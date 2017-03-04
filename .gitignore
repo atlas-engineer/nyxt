@@ -90,5 +90,5 @@ ENV/
 # Rope project settings
 .ropeproject
 qutebrowser
-qt
 icon
+archive/
