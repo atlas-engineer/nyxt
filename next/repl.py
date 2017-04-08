@@ -47,9 +47,6 @@ while True:
     lexer.input(s)
     
     # iterate through lexer tokens
-    while True:
-        tok = lexer.token()
-        if not tok:
-            break
+    for tok in lexer:
         print(' type {:<7} value {:<7} line {:<7} pos {:<7}'.format(
             tok.type, tok.value, tok.lineno, tok.lexpos))
