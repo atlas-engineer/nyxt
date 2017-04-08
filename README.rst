@@ -1,3 +1,3 @@
-Next Browser
+NeXT Browser
 ================================================================================
-Placeholder.
+The scriptable browser.
