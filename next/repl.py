@@ -2,18 +2,17 @@ import interpreter.lex as lex
 # import interpreter.yacc as yacc
 
 
-tokens = ('NAME', 'NUMBER', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE',
-          'EQUALS', 'LPAREN', 'RPAREN')
+op_tokens = ('PLUS', 'MINUS', 'TIMES', 'DIVIDE')
+tokens = ('SYMBOL', 'NUMBER', 'LPAREN', 'RPAREN') + op_tokens
 
 # Tokens
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
-t_EQUALS = r'='
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
-t_NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
+t_SYMBOL = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
 
 def t_NUMBER(t):
