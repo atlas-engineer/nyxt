@@ -7,7 +7,7 @@ lexer = lex.lex(module=interpreter.token_rules)
 
 while True:
     try:
-        s = input('nlisp > ')   # use input() on Python 3
+        s = input('nlisp > ')
     except EOFError:
         break
     lexer.input(s)
