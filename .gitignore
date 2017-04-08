@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+environment/
 build/
 develop-eggs/
 dist/
@@ -92,3 +93,6 @@ ENV/
 qutebrowser
 icon
 archive/
+
+# Ignore org files
+*.org
