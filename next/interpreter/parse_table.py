@@ -1,5 +1,6 @@
 import interpreter.yacc as yacc
 from interpreter.token_rules import tokens  # noqa: F401
+from interpreter import Interpreter
 
 # s_expression = atomic_symbol / "(" s_expression "."s_expression ")" / list
 # list = "(" s_expression < s_expression > ")"
@@ -10,12 +11,54 @@ from interpreter.token_rules import tokens  # noqa: F401
 # empty = " "
 
 
-def p_sexpression_atom(p):
-    '''sexpression : atom
-                   | LPAREN sexpression RPAREN'''
+def p_list(p):
+    'list : LPAREN items RPAREN'
+    p[0] = p[2]
+
+
+def p_items(p):
+    'items : item items'
+    p[0] = [p[1]] + p[2]
+
+
+def p_items_empty(p):
+    'items : empty'
+    p[0] = []
+
+
+def p_empty(p):
+    'empty :'
+    pass
+
+
+def p_item_atom(p):
+    'item : atom'
     p[0] = p[1]
-    for index, element in enumerate(p):
-        print(index, element)
+
+
+def p_item_list(p):
+    'item : list'
+    p[0] = p[1]
+
+
+def p_item_call(p):
+    'item : call'
+    p[0] = p[1]
+
+
+def p_item_empty(p):
+    'item : empty'
+    p[0] = p[1]
+
+
+def p_call(p):
+    'call : LPAREN SYMBOL items RPAREN'
+    pass
+
+
+def p_atom_symbol(p):
+    'atom : SYMBOL'
+    p[0] = p[1]
 
 
 def p_atom_number(p):

@@ -1,3 +1,8 @@
-"""Empty File
 
-"""
+
+class Interpreter(object):
+    """
+    
+    """
+    def evaluate(self, expression):
+        print('eval')
