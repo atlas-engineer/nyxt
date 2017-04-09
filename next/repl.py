@@ -1,9 +1,11 @@
 import interpreter.lex as lex
+
 import interpreter.token_rules
+from interpreter.parse_table import yacc
+
 
 # Build the lexer
 lexer = lex.lex(module=interpreter.token_rules)
-
 
 while True:
     try:
@@ -16,3 +18,4 @@ while True:
     for tok in lexer:
         print(' type {:<7} value {:<7} line {:<7} pos {:<7}'.format(
             tok.type, tok.value, tok.lineno, tok.lexpos))
+    yacc.parse(s)
