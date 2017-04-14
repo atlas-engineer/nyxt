@@ -1,6 +1,5 @@
 import interpreter.yacc as yacc
 from interpreter.token_rules import tokens  # noqa: F401
-from interpreter import Interpreter
 
 # s_expression = atomic_symbol / "(" s_expression "."s_expression ")" / list
 # list = "(" s_expression < s_expression > ")"
@@ -41,21 +40,6 @@ def p_item_list(p):
     p[0] = p[1]
 
 
-def p_item_call(p):
-    'item : call'
-    p[0] = p[1]
-
-
-def p_item_empty(p):
-    'item : empty'
-    p[0] = p[1]
-
-
-def p_call(p):
-    'call : LPAREN SYMBOL items RPAREN'
-    pass
-
-
 def p_atom_symbol(p):
     'atom : SYMBOL'
     p[0] = p[1]
@@ -64,11 +48,6 @@ def p_atom_symbol(p):
 def p_atom_number(p):
     'atom : NUMBER'
     p[0] = p[1]
-
-
-def p_atom_empty(p):
-    'atom :'
-    pass
 
 
 def p_error(p):
