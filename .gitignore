@@ -96,6 +96,7 @@ archive/
 
 # Ignore org files
 *.org
+*.org_archive
 
 # Ignore Lex/Yacc output
 parsetab.py
