@@ -98,6 +98,14 @@ archive/
 *.org
 *.org_archive
 
-# Ignore Lex/Yacc output
-parsetab.py
-parser.out
+# Qmake Stash
+*.qmake.stash
+
+# Ignore intermediary
+*.a
+
+# Ignore App
+*.app
+
+# Ignore temp
+tmp/
