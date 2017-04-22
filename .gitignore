@@ -103,9 +103,12 @@ archive/
 
 # Ignore intermediary
 *.a
+*.o
+Makefile
 
 # Ignore App
 *.app
 
 # Ignore temp
 tmp/
+Makefile
