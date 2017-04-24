@@ -112,3 +112,4 @@ Makefile
 # Ignore temp
 tmp/
 Makefile
+tr.h

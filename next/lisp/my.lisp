@@ -9,7 +9,7 @@
 
 (defun start ()
   (! "show" (qnew "QLabel"
-                  "text" (tr (format nil "<h3>~A ~{~R~^ ~},<br>I want to sleep until ~R."
+                  "text" (tr (format nil "<h3>~A ~{~R~^ ~},<br>I am the bonana king to sleep until ~R."
                                      (string-capitalize (format nil "~R" 1))
                                      (loop for i from 2 to 7 collect i)
                                      *alarm*))
