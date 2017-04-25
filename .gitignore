@@ -113,3 +113,6 @@ Makefile
 tmp/
 Makefile
 tr.h
+
+# Ignore html files (compiled RST files)
+*.html

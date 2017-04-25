@@ -5,13 +5,8 @@
 
 (in-package :example)
 
-(defparameter *alarm* 11)
-
 (defun start ()
   (! "show" (qnew "QLabel"
-                  "text" (tr (format nil "<h3>~A ~{~R~^ ~},<br>I am the bonana king to sleep until ~R."
-                                     (string-capitalize (format nil "~R" 1))
-                                     (loop for i from 2 to 7 collect i)
-                                     *alarm*))
+                  "text" (tr (format nil "Charlie, you're the banana king"))
                   "alignment" |Qt.AlignCenter|
                   "margin" 10)))
