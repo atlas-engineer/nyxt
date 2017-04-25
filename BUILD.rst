@@ -49,11 +49,11 @@ To verify your installation of ECL:
 - Verify the contents of /usr/local/lib contain the ecl libraries.
 - Verify the contents of /usr/local/include/ecl contain the header files
 
-Installing EQL Library (Embedded QT Lisp)
+Installing EQL5 Library (Embedded QT Lisp)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The source for EQL is available here:
+The source for EQL5 is available here:
 
-https://gitlab.com/eql/eql
+https://gitlab.com/eql/EQL5
 
 To build and install the EQL Library:
 
@@ -77,7 +77,7 @@ To build and install the EQL Library:
 7. Create symlinks between the dylib files in the parent directory and /usr/local/lib
 8. Copy the header files from the src/ directory to /usr/local/include/eql
 
-Installing EQL Executable (Embedded QT Lisp)
+Installing EQL5 Executable (Embedded QT Lisp)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. Adapt src/eql_exe.pro
 
@@ -96,7 +96,7 @@ Installing EQL Executable (Embedded QT Lisp)
 
    - If you cannot see the window, try looking for it or pressing on the dock
 
-Installing EQL Webkit Module (Embedded QT Lisp)
+Installing EQL5 Webkit Module (Embedded QT Lisp)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To build and install the EQL Webkit Module:
 
