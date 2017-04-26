@@ -1,13 +1,14 @@
-NeXT Browser
+nEXT Browser
 ========================================================================
-Next is the ultimate productivity. It is designed from
-the ground up to be optimized for your workflow. NeXT is infinitely
-customizable unlike traditional browser plugins. Literally nothing is
-not customizable. The browser itself is actually written as a plugin.
+nEXT is the ultimate productivity browser. It is designed from the
+ground up to be optimized for your workflow. nEXT Browser is the
+infinitely EXTensible browser. Unlike traditional browsers, literally
+nothing is not customizable. The browser itself is actually written as
+a plugin.
 
-Get NeXT Browser
+Install nEXT Browser
 ------------------------------------------------------------------------
-See the releases for releases.
+See the releases section for pre-built binary releases.
 
 Quickstart Guide
 ------------------------------------------------------------------------
