@@ -62,15 +62,18 @@ To build and install the EQL Library/Executable:
 3. Edit ``src/eql5.pro`` commenting out all QT modules you do not require
 4. Edit ``src/eql_lib.pro`` adding the directory of your ecl dylib files
 
-   - Change: ``LIBS += -lecl -L. -lini_eql5 -L/usr/local/lib``
+   - Change: ``LIBS += -lecl -L/usr/local/lib -lini_eql5 -L.``
 
-5. Edit ``src/eql_exe.pro`` to build an executable instead of ".app" for OSX
+5. Edit ``src/eql_exe.pro`` to build an executable instead of an ".app" for OSX
 
-   - Add: ``CONFIG-=app_bundle``
+   - Add: ``CONFIG -= app_bundle``
 
 6. In ``src/`` exec: ``qmake eql5.pro``. This command will generate the makefile
 7. In ``src/`` exec: ``make``
 8. In ``src/`` exec: ``sudo make install``
+
+To test your installation exec ``eql5 -qgui``, you should presented
+with a REPL and a GUI.
 
 Compiling nEXT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
