@@ -59,8 +59,8 @@ To build and install the EQL Library/Executable:
 
 1. Clone the Repository into a directory where you plan to keep the
    installation, this cannot be moved after installation.
-2. In ``src/`` exec: ``ecl -shell make.lisp`` This command will
-   generate ``src/libini_eql5.a``.
+2. In ``src/`` exec: ``ecl -shell make.lisp`` This command generates
+   ``src/libini_eql5.a``.
 3. Edit ``src/eql5.pro`` commenting out all QT modules you do not
    require.
 
@@ -76,7 +76,8 @@ To build and install the EQL Library/Executable:
 
    - Add: ``CONFIG -= app_bundle``
 
-6. In ``src/`` exec: ``qmake eql5.pro``. Command generates makefile.
+6. In ``src/`` exec: ``qmake eql5.pro``. This command generates
+   the makefile.
 7. In ``src/`` exec: ``make``
 8. In ``src/`` exec: ``sudo make install``
 
