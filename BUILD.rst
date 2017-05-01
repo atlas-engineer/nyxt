@@ -23,9 +23,9 @@ line tools are installed.
 
 Installing QT5 (Cross Platform GUI Toolkit)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-QT5 is available from a number of sources, the easiest is to install it
-via a package manager such as Macports or Brew. However you install,
-ensure that you install it with webkit support.
+QT5 is available from a number of sources, the easiest is to install
+it via a package manager such as Macports or Brew. However you
+install, ensure that you install it with webkit support.
 
 You can install QT5 via Macports with the following command:
 
@@ -57,23 +57,36 @@ https://gitlab.com/eql/EQL5
 
 To build and install the EQL Library/Executable:
 
-1. Clone the Repository into a directory where you plan to keep the install
-2. In ``src/`` exec: ``ecl -shell make.lisp`` This command will generate ``src/libini.a``
-3. Edit ``src/eql5.pro`` commenting out all QT modules you do not require
-4. Edit ``src/eql_lib.pro`` adding the directory of your ecl dylib files
+1. Clone the Repository into a directory where you plan to keep the
+   installation, this cannot be moved after installation.
+2. In ``src/`` exec: ``ecl -shell make.lisp`` This command will
+   generate ``src/libini_eql5.a``.
+3. Edit ``src/eql5.pro`` commenting out all QT modules you do not
+   require. The webkit module is required for nEXT.
+4. Edit ``src/eql_lib.pro`` adding the directory of your ecl \*.dylib
+   files.
 
    - Change: ``LIBS += -lecl -L/usr/local/lib -lini_eql5 -L.``
 
-5. Edit ``src/eql_exe.pro`` to build an executable instead of an ".app" for OSX
+5. Edit ``src/eql_exe.pro`` to build an executable instead of an
+   ".app" for OSX.
 
    - Add: ``CONFIG -= app_bundle``
 
-6. In ``src/`` exec: ``qmake eql5.pro``. This command will generate the makefile
+6. In ``src/`` exec: ``qmake eql5.pro``. This command will generate
+   the makefile necessary for the following steps.
 7. In ``src/`` exec: ``make``
 8. In ``src/`` exec: ``sudo make install``
 
 To test your installation exec ``eql5 -qgui``, you should presented
 with a REPL and a GUI.
+
+After the installation, the following should be completed:
+
+- ``/usr/local/bin`` contains an ``eql5`` executable
+- ``/usr/local/include`` contains a folder named ``eql5``
+- ``/usr/local/lib`` contains all built QT modules (selected in
+  ``src/eql5.pro``) and libeql \*.dylib files
 
 Compiling nEXT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
