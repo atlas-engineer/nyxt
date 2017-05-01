@@ -49,42 +49,28 @@ To verify your installation of ECL:
 - Verify the contents of ``/usr/local/lib`` contain the ecl libraries.
 - Verify the contents of ``/usr/local/include/ecl`` contain the header files
 
-Installing EQL5 Library (Embedded QT Lisp)
+Installing EQL5 Library & Executable (Embedded QT Lisp)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The source for EQL5 is available here:
 
 https://gitlab.com/eql/EQL5
 
-To build and install the EQL Library:
+To build and install the EQL Library/Executable:
 
-1. Clone the Repository into a dir where you plan to keep the install
-2. In ``src/`` exec: ``ecl -shell make-eql-lib.lisp`` This command will generate ``src/libini.dylib``
-3. In ``src/`` exec: ``qmake eql_lib.pro``. This command will generate the makefile
-4. In ``src/`` exec: ``make``. Compiled assets will appear in parent directory
-5. Create symlinks between the dylib files in the parent directory and ``/usr/local/lib``
-6. Copy the header files from the ``src/`` directory to ``/usr/local/include/eql``
+1. Clone the Repository into a directory where you plan to keep the install
+2. In ``src/`` exec: ``ecl -shell make.lisp`` This command will generate ``src/libini.a``
+3. Edit ``src/eql5.pro`` commenting out all QT modules you do not require
+4. Edit ``src/eql_lib.pro`` adding the directory of your ecl dylib files
 
-Installing EQL5 Executable (Embedded QT Lisp)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   - Change: ``LIBS += -lecl -L. -lini_eql5 -L/usr/local/lib``
 
-1. In src/ exec: ``qmake eql_exe.pro``. This command will generate the makefile
-2. Exec ``make``. Compiled asset will appear in the parent directory in eql5.app/Contents/MacOS/eql5
-3. Create a symlink from ``eql5.app/Contents/MacOS/eql5`` to ``/opt/local/bin`` or any other dir in your path
-4. Test your installation of EQL by running ``eql5 -qgui`` you should be presented with a GUI/REPL
+5. Edit ``src/eql_exe.pro`` to build an executable instead of ".app" for OSX
 
-   - If you cannot see the window, try looking for it or pressing on the dock
+   - Add: ``CONFIG-=app_bundle``
 
-Installing EQL5 Webkit Module (Embedded QT Lisp)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-To build and install the EQL Webkit Module:
-
-1. In ``src/`` exec: ``qmake module_webkit.pro``. This command will generate the makefile
-2. Exec ``make``. Compiled assets will appear in the parent directory
-3. Create symlinks between the webkit dylib files in the parent directory and ``/usr/local/lib``
-4. To verify your install of the EQL webkit module run ``eql5 -qgui``
-   
-   - Within the GUI's QT "Tab" the QWebView should render documentation
-   - If the Webkit module is not built/missing, the documentation will not render
+6. In ``src/`` exec: ``qmake eql5.pro``. This command will generate the makefile
+7. In ``src/`` exec: ``make``
+8. In ``src/`` exec: ``sudo make install``
 
 Compiling nEXT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
