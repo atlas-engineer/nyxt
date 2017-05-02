@@ -66,20 +66,10 @@ To build and install the EQL Library/Executable:
 
    - The webkit module is required for nEXT.
 
-4. Edit ``src/eql_lib.pro`` adding the directory of your ecl \*.dylib
-   files.
-
-   - Change: ``LIBS += -lecl -L/usr/local/lib -lini_eql5 -L.``
-
-5. Edit ``src/eql_exe.pro`` to build an executable instead of an
-   ".app" for OSX (http://doc.qt.io/qt-5/osx-deployment.html).
-
-   - Add: ``CONFIG -= app_bundle``
-
-6. In ``src/`` exec: ``qmake eql5.pro``. This command generates
+4. In ``src/`` exec: ``qmake eql5.pro``. This command generates
    the makefile.
-7. In ``src/`` exec: ``make``
-8. In ``src/`` exec: ``sudo make install``
+5. In ``src/`` exec: ``make``
+6. In ``src/`` exec: ``sudo make install``
 
 To test your installation exec ``eql5 -qgui``, you should presented
 with a REPL and a GUI.
