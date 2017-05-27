@@ -5,8 +5,14 @@
 
 (in-package :example)
 
+(qrequire :webkit)
+
+(defvar *web-view* (qnew "QWebView"))
+
+(defun set-url (name)
+  (qlet ((url (qnew "QUrl(QString)" name)))
+	(|setUrl| *web-view* url)))
+
 (defun start ()
-  (! "show" (qnew "QLabel"
-                  "text" (tr (format nil "Charlie, you're the banana king"))
-                  "alignment" |Qt.AlignCenter|
-                  "margin" 10)))
+  (! "show" *web-view*)
+  (set-url "http://www.google.com/"))
