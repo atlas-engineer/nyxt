@@ -11,8 +11,8 @@
 
 (defun set-url (name)
   (qlet ((url (qnew "QUrl(QString)" name)))
-	(|setUrl| *web-view* url)))
+    (|setUrl| *web-view* url)))
 
 (defun start ()
-  (! "show" *web-view*)
+  (|show| *web-view*)
   (set-url "http://www.google.com/"))
