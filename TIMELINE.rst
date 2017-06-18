@@ -52,7 +52,6 @@ For the first release, document-mode must have:
 
 - Ability to open new buffers with the key-binding C-x C-o
 
-Opening new buffers
 Opening of new buffers by invoking C-x C-o will open the Minibuffer.
 Within the Minibuffer, the user will be presented with a prompt in
 which they can enter in the url they would like to visit in a new
@@ -73,12 +72,10 @@ following key bindings and features:
 - Ability to navigate forward and backward in history with the
   key binding M-f, and M-b for forward and backward respectively
 
-Opening new pages in the same buffer
 Opening of new pages in the same buffer can be invoked by the key binding
 C-o. This key binding will open up the Minibuffer and prompt the user
 to enter the url which they would like to visit.
 
-History
 Within html-mode the history will be represented as a tree, with forwards
 and backwards navigation creating new nodes and traversals. This will
 allow for all points in history to be reachable, and a future expansion
