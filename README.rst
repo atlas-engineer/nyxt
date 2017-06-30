@@ -1,4 +1,4 @@
-    ..image:: assets/logo.png
+.. image:: assets/logo.png
 
 nEXT Browser
 ========================================================================
