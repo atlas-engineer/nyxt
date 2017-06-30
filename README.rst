@@ -1,3 +1,5 @@
+    ..image:: assets/logo.png
+
 nEXT Browser
 ========================================================================
 nEXT is the ultimate productivity browser. It is designed from the
