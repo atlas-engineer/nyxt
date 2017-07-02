@@ -8,8 +8,9 @@
 #+msvc
 (setf c::*compile-in-constants* t)
 
+;; load all lisp files for compilation
 (defparameter *lisp-files*
-  (list "my")
+  (list "base")
   "All Lisp files of the application.")
 
 (dolist (f *lisp-files*)

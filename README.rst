@@ -12,10 +12,6 @@ Install nEXT Browser
 ------------------------------------------------------------------------
 See the releases section for pre-built binary releases.
 
-Quickstart Guide
-------------------------------------------------------------------------
-Placeholder.
-
 Project Status
 ------------------------------------------------------------------------
 The project is currently in pre-alpha stage.
