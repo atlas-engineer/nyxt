@@ -10,7 +10,7 @@
 
 ;; load all lisp files for compilation
 (defparameter *lisp-files*
-  (list "base")
+  (list "base" "keymap")
   "All Lisp files of the application.")
 
 (dolist (f *lisp-files*)

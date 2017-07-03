@@ -35,6 +35,6 @@ int main(int argc, char** argv) {
 
     eql.exec(ini_app,    // see make.lisp
              "(start)",  // initial form to be evaluated (optional)
-             "example"); // package name                 (optional)
+             "next");    // package name                 (optional)
 
     return catch_all_qexec(); } // closing the main/last window will quit the program
