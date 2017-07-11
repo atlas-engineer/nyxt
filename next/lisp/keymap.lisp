@@ -29,7 +29,6 @@
     (push key-chord *key-sequence-stack*)))
 
 (defun consume-key-sequence ()
-  (print *key-sequence-stack*)
   ;; If key recognized, execute function
   (if (gethash *key-sequence-stack* global-map)
       (progn
@@ -45,9 +44,9 @@
     (#.|Qt.Key_Control|
        (setf *control-modifier* t))
     (t ; all other keys
-     (print (|text| event))
-     (push-key-chord (|text| event))
-     (consume-key-sequence))))
+     (progn
+       (push-key-chord (|text| event))
+       (consume-key-sequence)))))
 
 (defun key-release (obj event)
   (case (|key| event)
@@ -71,9 +70,11 @@
 	    (push key-chord key-sequence)))
     key-sequence))
 
+;; create hash map of key to actual keys
+;; http://doc.qt.io/qt-4.8/qt.html#Key-enum
+;; use form #.|Qt.Key_Control|
+
 (defun print-hey ()
   (print "hey"))
 
 (define-key global-map (kbd "a") #'print-hey)
-
-
