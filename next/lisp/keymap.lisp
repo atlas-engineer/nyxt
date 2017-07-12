@@ -27,7 +27,7 @@
        (setf *control-modifier* t))
     (t ; all other keys
      (progn
-       (push-key-chord (|text| event))
+       (push-key-chord (|key| event))
        (consume-key-sequence))))
   t ; return true to avoid propagation
   )
@@ -69,15 +69,8 @@
 	    (loop for key-character-string in (split key-chord-string "-")
 	       do (cond
 		    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
-		    (t (setf (key-character key-chord) key-character-string))))
+		    (t (setf (key-character key-chord)
+			     ;; Convert from the actual key to the QT code representation
+			     (gethash key-character-string *character->keycode*)))))
 	    (push key-chord key-sequence)))
     key-sequence))
-
-;; create hash map of key to actual keys
-;; http://doc.qt.io/qt-4.8/qt.html#Key-enum
-;; use form #.|Qt.Key_Control|
-
-(defun print-hey ()
-  (print "hey"))
-
-(define-key global-map (kbd "a") #'print-hey)

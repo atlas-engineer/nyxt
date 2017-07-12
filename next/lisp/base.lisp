@@ -4,7 +4,11 @@
    #:start))
 (in-package :next)
 (qrequire :webkit)
+(load "qt")
 (load "keymap")
+
+;; load the user's init file
+(load "~/.next.d/init")
 
 (defvar *web-view* (qnew "QWebView"))
 
