@@ -1,3 +1,5 @@
+;;; keymap.lisp --- lisp subroutines for key binding detection
+
 (in-package :next)
 (ql:quickload :cl-strings)
 (use-package :cl-strings)
@@ -10,9 +12,9 @@
   "A variable to store the status of the super/cmd key")
 
 (defparameter global-map (make-hash-table :test 'equalp)
-  "A global key map")
+  "A global key map, available in every mode/buffer")
 (defparameter *key-sequence-stack* ()
-  "A buffer that keeps track of the keys a user has inputted")
+  "A stack that keeps track of the key chords a user has inputted")
 
 (defstruct key
   character
@@ -61,16 +63,23 @@
   (setf (gethash key-sequence mode-map) function))
 
 (defun kbd (key-sequence-string)
+  ;; Take a key-sequence-string in the form of "C-x C-s"
+  ;; Firstly, break it apart into chords: "C-x" and "C-s"
+  ;; Then, break apart the chords into individual keys
+  ;; Use those individual keys to create a "key" struct
+  ;; that describes the chord. We now have two "keys"
+  ;; connect these two keys in a list <key> C-x, <key> C-s
+  ;; this is will serve as the key to our key->function map
   (let ((key-sequence ()))
     ;; Iterate through all key chords (space delimited)
     (loop for key-chord-string in (split key-sequence-string " ")
        ;; Iterate through all keys in chord (hyphen delimited)
        do (let ((key-chord (make-key)))
-	    (loop for key-character-string in (split key-chord-string "-")
-	       do (cond
-		    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
-		    (t (setf (key-character key-chord)
-			     ;; Convert from the actual key to the QT code representation
-			     (gethash key-character-string *character->keycode*)))))
-	    (push key-chord key-sequence)))
+  	    (loop for key-character-string in (split key-chord-string "-")
+  	       do (cond
+  		    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
+  		    (t (setf (key-character key-chord)
+  			     ;; Convert from the actual key to the QT code representation
+  			     (gethash key-character-string *character->keycode*)))))
+  	    (push key-chord key-sequence)))
     key-sequence))
