@@ -51,16 +51,32 @@
 (defun consume-key-sequence ()
   ;; If key recognized, execute function
   (if (gethash *key-sequence-stack* global-map)
-      (progn
-	(funcall (gethash *key-sequence-stack* global-map))
-	(setf *key-sequence-stack* ()))
+      ;; If not prefix key, consume
+      (if (not (equalp (gethash *key-sequence-stack* global-map) "prefix"))
+	  (progn
+	    (funcall (gethash *key-sequence-stack* global-map))
+	    (setf *key-sequence-stack* ())))
       ;; If key not recognized, print message
       (progn
 	(print "Key Undefined")
 	(setf *key-sequence-stack* ()))))
 
 (defun define-key (mode-map key-sequence function)
-  (setf (gethash key-sequence mode-map) function))
+  ;; A sequence of "C-x" "C-s" "C-a" will be broken
+  ;; up into three keys for the mode map, these are
+  ;; "C-x" "C-s" "C-a" - points to function
+  ;; "C-x" "C-s"       - set to "prefix"
+  ;; "C-x"             - set to "prefix"
+  ;;
+  ;; When a key is set to "prefix" it will not
+  ;; consume the stack, so that a sequence of keys
+  ;; longer than one key-chord can be recorded
+  (setf (gethash key-sequence mode-map) function)
+  ;; generate prefix representations
+  (loop while key-sequence
+     do
+       (pop key-sequence)
+       (setf (gethash key-sequence mode-map) "prefix")))
 
 (defun kbd (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"
