@@ -18,7 +18,9 @@
 
 (defstruct key
   character
-  control-modifier)
+  control-modifier
+  meta-modifier
+  super-modifier)
 
 (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
 (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
