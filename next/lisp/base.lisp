@@ -1,14 +1,12 @@
+;;; base.lisp --- main entry point into nEXT
+
 (defpackage :next
   (:use :common-lisp :eql)
   (:export
    #:start))
 (in-package :next)
-(qrequire :webkit)
-(load "qt")
-(load "keymap")
 
-;; load the user's init file
-(load "~/.next.d/init")
+(qrequire :webkit)
 
 (defvar *web-view* (qnew "QWebView"))
 
@@ -19,5 +17,3 @@
 (defun start ()
   (|show| *web-view*)
   (set-url "about:blank"))
-
-(start)

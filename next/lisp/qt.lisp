@@ -1,4 +1,6 @@
-;;; Contains QT Helper Functions & Data
+;;; qt.lisp --- QT helper functions & data
+
+(in-package :next)
 
 (defparameter *character->keycode* (make-hash-table :test 'equalp))
 

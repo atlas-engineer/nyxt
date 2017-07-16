@@ -1,7 +1,7 @@
 QT          += widgets printsupport uitools
 TEMPLATE     = app
 CONFIG      += no_keywords release
-LIBS        += -lecl -leql5 -L/usr/local/lib -lmy_lib -L.
+LIBS        += -lecl -leql5 -L/usr/local/lib -lnext -L.
 TARGET       = next
 DESTDIR      = ./
 OBJECTS_DIR  = ./tmp/
