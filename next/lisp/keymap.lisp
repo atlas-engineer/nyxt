@@ -16,12 +16,14 @@
 (defparameter *key-sequence-stack* ()
   "A stack that keeps track of the key chords a user has inputted")
 
+;; A struct used to describe a key-chord
 (defstruct key
   character
   control-modifier
   meta-modifier
   super-modifier)
 
+;; Used by QT to capture key presses
 (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
 (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
