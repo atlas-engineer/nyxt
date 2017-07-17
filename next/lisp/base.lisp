@@ -1,4 +1,4 @@
-;;; base.lisp --- main entry point into nEXT
+;;;; base.lisp --- main entry point into nEXT
 
 (defpackage :next
   (:use :common-lisp :eql)

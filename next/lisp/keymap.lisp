@@ -1,4 +1,4 @@
-;;; keymap.lisp --- lisp subroutines for key binding detection
+;;;; keymap.lisp --- lisp subroutines for key binding detection
 
 (in-package :next)
 (ql:quickload :cl-strings)

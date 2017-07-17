@@ -1,4 +1,4 @@
-;;; qt.lisp --- QT helper functions & data
+;;;; qt.lisp --- QT helper functions & data
 
 (in-package :next)
 
