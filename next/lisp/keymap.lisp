@@ -16,31 +16,34 @@
 (defparameter *key-sequence-stack* ()
   "A stack that keeps track of the key chords a user has inputted")
 
+;; A struct used to describe a key-chord
 (defstruct key
   character
   control-modifier
   meta-modifier
   super-modifier)
 
+;; Used by QT to capture key presses
 (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
 (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun key-press (obj event)
-  (case (|key| event)
-    (#.|Qt.Key_Control|
+  (let ((key (|key| event)))
+    (cond
+      ((equalp key *control-key*)
        (setf *control-modifier* t))
-    (t ; all other keys
-     (progn
-       (push-key-chord (|key| event))
-       (consume-key-sequence))))
-  t ; return true to avoid propagation
-  )
+      (t (progn
+	   (push-key-chord key)
+	   (consume-key-sequence)))))
+  ; return true to avoid propagation to all widgets
+  t)
 
 (defun key-release (obj event)
-  (case (|key| event)
-    (#.|Qt.Key_Control|
+  (let ((key (|key| event)))
+    (cond
+      ((equalp key *control-key*)
        (setf *control-modifier* nil))
-    (t (return-from key-release))))
+      (t (return-from key-release)))))
 
 (defun push-key-chord (key-character-string)
   (let ((key-chord (make-key)))
