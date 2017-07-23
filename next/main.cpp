@@ -1,13 +1,13 @@
 #undef SLOT
 
 #include <ecl/ecl.h>
+#include <eql5/eql.h>
 #include <QApplication>
 #include <QTextCodec>
 #include <QSettings>
 #include <QTranslator>
-#include "eql5/eql.h"
 
-extern "C" void ini_app(cl_object);
+extern "C" void init_lib_NEXT__ALL_SYSTEMS(cl_object);
 
 int catch_all_qexec() {
     int ret = 0;
@@ -18,7 +18,7 @@ int catch_all_qexec() {
 
 int main(int argc, char** argv) {
 
-    EQL::ini(argv); // best initialized here
+    EQL::ini(argv);
 
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // for Qt WebEngine
     QApplication qapp(argc, argv);
@@ -33,8 +33,6 @@ int main(int argc, char** argv) {
     eql.ignoreIOStreams();
 #endif
 
-    eql.exec(ini_app,    // see make.lisp
-             "(start)",  // initial form to be evaluated (optional)
-             "next");    // package name                 (optional)
+    eql.exec(init_lib_NEXT__ALL_SYSTEMS);
 
     return catch_all_qexec(); } // closing the main/last window will quit the program

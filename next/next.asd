@@ -3,10 +3,13 @@
 (defsystem :next
   :serial t
   :depends-on (:cl-strings)
-  :components ((:file "lisp/base")))
+  :components ((:file "lisp/package")
+	       (:file "lisp/qt")
+	       (:file "lisp/keymap")
+	       (:file "lisp/buffer")
+	       (:file "lisp/base")))
 
 ;; (asdf:make-build :next
 ;;                  :type :program
 ;;                  :move-here #P"./"
 ;;                  :epilogue-code '(next:start))
-

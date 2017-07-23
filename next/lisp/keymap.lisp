@@ -1,8 +1,7 @@
 ;;;; keymap.lisp --- lisp subroutines for key binding detection
 
 (in-package :next)
-(ql:quickload :cl-strings)
-(use-package :cl-strings)
+
 
 (defvar *control-modifier* nil
   "A variable to store the status of the control key")

@@ -3,24 +3,20 @@
 
 (require :cmp)
 
-#+msvc
-(setf c::*compile-in-constants* t)
+(load "dependencies")
 
-;; load all lisp files for compilation
-(defparameter *lisp-files*
-  (list "base" "qt" "keymap")
-  "All Lisp files of the application.")
+(push "./" asdf:*central-registry*)
 
-(dolist (f *lisp-files*)
-  (let ((file (format nil "lisp/~A" f)))
-    (load file)
-    (compile-file file :system-p t)))
+(asdf:make-build "next"
+                 :monolithic t
+                 :type :static-library
+                 :move-here "./")
 
-(c:build-static-library "next"
-                        :lisp-files (mapcar (lambda (file)
-                                              (format nil "lisp/~A.~A" file #+msvc "obj" #-msvc "o"))
-                                            *lisp-files*)
-			:init-name "ini_app"
-                        :epilogue-code '(next:start))
-
-(eql:qq)
+(let ((lib-name #+msvc "next_lib.lib"
+                #-msvc "libnext_lib.a"))
+  (when (probe-file lib-name)
+    (delete-file lib-name))
+  (rename-file (x:cc "next--all-systems"
+                      #+msvc ".lib"
+                      #-msvc ".a")
+               lib-name))
