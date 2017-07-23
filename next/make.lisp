@@ -12,8 +12,8 @@
                  :type :static-library
                  :move-here "./")
 
-(let ((lib-name #+msvc "next_lib.lib"
-                #-msvc "libnext_lib.a"))
+(let ((lib-name #+msvc "next.lib"
+                #-msvc "libnext.a"))
   (when (probe-file lib-name)
     (delete-file lib-name))
   (rename-file (x:cc "next--all-systems"
