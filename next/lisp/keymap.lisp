@@ -31,6 +31,8 @@
     (cond
       ((equalp key *control-key*)
        (setf *control-modifier* t))
+      ((equalp key *meta-key*)
+       (setf *meta-modifier* t))
       (t (progn
 	   (push-key-chord key)
 	   (consume-key-sequence)))))
@@ -42,6 +44,8 @@
     (cond
       ((equalp key *control-key*)
        (setf *control-modifier* nil))
+      ((equalp key *meta-key*)
+       (setf *meta-modifier* nil))
       (t (return-from key-release)))))
 
 (defun push-key-chord (key-character-string)
