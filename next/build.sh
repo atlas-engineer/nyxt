@@ -12,3 +12,4 @@ make
 # Clean up temporary directories
 rm -rf ./tmp
 rm libnext.a
+rm Makefile
