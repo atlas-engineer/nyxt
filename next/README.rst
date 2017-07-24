@@ -53,6 +53,23 @@ To verify your installation of ECL:
 - Verify the contents of ``/usr/local/lib`` contain the ecl libraries.
 - Verify the contents of ``/usr/local/include/ecl`` contain the header files
 
+Installing Quicklisp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The official quicklisp website can provide updated links
+to downloads, and instructions:
+
+https://www.quicklisp.org
+
+To install quicklisp:
+
+- Download https://beta.quicklisp.org/quicklisp.lisp
+- Execute ``ecl --load quicklisp.lisp`` to load quicklisp
+- Evaluate in the REPL ``(quicklisp-quickstart:install)`` to install
+- Evalute in the REPL ``(ql:add-to-init-file)`` to add quicklisp to your ecl init file
+
+more detailed instructions and other resources are readily available
+on the quicklisp website.
+
 Installing EQL5 Library & Executable (Embedded QT Lisp)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The source for EQL5 is available here:
