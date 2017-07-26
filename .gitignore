@@ -1,8 +1,9 @@
 # C extensions
 *.so
 
-# Ignore archive folder
+# Ignore folders
 archive/
+offline/
 
 # Ignore org files
 *.org
