@@ -4,11 +4,11 @@
 
 (qrequire :webkit)
 
-(defvar *web-view* (generate-new-buffer "default"))
+(setf *active-buffer* (generate-new-buffer "default"))
 
 (defun start ()
-  (|show| (buffer-web-view *web-view*))
-  (set-url "about:blank" *web-view*))
+  (|show| (buffer-view *active-buffer*))
+  (set-url "about:blank" *active-buffer*))
 
 ;; load the user configuration if it exists
 (load "~/.next.d/init.lisp" :if-does-not-exist nil)

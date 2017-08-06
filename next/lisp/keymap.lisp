@@ -1,5 +1,14 @@
 ;;;; keymap.lisp --- lisp subroutines for key binding detection
 
+;;;; keymaps are executed in priority from most specific to least
+;;;; that is, the order of execution for keymaps is:
+;;;; global-map --> major-mode-map --> minor-mode-maps
+;;;; 
+;;;; keys are defined with the following syntax:
+;;;; (define-key global-map (kbd "C-x o") #'function-reference)
+;;;; in the previous example, the sequence of keys:
+;;;; "control+x", "o" would invoke the "function-reference"
+
 (in-package :next)
 
 
@@ -27,6 +36,7 @@
 (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun key-press (obj event)
+  ;; Invoked upon key-press
   (let ((key (|key| event)))
     (cond
       ((equalp key *control-key*)
@@ -40,6 +50,7 @@
   t)
 
 (defun key-release (obj event)
+  ;; Invoked upon key-release
   (let ((key (|key| event)))
     (cond
       ((equalp key *control-key*)
@@ -49,6 +60,10 @@
       (t (return-from key-release)))))
 
 (defun push-key-chord (key-character-string)
+  ;; Adds a new chord to key-sequence
+  ;; For example, it may add C-M-s or C-x
+  ;; to a stack which will be consumed by
+  ;; consume-key-sequence
   (let ((key-chord (make-key)))
     (if *control-modifier*
 	(setf (key-control-modifier key-chord) t))
@@ -57,17 +72,24 @@
     (push key-chord *key-sequence-stack*)))
 
 (defun consume-key-sequence ()
+  ;; Iterate through all keymaps
   ;; If key recognized, execute function
-  (if (gethash *key-sequence-stack* global-map)
-      ;; If not prefix key, consume
-      (if (not (equalp (gethash *key-sequence-stack* global-map) "prefix"))
-	  (progn
-	    (funcall (gethash *key-sequence-stack* global-map))
-	    (setf *key-sequence-stack* ())))
-      ;; If key not recognized, print message
-      (progn
-	(print "Key Undefined")
-	(setf *key-sequence-stack* ()))))
+  (let ((key-maps (list
+		   global-map
+		   (mode-keymap (buffer-mode *active-buffer*)))))
+    (dolist (map key-maps)
+      (if (gethash *key-sequence-stack* map)
+	  (progn 
+	    ;; If not prefix key, consume
+	    (if (not (equalp (gethash *key-sequence-stack* map) "prefix"))
+		(progn
+		  (funcall (gethash *key-sequence-stack* map))
+		  (setf *key-sequence-stack* ())))
+	    (return-from consume-key-sequence))))
+    ;; If we make it to this point, key did not exist
+    ;; in any of the keymaps, print a message and clear stack
+    (print "Key Undefined")
+    (setf *key-sequence-stack* ())))
 
 (defun define-key (mode-map key-sequence function)
   ;; A sequence of "C-x" "C-s" "C-a" will be broken
@@ -107,3 +129,6 @@
   			     (gethash key-character-string *character->keycode*)))))
   	    (push key-chord key-sequence)))
     key-sequence))
+
+;;; set standard keybindings
+(define-key global-map (kbd "C-x C-c") #'qquit)
