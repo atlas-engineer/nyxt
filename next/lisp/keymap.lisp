@@ -37,6 +37,7 @@
 
 (defun key-press (obj event)
   ;; Invoked upon key-press
+  (declare (ignore obj)) ; supress unused warnings
   (let ((key (|key| event)))
     (cond
       ((equalp key *control-key*)
@@ -51,6 +52,7 @@
 
 (defun key-release (obj event)
   ;; Invoked upon key-release
+  (declare (ignore obj)) ; supress unused warnings
   (let ((key (|key| event)))
     (cond
       ((equalp key *control-key*)
