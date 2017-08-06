@@ -9,13 +9,21 @@
   name
   keymap)
 
+(defun scroll-down ()
+  (print "scroll-down"))
+(define-key document-mode-map (kbd "C-n") #'scroll-down)
+
+(defun scroll-up ()
+  (print "scroll-up"))
+(define-key document-mode-map (kbd "C-p") #'scroll-up)
+
 (defun document-mode ()
   "Base mode for interacting with documents"
   ;; (use-local-map wpdl-mode-map)
   ;; (setq major-mode 'wpdl-mode)
   ;; (setq mode-name "Document")
   ;; (run-hooks 'wpdl-mode-hook)
-
+  
   (make-mode
    :name "Document-Mode"
    :keymap document-mode-map))

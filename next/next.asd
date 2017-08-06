@@ -5,9 +5,9 @@
   :depends-on (:cl-strings)
   :components ((:file "lisp/package")
 	       (:file "lisp/qt")
+	       (:file "lisp/keymap")
 	       (:file "lisp/document-mode")
 	       (:file "lisp/buffer")
-	       (:file "lisp/keymap")
 	       (:file "lisp/base")))
 
 ;; (asdf:make-build :next
