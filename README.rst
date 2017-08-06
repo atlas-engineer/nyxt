@@ -1,8 +1,7 @@
 
 nEXT Browser
 ========================================================================
-.. image:: assets/icon.png
-  :height: 250px
+.. image:: assets/logo.png
 
 nEXT is the ultimate productivity browser. It is designed from the
 ground up to be optimized for your workflow. nEXT Browser is the
