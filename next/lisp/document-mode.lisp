@@ -19,10 +19,6 @@
 
 (defun document-mode ()
   "Base mode for interacting with documents"
-  ;; (use-local-map wpdl-mode-map)
-  ;; (setq major-mode 'wpdl-mode)
-  ;; (setq mode-name "Document")
-  ;; (run-hooks 'wpdl-mode-hook)
   
   (make-mode
    :name "Document-Mode"
