@@ -5,9 +5,9 @@
 archive/
 offline/
 
-# Ignore org files
-*.org
-*.org_archive
+# Ignore info org files
+info.org
+info.org_archive
 
 # Qmake Stash
 *.qmake.stash
