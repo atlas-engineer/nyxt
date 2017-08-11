@@ -19,7 +19,6 @@
 
 (defun document-mode ()
   "Base mode for interacting with documents"
-  
   (make-mode
    :name "Document-Mode"
    :keymap document-mode-map))
