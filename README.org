@@ -1,11 +1,25 @@
-* nEXT Browser
 #+html: <p align="center"><img src="assets/logo.png" /></p>
+#+html: <h1 align="center">The Fastest Productivity Browser</h1>
 
-nEXT is the ultimate productivity browser. It is designed from the
-ground up to be optimized for your workflow. nEXT Browser is the
-infinitely EXTensible browser. Unlike traditional browsers, literally
-nothing is not customizable. The browser itself is actually written as
-a plugin.
+nEXT is the fastest productivity browser. It is designed from the
+ground up to be customizable for your workflow. nEXT Browser is the
+infinitely EXTensible browser.
+
+* Powerful Features
+nEXT comes standard with a set of powerful features. Notable examples
+include:
+** Search all open tabs
+With a single hotkey, search all of your open tabs to find a piece of
+text that you are looking for.
+** History as a tree
+History is represented as a tree that you can traverse. More complex
+than the "forwards-backwards" abstraction found in other browsers,
+the tree makes sure you never lose track of where you've been.
+** Fast tab switching
+Switch easily between your open tabs by keyword, thumbnail, or by URL.
+Typing any semantically related word will give you a fuzzy search of
+your open tabs and let you quickly find which page you were looking
+for.
 
 * Install nEXT Browser
 See the releases section for pre-built binary releases.
