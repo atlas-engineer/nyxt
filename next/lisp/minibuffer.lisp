@@ -35,17 +35,21 @@
 (define-key minibuffer-mode-map (kbd "C-a") #'print-text-read)
 
 ;; define input keys
-(defun insert-a ()
-  (setf *minibuffer-input-string* (concatenate 'string *minibuffer-input-string* "a"))
+(defun insert-character (character)
+  (setf *minibuffer-input-string* (concatenate 'string *minibuffer-input-string* character))
   (update-display))
-(define-key minibuffer-mode-map (kbd "a") #'insert-a)
 
-(defun insert-b ()
-  (setf *minibuffer-input-string* (concatenate 'string *minibuffer-input-string* "b"))
-  (update-display))
-(define-key minibuffer-mode-map (kbd "b") #'insert-b)
+(defun add-binding (key)
+  (define-key minibuffer-mode-map (kbd key)
+     #'(lambda () (insert-character key))))
 
-(defun insert-c ()
-  (setf *minibuffer-input-string* (concatenate 'string *minibuffer-input-string* "c"))
-  (update-display))
-(define-key minibuffer-mode-map (kbd "c") #'insert-c)
+(loop for key in
+     (list "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"
+	   "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z")
+   do (add-binding key))
+
+;; add bindings for puncuation
+(define-key minibuffer-mode-map (kbd "Period") #'(lambda () (insert-character ".")))
+(define-key minibuffer-mode-map (kbd "Colon") #'(lambda () (insert-character ":")))
+(define-key minibuffer-mode-map (kbd "Slash") #'(lambda () (insert-character "/")))
+
