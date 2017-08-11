@@ -1,17 +1,10 @@
-nEXT Developer Guide
-========================================================================
-Placeholder.
-
-Installing Build Dependencies
-========================================================================
+* Installing Build Dependencies
 NeXT browser is built with ECL and EQL, and is designed to be cross
 platform compatible. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-OSX Compilation Instructions
-------------------------------------------------------------------------
-Installing Xcode Command Line Tools
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+** OSX Instructions
+*** Installing Xcode Command Line Tools
 Before installing anything, install the Xcode Comand line tools. To
 install the Xcode Command Line tools on OSX execute the following in a
 terminal:
@@ -25,8 +18,7 @@ To verify that the command tools were successfully installed type:
 the output of this command should be the path at which the command
 line tools are installed.
 
-Installing QT5 (Cross Platform GUI Toolkit)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Installing QT5 (Cross Platform GUI Toolkit)
 QT5 is available from a number of sources, the easiest is to install
 it via a package manager such as Macports or Brew. However you
 install, ensure that you install it with webkit support.
@@ -41,8 +33,7 @@ https://www.qt.io/download/
 
 To test your installation/version of QT, execute ``qmake --version``.
 
-Installing ECL (Embeddable Common Lisp)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Installing ECL (Embeddable Common Lisp)
 Compilable tarballs can be found on the ECL website:
 
 https://common-lisp.net/project/ecl/static/files/release/
@@ -53,8 +44,7 @@ To verify your installation of ECL:
 - Verify the contents of ``/usr/local/lib`` contain the ecl libraries.
 - Verify the contents of ``/usr/local/include/ecl`` contain the header files
 
-Installing Quicklisp
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Installing Quicklisp
 The official quicklisp website can provide updated links
 to downloads, and instructions:
 
@@ -70,8 +60,7 @@ To install quicklisp:
 more detailed instructions and other resources are readily available
 on the quicklisp website.
 
-Installing EQL5 Library & Executable (Embedded QT Lisp)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Installing EQL5 Library & Executable (Embedded QT Lisp)
 The source for EQL5 is available here:
 
 https://gitlab.com/eql/EQL5
@@ -102,8 +91,7 @@ After the installation, the following should be completed:
 - ``/usr/local/lib`` contains all built QT modules (selected in
   ``src/eql5.pro``) and libeql \*.dylib files
 
-Compiling nEXT
-========================================================================
+** Compiling nEXT
 From the directory next/ execute the following commands to compile:
 
 1. ``eql5 make``
