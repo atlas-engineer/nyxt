@@ -91,6 +91,63 @@ After the installation, the following should be completed:
 - ``/usr/local/lib`` contains all built QT modules (selected in
   ``src/eql5.pro``) and libeql \*.dylib files
 
+** Linux Instructions
+Due to the large variances in Linux distributions: file locations,
+package managers, and best practices, this installation guide attempts
+to make as few decisions as possible- instead opting to list the
+requirements necessary to build nEXT.
+
+*** Installing a compiler
+Install a C/C++ Compiler
+*** Installing QT5
+Install QT directly from QT: [[https://www.qt.io/download/][download QT]], or install via
+third party package manager sources, apt-get etc.
+*** Installing ECL (Embeddable Common Lisp)
+Compilable tarballs can be found on the ECL website: [[https://common-lisp.net/project/ecl/static/files/release/][download ECL]]
+*** Installing Quicklisp
+The official quicklisp website can provide updated links
+to downloads, and instructions:
+
+To install quicklisp:
+
+- Download https://beta.quicklisp.org/quicklisp.lisp
+- Execute ``ecl --load quicklisp.lisp`` to load quicklisp
+- Evaluate in the REPL ``(quicklisp-quickstart:install)`` to install
+- Evalute in the REPL ``(ql:add-to-init-file)`` to add quicklisp to your ecl init file
+
+more detailed instructions and other resources are readily available
+on the quicklisp website.
+*** Installing EQL5 Library & Executable (Embedded QT Lisp)
+The source for EQL5 is available here:
+
+https://gitlab.com/eql/EQL5
+
+To build and install the EQL Library/Executable:
+
+1. Clone the Repository into a directory where you plan to keep the
+   installation, this cannot be moved after installation.
+2. In ``src/`` exec: ``ecl -shell make.lisp`` This command generates
+   ``src/libini_eql5.a``.
+3. Edit ``src/eql5.pro`` commenting out all QT modules you do not
+   require.
+
+   - The webkit module is required for nEXT.
+
+4. In ``src/`` exec: ``qmake eql5.pro``. This command generates
+   the makefile.
+5. In ``src/`` exec: ``make``
+6. In ``src/`` exec: ``sudo make install``
+
+To test your installation exec ``eql5 -qgui``, you should presented
+with a REPL and a GUI.
+
+After the installation, the following should be completed:
+
+- ``/usr/local/bin`` contains an ``eql5`` executable
+- ``/usr/local/include`` contains a folder named ``eql5``
+- ``/usr/local/lib`` contains all built QT modules (selected in
+  ``src/eql5.pro``) and libeql \*.dylib files
+
 ** Compiling nEXT
 From the directory next/ execute the following commands to compile:
 
