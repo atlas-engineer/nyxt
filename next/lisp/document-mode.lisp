@@ -7,7 +7,8 @@
 
 (defstruct mode
   name
-  keymap)
+  keymap
+  view)
 
 (defun scroll-down ()
   (print "scroll-down"))
@@ -33,4 +34,5 @@
   "Base mode for interacting with documents"
   (make-mode
    :name "Document-Mode"
-   :keymap document-mode-map))
+   :keymap document-mode-map
+   :view (qnew "QWebView")))

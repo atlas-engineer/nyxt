@@ -12,11 +12,11 @@
   mode
   view)
 
-(defun generate-new-buffer (name &optional (mode (document-mode)))
+(defun generate-new-buffer (name mode)
   (make-buffer
    :name name
    :mode mode
-   :view (qnew "QWebView")))
+   :view (mode-view mode)))
 
 (defun set-major-mode (mode buffer)
   (setf (buffer-mode buffer) mode))

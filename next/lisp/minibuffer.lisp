@@ -6,7 +6,9 @@
 
 (defvar *mini-buffer* nil
   "A variable to store the mini-buffer")
-(defparameter *minibuffer-input-string* nil
+(defparameter *minibuffer-prompt* (qnew "QLabel" "text" "input:")
+  "A variable to store the current minibuffer input")
+(defparameter *minibuffer-input* (qnew "QLineEdit")
   "A variable to store the current minibuffer input")
 (defparameter *minibuffer-completion-callback* nil
   "A variable to store the function upon completion of the minibuffer read")
@@ -16,42 +18,29 @@
 (defun input (callback-function)
   (setf *minibuffer-completion-callback* callback-function)
   (setf *minibuffer-completion-callback-buffer* *active-buffer*)
+  (|setFocus| *minibuffer-input*)
   (set-active-buffer *mini-buffer*))
 
 (defun return-input ()
   (set-active-buffer *minibuffer-completion-callback-buffer*)
-  (funcall *minibuffer-completion-callback* *minibuffer-input-string*)
-  (setf *minibuffer-input-string* nil)
-  (update-display))
+  (funcall *minibuffer-completion-callback* (|text| *minibuffer-input*))
+  (|setText| *minibuffer-input* ""))
 
 (define-key minibuffer-mode-map (kbd "Return") #'return-input)
 
-(defun update-display ()
-  (|setHtml| (buffer-view *mini-buffer*) *minibuffer-input-string*))
-
 (defun minibuffer-mode ()
   "Base mode for input"
-  (make-mode
-   :name "Minibuffer-Mode"
-   :keymap minibuffer-mode-map))
+  (let ((widget (qnew "QWidget")) (layout (qnew "QGridLayout")))
+    (|addWidget| layout *minibuffer-prompt* 0 0 0 0)
+    (|addWidget| layout *minibuffer-input*  0 1 0 10)
+    (|setLayout| widget layout)
+    (make-mode
+     :name "Minibuffer-Mode"
+     :keymap minibuffer-mode-map
+     :view widget)))
 
-;; define input keys
-(defun insert-character (character)
-  (setf *minibuffer-input-string* (concatenate 'string *minibuffer-input-string* character))
-  (update-display))
-
-(defun add-binding (key)
-  (define-key minibuffer-mode-map (kbd key)
-     #'(lambda () (insert-character key))))
-
-(loop for key in
-     (list "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"
-	   "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z")
-   do (add-binding key))
-
-;; add bindings for puncuation
-(define-key minibuffer-mode-map (kbd "Period") #'(lambda () (insert-character ".")))
-(define-key minibuffer-mode-map (kbd "Colon") #'(lambda () (insert-character ":")))
-(define-key minibuffer-mode-map (kbd "Slash") #'(lambda () (insert-character "/")))
-(define-key minibuffer-mode-map (kbd "Minus") #'(lambda () (insert-character "-")))
-(define-key minibuffer-mode-map (kbd "Underscore") #'(lambda () (insert-character "_")))
+(qadd-event-filter *minibuffer-input* |QEvent.KeyRelease| 'update-candidates)
+(defun update-candidates (obj event)
+  (declare (ignore obj)) ; supress unused warnings
+  (declare (ignore event)) ; supress unused warnings
+  nil)

@@ -8,24 +8,17 @@
 (defparameter *layout* (qnew "QGridLayout"))
 
 (setf *mini-buffer* (generate-new-buffer "mini-buffer" (minibuffer-mode)))
-(setf *active-buffer* (generate-new-buffer "default"))
+(setf *active-buffer* (generate-new-buffer "default" (document-mode)))
 
 ;; Used by QT to capture key presses
-(qadd-event-filter *window* |QEvent.KeyPress| 'key-press)
-(qadd-event-filter *window* |QEvent.KeyRelease| 'key-release)
+(qadd-event-filter nil |QEvent.KeyPress| 'key-press)
+(qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun start ()
-  ;; addWidget(*Widget, row, column, rowspan, colspan)
-  ;; webview
-  (|addWidget| *layout* (buffer-view *active-buffer*) 0 0 9 0)
-  (set-url "http://www.google.com")
+  (|addWidget| *layout* (buffer-view *active-buffer*) 0  0 9 1)
+  (|addWidget| *layout* (buffer-view *mini-buffer*)   10 0 1 1)
   
-  ;; minibuffer layout
-  (setf *minibuffer-prompt* (qnew "QLabel" "text" "input:"))
-  (setf *minibuffer-input* (qnew "QLineEdit"))
-  
-  (|addWidget| *layout* *minibuffer-prompt* 9 0 1 0)
-  (|addWidget| *layout* *minibuffer-input*  9 1 1 10)
+  (set-url "http://www.google.com")  
   
   (|setLayout| *window* *layout*)
   (|show| *window*))
