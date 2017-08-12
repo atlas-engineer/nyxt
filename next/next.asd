@@ -7,6 +7,7 @@
 	       (:file "lisp/qt")
 	       (:file "lisp/keymap")
 	       (:file "lisp/document-mode")
+	       (:file "lisp/minibuffer")
 	       (:file "lisp/buffer")
 	       (:file "lisp/base")))
 
