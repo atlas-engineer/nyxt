@@ -15,8 +15,9 @@
 (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun start ()
-  (|addWidget| *layout* (buffer-view *active-buffer*) 0  0 9 1)
-  (|addWidget| *layout* (buffer-view *mini-buffer*)   10 0 1 1)
+   ;; row, column, rowspan, colspan
+  (|addWidget| *layout* (buffer-view *active-buffer*) 0 0 1 1)
+  (|addWidget| *layout* (buffer-view *mini-buffer*)   1 0 1 1)
   
   (set-url "http://www.google.com")  
   
