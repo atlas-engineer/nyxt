@@ -53,29 +53,27 @@ Within the Minibuffer, the user will be presented with a prompt in
 which they can enter in the url they would like to visit in a new
 buffer.
 
-
-*** Major mode: html-mode
-html-mode will be the basic major mode for opening documents on the
-web. html-mode will extend document-mode, and thus will inherit all of
-its key bindings. If there is a conflict of key bindings, the lowest
-scope key binding will be prioritized. As a concrete example, all
-bindings defined in html-mode will override any defined in
-document-mode. In the first release, html-mode will support the
-following key bindings and features:
+Document-mode will be the basic major mode for opening documents on
+the web. document-mode will extend document-mode, and thus will
+inherit all of its key bindings. If there is a conflict of key
+bindings, the lowest scope key binding will be prioritized. As a
+concrete example, all bindings defined in document-mode will override
+any defined in document-mode. In the first release, document-mode will
+support the following key bindings and features:
 
 - Ability to open a new html document with the key binding C-o
-- Ability to navigate forward and backward in history with the
-  key binding M-f, and M-b for forward and backward respectively
+- Ability to navigate forward and backward in history with the key
+  binding M-f, and M-b for forward and backward respectively
 
-Opening of new pages in the same buffer can be invoked by the key binding
-C-o. This key binding will open up the Minibuffer and prompt the user
-to enter the url which they would like to visit.
+Opening of new pages in the same buffer can be invoked by the key
+binding C-o. This key binding will open up the Minibuffer and prompt
+the user to enter the url which they would like to visit.
 
-Within html-mode the history will be represented as a tree, with forwards
-and backwards navigation creating new nodes and traversals. This will
-allow for all points in history to be reachable, and a future expansion
-designed to recreate the functionality offered by undo-tree:
-https://www.emacswiki.org/emacs/UndoTree
+Within document-mode the history will be represented as a tree, with
+forwards and backwards navigation creating new nodes and
+traversals. This will allow for all points in history to be reachable,
+and a future expansion designed to recreate the functionality offered
+by undo-tree: https://www.emacswiki.org/emacs/UndoTree
 
 *** Ability to set Key bindings
 The following syntax should be used to set a key binding:
