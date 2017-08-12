@@ -1,12 +1,10 @@
-nEXT Architecture and Release Timeline
-=======================================================================
+* nEXT Architecture and Release Timeline
 Major releases are issued by incrementing the first digit. That is,
 release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
-0.01
-------------------------------------------------------------------------
+** 0.01
 This version describes the minimum usability as a basic browser, with
 the following features:
 
@@ -15,8 +13,7 @@ the following features:
 - Ability to set key bindings for major modes
 - Ability to browse and change buffers using C-x b
 
-Definitions
-------------------------------------------------------------------------
+*** Definitions
 Buffer: All documents are contained in an object type called a
 buffer. As an example, a document on the web located at
 http://www.url.com can be contained in a buffer with a similar name. A
@@ -42,8 +39,7 @@ behavior and content. There can be an infinite amount of minor modes
 applied to a given buffer. All minor modes are composed of entirely
 lower case alpha with dashes used as a separator.
 
-Major mode: document-mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Major mode: document-mode
 All major modes inherit from document mode. Document mode provides the
 basic framework for mapping global commands and defining general
 behavior.
@@ -58,8 +54,7 @@ which they can enter in the url they would like to visit in a new
 buffer.
 
 
-Major mode: html-mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Major mode: html-mode
 html-mode will be the basic major mode for opening documents on the
 web. html-mode will extend document-mode, and thus will inherit all of
 its key bindings. If there is a conflict of key bindings, the lowest
@@ -82,8 +77,7 @@ allow for all points in history to be reachable, and a future expansion
 designed to recreate the functionality offered by undo-tree:
 https://www.emacswiki.org/emacs/UndoTree
 
-Ability to set Key bindings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Ability to set Key bindings
 The following syntax should be used to set a key binding:
 
 (define-key x-mode-map (kbd "C-h") 'function)
@@ -113,8 +107,7 @@ in the chain may not be used individually. For example, binding
 because there would be ambiguity in regards to which key binding
 is intended to be invoked. 
 
-Ability to browse and change buffers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*** Ability to browse and change buffers
 The user will be able to invoke the key binding C-x b to bring up
 a menu in the Minibuffer in which they will be able to select a new buffer
 to bring to focus.
