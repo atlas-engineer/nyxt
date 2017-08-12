@@ -40,6 +40,8 @@
        (setf *control-modifier* t))
       ((equalp key *meta-key*)
        (setf *meta-modifier* t))
+      ((equalp key *super-key*)
+       (setf *super-modifier* t))
       (t (progn
 	   (push-key-chord key)
 	   (consume-key-sequence))))))
@@ -53,6 +55,8 @@
        (setf *control-modifier* nil))
       ((equalp key *meta-key*)
        (setf *meta-modifier* nil))
+      ((equalp key *super-key*)
+       (setf *super-modifier* nil))
       (t (return-from key-release)))))
 
 (defun push-key-chord (key-character-string)

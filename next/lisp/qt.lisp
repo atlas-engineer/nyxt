@@ -3,13 +3,10 @@
 (in-package :next)
 
 ;; define parameters for modifiers
-(defparameter *control-key* 16777249)
-(defparameter *meta-key* 16777250)
-(defparameter *alt-key* 16777251)
-(defparameter *super_l-key* 16777299)
-(defparameter *super_r-key* 16777300)
-(defparameter *hyper_l-key* 16777302)
-(defparameter *hyper_r-key* 16777303)
+(defparameter *control-key* 16777249) ; OSX: command
+(defparameter *meta-key* 16777250)    ; OSX: control
+(defparameter *alt-key* 16777251)     ; OSX: option
+(defparameter *super-key* 16777249)   ; OSX: command
 
 ;; create a character->keycode hashmap
 (defparameter *character->keycode* (make-hash-table :test 'equalp))
