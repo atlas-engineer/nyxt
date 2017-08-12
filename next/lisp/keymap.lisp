@@ -31,10 +31,6 @@
   meta-modifier
   super-modifier)
 
-;; Used by QT to capture key presses
-(qadd-event-filter nil |QEvent.KeyPress| 'key-press)
-(qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
-
 (defun key-press (obj event)
   ;; Invoked upon key-press
   (declare (ignore obj)) ; supress unused warnings
@@ -46,9 +42,7 @@
        (setf *meta-modifier* t))
       (t (progn
 	   (push-key-chord key)
-	   (consume-key-sequence)))))
-  ; return true to avoid propagation to all widgets
-  t)
+	   (consume-key-sequence))))))
 
 (defun key-release (obj event)
   ;; Invoked upon key-release
@@ -87,11 +81,12 @@
 		(progn
 		  (funcall (gethash *key-sequence-stack* map))
 		  (setf *key-sequence-stack* ())))
-	    (return-from consume-key-sequence))))
+	    (return-from consume-key-sequence t))))
     ;; If we make it to this point, key did not exist
     ;; in any of the keymaps, print a message and clear stack
     (print "Key Undefined")
-    (setf *key-sequence-stack* ())))
+    (setf *key-sequence-stack* ())
+    (return-from consume-key-sequence nil)))
 
 (defun define-key (mode-map key-sequence function)
   ;; A sequence of "C-x" "C-s" "C-a" will be broken

@@ -53,4 +53,3 @@
 (define-key minibuffer-mode-map (kbd "Period") #'(lambda () (insert-character ".")))
 (define-key minibuffer-mode-map (kbd "Colon") #'(lambda () (insert-character ":")))
 (define-key minibuffer-mode-map (kbd "Slash") #'(lambda () (insert-character "/")))
-
