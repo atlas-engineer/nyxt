@@ -15,11 +15,12 @@
 (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun start ()
+  ;; remove margins around root widgets
+  (|setSpacing| *layout* 0)
+  (|setContentsMargins| *layout* 0 0 0 0)
    ;; row, column, rowspan, colspan
   (|addWidget| *layout* (buffer-view *active-buffer*) 0 0 1 1)
   (|addWidget| *layout* (buffer-view *mini-buffer*)   1 0 1 1)
-  
-  (set-url "http://www.google.com")  
   
   (|setLayout| *window* *layout*)
   (|show| *window*))
