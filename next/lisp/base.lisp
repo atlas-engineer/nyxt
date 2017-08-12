@@ -6,13 +6,9 @@
 
 (defparameter *window* (qnew "QWidget" "windowTitle" "nEXT"))
 (defparameter *layout* (qnew "QVBoxLayout"))
-(setf *mini-buffer* (generate-new-buffer "default" (minibuffer-mode)))
-(setf *active-buffer* *mini-buffer*)
 
-(defun set-active-buffer (buffer)
-  (|removeWidget| *layout* (buffer-view *active-buffer*))
-  (setf *active-buffer* buffer)
-  (|addWidget| *layout* (buffer-view *active-buffer*)))
+(setf *mini-buffer* (generate-new-buffer "mini-buffer" (minibuffer-mode)))
+(setf *active-buffer* (generate-new-buffer "default"))
 
 (defun start ()
   (|addWidget| *layout* (buffer-view *active-buffer*))

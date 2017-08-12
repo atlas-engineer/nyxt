@@ -4,19 +4,27 @@
 
 (defvar minibuffer-mode-map (make-hash-table :test 'equalp))
 
+(defvar *mini-buffer* nil
+  "A variable to store the mini-buffer")
 (defparameter *minibuffer-input-string* nil
   "A variable to store the current minibuffer input")
 (defparameter *minibuffer-completion-callback* nil
   "A variable to store the function upon completion of the minibuffer read")
+(defparameter *minibuffer-completion-callback-buffer* nil
+  "A variable to store the buffer which originally requested the minibuffer read")
+
+(defun input (callback-function)
+  (setf *minibuffer-completion-callback* callback-function)
+  (setf *minibuffer-completion-callback-buffer* *active-buffer*)
+  (set-active-buffer *mini-buffer*))
 
 (defun return-input ()
+  (set-active-buffer *minibuffer-completion-callback-buffer*)
   (funcall *minibuffer-completion-callback* *minibuffer-input-string*)
   (setf *minibuffer-input-string* nil)
   (update-display))
-(define-key minibuffer-mode-map (kbd "Return") #'return-input)
 
-(defun input (callback-function)
-  (setf *minibuffer-completion-callback* callback-function))
+(define-key minibuffer-mode-map (kbd "Return") #'return-input)
 
 (defun update-display ()
   (|setHtml| (buffer-view *mini-buffer*) *minibuffer-input-string*))
@@ -26,13 +34,6 @@
   (make-mode
    :name "Minibuffer-Mode"
    :keymap minibuffer-mode-map))
-
-(defun printy-text (text)
-  (print text))
-
-(defun print-text-read ()
-  (input #'printy-text))
-(define-key minibuffer-mode-map (kbd "C-a") #'print-text-read)
 
 ;; define input keys
 (defun insert-character (character)
