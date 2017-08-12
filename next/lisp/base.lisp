@@ -11,7 +11,12 @@
 (setf *active-buffer* (generate-new-buffer "default"))
 
 (defun start ()
+  (set-url "http://www.google.com")
+  (|setMaximumHeight| (buffer-view *mini-buffer*) 25)
+  (|setMinimumHeight| (buffer-view *mini-buffer*) 25)
   (|addWidget| *layout* (buffer-view *active-buffer*))
+  (|addStretch| *layout*)
+  (|addWidget| *layout* (buffer-view *mini-buffer*))
   (|setLayout| *window* *layout*)
   (|show| *window*))
 

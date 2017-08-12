@@ -22,6 +22,4 @@
   (setf (buffer-mode buffer) mode))
 
 (defun set-active-buffer (buffer)
-  (|removeWidget| *layout* (buffer-view *active-buffer*))
-  (setf *active-buffer* buffer)
-  (|addWidget| *layout* (buffer-view *active-buffer*)))
+  (setf *active-buffer* buffer))
