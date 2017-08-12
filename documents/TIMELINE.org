@@ -75,7 +75,8 @@ traversals. This will allow for all points in history to be reachable,
 and a future expansion designed to recreate the functionality offered
 by undo-tree: https://www.emacswiki.org/emacs/UndoTree
 
-*** Ability to set Key bindings
+*** DONE Ability to set Key bindings
+CLOSED: [2017-08-12 Sat 16:34]
 The following syntax should be used to set a key binding:
 
 (define-key x-mode-map (kbd "C-h") 'function)
@@ -89,8 +90,7 @@ The following syntax should be used to set a key binding:
 represented. For the keyboard syntax, the following keys are
 described:
 
-- s = super key (windows/command key)
-- S = shift key
+- S = super key (windows/command key)
 - C = control key
 - M = meta key (alt key)
 
