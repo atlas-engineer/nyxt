@@ -63,6 +63,10 @@
   (let ((key-chord (make-key)))
     (if *control-modifier*
 	(setf (key-control-modifier key-chord) t))
+    (if *meta-modifier*
+	(setf (key-meta-modifier key-chord) t))
+    (if *super-modifier*
+	(setf (key-super-modifier key-chord) t))
     
     (setf (key-character key-chord) key-character-string)
     (push key-chord *key-sequence-stack*)))
@@ -121,6 +125,8 @@
   	    (loop for key-character-string in (split key-chord-string "-")
   	       do (cond
   		    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
+		    ((equal "M" key-character-string) (setf (key-meta-modifier key-chord) t))
+		    ((equal "S" key-character-string) (setf (key-super-modifier key-chord) t))
   		    (t (setf (key-character key-chord)
   			     ;; Convert from the actual key to the QT code representation
   			     (gethash key-character-string *character->keycode*)))))
