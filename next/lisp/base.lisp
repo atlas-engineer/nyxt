@@ -7,7 +7,7 @@
 (defparameter *window* (qnew "QWidget" "windowTitle" "nEXT"))
 (defparameter *layout* (qnew "QGridLayout"))
 
-(setf *mini-buffer* (generate-new-buffer "mini-buffer" (minibuffer-mode)))
+(setf *minibuffer* (generate-new-buffer "mini-buffer" (minibuffer-mode)))
 (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
 
 ;; Used by QT to capture key presses
@@ -20,7 +20,9 @@
   (|setContentsMargins| *layout* 0 0 0 0)
    ;; row, column, rowspan, colspan
   (|addWidget| *layout* (buffer-view *active-buffer*) 0 0 1 1)
-  (|addWidget| *layout* (buffer-view *mini-buffer*)   1 0 1 1)
+  (|addWidget| *layout* (buffer-view *minibuffer*)   1 0 1 1)
+  
+  (|hide| (buffer-view *minibuffer*))
   
   (|setLayout| *window* *layout*)
   (|show| *window*))

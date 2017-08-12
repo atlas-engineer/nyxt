@@ -4,7 +4,7 @@
 
 (defvar minibuffer-mode-map (make-hash-table :test 'equalp))
 
-(defvar *mini-buffer* nil
+(defvar *minibuffer* nil
   "A variable to store the mini-buffer")
 (defparameter *minibuffer-prompt* (qnew "QLabel" "text" "input:")
   "A variable to store the minibuffer prompt")
@@ -20,13 +20,15 @@
 (defun input (callback-function)
   (setf *minibuffer-callback* callback-function)
   (setf *minibuffer-callback-buffer* *active-buffer*)
+  (|show| (buffer-view *minibuffer*))
   (|setFocus| *minibuffer-input*)
-  (set-active-buffer *mini-buffer*))
+  (set-active-buffer *minibuffer*))
 
 (defun return-input ()
   (set-active-buffer *minibuffer-callback-buffer*)
   (funcall *minibuffer-callback* (|text| *minibuffer-input*))
-  (|setText| *minibuffer-input* ""))
+  (|setText| *minibuffer-input* "")
+  (|hide| (buffer-view *minibuffer*)))
 
 (define-key minibuffer-mode-map (kbd "Return") #'return-input)
 
