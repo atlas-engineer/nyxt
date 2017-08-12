@@ -57,7 +57,7 @@ Document-mode will be the basic major mode for opening documents on
 the web. document-mode will extend document-mode, and thus will
 inherit all of its key bindings. If there is a conflict of key
 bindings, the lowest scope key binding will be prioritized. As a
-concrete example, all bindings defined in document-mode will override
+concrete example, all bindings defined in a minor mode will override
 any defined in document-mode. In the first release, document-mode will
 support the following key bindings and features:
 
