@@ -84,6 +84,18 @@ To build and install the EQL Library/Executable:
 To test your installation exec ``eql5 -qgui``, you should presented
 with a REPL and a GUI.
 
+Following the normal installation of EQL, it is necessary to setup the
+EQL wrappers permanentely which enable the lisp style invocation of QT
+functions.
+
+1. In ``src/`` exec: ``eql5 make-wrappers.lisp``
+2. Re-link EQL doing something like:
+3. delete ``tmp/eql.o*``
+4. In ``src/`` exec: ``qmake eql_lib.pro``. This command generates
+   the makefile.
+5. In ``src/`` exec: ``make``
+6. In ``src/`` exec: ``sudo make install``
+
 After the installation, the following should be completed:
 
 - ``/usr/local/bin`` contains an ``eql5`` executable
@@ -141,6 +153,18 @@ To build and install the EQL Library/Executable:
 To test your installation exec ``eql5 -qgui``, you should presented
 with a REPL and a GUI.
 
+Following the normal installation of EQL, it is necessary to setup the
+EQL wrappers permanentely which enable the lisp style invocation of QT
+functions.
+
+1. In ``src/`` exec: ``eql5 make-wrappers.lisp``
+2. Re-link EQL doing something like:
+3. delete ``tmp/eql.o*``
+4. In ``src/`` exec: ``qmake eql_lib.pro``. This command generates
+   the makefile.
+5. In ``src/`` exec: ``make``
+6. In ``src/`` exec: ``sudo make install``
+
 After the installation, the following should be completed:
 
 - ``/usr/local/bin`` contains an ``eql5`` executable
@@ -148,8 +172,27 @@ After the installation, the following should be completed:
 - ``/usr/local/lib`` contains all built QT modules (selected in
   ``src/eql5.pro``) and libeql \*.dylib files
 
-** Compiling nEXT
-From the directory next/ execute the following commands to compile:
+** Running nEXT
+From the directory ``next/`` execute the following command to run:
+
+1. ``eql5 run``
+
+You should be presented with a QT Window. To test that everything
+is working execute the following commands:
+
+1. ``C-l``
+2. A minibuffer should pop-up in which you can enter text
+
+From the terminal that you launched nEXT you'll be able to see output
+from the program. You can additionally create a REPL during runtime
+in the following way: ``eql5 run -qgui``.
+
+If an exception or crash occurs, you'll be presented with a REPL that
+you can use to debug the program.
+
+** Compiling nEXT (under active development)
+*** OSX Instructions
+From the directory ``next/`` execute the following commands to compile:
 
 1. ``eql5 make``
 2. ``qmake``
