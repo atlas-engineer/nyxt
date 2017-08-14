@@ -9,7 +9,6 @@ This version describes the minimum usability as a basic browser, with
 the following features:
 
 - Implementation of document-mode, the major-mode that all modes extend
-- Implementation of html-mode major-mode for html documents
 - Ability to set key bindings for major modes
 - Ability to browse and change buffers using C-x b
 
@@ -39,19 +38,10 @@ behavior and content. There can be an infinite amount of minor modes
 applied to a given buffer. All minor modes are composed of entirely
 lower case alpha with dashes used as a separator.
 
-*** Major mode: document-mode
+*** EXEC Major mode: document-mode
 All major modes inherit from document mode. Document mode provides the
 basic framework for mapping global commands and defining general
 behavior.
-
-For the first release, document-mode must have:
-
-- Ability to open new buffers with the key-binding C-x C-o
-
-Opening of new buffers by invoking C-x C-o will open the Minibuffer.
-Within the Minibuffer, the user will be presented with a prompt in
-which they can enter in the url they would like to visit in a new
-buffer.
 
 Document-mode will be the basic major mode for opening documents on
 the web. document-mode will extend document-mode, and thus will
@@ -61,19 +51,26 @@ concrete example, all bindings defined in a minor mode will override
 any defined in document-mode. In the first release, document-mode will
 support the following key bindings and features:
 
-- Ability to open a new html document with the key binding C-o
-- Ability to navigate forward and backward in history with the key
-  binding M-f, and M-b for forward and backward respectively
+For the first release, document-mode must have:
 
+**** DONE Ability to open a new html document with the key binding C-l
+CLOSED: [2017-08-14 Mon 11:31]
 Opening of new pages in the same buffer can be invoked by the key
-binding C-o. This key binding will open up the Minibuffer and prompt
+binding C-l. This key binding will open up the Minibuffer and prompt
 the user to enter the url which they would like to visit.
-
-Within document-mode the history will be represented as a tree, with
-forwards and backwards navigation creating new nodes and
+**** TODO Ability to open new buffers with the key-binding M-l
+Opening of new buffers by invoking M-l will open the Minibuffer.
+Within the Minibuffer, the user will be presented with a prompt in
+which they can enter in the url they would like to visit in a new
+buffer.
+**** TODO Within document-mode the history will be represented as a tree
+- forwards and backwards navigation creating new nodes and
 traversals. This will allow for all points in history to be reachable,
 and a future expansion designed to recreate the functionality offered
 by undo-tree: https://www.emacswiki.org/emacs/UndoTree
+***** TODO Ability to navigate forward and backward in history
+- using the key binding M-f, and M-b for forward and backward
+  respectively
 
 *** DONE Ability to set Key bindings
 CLOSED: [2017-08-12 Sat 16:34]
@@ -105,7 +102,7 @@ in the chain may not be used individually. For example, binding
 because there would be ambiguity in regards to which key binding
 is intended to be invoked. 
 
-*** Ability to browse and change buffers
+*** TODO Ability to browse and change buffers
 The user will be able to invoke the key binding C-x b to bring up
 a menu in the Minibuffer in which they will be able to select a new buffer
 to bring to focus.
