@@ -19,7 +19,9 @@
 (define-key document-mode-map (kbd "C-p") #'scroll-up)
 
 (defun set-url-new-buffer ()
-  (print "set-url-new-buffer"))
+  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+    (set-visible-active-buffer new-buffer)
+    (set-url-read)))
 
 (define-key document-mode-map (kbd "S-l") #'set-url-new-buffer)
 

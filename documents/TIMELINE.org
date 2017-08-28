@@ -50,7 +50,8 @@ behavior and content. There can be an infinite amount of minor modes
 applied to a given buffer. All minor modes are composed of entirely
 lower case alpha with dashes used as a separator.
 
-*** TODO Major mode: document-mode
+*** DONE Major mode: document-mode
+CLOSED: [2017-08-28 Mon 00:29]
 All major modes inherit from document mode. Document mode provides the
 basic framework for mapping global commands and defining general
 behavior.
@@ -70,11 +71,15 @@ CLOSED: [2017-08-14 Mon 11:31]
 Opening of new pages in the same buffer can be invoked by the key
 binding C-l. This key binding will open up the Minibuffer and prompt
 the user to enter the url which they would like to visit.
-**** TODO Ability to open new buffers with the key-binding M-l
+**** DONE Ability to open new buffers with the key-binding M-l
+CLOSED: [2017-08-28 Mon 00:28]
 Opening of new buffers by invoking M-l will open the Minibuffer.
 Within the Minibuffer, the user will be presented with a prompt in
 which they can enter in the url they would like to visit in a new
 buffer.
+
+- May possibly switch implementation to "hide" rather than "close"
+  widgets, possibly using a widget pool as well for memory performance
 
 *** DONE Ability to set Key bindings
 CLOSED: [2017-08-12 Sat 16:34]

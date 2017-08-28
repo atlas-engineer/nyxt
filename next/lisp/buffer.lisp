@@ -23,3 +23,10 @@
 
 (defun set-active-buffer (buffer)
   (setf *active-buffer* buffer))
+
+(defun set-visible-active-buffer (buffer)
+  (|removeWidget| *root-layout* (buffer-view *active-buffer*))
+  (|close| (buffer-view *active-buffer*))
+  (set-active-buffer buffer)
+  (|addWidget| *root-layout* (buffer-view *active-buffer*) 0 0 1 1)
+  (|update| *root-layout*))
