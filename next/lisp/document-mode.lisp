@@ -18,6 +18,11 @@
   (print "scroll-up"))
 (define-key document-mode-map (kbd "C-p") #'scroll-up)
 
+(defun set-url-new-buffer ()
+  (print "set-url-new-buffer"))
+
+(define-key document-mode-map (kbd "S-l") #'set-url-new-buffer)
+
 (defun set-url-buffer (input-url buffer)
   (qlet ((url (qnew "QUrl(QString)" input-url)))
 	(|setUrl| (buffer-view buffer) url)))
