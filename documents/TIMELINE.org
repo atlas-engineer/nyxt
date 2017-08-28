@@ -4,6 +4,18 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
+** 0.02
+*** TODO Window System
+- Emacs like window system
+*** TODO Within document-mode the history will be represented as a tree
+- forwards and backwards navigation creating new nodes and
+traversals. This will allow for all points in history to be reachable,
+and a future expansion designed to recreate the functionality offered
+by undo-tree: https://www.emacswiki.org/emacs/UndoTree
+**** TODO Ability to navigate forward and backward in history
+- using the key binding M-f, and M-b for forward and backward
+  respectively
+
 ** 0.01
 This version describes the minimum usability as a basic browser, with
 the following features:
@@ -38,7 +50,7 @@ behavior and content. There can be an infinite amount of minor modes
 applied to a given buffer. All minor modes are composed of entirely
 lower case alpha with dashes used as a separator.
 
-*** EXEC Major mode: document-mode
+*** TODO Major mode: document-mode
 All major modes inherit from document mode. Document mode provides the
 basic framework for mapping global commands and defining general
 behavior.
@@ -63,14 +75,6 @@ Opening of new buffers by invoking M-l will open the Minibuffer.
 Within the Minibuffer, the user will be presented with a prompt in
 which they can enter in the url they would like to visit in a new
 buffer.
-**** TODO Within document-mode the history will be represented as a tree
-- forwards and backwards navigation creating new nodes and
-traversals. This will allow for all points in history to be reachable,
-and a future expansion designed to recreate the functionality offered
-by undo-tree: https://www.emacswiki.org/emacs/UndoTree
-***** TODO Ability to navigate forward and backward in history
-- using the key binding M-f, and M-b for forward and backward
-  respectively
 
 *** DONE Ability to set Key bindings
 CLOSED: [2017-08-12 Sat 16:34]
@@ -106,3 +110,8 @@ is intended to be invoked.
 The user will be able to invoke the key binding C-x b to bring up
 a menu in the Minibuffer in which they will be able to select a new buffer
 to bring to focus.
+**** TODO Minibuffer Completion
+Example of minibuffer completion candidates
+*** TODO Compilation OSX
+- One "click" build system for deployment on OSX
+- Organization of build systems into lisp files, no shell scripts

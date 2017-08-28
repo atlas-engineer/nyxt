@@ -25,9 +25,6 @@ tmp/
 Makefile
 tr.h
 
-# Ignore html files (compiled RST files)
-*.html
-
 # Ignore PNG and XCF
 *.png
 *.xcf
