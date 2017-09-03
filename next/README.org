@@ -195,8 +195,6 @@ you can use to debug the program.
 From the directory ``next/`` execute the following commands to compile:
 
 1. ``eql5 make``
-2. ``qmake``
-3. ``make``
 
 Now you should have a compiled next.app, simply execute this app to
 start nEXT browser.
