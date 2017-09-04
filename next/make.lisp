@@ -42,3 +42,5 @@
 ;; delete Makefile
 (uiop:delete-file-if-exists
  (format nil "~AMakefile" (asdf:system-source-directory :next)))
+
+(qquit)
