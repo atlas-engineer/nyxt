@@ -1,3 +1,10 @@
+* Contents                                                              :TOC:
+- [[#installing-build-dependencies][Installing Build Dependencies]]
+  - [[#osx-instructions][OSX Instructions]]
+  - [[#linux-instructions][Linux Instructions]]
+  - [[#running-next][Running nEXT]]
+  - [[#compiling-next-under-active-development][Compiling nEXT (under active development)]]
+
 * Installing Build Dependencies
 NeXT browser is built with ECL and EQL, and is designed to be cross
 platform compatible. To download a prebuilt-binary, please see the
