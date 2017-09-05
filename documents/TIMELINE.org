@@ -122,12 +122,14 @@ in the chain may not be used individually. For example, binding
 because there would be ambiguity in regards to which key binding
 is intended to be invoked. 
 
-*** TODO Ability to browse and change buffers
+*** DONE Ability to browse and change buffers
+CLOSED: [2017-09-05 Tue 00:58]
 The user will be able to invoke the key binding C-x b to bring up
 a menu in the Minibuffer in which they will be able to select a new buffer
 to bring to focus.
 **** TODO Minibuffer Completion
-Example of minibuffer completion candidates
+Switch buffer should demonstrate an example of minibuffer completion
+candidates
 *** DONE Compilation OSX
 CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
