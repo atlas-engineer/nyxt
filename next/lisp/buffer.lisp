@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defvar *buffer-list* ()
+(defvar *buffers* ()
   "A list of all existing buffers")
 (defvar *active-buffer* ()
   "The currently active buffer")
@@ -12,11 +12,15 @@
   mode
   view)
 
-(defun generate-new-buffer (name mode)
-  (make-buffer
-   :name name
-   :mode mode
-   :view (mode-view mode)))
+(defun generate-new-buffer (name mode &optional (add-to-stack-layout t))
+  (let ((new-buffer (make-buffer
+		     :name name
+		     :mode mode
+		     :view (mode-view mode))))
+    (push new-buffer *buffers*)
+    (if add-to-stack-layout
+	(|addWidget| *stack-layout* (buffer-view new-buffer)))
+    new-buffer))
 
 (defun set-major-mode (mode buffer)
   (setf (buffer-mode buffer) mode))
@@ -25,8 +29,13 @@
   (setf *active-buffer* buffer))
 
 (defun set-visible-active-buffer (buffer)
-  (|removeWidget| *root-layout* (buffer-view *active-buffer*))
-  (|close| (buffer-view *active-buffer*))
   (set-active-buffer buffer)
-  (|addWidget| *root-layout* (buffer-view *active-buffer*) 0 0 1 1)
-  (|update| *root-layout*))
+  (|setCurrentWidget| *stack-layout* (buffer-view *active-buffer*)))
+
+(defun switch-buffer (index)
+  (set-visible-active-buffer (nth (parse-integer index) *buffers*)))
+
+(defun switch-buffer-read ()
+  (input #'switch-buffer))
+
+(define-key global-map (kbd "C-b") #'switch-buffer-read)
