@@ -134,14 +134,3 @@ candidates
 CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
 - Organization of build systems into lisp files, no shell scripts
-* Contributing
-Contributing is easy. Please find a task within this document that has
-a TODO label affixed. Upon finding a task that you'd like to work on,
-email the mailing list next-browser@googlegroups.com with the TODO
-item and a simple example of a proposed solution.
-
-After you have found a TODO item that is available:
-
-- make a fork of the repository
-- add your changes
-- make a pull request

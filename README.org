@@ -21,11 +21,22 @@ Typing any semantically related word will give you a fuzzy search of
 your open tabs and let you quickly find which page you were looking
 for.
 
-* Install nEXT Browser
+* Getting Started
+** Install nEXT Browser
 See the releases section for pre-built binary releases.
+** Quickstart Keys nEXT
+- ~C-l~:     Load URL in Buffer
+- ~S-l~:     Load URL in a new buffer
+- ~C-c C-X~: Quit
 
-To install a developer version please see the ``next/README.rst`` for
-directions on installing dependencies and execution on your own OS.
+** Customize nEXT
+Customization is possible through the creation of a
+=~/.next.d/init.lisp= file within your home directory. From here you
+can override and redefine any of the functions by defining your init
+file as part of the ~:next~ package.
 
 * Project Status
 The project is currently in pre-alpha stage.
+
+* Contributing
+Please see the ~documents/RELEASE.org~ file for active TODO items.

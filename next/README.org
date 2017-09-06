@@ -4,6 +4,7 @@
   - [[#linux-instructions][Linux Instructions]]
   - [[#running-next][Running nEXT]]
   - [[#compiling-next-under-active-development][Compiling nEXT (under active development)]]
+- [[#contributing][Contributing]]
 
 * Installing Build Dependencies
 NeXT browser is built with ECL and EQL, and is designed to be cross
@@ -205,3 +206,14 @@ From the directory ~next/~ execute the following commands to compile:
 
 Now you should have a compiled next.app, simply execute this app to
 start nEXT browser.
+* Contributing
+Please find a task within this document that has a TODO label
+affixed. Upon finding a task that you'd like to work on, email the
+mailing list next-browser@googlegroups.com with the TODO item and a
+simple example of a proposed solution.
+
+After you have found a TODO item that is available:
+
+- make a fork of the repository
+- add your changes
+- make a pull request
