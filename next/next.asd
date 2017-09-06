@@ -10,8 +10,3 @@
 	       (:file "lisp/minibuffer")
 	       (:file "lisp/buffer")
 	       (:file "lisp/base")))
-
-;; (asdf:make-build :next
-;;                  :type :program
-;;                  :move-here #P"./"
-;;                  :epilogue-code '(next:start))
