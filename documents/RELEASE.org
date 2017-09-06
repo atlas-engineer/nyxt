@@ -1,3 +1,8 @@
+* Contents                                                              :TOC:
+- [[#next-architecture-and-release-timeline][nEXT Architecture and Release Timeline]]
+  - [[#002][0.02]]
+  - [[#001][0.01]]
+
 * nEXT Architecture and Release Timeline
 Major releases are issued by incrementing the first digit. That is,
 release 1.20, and 2.20 are one major release away from each other. Minor
