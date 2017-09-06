@@ -6,8 +6,6 @@ ground up to be customizable for your workflow. nEXT Browser is the
 infinitely EXTensible browser.
 
 * Powerful Features
-nEXT comes standard with a set of powerful features. Notable examples
-include:
 ** Search all open tabs
 With a single hotkey, search all of your open tabs to find a piece of
 text that you are looking for.
@@ -34,9 +32,6 @@ Customization is possible through the creation of a
 =~/.next.d/init.lisp= file within your home directory. From here you
 can override and redefine any of the functions by defining your init
 file as part of the ~:next~ package.
-
-* Project Status
-The project is currently in pre-alpha stage.
-
-* Contributing
-Please see the ~documents/RELEASE.org~ file for active TODO items.
+* Documentation
+For full documentation about nEXT, how it works, and how to extend it
+please see the ~documents/MANUAL.org~ file.
