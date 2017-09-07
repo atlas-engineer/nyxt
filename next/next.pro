@@ -1,5 +1,6 @@
 QT          += widgets printsupport uitools
 TEMPLATE    = app
+ICON        = ../assets/next.icns
 CONFIG      += no_keywords release
 INCLUDEPATH += /usr/local/include
 INCLUDEPATH += /usr/local/include/eql
