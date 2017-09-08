@@ -35,7 +35,10 @@
 (defun switch-buffer (index)
   (set-visible-active-buffer (nth (parse-integer index) *buffers*)))
 
+(defun switch-buffer-complete (input)
+  (list "0" "1" "2"))
+
 (defun switch-buffer-read ()
-  (input #'switch-buffer))
+  (input #'switch-buffer #'switch-buffer-complete))
 
 (define-key global-map (kbd "C-b") #'switch-buffer-read)
