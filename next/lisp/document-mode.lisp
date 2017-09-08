@@ -12,18 +12,14 @@
 
 (defun scroll-down ()
   (print "scroll-down"))
-(define-key document-mode-map (kbd "C-n") #'scroll-down)
 
 (defun scroll-up ()
   (print "scroll-up"))
-(define-key document-mode-map (kbd "C-p") #'scroll-up)
 
 (defun set-url-new-buffer ()
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
     (set-visible-active-buffer new-buffer)
     (set-url-read)))
-
-(define-key document-mode-map (kbd "S-l") #'set-url-new-buffer)
 
 (defun set-url-buffer (input-url buffer)
   (qlet ((url (qnew "QUrl(QString)" input-url)))
@@ -35,11 +31,14 @@
 (defun set-url-read ()
   (input #'set-url))
 
-(define-key document-mode-map (kbd "C-l") #'set-url-read)
-
 (defun document-mode ()
   "Base mode for interacting with documents"
   (make-mode
    :name "Document-Mode"
    :keymap document-mode-map
    :view (qnew "QWebView")))
+
+(define-key document-mode-map (kbd "C-p") #'scroll-up)
+(define-key document-mode-map (kbd "C-n") #'scroll-down)
+(define-key document-mode-map (kbd "C-l") #'set-url-read)
+(define-key document-mode-map (kbd "S-l") #'set-url-new-buffer)
