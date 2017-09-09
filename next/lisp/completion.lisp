@@ -10,6 +10,9 @@
 ;;;; string", "strike", because it is more probable that the user is
 ;;;; looking for "some string"
 
+(in-package :next)
+
+
 (defun fuzzy-match (string string-list)
   (let ((regex
 	 (with-output-to-string (stream)
