@@ -9,4 +9,5 @@
 	       (:file "lisp/document-mode")
 	       (:file "lisp/minibuffer")
 	       (:file "lisp/buffer")
+	       (:file "lisp/completion")
 	       (:file "lisp/base")))
