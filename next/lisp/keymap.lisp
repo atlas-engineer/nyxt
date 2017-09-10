@@ -92,7 +92,6 @@
 	    (return-from consume-key-sequence t))))
     ;; If we make it to this point, key did not exist
     ;; in any of the keymaps, print a message and clear stack
-    (print "Key Undefined")
     (setf *key-sequence-stack* ())
     (return-from consume-key-sequence nil)))
 
