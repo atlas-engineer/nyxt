@@ -29,7 +29,7 @@
   (set-active-buffer buffer)
   (|setCurrentWidget| *stack-layout* (buffer-view *active-buffer*)))
 
-(defun switch-buffer (input)
+(defun switch-buffer (index)
   (set-visible-active-buffer (nth (parse-integer index) *buffers*)))
 
 (defun switch-buffer-complete (input)
