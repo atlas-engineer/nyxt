@@ -44,7 +44,7 @@
     (|setLayout| widget layout)
     (|setModel| *minibuffer-completion* *minibuffer-completion-model*)    
     (make-mode
-     :name "Minibuffer-Mode"
+     :name "minibuffer"
      :keymap minibuffer-mode-map
      :view widget)))
 

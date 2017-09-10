@@ -17,9 +17,12 @@
   (let ((regex
 	 (with-output-to-string (stream)
 	   (loop for char across string do
-		(princ char stream)
 		(princ #\. stream)
-		(princ #\* stream))))
+		(princ #\* stream)
+		(princ char stream))
+	   ;; match any set of chars after final char
+	   (princ #\. stream)
+	   (princ #\* stream)))
 	(results nil))
     (loop for element in string-list do
 	 (when (match-re regex element)
