@@ -22,6 +22,7 @@
     (set-url-read)))
 
 (defun set-url-buffer (input-url buffer)
+  (setf (buffer-name buffer) input-url)
   (qlet ((url (qnew "QUrl(QString)" input-url)))
 	(|setUrl| (buffer-view buffer) url)))
 

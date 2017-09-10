@@ -22,9 +22,6 @@
 	(|addWidget| *stack-layout* (buffer-view new-buffer)))
     new-buffer))
 
-(defun set-major-mode (mode buffer)
-  (setf (buffer-mode buffer) mode))
-
 (defun set-active-buffer (buffer)
   (setf *active-buffer* buffer))
 
@@ -32,10 +29,15 @@
   (set-active-buffer buffer)
   (|setCurrentWidget| *stack-layout* (buffer-view *active-buffer*)))
 
-(defun switch-buffer (index)
-  (set-visible-active-buffer (nth (parse-integer index) *buffers*)))
+(defun switch-buffer (input)
+  (loop for buffer in *buffers* do
+       (if (equalp (buffer-name buffer) input)
+	   (set-visible-active-buffer buffer))))
+
+(defun switch-buffer-complete (input)
+  (fuzzy-match input (mapcar #'buffer-name *buffers*)))
 
 (defun switch-buffer-read ()
-  (input #'switch-buffer))
+  (input #'switch-buffer #'switch-buffer-complete))
 
 (define-key global-map (kbd "C-b") #'switch-buffer-read)

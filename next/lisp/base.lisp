@@ -8,7 +8,7 @@
 (defparameter *root-layout* (qnew "QGridLayout"))
 (defparameter *stack-layout* (qnew "QStackedLayout"))
 
-(setf *minibuffer* (generate-new-buffer "mini-buffer" (minibuffer-mode) nil))
+(setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
 (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
 
 ;; Used by QT to capture key presses

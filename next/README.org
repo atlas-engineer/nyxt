@@ -338,7 +338,8 @@ CLOSED: [2017-09-05 Tue 00:58]
 The user will be able to invoke the key binding C-x b to bring up
 a menu in the Minibuffer in which they will be able to select a new buffer
 to bring to focus.
-**** TODO Minibuffer Completion
+**** DONE Minibuffer Completion
+CLOSED: [2017-09-10 Sun 01:42]
 Switch buffer should demonstrate an example of minibuffer completion
 candidates
 *** DONE Compilation OSX
