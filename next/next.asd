@@ -4,6 +4,7 @@
   :serial t
   :depends-on (:cl-strings :cl-string-match)
   :components ((:file "lisp/package")
+	       (:file "lisp/macro")
 	       (:file "lisp/qt")
 	       (:file "lisp/keymap")
 	       (:file "lisp/minibuffer")

@@ -16,10 +16,10 @@
 (defun scroll-up ()
   (print "scroll-up"))
 
-(defun set-url-new-buffer ()
+(defun set-url-new-buffer (input-url)
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
     (set-visible-active-buffer new-buffer)
-    (set-url-read)))
+    (set-url input-url)))
 
 (defun set-url-buffer (input-url buffer)
   (setf (buffer-name buffer) input-url)
@@ -28,9 +28,6 @@
 
 (defun set-url (input-url)
   (set-url-buffer input-url *active-buffer*))
-
-(defun set-url-read ()
-  (input #'set-url))
 
 (defun document-mode ()
   "Base mode for interacting with documents"
@@ -41,5 +38,5 @@
 
 (define-key document-mode-map (kbd "C-p") #'scroll-up)
 (define-key document-mode-map (kbd "C-n") #'scroll-down)
-(define-key document-mode-map (kbd "C-l") #'set-url-read)
-(define-key document-mode-map (kbd "S-l") #'set-url-new-buffer)
+(define-key document-mode-map (kbd "C-l") (:input set-url))
+(define-key document-mode-map (kbd "S-l") (:input set-url-new-buffer))
