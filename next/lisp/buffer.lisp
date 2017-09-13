@@ -7,13 +7,13 @@
 (defvar *active-buffer* ()
   "The currently active buffer")
 
-(defstruct buffer
-  name
-  mode
-  view)
+(defclass buffer ()
+  ((name :accessor buffer-name :initarg :name)
+   (mode :accessor buffer-mode :initarg :mode)
+   (view :accessor buffer-view :initarg :view)))
 
 (defun generate-new-buffer (name mode &optional (add-to-stack-layout t))
-  (let ((new-buffer (make-buffer
+  (let ((new-buffer (make-instance 'buffer
 		     :name name
 		     :mode mode
 		     :view (mode-view mode))))
