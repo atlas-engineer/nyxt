@@ -230,8 +230,6 @@ two minor releases following major release 1.0.
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
 ** TODO 0.02
-*** TODO CLOS
-- Convert struct usage to CLOS
 *** TODO Within document-mode the history will be represented as a tree
 - forwards and backwards navigation creating new nodes and
 traversals. This will allow for all points in history to be reachable,
@@ -251,6 +249,9 @@ by undo-tree: https://www.emacswiki.org/emacs/UndoTree
 - Use install_name_tool to update the now copied frameworks in 
   `next.app/Contents/Frameworks`
 - For more info please see: http://doc.qt.io/qt-5/osx-deployment.html
+*** DONE CLOS
+CLOSED: [2017-09-13 Wed 18:09]
+- Convert struct usage to CLOS
 *** DONE Scrolling
 CLOSED: [2017-09-12 Tue 19:04]
 - The ability to scroll up and down within a document
