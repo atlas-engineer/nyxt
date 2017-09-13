@@ -227,18 +227,13 @@ two minor releases following major release 1.0.
 - Use install_name_tool to update the now copied frameworks in 
   `next.app/Contents/Frameworks`
 - For more info please see: http://doc.qt.io/qt-5/osx-deployment.html
-*** TODO Window System
-- Emacs like window system
-*** TODO Within document-mode the history will be represented as a tree
-- forwards and backwards navigation creating new nodes and
-traversals. This will allow for all points in history to be reachable,
-and a future expansion designed to recreate the functionality offered
-by undo-tree: https://www.emacswiki.org/emacs/UndoTree
-**** TODO Ability to navigate forward and backward in history
-- using the key binding M-f, and M-b for forward and backward
-  respectively
-
-** 0.01
+*** DONE Scrolling
+CLOSED: [2017-09-12 Tue 19:04]
+- The ability to scroll up and down within a document
+  - using C-n to scroll down
+  - using C-p to scroll up
+** DONE 0.01
+CLOSED: [2017-09-09 Tue 19:05]
 This version describes the minimum usability as a basic browser, with
 the following features:
 

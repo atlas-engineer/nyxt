@@ -11,10 +11,10 @@
   view)
 
 (defun scroll-down ()
-  (print "scroll-down"))
+  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 30))
 
 (defun scroll-up ()
-  (print "scroll-up"))
+  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 -30))
 
 (defun set-url-new-buffer (input-url)
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
