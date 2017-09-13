@@ -4,6 +4,8 @@
 
 (defvar minibuffer-mode-map (make-hash-table :test 'equalp))
 
+(defclass minibuffer-mode (mode) ())
+
 (defvar *minibuffer* nil
   "A variable to store the mini-buffer")
 (defparameter *minibuffer-prompt* (qnew "QLabel" "text" "input:")
@@ -47,7 +49,7 @@
     (|addWidget| layout *minibuffer-completion*  1 1 1 15)
     (|setLayout| widget layout)
     (|setModel| *minibuffer-completion* *minibuffer-completion-model*)    
-    (make-mode
+    (make-instance 'minibuffer-mode
      :name "minibuffer"
      :keymap minibuffer-mode-map
      :view widget)))

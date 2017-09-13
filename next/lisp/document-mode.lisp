@@ -5,10 +5,7 @@
 (defvar document-mode-hook nil)
 (defvar document-mode-map (make-hash-table :test 'equalp))
 
-(defstruct mode
-  name
-  keymap
-  view)
+(defclass document-mode (mode) ())
 
 (defun scroll-down ()
   (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 30))
@@ -31,7 +28,7 @@
 
 (defun document-mode ()
   "Base mode for interacting with documents"
-  (make-mode
+  (make-instance 'document-mode
    :name "Document-Mode"
    :keymap document-mode-map
    :view (qnew "QWebView")))

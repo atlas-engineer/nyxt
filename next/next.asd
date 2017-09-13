@@ -6,6 +6,7 @@
   :components ((:file "lisp/package")
 	       (:file "lisp/macro")
 	       (:file "lisp/qt")
+	       (:file "lisp/mode")
 	       (:file "lisp/keymap")
 	       (:file "lisp/minibuffer")
 	       (:file "lisp/buffer")
