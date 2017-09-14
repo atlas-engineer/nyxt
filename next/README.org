@@ -230,7 +230,8 @@ two minor releases following major release 1.0.
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
 ** TODO 0.02
-*** TODO Within document-mode the history will be represented as a tree
+*** DONE Within document-mode the history will be represented as a tree
+CLOSED: [2017-09-14 Thu 01:17]
 - forwards and backwards navigation creating new nodes and
 traversals. This will allow for all points in history to be reachable,
 and a future expansion designed to recreate the functionality offered
@@ -238,6 +239,11 @@ by undo-tree: https://www.emacswiki.org/emacs/UndoTree
 **** TODO Ability to navigate forward and backward in history
 - using the key binding M-f, and M-b for forward and backward
   respectively
+- should only work if there is one child
+*** TODO Deprecate Buffers
+- Buffers serve as an unnecessary abstraction in next
+- Create base class rich-buffer, all buffer types extend from it
+- document-buffer, input-buffer, history-tree-buffer
 *** TODO OSX Compilation
 - Modify make.lisp script to create a binary that grabs all of the
   dependencies and creates a executable that can be deployed on OSX
