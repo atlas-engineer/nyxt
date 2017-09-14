@@ -51,7 +51,14 @@
 	(|setUrl| (buffer-view buffer) url)))
 
 (defun set-url (input-url)
-  (set-url-buffer input-url *active-buffer*))
+  (let ((url (maybe-add-default-url-scheme input-url)))
+    (set-url-buffer url *active-buffer*)))
+
+(defun maybe-add-default-url-scheme (input-url)
+  (let ((url (quri:uri input-url)))
+    (if (quri:uri-scheme url)
+        input-url
+        (concatenate 'string "http://" input-url ))))
 
 (defun document-mode ()
   "Base mode for interacting with documents"
