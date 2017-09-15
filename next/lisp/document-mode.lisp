@@ -51,10 +51,11 @@
 	(|setUrl| (buffer-view buffer) url)))
 
 (defun set-url (input-url)
-  (let ((url (maybe-add-default-url-scheme input-url)))
+  (let ((url (normalize-url input-url)))
     (set-url-buffer url *active-buffer*)))
 
-(defun maybe-add-default-url-scheme (input-url)
+(defun normalize-url (input-url)
+  "Will convert example.com to http://www.example.com"
   (let ((url (quri:uri input-url)))
     (if (quri:uri-scheme url)
         input-url
