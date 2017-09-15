@@ -1,8 +1,8 @@
 #-eql5
 (error "Please use the EQL5 executable (see README)")
 (require :cmp)
-(load "dependencies")
 (push "./" asdf:*central-registry*)
+(ql:quickload "next")
 
 ;; build static library 
 (asdf:make-build "next"
