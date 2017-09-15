@@ -2,7 +2,7 @@
 ;;;; next.asd
 (defsystem :next
   :serial t
-  :depends-on (:cl-strings :cl-string-match)
+  :depends-on (:cl-strings :cl-string-match :quri)
   :components ((:file "lisp/package")
 	       (:file "lisp/macro")
 	       (:file "lisp/qt")
