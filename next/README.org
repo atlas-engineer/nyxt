@@ -96,18 +96,6 @@ To build and install the EQL Library/Executable:
 To test your installation exec ~eql5 -qgui~, you should presented
 with a REPL and a GUI.
 
-Following the normal installation of EQL, it is necessary to setup the
-EQL wrappers permanentely which enable the lisp style invocation of QT
-functions.
-
-1. In ~src/~ exec: ~eql5 make-wrappers.lisp~
-2. Re-link EQL doing something like:
-3. delete ~tmp/eql.o*~
-4. In ~src/~ exec: ~qmake eql_lib.pro~. This command generates
-   the makefile.
-5. In ~src/~ exec: ~make~
-6. In ~src/~ exec: ~sudo make install~
-
 After the installation, the following should be completed:
 
 - ~/usr/local/bin~ contains an ~eql5~ executable
@@ -164,18 +152,6 @@ To build and install the EQL Library/Executable:
 
 To test your installation exec ~eql5 -qgui~, you should presented
 with a REPL and a GUI.
-
-Following the normal installation of EQL, it is necessary to setup the
-EQL wrappers permanentely which enable the lisp style invocation of QT
-functions.
-
-1. In ~src/~ exec: ~eql5 make-wrappers.lisp~
-2. Re-link EQL doing something like:
-3. delete ~tmp/eql.o*~
-4. In ~src/~ exec: ~qmake eql_lib.pro~. This command generates
-   the makefile.
-5. In ~src/~ exec: ~make~
-6. In ~src/~ exec: ~sudo make install~
 
 After the installation, the following should be completed:
 
