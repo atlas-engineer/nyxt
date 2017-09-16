@@ -20,7 +20,11 @@
     (if parent
 	(set-url (node-data parent)))))
 
-(defun history-forwards ())
+(defun history-forwards ()
+  ;; move forwards the history if there is only one child
+  (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
+    (if children
+	(set-url (node-data (nth 0 children))))))
 
 (defun add-or-traverse-history (mode)
   ;; get url from mode-view's qwebview
