@@ -7,13 +7,20 @@
 
 (defclass document-mode (mode)
   ((history-tree :accessor mode-history-tree :initform ())
-   (history-active-node :accessor mode-history-active-node :initform (make-node))))
+   (history-active-node :accessor mode-history-active-node :initform (make-node :data "about:blank"))))
 
 (defun scroll-down ()
   (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 30))
 
 (defun scroll-up ()
   (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 -30))
+
+(defun history-backwards ()
+  (let ((parent (node-parent (mode-history-active-node (buffer-mode *active-buffer*)))))
+    (if parent
+	(set-url (node-data parent)))))
+
+(defun history-forwards ())
 
 (defun add-or-traverse-history (mode)
   ;; get url from mode-view's qwebview
@@ -73,6 +80,8 @@
     ;; return instance of mode
     mode))
 
+(define-key document-mode-map (kbd "S-f") #'history-forwards)
+(define-key document-mode-map (kbd "S-b") #'history-backwards)
 (define-key document-mode-map (kbd "C-p") #'scroll-up)
 (define-key document-mode-map (kbd "C-n") #'scroll-down)
 (define-key document-mode-map (kbd "C-l") (:input set-url))
