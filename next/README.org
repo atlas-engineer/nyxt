@@ -220,6 +220,8 @@ two minor releases following major release 1.0.
 *** TODO History Tree Mode
 - Create a mode that allows traversal of the tree created in the
   history of a document-mode buffer
+*** DONE Cancel Within Minibuffer mode
+CLOSED: [2017-09-17 Sun 14:53]
 *** DONE Within document-mode the history will be represented as a tree
 CLOSED: [2017-09-14 Thu 01:17]
 - forwards and backwards navigation creating new nodes and

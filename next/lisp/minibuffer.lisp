@@ -41,6 +41,11 @@
   (|setText| *minibuffer-input* "")
   (|hide| (buffer-view *minibuffer*)))
 
+(defun cancel-input ()
+  (set-active-buffer *minibuffer-callback-buffer*)
+  (|setText| *minibuffer-input* "")
+  (|hide| (buffer-view *minibuffer*)))
+
 (defun minibuffer-mode ()
   "Base mode for input"
   (let ((widget (qnew "QWidget")) (layout (qnew "QGridLayout")))
@@ -64,3 +69,5 @@
   nil)
 
 (define-key minibuffer-mode-map (kbd "Return") #'return-input)
+(define-key minibuffer-mode-map (kbd "C-g") #'cancel-input)
+(define-key minibuffer-mode-map (kbd "Escape") #'cancel-input)
