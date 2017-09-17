@@ -29,10 +29,16 @@
 ;;                 Q.enqueue(n)
 
 
+(defvar tree-history-mode-hook nil)
 (defvar tree-history-mode-map (make-hash-table :test 'equalp))
 
-(defvar tree-history-mode-hook nil)
 (defclass tree-history-mode (mode) ())
+
+(defvar *history-tree* nil
+  "A variable to store the singleton history tree")
+(defparameter *tree-history-model* (qnew "QStandardItemModel")
+  "A variable to store the model which updates the QTreeView")
+
 
 (defun tree-history-mode ()
   "Base mode for representing the history of a buffer"

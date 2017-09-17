@@ -27,8 +27,7 @@
 	(set-url (node-data (nth 0 children))))))
 
 (defun history-tree-show ()
-  (let ((new-buffer (generate-new-buffer "history-tree" (tree-history-mode))))
-    (set-visible-active-buffer new-buffer)))
+  (set-visible-active-buffer *history-tree*))
 
 (defun add-or-traverse-history (mode)
   ;; get url from mode-view's qwebview
