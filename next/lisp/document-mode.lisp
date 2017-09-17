@@ -26,6 +26,10 @@
     (if children
 	(set-url (node-data (nth 0 children))))))
 
+(defun history-tree-show ()
+  (let ((new-buffer (generate-new-buffer "history-tree" (tree-history-mode))))
+    (set-visible-active-buffer new-buffer)))
+
 (defun add-or-traverse-history (mode)
   ;; get url from mode-view's qwebview
   (let ((url (|toString| (|url| (mode-view mode))))
@@ -84,6 +88,7 @@
     ;; return instance of mode
     mode))
 
+(define-key document-mode-map (kbd "S-t") #'history-tree-show)
 (define-key document-mode-map (kbd "S-f") #'history-forwards)
 (define-key document-mode-map (kbd "S-b") #'history-backwards)
 (define-key document-mode-map (kbd "C-p") #'scroll-up)
