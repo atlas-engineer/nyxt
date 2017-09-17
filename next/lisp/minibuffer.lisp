@@ -2,6 +2,7 @@
 
 (in-package :next)
 
+(defvar minibuffer-mode-hook nil)
 (defvar minibuffer-mode-map (make-hash-table :test 'equalp))
 
 (defclass minibuffer-mode (mode) ())
@@ -15,7 +16,7 @@
 (defparameter *minibuffer-completion-function* nil
   "A variable to store the function used to generate completion candidates")
 (defparameter *minibuffer-completion-model* (qnew "QStringListModel")
-  " A variable to store the model which updates the QListView")
+  "A variable to store the model which updates the QListView")
 (defparameter *minibuffer-completion* (qnew "QListView")
   "A variable to store the current minibuffer completion candidates")
 (defparameter *minibuffer-callback* nil
