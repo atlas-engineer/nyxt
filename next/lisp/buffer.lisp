@@ -37,4 +37,4 @@
 (defun switch-buffer-complete (input)
   (fuzzy-match input (mapcar #'buffer-name *buffers*)))
 
-(define-key global-map (kbd "C-b") (:input-complete switch-buffer switch-buffer-complete))
+(define-key global-map (kbd "C-x b") (:input-complete switch-buffer switch-buffer-complete))
