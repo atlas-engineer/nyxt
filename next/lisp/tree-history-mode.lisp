@@ -39,6 +39,12 @@
 (defparameter *tree-history-model* (qnew "QStandardItemModel")
   "A variable to store the model which updates the QTreeView")
 
+(defun update-tree-model (root-node)
+  (let ((nodey (qnew "QStandardItem(QString)" "element")))
+    (|appendRow| *tree-history-model* (qnew "QStandardItem(QString)" "element"))
+    (|appendRow| *tree-history-model* (qnew "QStandardItem(QString)" "element"))
+    (|appendRow| *tree-history-model* nodey)
+    (|appendRow| nodey (qnew "QStandardItem(QString)" "element"))))
 
 (defun tree-history-mode ()
   "Base mode for representing the history of a buffer"
@@ -47,5 +53,8 @@
 			:name "Tree-Mode"
 			:keymap tree-history-mode-map
 			:view (qnew "QTreeView"))))
+    (|setHorizontalHeaderLabels| *tree-history-model* '("Name"))
+    (|setModel| (mode-view mode) *tree-history-model*)
+    (|setUniformRowHeights| (mode-view mode) t)
     ;; return instance of mode
     mode))

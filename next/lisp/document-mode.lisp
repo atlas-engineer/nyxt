@@ -28,6 +28,7 @@
 	(set-url (node-data (nth 0 children))))))
 
 (defun history-tree-show ()
+  (update-tree-model (mode-history-tree-root-node (buffer-mode *active-buffer*)))
   (set-visible-active-buffer *history-tree*))
 
 (defun add-or-traverse-history (mode)
@@ -78,17 +79,17 @@
 
 (defun document-mode ()
   "Base mode for interacting with documents"
-  (let ((root (make-node :data "about:blank")))
-    (let ((mode (make-instance 'document-mode
-			       :name "Document-Mode"
-			       :keymap document-mode-map
-			       :view (qnew "QWebView")
-			       :root-node root
-			       :active-node root)))
-      (qconnect (|mainFrame| (|page| (mode-view mode))) "loadFinished(bool)"
-		(lambda (ok) (add-or-traverse-history mode)))
-      ;; return instance of mode
-      mode)))
+  (let* ((root (make-node :data "about:blank"))
+	 (mode (make-instance 'document-mode
+			     :name "Document-Mode"
+			     :keymap document-mode-map
+			     :view (qnew "QWebView")
+			     :root-node root
+			     :active-node root)))
+    (qconnect (|mainFrame| (|page| (mode-view mode))) "loadFinished(bool)"
+	      (lambda (ok) (add-or-traverse-history mode)))
+    ;; return instance of mode
+    mode))
 
 (define-key document-mode-map (kbd "S-t") #'history-tree-show)
 (define-key document-mode-map (kbd "S-f") #'history-forwards)
