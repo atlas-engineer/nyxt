@@ -7,7 +7,8 @@
 
 (defclass document-mode (mode)
   ((history-tree :accessor mode-history-tree :initform ())
-   (history-active-node :accessor mode-history-active-node :initform (make-node :data "about:blank"))))
+   (history-tree-root-node :accessor mode-history-tree-root-node :initarg :root-node)
+   (history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
   (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 30))
@@ -21,7 +22,7 @@
 	(set-url (node-data parent)))))
 
 (defun history-forwards ()
-  ;; move forwards the history if there is only one child
+  ;; move forwards the history selecting the first child
   (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
     (if children
 	(set-url (node-data (nth 0 children))))))
@@ -77,15 +78,17 @@
 
 (defun document-mode ()
   "Base mode for interacting with documents"
-  (let ((mode 
-	 (make-instance 'document-mode
-			:name "Document-Mode"
-			:keymap document-mode-map
-			:view (qnew "QWebView"))))
-    (qconnect (|mainFrame| (|page| (mode-view mode))) "loadFinished(bool)"
-	      (lambda (ok) (add-or-traverse-history mode)))
-    ;; return instance of mode
-    mode))
+  (let ((root (make-node :data "about:blank")))
+    (let ((mode (make-instance 'document-mode
+			       :name "Document-Mode"
+			       :keymap document-mode-map
+			       :view (qnew "QWebView")
+			       :root-node root
+			       :active-node root)))
+      (qconnect (|mainFrame| (|page| (mode-view mode))) "loadFinished(bool)"
+		(lambda (ok) (add-or-traverse-history mode)))
+      ;; return instance of mode
+      mode)))
 
 (define-key document-mode-map (kbd "S-t") #'history-tree-show)
 (define-key document-mode-map (kbd "S-f") #'history-forwards)
