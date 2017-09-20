@@ -8,9 +8,9 @@
 (defparameter *root-layout* (qnew "QGridLayout"))
 (defparameter *stack-layout* (qnew "QStackedLayout"))
 
-(setf *history-tree* (generate-new-buffer "history-tree" (tree-history-mode)))
 (setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
 (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
+(setf *history-tree* (generate-new-buffer "history-tree" (tree-history-mode)))
 
 ;; Used by QT to capture key presses
 (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
