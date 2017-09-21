@@ -5,15 +5,37 @@ ground up to be customizable for your workflow. nEXT Browser is the
 infinitely EXTensible browser.
 
 * Powerful Features
+** Fast tab switching
+Switch easily between your open tabs by fuzzy search. If you are
+looking for ~http://www.example.com~, you could type in ~ele~, ~exa~,
+~epl~, and any other valid series of letters. In a future release,
+typing any semantically related word will give you a fuzzy search of
+your open tabs and let you quickly find which page you were looking
+for.
+
+#+html: <img src="assets/gifs/tab_switch.gif"/>
+
 ** History as a tree
 History is represented as a tree that you can traverse. More complex
 than the "forwards-backwards" abstraction found in other browsers,
 the tree makes sure you never lose track of where you've been.
-** Fast tab switching
-Switch easily between your open tabs by keyword, thumbnail, or by URL.
-Typing any semantically related word will give you a fuzzy search of
-your open tabs and let you quickly find which page you were looking
-for.
+
+In the example below, the User performs the following actions:
+
+1. Starts page ~Athens~
+2. Visits page ~Ancient Greek~
+3. Returns to page ~Athens~
+4. Visits page ~Classical Athens~
+5. Returns to page ~Athens~
+6. Executes ~forwards~ keybind in history
+
+It is at this point that a normal browser would NOT be able to
+navigate you forwards to your visit of ~Ancient Greek~. Instead of
+erasing your history, nEXT offers smart navigation and prompts the
+user. Do you wish to go forwards to ~Ancient Greek~ or to
+~Classical Athens~?
+
+#+html: <img src="assets/gifs/tree_forward.gif"/>
 
 * Getting Started
 ** Install nEXT Browser
