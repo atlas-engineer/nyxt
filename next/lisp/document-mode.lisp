@@ -22,10 +22,22 @@
 	(set-url (node-data parent)))))
 
 (defun history-forwards ()
-  ;; move forwards the history selecting the first child
+  ;; move forwards in history selecting the first child
   (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
     (if children
 	(set-url (node-data (nth 0 children))))))
+
+(defun history-forwards-query (input)
+  ;; move forwards in history querying if more than one child
+  (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
+    (loop for child in children do
+	 (if (equalp (node-data child) input)
+	     (set-url (node-data child))))))
+
+(defun history-fowards-query-complete (input)
+  (let ((children (node-children (mode-history-active-node (buffer-mode *minibuffer-callback-buffer*)))))
+    (when children
+      (fuzzy-match input (mapcar #'node-data children)))))
 
 (defun history-tree-show ()
   (update-tree-model (mode-history-tree-root-node (buffer-mode *active-buffer*)))
@@ -92,8 +104,11 @@
     mode))
 
 (define-key document-mode-map (kbd "S-t") #'history-tree-show)
-(define-key document-mode-map (kbd "S-f") #'history-forwards)
+(define-key document-mode-map (kbd "S-f")
+  (:input-complete history-forwards-query history-fowards-query-complete))
 (define-key document-mode-map (kbd "S-b") #'history-backwards)
+(define-key document-mode-map (kbd "C-f") #'history-forwards)
+(define-key document-mode-map (kbd "C-b") #'history-backwards)
 (define-key document-mode-map (kbd "C-p") #'scroll-up)
 (define-key document-mode-map (kbd "C-n") #'scroll-down)
 (define-key document-mode-map (kbd "C-l") (:input set-url))

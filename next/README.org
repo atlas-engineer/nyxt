@@ -192,7 +192,13 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
-** 0.03
+** TODO 0.03
+*** TODO Improve in Code Documentation & Architecture
+- Create much clearer picture of how everything functions together,
+  make cleaner architecture diagrams showing how everything links
+  together
+- Clean up classes, use defmethods instead of generic functions
+- Create Page class with meta information about page
 *** TODO Window System
 - Emacs like window system
 *** TODO Bookmarks
@@ -216,11 +222,8 @@ two minor releases following major release 1.0.
 - Use install_name_tool to update the now copied frameworks in 
   `next.app/Contents/Frameworks`
 - For more info please see: http://doc.qt.io/qt-5/osx-deployment.html
-** TODO 0.02
-*** TODO Improve in Code Documentation
-- Create much clearer picture of how everything functions together,
-  make cleaner architecture diagrams showing how everything links
-  together
+** DONE 0.02
+CLOSED: [2017-09-21 Thu 00:15]
 *** DONE History Tree Mode
 CLOSED: [2017-09-20 Wed 22:42]
 - Create a mode that allows traversal of the tree created in the
@@ -238,7 +241,8 @@ CLOSED: [2017-09-20 Wed 19:32]
 - using the key binding M-f, and M-b for forward and backward
   respectively
 - should only work if there is one child
-**** TODO Forward navigation with more than one child prompts mini-buffer selection
+**** DONE Forward navigation with more than one child prompts mini-buffer selection
+CLOSED: [2017-09-21 Thu 00:15]
 - If a user tries to navigate forward but there is more than one
   possible destination available, show the possibilities as an
   auto-completable list in the minibuffer
