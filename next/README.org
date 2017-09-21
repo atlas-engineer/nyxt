@@ -221,7 +221,8 @@ two minor releases following major release 1.0.
 - Create much clearer picture of how everything functions together,
   make cleaner architecture diagrams showing how everything links
   together
-*** TODO History Tree Mode
+*** DONE History Tree Mode
+CLOSED: [2017-09-20 Wed 22:42]
 - Create a mode that allows traversal of the tree created in the
   history of a document-mode buffer
 *** DONE Cancel Within Minibuffer mode
@@ -232,10 +233,15 @@ CLOSED: [2017-09-14 Thu 01:17]
 traversals. This will allow for all points in history to be reachable,
 and a future expansion designed to recreate the functionality offered
 by undo-tree: https://www.emacswiki.org/emacs/UndoTree
-**** TODO Ability to navigate forward and backward in history
+**** DONE Ability to navigate forward and backward in history
+CLOSED: [2017-09-20 Wed 19:32]
 - using the key binding M-f, and M-b for forward and backward
   respectively
 - should only work if there is one child
+**** TODO Forward navigation with more than one child prompts mini-buffer selection
+- If a user tries to navigate forward but there is more than one
+  possible destination available, show the possibilities as an
+  auto-completable list in the minibuffer
 *** DONE CLOS
 CLOSED: [2017-09-13 Wed 18:09]
 - Convert struct usage to CLOS

@@ -6,28 +6,8 @@
 (defstruct node
   parent
   children
-  data)
-
-;; Breadth-First-Search(Graph, root):
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; add to queue, add children to model
-;;
-;;     create empty set S
-;;     create empty queue Q
-;;
-;;     add root to S
-;;     Q.enqueue(root)
-;;
-;;     while Q is not empty:
-;;         current = Q.dequeue()
-;;         if current is the goal:
-;;             return current
-;;         for each node n that is adjacent to current:
-;;             if n is not in S:
-;;                 add n to S
-;;                 Q.enqueue(n)
-
+  data
+  qitem)
 
 (defvar tree-history-mode-hook nil)
 (defvar tree-history-mode-map (make-hash-table :test 'equalp))
@@ -40,11 +20,19 @@
   "A variable to store the model which updates the QTreeView")
 
 (defun update-tree-model (root-node)
-  (let ((nodey (qnew "QStandardItem(QString)" "element")))
-    (|appendRow| *tree-history-model* (qnew "QStandardItem(QString)" "element"))
-    (|appendRow| *tree-history-model* (qnew "QStandardItem(QString)" "element"))
-    (|appendRow| *tree-history-model* nodey)
-    (|appendRow| nodey (qnew "QStandardItem(QString)" "element"))))
+  (let ((queue (queues:make-queue :simple-queue)))
+    (queues:qpush queue root-node)
+    (setf (node-qitem root-node) *tree-history-model*)
+    (loop while (>= (queues:qsize queue) 1) do
+	 (let* ((node (queues:qpop queue)))
+	   (when (not (node-qitem node))
+	     (setf (node-qitem node) (qnew "QStandardItem(QString)" (node-data node))))
+	   (loop for child in (node-children node) do
+		(queues:qpush queue child)
+		(when (not (node-qitem child))
+		  (setf (node-qitem child) (qnew "QStandardItem(QString)" (node-data child))))
+		(|appendRow| (node-qitem node) (node-qitem child))
+		(print (node-data child)))))))
 
 (defun tree-history-mode ()
   "Base mode for representing the history of a buffer"
