@@ -1,4 +1,4 @@
-#+html: <img src="assets/icon_128x128.png" align="right"/>
+#+html: <img src="assets/icon_256x256.png" align="right"/>
 * nEXT Browser
 nEXT is the fastest productivity browser. It is designed from the
 ground up to be customizable for your workflow. nEXT Browser is the
