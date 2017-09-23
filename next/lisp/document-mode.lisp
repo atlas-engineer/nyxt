@@ -17,21 +17,21 @@
 
 (defun history-backwards ()
   (let ((parent (node-parent (mode-history-active-node (buffer-mode *active-buffer*)))))
-    (if parent
+    (when parent
 	(set-url (node-data parent)))))
 
 (defun history-forwards ()
   ;; move forwards in history selecting the first child
   (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
-    (if children
-	(set-url (node-data (nth 0 children))))))
+    (unless (null children)
+      (set-url (node-data (nth 0 children))))))
 
 (defun history-forwards-query (input)
   ;; move forwards in history querying if more than one child
   (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
     (loop for child in children do
-	 (if (equalp (node-data child) input)
-	     (set-url (node-data child))))))
+	 (when (equalp (node-data child) input)
+	   (set-url (node-data child))))))
 
 (defun history-fowards-query-complete (input)
   (let ((children (node-children (mode-history-active-node (buffer-mode *minibuffer-callback-buffer*)))))
