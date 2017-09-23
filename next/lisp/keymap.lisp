@@ -65,11 +65,11 @@
   ;; to a stack which will be consumed by
   ;; consume-key-sequence
   (let ((key-chord (make-key)))
-    (if *control-modifier*
+    (when *control-modifier*
 	(setf (key-control-modifier key-chord) t))
-    (if *meta-modifier*
+    (when *meta-modifier*
 	(setf (key-meta-modifier key-chord) t))
-    (if *super-modifier*
+    (when *super-modifier*
 	(setf (key-super-modifier key-chord) t))
     
     (setf (key-character key-chord) key)
