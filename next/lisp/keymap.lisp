@@ -82,18 +82,15 @@
 		   global-map
 		   (mode-keymap (buffer-mode *active-buffer*)))))
     (dolist (map key-maps)
-      (if (gethash *key-sequence-stack* map)
-	  (progn 
-	    ;; If not prefix key, consume
-	    (if (not (equalp (gethash *key-sequence-stack* map) "prefix"))
-		(progn
-		  (funcall (gethash *key-sequence-stack* map))
-		  (setf *key-sequence-stack* ())))
-	    (return-from consume-key-sequence t))))
+      (when (gethash *key-sequence-stack* map)
+	;; If not prefix key, consume
+	(when (not (equalp (gethash *key-sequence-stack* map) "prefix"))
+	  (funcall (gethash *key-sequence-stack* map))
+	  (setf *key-sequence-stack* ()))
+	(return-from consume-key-sequence t)))
     ;; If we make it to this point, key did not exist
-    ;; in any of the keymaps, print a message and clear stack
-    (setf *key-sequence-stack* ())
-    (return-from consume-key-sequence nil)))
+    ;; return false
+    (setf *key-sequence-stack* ())))
 
 (defun define-key (mode-map key-sequence function)
   ;; A sequence of "C-x" "C-s" "C-a" will be broken
