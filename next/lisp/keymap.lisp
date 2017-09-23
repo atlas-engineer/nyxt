@@ -88,8 +88,8 @@
 	  (funcall (gethash *key-sequence-stack* map))
 	  (setf *key-sequence-stack* ()))
 	(return-from consume-key-sequence t)))
-    ;; If we make it to this point, key did not exist
-    ;; return false
+    ;; If we made it to this point, key did not exist, return false,
+    ;; allowing the key to be consumed by other widgets
     (setf *key-sequence-stack* ())))
 
 (defun define-key (mode-map key-sequence function)
