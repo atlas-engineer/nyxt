@@ -3,28 +3,27 @@
 ;;;; completion matchers are functions that accept an input string and
 ;;;; a list of strings, and given some logic, return an ordered list
 ;;;; of strings matched based on probability
-;;;;
-;;;; as an example, consider the possible implementation
-;;;; "fuzzy_matcher" with input string "so str" and a list of strings:
-;;;; "some string", "strike" we would expect the return to be "some
-;;;; string", "strike", because it is more probable that the user is
-;;;; looking for "some string"
 
 (in-package :next)
 
 
-(defun fuzzy-match (string string-list)
+(defun fuzzy-match (input candidates)
+  ;; fuzzy-match works by taking a string input from the user. the
+  ;; string is then populated with ".*" between each character to
+  ;; create a regex. As an example, "nt" will become "n.*t.*". This
+  ;; will enable matching of "next" or "note" etc.
   (let ((regex
 	 (with-output-to-string (stream)
-	   (loop for char across string do
+	   (loop for char across input do
 		(princ #\. stream)
 		(princ #\* stream)
 		(princ char stream))
-	   ;; match any set of chars after final char
+	   ;; match any chars after final char in input
 	   (princ #\. stream)
 	   (princ #\* stream)))
-	(results nil))
-    (loop for element in string-list do
-	 (when (match-re regex element)
-	   (push element results)))
-    results))
+	(completions nil))
+    ;; use constructed regex to see which options match
+    (loop for candidate in candidates do
+	 (when (cl-string-match:match-re regex candidate)
+	   (push candidate completions)))
+    completions))

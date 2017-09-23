@@ -122,10 +122,10 @@
   ;; this is will serve as the key to our key->function map
   (let ((key-sequence ()))
     ;; Iterate through all key chords (space delimited)
-    (loop for key-chord-string in (split key-sequence-string " ")
+    (loop for key-chord-string in (cl-strings:split key-sequence-string " ")
        ;; Iterate through all keys in chord (hyphen delimited)
        do (let ((key-chord (make-key)))
-  	    (loop for key-character-string in (split key-chord-string "-")
+  	    (loop for key-character-string in (cl-strings:split key-chord-string "-")
   	       do (cond
   		    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
 		    ((equal "M" key-character-string) (setf (key-meta-modifier key-chord) t))
