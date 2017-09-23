@@ -13,13 +13,14 @@
    (view :accessor buffer-view :initarg :view)))
 
 (defun generate-new-buffer (name mode &optional (add-to-stack-layout t))
-  (let ((new-buffer (make-instance 'buffer
-		     :name name
-		     :mode mode
-		     :view (mode-view mode))))
+  (let ((new-buffer
+	 (make-instance 'buffer
+			:name name
+			:mode mode
+			:view (mode-view mode))))
     (push new-buffer *buffers*)
-    (if add-to-stack-layout
-	(|addWidget| *stack-layout* (buffer-view new-buffer)))
+    (when add-to-stack-layout
+      (|addWidget| *stack-layout* (buffer-view new-buffer)))
     new-buffer))
 
 (defun set-active-buffer (buffer)
@@ -31,8 +32,8 @@
 
 (defun switch-buffer (input)
   (loop for buffer in *buffers* do
-       (if (equalp (buffer-name buffer) input)
-	   (set-visible-active-buffer buffer))))
+       (when (equalp (buffer-name buffer) input)
+	 (set-visible-active-buffer buffer))))
 
 (defun switch-buffer-complete (input)
   (fuzzy-match input (mapcar #'buffer-name *buffers*)))

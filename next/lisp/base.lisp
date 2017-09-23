@@ -20,7 +20,7 @@
   ;; remove margins around root widgets
   (|setSpacing| *root-layout* 0)
   (|setContentsMargins| *root-layout* 0 0 0 0)
-   ;; row, column, rowspan, colspan
+   ;; arguments for grid layout: row, column, rowspan, colspan
   (|addLayout| *root-layout* *stack-layout*              0 0 1 1)
   (|addWidget| *root-layout* (buffer-view *minibuffer*)  1 0 1 1)
   
