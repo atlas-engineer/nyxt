@@ -59,7 +59,7 @@
        (setf *super-modifier* nil))
       (t (return-from key-release)))))
 
-(defun push-key-chord (key-character-string)
+(defun push-key-chord (key)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
@@ -72,7 +72,7 @@
     (if *super-modifier*
 	(setf (key-super-modifier key-chord) t))
     
-    (setf (key-character key-chord) key-character-string)
+    (setf (key-character key-chord) key)
     (push key-chord *key-sequence-stack*)))
 
 (defun consume-key-sequence ()
