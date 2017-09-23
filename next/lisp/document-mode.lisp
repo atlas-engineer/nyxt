@@ -2,7 +2,6 @@
 
 (in-package :next)
 
-(defvar document-mode-hook nil)
 (defvar document-mode-map (make-hash-table :test 'equalp))
 
 (defclass document-mode (mode)

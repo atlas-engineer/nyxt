@@ -2,7 +2,6 @@
 
 (in-package :next)
 
-(defvar minibuffer-mode-hook nil)
 (defvar minibuffer-mode-map (make-hash-table :test 'equalp))
 
 (defclass minibuffer-mode (mode) ())

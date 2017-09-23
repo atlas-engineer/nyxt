@@ -9,7 +9,6 @@
   data
   qitem)
 
-(defvar tree-history-mode-hook nil)
 (defvar tree-history-mode-map (make-hash-table :test 'equalp))
 
 (defclass tree-history-mode (mode) ())
