@@ -1,7 +1,82 @@
-* Note: Manual Incomplete
+Note: Manual Incomplete
+
 * nEXT Browser
 Next Browser is the ultimate nEXT generation browsing experience
-designed for power users.
-* Introduction
-You are reading about nEXT, the fastest productivity browser.
+designed for power users. 100% of the functions and classes are
+exposed to the end-user allowing for infinite customization.
+
+** History
+History is represented as a tree that you can traverse. More complex
+than the "forwards-backwards" abstraction found in other browsers,
+the tree makes sure you never lose track of where you've been.
+
+In the example below, the User performs the following actions:
+
+1. Starts page ~Athens~
+2. Visits page ~Ancient Greek~
+3. Returns to page ~Athens~
+4. Visits page ~Classical Athens~
+5. Returns to page ~Athens~
+6. Executes ~forwards~ keybind in history
+
+It is at this point that a normal browser would NOT be able to
+navigate you forwards to your visit of ~Ancient Greek~. Instead of
+erasing your history, nEXT offers smart navigation and prompts the
+user. Do you wish to go forwards to ~Ancient Greek~ or to
+~Classical Athens~?
+
+The standard keybindings for forward-backward navigation are:
+
+1. C-f: Navigate Forward
+2. C-b: Navigate Backward
+3. S-f: Navigate Forward Tree
+4. S-b: Navigate Backward
+
+By using navigate forward tree you will be prompted for which branch
+you'd like to visit as in the example above. The simple navigate
+forward command will simply visit the first child of the current node
+in the tree.
+
+** Tabs
+Tabs are represented by a concept known as "buffers". Buffers are
+known in other GUIs as Views. Unlike in other GUI systems, the model
+for a view cannot dynamically change. This is true within nEXT. Given
+a buffer composed of a web-view and a document-mode model, one can
+dynamically set the model to any other mode. This enables run-time
+specialization and modification of widget behavior.
+
+The standard keybindigns for tab management (within document-mode)
+are:
+
+1. C-x b: Switch Tab
+2. S-l: New document-mode tab
+3. C-l: Change URL of current document
+
+* Customization
+All customization begins by creating a ~/.next.d/init.lisp file.
+Within your init file you can write your own keybindings and
+customizations.
+
+The first line of an init file should contain the following package
+declaration in order to modify nEXT specific variables and functions:
+
+#+NAME: package
+#+BEGIN_SRC lisp
+(in-package :next)
+#+END_SRC
+
+Following the package declaration, you can write or override any
+functions and variables.
+
+** Keybinding
+Keys are defined with the following syntax:
+
+#+NAME: define key
+#+BEGIN_SRC lisp
+(define-key global-map (kbd "C-x o") #'function-example)
+#+END_SRC
+
+in the previous example, the sequence of keys: "control+x", "o" would
+invoke the "function-example"
+
 
