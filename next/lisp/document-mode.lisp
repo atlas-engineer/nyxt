@@ -12,12 +12,15 @@
    (history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
-  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 scroll-distance))
+  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*)))
+	    0 scroll-distance))
 
 (defun scroll-up ()
-  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 (- scroll-distance)))
+  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*)))
+	    0 (- scroll-distance)))
 
 (defun history-backwards ()
+  ;; move up to parent node to iterate backwards in history tree
   (let ((parent (node-parent (mode-history-active-node (buffer-mode *active-buffer*)))))
     (when parent
 	(set-url (node-data parent)))))
@@ -29,13 +32,14 @@
       (set-url (node-data (nth 0 children))))))
 
 (defun history-forwards-query (input)
-  ;; move forwards in history querying if more than one child
+  ;; move forwards in history querying if more than one child present
   (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
     (loop for child in children do
 	 (when (equalp (node-data child) input)
 	   (set-url (node-data child))))))
 
 (defun history-fowards-query-complete (input)
+  ;; provide completion candidates to the history-forwards-query function
   (let ((children (node-children (mode-history-active-node (buffer-mode *minibuffer-callback-buffer*)))))
     (when children
       (fuzzy-match input (mapcar #'node-data children)))))
@@ -88,7 +92,7 @@
   (let ((url (quri:uri input-url)))
     (if (quri:uri-scheme url)
         input-url
-        (concatenate 'string "http://" input-url ))))
+        (concatenate 'string "http://" input-url))))
 
 (defun document-mode ()
   "Base mode for interacting with documents"

@@ -202,7 +202,8 @@ two minor releases following major release 1.0.
 CLOSED: [2017-09-24 Sun 15:38]
 - Write basic information and configuration within the manual as a
   "users" guide
-*** EXEC Improve in Code Documentation & Architecture
+*** DONE Improve in Code Documentation & Architecture
+CLOSED: [2017-09-24 Sun 18:57]
 - Create much clearer picture of how everything functions together,
   make cleaner architecture diagrams showing how everything links
   together
