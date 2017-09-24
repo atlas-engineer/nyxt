@@ -3,6 +3,8 @@
 (in-package :next)
 
 (defvar document-mode-map (make-hash-table :test 'equalp))
+(defvar scroll-distance 30
+  "The distance scroll-down or scroll-up will scroll.")
 
 (defclass document-mode (mode)
   ((history-tree :accessor mode-history-tree :initform ())
@@ -10,10 +12,10 @@
    (history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
-  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 30))
+  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 scroll-distance))
 
 (defun scroll-up ()
-  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 -30))
+  (|scroll| (|mainFrame| (|page| (buffer-view *active-buffer*))) 0 (- scroll-distance)))
 
 (defun history-backwards ()
   (let ((parent (node-parent (mode-history-active-node (buffer-mode *active-buffer*)))))
