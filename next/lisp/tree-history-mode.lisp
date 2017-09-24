@@ -30,8 +30,7 @@
 		(queues:qpush queue child)
 		(when (not (node-qitem child))
 		  (setf (node-qitem child) (qnew "QStandardItem(QString)" (node-data child))))
-		(|appendRow| (node-qitem node) (node-qitem child))
-		(print (node-data child)))))))
+		(|appendRow| (node-qitem node) (node-qitem child)))))))
 
 (defun tree-history-mode ()
   "Base mode for representing the history of a buffer"
