@@ -76,7 +76,16 @@ Keys are defined with the following syntax:
 (define-key global-map (kbd "C-x o") #'function-example)
 #+END_SRC
 
-in the previous example, the sequence of keys: "control+x", "o" would
-invoke the "function-example"
+in the previous example, the sequence of keys: ~control+x~, lift hands
+off control key, ~o~ would invoke the "function-example". Additionally
+important to note is that the key sequence ~control+x~ is now
+registered as a special type keybinding, a prefix. A prefix key can,
+but should not be mapped. If a subsequent mapping was to bind
+~control+x~, it would be unclear to nEXT what keybinding invocation
+the user is trying to type.
 
+The following keys exist as special keys:
 
+1. ~C~: Control
+2. ~S~: Super (Windows key, Command Key)
+3. ~M~: Meta (Alt key, Option Key)
