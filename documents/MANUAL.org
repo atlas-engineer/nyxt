@@ -27,10 +27,10 @@ user. Do you wish to go forwards to ~Ancient Greek~ or to
 
 The standard keybindings for forward-backward navigation are:
 
-1. C-f: Navigate Forward
-2. C-b: Navigate Backward
-3. S-f: Navigate Forward Tree
-4. S-b: Navigate Backward
+1. ~C-f~: Navigate Forward
+2. ~C-b~: Navigate Backward
+3. ~S-f~: Navigate Forward Tree
+4. ~S-b~: Navigate Backward
 
 By using navigate forward tree you will be prompted for which branch
 you'd like to visit as in the example above. The simple navigate
@@ -48,12 +48,12 @@ specialization and modification of widget behavior.
 The standard keybindigns for tab management (within document-mode)
 are:
 
-1. C-x b: Switch Tab
-2. S-l: New document-mode tab
-3. C-l: Change URL of current document
+1. ~C-x b~: Switch Tab
+2. ~S-l~: New document-mode tab
+3. ~C-l~: Change URL of current document
 
 * Customization
-All customization begins by creating a ~/.next.d/init.lisp file.
+All customization begins by creating a =~/.next.d/init.lisp= file.
 Within your init file you can write your own keybindings and
 customizations.
 
