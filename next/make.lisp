@@ -21,10 +21,10 @@
                lib-name))
 
 ;; execute qmake
-(ext:run-program "qmake" nil)
+(ext:run-program "qmake" nil :output t)
 
 ;; execute make
-(ext:run-program "make" nil)
+(ext:run-program "make" nil :output t)
 
 
 ;;;; Cleanup Operations ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

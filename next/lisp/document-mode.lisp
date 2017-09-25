@@ -89,8 +89,8 @@
 
 (defun normalize-url (input-url)
   "Will convert example.com to http://www.example.com"
-  (let ((url (quri:uri input-url)))
-    (if (quri:uri-scheme url)
+  (let ((url (puri:parse-uri input-url)))
+    (if (puri:uri-scheme url)
         input-url
         (concatenate 'string "http://" input-url))))
 
