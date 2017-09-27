@@ -18,8 +18,6 @@ int catch_all_qexec() {
 
 int main(int argc, char** argv) {
 
-    EQL::ini(argv);
-
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // for Qt WebEngine
     QApplication qapp(argc, argv);
 
