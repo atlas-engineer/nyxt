@@ -18,18 +18,14 @@ int catch_all_qexec() {
 
 int main(int argc, char** argv) {
 
-    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // for Qt WebEngine
+    EQL::ini(argv);
+
     QApplication qapp(argc, argv);
 
     QTextCodec* utf8 = QTextCodec::codecForName("UTF-8");
     QTextCodec::setCodecForLocale(utf8);
 
     EQL eql;
-
-#ifdef Q_OS_WIN
-    // print output would crash program
-    eql.ignoreIOStreams();
-#endif
 
     eql.exec(init_lib_NEXT__ALL_SYSTEMS);
 
