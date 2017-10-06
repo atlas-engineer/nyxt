@@ -195,19 +195,7 @@ two minor releases following major release 1.0.
 
 ** 0.04
 *** TODO Add REPL
-- Add built-in REPL for simple usage
-
-** TODO 0.03
-*** DONE Write Manual Base
-CLOSED: [2017-09-24 Sun 15:38]
-- Write basic information and configuration within the manual as a
-  "users" guide
-*** DONE Improve in Code Documentation & Architecture
-CLOSED: [2017-09-24 Sun 18:57]
-- Create much clearer picture of how everything functions together,
-  make cleaner architecture diagrams showing how everything links
-  together
-- Document all functions
+- Add built-in REPL for simple usage outside of terminal
 *** TODO Create Page class with meta information about page
 - Use this as data field in tree
 - Use a method from this class for persistence
@@ -223,6 +211,17 @@ CLOSED: [2017-09-24 Sun 18:57]
   things (e.g. date, include exclude regex, etc)
 *** TODO Window System
 - Emacs like window system
+** TODO 0.03
+*** DONE Write Manual Base
+CLOSED: [2017-09-24 Sun 15:38]
+- Write basic information and configuration within the manual as a
+  "users" guide
+*** DONE Improve in Code Documentation & Architecture
+CLOSED: [2017-09-24 Sun 18:57]
+- Create much clearer picture of how everything functions together,
+  make cleaner architecture diagrams showing how everything links
+  together
+- Document all functions
 *** DONE OSX Compilation
 CLOSED: [2017-10-05 Thu 23:45]
 - Modify make.lisp script to create a binary that grabs all of the
@@ -235,6 +234,9 @@ CLOSED: [2017-10-05 Thu 23:45]
 - Use install_name_tool to update the now copied frameworks in 
   `next.app/Contents/Frameworks`
 - For more info please see: http://doc.qt.io/qt-5/osx-deployment.html
+*** DONE Kill Buffer
+CLOSED: [2017-10-05 Thu 23:48]
+- Add function to kill buffer, bind to C-k
 ** DONE 0.02
 CLOSED: [2017-09-21 Thu 00:15]
 *** DONE History Tree Mode

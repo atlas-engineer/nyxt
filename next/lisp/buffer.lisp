@@ -31,11 +31,16 @@
   (|setCurrentWidget| *stack-layout* (buffer-view *active-buffer*)))
 
 (defun switch-buffer (input)
-  (loop for buffer in *buffers* do
-       (when (equalp (buffer-name buffer) input)
-	 (set-visible-active-buffer buffer))))
+  (let ((buffer (find-if #'(lambda (element) (equalp input (buffer-name element))) *buffers*)))
+    (set-visible-active-buffer buffer)))
 
-(defun switch-buffer-complete (input)
+(defun buffer-complete (input)
   (fuzzy-match input (mapcar #'buffer-name *buffers*)))
 
-(define-key global-map (kbd "C-x b") (:input-complete switch-buffer switch-buffer-complete))
+(defun delete-buffer (input)
+  (let ((buffer (find-if #'(lambda (element) (equalp input (buffer-name element))) *buffers*)))
+    (qdelete (buffer-view buffer))
+    (delete buffer *buffers*)))
+
+(define-key global-map (kbd "C-x b") (:input-complete switch-buffer buffer-complete))
+(define-key global-map (kbd "C-x k") (:input-complete delete-buffer buffer-complete))
