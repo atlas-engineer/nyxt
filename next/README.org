@@ -223,7 +223,8 @@ CLOSED: [2017-09-24 Sun 18:57]
   things (e.g. date, include exclude regex, etc)
 *** TODO Window System
 - Emacs like window system
-*** TODO OSX Compilation
+*** DONE OSX Compilation
+CLOSED: [2017-10-05 Thu 23:45]
 - Modify make.lisp script to create a binary that grabs all of the
   dependencies and creates a executable that can be deployed on OSX
 - Use `macdeployqt` to copy the core qt libraries to
