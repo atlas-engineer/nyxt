@@ -5,6 +5,15 @@ Next Browser is the ultimate nEXT generation browsing experience
 designed for power users. 100% of the functions and classes are
 exposed to the end-user allowing for infinite customization.
 
+** Contents                                                            :TOC:
+- [[#next-browser][nEXT Browser]]
+- [[#basics][Basics]]
+  - [[#history][History]]
+  - [[#tabs-buffers][Tabs (Buffers)]]
+- [[#customization][Customization]]
+  - [[#keybinding][Keybinding]]
+
+* Basics
 ** History
 History is represented as a tree that you can traverse. More complex
 than the "forwards-backwards" abstraction found in other browsers,
@@ -37,7 +46,7 @@ you'd like to visit as in the example above. The simple navigate
 forward command will simply visit the first child of the current node
 in the tree.
 
-** Tabs [Buffers]
+** Tabs (Buffers)
 Tabs are represented by a concept known as "buffers". Buffers are
 known in other GUIs as Views. Unlike in other GUI systems, the model
 for a view cannot dynamically change. This is true within nEXT. Given
@@ -52,7 +61,6 @@ are:
 2. ~C-x k~: Kill Tab
 3. ~S-l~: New document-mode tab
 4. ~C-l~: Change URL of current document
-
 * Customization
 All customization begins by creating a =~/.next.d/init.lisp= file.
 Within your init file you can write your own keybindings and
