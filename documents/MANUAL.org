@@ -37,7 +37,7 @@ you'd like to visit as in the example above. The simple navigate
 forward command will simply visit the first child of the current node
 in the tree.
 
-** Tabs
+** Tabs [Buffers]
 Tabs are represented by a concept known as "buffers". Buffers are
 known in other GUIs as Views. Unlike in other GUI systems, the model
 for a view cannot dynamically change. This is true within nEXT. Given
@@ -49,8 +49,9 @@ The standard keybindigns for tab management (within document-mode)
 are:
 
 1. ~C-x b~: Switch Tab
-2. ~S-l~: New document-mode tab
-3. ~C-l~: Change URL of current document
+2. ~C-x k~: Kill Tab
+3. ~S-l~: New document-mode tab
+4. ~C-l~: Change URL of current document
 
 * Customization
 All customization begins by creating a =~/.next.d/init.lisp= file.
