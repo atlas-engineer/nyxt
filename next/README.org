@@ -211,7 +211,8 @@ two minor releases following major release 1.0.
   things (e.g. date, include exclude regex, etc)
 *** TODO Window System
 - Emacs like window system
-** TODO 0.03
+** DONE 0.03
+CLOSED: [2017-10-05 Thu 23:50]
 *** DONE Write Manual Base
 CLOSED: [2017-09-24 Sun 15:38]
 - Write basic information and configuration within the manual as a
