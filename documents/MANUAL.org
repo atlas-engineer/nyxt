@@ -48,13 +48,13 @@ in the tree.
 
 ** Tabs (Buffers)
 Tabs are represented by a concept known as "buffers". Buffers are
-known in other GUIs as Views. Unlike in other GUI systems, the model
-for a view cannot dynamically change. This is true within nEXT. Given
-a buffer composed of a web-view and a document-mode model, one can
-dynamically set the model to any other mode. This enables run-time
-specialization and modification of widget behavior.
+known in other GUIs as Views. Unlike in other GUI systems, the
+controller for a view can dynamically change. Given a buffer composed
+of a web-view and a document-mode model, one can dynamically set the
+model to any other mode. This enables run-time specialization and
+modification of widget behavior.
 
-The standard keybindigns for tab management (within document-mode)
+The standard keybindings for tab management (within document-mode)
 are:
 
 1. ~C-x b~: Switch Tab
