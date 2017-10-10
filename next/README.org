@@ -5,6 +5,7 @@
   - [[#running-next][Running nEXT]]
   - [[#compiling-next-under-active-development][Compiling nEXT (under active development)]]
 - [[#release-timeline][Release Timeline]]
+  - [[#005][0.05]]
   - [[#004][0.04]]
   - [[#003][0.03]]
   - [[#002][0.02]]
@@ -193,13 +194,17 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
+** 0.05
+*** TODO Window System
+- Emacs like window system
 ** 0.04
 *** TODO Add REPL
-- Add built-in REPL for simple usage outside of terminal
+- Add slime support
 *** TODO Create Page class with meta information about page
 - Use this as data field in tree
 - Use a method from this class for persistence
-*** TODO Bookmarks
+*** DONE Bookmarks
+CLOSED: [2017-10-10 Tue 01:06]
 - Bookmarks will be stored in a db (possibly sqlite) with information
   about them, they'll be navigable via a completion buffer
 *** TODO History
@@ -209,8 +214,6 @@ two minor releases following major release 1.0.
 **** TODO History is searchable
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
-*** TODO Window System
-- Emacs like window system
 ** DONE 0.03
 CLOSED: [2017-10-05 Thu 23:50]
 *** DONE Write Manual Base
