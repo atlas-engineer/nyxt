@@ -22,6 +22,13 @@
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
 
+(defun bookmark-delete (input)
+    (let ((db (sqlite:connect
+	       (truename (probe-file "~/.next.d/bookmark.db")))))
+      (sqlite:execute-non-query
+       db "delete from bookmarks where url = ?" input)
+      (sqlite:disconnect db)))
+
 (defun bookmark-complete (input)
   (let* ((db
 	  (sqlite:connect (truename (probe-file "~/.next.d/bookmark.db"))))
@@ -32,7 +39,9 @@
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))
 
-(define-key document-mode-map (kbd "C-s")
+(define-key global-map (kbd "S-s k")
+  (:input-complete bookmark-delete bookmark-complete))
+(define-key document-mode-map (kbd "S-s o")
   (:input-complete set-url bookmark-complete))
-(define-key document-mode-map (kbd "S-s") #'bookmark-current-page)
+(define-key document-mode-map (kbd "S-s s") #'bookmark-current-page)
 (initialize-bookmark-db)
