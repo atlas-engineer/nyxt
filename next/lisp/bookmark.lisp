@@ -5,7 +5,7 @@
 (defun initialize-bookmark-db ()
   "Create a databas file if necessary and make a table for bookmarks"
   (unless (probe-file "~/.next.d/bookmark.db")
-    (with-open-file (p "~/.next.d/bookmark.db" :if-does-not-exist :create))
+    (close (open "~/.next.d/bookmark.db" :direction :probe :if-does-not-exist :create))
     (let ((db (sqlite:connect
 	       (truename (probe-file "~/.next.d/bookmark.db")))))
       (sqlite:execute-non-query
