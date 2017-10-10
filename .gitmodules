@@ -1,0 +1,3 @@
+[submodule "Environment"]
+	path = Environment
+	url = git@github.com:nEXT-Browser/Environment.git
