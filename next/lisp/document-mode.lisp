@@ -117,4 +117,4 @@
 (define-key document-mode-map (kbd "C-p") #'scroll-up)
 (define-key document-mode-map (kbd "C-n") #'scroll-down)
 (define-key document-mode-map (kbd "C-l") (:input set-url))
-(define-key document-mode-map (kbd "S-l") (:input set-url-new-buffer))
+(define-key global-map (kbd "S-l") (:input set-url-new-buffer))
