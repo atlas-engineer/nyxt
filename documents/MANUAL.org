@@ -10,6 +10,7 @@ exposed to the end-user allowing for infinite customization.
 - [[#basics][Basics]]
   - [[#history][History]]
   - [[#tabs-buffers][Tabs (Buffers)]]
+  - [[#bookmarks][Bookmarks]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
 
@@ -61,6 +62,17 @@ are:
 2. ~C-x k~: Kill Tab
 3. ~S-l~: New document-mode tab
 4. ~C-l~: Change URL of current document
+** Bookmarks
+Bookmarks are located in a database located in
+=~/.next.d/bookmark.db=. This directory and database will be created
+automatically for you. The bookmark database is a SQLITE database that
+contains one table with two columns: id, url. In order to navigate
+and manage your bookmarks, a few functions are provided:
+
+1. ~S-s k~: Delete Bookmark
+2. ~S-s o~: Open Bookmark
+3. ~S-s s~: Bookmark Current Page
+
 * Customization
 All customization begins by creating a =~/.next.d/init.lisp= file.
 Within your init file you can write your own keybindings and
