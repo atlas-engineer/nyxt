@@ -6,8 +6,6 @@
 
 (in-package #:next)
 
-(initialize-bookmark-db)
-
 ;; start nEXT
 (start)
 

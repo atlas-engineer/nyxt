@@ -13,6 +13,7 @@
 (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun start ()
+  (ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
   (setf *window* (qnew "QWidget" "windowTitle" "nEXT")
          *root-layout* (qnew "QGridLayout")
          *stack-layout* (qnew "QStackedLayout"))
@@ -45,6 +46,7 @@
   (define-key document-mode-map (kbd "C-l") (:input set-url))
   (define-key global-map (kbd "S-l") (:input set-url-new-buffer))
 
+  (initialize-bookmark-db)
   (define-key global-map (kbd "S-s k")
     (:input-complete bookmark-delete bookmark-complete))
   (define-key document-mode-map (kbd "S-s o")

@@ -3,7 +3,7 @@
 (in-package :next)
 
 (defun initialize-bookmark-db ()
-  "Create a databas file if necessary and make a table for bookmarks"
+  "Create a database file if necessary and make a table for bookmarks"
   (unless (probe-file "~/.next.d/bookmark.db")
     (close (open "~/.next.d/bookmark.db" :direction :probe :if-does-not-exist :create))
     (let ((db (sqlite:connect
