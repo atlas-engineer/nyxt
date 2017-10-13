@@ -23,13 +23,7 @@
    ;; arguments for grid layout: row, column, rowspan, colspan
   (|addLayout| *root-layout* *stack-layout*              0 0 1 1)
   (|addWidget| *root-layout* (buffer-view *minibuffer*)  1 0 1 1)
-  
+
   (|hide| (buffer-view *minibuffer*))
   (|setLayout| *window* *root-layout*)
   (|show| *window*))
-
-;; start nEXT
-(start)
-
-;; load the user configuration if it exists
-(load "~/.next.d/init.lisp" :if-does-not-exist nil)
