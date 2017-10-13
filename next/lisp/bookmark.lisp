@@ -44,4 +44,5 @@
 (define-key document-mode-map (kbd "S-s o")
   (:input-complete set-url bookmark-complete))
 (define-key document-mode-map (kbd "S-s s") #'bookmark-current-page)
+(ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
 (initialize-bookmark-db)
