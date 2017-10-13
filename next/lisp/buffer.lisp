@@ -41,6 +41,3 @@
   (let ((buffer (find-if #'(lambda (element) (equalp input (buffer-name element))) *buffers*)))
     (qdelete (buffer-view buffer))
     (delete buffer *buffers*)))
-
-(define-key global-map (kbd "C-x b") (:input-complete switch-buffer buffer-complete))
-(define-key global-map (kbd "C-x k") (:input-complete delete-buffer buffer-complete))

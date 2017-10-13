@@ -38,9 +38,3 @@
 	   (format nil "%~a%" input))))
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))
-
-(define-key global-map (kbd "S-s k")
-  (:input-complete bookmark-delete bookmark-complete))
-(define-key document-mode-map (kbd "S-s o")
-  (:input-complete set-url bookmark-complete))
-(define-key document-mode-map (kbd "S-s s") #'bookmark-current-page)

@@ -3,7 +3,7 @@
 ;;;; keymaps are executed in priority from most specific to least
 ;;;; that is, the order of execution for keymaps is:
 ;;;; global-map --> major-mode-map --> minor-mode-maps
-;;;; 
+;;;;
 ;;;; keys are defined with the following syntax:
 ;;;; (define-key global-map (kbd "C-x o") #'function-reference)
 ;;;; in the previous example, the sequence of keys:
@@ -71,7 +71,7 @@
 	(setf (key-meta-modifier key-chord) t))
     (when *super-modifier*
 	(setf (key-super-modifier key-chord) t))
-    
+
     (setf (key-character key-chord) key)
     (push key-chord *key-sequence-stack*)))
 
@@ -133,5 +133,6 @@
   	    (push key-chord key-sequence)))
     key-sequence))
 
-;;; set standard keybindings
-(define-key global-map (kbd "C-x C-c") #'qquit)
+(defun initialize-keymap ()
+  ;;; set standard keybindings
+  (define-key global-map (kbd "C-x C-c") #'qquit))
