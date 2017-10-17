@@ -62,4 +62,7 @@
 
   (|hide| (buffer-view *minibuffer*))
   (|setLayout| *window* *root-layout*)
-  (|show| *window*))
+  (|show| *window*)
+  
+  ;; load the user configuration if it exists
+  (load "~/.next.d/init.lisp" :if-does-not-exist nil))
