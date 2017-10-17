@@ -3,7 +3,7 @@
 (in-package :next)
 
 (defun initialize-bookmark-db ()
-  "Create a databas file if necessary and make a table for bookmarks"
+  "Create a database file if necessary and make a table for bookmarks"
   (unless (probe-file "~/.next.d/bookmark.db")
     (close (open "~/.next.d/bookmark.db" :direction :probe :if-does-not-exist :create))
     (let ((db (sqlite:connect
@@ -38,11 +38,3 @@
 	   (format nil "%~a%" input))))
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))
-
-(define-key global-map (kbd "S-s k")
-  (:input-complete bookmark-delete bookmark-complete))
-(define-key document-mode-map (kbd "S-s o")
-  (:input-complete set-url bookmark-complete))
-(define-key document-mode-map (kbd "S-s s") #'bookmark-current-page)
-(ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
-(initialize-bookmark-db)

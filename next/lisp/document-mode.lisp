@@ -107,14 +107,3 @@
 	      (lambda (ok) (add-or-traverse-history mode)))
     ;; return instance of mode
     mode))
-
-(define-key document-mode-map (kbd "S-t") #'history-tree-show)
-(define-key document-mode-map (kbd "S-f")
-  (:input-complete history-forwards-query history-fowards-query-complete))
-(define-key document-mode-map (kbd "S-b") #'history-backwards)
-(define-key document-mode-map (kbd "C-f") #'history-forwards)
-(define-key document-mode-map (kbd "C-b") #'history-backwards)
-(define-key document-mode-map (kbd "C-p") #'scroll-up)
-(define-key document-mode-map (kbd "C-n") #'scroll-down)
-(define-key document-mode-map (kbd "C-l") (:input set-url))
-(define-key global-map (kbd "S-l") (:input set-url-new-buffer))

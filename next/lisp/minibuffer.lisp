@@ -8,15 +8,15 @@
 
 (defvar *minibuffer* nil
   "A variable to store the mini-buffer")
-(defparameter *minibuffer-prompt* (qnew "QLabel" "text" "input:")
+(defparameter *minibuffer-prompt* nil
   "A variable to store the minibuffer prompt")
-(defparameter *minibuffer-input* (qnew "QLineEdit")
+(defparameter *minibuffer-input* nil
   "A variable to store the current minibuffer input")
 (defparameter *minibuffer-completion-function* nil
   "A variable to store the function used to generate completion candidates")
-(defparameter *minibuffer-completion-model* (qnew "QStringListModel")
+(defparameter *minibuffer-completion-model* nil
   "A variable to store the model which updates the QListView")
-(defparameter *minibuffer-completion* (qnew "QListView")
+(defparameter *minibuffer-completion* nil
   "A variable to store the current minibuffer completion candidates")
 (defparameter *minibuffer-callback* nil
   "A variable to store the function upon completion of the minibuffer read")
@@ -33,7 +33,7 @@
 
 (defun return-input ()
   (set-active-buffer *minibuffer-callback-buffer*)
-  (if *minibuffer-completion-function* 
+  (if *minibuffer-completion-function*
       (progn
 	(funcall *minibuffer-callback*
 		 (nth 0 (funcall *minibuffer-completion-function* (|text| *minibuffer-input*)))))
@@ -53,7 +53,7 @@
     (|addWidget| layout *minibuffer-input*       0 1 1 15)
     (|addWidget| layout *minibuffer-completion*  1 1 1 15)
     (|setLayout| widget layout)
-    (|setModel| *minibuffer-completion* *minibuffer-completion-model*)    
+    (|setModel| *minibuffer-completion* *minibuffer-completion-model*)
     (make-instance 'minibuffer-mode
      :name "minibuffer"
      :keymap minibuffer-mode-map
@@ -67,7 +67,3 @@
     (let ((candidates (funcall *minibuffer-completion-function* (|text| *minibuffer-input*))))
       (|setStringList| *minibuffer-completion-model* candidates)))
   nil)
-
-(define-key minibuffer-mode-map (kbd "Return") #'return-input)
-(define-key minibuffer-mode-map (kbd "C-g") #'cancel-input)
-(define-key minibuffer-mode-map (kbd "Escape") #'cancel-input)
