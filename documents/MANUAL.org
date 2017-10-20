@@ -1,4 +1,4 @@
-Note: Manual Incomplete
+#+TITLE: nEXT Browser User Manual
 
 * nEXT Browser
 Next Browser is the ultimate nEXT generation browsing experience
