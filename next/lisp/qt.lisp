@@ -2,6 +2,15 @@
 
 (in-package :next)
 
+(defun set-visible-view (view)
+  (|setCurrentWidget| *stack-layout* view))
+
+(defun add-to-stack-layout (view)
+  (|addWidget| *stack-layout* view))
+
+(defun delete-view (view)
+  (qdelete view))
+
 ;; define parameters for modifiers
 (defparameter *control-key* 16777249) ; OSX: command
 (defparameter *meta-key* 16777250)    ; OSX: control
