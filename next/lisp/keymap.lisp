@@ -31,34 +31,6 @@
   meta-modifier
   super-modifier)
 
-(defun key-press (obj event)
-  ;; Invoked upon key-press
-  (declare (ignore obj)) ; supress unused warnings
-  (let ((key (|key| event)))
-    (cond
-      ((equalp key *control-key*)
-       (setf *control-modifier* t))
-      ((equalp key *meta-key*)
-       (setf *meta-modifier* t))
-      ((equalp key *super-key*)
-       (setf *super-modifier* t))
-      (t (progn
-	   (push-key-chord key)
-	   (consume-key-sequence))))))
-
-(defun key-release (obj event)
-  ;; Invoked upon key-release
-  (declare (ignore obj)) ; supress unused warnings
-  (let ((key (|key| event)))
-    (cond
-      ((equalp key *control-key*)
-       (setf *control-modifier* nil))
-      ((equalp key *meta-key*)
-       (setf *meta-modifier* nil))
-      ((equalp key *super-key*)
-       (setf *super-modifier* nil))
-      (t (return-from key-release)))))
-
 (defun push-key-chord (key)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
@@ -71,7 +43,6 @@
 	(setf (key-meta-modifier key-chord) t))
     (when *super-modifier*
 	(setf (key-super-modifier key-chord) t))
-
     (setf (key-character key-chord) key)
     (push key-chord *key-sequence-stack*)))
 
@@ -132,7 +103,3 @@
   			     (gethash key-character-string *character->keycode*)))))
   	    (push key-chord key-sequence)))
     key-sequence))
-
-(defun initialize-keymap ()
-  ;;; set standard keybindings
-  (define-key global-map (kbd "C-x C-c") #'qquit))

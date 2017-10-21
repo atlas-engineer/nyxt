@@ -2,6 +2,8 @@
 
 (in-package :next)
 
+(qrequire :webkit)
+
 (defun set-visible-view (view)
   (|setCurrentWidget| *stack-layout* view))
 
@@ -11,11 +13,41 @@
 (defun delete-view (view)
   (qdelete view))
 
-;; define parameters for modifiers
 (defparameter *control-key* 16777249) ; OSX: command
 (defparameter *meta-key* 16777250)    ; OSX: control
 (defparameter *alt-key* 16777251)     ; OSX: option
 (defparameter *super-key* 16777249)   ; OSX: command
+
+(qadd-event-filter nil |QEvent.KeyPress| 'key-press)
+(qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
+
+(defun key-press (obj event)
+  ;; Invoked upon key-press
+  (declare (ignore obj)) ; supress unused warnings
+  (let ((key (|key| event)))
+    (cond
+      ((equalp key *control-key*)
+       (setf *control-modifier* t))
+      ((equalp key *meta-key*)
+       (setf *meta-modifier* t))
+      ((equalp key *super-key*)
+       (setf *super-modifier* t))
+      (t (progn
+	   (push-key-chord key)
+	   (consume-key-sequence))))))
+
+(defun key-release (obj event)
+  ;; Invoked upon key-release
+  (declare (ignore obj)) ; supress unused warnings
+  (let ((key (|key| event)))
+    (cond
+      ((equalp key *control-key*)
+       (setf *control-modifier* nil))
+      ((equalp key *meta-key*)
+       (setf *meta-modifier* nil))
+      ((equalp key *super-key*)
+       (setf *super-modifier* nil))
+      (t (return-from key-release)))))
 
 ;; create a character->keycode hashmap
 (defparameter *character->keycode* (make-hash-table :test 'equalp))

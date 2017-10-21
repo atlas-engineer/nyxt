@@ -2,15 +2,9 @@
 
 (in-package :next)
 
-(qrequire :webkit)
-
 (defparameter *window* nil)
 (defparameter *root-layout* nil)
 (defparameter *stack-layout* nil)
-
-;; Used by QT to capture key presses
-(qadd-event-filter nil |QEvent.KeyPress| 'key-press)
-(qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun start ()
   (ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
@@ -26,8 +20,8 @@
   (setf *history-tree* (generate-new-buffer "history-tree" (tree-history-mode)))
 
   (initialize-keycodes)
-  (initialize-keymap)
-
+  
+  (define-key global-map (kbd "C-x C-c") #'qquit)
   (define-key minibuffer-mode-map (kbd "Return") #'return-input)
   (define-key minibuffer-mode-map (kbd "C-g") #'cancel-input)
   (define-key minibuffer-mode-map (kbd "Escape") #'cancel-input)
