@@ -82,6 +82,9 @@
   (|setText| *minibuffer-input* "")
   (|hide| (buffer-view *minibuffer*)))
 
+(defun minibuffer-get-input ()
+  (|text| *minibuffer-input*))
+
 (defun key-press (obj event)
   ;; Invoked upon key-press
   (declare (ignore obj)) ; supress unused warnings

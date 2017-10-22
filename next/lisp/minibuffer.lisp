@@ -32,10 +32,9 @@
 (defun return-input ()
   (set-active-buffer *minibuffer-callback-buffer*)
   (if *minibuffer-completion-function*
-      (progn
-	(funcall *minibuffer-callback*
-		 (nth 0 (funcall *minibuffer-completion-function* (|text| *minibuffer-input*)))))
-      (funcall *minibuffer-callback* (|text| *minibuffer-input*)))
+      (funcall *minibuffer-callback*
+	       (nth 0 (funcall *minibuffer-completion-function* (minibuffer-get-input))))
+      (funcall *minibuffer-callback* (minibuffer-get-input)))
   (minibuffer-hide))
 
 (defun cancel-input ()
