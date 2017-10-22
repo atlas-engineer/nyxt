@@ -44,16 +44,10 @@
 
 (defun minibuffer-mode ()
   "Base mode for input"
-  (let ((widget (qnew "QWidget")) (layout (qnew "QGridLayout")))
-    (|addWidget| layout *minibuffer-prompt*      0 0 1 5)
-    (|addWidget| layout *minibuffer-input*       0 1 1 15)
-    (|addWidget| layout *minibuffer-completion*  1 1 1 15)
-    (|setLayout| widget layout)
-    (|setModel| *minibuffer-completion* *minibuffer-completion-model*)
-    (make-instance 'minibuffer-mode
-     :name "minibuffer"
-     :keymap minibuffer-mode-map
-     :view widget)))
+  (make-instance 'minibuffer-mode
+		 :name "minibuffer"
+		 :keymap minibuffer-mode-map
+		 :view (make-minibuffer)))
 
 (qadd-event-filter *minibuffer-input* |QEvent.KeyRelease| 'update-candidates)
 (defun update-candidates (obj event)

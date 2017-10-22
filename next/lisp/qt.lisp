@@ -9,12 +9,9 @@
   (initialize-keycodes))
 
 (defun start-gui ()
-  (defparameter *window* nil)
-  (defparameter *root-layout* nil)
-  (defparameter *stack-layout* nil)
-  (setf *window* (qnew "QWidget" "windowTitle" "nEXT")
-	*root-layout* (qnew "QGridLayout")
-	*stack-layout* (qnew "QStackedLayout"))
+  (defparameter *window* (qnew "QWidget" "windowTitle" "nEXT"))
+  (defparameter *root-layout* (qnew "QGridLayout"))
+  (defparameter *stack-layout* (qnew "QStackedLayout"))
   (setf *minibuffer-prompt* (qnew "QLabel" "text" "input:")
         *minibuffer-input* (qnew "QLineEdit")
         *minibuffer-completion-model* (qnew "QStringListModel")
@@ -41,6 +38,9 @@
 (defun delete-view (view)
   (qdelete view))
 
+(defun make-web-view ()
+  (qnew "QWebView"))
+
 (defun web-view-scroll-down (view)
   (|scroll| (|mainFrame| (|page| view))
 	    0 scroll-distance))
@@ -60,8 +60,14 @@
 (defun web-view-get-url (view)
   (|toString| (|url| view)))
 
-(defun make-web-view ()
-  (qnew "QWebView"))
+(defun make-minibuffer ()
+  (let ((widget (qnew "QWidget")) (layout (qnew "QGridLayout")))
+    (|addWidget| layout *minibuffer-prompt*      0 0 1 5)
+    (|addWidget| layout *minibuffer-input*       0 1 1 15)
+    (|addWidget| layout *minibuffer-completion*  1 1 1 15)
+    (|setLayout| widget layout)
+    (|setModel| *minibuffer-completion* *minibuffer-completion-model*)
+    widget))
 
 (defun minibuffer-show ()
   (|show| (buffer-view *minibuffer*))
