@@ -6,6 +6,10 @@
   (qrequire :webkit)
   (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
   (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
+  (defparameter *control-key* 16777249) ; OSX: command
+  (defparameter *meta-key* 16777250)    ; OSX: control
+  (defparameter *alt-key* 16777251)     ; OSX: option
+  (defparameter *super-key* 16777249)   ; OSX: command
   (initialize-keycodes))
 
 (defun start-gui ()
@@ -77,11 +81,6 @@
 (defun minibuffer-hide ()
   (|setText| *minibuffer-input* "")
   (|hide| (buffer-view *minibuffer*)))
-
-(defparameter *control-key* 16777249) ; OSX: command
-(defparameter *meta-key* 16777250)    ; OSX: control
-(defparameter *alt-key* 16777251)     ; OSX: option
-(defparameter *super-key* 16777249)   ; OSX: command
 
 (defun key-press (obj event)
   ;; Invoked upon key-press
