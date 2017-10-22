@@ -36,6 +36,10 @@
   (qlet ((url (qnew "QUrl(QString)" url)))
 	(|setUrl| view url)))
 
+(defun web-view-set-url-loaded-callback (view function)
+  (qconnect (|mainFrame| (|page| view)) "loadFinished(bool)"
+	    function))
+
 (defun web-view-get-url (view)
   (|toString| (|url| view)))
 

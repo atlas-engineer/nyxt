@@ -89,11 +89,12 @@
   "Base mode for interacting with documents"
   (let* ((root (make-node :data "about:blank"))
 	 (mode (make-instance 'document-mode
-			     :name "Document-Mode"
-			     :keymap document-mode-map
-			     :view (make-web-view)
-			     :active-node root)))
-    (qconnect (|mainFrame| (|page| (mode-view mode))) "loadFinished(bool)"
-	      (lambda (ok) (add-or-traverse-history mode)))
+			      :name "Document-Mode"
+			      :keymap document-mode-map
+			      :view (make-web-view)
+			      :active-node root)))
+    (web-view-set-url-loaded-callback
+     (mode-view mode)
+     (lambda (ok) (add-or-traverse-history mode)))
     ;; return instance of mode
     mode))
