@@ -32,6 +32,10 @@
   (|scroll| (|mainFrame| (|page| view))
 	    0 (- scroll-distance)))
 
+(defun web-view-set-url (view url)
+  (qlet ((url (qnew "QUrl(QString)" url)))
+	(|setUrl| view url)))
+
 (defparameter *control-key* 16777249) ; OSX: command
 (defparameter *meta-key* 16777250)    ; OSX: control
 (defparameter *alt-key* 16777251)     ; OSX: option

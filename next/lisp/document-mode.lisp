@@ -78,8 +78,7 @@
 
 (defun set-url-buffer (input-url buffer)
   (setf (buffer-name buffer) input-url)
-  (qlet ((url (qnew "QUrl(QString)" input-url)))
-	(|setUrl| (buffer-view buffer) url)))
+  (web-view-set-url (buffer-view buffer) input-url))
 
 (defun set-url (input-url)
   (let ((url (normalize-url input-url)))
