@@ -9,8 +9,8 @@
 (defun start ()
   (ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
   (setf *window* (qnew "QWidget" "windowTitle" "nEXT")
-         *root-layout* (qnew "QGridLayout")
-         *stack-layout* (qnew "QStackedLayout"))
+	*root-layout* (qnew "QGridLayout")
+	*stack-layout* (qnew "QStackedLayout"))
   (setf *minibuffer-prompt* (qnew "QLabel" "text" "input:")
         *minibuffer-input* (qnew "QLineEdit")
         *minibuffer-completion-model* (qnew "QStringListModel")
@@ -18,17 +18,16 @@
         *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
   (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
   (setf *history-tree* (generate-new-buffer "history-tree" (tree-history-mode)))
-
-  (initialize-keycodes)
   
+  (initialize-keycodes)
+  (initialize-bookmark-db)  
+
   (define-key global-map (kbd "C-x C-c") #'qquit)
   (define-key minibuffer-mode-map (kbd "Return") #'return-input)
   (define-key minibuffer-mode-map (kbd "C-g") #'cancel-input)
   (define-key minibuffer-mode-map (kbd "Escape") #'cancel-input)
-
   (define-key global-map (kbd "C-x b") (:input-complete switch-buffer buffer-complete))
   (define-key global-map (kbd "C-x k") (:input-complete delete-buffer buffer-complete))
-
   (define-key document-mode-map (kbd "S-t") #'history-tree-show)
   (define-key document-mode-map (kbd "S-f")
     (:input-complete history-forwards-query history-fowards-query-complete))
@@ -39,24 +38,13 @@
   (define-key document-mode-map (kbd "C-n") #'scroll-down)
   (define-key document-mode-map (kbd "C-l") (:input set-url))
   (define-key global-map (kbd "S-l") (:input set-url-new-buffer))
-
-  (initialize-bookmark-db)
   (define-key global-map (kbd "S-s k")
     (:input-complete bookmark-delete bookmark-complete))
   (define-key document-mode-map (kbd "S-s o")
     (:input-complete set-url bookmark-complete))
   (define-key document-mode-map (kbd "S-s s") #'bookmark-current-page)
 
-  ;; remove margins around root widgets
-  (|setSpacing| *root-layout* 0)
-  (|setContentsMargins| *root-layout* 0 0 0 0)
-   ;; arguments for grid layout: row, column, rowspan, colspan
-  (|addLayout| *root-layout* *stack-layout*              0 0 1 1)
-  (|addWidget| *root-layout* (buffer-view *minibuffer*)  1 0 1 1)
-
-  (|hide| (buffer-view *minibuffer*))
-  (|setLayout| *window* *root-layout*)
-  (|show| *window*)
+  (start-gui)
   
   ;; load the user configuration if it exists
   (load "~/.next.d/init.lisp" :if-does-not-exist nil))

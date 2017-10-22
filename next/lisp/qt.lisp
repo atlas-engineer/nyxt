@@ -4,6 +4,17 @@
 
 (qrequire :webkit)
 
+(defun start-gui ()
+  ;; remove margins around root widgets
+  (|setSpacing| *root-layout* 0)
+  (|setContentsMargins| *root-layout* 0 0 0 0)
+   ;; arguments for grid layout: row, column, rowspan, colspan
+  (|addLayout| *root-layout* *stack-layout*              0 0 1 1)
+  (|addWidget| *root-layout* (buffer-view *minibuffer*)  1 0 1 1)
+  (|hide| (buffer-view *minibuffer*))
+  (|setLayout| *window* *root-layout*)
+  (|show| *window*))
+
 (defun set-visible-view (view)
   (|setCurrentWidget| *stack-layout* view))
 
