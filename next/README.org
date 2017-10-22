@@ -197,16 +197,11 @@ two minor releases following major release 1.0.
 ** 0.05
 *** TODO Window System
 - Emacs like window system
-** 0.04
 *** TODO Add REPL
 - Add slime support
 *** TODO Create Page class with meta information about page
 - Use this as data field in tree
 - Use a method from this class for persistence
-*** DONE Bookmarks
-CLOSED: [2017-10-10 Tue 01:06]
-- Bookmarks will be stored in a db (possibly sqlite) with information
-  about them, they'll be navigable via a completion buffer
 *** TODO History
 - History will be stored in a db (possibly sqlite) with additional
   metadata that allows searching semantically, as well as searching
@@ -214,6 +209,18 @@ CLOSED: [2017-10-10 Tue 01:06]
 **** TODO History is searchable
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
+** 0.04
+*** DONE Isolate backend QT Code
+CLOSED: [2017-10-23 Mon 01:23]
+- Break apart QT code into separate file
+- Remove all top-level side effects
+- Modularize GUI backend
+**** TODO Write Cocoa backend
+- Use CCL Cocoa Library to use native webkit backend
+*** DONE Bookmarks
+CLOSED: [2017-10-10 Tue 01:06]
+- Bookmarks will be stored in a db (possibly sqlite) with information
+  about them, they'll be navigable via a completion buffer
 ** DONE 0.03
 CLOSED: [2017-10-05 Thu 23:50]
 *** DONE Write Manual Base
