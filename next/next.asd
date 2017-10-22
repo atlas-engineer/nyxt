@@ -11,7 +11,7 @@
 	       (:file "keymap")
 	       (:file "minibuffer")
 	       (:file "buffer")
-	       (:file "tree-history-mode")
+	       (:file "tree-history")
 	       (:file "document-mode")
 	       (:file "bookmark")
 	       (:file "completion")

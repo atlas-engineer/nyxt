@@ -17,7 +17,6 @@
         *minibuffer-completion* (qnew "QListView")
         *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
   (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
-  (setf *history-tree* (generate-new-buffer "history-tree" (tree-history-mode)))
   
   (initialize-keycodes)
   (initialize-bookmark-db)  
@@ -28,7 +27,6 @@
   (define-key minibuffer-mode-map (kbd "Escape") #'cancel-input)
   (define-key global-map (kbd "C-x b") (:input-complete switch-buffer buffer-complete))
   (define-key global-map (kbd "C-x k") (:input-complete delete-buffer buffer-complete))
-  (define-key document-mode-map (kbd "S-t") #'history-tree-show)
   (define-key document-mode-map (kbd "S-f")
     (:input-complete history-forwards-query history-fowards-query-complete))
   (define-key document-mode-map (kbd "S-b") #'history-backwards)

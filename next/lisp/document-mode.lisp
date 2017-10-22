@@ -7,9 +7,7 @@
   "The distance scroll-down or scroll-up will scroll.")
 
 (defclass document-mode (mode)
-  ((history-tree :accessor mode-history-tree :initform ())
-   (history-tree-root-node :accessor mode-history-tree-root-node :initarg :root-node)
-   (history-active-node :accessor mode-history-active-node :initarg :active-node)))
+  ((history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
   (web-view-scroll-down (buffer-view *active-buffer*)))
@@ -42,13 +40,9 @@
     (when children
       (fuzzy-match input (mapcar #'node-data children)))))
 
-(defun history-tree-show ()
-  (update-tree-model (mode-history-tree-root-node (buffer-mode *active-buffer*)))
-  (set-visible-active-buffer *history-tree*))
-
 (defun add-or-traverse-history (mode)
   ;; get url from mode-view's qwebview
-  (let ((url (|toString| (|url| (mode-view mode))))
+  (let ((url (web-view-get-url (mode-view mode)))
 	(active-node (mode-history-active-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
@@ -97,8 +91,7 @@
 	 (mode (make-instance 'document-mode
 			     :name "Document-Mode"
 			     :keymap document-mode-map
-			     :view (qnew "QWebView")
-			     :root-node root
+			     :view (make-web-view)
 			     :active-node root)))
     (qconnect (|mainFrame| (|page| (mode-view mode))) "loadFinished(bool)"
 	      (lambda (ok) (add-or-traverse-history mode)))

@@ -36,6 +36,12 @@
   (qlet ((url (qnew "QUrl(QString)" url)))
 	(|setUrl| view url)))
 
+(defun web-view-get-url (view)
+  (|toString| (|url| view)))
+
+(defun make-web-view ()
+  (qnew "QWebView"))
+
 (defparameter *control-key* 16777249) ; OSX: command
 (defparameter *meta-key* 16777250)    ; OSX: control
 (defparameter *alt-key* 16777251)     ; OSX: option
