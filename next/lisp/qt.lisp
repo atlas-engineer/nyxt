@@ -2,12 +2,16 @@
 
 (in-package :next)
 
-(qrequire :webkit)
-
 (defun initialize-gui ()
+  (qrequire :webkit)
+  (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
+  (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
   (initialize-keycodes))
 
 (defun start-gui ()
+  (defparameter *window* nil)
+  (defparameter *root-layout* nil)
+  (defparameter *stack-layout* nil)
   (setf *window* (qnew "QWidget" "windowTitle" "nEXT")
 	*root-layout* (qnew "QGridLayout")
 	*stack-layout* (qnew "QStackedLayout"))
@@ -72,9 +76,6 @@
 (defparameter *meta-key* 16777250)    ; OSX: control
 (defparameter *alt-key* 16777251)     ; OSX: option
 (defparameter *super-key* 16777249)   ; OSX: command
-
-(qadd-event-filter nil |QEvent.KeyPress| 'key-press)
-(qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
 
 (defun key-press (obj event)
   ;; Invoked upon key-press

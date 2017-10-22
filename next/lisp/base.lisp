@@ -2,10 +2,6 @@
 
 (in-package :next)
 
-(defparameter *window* nil)
-(defparameter *root-layout* nil)
-(defparameter *stack-layout* nil)
-
 (defun start ()
   (ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
   (initialize-gui)
