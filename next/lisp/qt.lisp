@@ -16,10 +16,10 @@
   (defparameter *window* (qnew "QWidget" "windowTitle" "nEXT"))
   (defparameter *root-layout* (qnew "QGridLayout"))
   (defparameter *stack-layout* (qnew "QStackedLayout"))
-  (setf *minibuffer-prompt* (qnew "QLabel" "text" "input:")
-        *minibuffer-input* (qnew "QLineEdit")
-        *minibuffer-completion-model* (qnew "QStringListModel")
-        *minibuffer-completion* (qnew "QListView"))
+  (defparameter *minibuffer-prompt* (qnew "QLabel" "text" "input:"))
+  (defparameter *minibuffer-input* (qnew "QLineEdit"))
+  (defparameter *minibuffer-completion* (qnew "QListView"))
+  (defparameter *minibuffer-completion-model* (qnew "QStringListModel"))
   ;; create default buffers
   (setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
   (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
@@ -71,7 +71,17 @@
     (|addWidget| layout *minibuffer-completion*  1 1 1 15)
     (|setLayout| widget layout)
     (|setModel| *minibuffer-completion* *minibuffer-completion-model*)
+    (qadd-event-filter *minibuffer-input* |QEvent.KeyRelease| 'update-candidates)
+    ;; return the widget
     widget))
+
+(defun update-candidates (obj event)
+  (declare (ignore obj)) ; supress unused warnings
+  (declare (ignore event)) ; supress unused warnings
+  (when *minibuffer-completion-function*
+    (let ((candidates (funcall *minibuffer-completion-function* (minibuffer-get-input))))
+      (|setStringList| *minibuffer-completion-model* candidates)))
+  nil)
 
 (defun minibuffer-show ()
   (|show| (buffer-view *minibuffer*))

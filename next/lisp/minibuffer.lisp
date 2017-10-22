@@ -8,16 +8,9 @@
 
 (defvar *minibuffer* nil
   "A variable to store the mini-buffer")
-(defparameter *minibuffer-prompt* nil
-  "A variable to store the minibuffer prompt")
-(defparameter *minibuffer-input* nil
-  "A variable to store the current minibuffer input")
+
 (defparameter *minibuffer-completion-function* nil
   "A variable to store the function used to generate completion candidates")
-(defparameter *minibuffer-completion-model* nil
-  "A variable to store the model which updates the QListView")
-(defparameter *minibuffer-completion* nil
-  "A variable to store the current minibuffer completion candidates")
 (defparameter *minibuffer-callback* nil
   "A variable to store the function upon completion of the minibuffer read")
 (defparameter *minibuffer-callback-buffer* nil
@@ -47,12 +40,3 @@
 		 :name "minibuffer"
 		 :keymap minibuffer-mode-map
 		 :view (make-minibuffer)))
-
-(qadd-event-filter *minibuffer-input* |QEvent.KeyRelease| 'update-candidates)
-(defun update-candidates (obj event)
-  (declare (ignore obj)) ; supress unused warnings
-  (declare (ignore event)) ; supress unused warnings
-  (when *minibuffer-completion-function*
-    (let ((candidates (funcall *minibuffer-completion-function* (|text| *minibuffer-input*))))
-      (|setStringList| *minibuffer-completion-model* candidates)))
-  nil)
