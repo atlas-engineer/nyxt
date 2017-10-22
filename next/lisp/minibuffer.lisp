@@ -27,9 +27,7 @@
   (setf *minibuffer-callback* callback-function)
   (setf *minibuffer-completion-function* completion-function)
   (setf *minibuffer-callback-buffer* *active-buffer*)
-  (|show| (buffer-view *minibuffer*))
-  (|setFocus| *minibuffer-input*)
-  (set-active-buffer *minibuffer*))
+  (minibuffer-show))
 
 (defun return-input ()
   (set-active-buffer *minibuffer-callback-buffer*)
@@ -38,13 +36,11 @@
 	(funcall *minibuffer-callback*
 		 (nth 0 (funcall *minibuffer-completion-function* (|text| *minibuffer-input*)))))
       (funcall *minibuffer-callback* (|text| *minibuffer-input*)))
-  (|setText| *minibuffer-input* "")
-  (|hide| (buffer-view *minibuffer*)))
+  (minibuffer-hide))
 
 (defun cancel-input ()
   (set-active-buffer *minibuffer-callback-buffer*)
-  (|setText| *minibuffer-input* "")
-  (|hide| (buffer-view *minibuffer*)))
+  (minibuffer-hide))
 
 (defun minibuffer-mode ()
   "Base mode for input"

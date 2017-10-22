@@ -59,6 +59,15 @@
 (defun make-web-view ()
   (qnew "QWebView"))
 
+(defun minibuffer-show ()
+  (|show| (buffer-view *minibuffer*))
+  (|setFocus| *minibuffer-input*)
+  (set-active-buffer *minibuffer*))
+
+(defun minibuffer-hide ()
+  (|setText| *minibuffer-input* "")
+  (|hide| (buffer-view *minibuffer*)))
+
 (defparameter *control-key* 16777249) ; OSX: command
 (defparameter *meta-key* 16777250)    ; OSX: control
 (defparameter *alt-key* 16777251)     ; OSX: option
