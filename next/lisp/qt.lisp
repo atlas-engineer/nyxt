@@ -4,11 +4,24 @@
 
 (qrequire :webkit)
 
+(defun initialize-gui ()
+  (initialize-keycodes))
+
 (defun start-gui ()
+  (setf *window* (qnew "QWidget" "windowTitle" "nEXT")
+	*root-layout* (qnew "QGridLayout")
+	*stack-layout* (qnew "QStackedLayout"))
+  (setf *minibuffer-prompt* (qnew "QLabel" "text" "input:")
+        *minibuffer-input* (qnew "QLineEdit")
+        *minibuffer-completion-model* (qnew "QStringListModel")
+        *minibuffer-completion* (qnew "QListView"))
+  ;; create default buffers
+  (setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
+  (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
   ;; remove margins around root widgets
   (|setSpacing| *root-layout* 0)
   (|setContentsMargins| *root-layout* 0 0 0 0)
-   ;; arguments for grid layout: row, column, rowspan, colspan
+  ;; arguments for grid layout: row, column, rowspan, colspan
   (|addLayout| *root-layout* *stack-layout*              0 0 1 1)
   (|addWidget| *root-layout* (buffer-view *minibuffer*)  1 0 1 1)
   (|hide| (buffer-view *minibuffer*))
@@ -82,8 +95,8 @@
        (setf *super-modifier* nil))
       (t (return-from key-release)))))
 
-;; create a character->keycode hashmap
-(defparameter *character->keycode* (make-hash-table :test 'equalp))
+(defparameter *character->keycode* (make-hash-table :test 'equalp)
+  "A character -> keycode hashmap for associating the QT keycodes")
 
 (defun keycode (character keycode)
   (setf (gethash character *character->keycode*) keycode))
