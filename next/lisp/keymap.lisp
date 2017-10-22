@@ -11,7 +11,6 @@
 
 (in-package :next)
 
-
 (defvar *control-modifier* nil
   "A variable to store the status of the control key")
 (defvar *meta-modifier* nil
@@ -19,9 +18,9 @@
 (defvar *super-modifier* nil
   "A variable to store the status of the super/cmd key")
 
-(defparameter global-map (make-hash-table :test 'equalp)
+(defvar global-map (make-hash-table :test 'equalp)
   "A global key map, available in every mode/buffer")
-(defparameter *key-sequence-stack* ()
+(defvar *key-sequence-stack* ()
   "A stack that keeps track of the key chords a user has inputted")
 
 ;; A struct used to describe a key-chord
