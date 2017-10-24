@@ -11,12 +11,6 @@
 
 (in-package :next)
 
-(defvar *control-modifier* nil
-  "A variable to store the status of the control key")
-(defvar *meta-modifier* nil
-  "A variable to store the status of the alt/meta key")
-(defvar *super-modifier* nil
-  "A variable to store the status of the super/cmd key")
 
 (defvar global-map (make-hash-table :test 'equalp)
   "A global key map, available in every mode/buffer")
@@ -30,20 +24,21 @@
   meta-modifier
   super-modifier)
 
-(defun push-key-chord (key)
+(defun push-key-chord (control-modifier meta-modifier super-modifier key)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
   ;; consume-key-sequence
   (let ((key-chord (make-key)))
-    (when *control-modifier*
-	(setf (key-control-modifier key-chord) t))
-    (when *meta-modifier*
-	(setf (key-meta-modifier key-chord) t))
-    (when *super-modifier*
-	(setf (key-super-modifier key-chord) t))
+    (when control-modifier
+      (setf (key-control-modifier key-chord) t))
+    (when meta-modifier
+      (setf (key-meta-modifier key-chord) t))
+    (when super-modifier
+      (setf (key-super-modifier key-chord) t))
     (setf (key-character key-chord) key)
-    (push key-chord *key-sequence-stack*)))
+    (push key-chord *key-sequence-stack*))
+  (consume-key-sequence))
 
 (defun consume-key-sequence ()
   ;; Iterate through all keymaps

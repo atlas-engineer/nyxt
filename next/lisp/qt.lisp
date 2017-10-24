@@ -7,9 +7,15 @@
   (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
   (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
   (defparameter *control-key* 16777249) ; OSX: command
-  (defparameter *meta-key* 16777250)    ; OSX: control
-  (defparameter *alt-key* 16777251)     ; OSX: option
-  (defparameter *super-key* 16777249)   ; OSX: command
+  (defparameter *meta-key*    16777250) ; OSX: control
+  (defparameter *alt-key*     16777251) ; OSX: option
+  (defparameter *super-key*   16777249) ; OSX: command
+  (defvar *control-modifier* nil
+    "A variable to store the status of the control key")
+  (defvar *meta-modifier* nil
+    "A variable to store the status of the alt/meta key")
+  (defvar *super-modifier* nil
+    "A variable to store the status of the super/cmd key")
   (initialize-keycodes))
 
 (defun start-gui ()
@@ -106,9 +112,11 @@
        (setf *meta-modifier* t))
       ((equalp key *super-key*)
        (setf *super-modifier* t))
-      (t (progn
-	   (push-key-chord (gethash key *keycode->character*))
-	   (consume-key-sequence))))))
+      (t (push-key-chord
+	  *control-modifier*
+	  *meta-modifier*
+	  *super-modifier*
+	  (gethash key *keycode->character*))))))
 
 (defun key-release (obj event)
   ;; Invoked upon key-release
