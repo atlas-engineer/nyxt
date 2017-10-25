@@ -1,6 +1,7 @@
 ;;;; qt.lisp --- QT helper functions & data
 
 (in-package :next)
+(use-package :eql)
 
 (defun initialize-gui ()
   (qrequire :webkit)
@@ -38,6 +39,8 @@
   (|hide| (buffer-view *minibuffer*))
   (|setLayout| *window* *root-layout*)
   (|show| *window*))
+(defun quit ()
+  (eql:qquit))
 
 (defun set-visible-view (view)
   (|setCurrentWidget| *stack-layout* view))

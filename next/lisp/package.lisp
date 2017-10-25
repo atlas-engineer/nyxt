@@ -3,6 +3,6 @@
 (in-package :cl-user)
 
 (defpackage :next
-  (:use :common-lisp :eql)
+  (:use :common-lisp)
   (:export
    #:start))

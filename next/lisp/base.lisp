@@ -7,7 +7,7 @@
   (initialize-gui)
   (initialize-bookmark-db)
   ;; define the default keybindings
-  (define-key global-map (kbd "C-x C-c") #'qquit)
+  (define-key global-map (kbd "C-x C-c") #'quit)
   (define-key minibuffer-mode-map (kbd "Return") #'return-input)
   (define-key minibuffer-mode-map (kbd "C-g") #'cancel-input)
   (define-key minibuffer-mode-map (kbd "Escape") #'cancel-input)
