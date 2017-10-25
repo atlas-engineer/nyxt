@@ -20,7 +20,7 @@
 			:view (mode-view mode))))
     (push new-buffer *buffers*)
     (when add-to-stack-layout
-      (add-to-stack-layout (buffer-view new-buffer)))
+      (interface:add-to-stack-layout (buffer-view new-buffer)))
     new-buffer))
 
 (defun set-active-buffer (buffer)
@@ -28,7 +28,7 @@
 
 (defun set-visible-active-buffer (buffer)
   (set-active-buffer buffer)
-  (set-visible-view (buffer-view *active-buffer*)))
+  (interface:set-visible-view (buffer-view *active-buffer*)))
 
 (defun switch-buffer (input)
   (let ((buffer (find-if #'(lambda (element) (equalp input (buffer-name element))) *buffers*)))
@@ -39,5 +39,5 @@
 
 (defun delete-buffer (input)
   (let ((buffer (find-if #'(lambda (element) (equalp input (buffer-name element))) *buffers*)))
-    (delete-view (buffer-view buffer))
+    (interface:delete-view (buffer-view buffer))
     (delete buffer *buffers*)))

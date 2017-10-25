@@ -39,10 +39,14 @@ user. Do you wish to go forwards to ~Ancient Greek~ or to
 
 * Getting Started
 ** Install nEXT Browser
-See the [[https://github.com/nEXT-Browser/nEXT/releases][releases]] section for pre-built binaries.
+See the [[https://github.com/nEXT-Browser/nEXT/releases][releases]] section for pre-built binaries. To perform an
+installation from source, please see the [[https://github.com/nEXT-Browser/nEXT/tree/master/next][developer readme]].
 ** Quickstart Keys nEXT
-- ~C-l~:     Load URL in Buffer
-- ~S-l~:     Load URL in a new buffer
+- ~C-l~:     Load URL in tab
+- ~S-l~:     Load URL in a new tab
+- ~C-x b~:   Switch tab
+- ~C-b~:     Backwards history
+- ~C-f~:     Forwards history
 - ~C-c C-X~: Quit
 
 ** Customize nEXT
@@ -51,6 +55,6 @@ Customization is possible through the creation of a
 can override and redefine any of the functions by defining your init
 file as part of the ~:next~ package. For more information please see:
 [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org#customization][customizing nEXT]].
-* Documentation
+** Documentation
 For full documentation about nEXT, how it works, and how to extend it
 please see the [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org][user manual]].

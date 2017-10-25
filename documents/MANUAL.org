@@ -1,12 +1,8 @@
 #+TITLE: nEXT Browser User Manual
-
-* nEXT Browser
 Next Browser is the ultimate nEXT generation browsing experience
 designed for power users. 100% of the functions and classes are
 exposed to the end-user allowing for infinite customization.
-
-** Contents                                                            :TOC:
-- [[#next-browser][nEXT Browser]]
+* Contents                                                              :TOC:
 - [[#basics][Basics]]
   - [[#history][History]]
   - [[#tabs-buffers][Tabs (Buffers)]]
@@ -58,8 +54,8 @@ modification of widget behavior.
 The standard keybindings for tab management (within document-mode)
 are:
 
-1. ~C-x b~: Switch Tab
-2. ~C-x k~: Kill Tab
+1. ~C-x b~: Switch tab
+2. ~C-x k~: Kill tab
 3. ~S-l~: New document-mode tab
 4. ~C-l~: Change URL of current document
 ** Bookmarks
