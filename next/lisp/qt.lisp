@@ -1,113 +1,113 @@
 ;;;; qt.lisp --- QT helper functions & data
 
-(in-package :next)
-(use-package :eql)
+(in-package :interface)
 
-(defun initialize-gui ()
-  (qrequire :webkit)
-  (qadd-event-filter nil |QEvent.KeyPress| 'key-press)
-  (qadd-event-filter nil |QEvent.KeyRelease| 'key-release)
-  (defparameter *control-key* 16777249) ; OSX: command
-  (defparameter *meta-key*    16777250) ; OSX: control
-  (defparameter *alt-key*     16777251) ; OSX: option
-  (defparameter *super-key*   16777249) ; OSX: command
+(defun initialize ()
+  (eql:qrequire :webkit)
+  (initialize-keycodes)
   (defvar *control-modifier* nil
     "A variable to store the status of the control key")
   (defvar *meta-modifier* nil
     "A variable to store the status of the alt/meta key")
   (defvar *super-modifier* nil
     "A variable to store the status of the super/cmd key")
-  (initialize-keycodes))
+  (eql:qadd-event-filter nil eql:|QEvent.KeyPress| 'key-press)
+  (eql:qadd-event-filter nil eql:|QEvent.KeyRelease| 'key-release))
 
-(defun start-gui ()
-  (defparameter *window* (qnew "QWidget" "windowTitle" "nEXT"))
-  (defparameter *root-layout* (qnew "QGridLayout"))
-  (defparameter *stack-layout* (qnew "QStackedLayout"))
-  (defparameter *minibuffer-prompt* (qnew "QLabel" "text" "input:"))
-  (defparameter *minibuffer-input* (qnew "QLineEdit"))
-  (defparameter *minibuffer-completion* (qnew "QListView"))
-  (defparameter *minibuffer-completion-model* (qnew "QStringListModel"))
-  ;; create default buffers
-  (setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
-  (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
+(defun start ()
+  (defparameter *window* (eql:qnew "QWidget" "windowTitle" "nEXT"))
+  (defparameter *root-layout* (eql:qnew "QGridLayout"))
+  (defparameter *stack-layout* (eql:qnew "QStackedLayout"))
+  (defparameter *minibuffer* nil "reference for widget containing all minibuffer views")
+  (defparameter *minibuffer-prompt* (eql:qnew "QLabel" "text" "input:"))
+  (defparameter *minibuffer-input* (eql:qnew "QLineEdit"))
+  (defparameter *minibuffer-completion* (eql:qnew "QListView"))
+  (defparameter *minibuffer-completion-model* (eql:qnew "QStringListModel"))
+  (defparameter *minibuffer-completion-function* nil)
   ;; remove margins around root widgets
-  (|setSpacing| *root-layout* 0)
-  (|setContentsMargins| *root-layout* 0 0 0 0)
+  (eql:|setSpacing| *root-layout* 0)
+  (eql:|setContentsMargins| *root-layout* 0 0 0 0)
   ;; arguments for grid layout: row, column, rowspan, colspan
-  (|addLayout| *root-layout* *stack-layout*              0 0 1 1)
-  (|addWidget| *root-layout* (buffer-view *minibuffer*)  1 0 1 1)
-  (|hide| (buffer-view *minibuffer*))
-  (|setLayout| *window* *root-layout*)
-  (|show| *window*))
+  (eql:|addLayout| *root-layout* *stack-layout* 0 0 1 1)
+  (eql:|setLayout| *window* *root-layout*)
+  (eql:|show| *window*))
+
 (defun quit ()
   (eql:qquit))
 
 (defun set-visible-view (view)
-  (|setCurrentWidget| *stack-layout* view))
+  (eql:|setCurrentWidget| *stack-layout* view))
 
 (defun add-to-stack-layout (view)
-  (|addWidget| *stack-layout* view))
+  (eql:|addWidget| *stack-layout* view))
 
 (defun delete-view (view)
-  (qdelete view))
+  (eql:qdelete view))
 
 (defun make-web-view ()
-  (qnew "QWebView"))
+  (eql:qnew "QWebView"))
 
 (defun web-view-scroll-down (view)
-  (|scroll| (|mainFrame| (|page| view))
+  (eql:|scroll| (eql:|mainFrame| (eql:|page| view))
 	    0 scroll-distance))
 
 (defun web-view-scroll-up (view)
-  (|scroll| (|mainFrame| (|page| view))
+  (eql:|scroll| (eql:|mainFrame| (eql:|page| view))
 	    0 (- scroll-distance)))
 
 (defun web-view-set-url (view url)
-  (qlet ((url (qnew "QUrl(QString)" url)))
-	(|setUrl| view url)))
+  (eql:qlet ((url (eql:qnew "QUrl(QString)" url)))
+	(eql:|setUrl| view url)))
 
 (defun web-view-set-url-loaded-callback (view function)
-  (qconnect (|mainFrame| (|page| view)) "loadFinished(bool)"
+  (eql:qconnect (eql:|mainFrame| (eql:|page| view)) "loadFinished(bool)"
 	    function))
 
 (defun web-view-get-url (view)
-  (|toString| (|url| view)))
+  (eql:|toString| (eql:|url| view)))
 
 (defun make-minibuffer ()
-  (let ((widget (qnew "QWidget")) (layout (qnew "QGridLayout")))
-    (|addWidget| layout *minibuffer-prompt*      0 0 1 5)
-    (|addWidget| layout *minibuffer-input*       0 1 1 15)
-    (|addWidget| layout *minibuffer-completion*  1 1 1 15)
-    (|setLayout| widget layout)
-    (|setModel| *minibuffer-completion* *minibuffer-completion-model*)
-    (qadd-event-filter *minibuffer-input* |QEvent.KeyRelease| 'update-candidates)
+  (let ((minibuffer (eql:qnew "QWidget")) (layout (eql:qnew "QGridLayout")))
+    (eql:|addWidget| layout *minibuffer-prompt*      0 0 1 5)
+    (eql:|addWidget| layout *minibuffer-input*       0 1 1 15)
+    (eql:|addWidget| layout *minibuffer-completion*  1 1 1 15)
+    (eql:|setLayout| minibuffer layout)
+    (eql:|setModel| *minibuffer-completion* *minibuffer-completion-model*)
+    (eql:qadd-event-filter *minibuffer-input* eql:|QEvent.KeyRelease| 'update-candidates)
+    ;; add it to the main grid layout (*root-layout*)
+    ;; arguments for grid layout: row, column, rowspan, colspan
+    (eql:|addWidget| *root-layout* minibuffer  1 0 1 1)
+    (eql:|hide| minibuffer)
+    (setf *minibuffer* minibuffer)
     ;; return the widget
-    widget))
+    *minibuffer*))
 
 (defun update-candidates (obj event)
   (declare (ignore obj)) ; supress unused warnings
   (declare (ignore event)) ; supress unused warnings
   (when *minibuffer-completion-function*
     (let ((candidates (funcall *minibuffer-completion-function* (minibuffer-get-input))))
-      (|setStringList| *minibuffer-completion-model* candidates)))
+      (eql:|setStringList| *minibuffer-completion-model* candidates)))
   nil)
 
+(defun minibuffer-set-completion-function (function)
+  (setf *minibuffer-completion-function* function))
+
 (defun minibuffer-show ()
-  (|show| (buffer-view *minibuffer*))
-  (|setFocus| *minibuffer-input*)
-  (set-active-buffer *minibuffer*))
+  (eql:|show| *minibuffer*)
+  (eql:|setFocus| *minibuffer-input*))
 
 (defun minibuffer-hide ()
-  (|setText| *minibuffer-input* "")
-  (|hide| (buffer-view *minibuffer*)))
+  (eql:|setText| *minibuffer-input* "")
+  (eql:|hide| *minibuffer*))
 
 (defun minibuffer-get-input ()
-  (|text| *minibuffer-input*))
+  (eql:|text| *minibuffer-input*))
 
 (defun key-press (obj event)
   ;; Invoked upon key-press
   (declare (ignore obj)) ; supress unused warnings
-  (let ((key (|key| event)))
+  (let ((key (eql:|key| event)))
     (cond
       ((equalp key *control-key*)
        (setf *control-modifier* t))
@@ -115,7 +115,7 @@
        (setf *meta-modifier* t))
       ((equalp key *super-key*)
        (setf *super-modifier* t))
-      (t (push-key-chord
+      (t (next:push-key-chord
 	  *control-modifier*
 	  *meta-modifier*
 	  *super-modifier*
@@ -124,7 +124,7 @@
 (defun key-release (obj event)
   ;; Invoked upon key-release
   (declare (ignore obj)) ; supress unused warnings
-  (let ((key (|key| event)))
+  (let ((key (eql:|key| event)))
     (cond
       ((equalp key *control-key*)
        (setf *control-modifier* nil))
@@ -141,6 +141,10 @@
   (setf (gethash character *keycode->character*) keycode))
 
 (defun initialize-keycodes ()
+  (defparameter *control-key* 16777249) ; OSX: command
+  (defparameter *meta-key*    16777250) ; OSX: control
+  (defparameter *alt-key*     16777251) ; OSX: option
+  (defparameter *super-key*   16777249) ; OSX: command
   (keycode 48 "0")
   (keycode 49 "1")
   (keycode 50 "2")

@@ -10,10 +10,10 @@
   ((history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
-  (web-view-scroll-down (buffer-view *active-buffer*)))
+  (interface:web-view-scroll-down (buffer-view *active-buffer*)))
 
 (defun scroll-up ()
-  (web-view-scroll-up (buffer-view *active-buffer*)))
+  (interface:web-view-scroll-up (buffer-view *active-buffer*)))
 
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
@@ -42,7 +42,7 @@
 
 (defun add-or-traverse-history (mode)
   ;; get url from mode-view's qwebview
-  (let ((url (web-view-get-url (mode-view mode)))
+  (let ((url (interface:web-view-get-url (mode-view mode)))
 	(active-node (mode-history-active-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
@@ -72,7 +72,7 @@
 
 (defun set-url-buffer (input-url buffer)
   (setf (buffer-name buffer) input-url)
-  (web-view-set-url (buffer-view buffer) input-url))
+  (interface:web-view-set-url (buffer-view buffer) input-url))
 
 (defun set-url (input-url)
   (let ((url (normalize-url input-url)))
@@ -91,9 +91,9 @@
 	 (mode (make-instance 'document-mode
 			      :name "Document-Mode"
 			      :keymap document-mode-map
-			      :view (make-web-view)
+			      :view (interface:make-web-view)
 			      :active-node root)))
-    (web-view-set-url-loaded-callback
+    (interface:web-view-set-url-loaded-callback
      (mode-view mode)
      (lambda (ok) (add-or-traverse-history mode)))
     ;; return instance of mode
