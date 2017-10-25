@@ -4,10 +4,10 @@
 
 (defun start ()
   (ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
-  (interface:initialize)
+  ;; (interface:initialize)
   (initialize-bookmark-db)
   ;; define the default keybindings
-  (define-key global-map (kbd "C-x C-c") #'interface:quit)
+  (define-key global-map (kbd "C-x C-c") #'interface:kill)
   (define-key minibuffer-mode-map (kbd "Return") #'return-input)
   (define-key minibuffer-mode-map (kbd "C-g") #'cancel-input)
   (define-key minibuffer-mode-map (kbd "Escape") #'cancel-input)
@@ -25,9 +25,9 @@
   (define-key document-mode-map (kbd "S-s o") (:input-complete set-url bookmark-complete))
   (define-key document-mode-map (kbd "S-s s") #'bookmark-current-page)
   ;; start the gui
-  (interface:start)
+   ;; (interface:start)
   ;; create the default buffers
-  (setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
-  (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
+  ;; (setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
+  ;; (setf *active-buffer* (generate-new-buffer "default" (document-mode)))
   ;; load the user configuration if it exists
   (load "~/.next.d/init.lisp" :if-does-not-exist nil))
