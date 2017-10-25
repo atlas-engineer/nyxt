@@ -4,7 +4,7 @@
 
 (defun start ()
   (ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
-  (initialize-gui)
+  ;; (initialize-gui)
   (initialize-bookmark-db)
   ;; define the default keybindings
   (define-key global-map (kbd "C-x C-c") #'qquit)
@@ -25,6 +25,6 @@
   (define-key document-mode-map (kbd "S-s o") (:input-complete set-url bookmark-complete))
   (define-key document-mode-map (kbd "S-s s") #'bookmark-current-page)
   ;; start the gui
-  (start-gui)
+  ;; (start-gui)
   ;; load the user configuration if it exists
   (load "~/.next.d/init.lisp" :if-does-not-exist nil))

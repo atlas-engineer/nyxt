@@ -5,7 +5,7 @@
   :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue :sqlite)
   :pathname "lisp/"
   :components ((:file "package")
-	       (:file "qt")
+	       (:file "cocoa")
 	       (:file "macro")
 	       (:file "mode")
 	       (:file "keymap")
