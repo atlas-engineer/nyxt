@@ -51,6 +51,6 @@ Customization is possible through the creation of a
 can override and redefine any of the functions by defining your init
 file as part of the ~:next~ package. For more information please see:
 [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org#customization][customizing nEXT]].
-* Documentation
+** Documentation
 For full documentation about nEXT, how it works, and how to extend it
 please see the [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org][user manual]].
