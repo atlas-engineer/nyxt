@@ -4,6 +4,7 @@
 # Ignore folders
 archive/
 offline/
+environment/
 
 # Ignore info org files
 info.org
