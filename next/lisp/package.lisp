@@ -13,7 +13,7 @@
   (:export
    #:initialize
    #:start
-   #:quit
+   #:kill
    #:set-visible-view
    #:add-to-stack-layout
    #:delete-view
