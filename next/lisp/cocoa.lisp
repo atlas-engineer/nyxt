@@ -7,29 +7,16 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (objc:load-framework "WebKit" :webkit))
 
-(defun pathname-to-file-url (pathname)
-  ;; NATIVE-TRANSLATED-NAMESTRING returns a simple string that can be
-  ;; passed to a filesystem function.  (It may be exactly the same as
-  ;; what NAMESTRING returns, or it may differ if special characters
-  ;; were escaped in NAMESTRING's result.)
-  (ccl::with-autorelease-pool
-    (#/retain
-     (#/fileURLWithPath: ns:ns-url (ccl::%make-nsstring
-                                    (native-translated-namestring pathname))))))
-
 (defun url-from-string (s)
   (ccl::with-autorelease-pool
     (#/retain (#/URLWithString: ns:ns-url (ccl::%make-nsstring (string s))))))
-		  
 
 (defun %browser-window (urlspec)
   (gui::assume-cocoa-thread)
   ;; Content rect for window, bounds rect for view.
   (ns:with-ns-rect (r 100.0 100.0 800.0 600.0)
     (ccl::with-autorelease-pool 
-      (let* ((url (if (typep urlspec 'pathname)
-		      (pathname-to-file-url urlspec)
-		      (url-from-string urlspec)))
+      (let* ((url (url-from-string urlspec))
              ;; Create a window with titlebar, close & iconize buttons
              (w (make-instance
                  'ns:ns-window
