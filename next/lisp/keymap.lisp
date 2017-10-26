@@ -11,7 +11,6 @@
 
 (in-package :next)
 
-
 (defvar global-map (make-hash-table :test 'equalp)
   "A global key map, available in every mode/buffer")
 (defvar *key-sequence-stack* ()

@@ -9,7 +9,7 @@
    #:push-key-chord))
 
 (defpackage :interface
-  (:use :common-lisp)
+  (:use :common-lisp :ccl)
   (:export
    #:initialize
    #:start
