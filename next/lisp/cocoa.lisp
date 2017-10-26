@@ -66,9 +66,40 @@
         (wait-on-semaphore s)
         v))))
 
-(defun initialize ())
+(defun make-window ()
+  (gui::assume-cocoa-thread)
+  ;; Content rect for window, bounds rect for view.
+  (ns:with-ns-rect (r 100.0 100.0 800.0 800.0)
+    (ccl::with-autorelease-pool 
+      (let* ((w (make-instance
+                 'ns:ns-window
+                 :with-content-rect r
+                 :style-mask (logior #$NSTitledWindowMask
+                                     #$NSClosableWindowMask
+                                     #$NSMiniaturizableWindowMask
+                                     #$NSResizableWindowMask)
+                 ;; Backing styles other than #$NSBackingStoreBuffered
+                 ;; don't work at all in Cocoa.
+                 :backing #$NSBackingStoreBuffered
+                 :defer t)))
+	(#/makeKeyAndOrderFront: w +null-ptr+)
+	w))))
+
+(defun initialize ()
+  (let* ((ip ccl::*initial-process*))
+    (if (eq ccl::*current-process* ip)
+	(make-window)
+	(let* ((s (make-semaphore))
+	       (v nil))
+	  (process-interrupt ip (lambda ()
+				  (setq v (make-window))
+				  (signal-semaphore s)))
+	  (wait-on-semaphore s)
+	  v))))
+
 (defun start ()
   (browser-window "https://github.com/nEXT-Browser/nEXT"))
+
 (defun kill ())
 (defun set-visible-view ())
 (defun add-to-stack-layout ())
