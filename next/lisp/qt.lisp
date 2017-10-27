@@ -145,6 +145,13 @@
   (defparameter *meta-key*    16777250) ; OSX: control
   (defparameter *alt-key*     16777251) ; OSX: option
   (defparameter *super-key*   16777249) ; OSX: command
+  (when (equalp (eql:|platformName.QGuiApplication|) "cocoa")
+    (let ((original_control *control-key*)
+	  (original_meta *meta-key*)
+	  (original_alt *alt-key*))
+      (setf *control-key* original_meta)
+      (setf *meta-key* original_alt)
+      (setf *super-key* original_control)))
   (keycode 48 "0")
   (keycode 49 "1")
   (keycode 50 "2")
