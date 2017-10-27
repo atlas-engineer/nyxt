@@ -47,13 +47,13 @@
 (defun make-web-view ()
   (eql:qnew "QWebView"))
 
-(defun web-view-scroll-down (view)
+(defun web-view-scroll-down (view distance)
   (eql:|scroll| (eql:|mainFrame| (eql:|page| view))
-	    0 scroll-distance))
+	    0 distance))
 
-(defun web-view-scroll-up (view)
+(defun web-view-scroll-up (view distance)
   (eql:|scroll| (eql:|mainFrame| (eql:|page| view))
-	    0 (- scroll-distance)))
+	    0 (- distance)))
 
 (defun web-view-set-url (view url)
   (eql:qlet ((url (eql:qnew "QUrl(QString)" url)))
