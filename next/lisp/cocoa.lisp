@@ -18,7 +18,12 @@
     (ccl::%get-utf-8-cstring (#/UTF8String ns-str))
     ""))
 
-(objc:defmethod (#/keyDown: :void) ((self ns:ns-window) event)
+(defclass next-window (ns:ns-window) ()
+  (:metaclass ns:+ns-object))
+
+(objc:defmethod (#/acceptsFirstResponder :<BOOL>) ((self next-window)) t)
+
+(objc:defmethod (#/keyDown: :void) ((self next-window) event)
   (let* ((flags (#/modifierFlags event))
 	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event))))
     (next:push-key-chord
@@ -28,8 +33,6 @@
      character)
     (call-next-method event)))
 
-(objc:defmethod (#/acceptsFirstResponder :<BOOL>) ((self ns:ns-window)) t)
-
 (defun url-from-string (s)
   (ccl::with-autorelease-pool
     (#/retain (#/URLWithString: ns:ns-url (ccl::%make-nsstring (string s))))))
@@ -38,10 +41,10 @@
   (defparameter *window* nil)
   (gui::assume-cocoa-thread)
   ;; Content rect for window, bounds rect for view.
-  (ns:with-ns-rect (r 100.0 100.0 800.0 800.0)
+  (ns:with-ns-rect (r 100.0 100.0 1024.0 768.0)
     (ccl::with-autorelease-pool 
       (let* ((window (make-instance
-		      'ns:ns-window
+		      'next-window
 		      :with-content-rect r
 		      :style-mask (logior #$NSTitledWindowMask
 					  #$NSClosableWindowMask
@@ -68,7 +71,7 @@
 
 (defun make-web-view ()
   (on-main-thread
-   (ns:with-ns-rect (r 100.0 100.0 800.0 600.0)
+   (ns:with-ns-rect (r 100.0 100.0 1024.0 768.0)
 		    (let ((view
 			   (make-instance
 			    'ns:web-view
@@ -96,4 +99,3 @@
 (defun minibuffer-hide ())
 (defun minibuffer-get-input ())
 (defun minibuffer-set-completion-function ())
-
