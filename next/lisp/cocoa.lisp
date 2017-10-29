@@ -3,9 +3,30 @@
 (in-package :interface)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "COCOA"))
+  (require :cocoa))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (objc:load-framework "WebKit" :webkit))
+
+(defun ns-to-lisp-string (ns-str)
+  (if (and (not (eql (%null-ptr) ns-str)) (plusp (#/length ns-str)))
+    (ccl::%get-utf-8-cstring (#/UTF8String ns-str))
+    ""))
+
+(defclass key-window (ns:ns-window) ()
+  (:metaclass ns:+ns-object))
+
+(objc:defmethod (#/keyDown: :void) ((self key-window) event)
+  (let* ((flags (#/modifierFlags event))
+	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event))))
+    (next:push-key-chord
+     (> (logand flags #$NSControlKeyMask) 0)
+     (> (logand flags #$NSAlternateKeyMask) 0)
+     (> (logand flags #$NSCommandKeyMask) 0)
+     character)
+    (call-next-method event)))
+
+(objc:defmethod (#/acceptsFirstResponder :<BOOL>) ((self key-window)) t)
 
 (defun url-from-string (s)
   (ccl::with-autorelease-pool
@@ -19,7 +40,7 @@
       (let* ((url (url-from-string urlspec))
              ;; Create a window with titlebar, close & iconize buttons
              (w (make-instance
-                 'ns:ns-window
+                 'key-window
                  :with-content-rect r
                  :style-mask (logior #$NSTitledWindowMask
                                      #$NSClosableWindowMask
@@ -100,7 +121,8 @@
 (defun start ()
   (browser-window "https://github.com/nEXT-Browser/nEXT"))
 
-(defun kill ())
+(defun kill ()
+  (quit))
 (defun set-visible-view ())
 (defun add-to-stack-layout ())
 (defun delete-view ())
