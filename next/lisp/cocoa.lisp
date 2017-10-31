@@ -3,10 +3,9 @@
 (in-package :interface)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require :cocoa))
+  )
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (objc:load-framework "WebKit" :webkit))
+(defparameter *window* nil)
 
 (defmacro on-main-thread (&rest actions)
   `(ccl::call-in-event-process
@@ -38,7 +37,6 @@
     (#/retain (#/URLWithString: ns:ns-url (ccl::%make-nsstring (string s))))))
 
 (defun make-window ()
-  (defparameter *window* nil)
   (gui::assume-cocoa-thread)
   ;; Content rect for window, bounds rect for view.
   (ns:with-ns-rect (r 100.0 100.0 1024.0 768.0)
@@ -65,9 +63,16 @@
 (defun kill ()
   (quit))
 
+(defun get-active-view ()
+  (print (objc:send ns:ns-view 'focus-view)))
+
 (defun set-visible-view (view)
   (on-main-thread
    (#/setContentView: *window* view)))
+
+(defun set-visible-view-window (view window)
+  (on-main-thread
+   (#/setContentView: window view)))
 
 (defun make-web-view ()
   (on-main-thread
@@ -89,7 +94,7 @@
      (#/loadRequest: webframe request))))
 
 (defun add-to-stack-layout ())
-(defun delete-view ())
+(defun delete-view (view))
 (defun web-view-scroll-down ())
 (defun web-view-scroll-up ())
 (defun web-view-set-url-loaded-callback ())

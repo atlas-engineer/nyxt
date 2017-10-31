@@ -2,7 +2,8 @@
 ;;;; next.asd
 (defsystem :next
   :serial t
-  :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue :sqlite)
+  :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue :sqlite
+			   (:require "cocoa") (:require "webkit"))
   :pathname "lisp/"
   :components ((:file "package")
 	       (:file "cocoa")
