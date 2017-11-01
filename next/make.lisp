@@ -6,10 +6,35 @@
 ;;;; Please note that this script must be run from the directory
 ;;;; Next/next.
 
+(let ((quicklisp-init (merge-pathnames ".quicklisp/setup.lisp" (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
+(require :asdf)
+
 (push "./" asdf:*central-registry*)
-(ql:quickload "next")
+(ql:quickload "next" :silent t)
 
-;; execute make
-(ext:run-program "make" nil :output t)
+(defparameter *source-dir* (make-pathname :name nil :type nil
+					  :defaults *load-truename*))
+(defparameter *build-dir* (merge-pathnames "build/" *source-dir*))
 
+(defvar *bundle-dir*)
+(defvar *contents-dir*)
+(defvar *resources-dir*)
+(defvar *macos-dir*)
+
+(defun build-next (&optional (build-dir *build-dir*))
+  (let* ((*build-dir* build-dir)
+	 (*bundle-dir* (merge-pathnames "nEXT.app/" *build-dir*))
+	 (*contents-dir* (merge-pathnames "Contents/" *bundle-dir*))
+	 (*resources-dir* (merge-pathnames "Resources/" *contents-dir*))
+	 (*macos-dir* (merge-pathnames "MacOS/" *contents-dir*))
+	 (*default-pathname-defaults* *source-dir*))
+    (format t "~&Building from ~s, output to ~s" *source-dir* *build-dir*)
+    (ccl::ensure-directories-exist *resources-dir*)
+    (ccl::ensure-directories-exist (merge-pathnames "ccl/" *resources-dir*))
+    (ccl::ensure-directories-exist *macos-dir*)
+))
+
+(build-next)
 (quit)
