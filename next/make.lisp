@@ -43,7 +43,4 @@
     (save-application (merge-pathnames "ccl/nEXT.image" *resources-dir*)
 		      :application-class (find-symbol "COCOA-APPLICATION" "CCL"))))
 
-(require 'objc-support)
-(load "ccl:mac-ui;cf-utils")
-(load "ccl:mac-ui;event-process")
 (build-next)
