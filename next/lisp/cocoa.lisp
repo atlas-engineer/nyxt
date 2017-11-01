@@ -2,9 +2,6 @@
 
 (in-package :interface)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  )
-
 (defparameter *window* nil)
 
 (defmacro on-main-thread (&rest actions)

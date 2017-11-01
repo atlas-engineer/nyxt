@@ -7,6 +7,7 @@
   :pathname "lisp/"
   :components ((:file "package")
 	       (:file "cocoa")
+	       (:file "application")
 	       (:file "macro")
 	       (:file "mode")
 	       (:file "keymap")

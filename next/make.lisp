@@ -37,10 +37,10 @@
 		    :if-exists :supersede)
     (ccl::copy-file "../assets/next.icns" (merge-pathnames "next.icns" *resources-dir*)
 		    :if-exists :supersede)
-    (copy-file (ccl::kernel-path) (merge-pathnames "nEXT" *macos-dir*)
+    (ccl::copy-file (ccl::kernel-path) (merge-pathnames "nEXT" *macos-dir*)
 	       :if-exists :supersede
 	       :preserve-attributes t)
-    (save-application (merge-pathnames "ccl/nEXT.image" *resources-dir*)
+    (ccl::save-application (merge-pathnames "ccl/nEXT.image" *resources-dir*)
 		      :application-class (find-symbol "COCOA-APPLICATION" "CCL"))))
 
 (build-next)
