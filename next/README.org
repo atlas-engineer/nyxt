@@ -1,9 +1,9 @@
 * Contents                                                              :TOC:
 - [[#developer-installation][Developer Installation]]
-  - [[#osx-instructions][OSX Instructions]]
+  - [[#macos-instructions][macOS Instructions]]
   - [[#linux-instructions][Linux Instructions]]
-  - [[#running-next][Running nEXT]]
-  - [[#compiling-next-under-active-development][Compiling nEXT (under active development)]]
+  - [[#running-next-from-source][Running nEXT from Source]]
+  - [[#compiling-next][Compiling nEXT]]
 - [[#release-timeline][Release Timeline]]
   - [[#005][0.05]]
   - [[#004][0.04]]
@@ -18,27 +18,50 @@ compatible. Support for graphics is provided via Cocoa for macOS and
 GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-** OSX Instructions
+** macOS Instructions
 *** Installing CCL
-- Download [[https://ccl.clozure.com/download.html][CCL]], full installation instructions can be found [[https://ccl.clozure.com/install.html][here]].
+- Download CCL: [[https://ccl.clozure.com/download.html]], full
+  installation instructions can be found here:
+  [[https://ccl.clozure.com/install.html]]. Brief installation
+  instructions can be found below:
 
 1. Copy the downloaded CCL directory to ~/usr/local/src/ccl~
 2. Copy the script located at ~ccl/scripts/ccl64~ somewhere into your
    executable path
-3. You may want to make an alias or rename ~ccl64~ to ~ccl~
+3. Optionally make an alias, or rename ~ccl64~ to ~ccl~
+*** Installing Quicklisp
+The official quicklisp website can provide updated links
+to downloads, and instructions:
+
+https://www.quicklisp.org
+
+To install quicklisp:
+
+- Download https://beta.quicklisp.org/quicklisp.lisp
+- Execute ~ccl --load quicklisp.lisp~ to load quicklisp
+- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
+- Evalute in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
+
+more detailed instructions and other resources are readily available
+on the quicklisp website.
 ** Linux Instructions
 Instructions forthcoming pending GTK release.
-** Running nEXT
-From the directory ~next/~ execute the following command to run:
+** Running nEXT from Source
+In a new Terminal execute the following:
 
-1. ~ccl -l load~
-2. This will have loaded nEXT, to launch nEXT, execute
-   ~(next:start)~. A fully functional window should appear.
-3. The repl will remain accessible via the terminal.
+1. ~ccl~ to create a new CCL Repl
+2. Execute ~(require :asdf)~ if asdf is not already loaded
+3. Execute ~(asdf:load-asd "/path/to/next.asd")~, this will load the
+   nEXT system into your Lisp image
+4. Execute ~(next:start)~ to open your first nEXT Window.
 
-** Compiling nEXT (under active development)
-*** OSX Instructions
-Placeholder text.
+** Compiling nEXT
+*** macOS Instructions
+From the CCL Source directory, execute
+
+1. ~ccl --no-init --load make.lisp~
+2. The compiled binary will be present in build/nEXT
+
 * Release Timeline
 Major releases are issued by incrementing the first digit. That is,
 release 1.20, and 2.20 are one major release away from each other. Minor
