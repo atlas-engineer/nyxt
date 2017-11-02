@@ -4,7 +4,7 @@
   :serial t
   :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue :sqlite
 			   (:require "cocoa") (:require "webkit"))
-  :pathname "lisp/"
+  :pathname "source/"
   :components ((:file "package")
 	       (:file "cocoa")
 	       (:file "application")
