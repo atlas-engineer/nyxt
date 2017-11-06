@@ -86,7 +86,7 @@
     (#/setConstant: (minibuffer-height-constraint self) 0))
 
 (defmethod show-minibuffer ((self next-view))
-    (#/setConstant: (minibuffer-height-constraint self) 100))
+    (#/setConstant: (minibuffer-height-constraint self) 0))
 
 (defmacro on-main-thread (&rest actions)
   `(ccl::call-in-event-process
@@ -171,7 +171,8 @@
 (defun web-view-scroll-up (view))
 (defun web-view-set-url-loaded-callback ())
 (defun web-view-get-url (view))
-(defun make-minibuffer ())
+(defun make-minibuffer ()
+  (minibuffer-view *next-view*))
 (defun minibuffer-show ())
 (defun minibuffer-hide ())
 (defun minibuffer-get-input ())
