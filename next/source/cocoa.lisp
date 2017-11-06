@@ -2,6 +2,15 @@
 
 (in-package :interface)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require :interface-packages)
+  (require :objc-initialize)
+  (require :dev-tools)
+  (require :window-utils)
+  (require :window-controller)
+  (require :text-views)
+  (require :constraint-layout))
+
 (defparameter *window* nil)
 (defparameter *next-view* nil)
 
@@ -38,7 +47,7 @@
 
 (defmethod initialize-instance :after ((self fill-container-view)
                                        &key (fill-view nil) &allow-other-keys)
-  (when (view-p fill-view)
+  (when (and fill-view (view-p fill-view))
     (#/addSubview: self fill-view)
     (constrain-size-relative-to fill-view self :rel :=))
   (#/setTranslatesAutoresizingMaskIntoConstraints: self #$NO))
@@ -106,10 +115,9 @@
 
 (defun make-window ()
   (gui::assume-cocoa-thread)
-  ;; Content rect for window, bounds rect for view.
   (ns:with-ns-rect (r 100.0 100.0 1024.0 768.0)
     (ccl::with-autorelease-pool 
-      (let* ((window (make-instance
+      (let* ((.window. (make-instance
 		      'next-window
 		      :with-content-rect r
 		      :style-mask (logior #$NSTitledWindowMask
@@ -117,9 +125,12 @@
 					  #$NSMiniaturizableWindowMask
 					  #$NSResizableWindowMask)
 		      :backing #$NSBackingStoreBuffered
-		      :defer t)))
-	(#/makeKeyAndOrderFront: window +null-ptr+)
-	(setf *window* window)
+		      :defer t))
+	     (.next-view. (make-instance 'next-view)))
+	(#/setContentView: .window. .next-view.)
+	(#/makeKeyAndOrderFront: .window. +null-ptr+)
+	(setf *window* .window.)
+	(setf *next-view* .next-view.)
 	*window*))))
 
 (defun initialize ()
@@ -132,12 +143,7 @@
   (quit))
 
 (defun set-visible-view (view)
-  (on-main-thread
-   (#/setContentView: *window* view)))
-
-(defun set-visible-view-window (view window)
-  (on-main-thread
-   (#/setContentView: window view)))
+  (set-fill-view (fill-container-view *next-view*) view))
 
 (defun make-web-view ()
   (on-main-thread
@@ -159,12 +165,12 @@
 	  (request (#/requestWithURL: ns:ns-url-request nsurl)))
      (#/loadRequest: webframe request))))
 
-(defun add-to-stack-layout ())
+(defun add-to-stack-layout (view))
 (defun delete-view (view))
-(defun web-view-scroll-down ())
-(defun web-view-scroll-up ())
+(defun web-view-scroll-down (view))
+(defun web-view-scroll-up (view))
 (defun web-view-set-url-loaded-callback ())
-(defun web-view-get-url ())
+(defun web-view-get-url (view))
 (defun make-minibuffer ())
 (defun minibuffer-show ())
 (defun minibuffer-hide ())
