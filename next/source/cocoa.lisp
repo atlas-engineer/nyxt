@@ -3,6 +3,81 @@
 (in-package :interface)
 
 (defparameter *window* nil)
+(defparameter *next-view* nil)
+
+(defclass minibuffer-view (ns:ns-view)
+  ((input-buffer :accessor input-buffer)
+   (completion-table :accessor completion-table))
+    (:metaclass ns:+ns-object))
+
+(defmethod initialize-instance :after ((self minibuffer-view)
+				       &key &allow-other-keys)
+  (let ((input-field (make-instance 'ns:ns-text-field))
+	(candidate-table (make-instance 'ns:ns-table-view)))
+    (#/setTranslatesAutoresizingMaskIntoConstraints: self #$NO)
+    (#/setTranslatesAutoresizingMaskIntoConstraints: input-field #$NO)
+    (#/setTranslatesAutoresizingMaskIntoConstraints: candidate-table #$NO)
+    (setf (input-buffer self) input-field)
+    (setf (completion-table self) candidate-table)
+    (#/addSubview: self input-field)
+    (#/addSubview: self candidate-table)
+    (constrain (= (center-x input-field) (center-x self)))
+    (constrain (= (width input-field) (width self)))
+    (constrain (= (top input-field) (top self)))
+    (constrain (= (height input-field) 20))
+    (constrain (= (top candidate-table) (bottom input-field)))
+    (constrain (= (bottom candidate-table) (bottom self)))
+    (constrain (= (width candidate-table) (width self)))))
+
+(defclass fill-container-view (ns:ns-view)
+  ((fill-view :accessor fill-view
+		    :initarg :fill-view))
+  (:default-initargs
+   :fill-view nil)
+  (:metaclass ns:+ns-object))
+
+(defmethod initialize-instance :after ((self fill-container-view)
+                                       &key (fill-view nil) &allow-other-keys)
+  (when (view-p fill-view)
+    (#/addSubview: self fill-view)
+    (constrain-size-relative-to fill-view self :rel :=))
+  (#/setTranslatesAutoresizingMaskIntoConstraints: self #$NO))
+
+(defmethod set-fill-view ((self fill-container-view) view)
+  (on-main-thread
+   (when (fill-view self)
+     (#/removeFromSuperview (fill-view self)))
+   (#/addSubview: self view)
+   (constrain-size-relative-to view self :rel :=))
+  (setf (fill-view self) view))
+
+(defclass next-view (ns:ns-view)
+  ((%fill-container-view :accessor fill-container-view)
+   (%minibuffer-view :accessor minibuffer-view)
+   (minibuffer-height-constraint :accessor minibuffer-height-constraint))
+  (:metaclass ns:+ns-object))
+
+(defmethod initialize-instance :after ((self next-view)
+				       &key &allow-other-keys)
+  (let ((fvc (make-instance 'fill-container-view))
+	(mb (make-instance 'minibuffer-view)))
+    (#/addSubview: self fvc)
+    (#/addSubview: self mb)
+    (setf (fill-container-view self) fvc)
+    (setf (minibuffer-view self) mb)
+    (constrain (= (top fvc) (top self)))
+    (constrain (= (width fvc) (width self)))
+    (constrain (= (bottom fvc) (top mb)))
+    (constrain (= (bottom mb) (bottom self)))
+    (constrain (= (width mb) (width self)))
+    (setf (minibuffer-height-constraint self)
+	  (constrain (= (height mb) 100)))))
+
+(defmethod hide-minibuffer ((self next-view))
+    (#/setConstant: (minibuffer-height-constraint self) 0))
+
+(defmethod show-minibuffer ((self next-view))
+    (#/setConstant: (minibuffer-height-constraint self) 100))
 
 (defmacro on-main-thread (&rest actions)
   `(ccl::call-in-event-process
