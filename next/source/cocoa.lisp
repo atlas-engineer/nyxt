@@ -80,13 +80,15 @@
     (constrain (= (bottom mb) (bottom self)))
     (constrain (= (width mb) (width self)))
     (setf (minibuffer-height-constraint self)
-	  (constrain (= (height mb) 100)))))
+	  (constrain (= (height mb) 0)))))
 
 (defmethod hide-minibuffer ((self next-view))
-    (#/setConstant: (minibuffer-height-constraint self) 0))
+  (on-main-thread
+   (#/setConstant: (minibuffer-height-constraint self) 0)))
 
 (defmethod show-minibuffer ((self next-view))
-    (#/setConstant: (minibuffer-height-constraint self) 0))
+  (on-main-thread
+   (#/setConstant: (minibuffer-height-constraint self) 100)))
 
 (defmacro on-main-thread (&rest actions)
   `(ccl::call-in-event-process
@@ -165,15 +167,20 @@
 	  (request (#/requestWithURL: ns:ns-url-request nsurl)))
      (#/loadRequest: webframe request))))
 
-(defun add-to-stack-layout (view))
-(defun delete-view (view))
+(defun add-to-stack-layout (view)
+  view)
+(defun delete-view (view)
+  view)
 (defun web-view-scroll-down (view))
 (defun web-view-scroll-up (view))
 (defun web-view-set-url-loaded-callback ())
 (defun web-view-get-url (view))
 (defun make-minibuffer ()
   (minibuffer-view *next-view*))
-(defun minibuffer-show ())
-(defun minibuffer-hide ())
+(defun minibuffer-show ()
+  (show-minibuffer *next-view*))
+(defun minibuffer-hide ()
+  (hide-minibuffer *next-view*))
 (defun minibuffer-get-input ())
-(defun minibuffer-set-completion-function ())
+(defun minibuffer-set-completion-function (function)
+  function)
