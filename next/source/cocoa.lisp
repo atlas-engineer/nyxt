@@ -38,6 +38,9 @@
     (constrain (= (bottom candidate-table) (bottom self)))
     (constrain (= (width candidate-table) (width self)))))
 
+(defmethod get-input ((self minibuffer-view))
+  (ns-to-lisp-string (#/stringValue (input-buffer self))))
+
 (defclass fill-container-view (ns:ns-view)
   ((fill-view :accessor fill-view
 		    :initarg :fill-view))
@@ -97,8 +100,8 @@
 
 (defun ns-to-lisp-string (ns-str)
   (if (and (not (eql (%null-ptr) ns-str)) (plusp (#/length ns-str)))
-    (ccl::%get-utf-8-cstring (#/UTF8String ns-str))
-    ""))
+      (ccl::%get-utf-8-cstring (#/UTF8String ns-str))
+      ""))
 
 (defclass next-window (ns:ns-window) ()
   (:metaclass ns:+ns-object))
@@ -181,6 +184,7 @@
   (show-minibuffer *next-view*))
 (defun minibuffer-hide ()
   (hide-minibuffer *next-view*))
-(defun minibuffer-get-input ())
+(defun minibuffer-get-input ()
+  (get-input (minibuffer-view *next-view*)))
 (defun minibuffer-set-completion-function (function)
   function)
