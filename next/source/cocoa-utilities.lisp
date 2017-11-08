@@ -129,3 +129,35 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       (on-main-thread
        (#/addConstraint: install-view constraint)))
     constraint))
+
+(defmethod constrain-size-relative-to ((sized-view ns:ns-view) (relative-view ns:ns-view)
+                                       &key
+                                       (priority nil)
+                                       (install-view (common-superview sized-view relative-view))
+                                       (rel :=)
+                                       (width t)
+                                       (height t))
+  ;; constrains sized-view relative to the size of relative-view
+  ;; rel should be one of the keywords := :<= :>=
+  (let ((constraints nil))
+    (when width
+      (push (make-constraint
+	     :priority priority
+	     :install-view install-view
+	     :item1 sized-view
+	     :att1 :width
+	     :relation rel
+	     :item2 relative-view
+	     :att2 :width) 
+            constraints))
+    (when height
+      (push (make-constraint
+	     :priority priority
+	     :install-view install-view
+	     :item1 sized-view
+	     :att1 :height
+	     :relation rel
+	     :item2 relative-view
+	     :att2 :height)
+            constraints))
+    constraints))

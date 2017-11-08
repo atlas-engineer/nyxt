@@ -2,15 +2,6 @@
 
 (in-package :interface)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (require :interface-packages)
-  (require :objc-initialize)
-  (require :dev-tools)
-  (require :window-utils)
-  (require :window-controller)
-  (require :text-views)
-  (require :constraint-layout))
-
 (defparameter *window* nil)
 (defparameter *next-view* nil)
 
@@ -30,13 +21,13 @@
     (setf (completion-table self) candidate-table)
     (#/addSubview: self input-field)
     (#/addSubview: self candidate-table)
-    (constrain (= (center-x input-field) (center-x self)))
-    (constrain (= (width input-field) (width self)))
-    (constrain (= (top input-field) (top self)))
-    (constrain (= (height input-field) 20))
-    (constrain (= (top candidate-table) (bottom input-field)))
-    (constrain (= (bottom candidate-table) (bottom self)))
-    (constrain (= (width candidate-table) (width self)))))
+    (make-constraint :item1 input-field :att1 :center-x :relation := :item2 self :att2 :center-x)
+    (make-constraint :item1 input-field :att1 :width :relation := :item2 self :att2 :width)
+    (make-constraint :item1 input-field :att1 :top :relation := :item2 self :att2 :top)
+    (make-constraint :item1 input-field :att1 :height :relation := :const 20)
+    (make-constraint :item1 candidate-table :att1 :top :relation := :item2 input-field :att2 :bottom)
+    (make-constraint :item1 candidate-table :att1 :bottom :relation := :item2 self :att2 :bottom)
+    (make-constraint :item1 candidate-table :att1 :width :relation := :item2 self :att2 :width)))
 
 (defmethod get-input ((self minibuffer-view))
   (ns-to-lisp-string (#/stringValue (input-buffer self))))
@@ -77,13 +68,14 @@
     (#/addSubview: self mb)
     (setf (fill-container-view self) fvc)
     (setf (minibuffer-view self) mb)
-    (constrain (= (top fvc) (top self)))
-    (constrain (= (width fvc) (width self)))
-    (constrain (= (bottom fvc) (top mb)))
-    (constrain (= (bottom mb) (bottom self)))
-    (constrain (= (width mb) (width self)))
+    (make-constraint :item1 fvc :att1 :top :relation := :item2 self :att2 :top)
+    (make-constraint :item1 fvc :att1 :width :relation := :item2 self :att2 :width)
+    (make-constraint :item1 fvc :att1 :bottom :relation := :item2 mb :att2 :top)
+    (make-constraint :item1 mb :att1 :bottom :relation := :item2 self :att2 :bottom)
+    (make-constraint :item1 mb :att1 :width :relation := :item2 self :att2 :width)
+
     (setf (minibuffer-height-constraint self)
-	  (constrain (= (height mb) 0)))))
+	  (make-constraint :item1 mb :att1 :height :relation := :const 0))))
 
 (defmethod hide-minibuffer ((self next-view))
   (on-main-thread
