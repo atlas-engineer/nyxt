@@ -93,16 +93,6 @@
   (on-main-thread
    (#/setConstant: (minibuffer-height-constraint self) 100)))
 
-(defmacro on-main-thread (&rest actions)
-  `(ccl::call-in-event-process
-     #'(lambda ()
-         ,@actions)))
-
-(defun ns-to-lisp-string (ns-str)
-  (if (and (not (eql (%null-ptr) ns-str)) (plusp (#/length ns-str)))
-      (ccl::%get-utf-8-cstring (#/UTF8String ns-str))
-      ""))
-
 (defclass next-window (ns:ns-window) ()
   (:metaclass ns:+ns-object))
 
@@ -174,10 +164,13 @@
   view)
 (defun delete-view (view)
   view)
-(defun web-view-scroll-down (view))
-(defun web-view-scroll-up (view))
+(defun web-view-scroll-down (view)
+  view)
+(defun web-view-scroll-up (view)
+  view)
 (defun web-view-set-url-loaded-callback ())
-(defun web-view-get-url (view))
+(defun web-view-get-url (view)
+  view)
 (defun make-minibuffer ()
   (minibuffer-view *next-view*))
 (defun minibuffer-show ()

@@ -6,6 +6,7 @@
 			   (:require "cocoa") (:require "webkit"))
   :pathname "source/"
   :components ((:file "package")
+	       (:file "cocoa-utilities")
 	       (:file "cocoa")
 	       (:file "application")
 	       (:file "macro")
