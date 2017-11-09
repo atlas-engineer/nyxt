@@ -41,7 +41,7 @@
       (fuzzy-match input (mapcar #'node-data children)))))
 
 (defun add-or-traverse-history (mode)
-  ;; get url from mode-view's qwebview
+  ;; get url from mode-view's webview
   (let ((url (interface:web-view-get-url (mode-view mode)))
 	(active-node (mode-history-active-node mode)))
     ;; only add element to the history if it is different than the current

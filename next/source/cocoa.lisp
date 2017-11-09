@@ -69,7 +69,6 @@
     (make-constraint :item1 fvc :att1 :bottom :relation := :item2 mb :att2 :top)
     (make-constraint :item1 mb :att1 :bottom :relation := :item2 self :att2 :bottom)
     (make-constraint :item1 mb :att1 :width :relation := :item2 self :att2 :width)
-
     (setf (minibuffer-height-constraint self)
 	  (make-constraint :item1 mb :att1 :height :relation := :const 0))))
 
@@ -159,7 +158,7 @@
   view)
 (defun web-view-set-url-loaded-callback ())
 (defun web-view-get-url (view)
-  view)
+  (ns-to-lisp-string (#/mainFrameURL view)))
 (defun make-minibuffer ()
   (minibuffer-view *next-view*))
 (defun minibuffer-show ()
