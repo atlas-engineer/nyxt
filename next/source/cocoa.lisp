@@ -14,9 +14,6 @@
 				       &key &allow-other-keys)
   (let ((input-field (make-instance 'ns:ns-text-field))
 	(candidate-table (make-instance 'ns:ns-table-view)))
-    (#/setTranslatesAutoresizingMaskIntoConstraints: self #$NO)
-    (#/setTranslatesAutoresizingMaskIntoConstraints: input-field #$NO)
-    (#/setTranslatesAutoresizingMaskIntoConstraints: candidate-table #$NO)
     (setf (input-buffer self) input-field)
     (setf (completion-table self) candidate-table)
     (#/addSubview: self input-field)
@@ -43,8 +40,7 @@
                                        &key (fill-view nil) &allow-other-keys)
   (when (and fill-view (view-p fill-view))
     (#/addSubview: self fill-view)
-    (constrain-size-relative-to fill-view self :rel :=))
-  (#/setTranslatesAutoresizingMaskIntoConstraints: self #$NO))
+    (constrain-size-relative-to fill-view self :rel :=)))
 
 (defmethod set-fill-view ((self fill-container-view) view)
   (on-main-thread
