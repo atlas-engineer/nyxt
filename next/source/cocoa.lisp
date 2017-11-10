@@ -153,10 +153,13 @@
 (defun delete-view (view)
   view)
 (defun web-view-scroll-down (view)
-  view)
+  (on-main-thread
+   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, 100);")))
 (defun web-view-scroll-up (view)
-  view)
-(defun web-view-set-url-loaded-callback ())
+  (on-main-thread
+   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -100);")))
+(defun web-view-set-url-loaded-callback (function)
+  function)
 (defun web-view-get-url (view)
   (ns-to-lisp-string (#/mainFrameURL view)))
 (defun make-minibuffer ()
