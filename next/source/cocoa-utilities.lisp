@@ -251,3 +251,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                  (row #>NSInteger))
   (declare (ignore tab))
   (lisp-to-ns-string (nth row (data self))))
+
+(defmethod data-changed ((self controller))
+  (#/reloadData (view self)))
