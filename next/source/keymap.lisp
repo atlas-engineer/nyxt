@@ -11,8 +11,6 @@
 
 (in-package :next)
 
-(defvar global-map (make-hash-table :test 'equalp)
-  "A global key map, available in every mode/buffer")
 (defvar *key-sequence-stack* ()
   "A stack that keeps track of the key chords a user has inputted")
 

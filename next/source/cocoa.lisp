@@ -8,6 +8,7 @@
 (defclass minibuffer-view (ns:ns-view)
   ((input-buffer :accessor input-buffer)
    (completion-table :accessor completion-table)
+   (completion-controller :accessor completion-controller)
    (completion-function :accessor completion-function))
     (:metaclass ns:+ns-object))
 
@@ -31,6 +32,7 @@
                     :column-autoresizing-style :uniform)))
     (setf (input-buffer self) input-field)
     (setf (completion-table self) candidate-table)
+    (setf (completion-controller self) candidate-controller)
     (setf (view candidate-controller) candidate-table)
     (#/addSubview: self input-field)
     (#/addSubview: self candidate-table)
