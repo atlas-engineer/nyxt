@@ -39,6 +39,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       (ccl::%get-utf-8-cstring (#/UTF8String ns-str))
       ""))
 
+(defun lisp-to-ns-string (lisp-str)
+  (ccl::%make-nsstring lisp-str))
+
 (defun view-p (thing)
   (typep thing 'ns:ns-view))
 
@@ -161,3 +164,90 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	     :att2 :height)
             constraints))
     constraints))
+
+(defclass controller (ns:ns-object)
+  ((data :accessor data
+         :initarg :data)
+   (objects :accessor objects
+            :initform nil)
+   (col-ids :accessor col-ids
+            :initarg :col-ids)
+   (count-func :accessor count-func
+               :initarg :count-func)
+   (select-func :accessor select-func
+                :initarg :select-func)
+   (edited-func :accessor edited-func
+                :initarg :edited-func)
+   (added-func :accessor added-func
+               :initarg :added-func)
+   (removed-func :accessor removed-func
+                 :initarg :removed-func)
+   (add-child-func :accessor add-child-func
+                   :initarg :add-child-func)
+   (search-key :accessor search-key
+               :initarg :search-key)
+   (search-string :accessor search-string
+                  :initform "")
+   (search-test :accessor search-test
+                :initarg :search-test)
+   (search-results :accessor search-results
+                   :initform nil)
+   (prev-search-results :accessor prev-search-results
+                        :initform nil)
+   (level-info :accessor level-info)
+   (max-level :accessor max-level
+              :initform 0)
+   (column-info :accessor column-info)
+   (nib-initialized :accessor nib-initialized)
+   (view-class :accessor view-class)
+   (single-level :accessor single-level
+                 :initform t)
+   (bind-path :accessor bind-path
+              :initform nil)
+   (bind-obj :accessor bind-obj
+             :initform nil)
+   (reflect-to-bound-object :accessor reflect-to-bound-object
+                            :initform t)
+   (observer-obj :accessor observer-obj
+                 :initform nil)
+   (can-remove :foreign-type #>BOOL :accessor can-remove)
+   (can-insert :foreign-type #>BOOL :accessor can-insert)
+   (can-add-child :foreign-type #>BOOL :accessor can-add-child)
+   (can-search-next :foreign-type #>BOOL :accessor can-search-next)
+   (can-search-prev :foreign-type #>BOOL :accessor can-search-prev)
+   (has-selection :foreign-type #>BOOL :accessor has-selection)
+   (func-owner :accessor func-owner
+               :initarg :func-owner)
+   (view :foreign-type :id :accessor view))
+  (:default-initargs
+    :root nil
+    :root-type nil
+    :col-ids nil
+    :count-func nil
+    :select-func nil
+    :edited-func nil
+    :added-func nil
+    :removed-func nil
+    :add-child-func nil
+    :func-owner nil
+    :undo-doc nil
+    :undo-name "table"
+    :search-key #'identity
+    :search-test #'string-equal)
+  (:metaclass ns:+ns-object))
+
+(objc:defmethod (#/numberOfRowsInTableView: #>NSInteger) 
+                ((self controller) (tab :id))
+  ;; Assumes that objects is some type of sequence
+  ;; Subclass should override this method if that is not true.
+  (declare (ignore tab))
+  (with-slots (data) self
+    (length data)))
+
+(objc:defmethod (#/tableView:objectValueForTableColumn:row: :id) 
+                ((self controller) 
+                 (tab :id)
+                 (col :id)
+                 (row #>NSInteger))
+  (declare (ignore tab))
+  (lisp-to-ns-string (nth row (data self))))

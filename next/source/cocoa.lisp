@@ -12,10 +12,25 @@
 
 (defmethod initialize-instance :after ((self minibuffer-view)
 				       &key &allow-other-keys)
-  (let ((input-field (make-instance 'ns:ns-text-field))
-	(candidate-table (make-instance 'ns:ns-table-view)))
+  (let* ((input-field (make-instance 'ns:ns-text-field))
+	 (candidate-controller (make-instance 'controller
+					      :data (list "Data 1" "Data 2")))
+	 (completion-column (#/autorelease (make-instance ns:ns-table-column
+							  :column-title "Completion"
+							  :identifier "Completion"
+							  :min-width 80
+							  :editable nil
+							  :selectable t)))
+	 (candidate-table
+	  (make-instance ns:ns-table-view
+                    :columns (list completion-column)
+                    :data-source candidate-controller
+                    :delegate candidate-controller
+                    :allows-column-resizing nil
+                    :column-autoresizing-style :uniform)))
     (setf (input-buffer self) input-field)
     (setf (completion-table self) candidate-table)
+    (setf (view candidate-controller) candidate-table)
     (#/addSubview: self input-field)
     (#/addSubview: self candidate-table)
     (make-constraint :item1 input-field :att1 :center-x :relation := :item2 self :att2 :center-x)
