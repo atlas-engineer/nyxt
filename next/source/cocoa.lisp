@@ -7,7 +7,8 @@
 
 (defclass minibuffer-view (ns:ns-view)
   ((input-buffer :accessor input-buffer)
-   (completion-table :accessor completion-table))
+   (completion-table :accessor completion-table)
+   (completion-function :accessor completion-function))
     (:metaclass ns:+ns-object))
 
 (defmethod initialize-instance :after ((self minibuffer-view)
@@ -186,4 +187,4 @@
 (defun minibuffer-get-input ()
   (get-input (minibuffer-view *next-view*)))
 (defun minibuffer-set-completion-function (function)
-  function)
+  (setf (completion-function (minibuffer-view *next-view*)) function))
