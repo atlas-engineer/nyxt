@@ -249,7 +249,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                  (tab :id)
                  (col :id)
                  (row #>NSInteger))
-  (declare (ignore tab))
+  (declare (ignore tab col))
   (lisp-to-ns-string (nth row (data self))))
 
 (defmethod data-changed ((self controller))

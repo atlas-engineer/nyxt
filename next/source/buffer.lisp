@@ -2,11 +2,6 @@
 
 (in-package :next)
 
-(defvar *buffers* ()
-  "A list of all existing buffers")
-(defvar *active-buffer* ()
-  "The currently active buffer")
-
 (defclass buffer ()
   ((name :accessor buffer-name :initarg :name)
    (mode :accessor buffer-mode :initarg :mode)

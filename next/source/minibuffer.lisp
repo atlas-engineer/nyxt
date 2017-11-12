@@ -6,15 +6,6 @@
 
 (defclass minibuffer-mode (mode) ())
 
-(defvar *minibuffer* nil
-  "A variable to store the mini-buffer")
-
-(defparameter *minibuffer-completion-function* nil
-  "A variable to store the function used to generate completion candidates")
-(defparameter *minibuffer-callback* nil
-  "A variable to store the function upon completion of the minibuffer read")
-(defparameter *minibuffer-callback-buffer* nil
-  "A variable to store the buffer which originally requested the minibuffer read")
 
 (defun input (callback-function &optional completion-function)
   (setf *minibuffer-callback* callback-function)
