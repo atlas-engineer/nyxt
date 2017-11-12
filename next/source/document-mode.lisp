@@ -3,8 +3,6 @@
 (in-package :next)
 
 (defvar document-mode-map (make-hash-table :test 'equalp))
-(defvar scroll-distance 30
-  "The distance scroll-down or scroll-up will scroll.")
 
 (defclass document-mode (mode)
   ((history-active-node :accessor mode-history-active-node :initarg :active-node)))

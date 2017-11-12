@@ -10,3 +10,5 @@
   "A variable to store the mini-buffer")
 (defvar *buffers* ()
   "A list of all existing buffers")
+(defvar *scroll-distance* 30
+  "The distance scroll-down or scroll-up will scroll.")
