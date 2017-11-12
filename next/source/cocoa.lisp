@@ -134,11 +134,11 @@
 	(setf *next-view* .next-view.)
 	*window*))))
 
-(defun initialize ()
+(defun initialize ())
+
+(defun start ()
   (on-main-thread
    (make-window)))
-
-(defun start ())
 
 (defun kill ()
   (quit))
