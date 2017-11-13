@@ -7,15 +7,13 @@
    (mode :accessor buffer-mode :initarg :mode)
    (view :accessor buffer-view :initarg :view)))
 
-(defun generate-new-buffer (name mode &optional (add-to-stack-layout t))
+(defun generate-new-buffer (name mode)
   (let ((new-buffer
 	 (make-instance 'buffer
 			:name name
 			:mode mode
 			:view (mode-view mode))))
     (push new-buffer *buffers*)
-    (when add-to-stack-layout
-      (interface:add-to-stack-layout (buffer-view new-buffer)))
     new-buffer))
 
 (defun set-active-buffer (buffer)

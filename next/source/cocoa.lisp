@@ -163,8 +163,6 @@
 	  (request (#/requestWithURL: ns:ns-url-request nsurl)))
      (#/loadRequest: webframe request))))
 
-(defun add-to-stack-layout (view)
-  view)
 (defun delete-view (view)
   view)
 (defun web-view-scroll-down (view)
