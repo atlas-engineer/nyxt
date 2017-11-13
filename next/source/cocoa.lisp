@@ -17,7 +17,7 @@
   (let* ((input-field (make-instance 'ns:ns-text-field
 				     :delegate self))
 	 (candidate-controller (make-instance 'controller
-					      :data (list "Data 1" "Data 2")))
+					      :data ()))
 	 (completion-column (#/autorelease (make-instance ns:ns-table-column
 							  :column-title "Completion"
 							  :identifier "Completion"
@@ -48,16 +48,16 @@
 (defmethod get-input ((self minibuffer-view))
   (ns-to-lisp-string (#/stringValue (input-buffer self))))
 
-(defmethod set-completions ((self minibuffer-view) completions)
-  (with-slots (completion-controller completion-table) self
-    (setf (data completion-controller) completions)
-    (#/reloadData completion-table)))
+(defmethod process-set-completions ((self minibuffer-view))
+  "Process and set completions for the minibuffer"
+  (with-slots (completion-function completion-controller completion-table) self
+    (when (completion-function self)
+      (setf (data completion-controller) (funcall completion-function (get-input self)))
+      (#/reloadData completion-table))))
 
 (objc:defmethod (#/controlTextDidChange: :void) ((self minibuffer-view) notification)
   (declare (ignore notification))
-  (with-slots (completion-function) self
-    (when (completion-function self)
-      (set-completions self (funcall completion-function (get-input self))))))
+  (process-set-completions self))
 
 (defclass fill-container-view (ns:ns-view)
   ((fill-view :accessor fill-view
@@ -108,10 +108,22 @@
 
 (defmethod show-minibuffer ((self next-view))
   (on-main-thread
-   (#/setConstant: (minibuffer-height-constraint self) 100)))
+   (#/setConstant: (minibuffer-height-constraint self) 200)))
 
 (defclass next-window (ns:ns-window) ()
   (:metaclass ns:+ns-object))
+
+(objc:defmethod (#/acceptsFirstResponder :<BOOL>) ((self next-window)) t)
+
+(objc:defmethod (#/keyDown: :void) ((self next-window) event)
+  (let* ((flags (#/modifierFlags event))
+	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event))))
+    (next:push-key-chord
+     (> (logand flags #$NSControlKeyMask) 0)
+     (> (logand flags #$NSAlternateKeyMask) 0)
+     (> (logand flags #$NSCommandKeyMask) 0)
+     character)
+    (call-next-method event)))
 
 (defun process-event (event)
   (let* ((flags (#/modifierFlags event))
@@ -196,10 +208,13 @@
   (minibuffer-view *next-view*))
 
 (defun minibuffer-show ()
-  (show-minibuffer *next-view*))
+  (show-minibuffer *next-view*)
+  (#/makeFirstResponder: *window* (input-buffer (minibuffer-view *next-view*)))
+  (process-set-completions (minibuffer-view *next-view*)))
 
 (defun minibuffer-hide ()
-  (hide-minibuffer *next-view*))
+  (hide-minibuffer *next-view*)
+  (#/makeFirstResponder: *window* (fill-container-view *next-view*)))
 
 (defun minibuffer-get-input ()
   (get-input (minibuffer-view *next-view*)))
