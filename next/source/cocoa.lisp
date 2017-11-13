@@ -14,7 +14,8 @@
 
 (defmethod initialize-instance :after ((self minibuffer-view)
 				       &key &allow-other-keys)
-  (let* ((input-field (make-instance 'ns:ns-text-field))
+  (let* ((input-field (make-instance 'ns:ns-text-field
+				     :delegate self))
 	 (candidate-controller (make-instance 'controller
 					      :data (list "Data 1" "Data 2")))
 	 (completion-column (#/autorelease (make-instance ns:ns-table-column
@@ -46,6 +47,17 @@
 
 (defmethod get-input ((self minibuffer-view))
   (ns-to-lisp-string (#/stringValue (input-buffer self))))
+
+(defmethod set-completions ((self minibuffer-view) completions)
+  (with-slots (completion-controller completion-table) self
+    (setf (data completion-controller) completions)
+    (#/reloadData completion-table)))
+
+(objc:defmethod (#/controlTextDidChange: :void) ((self minibuffer-view) notification)
+  (declare (ignore notification))
+  (with-slots (completion-function) self
+    (when (completion-function self)
+      (set-completions self (funcall completion-function (get-input self))))))
 
 (defclass fill-container-view (ns:ns-view)
   ((fill-view :accessor fill-view
@@ -165,23 +177,32 @@
 
 (defun delete-view (view)
   view)
+
 (defun web-view-scroll-down (view)
   (on-main-thread
    (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, 100);")))
+
 (defun web-view-scroll-up (view)
   (on-main-thread
    (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -100);")))
+
 (defun web-view-set-url-loaded-callback (function)
   function)
+
 (defun web-view-get-url (view)
   (ns-to-lisp-string (#/mainFrameURL view)))
+
 (defun make-minibuffer ()
   (minibuffer-view *next-view*))
+
 (defun minibuffer-show ()
   (show-minibuffer *next-view*))
+
 (defun minibuffer-hide ()
   (hide-minibuffer *next-view*))
+
 (defun minibuffer-get-input ()
   (get-input (minibuffer-view *next-view*)))
+
 (defun minibuffer-set-completion-function (function)
   (setf (completion-function (minibuffer-view *next-view*)) function))

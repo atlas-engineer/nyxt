@@ -9,7 +9,8 @@
   (interface:initialize)
   (interface:start)
   ;; create the default buffers
-  (setf *minibuffer* (generate-new-buffer "minibuffer" (minibuffer-mode) nil))
+  (setf *minibuffer*
+	(make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
   (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
   ;; load the user configuration if it exists
   (load "~/.next.d/init.lisp" :if-does-not-exist nil))
