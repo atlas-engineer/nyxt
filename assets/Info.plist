@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
+	<string>next-application</string>
 	<key>CFBundleIconFile</key>
 	<string>next.icns</string>
 	<key>CFBundlePackageType</key>

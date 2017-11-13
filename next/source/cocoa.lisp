@@ -101,17 +101,14 @@
 (defclass next-window (ns:ns-window) ()
   (:metaclass ns:+ns-object))
 
-(objc:defmethod (#/acceptsFirstResponder :<BOOL>) ((self next-window)) t)
-
-(objc:defmethod (#/keyDown: :void) ((self next-window) event)
+(defun process-event (event)
   (let* ((flags (#/modifierFlags event))
 	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event))))
     (next:push-key-chord
      (> (logand flags #$NSControlKeyMask) 0)
      (> (logand flags #$NSAlternateKeyMask) 0)
      (> (logand flags #$NSCommandKeyMask) 0)
-     character)
-    (call-next-method event)))
+     character)))
 
 (defun make-window ()
   (gui::assume-cocoa-thread)

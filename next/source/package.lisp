@@ -14,6 +14,7 @@
    #:initialize
    #:start
    #:kill
+   #:process-event
    #:set-visible-view
    #:add-to-stack-layout
    #:delete-view

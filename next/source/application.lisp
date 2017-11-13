@@ -1,5 +1,14 @@
 (in-package "CCL")
 
+(defclass next-application (ns:ns-application) ()
+  (:metaclass ns:+ns-application))
+
+(objc:defmethod (#/sendEvent: :void) ((self next-application) event)
+  (if (eql #$NSKeyDown (#/type event))
+      (unless (interface:process-event event)
+	(call-next-method event))
+      (call-next-method event)))
+
 (defclass cocoa-ui-object (ui-object) ())
 
 (defclass cocoa-application (application)
@@ -9,38 +18,35 @@
   (make-instance 'cocoa-application
 		 :ui-object (make-instance 'cocoa-ui-object)))
 
-(defmethod application-error ((a cocoa-application) condition error-pointer)
+(defmethod application-error ((self cocoa-application) condition error-pointer)
   (break-loop-handle-error condition error-pointer))
 
-(defmethod parse-application-arguments ((a cocoa-application))
+(defmethod parse-application-arguments ((self cocoa-application))
   (values nil nil nil nil))
 
-(defmethod toplevel-function ((a cocoa-application) init-file)
+(defmethod toplevel-function ((self cocoa-application) init-file)
   (declare (ignore init-file))
-  (setf (cocoa-application-standalone-p a) t)
-  (prepare-cocoa-application a)
-  (start-cocoa-application a))
+  (setf (cocoa-application-standalone-p self) t)
+  (prepare-cocoa-application self)
+  (start-cocoa-application self))
 
-(defmethod prepare-cocoa-application ((a cocoa-application))
+(defmethod prepare-cocoa-application ((self cocoa-application))
   (call-in-initial-process #'(lambda ()
-			       (setq *nsapp* (load-cocoa-application a))
+			       (setq *nsapp* (load-cocoa-application self))
 			       (next:start))))
 
 (defmethod load-cocoa-application ((a cocoa-application))
   (with-autorelease-pool
     (let* ((bundle (#/mainBundle ns:ns-bundle))
 	   (info (#/infoDictionary bundle))
-	   (classname (#/objectForKey: info #@"NSPrincipalClass"))
 	   (progname (#/objectForKey: info #@"CFBundleName")))
-      (when (%null-ptr-p classname)
-	(setq classname #@"NSApplication"))
       (unless (%null-ptr-p progname)
 	(#/setProcessName: (#/processInfo ns:ns-process-info) progname))
-      (let* ((appclass (#_NSClassFromString classname))
+      (let* ((appclass next-application)
 	     (app (#/sharedApplication appclass)))
 	(when (%null-ptr-p app)
-	  (error "Could not create shared instance of ~s" (%get-cfstring
-							   classname)))
+	  (error "Could not create shared instance of ~s"
+		 (%get-cfstring classname)))
 	app))))
 
 (defun become-foreground-application ()
