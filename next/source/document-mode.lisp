@@ -77,11 +77,11 @@
     (set-url-buffer url *active-buffer*)))
 
 (defun normalize-url (input-url)
-  "Will convert example.com to http://www.example.com"
+  "Will convert example.com to https://www.example.com"
   (let ((url (puri:parse-uri input-url)))
     (if (puri:uri-scheme url)
         input-url
-        (concatenate 'string "http://" input-url))))
+        (concatenate 'string "https://" input-url))))
 
 (defun document-mode ()
   "Base mode for interacting with documents"
