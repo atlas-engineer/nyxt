@@ -14,8 +14,7 @@
 
 (defmethod initialize-instance :after ((self minibuffer-view)
 				       &key &allow-other-keys)
-  (let* ((input-field (make-instance 'ns:ns-text-field
-				     :delegate self))
+  (let* ((input-field (make-instance 'ns:ns-text-field))
 	 (completion-controller (make-instance 'controller
 					      :data ()))
 	 (completion-column (#/autorelease (make-instance ns:ns-table-column
@@ -26,15 +25,14 @@
 							  :selectable t)))
 	 (completion-table
 	  (make-instance ns:ns-table-view
-                    :columns (list completion-column)
-                    :data-source completion-controller
-                    :delegate completion-controller
                     :allows-column-resizing nil
                     :column-autoresizing-style :uniform)))
+    (#/setDelegate: input-field self)
+    (#/addTableColumn: completion-table completion-column)
+    (#/setDataSource: completion-table completion-controller)
     (setf (input-buffer self) input-field)
     (setf (completion-table self) completion-table)
     (setf (completion-controller self) completion-controller)
-    (setf (view completion-controller) completion-table)
     (#/addSubview: self input-field)
     (#/addSubview: self completion-table)
     (make-constraint :item1 input-field :att1 :center-x :relation := :item2 self :att2 :center-x)
@@ -123,18 +121,6 @@
 
 (defclass next-window (ns:ns-window) ()
   (:metaclass ns:+ns-object))
-
-(objc:defmethod (#/acceptsFirstResponder :<BOOL>) ((self next-window)) t)
-
-(objc:defmethod (#/keyDown: :void) ((self next-window) event)
-  (let* ((flags (#/modifierFlags event))
-	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event))))
-    (next:push-key-chord
-     (> (logand flags #$NSControlKeyMask) 0)
-     (> (logand flags #$NSAlternateKeyMask) 0)
-     (> (logand flags #$NSCommandKeyMask) 0)
-     character)
-    (call-next-method event)))
 
 (defun process-event (event)
   (let* ((flags (#/modifierFlags event))
