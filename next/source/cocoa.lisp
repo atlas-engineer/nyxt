@@ -166,12 +166,14 @@
 
 (defun make-web-view ()
   (on-main-thread
-   (let ((view (make-instance
-		'next-web-view
-		:frame-name #@"frame"
-		:group-name #@"group")))
-     (#/setFrameLoadDelegate: view view)
-     view)))
+   (ccl::with-autorelease-pool
+     (let ((view (#/retain
+		  (make-instance
+		   'next-web-view
+		   :frame-name #@"frame"
+		   :group-name #@"group"))))
+       (#/setFrameLoadDelegate: view view)
+       view))))
 
 (defun url-from-string (s)
   (ccl::with-autorelease-pool
@@ -185,7 +187,7 @@
      (#/loadRequest: webframe request))))
 
 (defun delete-view (view)
-  view)
+  (#/release view))
 
 (defun web-view-scroll-down (view)
   (on-main-thread
