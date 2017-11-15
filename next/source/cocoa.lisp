@@ -60,7 +60,7 @@
   (process-set-completions self))
 
 (defclass next-web-view (ns:web-view)
-  ((load-finished-call-back :accessor load-finished-call-back))
+  ((load-finished-callback :accessor load-finished-callback))
   (:metaclass ns:+ns-object))
 
 (objc:defmethod (#/webView:didFinishLoadForFrame: :void)
@@ -68,7 +68,7 @@
      (wvs :id)
      (fl :id))
   (declare (ignore wvs fl))
-  (funcall (load-finished-call-back self)))
+  (funcall (load-finished-callback self)))
 
 (defclass fill-container-view (ns:ns-view)
   ((fill-view :accessor fill-view
@@ -210,7 +210,7 @@
    (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -100);")))
 
 (defun web-view-set-url-loaded-callback (view function)
-  (setf (load-finished-call-back view) function))
+  (setf (load-finished-callback view) function))
 
 (defun web-view-get-url (view)
   (ns-to-lisp-string (#/mainFrameURL view)))

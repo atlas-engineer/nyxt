@@ -34,7 +34,12 @@
 
 (defun history-fowards-query-complete (input)
   ;; provide completion candidates to the history-forwards-query function
-  (let ((children (node-children (mode-history-active-node (buffer-mode *minibuffer-callback-buffer*)))))
+  (let ((children
+	 ;; Find children of active document-mode instance
+	 (node-children (mode-history-active-node
+			 ;; Find active document-mode instance from minibuffer callback
+			 (buffer-mode (minibuffer-callback-buffer
+				       (buffer-mode *minibuffer*)))))))
     (when children
       (fuzzy-match input (mapcar #'node-data children)))))
 
