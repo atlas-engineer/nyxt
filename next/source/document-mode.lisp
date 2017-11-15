@@ -93,6 +93,6 @@
 			      :active-node root)))
     (interface:web-view-set-url-loaded-callback
      (mode-view mode)
-     (lambda (ok) (add-or-traverse-history mode)))
+     (lambda () (add-or-traverse-history mode)))
     ;; return instance of mode
     mode))

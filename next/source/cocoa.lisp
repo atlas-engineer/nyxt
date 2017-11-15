@@ -59,16 +59,16 @@
   (declare (ignore notification))
   (process-set-completions self))
 
-(defclass web-view-delegate (ns:ns-object)
-  ()
+(defclass next-web-view (ns:web-view)
+  ((load-finished-call-back :accessor load-finished-call-back))
   (:metaclass ns:+ns-object))
 
 (objc:defmethod (#/webView:didFinishLoadForFrame: :void)
-    ((self web-view-delegate)
+    ((self next-web-view)
      (wvs :id)
      (fl :id))
   (declare (ignore wvs fl))
-  (print "called"))
+  (funcall (load-finished-call-back self)))
 
 (defclass fill-container-view (ns:ns-view)
   ((fill-view :accessor fill-view
@@ -180,13 +180,11 @@
 
 (defun make-web-view ()
   (on-main-thread
-   (let* ((view-delegate (make-instance
-			  'web-view-delegate))
-	  (view (make-instance
-		 'ns:web-view
-		 :frame-name #@"frame"
-		 :group-name #@"group")))
-     (#/setFrameLoadDelegate: view view-delegate)
+   (let ((view (make-instance
+		'next-web-view
+		:frame-name #@"frame"
+		:group-name #@"group")))
+     (#/setFrameLoadDelegate: view view)
      view)))
 
 (defun url-from-string (s)
@@ -212,7 +210,7 @@
    (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -100);")))
 
 (defun web-view-set-url-loaded-callback (view function)
-  function)
+  (setf (load-finished-call-back view) function))
 
 (defun web-view-get-url (view)
   (ns-to-lisp-string (#/mainFrameURL view)))
