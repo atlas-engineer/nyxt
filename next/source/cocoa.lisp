@@ -16,7 +16,7 @@
 				       &key &allow-other-keys)
   (let* ((input-field (make-instance 'ns:ns-text-field
 				     :delegate self))
-	 (candidate-controller (make-instance 'controller
+	 (completion-controller (make-instance 'controller
 					      :data ()))
 	 (completion-column (#/autorelease (make-instance ns:ns-table-column
 							  :column-title "Completion"
@@ -24,26 +24,26 @@
 							  :min-width 80
 							  :editable nil
 							  :selectable t)))
-	 (candidate-table
+	 (completion-table
 	  (make-instance ns:ns-table-view
                     :columns (list completion-column)
-                    :data-source candidate-controller
-                    :delegate candidate-controller
+                    :data-source completion-controller
+                    :delegate completion-controller
                     :allows-column-resizing nil
                     :column-autoresizing-style :uniform)))
     (setf (input-buffer self) input-field)
-    (setf (completion-table self) candidate-table)
-    (setf (completion-controller self) candidate-controller)
-    (setf (view candidate-controller) candidate-table)
+    (setf (completion-table self) completion-table)
+    (setf (completion-controller self) completion-controller)
+    (setf (view completion-controller) completion-table)
     (#/addSubview: self input-field)
-    (#/addSubview: self candidate-table)
+    (#/addSubview: self completion-table)
     (make-constraint :item1 input-field :att1 :center-x :relation := :item2 self :att2 :center-x)
     (make-constraint :item1 input-field :att1 :width :relation := :item2 self :att2 :width)
     (make-constraint :item1 input-field :att1 :top :relation := :item2 self :att2 :top)
     (make-constraint :item1 input-field :att1 :height :relation := :const 20)
-    (make-constraint :item1 candidate-table :att1 :top :relation := :item2 input-field :att2 :bottom)
-    (make-constraint :item1 candidate-table :att1 :bottom :relation := :item2 self :att2 :bottom)
-    (make-constraint :item1 candidate-table :att1 :width :relation := :item2 self :att2 :width)))
+    (make-constraint :item1 completion-table :att1 :top :relation := :item2 input-field :att2 :bottom)
+    (make-constraint :item1 completion-table :att1 :bottom :relation := :item2 self :att2 :bottom)
+    (make-constraint :item1 completion-table :att1 :width :relation := :item2 self :att2 :width)))
 
 (defmethod get-input ((self minibuffer-view))
   (ns-to-lisp-string (#/stringValue (input-buffer self))))
@@ -58,6 +58,17 @@
 (objc:defmethod (#/controlTextDidChange: :void) ((self minibuffer-view) notification)
   (declare (ignore notification))
   (process-set-completions self))
+
+(defclass web-view-delegate (ns:ns-object)
+  ()
+  (:metaclass ns:+ns-object))
+
+(objc:defmethod (#/webView:didFinishLoadForFrame: :void)
+    ((self web-view-delegate)
+     (wvs :id)
+     (fl :id))
+  (declare (ignore wvs fl))
+  (print "called"))
 
 (defclass fill-container-view (ns:ns-view)
   ((fill-view :accessor fill-view
@@ -169,11 +180,13 @@
 
 (defun make-web-view ()
   (on-main-thread
-   (let ((view
-	  (make-instance
-	   'ns:web-view
-	   :frame-name #@"frame"
-	   :group-name #@"group")))
+   (let* ((view-delegate (make-instance
+			  'web-view-delegate))
+	  (view (make-instance
+		 'ns:web-view
+		 :frame-name #@"frame"
+		 :group-name #@"group")))
+     (#/setFrameLoadDelegate: view view-delegate)
      view)))
 
 (defun url-from-string (s)
@@ -198,7 +211,7 @@
   (on-main-thread
    (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -100);")))
 
-(defun web-view-set-url-loaded-callback (function)
+(defun web-view-set-url-loaded-callback (view function)
   function)
 
 (defun web-view-get-url (view)
