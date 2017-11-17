@@ -106,21 +106,3 @@ The following keys exist as special keys:
 1. ~C~: Control
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
-
-*** Swapping the Modifier Keys
-nEXT is built with QT, and on Mac OS, QT will automatically modify
-what control, meta and caps lock as keycodes sent to the key-capturing
-system. In order to maintain consistency with other programs that you
-are familiar with, you may want to switch to the default emacs style
-keybindings; to do so; simply copy the snippet below into your
-init.lisp file.
-
-#+NAME: Emacs Style Modifier Keys
-#+BEGIN_SRC lisp
-(let ((original_control *control-key*)
-      (original_meta *meta-key*)
-      (original_alt *alt-key*))
-  (setf *control-key* original_meta)
-  (setf *meta-key* original_alt)
-  (setf *super-key* original_control))
-#+END_SRC

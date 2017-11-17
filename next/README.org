@@ -1,9 +1,9 @@
 * Contents                                                              :TOC:
 - [[#developer-installation][Developer Installation]]
-  - [[#osx-instructions][OSX Instructions]]
+  - [[#macos-instructions][macOS Instructions]]
   - [[#linux-instructions][Linux Instructions]]
-  - [[#running-next][Running nEXT]]
-  - [[#compiling-next-under-active-development][Compiling nEXT (under active development)]]
+  - [[#running-next-from-source][Running nEXT from Source]]
+  - [[#compiling-next][Compiling nEXT]]
 - [[#release-timeline][Release Timeline]]
   - [[#005][0.05]]
   - [[#004][0.04]]
@@ -13,51 +13,22 @@
 - [[#contributing][Contributing]]
 
 * Developer Installation
-nEXT browser is built with ECL and EQL, and is designed to be cross
-platform compatible. To download a prebuilt-binary, please see the
+nEXT browser is built with CCL, and is designed to be cross platform
+compatible. Support for graphics is provided via Cocoa for macOS and
+GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-** OSX Instructions
-*** Installing Xcode Command Line Tools
-Before installing anything, install the Xcode Comand line tools. To
-install the Xcode Command Line tools on OSX execute the following in a
-terminal:
+** macOS Instructions
+*** Installing CCL
+- Download CCL: [[https://ccl.clozure.com/download.html]], full
+  installation instructions can be found here:
+  [[https://ccl.clozure.com/install.html]]. Brief installation
+  instructions can be found below:
 
-~xcode-select --install~
-
-To verify that the command tools were successfully installed type:
-
-~xcode-select -p~
-
-the output of this command should be the path at which the command
-line tools are installed.
-
-*** Installing QT5 (Cross Platform GUI Toolkit)
-QT5 is available from a number of sources, the easiest is to install
-it via a package manager such as Macports or Brew. However you
-install, ensure that you install it with webkit support.
-
-You can install QT5 via Macports with the following command:
-
-~port install qt5~
-
-You can also install QT5 via the official qt installer:
-
-https://www.qt.io/download/
-
-To test your installation/version of QT, execute ~qmake --version~.
-
-*** Installing ECL (Embeddable Common Lisp)
-Compilable tarballs can be found on the ECL website:
-
-https://common-lisp.net/project/ecl/static/files/release/
-
-To verify your installation of ECL:
-
-- Execute ~/usr/local/bin/ecl~, it should show an ECL Prompt
-- Verify the contents of ~/usr/local/lib~ contain the ecl libraries.
-- Verify the contents of ~/usr/local/include/ecl~ contain the header files
-
+1. Copy the downloaded CCL directory to ~/usr/local/src/ccl~
+2. Copy the script located at ~ccl/scripts/ccl64~ somewhere into your
+   executable path
+3. Optionally make an alias, or rename ~ccl64~ to ~ccl~
 *** Installing Quicklisp
 The official quicklisp website can provide updated links
 to downloads, and instructions:
@@ -67,127 +38,30 @@ https://www.quicklisp.org
 To install quicklisp:
 
 - Download https://beta.quicklisp.org/quicklisp.lisp
-- Execute ~ecl --load quicklisp.lisp~ to load quicklisp
+- Execute ~ccl --load quicklisp.lisp~ to load quicklisp
 - Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
-- Evalute in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ecl init file
+- Evalute in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-
-*** Installing EQL5 Library & Executable (Embedded QT Lisp)
-The source for EQL5 is available here:
-
-https://gitlab.com/eql/EQL5
-
-To build and install the EQL Library/Executable:
-
-1. Clone the Repository into a directory where you plan to keep the
-   installation, this cannot be moved after installation.
-2. In ~src/~ exec: ~ecl -shell make.lisp~ This command generates
-   ~src/libini_eql5.a~.
-3. Edit ~src/eql5.pro~ commenting out all QT modules you do not
-   require.
-
-   - The webkit module is required for nEXT.
-
-4. In ~src/~ exec: ~qmake eql5.pro~. This command generates
-   the makefile.
-5. In ~src/~ exec: ~make~
-6. In ~src/~ exec: ~sudo make install~
-
-To test your installation exec ~eql5 -qgui~, you should presented
-with a REPL and a GUI.
-
-After the installation, the following should be completed:
-
-- ~/usr/local/bin~ contains an ~eql5~ executable
-- ~/usr/local/include~ contains a folder named ~eql5~
-- ~/usr/local/lib~ contains all built QT modules (selected in
-  ~src/eql5.pro~) and libeql \*.dylib files
-
 ** Linux Instructions
-Due to the large variances in Linux distributions: file locations,
-package managers, and best practices, this installation guide attempts
-to make as few decisions as possible- instead opting to list the
-requirements necessary to build nEXT.
+Instructions forthcoming pending GTK release.
+** Running nEXT from Source
+In a new Terminal execute the following:
 
-*** Installing a compiler
-Install a C/C++ Compiler
-*** Installing QT5
-Install QT directly from QT: [[https://www.qt.io/download/][download QT]], or install via
-third party package manager sources, apt-get etc.
-*** Installing ECL (Embeddable Common Lisp)
-Compilable tarballs can be found on the ECL website: [[https://common-lisp.net/project/ecl/static/files/release/][download ECL]]
-*** Installing Quicklisp
-The official quicklisp website can provide updated links
-to downloads, and instructions:
+1. ~ccl~ to create a new CCL Repl
+2. Execute ~(require :asdf)~ if asdf is not already loaded
+3. Execute ~(asdf:load-asd "/path/to/next.asd")~, this will load the
+   nEXT system into your Lisp image
+4. Execute ~(next:start)~ to open your first nEXT Window.
 
-To install quicklisp:
+** Compiling nEXT
+*** macOS Instructions
+From the CCL Source directory, execute
 
-- Download https://beta.quicklisp.org/quicklisp.lisp
-- Execute ~ecl --load quicklisp.lisp~ to load quicklisp
-- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
-- Evalute in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ecl init file
+1. ~ccl --no-init --load make.lisp~
+2. The compiled binary will be present in build/nEXT
 
-more detailed instructions and other resources are readily available
-on the quicklisp website.
-*** Installing EQL5 Library & Executable (Embedded QT Lisp)
-The source for EQL5 is available here:
-
-https://gitlab.com/eql/EQL5
-
-To build and install the EQL Library/Executable:
-
-1. Clone the Repository into a directory where you plan to keep the
-   installation, this cannot be moved after installation.
-2. In ~src/~ exec: ~ecl -shell make.lisp~ This command generates
-   ~src/libini_eql5.a~.
-3. Edit ~src/eql5.pro~ commenting out all QT modules you do not
-   require.
-
-   - The webkit module is required for nEXT.
-
-4. In ~src/~ exec: ~qmake eql5.pro~. This command generates
-   the makefile.
-5. In ~src/~ exec: ~make~
-6. In ~src/~ exec: ~sudo make install~
-
-To test your installation exec ~eql5 -qgui~, you should presented
-with a REPL and a GUI.
-
-After the installation, the following should be completed:
-
-- ~/usr/local/bin~ contains an ~eql5~ executable
-- ~/usr/local/include~ contains a folder named ~eql5~
-- ~/usr/local/lib~ contains all built QT modules (selected in
-  ~src/eql5.pro~) and libeql \*.dylib files
-
-** Running nEXT
-From the directory ~next/~ execute the following command to run:
-
-1. ~eql5 run~
-
-You should be presented with a QT Window. To test that everything
-is working execute the following commands:
-
-1. ~C-l~
-2. A minibuffer should pop-up in which you can enter text
-
-From the terminal that you launched nEXT you'll be able to see output
-from the program. You can additionally create a REPL during runtime
-in the following way: ~eql5 run -qgui~.
-
-If an exception or crash occurs, you'll be presented with a REPL that
-you can use to debug the program.
-
-** Compiling nEXT (under active development)
-*** OSX Instructions
-From the directory ~next/~ execute the following commands to compile:
-
-1. ~eql5 make~
-
-Now you should have a compiled next.app, simply execute this app to
-start nEXT browser.
 * Release Timeline
 Major releases are issued by incrementing the first digit. That is,
 release 1.20, and 2.20 are one major release away from each other. Minor

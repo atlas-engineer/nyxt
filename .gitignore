@@ -1,22 +1,11 @@
-# C extensions
-*.so
-
 # Ignore folders
 archive/
 offline/
-environment/
+online/
 
 # Ignore info org files
 info.org
 info.org_archive
-
-# Qmake Stash
-*.qmake.stash
-
-# Ignore intermediary
-*.a
-*.o
-Makefile
 
 # Ignore App
 *.app

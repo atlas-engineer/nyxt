@@ -3,17 +3,15 @@
 (in-package :next)
 
 (defvar document-mode-map (make-hash-table :test 'equalp))
-(defvar scroll-distance 30
-  "The distance scroll-down or scroll-up will scroll.")
 
 (defclass document-mode (mode)
   ((history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
-  (interface:web-view-scroll-down (buffer-view *active-buffer*) scroll-distance))
+  (interface:web-view-scroll-down (buffer-view *active-buffer*) *scroll-distance*))
 
 (defun scroll-up ()
-  (interface:web-view-scroll-up (buffer-view *active-buffer*) scroll-distance))
+  (interface:web-view-scroll-up (buffer-view *active-buffer*) *scroll-distance*))
 
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
@@ -36,12 +34,17 @@
 
 (defun history-fowards-query-complete (input)
   ;; provide completion candidates to the history-forwards-query function
-  (let ((children (node-children (mode-history-active-node (buffer-mode *minibuffer-callback-buffer*)))))
+  (let ((children
+	 ;; Find children of active document-mode instance
+	 (node-children (mode-history-active-node
+			 ;; Find active document-mode instance from minibuffer callback
+			 (buffer-mode (minibuffer-callback-buffer
+				       (buffer-mode *minibuffer*)))))))
     (when children
       (fuzzy-match input (mapcar #'node-data children)))))
 
 (defun add-or-traverse-history (mode)
-  ;; get url from mode-view's qwebview
+  ;; get url from mode-view's webview
   (let ((url (interface:web-view-get-url (mode-view mode)))
 	(active-node (mode-history-active-node mode)))
     ;; only add element to the history if it is different than the current
@@ -79,11 +82,11 @@
     (set-url-buffer url *active-buffer*)))
 
 (defun normalize-url (input-url)
-  "Will convert example.com to http://www.example.com"
+  "Will convert example.com to https://www.example.com"
   (let ((url (puri:parse-uri input-url)))
     (if (puri:uri-scheme url)
         input-url
-        (concatenate 'string "http://" input-url))))
+        (concatenate 'string "https://" input-url))))
 
 (defun document-mode ()
   "Base mode for interacting with documents"
@@ -95,6 +98,6 @@
 			      :active-node root)))
     (interface:web-view-set-url-loaded-callback
      (mode-view mode)
-     (lambda (ok) (add-or-traverse-history mode)))
+     (lambda () (add-or-traverse-history mode)))
     ;; return instance of mode
     mode))

@@ -9,13 +9,13 @@
    #:push-key-chord))
 
 (defpackage :interface
-  (:use :common-lisp)
+  (:use :common-lisp :ccl)
   (:export
    #:initialize
    #:start
-   #:quit
+   #:kill
+   #:process-event
    #:set-visible-view
-   #:add-to-stack-layout
    #:delete-view
    #:make-web-view
    #:web-view-scroll-down
