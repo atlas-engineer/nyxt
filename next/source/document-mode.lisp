@@ -8,10 +8,10 @@
   ((history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
-  (interface:web-view-scroll-down (buffer-view *active-buffer*)))
+  (interface:web-view-scroll-down (buffer-view *active-buffer*) *scroll-distance*))
 
 (defun scroll-up ()
-  (interface:web-view-scroll-up (buffer-view *active-buffer*)))
+  (interface:web-view-scroll-up (buffer-view *active-buffer*) *scroll-distance*))
 
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
