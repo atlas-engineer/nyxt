@@ -7,9 +7,9 @@
   :pathname "source/"
   :components ((:file "package")
 	       (:file "global")
-	       (:file "cocoa-utilities")
-	       (:file "cocoa")
-	       (:file "application")
+	       (:file "cocoa/utilities")
+	       (:file "cocoa/cocoa")
+	       (:file "cocoa/application")
 	       (:file "macro")
 	       (:file "mode")
 	       (:file "keymap")
