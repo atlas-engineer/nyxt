@@ -3,7 +3,7 @@
 (in-package :next)
 
 (defun start ()
-  (ensure-directories-exist (uiop:physicalize-pathname #P"~/.next.d/"))
+  (ensure-directories-exist (uiop:physicalize-pathname "~/.next.d/"))
   (initialize-bookmark-db)
   (initialize-default-key-bindings)
   (interface:initialize)
