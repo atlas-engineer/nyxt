@@ -5,6 +5,7 @@
   - [[#running-next-from-source][Running nEXT from Source]]
   - [[#compiling-next][Compiling nEXT]]
 - [[#release-timeline][Release Timeline]]
+  - [[#006][0.06]]
   - [[#005][0.05]]
   - [[#004][0.04]]
   - [[#003][0.03]]
@@ -68,14 +69,13 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
-** 0.05
+** 0.06
 *** TODO Window System
 - Emacs like window system
-*** TODO Add REPL
-- Add slime support
-*** TODO Create Page class with meta information about page
-- Use this as data field in tree
-- Use a method from this class for persistence
+** 0.05
+*** TODO Add Link Hints
+- user should be able to navigate all links entirely by keyboard
+*** TODO Add Slime Support
 *** TODO History
 - History will be stored in a db (possibly sqlite) with additional
   metadata that allows searching semantically, as well as searching
@@ -83,7 +83,8 @@ two minor releases following major release 1.0.
 **** TODO History is searchable
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
-** 0.04
+** DONE 0.04
+CLOSED: [2017-11-20 Mon 17:57]
 *** DONE Isolate backend QT Code
 CLOSED: [2017-10-23 Mon 01:23]
 - Break apart QT code into separate file
