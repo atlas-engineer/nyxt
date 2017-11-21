@@ -12,3 +12,10 @@
 ;; when given input
 (defmacro :input-complete (minibuffer function completion)
   `#'(lambda () (input (mode ,minibuffer) #',function #',completion)))
+
+;; used to allow inlining of parenscript compilation in a lisp file.
+;; with the syntax (defparen name) allows definition of a paren
+;; to some constant of name "name"
+(defmacro defparen (script-name &rest script-body)
+  `(defparameter ,script-name
+     (ps:ps ,@script-body)))
