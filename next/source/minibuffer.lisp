@@ -5,32 +5,32 @@
 (defvar minibuffer-mode-map (make-hash-table :test 'equalp))
 
 (defclass minibuffer-mode (mode)
-  ((minibuffer-completion-function :accessor minibuffer-completion-function)
-   (minibuffer-callback-function :accessor minibuffer-callback-function)
-   (minibuffer-callback-buffer :accessor minibuffer-callback-buffer)))
+  ((completion-function :accessor completion-function)
+   (callback-function :accessor callback-function)
+   (callback-buffer :accessor callback-buffer)))
 
-(defmethod input ((self minibuffer-mode) callback-function &optional completion-function)
-  (with-slots (minibuffer-callback-function minibuffer-completion-function minibuffer-callback-buffer) self
-    (setf minibuffer-callback-function callback-function)
-    (setf minibuffer-completion-function completion-function)
-    (setf minibuffer-callback-buffer *active-buffer*)
-    (interface:minibuffer-set-completion-function completion-function))
+(defmethod input ((self minibuffer-mode) callback &optional completion)
+  (with-slots (callback-function completion-function callback-buffer) self
+    (setf callback-function callback)
+    (setf completion-function completion)
+    (setf callback-buffer *active-buffer*)
+    (interface:minibuffer-set-completion-function completion))
   (set-active-buffer *minibuffer*)
   (interface:minibuffer-show))
 
 (defmethod return-input ((self minibuffer-mode))
-  (set-active-buffer (minibuffer-callback-buffer self))
-  (with-slots (minibuffer-completion-function minibuffer-callback-function) self
-      (if minibuffer-completion-function
-      (funcall minibuffer-callback-function
-	       (nth 0 (funcall minibuffer-completion-function
+  (set-active-buffer (callback-buffer self))
+  (with-slots (completion-function callback-function) self
+      (if completion-function
+      (funcall callback-function
+	       (nth 0 (funcall completion-function
 			       (interface:minibuffer-get-input))))
-      (funcall minibuffer-callback-function
+      (funcall callback-function
 	       (interface:minibuffer-get-input))))
   (interface:minibuffer-hide))
 
 (defmethod cancel-input ((self minibuffer-mode))
-  (set-active-buffer (minibuffer-callback-buffer self))
+  (set-active-buffer (callback-buffer self))
   (interface:minibuffer-hide))
 
 (defun minibuffer-mode ()

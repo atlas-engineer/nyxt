@@ -38,8 +38,7 @@
 	 ;; Find children of active document-mode instance
 	 (node-children (mode-history-active-node
 			 ;; Find active document-mode instance from minibuffer callback
-			 (buffer-mode (minibuffer-callback-buffer
-				       (buffer-mode *minibuffer*)))))))
+			 (buffer-mode (callback-buffer (buffer-mode *minibuffer*)))))))
     (when children
       (fuzzy-match input (mapcar #'node-data children)))))
 
