@@ -42,7 +42,7 @@
   ;; If key recognized, execute function
   (let ((key-maps (list
 		   global-map
-		   (mode-keymap (buffer-mode *active-buffer*)))))
+		   (mode-keymap (mode *active-buffer*)))))
     (dolist (map key-maps)
       (when (gethash *key-sequence-stack* map)
 	;; If not prefix key, consume

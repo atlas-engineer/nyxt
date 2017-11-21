@@ -8,26 +8,26 @@
   ((history-active-node :accessor mode-history-active-node :initarg :active-node)))
 
 (defun scroll-down ()
-  (interface:web-view-scroll-down (buffer-view *active-buffer*) *scroll-distance*))
+  (interface:web-view-scroll-down (view *active-buffer*) *scroll-distance*))
 
 (defun scroll-up ()
-  (interface:web-view-scroll-up (buffer-view *active-buffer*) *scroll-distance*))
+  (interface:web-view-scroll-up (view *active-buffer*) *scroll-distance*))
 
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
-  (let ((parent (node-parent (mode-history-active-node (buffer-mode *active-buffer*)))))
+  (let ((parent (node-parent (mode-history-active-node (mode *active-buffer*)))))
     (when parent
 	(set-url (node-data parent)))))
 
 (defun history-forwards ()
   ;; move forwards in history selecting the first child
-  (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
+  (let ((children (node-children (mode-history-active-node (mode *active-buffer*)))))
     (unless (null children)
       (set-url (node-data (nth 0 children))))))
 
 (defun history-forwards-query (input)
   ;; move forwards in history querying if more than one child present
-  (let ((children (node-children (mode-history-active-node (buffer-mode *active-buffer*)))))
+  (let ((children (node-children (mode-history-active-node (mode *active-buffer*)))))
     (loop for child in children do
 	 (when (equalp (node-data child) input)
 	   (set-url (node-data child))))))
@@ -38,7 +38,7 @@
 	 ;; Find children of active document-mode instance
 	 (node-children (mode-history-active-node
 			 ;; Find active document-mode instance from minibuffer callback
-			 (buffer-mode (callback-buffer (buffer-mode *minibuffer*)))))))
+			 (mode (callback-buffer (mode *minibuffer*)))))))
     (when children
       (fuzzy-match input (mapcar #'node-data children)))))
 
@@ -73,8 +73,8 @@
     (set-url input-url)))
 
 (defun set-url-buffer (input-url buffer)
-  (setf (buffer-name buffer) input-url)
-  (interface:web-view-set-url (buffer-view buffer) input-url))
+  (setf (name buffer) input-url)
+  (interface:web-view-set-url (view buffer) input-url))
 
 (defun set-url (input-url)
   (let ((url (normalize-url input-url)))

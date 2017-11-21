@@ -17,7 +17,7 @@
 (defun bookmark-current-page ()
   (let ((db (sqlite:connect
 	     (truename (probe-file "~/.next.d/bookmark.db"))))
-	(url (buffer-name *active-buffer*)))
+	(url (name *active-buffer*)))
     (sqlite:execute-non-query
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
