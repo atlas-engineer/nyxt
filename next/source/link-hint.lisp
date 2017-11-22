@@ -91,7 +91,8 @@
   (hints-add (links-find window document)))
 
 (defun add-link-hints ()
-  (interface:web-view-execute (view *active-buffer*) add-link-hints))
+  (cl-json:decode-json-from-string
+   (interface:web-view-execute (view *active-buffer*) add-link-hints)))
 
 (defparen remove-link-hints
   (defun qsa (context selector)
