@@ -2,7 +2,8 @@
 ;;;; next.asd
 (defsystem :next
   :serial t
-  :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue :sqlite :parenscript
+  :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue
+			   :sqlite :parenscript :cl-json
 			   (:require "cocoa") (:require "webkit"))
   :pathname "source/"
   :components ((:file "package")
