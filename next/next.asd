@@ -17,6 +17,7 @@
 	       (:file "minibuffer")
 	       (:file "buffer")
 	       (:file "tree-history")
+	       (:file "link-hint")
 	       (:file "document-mode")
 	       (:file "bookmark")
 	       (:file "completion")
