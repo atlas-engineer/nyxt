@@ -4,14 +4,14 @@
 
 ;; used to provide input to buffers, "function" must accept input from
 ;; the minibuffer
-(defmacro :input (minibuffer function)
-  `#'(lambda () (input (mode ,minibuffer) #',function)))
+(defmacro :input (minibuffer function &rest rest)
+  `#'(lambda () (input (mode ,minibuffer) #',function ,@rest)))
 
 ;; used to provide input to buffers with an optional completion
 ;; function, the completion function must narrow a list of candidates
 ;; when given input
 (defmacro :input-complete (minibuffer function completion)
-  `#'(lambda () (input (mode ,minibuffer) #',function #',completion)))
+  `#'(lambda () (input (mode ,minibuffer) #',function :completion #',completion)))
 
 ;; used to allow inlining of parenscript compilation in a lisp file.
 ;; with the syntax (defparen name) allows definition of a paren
