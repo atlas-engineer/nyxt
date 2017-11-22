@@ -36,6 +36,8 @@
     (:input-complete *minibuffer* history-forwards-query history-fowards-query-complete))
   (define-key document-mode-map (kbd "M-b")
     #'history-backwards)
+  (define-key document-mode-map (kbd "C-g")
+    #'input-anchor)
   (define-key document-mode-map (kbd "C-f")
     #'history-forwards)
   (define-key document-mode-map (kbd "C-b")

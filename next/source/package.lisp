@@ -23,6 +23,7 @@
    #:web-view-set-url
    #:web-view-set-url-loaded-callback
    #:web-view-get-url
+   #:web-view-execute
    #:make-minibuffer
    #:minibuffer-show
    #:minibuffer-hide
