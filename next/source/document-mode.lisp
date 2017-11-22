@@ -5,7 +5,8 @@
 (defvar document-mode-map (make-hash-table :test 'equalp))
 
 (defclass document-mode (mode)
-  ((history-active-node :accessor mode-history-active-node :initarg :active-node)))
+  ((active-history-node :accessor active-history-node :initarg :active-node)
+   (link-hints :accessor link-hints)))
 
 (defun scroll-down ()
   (interface:web-view-scroll-down (view *active-buffer*) *scroll-distance*))
@@ -15,19 +16,19 @@
 
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
-  (let ((parent (node-parent (mode-history-active-node (mode *active-buffer*)))))
+  (let ((parent (node-parent (active-history-node (mode *active-buffer*)))))
     (when parent
 	(set-url (node-data parent)))))
 
 (defun history-forwards ()
   ;; move forwards in history selecting the first child
-  (let ((children (node-children (mode-history-active-node (mode *active-buffer*)))))
+  (let ((children (node-children (active-history-node (mode *active-buffer*)))))
     (unless (null children)
       (set-url (node-data (nth 0 children))))))
 
 (defun history-forwards-query (input)
   ;; move forwards in history querying if more than one child present
-  (let ((children (node-children (mode-history-active-node (mode *active-buffer*)))))
+  (let ((children (node-children (active-history-node (mode *active-buffer*)))))
     (loop for child in children do
 	 (when (equalp (node-data child) input)
 	   (set-url (node-data child))))))
@@ -36,7 +37,7 @@
   ;; provide completion candidates to the history-forwards-query function
   (let ((children
 	 ;; Find children of active document-mode instance
-	 (node-children (mode-history-active-node
+	 (node-children (active-history-node
 			 ;; Find active document-mode instance from minibuffer callback
 			 (mode (callback-buffer (mode *minibuffer*)))))))
     (when children
@@ -45,7 +46,7 @@
 (defun add-or-traverse-history (mode)
   ;; get url from mode-view's webview
   (let ((url (interface:web-view-get-url (mode-view mode)))
-	(active-node (mode-history-active-node mode)))
+	(active-node (active-history-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
       (return-from add-or-traverse-history t))
@@ -54,17 +55,17 @@
       ;; check if parent node's url is equal
       (when (equalp url (node-data (node-parent active-node)))
     	;; set active-node to parent
-    	(setf (mode-history-active-node mode) (node-parent active-node))
+    	(setf (active-history-node mode) (node-parent active-node))
     	(return-from add-or-traverse-history t)))
     ;; loop through children to make sure node does not exist in children
     (loop for child in (node-children active-node) do
     	 (when (equalp (node-data child) url)
-    	   (setf (mode-history-active-node mode) child)
+    	   (setf (active-history-node mode) child)
     	   (return-from add-or-traverse-history t)))
     ;; if we made it this far, we must create a new node
     (let ((new-node (make-node :parent active-node :data url)))
       (push new-node (node-children active-node))
-      (setf (mode-history-active-node mode) new-node)
+      (setf (active-history-node mode) new-node)
       (return-from add-or-traverse-history t))))
 
 (defun set-url-new-buffer (input-url)
@@ -86,6 +87,15 @@
     (if (puri:uri-scheme url)
         input-url
         (concatenate 'string "https://" input-url))))
+
+(defun input-anchor ()
+  (setf (link-hints (mode *active-buffer*)) (add-link-hints))
+  (input (mode *minibuffer*) #'go-anchor :cleanup #'remove-link-hints))
+
+(defun go-anchor (input)
+  (loop for hint in (link-hints (mode *active-buffer*))
+     do (when (equalp (nth 0 hint) input)
+	  (set-url (nth 1 hint)))))
 
 (defun document-mode ()
   "Base mode for interacting with documents"
