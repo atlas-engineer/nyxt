@@ -10,14 +10,14 @@
   (defun remove-if-not (predicate sequence)
     "Small reimplementation of remove-if"
     (loop for el in sequence
-	     when (predicate el)
-	     collect el))
+       when (predicate el)
+       collect el))
   (defun code-char (n)
     "Alias of String.fromCharCode"
     (ps:chain -string (from-char-code n)))
   (defun is-in-viewport (el)
     "Finds out if an element is in the viewport"
-    (ps:let ((rect (ps:chain el (get-bounding-client-rect))))
+    (let ((rect (ps:chain el (get-bounding-client-rect))))
       (and
        (>= (ps:@ rect top) 0)
        (>= (ps:@ rect left) 0)
@@ -27,8 +27,8 @@
 				 (ps:@ document document-element client-width))))))
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the link"
-    (ps:create :top  (ps:@ rect top)
-	       :left (- (ps:@ rect left) 20)))
+    (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
+	       :left (+ (ps:@ window page-x-offset) (- (ps:@ rect left) 20))))
   (defun hint-create-element (link hint)
     "Creates a DOM element to be used as a hint"
     (ps:let* ((rect (ps:chain link (get-bounding-client-rect)))
