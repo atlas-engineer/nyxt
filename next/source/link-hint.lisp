@@ -61,8 +61,8 @@
 		(stringify
 		 (loop for i from 0 to (- links-length 1)
 		    collect (list
-			     (ps:@ (elt links i) href)
-			     (ps:@ (hint-add (elt links i) (elt hints i)) inner-text)))))))
+			     (ps:@ (hint-add (elt links i) (elt hints i)) inner-text)
+			     (ps:@ (elt links i) href)))))))
   (defun hints-determine-chars-length (length)
     "Finds out how many chars long the hints must be"
     (ps:let ((i 1))
