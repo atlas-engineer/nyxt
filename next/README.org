@@ -73,7 +73,8 @@ two minor releases following major release 1.0.
 *** TODO Window System
 - Emacs like window system
 ** 0.05
-*** TODO Add Link Hints
+*** DONE Add Link Hints
+CLOSED: [2017-11-23 Thu 00:29]
 - user should be able to navigate all links entirely by keyboard
 *** TODO Add Slime Support
 *** TODO History
