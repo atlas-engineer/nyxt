@@ -75,6 +75,7 @@ two minor releases following major release 1.0.
   (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
+*** TODO Update documentation with supported operations
 *** TODO Minibuffer Prompt
 - Create a settable prompt for the minibuffer
 ** 0.05
