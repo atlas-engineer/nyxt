@@ -46,6 +46,9 @@
 (defmethod get-input ((self minibuffer-view))
   (ns-to-lisp-string (#/stringValue (input-buffer self))))
 
+(defmethod set-input ((self minibuffer-view) input-string)
+  (#/setStringValue: (input-buffer self) (lisp-to-ns-string input-string)))
+
 (defmethod process-set-completions ((self minibuffer-view))
   "Process and set completions for the minibuffer"
   (with-slots (completion-function completion-controller completion-table) self
