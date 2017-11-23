@@ -90,7 +90,8 @@ CLOSED: [2017-11-23 Thu 14:59]
 *** DONE Add Link Hints
 CLOSED: [2017-11-23 Thu 00:29]
 - user should be able to navigate all links entirely by keyboard
-**** TODO Add open in new-tab support
+- user should be able to open link hints in a new buffer with focus
+- user should be able to open link hints in a new buffer without focus
 *** TODO Add Slime Support
 *** TODO History
 - History will be stored in a db (possibly sqlite) with additional
