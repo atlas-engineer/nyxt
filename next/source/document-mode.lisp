@@ -101,6 +101,12 @@
      do (when (equalp (nth 0 hint) input)
 	  (set-url (nth 1 hint)))))
 
+(defun go-anchor-new-buffer (input)
+  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+    (loop for hint in (link-hints (mode *active-buffer*))
+       do (when (equalp (nth 0 hint) input)
+	    (set-url-buffer (nth 1 hint) new-buffer)))))
+
 (defun document-mode ()
   "Base mode for interacting with documents"
   (let* ((root (make-node :data "about:blank"))

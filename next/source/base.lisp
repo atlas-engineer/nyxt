@@ -38,6 +38,8 @@
     #'history-backwards)
   (define-key document-mode-map (kbd "C-g")
     (:input *minibuffer* go-anchor :setup #'setup-anchor :cleanup #'remove-link-hints))
+  (define-key document-mode-map (kbd "M-g")
+    (:input *minibuffer* go-anchor-new-buffer :setup #'setup-anchor :cleanup #'remove-link-hints))
   (define-key document-mode-map (kbd "C-f")
     #'history-forwards)
   (define-key document-mode-map (kbd "C-b")
