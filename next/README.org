@@ -83,7 +83,8 @@ two minor releases following major release 1.0.
   buffer. That is, set-url and set-url-new-buffer will be deprecated
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
-*** TODO Minibuffer set text
+*** DONE Minibuffer set text
+CLOSED: [2017-11-23 Thu 14:59]
 - Allow the setting of the minibuffer text
 - Setup the automatic clearing of the minibuffer previous text
 *** DONE Add Link Hints
