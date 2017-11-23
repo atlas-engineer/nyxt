@@ -11,7 +11,7 @@
    (setup-function :accessor setup-function)
    (cleanup-function :accessor cleanup-function)))
 
-(defmethod input ((self minibuffer-mode) callback &key completion setup cleanup)
+(defmethod input ((self minibuffer-mode) callback &key completion (setup #'erase-input) cleanup)
   (with-slots (callback-function completion-function callback-buffer setup-function cleanup-function) self
     (setf callback-function callback)
     (setf completion-function completion)
@@ -42,6 +42,9 @@
     (when cleanup-function
       (funcall cleanup-function)))
   (interface:minibuffer-hide))
+
+(defun erase-input ()
+  (interface:minibuffer-set-input ""))
 
 (defun minibuffer-mode ()
   "Base mode for input"
