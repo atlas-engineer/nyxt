@@ -19,6 +19,8 @@
     (setf cleanup-function cleanup)
     (setf callback-buffer *active-buffer*)
     (interface:minibuffer-set-completion-function completion)
+    ;; setup function must be called before *active-buffer* is changed
+    ;; to mini-buffer so that setup function may act upon *active-buffer*
     (funcall setup-function))
   (set-active-buffer *minibuffer*)
   (interface:minibuffer-show))
@@ -42,6 +44,9 @@
     (when cleanup-function
       (funcall cleanup-function)))
   (interface:minibuffer-hide))
+
+(defmethod set-input ((self minibuffer-mode) input)
+  (interface:minibuffer-set-input input))
 
 (defun erase-input ()
   (interface:minibuffer-set-input ""))

@@ -77,6 +77,10 @@
   (setf (name buffer) input-url)
   (interface:web-view-set-url (view buffer) input-url))
 
+(defun setup-url ()
+  (set-input (mode *minibuffer*)
+	     (interface:web-view-get-url (view *active-buffer*))))
+
 (defun set-url (input-url)
   (let ((url (normalize-url input-url)))
     (set-url-buffer url *active-buffer*)))

@@ -47,7 +47,7 @@
   (define-key document-mode-map (kbd "C-n")
     #'scroll-down)
   (define-key document-mode-map (kbd "C-l")
-    (:input *minibuffer* set-url))
+    (:input *minibuffer* set-url :setup #'setup-url))
   (define-key document-mode-map (kbd "S-b o")
     (:input-complete *minibuffer* set-url bookmark-complete))
   (define-key document-mode-map (kbd "S-b s")
