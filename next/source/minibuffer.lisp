@@ -8,15 +8,18 @@
   ((completion-function :accessor completion-function)
    (callback-function :accessor callback-function)
    (callback-buffer :accessor callback-buffer)
+   (setup-function :accessor setup-function)
    (cleanup-function :accessor cleanup-function)))
 
-(defmethod input ((self minibuffer-mode) callback &key completion cleanup)
-  (with-slots (callback-function completion-function callback-buffer cleanup-function) self
+(defmethod input ((self minibuffer-mode) callback &key completion setup cleanup)
+  (with-slots (callback-function completion-function callback-buffer setup-function cleanup-function) self
     (setf callback-function callback)
     (setf completion-function completion)
+    (setf setup-function setup)
     (setf cleanup-function cleanup)
     (setf callback-buffer *active-buffer*)
-    (interface:minibuffer-set-completion-function completion))
+    (interface:minibuffer-set-completion-function completion)
+    (funcall setup-function))
   (set-active-buffer *minibuffer*)
   (interface:minibuffer-show))
 
