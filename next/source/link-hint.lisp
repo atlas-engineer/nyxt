@@ -106,3 +106,6 @@
 
 (defun remove-link-hints ()
   (interface:web-view-execute (view *active-buffer*) remove-link-hints))
+
+(defun remove-link-hints-buffer (buffer)
+  (interface:web-view-execute (view buffer) remove-link-hints))
