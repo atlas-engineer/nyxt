@@ -76,6 +76,14 @@ two minor releases following major release 1.0.
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
 *** TODO Update documentation with supported operations
+*** TODO Minibuffer selection
+- Should be possible to use C-n and C-p within the minibuffer to
+  navigate up and down through the candidates
+- Candidates within the minibuffer should be represented by an object
+  'minibuffer-candidate' that includes slots for the text to match
+  against, as well as the actual object behind a given candidate
+- Returning input from the minibuffer should return the object that
+  was selected
 *** TODO Minibuffer Prompt
 - Create a settable prompt for the minibuffer
 ** 0.05
