@@ -27,5 +27,6 @@
    #:make-minibuffer
    #:minibuffer-show
    #:minibuffer-hide
+   #:minibuffer-set-input
    #:minibuffer-get-input
    #:minibuffer-set-completion-function))

@@ -238,6 +238,9 @@
   (hide-minibuffer *next-view*)
   (#/makeFirstResponder: *window* (fill-container-view *next-view*)))
 
+(defun minibuffer-set-input (input)
+  (set-input (minibuffer-view *next-view*) input))
+
 (defun minibuffer-get-input ()
   (get-input (minibuffer-view *next-view*)))
 
