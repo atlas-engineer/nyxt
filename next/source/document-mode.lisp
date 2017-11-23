@@ -88,9 +88,9 @@
         input-url
         (concatenate 'string "https://" input-url))))
 
-(defun input-anchor ()
-  (setf (link-hints (mode *active-buffer*)) (add-link-hints))
-  (input (mode *minibuffer*) #'go-anchor :cleanup #'remove-link-hints))
+(defun setup-anchor ()
+  (erase-input)
+  (setf (link-hints (mode *active-buffer*)) (add-link-hints)))
 
 (defun go-anchor (input)
   (loop for hint in (link-hints (mode *active-buffer*))
