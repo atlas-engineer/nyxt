@@ -101,6 +101,9 @@ CLOSED: [2017-11-23 Thu 00:29]
 - user should be able to navigate all links entirely by keyboard
 - user should be able to open link hints in a new buffer with focus
 - user should be able to open link hints in a new buffer without focus
+*** DONE Fix keybindings within repl
+CLOSED: [2017-11-24 Fri 16:37]
+- Allow keybinding invocation within repl overriding ccl cocoa IDE
 *** TODO Add Slime Support
 *** TODO History
 - History will be stored in a db (possibly sqlite) with additional
