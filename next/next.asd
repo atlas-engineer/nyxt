@@ -8,6 +8,7 @@
   :pathname "source/"
   :components ((:file "package")
 	       (:file "global")
+	       (:file "cocoa/repl")
 	       (:file "cocoa/utilities")
 	       (:file "cocoa/cocoa")
 	       (:file "cocoa/application")
