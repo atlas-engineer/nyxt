@@ -15,6 +15,9 @@
   ;; load the user configuration if it exists
   (load "~/.next.d/init.lisp" :if-does-not-exist nil))
 
+(defun start-swank ()
+  (swank:create-server :port *swank-port* :style :spawn :dont-close t))
+
 (defun initialize-default-key-bindings ()
   (define-key global-map (kbd "C-x C-c")
     #'interface:kill)
@@ -55,4 +58,6 @@
   (define-key document-mode-map (kbd "S-b o")
     (:input-complete *minibuffer* set-url bookmark-complete))
   (define-key document-mode-map (kbd "S-b s")
-    #'bookmark-current-page))
+    #'bookmark-current-page)
+  (define-key global-map (kbd "C-i")
+    #'start-swank))

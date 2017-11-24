@@ -12,3 +12,5 @@
   "A list of all existing buffers")
 (defvar *scroll-distance* 15
   "The distance scroll-down or scroll-up will scroll.")
+(defvar *swank-port* 4006
+  "The distance scroll-down or scroll-up will scroll.")
