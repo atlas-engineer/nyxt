@@ -27,6 +27,18 @@
   (let ((buffer (find-if #'(lambda (element) (equalp input (name element))) *buffers*)))
     (set-visible-active-buffer buffer)))
 
+(defun switch-buffer-previous ()
+  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
+    (if (equalp 0 active-buffer-index)
+	(set-visible-active-buffer (nth (- (length *buffers*) 1) *buffers*))
+	(set-visible-active-buffer (nth (- active-buffer-index 1) *buffers*)))))
+
+(defun switch-buffer-next ()
+  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
+    (if (< (+ active-buffer-index 1) (length *buffers*))
+	(set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
+	(set-visible-active-buffer (nth 0 *buffers*)))))
+
 (defun buffer-complete (input)
   (fuzzy-match input (mapcar #'name *buffers*)))
 
