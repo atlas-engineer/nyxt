@@ -44,7 +44,10 @@
     (make-constraint :item1 completion-table :att1 :width :relation := :item2 self :att2 :width)))
 
 (defmethod get-input ((self minibuffer-view))
-  (ns-to-lisp-string (#/stringValue (input-buffer self))))
+  (with-slots (completion-function completion-controller) self
+    (if completion-function
+	(nth (get-selected-row self) (data completion-controller))
+	(ns-to-lisp-string (#/stringValue (input-buffer self))))))
 
 (defmethod set-input ((self minibuffer-view) input-string)
   (#/setStringValue: (input-buffer self) (lisp-to-ns-string input-string)))
