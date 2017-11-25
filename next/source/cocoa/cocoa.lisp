@@ -49,12 +49,28 @@
 (defmethod set-input ((self minibuffer-view) input-string)
   (#/setStringValue: (input-buffer self) (lisp-to-ns-string input-string)))
 
+(defmethod get-selected-row ((self minibuffer-view))
+  (#/selectedRow (completion-table self)))
+
+(defmethod set-selected-row ((self minibuffer-view) index)
+  (#/selectRowIndexes:byExtendingSelection:
+   (completion-table self) (#/indexSetWithIndex: ns:ns-index-set index) #$NO))
+
+(defmethod select-next-row ((self minibuffer-view))
+  (let ((current-row (get-selected-row self))
+
+(defmethod select-previous-row ((self minibuffer-view))
+  (let ((current-row (get-selected-row self)))
+    (when (> current-row 0)
+      (set-selected-row self (- current-row 1)))))
+
 (defmethod process-set-completions ((self minibuffer-view))
   "Process and set completions for the minibuffer"
   (with-slots (completion-function completion-controller completion-table) self
     (when (completion-function self)
       (setf (data completion-controller) (funcall completion-function (get-input self)))
-      (#/reloadData completion-table))))
+      (#/reloadData completion-table)
+      (set-selected-row self 0))))
 
 (objc:defmethod (#/controlTextDidChange: :void) ((self minibuffer-view) notification)
   (declare (ignore notification))
