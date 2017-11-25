@@ -35,8 +35,8 @@ The standard keybindings for forward-backward navigation are:
 
 1. ~C-f~: Navigate Forward
 2. ~C-b~: Navigate Backward
-3. ~S-f~: Navigate Forward Tree
-4. ~S-b~: Navigate Backward
+3. ~M-f~: Navigate Forward Tree
+4. ~M-b~: Navigate Backward
 
 By using navigate forward tree you will be prompted for which branch
 you'd like to visit as in the example above. The simple navigate
@@ -58,6 +58,15 @@ are:
 2. ~C-x k~: Kill tab
 3. ~S-l~: New document-mode tab
 4. ~C-l~: Change URL of current document
+
+*** Switching Tabs by Order
+In addition to switching tabs by selecting the current tab, you can
+cycle through them. This enables you to jump back and forth between
+two tabs that are next to each other.
+
+1. ~C-[~: Switch tab previous
+2. ~C-]~: Switch tab next
+
 ** Bookmarks
 Bookmarks are located in a database located in
 =~/.next.d/bookmark.db=. This directory and database will be created
