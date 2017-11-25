@@ -27,6 +27,9 @@
   (let ((buffer (find-if #'(lambda (element) (equalp input (name element))) *buffers*)))
     (set-visible-active-buffer buffer)))
 
+(defun get-active-buffer-index ()
+  (position *active-buffer* *buffers* :test #'equalp))
+
 (defun switch-buffer-previous ()
   (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
     (if (equalp 0 active-buffer-index)
@@ -46,3 +49,13 @@
   (let ((buffer (find-if #'(lambda (element) (equalp input (name element))) *buffers*)))
     (interface:delete-view (view buffer))
     (delete buffer *buffers*)))
+
+(defun delete-active-buffer ()
+  (when (> (length *buffers*) 1)
+    (let ((former-active-buffer *active-buffer*))
+      ;; switch-buffer-next changes value of *active-buffer*
+      ;; which in turn changes the value of former-active-buffer
+      (switch-buffer-next)
+      ;; therefore delete actually deletes the new *active-buffer*
+      (setf *buffers* (delete former-active-buffer *buffers*))
+      (interface:delete-view (view former-active-buffer)))))

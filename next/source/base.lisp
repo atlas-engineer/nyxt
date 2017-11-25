@@ -59,4 +59,6 @@
   (define-key document-mode-map (kbd "C-[")
     #'switch-buffer-previous)
   (define-key document-mode-map (kbd "C-]")
-    #'switch-buffer-next))
+    #'switch-buffer-next)
+  (define-key global-map (kbd "C-w")
+    #'delete-active-buffer))
