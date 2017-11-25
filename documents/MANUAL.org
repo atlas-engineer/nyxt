@@ -100,9 +100,9 @@ automatically for you. The bookmark database is a SQLITE database that
 contains one table with two columns: id, url. In order to navigate
 and manage your bookmarks, a few functions are provided:
 
-1. ~S-s k~: Delete Bookmark
-2. ~S-s o~: Open Bookmark
-3. ~S-s s~: Bookmark Current Page
+1. ~S-b k~: Delete Bookmark
+2. ~S-b o~: Open Bookmark
+3. ~S-b s~: Bookmark Current Page
 
 ** Exiting
 To exit nEXT enter the key-combination ~C-x C-c~ and the program will
