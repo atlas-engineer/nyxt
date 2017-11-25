@@ -43,11 +43,14 @@
     (make-constraint :item1 completion-table :att1 :bottom :relation := :item2 self :att2 :bottom)
     (make-constraint :item1 completion-table :att1 :width :relation := :item2 self :att2 :width)))
 
-(defmethod get-input ((self minibuffer-view))
+(defmethod get-input-or-complete ((self minibuffer-view))
   (with-slots (completion-function completion-controller) self
     (if completion-function
 	(nth (get-selected-row self) (data completion-controller))
 	(ns-to-lisp-string (#/stringValue (input-buffer self))))))
+
+(defmethod get-input ((self minibuffer-view))
+  (ns-to-lisp-string (#/stringValue (input-buffer self))))
 
 (defmethod set-input ((self minibuffer-view) input-string)
   (#/setStringValue: (input-buffer self) (lisp-to-ns-string input-string)))
@@ -61,6 +64,9 @@
 
 (defmethod select-next-row ((self minibuffer-view))
   (let ((current-row (get-selected-row self))
+	(data-length (length (data (completion-controller self)))))
+    (when (< (+ current-row 1) data-length)
+      (set-selected-row self (+ current-row 1)))))
 
 (defmethod select-previous-row ((self minibuffer-view))
   (let ((current-row (get-selected-row self)))
@@ -261,7 +267,13 @@
   (set-input (minibuffer-view *next-view*) input))
 
 (defun minibuffer-get-input ()
-  (get-input (minibuffer-view *next-view*)))
+  (get-input-or-complete (minibuffer-view *next-view*)))
 
 (defun minibuffer-set-completion-function (function)
   (setf (completion-function (minibuffer-view *next-view*)) function))
+
+(defun minibuffer-select-next ()
+  (select-next-row (minibuffer-view *next-view*)))
+
+(defun minibuffer-select-previous ()
+  (select-previous-row (minibuffer-view *next-view*)))
