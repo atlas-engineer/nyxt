@@ -114,13 +114,15 @@ CLOSED: [2017-11-23 Thu 00:29]
 *** DONE Fix keybindings within repl
 CLOSED: [2017-11-24 Fri 16:37]
 - Allow keybinding invocation within repl overriding ccl cocoa IDE
-*** TODO History
-- History will be stored in a db (possibly sqlite) with additional
-  metadata that allows searching semantically, as well as searching
-  by different criteria.
-**** TODO History is searchable
+*** DONE History
+CLOSED: [2017-11-26 Sun 17:59]
+- History will be stored in a db (possibly sqlite)
+**** DONE History is searchable
+CLOSED: [2017-11-26 Sun 17:59]
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
+- Because history is stored in sqlite db, user can create queries
+  against their history
 ** DONE 0.04
 CLOSED: [2017-11-20 Mon 17:57]
 *** DONE Isolate backend QT Code
