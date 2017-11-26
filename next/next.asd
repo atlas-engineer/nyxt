@@ -21,5 +21,6 @@
 	       (:file "link-hint")
 	       (:file "document-mode")
 	       (:file "bookmark")
+	       (:file "history")
 	       (:file "completion")
 	       (:file "base")))
