@@ -95,7 +95,8 @@ two minor releases following major release 1.0.
 - Even when completion function is present, should have the option to
   return literally what is present
 *** TODO Add Slime Support
-** 0.05
+** DONE 0.05
+CLOSED: [2017-11-26 Sun 20:03]
 *** DONE Minibuffer selection
 CLOSED: [2017-11-26 Sun 00:43]
 - Should be able to move up and down through candidates using C-n and
@@ -123,6 +124,14 @@ CLOSED: [2017-11-26 Sun 17:59]
   things (e.g. date, include exclude regex, etc)
 - Because history is stored in sqlite db, user can create queries
   against their history
+**** DONE Set-url history suggestion
+CLOSED: [2017-11-26 Sun 20:03]
+- History should be suggested by set-url
+- Minibuffer input should be able to handle different use cases for
+  different input methods
+**** DONE Update Manual
+CLOSED: [2017-11-26 Sun 20:03]
+- Update manual with latest capabilities and changes to codebase
 ** DONE 0.04
 CLOSED: [2017-11-20 Mon 17:57]
 *** DONE Isolate backend QT Code
