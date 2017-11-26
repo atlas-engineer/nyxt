@@ -5,6 +5,7 @@
 (defun start ()
   (ensure-directories-exist (uiop:physicalize-pathname "~/.next.d/"))
   (initialize-bookmark-db)
+  (initialize-history-db)
   (initialize-default-key-bindings)
   (interface:initialize)
   (interface:start)
