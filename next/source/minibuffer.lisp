@@ -28,6 +28,18 @@
 (defmethod return-input ((self minibuffer-mode))
   (set-active-buffer (callback-buffer self))
   (with-slots (callback-function cleanup-function) self
+    (let ((completion (interface:minibuffer-get-input-complete)))
+      (if completion
+	  (funcall callback-function completion)
+	  (cancel-input self)))
+    (when cleanup-function
+      (funcall cleanup-function)))
+  (interface:minibuffer-hide))
+
+(defmethod return-immediate ((self minibuffer-mode))
+  "Return without completion"
+  (set-active-buffer (callback-buffer self))
+  (with-slots (callback-function cleanup-function) self
     (funcall callback-function
 	     (interface:minibuffer-get-input))
     (when cleanup-function
