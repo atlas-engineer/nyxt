@@ -75,15 +75,6 @@ two minor releases following major release 1.0.
   (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
-*** TODO Update documentation with supported operations
-*** TODO Minibuffer selection
-- Should be possible to use C-n and C-p within the minibuffer to
-  navigate up and down through the candidates
-- Candidates within the minibuffer should be represented by an object
-  'minibuffer-candidate' that includes slots for the text to match
-  against, as well as the actual object behind a given candidate
-- Returning input from the minibuffer should return the object that
-  was selected
 *** TODO Create with-new-buffer macro
 - Should allow the user to encapsulate operations against some new
   buffer. That is, set-url and set-url-new-buffer will be deprecated
@@ -91,9 +82,6 @@ two minor releases following major release 1.0.
   "https://www.example.com"))
 *** TODO Minibuffer Prompt
 - Create a settable prompt for the minibuffer
-*** TODO Minibuffer Return Exactly
-- Even when completion function is present, should have the option to
-  return literally what is present
 *** TODO Add Slime Support
 ** DONE 0.05
 CLOSED: [2017-11-26 Sun 20:03]
