@@ -27,7 +27,6 @@
   (interface:set-visible-view (view *active-buffer*)))
 
 (defun switch-buffer (buffer)
-  (print buffer)
   (set-visible-active-buffer buffer))
 
 (defun get-active-buffer-index ()

@@ -91,6 +91,9 @@ two minor releases following major release 1.0.
   "https://www.example.com"))
 *** TODO Minibuffer Prompt
 - Create a settable prompt for the minibuffer
+*** TODO Minibuffer Return Exactly
+- Even when completion function is present, should have the option
+to return literally what is present
 *** TODO Add Slime Support
 ** 0.05
 *** DONE Minibuffer selection
