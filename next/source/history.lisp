@@ -11,7 +11,7 @@
       (sqlite:execute-non-query
        db"create table history (id integer primary key, url text not null)")
       (sqlite:execute-non-query
-       db"create table typed (id integer primary key, url text not null)")
+       db"create table typed (id integer primary key, url text not null, unique (url) on conflict replace)")
       (sqlite:execute-non-query
        db "insert into history (url) values (?)" "about:blank")
       (sqlite:execute-non-query
