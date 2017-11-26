@@ -17,3 +17,17 @@
       (sqlite:execute-non-query
        db "insert into typed (url) values (?)" "about:blank")
       (sqlite:disconnect db))))
+
+(defun history-add (url)
+  (let ((db (sqlite:connect
+	     (truename (probe-file "~/.next.d/history.db")))))
+    (sqlite:execute-non-query
+     db "insert into history (url) values (?)" url)
+    (sqlite:disconnect db)))
+
+(defun history-typed-add (url)
+  (let ((db (sqlite:connect
+	     (truename (probe-file "~/.next.d/history.db")))))
+    (sqlite:execute-non-query
+     db "insert into typed (url) values (?)" url)
+    (sqlite:disconnect db)))
