@@ -7,6 +7,9 @@
    (mode :accessor mode :initarg :mode)
    (view :accessor view :initarg :view)))
 
+(defmethod print-object ((self buffer) stream)
+  (format stream "~s" (name self)))
+
 (defun generate-new-buffer (name mode)
   (let ((new-buffer
 	 (make-instance 'buffer
@@ -23,9 +26,9 @@
   (set-active-buffer buffer)
   (interface:set-visible-view (view *active-buffer*)))
 
-(defun switch-buffer (input)
-  (let ((buffer (find-if #'(lambda (element) (equalp input (name element))) *buffers*)))
-    (set-visible-active-buffer buffer)))
+(defun switch-buffer (buffer)
+  (print buffer)
+  (set-visible-active-buffer buffer))
 
 (defun get-active-buffer-index ()
   (position *active-buffer* *buffers* :test #'equalp))
@@ -43,12 +46,11 @@
 	(set-visible-active-buffer (nth 0 *buffers*)))))
 
 (defun buffer-complete (input)
-  (fuzzy-match input (mapcar #'name *buffers*)))
+  (fuzzy-match input *buffers* #'name))
 
-(defun delete-buffer (input)
-  (let ((buffer (find-if #'(lambda (element) (equalp input (name element))) *buffers*)))
-    (interface:delete-view (view buffer))
-    (delete buffer *buffers*)))
+(defun delete-buffer (buffer)
+  (setf *buffers* (delete buffer *buffers*))
+  (interface:delete-view (view buffer)))
 
 (defun delete-active-buffer ()
   (when (> (length *buffers*) 1)

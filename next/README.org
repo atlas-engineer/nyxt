@@ -84,14 +84,21 @@ two minor releases following major release 1.0.
   against, as well as the actual object behind a given candidate
 - Returning input from the minibuffer should return the object that
   was selected
-*** TODO Minibuffer Prompt
-- Create a settable prompt for the minibuffer
-** 0.05
 *** TODO Create with-new-buffer macro
 - Should allow the user to encapsulate operations against some new
   buffer. That is, set-url and set-url-new-buffer will be deprecated
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
+*** TODO Minibuffer Prompt
+- Create a settable prompt for the minibuffer
+*** TODO Add Slime Support
+** 0.05
+*** DONE Minibuffer selection
+CLOSED: [2017-11-26 Sun 00:43]
+- Should be able to move up and down through candidates using C-n and
+  C-p
+- Minibuffer should return actual object in question instead of doing
+  strange magic with strings
 *** DONE Minibuffer set text
 CLOSED: [2017-11-23 Thu 14:59]
 - Allow the setting of the minibuffer text
@@ -104,7 +111,6 @@ CLOSED: [2017-11-23 Thu 00:29]
 *** DONE Fix keybindings within repl
 CLOSED: [2017-11-24 Fri 16:37]
 - Allow keybinding invocation within repl overriding ccl cocoa IDE
-*** TODO Add Slime Support
 *** TODO History
 - History will be stored in a db (possibly sqlite) with additional
   metadata that allows searching semantically, as well as searching

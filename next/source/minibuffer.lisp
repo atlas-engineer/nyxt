@@ -27,15 +27,11 @@
 
 (defmethod return-input ((self minibuffer-mode))
   (set-active-buffer (callback-buffer self))
-  (with-slots (completion-function callback-function cleanup-function) self
-      (if completion-function
-      (funcall callback-function
-	       (nth 0 (funcall completion-function
-			       (interface:minibuffer-get-input))))
-      (funcall callback-function
-	       (interface:minibuffer-get-input)))
-      (when cleanup-function
-	(funcall cleanup-function)))
+  (with-slots (callback-function cleanup-function) self
+    (funcall callback-function
+	     (interface:minibuffer-get-input))
+    (when cleanup-function
+      (funcall cleanup-function)))
   (interface:minibuffer-hide))
 
 (defmethod cancel-input ((self minibuffer-mode))
