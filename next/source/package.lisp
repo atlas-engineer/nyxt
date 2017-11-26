@@ -29,6 +29,7 @@
    #:minibuffer-hide
    #:minibuffer-set-input
    #:minibuffer-get-input
+   #:minibuffer-get-input-complete
    #:minibuffer-select-next
    #:minibuffer-select-previous
    #:minibuffer-set-completion-function))

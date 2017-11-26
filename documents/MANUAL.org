@@ -5,6 +5,7 @@ exposed to the end-user allowing for infinite customization.
 * Contents                                                              :TOC:
 - [[#basics][Basics]]
   - [[#navigation][Navigation]]
+  - [[#input-minibuffer][Input (Minibuffer)]]
   - [[#tabs-buffers][Tabs (Buffers)]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
@@ -38,6 +39,38 @@ The full key-bindings for link-hint based navigate are found below:
 2. ~M-g~: Create new tab with link, keep focus on current tab
 3. ~S-g~: Create new tab with link, focus on new tab
 
+** Input (Minibuffer)
+All input is handled within a special area called the minibuffer. The
+minibuffer will appear at the bottom of the screen when the user is
+responsible for inputting some value. The minibuffer may also suggest
+completions.
+
+Any time a function activates the minibuffer there are two applicable
+returns:
+
+1. ~C-RET~: Return Immediate - Return EXACTLY what has been typed into
+   the minibuffer, ignoring completions.
+2. ~RET~: Return Complete - If completion function provided, return
+   the selected completion candidate. If completion not provided
+   return the EXACT text inputted into the minibuffer. If completion
+   function provided, no completion applicable (selected), and the
+   :empty-complete is a truthy value, the function will accept the
+   EXACT text inputted into the minibuffer.
+
+Below is a concrete example that may help clarify the usage of ~RET~
+
+#+NAME: input-complete-empty
+#+BEGIN_SRC lisp
+(:input-complete *minibuffer* set-url-new-buffer
+history-typed-complete :empty-complete t)
+#+END_SRC
+
+In the above case ~set-url-new-buffer~ will attempt to be completed by
+~history-typed-complete~. If there are no suitable candidates, e.g.
+the user is attempting to visit a URL they have never visited before,
+~:empty-complete t~ will allow the ~return-input~ to return the literal
+input to ~set-url-new-buffer~.
+
 ** Tabs (Buffers)
 Tabs are represented by a concept known as "buffers". Buffers are
 known in other GUIs as Views. Unlike in other GUI systems, the
@@ -61,6 +94,7 @@ two tabs that are next to each other.
 
 1. ~C-[~: Switch tab previous
 2. ~C-]~: Switch tab next
+
 ** History
 History is represented as a tree that you can traverse. More complex
 than the "forwards-backwards" abstraction found in other browsers,

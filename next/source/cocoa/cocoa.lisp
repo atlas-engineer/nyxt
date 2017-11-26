@@ -43,11 +43,11 @@
     (make-constraint :item1 completion-table :att1 :bottom :relation := :item2 self :att2 :bottom)
     (make-constraint :item1 completion-table :att1 :width :relation := :item2 self :att2 :width)))
 
-(defmethod get-input-or-complete ((self minibuffer-view))
+(defmethod get-input-complete ((self minibuffer-view))
   (with-slots (completion-function completion-controller) self
-    (if completion-function
+    (if (> (length (data completion-controller)) 0)
 	(nth (get-selected-row self) (data completion-controller))
-	(ns-to-lisp-string (#/stringValue (input-buffer self))))))
+	nil)))
 
 (defmethod get-input ((self minibuffer-view))
   (ns-to-lisp-string (#/stringValue (input-buffer self))))
@@ -267,7 +267,10 @@
   (set-input (minibuffer-view *next-view*) input))
 
 (defun minibuffer-get-input ()
-  (get-input-or-complete (minibuffer-view *next-view*)))
+  (get-input (minibuffer-view *next-view*)))
+
+(defun minibuffer-get-input-complete ()
+  (get-input-complete (minibuffer-view *next-view*)))
 
 (defun minibuffer-set-completion-function (function)
   (setf (completion-function (minibuffer-view *next-view*)) function))

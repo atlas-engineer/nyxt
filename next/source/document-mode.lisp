@@ -63,6 +63,7 @@
     	   (setf (active-history-node mode) child)
     	   (return-from add-or-traverse-history t)))
     ;; if we made it this far, we must create a new node
+    (history-add url) ; add to history database
     (let ((new-node (make-node :parent active-node :data url)))
       (push new-node (node-children active-node))
       (setf (active-history-node mode) new-node)
@@ -75,6 +76,7 @@
 
 (defun set-url-buffer (input-url buffer)
   (setf (name buffer) input-url)
+  (history-typed-add input-url)
   (interface:web-view-set-url (view buffer) input-url))
 
 (defun setup-url ()
