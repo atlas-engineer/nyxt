@@ -74,9 +74,10 @@
     (set-visible-active-buffer new-buffer)
     (set-url input-url)))
 
-(defun set-url-buffer (input-url buffer)
+(defun set-url-buffer (input-url buffer &optional disable-history)
   (setf (name buffer) input-url)
-  (history-typed-add input-url)
+  (unless disable-history
+    (history-typed-add input-url))
   (interface:web-view-set-url (view buffer) input-url))
 
 (defun setup-url ()
@@ -101,19 +102,19 @@
 (defun go-anchor (input)
   (loop for hint in (link-hints (mode *active-buffer*))
      do (when (equalp (nth 0 hint) input)
-	  (set-url (nth 1 hint)))))
+	  (set-url-buffer (nth 1 hint) *active-buffer* t))))
 
 (defun go-anchor-new-buffer (input)
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
     (loop for hint in (link-hints (mode *active-buffer*))
        do (when (equalp (nth 0 hint) input)
-	    (set-url-buffer (nth 1 hint) new-buffer)))))
+	    (set-url-buffer (nth 1 hint) new-buffer t)))))
 
 (defun go-anchor-new-buffer-focus (input)
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
     (loop for hint in (link-hints (mode *active-buffer*))
        do (when (equalp (nth 0 hint) input)
-	    (set-url-buffer (nth 1 hint) new-buffer)))
+	    (set-url-buffer (nth 1 hint) new-buffer t)))
     (remove-link-hints)
     (set-visible-active-buffer new-buffer)))
 
