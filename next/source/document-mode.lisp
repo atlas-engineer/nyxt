@@ -18,20 +18,20 @@
   ;; move up to parent node to iterate backwards in history tree
   (let ((parent (node-parent (active-history-node (mode *active-buffer*)))))
     (when parent
-	(set-url (node-data parent)))))
+	(set-url (node-data parent) t))))
 
 (defun history-forwards ()
   ;; move forwards in history selecting the first child
   (let ((children (node-children (active-history-node (mode *active-buffer*)))))
     (unless (null children)
-      (set-url (node-data (nth 0 children))))))
+      (set-url (node-data (nth 0 children)) t))))
 
 (defun history-forwards-query (input)
   ;; move forwards in history querying if more than one child present
   (let ((children (node-children (active-history-node (mode *active-buffer*)))))
     (loop for child in children do
 	 (when (equalp (node-data child) input)
-	   (set-url (node-data child))))))
+	   (set-url (node-data child) t)))))
 
 (defun history-fowards-query-complete (input)
   ;; provide completion candidates to the history-forwards-query function
@@ -84,9 +84,9 @@
   (set-input (mode *minibuffer*)
 	     (interface:web-view-get-url (view *active-buffer*))))
 
-(defun set-url (input-url)
+(defun set-url (input-url &optional disable-history)
   (let ((url (normalize-url input-url)))
-    (set-url-buffer url *active-buffer*)))
+    (set-url-buffer url *active-buffer* disable-history)))
 
 (defun normalize-url (input-url)
   "Will convert example.com to https://www.example.com"
