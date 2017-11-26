@@ -31,3 +31,13 @@
     (sqlite:execute-non-query
      db "insert into typed (url) values (?)" url)
     (sqlite:disconnect db)))
+
+(defun history-typed-complete (input)
+  (let* ((db
+	  (sqlite:connect (truename (probe-file "~/.next.d/history.db"))))
+	 (candidates
+	  (sqlite:execute-to-list
+	   db "select url from typed where url like ?"
+	   (format nil "%~a%" input))))
+    (sqlite:disconnect db)
+    (reduce #'append candidates :from-end t)))
