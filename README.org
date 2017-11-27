@@ -13,7 +13,7 @@ typing any semantically related word will give you a fuzzy search of
 your open tabs and let you quickly find which page you were looking
 for.
 
-#+html: <img src="assets/gifs/tab_switch.gif"/>
+#+html: <img src="assets/gifs/tab_switch.gif" align="center"/>
 
 ** History as a tree
 History is represented as a tree that you can traverse. More complex
@@ -22,20 +22,33 @@ the tree makes sure you never lose track of where you've been.
 
 In the example below, the User performs the following actions:
 
-1. Starts page ~Athens~
-2. Visits page ~Ancient Greek~
-3. Returns to page ~Athens~
-4. Visits page ~Classical Athens~
-5. Returns to page ~Athens~
+1. Starts page ~Fish~
+2. Visits page ~Amphibian~
+3. Returns to page ~Fish~
+4. Visits page ~Reptile~
+5. Returns to page ~Fish~
 6. Executes ~forwards~ keybind in history
 
 It is at this point that a normal browser would NOT be able to
-navigate you forwards to your visit of ~Ancient Greek~. Instead of
+navigate you forwards to your visit of ~Amphibian~. Instead of
 erasing your history, nEXT offers smart navigation and prompts the
-user. Do you wish to go forwards to ~Ancient Greek~ or to
-~Classical Athens~?
+user. Do you wish to go forwards to ~Amphibian~ or to
+~Reptile~?
 
-#+html: <img src="assets/gifs/tree_forward.gif"/>
+#+html: <img src="assets/gifs/tree_forward.gif" align="center"/>
+
+** Lightning fast navigation
+nEXT is lightweight and fast. The interface does not get in your way,
+and everything can be done by keyboard. You are free to fully focus on
+your task unburdened by cumbersome UI.
+
+Link Hints provide you with the ability to instantly jump to any link
+on the page, or even open it in a new tab.
+
+Fuzzy completion means intelligent completion. Find your bookmarks,
+open up new links, or switch tabs with the power of fuzzy completion.
+
+#+html: <img src="assets/gifs/fast_navigation.gif" align="center"/>
 
 * Getting Started
 ** Install nEXT Browser
