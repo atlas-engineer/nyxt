@@ -13,7 +13,7 @@ typing any semantically related word will give you a fuzzy search of
 your open tabs and let you quickly find which page you were looking
 for.
 
-#+html: <img src="assets/gifs/tab_switch.gif" align="center"/>
+#+html: <img src="assets/gifs/tab_switch.gif" align="center" style="border:2px solid black;"/>
 
 ** History as a tree
 History is represented as a tree that you can traverse. More complex
@@ -35,7 +35,7 @@ erasing your history, nEXT offers smart navigation and prompts the
 user. Do you wish to go forwards to ~Amphibian~ or to
 ~Reptile~?
 
-#+html: <img src="assets/gifs/tree_forward.gif" align="center"/>
+#+html: <img src="assets/gifs/tree_forward.gif" align="center" style="border:2px solid black;"/>
 
 ** Lightning fast navigation
 nEXT is lightweight and fast. The interface does not get in your way,
@@ -48,7 +48,7 @@ on the page, or even open it in a new tab.
 Fuzzy completion means intelligent completion. Find your bookmarks,
 open up new links, or switch tabs with the power of fuzzy completion.
 
-#+html: <img src="assets/gifs/fast_navigation.gif" align="center"/>
+#+html: <img src="assets/gifs/fast_navigation.gif" align="center style="border:2px solid black;""/>
 
 * Getting Started
 ** Install nEXT Browser
