@@ -55,12 +55,19 @@ open up new links, or switch tabs with the power of fuzzy completion.
 See the [[https://github.com/nEXT-Browser/nEXT/releases][releases]] section for pre-built binaries. To perform an
 installation from source, please see the [[https://github.com/nEXT-Browser/nEXT/tree/master/next][developer readme]].
 ** Quickstart Keys nEXT
+
 - ~C-l~:     Load URL in tab
 - ~S-l~:     Load URL in a new tab
 - ~C-x b~:   Switch tab
 - ~C-b~:     Backwards history
 - ~C-f~:     Forwards history
 - ~C-c C-X~: Quit
+
+The following keys exist as special keys:
+
+1. ~C~: Control Key
+2. ~S~: Super (Windows key, Command Key)
+3. ~M~: Meta (Alt key, Option Key)
 
 ** Customize nEXT
 Customization is possible through the creation of a
