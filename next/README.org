@@ -44,7 +44,7 @@ To install quicklisp:
 - Download https://beta.quicklisp.org/quicklisp.lisp
 - Execute ~ccl --load quicklisp.lisp~ to load quicklisp
 - Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
-- Evalute in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
+- Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
@@ -94,7 +94,7 @@ two minor releases following major release 1.0.
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
 *** TODO Minibuffer Prompt
-- Create a settable prompt for the minibuffer
+- Create a settable prompt for the Minibuffer
 *** TODO Add Slime Support
 - Add slime support to the compiled version of nEXT
 ** DONE 0.05
@@ -107,8 +107,8 @@ CLOSED: [2017-11-26 Sun 00:43]
   strange magic with strings
 *** DONE Minibuffer set text
 CLOSED: [2017-11-23 Thu 14:59]
-- Allow the setting of the minibuffer text
-- Setup the automatic clearing of the minibuffer previous text
+- Allow the setting of the Minibuffer text
+- Setup the automatic clearing of the Minibuffer previous text
 *** DONE Add Link Hints
 CLOSED: [2017-11-23 Thu 00:29]
 - user should be able to navigate all links entirely by keyboard
