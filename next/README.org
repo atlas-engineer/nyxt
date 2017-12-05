@@ -1,9 +1,9 @@
 * nEXT Browser Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
-  - [[#macos-installation][macOS Installation]]
-  - [[#linux-installation][Linux Installation]]
+  - [[#macos-setup][macOS Setup]]
+  - [[#linux-setup][Linux Setup]]
   - [[#run-from-source][Run from Source]]
-  - [[#compilation][Compilation]]
+  - [[#compile][Compile]]
 - [[#release-timeline][Release Timeline]]
   - [[#006][0.06]]
   - [[#005][0.05]]
@@ -22,7 +22,7 @@ compatible. Support for graphics is provided via Cocoa for macOS and
 GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-** macOS Installation
+** macOS Setup
 *** Installing CCL
 - Download CCL: [[https://ccl.clozure.com/download.html]], full
   installation instructions can be found here:
@@ -48,7 +48,7 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-** Linux Installation
+** Linux Setup
 Instructions forthcoming pending GTK release.
 ** Run from Source
 In a new Terminal execute the following:
@@ -61,7 +61,7 @@ In a new Terminal execute the following:
    Lisp image
 5. Execute ~(next:start)~ to open your first nEXT Window.
 
-** Compilation
+** Compile
 *** macOS Compilation
 From the CCL Source directory, execute
 
