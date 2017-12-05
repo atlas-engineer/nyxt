@@ -1,8 +1,8 @@
 * nEXT Browser Developer Readme                                         :TOC:
-- [[#installation][Installation]]
+- [[#developer-installation][Developer Installation]]
   - [[#macos-installation][macOS Installation]]
   - [[#linux-installation][Linux Installation]]
-  - [[#execute-from-source][Execute from Source]]
+  - [[#run-from-source][Run from Source]]
   - [[#compilation][Compilation]]
 - [[#release-timeline][Release Timeline]]
   - [[#006][0.06]]
@@ -16,7 +16,7 @@
   - [[#irc-channel][IRC Channel]]
   - [[#mailing-list][Mailing List]]
 
-* Installation
+* Developer Installation
 nEXT browser is built with CCL, and is designed to be cross platform
 compatible. Support for graphics is provided via Cocoa for macOS and
 GTK for Linux. To download a prebuilt-binary, please see the
@@ -50,14 +50,16 @@ more detailed instructions and other resources are readily available
 on the quicklisp website.
 ** Linux Installation
 Instructions forthcoming pending GTK release.
-** Execute from Source
+** Run from Source
 In a new Terminal execute the following:
 
 1. ~ccl~ to create a new CCL Repl
 2. Execute ~(require :asdf)~ if asdf is not already loaded
-3. Execute ~(asdf:load-asd "/path/to/next.asd")~, this will load the
-   nEXT system into your Lisp image
-4. Execute ~(next:start)~ to open your first nEXT Window.
+3. Execute ~(asdf:load-asd "/path/to/next.asd")~ to load the nEXT
+   system definition
+4. Execute ~(ql:quickload :next)~ to load the nEXT system into your
+   Lisp image
+5. Execute ~(next:start)~ to open your first nEXT Window.
 
 ** Compilation
 *** macOS Compilation
