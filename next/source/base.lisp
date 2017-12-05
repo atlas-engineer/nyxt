@@ -4,17 +4,17 @@
 
 (defun start ()
   (ensure-directories-exist (uiop:physicalize-pathname "~/.next.d/"))
+  (initialize-default-key-bindings)
+  ;; load the user configuration if it exists
+  (load "~/.next.d/init.lisp" :if-does-not-exist nil)
   (initialize-bookmark-db)
   (initialize-history-db)
-  (initialize-default-key-bindings)
   (interface:initialize)
   (interface:start)
   ;; create the default buffers
   (setf *minibuffer*
 	(make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
-  (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
-  ;; load the user configuration if it exists
-  (load "~/.next.d/init.lisp" :if-does-not-exist nil))
+  (set-visible-active-buffer (generate-new-buffer "default" (document-mode))))
 
 (defun initialize-default-key-bindings ()
   (define-key global-map (kbd "C-x C-c")
