@@ -59,6 +59,8 @@
     (:input-complete *minibuffer* set-url bookmark-complete))
   (define-key document-mode-map (kbd "S-b s")
     #'bookmark-current-page)
+  (define-key global-map (kbd "S-b u")
+    (:input *minibuffer* bookmark-url))
   (define-key document-mode-map (kbd "C-[")
     #'switch-buffer-previous)
   (define-key document-mode-map (kbd "C-]")

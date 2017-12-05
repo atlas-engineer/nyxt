@@ -22,6 +22,13 @@
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
 
+(defun bookmark-url (input)
+  (let ((db (sqlite:connect
+	     (truename (probe-file "~/.next.d/bookmark.db")))))
+    (sqlite:execute-non-query
+     db "insert into bookmarks (url) values (?)" input)
+    (sqlite:disconnect db)))
+
 (defun bookmark-delete (input)
     (let ((db (sqlite:connect
 	       (truename (probe-file "~/.next.d/bookmark.db")))))
