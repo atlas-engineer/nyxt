@@ -1,9 +1,9 @@
-* Contents                                                              :TOC:
-- [[#developer-installation][Developer Installation]]
-  - [[#macos-instructions][macOS Instructions]]
-  - [[#linux-instructions][Linux Instructions]]
-  - [[#running-next-from-source][Running nEXT from Source]]
-  - [[#compiling-next][Compiling nEXT]]
+* nEXT Browser Developer Readme                                         :TOC:
+- [[#installation][Installation]]
+  - [[#macos-installation][macOS Installation]]
+  - [[#linux-installation][Linux Installation]]
+  - [[#execute-from-source][Execute from Source]]
+  - [[#compilation][Compilation]]
 - [[#release-timeline][Release Timeline]]
   - [[#006][0.06]]
   - [[#005][0.05]]
@@ -11,15 +11,18 @@
   - [[#003][0.03]]
   - [[#002][0.02]]
   - [[#001][0.01]]
-- [[#contributing][Contributing]]
+- [[#contribution][Contribution]]
+- [[#help--community][Help & Community]]
+  - [[#irc-channel][IRC Channel]]
+  - [[#mailing-list][Mailing List]]
 
-* Developer Installation
+* Installation
 nEXT browser is built with CCL, and is designed to be cross platform
 compatible. Support for graphics is provided via Cocoa for macOS and
 GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-** macOS Instructions
+** macOS Installation
 *** Installing CCL
 - Download CCL: [[https://ccl.clozure.com/download.html]], full
   installation instructions can be found here:
@@ -45,9 +48,9 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-** Linux Instructions
+** Linux Installation
 Instructions forthcoming pending GTK release.
-** Running nEXT from Source
+** Execute from Source
 In a new Terminal execute the following:
 
 1. ~ccl~ to create a new CCL Repl
@@ -56,8 +59,8 @@ In a new Terminal execute the following:
    nEXT system into your Lisp image
 4. Execute ~(next:start)~ to open your first nEXT Window.
 
-** Compiling nEXT
-*** macOS Instructions
+** Compilation
+*** macOS Compilation
 From the CCL Source directory, execute
 
 1. ~ccl --no-init --load make.lisp~
@@ -312,8 +315,7 @@ candidates
 CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
 - Organization of build systems into lisp files, no shell scripts
-
-* Contributing
+* Contribution
 Please find a task within this document that has a TODO label
 affixed. Upon finding a task that you'd like to work on, email the
 mailing list next-browser@googlegroups.com with the TODO item and a
@@ -324,3 +326,15 @@ After you have found a TODO item that is available:
 - make a fork of the repository
 - add your changes
 - make a pull request
+
+* Help & Community
+There are several ways to ask for help from the community. The first
+and easiest one is to simply open up an issue with whatever problem
+you have. Feel free to open issues for any task, suggestion or
+conversation you wish to have.
+
+** IRC Channel
+You can find nEXT Browser on Freenode IRC at ##nEXT-Browser
+** Mailing List
+You can email all members through the mailing list:
+next-browser@googlegroups.com
