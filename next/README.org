@@ -123,6 +123,11 @@ two minor releases following major release 1.0.
 - Create a settable prompt for the Minibuffer
 *** TODO Add Slime Support
 - Add slime support to the compiled version of nEXT
+*** DONE Extend Bookmark Support
+CLOSED: [2017-12-06 Wed 14:13]
+- Allow user to manually enter the bookmark URL into the minibuffer
+  directly
+- Allow the user to create a bookmark from a link-hint anchor
 ** DONE 0.05
 CLOSED: [2017-11-26 Sun 20:03]
 *** DONE Minibuffer selection
