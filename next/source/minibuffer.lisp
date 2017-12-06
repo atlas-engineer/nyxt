@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defvar minibuffer-mode-map (make-hash-table :test 'equalp))
+(defvar *minibuffer-mode-map* (make-hash-table :test 'equalp))
 
 (defclass minibuffer-mode (mode)
   ((completion-function :accessor completion-function)
@@ -80,5 +80,5 @@
   "Base mode for input"
   (make-instance 'minibuffer-mode
 		 :name "minibuffer"
-		 :keymap minibuffer-mode-map
+		 :keymap *minibuffer-mode-map*
 		 :view (interface:make-minibuffer)))

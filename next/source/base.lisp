@@ -28,13 +28,13 @@
     (:input-complete *minibuffer* set-url-new-buffer history-typed-complete :empty-complete t))
   (define-key *global-map* (kbd "S-b k")
     (:input-complete *minibuffer* bookmark-delete bookmark-complete))
-  (define-key minibuffer-mode-map (kbd "")
+  (define-key *minibuffer-mode-map* (kbd "")
     #'(lambda () (return-input (mode *minibuffer*))))
-  (define-key minibuffer-mode-map (kbd "C-")
+  (define-key *minibuffer-mode-map* (kbd "C-")
     #'(lambda () (return-immediate (mode *minibuffer*))))  
-  (define-key minibuffer-mode-map (kbd "C-g")
+  (define-key *minibuffer-mode-map* (kbd "C-g")
     #'(lambda () (cancel-input (mode *minibuffer*))))
-  (define-key minibuffer-mode-map (kbd "Escape")
+  (define-key *minibuffer-mode-map* (kbd "Escape")
     #'(lambda () (cancel-input (mode *minibuffer*))))
   (define-key *document-mode-map* (kbd "M-f")
     (:input-complete *minibuffer* history-forwards-query history-fowards-query-complete))
@@ -70,7 +70,7 @@
     #'switch-buffer-next)
   (define-key *global-map* (kbd "C-w")
     #'delete-active-buffer)
-  (define-key minibuffer-mode-map (kbd "C-n")
+  (define-key *minibuffer-mode-map* (kbd "C-n")
     #'interface:minibuffer-select-next)
-  (define-key minibuffer-mode-map (kbd "C-p")
+  (define-key *minibuffer-mode-map* (kbd "C-p")
     #'interface:minibuffer-select-previous))
