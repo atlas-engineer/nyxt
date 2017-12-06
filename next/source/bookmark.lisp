@@ -29,6 +29,11 @@
      db "insert into bookmarks (url) values (?)" input)
     (sqlite:disconnect db)))
 
+(defun bookmark-anchor (input)
+  (loop for hint in (link-hints (mode *active-buffer*))
+     do (when (equalp (nth 0 hint) input)
+	  (bookmark-url (nth 1 hint)))))
+
 (defun bookmark-delete (input)
     (let ((db (sqlite:connect
 	       (truename (probe-file "~/.next.d/bookmark.db")))))
