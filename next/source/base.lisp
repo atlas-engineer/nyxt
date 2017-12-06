@@ -14,7 +14,8 @@
   ;; create the default buffers
   (setf *minibuffer*
 	(make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
-  (set-visible-active-buffer (generate-new-buffer "default" (document-mode))))
+  (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
+  (set-url *start-page-url*))
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c")
