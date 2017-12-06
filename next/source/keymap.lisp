@@ -2,10 +2,10 @@
 
 ;;;; keymaps are executed in priority from most specific to least
 ;;;; that is, the order of execution for keymaps is:
-;;;; global-map --> major-mode-map --> minor-mode-maps
+;;;; *global-map* --> major-mode-map --> minor-mode-maps
 ;;;;
 ;;;; keys are defined with the following syntax:
-;;;; (define-key global-map (kbd "C-x o") #'function-reference)
+;;;; (define-key *global-map* (kbd "C-x o") #'function-reference)
 ;;;; in the previous example, the sequence of keys:
 ;;;; "control+x", "o" would invoke the "function-reference"
 
@@ -41,7 +41,7 @@
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
   (let ((key-maps (list
-		   global-map
+		   *global-map*
 		   (mode-keymap (mode *active-buffer*)))))
     (dolist (map key-maps)
       (when (gethash *key-sequence-stack* map)

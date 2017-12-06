@@ -167,7 +167,7 @@ Keys are defined with the following syntax:
 
 #+NAME: define key
 #+BEGIN_SRC lisp
-(define-key global-map (kbd "C-x o") #'function-example)
+(define-key *global-map* (kbd "C-x o") #'function-example)
 #+END_SRC
 
 in the previous example, the sequence of keys: ~control+x~, lift hands

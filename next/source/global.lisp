@@ -2,10 +2,10 @@
 
 (in-package :next)
 
-(defvar global-map (make-hash-table :test 'equalp)
+(defvar *global-map* (make-hash-table :test 'equalp)
   "A global key map, available in every mode/buffer")
 (defvar *active-buffer* ()
-  "The currently active buffer")
+  "The currently active buffer, do not modify this variable directly")
 (defvar *minibuffer* nil
   "A variable to store the mini-buffer")
 (defvar *buffers* ()
