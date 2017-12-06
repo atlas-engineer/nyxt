@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defvar document-mode-map (make-hash-table :test 'equalp))
+(defvar *document-mode-map* (make-hash-table :test 'equalp))
 
 (defclass document-mode (mode)
   ((active-history-node :accessor active-history-node :initarg :active-node)
@@ -123,7 +123,7 @@
   (let* ((root (make-node :data "about:blank"))
 	 (mode (make-instance 'document-mode
 			      :name "Document-Mode"
-			      :keymap document-mode-map
+			      :keymap *document-mode-map*
 			      :view (interface:make-web-view)
 			      :active-node root)))
     (interface:web-view-set-url-loaded-callback
