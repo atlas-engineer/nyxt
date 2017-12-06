@@ -4,6 +4,10 @@
   - [[#linux-setup][Linux Setup]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
+- [[#help--community][Help & Community]]
+  - [[#contribution][Contribution]]
+  - [[#irc-channel][IRC Channel]]
+  - [[#mailing-list][Mailing List]]
 - [[#release-timeline][Release Timeline]]
   - [[#006][0.06]]
   - [[#005][0.05]]
@@ -11,10 +15,6 @@
   - [[#003][0.03]]
   - [[#002][0.02]]
   - [[#001][0.01]]
-- [[#contribution][Contribution]]
-- [[#help--community][Help & Community]]
-  - [[#irc-channel][IRC Channel]]
-  - [[#mailing-list][Mailing List]]
 
 * Developer Installation
 nEXT browser is built with CCL, and is designed to be cross platform
@@ -67,6 +67,30 @@ From the CCL Source directory, execute
 
 1. ~ccl --no-init --load make.lisp~
 2. The compiled binary will be present in build/nEXT
+
+* Help & Community
+There are several ways to ask for help from the community. The first
+and easiest one is to simply open up an issue with whatever problem
+you have. Feel free to open issues for any task, suggestion or
+conversation you wish to have.
+
+** Contribution
+To contribute, please find a task within this document that has a TODO
+label affixed. Upon finding a task that you'd like to work on, email
+the mailing list next-browser@googlegroups.com with the TODO item, and
+a simple example of a proposed solution.
+
+After you have found a TODO item that is available:
+
+- make a fork of the repository
+- add your changes
+- make a pull request
+
+** IRC Channel
+You can find nEXT Browser on Freenode IRC at ##nEXT-Browser
+** Mailing List
+You can email all members through the mailing list:
+next-browser@googlegroups.com
 
 * Release Timeline
 Major releases are issued by incrementing the first digit. That is,
@@ -317,26 +341,5 @@ candidates
 CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
 - Organization of build systems into lisp files, no shell scripts
-* Contribution
-Please find a task within this document that has a TODO label
-affixed. Upon finding a task that you'd like to work on, email the
-mailing list next-browser@googlegroups.com with the TODO item and a
-simple example of a proposed solution.
 
-After you have found a TODO item that is available:
 
-- make a fork of the repository
-- add your changes
-- make a pull request
-
-* Help & Community
-There are several ways to ask for help from the community. The first
-and easiest one is to simply open up an issue with whatever problem
-you have. Feel free to open issues for any task, suggestion or
-conversation you wish to have.
-
-** IRC Channel
-You can find nEXT Browser on Freenode IRC at ##nEXT-Browser
-** Mailing List
-You can email all members through the mailing list:
-next-browser@googlegroups.com
