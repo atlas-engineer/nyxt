@@ -75,4 +75,6 @@
   (define-key *minibuffer-mode-map* (kbd "C-p")
     #'interface:minibuffer-select-previous)
   (define-key *global-map* (kbd "S-h v")
-    (:input-complete *minibuffer* variable-inspect variable-complete :setup #'load-package-globals)))
+    (:input-complete *minibuffer* variable-inspect variable-complete :setup #'load-package-globals))
+  (define-key *global-map* (kbd "C-o")
+    (:input *minibuffer* load-file)))

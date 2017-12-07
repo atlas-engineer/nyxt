@@ -7,3 +7,6 @@
   parent
   children
   data)
+
+(defun load-file (input)
+  (load input :if-does-not-exist nil))

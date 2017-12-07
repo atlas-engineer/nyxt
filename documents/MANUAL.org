@@ -13,6 +13,7 @@ exposed to the end-user allowing for infinite customization.
   - [[#exiting][Exiting]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
+  - [[#loading-files][Loading Files]]
 
 * Basics
 ** Navigation
@@ -190,3 +191,10 @@ The following keys exist as special keys:
 1. ~C~: Control
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
+
+** Loading Files
+To load a file again, or reload an init file use the function
+load-file. Within the minibuffer prompt enter the full path to the
+file you wish to load.
+
+1. ~C-o~: Load File
