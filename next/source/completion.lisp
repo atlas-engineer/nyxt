@@ -7,7 +7,7 @@
 (in-package :next)
 
 
-(defun fuzzy-match (input candidates)
+(defun fuzzy-match (input candidates &optional accessor-function)
   ;; fuzzy-match works by taking a string input from the user. the
   ;; string is then populated with ".*" between each character to
   ;; create a regex. As an example, "nt" will become "n.*t.*". This
@@ -24,6 +24,10 @@
 	(completions nil))
     ;; use constructed regex to see which options match
     (loop for candidate in candidates do
-	 (when (cl-string-match:match-re regex candidate)
+	 (when (cl-string-match:match-re
+		regex
+		(if accessor-function
+		    (funcall accessor-function candidate)
+		    candidate))
 	   (push candidate completions)))
     completions))

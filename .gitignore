@@ -9,6 +9,7 @@ info.org_archive
 
 # Ignore App
 *.app
+*.dmg
 
 # Ignore temp
 tmp/

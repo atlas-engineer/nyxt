@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defvar document-mode-map (make-hash-table :test 'equalp))
+(defvar *document-mode-map* (make-hash-table :test 'equalp))
 
 (defclass document-mode (mode)
   ((active-history-node :accessor active-history-node :initarg :active-node)
@@ -18,20 +18,20 @@
   ;; move up to parent node to iterate backwards in history tree
   (let ((parent (node-parent (active-history-node (mode *active-buffer*)))))
     (when parent
-	(set-url (node-data parent)))))
+	(set-url (node-data parent) t))))
 
 (defun history-forwards ()
   ;; move forwards in history selecting the first child
   (let ((children (node-children (active-history-node (mode *active-buffer*)))))
     (unless (null children)
-      (set-url (node-data (nth 0 children))))))
+      (set-url (node-data (nth 0 children)) t))))
 
 (defun history-forwards-query (input)
   ;; move forwards in history querying if more than one child present
   (let ((children (node-children (active-history-node (mode *active-buffer*)))))
     (loop for child in children do
 	 (when (equalp (node-data child) input)
-	   (set-url (node-data child))))))
+	   (set-url (node-data child) t)))))
 
 (defun history-fowards-query-complete (input)
   ;; provide completion candidates to the history-forwards-query function
@@ -63,6 +63,7 @@
     	   (setf (active-history-node mode) child)
     	   (return-from add-or-traverse-history t)))
     ;; if we made it this far, we must create a new node
+    (history-add url) ; add to history database
     (let ((new-node (make-node :parent active-node :data url)))
       (push new-node (node-children active-node))
       (setf (active-history-node mode) new-node)
@@ -73,17 +74,19 @@
     (set-visible-active-buffer new-buffer)
     (set-url input-url)))
 
-(defun set-url-buffer (input-url buffer)
+(defun set-url-buffer (input-url buffer &optional disable-history)
   (setf (name buffer) input-url)
+  (unless disable-history
+    (history-typed-add input-url))
   (interface:web-view-set-url (view buffer) input-url))
 
 (defun setup-url ()
   (set-input (mode *minibuffer*)
 	     (interface:web-view-get-url (view *active-buffer*))))
 
-(defun set-url (input-url)
+(defun set-url (input-url &optional disable-history)
   (let ((url (normalize-url input-url)))
-    (set-url-buffer url *active-buffer*)))
+    (set-url-buffer url *active-buffer* disable-history)))
 
 (defun normalize-url (input-url)
   "Will convert example.com to https://www.example.com"
@@ -99,19 +102,19 @@
 (defun go-anchor (input)
   (loop for hint in (link-hints (mode *active-buffer*))
      do (when (equalp (nth 0 hint) input)
-	  (set-url (nth 1 hint)))))
+	  (set-url-buffer (nth 1 hint) *active-buffer* t))))
 
 (defun go-anchor-new-buffer (input)
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
     (loop for hint in (link-hints (mode *active-buffer*))
        do (when (equalp (nth 0 hint) input)
-	    (set-url-buffer (nth 1 hint) new-buffer)))))
+	    (set-url-buffer (nth 1 hint) new-buffer t)))))
 
 (defun go-anchor-new-buffer-focus (input)
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
     (loop for hint in (link-hints (mode *active-buffer*))
        do (when (equalp (nth 0 hint) input)
-	    (set-url-buffer (nth 1 hint) new-buffer)))
+	    (set-url-buffer (nth 1 hint) new-buffer t)))
     (remove-link-hints)
     (set-visible-active-buffer new-buffer)))
 
@@ -120,7 +123,7 @@
   (let* ((root (make-node :data "about:blank"))
 	 (mode (make-instance 'document-mode
 			      :name "Document-Mode"
-			      :keymap document-mode-map
+			      :keymap *document-mode-map*
 			      :view (interface:make-web-view)
 			      :active-node root)))
     (interface:web-view-set-url-loaded-callback

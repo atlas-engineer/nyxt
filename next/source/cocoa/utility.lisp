@@ -158,4 +158,4 @@
                  (col :id)
                  (row #>NSInteger))
   (declare (ignore tab col))
-  (lisp-to-ns-string (nth row (data self))))
+  (lisp-to-ns-string (write-to-string (nth row (data self)))))

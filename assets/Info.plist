@@ -13,7 +13,7 @@
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleExecutable</key>
-    <string>next</string>
+    <string>nEXT</string>
     <key>CFBundleIdentifier</key>
     <string>next.browser</string>
     <key>NSAppTransportSecurity</key>

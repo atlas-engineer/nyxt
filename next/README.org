@@ -1,17 +1,21 @@
-* Contents                                                              :TOC:
+* nEXT Browser Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
-  - [[#macos-instructions][macOS Instructions]]
-  - [[#linux-instructions][Linux Instructions]]
-  - [[#running-next-from-source][Running nEXT from Source]]
-  - [[#compiling-next][Compiling nEXT]]
+  - [[#macos-setup][macOS Setup]]
+  - [[#linux-setup][Linux Setup]]
+  - [[#run-from-source][Run from Source]]
+  - [[#compile][Compile]]
+- [[#help--community][Help & Community]]
+  - [[#contribution][Contribution]]
+  - [[#irc-channel][IRC Channel]]
+  - [[#mailing-list][Mailing List]]
 - [[#release-timeline][Release Timeline]]
+  - [[#007][0.07]]
   - [[#006][0.06]]
   - [[#005][0.05]]
   - [[#004][0.04]]
   - [[#003][0.03]]
   - [[#002][0.02]]
   - [[#001][0.01]]
-- [[#contributing][Contributing]]
 
 * Developer Installation
 nEXT browser is built with CCL, and is designed to be cross platform
@@ -19,7 +23,7 @@ compatible. Support for graphics is provided via Cocoa for macOS and
 GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-** macOS Instructions
+** macOS Setup
 *** Installing CCL
 - Download CCL: [[https://ccl.clozure.com/download.html]], full
   installation instructions can be found here:
@@ -41,27 +45,53 @@ To install quicklisp:
 - Download https://beta.quicklisp.org/quicklisp.lisp
 - Execute ~ccl --load quicklisp.lisp~ to load quicklisp
 - Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
-- Evalute in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
+- Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-** Linux Instructions
+** Linux Setup
 Instructions forthcoming pending GTK release.
-** Running nEXT from Source
+** Run from Source
 In a new Terminal execute the following:
 
 1. ~ccl~ to create a new CCL Repl
 2. Execute ~(require :asdf)~ if asdf is not already loaded
-3. Execute ~(asdf:load-asd "/path/to/next.asd")~, this will load the
-   nEXT system into your Lisp image
-4. Execute ~(next:start)~ to open your first nEXT Window.
+3. Execute ~(asdf:load-asd "/path/to/next.asd")~ to load the nEXT
+   system definition
+4. Execute ~(ql:quickload :next)~ to load the nEXT system into your
+   Lisp image
+5. Execute ~(next:start)~ to open your first nEXT Window.
 
-** Compiling nEXT
-*** macOS Instructions
+** Compile
+*** macOS Compilation
 From the CCL Source directory, execute
 
 1. ~ccl --no-init --load make.lisp~
 2. The compiled binary will be present in build/nEXT
+
+* Help & Community
+There are several ways to ask for help from the community. The first
+and easiest one is to simply open up an issue with whatever problem
+you have. Feel free to open issues for any task, suggestion or
+conversation you wish to have.
+
+** Contribution
+To contribute, please find a task within this document that has a TODO
+label affixed. Upon finding a task that you'd like to work on, email
+the mailing list next-browser@googlegroups.com with the TODO item, and
+a simple example of a proposed solution.
+
+After you have found a TODO item that is available:
+
+- make a fork of the repository
+- add your changes
+- make a pull request
+
+** IRC Channel
+You can find nEXT Browser on Freenode IRC at ##nEXT-Browser
+** Mailing List
+You can email all members through the mailing list:
+next-browser@googlegroups.com
 
 * Release Timeline
 Major releases are issued by incrementing the first digit. That is,
@@ -69,33 +99,56 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
+** 0.07
+*** TODO GTK Port
+Create Linux GTK Port
 ** 0.06
+*** TODO Maintain Scroll Position
+- When jumping back and forth through history, maintain the scroll
+  position
+*** TODO Add Search Function
+- Minibuffer should allow searching via a search engine
 *** TODO Add Hook System
 - Model Hook system similar to the Emacs style hooks
   (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
-*** TODO Update documentation with supported operations
-*** TODO Minibuffer selection
-- Should be possible to use C-n and C-p within the minibuffer to
-  navigate up and down through the candidates
-- Candidates within the minibuffer should be represented by an object
-  'minibuffer-candidate' that includes slots for the text to match
-  against, as well as the actual object behind a given candidate
-- Returning input from the minibuffer should return the object that
-  was selected
-*** TODO Minibuffer Prompt
-- Create a settable prompt for the minibuffer
-** 0.05
 *** TODO Create with-new-buffer macro
 - Should allow the user to encapsulate operations against some new
   buffer. That is, set-url and set-url-new-buffer will be deprecated
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
+*** TODO Minibuffer Prompt
+- Create a settable prompt for the Minibuffer
+*** TODO Add Slime Support
+- Add slime support to the compiled version of nEXT
+*** TODO Jump to Heading
+- Implement something akin to ijump which allows you to jump to any
+  heading on a given page represented by H1 H2 H3 tag etc
+*** DONE Reload Init Function
+CLOSED: [2017-12-07 Thu 15:48]
+- Allow function to reload init
+*** DONE Add Help System
+CLOSED: [2017-12-07 Thu 13:07]
+- Add basic help system that can be extended
+- Add the ability to look up global variables
+*** DONE Extend Bookmark Support
+CLOSED: [2017-12-06 Wed 14:13]
+- Allow user to manually enter the bookmark URL into the minibuffer
+  directly
+- Allow the user to create a bookmark from a link-hint anchor
+** DONE 0.05
+CLOSED: [2017-11-26 Sun 20:03]
+*** DONE Minibuffer selection
+CLOSED: [2017-11-26 Sun 00:43]
+- Should be able to move up and down through candidates using C-n and
+  C-p
+- Minibuffer should return actual object in question instead of doing
+  strange magic with strings
 *** DONE Minibuffer set text
 CLOSED: [2017-11-23 Thu 14:59]
-- Allow the setting of the minibuffer text
-- Setup the automatic clearing of the minibuffer previous text
+- Allow the setting of the Minibuffer text
+- Setup the automatic clearing of the Minibuffer previous text
 *** DONE Add Link Hints
 CLOSED: [2017-11-23 Thu 00:29]
 - user should be able to navigate all links entirely by keyboard
@@ -104,14 +157,23 @@ CLOSED: [2017-11-23 Thu 00:29]
 *** DONE Fix keybindings within repl
 CLOSED: [2017-11-24 Fri 16:37]
 - Allow keybinding invocation within repl overriding ccl cocoa IDE
-*** TODO Add Slime Support
-*** TODO History
-- History will be stored in a db (possibly sqlite) with additional
-  metadata that allows searching semantically, as well as searching
-  by different criteria.
-**** TODO History is searchable
+*** DONE History
+CLOSED: [2017-11-26 Sun 17:59]
+- History will be stored in a db (possibly sqlite)
+**** DONE History is searchable
+CLOSED: [2017-11-26 Sun 17:59]
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
+- Because history is stored in sqlite db, user can create queries
+  against their history
+**** DONE Set-url history suggestion
+CLOSED: [2017-11-26 Sun 20:03]
+- History should be suggested by set-url
+- Minibuffer input should be able to handle different use cases for
+  different input methods
+**** DONE Update Manual
+CLOSED: [2017-11-26 Sun 20:03]
+- Update manual with latest capabilities and changes to codebase
 ** DONE 0.04
 CLOSED: [2017-11-20 Mon 17:57]
 *** DONE Isolate backend QT Code
@@ -294,14 +356,4 @@ CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
 - Organization of build systems into lisp files, no shell scripts
 
-* Contributing
-Please find a task within this document that has a TODO label
-affixed. Upon finding a task that you'd like to work on, email the
-mailing list next-browser@googlegroups.com with the TODO item and a
-simple example of a proposed solution.
 
-After you have found a TODO item that is available:
-
-- make a fork of the repository
-- add your changes
-- make a pull request
