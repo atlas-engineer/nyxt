@@ -22,3 +22,7 @@
   function load package-globals")
 (defvar *init-file-path* "~/.next.d/init.lisp"
   "The path where the system will look to load an init file from.")
+(defvar *history-db-path* "~/.next.d/history.db"
+  "The path where the system will create/save the history database.")
+(defvar *bookmark-db-path* "~/.next.d/bookmark.db"
+  "The path where the system will create/save the bookmark database.")
