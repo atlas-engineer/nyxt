@@ -14,3 +14,7 @@
   "The distance scroll-down or scroll-up will scroll.")
 (defvar *start-page-url* "https://next-browser.github.io/start.html"
   "The url of the first buffer opened by nEXT when started.")
+(defvar *package-symbols* nil
+  "The package symbols available")
+(defvar *package-globals* nil
+  "The package global variables available")

@@ -73,4 +73,6 @@
   (define-key *minibuffer-mode-map* (kbd "C-n")
     #'interface:minibuffer-select-next)
   (define-key *minibuffer-mode-map* (kbd "C-p")
-    #'interface:minibuffer-select-previous))
+    #'interface:minibuffer-select-previous)
+  (define-key *global-map* (kbd "S-h v")
+    (:input-complete *minibuffer* variable-inspect variable-complete :setup #'load-package-globals)))

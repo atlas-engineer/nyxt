@@ -23,4 +23,5 @@
 	       (:file "link-hint")
 	       (:file "completion")
 	       (:file "document-mode")
+	       (:file "help")
 	       (:file "base")))
