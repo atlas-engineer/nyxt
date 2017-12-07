@@ -9,6 +9,7 @@ exposed to the end-user allowing for infinite customization.
   - [[#tabs-buffers][Tabs (Buffers)]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
+  - [[#help][Help]]
   - [[#exiting][Exiting]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
@@ -139,6 +140,12 @@ and manage your bookmarks, a few functions are provided:
 3. ~S-b s~: Bookmark Current Page
 4. ~S-b u~: Bookmark URL (input URL via minibuffer)
 5. ~S-b g~: Bookmark Anchor (input URL via link hints)
+
+** Help
+The help system allows you to look up variable and function docstrings
+directly within nEXT. Docstrings will appear in a new help buffer.
+
+1. ~S-h v~: Look up a variable docstring
 
 ** Exiting
 To exit nEXT enter the key-combination ~C-x C-c~ and the program will
