@@ -25,8 +25,9 @@
   (let* ((help-buffer (generate-new-buffer
 		       (concatenate 'string "HELP-" (symbol-name input)) (document-mode)))
 	 (help-contents (concatenate 'string "<h1>" (symbol-name input) "</h1>"
-				     (documentation input 'variable)))
+				     (documentation input 'variable)
+				     "<h2>Current Value:</h2>"
+				     (write-to-string (symbol-value input))))
 	 (insert-help (ps:ps (setf (ps:@ document Body inner-H-T-M-L) (ps:lisp help-contents)))))
-    (print insert-help)
     (interface:web-view-execute (view help-buffer) insert-help)
     (set-visible-active-buffer help-buffer)))

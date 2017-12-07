@@ -106,13 +106,8 @@ Create Linux GTK Port
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
-*** TODO Jump to Heading
-- Implement something akin to ijump which allows you to jump to any
-  heading on a given page represented by H1 H2 H3 tag etc
 *** TODO Add Search Function
 - Minibuffer should allow searching via a search engine
-*** TODO Reload Init Function
-- Allow function to reload init
 *** TODO Add Hook System
 - Model Hook system similar to the Emacs style hooks
   (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
@@ -127,6 +122,11 @@ Create Linux GTK Port
 - Create a settable prompt for the Minibuffer
 *** TODO Add Slime Support
 - Add slime support to the compiled version of nEXT
+*** TODO Reload Init Function
+- Allow function to reload init
+*** TODO Jump to Heading
+- Implement something akin to ijump which allows you to jump to any
+  heading on a given page represented by H1 H2 H3 tag etc
 *** DONE Add Help System
 CLOSED: [2017-12-07 Thu 13:07]
 - Add basic help system that can be extended
