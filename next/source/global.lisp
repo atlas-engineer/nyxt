@@ -15,6 +15,8 @@
 (defvar *start-page-url* "https://next-browser.github.io/start.html"
   "The url of the first buffer opened by nEXT when started.")
 (defvar *package-symbols* nil
-  "The package symbols available")
+  "The package symbols available, populated by helper function
+  load-package-symbols.")
 (defvar *package-globals* nil
-  "The package global variables available")
+  "The package global variables available, populated by helper
+  function load package-globals")
