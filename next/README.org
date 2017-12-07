@@ -127,6 +127,10 @@ Create Linux GTK Port
 - Create a settable prompt for the Minibuffer
 *** TODO Add Slime Support
 - Add slime support to the compiled version of nEXT
+*** DONE Add Help System
+CLOSED: [2017-12-07 Thu 13:07]
+- Add basic help system that can be extended
+- Add the ability to look up global variables
 *** DONE Extend Bookmark Support
 CLOSED: [2017-12-06 Wed 14:13]
 - Allow user to manually enter the bookmark URL into the minibuffer
