@@ -6,7 +6,7 @@
   (ensure-directories-exist (uiop:physicalize-pathname "~/.next.d/"))
   (initialize-default-key-bindings)
   ;; load the user configuration if it exists
-  (load "~/.next.d/init.lisp" :if-does-not-exist nil)
+  (load *init-file-path* :if-does-not-exist nil)
   (initialize-bookmark-db)
   (initialize-history-db)
   (interface:initialize)

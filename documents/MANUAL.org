@@ -198,3 +198,6 @@ load-file. Within the minibuffer prompt enter the full path to the
 file you wish to load.
 
 1. ~C-o~: Load File
+
+A convenience function for reloading the init file called
+~reload-init~ can also be keybound.

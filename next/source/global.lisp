@@ -20,3 +20,5 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
+(defvar *init-file-path* "~/.next.d/init.lisp"
+  "The path where the system will look to load an init file from.")
