@@ -17,9 +17,6 @@
   (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
   (set-url *start-page-url*))
 
-(defun start-swank ()
-  (swank:create-server :port *swank-port* :style :spawn :dont-close t))
-
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c")
     #'interface:kill)
@@ -81,5 +78,5 @@
     (:input-complete *minibuffer* variable-inspect variable-complete :setup #'load-package-globals))
   (define-key *global-map* (kbd "C-o")
     (:input *minibuffer* load-file))
-  (define-key global-map (kbd "C-i")
+  (define-key *global-map* (kbd "S-h s")
     #'start-swank))
