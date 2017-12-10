@@ -11,6 +11,8 @@ exposed to the end-user allowing for infinite customization.
   - [[#bookmarks][Bookmarks]]
   - [[#help][Help]]
   - [[#exiting][Exiting]]
+- [[#advanced-topics][Advanced Topics]]
+  - [[#slime-with-a-compiled-version-of-next][Slime with a compiled version of nEXT]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
   - [[#loading-files][Loading Files]]
@@ -153,6 +155,37 @@ To exit nEXT enter the key-combination ~C-x C-c~ and the program will
 quit. All of your open tabs and form data will not be persisted. The
 only information saved will be your filled in passwords, cookes,
 and other information within your cache.
+
+* Advanced Topics
+** Slime with a compiled version of nEXT
+Slime provides a way of interacting with nEXT, and with Lisp code in
+general (in a REPL like manner).
+
+From the Slime Manual:
+#+begin_quote
+SLIME extends Emacs with support for interactive programming in Common
+Lisp. The features are centered around slime-mode, an Emacs minor-mode
+that complements the standard lisp-mode. While lisp-mode supports
+editing Lisp source files, slime-mode adds support for interacting
+with a running Common Lisp process for compilation, debugging,
+documentation lookup, and so on.
+#+end_quote
+
+To use Slime with a compiled version of nEXT use the keybinding ~S-h
+s~ to launch a Swank server. Slime will connect to the Swank server
+and give you completion, debugging, documentation, etc. The default
+port for Swank on nEXT is ~4006~ to avoid collisions with the default
+Swank port of ~4005~ within an Emacs ~*inferior-lisp*~ process.
+
+After launching the Swank server in nEXT- within Emacs execute:
+
+1. ~M-x~
+2. ~slime-connect~
+3. Enter ~127.0.0.1~ for the host
+4. Enter ~4006~ for the port (nEXT variable ~*swank-port*~)
+
+To customize the port that Swank starts on, edit the global variable
+~*swank-port*~ in your init file.
 
 * Customization
 All customization begins by creating a =~/.next.d/init.lisp= file.
