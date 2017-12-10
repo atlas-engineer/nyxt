@@ -106,8 +106,6 @@ Create Linux GTK Port
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
-*** TODO Add Search Function
-- Minibuffer should allow searching via a search engine
 *** TODO Add Hook System
 - Model Hook system similar to the Emacs style hooks
   (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
@@ -118,15 +116,16 @@ Create Linux GTK Port
   buffer. That is, set-url and set-url-new-buffer will be deprecated
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
-*** TODO Minibuffer Prompt
-- Create a settable prompt for the Minibuffer
 *** TODO Jump to Heading
 - Implement something akin to ijump which allows you to jump to any
   heading on a given page represented by H1 H2 H3 tag etc
 *** TODO User Customization Example
 - Create an example in the Documents directory that details the
   creation of a simple mode, and a way of customizing nEXT
-*** TODO Buffer contains list of modes
+*** TODO Add Search Function
+- Minibuffer should allow searching via a search engine
+*** DONE Buffer contains list of modes
+CLOSED: [2017-12-11 Mon 00:26]
 - The buffer should contain a list of all of the modes that have been
   applied to it, so that no memory is lost when switching modes
 *** DONE Add Slime Support
