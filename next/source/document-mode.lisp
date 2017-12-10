@@ -44,8 +44,7 @@
       (fuzzy-match input (mapcar #'node-data children)))))
 
 (defun add-or-traverse-history (mode)
-  ;; get url from mode-view's webview
-  (let ((url (interface:web-view-get-url (mode-view mode)))
+  (let ((url (interface:web-view-get-url (view (buffer mode))))
 	(active-node (active-history-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
@@ -124,10 +123,11 @@
 	 (mode (make-instance 'document-mode
 			      :name "Document-Mode"
 			      :keymap *document-mode-map*
-			      :view (interface:make-web-view)
 			      :active-node root)))
-    (interface:web-view-set-url-loaded-callback
-     (mode-view mode)
-     (lambda () (add-or-traverse-history mode)))
-    ;; return instance of mode
     mode))
+
+(defmethod setup ((mode document-mode) buffer)
+  (call-next-method)
+  (interface:web-view-set-url-loaded-callback
+   (view buffer)
+   (lambda () (add-or-traverse-history mode))))

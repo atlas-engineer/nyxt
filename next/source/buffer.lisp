@@ -14,6 +14,7 @@
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))
+      (setf (buffer mode) buffer)
       (setf (gethash (class-name (class-of mode)) (modes buffer)) mode))))
 
 (defmethod switch-mode ((buffer buffer) mode)
@@ -24,7 +25,7 @@
 
 (defmethod add-or-switch-to-mode ((buffer buffer) mode)
   (add-mode buffer mode)
-  (switch-mode buffer (class-name (class-of mode))))
+  (switch-mode buffer mode))
 
 (defun generate-new-buffer (name mode)
   (let ((new-buffer
@@ -32,8 +33,9 @@
 			:name name
 			:mode mode
 			:modes (make-hash-table :test 'equalp)
-			:view (mode-view mode))))
+			:view (interface:make-web-view))))
     (push new-buffer *buffers*)
+    (setup mode new-buffer)
     (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))
     new-buffer))
 

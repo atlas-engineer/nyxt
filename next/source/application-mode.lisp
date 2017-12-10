@@ -10,5 +10,4 @@
 (defun application-mode ()
   (make-instance 'application-mode
 		 :name "Application-Mode"
-		 :keymap *application-mode-map*
-		 :view (interface:make-web-view)))
+		 :keymap *application-mode-map*))

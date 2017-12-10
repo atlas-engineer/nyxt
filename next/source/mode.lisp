@@ -4,6 +4,9 @@
 (in-package :next)
 
 (defclass mode ()
-    ((name :accessor mode-name :initarg :name)
-     (keymap :accessor mode-keymap :initarg :keymap)
-     (view :accessor mode-view :initarg :view)))
+    ((name :accessor name :initarg :name)
+     (keymap :accessor keymap :initarg :keymap)
+     (buffer :accessor buffer)))
+
+(defmethod setup ((mode mode) buffer)
+  (setf (buffer mode) buffer))

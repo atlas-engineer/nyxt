@@ -80,5 +80,4 @@
   "Base mode for input"
   (make-instance 'minibuffer-mode
 		 :name "minibuffer"
-		 :keymap *minibuffer-mode-map*
-		 :view (interface:make-minibuffer)))
+		 :keymap *minibuffer-mode-map*))
