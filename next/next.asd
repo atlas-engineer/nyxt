@@ -22,6 +22,7 @@
 	       (:file "history")
 	       (:file "link-hint")
 	       (:file "completion")
+	       (:file "application-mode")
 	       (:file "document-mode")
 	       (:file "help")
 	       (:file "base")))
