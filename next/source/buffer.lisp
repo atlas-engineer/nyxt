@@ -8,39 +8,33 @@
    (view :accessor view :initarg :view)
    (modes :accessor modes :initarg :modes)))
 
-(defmethod print-object ((self buffer) stream)
-  (format stream "~s" (name self)))
+(defmethod print-object ((buffer buffer) stream)
+  (format stream "~s" (name buffer)))
 
-(defmethod add-mode ((self buffer) mode &optional (overwrite nil))
-  (let ((found-mode (find mode (modes self)
-			  :test #'(lambda (class mode) (typep mode class)))))
-    (unless found-mode
-      (push mode (modes self)))
-    (when (and found-mode overwrite)
-      (setf (modes self)
-	    (remove-if #'(lambda (item) (typep item 'mode)) (modes self)))
-      (push mode (modes self)))))
+(defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
+  (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
+    (when (or (not found-mode) (and found-mode overwrite))
+      (setf (gethash (class-name (class-of mode)) (modes buffer)) mode))))
 
-(defmethod switch-mode ((self buffer) mode-class)
-  (let ((found-mode
-	 (find mode-class (modes self)
-	       :test #'(lambda (class mode) (typep mode class)))))
+(defmethod switch-mode ((buffer buffer) mode)
+  (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (if found-mode
-	(setf (mode self) found-mode)
+	(setf (mode buffer) found-mode)
 	nil)))
 
-(defmethod add-or-switch-to-mode ((self buffer) mode)
-  (add-mode self mode)
-  (switch-mode self (class-of mode)))
+(defmethod add-or-switch-to-mode ((buffer buffer) mode)
+  (add-mode buffer mode)
+  (switch-mode buffer (class-name (class-of mode))))
 
 (defun generate-new-buffer (name mode)
   (let ((new-buffer
 	 (make-instance 'buffer
 			:name name
 			:mode mode
-			:modes (list mode)
+			:modes (make-hash-table :test 'equalp)
 			:view (mode-view mode))))
     (push new-buffer *buffers*)
+    (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))
     new-buffer))
 
 (defun set-active-buffer (buffer)
