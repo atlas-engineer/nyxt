@@ -12,6 +12,9 @@
   "A list of all existing buffers.")
 (defvar *scroll-distance* 15
   "The distance scroll-down or scroll-up will scroll.")
+(defvar *swank-port* 4006
+  "The port that swank will open a new server on (default Emacs slime port
+  is 4005, default set to 4006 in nEXT to avoid collisions).")
 (defvar *start-page-url* "https://next-browser.github.io/start.html"
   "The url of the first buffer opened by nEXT when started.")
 (defvar *package-symbols* nil

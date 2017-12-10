@@ -120,11 +120,12 @@ Create Linux GTK Port
   "https://www.example.com"))
 *** TODO Minibuffer Prompt
 - Create a settable prompt for the Minibuffer
-*** TODO Add Slime Support
-- Add slime support to the compiled version of nEXT
 *** TODO Jump to Heading
 - Implement something akin to ijump which allows you to jump to any
   heading on a given page represented by H1 H2 H3 tag etc
+*** DONE Add Slime Support
+CLOSED: [2017-12-10 Sun 01:55]
+- Add slime support to the compiled version of nEXT
 *** DONE Reload Init Function
 CLOSED: [2017-12-07 Thu 15:48]
 - Allow function to reload init

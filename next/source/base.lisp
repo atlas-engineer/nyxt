@@ -77,4 +77,6 @@
   (define-key *global-map* (kbd "S-h v")
     (:input-complete *minibuffer* variable-inspect variable-complete :setup #'load-package-globals))
   (define-key *global-map* (kbd "C-o")
-    (:input *minibuffer* load-file)))
+    (:input *minibuffer* load-file))
+  (define-key *global-map* (kbd "S-h s")
+    #'start-swank))
