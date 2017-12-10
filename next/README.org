@@ -123,6 +123,12 @@ Create Linux GTK Port
 *** TODO Jump to Heading
 - Implement something akin to ijump which allows you to jump to any
   heading on a given page represented by H1 H2 H3 tag etc
+*** TODO User Customization Example
+- Create an example in the Documents directory that details the
+  creation of a simple mode, and a way of customizing nEXT
+*** TODO Buffer contains list of modes
+- The buffer should contain a list of all of the modes that have been
+  applied to it, so that no memory is lost when switching modes
 *** DONE Add Slime Support
 CLOSED: [2017-12-10 Sun 01:55]
 - Add slime support to the compiled version of nEXT
