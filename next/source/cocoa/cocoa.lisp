@@ -49,6 +49,10 @@
 	(nth (get-selected-row self) (data completion-controller))
 	nil)))
 
+(defmethod completions-clear ((self minibuffer-view))
+  (setf (data (completion-controller self)) ())
+  (#/reloadData (completion-table self)))
+
 (defmethod get-input ((self minibuffer-view))
   (ns-to-lisp-string (#/stringValue (input-buffer self))))
 
@@ -261,7 +265,8 @@
 
 (defun minibuffer-hide ()
   (hide-minibuffer *next-view*)
-  (#/makeFirstResponder: *window* (fill-container-view *next-view*)))
+  (completions-clear (minibuffer-view *next-view*))
+  (#/makeFirstResponder: *window* (fill-view (fill-container-view *next-view*))))
 
 (defun minibuffer-set-input (input)
   (set-input (minibuffer-view *next-view*) input))
