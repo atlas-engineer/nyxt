@@ -1,6 +1,6 @@
 (in-package "CCL")
 
-(defclass next-application (ns:ns-application) ()
+(defclass next-application (ccl::ccl-application) ()
   (:metaclass ns:+ns-application))
 
 (objc:defmethod (#/sendEvent: :void) ((self next-application) event)
