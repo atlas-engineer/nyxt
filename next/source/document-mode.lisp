@@ -84,15 +84,8 @@
 	     (interface:web-view-get-url (view *active-buffer*))))
 
 (defun set-url (input-url &optional disable-history)
-  (let ((url (normalize-url input-url)))
+  (let ((url (parse-url input-url)))
     (set-url-buffer url *active-buffer* disable-history)))
-
-(defun normalize-url (input-url)
-  "Will convert example.com to https://www.example.com"
-  (let ((url (puri:parse-uri input-url)))
-    (if (puri:uri-scheme url)
-        input-url
-        (concatenate 'string "https://" input-url))))
 
 (defun setup-anchor ()
   (erase-input)

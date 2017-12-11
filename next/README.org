@@ -122,7 +122,8 @@ Create Linux GTK Port
 *** TODO User Customization Example
 - Create an example in the Documents directory that details the
   creation of a simple mode, and a way of customizing nEXT
-*** TODO Add Search Function
+*** DONE Add Search Function
+CLOSED: [2017-12-11 Mon 18:10]
 - Minibuffer should allow searching via a search engine
 *** DONE Buffer contains list of modes
 CLOSED: [2017-12-11 Mon 00:26]
