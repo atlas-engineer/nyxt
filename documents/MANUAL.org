@@ -43,6 +43,23 @@ The full key-bindings for link-hint based navigate are found below:
 2. ~M-g~: Create new tab with link, keep focus on current tab
 3. ~S-g~: Create new tab with link, focus on new tab
 
+*** Visiting URLS
+To visit URLs, nEXT will automatically try to determine what the user
+wishes. If the user does not supply a protocol in a URL, ~https~ will
+be assumed. To visit a site supporting only ~http~, the user must
+explicitly type the full URL with ~http~ included.
+
+1. ~C-l~: Change URL of current document
+2. ~M-l~: New document-mode tab
+
+*** Searching via search engine
+To search via search engine, within the the new URL prompt, simply
+enter "s your search query". In the previous example, a search engine
+would query "your search query".
+
+Therefore, the complete steps to searching are ~C-l~ or ~M-l~, then,
+when the prompt appears, enter "s <search terms>".
+
 ** Input (Minibuffer)
 All input is handled within a special area called the minibuffer. The
 minibuffer will appear at the bottom of the screen when the user is
@@ -88,7 +105,7 @@ are:
 
 1. ~C-x b~: Switch tab
 2. ~C-x k~: Kill tab
-3. ~S-l~: New document-mode tab
+3. ~M-l~: New document-mode tab
 4. ~C-l~: Change URL of current document
 
 *** Switching Tabs by Order
