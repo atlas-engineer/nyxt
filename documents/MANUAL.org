@@ -43,11 +43,12 @@ The full key-bindings for link-hint based navigate are found below:
 2. ~M-g~: Create new tab with link, keep focus on current tab
 3. ~S-g~: Create new tab with link, focus on new tab
 
-*** Visiting URLS
-To visit URLs, nEXT will automatically try to determine what the user
-wishes. If the user does not supply a protocol in a URL, ~https~ will
-be assumed. To visit a site supporting only ~http~, the user must
-explicitly type the full URL with ~http~ included.
+*** Visiting URLs
+When ambiguous URLs are inputted, nEXT will attempt the best guess
+about what the user wishes. If the user does not supply a protocol in
+a URL, ~https~ will be assumed. To visit a site supporting only
+~http~, the user must explicitly type the full URL with ~http~
+included.
 
 1. ~C-l~: Change URL of current document
 2. ~M-l~: New document-mode tab
@@ -170,7 +171,7 @@ directly within nEXT. Docstrings will appear in a new help buffer.
 ** Exiting
 To exit nEXT enter the key-combination ~C-x C-c~ and the program will
 quit. All of your open tabs and form data will not be persisted. The
-only information saved will be your filled in passwords, cookes,
+only information saved will be your filled in passwords, cookies,
 and other information within your cache.
 
 * Advanced Topics
