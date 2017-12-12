@@ -100,6 +100,9 @@ releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
 ** 0.07
+*** TODO Maintain Scroll Position
+- When jumping back and forth through history, maintain the scroll
+  position
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
 *** TODO GTK Port
@@ -108,12 +111,6 @@ two minor releases following major release 1.0.
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
 ** 0.06
-*** TODO Maintain Scroll Position
-- When jumping back and forth through history, maintain the scroll
-  position
-*** TODO Add Hook System
-- Model Hook system similar to the Emacs style hooks
-  (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
 *** TODO Create with-new-buffer macro
 - Should allow the user to encapsulate operations against some new
   buffer. That is, set-url and set-url-new-buffer will be deprecated
@@ -122,11 +119,14 @@ two minor releases following major release 1.0.
 *** TODO Jump to Heading
 - Implement something akin to ijump which allows you to jump to any
   heading on a given page represented by H1 H2 H3 tag etc
-*** TODO Search within Buffer
-- Add ability to search within the buffer
 *** TODO User Customization Example
 - Create an example in the Documents directory that details the
   creation of a simple mode, and a way of customizing nEXT
+*** TODO Search within Buffer
+- Add ability to search within the buffer
+*** TODO Add Hook System
+- Model Hook system similar to the Emacs style hooks
+  (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
 *** DONE Add Search Function
 CLOSED: [2017-12-11 Mon 18:10]
 - Minibuffer should allow searching via a search engine
