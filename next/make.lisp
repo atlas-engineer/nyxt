@@ -6,7 +6,7 @@
 ;;;; Please note that this script must be run from the directory
 ;;;; nEXT/next.
 
-(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
+(let ((quicklisp-init (merge-pathnames ".quicklisp/setup.lisp" (user-homedir-pathname))))
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 (require :asdf)
