@@ -18,8 +18,6 @@
    #:set-visible-view
    #:delete-view
    #:make-web-view
-   #:web-view-scroll-down
-   #:web-view-scroll-up
    #:web-view-set-url
    #:web-view-set-url-loaded-callback
    #:web-view-get-url

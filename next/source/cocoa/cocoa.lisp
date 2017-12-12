@@ -221,16 +221,6 @@
 (defun delete-view (view)
   (#/release view))
 
-(defun web-view-scroll-down (view scroll-distance)
-  (declare (ignore scroll-distance))
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, 100);")))
-
-(defun web-view-scroll-up (view scroll-distance)
-  (declare (ignore scroll-distance))
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -100);")))
-
 (defun web-view-reload (view)
   (on-main-thread
    (#/stringByEvaluatingJavaScriptFromString: view #@"window.location.reload();")))
