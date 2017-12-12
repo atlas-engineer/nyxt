@@ -193,7 +193,8 @@ CLOSED: [2017-10-23 Mon 01:23]
 - Break apart QT code into separate file
 - Remove all top-level side effects
 - Modularize GUI backend
-**** TODO Write Cocoa backend
+**** DONE Write Cocoa backend
+CLOSED: [2017-10-15 Tue 13:45]
 - Use CCL Cocoa Library to use native webkit backend
 *** DONE Bookmarks
 CLOSED: [2017-10-10 Tue 01:06]
