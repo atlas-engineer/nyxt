@@ -19,3 +19,9 @@
 (defmacro defparenstatic (script-name &rest script-body)
   `(defparameter ,script-name
      (ps:ps ,@script-body)))
+
+;; allow inlining of a parenscript function that can accept arguments,
+;; useful for parenscript that will accept variables from lisp
+(defmacro defparen (name lambda-list &body body)
+  `(defun ,name (,@lambda-list)
+       (ps:ps ,@body)))
