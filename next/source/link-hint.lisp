@@ -3,7 +3,7 @@
 
 (in-package :next)
 
-(defparen add-link-hints
+(defparenstatic add-link-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -94,7 +94,7 @@
   (cl-json:decode-json-from-string
    (interface:web-view-execute (view *active-buffer*) add-link-hints)))
 
-(defparen remove-link-hints
+(defparenstatic remove-link-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
