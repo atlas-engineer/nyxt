@@ -11,6 +11,5 @@
          (last-match t))
     (ps:chain -j-s-o-n
               (stringify
-               (loop do last-match do
-                    (setf last-match (ps:chain matcher (exec stringy)))
+               (loop while (setf last-match (ps:chain matcher (exec stringy)))
                   collect last-match)))))
