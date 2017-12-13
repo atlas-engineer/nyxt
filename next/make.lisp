@@ -6,16 +6,19 @@
 ;;;; Please note that this script must be run from the directory
 ;;;; nEXT/next.
 
-(let ((quicklisp-init (merge-pathnames ".quicklisp/setup.lisp" (user-homedir-pathname))))
-  (when (probe-file quicklisp-init)
-    (load quicklisp-init)))
+(defun maybe-load-quicklisp (path)
+  (ignore-errors
+    (load (merge-pathnames path (user-homedir-pathname)) :if-does-not-exist nil)))
+
+(find-if (function maybe-load-quicklisp)
+         '(".quicklisp/setup.lisp" "quicklisp/setup.lisp"))
+
 (require :asdf)
 
 (push "./" asdf:*central-registry*)
 (ql:quickload "next" :silent t)
 
-(defparameter *source-dir* (make-pathname :name nil :type nil
-                                          :defaults *load-truename*))
+(defparameter *source-dir* (make-pathname :name nil :type nil :defaults *load-truename*))
 (defparameter *build-dir* (merge-pathnames "build/" *source-dir*))
 
 (defvar *bundle-dir*)
