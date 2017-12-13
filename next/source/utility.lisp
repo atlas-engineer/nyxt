@@ -22,10 +22,16 @@
 (defun parse-url (input-url)
   (if (equalp "s" (nth 0 (cl-strings:split input-url)))
       (generate-search-query (subseq input-url 2))
-      (let ((url (puri:parse-uri input-url)))
-	(if (puri:uri-scheme url)
-	    input-url
-	    (concatenate 'string "https://" input-url)))))
+      (handler-case
+          ;; puri:parse-uri fails on crazy inputs like:
+          ;; - hello world
+          ;; - https://www.google.com/search?q=hello world
+          (let ((url (puri:parse-uri input-url)))
+            (if (puri:uri-scheme url)
+                input-url
+                (concatenate 'string "https://" input-url)))
+        (puri:uri-parse-error ()
+          input-url))))
 
 (defun generate-search-query (search-string)
   (let* ((encoded-search-string

@@ -1,10 +1,10 @@
 ;;;; make.lisp --- create binary files for nEXT
 ;;;;
-;;;; See Next/next/README.org for more information on installing the
+;;;; See nEXT/next/README.org for more information on installing the
 ;;;; dependencies necessary to build nEXT from source
 ;;;;
 ;;;; Please note that this script must be run from the directory
-;;;; Next/next.
+;;;; nEXT/next.
 
 (let ((quicklisp-init (merge-pathnames ".quicklisp/setup.lisp" (user-homedir-pathname))))
   (when (probe-file quicklisp-init)
@@ -15,7 +15,7 @@
 (ql:quickload "next" :silent t)
 
 (defparameter *source-dir* (make-pathname :name nil :type nil
-					  :defaults *load-truename*))
+                                          :defaults *load-truename*))
 (defparameter *build-dir* (merge-pathnames "build/" *source-dir*))
 
 (defvar *bundle-dir*)
@@ -25,22 +25,22 @@
 
 (defun build-next (&optional (build-dir *build-dir*))
   (let* ((*build-dir* build-dir)
-	 (*bundle-dir* (merge-pathnames "nEXT.app/" *build-dir*))
-	 (*contents-dir* (merge-pathnames "Contents/" *bundle-dir*))
-	 (*resources-dir* (merge-pathnames "Resources/" *contents-dir*))
-	 (*macos-dir* (merge-pathnames "MacOS/" *contents-dir*))
-	 (*default-pathname-defaults* *source-dir*))
+         (*bundle-dir* (merge-pathnames "nEXT.app/" *build-dir*))
+         (*contents-dir* (merge-pathnames "Contents/" *bundle-dir*))
+         (*resources-dir* (merge-pathnames "Resources/" *contents-dir*))
+         (*macos-dir* (merge-pathnames "MacOS/" *contents-dir*))
+         (*default-pathname-defaults* *source-dir*))
     (ccl::ensure-directories-exist *resources-dir*)
     (ccl::ensure-directories-exist (merge-pathnames "ccl/" *resources-dir*))
     (ccl::ensure-directories-exist *macos-dir*)
     (ccl::copy-file "../assets/Info.plist" (merge-pathnames "Info.plist" *contents-dir*)
-		    :if-exists :supersede)
+                    :if-exists :supersede)
     (ccl::copy-file "../assets/next.icns" (merge-pathnames "next.icns" *resources-dir*)
-		    :if-exists :supersede)
+                    :if-exists :supersede)
     (ccl::copy-file (ccl::kernel-path) (merge-pathnames "nEXT" *macos-dir*)
-	       :if-exists :supersede
-	       :preserve-attributes t)
+                    :if-exists :supersede
+                    :preserve-attributes t)
     (ccl::save-application (merge-pathnames "ccl/nEXT.image" *resources-dir*)
-		      :application-class (find-symbol "COCOA-APPLICATION" "CCL"))))
+                           :application-class (find-symbol "COCOA-APPLICATION" "CCL"))))
 
 (build-next)
