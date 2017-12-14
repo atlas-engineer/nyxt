@@ -7,6 +7,7 @@ exposed to the end-user allowing for infinite customization.
   - [[#navigation][Navigation]]
   - [[#input-minibuffer][Input (Minibuffer)]]
   - [[#tabs-buffers][Tabs (Buffers)]]
+  - [[#searching][Searching]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
   - [[#help][Help]]
@@ -116,6 +117,18 @@ two tabs that are next to each other.
 
 1. ~C-[~: Switch tab previous
 2. ~C-]~: Switch tab next
+
+** Searching
+There are a number of keybindings provided to enable searching within
+a buffer.
+
+1. ~S-s s~: Search for a Given Term: This command will place a red box
+   next to every match on a given web-page.
+2. ~S-s n~: Next match: This command will move the next match
+   to the top of the browser screen.
+3. ~S-s p~: Previous match: This command will move the previous match
+   to the top of the browser screen.
+4. ~S-s k~: Clear Search: Remove the read search boxes from the screen.
 
 ** History
 History is represented as a tree that you can traverse. More complex
