@@ -3,7 +3,7 @@
 (in-package :next)
 
 (defparenstatic initialize-search-buffer
-    (ps:defvar current-search 0)
+  (ps:defvar current-search 0)
   (ps:defvar match-count)
   (defun insert (str index value)
     (+ (ps:chain str (substr 0 index)) value (ps:chain str (substr index))))
@@ -18,7 +18,10 @@
       (setf (ps:@ el id) index)
       el)))
 
-(defparen add-search-boxes (search-string)
+(defun initialize-search-buffer ()
+  (interface:web-view-execute (view *active-buffer*) initialize-search-buffer))
+
+(defparen paren-add-search-boxes (search-string)
   (let* ((regex-string (ps:lisp (concatenate 'string search-string "[A-Za-z]*")))
          (regex-flags "gi")
          (matcher (ps:new (-reg-exp regex-string regex-flags)))
@@ -34,6 +37,9 @@
     (setf (ps:chain document body inner-h-t-m-l) body))
   nil)
 
+(defun add-search-boxes (input)
+  (interface:web-view-execute (view *active-buffer*) (paren-add-search-boxes input)))
+
 (defparenstatic remove-search-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
@@ -44,14 +50,23 @@
       (ps:chain el (remove))))
   (search-hints-remove-all))
 
+(defun remove-search-hints ()
+  (interface:web-view-execute (view *active-buffer*) remove-search-hints))
+
 (defparenstatic next-search-hint
     (when (> match-count current-search)
       (setf current-search (+ current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
 
+(defun next-search-hint ()
+  (interface:web-view-execute (view *active-buffer*) next-search-hint))
+
 (defparenstatic previous-search-hint
     (when (> current-search 0)
       (setf current-search (- current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
+
+(defun previous-search-hint ()
+  (interface:web-view-execute (view *active-buffer*) previous-search-hint))
