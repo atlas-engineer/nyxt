@@ -86,5 +86,5 @@
     #'next-search-hint)
   (define-key *document-mode-map* (kbd "S-s p")
     #'previous-search-hint)
-  (define-key *document-mode-map* (kbd "S-s g")
+  (define-key *document-mode-map* (kbd "S-s k")
     #'remove-search-hints))
