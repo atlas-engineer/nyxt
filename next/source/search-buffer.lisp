@@ -12,7 +12,7 @@
       (setf (ps:@ el style border) "1px solid red")
       (setf (ps:@ el style font-weight) "bold")
       (setf (ps:@ el style text-align) "center")
-      (setf (ps:@ el text-content) "!")
+      (setf (ps:@ el text-content) index)
       el))
   (let* ((regex-string (ps:lisp (concatenate 'string search-string "[A-Za-z]*")))
          (regex-flags "gi")
@@ -20,8 +20,20 @@
          (body (ps:chain document body inner-h-t-m-l))
          (last-match t)
          (matches (loop while (setf last-match (ps:chain matcher (exec body)))
-                     collect (ps:list (ps:chain last-match index) (+ 1 (ps:chain matcher last-index))))))
+                     collect (ps:chain last-match index))))
     (setf matches (ps:chain matches (reverse)))
-    (loop for match in matches
-       do (setf body (insert body (ps:elt match 0) (ps:chain (create-search-span 10) outer-h-t-m-l))))
-    (setf (ps:chain document body inner-h-t-m-l) body)))
+    (loop for i from 0 to (- (length matches) 1)
+       do (setf body (insert body (ps:elt matches i)
+                             (ps:chain (create-search-span (- (length matches) i)) outer-h-t-m-l))))
+    (setf (ps:chain document body inner-h-t-m-l) body))
+  nil)
+
+(defparenstatic remove-search-hints
+  (defun qsa (context selector)
+    "Alias of document.querySelectorAll"
+    (ps:chain context (query-selector-all selector)))
+  (defun search-hints-remove-all ()
+    "Removes all the links"
+    (ps:dolist (el (qsa document ".next-search-hint"))
+      (ps:chain el (remove))))
+  (search-hints-remove-all))
