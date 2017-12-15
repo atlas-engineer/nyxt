@@ -29,3 +29,6 @@
   "The path where the system will create/save the history database.")
 (defvar *bookmark-db-path* "~/.next.d/bookmark.db"
   "The path where the system will create/save the bookmark database.")
+(defvar *current-completions* ()
+  "A global variable used to store current completions for a
+  completion function that has a static list.")
