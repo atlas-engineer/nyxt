@@ -123,12 +123,13 @@ two minor releases following major release 1.0.
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
 ** 0.06
-*** TODO Jump to Heading
-- Implement something akin to ijump which allows you to jump to any
-  heading on a given page represented by H1 H2 H3 tag etc
 *** TODO User Customization Example
 - Create an example in the Documents directory that details the
   creation of a simple mode, and a way of customizing nEXT
+*** DONE Jump to Heading
+CLOSED: [2017-12-16 Sat 00:49]
+- Implement something akin to ijump which allows you to jump to any
+  heading on a given page represented by H1 H2 H3 tag etc
 *** DONE Search within Buffer
 CLOSED: [2017-12-14 Thu 22:15]
 - Add ability to search within the buffer
