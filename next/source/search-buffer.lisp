@@ -16,8 +16,7 @@
       (setf (ps:@ el style text-align) "center")
       (setf (ps:@ el text-content) index)
       (setf (ps:@ el id) index)
-      el))
-  t)
+      el)))
 
 (defparen paren-add-search-boxes (search-string)
   (let* ((regex-string (ps:lisp (concatenate 'string search-string "[A-Za-z]*")))
@@ -49,13 +48,13 @@
   (search-hints-remove-all))
 
 (defparenstatic next-search-hint
-    (when (> match-count current-search)
-      (setf current-search (+ current-search 1)))
+  (when (> match-count current-search)
+    (setf current-search (+ current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
 
 (defparenstatic previous-search-hint
-    (when (> current-search 0)
-      (setf current-search (- current-search 1)))
+  (when (> current-search 0)
+    (setf current-search (- current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
