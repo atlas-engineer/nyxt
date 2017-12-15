@@ -20,6 +20,7 @@
 	       (:file "buffer")
 	       (:file "bookmark")
 	       (:file "history")
+	       (:file "search-buffer")
 	       (:file "link-hint")
 	       (:file "completion")
 	       (:file "application-mode")

@@ -3,7 +3,7 @@
 
 (in-package :next)
 
-(defparen add-link-hints
+(defparenstatic add-link-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -90,11 +90,7 @@
 	""))
   (hints-add (links-find window document)))
 
-(defun add-link-hints ()
-  (cl-json:decode-json-from-string
-   (interface:web-view-execute (view *active-buffer*) add-link-hints)))
-
-(defparen remove-link-hints
+(defparenstatic remove-link-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -103,9 +99,3 @@
     (ps:dolist (el (qsa document ".next-link-hint"))
       (ps:chain el (remove))))
   (hints-remove-all))
-
-(defun remove-link-hints ()
-  (interface:web-view-execute (view *active-buffer*) remove-link-hints))
-
-(defun remove-link-hints-buffer (buffer)
-  (interface:web-view-execute (view buffer) remove-link-hints))

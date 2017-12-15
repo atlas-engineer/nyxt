@@ -14,8 +14,19 @@
   `#'(lambda () (input (mode ,minibuffer) #',function :completion #',completion ,@rest)))
 
 ;; used to allow inlining of parenscript compilation in a lisp file.
-;; with the syntax (defparen name) allows definition of a paren
+;; with the syntax (defparenstatic name) allows definition of a paren
 ;; to some constant of name "name"
-(defmacro defparen (script-name &rest script-body)
-  `(defparameter ,script-name
-     (ps:ps ,@script-body)))
+(defmacro defparenstatic (script-name &rest script-body)
+  `(progn
+     (defparameter ,script-name
+       (ps:ps ,@script-body))
+     (defun ,script-name (&optional (buffer *active-buffer*))
+       (let ((script-result (interface:web-view-execute (view buffer) ,script-name)))
+         (when (not (equalp "" script-result))
+           (cl-json:decode-json-from-string script-result))))))
+
+;; allow inlining of a parenscript function that can accept arguments,
+;; useful for parenscript that will accept variables from lisp
+(defmacro defparen (name lambda-list &body body)
+  `(defun ,name (,@lambda-list)
+       (ps:ps ,@body)))

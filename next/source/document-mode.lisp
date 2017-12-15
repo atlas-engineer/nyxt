@@ -8,17 +8,11 @@
   ((active-history-node :accessor active-history-node :initarg :active-node)
    (link-hints :accessor link-hints)))
 
-(defparen scroll-down
+(defparenstatic scroll-down
     (ps:chain window (scroll-by 0 (ps:lisp *scroll-distance*))))
 
-(defun scroll-down ()
-  (interface:web-view-execute (view *active-buffer*) scroll-down))
-
-(defparen scroll-up
+(defparenstatic scroll-up
     (ps:chain window (scroll-by 0 (ps:lisp (- *scroll-distance*)))))
-
-(defun scroll-up ()
-  (interface:web-view-execute (view *active-buffer*) scroll-up))
 
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
