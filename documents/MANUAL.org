@@ -62,6 +62,12 @@ would query "your search query".
 Therefore, the complete steps to searching are ~C-l~ or ~M-l~, then,
 when the prompt appears, enter "s <search terms>".
 
+*** Jumping to Headings
+Jumping to different headings based on fuzzy completion is available
+via the following keybindings:
+
+1. ~C-.~: Jump to heading
+
 ** Input (Minibuffer)
 All input is handled within a special area called the minibuffer. The
 minibuffer will appear at the bottom of the screen when the user is

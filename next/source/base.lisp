@@ -87,4 +87,6 @@
   (define-key *document-mode-map* (kbd "S-s p")
     #'previous-search-hint)
   (define-key *document-mode-map* (kbd "S-s k")
-    #'remove-search-hints))
+    #'remove-search-hints)
+  (define-key *document-mode-map* (kbd "C-.")
+    (:input-complete *minibuffer* jump-to-heading heading-complete :setup #'setup-headings-jump)))
