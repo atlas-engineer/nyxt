@@ -90,10 +90,6 @@
 	""))
   (hints-add (links-find window document)))
 
-(defun add-link-hints ()
-  (cl-json:decode-json-from-string
-   (interface:web-view-execute (view *active-buffer*) add-link-hints)))
-
 (defparenstatic remove-link-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
@@ -103,9 +99,3 @@
     (ps:dolist (el (qsa document ".next-link-hint"))
       (ps:chain el (remove))))
   (hints-remove-all))
-
-(defun remove-link-hints ()
-  (interface:web-view-execute (view *active-buffer*) remove-link-hints))
-
-(defun remove-link-hints-buffer (buffer)
-  (interface:web-view-execute (view buffer) remove-link-hints))

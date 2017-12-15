@@ -11,14 +11,8 @@
 (defparenstatic scroll-down
     (ps:chain window (scroll-by 0 (ps:lisp *scroll-distance*))))
 
-(defun scroll-down ()
-  (interface:web-view-execute (view *active-buffer*) scroll-down))
-
 (defparenstatic scroll-up
     (ps:chain window (scroll-by 0 (ps:lisp (- *scroll-distance*)))))
-
-(defun scroll-up ()
-  (interface:web-view-execute (view *active-buffer*) scroll-up))
 
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree

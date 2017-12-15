@@ -16,10 +16,8 @@
       (setf (ps:@ el style text-align) "center")
       (setf (ps:@ el text-content) index)
       (setf (ps:@ el id) index)
-      el)))
-
-(defun initialize-search-buffer ()
-  (interface:web-view-execute (view *active-buffer*) initialize-search-buffer))
+      el))
+  t)
 
 (defparen paren-add-search-boxes (search-string)
   (let* ((regex-string (ps:lisp (concatenate 'string search-string "[A-Za-z]*")))
@@ -50,23 +48,14 @@
       (ps:chain el (remove))))
   (search-hints-remove-all))
 
-(defun remove-search-hints ()
-  (interface:web-view-execute (view *active-buffer*) remove-search-hints))
-
 (defparenstatic next-search-hint
     (when (> match-count current-search)
       (setf current-search (+ current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
 
-(defun next-search-hint ()
-  (interface:web-view-execute (view *active-buffer*) next-search-hint))
-
 (defparenstatic previous-search-hint
     (when (> current-search 0)
       (setf current-search (- current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
-
-(defun previous-search-hint ()
-  (interface:web-view-execute (view *active-buffer*) previous-search-hint))

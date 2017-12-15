@@ -17,8 +17,13 @@
 ;; with the syntax (defparenstatic name) allows definition of a paren
 ;; to some constant of name "name"
 (defmacro defparenstatic (script-name &rest script-body)
-  `(defparameter ,script-name
-     (ps:ps ,@script-body)))
+  `(progn
+     (defparameter ,script-name
+       (ps:ps ,@script-body))
+     (defun ,script-name (&optional (buffer *active-buffer*))
+       (let ((script-result (interface:web-view-execute (view buffer) ,script-name)))
+         (when (not (equalp "" script-result))
+           (cl-json:decode-json-from-string script-result))))))
 
 ;; allow inlining of a parenscript function that can accept arguments,
 ;; useful for parenscript that will accept variables from lisp
