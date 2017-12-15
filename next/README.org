@@ -9,6 +9,7 @@
   - [[#irc-channel][IRC Channel]]
   - [[#mailing-list][Mailing List]]
 - [[#release-timeline][Release Timeline]]
+  - [[#008][0.08]]
   - [[#007][0.07]]
   - [[#006][0.06]]
   - [[#005][0.05]]
@@ -99,17 +100,11 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
-** 0.07
+** 0.08
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
-*** TODO Support Multiple Windows
-**** TODO Turn interface package into CLOS Object
-*** TODO GTK Port
-- Create Linux GTK Port
-*** TODO Defcommand
-- Implement defcommand macro with overhaul for how keybindings are
-  set/handled in functions
+
 *** TODO Add Hook System
 - Model Hook system similar to the Emacs style hooks
   (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
@@ -118,6 +113,15 @@ two minor releases following major release 1.0.
   buffer. That is, set-url and set-url-new-buffer will be deprecated
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
+
+** 0.07
+*** TODO Support Multiple Windows
+**** TODO Turn interface package into CLOS Object
+*** TODO GTK Port
+- Create Linux GTK Port
+*** TODO Defcommand
+- Implement defcommand macro with overhaul for how keybindings are
+  set/handled in functions
 ** 0.06
 *** TODO Jump to Heading
 - Implement something akin to ijump which allows you to jump to any
