@@ -29,4 +29,4 @@
 ;; useful for parenscript that will accept variables from lisp
 (defmacro defparen (name lambda-list &body body)
   `(defun ,name (,@lambda-list)
-       (ps:ps ,@body)))
+     (ps:ps ,@body)))
