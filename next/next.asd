@@ -21,6 +21,7 @@
 	       (:file "bookmark")
 	       (:file "history")
 	       (:file "search-buffer")
+	       (:file "jump-heading")
 	       (:file "link-hint")
 	       (:file "completion")
 	       (:file "application-mode")
