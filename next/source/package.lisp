@@ -14,9 +14,9 @@
    #:initialize
    #:start
    #:kill
-   #:kill-ring-save
-   #:yank
-   #:kill-region
+   #:copy
+   #:paste
+   #:cut
    #:process-event
    #:set-visible-view
    #:delete-view

@@ -193,13 +193,13 @@
 (defun kill ()
   (quit))
 
-(defun kill-ring-save ()
+(defun copy ()
   (#/sendAction:to:from: ccl::*nsapp* (objc:@selector #/copy:) nil *next-view*))
 
-(defun yank ()
+(defun paste ()
   (#/sendAction:to:from: ccl::*nsapp* (objc:@selector #/paste:) nil *next-view*))
 
-(defun kill-region ()
+(defun cut ()
   (#/sendAction:to:from: ccl::*nsapp* (objc:@selector #/cut:) nil *next-view*))
 
 (defun set-visible-view (view)
