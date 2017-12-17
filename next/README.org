@@ -122,7 +122,12 @@ two minor releases following major release 1.0.
 *** TODO Defcommand
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
-** 0.06
+** DONE 0.06
+CLOSED: [2017-12-17 Sun 01:13]
+*** DONE Fix Compilation
+CLOSED: [2017-12-17 Sun 01:13]
+- Compilation loading of quicklisp should check both ~/.quicklisp as
+  well as ~/quicklisp and load whichever it finds first
 *** DONE User Customization Example
 CLOSED: [2017-12-17 Sun 01:10]
 - Create an example in the Documents directory that details the
