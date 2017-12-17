@@ -123,7 +123,8 @@ two minor releases following major release 1.0.
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
 ** 0.06
-*** TODO User Customization Example
+*** DONE User Customization Example
+CLOSED: [2017-12-17 Sun 01:10]
 - Create an example in the Documents directory that details the
   creation of a simple mode, and a way of customizing nEXT
 *** DONE Jump to Heading

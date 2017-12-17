@@ -1,0 +1,35 @@
+#+TITLE: nEXT EXTension Exposé
+This Document is a place for users of nEXT Browser to share useful
+customizations as a community. If you have something you wish to add,
+please feel free to open a PR with your customization.
+
+* Contents                                                              :TOC:
+- [[#setting-the-start-page][Setting The Start Page]]
+- [[#creating-your-own-parenscript][Creating your own Parenscript]]
+
+* Setting The Start Page
+Setting the start page can easily be achieved in the following manner:
+
+#+NAME: start-page-set
+#+BEGIN_SRC lisp
+(setf *start-page-url* "about:blank")
+#+END_SRC
+
+* Creating your own Parenscript
+You can call any parenscript within the browser through the convient
+defparen, and defparenstatic macros. A really simple example below
+shows how you could set the body with the URL of the current page.
+
+#+NAME: hell-url
+#+BEGIN_SRC lisp
+(defparenstatic hello-url
+    (defun set-body (text)
+      (setf (ps:chain document body inner-text) text)
+      ;; return nil to avoid json decode errors
+      nil)
+  (set-body (ps:chain document -u-r-l)))
+#+END_SRC
+
+Defparenstatic will automatically generate a defparameter named
+~hello-url~ as in the case above, and a function ~(hello-url)~ that
+you can invoke to act upon the currently ~*active-buffer*~.
