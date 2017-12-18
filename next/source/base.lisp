@@ -68,7 +68,7 @@
     #'switch-buffer-previous)
   (define-key *document-mode-map* (kbd "C-]")
     #'switch-buffer-next)
-  (define-key *global-map* (kbd "C-w")
+  (define-key *global-map* (kbd "C-x w")
     #'delete-active-buffer)
   (define-key *minibuffer-mode-map* (kbd "C-n")
     #'interface:minibuffer-select-next)
