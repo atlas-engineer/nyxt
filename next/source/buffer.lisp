@@ -61,22 +61,27 @@
 (defun switch-buffer-next ()
   (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
     (if (< (+ active-buffer-index 1) (length *buffers*))
-	(set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
-	(set-visible-active-buffer (nth 0 *buffers*)))))
+        (set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
+        (set-visible-active-buffer (nth 0 *buffers*)))))
 
 (defun buffer-complete (input)
   (fuzzy-match input *buffers* #'name))
 
-(defun delete-buffer (buffer)
+(defun %delete-buffer (buffer)
   (setf *buffers* (delete buffer *buffers*))
   (interface:delete-view (view buffer)))
 
 (defun delete-active-buffer ()
-  (when (> (length *buffers*) 1)
-    (let ((former-active-buffer *active-buffer*))
-      ;; switch-buffer-next changes value of *active-buffer*
-      ;; which in turn changes the value of former-active-buffer
-      (switch-buffer-next)
-      ;; therefore delete actually deletes the new *active-buffer*
-      (setf *buffers* (delete former-active-buffer *buffers*))
-      (interface:delete-view (view former-active-buffer)))))
+  (if (> (length *buffers*) 1)
+      (let ((former-active-buffer *active-buffer*))
+        ;; switch-buffer-next changes value of *active-buffer*
+        ;; which in turn changes the value of former-active-buffer
+        (switch-buffer-next)
+        ;; therefore delete actually deletes the new *active-buffer*
+        (%delete-buffer former-active-buffer))
+      (set-url *start-page-url*)))
+
+(defun delete-buffer (buffer)
+  (if (equalp buffer *active-buffer*)
+      (delete-active-buffer)
+      (%delete-buffer buffer)))
