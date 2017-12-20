@@ -20,6 +20,35 @@
 (defparenstatic scroll-right
     (ps:chain window (scroll-by (ps:lisp *hl-scroll-distance*) 0)))
 
+(defun ensure-zoom-ratio-range (zoom)
+  (let ((ratio (funcall zoom *current-zoom-ratio* *zoom-ratio-step*)))
+    (setf ratio (max ratio *zoom-ratio-min*))
+    (setf ratio (min ratio *zoom-ratio-max*))
+    (setf *current-zoom-ratio* ratio)))
+
+(defparen %zoom-in-page ()
+  (ps:lisp (ensure-zoom-ratio-range #'+))
+  (ps:let ((style (ps:chain document body style)))
+    (setf (ps:@ style zoom) (ps:lisp *current-zoom-ratio*))))
+
+(defun zoom-in-page ()
+  (interface:web-view-execute (view *active-buffer*) (%zoom-in-page)))
+
+(defparen %zoom-out-page ()
+  (ps:lisp (ensure-zoom-ratio-range #'-))
+  (ps:let ((style (ps:chain document body style)))
+    (setf (ps:@ style zoom) (ps:lisp *current-zoom-ratio*))))
+
+(defun zoom-out-page ()
+  (interface:web-view-execute (view *active-buffer*) (%zoom-out-page)))
+
+(defparen %unzoom-page ()
+  (ps:lisp (setf *current-zoom-ratio* *zoom-ratio-default*))
+  (setf (ps:chain document body style zoom) (ps:lisp *zoom-ratio-default*)))
+
+(defun unzoom-page ()
+  (interface:web-view-execute (view *active-buffer*) (%unzoom-page)))
+
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
   (let ((parent (node-parent (active-history-node (mode *active-buffer*)))))

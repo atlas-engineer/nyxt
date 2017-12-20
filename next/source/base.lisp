@@ -13,7 +13,7 @@
   (interface:start)
   ;; create the default buffers
   (setf *minibuffer*
-	(make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
+        (make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
   (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
   (set-url *start-page-url*))
 
@@ -56,6 +56,12 @@
     #'scroll-up)
   (define-key *document-mode-map* (kbd "C-n")
     #'scroll-down)
+  (define-key *document-mode-map* (kbd "C-x C-=")
+    #'zoom-in-page)
+  (define-key *document-mode-map* (kbd "C-x C--")
+    #'zoom-out-page)
+  (define-key *document-mode-map* (kbd "C-x C-0")
+    #'unzoom-page)
   (define-key *document-mode-map* (kbd "C-l")
     (:input-complete *minibuffer* set-url history-typed-complete :setup #'setup-url :empty-complete t))
   (define-key *document-mode-map* (kbd "S-b o")

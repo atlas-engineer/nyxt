@@ -15,6 +15,11 @@
 (defvar *hl-scroll-distance* 50
   "Horizontal scroll distance. The distance scroll-left or scroll-right
   will scroll.")
+(defvar *current-zoom-ratio* 1.0)
+(defvar *zoom-ratio-step* 0.2)
+(defvar *zoom-ratio-min* 0.2)
+(defvar *zoom-ratio-max* 5.0)
+(defvar *zoom-ratio-default* 1.0)
 (defvar *swank-port* 4006
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in nEXT to avoid collisions).")
