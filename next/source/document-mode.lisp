@@ -15,10 +15,10 @@
     (ps:chain window (scroll-by 0 (ps:lisp (- *scroll-distance*)))))
 
 (defparenstatic scroll-left
-    (ps:chain window (scroll-by (ps:lisp (- *hl-scroll-distance*)) 0)))
+    (ps:chain window (scroll-by (ps:lisp (- *horizontal-scroll-distance*)) 0)))
 
 (defparenstatic scroll-right
-    (ps:chain window (scroll-by (ps:lisp *hl-scroll-distance*) 0)))
+    (ps:chain window (scroll-by (ps:lisp *horizontal-scroll-distance*) 0)))
 
 (defun ensure-zoom-ratio-range (zoom)
   (let ((ratio (funcall zoom *current-zoom-ratio* *zoom-ratio-step*)))
