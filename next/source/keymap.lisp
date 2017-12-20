@@ -83,18 +83,12 @@
     ;; Iterate through all key chords (space delimited)
     (loop for key-chord-string in (cl-strings:split key-sequence-string " ")
        ;; Iterate through all keys in chord (hyphen delimited)
-       do (let ((key-chord (make-key))
-                ;; KLUDGE: replace "--" with "- " to make `kbd` recognize key chords like
-                ;; "C--". Space characters were eliminated by the outer loop, so it should
-                ;; be safe to use
-                (key-chord-string (cl-strings:replace-all key-chord-string "--" "- ")))
-            (loop for key-character-string in (cl-strings:split key-chord-string "-")
-               do (cond
-                    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
-                    ((equal "M" key-character-string) (setf (key-meta-modifier key-chord) t))
-                    ((equal "S" key-character-string) (setf (key-super-modifier key-chord) t))
-                    ;; KLUDGE: make `kbd` recognize "C-x C--"
-                    ((equal " " key-character-string) (setf (key-character key-chord) "-"))
-                    (t (setf (key-character key-chord) key-character-string))))
-            (push key-chord key-sequence)))
+       do (let ((key-chord (make-key)))
+  	    (loop for key-character-string in (cl-strings:split key-chord-string "-")
+  	       do (cond
+  		    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
+		    ((equal "M" key-character-string) (setf (key-meta-modifier key-chord) t))
+		    ((equal "S" key-character-string) (setf (key-super-modifier key-chord) t))
+  		    (t (setf (key-character key-chord) key-character-string))))
+  	    (push key-chord key-sequence)))
     key-sequence))

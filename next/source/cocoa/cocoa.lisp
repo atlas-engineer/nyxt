@@ -4,6 +4,7 @@
 
 (defparameter *window* nil)
 (defparameter *next-view* nil)
+(defparameter *character-conversion-table* (make-hash-table :test 'equalp))
 
 (defclass minibuffer-view (ns:ns-view)
   ((input-buffer :accessor input-buffer)
@@ -156,12 +157,13 @@
 
 (defun process-event (event)
   (let* ((flags (#/modifierFlags event))
-	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event))))
+	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event)))
+         (mapped-character (gethash character *character-conversion-table* character)))
     (next:push-key-chord
      (> (logand flags #$NSControlKeyMask) 0)
      (> (logand flags #$NSAlternateKeyMask) 0)
      (> (logand flags #$NSCommandKeyMask) 0)
-     character)))
+     mapped-character)))
 
 (defun make-window ()
   (gui::assume-cocoa-thread)
@@ -184,7 +186,9 @@
 	(setf *next-view* .next-view.)
 	*window*))))
 
-(defun initialize ())
+(defun initialize ()
+  (setf (gethash "" *character-conversion-table*) "RETURN")
+  (setf (gethash "-" *character-conversion-table*) "HYPHEN"))
 
 (defun start ()
   (on-main-thread

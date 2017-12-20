@@ -28,9 +28,9 @@
     (:input-complete *minibuffer* set-url-new-buffer history-typed-complete :empty-complete t))
   (define-key *global-map* (kbd "S-b k")
     (:input-complete *minibuffer* bookmark-delete bookmark-complete))
-  (define-key *minibuffer-mode-map* (kbd "")
+  (define-key *minibuffer-mode-map* (kbd "RETURN")
     #'(lambda () (return-input (mode *minibuffer*))))
-  (define-key *minibuffer-mode-map* (kbd "C-")
+  (define-key *minibuffer-mode-map* (kbd "C-RETURN")
     #'(lambda () (return-immediate (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-g")
     #'(lambda () (cancel-input (mode *minibuffer*))))
@@ -58,7 +58,7 @@
     #'scroll-down)
   (define-key *document-mode-map* (kbd "C-x C-=")
     #'zoom-in-page)
-  (define-key *document-mode-map* (kbd "C-x C--")
+  (define-key *document-mode-map* (kbd "C-x C-HYPHEN")
     #'zoom-out-page)
   (define-key *document-mode-map* (kbd "C-x C-0")
     #'unzoom-page)
