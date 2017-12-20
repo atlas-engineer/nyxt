@@ -26,6 +26,16 @@ provided.
 
 1. ~C-n~: Move down
 2. ~C-p~: Move up
+3. ~scroll-left~: Move left (no keybindings for now)
+4. ~scroll-right~: Move right (no keybindings for now)
+
+*** Zooming page
+Use the zoom keybindings to make everything on a webpage larger or smaller.
+These keybindings mimic the Emacs counterpart:
+
+1. ~C-x C-=~: Increase size
+2. ~C-x C--~: Decrease size
+3. ~C-x C-0~: Restore defaults
 
 *** Jumping to links (link-hints)
 In order to visit a link, one never has to remove their fingers from
