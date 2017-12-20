@@ -14,6 +14,12 @@
 (defparenstatic scroll-up
     (ps:chain window (scroll-by 0 (ps:lisp (- *scroll-distance*)))))
 
+(defparenstatic scroll-left
+    (ps:chain window (scroll-by (ps:lisp (- *hl-scroll-distance*)) 0)))
+
+(defparenstatic scroll-right
+    (ps:chain window (scroll-by (ps:lisp *hl-scroll-distance*) 0)))
+
 (defun history-backwards ()
   ;; move up to parent node to iterate backwards in history tree
   (let ((parent (node-parent (active-history-node (mode *active-buffer*)))))

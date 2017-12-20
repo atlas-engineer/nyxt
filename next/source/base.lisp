@@ -31,7 +31,7 @@
   (define-key *minibuffer-mode-map* (kbd "")
     #'(lambda () (return-input (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-")
-    #'(lambda () (return-immediate (mode *minibuffer*))))  
+    #'(lambda () (return-immediate (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-g")
     #'(lambda () (cancel-input (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "Escape")
@@ -48,8 +48,10 @@
     (:input *minibuffer* go-anchor-new-buffer-focus :setup #'setup-anchor))
   (define-key *document-mode-map* (kbd "C-f")
     #'history-forwards)
+    ;; #'scroll-right)
   (define-key *document-mode-map* (kbd "C-b")
     #'history-backwards)
+    ;; #'scroll-left)
   (define-key *document-mode-map* (kbd "C-p")
     #'scroll-up)
   (define-key *document-mode-map* (kbd "C-n")
