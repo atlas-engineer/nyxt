@@ -68,7 +68,8 @@
 
 (defmethod set-selected-row ((self minibuffer-view) index)
   (#/selectRowIndexes:byExtendingSelection:
-   (completion-table self) (#/indexSetWithIndex: ns:ns-index-set index) #$NO))
+   (completion-table self) (#/indexSetWithIndex: ns:ns-index-set index) #$NO)
+  (#/scrollRowToVisible: (completion-table self) index))
 
 (defmethod select-next-row ((self minibuffer-view))
   (let ((current-row (get-selected-row self))
