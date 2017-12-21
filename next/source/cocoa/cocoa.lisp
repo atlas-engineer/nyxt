@@ -30,9 +30,11 @@
                     :column-autoresizing-style :uniform))
          (completion-scroll-view
           (make-instance ns:ns-scroll-view)))
+    (#/setTitle: completion-column (lisp-to-ns-string "Completions:"))
     (#/setDelegate: input-field self)
     (#/addTableColumn: completion-table completion-column)
     (#/setDataSource: completion-table completion-controller)
+    (#/setHeaderView: completion-table nil)
     (setf (input-buffer self) input-field)
     (setf (completion-table self) completion-table)
     (setf (completion-controller self) completion-controller)
