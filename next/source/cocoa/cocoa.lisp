@@ -27,22 +27,25 @@
 	 (completion-table
 	  (make-instance ns:ns-table-view
                     :allows-column-resizing nil
-                    :column-autoresizing-style :uniform)))
+                    :column-autoresizing-style :uniform))
+         (completion-scroll-view
+          (make-instance ns:ns-scroll-view)))
     (#/setDelegate: input-field self)
     (#/addTableColumn: completion-table completion-column)
     (#/setDataSource: completion-table completion-controller)
     (setf (input-buffer self) input-field)
     (setf (completion-table self) completion-table)
     (setf (completion-controller self) completion-controller)
+    (#/setDocumentView: completion-scroll-view completion-table)
     (#/addSubview: self input-field)
-    (#/addSubview: self completion-table)
+    (#/addSubview: self completion-scroll-view)
     (make-constraint :item1 input-field :att1 :center-x :relation := :item2 self :att2 :center-x)
     (make-constraint :item1 input-field :att1 :width :relation := :item2 self :att2 :width)
     (make-constraint :item1 input-field :att1 :top :relation := :item2 self :att2 :top)
     (make-constraint :item1 input-field :att1 :height :relation := :const 20)
-    (make-constraint :item1 completion-table :att1 :top :relation := :item2 input-field :att2 :bottom)
-    (make-constraint :item1 completion-table :att1 :bottom :relation := :item2 self :att2 :bottom)
-    (make-constraint :item1 completion-table :att1 :width :relation := :item2 self :att2 :width)))
+    (make-constraint :item1 completion-scroll-view :att1 :top :relation := :item2 input-field :att2 :bottom)
+    (make-constraint :item1 completion-scroll-view :att1 :bottom :relation := :item2 self :att2 :bottom)
+    (make-constraint :item1 completion-scroll-view :att1 :width :relation := :item2 self :att2 :width)))
 
 (defmethod get-input-complete ((self minibuffer-view))
   (with-slots (completion-function completion-controller) self
