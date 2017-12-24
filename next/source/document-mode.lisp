@@ -8,6 +8,12 @@
   ((active-history-node :accessor active-history-node :initarg :active-node)
    (link-hints :accessor link-hints)))
 
+(defparenstatic scroll-to-top
+    (ps:chain window (scroll-by 0 (- (ps:chain document body scroll-height)))))
+
+(defparenstatic scroll-to-bottom
+    (ps:chain window (scroll-by 0 (ps:chain document body scroll-height))))
+
 (defparenstatic scroll-down
     (ps:chain window (scroll-by 0 (ps:lisp *scroll-distance*))))
 
