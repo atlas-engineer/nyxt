@@ -8,7 +8,6 @@
   :components ((:file "package")
 	       (:file "global")
 	       (:file "gtk/gtk")
-	       (:file "cocoa/application")
 	       (:file "macro")
 	       (:file "utility")
 	       (:file "mode")
