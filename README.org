@@ -69,12 +69,18 @@ The following keys exist as special keys:
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
 
-** Customize nEXT
+** Customize and EXTend nEXT
 Customization is possible through the creation of a
 =~/.next.d/init.lisp= file within your home directory. From here you
 can override and redefine any of the functions by defining your init
 file as part of the ~:next~ package. For more information please see:
 [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org#customization][customizing nEXT]].
+
+Additionally there is a document provided in the documents directory
+named [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/EXTENSION.org][EXTENSION.org]] this document is a place for the community to
+share helpful customizations. To share your own extension, please make
+a pull request with your new extension appended to EXTENSION.org.
+
 ** Documentation
 For full documentation about nEXT, how it works, and how to extend it
 please see the [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org][user manual]].
