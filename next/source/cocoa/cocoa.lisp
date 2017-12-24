@@ -240,18 +240,6 @@
 (defun delete-view (view)
   (#/release view))
 
-(defun web-view-reload (view)
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.location.reload();")))
-
-(defun web-view-scroll-bottom (view)
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, document.body.scrollHeight);")))
-
-(defun web-view-scroll-top (view)
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -document.body.scrollHeight);")))
-
 (defun web-view-set-url-loaded-callback (view function)
   (setf (load-finished-callback view) function))
 
