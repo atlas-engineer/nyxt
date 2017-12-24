@@ -9,6 +9,7 @@ exposed to the end-user allowing for infinite customization.
   - [[#jumping-to-links-link-hints][Jumping to links (link-hints)]]
   - [[#visiting-urls][Visiting URLs]]
   - [[#searching-via-search-engine][Searching via search engine]]
+  - [[#jumping-to-headings][Jumping to Headings]]
   - [[#input-minibuffer][Input (Minibuffer)]]
   - [[#tabs-buffers][Tabs (Buffers)]]
   - [[#searching][Searching]]
@@ -48,7 +49,7 @@ In order to visit a link, one never has to remove their fingers from
 the keyboard. It works like this:
 
 1. Enter in a special key combination ~C-g~
-2. Several yellow strings will appear on screen "AZ" "CY", these
+2. Several strings will appear on screen "AZ" "CY", these
    special strings represent links that you can visit
 3. Enter in one of these strings into the minibuffer
 4. Press ~Return~
@@ -78,7 +79,7 @@ would query "your search query".
 Therefore, the complete steps to searching are ~C-l~ or ~M-l~, then,
 when the prompt appears, enter "s <search terms>".
 
-*** Jumping to Headings
+** Jumping to Headings
 Jumping to different headings based on fuzzy completion is available
 via the following keybindings:
 
