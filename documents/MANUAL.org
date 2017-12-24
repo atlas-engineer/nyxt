@@ -5,14 +5,18 @@ exposed to the end-user allowing for infinite customization.
 * Contents                                                              :TOC:
 - [[#basics][Basics]]
   - [[#navigation][Navigation]]
+  - [[#zooming-page][Zooming page]]
+  - [[#jumping-to-links-link-hints][Jumping to links (link-hints)]]
+  - [[#visiting-urls][Visiting URLs]]
+  - [[#searching-via-search-engine][Searching via search engine]]
   - [[#input-minibuffer][Input (Minibuffer)]]
   - [[#tabs-buffers][Tabs (Buffers)]]
   - [[#searching][Searching]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
-  - [[#help][Help]]
   - [[#exiting][Exiting]]
 - [[#advanced-topics][Advanced Topics]]
+  - [[#help][Help]]
   - [[#slime-with-a-compiled-version-of-next][Slime with a compiled version of nEXT]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
@@ -28,8 +32,10 @@ provided.
 2. ~C-p~: Move up
 3. ~scroll-left~: Move left (no keybindings for now)
 4. ~scroll-right~: Move right (no keybindings for now)
+5. ~M->~: Jump to bottom of page
+6. ~M-<~: Jump to top of page
 
-*** Zooming page
+** Zooming page
 Use the zoom keybindings to make everything on a webpage larger or smaller.
 These keybindings mimic the Emacs counterpart:
 
@@ -37,7 +43,7 @@ These keybindings mimic the Emacs counterpart:
 2. ~C-x C--~: Decrease size
 3. ~C-x C-0~: Restore defaults
 
-*** Jumping to links (link-hints)
+** Jumping to links (link-hints)
 In order to visit a link, one never has to remove their fingers from
 the keyboard. It works like this:
 
@@ -54,7 +60,7 @@ The full key-bindings for link-hint based navigate are found below:
 2. ~M-g~: Create new tab with link, keep focus on current tab
 3. ~S-g~: Create new tab with link, focus on new tab
 
-*** Visiting URLs
+** Visiting URLs
 When ambiguous URLs are inputted, nEXT will attempt the best guess
 about what the user wishes. If the user does not supply a protocol in
 a URL, ~https~ will be assumed. To visit a site supporting only
@@ -64,7 +70,7 @@ included.
 1. ~C-l~: Change URL of current document
 2. ~M-l~: New document-mode tab
 
-*** Searching via search engine
+** Searching via search engine
 To search via search engine, within the the new URL prompt, simply
 enter "s your search query". In the previous example, a search engine
 would query "your search query".
@@ -191,12 +197,6 @@ and manage your bookmarks, a few functions are provided:
 4. ~S-b u~: Bookmark URL (input URL via minibuffer)
 5. ~S-b g~: Bookmark Anchor (input URL via link hints)
 
-** Help
-The help system allows you to look up variable and function docstrings
-directly within nEXT. Docstrings will appear in a new help buffer.
-
-1. ~S-h v~: Look up a variable docstring
-
 ** Exiting
 To exit nEXT enter the key-combination ~C-x C-c~ and the program will
 quit. All of your open tabs and form data will not be persisted. The
@@ -204,6 +204,12 @@ only information saved will be your filled in passwords, cookies,
 and other information within your cache.
 
 * Advanced Topics
+** Help
+The help system allows you to look up variable and function docstrings
+directly within nEXT. Docstrings will appear in a new help buffer.
+
+1. ~S-h v~: Look up a variable docstring
+
 ** Slime with a compiled version of nEXT
 Slime provides a way of interacting with nEXT, and with Lisp code in
 general (in a REPL like manner).
