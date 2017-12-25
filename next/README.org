@@ -101,6 +101,9 @@ releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
 ** 0.08
+*** TODO Package System
+- Create way for users to install packages easily
+- Create trusted source for packages
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
