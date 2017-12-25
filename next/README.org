@@ -1,6 +1,6 @@
 * nEXT Browser Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
-  - [[#macos-setup][macOS Setup]]
+  - [[#macos-setup][MacOS Setup]]
   - [[#linux-setup][Linux Setup]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
@@ -20,11 +20,11 @@
 
 * Developer Installation
 nEXT browser is built with CCL, and is designed to be cross platform
-compatible. Support for graphics is provided via Cocoa for macOS and
+compatible. Support for graphics is provided via Cocoa for MacOS and
 GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-** macOS Setup
+** MacOS Setup
 *** Installing CCL
 - Download CCL: [[https://ccl.clozure.com/download.html]], full
   installation instructions can be found here:
@@ -64,7 +64,7 @@ In a new Terminal execute the following:
 5. Execute ~(next:start)~ to open your first nEXT Window.
 
 ** Compile
-*** macOS Compilation
+*** MacOS Compilation
 From the CCL Source directory, execute
 
 1. ~ccl --no-init --load make.lisp~
