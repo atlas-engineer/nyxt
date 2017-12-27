@@ -1,17 +1,13 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 ;;;; next.asd
+
 (defsystem :next
   :serial t
   :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue
-			   :sqlite :parenscript :cl-json :swank
-			   (:require "cocoa") (:require "webkit"))
+                    :sqlite :parenscript :cl-json :swank)
   :pathname "source/"
   :components ((:file "package")
 	       (:file "global")
-	       (:file "cocoa/repl")
-	       (:file "cocoa/utility")
-	       (:file "cocoa/cocoa")
-	       (:file "cocoa/application")
 	       (:file "macro")
 	       (:file "utility")
 	       (:file "mode")
@@ -28,3 +24,20 @@
 	       (:file "document-mode")
 	       (:file "help")
 	       (:file "base")))
+
+(defsystem :next/cocoa
+  :depends-on (:next (:require "cocoa") (:require "webkit"))
+  :pathname "source/"
+  :components ((:file "cocoa/repl")
+               (:file "cocoa/utility")
+               (:file "cocoa/cocoa")))
+
+(defsystem :next/cocoa/application
+  :depends-on (:next/cocoa)
+  :pathname "source/"
+  :components ((:file "cocoa/application")))
+
+(defsystem :next/gtk
+  :depends-on (:next)
+  :pathname "source/"
+  :components ((:file "gtk/gtk")))
