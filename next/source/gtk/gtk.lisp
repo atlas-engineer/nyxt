@@ -12,7 +12,7 @@
 (defun set-visible-view (view))
 (defun delete-view (view))
 (defun make-web-view ())
-(defun web-view-set-url (url))
+(defun web-view-set-url (view url))
 (defun web-view-set-url-loaded-callback (view function))
 (defun web-view-get-url (view))
 (defun web-view-execute (view script))
