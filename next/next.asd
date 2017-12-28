@@ -38,6 +38,6 @@
   :components ((:file "cocoa/application")))
 
 (defsystem :next/gtk
-  :depends-on (:next)
+  :depends-on (:next :cl-cffi-gtk)
   :pathname "source/"
   :components ((:file "gtk/gtk")))
