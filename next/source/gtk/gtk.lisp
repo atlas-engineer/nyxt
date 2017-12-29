@@ -1,15 +1,21 @@
 ;;;; gtk.lisp --- gtk interface
-
 (in-package :interface)
 
-(defparameter *window* nil)
-(defparameter *next-view* nil)
-(defparameter *last-event* nil)
+(defparameter *next-interface* nil)
+
+(defclass next-interface ()
+  ((window :accessor window :initarg :window)
+   (minibuffer :accessor minibuffer :initarg minibuffer)))
+
+(defclass minibuffer-view ()
+  ((input-entry :accessor input-entry :initarg :input-entry)
+   (completion-model :accessor completion-model :initarg :completion-model)
+   (completion-view :accessor completion-view :initarg :completion-view)))
 
 (defun initialize ())
+
 (defun start ()
   (gtk:within-main-loop
-    (print "lol")
    (let* ((window
            (make-instance 'gtk:gtk-window
                           :type :toplevel
