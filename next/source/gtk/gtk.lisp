@@ -52,13 +52,25 @@
         (declare (ignore window))
         (process-event event)))
      (gtk:gtk-widget-show-all window))))
-(defun kill ())
+
+(defun kill ()
+  (quit))
+
 (defun copy ())
 (defun paste ())
 (defun cut ())
+
 (defun process-event (event)
-  (setf *last-event* event)
-  nil)
+  (let ((modifier-state (gdk:gdk-event-key-state event))
+        (character (gdk:gdk-keyval-to-unicode
+                    (gdk:gdk-event-key-keyval event))))
+    (unless (equalp character #\Null)
+      (next:push-key-chord
+       (member :control-mask modifier-state :test #'equalp)
+       (member :mod1-mask modifier-state :test #'equalp)
+       (member :super-mask modifier-state :test #'equalp)
+       (string character)))))
+
 (defun set-visible-view (view)
   (declare (ignore view)))
 (defun delete-view (view)
