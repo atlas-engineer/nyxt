@@ -10,7 +10,7 @@
   (initialize-bookmark-db)
   (initialize-history-db)
   (interface:initialize)
-  ;; (interface:start)
+  (interface:start)
   ;; ;; create the default buffers
   ;; (setf *minibuffer*
   ;;       (make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))

@@ -1,6 +1,9 @@
-;;;; cocoa.lisp --- cocoa helper functions & data
+;;;; gtk.lisp --- gtk interface
 
 (in-package :interface)
+
+(defparameter *window* nil)
+(defparameter *next-view* nil)
 
 (defun initialize ())
 (defun start ())
