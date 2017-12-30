@@ -107,7 +107,8 @@
 (defun make-minibuffer ())
 
 (defun minibuffer-show ()
-  (gtk:gtk-widget-show (container-view (minibuffer-view *next-interface*))))
+  (gtk:gtk-widget-show (container-view (minibuffer-view *next-interface*)))
+  (gtk:gtk-widget-grab-focus (input-entry (minibuffer-view *next-interface*))))
 
 (defun minibuffer-hide ()
   (gtk:gtk-widget-hide (container-view (minibuffer-view *next-interface*))))
