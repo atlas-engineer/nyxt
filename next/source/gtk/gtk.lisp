@@ -115,7 +115,10 @@
 
 (defun minibuffer-set-input (input)
   (declare (ignore input)))
-(defun minibuffer-get-input ())
+
+(defun minibuffer-get-input ()
+  (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))))
+
 (defun minibuffer-get-input-complete ())
 (defun minibuffer-select-next ())
 (defun minibuffer-select-previous ())
