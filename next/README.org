@@ -126,7 +126,6 @@ two minor releases following major release 1.0.
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
-
 *** TODO Hydra Functionality
 - Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
   Krehel
@@ -146,14 +145,19 @@ two minor releases following major release 1.0.
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
 
+*** TODO Continuation Passing Style Input
+- Allow user to use a (input* ()) type binding in which they can
+  prompt the user for input rather than the current style which
+  involves setting the input handling as part of the lambda registered
+  in the keybinding
+*** TODO Defcommand
+- Implement defcommand macro with overhaul for how keybindings are
+  set/handled in functions
 ** 0.07
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
 *** TODO GTK Port
 - Create Linux GTK Port
-*** TODO Defcommand
-- Implement defcommand macro with overhaul for how keybindings are
-  set/handled in functions
 ** DONE 0.06
 CLOSED: [2017-12-17 Sun 01:13]
 *** DONE Fix Compilation
