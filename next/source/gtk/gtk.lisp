@@ -11,7 +11,23 @@
   ((container-view :accessor container-view :initarg :container-view)
    (input-entry :accessor input-entry :initarg :input-entry)
    (completion-model :accessor completion-model :initarg :completion-model)
-   (completion-view :accessor completion-view :initarg :completion-view)))
+   (completion-view :accessor completion-view :initarg :completion-view)
+   (completion-function :accessor completion-function)))
+
+(defmethod completions-clear ((self minibuffer-view))
+  (gtk:gtk-list-store-set (completion-model self)
+                          (gtk:gtk-list-store-clear
+                           (completion-model self))))
+
+(defmethod completions-add ((self minibuffer-view) elements)
+  (loop for element in elements do
+       (gtk:gtk-list-store-set
+        (completion-model self)
+        (gtk:gtk-list-store-append (completion-model self))
+        element)))
+
+(defmethod get-input-complete ((self minibuffer-view))
+  )
 
 (defun initialize ())
 
@@ -72,7 +88,8 @@
       (lambda (window event)
         (declare (ignore window))
         (process-event event)))
-     (gtk:gtk-widget-show-all window))))
+     (gtk:gtk-widget-show-all window)
+     (minibuffer-hide))))
 
 (defun kill ()
   (quit))
@@ -103,8 +120,10 @@
   (declare (ignore view function)))
 (defun web-view-get-url (view)
   (declare (ignore view)))
+
 (defun web-view-execute (view script)
-  (declare (ignore view script)))
+  (declare (ignore view script))
+  "{\"hello\": \"world\"}")
 
 (defun make-minibuffer ()
   (container-view (minibuffer-view *next-interface*)))
