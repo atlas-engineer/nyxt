@@ -78,8 +78,8 @@ In a new Terminal execute the following:
 3. Execute ~(asdf:load-asd "/path/to/next.asd")~ to load the nEXT
    system definition
 4. Execute ~(ql:quickload :next)~ to load the nEXT system into your
-   Lisp image. To load the MacOS version quickload :next/cocoa. To
-   load the GTK version quickload :next/gtk.
+   Lisp image. To load the MacOS version quickload ~:next/cocoa~. To
+   load the GTK version quickload ~:next/gtk~.
 5. Execute ~(next:start)~ to open your first nEXT Window.
 
 ** Compile
