@@ -5,10 +5,11 @@
 
 (defclass next-interface ()
   ((window :accessor window :initarg :window)
-   (minibuffer :accessor minibuffer :initarg minibuffer)))
+   (minibuffer-view :accessor minibuffer-view :initarg :minibuffer-view)))
 
 (defclass minibuffer-view ()
-  ((input-entry :accessor input-entry :initarg :input-entry)
+  ((container-view :accessor container-view :initarg :container-view)
+   (input-entry :accessor input-entry :initarg :input-entry)
    (completion-model :accessor completion-model :initarg :completion-model)
    (completion-view :accessor completion-view :initarg :completion-view)))
 
@@ -22,13 +23,17 @@
                           :title "nEXT"
                           :default-width 250
                           :border-width 0))
-          (button-a
+          (button
            (make-instance 'gtk:gtk-button
                           :label "Browser View Placeholder"))
           (entry
            (make-instance 'gtk:gtk-entry
                           :text "Minibuffer Input"))
-          (box
+          (root-box
+           (make-instance 'gtk:gtk-box
+                          :orientation :vertical
+                          :spacing 0))
+          (minibuffer-box
            (make-instance 'gtk:gtk-box
                           :orientation :vertical
                           :spacing 0))
@@ -42,16 +47,25 @@
           (column (gtk:gtk-tree-view-column-new-with-attributes
                    "Name" renderer "text" 0)))
      (gtk:gtk-tree-view-append-column list-view column)
-     (gtk:gtk-list-store-set model (gtk:gtk-list-store-append model)
-                             "Element 0")
+     (gtk:gtk-list-store-set model (gtk:gtk-list-store-append model) "Element 1")
      (gobject:g-signal-connect window "destroy"
                                (lambda (widget)
                                  (declare (ignore widget))
                                  (gtk:leave-gtk-main)))
-     (gtk:gtk-box-pack-start box button-a)
-     (gtk:gtk-box-pack-start box entry :expand nil)
-     (gtk:gtk-box-pack-start box list-view :expand nil)
-     (gtk:gtk-container-add window box)
+     (gtk:gtk-box-pack-start root-box button)
+     (gtk:gtk-box-pack-start root-box minibuffer-box :expand nil)
+     (gtk:gtk-box-pack-start minibuffer-box entry :expand nil)
+     (gtk:gtk-box-pack-start minibuffer-box list-view :expand nil)
+     (gtk:gtk-container-add window root-box)
+     (setf *next-interface* (make-instance
+                             'next-interface
+                             :window window
+                             :minibuffer-view (make-instance
+                                               'minibuffer-view
+                                               :container-view minibuffer-box
+                                               :input-entry entry
+                                               :completion-model model
+                                               :completion-view list-view)))
      (gobject:g-signal-connect
       window "key_press_event"
       (lambda (window event)
@@ -91,8 +105,13 @@
 (defun web-view-execute (view script)
   (declare (ignore view script)))
 (defun make-minibuffer ())
-(defun minibuffer-show ())
-(defun minibuffer-hide ())
+
+(defun minibuffer-show ()
+  (gtk:gtk-widget-show (container-view (minibuffer-view *next-interface*))))
+
+(defun minibuffer-hide ()
+  (gtk:gtk-widget-hide (container-view (minibuffer-view *next-interface*))))
+
 (defun minibuffer-set-input (input)
   (declare (ignore input)))
 (defun minibuffer-get-input ())
