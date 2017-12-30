@@ -6,6 +6,7 @@ please feel free to open a PR with your customization.
 * Contents                                                              :TOC:
 - [[#setting-the-start-page][Setting The Start Page]]
 - [[#creating-your-own-parenscript][Creating your own Parenscript]]
+- [[#running-shell-commands-within-next][Running Shell Commands within nEXT]]
 
 * Setting The Start Page
 Setting the start page can easily be achieved in the following manner:
@@ -33,3 +34,48 @@ shows how you could set the body with the URL of the current page.
 Defparenstatic will automatically generate a defparameter named
 ~hello-url~ as in the case above, and a function ~(hello-url)~ that
 you can invoke to act upon the currently ~*active-buffer*~.
+* Running Shell Commands within nEXT
+Shell mode is an extension for running simple one liner shell commands
+and seeing the output. There is no history or variables. Use ~C-x s~
+to enter ~*shell-mode*~ and ~c~ to enter a command and ~k~ to clear
+the command output.
+
+#+NAME: shell-mode
+#+BEGIN_SRC lisp
+(defvar *shell-mode-map* (make-hash-table :test 'equalp))
+
+(defclass shell-mode (mode) ())
+
+(defun shell-mode ()
+  (make-instance 'application-mode
+		 :name "shell-mode"
+		 :keymap *shell-mode-map*))
+
+(defparenstatic clear-shell-output
+    (setf (ps:chain document body inner-h-t-m-l) ""))
+
+(defparen append-output (output)
+  (setf (ps:chain document body inner-h-t-m-l)
+        (ps:chain document body inner-h-t-m-l
+                  (concat (ps:lisp
+                           (concatenate 'string output "<br />"))))))
+
+(defun run-shell-command (input)
+  (interface:web-view-execute
+   (view *active-buffer*)
+   (append-output
+    (uiop:run-program input :force-shell t :output :string))))
+
+(defun open-new-shell ()
+  (set-visible-active-buffer
+   (generate-new-buffer "*shell*" (shell-mode))))
+
+(define-key *shell-mode-map* (kbd "c")
+  (:input *minibuffer* run-shell-command))
+
+(define-key *shell-mode-map* (kbd "k")
+  #'clear-shell-output)
+
+(define-key *global-map* (kbd "C-x s")
+  #'open-new-shell)
+#+END_SRC

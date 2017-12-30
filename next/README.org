@@ -1,6 +1,6 @@
 * nEXT Browser Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
-  - [[#macos-setup][macOS Setup]]
+  - [[#macos-setup][MacOS Setup]]
   - [[#linux-setup][Linux Setup]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
@@ -20,11 +20,11 @@
 
 * Developer Installation
 nEXT browser is built with CCL, and is designed to be cross platform
-compatible. Support for graphics is provided via Cocoa for macOS and
+compatible. Support for graphics is provided via Cocoa for MacOS and
 GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
-** macOS Setup
+** MacOS Setup
 *** Installing CCL
 - Download CCL: [[https://ccl.clozure.com/download.html]], full
   installation instructions can be found here:
@@ -83,7 +83,7 @@ In a new Terminal execute the following:
 5. Execute ~(next:start)~ to open your first nEXT Window.
 
 ** Compile
-*** macOS Compilation
+*** MacOS Compilation
 From the CCL Source directory, execute
 
 1. ~ccl --no-init --load make.lisp~
@@ -120,10 +120,16 @@ releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
 ** 0.08
+*** TODO Package System
+- Create way for users to install packages easily
+- Create trusted source for packages
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
 
+*** TODO Hydra Functionality
+- Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
+  Krehel
 *** TODO Add Hook System
 - Model Hook system similar to the Emacs style hooks
   (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)

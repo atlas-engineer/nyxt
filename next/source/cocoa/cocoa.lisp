@@ -4,6 +4,7 @@
 
 (defparameter *window* nil)
 (defparameter *next-view* nil)
+(defparameter *character-conversion-table* (make-hash-table :test 'equalp))
 
 (defclass minibuffer-view (ns:ns-view)
   ((input-buffer :accessor input-buffer)
@@ -26,22 +27,27 @@
 	 (completion-table
 	  (make-instance ns:ns-table-view
                     :allows-column-resizing nil
-                    :column-autoresizing-style :uniform)))
+                    :column-autoresizing-style :uniform))
+         (completion-scroll-view
+          (make-instance ns:ns-scroll-view)))
+    (#/setTitle: completion-column (lisp-to-ns-string "Completions:"))
     (#/setDelegate: input-field self)
     (#/addTableColumn: completion-table completion-column)
     (#/setDataSource: completion-table completion-controller)
+    (#/setHeaderView: completion-table nil)
     (setf (input-buffer self) input-field)
     (setf (completion-table self) completion-table)
     (setf (completion-controller self) completion-controller)
+    (#/setDocumentView: completion-scroll-view completion-table)
     (#/addSubview: self input-field)
-    (#/addSubview: self completion-table)
+    (#/addSubview: self completion-scroll-view)
     (make-constraint :item1 input-field :att1 :center-x :relation := :item2 self :att2 :center-x)
     (make-constraint :item1 input-field :att1 :width :relation := :item2 self :att2 :width)
     (make-constraint :item1 input-field :att1 :top :relation := :item2 self :att2 :top)
     (make-constraint :item1 input-field :att1 :height :relation := :const 20)
-    (make-constraint :item1 completion-table :att1 :top :relation := :item2 input-field :att2 :bottom)
-    (make-constraint :item1 completion-table :att1 :bottom :relation := :item2 self :att2 :bottom)
-    (make-constraint :item1 completion-table :att1 :width :relation := :item2 self :att2 :width)))
+    (make-constraint :item1 completion-scroll-view :att1 :top :relation := :item2 input-field :att2 :bottom)
+    (make-constraint :item1 completion-scroll-view :att1 :bottom :relation := :item2 self :att2 :bottom)
+    (make-constraint :item1 completion-scroll-view :att1 :width :relation := :item2 self :att2 :width)))
 
 (defmethod get-input-complete ((self minibuffer-view))
   (with-slots (completion-function completion-controller) self
@@ -64,7 +70,8 @@
 
 (defmethod set-selected-row ((self minibuffer-view) index)
   (#/selectRowIndexes:byExtendingSelection:
-   (completion-table self) (#/indexSetWithIndex: ns:ns-index-set index) #$NO))
+   (completion-table self) (#/indexSetWithIndex: ns:ns-index-set index) #$NO)
+  (#/scrollRowToVisible: (completion-table self) index))
 
 (defmethod select-next-row ((self minibuffer-view))
   (let ((current-row (get-selected-row self))
@@ -156,12 +163,13 @@
 
 (defun process-event (event)
   (let* ((flags (#/modifierFlags event))
-	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event))))
+	 (character (ns-to-lisp-string (#/charactersIgnoringModifiers event)))
+         (mapped-character (gethash character *character-conversion-table* character)))
     (next:push-key-chord
      (> (logand flags #$NSControlKeyMask) 0)
      (> (logand flags #$NSAlternateKeyMask) 0)
      (> (logand flags #$NSCommandKeyMask) 0)
-     character)))
+     mapped-character)))
 
 (defun make-window ()
   (gui::assume-cocoa-thread)
@@ -184,7 +192,9 @@
 	(setf *next-view* .next-view.)
 	*window*))))
 
-(defun initialize ())
+(defun initialize ()
+  (setf (gethash "" *character-conversion-table*) "RETURN")
+  (setf (gethash "-" *character-conversion-table*) "HYPHEN"))
 
 (defun start ()
   (on-main-thread
@@ -229,18 +239,6 @@
 
 (defun delete-view (view)
   (#/release view))
-
-(defun web-view-reload (view)
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.location.reload();")))
-
-(defun web-view-scroll-bottom (view)
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, document.body.scrollHeight);")))
-
-(defun web-view-scroll-top (view)
-  (on-main-thread
-   (#/stringByEvaluatingJavaScriptFromString: view #@"window.scrollBy(0, -document.body.scrollHeight);")))
 
 (defun web-view-set-url-loaded-callback (view function)
   (setf (load-finished-callback view) function))

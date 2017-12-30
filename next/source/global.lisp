@@ -12,6 +12,19 @@
   "A list of all existing buffers.")
 (defvar *scroll-distance* 50
   "The distance scroll-down or scroll-up will scroll.")
+(defvar *horizontal-scroll-distance* 50
+  "Horizontal scroll distance. The distance scroll-left or scroll-right
+  will scroll.")
+(defvar *current-zoom-ratio* 1.0
+  "The current zoom relative to the default zoom.")
+(defvar *zoom-ratio-step* 0.2
+  "The step size for zooming in and out.")
+(defvar *zoom-ratio-min* 0.2
+  "The minimum zoom ratio relative to the default.")
+(defvar *zoom-ratio-max* 5.0
+  "The maximum zoom ratio relative to the default.")
+(defvar *zoom-ratio-default* 1.0
+  "The default zoom ratio.")
 (defvar *swank-port* 4006
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in nEXT to avoid collisions).")
