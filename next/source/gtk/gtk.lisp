@@ -48,6 +48,7 @@
                    "Name" renderer "text" 0)))
      (gtk:gtk-tree-view-append-column list-view column)
      (gtk:gtk-list-store-set model (gtk:gtk-list-store-append model) "Element 1")
+     (gtk:gtk-list-store-set model (gtk:gtk-list-store-append model) "Element 2")
      (gobject:g-signal-connect window "destroy"
                                (lambda (widget)
                                  (declare (ignore widget))
@@ -122,7 +123,20 @@
   (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))))
 
 (defun minibuffer-get-input-complete ())
-(defun minibuffer-select-next ())
-(defun minibuffer-select-previous ())
+
+(defun minibuffer-select-next ()
+  (gtk:gtk-tree-view-set-cursor
+   (completion-view (minibuffer-view *next-interface*))
+   (gtk:gtk-tree-path-next
+    (gtk:gtk-tree-view-get-cursor
+     (completion-view (minibuffer-view *next-interface*))))))
+
+(defun minibuffer-select-previous ()
+  (gtk:gtk-tree-view-set-cursor
+   (completion-view (minibuffer-view *next-interface*))
+   (gtk:gtk-tree-path-prev
+    (gtk:gtk-tree-view-get-cursor
+     (completion-view (minibuffer-view *next-interface*))))))
+
 (defun minibuffer-set-completion-function (function)
   (declare (ignore function)))
