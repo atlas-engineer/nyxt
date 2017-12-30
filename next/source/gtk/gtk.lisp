@@ -114,7 +114,7 @@
   (gtk:gtk-widget-hide (container-view (minibuffer-view *next-interface*))))
 
 (defun minibuffer-set-input (input)
-  (declare (ignore input)))
+  (setf (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))) input))
 
 (defun minibuffer-get-input ()
   (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))))
