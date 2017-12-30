@@ -104,7 +104,9 @@
   (declare (ignore view)))
 (defun web-view-execute (view script)
   (declare (ignore view script)))
-(defun make-minibuffer ())
+
+(defun make-minibuffer ()
+  (container-view (minibuffer-view *next-interface*)))
 
 (defun minibuffer-show ()
   (gtk:gtk-widget-show (container-view (minibuffer-view *next-interface*)))
