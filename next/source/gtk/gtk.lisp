@@ -103,7 +103,8 @@
       (lambda (widget)
         (declare (ignore widget))
         (process-set-completions (minibuffer-view *next-interface*))))
-     (gtk:gtk-widget-show-all window))))
+     (gtk:gtk-widget-show-all window)
+     (minibuffer-hide))))
 
 (defun kill ()
   (quit))
