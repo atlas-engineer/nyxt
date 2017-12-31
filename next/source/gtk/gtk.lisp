@@ -141,7 +141,14 @@
 (defun minibuffer-get-input ()
   (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))))
 
-(defun minibuffer-get-input-complete ())
+(defun minibuffer-get-input-complete ()
+  (gtk:gtk-tree-model-get-value
+   (completion-model (minibuffer-view *next-interface*))
+   (gtk:gtk-tree-model-get-iter
+    (completion-model (minibuffer-view *next-interface*))
+    (gtk:gtk-tree-view-get-cursor
+     (completion-view (minibuffer-view *next-interface*))))
+   0))
 
 (defun minibuffer-select-next ()
   (gtk:gtk-tree-view-set-cursor
