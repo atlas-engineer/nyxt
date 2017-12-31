@@ -2,9 +2,11 @@
 (in-package :interface)
 
 (defparameter *next-interface* nil)
+(defparameter *character-conversion-table* (make-hash-table :test 'equalp))
 
 (defclass next-interface ()
   ((window :accessor window :initarg :window)
+   (container-view :accessor container-view :initarg :container-view)
    (minibuffer-view :accessor minibuffer-view :initarg :minibuffer-view)))
 
 (defclass minibuffer-view ()
@@ -24,9 +26,21 @@
        (gtk:gtk-list-store-set
         (completion-model self)
         (gtk:gtk-list-store-append (completion-model self))
-        element)))
+        (write-to-string element))))
 
-(defun initialize ())
+(defmethod get-input ((self minibuffer-view))
+  (gtk:gtk-entry-text (input-entry self)))
+
+(defmethod process-set-completions ((self minibuffer-view))
+  "Process and set completions for the minibuffer"
+  (with-slots (completion-function completion-model completion-viw) self
+    (when (completion-function self)
+      (completions-clear self)
+      (completions-add self (funcall completion-function (get-input self))))))
+
+(defun initialize ()
+  (setf (gethash #\Return *character-conversion-table*) "RETURN")
+  (setf (gethash #\- *character-conversion-table*) "HYPHEN"))
 
 (defun start ()
   (gtk:within-main-loop
@@ -84,8 +98,12 @@
       (lambda (window event)
         (declare (ignore window))
         (process-event event)))
-     (gtk:gtk-widget-show-all window)
-     (minibuffer-hide))))
+     (gobject:g-signal-connect
+      entry "changed"
+      (lambda (widget)
+        (declare (ignore widget))
+        (process-set-completions (minibuffer-view *next-interface*))))
+     (gtk:gtk-widget-show-all window))))
 
 (defun kill ()
   (quit))
@@ -95,27 +113,33 @@
 (defun cut ())
 
 (defun process-event (event)
-  (let ((modifier-state (gdk:gdk-event-key-state event))
-        (character (gdk:gdk-keyval-to-unicode
-                    (gdk:gdk-event-key-keyval event))))
+  (let* ((modifier-state (gdk:gdk-event-key-state event))
+         (character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
+         (mapped-character (gethash character *character-conversion-table* character)))
     (unless (equalp character #\Null)
       (next:push-key-chord
        (member :control-mask modifier-state :test #'equalp)
        (member :mod1-mask modifier-state :test #'equalp)
        (member :super-mask modifier-state :test #'equalp)
-       (string character)))))
+       (string mapped-character)))))
 
 (defun set-visible-view (view)
   (declare (ignore view)))
+
 (defun delete-view (view)
   (declare (ignore view)))
+
 (defun make-web-view ())
+
 (defun web-view-set-url (view url)
   (declare (ignore view url)))
+
 (defun web-view-set-url-loaded-callback (view function)
   (declare (ignore view function)))
+
 (defun web-view-get-url (view)
-  (declare (ignore view)))
+  (declare (ignore view))
+  "url.com")
 
 (defun web-view-execute (view script)
   (declare (ignore view script))
@@ -166,4 +190,4 @@
      (completion-view (minibuffer-view *next-interface*))))))
 
 (defun minibuffer-set-completion-function (function)
-  (declare (ignore function)))
+  (setf (completion-function (minibuffer-view *next-interface*)) function))
