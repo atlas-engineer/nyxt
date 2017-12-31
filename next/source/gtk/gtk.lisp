@@ -26,9 +26,6 @@
         (gtk:gtk-list-store-append (completion-model self))
         element)))
 
-(defmethod get-input-complete ((self minibuffer-view))
-  )
-
 (defun initialize ())
 
 (defun start ()
@@ -64,7 +61,6 @@
                    "Name" renderer "text" 0)))
      (gtk:gtk-tree-view-append-column list-view column)
      (gtk:gtk-list-store-set model (gtk:gtk-list-store-append model) "Element 1")
-     (gtk:gtk-list-store-set model (gtk:gtk-list-store-append model) "Element 2")
      (gobject:g-signal-connect window "destroy"
                                (lambda (widget)
                                  (declare (ignore widget))
@@ -143,13 +139,17 @@
 
 (defun minibuffer-get-input-complete ()
   (with-slots (completion-model completion-view) (minibuffer-view *next-interface*)
-    (gtk:gtk-tree-model-get-value
-     completion-model
-     (gtk:gtk-tree-model-get-iter
-      completion-model
-      (gtk:gtk-tree-view-get-cursor
-       completion-view))
-     0)))
+    (when (gtk:gtk-tree-model-get-iter
+           completion-model
+           (gtk:gtk-tree-view-get-cursor
+            completion-view))
+      (gtk:gtk-tree-model-get-value
+       completion-model
+       (gtk:gtk-tree-model-get-iter
+        completion-model
+        (gtk:gtk-tree-view-get-cursor
+         completion-view))
+       0))))
 
 (defun minibuffer-select-next ()
   (gtk:gtk-tree-view-set-cursor
