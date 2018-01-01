@@ -39,9 +39,12 @@
       (let ((completions (funcall completion-function (get-input self))))
         (when completions
           (completions-add self completions)
-          (gtk:gtk-tree-view-set-cursor
+          (highlight-completion self 0))))))
+
+(defmethod highlight-completion ((self minibuffer-view) index)
+  (gtk:gtk-tree-view-set-cursor
            (completion-view self)
-           (gtk:gtk-tree-path-new-from-string "0")))))))
+           (gtk:gtk-tree-path-new-from-string (write-to-string index))))
 
 (defun initialize ()
   (setf (gethash #\Return *character-conversion-table*) "RETURN")
