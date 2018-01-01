@@ -36,7 +36,12 @@
   (with-slots (completion-function completion-model completion-viw) self
     (when (completion-function self)
       (completions-clear self)
-      (completions-add self (funcall completion-function (get-input self))))))
+      (let ((completions (funcall completion-function (get-input self))))
+        (when completions
+          (completions-add self completions)
+          (gtk:gtk-tree-view-set-cursor
+           (completion-view self)
+           (gtk:gtk-tree-path-new-from-string "0")))))))
 
 (defun initialize ()
   (setf (gethash #\Return *character-conversion-table*) "RETURN")
