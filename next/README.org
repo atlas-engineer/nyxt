@@ -79,7 +79,7 @@ For Debian this package is ~libwebkit2gtk~
 The cl-webkit bindings provide an interface to the Webkit2GTK+
 framework for manipulating and rendering web content.
 
-- Clone: https://github.com/joachifm/cl-webkit.git to a path within
+- Clone: https://github.com/nEXT-Browser/cl-webkit to a path within
   your local-projects. (=~/common-lisp/quicklisp/local-projects/cl-webkit=)
 
 ** Run from Source
