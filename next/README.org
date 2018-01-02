@@ -70,6 +70,18 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
+*** Install WebKit2GTK+
+Find a package for your distribution which provides libwebkit2gtk-3.0.so
+
+For Ubuntu this package is ~libwebkit2gtk-3.0-dev~
+For Debian this package is ~libwebkit2gtk~
+*** Install cl-webkit
+The cl-webkit bindings provide an interface to the Webkit2GTK+
+framework for manipulating and rendering web content.
+
+- Clone: https://github.com/joachifm/cl-webkit.git to a path within
+  your local-projects. (=~/common-lisp/quicklisp/local-projects/cl-webkit=)
+
 ** Run from Source
 In a new Terminal execute the following:
 
@@ -80,7 +92,7 @@ In a new Terminal execute the following:
 4. Execute ~(ql:quickload :next)~ to load the nEXT system into your
    Lisp image. To load the MacOS version quickload ~:next/cocoa~. To
    load the GTK version quickload ~:next/gtk~.
-5. Execute ~(next:start)~ to open your first nEXT Window.
+5. Execute ~(next:start)~ to open your first nEXT window.
 
 ** Compile
 *** MacOS Compilation
