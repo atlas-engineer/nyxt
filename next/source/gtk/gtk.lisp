@@ -139,11 +139,12 @@
        (string mapped-character)))))
 
 (defun set-visible-view (view)
-  (gtk:gtk-container-foreach
-   (container-view *next-interface*)
-   (lambda (widget) (gtk:gtk-container-remove (container-view *next-interface*) widget)))
-  (gtk:gtk-box-pack-start (container-view *next-interface*) view)
-  (gtk:gtk-widget-show view))
+  (gtk:within-main-loop
+    (gtk:gtk-container-foreach
+     (container-view *next-interface*)
+     (lambda (widget) (gtk:gtk-container-remove (container-view *next-interface*) widget)))
+    (gtk:gtk-box-pack-start (container-view *next-interface*) view)
+    (gtk:gtk-widget-show view)))
 
 (defun delete-view (view)
   (declare (ignore view)))
