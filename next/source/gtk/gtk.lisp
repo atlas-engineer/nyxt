@@ -18,9 +18,8 @@
    (completion-function :accessor completion-function)))
 
 (defmethod completions-clear ((self minibuffer-view))
-  (gtk:gtk-list-store-set (completion-model self)
-                          (gtk:gtk-list-store-clear
-                           (completion-model self))))
+  (gtk:gtk-list-store-clear
+   (completion-model self)))
 
 (defmethod completions-add ((self minibuffer-view) elements)
   (loop for element in elements do
@@ -154,7 +153,7 @@
                  :label "about:blank"))
 
 (defun web-view-set-url (view url)
-  (declare (ignore view url)))
+  (setf (gtk:gtk-button-label view) url))
 
 (defun web-view-set-url-loaded-callback (view function)
   (declare (ignore view function)))
