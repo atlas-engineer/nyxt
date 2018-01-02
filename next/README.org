@@ -71,10 +71,21 @@ To install quicklisp:
 more detailed instructions and other resources are readily available
 on the quicklisp website.
 *** Install WebKit2GTK+
-Find a package for your distribution which provides libwebkit2gtk-3.0.so
+Find a package for your distribution which provides
+~libwebkit2gtk-3.0.so~ (the shared library for WebKit2GTK+).
 
 For Ubuntu this package is ~libwebkit2gtk-3.0-dev~
 For Debian this package is ~libwebkit2gtk~
+
+#+begin_quote
+A note of caution about installing Webkit on Linux via your package
+manager: Your distribution supplied version of Webkit may not provide
+up-to-date versions of Webkit including the latest security
+patches. WebkitGTK+ tries to do the best job possible with maintaining
+security patches upstream, but it is also additionally up to the the
+distribution provider to update their packages to take advantage of
+these fixes.
+#+end_quote
 *** Install cl-webkit
 The cl-webkit bindings provide an interface to the Webkit2GTK+
 framework for manipulating and rendering web content.
@@ -132,6 +143,8 @@ releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
 ** 0.08
+*** TODO Support Multiple Windows
+**** TODO Turn interface package into CLOS Object
 *** TODO Package System
 - Create way for users to install packages easily
 - Create trusted source for packages
@@ -165,10 +178,10 @@ two minor releases following major release 1.0.
 *** TODO Defcommand
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
-** 0.07
-*** TODO Support Multiple Windows
-**** TODO Turn interface package into CLOS Object
-*** TODO GTK Port
+** DONE 0.07
+CLOSED: [2018-01-02 Tue 16:06]
+*** DONE GTK Port
+CLOSED: [2018-01-02 Tue 16:06]
 - Create Linux GTK Port
 ** DONE 0.06
 CLOSED: [2017-12-17 Sun 01:13]
