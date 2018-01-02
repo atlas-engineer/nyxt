@@ -1,6 +1,10 @@
 ;;;; gtk.lisp --- gtk interface
 (in-package :interface)
 
+(defparameter *cookie-path-dir* "~/.next.d/")
+(defparameter *cookie-type* :webkit-cookie-persistent-storage-text)
+(defparameter *cookie-accept-policy* :webkit-cookie-policy-accept-always)
+
 (defparameter *next-interface* nil)
 (defparameter *character-conversion-table* (make-hash-table :test 'equalp))
 
@@ -59,9 +63,6 @@
                           :title "nEXT"
                           :default-width 250
                           :border-width 0))
-          (button
-           (make-instance 'gtk:gtk-button
-                          :label "About:Blank"))
           (entry
            (make-instance 'gtk:gtk-entry
                           :text "Minibuffer Input"))
@@ -93,7 +94,6 @@
                                  (gtk:leave-gtk-main)))
      (gtk:gtk-box-pack-start root-box container-box)
      (gtk:gtk-box-pack-start root-box minibuffer-box :expand nil)
-     (gtk:gtk-box-pack-start container-box button)
      (gtk:gtk-box-pack-start minibuffer-box entry :expand nil)
      (gtk:gtk-box-pack-start minibuffer-box list-view :expand nil)
      (gtk:gtk-container-add window root-box)
@@ -148,22 +148,32 @@
 (defun delete-view (view)
   (declare (ignore view)))
 
+(defun make-default-context ()
+  (let* ((ctx (cl-webkit2:webkit-web-context-get-default))
+         (cm  (cl-webkit2:webkit-web-context-get-cookie-manager ctx)))
+    (cl-webkit2:webkit-cookie-manager-set-accept-policy
+     cm *cookie-accept-policy*)
+    (cl-webkit2:webkit-cookie-manager-set-persistent-storage
+     cm (namestring (merge-pathnames "cookies" *cookie-path-dir*)) *cookie-type*)
+    ctx))
+
 (defun make-web-view ()
-  (make-instance 'gtk:gtk-button
-                 :label "about:blank"))
+  (let* ((ctx (make-default-context))
+         (wv (make-instance 'webkit2:webkit-web-view :context ctx)))
+    wv))
 
 (defun web-view-set-url (view url)
-  (setf (gtk:gtk-button-label view) url))
+  (webkit2:webkit-web-view-load-uri view url))
 
 (defun web-view-set-url-loaded-callback (view function)
   (declare (ignore view function)))
 
 (defun web-view-get-url (view)
-  (declare (ignore view))
-  "url.com")
+  (webkit2:webkit-web-view-uri view))
 
 (defun web-view-execute (view script)
-  (declare (ignore view script))
+  (let ((np (cffi:null-pointer)))
+    (webkit2:webkit-web-view-run-javascript view script np np np))
   "{\"hello\": \"world\"}")
 
 (defun make-minibuffer ()
