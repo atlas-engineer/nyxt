@@ -12,6 +12,7 @@
 (defclass minibuffer-view ()
   ((container-view :accessor container-view :initarg :container-view)
    (input-entry :accessor input-entry :initarg :input-entry)
+   (completions :accessor completions)
    (completion-model :accessor completion-model :initarg :completion-model)
    (completion-view :accessor completion-view :initarg :completion-view)
    (completion-function :accessor completion-function)))
@@ -39,6 +40,7 @@
       (let ((completions (funcall completion-function (get-input self))))
         (when completions
           (completions-add self completions)
+          (setf (completions self) completions)
           (highlight-completion self 0))))))
 
 (defmethod highlight-completion ((self minibuffer-view) index)
@@ -60,11 +62,15 @@
                           :border-width 0))
           (button
            (make-instance 'gtk:gtk-button
-                          :label "Browser View Placeholder"))
+                          :label "About:Blank"))
           (entry
            (make-instance 'gtk:gtk-entry
                           :text "Minibuffer Input"))
           (root-box
+           (make-instance 'gtk:gtk-box
+                          :orientation :vertical
+                          :spacing 0))
+          (container-box
            (make-instance 'gtk:gtk-box
                           :orientation :vertical
                           :spacing 0))
@@ -82,19 +88,20 @@
           (column (gtk:gtk-tree-view-column-new-with-attributes
                    "Name" renderer "text" 0)))
      (gtk:gtk-tree-view-append-column list-view column)
-     (gtk:gtk-list-store-set model (gtk:gtk-list-store-append model) "Element 1")
      (gobject:g-signal-connect window "destroy"
                                (lambda (widget)
                                  (declare (ignore widget))
                                  (gtk:leave-gtk-main)))
-     (gtk:gtk-box-pack-start root-box button)
+     (gtk:gtk-box-pack-start root-box container-box)
      (gtk:gtk-box-pack-start root-box minibuffer-box :expand nil)
+     (gtk:gtk-box-pack-start container-box button)
      (gtk:gtk-box-pack-start minibuffer-box entry :expand nil)
      (gtk:gtk-box-pack-start minibuffer-box list-view :expand nil)
      (gtk:gtk-container-add window root-box)
      (setf *next-interface* (make-instance
                              'next-interface
                              :window window
+                             :container-view container-box
                              :minibuffer-view (make-instance
                                                'minibuffer-view
                                                :container-view minibuffer-box
@@ -133,12 +140,18 @@
        (string mapped-character)))))
 
 (defun set-visible-view (view)
-  (declare (ignore view)))
+  (gtk:gtk-container-foreach
+   (container-view *next-interface*)
+   (lambda (widget) (gtk:gtk-container-remove (container-view *next-interface*) widget)))
+  (gtk:gtk-box-pack-start (container-view *next-interface*) view)
+  (gtk:gtk-widget-show view))
 
 (defun delete-view (view)
   (declare (ignore view)))
 
-(defun make-web-view ())
+(defun make-web-view ()
+  (make-instance 'gtk:gtk-button
+                 :label "about:blank"))
 
 (defun web-view-set-url (view url)
   (declare (ignore view url)))
@@ -159,9 +172,11 @@
 
 (defun minibuffer-show ()
   (gtk:gtk-widget-show (container-view (minibuffer-view *next-interface*)))
-  (gtk:gtk-widget-grab-focus (input-entry (minibuffer-view *next-interface*))))
+  (gtk:gtk-widget-grab-focus (input-entry (minibuffer-view *next-interface*)))
+  (process-set-completions (minibuffer-view *next-interface*)))
 
 (defun minibuffer-hide ()
+  (completions-clear (minibuffer-view *next-interface*))
   (gtk:gtk-widget-hide (container-view (minibuffer-view *next-interface*))))
 
 (defun minibuffer-set-input (input)
@@ -171,18 +186,12 @@
   (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))))
 
 (defun minibuffer-get-input-complete ()
-  (with-slots (completion-model completion-view) (minibuffer-view *next-interface*)
-    (when (gtk:gtk-tree-model-get-iter
-           completion-model
-           (gtk:gtk-tree-view-get-cursor
-            completion-view))
-      (gtk:gtk-tree-model-get-value
-       completion-model
-       (gtk:gtk-tree-model-get-iter
-        completion-model
-        (gtk:gtk-tree-view-get-cursor
-         completion-view))
-       0))))
+  (with-slots (completion-view completions) (minibuffer-view *next-interface*)
+    (let ((path (gtk:gtk-tree-path-to-string
+                 (gtk:gtk-tree-view-get-cursor completion-view))))
+      (if path
+          (nth (parse-integer path) completions)
+          nil))))
 
 (defun minibuffer-select-next ()
   (gtk:gtk-tree-view-set-cursor
