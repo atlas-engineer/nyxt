@@ -187,7 +187,7 @@
 		      :defer t))
 	     (.next-view. (make-instance 'next-view)))
 	(#/setContentView: .window. .next-view.)
-	(#/makeKeyAndOrderFront: .window. +null-ptr+)
+	(#/makeKeyAndOrderFront: .window. ccl:+null-ptr+)
 	(setf *window* .window.)
 	(setf *next-view* .next-view.)
 	*window*))))
@@ -201,7 +201,7 @@
    (make-window)))
 
 (defun kill ()
-  (quit))
+  (ccl:quit))
 
 (defun copy ()
   (#/sendAction:to:from: ccl::*nsapp* (objc:@selector #/copy:) nil *next-view*))

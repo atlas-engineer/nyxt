@@ -9,7 +9,7 @@
 	,@actions)))
 
 (defun ns-to-lisp-string (ns-str)
-  (if (and (not (eql (%null-ptr) ns-str)) (plusp (#/length ns-str)))
+  (if (and (not (eql (ccl:%null-ptr) ns-str)) (plusp (#/length ns-str)))
       (ccl::%get-utf-8-cstring (#/UTF8String ns-str))
       ""))
 
@@ -20,7 +20,7 @@
   (typep thing 'ns:ns-view))
 
 (defun obj-if-not-null (ns-obj)
-  (if (eql ns-obj (%null-ptr))
+  (if (eql ns-obj (ccl:%null-ptr))
       nil
       ns-obj))
 
@@ -89,14 +89,14 @@
   (let* ((rel (relation-convert relation))
 	 (a1 (attribute-convert att1))
 	 (a2 (cond (att2 (attribute-convert att2))
-		   ((or (null item2) (eql item2 (%null-ptr))) (attribute-convert :none))
+		   ((or (null item2) (eql item2 (ccl:%null-ptr))) (attribute-convert :none))
 		   (t a1)))
 	 (constraint (#/constraintWithItem:attribute:relatedBy:toItem:attribute:multiplier:constant:
 		      ns:ns-layout-constraint
 		      item1
 		      a1
 		      rel
-		      (or item2 (%null-ptr))
+		      (or item2 (ccl:%null-ptr))
 		      a2
 		      (gui::cgfloat mult)
 		      (gui::cgfloat const))))
