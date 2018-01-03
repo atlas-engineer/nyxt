@@ -51,12 +51,31 @@
            (completion-view self)
            (gtk:gtk-tree-path-new-from-string (write-to-string index))))
 
+(defvar *within-main-nesting* nil)
+
+(defmacro synchronous-within-main (&body b)
+  (let ((promise (gensym "PROMISE"))
+	(thunk (gensym "THUNK")))
+  `(let ((,thunk (lambda () ,@b)))
+     (format *error-output* "S-W-M~%")
+     (if (or
+	  *within-main-nesting*
+	  (string= (bt:thread-name (bt:current-thread))
+		   "cl-cffi-gtk main thread"))
+	 (funcall ,thunk)
+	 (let ((*within-main-nesting* t)
+	       (,promise (lparallel:promise)))
+	   (gtk:within-main-loop
+	     (lparallel:fulfill ,promise
+	       (funcall ,thunk)))
+	   (lparallel:force ,promise))))))
+
 (defun initialize ()
   (setf (gethash #\Return *character-conversion-table*) "RETURN")
   (setf (gethash #\- *character-conversion-table*) "HYPHEN"))
 
 (defun start ()
-  (gtk:within-main-loop
+  (synchronous-within-main
    (let* ((window
            (make-instance 'gtk:gtk-window
                           :type :toplevel
@@ -139,7 +158,7 @@
        (string mapped-character)))))
 
 (defun set-visible-view (view)
-  (gtk:within-main-loop
+  (synchronous-within-main
     (gtk:gtk-container-foreach
      (container-view *next-interface*)
      (lambda (widget) (gtk:gtk-container-remove (container-view *next-interface*) widget)))
@@ -159,9 +178,10 @@
     ctx))
 
 (defun make-web-view ()
-  (let* ((ctx (make-default-context))
-         (wv (make-instance 'webkit2:webkit-web-view :context ctx)))
-    wv))
+  (synchronous-within-main
+    (let* ((ctx (make-default-context))
+	   (wv (make-instance 'webkit2:webkit-web-view :context ctx)))
+      wv)))
 
 (defun web-view-set-url (view url)
   (webkit2:webkit-web-view-load-uri view url))
