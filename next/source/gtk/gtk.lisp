@@ -141,7 +141,7 @@
      (minibuffer-hide))))
 
 (defun kill ()
-  (quit))
+  (uiop:quit))
 
 (defun copy ())
 (defun paste ())
@@ -193,10 +193,17 @@
 (defun web-view-get-url (view)
   (webkit2:webkit-web-view-uri view))
 
+(cffi:defctype g-async-result :pointer)
+
+(cffi:defcallback callybacky :void ((source-object :pointer)
+                                    (result g-async-result)
+                                    (user-data :pointer))
+  (print "called!")
+  nil)
+
 (defun web-view-execute (view script)
   (let ((np (cffi:null-pointer)))
-    (webkit2:webkit-web-view-run-javascript view script np np np))
-  "{\"hello\": \"world\"}")
+    (webkit2:webkit-web-view-run-javascript view script np (cffi:callback callybacky) np)))
 
 (defun make-minibuffer ()
   (container-view (minibuffer-view *next-interface*)))

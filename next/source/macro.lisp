@@ -22,7 +22,7 @@
        (ps:ps ,@script-body))
      (defun ,script-name (&optional (buffer *active-buffer*))
        (let ((script-result (interface:web-view-execute (view buffer) ,script-name)))
-         (when (not (equalp "" script-result))
+         (when (and script-result (not (equalp "" script-result)))
            (cl-json:decode-json-from-string script-result))))))
 
 ;; allow inlining of a parenscript function that can accept arguments,
