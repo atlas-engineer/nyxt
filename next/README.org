@@ -50,10 +50,19 @@ To install quicklisp:
 more detailed instructions and other resources are readily available
 on the quicklisp website.
 ** Linux Setup
-*** Installing CCL
-- Download CCL: [[https://ccl.clozure.com/download.html]], full
-  installation instructions can be found here:
-  [[https://ccl.clozure.com/install.html]].
+*** Installing SBCL
+You can obtain SBCL either from your package manager or by downloading
+it directly from the SBCL repository.
+
+- To install SBCL from source, Download SBCL:
+  [[http://www.sbcl.org/platform-table.html]], full installation
+  instructions can be found here: [[http://www.sbcl.org/getting.html]]
+
+#+begin_quote
+nEXT is also compatible with CCL, but due to upstream issues in a
+dependency, the stability of nEXT is best with SBCL.
+#+end_quote
+
 *** Installing Quicklisp
 The official quicklisp website can provide updated links
 to downloads, and instructions:
