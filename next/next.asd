@@ -38,6 +38,6 @@
   :components ((:file "cocoa/application")))
 
 (defsystem :next/gtk
-  :depends-on (:next :cl-cffi-gtk :cl-webkit2 :lparallel)
+  :depends-on (:next :cl-cffi-gtk :cl-webkit2 :lparallel :jscore)
   :pathname "source/"
   :components ((:file "gtk/gtk")))
