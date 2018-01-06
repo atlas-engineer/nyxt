@@ -10,6 +10,7 @@
 
 (defclass next-interface ()
   ((window :accessor window :initarg :window)
+   (current-view :accessor current-view)
    (container-view :accessor container-view :initarg :container-view)
    (minibuffer-view :accessor minibuffer-view :initarg :minibuffer-view)))
 
@@ -164,7 +165,8 @@
      (container-view *next-interface*)
      (lambda (widget) (gtk:gtk-container-remove (container-view *next-interface*) widget)))
     (gtk:gtk-box-pack-start (container-view *next-interface*) view)
-    (gtk:gtk-widget-show view)))
+    (gtk:gtk-widget-show view)
+    (setf (current-view *next-interface*) view)))
 
 (defun delete-view (view)
   (declare (ignore view)))
@@ -193,12 +195,28 @@
 (defun web-view-get-url (view)
   (webkit2:webkit-web-view-uri view))
 
-(cffi:defctype g-async-result :pointer)
-
 (cffi:defcallback callybacky :void ((source-object :pointer)
-                                    (result g-async-result)
+                                    (result :pointer)
                                     (user-data :pointer))
-  (print "called!")
+  (let* ((np (cffi:null-pointer))
+         (js-result
+          (webkit2:webkit-web-view-run-javascript-finish
+           (current-view *next-interface*) result))
+         (context (webkit2:webkit-javascript-result-get-global-context js-result))
+         (value (webkit2:webkit-javascript-result-get-value js-result))
+         (js-is-str (jscore:js-value-is-string context value))
+         (js-str-value (jscore:js-value-to-string-copy context value np))
+         (js-str-length (jscore:js-string-get-maximum-utf-8-c-string-size js-str-value))
+         (str-value (cffi:foreign-alloc :char :count (cffi:convert-from-foreign js-str-length :unsigned-int))))
+    (jscore:js-string-get-utf-8-c-string js-str-value str-value js-str-length)
+    (print js-result)
+    (print context)
+    (print value)
+    (print js-is-str)
+    (print js-str-value)
+    (print js-str-length)
+    (print (cffi:convert-from-foreign js-str-length :unsigned-int))
+    (print (cffi:convert-from-foreign str-value :string+ptr)))
   nil)
 
 (defun web-view-execute (view script)
