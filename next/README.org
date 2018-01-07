@@ -128,9 +128,8 @@ conversation you wish to have.
 
 ** Contribution
 To contribute, please find a task within this document that has a TODO
-label affixed. Upon finding a task that you'd like to work on, email
-the mailing list next-browser@googlegroups.com with the TODO item, and
-a simple example of a proposed solution.
+label affixed. Upon finding a task that you'd like to work on,
+ideally, ensure that it is not already being worked on.
 
 After you have found a TODO item that is available:
 
