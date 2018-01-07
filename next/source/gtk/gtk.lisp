@@ -86,7 +86,7 @@
                           :border-width 0))
           (entry
            (make-instance 'gtk:gtk-entry
-                          :text "Minibuffer Input"))
+                          :text ""))
           (root-box
            (make-instance 'gtk:gtk-box
                           :orientation :vertical
@@ -128,6 +128,11 @@
                                                :input-entry entry
                                                :completion-model model
                                                :completion-view list-view)))
+     (gobject:g-signal-connect
+      window "destroy"
+      (lambda (widget)
+        (declare (ignore widget))
+        (gtk:leave-gtk-main)))
      (gobject:g-signal-connect
       window "key_press_event"
       (lambda (window event)
