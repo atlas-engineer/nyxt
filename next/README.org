@@ -80,13 +80,10 @@ more detailed instructions and other resources are readily available
 on the quicklisp website.
 *** Install WebKit2GTK+
 Find a package for your distribution which provides
-~libwebkit2gtk-3.0.so~ (the shared library for WebKit2GTK+).
+~libwebkit2gtk-4.0.so~ (the shared library for WebKit2GTK+).
 
-For Ubuntu this package is ~libwebkit2gtk-3.0-dev~
+For Ubuntu this package is ~libwebkit2gtk-4.0-dev~
 For Debian this package is ~libwebkit2gtk~
-
-For now, nEXT only supports ~libwebkit2gtk-3.0.so~ due to
-compatibility issues with cl-webkit.
 
 #+begin_quote
 A note of caution about installing Webkit on Linux via your package
