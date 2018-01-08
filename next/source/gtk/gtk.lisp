@@ -179,22 +179,22 @@
 
 (defun make-default-context ()
   (synchronous-within-main
-    (let* ((context (cl-webkit2:webkit-web-context-get-default))
-           (cookie-manager  (cl-webkit2:webkit-web-context-get-cookie-manager context)))
-      (cl-webkit2:webkit-cookie-manager-set-accept-policy
+    (let* ((context (webkit:webkit-web-context-get-default))
+           (cookie-manager  (webkit:webkit-web-context-get-cookie-manager context)))
+      (webkit:webkit-cookie-manager-set-accept-policy
        cookie-manager *cookie-accept-policy*)
-      (cl-webkit2:webkit-cookie-manager-set-persistent-storage
+      (webkit:webkit-cookie-manager-set-persistent-storage
        cookie-manager (namestring (merge-pathnames "cookies" *cookie-path-dir*)) *cookie-type*)
       context)))
 
 (defun make-web-view ()
   (synchronous-within-main
     (let* ((context (make-default-context))
-	   (web-view (make-instance 'webkit2:webkit-web-view :context context)))
+	   (web-view (make-instance 'webkit:webkit-web-view :context context)))
       web-view)))
 
 (defun web-view-set-url (view url)
-  (webkit2:webkit-web-view-load-uri view url))
+  (webkit:webkit-web-view-load-uri view url))
 
 (defun web-view-set-url-loaded-callback (view function)
   (synchronous-within-main
@@ -204,16 +204,16 @@
        (funcall function)))))
 
 (defun web-view-get-url (view)
-  (webkit2:webkit-web-view-uri view))
+  (webkit:webkit-web-view-uri view))
 
 (cffi:defcallback js-execution-complete :void ((source-object :pointer)
                                                (result :pointer)
                                                (user-data :pointer))
   (let* ((np (cffi:null-pointer))
-         (js-result (webkit2:webkit-web-view-run-javascript-finish
+         (js-result (webkit:webkit-web-view-run-javascript-finish
                      (current-view *next-interface*) result))
-         (context (webkit2:webkit-javascript-result-get-global-context js-result))
-         (value (webkit2:webkit-javascript-result-get-value js-result))
+         (context (webkit:webkit-javascript-result-get-global-context js-result))
+         (value (webkit:webkit-javascript-result-get-value js-result))
          (js-is-str (jscore:js-value-is-string context value))
          (js-str-value (jscore:js-value-to-string-copy context value np))
          (js-str-length (jscore:js-string-get-maximum-utf-8-c-string-size js-str-value))
@@ -226,8 +226,8 @@
     (if callback-supplied-p
         (progn
           (setf (js-script-callback *next-interface*) callback)
-          (webkit2:webkit-web-view-run-javascript view script np (cffi:callback js-execution-complete) np))
-        (webkit2:webkit-web-view-run-javascript view script np np np))))
+          (webkit:webkit-web-view-run-javascript view script np (cffi:callback js-execution-complete) np))
+        (webkit:webkit-web-view-run-javascript view script np np np))))
 
 (defun make-minibuffer ()
   (container-view (minibuffer-view *next-interface*)))
