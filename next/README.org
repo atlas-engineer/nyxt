@@ -106,8 +106,8 @@ In a new Terminal execute the following:
 
 1. ~ccl~ to create a new CCL Repl
 2. Execute ~(require :asdf)~ if asdf is not already loaded
-3. Execute ~(asdf:load-asd "/path/to/next.asd")~ to load the nEXT
-   system definition
+3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the nEXT
+   system definition (you can not use relative pathnames).
 4. Execute ~(ql:quickload :next)~ to load the nEXT system into your
    Lisp image. To load the MacOS version quickload ~:next/cocoa~. To
    load the GTK version quickload ~:next/gtk~.
