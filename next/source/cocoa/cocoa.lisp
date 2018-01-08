@@ -246,11 +246,14 @@
 (defun web-view-get-url (view)
   (ns-to-lisp-string (#/mainFrameURL view)))
 
-(defun web-view-execute (view script)
+(defun web-view-execute (view script &optional (callback nil callback-supplied-p))
   (on-main-thread
-   (ns-to-lisp-string
-    (#/stringByEvaluatingJavaScriptFromString:
-     view (lisp-to-ns-string script)))))
+   (let ((result (ns-to-lisp-string
+                  (#/stringByEvaluatingJavaScriptFromString:
+                   view (lisp-to-ns-string script)))))
+     (if callback-supplied-p
+         (funcall callback result)
+         result))))
 
 (defun make-minibuffer ()
   (minibuffer-view *next-view*))

@@ -3,7 +3,8 @@
 (in-package :next)
 
 (defun setup-headings-jump ()
-  (setf *current-completions* (get-headings)))
+  (with-parenscript (headings get-headings)
+    (setf *current-completions* headings)))
 
 (defparenstatic get-headings
   (defun qsa (context selector)
