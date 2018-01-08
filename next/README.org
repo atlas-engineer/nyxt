@@ -18,9 +18,9 @@
   - [[#001][0.01]]
 
 * Developer Installation
-nEXT browser is built with CCL, and is designed to be cross platform
-compatible. Support for graphics is provided via Cocoa for MacOS and
-GTK for Linux. To download a prebuilt-binary, please see the
+nEXT browser is built with CCL and SBCL. It is designed to be cross
+platform compatible. Support for graphics is provided via Cocoa for
+MacOS and GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
 ** MacOS Setup
