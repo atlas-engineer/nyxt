@@ -85,6 +85,9 @@ Find a package for your distribution which provides
 For Ubuntu this package is ~libwebkit2gtk-3.0-dev~
 For Debian this package is ~libwebkit2gtk~
 
+For now, nEXT only supports ~libwebkit2gtk-3.0.so~ due to
+compatibility issues with cl-webkit.
+
 #+begin_quote
 A note of caution about installing Webkit on Linux via your package
 manager: Your distribution supplied version of Webkit may not provide
