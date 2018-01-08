@@ -45,3 +45,5 @@
 (defvar *current-completions* ()
   "A global variable used to store current completions for a
   completion function that has a static list.")
+(defvar *cookie-path-dir* "~/.next.d/"
+  "The path for cookies in the GTK Version of nEXT")

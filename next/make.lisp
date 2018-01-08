@@ -16,7 +16,7 @@
 (require :asdf)
 
 (push "./" asdf:*central-registry*)
-(ql:quickload "next" :silent t)
+(ql:quickload "next/cocoa/application" :silent t)
 
 (defparameter *source-dir* (make-pathname :name nil :type nil :defaults *load-truename*))
 (defparameter *build-dir* (merge-pathnames "build/" *source-dir*))

@@ -1,8 +1,11 @@
 #+html: <img src="assets/icon_256x256.png" align="right"/>
 * nEXT Browser
-nEXT is the fastest productivity browser. It is designed from the
-ground up to be customizable for your workflow. nEXT Browser is the
-infinitely EXTensible browser.
+nEXT is the fastest productivity browser. nEXT is a keyboard-oriented,
+extensible web-browser inspired by Emacs and designed for power
+users. The application has familiar key-bindings, is fully
+configurable and extensible in Lisp, and has powerful features for
+productive professionals. nEXT Browser is the infinitely EXTensible
+browser.
 
 * Powerful Features
 ** Fast tab switching

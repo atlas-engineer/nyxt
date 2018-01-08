@@ -1,13 +1,12 @@
 * nEXT Browser Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#macos-setup][MacOS Setup]]
-  - [[#linux-setup][Linux Setup]]
+  - [[#linux-setup-experimental][Linux Setup (Experimental)]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
 - [[#help--community][Help & Community]]
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
-  - [[#mailing-list][Mailing List]]
 - [[#release-timeline][Release Timeline]]
   - [[#008][0.08]]
   - [[#007][0.07]]
@@ -19,9 +18,9 @@
   - [[#001][0.01]]
 
 * Developer Installation
-nEXT browser is built with CCL, and is designed to be cross platform
-compatible. Support for graphics is provided via Cocoa for MacOS and
-GTK for Linux. To download a prebuilt-binary, please see the
+nEXT browser is built with CCL and SBCL. It is designed to be cross
+platform compatible. Support for graphics is provided via Cocoa for
+MacOS and GTK for Linux. To download a prebuilt-binary, please see the
 "Releases" section of this repository.
 
 ** MacOS Setup
@@ -50,18 +49,72 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-** Linux Setup
-Instructions forthcoming pending GTK release.
+** Linux Setup (Experimental)
+*** Installing SBCL
+You can obtain SBCL either from your package manager or by downloading
+it directly from the SBCL repository.
+
+- To install SBCL from source, Download SBCL:
+  [[http://www.sbcl.org/platform-table.html]], full installation
+  instructions can be found here: [[http://www.sbcl.org/getting.html]]
+
+#+begin_quote
+nEXT is also compatible with CCL, but due to upstream issues in a
+dependency, the stability of nEXT is best with SBCL.
+#+end_quote
+
+*** Installing Quicklisp
+The official quicklisp website can provide updated links
+to downloads, and instructions:
+
+https://www.quicklisp.org
+
+To install quicklisp:
+
+- Download https://beta.quicklisp.org/quicklisp.lisp
+- Execute ~ccl --load quicklisp.lisp~ to load quicklisp
+- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
+- Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
+
+more detailed instructions and other resources are readily available
+on the quicklisp website.
+*** Install WebKit2GTK+
+Find a package for your distribution which provides
+~libwebkit2gtk-3.0.so~ (the shared library for WebKit2GTK+).
+
+For Ubuntu this package is ~libwebkit2gtk-3.0-dev~
+For Debian this package is ~libwebkit2gtk~
+
+For now, nEXT only supports ~libwebkit2gtk-3.0.so~ due to
+compatibility issues with cl-webkit.
+
+#+begin_quote
+A note of caution about installing Webkit on Linux via your package
+manager: Your distribution supplied version of Webkit may not provide
+up-to-date versions of Webkit including the latest security
+patches. WebkitGTK+ tries to do the best job possible with maintaining
+security patches upstream, but it is also additionally up to the the
+distribution provider to update their packages to take advantage of
+these fixes.
+#+end_quote
+*** Install cl-webkit
+The cl-webkit bindings provide an interface to the Webkit2GTK+
+framework for manipulating and rendering web content.
+
+- Clone: https://github.com/nEXT-Browser/cl-webkit to a path within
+  your local-projects. (=~/common-lisp/quicklisp/local-projects/cl-webkit=)
+
 ** Run from Source
 In a new Terminal execute the following:
 
 1. ~ccl~ to create a new CCL Repl
 2. Execute ~(require :asdf)~ if asdf is not already loaded
-3. Execute ~(asdf:load-asd "/path/to/next.asd")~ to load the nEXT
-   system definition
+3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the nEXT
+   system definition (you can not use relative pathnames).
 4. Execute ~(ql:quickload :next)~ to load the nEXT system into your
-   Lisp image
-5. Execute ~(next:start)~ to open your first nEXT Window.
+   Lisp image. To load the MacOS version quickload ~:next/cocoa~. To
+   load the GTK version quickload ~:next/gtk~.
+5. Execute ~(next:start)~ to open your first nEXT window.
 
 ** Compile
 *** MacOS Compilation
@@ -78,9 +131,8 @@ conversation you wish to have.
 
 ** Contribution
 To contribute, please find a task within this document that has a TODO
-label affixed. Upon finding a task that you'd like to work on, email
-the mailing list next-browser@googlegroups.com with the TODO item, and
-a simple example of a proposed solution.
+label affixed. Upon finding a task that you'd like to work on,
+ideally, ensure that it is not already being worked on.
 
 After you have found a TODO item that is available:
 
@@ -90,10 +142,6 @@ After you have found a TODO item that is available:
 
 ** IRC Channel
 You can find nEXT Browser on Freenode IRC at ##nEXT-Browser
-** Mailing List
-You can email all members through the mailing list:
-next-browser@googlegroups.com
-
 * Release Timeline
 Major releases are issued by incrementing the first digit. That is,
 release 1.20, and 2.20 are one major release away from each other. Minor
@@ -101,13 +149,14 @@ releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
 ** 0.08
+*** TODO Support Multiple Windows
+**** TODO Turn interface package into CLOS Object
 *** TODO Package System
 - Create way for users to install packages easily
 - Create trusted source for packages
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
-
 *** TODO Hydra Functionality
 - Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
   Krehel
@@ -127,14 +176,22 @@ two minor releases following major release 1.0.
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
 
-** 0.07
-*** TODO Support Multiple Windows
-**** TODO Turn interface package into CLOS Object
-*** TODO GTK Port
-- Create Linux GTK Port
+*** TODO Continuation Passing Style Input
+- Allow user to use a (input* ()) type binding in which they can
+  prompt the user for input rather than the current style which
+  involves setting the input handling as part of the lambda registered
+  in the keybinding
+*** TODO Configuration Object
+- Create configuration object that can be passed from the nEXT package
+  to the interface package.
 *** TODO Defcommand
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
+** DONE 0.07
+CLOSED: [2018-01-02 Tue 16:06]
+*** DONE GTK Port
+CLOSED: [2018-01-02 Tue 16:06]
+- Create Linux GTK Port
 ** DONE 0.06
 CLOSED: [2017-12-17 Sun 01:13]
 *** DONE Fix Compilation

@@ -22,7 +22,7 @@
        (ps:ps ,@script-body))
      (defun ,script-name (&optional (buffer *active-buffer*))
        (let ((script-result (interface:web-view-execute (view buffer) ,script-name)))
-         (when (not (equalp "" script-result))
+         (when (and script-result (not (equalp "" script-result)))
            (cl-json:decode-json-from-string script-result))))))
 
 ;; allow inlining of a parenscript function that can accept arguments,
@@ -30,3 +30,21 @@
 (defmacro defparen (name lambda-list &body body)
   `(defun ,name (,@lambda-list)
      (ps:ps ,@body)))
+
+(defmacro with-parenscript ((symbol script) &body body)
+  `(interface:web-view-execute
+    (view *active-buffer*) ,script
+    (lambda (json-execution-result)
+      (let ((,symbol (cl-json:decode-json-from-string json-execution-result)))
+        ,@body))))
+
+(defmacro with-result ((symbol async-form) &body body)
+  `(,(first async-form)
+    (lambda (,symbol) ,@body)
+    ,@(rest async-form)))
+
+(defmacro with-results (bindings &body body)
+  (if (null bindings)
+    `(progn ,@body)
+    `(with-result ,(first bindings)
+       (with-results ,(rest bindings) ,@body))))

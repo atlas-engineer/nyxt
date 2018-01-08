@@ -15,7 +15,8 @@
   (load-file *init-file-path*))
 
 (defun start-swank ()
-  (ccl::call-in-event-process
+  (#+ccl ccl::call-in-event-process
+   #-ccl progn
    #'(lambda ()
        (swank:create-server :port *swank-port* :dont-close t))))
 
