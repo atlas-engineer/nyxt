@@ -213,7 +213,6 @@
                      (current-view *next-interface*) result))
          (context (webkit:webkit-javascript-result-get-global-context js-result))
          (value (webkit:webkit-javascript-result-get-value js-result))
-         (js-is-str (jscore:js-value-is-string context value))
          (js-str-value (jscore:js-value-to-string-copy context value np))
          (js-str-length (jscore:js-string-get-maximum-utf-8-c-string-size js-str-value))
          (str-value (cffi:foreign-alloc :char :count (cffi:convert-from-foreign js-str-length :unsigned-int))))
