@@ -148,7 +148,7 @@
      (minibuffer-hide))))
 
 (defun kill ()
-  (uiop:quit))
+  (uiop:quit 1))
 
 (defun copy ())
 (defun paste ())
@@ -178,13 +178,14 @@
   (declare (ignore view)))
 
 (defun make-default-context ()
-  (let* ((context (cl-webkit2:webkit-web-context-get-default))
-         (cookie-manager  (cl-webkit2:webkit-web-context-get-cookie-manager context)))
-    (cl-webkit2:webkit-cookie-manager-set-accept-policy
-     cookie-manager *cookie-accept-policy*)
-    (cl-webkit2:webkit-cookie-manager-set-persistent-storage
-     cookie-manager (namestring (merge-pathnames "cookies" *cookie-path-dir*)) *cookie-type*)
-    context))
+  (synchronous-within-main
+    (let* ((context (cl-webkit2:webkit-web-context-get-default))
+           (cookie-manager  (cl-webkit2:webkit-web-context-get-cookie-manager context)))
+      (cl-webkit2:webkit-cookie-manager-set-accept-policy
+       cookie-manager *cookie-accept-policy*)
+      (cl-webkit2:webkit-cookie-manager-set-persistent-storage
+       cookie-manager (namestring (merge-pathnames "cookies" *cookie-path-dir*)) *cookie-type*)
+      context)))
 
 (defun make-web-view ()
   (synchronous-within-main
@@ -196,7 +197,11 @@
   (webkit2:webkit-web-view-load-uri view url))
 
 (defun web-view-set-url-loaded-callback (view function)
-  (declare (ignore view function)))
+  (synchronous-within-main
+    (gobject:g-signal-connect
+     view "load-changed"
+     (lambda (webview load-event)
+       (funcall function)))))
 
 (defun web-view-get-url (view)
   (webkit2:webkit-web-view-uri view))
