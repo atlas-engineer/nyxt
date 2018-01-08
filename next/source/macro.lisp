@@ -48,5 +48,3 @@
     `(progn ,@body)
     `(with-result ,(first bindings)
        (with-results ,(rest bindings) ,@body))))
-
-
