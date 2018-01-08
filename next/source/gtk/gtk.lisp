@@ -1,10 +1,9 @@
 ;;;; gtk.lisp --- gtk interface
 (in-package :interface)
 
-(defparameter *cookie-path-dir* "~/.next.d/")
+(defparameter *web-view-context* nil)
 (defparameter *cookie-type* :webkit-cookie-persistent-storage-text)
 (defparameter *cookie-accept-policy* :webkit-cookie-policy-accept-always)
-
 (defparameter *next-interface* nil)
 (defparameter *character-conversion-table* (make-hash-table :test 'equalp))
 
@@ -184,14 +183,14 @@
       (webkit:webkit-cookie-manager-set-accept-policy
        cookie-manager *cookie-accept-policy*)
       (webkit:webkit-cookie-manager-set-persistent-storage
-       cookie-manager (namestring (merge-pathnames "cookies" *cookie-path-dir*)) *cookie-type*)
+       cookie-manager (namestring (merge-pathnames "cookies" next::*cookie-path-dir*)) *cookie-type*)
       context)))
 
 (defun make-web-view ()
   (synchronous-within-main
-    (let* ((context (make-default-context))
-	   (web-view (make-instance 'webkit:webkit-web-view :context context)))
-      web-view)))
+    (when (not *web-view-context*)
+      (setf *web-view-context* (make-default-context)))
+    (make-instance 'webkit:webkit-web-view :context *web-view-context*)))
 
 (defun web-view-set-url (view url)
   (webkit:webkit-web-view-load-uri view url))
