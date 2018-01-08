@@ -130,7 +130,9 @@
 
 (defun setup-anchor ()
   (erase-input)
-  (setf (link-hints (mode *active-buffer*)) (add-link-hints)))
+  (let ((current-mode (mode *active-buffer*)))
+    (with-parenscript (link-hints add-link-hints)
+      (setf (link-hints current-mode) link-hints))))
 
 (defun go-anchor (input)
   (loop for hint in (link-hints (mode *active-buffer*))
