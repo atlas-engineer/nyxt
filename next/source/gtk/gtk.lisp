@@ -201,8 +201,6 @@
 (defun web-view-get-url (view)
   (webkit2:webkit-web-view-uri view))
 
-(defparameter *magic* nil)
-
 (cffi:defcallback js-execution-complete :void ((source-object :pointer)
                                                (result :pointer)
                                                (user-data :pointer))
