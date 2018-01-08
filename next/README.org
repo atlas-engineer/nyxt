@@ -1,7 +1,7 @@
 * nEXT Browser Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#macos-setup][MacOS Setup]]
-  - [[#linux-setup][Linux Setup]]
+  - [[#linux-setup-experimental][Linux Setup (Experimental)]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
 - [[#help--community][Help & Community]]
@@ -49,7 +49,7 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-** Linux Setup
+** Linux Setup (Experimental)
 *** Installing SBCL
 You can obtain SBCL either from your package manager or by downloading
 it directly from the SBCL repository.
