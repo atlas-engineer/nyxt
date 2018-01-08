@@ -174,7 +174,7 @@
     (setf (current-view *next-interface*) view)))
 
 (defun delete-view (view)
-  (declare (ignore view)))
+  (gtk:gtk-widget-destroy view))
 
 (defun make-default-context ()
   (synchronous-within-main
