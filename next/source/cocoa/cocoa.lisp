@@ -100,7 +100,7 @@
   ((load-finished-callback :accessor load-finished-callback))
   (:metaclass ns:+ns-object))
 
-(objc:defmethod (#/webView:didFinishLoadForFrame: :void)
+(objc:defmethod (#/webView:didCommitLoadForFrame: :void)
     ((self next-web-view)
      (wvs :id)
      (fl :id))
