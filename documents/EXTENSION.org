@@ -79,3 +79,41 @@ the command output.
 (define-key *global-map* (kbd "C-x s")
   #'open-new-shell)
 #+END_SRC
+* Reload page with §
+
+#+NAME: reload-page
+#+BEGIN_SRC lisp
+;; Reload page with §
+(defparenstatic reload-page
+  (ps:chain location (reload)))
+(define-key *global-map* (kbd "§") #'reload-page)
+#+END_SRC
+
+* Scroll page up and down with C-v and M-v resp.
+
+#+NAME: scroll-page-up-and-down
+#+BEGIN_SRC lisp
+;; Scroll page up and down with C-v and M-v resp.
+(defparenstatic scroll-page-down
+    (ps:chain window (scroll-by 0 (ps:lisp (* *scroll-distance* 10)))))
+(defparenstatic scroll-page-up
+    (ps:chain window (scroll-by 0 (ps:lisp (* (- *scroll-distance*) 10)))))
+(define-key *global-map* (kbd "C-v") #'scroll-page-down)
+(define-key *global-map* (kbd "M-v") #'scroll-page-up)
+#+END_SRC
+
+* Scroll to top with M->
+
+#+NAME: scroll-to-top
+#+BEGIN_SRC lisp
+;; Scroll to top with M->
+(define-key *global-map* (kbd "M-<") #'scroll-to-top)
+#+END_SRC
+
+* Scroll to bottom with M-<
+
+#+NAME: scroll-to-bottom
+#+BEGIN_SRC lisp
+;; Scroll to bottom with M-<
+(define-key *global-map* (kbd "M->") #'scroll-to-bottom)
+#+END_SRC
