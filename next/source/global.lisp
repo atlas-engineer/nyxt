@@ -45,25 +45,16 @@
   "The package global variables available, populated by helper
   function load package-globals")
 (defvar *init-file-path*
-  (if (uiop:file-exists-p "~/.next.d/init.lisp")
-    "~/.next.d/init.lisp"
-    (xdg-config-home "init.lisp"))
+  (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
 (defvar *history-db-path*
-  (if (uiop:file-exists-p "~/.next.d/history.db")
-    "~/.next.d/history.db"
-    (xdg-data-home "history.db"))
+  (xdg-data-home "history.db")
   "The path where the system will create/save the history database.")
 (defvar *bookmark-db-path*
-  (if (uiop:file-exists-p "~/.next.d/bookmark.db")
-    "~/.next.d/bookmark.db"
-    (xdg-data-home "bookmark.db"))
+  (xdg-data-home "bookmark.db")
   "The path where the system will create/save the bookmark database.")
 (defvar *current-completions* ()
   "A global variable used to store current completions for a
   completion function that has a static list.")
-(defvar *cookie-path-dir*
-  (if (uiop:directory-exists-p "~/.next.d/")
-    "~/.next.d"
-    (xdg-data-home))
+(defvar *cookie-path-dir* (xdg-data-home)
   "The path for cookies in the GTK Version of nEXT")
