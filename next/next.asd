@@ -7,6 +7,7 @@
                     :sqlite :parenscript :cl-json :swank)
   :pathname "source/"
   :components ((:file "package")
+               (:file "user")
 	       (:file "global")
 	       (:file "macro")
 	       (:file "utility")
