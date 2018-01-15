@@ -72,7 +72,8 @@ https://www.quicklisp.org
 To install quicklisp:
 
 - Download https://beta.quicklisp.org/quicklisp.lisp
-- Execute ~ccl --load quicklisp.lisp~ to load quicklisp
+- Execute ~lisp --load quicklisp.lisp~ to load quicklisp (replace
+  ~lisp~ with ~sbcl~ or ~ccl~)
 - Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
 - Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
 
@@ -104,7 +105,8 @@ framework for manipulating and rendering web content.
 ** Run from Source
 In a new Terminal execute the following:
 
-1. ~ccl~ to create a new CCL Repl
+1. ~lisp~ to create a new Lisp Repl (replace ~lisp~ with ~sbcl~ or
+   ~ccl~)
 2. Execute ~(require :asdf)~ if asdf is not already loaded
 3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the nEXT
    system definition (you can not use relative pathnames).
