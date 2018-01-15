@@ -4,9 +4,17 @@
 
 ;; utility functions for getting paths from the xdg directory
 ;; specification in a namespaced directory for next
-(defun xdg-data-home (&optional (rel ""))
-  (uiop:xdg-data-home (concatenate 'string "next/" rel)))
+(defun xdg-data-home (&optional (file-name ""))
+  (merge-pathnames
+   file-name
+   (merge-pathnames
+    (make-pathname :directory '(:relative "next"))
+    (uiop:xdg-data-home))))
 
-(defun xdg-config-home (&optional (rel ""))
-  (uiop:xdg-config-home (concatenate 'string "next/" rel)))
+(defun xdg-config-home (&optional (file-name ""))
+  (merge-pathnames
+   file-name
+   (merge-pathnames
+    (make-pathname :directory '(:relative "next"))
+    (uiop:xdg-config-home))))
 
