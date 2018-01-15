@@ -186,6 +186,10 @@ two minor releases following major release 1.0.
 *** TODO Defcommand
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
+*** DONE Support XDG Configuration
+CLOSED: [2018-01-15 Mon 00:06]
+- Based on the spec here:
+  https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 ** DONE 0.07
 CLOSED: [2018-01-02 Tue 16:06]
 *** DONE GTK Port
