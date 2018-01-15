@@ -2,6 +2,14 @@
 
 (in-package :next)
 
+;; utility functions for getting paths from the xdg directory specification in
+;; a namespaced directory for next
+(defun xdg-data-home (&optional (rel ""))
+  (uiop:xdg-data-home (concatenate 'string "next/" rel)))
+
+(defun xdg-config-home (&optional (rel ""))
+  (uiop:xdg-config-home (concatenate 'string "next/" rel)))
+
 (defvar *global-map* (make-hash-table :test 'equalp)
   "A global key map, available in every mode/buffer.")
 (defvar *active-buffer* ()
@@ -36,14 +44,17 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
-(defvar *init-file-path* "~/.next.d/init.lisp"
+(defvar *init-file-path*
+  (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
-(defvar *history-db-path* "~/.next.d/history.db"
+(defvar *history-db-path*
+  (xdg-data-home "history.db")
   "The path where the system will create/save the history database.")
-(defvar *bookmark-db-path* "~/.next.d/bookmark.db"
+(defvar *bookmark-db-path*
+  (xdg-data-home "bookmark.db")
   "The path where the system will create/save the bookmark database.")
 (defvar *current-completions* ()
   "A global variable used to store current completions for a
   completion function that has a static list.")
-(defvar *cookie-path-dir* "~/.next.d/"
+(defvar *cookie-path-dir* (xdg-data-home)
   "The path for cookies in the GTK Version of nEXT")
