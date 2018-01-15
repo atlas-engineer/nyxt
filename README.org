@@ -74,7 +74,7 @@ The following keys exist as special keys:
 
 ** Customize and EXTend nEXT
 Customization is possible through the creation of a
-=~/.next.d/init.lisp= file within your home directory. From here you
+=~/.config/next/init.lisp= file. From here you
 can override and redefine any of the functions by defining your init
 file as part of the ~:next~ package. For more information please see:
 [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org#customization][customizing nEXT]].

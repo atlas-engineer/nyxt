@@ -3,7 +3,7 @@
 (in-package :next)
 
 (defun start ()
-  (ensure-directories-exist (uiop:physicalize-pathname "~/.next.d/"))
+  (ensure-directories-exist (xdg-data-home))
   (initialize-default-key-bindings)
   ;; load the user configuration if it exists
   (load *init-file-path* :if-does-not-exist nil)

@@ -187,7 +187,7 @@ in the tree.
 
 ** Bookmarks
 Bookmarks are located in a database located in
-=~/.next.d/bookmark.db=. This directory and database will be created
+=~/.local/share/next/bookmark.db=. This directory and database will be created
 automatically for you. The bookmark database is a SQLITE database that
 contains one table with two columns: id, url. In order to navigate
 and manage your bookmarks, a few functions are provided:
@@ -242,9 +242,10 @@ To customize the port that Swank starts on, edit the global variable
 ~*swank-port*~ in your init file.
 
 * Customization
-All customization begins by creating a =~/.next.d/init.lisp= file.
-Within your init file you can write your own keybindings and
-customizations.
+All customization begins by creating a =~/.config/next/init.lisp=
+file.  Within your init file you can write your own keybindings and
+customizations. If the directory =~/.config/next/= does not already
+exist, you will have to make it.
 
 The first line of an init file should contain the following package
 declaration in order to modify nEXT specific variables and functions:
