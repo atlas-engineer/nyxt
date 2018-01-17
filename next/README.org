@@ -180,6 +180,7 @@ two minor releases following major release 1.0.
   prompt the user for input rather than the current style which
   involves setting the input handling as part of the lambda registered
   in the keybinding
+- Convert existing functions to use continuation passing style input
 *** TODO Configuration Object
 - Create configuration object that can be passed from the nEXT package
   to the interface package.
