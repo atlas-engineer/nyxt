@@ -19,9 +19,8 @@
 
 (defmethod switch-mode ((buffer buffer) mode)
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
-    (if found-mode
-	(setf (mode buffer) found-mode)
-	nil)))
+    (when found-mode
+      (setf (mode buffer) found-mode))))
 
 (defmethod add-or-switch-to-mode ((buffer buffer) mode)
   (add-mode buffer mode)
