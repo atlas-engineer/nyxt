@@ -147,7 +147,7 @@
      (minibuffer-hide))))
 
 (defun kill ()
-  (uiop:quit 1))
+  (gtk:leave-gtk-main))
 
 (defun copy ())
 (defun paste ())
