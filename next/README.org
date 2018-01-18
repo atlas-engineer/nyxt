@@ -184,7 +184,8 @@ two minor releases following major release 1.0.
 *** TODO Configuration Object
 - Create configuration object that can be passed from the nEXT package
   to the interface package.
-*** TODO Defcommand
+*** DONE Defcommand
+CLOSED: [2018-01-18 Thu 12:55]
 - Implement defcommand macro with overhaul for how keybindings are
   set/handled in functions
 *** DONE Support XDG Configuration

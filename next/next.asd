@@ -10,6 +10,7 @@
                (:file "user")
 	       (:file "global")
 	       (:file "macro")
+	       (:file "command")
 	       (:file "utility")
 	       (:file "mode")
 	       (:file "keymap")
