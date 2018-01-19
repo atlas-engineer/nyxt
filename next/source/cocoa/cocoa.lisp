@@ -1,4 +1,4 @@
-;;;; cocoa.lisp --- cocoa helper functions & data
+;;; cocoa.lisp --- cocoa helper functions & data
 
 (in-package :interface)
 

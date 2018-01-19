@@ -1,4 +1,4 @@
-;;;; repl.lisp --- adds support for keybindings in repl loaded system
+;;; repl.lisp --- adds support for keybindings in repl loaded system
 
 (in-package :gui)
 

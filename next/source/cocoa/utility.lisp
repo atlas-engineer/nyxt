@@ -1,5 +1,5 @@
-;;;; cocoa-utilities.lisp
-;;;; This file is licensed under license documents/external/LICENSE0
+;;; cocoa-utilities.lisp
+;;; This file is licensed under license documents/external/LICENSE0
 
 (in-package :interface)
 

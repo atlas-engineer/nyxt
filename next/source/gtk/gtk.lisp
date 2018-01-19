@@ -1,4 +1,4 @@
-;;;; gtk.lisp --- gtk interface
+;;; gtk.lisp --- gtk interface
 (in-package :interface)
 
 (defparameter *web-view-context* nil)
