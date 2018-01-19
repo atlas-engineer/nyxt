@@ -153,13 +153,13 @@
 (defun process-event (event)
   (let* ((modifier-state (gdk:gdk-event-key-state event))
          (character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
-         (key-code (char-code character)))
+         (character-code (char-code character)))
     (unless (equalp character #\Null)
       (next:push-key-chord
        (member :control-mask modifier-state :test #'equalp)
        (member :mod1-mask modifier-state :test #'equalp)
        (member :super-mask modifier-state :test #'equalp)
-       (string key-code)))))
+       character-code))))
 
 (defun set-visible-view (view)
   (synchronous-within-main
@@ -197,6 +197,7 @@
     (gobject:g-signal-connect
      view "load-changed"
      (lambda (webview load-event)
+       (declare (ignore webview load-event))
        (funcall function)))))
 
 (defun web-view-get-url (view)
@@ -205,6 +206,7 @@
 (cffi:defcallback js-execution-complete :void ((source-object :pointer)
                                                (result :pointer)
                                                (user-data :pointer))
+  (declare (ignore source-object user-data))
   (let* ((np (cffi:null-pointer))
          (js-result (webkit:webkit-web-view-run-javascript-finish
                      (current-view *next-interface*) result))
