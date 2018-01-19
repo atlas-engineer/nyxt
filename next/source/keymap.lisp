@@ -24,7 +24,7 @@
 (defvar *character-conversion-table* (make-hash-table :test 'equalp))
 (setf (gethash "RETURN" *character-conversion-table*) (char-code #\Return))
 (setf (gethash "HYPHEN" *character-conversion-table*) (char-code #\-))
-(setf (gethash "ESCAPE" *character-conversion-table*) 27) ;; 27 is ascii for esc
+(setf (gethash "ESCAPE" *character-conversion-table*) (char-code #\Esc))
 
 (defun get-char-code (char-string)
   ;; Take a string that represents a character and convert it into
