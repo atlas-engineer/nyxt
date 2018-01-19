@@ -81,27 +81,11 @@
   ;; consume the stack, so that a sequence of keys
   ;; longer than one key-chord can be recorded
   (setf (gethash key-sequence mode-map) function)
-  ;; set prefixes (suffixes of reversed list) to "prefix"
-  (maplist #'(lambda (key-seq) (setf (gethash (cdr key-seq) mode-map) "prefix"))
-	   (reverse key-sequence)))
-
-(defun split-chord (chord-string)
-  ;; Take a sequnce like "C-x" or "C-HYPHEN" and convert it into a
-  ;; key struct. The symbol after the last - should be either a literal
-  ;; character or a sequence characters describing a key code.
-  ;; We need to treat the last element of the sequence specially in
-  ;; order to have "C-C" be control C.
-  (let ((chord-seq (reverse (cl-strings:split chord-string "-")))
-	(key (make-key)))
-    ;; first get the character code for the last element of the chord string
-    (setf (key-character-code key) (get-char-code (car chord-seq)))
-    ;; then set the modifiers from the prefix of the chord string
-    (loop for modifier-string in (cdr chord-seq) do
-      (cond
-	((equal "C" modifier-string) (setf (key-control-modifier key) t))
-	((equal "M" modifier-string) (setf (key-meta-modifier key) t))
-	((equal "S" modifier-string) (setf (key-super-modifier key) t))))
-    key))
+  ;; generate prefix representations
+  (loop while key-sequence
+     do
+       (pop key-sequence)
+       (setf (gethash key-sequence mode-map) "prefix")))
 
 (defun kbd (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"
@@ -111,4 +95,16 @@
   ;; that describes the chord. We now have two "keys"
   ;; connect these two keys in a list <key> C-x, <key> C-s
   ;; this is will serve as the key to our key->function map
-  (mapcar #'split-chord (cl-strings:split key-sequence-string " ")))
+  (let ((key-sequence ()))
+    ;; Iterate through all key chords (space delimited)
+    (loop for key-chord-string in (cl-strings:split key-sequence-string " ")
+       ;; Iterate through all keys in chord (hyphen delimited)
+       do (let ((key-chord (make-key)))
+  	    (loop for key-character-string in (cl-strings:split key-chord-string "-")
+  	       do (cond
+  		    ((equal "C" key-character-string) (setf (key-control-modifier key-chord) t))
+		    ((equal "M" key-character-string) (setf (key-meta-modifier key-chord) t))
+		    ((equal "S" key-character-string) (setf (key-super-modifier key-chord) t))
+  		    (t (setf (key-character-code key-chord) (get-char-code key-character-string)))))
+  	    (push key-chord key-sequence)))
+    key-sequence))
