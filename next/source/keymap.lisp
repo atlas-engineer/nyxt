@@ -37,7 +37,7 @@
       (single-char? (char-code (char char-string 0)))
       (t ()))))
 
-(defun push-key-chord (control-modifier meta-modifier super-modifier key)
+(defun push-key-chord (control-modifier meta-modifier super-modifier key-code)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
@@ -49,7 +49,7 @@
       (setf (key-meta-modifier key-chord) t))
     (when super-modifier
       (setf (key-super-modifier key-chord) t))
-    (setf (key-character-code key-chord) (get-char-code key))
+    (setf (key-character-code key-chord) key-code)
     (push key-chord *key-sequence-stack*))
   (consume-key-sequence))
 

@@ -5,7 +5,6 @@
 (defparameter *cookie-type* :webkit-cookie-persistent-storage-text)
 (defparameter *cookie-accept-policy* :webkit-cookie-policy-accept-always)
 (defparameter *next-interface* nil)
-(defparameter *character-conversion-table* (make-hash-table :test 'equalp))
 
 (defclass next-interface ()
   ((window :accessor window :initarg :window)
@@ -71,9 +70,7 @@
 	       (funcall ,thunk)))
 	   (lparallel:force ,promise))))))
 
-(defun initialize ()
-  (setf (gethash #\Return *character-conversion-table*) "RETURN")
-  (setf (gethash #\- *character-conversion-table*) "HYPHEN"))
+(defun initialize ())
 
 (defun start ()
   (synchronous-within-main
@@ -156,13 +153,13 @@
 (defun process-event (event)
   (let* ((modifier-state (gdk:gdk-event-key-state event))
          (character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
-         (mapped-character (gethash character *character-conversion-table* character)))
+         (key-code (char-code character)))
     (unless (equalp character #\Null)
       (next:push-key-chord
        (member :control-mask modifier-state :test #'equalp)
        (member :mod1-mask modifier-state :test #'equalp)
        (member :super-mask modifier-state :test #'equalp)
-       (string mapped-character)))))
+       (string key-code)))))
 
 (defun set-visible-view (view)
   (synchronous-within-main
