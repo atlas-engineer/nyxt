@@ -1,4 +1,4 @@
-;;;; history.lisp --- manage and create bookmarks
+;;; history.lisp --- manage and create bookmarks
 
 (in-package :next)
 

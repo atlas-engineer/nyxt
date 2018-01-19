@@ -1,8 +1,8 @@
-;;;; completion.lisp --- completion matchers
+;;; completion.lisp --- completion matchers
 
-;;;; completion matchers are functions that accept an input string and
-;;;; a list of strings, and given some logic, return an ordered list
-;;;; of strings matched based on probability
+;;; completion matchers are functions that accept an input string and
+;;; a list of strings, and given some logic, return an ordered list
+;;; of strings matched based on probability
 
 (in-package :next)
 

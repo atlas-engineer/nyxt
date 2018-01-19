@@ -1,4 +1,4 @@
-;;;; bookmark.lisp --- manage and create bookmarks
+;;; bookmark.lisp --- manage and create bookmarks
 
 (in-package :next)
 

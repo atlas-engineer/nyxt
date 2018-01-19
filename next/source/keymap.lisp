@@ -1,13 +1,13 @@
-;;;; keymap.lisp --- lisp subroutines for key binding detection
+;;; keymap.lisp --- lisp subroutines for key binding detection
 
-;;;; keymaps are executed in priority from most specific to least
-;;;; that is, the order of execution for keymaps is:
-;;;; *global-map* --> major-mode-map --> minor-mode-maps
-;;;;
-;;;; keys are defined with the following syntax:
-;;;; (define-key *global-map* (kbd "C-x o") #'function-reference)
-;;;; in the previous example, the sequence of keys:
-;;;; "control+x", "o" would invoke the "function-reference"
+;;; keymaps are executed in priority from most specific to least
+;;; that is, the order of execution for keymaps is:
+;;; *global-map* --> major-mode-map --> minor-mode-maps
+;;;
+;;; keys are defined with the following syntax:
+;;; (define-key *global-map* (kbd "C-x o") #'function-reference)
+;;; in the previous example, the sequence of keys:
+;;; "control+x", "o" would invoke the "function-reference"
 
 (in-package :next)
 

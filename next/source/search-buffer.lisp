@@ -1,4 +1,4 @@
-;;;; search-buffer.lisp --- functions to enable searching within a webview
+;;; search-buffer.lisp --- functions to enable searching within a webview
 
 (in-package :next)
 

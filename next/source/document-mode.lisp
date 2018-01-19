@@ -1,4 +1,4 @@
-;;;; document-mode.lisp --- document major mode for internet documents
+;;; document-mode.lisp --- document major mode for internet documents
 
 (in-package :next)
 

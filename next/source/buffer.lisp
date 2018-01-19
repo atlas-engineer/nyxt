@@ -1,4 +1,4 @@
-;;;; buffer.lisp --- lisp subroutines for creating / managing buffers
+;;; buffer.lisp --- lisp subroutines for creating / managing buffers
 
 (in-package :next)
 

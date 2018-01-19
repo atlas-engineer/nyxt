@@ -1,4 +1,4 @@
-;;;; package.lisp --- definition of package used by next
+;;; package.lisp --- definition of package used by next
 
 (in-package :cl-user)
 

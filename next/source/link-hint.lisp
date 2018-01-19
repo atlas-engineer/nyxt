@@ -1,5 +1,5 @@
-;;;; link-hint.lisp --- functions to enable link hinting and navigation
-;;;; This file's parenscript is licensed under license documents/external/LICENSE1
+;;; link-hint.lisp --- functions to enable link hinting and navigation
+;;; This file's parenscript is licensed under license documents/external/LICENSE1
 
 (in-package :next)
 

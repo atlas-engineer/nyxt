@@ -1,4 +1,4 @@
-;;;; global.lisp --- global variable and parameter declarations
+;;; global.lisp --- global variable and parameter declarations
 
 (in-package :next)
 
