@@ -21,6 +21,22 @@
   meta-modifier
   super-modifier)
 
+(defvar *character-conversion-table* (make-hash-table :test 'equalp))
+(setf (gethash "RETURN" *character-conversion-table*) (char-code #\Return))
+(setf (gethash "HYPHEN" *character-conversion-table*) (char-code #\-))
+(setf (gethash "ESCAPE" *character-conversion-table*) 27) ;; 27 is ascii for esc
+
+(defun get-char-code (char-string)
+  ;; Take a string that represents a character and convert it into
+  ;; key code representing it.
+  ;; If the char-string does not represent a single character; returns nil
+  (let ((character-code (gethash char-string *character-conversion-table* nil))
+	(single-char? (= (length char-string) 1)))
+    (cond
+      (character-code character-code)
+      (single-char? (char-code (char char-string 0)))
+      (t ()))))
+
 (defun push-key-chord (control-modifier meta-modifier super-modifier key)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
