@@ -48,6 +48,11 @@
 (defun switch-buffer (buffer)
   (set-visible-active-buffer buffer))
 
+(defun make-visible-new-buffer ()
+  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+    (set-visible-active-buffer new-buffer)
+    (set-url *default-new-buffer-url*)))
+
 (defun get-active-buffer-index ()
   (position *active-buffer* *buffers* :test #'equalp))
 
