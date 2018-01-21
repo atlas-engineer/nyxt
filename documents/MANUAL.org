@@ -132,6 +132,7 @@ are:
 2. ~C-x k~: Kill tab
 3. ~M-l~: New document-mode tab
 4. ~C-l~: Change URL of current document
+5. ~C-t~: Make new empty buffer
 
 *** Switching Tabs by Order
 In addition to switching tabs by selecting the current tab, you can

@@ -28,7 +28,7 @@
     (:input-complete *minibuffer* set-url-new-buffer history-typed-complete :empty-complete t))
   (define-key *global-map* (kbd "S-b k")
     (:input-complete *minibuffer* bookmark-delete bookmark-complete))
-  (define-key *global-map* (kbd "S-t")
+  (define-key *global-map* (kbd "C-t")
     'make-visible-new-buffer)
   (define-key *minibuffer-mode-map* (kbd "RETURN")
     #'(lambda () (return-input (mode *minibuffer*))))
