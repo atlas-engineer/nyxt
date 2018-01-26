@@ -2,6 +2,7 @@
 archive/
 offline/
 online/
+software/
 
 # Ignore info org files
 info.org
