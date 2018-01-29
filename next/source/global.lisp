@@ -30,7 +30,7 @@
 (defvar *swank-port* 4006
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in nEXT to avoid collisions).")
-(defvar *start-page-url* "https://next-browser.github.io/start.html"
+(defvar *start-page-url* "https://next-browser.github.io/start"
   "The url of the first buffer opened by nEXT when started.")
 (defvar *default-new-buffer-url* "about:blank"
   "The url set to a new blank buffer opened by nEXT.")
