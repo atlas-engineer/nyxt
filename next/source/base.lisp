@@ -3,7 +3,7 @@
 (in-package :next)
 
 (defun start ()
-  (initialize-deferred-variables)
+  (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))
   (initialize-default-key-bindings)
   ;; load the user configuration if it exists
@@ -111,7 +111,3 @@
     'scroll-to-bottom)
   (define-key *document-mode-map* (kbd "M-<")
     'scroll-to-top))
-
-(defun initialize-deferred-variables ()
-  (loop for variable in *deferred-variables*
-       do (funcall variable)))
