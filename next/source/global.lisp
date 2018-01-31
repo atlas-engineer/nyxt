@@ -4,6 +4,8 @@
 
 (defvar *available-commands* (make-hash-table :test #'equalp)
   "A hash of all available commands")
+(defvar *deferred-variables* ()
+  "A list of functions which set globals which are deferred until startup for evaluation.")
 (defvar *global-map* (make-hash-table :test 'equalp)
   "A global key map, available in every mode/buffer.")
 (defvar *active-buffer* ()
