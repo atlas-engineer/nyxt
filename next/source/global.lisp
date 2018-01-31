@@ -42,14 +42,14 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
-(defvar *init-file-path* (xdg-config-home "init.lisp")
+(deferredvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
-(defvar *history-db-path* (xdg-data-home "history.db")
+(deferredvar *history-db-path* (xdg-data-home "history.db")
   "The path where the system will create/save the history database.")
-(defvar *bookmark-db-path* (xdg-data-home "bookmark.db")
+(deferredvar *bookmark-db-path* (xdg-data-home "bookmark.db")
   "The path where the system will create/save the bookmark database.")
 (defvar *current-completions* ()
   "A global variable used to store current completions for a
   completion function that has a static list.")
-(defvar *cookie-path-dir* (xdg-data-home)
+(deferredvar *cookie-path-dir* (xdg-data-home)
   "The path for cookies in the GTK Version of nEXT")
