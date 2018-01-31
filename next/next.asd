@@ -4,12 +4,12 @@
 (defsystem :next
   :serial t
   :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue
-                    :sqlite :parenscript :cl-json :swank)
+                           :sqlite :parenscript :cl-json :swank)
   :pathname "source/"
   :components ((:file "package")
+	       (:file "macro")
                (:file "user")
 	       (:file "global")
-	       (:file "macro")
 	       (:file "command")
 	       (:file "utility")
 	       (:file "mode")
