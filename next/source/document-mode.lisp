@@ -37,7 +37,8 @@
   (ps:let ((style (ps:chain document body style)))
     (setf (ps:@ style zoom) (ps:lisp *current-zoom-ratio*))))
 
-(defun zoom-in-page ()
+(defcommand zoom-in-page ()
+  "Zoom in the current page."
   (interface:web-view-execute (view *active-buffer*) (%zoom-in-page)))
 
 (defparen %zoom-out-page ()
@@ -45,34 +46,29 @@
   (ps:let ((style (ps:chain document body style)))
     (setf (ps:@ style zoom) (ps:lisp *current-zoom-ratio*))))
 
-(defun zoom-out-page ()
+(defcommand zoom-out-page ()
+  "Zoom out the current page."
   (interface:web-view-execute (view *active-buffer*) (%zoom-out-page)))
 
 (defparen %unzoom-page ()
   (ps:lisp (setf *current-zoom-ratio* *zoom-ratio-default*))
   (setf (ps:chain document body style zoom) (ps:lisp *zoom-ratio-default*)))
 
-(defun unzoom-page ()
+(defcommand unzoom-page ()
+  "Unzoom the page."
   (interface:web-view-execute (view *active-buffer*) (%unzoom-page)))
 
-(defun history-backwards ()
-  ;; move up to parent node to iterate backwards in history tree
+(defcommand history-backwards ()
+  "Move up to parent node to iterate backwards in history tree."
   (let ((parent (node-parent (active-history-node (mode *active-buffer*)))))
     (when parent
 	(set-url (node-data parent) t))))
 
-(defun history-forwards ()
-  ;; move forwards in history selecting the first child
+(defcommand history-forwards ()
+  "Move forwards in history selecting the first child."
   (let ((children (node-children (active-history-node (mode *active-buffer*)))))
     (unless (null children)
       (set-url (node-data (nth 0 children)) t))))
-
-(defun history-forwards-query (input)
-  ;; move forwards in history querying if more than one child present
-  (let ((children (node-children (active-history-node (mode *active-buffer*)))))
-    (loop for child in children do
-	 (when (equalp (node-data child) input)
-	   (set-url (node-data child) t)))))
 
 (defun history-fowards-query-complete (input)
   ;; provide completion candidates to the history-forwards-query function
@@ -83,6 +79,16 @@
 			 (mode (callback-buffer (mode *minibuffer*)))))))
     (when children
       (fuzzy-match input (mapcar #'node-data children)))))
+
+(defcommand history-forwards-query ()
+  "Move forwards in history querying if more than one child present."
+    (with-result (input (read-from-minibuffer
+                         (mode *minibuffer*)
+                         :completion 'history-fowards-query-complete))
+      (let ((children (node-children (active-history-node (mode *active-buffer*)))))
+        (loop for child in children do
+          (when (equalp (node-data child) input)
+            (set-url (node-data child) t))))))
 
 (defun add-or-traverse-history (mode)
   (let ((url (interface:web-view-get-url (view (buffer mode))))
@@ -109,10 +115,16 @@
       (setf (active-history-node mode) new-node)
       (return-from add-or-traverse-history t))))
 
-(defun set-url-new-buffer (input-url)
-  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-    (set-visible-active-buffer new-buffer)
-    (set-url input-url)))
+(defcommand set-url-new-buffer ()
+  "Prompt the user for a url and set it in a new active / visible
+buffer"
+  (with-result (input-url (read-from-minibuffer
+                           (mode *minibuffer*)
+                           :completion 'history-typed-complete
+                           :empty-complete t))
+    (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+      (set-visible-active-buffer new-buffer)
+      (set-url input-url))))
 
 (defun set-url-buffer (input-url buffer &optional disable-history)
   (setf (name buffer) input-url)
@@ -128,30 +140,63 @@
   (let ((url (parse-url input-url)))
     (set-url-buffer url *active-buffer* disable-history)))
 
+(defcommand set-url-current-buffer ()
+  "Set the url for the current buffer, completing with history."
+  (with-result (url (read-from-minibuffer
+              (mode *minibuffer*)
+              :completion 'history-typed-complete
+              :setup 'setup-url
+              :empty-complete t))
+        (set-url url)))
+
+(defcommand set-url-from-bookmark ()
+  "Set the url for the current buffer from a bookmark."
+  (with-result (url (read-from-minibuffer
+              (mode *minibuffer*)
+              :completion 'bookmark-complete))
+        (set-url url)))
+
 (defun setup-anchor ()
   (erase-input)
   (let ((current-mode (mode *active-buffer*)))
     (with-parenscript (link-hints add-link-hints)
       (setf (link-hints current-mode) link-hints))))
 
-(defun go-anchor (input)
-  (loop for hint in (link-hints (mode *active-buffer*))
-     do (when (equalp (nth 0 hint) input)
-	  (set-url-buffer (nth 1 hint) *active-buffer* t))))
-
-(defun go-anchor-new-buffer (input)
-  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+(defcommand go-anchor ()
+  "Show a set of link hints, and go to the user inputted one in the
+currently active buffer."
+  (with-result (input (read-from-minibuffer
+                       (mode *minibuffer*)
+                       :setup 'setup-anchor
+                       :cleanup 'remove-link-hints))
     (loop for hint in (link-hints (mode *active-buffer*))
-       do (when (equalp (nth 0 hint) input)
-	    (set-url-buffer (nth 1 hint) new-buffer t)))))
+          do (when (equalp (nth 0 hint) input)
+               (set-url-buffer (nth 1 hint) *active-buffer* t)))))
 
-(defun go-anchor-new-buffer-focus (input)
-  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-    (loop for hint in (link-hints (mode *active-buffer*))
-       do (when (equalp (nth 0 hint) input)
-	    (set-url-buffer (nth 1 hint) new-buffer t)))
-    (remove-link-hints)
-    (set-visible-active-buffer new-buffer)))
+(defcommand go-anchor-new-buffer ()
+  "Show a set of link hints, and open the user inputted one in a new
+buffer (not set to visible active buffer)."
+    (with-result (input (read-from-minibuffer
+                         (mode *minibuffer*)
+                         :setup 'setup-anchor
+                         :cleanup 'remove-link-hints))
+      (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+        (loop for hint in (link-hints (mode *active-buffer*))
+              do (when (equalp (nth 0 hint) input)
+                   (set-url-buffer (nth 1 hint) new-buffer t))))))
+
+(defcommand go-anchor-new-buffer-focus ()
+  "Show a set of link hints, and open the user inputted one in a new
+visible active buffer."
+  (with-result (input (read-from-minibuffer
+                       (mode *minibuffer*)
+                       :setup 'setup-anchor))
+    (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+      (loop for hint in (link-hints (mode *active-buffer*))
+            do (when (equalp (nth 0 hint) input)
+                 (set-url-buffer (nth 1 hint) new-buffer t)))
+      (remove-link-hints)
+      (set-visible-active-buffer new-buffer))))
 
 (defun document-mode ()
   "Base mode for interacting with documents"
