@@ -8,8 +8,10 @@
   children
   data)
 
-(defun load-file (input)
-  (load input :if-does-not-exist nil))
+(defcommand load-file ()
+  (with-result (file-name-input (read-from-minibuffer
+                                 (mode *minibuffer*)))
+    (load file-name-input :if-does-not-exist nil)))
 
 (defun reload-init ()
   (load-file *init-file-path*))
