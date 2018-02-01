@@ -9,6 +9,7 @@
   data)
 
 (defcommand load-file ()
+  "Load a file by specifying the absolute path to that file."
   (with-result (file-name-input (read-from-minibuffer
                                  (mode *minibuffer*)))
     (load file-name-input :if-does-not-exist nil)))
