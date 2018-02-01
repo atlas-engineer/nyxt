@@ -17,7 +17,9 @@
 (defun reload-init ()
   (load-file *init-file-path*))
 
-(defun start-swank ()
+(defcommand start-swank ()
+  "Start a swank server that can be connected to in Emacs via
+slime. Default port is 4006."
   (#+ccl ccl::call-in-event-process
    #-ccl progn
    #'(lambda ()
