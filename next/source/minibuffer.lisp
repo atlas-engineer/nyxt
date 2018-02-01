@@ -13,6 +13,9 @@
    ;; empty-complete-immediate: if no completion candidates, return-immediate
    (empty-complete-immediate :accessor empty-complete-immediate)))
 
+(defmethod read-from-minibuffer (callback (self minibuffer-mode))
+  (input self callback))
+
 (defmethod input ((self minibuffer-mode) callback
 		  &key completion (setup #'erase-input) cleanup empty-complete)
   (with-slots (callback-function completion-function callback-buffer

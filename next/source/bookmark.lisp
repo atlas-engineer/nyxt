@@ -22,7 +22,12 @@
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
 
-(defun bookmark-url (input)
+(defcommand bookmark-url ()
+  "Allow the user to bookmark a URL via minibuffer input."
+  (with-result (url (read-from-minibuffer (mode *minibuffer*)))
+    (%bookmark-url url)))
+
+(defun %bookmark-url (input)
   (let ((db (sqlite:connect
 	     (truename (probe-file *bookmark-db-path*)))))
     (sqlite:execute-non-query
@@ -32,7 +37,7 @@
 (defun bookmark-anchor (input)
   (loop for hint in (link-hints (mode *active-buffer*))
      do (when (equalp (nth 0 hint) input)
-	  (bookmark-url (nth 1 hint)))))
+	  (%bookmark-url (nth 1 hint)))))
 
 (defun bookmark-delete (input)
     (let ((db (sqlite:connect
