@@ -14,7 +14,25 @@
        db "insert into bookmarks (url) values (?)" "about:blank")
       (sqlite:disconnect db))))
 
-(defun bookmark-current-page ()
+(defun bookmark-complete (input)
+  (let* ((db (sqlite:connect
+	      (truename (probe-file *bookmark-db-path*))))
+	 (candidates
+	  (sqlite:execute-to-list
+	   db "select url from bookmarks where url like ?"
+	   (format nil "%~a%" input))))
+    (sqlite:disconnect db)
+    (reduce #'append candidates :from-end t)))
+
+(defun %bookmark-url (input)
+  (let ((db (sqlite:connect
+	     (truename (probe-file *bookmark-db-path*)))))
+    (sqlite:execute-non-query
+     db "insert into bookmarks (url) values (?)" input)
+    (sqlite:disconnect db)))
+
+(defcommand bookmark-current-page ()
+  "Bookmark the currently opened page in the active buffer."
   (let ((db (sqlite:connect
 	     (truename (probe-file *bookmark-db-path*))))
 	(url (name *active-buffer*)))
@@ -27,31 +45,23 @@
   (with-result (url (read-from-minibuffer (mode *minibuffer*)))
     (%bookmark-url url)))
 
-(defun %bookmark-url (input)
-  (let ((db (sqlite:connect
-	     (truename (probe-file *bookmark-db-path*)))))
-    (sqlite:execute-non-query
-     db "insert into bookmarks (url) values (?)" input)
-    (sqlite:disconnect db)))
-
-(defun bookmark-anchor (input)
-  (loop for hint in (link-hints (mode *active-buffer*))
-     do (when (equalp (nth 0 hint) input)
-	  (%bookmark-url (nth 1 hint)))))
-
-(defun bookmark-delete (input)
+(defcommand bookmark-delete ()
+  "Delete a bookmark from the bookmark database."
+  (with-result (bookmark (read-from-minibuffer
+                          (mode *minibuffer*)
+                          :completion 'bookmark-complete))
     (let ((db (sqlite:connect
-	       (truename (probe-file *bookmark-db-path*)))))
+               (truename (probe-file *bookmark-db-path*)))))
       (sqlite:execute-non-query
-       db "delete from bookmarks where url = ?" input)
-      (sqlite:disconnect db)))
+       db "delete from bookmarks where url = ?" bookmark)
+      (sqlite:disconnect db))))
 
-(defun bookmark-complete (input)
-  (let* ((db (sqlite:connect
-	      (truename (probe-file *bookmark-db-path*))))
-	 (candidates
-	  (sqlite:execute-to-list
-	   db "select url from bookmarks where url like ?"
-	   (format nil "%~a%" input))))
-    (sqlite:disconnect db)
-    (reduce #'append candidates :from-end t)))
+(defcommand bookmark-anchor ()
+  "Show link hints on screen, and allow the user to bookmark one"
+  (with-result (selected-anchor (read-from-minibuffer
+                                 (mode *minibuffer*)
+                                 :setup 'setup-anchor
+                                 :cleanup 'remove-link-hints))
+    (loop for hint in (link-hints (mode *active-buffer*))
+          do (when (equalp (nth 0 hint) selected-anchor)
+               (%bookmark-url (nth 1 hint))))))
