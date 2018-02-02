@@ -22,7 +22,7 @@
     (documentation-style-warning)
   ((subject-type :initform 'command)))
 
-(defmacro defcommand (name arglist &body body)
+(defmacro define-command (name arglist &body body)
   (let ((documentation (if (stringp (first body))
                            (first body)
                            (warn (make-condition

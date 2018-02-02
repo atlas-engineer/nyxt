@@ -34,8 +34,12 @@
     (setf (ps:chain document body inner-h-t-m-l) body))
   nil)
 
-(defun add-search-boxes (input)
-  (interface:web-view-execute (view *active-buffer*) (paren-add-search-boxes input)))
+(define-command add-search-boxes ()
+  "Add search boxes for a given search string"
+  (with-result (input (read-from-minibuffer
+                       (mode *minibuffer*)
+                       :setup 'initialize-search-buffer))
+    (interface:web-view-execute (view *active-buffer*) (paren-add-search-boxes input))))
 
 (defparenstatic remove-search-hints
   (defun qsa (context selector)

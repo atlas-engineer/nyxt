@@ -8,13 +8,18 @@
   children
   data)
 
-(defun load-file (input)
-  (load input :if-does-not-exist nil))
+(define-command load-file ()
+  "Load a file by specifying the absolute path to that file."
+  (with-result (file-name-input (read-from-minibuffer
+                                 (mode *minibuffer*)))
+    (load file-name-input :if-does-not-exist nil)))
 
 (defun reload-init ()
   (load-file *init-file-path*))
 
-(defun start-swank ()
+(define-command start-swank ()
+  "Start a swank server that can be connected to in Emacs via
+slime. Default port is 4006."
   (#+ccl ccl::call-in-event-process
    #-ccl progn
    #'(lambda ()

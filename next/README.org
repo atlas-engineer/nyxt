@@ -174,20 +174,22 @@ two minor releases following major release 1.0.
   buffer. That is, set-url and set-url-new-buffer will be deprecated
   in favor of simply set-url, and (with-new-buffer (set-url
   "https://www.example.com"))
+*** TODO Configuration Object
+- Create configuration object that can be passed from the nEXT package
+  to the interface package.
 
-*** TODO Continuation Passing Style Input
+*** DONE Continuation Passing Style Input
+CLOSED: [2018-02-02 Fri 01:18]
 - Allow user to use a (input* ()) type binding in which they can
   prompt the user for input rather than the current style which
   involves setting the input handling as part of the lambda registered
   in the keybinding
 - Convert existing functions to use continuation passing style input
-*** TODO Configuration Object
-- Create configuration object that can be passed from the nEXT package
-  to the interface package.
-*** DONE Defcommand
+*** DONE Define-Command
 CLOSED: [2018-01-18 Thu 12:55]
-- Implement defcommand macro with overhaul for how keybindings are
+- Implement define-command macro with overhaul for how keybindings are
   set/handled in functions
+- Convert all user invokable functions to use define-command
 *** DONE Support XDG Configuration
 CLOSED: [2018-01-15 Mon 00:06]
 - Based on the spec here:

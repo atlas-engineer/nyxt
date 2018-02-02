@@ -45,37 +45,49 @@
   (set-active-buffer buffer)
   (interface:set-visible-view (view *active-buffer*)))
 
-(defun switch-buffer (buffer)
-  (set-visible-active-buffer buffer))
-
-(defun make-visible-new-buffer ()
-  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-    (set-visible-active-buffer new-buffer)
-    (set-url *default-new-buffer-url*)))
+(defun buffer-complete (input)
+  (fuzzy-match input *buffers* #'name))
 
 (defun get-active-buffer-index ()
   (position *active-buffer* *buffers* :test #'equalp))
-
-(defun switch-buffer-previous ()
-  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
-    (if (equalp 0 active-buffer-index)
-	(set-visible-active-buffer (nth (- (length *buffers*) 1) *buffers*))
-	(set-visible-active-buffer (nth (- active-buffer-index 1) *buffers*)))))
-
-(defun switch-buffer-next ()
-  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
-    (if (< (+ active-buffer-index 1) (length *buffers*))
-        (set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
-        (set-visible-active-buffer (nth 0 *buffers*)))))
-
-(defun buffer-complete (input)
-  (fuzzy-match input *buffers* #'name))
 
 (defun %delete-buffer (buffer)
   (setf *buffers* (delete buffer *buffers*))
   (interface:delete-view (view buffer)))
 
-(defun delete-active-buffer ()
+(define-command switch-buffer ()
+  "Switch the active buffer in the current window."
+  (with-result (buffer (read-from-minibuffer
+                        (mode *minibuffer*)
+                        :completion 'buffer-complete))
+    (set-visible-active-buffer buffer)))
+
+(define-command make-visible-new-buffer ()
+  "Make a new empty buffer with the *default-new-buffer-url* loaded"
+  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+    (set-visible-active-buffer new-buffer)
+    (set-url *default-new-buffer-url*)))
+
+(define-command switch-buffer-previous ()
+  "Switch to the previous buffer in the list of *buffers*, if the
+first item in the list, jump to the last item."
+  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
+    (if (equalp 0 active-buffer-index)
+	(set-visible-active-buffer (nth (- (length *buffers*) 1) *buffers*))
+	(set-visible-active-buffer (nth (- active-buffer-index 1) *buffers*)))))
+
+(define-command switch-buffer-next ()
+  "Switch to the next buffer in the list of *buffers*, if the last
+item in the list, jump to the first item."
+  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
+    (if (< (+ active-buffer-index 1) (length *buffers*))
+        (set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
+        (set-visible-active-buffer (nth 0 *buffers*)))))
+
+(define-command delete-active-buffer ()
+  "Delete the currently active buffer, and make the next buffer
+*buffers* the visible buffer. If no other buffers exist, set the url
+of the current buffer to the start page."
   (if (> (length *buffers*) 1)
       (let ((former-active-buffer *active-buffer*))
         ;; switch-buffer-next changes value of *active-buffer*
@@ -85,7 +97,11 @@
         (%delete-buffer former-active-buffer))
       (set-url *start-page-url*)))
 
-(defun delete-buffer (buffer)
-  (if (equalp buffer *active-buffer*)
-      (delete-active-buffer)
-      (%delete-buffer buffer)))
+(define-command delete-buffer ()
+  "Delete the buffer via minibuffer input."
+  (with-result (buffer (read-from-minibuffer
+                        (mode *minibuffer*)
+                        :completion 'buffer-complete))
+    (if (equalp buffer *active-buffer*)
+        (delete-active-buffer)
+        (%delete-buffer buffer))))
