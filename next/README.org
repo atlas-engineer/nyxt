@@ -8,6 +8,7 @@
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
 - [[#release-timeline][Release Timeline]]
+  - [[#009][0.09]]
   - [[#008][0.08]]
   - [[#007][0.07]]
   - [[#006][0.06]]
@@ -147,9 +148,21 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
-** 0.08
+** 0.09
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
+*** TODO Create with-new-buffer macro
+- Should allow the user to encapsulate operations against some new
+  buffer. That is, set-url and set-url-new-buffer will be deprecated
+  in favor of simply set-url, and (with-new-buffer (set-url
+  "https://www.example.com"))
+*** TODO Configuration Object
+- Create configuration object that can be passed from the nEXT package
+  to the interface package.
+*** TODO Linux Compilation
+- Create Lisp compile script for Linux
+- Create Flatpak release
+** 0.08
 *** TODO Package System
 - Create way for users to install packages easily
 - Create trusted source for packages
@@ -169,15 +182,6 @@ two minor releases following major release 1.0.
   heading built into nEXT to allow jumping to a paragraph (many
   websites do not use h1, h2 tags, especially ones with user created
   content)
-*** TODO Create with-new-buffer macro
-- Should allow the user to encapsulate operations against some new
-  buffer. That is, set-url and set-url-new-buffer will be deprecated
-  in favor of simply set-url, and (with-new-buffer (set-url
-  "https://www.example.com"))
-*** TODO Configuration Object
-- Create configuration object that can be passed from the nEXT package
-  to the interface package.
-
 *** DONE Continuation Passing Style Input
 CLOSED: [2018-02-02 Fri 01:18]
 - Allow user to use a (input* ()) type binding in which they can
