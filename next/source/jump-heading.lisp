@@ -27,5 +27,10 @@
 (defun heading-complete (input)
   (fuzzy-match input *current-completions*))
 
-(defun jump-to-heading (input)
-  (interface:web-view-execute (view *active-buffer*) (paren-jump-to-heading input)))
+(defcommand jump-to-heading (input)
+  "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6"
+  (with-result (input (read-from-minibuffer
+                       (mode *minibuffer*)
+                       :completion 'heading-complete
+                       :setup 'setup-headings-jump))
+    (interface:web-view-execute (view *active-buffer*) (paren-jump-to-heading input))))
