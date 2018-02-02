@@ -21,7 +21,7 @@
 (defun variable-complete (input)
   (fuzzy-match input *package-globals* #'symbol-name))
 
-(defcommand variable-inspect (input)
+(define-command variable-inspect (input)
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (mode *minibuffer*)

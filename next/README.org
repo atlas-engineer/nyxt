@@ -185,11 +185,11 @@ CLOSED: [2018-02-02 Fri 01:18]
   involves setting the input handling as part of the lambda registered
   in the keybinding
 - Convert existing functions to use continuation passing style input
-*** DONE Defcommand
+*** DONE Define-Command
 CLOSED: [2018-01-18 Thu 12:55]
-- Implement defcommand macro with overhaul for how keybindings are
+- Implement define-command macro with overhaul for how keybindings are
   set/handled in functions
-- Convert all user invokable functions to use defcommand
+- Convert all user invokable functions to use define-command
 *** DONE Support XDG Configuration
 CLOSED: [2018-01-15 Mon 00:06]
 - Based on the spec here:

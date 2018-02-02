@@ -34,7 +34,7 @@
     (setf (ps:chain document body inner-h-t-m-l) body))
   nil)
 
-(defcommand add-search-boxes ()
+(define-command add-search-boxes ()
   "Add search boxes for a given search string"
   (with-result (input (read-from-minibuffer
                        (mode *minibuffer*)

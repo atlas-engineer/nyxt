@@ -55,20 +55,20 @@
   (setf *buffers* (delete buffer *buffers*))
   (interface:delete-view (view buffer)))
 
-(defcommand switch-buffer ()
+(define-command switch-buffer ()
   "Switch the active buffer in the current window."
   (with-result (buffer (read-from-minibuffer
                         (mode *minibuffer*)
                         :completion 'buffer-complete))
     (set-visible-active-buffer buffer)))
 
-(defcommand make-visible-new-buffer ()
+(define-command make-visible-new-buffer ()
   "Make a new empty buffer with the *default-new-buffer-url* loaded"
   (let ((new-buffer (generate-new-buffer "default" (document-mode))))
     (set-visible-active-buffer new-buffer)
     (set-url *default-new-buffer-url*)))
 
-(defcommand switch-buffer-previous ()
+(define-command switch-buffer-previous ()
   "Switch to the previous buffer in the list of *buffers*, if the
 first item in the list, jump to the last item."
   (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
@@ -76,7 +76,7 @@ first item in the list, jump to the last item."
 	(set-visible-active-buffer (nth (- (length *buffers*) 1) *buffers*))
 	(set-visible-active-buffer (nth (- active-buffer-index 1) *buffers*)))))
 
-(defcommand switch-buffer-next ()
+(define-command switch-buffer-next ()
   "Switch to the next buffer in the list of *buffers*, if the last
 item in the list, jump to the first item."
   (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
@@ -84,7 +84,7 @@ item in the list, jump to the first item."
         (set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
         (set-visible-active-buffer (nth 0 *buffers*)))))
 
-(defcommand delete-active-buffer ()
+(define-command delete-active-buffer ()
   "Delete the currently active buffer, and make the next buffer
 *buffers* the visible buffer. If no other buffers exist, set the url
 of the current buffer to the start page."
@@ -97,7 +97,7 @@ of the current buffer to the start page."
         (%delete-buffer former-active-buffer))
       (set-url *start-page-url*)))
 
-(defcommand delete-buffer ()
+(define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
   (with-result (buffer (read-from-minibuffer
                         (mode *minibuffer*)

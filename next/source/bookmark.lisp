@@ -31,7 +31,7 @@
      db "insert into bookmarks (url) values (?)" input)
     (sqlite:disconnect db)))
 
-(defcommand bookmark-current-page ()
+(define-command bookmark-current-page ()
   "Bookmark the currently opened page in the active buffer."
   (let ((db (sqlite:connect
 	     (truename (probe-file *bookmark-db-path*))))
@@ -40,12 +40,12 @@
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
 
-(defcommand bookmark-url ()
+(define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
   (with-result (url (read-from-minibuffer (mode *minibuffer*)))
     (%bookmark-url url)))
 
-(defcommand bookmark-delete ()
+(define-command bookmark-delete ()
   "Delete a bookmark from the bookmark database."
   (with-result (bookmark (read-from-minibuffer
                           (mode *minibuffer*)
@@ -56,7 +56,7 @@
        db "delete from bookmarks where url = ?" bookmark)
       (sqlite:disconnect db))))
 
-(defcommand bookmark-anchor ()
+(define-command bookmark-anchor ()
   "Show link hints on screen, and allow the user to bookmark one"
   (with-result (selected-anchor (read-from-minibuffer
                                  (mode *minibuffer*)
