@@ -22,6 +22,8 @@ exposed to the end-user allowing for infinite customization.
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
   - [[#loading-files][Loading Files]]
+  - [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
+  - [[#getting-input-from-the-user][Getting input from the user]]
 
 * Basics
 ** Navigation
@@ -290,3 +292,33 @@ file you wish to load.
 
 A convenience function for reloading the init file called
 ~reload-init~ can also be keybound.
+
+** Creating your own interactive commands
+Creating your own invokable commands is the same as creating any other
+~defun~ except the form is ~define-command~. A docstring is highly
+reccommend and will produce a style warning when it is missing.
+
+An example of a trivial command definition can be seen below.
+
+#+NAME: bookmark-url
+#+BEGIN_SRC lisp
+(define-command bookmark-url ()
+  "Allow the user to bookmark a URL via minibuffer input."
+  (with-result (url (read-from-minibuffer (mode *minibuffer*)))
+    (%bookmark-url url)))
+#+END_SRC
+
+** Getting input from the user
+Getting input from the user via the minibuffer is an asynchronous
+command. That is why the ~read-from-minibuffer~ function is wrapped
+within a continuation passing style macro ~with-result~. The form
+therefore takes the following look:
+
+#+NAME: read-from-minibuffer-example
+#+BEGIN_SRC lisp
+(with-result (variable-name-to-bind-minibuffer-input
+              (read-from-minibuffer
+               (mode *minibuffer*)))
+  (print variable-name-to-bind-minibuffer-input))
+#+END_SRC
+
