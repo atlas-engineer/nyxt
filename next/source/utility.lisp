@@ -15,7 +15,7 @@
     (load file-name-input :if-does-not-exist nil)))
 
 (defun reload-init ()
-  (load-file *init-file-path*))
+  (load *init-file-path*))
 
 (define-command start-swank ()
   "Start a swank server that can be connected to in Emacs via
