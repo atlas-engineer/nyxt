@@ -28,6 +28,7 @@
   (define-key *global-map* (kbd "S-b u") 'bookmark-url)
   (define-key *global-map* (kbd "C-x w") 'delete-active-buffer)
   (define-key *global-map* (kbd "S-h v") 'variable-inspect)
+  (define-key *global-map* (kbd "S-h c") 'command-inspect)
   (define-key *global-map* (kbd "C-o") 'load-file)
   (define-key *global-map* (kbd "S-h s") 'start-swank)
   (define-key *global-map* (kbd "C-y") 'interface:paste)

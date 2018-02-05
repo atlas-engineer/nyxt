@@ -182,6 +182,8 @@ two minor releases following major release 1.0.
   heading built into nEXT to allow jumping to a paragraph (many
   websites do not use h1, h2 tags, especially ones with user created
   content)
+*** DONE Add ability to inspect commands
+CLOSED: [2018-02-05 Mon 18:34]
 *** DONE Continuation Passing Style Input
 CLOSED: [2018-02-02 Fri 01:18]
 - Allow user to use a (input* ()) type binding in which they can
