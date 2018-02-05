@@ -213,6 +213,7 @@ The help system allows you to look up variable and function docstrings
 directly within nEXT. Docstrings will appear in a new help buffer.
 
 1. ~S-h v~: Look up a variable docstring
+2. ~S-h c~: Look up a command docstring
 
 ** Slime with a compiled version of nEXT
 Slime provides a way of interacting with nEXT, and with Lisp code in
