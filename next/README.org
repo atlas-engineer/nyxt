@@ -172,9 +172,6 @@ two minor releases following major release 1.0.
 *** TODO Hydra Functionality
 - Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
   Krehel
-*** TODO Add Hook System
-- Model Hook system similar to the Emacs style hooks
-  (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
 *** TODO Jump to paragraph categorized based on content
 - Develop first content analysis functions to be used for keyword
   generation
@@ -182,6 +179,10 @@ two minor releases following major release 1.0.
   heading built into nEXT to allow jumping to a paragraph (many
   websites do not use h1, h2 tags, especially ones with user created
   content)
+*** DONE Add Hook System
+CLOSED: [2018-02-05 Mon 23:49]
+- Model Hook system similar to the Emacs style hooks
+  (https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html)
 *** DONE Add ability to inspect commands
 CLOSED: [2018-02-05 Mon 18:34]
 *** DONE Continuation Passing Style Input
