@@ -2,6 +2,8 @@
 
 (in-package :next)
 
+(defvar *available-hooks* (make-hash-table :test #'equalp)
+  "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)
   "A hash of all available commands")
 (defvar *deferred-variables* ()
