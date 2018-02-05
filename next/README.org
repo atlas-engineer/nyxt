@@ -162,16 +162,13 @@ two minor releases following major release 1.0.
 *** TODO Linux Compilation
 - Create Lisp compile script for Linux
 - Create Flatpak release
-** 0.08
 *** TODO Package System
 - Create way for users to install packages easily
 - Create trusted source for packages
+** 0.08
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
-*** TODO Hydra Functionality
-- Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
-  Krehel
 *** TODO Jump to paragraph categorized based on content
 - Develop first content analysis functions to be used for keyword
   generation
@@ -179,6 +176,9 @@ two minor releases following major release 1.0.
   heading built into nEXT to allow jumping to a paragraph (many
   websites do not use h1, h2 tags, especially ones with user created
   content)
+*** TODO Hydra Functionality
+- Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
+  Krehel
 *** DONE Add Hook System
 CLOSED: [2018-02-05 Mon 23:49]
 - Model Hook system similar to the Emacs style hooks
