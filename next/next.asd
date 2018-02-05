@@ -10,6 +10,7 @@
 	       (:file "macro")
                (:file "user")
 	       (:file "global")
+	       (:file "hook")
 	       (:file "command")
 	       (:file "utility")
 	       (:file "mode")
