@@ -3,8 +3,8 @@
 
 (defsystem :next
   :serial t
-  :depends-on (:cl-strings :cl-string-match :puri :queues.simple-queue
-                           :sqlite :parenscript :cl-json :swank)
+  :depends-on (:alexandria :cl-strings :cl-string-match :puri
+               :queues.simple-queue :sqlite :parenscript :cl-json :swank)
   :pathname "source/"
   :components ((:file "package")
 	       (:file "macro")

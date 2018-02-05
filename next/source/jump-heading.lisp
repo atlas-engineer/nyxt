@@ -27,7 +27,7 @@
 (defun heading-complete (input)
   (fuzzy-match input *current-completions*))
 
-(define-command jump-to-heading (input)
+(define-command jump-to-heading ()
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6"
   (with-result (input (read-from-minibuffer
                        (mode *minibuffer*)

@@ -21,7 +21,10 @@
 (defun variable-complete (input)
   (fuzzy-match input *package-globals* #'symbol-name))
 
-(define-command variable-inspect (input)
+(defun function-complete (input)
+  (fuzzy-match input (alexandria:hash-table-keys *available-commands*)))
+
+(define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (mode *minibuffer*)
@@ -32,7 +35,22 @@
            (help-contents (concatenate 'string "<h1>" (symbol-name input) "</h1>"
                                        (documentation input 'variable)
                                        "<h2>Current Value:</h2>"
-                                       (write-to-string (symbol-value input))))
+                                       (write-to-string (sypmbol-value input))))
+           (insert-help (ps:ps (setf (ps:@ document Body inner-H-T-M-L) (ps:lisp help-contents)))))
+      (interface:web-view-execute (view help-buffer) insert-help)
+      (set-visible-active-buffer help-buffer))))
+
+(define-command command-inspect ()
+  "Inspect a function and show it in a help buffer."
+  (with-result (input (read-from-minibuffer
+                       (mode *minibuffer*)
+                       :completion 'function-complete))
+    (let* ((help-buffer (generate-new-buffer
+                         (concatenate 'string "HELP-" input) (document-mode)))
+           (help-contents (concatenate 'string "<h1>" input "</h1>"
+                                       (documentation input 'variable)
+                                       "<h2>Documentation:</h2>"
+                                       (write-to-string (doc (gethash input *available-commands*)))))
            (insert-help (ps:ps (setf (ps:@ document Body inner-H-T-M-L) (ps:lisp help-contents)))))
       (interface:web-view-execute (view help-buffer) insert-help)
       (set-visible-active-buffer help-buffer))))
