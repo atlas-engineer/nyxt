@@ -15,7 +15,8 @@
 
 (defun run-hook (hook-name)
   (let ((hook-functions-hash (gethash hook-name *available-hooks*)))
-    (maphash 'execute-entry hook-functions-hash)))
+    (when hook-functions-hash
+      (maphash 'execute-entry hook-functions-hash))))
 
 (defun remove-hook (hook-name function-key)
   (let ((hook-functions-hash (gethash hook-name *available-hooks*)))
