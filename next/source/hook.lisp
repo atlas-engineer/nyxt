@@ -2,8 +2,8 @@
 
 (in-package :next)
 
-(defun add-hook ())
+(defun add-hook (hook-name function function-designator))
 
-(defun run-hook ())
+(defun run-hook (hook-name))
 
-(defun remove-hook ())
+(defun remove-hook ((hook-name function-designator)))
