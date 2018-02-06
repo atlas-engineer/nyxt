@@ -19,10 +19,12 @@
   - [[#001][0.01]]
 
 * Developer Installation
-nEXT browser is built with CCL and SBCL. It is designed to be cross
-platform compatible. Support for graphics is provided via Cocoa for
-MacOS and GTK for Linux. To download a prebuilt-binary, please see the
-"Releases" section of this repository.
+nEXT browser is written in Common Lisp. It can be built with
+[[https://ccl.clozure.com/][CCL]] and [[http://www.sbcl.org/][SBCL]].
+It is designed to be cross-platform compatible. Support for graphics is
+provided via Cocoa for MacOS and GTK for Linux. To download a prebuilt-binary,
+please see the "Releases" section of the GitHub repository
+([[https://github.com/next-browser/next/releases]]).
 
 ** MacOS Setup
 *** Installing CCL
