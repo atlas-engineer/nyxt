@@ -2,10 +2,6 @@
 
 (in-package :next)
 
-(defun setup-headings-jump ()
-  (with-parenscript (headings get-headings)
-    (setf *current-completions* headings)))
-
 (defparenstatic get-headings
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
@@ -14,6 +10,10 @@
     (ps:chain -j-s-o-n (stringify
                         (loop for heading in headings
                            collect (ps:chain heading inner-text))))))
+
+(defun setup-headings-jump ()
+  (with-parenscript (headings get-headings)
+    (setf *current-completions* headings)))
 
 (defparen paren-jump-to-heading (heading-inner-text)
   (defun qsa (context selector)
