@@ -1,10 +1,10 @@
-;;;; make.lisp --- create binary files for nEXT
-;;;;
-;;;; See nEXT/next/README.org for more information on installing the
-;;;; dependencies necessary to build nEXT from source
-;;;;
-;;;; Please note that this script must be run from the directory
-;;;; nEXT/next.
+;;; make.lisp --- create binary files for nEXT
+;;;
+;;; See nEXT/next/README.org for more information on installing the
+;;; dependencies necessary to build nEXT from source
+;;;
+;;; Please note that this script must be run from the directory
+;;; nEXT/next.
 
 (defun maybe-load-quicklisp (path)
   (ignore-errors
