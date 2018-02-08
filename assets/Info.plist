@@ -9,11 +9,11 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleGetInfoString</key>
-    <string>nEXT Browser</string>
+    <string>next browser</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleExecutable</key>
-    <string>nEXT</string>
+    <string>next</string>
     <key>CFBundleIdentifier</key>
     <string>next.browser</string>
     <key>NSAppTransportSecurity</key>

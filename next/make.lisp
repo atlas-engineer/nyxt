@@ -1,10 +1,10 @@
-;;; make.lisp --- create binary files for nEXT
+;;; make.lisp --- create binary files for next
 ;;;
-;;; See nEXT/next/README.org for more information on installing the
-;;; dependencies necessary to build nEXT from source
+;;; See next/next/README.org for more information on installing the
+;;; dependencies necessary to build next from source
 ;;;
 ;;; Please note that this script must be run from the directory
-;;; nEXT/next.
+;;; next/next.
 
 (defun maybe-load-quicklisp (path)
   (ignore-errors
@@ -28,7 +28,7 @@
 
 (defun build-next (&optional (build-dir *build-dir*))
   (let* ((*build-dir* build-dir)
-         (*bundle-dir* (merge-pathnames "nEXT.app/" *build-dir*))
+         (*bundle-dir* (merge-pathnames "next.app/" *build-dir*))
          (*contents-dir* (merge-pathnames "Contents/" *bundle-dir*))
          (*resources-dir* (merge-pathnames "Resources/" *contents-dir*))
          (*macos-dir* (merge-pathnames "MacOS/" *contents-dir*))
@@ -40,10 +40,10 @@
                     :if-exists :supersede)
     (ccl::copy-file "../assets/next.icns" (merge-pathnames "next.icns" *resources-dir*)
                     :if-exists :supersede)
-    (ccl::copy-file (ccl::kernel-path) (merge-pathnames "nEXT" *macos-dir*)
+    (ccl::copy-file (ccl::kernel-path) (merge-pathnames "next" *macos-dir*)
                     :if-exists :supersede
                     :preserve-attributes t)
-    (ccl::save-application (merge-pathnames "ccl/nEXT.image" *resources-dir*)
+    (ccl::save-application (merge-pathnames "ccl/next.image" *resources-dir*)
                            :application-class (find-symbol "COCOA-APPLICATION" "CCL"))))
 
 (build-next)

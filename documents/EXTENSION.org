@@ -1,12 +1,12 @@
-#+TITLE: nEXT EXTension Exposé
-This Document is a place for users of nEXT Browser to share useful
+#+TITLE: next EXTension Exposé
+This Document is a place for users of next browser to share useful
 customizations as a community. If you have something you wish to add,
 please feel free to open a PR with your customization.
 
 * Contents                                                              :TOC:
 - [[#setting-the-start-page][Setting the start page]]
 - [[#creating-your-own-parenscript][Creating your own Parenscript]]
-- [[#running-shell-commands-within-next][Running shell commands within nEXT]]
+- [[#running-shell-commands-within-next][Running shell commands within next]]
 - [[#reloading-the-page][Reloading the page]]
 - [[#scroll-the-page-up-and-down-by-a-screen][Scroll the page up and down by a screen]]
 
@@ -36,7 +36,7 @@ shows how you could set the body with the URL of the current page.
 Defparenstatic will automatically generate a defparameter named
 ~hello-url~ as in the case above, and a function ~(hello-url)~ that
 you can invoke to act upon the currently ~*active-buffer*~.
-* Running shell commands within nEXT
+* Running shell commands within next
 Shell mode is an extension for running simple one liner shell commands
 and seeing the output. There is no history or variables. Use ~C-x s~
 to enter ~*shell-mode*~ and ~c~ to enter a command and ~k~ to clear

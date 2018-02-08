@@ -77,7 +77,7 @@
    (let* ((window
            (make-instance 'gtk:gtk-window
                           :type :toplevel
-                          :title "nEXT"
+                          :title "next"
                           :default-width 1024
                           :default-height 768
                           :border-width 0))

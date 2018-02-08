@@ -6,7 +6,7 @@
 ;; ide-application is created as the NSApplication. This NSApplication
 ;; extends from ccl::ccl-application. By implementing the sendEvent
 ;; method we can capture all key events and if they are applicable to
-;; a nEXT keybinding we can execute them in place of the Cocoa IDE
+;; a next keybinding we can execute them in place of the Cocoa IDE
 ;; keybinding.
 
 (objc:defmethod (#/sendEvent: :void) ((self ide-application) event)
