@@ -30,9 +30,11 @@
                                   :name name))))
         (body (if (stringp (first body))
                   (rest body)
-                  body)))
+                  body))
+        (keyword-symbol (intern (symbol-name name) :keyword)))
     `(progn
        (defun ,name ,arglist
+         (run-hook ,keyword-symbol)
          ,@body)
        (make-instance 'command
                       :name (symbol-name ',name)
