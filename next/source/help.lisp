@@ -1,4 +1,4 @@
-;;; help.lisp --- functions for the user to get help on next
+;;; help.lisp --- functions for the user to get help on Next
 
 (in-package :next)
 

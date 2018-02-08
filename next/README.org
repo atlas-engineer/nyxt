@@ -1,4 +1,4 @@
-* next browser Developer Readme                                         :TOC:
+* Next-browser Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#macos-setup][MacOS Setup]]
   - [[#linux-setup-experimental][Linux Setup (Experimental)]]
@@ -19,7 +19,7 @@
   - [[#001][0.01]]
 
 * Developer Installation
-next browser is written in Common Lisp. It can be built with
+Next-browser is written in Common Lisp. It can be built with
 [[https://ccl.clozure.com/][CCL]] and [[http://www.sbcl.org/][SBCL]].
 It is designed to be cross-platform compatible. Support for graphics is
 provided via Cocoa for MacOS and GTK for Linux. To download a prebuilt-binary,
@@ -62,8 +62,8 @@ it directly from the SBCL repository.
   instructions can be found here: [[http://www.sbcl.org/getting.html]]
 
 #+begin_quote
-next is also compatible with CCL, but due to upstream issues in a
-dependency, the stability of next is best with SBCL.
+Next is also compatible with CCL, but due to upstream issues in a
+dependency, the stability of Next is best with SBCL.
 #+end_quote
 
 *** Installing Quicklisp
@@ -111,19 +111,19 @@ In a new Terminal execute the following:
 1. ~lisp~ to create a new Lisp Repl (replace ~lisp~ with ~sbcl~ or
    ~ccl~)
 2. Execute ~(require :asdf)~ if asdf is not already loaded
-3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the next
+3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
    system definition (you can not use relative pathnames).
-4. Execute ~(ql:quickload :next)~ to load the next system into your
+4. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image. To load the MacOS version quickload ~:next/cocoa~. To
    load the GTK version quickload ~:next/gtk~.
-5. Execute ~(next:start)~ to open your first next window.
+5. Execute ~(next:start)~ to open your first Next window.
 
 ** Compile
 *** MacOS Compilation
 From the CCL Source directory, execute
 
 1. ~ccl --no-init --load make.lisp~
-2. The compiled binary will be present in build/next
+2. The compiled binary will be present in build/Next
 
 * Help & Community
 There are several ways to ask for help from the community. The first
@@ -143,7 +143,7 @@ After you have found a TODO item that is available:
 - make a pull request
 
 ** IRC Channel
-You can find next browser on Freenode IRC at #next-browser
+You can find Next-browser on Freenode IRC at #next-browser
 * Release Timeline
 Major releases are issued by incrementing the first digit. That is,
 release 1.20, and 2.20 are one major release away from each other. Minor
@@ -212,7 +212,7 @@ CLOSED: [2017-12-17 Sun 01:13]
 *** DONE User Customization Example
 CLOSED: [2017-12-17 Sun 01:10]
 - Create an example in the Documents directory that details the
-  creation of a simple mode, and a way of customizing next
+  creation of a simple mode, and a way of customizing Next
 *** DONE Jump to Heading
 CLOSED: [2017-12-16 Sat 00:49]
 - Implement something akin to ijump which allows you to jump to any
@@ -229,7 +229,7 @@ CLOSED: [2017-12-11 Mon 00:26]
   applied to it, so that no memory is lost when switching modes
 *** DONE Add Slime Support
 CLOSED: [2017-12-10 Sun 01:55]
-- Add slime support to the compiled version of next
+- Add slime support to the compiled version of Next
 *** DONE Reload Init Function
 CLOSED: [2017-12-07 Thu 15:48]
 - Allow function to reload init
@@ -310,12 +310,12 @@ CLOSED: [2017-10-05 Thu 23:45]
 - Modify make.lisp script to create a binary that grabs all of the
   dependencies and creates a executable that can be deployed on OSX
 - Use `macdeployqt` to copy the core qt libraries to
-  `next.app/Contents/Frameworks`
-- Use `otool -L next.app/Contents/MacOS/next` to find the linked
-  frameworks that are not located in `next.app/Contents/Frameworks`,
-  manually copy them to `next.app/Contents/Frameworks`
+  `Next.app/Contents/Frameworks`
+- Use `otool -L Next.app/Contents/MacOS/next` to find the linked
+  frameworks that are not located in `Next.app/Contents/Frameworks`,
+  manually copy them to `Next.app/Contents/Frameworks`
 - Use install_name_tool to update the now copied frameworks in 
-  `next.app/Contents/Frameworks`
+  `Next.app/Contents/Frameworks`
 - For more info please see: http://doc.qt.io/qt-5/osx-deployment.html
 *** DONE Kill Buffer
 CLOSED: [2017-10-05 Thu 23:48]
@@ -370,7 +370,7 @@ render a single document.
 
 Mode-map: A keyboard hot-key to function mapping.
 
-Minibuffer: A special buffer dedicated to interacting with next
+Minibuffer: A special buffer dedicated to interacting with Next
 commands in progress. This buffer appears at the bottom of the screen
 and is collapsed when not in use.
 

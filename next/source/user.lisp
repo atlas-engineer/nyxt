@@ -3,7 +3,7 @@
 (in-package :next)
 
 ;; utility functions for getting paths from the xdg directory
-;; specification in a namespaced directory for next
+;; specification in a namespaced directory for Next
 (defun xdg-data-home (&optional (file-name ""))
   (merge-pathnames
    file-name

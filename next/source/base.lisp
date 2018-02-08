@@ -1,4 +1,4 @@
-;;; base.lisp --- main entry point into next
+;;; base.lisp --- main entry point into Next
 
 (in-package :next)
 

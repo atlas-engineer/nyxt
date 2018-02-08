@@ -3,19 +3,19 @@
 <plist version="1.0">
   <dict>
     <key>NSPrincipalClass</key>
-    <string>next-application</string>
+    <string>Next-application</string>
     <key>CFBundleIconFile</key>
     <string>next.icns</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleGetInfoString</key>
-    <string>next browser</string>
+    <string>Next-browser</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleExecutable</key>
-    <string>next</string>
+    <string>Next</string>
     <key>CFBundleIdentifier</key>
-    <string>next.browser</string>
+    <string>Next.browser</string>
     <key>NSAppTransportSecurity</key>
     <dict>
       <!--Include to allow all connections-->

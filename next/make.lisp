@@ -1,7 +1,7 @@
-;;; make.lisp --- create binary files for next
+;;; make.lisp --- create binary files for Next
 ;;;
 ;;; See next/next/README.org for more information on installing the
-;;; dependencies necessary to build next from source
+;;; dependencies necessary to build Next from source
 ;;;
 ;;; Please note that this script must be run from the directory
 ;;; next/next.
@@ -28,7 +28,7 @@
 
 (defun build-next (&optional (build-dir *build-dir*))
   (let* ((*build-dir* build-dir)
-         (*bundle-dir* (merge-pathnames "next.app/" *build-dir*))
+         (*bundle-dir* (merge-pathnames "Next.app/" *build-dir*))
          (*contents-dir* (merge-pathnames "Contents/" *bundle-dir*))
          (*resources-dir* (merge-pathnames "Resources/" *contents-dir*))
          (*macos-dir* (merge-pathnames "MacOS/" *contents-dir*))
