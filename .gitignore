@@ -1,21 +1,6 @@
-# Ignore folders
-archive/
-offline/
-online/
-software/
-
-# Ignore info org files
-info.org
-info.org_archive
-
 # Ignore App
 *.app
 *.dmg
-
-# Ignore temp
-tmp/
-Makefile
-tr.h
 
 # Ignore PNG and XCF
 *.png
