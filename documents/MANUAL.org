@@ -1,5 +1,5 @@
-#+TITLE: Next-browser User Manual
-Next-browser is the next generation browsing experience designed for
+#+TITLE: Next User Manual
+Next is the next generation browsing experience designed for
 power users. 100% of the functions and classes are exposed to the
 end-user allowing for infinite customization.
 * Contents                                                              :TOC:

@@ -1,5 +1,5 @@
 #+TITLE: Next EXTension Exposé
-This Document is a place for users of Next-browser to share useful
+This Document is a place for users of Next to share useful
 customizations as a community. If you have something you wish to add,
 please feel free to open a PR with your customization.
 
