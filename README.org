@@ -1,5 +1,5 @@
 #+html: <img src="assets/icon_256x256.png" align="right"/>
-* Next
+* Next Web Browser
 Next is a keyboard-oriented, extensible web-browser inspired by Emacs
 and designed for power users. The application has familiar
 key-bindings, is fully configurable and extensible in Lisp, and has
