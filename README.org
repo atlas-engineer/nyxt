@@ -23,18 +23,18 @@ the tree makes sure you never lose track of where you've been.
 
 In the example below, the User performs the following actions:
 
-1. Starts page ~Fish~
-2. Visits page ~Amphibian~
-3. Returns to page ~Fish~
-4. Visits page ~Reptile~
-5. Returns to page ~Fish~
+1. Starts page ~True Parrot~
+2. Visits page ~Gray Parrot~
+3. Returns to page ~True Parrot~
+4. Visits page ~Budgerigar~
+5. Returns to page ~True Parrot~
 6. Executes ~forwards~ keybind in history
 
 It is at this point that a normal browser would NOT be able to
-navigate you forwards to your visit of ~Amphibian~. Instead of
+navigate you forwards to your visit of ~Gray Parrot~. Instead of
 erasing your history, Next offers smart navigation and prompts the
-user. Do you wish to go forwards to ~Amphibian~ or to
-~Reptile~?
+user. Do you wish to go forwards to ~Gray Parrot~ or to
+~Budgerigar~?
 
 #+html: <img src="assets/gifs/tree_forward.gif" align="center"/>
 
