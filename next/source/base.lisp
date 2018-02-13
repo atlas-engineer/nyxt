@@ -4,6 +4,7 @@
 
 (defun start ()
   (map nil 'funcall *deferred-variables*)
+  (uiop:setup-temporary-directory)
   (ensure-directories-exist (xdg-data-home))
   (initialize-default-key-bindings)
   ;; load the user configuration if it exists
