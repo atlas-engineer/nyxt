@@ -28,6 +28,11 @@
 	       (:file "help")
 	       (:file "base")))
 
+(defsystem :next/remote
+  :depends-on (:next)
+  :pathname "source/"
+  :components ((:file "remote/remote")))
+
 (defsystem :next/cocoa
   :depends-on (:next (:require "cocoa") (:require "webkit"))
   :pathname "source/"
