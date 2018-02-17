@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defun run ()
+(defun start ()
   (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))
   (initialize-default-key-bindings)
@@ -12,7 +12,7 @@
   (initialize-history-db)
   ;; create the interface object
   (setf *interface* (make-instance 'remote-interface))
-  (start *interface*))
+  (start-interface *interface*))
   ;; create the default buffers
   ;; (setf *minibuffer* (make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
   ;; (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))

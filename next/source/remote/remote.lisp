@@ -4,8 +4,7 @@
 
 (defclass remote-interface ()())
 
-(defmethod initialize ((interface remote-interface)))
-(defmethod start ((interface remote-interface))
+(defmethod start-interface ((interface remote-interface))
   (print "Start."))
 (defmethod kill ((interface remote-interface)))
 
