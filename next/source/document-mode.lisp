@@ -39,7 +39,7 @@
 
 (define-command zoom-in-page ()
   "Zoom in the current page."
-  (interface:web-view-execute (view *active-buffer*) (%zoom-in-page)))
+  (web-view-execute *interface* (view *active-buffer*) (%zoom-in-page)))
 
 (defparen %zoom-out-page ()
   (ps:lisp (ensure-zoom-ratio-range #'-))
@@ -48,7 +48,7 @@
 
 (define-command zoom-out-page ()
   "Zoom out the current page."
-  (interface:web-view-execute (view *active-buffer*) (%zoom-out-page)))
+  (web-view-execute *interface* (view *active-buffer*) (%zoom-out-page)))
 
 (defparen %unzoom-page ()
   (ps:lisp (setf *current-zoom-ratio* *zoom-ratio-default*))
@@ -56,7 +56,7 @@
 
 (define-command unzoom-page ()
   "Unzoom the page."
-  (interface:web-view-execute (view *active-buffer*) (%unzoom-page)))
+  (web-view-execute *interface* (view *active-buffer*) (%unzoom-page)))
 
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."
@@ -91,7 +91,7 @@
             (set-url (node-data child) t))))))
 
 (defun add-or-traverse-history (mode)
-  (let ((url (interface:web-view-get-url (view (buffer mode))))
+  (let ((url (web-view-get-url *interface* (view (buffer mode))))
 	(active-node (active-history-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
@@ -130,11 +130,11 @@ buffer"
   (setf (name buffer) input-url)
   (unless disable-history
     (history-typed-add input-url))
-  (interface:web-view-set-url (view buffer) input-url))
+  (web-view-set-url *interface* (view buffer) input-url))
 
 (defun setup-url ()
   (set-input (mode *minibuffer*)
-	     (interface:web-view-get-url (view *active-buffer*))))
+	     (web-view-get-url *interface* (view *active-buffer*))))
 
 (defun set-url (input-url &optional disable-history)
   (let ((url (parse-url input-url)))
@@ -209,6 +209,6 @@ visible active buffer."
 
 (defmethod setup ((mode document-mode) buffer)
   (call-next-method)
-  (interface:web-view-set-url-loaded-callback
+  (web-view-set-url-loaded-callback *interface*
    (view buffer)
    (lambda () (add-or-traverse-history mode))))

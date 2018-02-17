@@ -32,7 +32,7 @@
 			:name name
 			:mode mode
 			:modes (make-hash-table :test 'equalp)
-			:view (interface:make-web-view))))
+			:view (make-web-view *interface*))))
     (push new-buffer *buffers*)
     (setup mode new-buffer)
     (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))
@@ -43,7 +43,7 @@
 
 (defun set-visible-active-buffer (buffer)
   (set-active-buffer buffer)
-  (interface:set-visible-view (view *active-buffer*)))
+  (set-visible-view *interface* (view *active-buffer*)))
 
 (defun buffer-complete (input)
   (fuzzy-match input *buffers* #'name))
@@ -53,7 +53,7 @@
 
 (defun %delete-buffer (buffer)
   (setf *buffers* (delete buffer *buffers*))
-  (interface:delete-view (view buffer)))
+  (delete-view *interface* (view buffer)))
 
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."

@@ -55,3 +55,5 @@
   completion function that has a static list.")
 (deferredvar *cookie-path-dir* (xdg-data-home)
   "The path for cookies in the GTK Version of Next")
+(defvar *interface* nil
+  "The CLOS object responsible for rendering the interface")
