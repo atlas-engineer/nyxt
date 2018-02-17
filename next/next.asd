@@ -35,17 +35,17 @@
 
 (defsystem :next/cocoa
   :depends-on (:next (:require "cocoa") (:require "webkit"))
-  :pathname "source/"
-  :components ((:file "cocoa/repl")
-               (:file "cocoa/utility")
-               (:file "cocoa/cocoa")))
+  :pathname "source/cocoa/"
+  :components ((:file "repl")
+               (:file "utility")
+               (:file "cocoa")))
 
 (defsystem :next/cocoa/application
   :depends-on (:next/cocoa)
-  :pathname "source/"
-  :components ((:file "cocoa/application")))
+  :pathname "source/cocoa/"
+  :components ((:file "application")))
 
 (defsystem :next/gtk
   :depends-on (:next :cl-cffi-gtk :cl-webkit2 :lparallel)
-  :pathname "source/"
-  :components ((:file "gtk/gtk")))
+  :pathname "source/gtk/"
+  :components ((:file "gtk")))
