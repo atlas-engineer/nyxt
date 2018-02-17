@@ -1,6 +1,6 @@
-;;; remote.lisp --- cocoa helper functions & data
+;;; remote.lisp --- remote gui interface
 
-(in-package :interface)
+(in-package :next)
 
 (defparameter *next-interface* nil)
 
