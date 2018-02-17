@@ -32,20 +32,3 @@
   :depends-on (:next)
   :pathname "source/"
   :components ((:file "remote/remote")))
-
-(defsystem :next/cocoa
-  :depends-on (:next (:require "cocoa") (:require "webkit"))
-  :pathname "source/cocoa/"
-  :components ((:file "repl")
-               (:file "utility")
-               (:file "cocoa")))
-
-(defsystem :next/cocoa/application
-  :depends-on (:next/cocoa)
-  :pathname "source/cocoa/"
-  :components ((:file "application")))
-
-(defsystem :next/gtk
-  :depends-on (:next :cl-cffi-gtk :cl-webkit2 :lparallel)
-  :pathname "source/gtk/"
-  :components ((:file "gtk")))
