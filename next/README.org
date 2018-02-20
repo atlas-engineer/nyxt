@@ -7,6 +7,7 @@
 - [[#help--community][Help & Community]]
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
+  - [[#mailing-list][Mailing List]]
 - [[#release-timeline][Release Timeline]]
   - [[#009][0.09]]
   - [[#008][0.08]]
@@ -144,6 +145,19 @@ After you have found a TODO item that is available:
 
 ** IRC Channel
 You can find Next on Freenode IRC at #next-browser
+
+** Mailing List
+Next maintains a GNU Mailman server located at
+[[http://mail.next-browser.com/listinfo]].
+
+*** Developer Mailing List
+You can sign up for the [[http://mail.next-browser.com/listinfo/development][developer mailing list]] to participate in
+discussions on the engineering and programming of Next.
+
+*** Alpha Mailing List
+You can up for the [[http://mail.next-browser.com/listinfo/alpha][alpha mailing list]] to participate in discussions on
+feature requests, and early version testing.
+
 * Release Timeline
 Major releases are issued by incrementing the first digit. That is,
 release 1.20, and 2.20 are one major release away from each other. Minor
