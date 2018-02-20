@@ -3,11 +3,11 @@
 Next is a keyboard-oriented, extensible web-browser inspired by Emacs
 and designed for power users. The application has familiar
 key-bindings, is fully configurable and extensible in Lisp, and has
-powerful features for productive professionals. Next is the infinitely
-EXTensible browser.
+powerful features for productive professionals.
 
 * Features
-Next includes many features such as the ones listed below.
+Next includes many features designed to enable you to focus on being
+productive. A few of them are demonstrated below.
 
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
