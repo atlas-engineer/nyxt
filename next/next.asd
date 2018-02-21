@@ -29,6 +29,6 @@
 	       (:file "base")))
 
 (defsystem :next/remote
-  :depends-on (:next :usocket)
+  :depends-on (:next :usocket :bordeaux-threads)
   :pathname "source/"
   :components ((:file "remote/remote")))
