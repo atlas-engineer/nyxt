@@ -2,11 +2,14 @@
 
 (in-package :next)
 
-(defclass remote-interface ()())
+(defclass remote-interface ()
+  ((server :accessor server :initform (usocket:socket-listen "127.0.0.1" 8080))))
 
 (defmethod start-interface ((interface remote-interface))
   (print "Start."))
-(defmethod kill ((interface remote-interface)))
+
+(defmethod kill ((interface remote-interface))
+  (usocket:socket-close (server interface)))
 
 (defmethod copy ((interface remote-interface)))
 (defmethod paste ((interface remote-interface)))
