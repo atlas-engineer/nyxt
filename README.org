@@ -57,7 +57,7 @@ See the [[https://github.com/next-browser/next/releases][releases]] section for 
 installation from source, please see the [[https://github.com/next-browser/next/tree/master/next][developer readme]].
 ** Quickstart Keys
 - ~C-l~:     Load URL in tab
-- ~S-l~:     Load URL in a new tab
+- ~M-l~:     Load URL in a new tab
 - ~C-x b~:   Switch tab
 - ~C-b~:     Backwards history
 - ~C-f~:     Forwards history
