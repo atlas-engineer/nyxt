@@ -36,6 +36,7 @@
   (define-key *global-map* (kbd "C-w") 'interface:cut)
   (define-key *global-map* (kbd "M-w") 'interface:copy)
   (define-key *global-map* (kbd "M-x") 'execute-extended-command)
+  (define-key *global-map* (kbd "ESCAPE x") 'execute-extended-command)
   (define-key *minibuffer-mode-map* (kbd "RETURN") #'(lambda () (return-input (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-RETURN") #'(lambda () (return-immediate (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-g") #'(lambda () (cancel-input (mode *minibuffer*))))
