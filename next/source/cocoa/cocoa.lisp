@@ -256,13 +256,13 @@
   (minibuffer-view *next-view*))
 
 (defun minibuffer-show ()
+  (completions-clear (minibuffer-view *next-view*))
   (show-minibuffer *next-view*)
   (#/makeFirstResponder: *window* (input-buffer (minibuffer-view *next-view*)))
   (process-set-completions (minibuffer-view *next-view*)))
 
 (defun minibuffer-hide ()
   (hide-minibuffer *next-view*)
-  (completions-clear (minibuffer-view *next-view*))
   (#/makeFirstResponder: *window* (fill-view (fill-container-view *next-view*))))
 
 (defun minibuffer-set-input (input)

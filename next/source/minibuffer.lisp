@@ -31,25 +31,8 @@
   (set-active-buffer *minibuffer*)
   (interface:minibuffer-show))
 
-(defmethod input ((self minibuffer-mode) callback
-		  &key completion (setup #'erase-input) cleanup empty-complete)
-  (with-slots (callback-function completion-function callback-buffer
-               setup-function cleanup-function empty-complete-immediate)
-      self
-    (setf callback-function callback)
-    (setf completion-function completion)
-    (setf setup-function setup)
-    (setf cleanup-function cleanup)
-    (setf empty-complete-immediate empty-complete)
-    (setf callback-buffer *active-buffer*)
-    (interface:minibuffer-set-completion-function completion)
-    ;; setup function must be called before *active-buffer* is changed
-    ;; to mini-buffer so that setup function may act upon *active-buffer*
-    (funcall setup-function))
-  (set-active-buffer *minibuffer*)
-  (interface:minibuffer-show))
-
 (defmethod return-input ((self minibuffer-mode))
+  (interface:minibuffer-hide)
   (set-active-buffer (callback-buffer self))
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completion-function)
@@ -68,8 +51,7 @@
 	;; if there's no completion function
 	(return-immediate self))
     (when cleanup-function
-      (funcall cleanup-function)))
-  (interface:minibuffer-hide))
+      (funcall cleanup-function))))
 
 (defmethod return-immediate ((self minibuffer-mode))
   "Return without completion"
