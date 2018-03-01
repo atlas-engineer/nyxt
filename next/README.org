@@ -9,6 +9,7 @@
   - [[#irc-channel][IRC Channel]]
   - [[#mailing-list][Mailing List]]
 - [[#release-timeline][Release Timeline]]
+  - [[#010][0.10]]
   - [[#009][0.09]]
   - [[#008][0.08]]
   - [[#007][0.07]]
@@ -164,6 +165,17 @@ release 1.20, and 2.20 are one major release away from each other. Minor
 releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
 two minor releases following major release 1.0.
 
+** 0.10
+*** TODO Jump to paragraph categorized based on content
+- Develop first content analysis functions to be used for keyword
+  generation
+- Use the keyword generation to extend upon the current jump to
+  heading built into next to allow jumping to a paragraph (many
+  websites do not use h1, h2 tags, especially ones with user created
+  content)
+*** TODO Maintain Scroll Position
+- When jumping back and forth through history, maintain the scroll
+  position
 ** 0.09
 *** TODO Support Multiple Windows
 **** TODO Turn interface package into CLOS Object
@@ -177,16 +189,9 @@ two minor releases following major release 1.0.
 - Create way for users to install packages easily
 - Create trusted source for packages
 ** 0.08
-*** TODO Maintain Scroll Position
-- When jumping back and forth through history, maintain the scroll
-  position
-*** TODO Jump to paragraph categorized based on content
-- Develop first content analysis functions to be used for keyword
-  generation
-- Use the keyword generation to extend upon the current jump to
-  heading built into next to allow jumping to a paragraph (many
-  websites do not use h1, h2 tags, especially ones with user created
-  content)
+*** DONE Execute Extended Command
+CLOSED: [2018-03-01 Thu 21:33]
+Allow the user to run M-x to execute any extended command.
 *** TODO Hydra Functionality
 - Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
   Krehel
