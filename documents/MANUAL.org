@@ -17,6 +17,7 @@ end-user allowing for infinite customization.
   - [[#bookmarks][Bookmarks]]
   - [[#exiting][Exiting]]
 - [[#advanced-topics][Advanced Topics]]
+  - [[#execute-extended-command][Execute Extended Command]]
   - [[#help][Help]]
   - [[#slime-with-a-compiled-version-of-next][Slime with a compiled version of Next]]
 - [[#customization][Customization]]
@@ -208,6 +209,11 @@ only information saved will be your filled in passwords, cookies,
 and other information within your cache.
 
 * Advanced Topics
+** Execute Extended Command
+You can execute any command by name by typing =M-x= or =ESCAPE
+x=. This will bring up a list of candidates that you can fuzzily
+complete.
+
 ** Help
 The help system allows you to look up variable and function docstrings
 directly within Next. Docstrings will appear in a new help buffer.
