@@ -26,6 +26,7 @@
 	       (:file "application-mode")
 	       (:file "document-mode")
 	       (:file "help")
+	       (:file "hydra")
 	       (:file "base")))
 
 (defsystem :next/cocoa
