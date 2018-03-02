@@ -3,7 +3,9 @@
 
 (defmacro defhydra (name &body suffixes)
   "Define a hydra named 'name'"
-  (let ((hydra-object (gensym))
+  (let ((name (intern (concatenate 'string "HYDRA-"
+				   (symbol-name name))))
+	(hydra-object (gensym))
 	(completion-function (gensym)))
     `(progn
        (defclass ,hydra-object ()
