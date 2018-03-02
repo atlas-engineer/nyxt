@@ -176,23 +176,34 @@ two minor releases following major release 1.0.
 *** TODO Maintain Scroll Position
 - When jumping back and forth through history, maintain the scroll
   position
-** 0.09
-*** TODO Support Multiple Windows
-**** TODO Turn interface package into CLOS Object
-*** TODO Configuration Object
-- Create configuration object that can be passed from the next package
-  to the interface package.
-*** TODO Linux Compilation
-- Create Lisp compile script for Linux
-- Create Flatpak release
 *** TODO Package System
 - Create way for users to install packages easily
 - Create trusted source for packages
-** 0.08
+*** TODO Compilation Script
+The script should be able to produce a complete application bundle for
+MacOS, self contained dmg etc. On Linux it should do the equivalent,
+but with flatpak.
+
+**** TODO Compilation Script Linux
+**** TODO Compilation Script MacOS
+** 0.09
+*** TODO Linux Frontend
+- Create frontend that renders the new Next GUI
+*** TODO MacOS Frontend
+- Create frontend that renders the new Next GUI
+*** TODO Lisp Core Remote Backend
+- Create abstract interface for controlling frontends.
+- Interface must be asynchronous
+- Interface should be connection agnostic, should support BSD style
+  sockets for first iteration, and Unix domain sockets for second
+  interation
+** DONE 0.08
+CLOSED: [2018-03-02 Fri 14:21]
 *** DONE Execute Extended Command
 CLOSED: [2018-03-01 Thu 21:33]
 Allow the user to run M-x to execute any extended command.
-*** TODO Hydra Functionality
+*** DONE Hydra Functionality
+CLOSED: [2018-03-02 Fri 14:21]
 - Implement functionality similar to the famous [[https://github.com/abo-abo/hydra][Hydra package]] by Oleh
   Krehel
 *** DONE Add Hook System
