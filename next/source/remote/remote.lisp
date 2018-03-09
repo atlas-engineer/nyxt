@@ -39,7 +39,7 @@
 (defmethod minibuffer-show ((interface remote-interface))
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "system.listMethods")
+     (s-xml-rpc:encode-xml-rpc-call "sample.add" 5 7)
      :host host :port port :url url)))
 
 (defmethod minibuffer-hide ((interface remote-interface)))
