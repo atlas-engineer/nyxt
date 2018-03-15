@@ -28,6 +28,12 @@
      (s-xml-rpc:encode-xml-rpc-call "window.switch" window)
      :host host :port port :url url)))
 
+(defmethod minibuffer-set-height ((interface remote-interface) window height)
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "minibuffer.set.height" window height)
+     :host host :port port :url url)))
+
 (defmethod kill ((interface remote-interface)))
 
 (defmethod copy ((interface remote-interface)))
@@ -61,17 +67,11 @@
      :host host :port port :url url)))
 
 (defmethod minibuffer-hide ((interface remote-interface)))
-
 (defmethod minibuffer-set-input ((interface remote-interface) input)
   (declare (ignore input)))
-
 (defmethod minibuffer-get-input ((interface remote-interface)))
-
 (defmethod minibuffer-get-input-complete ((interface remote-interface)))
-
 (defmethod minibuffer-select-next ((interface remote-interface)))
-
 (defmethod minibuffer-select-previous ((interface remote-interface)))
-
 (defmethod minibuffer-set-completion-function ((interface remote-interface) function)
   (declare (ignore function)))
