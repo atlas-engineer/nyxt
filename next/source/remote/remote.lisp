@@ -10,6 +10,18 @@
 (defmethod start-interface ((interface remote-interface))
   (print "start-interface"))
 
+(defmethod window-make ((interface remote-interface))
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "window.make")
+     :host host :port port :url url)))
+
+(defmethod window-delete ((interface remote-interface) window)
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "window.delete" window)
+     :host host :port port :url url)))
+
 (defmethod kill ((interface remote-interface)))
 
 (defmethod copy ((interface remote-interface)))
