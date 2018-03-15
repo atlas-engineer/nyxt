@@ -34,6 +34,12 @@
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.set.height" window height)
      :host host :port port :url url)))
 
+(defmethod minibuffer-execute-javascript ((interface remote-interface) window javascript)
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" window javascript)
+     :host host :port port :url url)))
+
 (defmethod kill ((interface remote-interface)))
 
 (defmethod copy ((interface remote-interface)))
