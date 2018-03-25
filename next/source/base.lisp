@@ -10,6 +10,8 @@
   (load *init-file-path* :if-does-not-exist nil)
   (initialize-bookmark-db)
   (initialize-history-db)
+  ;; start the local server
+  (s-xml-rpc:start-xml-rpc-server :port 8081)
   ;; create the interface object
   (setf *interface* (make-instance 'remote-interface))
   (start-interface *interface*)
