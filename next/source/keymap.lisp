@@ -37,7 +37,7 @@
       (single-char? (char-code (char char-string 0)))
       (t ()))))
 
-(defun push-key-chord (control-modifier meta-modifier super-modifier key-code)
+(defun s-xml-rpc::push-key-chord (control-modifier meta-modifier super-modifier key-code)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
