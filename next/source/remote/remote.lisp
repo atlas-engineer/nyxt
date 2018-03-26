@@ -2,27 +2,8 @@
 
 (in-package :next)
 
-(defun s-xml-rpc-exports::push-key-chord (control-modifier meta-modifier super-modifier key-code)
-  ;; Adds a new chord to key-sequence
-  ;; For example, it may add C-M-s or C-x
-  ;; to a stack which will be consumed by
-  ;; consume-key-sequence
-  (let ((key-chord (make-key)))
-    (when control-modifier
-      (setf (key-control-modifier key-chord) t))
-    (when meta-modifier
-      (setf (key-meta-modifier key-chord) t))
-    (when super-modifier
-      (setf (key-super-modifier key-chord) t))
-    (setf (key-character-code key-chord) key-code)
-    (push key-chord *key-sequence-stack*))
-  (consume-key-sequence))
-
-(defun s-xml-rpc-exports::|validator1.manyTypesTest| (boolean string)
-  (assert
-   (and (or (null boolean) (eq boolean t))
-	(stringp string)))
-  (list boolean string))
+;; expose push-key-chord to server endpoint
+(import 'push-key-chord :s-xml-rpc-exports)
 
 (defclass remote-interface ()
   ((host :accessor host :initform "localhost")
