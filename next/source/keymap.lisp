@@ -37,22 +37,6 @@
       (single-char? (char-code (char char-string 0)))
       (t ()))))
 
-(defun s-xml-rpc::push-key-chord (control-modifier meta-modifier super-modifier key-code)
-  ;; Adds a new chord to key-sequence
-  ;; For example, it may add C-M-s or C-x
-  ;; to a stack which will be consumed by
-  ;; consume-key-sequence
-  (let ((key-chord (make-key)))
-    (when control-modifier
-      (setf (key-control-modifier key-chord) t))
-    (when meta-modifier
-      (setf (key-meta-modifier key-chord) t))
-    (when super-modifier
-      (setf (key-super-modifier key-chord) t))
-    (setf (key-character-code key-chord) key-code)
-    (push key-chord *key-sequence-stack*))
-  (consume-key-sequence))
-
 (defun consume-key-sequence ()
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
