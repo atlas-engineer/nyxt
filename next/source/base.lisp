@@ -19,7 +19,7 @@
   (set-url *start-page-url*))
 
 (defun initialize-default-key-bindings ()
-  (define-key *global-map* (kbd "C-x C-c") '(lambda () (kill *interface*)))
+  (define-key *global-map* (kbd "C-x C-c") '(lambda () (kill-interface *interface*)))
   (define-key *global-map* (kbd "C-x b") 'switch-buffer)
   (define-key *global-map* (kbd "C-x k") 'delete-buffer)
   (define-key *global-map* (kbd "M-l") 'set-url-new-buffer)

@@ -1,4 +1,4 @@
-;;; minibuffer.lisp --- major mode for input
+;;;; minibuffer.lisp --- major mode for input
 
 (in-package :next)
 
@@ -29,7 +29,7 @@
     ;; to mini-buffer so that setup function may act upon *active-buffer*
     (funcall setup-function))
   (set-active-buffer *minibuffer*)
-  (minibuffer-show *interface*))
+  (minibuffer-show self))
 
 (defmethod return-input ((self minibuffer-mode))
   (set-active-buffer (callback-buffer self))
@@ -51,7 +51,7 @@
 	(return-immediate self))
     (when cleanup-function
       (funcall cleanup-function)))
-  (minibuffer-hide *interface*))
+  (minibuffer-hide self))
 
 (defmethod return-immediate ((self minibuffer-mode))
   "Return without completion"
@@ -61,20 +61,26 @@
 	     (minibuffer-get-input *interface*))
     (when cleanup-function
       (funcall cleanup-function)))
-  (minibuffer-hide *interface*))
+  (minibuffer-hide self))
 
 (defmethod cancel-input ((self minibuffer-mode))
   (set-active-buffer (callback-buffer self))
   (with-slots (cleanup-function) self
     (when cleanup-function
       (funcall cleanup-function)))
-  (minibuffer-hide *interface*))
+  (minibuffer-hide self))
 
 (defmethod set-input ((self minibuffer-mode) input)
   (minibuffer-set-input *interface* input))
 
 (defun erase-input ()
   (minibuffer-set-input *interface* ""))
+
+(defmethod minibuffer-show ((self minibuffer-mode))
+  (minibuffer-set-height *interface* "0" 100))
+
+(defmethod minibuffer-hide ((self minibuffer-mode))
+  (minibuffer-set-height *interface* "0" 10))
 
 (defun minibuffer-mode ()
   "Base mode for input"

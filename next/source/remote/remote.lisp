@@ -7,11 +7,13 @@
 
 (defclass remote-interface ()
   ((host :accessor host :initform "localhost")
-   (port :accessor port :initform 8080)
+   (port :accessor port :initform 8082)
    (url :accessor url :initform "/RPC2")))
 
 (defmethod start-interface ((interface remote-interface))
   (s-xml-rpc:start-xml-rpc-server :port 8081))
+
+(defmethod kill-interface ((interface remote-interface)))
 
 (defmethod window-make ((interface remote-interface))
   (with-slots (host port url) interface
@@ -43,12 +45,6 @@
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" window javascript)
      :host host :port port :url url)))
 
-(defmethod kill ((interface remote-interface)))
-
-(defmethod copy ((interface remote-interface)))
-(defmethod paste ((interface remote-interface)))
-(defmethod cut ((interface remote-interface)))
-
 (defmethod set-visible-buffer-for-pane ((interface remote-interface) view)
   (declare (ignore view)))
 
@@ -69,13 +65,10 @@
 (defmethod web-view-set-url-loaded-callback ((interface remote-interface) view function)
   (declare (ignore view function)))
 
-(defmethod minibuffer-show ((interface remote-interface))
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "sample.add" 5 7)
-     :host host :port port :url url)))
+(defmethod copy ((interface remote-interface)))
+(defmethod paste ((interface remote-interface)))
+(defmethod cut ((interface remote-interface)))
 
-(defmethod minibuffer-hide ((interface remote-interface)))
 (defmethod minibuffer-set-input ((interface remote-interface) input)
   (declare (ignore input)))
 (defmethod minibuffer-get-input ((interface remote-interface)))
