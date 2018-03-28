@@ -69,11 +69,3 @@
 (defmethod paste ((interface remote-interface)))
 (defmethod cut ((interface remote-interface)))
 
-(defmethod minibuffer-set-input ((interface remote-interface) input)
-  (declare (ignore input)))
-(defmethod minibuffer-get-input ((interface remote-interface)))
-(defmethod minibuffer-get-input-complete ((interface remote-interface)))
-(defmethod minibuffer-select-next ((interface remote-interface)))
-(defmethod minibuffer-select-previous ((interface remote-interface)))
-(defmethod minibuffer-set-completion-function ((interface remote-interface) function)
-  (declare (ignore function)))
