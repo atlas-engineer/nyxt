@@ -66,7 +66,11 @@
   (define-key *document-mode-map* (kbd "M->") 'scroll-to-bottom)
   (define-key *document-mode-map* (kbd "M-<") 'scroll-to-top)
   ;;; define self-insert commands for minibuffer
+  (define-key *minibuffer-mode-map* (kbd "C-f") #'(lambda () (cursor-forwards (mode *minibuffer*))))
+  (define-key *minibuffer-mode-map* (kbd "C-b") #'(lambda () (cursor-backwards (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-d") #'(lambda () (delete-forwards (mode *minibuffer*))))
+  (define-key *minibuffer-mode-map* (kbd "C-a") #'(lambda () (cursor-beginning (mode *minibuffer*))))
+  (define-key *minibuffer-mode-map* (kbd "C-e") #'(lambda () (cursor-end (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "a") #'(lambda () (self-insert (mode *minibuffer*) "a")))
   (define-key *minibuffer-mode-map* (kbd "b") #'(lambda () (self-insert (mode *minibuffer*) "b")))
   (define-key *minibuffer-mode-map* (kbd "c") #'(lambda () (self-insert (mode *minibuffer*) "c")))
@@ -92,4 +96,5 @@
   (define-key *minibuffer-mode-map* (kbd "w") #'(lambda () (self-insert (mode *minibuffer*) "w")))
   (define-key *minibuffer-mode-map* (kbd "x") #'(lambda () (self-insert (mode *minibuffer*) "x")))
   (define-key *minibuffer-mode-map* (kbd "y") #'(lambda () (self-insert (mode *minibuffer*) "y")))
-  (define-key *minibuffer-mode-map* (kbd "z") #'(lambda () (self-insert (mode *minibuffer*) "z"))))
+  (define-key *minibuffer-mode-map* (kbd "z") #'(lambda () (self-insert (mode *minibuffer*) "z")))
+  (define-key *minibuffer-mode-map* (kbd "SPACE") #'(lambda () (self-insert (mode *minibuffer*) " "))))

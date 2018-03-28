@@ -103,9 +103,6 @@
   (incf (cursor-index self))
   (update-display self))
 
-(defmethod self-delete ((self minibuffer-mode) direction)
-  )
-
 (defmethod delete-forwards ((self minibuffer-mode))
   (with-slots (input-buffer cursor-index) self
     (unless (= cursor-index (length input-buffer))
@@ -115,12 +112,38 @@
                          (subseq input-buffer (+ 1 cursor-index) (length input-buffer))))))
   (update-display self))
 
+(defmethod delete-backwards ((self minibuffer-mode)))
+
+(defmethod cursor-forwards ((self minibuffer-mode))
+  (with-slots (input-buffer cursor-index) self
+    (when (< cursor-index (length input-buffer))
+      (incf cursor-index)))
+  (update-display self))
+
+(defmethod cursor-backwards ((self minibuffer-mode))
+  (with-slots (input-buffer cursor-index) self
+    (when (> cursor-index 0)
+      (decf cursor-index)))
+  (update-display self))
+
+(defmethod cursor-beginning ((self minibuffer-mode))
+  (with-slots (cursor-index) self
+    (setf cursor-index 0))
+  (update-display self))
+
+(defmethod cursor-end ((self minibuffer-mode))
+  (with-slots (input-buffer cursor-index) self
+    (setf cursor-index (length input-buffer)))
+  (update-display self))
+
 (defmethod update-display ((self minibuffer-mode))
   (minibuffer-execute-javascript
    *interface* "0"
    (concatenate 'string
                 "document.getElementById(\"input\").innerHTML=\""
-                (input-buffer self)
+                (subseq  (input-buffer self) 0 (cursor-index self))
+                "&#9608;"
+                (subseq  (input-buffer self) (cursor-index self) (length (input-buffer self)))
                 "\"")))
 
 (defmethod select-next ((self minibuffer-mode)))
