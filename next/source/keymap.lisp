@@ -23,7 +23,7 @@
 
 (defvar *character-conversion-table* (make-hash-table :test 'equalp))
 (setf (gethash "SPACE" *character-conversion-table*) (char-code #\Space))
-(setf (gethash "BACKSPACE" *character-conversion-table*) (char-code #\Backspace))
+(setf (gethash "BACKSPACE" *character-conversion-table*) 127)
 (setf (gethash "RETURN" *character-conversion-table*) (char-code #\Return))
 (setf (gethash "HYPHEN" *character-conversion-table*) (char-code #\-))
 (setf (gethash "ESCAPE" *character-conversion-table*) (char-code #\Esc))

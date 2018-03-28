@@ -112,7 +112,15 @@
                          (subseq input-buffer (+ 1 cursor-index) (length input-buffer))))))
   (update-display self))
 
-(defmethod delete-backwards ((self minibuffer-mode)))
+(defmethod delete-backwards ((self minibuffer-mode))
+  (with-slots (input-buffer cursor-index) self
+    (unless (= cursor-index 0)
+      (setf input-buffer
+            (concatenate 'string
+                         (subseq input-buffer 0 (- cursor-index 1))
+                         (subseq input-buffer cursor-index (length input-buffer))))
+      (decf cursor-index)))
+  (update-display self))
 
 (defmethod cursor-forwards ((self minibuffer-mode))
   (with-slots (input-buffer cursor-index) self

@@ -69,6 +69,7 @@
   (define-key *minibuffer-mode-map* (kbd "C-f") #'(lambda () (cursor-forwards (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-b") #'(lambda () (cursor-backwards (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-d") #'(lambda () (delete-forwards (mode *minibuffer*))))
+  (define-key *minibuffer-mode-map* (kbd "BACKSPACE") #'(lambda () (delete-backwards (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-a") #'(lambda () (cursor-beginning (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-e") #'(lambda () (cursor-end (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "a") #'(lambda () (self-insert (mode *minibuffer*) "a")))
