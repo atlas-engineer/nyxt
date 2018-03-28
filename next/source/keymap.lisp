@@ -22,6 +22,7 @@
   super-modifier)
 
 (defvar *character-conversion-table* (make-hash-table :test 'equalp))
+(setf (gethash "BACKSPACE" *character-conversion-table*) (char-code #\Backspace))
 (setf (gethash "RETURN" *character-conversion-table*) (char-code #\Return))
 (setf (gethash "HYPHEN" *character-conversion-table*) (char-code #\-))
 (setf (gethash "ESCAPE" *character-conversion-table*) (char-code #\Esc))

@@ -10,7 +10,9 @@
    (callback-buffer :accessor callback-buffer)
    (setup-function :accessor setup-function)
    (cleanup-function :accessor cleanup-function)
-   (empty-complete-immediate :accessor empty-complete-immediate)))
+   (empty-complete-immediate :accessor empty-complete-immediate)
+   (input-buffer :accessor input-buffer :initform "")
+   (cursor-index :accessor cursor-index :initform 0)))
 
 (defmethod read-from-minibuffer (callback (self minibuffer-mode)
                                  &key completion setup cleanup empty-complete)
@@ -23,8 +25,9 @@
     (setf cleanup-function cleanup)
     (setf empty-complete-immediate empty-complete)
     (setf callback-buffer *active-buffer*)
-    (erase-input self)
-    (funcall setup-function))
+    (if setup
+        (funcall setup-function)
+        (setup-default self)))
   (set-active-buffer *minibuffer*)
   (show self))
 
@@ -78,11 +81,47 @@
    *interface* "0"
    "document.open();document.close();"))
 
+(defmethod setup-default ((self minibuffer-mode))
+  (erase-input self)
+  (set-input
+   self
+   (cl-markup:markup
+    (:div :id "input" "input")
+    (:div :id "completions" "completions"))))
+
 (defmethod show ((self minibuffer-mode))
   (minibuffer-set-height *interface* "0" 100))
 
 (defmethod hide ((self minibuffer-mode))
   (minibuffer-set-height *interface* "0" 10))
+
+(defmethod self-insert ((self minibuffer-mode) character)
+  (setf (input-buffer self)
+        (cl-strings:insert character
+                           (input-buffer self)
+                           :position (cursor-index self)))
+  (incf (cursor-index self))
+  (update-display self))
+
+(defmethod self-delete ((self minibuffer-mode) direction)
+  )
+
+(defmethod delete-forwards ((self minibuffer-mode))
+  (with-slots (input-buffer cursor-index) self
+    (unless (= cursor-index (length input-buffer))
+      (setf input-buffer
+            (concatenate 'string
+                         (subseq input-buffer 0 cursor-index)
+                         (subseq input-buffer (+ 1 cursor-index) (length input-buffer))))))
+  (update-display self))
+
+(defmethod update-display ((self minibuffer-mode))
+  (minibuffer-execute-javascript
+   *interface* "0"
+   (concatenate 'string
+                "document.getElementById(\"input\").innerHTML=\""
+                (input-buffer self)
+                "\"")))
 
 (defmethod select-next ((self minibuffer-mode)))
 
