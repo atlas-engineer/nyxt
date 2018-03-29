@@ -28,6 +28,7 @@
     (setf empty-complete-immediate empty-complete)
     (setf callback-buffer *active-buffer*)
     (setup-default self)
+    (update-display self)
     (when setup (funcall setup-function)))
   (set-active-buffer *minibuffer*)
   (show self))
@@ -94,10 +95,10 @@
     (:div :id "completions" "completions"))))
 
 (defmethod show ((self minibuffer-mode))
-  (minibuffer-set-height *interface* "0" 300))
+  (minibuffer-set-height *interface* "0" *minibuffer-open-height*))
 
 (defmethod hide ((self minibuffer-mode))
-  (minibuffer-set-height *interface* "0" 10))
+  (minibuffer-set-height *interface* "0" *minibuffer-closed-height*))
 
 (defmethod self-insert ((self minibuffer-mode) character)
   (setf (input-buffer self)

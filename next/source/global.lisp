@@ -56,4 +56,8 @@
 (deferredvar *cookie-path-dir* (xdg-data-home)
   "The path for cookies in the GTK Version of Next")
 (defvar *interface* nil
-  "The CLOS object responsible for rendering the interface")
+  "The CLOS object responsible for rendering the interface.")
+(defvar *minibuffer-closed-height* 10
+  "The height of the minibuffer when closed.")
+(defvar *minibuffer-open-height* 300
+  "The height of the minibuffer when open.")
