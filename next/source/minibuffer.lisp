@@ -72,14 +72,17 @@
   (hide self))
 
 (defmethod set-input ((self minibuffer-mode) input)
-  (minibuffer-execute-javascript
-   *interface* "0"
-   (concatenate 'string "document.write('" input "');")))
+  (when input
+    (minibuffer-execute-javascript
+     *interface* "0"
+     (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
 (defmethod erase-input ((self minibuffer-mode))
   (minibuffer-execute-javascript
    *interface* "0"
-   "document.open();document.close();"))
+   (ps:ps
+     (ps:chain document (open))
+     (ps:chain document (close)))))
 
 (defmethod setup-default ((self minibuffer-mode))
   (erase-input self)
