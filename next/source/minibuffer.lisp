@@ -76,12 +76,12 @@
 (defmethod set-input ((self minibuffer-mode) input)
   (when input
     (minibuffer-execute-javascript
-     *interface* "0"
+     *interface* (window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
 (defmethod erase-input ((self minibuffer-mode))
   (minibuffer-execute-javascript
-   *interface* "0"
+   *interface* (window-active *interface*)
    (ps:ps
      (ps:chain document (open))
      (ps:chain document (close)))))
@@ -95,10 +95,10 @@
     (:div :id "completions" "completions"))))
 
 (defmethod show ((self minibuffer-mode))
-  (minibuffer-set-height *interface* "0" *minibuffer-open-height*))
+  (minibuffer-set-height *interface* (window-active *interface*) *minibuffer-open-height*))
 
 (defmethod hide ((self minibuffer-mode))
-  (minibuffer-set-height *interface* "0" *minibuffer-closed-height*))
+  (minibuffer-set-height *interface* (window-active *interface*) *minibuffer-closed-height*))
 
 (defmethod self-insert ((self minibuffer-mode) character)
   (setf (input-buffer self)
@@ -154,7 +154,7 @@
     (when completion-function
       (setf completions (funcall completion-function input-buffer)))
     (minibuffer-execute-javascript
-     *interface* "0"
+     *interface* (window-active *interface*)
      (ps:ps
        (setf (ps:chain document (get-element-by-id "input") inner-h-t-m-l)
              (ps:lisp
@@ -163,7 +163,7 @@
                            "&#x25fc;"
                            (subseq input-buffer cursor-index (length input-buffer)))))))
     (minibuffer-execute-javascript
-     *interface* "0"
+     *interface* (window-active *interface*)
      (ps:ps
        (setf (ps:chain document (get-element-by-id "completions") inner-h-t-m-l)
              (ps:lisp (cl-markup:markup

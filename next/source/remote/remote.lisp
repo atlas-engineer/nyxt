@@ -12,7 +12,7 @@
   ((host :accessor host :initform "localhost")
    (port :accessor port :initform 8082)
    (url :accessor url :initform "/RPC2")
-   (windows :accessor windows :initform (make-hash-table)))
+   (windows :accessor windows :initform (make-hash-table))))
 
 (defmethod start-interface ((interface remote-interface))
   (s-xml-rpc:start-xml-rpc-server :port 8081))
@@ -24,11 +24,12 @@
     (let ((window (s-xml-rpc:xml-rpc-call
                    (s-xml-rpc:encode-xml-rpc-call "window.make")
                    :host host :port port :url url)))
-      (setf (gethash window windows) window))))
+      (setf (gethash window windows) (make-instance 'window))
+      window)))
 
 (defmethod window-delete ((interface remote-interface) window)
-  (setf (gethash window (windows interface)) nil)
-  (with-slots (host port url) interface
+  (with-slots (host port url windows) interface
+    (setf (gethash window windows) nil)
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call "window.delete" window)
      :host host :port port :url url)))
@@ -42,7 +43,7 @@
 (defmethod window-active ((interface remote-interface))
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.active" window)
+     (s-xml-rpc:encode-xml-rpc-call "window.active")
      :host host :port port :url url)))
 
 (defmethod minibuffer-set-height ((interface remote-interface) window height)
