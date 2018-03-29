@@ -53,7 +53,7 @@
 
 (defun %delete-buffer (buffer)
   (setf *buffers* (delete buffer *buffers*))
-  (delete-view *interface* (view buffer)))
+  (buffer-delete *interface* (view buffer)))
 
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
