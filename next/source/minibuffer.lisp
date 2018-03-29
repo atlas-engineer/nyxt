@@ -12,7 +12,8 @@
    (cleanup-function :accessor cleanup-function)
    (empty-complete-immediate :accessor empty-complete-immediate)
    (input-buffer :accessor input-buffer :initform "")
-   (cursor-index :accessor cursor-index :initform 0)))
+   (cursor-index :accessor cursor-index :initform 0)
+   (completions :accessor completions)))
 
 (defmethod read-from-minibuffer (callback (self minibuffer-mode)
                                  &key completion setup cleanup empty-complete)
@@ -25,9 +26,8 @@
     (setf cleanup-function cleanup)
     (setf empty-complete-immediate empty-complete)
     (setf callback-buffer *active-buffer*)
-    (if setup
-        (funcall setup-function)
-        (setup-default self)))
+    (setup-default self)
+    (when setup (funcall setup-function)))
   (set-active-buffer *minibuffer*)
   (show self))
 
@@ -57,7 +57,7 @@
   "Return without completion"
   (set-active-buffer (callback-buffer self))
   (with-slots (callback-function cleanup-function) self
-    (funcall callback-function) ;; add value
+    (funcall callback-function (input-buffer self))
     (when cleanup-function
       (funcall cleanup-function)))
   (hide *interface*))
@@ -90,7 +90,7 @@
     (:div :id "completions" "completions"))))
 
 (defmethod show ((self minibuffer-mode))
-  (minibuffer-set-height *interface* "0" 100))
+  (minibuffer-set-height *interface* "0" 300))
 
 (defmethod hide ((self minibuffer-mode))
   (minibuffer-set-height *interface* "0" 10))
@@ -150,9 +150,22 @@
    (concatenate 'string
                 "document.getElementById(\"input\").innerHTML=\""
                 (subseq  (input-buffer self) 0 (cursor-index self))
-                "&#9608;"
+                "&#x25fc;"
                 (subseq  (input-buffer self) (cursor-index self) (length (input-buffer self)))
-                "\"")))
+                "\""))
+  (when (completion-function self)
+    (setf (completions self)
+          (funcall
+           (completion-function self)
+           (input-buffer self))))
+  (minibuffer-execute-javascript
+     *interface* "0"
+     (concatenate 'string
+                  "document.getElementById(\"completions\").innerHTML=\""
+                  (cl-markup:markup
+                   (:ul (loop for item in (completions self)
+                              collect (cl-markup:markup (:li item)))))
+                  "\"")))
 
 (defmethod select-next ((self minibuffer-mode)))
 
