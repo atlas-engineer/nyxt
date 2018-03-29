@@ -32,7 +32,7 @@
 			:name name
 			:mode mode
 			:modes (make-hash-table :test 'equalp)
-			:view (make-web-view *interface*))))
+			:view (buffer-make *interface*))))
     (push new-buffer *buffers*)
     (setup mode new-buffer)
     (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))

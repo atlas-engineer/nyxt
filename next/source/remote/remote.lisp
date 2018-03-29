@@ -45,13 +45,17 @@
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" window javascript)
      :host host :port port :url url)))
 
+(defmethod buffer-make ((interface remote-interface))
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "buffer.make")
+     :host host :port port :url url)))
+
 (defmethod set-visible-buffer-for-pane ((interface remote-interface) view)
   (declare (ignore view)))
 
 (defmethod delete-view ((interface remote-interface) view)
   (declare (ignore view)))
-
-(defmethod make-web-view ((interface remote-interface)))
 
 (defmethod web-view-set-url ((interface remote-interface) view url)
   (declare (ignore view url)))
@@ -68,4 +72,3 @@
 (defmethod copy ((interface remote-interface)))
 (defmethod paste ((interface remote-interface)))
 (defmethod cut ((interface remote-interface)))
-
