@@ -13,7 +13,8 @@
    (empty-complete-immediate :accessor empty-complete-immediate)
    (input-buffer :accessor input-buffer :initform "")
    (cursor-index :accessor cursor-index :initform 0)
-   (completions :accessor completions)))
+   (completions :accessor completions)
+   (completion-index :accessor completion-index)))
 
 (defmethod read-from-minibuffer (callback (self minibuffer-mode)
                                  &key completion setup cleanup empty-complete)
@@ -148,27 +149,25 @@
   (update-display self))
 
 (defmethod update-display ((self minibuffer-mode))
-  (minibuffer-execute-javascript
-   *interface* "0"
-   (concatenate 'string
-                "document.getElementById(\"input\").innerHTML=\""
-                (subseq  (input-buffer self) 0 (cursor-index self))
-                "&#x25fc;"
-                (subseq  (input-buffer self) (cursor-index self) (length (input-buffer self)))
-                "\""))
-  (when (completion-function self)
-    (setf (completions self)
-          (funcall
-           (completion-function self)
-           (input-buffer self))))
-  (minibuffer-execute-javascript
+  (with-slots (input-buffer cursor-index completions completion-function) self
+    (when completion-function
+      (setf completions (funcall completion-function input-buffer)))
+    (minibuffer-execute-javascript
      *interface* "0"
-     (concatenate 'string
-                  "document.getElementById(\"completions\").innerHTML=\""
-                  (cl-markup:markup
-                   (:ul (loop for item in (completions self)
-                              collect (cl-markup:markup (:li item)))))
-                  "\"")))
+     (ps:ps
+       (setf (ps:chain document (get-element-by-id "input") inner-h-t-m-l)
+             (ps:lisp
+              (concatenate 'string
+                           (subseq input-buffer 0 cursor-index)
+                           "&#x25fc;"
+                           (subseq input-buffer cursor-index (length input-buffer)))))))
+    (minibuffer-execute-javascript
+     *interface* "0"
+     (ps:ps
+       (setf (ps:chain document (get-element-by-id "completions") inner-h-t-m-l)
+             (ps:lisp (cl-markup:markup
+                       (:ul (loop for item in completions
+                                  collect (cl-markup:markup (:li item)))))))))))
 
 (defmethod select-next ((self minibuffer-mode)))
 
