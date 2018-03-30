@@ -79,7 +79,7 @@
      *interface* (window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
-(defmethod erase-input ((self minibuffer-mode))
+(defmethod erase-document ((self minibuffer-mode))
   (minibuffer-execute-javascript
    *interface* (window-active *interface*)
    (ps:ps
@@ -87,7 +87,9 @@
      (ps:chain document (close)))))
 
 (defmethod setup-default ((self minibuffer-mode))
-  (erase-input self)
+  (erase-document self)
+  (setf (input-buffer self) "")
+  (setf (cursor-index self) 0)
   (set-input
    self
    (cl-markup:markup
