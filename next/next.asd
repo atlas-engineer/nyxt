@@ -14,6 +14,7 @@
 	       (:file "hook")
 	       (:file "command")
 	       (:file "utility")
+	       (:file "window")
 	       (:file "mode")
 	       (:file "keymap")
 	       (:file "minibuffer")

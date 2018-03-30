@@ -34,6 +34,8 @@
   (define-key *global-map* (kbd "C-y") '(lambda () (paste *interface*)))
   (define-key *global-map* (kbd "C-w") '(lambda () (cut *interface*)))
   (define-key *global-map* (kbd "M-w") '(lambda () (copy *interface*)))
+  (define-key *global-map* (kbd "C-x 5 2") 'make-window)
+  (define-key *global-map* (kbd "C-x 5 0") 'delete-window)
   (define-key *minibuffer-mode-map* (kbd "RETURN") #'(lambda () (return-input (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-RETURN") #'(lambda () (return-immediate (mode *minibuffer*))))
   (define-key *minibuffer-mode-map* (kbd "C-g") #'(lambda () (cancel-input (mode *minibuffer*))))
