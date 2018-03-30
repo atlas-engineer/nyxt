@@ -98,4 +98,7 @@
   (define-key *minibuffer-mode-map* (kbd "x") #'(lambda () (self-insert (mode *minibuffer*) "x")))
   (define-key *minibuffer-mode-map* (kbd "y") #'(lambda () (self-insert (mode *minibuffer*) "y")))
   (define-key *minibuffer-mode-map* (kbd "z") #'(lambda () (self-insert (mode *minibuffer*) "z")))
+  (define-key *minibuffer-mode-map* (kbd ":") #'(lambda () (self-insert (mode *minibuffer*) ":")))
+  (define-key *minibuffer-mode-map* (kbd "/") #'(lambda () (self-insert (mode *minibuffer*) "/")))
+  (define-key *minibuffer-mode-map* (kbd ".") #'(lambda () (self-insert (mode *minibuffer*) ".")))
   (define-key *minibuffer-mode-map* (kbd "SPACE") #'(lambda () (self-insert (mode *minibuffer*) " "))))
