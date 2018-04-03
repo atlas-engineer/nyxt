@@ -1,0 +1,19 @@
+image: daewok/lisp-devel
+
+before_script:
+    - apt install git-core libwebkit2gtk-4.0.37
+    - git clone https://github.com/next-browser/cl-webkit ~/quicklisp/local-projects/
+
+stages:
+  - build
+
+build:
+  stage: build
+  only:
+    # Only when a new tag is pushed.
+    - tags
+  script:
+    - cd next && make build-gtk
+  artifacts:
+    paths:
+      - next/source/next-gtk
