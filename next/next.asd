@@ -1,7 +1,7 @@
 ;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 ;;; next.asd
 
-(defsystem :next
+(asdf:defsystem :next
   :serial t
   :depends-on (:alexandria :cl-strings :cl-string-match :puri
                :queues.simple-queue :sqlite :parenscript :cl-json :swank)
@@ -29,19 +29,25 @@
 	       (:file "hydra")
 	       (:file "base")))
 
-(defsystem :next/cocoa
+(asdf:defsystem :next/cocoa
   :depends-on (:next (:require "cocoa") (:require "webkit"))
   :pathname "source/"
   :components ((:file "cocoa/repl")
                (:file "cocoa/utility")
                (:file "cocoa/cocoa")))
 
-(defsystem :next/cocoa/application
+(asdf:defsystem :next/cocoa/application
   :depends-on (:next/cocoa)
   :pathname "source/"
   :components ((:file "cocoa/application")))
 
-(defsystem :next/gtk
+(asdf:defsystem :next/gtk
   :depends-on (:next :cl-cffi-gtk :cl-webkit2 :lparallel)
   :pathname "source/"
-  :components ((:file "gtk/gtk")))
+  :components ((:file "gtk/gtk"))
+
+  ;; build executable
+  :build-operation "program-op"
+  ;; built in source/next-gtk
+  :build-pathname "next-gtk"
+  :entry-point "next:start")

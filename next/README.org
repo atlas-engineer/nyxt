@@ -121,6 +121,13 @@ In a new Terminal execute the following:
 5. Execute ~(next:start)~ to open your first Next window.
 
 ** Compile
+*** Build a Linux binary
+
+: cd next/next
+: make build-gtk
+
+the compiled binary will be present in source/next-gtk.
+
 *** MacOS Compilation
 From the CCL Source directory, execute
 
