@@ -65,10 +65,13 @@
      :host host :port port :url url)))
 
 (defmethod buffer-delete ((interface remote-interface) buffer)
-  (declare (ignore buffer)))
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "buffer.delete" buffer)
+     :host host :port port :url url)))
 
-(defmethod set-visible-buffer-for-pane ((interface remote-interface) view)
-  (declare (ignore view)))
+(defmethod set-visible-buffer-for-pane ((interface remote-interface) pane window)
+  (declare (ignore view window)))
 
 (defmethod web-view-set-url ((interface remote-interface) view url)
   (declare (ignore view url)))
