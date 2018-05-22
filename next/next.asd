@@ -4,7 +4,7 @@
 (asdf:defsystem :next
   :serial t
   :depends-on (:alexandria :cl-strings :cl-string-match :puri
-               :queues.simple-queue :sqlite :parenscript :cl-json :swank)
+               :queues.simple-queue :sqlite :parenscript :cl-json :swank :unix-opts)
   :pathname "source/"
   :components ((:file "package")
 	       (:file "macro")
