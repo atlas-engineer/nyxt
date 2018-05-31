@@ -2,22 +2,59 @@
 
 (in-package :next)
 
+
+(defun handle-malformed-cli-arg (condition)
+  (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
+  (opts:describe)
+  (uiop:quit))
+
+(defun parse-cli-args ()
+  "Parse command line arguments."
+  (opts:define-opts
+    (:name :help
+           :description "Print this help and exit."
+           :short #\h
+           :long "help")
+    (:name :verbose
+           :short #\v
+           :long "verbose"
+           :description "Print debugging information to stdout."))
+
+  (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
+                 (opts:missing-arg #'handle-malformed-cli-arg)
+                 (opts:arg-parser-failed #'handle-malformed-cli-arg)
+                 ;; (opts:missing-required-option #'handle-malformed-cli-arg)
+                 )
+    (opts:get-opts)))
+
 (defun start ()
-  (map nil 'funcall *deferred-variables*)
-  (uiop:setup-temporary-directory)
-  (ensure-directories-exist (xdg-data-home))
-  (initialize-default-key-bindings)
-  ;; load the user configuration if it exists
-  (load *init-file-path* :if-does-not-exist nil)
-  (initialize-bookmark-db)
-  (initialize-history-db)
-  (interface:initialize)
-  (interface:start)
-  ;; create the default buffers
-  (setf *minibuffer*
-        (make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
-  (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
-  (set-url *start-page-url*))
+  (multiple-value-bind (options free-args)
+      (parse-cli-args)
+    (when (getf options :help)
+      (opts:describe :prefix "Next command line usage:")
+      (uiop:quit))
+    (when (getf options :verbose)
+      (format t "Arguments parsed: ~a and ~a~&" options free-args))
+    (map nil 'funcall *deferred-variables*)
+    (uiop:setup-temporary-directory)
+    (ensure-directories-exist (xdg-data-home))
+    (initialize-default-key-bindings)
+    ;; load the user configuration if it exists
+    (load *init-file-path* :if-does-not-exist nil)
+    (initialize-bookmark-db)
+    (initialize-history-db)
+    (interface:initialize)
+    (interface:start)
+    ;; create the default buffers
+    (setf *minibuffer*
+          (make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
+    (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
+
+    ;; We can have many urls as positional arguments.
+    (if free-args
+        (loop for url in free-args do
+             (set-url-new-buffer url t))
+        (set-url *start-page-url*))))
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c") 'interface:kill)
