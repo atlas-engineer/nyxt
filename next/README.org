@@ -90,6 +90,7 @@ Find a package for your distribution which provides
 
 For Ubuntu this package is ~libwebkit2gtk-4.0-dev~
 For Debian this package is ~libwebkit2gtk~
+For Arch this package is [~webkit2gtk~](https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/)
 
 #+begin_quote
 A note of caution about installing Webkit on Linux via your package
@@ -126,7 +127,7 @@ In a new Terminal execute the following:
 : cd next/next
 : make build-gtk
 
-the compiled binary will be present in source/next-gtk.
+the compiled binary will be present in the directory ~source~ as ~next-gtk~.
 
 *** MacOS Compilation
 From the CCL Source directory, execute
