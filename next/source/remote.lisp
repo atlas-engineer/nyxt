@@ -12,7 +12,8 @@
   ((host :accessor host :initform "localhost")
    (port :accessor port :initform 8082)
    (url :accessor url :initform "/RPC2")
-   (windows :accessor windows :initform (make-hash-table))))
+   (windows :accessor windows :initform (make-hash-table))
+   (buffers :accessor buffers :initform (make-hash-table))))
 
 (defmethod start-interface ((interface remote-interface))
   (s-xml-rpc:start-xml-rpc-server :port 8081))
@@ -46,6 +47,12 @@
      (s-xml-rpc:encode-xml-rpc-call "window.active")
      :host host :port port :url url)))
 
+(defmethod set-visible-buffer-for-window ((interface remote-interface) buffer window)
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "window.set.visible.buffer" buffer window)
+     :host host :port port :url url)))
+
 (defmethod minibuffer-set-height ((interface remote-interface) window height)
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
@@ -70,20 +77,8 @@
      (s-xml-rpc:encode-xml-rpc-call "buffer.delete" buffer)
      :host host :port port :url url)))
 
-(defmethod set-visible-buffer-for-pane ((interface remote-interface) pane window)
-  (declare (ignore view window)))
-
-(defmethod web-view-set-url ((interface remote-interface) view url)
-  (declare (ignore view url)))
-
-(defmethod web-view-get-url ((interface remote-interface) view)
-  (declare (ignore view)))
-
 (defmethod web-view-execute ((interface remote-interface) view script &optional callback)
   (declare (ignore view script callback)))
-
-(defmethod web-view-set-url-loaded-callback ((interface remote-interface) view function)
-  (declare (ignore view function)))
 
 (defmethod copy ((interface remote-interface)))
 (defmethod paste ((interface remote-interface)))
