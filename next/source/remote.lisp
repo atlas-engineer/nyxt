@@ -80,6 +80,15 @@
 (defmethod web-view-execute ((interface remote-interface) view script &optional callback)
   (declare (ignore view script callback)))
 
+(defmethod web-view-set-url-loaded-callback ((interface remote-interface) view function)
+  (declare (ignore view function)))
+
+(defmethod web-view-set-url ((interface remote-interface) view url)
+  (declare (ignore view url)))
+
+(defmethod web-view-get-url ((interface remote-interface) view)
+  (declare (ignore view)))
+
 (defmethod copy ((interface remote-interface)))
 (defmethod paste ((interface remote-interface)))
 (defmethod cut ((interface remote-interface)))
