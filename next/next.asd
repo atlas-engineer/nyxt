@@ -5,7 +5,7 @@
   :serial t
   :depends-on (:alexandria :cl-strings :cl-string-match :puri
                :queues.simple-queue :sqlite :parenscript :cl-json :swank
-               :cl-markup)
+               :cl-markup :usocket :bordeaux-threads :s-xml-rpc)
   :pathname "source/"
   :components ((:file "package")
 	       (:file "macro")
@@ -28,9 +28,5 @@
 	       (:file "application-mode")
 	       (:file "document-mode")
 	       (:file "help")
-	       (:file "base")))
-
-(defsystem :next/remote
-  :depends-on (:next :usocket :bordeaux-threads :s-xml-rpc)
-  :pathname "source/"
-  :components ((:file "remote")))
+	       (:file "base")
+               (:file "remote")))
