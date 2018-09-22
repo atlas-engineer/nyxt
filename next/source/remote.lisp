@@ -10,15 +10,19 @@
 
 (defclass remote-interface ()
   ((host :accessor host :initform "localhost")
+   (active-connection :accessor active-connection :initform nil)
    (port :accessor port :initform 8082)
    (url :accessor url :initform "/RPC2")
    (windows :accessor windows :initform (make-hash-table))
    (buffers :accessor buffers :initform (make-hash-table))))
 
 (defmethod start-interface ((interface remote-interface))
-  (s-xml-rpc:start-xml-rpc-server :port 8081))
+  (setf (active-connection interface)
+        (s-xml-rpc:start-xml-rpc-server :port 8081)))
 
-(defmethod kill-interface ((interface remote-interface)))
+(defmethod kill-interface ((interface remote-interface))
+  (when (active-connection interface)
+    (s-xml-rpc:stop-server (active-connection interface))))
 
 (defmethod window-make ((interface remote-interface))
   (with-slots (host port url windows) interface
