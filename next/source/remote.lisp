@@ -39,12 +39,6 @@
      (s-xml-rpc:encode-xml-rpc-call "window.delete" window)
      :host host :port port :url url)))
 
-(defmethod window-switch ((interface remote-interface) window)
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.switch" window)
-     :host host :port port :url url)))
-
 (defmethod window-active ((interface remote-interface))
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
