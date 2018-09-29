@@ -14,8 +14,11 @@
   (setf *interface* (make-instance 'remote-interface))
   (kill-interface *interface*)
   (start-interface *interface*)
-  ;; create a window
-  (window-make *interface*))
+  ;; initialize default state
+  (setf *minibuffer* (make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
+  (window-make *interface*)
+  (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
+  (set-url *start-page-url*))
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c") '(lambda () (kill-interface *interface*)))
@@ -33,6 +36,7 @@
   (define-key *global-map* (kbd "C-y") '(lambda () (paste *interface*)))
   (define-key *global-map* (kbd "C-w") '(lambda () (cut *interface*)))
   (define-key *global-map* (kbd "M-w") '(lambda () (copy *interface*)))
+  (define-key *global-map* (kbd "C-x 5 3") #'(lambda () (print (window-active *interface*))))
   (define-key *global-map* (kbd "C-x 5 2") 'make-window)
   (define-key *global-map* (kbd "C-x 5 0") 'delete-window)
   (define-key *minibuffer-mode-map* (kbd "RETURN") #'(lambda () (return-input (mode *minibuffer*))))
