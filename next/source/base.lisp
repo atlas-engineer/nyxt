@@ -15,9 +15,14 @@
   (kill-interface *interface*)
   (start-interface *interface*)
   ;; initialize default state
-  (setf *minibuffer* (make-instance 'buffer :name "minibuffer" :mode (minibuffer-mode)))
+  (setf *minibuffer*
+        (make-instance 'buffer
+                       :name "minibuffer"
+                       :mode (minibuffer-mode)))
   (window-make *interface*)
-  (set-visible-active-buffer (generate-new-buffer "default" (document-mode)))
+  (set-visible-active-buffer (generate-new-buffer
+                              "default"
+                              (document-mode)))
   (set-url *start-page-url*))
 
 (defun initialize-default-key-bindings ()
