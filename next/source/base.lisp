@@ -53,7 +53,7 @@
     ;; We can have many urls as positional arguments.
     (if free-args
         (loop for url in free-args do
-             (set-url-new-buffer url t))
+             (%set-url-new-buffer url t))
         (set-url *start-page-url*))))
 
 (defun initialize-default-key-bindings ()
