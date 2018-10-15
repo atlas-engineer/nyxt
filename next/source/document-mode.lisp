@@ -109,7 +109,8 @@
     	   (setf (active-history-node mode) child)
     	   (return-from add-or-traverse-history t)))
     ;; if we made it this far, we must create a new node
-    (history-add url) ; add to history database
+    (when url
+      (history-add url)) ; add to history database
     (let ((new-node (make-node :parent active-node :data url)))
       (push new-node (node-children active-node))
       (setf (active-history-node mode) new-node)
