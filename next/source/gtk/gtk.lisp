@@ -33,7 +33,7 @@
         (write-to-string element))))
 
 (defmethod get-input ((self minibuffer-view))
-  (gtk:gtk-entry-text (input-entry self)))
+  (gtk::gtk-entry-text (input-entry self)))
 
 (defmethod process-set-completions ((self minibuffer-view))
   "Process and set completions for the minibuffer"
