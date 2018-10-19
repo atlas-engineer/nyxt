@@ -55,6 +55,16 @@ open up new links, or switch tabs with the power of fuzzy completion.
 ** Install Next
 See the [[https://github.com/next-browser/next/releases][releases]] section for pre-built binaries. To perform an
 installation from source, please see the [[https://github.com/next-browser/next/tree/master/next][developer readme]].
+
+The GNU/Linux version requires some dependencies:
+
+- sqlite
+- webkitgtk, also known as webkit2gtk (make sure to use the most recent version
+  for security reasons)
+- glib-networking (for Webkit)
+- gsettings-desktop-schemas (for Wekit)
+- gstreamer, gst-plugins-* for HTML audio/video
+
 ** Quickstart Keys
 - ~C-l~:     Load URL in tab
 - ~M-l~:     Load URL in a new tab
