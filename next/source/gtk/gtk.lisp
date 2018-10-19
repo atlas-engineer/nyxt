@@ -201,7 +201,7 @@
        (funcall function)))))
 
 (defun web-view-get-url (view)
-  (web-view-execute view "window.location"))
+  (webkit:webkit-web-view-uri view))
 
 (cffi:defcallback js-execution-complete :void ((source-object :pointer)
                                                (result :pointer)
@@ -239,10 +239,10 @@
   (gtk:gtk-widget-hide (container-view (minibuffer-view *next-interface*))))
 
 (defun minibuffer-set-input (input)
-  (setf (gtk::gtk-entry-text (input-entry (minibuffer-view *next-interface*))) input))
+  (setf (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))) input))
 
 (defun minibuffer-get-input ()
-  (gtk::gtk-entry-text (input-entry (minibuffer-view *next-interface*))))
+  (gtk:gtk-entry-text (input-entry (minibuffer-view *next-interface*))))
 
 (defun minibuffer-get-input-complete ()
   (with-slots (completion-view completions) (minibuffer-view *next-interface*)
