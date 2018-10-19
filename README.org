@@ -11,7 +11,7 @@ productive. A few of them are demonstrated below.
 
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
-looking for ~http://www.example.com~, you could type in ~ele~, ~exa~,
+looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 ~epl~, and any other valid series of letters.
 
 #+html: <img src="assets/gifs/tab_switch.gif" align="center"/>

@@ -26,7 +26,7 @@ Next is written in Common Lisp. It can be built with
 It is designed to be cross-platform compatible. Support for graphics is
 provided via Cocoa for MacOS and GTK for Linux. To download a prebuilt-binary,
 please see the "Releases" section of the GitHub repository
-([[https://github.com/next-browser/next/releases]]).
+([[https://github.com/atlas-engineer/next/releases]]).
 
 ** MacOS Setup
 *** Installing CCL
@@ -88,7 +88,7 @@ on the quicklisp website.
 The cl-webkit bindings provide an interface to the WebKit2GTK+
 framework for manipulating and rendering web content.
 
-- Clone: https://github.com/next-browser/cl-webkit to a path within
+- Clone: https://github.com/atlas-engineer/cl-webkit to a path within
   your local-projects. (=~/common-lisp/quicklisp/local-projects/cl-webkit=)
 *** Installing dependencies
 Find a package for your distribution which provides
