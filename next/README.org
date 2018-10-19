@@ -1,7 +1,7 @@
 * Next Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#macos-setup][MacOS Setup]]
-  - [[#linux-setup-experimental][Linux Setup (Experimental)]]
+  - [[#gnu-linux-setup-experimental][GNU/Linux Setup (Experimental)]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
 - [[#help--community][Help & Community]]
@@ -24,7 +24,7 @@
 Next is written in Common Lisp. It can be built with
 [[https://ccl.clozure.com/][CCL]] and [[http://www.sbcl.org/][SBCL]].
 It is designed to be cross-platform compatible. Support for graphics is
-provided via Cocoa for MacOS and GTK for Linux. To download a prebuilt-binary,
+provided via Cocoa for MacOS and GTK for GNU/Linux. To download a prebuilt-binary,
 please see the "Releases" section of the GitHub repository
 ([[https://github.com/atlas-engineer/next/releases]]).
 
@@ -54,7 +54,7 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-** Linux Setup (Experimental)
+** GNU/Linux Setup (Experimental)
 *** Installing SBCL
 You can obtain SBCL either from your package manager or by downloading
 it directly from the SBCL repository.
@@ -196,13 +196,13 @@ two minor releases following major release 1.0.
 - Create trusted source for packages
 *** TODO Compilation Script
 The script should be able to produce a complete application bundle for
-MacOS, self contained dmg etc. On Linux it should do the equivalent,
+MacOS, self contained dmg etc. On GNU/Linux it should do the equivalent,
 but with flatpak.
 
 **** TODO Compilation Script Linux
 **** TODO Compilation Script MacOS
 ** 0.09
-*** TODO Linux Frontend
+*** TODO GNU/Linux Frontend
 - Create frontend that renders the new Next GUI
 *** TODO MacOS Frontend
 - Create frontend that renders the new Next GUI
@@ -247,7 +247,7 @@ CLOSED: [2018-01-15 Mon 00:06]
 CLOSED: [2018-01-02 Tue 16:06]
 *** DONE GTK Port
 CLOSED: [2018-01-02 Tue 16:06]
-- Create Linux GTK Port
+- Create GNU/Linux GTK Port
 ** DONE 0.06
 CLOSED: [2017-12-17 Sun 01:13]
 *** DONE Fix Compilation
