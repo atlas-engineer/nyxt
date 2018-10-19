@@ -197,7 +197,7 @@ two minor releases following major release 1.0.
 *** TODO Compilation Script
 The script should be able to produce a complete application bundle for
 MacOS, self contained dmg etc. On GNU/Linux it should do the equivalent,
-but with flatpak.
+but with flatpak or [[https://guix.info/blog/2018/tarballs-the-ultimate-container-image-format/][guix pack]].
 
 **** TODO Compilation Script Linux
 **** TODO Compilation Script MacOS
