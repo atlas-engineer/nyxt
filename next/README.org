@@ -94,9 +94,9 @@ framework for manipulating and rendering web content.
 Find a package for your distribution which provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKit2GTK+).
 
-For Ubuntu this package is ~libwebkit2gtk-4.0-dev~
-For Debian this package is ~libwebkit2gtk~
-For Arch this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]]
+For Ubuntu this package is ~libwebkit2gtk-4.0-dev~.
+For Debian this package is ~libwebkit2gtk~.
+For Arch Linux this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]].
 
 #+begin_quote
 A note of caution about installing WebKit on Linux via your package
@@ -359,7 +359,7 @@ CLOSED: [2017-10-05 Thu 23:45]
 - Use `otool -L Next.app/Contents/MacOS/next` to find the linked
   frameworks that are not located in `Next.app/Contents/Frameworks`,
   manually copy them to `Next.app/Contents/Frameworks`
-- Use install_name_tool to update the now copied frameworks in 
+- Use install_name_tool to update the now copied frameworks in
   `Next.app/Contents/Frameworks`
 - For more info please see: http://doc.qt.io/qt-5/osx-deployment.html
 *** DONE Kill Buffer
@@ -491,7 +491,7 @@ Upon the definition of a "chained" keyboard binding, any elements
 in the chain may not be used individually. For example, binding
 "C-x C-s", will prohibit the binding of "C-x" by itself. This is
 because there would be ambiguity in regards to which key binding
-is intended to be invoked. 
+is intended to be invoked.
 
 *** DONE Ability to browse and change buffers
 CLOSED: [2017-09-05 Tue 00:58]
@@ -506,5 +506,3 @@ candidates
 CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
 - Organization of build systems into lisp files, no shell scripts
-
-
