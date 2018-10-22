@@ -131,7 +131,7 @@ In a new Terminal execute the following:
 ** Compile
 *** Build a Linux binary
 
-: cd next/next
+: cd source
 : make build-gtk
 
 the compiled binary will be present in the directory ~source~ as ~next-gtk~.

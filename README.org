@@ -53,8 +53,8 @@ open up new links, or switch tabs with the power of fuzzy completion.
 
 * Getting Started
 ** Install Next
-See the [[https://github.com/next-browser/next/releases][releases]] section for pre-built binaries. To perform an
-installation from source, please see the [[https://github.com/next-browser/next/tree/master/next][developer readme]].
+See the [[https://github.com/atlas-engineer/next/releases][releases]] section for pre-built binaries. To perform an
+installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
 The GNU/Linux version requires some dependencies:
 
@@ -84,13 +84,13 @@ Customization is possible through the creation of a
 =~/.config/next/init.lisp= file. From here you
 can override and redefine any of the functions by defining your init
 file as part of the ~:next~ package. For more information please see:
-[[https://github.com/next-browser/next/blob/master/documents/MANUAL.org#customization][customizing Next]].
+[[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org#customization][customizing Next]].
 
 Additionally, a document provided in the documents directory named
-[[https://github.com/nEXT-Browser/nEXT/blob/master/documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
+[[https://github.com/atlas-engineer/next/blob/master/documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
 customizations. To share your own extension, please make a pull
 request with your new extension appended to EXTENSION.org.
 
 ** Documentation
 For full documentation about Next, how it works, and how to extend it
-please see the [[https://github.com/nEXT-Browser/nEXT/blob/master/documents/MANUAL.org][user manual]].
+please see the [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org][user manual]].
