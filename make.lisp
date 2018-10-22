@@ -1,10 +1,10 @@
 ;;; make.lisp --- create binary files for Next
 ;;;
-;;; See next/next/README.org for more information on installing the
+;;; See documents/README.org for more information on installing the
 ;;; dependencies necessary to build Next from source
 ;;;
-;;; Please note that this script must be run from the directory
-;;; next/next.
+;;; Please note that this script must be run from the root directory
+;;; of the repository.
 
 (defun maybe-load-quicklisp (path)
   (ignore-errors

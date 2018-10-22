@@ -2,6 +2,31 @@
 
 (in-package :next)
 
+
+(defun handle-malformed-cli-arg (condition)
+  (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
+  (opts:describe)
+  (uiop:quit))
+
+(defun parse-cli-args ()
+  "Parse command line arguments."
+  (opts:define-opts
+    (:name :help
+           :description "Print this help and exit."
+           :short #\h
+           :long "help")
+    (:name :verbose
+           :short #\v
+           :long "verbose"
+           :description "Print debugging information to stdout."))
+
+  (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
+                 (opts:missing-arg #'handle-malformed-cli-arg)
+                 (opts:arg-parser-failed #'handle-malformed-cli-arg)
+                 ;; (opts:missing-required-option #'handle-malformed-cli-arg)
+                 )
+    (opts:get-opts)))
+
 (defun start ()
   (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))

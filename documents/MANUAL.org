@@ -17,10 +17,12 @@ end-user allowing for infinite customization.
   - [[#bookmarks][Bookmarks]]
   - [[#exiting][Exiting]]
 - [[#advanced-topics][Advanced Topics]]
+  - [[#execute-extended-command][Execute Extended Command]]
   - [[#help][Help]]
   - [[#slime-with-a-compiled-version-of-next][Slime with a compiled version of Next]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
+  - [[#hydras][Hydras]]
   - [[#loading-files][Loading Files]]
   - [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
   - [[#getting-input-from-the-user][Getting input from the user]]
@@ -208,6 +210,11 @@ only information saved will be your filled in passwords, cookies,
 and other information within your cache.
 
 * Advanced Topics
+** Execute Extended Command
+You can execute any command by name by typing =M-x= or =ESCAPE
+x=. This will bring up a list of candidates that you can fuzzily
+complete.
+
 ** Help
 The help system allows you to look up variable and function docstrings
 directly within Next. Docstrings will appear in a new help buffer.
@@ -283,6 +290,28 @@ The following keys exist as special keys:
 1. ~C~: Control
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
+
+** Hydras
+Hydras are a great way to bundle functionality together under a common
+prefix. Next provides a rough adaption of the functionality provided
+by Oleh Krehel in his fantastic package for Emacs titled [[https://github.com/abo-abo/hydra][Hydra]].
+
+#+NAME: sample hydra
+#+BEGIN_SRC lisp
+(defhydra switch-buffer
+  ("p" switch-buffer-previous)
+  ("n" switch-buffer-next))
+
+(define-key *global-map* (kbd "M-s") #'hydra-switch-buffer)
+#+END_SRC
+
+In the example above, the ~defhydra~ form will generate a function
+with the name ~hydra-switch-buffer~. When this function is invoked, it
+will open up the minibuffer showing a list of commands, and the keys
+to invoke them. In this case typing =p= then =RET= would invoke
+=switch-buffer-previous=. Hydras are a pseudo-modal way of interacting
+with the browser by making it easy to remember related sets of
+hotkeys.
 
 ** Loading Files
 To load a file again, or reload an init file use the function

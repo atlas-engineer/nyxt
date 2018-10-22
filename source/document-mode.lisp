@@ -109,7 +109,8 @@
     	   (setf (active-history-node mode) child)
     	   (return-from add-or-traverse-history t)))
     ;; if we made it this far, we must create a new node
-    (history-add url) ; add to history database
+    (when url
+      (history-add url)) ; add to history database
     (let ((new-node (make-node :parent active-node :data url)))
       (push new-node (node-children active-node))
       (setf (active-history-node mode) new-node)
@@ -131,6 +132,11 @@ buffer"
   (unless disable-history
     (history-typed-add input-url))
   (web-view-set-url *interface* (view buffer) input-url))
+
+(defun %set-url-new-buffer (input-url &optional disable-history)
+  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
+    (set-visible-active-buffer new-buffer)
+    (set-url-buffer input-url new-buffer disable-history)))
 
 (defun setup-url ()
   (set-input (mode *minibuffer*)

@@ -52,3 +52,13 @@
     (when command
       (with-slots (implementation) command
         (funcall implementation)))))
+
+(defun complete-command (input)
+  (fuzzy-match input (alexandria:hash-table-keys *available-commands*)))
+
+(define-command execute-extended-command ()
+  "Execute a command by name"
+  (with-result (command (read-from-minibuffer
+                         (mode *minibuffer*)
+                         :completion 'complete-command))
+    (funcall (impl (gethash command *available-commands*)))))

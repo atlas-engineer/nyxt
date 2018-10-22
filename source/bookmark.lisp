@@ -45,6 +45,11 @@
   (with-result (url (read-from-minibuffer (mode *minibuffer*)))
     (%bookmark-url url)))
 
+(define-command bookmark-url-from-buffer ()
+  "Allow the user to bookmark a URL from the current active buffer."
+  (let ((url (interface:web-view-get-url (view *active-buffer*))))
+    (%bookmark-url url)))
+
 (define-command bookmark-delete ()
   "Delete a bookmark from the bookmark database."
   (with-result (bookmark (read-from-minibuffer

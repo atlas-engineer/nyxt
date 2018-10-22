@@ -31,9 +31,10 @@
     (update-display self)
     (when setup (funcall setup-function)))
   (set-active-buffer *minibuffer*)
-  (show self))
+  (interface:minibuffer-show))
 
 (defmethod return-input ((self minibuffer-mode))
+  (interface:minibuffer-hide)
   (set-active-buffer (callback-buffer self))
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completion-function)
@@ -52,8 +53,7 @@
 	;; if there's no completion function
 	(return-immediate self))
     (when cleanup-function
-      (funcall cleanup-function)))
-  (hide *interface*))
+      (funcall cleanup-function))))
 
 (defmethod return-immediate ((self minibuffer-mode))
   "Return without completion"
