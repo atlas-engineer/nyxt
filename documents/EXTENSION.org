@@ -63,7 +63,7 @@ the command output.
                            (concatenate 'string output "<br />"))))))
 
 (defun run-shell-command (input)
-  (interface:web-view-execute
+  (web-view-execute
    (view *active-buffer*)
    (append-output
     (uiop:run-program input :force-shell t :output :string))))

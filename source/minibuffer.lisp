@@ -31,10 +31,10 @@
     (update-display self)
     (when setup (funcall setup-function)))
   (set-active-buffer *minibuffer*)
-  (interface:minibuffer-show))
+  (minibuffer-set-height *minibuffer-open-height*))
 
 (defmethod return-input ((self minibuffer-mode))
-  (interface:minibuffer-hide)
+  (minibuffer-set-height *minibuffer-closed-height*)
   (set-active-buffer (callback-buffer self))
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completion-function)

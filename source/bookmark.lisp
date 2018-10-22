@@ -47,7 +47,7 @@
 
 (define-command bookmark-url-from-buffer ()
   "Allow the user to bookmark a URL from the current active buffer."
-  (let ((url (interface:web-view-get-url (view *active-buffer*))))
+  (let ((url (web-view-get-url *interface* (view *active-buffer*))))
     (%bookmark-url url)))
 
 (define-command bookmark-delete ()

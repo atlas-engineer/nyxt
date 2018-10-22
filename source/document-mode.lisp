@@ -163,7 +163,7 @@ buffer"
         (set-url url)))
 
 (defun setup-anchor ()
-  (erase-input (mode *minibuffer*))
+  (erase-document (mode *minibuffer*))
   (let ((current-mode (mode *active-buffer*)))
     (with-parenscript (link-hints add-link-hints)
       (setf (link-hints current-mode) link-hints))))
