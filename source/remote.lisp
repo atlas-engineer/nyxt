@@ -78,6 +78,9 @@
 (defmethod web-view-execute ((interface remote-interface) view script &optional callback)
   (declare (ignore view script callback)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; METHODS BELOW ARE NOT NECESSARY - TEMPORARY FOR COMPILATION
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod web-view-set-url-loaded-callback ((interface remote-interface) view function)
   (declare (ignore view function)))
 
