@@ -65,14 +65,17 @@
 	 (funcall ,thunk)
 	 (let ((*within-main-nesting* t)
 	       (,promise (lparallel:promise)))
-	   (gtk:within-main-loop
+	   (gtk:within-gtk-thread
 	     (lparallel:fulfill ,promise
 	       (funcall ,thunk)))
 	   (lparallel:force ,promise))))))
 
 (defun initialize ())
 
+(defvar *window* NIL)
+
 (defun start ()
+  (gtk:ensure-gtk-main)
   (synchronous-within-main
    (let* ((window
            (make-instance 'gtk:gtk-window
@@ -106,10 +109,6 @@
           (column (gtk:gtk-tree-view-column-new-with-attributes
                    "Name" renderer "text" 0)))
      (gtk:gtk-tree-view-append-column list-view column)
-     (gobject:g-signal-connect window "destroy"
-                               (lambda (widget)
-                                 (declare (ignore widget))
-                                 (gtk:leave-gtk-main)))
      (gtk:gtk-box-pack-start root-box container-box)
      (gtk:gtk-box-pack-start root-box minibuffer-box :expand nil)
      (gtk:gtk-box-pack-start minibuffer-box entry :expand nil)
@@ -129,6 +128,7 @@
       window "destroy"
       (lambda (widget)
         (declare (ignore widget))
+        (setf *window* NIL)
         (gtk:leave-gtk-main)))
      (gobject:g-signal-connect
       window "key_press_event"
@@ -141,10 +141,11 @@
         (declare (ignore widget))
         (process-set-completions (minibuffer-view *next-interface*))))
      (gtk:gtk-widget-show-all window)
+     (setf *window* window)
      (minibuffer-hide))))
 
 (defun kill ()
-  (gtk:leave-gtk-main))
+  (gtk:gtk-widget-destroy *window*))
 
 (defun copy ())
 (defun paste ())
