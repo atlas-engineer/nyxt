@@ -246,11 +246,11 @@
 
 (defun minibuffer-get-input-complete ()
   (with-slots (completion-view completions) (minibuffer-view *next-interface*)
-    (let ((path (gtk:gtk-tree-path-to-string
-                 (gtk:gtk-tree-view-get-cursor completion-view))))
-      (if path
-          (nth (parse-integer path) completions)
-          nil))))
+    (let ((cursor (gtk:gtk-tree-view-get-cursor completion-view)))
+      (when cursor
+        (let ((path (gtk:gtk-tree-path-to-string cursor)))
+          (when path
+            (nth (parse-integer path) completions)))))))
 
 (defun minibuffer-select-next ()
   (gtk:gtk-tree-view-set-cursor
