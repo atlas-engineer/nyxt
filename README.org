@@ -71,7 +71,7 @@ The GNU/Linux version requires some dependencies:
 - ~C-x b~:   Switch tab
 - ~C-b~:     Backwards history
 - ~C-f~:     Forwards history
-- ~C-c C-X~: Quit
+- ~C-x C-c~: Quit
 
 The following keys exist as special keys:
 
