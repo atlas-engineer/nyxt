@@ -131,10 +131,11 @@ In a new Terminal execute the following:
 ** Compile
 *** Build a Linux binary
 
-: cd source
-: make build-gtk
+Run
 
-the compiled binary will be present in the directory ~source~ as ~next-gtk~.
+: make
+
+and the compiled binary will be placed in the directory ~source~ as ~next-gtk~.
 
 *** MacOS Compilation
 From the CCL Source directory, execute
@@ -160,7 +161,7 @@ After you have found a TODO item that is available:
 - make a pull request
 
 ** IRC Channel
-You can find Next on Freenode IRC at #next-browser
+You can find Next on Freenode IRC at =#next-browser=.
 
 ** Mailing List
 Next maintains a GNU Mailman server located at
