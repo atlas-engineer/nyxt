@@ -29,4 +29,5 @@
 	       (:file "document-mode")
 	       (:file "help")
 	       (:file "base")
-               (:file "remote")))
+               (:file "remote")
+               (:file "web-view")))
