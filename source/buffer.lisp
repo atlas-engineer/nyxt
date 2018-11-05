@@ -43,7 +43,7 @@
 
 (defun set-visible-active-buffer (buffer)
   (set-active-buffer buffer)
-  (set-visible-buffer-for-window *interface*
+  (window-set-visible-buffer *interface*
                                  (view *active-buffer*)
                                  (window-active *interface*)))
 

@@ -45,7 +45,7 @@
      (s-xml-rpc:encode-xml-rpc-call "window.active")
      :host host :port port :url url)))
 
-(defmethod set-visible-buffer-for-window ((interface remote-interface) buffer window)
+(defmethod window-set-visible-buffer ((interface remote-interface) buffer window)
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call "window.set.visible.buffer" buffer window)
