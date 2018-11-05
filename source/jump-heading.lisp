@@ -33,4 +33,4 @@
                        (mode *minibuffer*)
                        :completion 'heading-complete
                        :setup 'setup-headings-jump))
-    (buffer-execute-js *interface* (view *active-buffer*) (paren-jump-to-heading input))))
+    (buffer-execute-javascript *interface* (view *active-buffer*) (paren-jump-to-heading input))))

@@ -75,7 +75,7 @@
      (s-xml-rpc:encode-xml-rpc-call "buffer.delete" buffer)
      :host host :port port :url url)))
 
-(defmethod buffer-execute-js ((interface remote-interface) view script &optional callback)
+(defmethod buffer-execute-javascript ((interface remote-interface) view script &optional callback)
   (declare (ignore view script callback)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

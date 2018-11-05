@@ -39,7 +39,7 @@
 
 (define-command zoom-in-page ()
   "Zoom in the current page."
-  (buffer-execute-js *interface* (view *active-buffer*) (%zoom-in-page)))
+  (buffer-execute-javascript *interface* (view *active-buffer*) (%zoom-in-page)))
 
 (defparen %zoom-out-page ()
   (ps:lisp (ensure-zoom-ratio-range #'-))
@@ -48,7 +48,7 @@
 
 (define-command zoom-out-page ()
   "Zoom out the current page."
-  (buffer-execute-js *interface* (view *active-buffer*) (%zoom-out-page)))
+  (buffer-execute-javascript *interface* (view *active-buffer*) (%zoom-out-page)))
 
 (defparen %unzoom-page ()
   (ps:lisp (setf *current-zoom-ratio* *zoom-ratio-default*))
@@ -56,7 +56,7 @@
 
 (define-command unzoom-page ()
   "Unzoom the page."
-  (buffer-execute-js *interface* (view *active-buffer*) (%unzoom-page)))
+  (buffer-execute-javascript *interface* (view *active-buffer*) (%unzoom-page)))
 
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."
