@@ -44,8 +44,8 @@
 (defun set-visible-active-buffer (buffer)
   (set-active-buffer buffer)
   (window-set-visible-buffer *interface*
-                                 (view *active-buffer*)
-                                 (window-active *interface*)))
+                             (view *active-buffer*)
+                             (window-active *interface*)))
 
 (defun buffer-complete (input)
   (fuzzy-match input *buffers* #'name))
