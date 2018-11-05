@@ -45,10 +45,10 @@
      (s-xml-rpc:encode-xml-rpc-call "window.active")
      :host host :port port :url url)))
 
-(defmethod window-set-visible-buffer ((interface remote-interface) buffer window)
+(defmethod window-set-active-buffer ((interface remote-interface) buffer window)
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.set.visible.buffer" buffer window)
+     (s-xml-rpc:encode-xml-rpc-call "window.set.active.buffer" buffer window)
      :host host :port port :url url)))
 
 (defmethod minibuffer-set-height ((interface remote-interface) window height)
@@ -75,7 +75,7 @@
      (s-xml-rpc:encode-xml-rpc-call "buffer.delete" buffer)
      :host host :port port :url url)))
 
-(defmethod web-view-execute ((interface remote-interface) view script &optional callback)
+(defmethod buffer-execute-js ((interface remote-interface) view script &optional callback)
   (declare (ignore view script callback)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

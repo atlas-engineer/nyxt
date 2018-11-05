@@ -37,7 +37,7 @@
                                        "<h2>Current Value:</h2>"
                                        (write-to-string (symbol-value input))))
            (insert-help (ps:ps (setf (ps:@ document Body inner-H-T-M-L) (ps:lisp help-contents)))))
-      (web-view-execute *interface* (view help-buffer) insert-help)
+      (buffer-execute-js *interface* (view help-buffer) insert-help)
       (set-visible-active-buffer help-buffer))))
 
 (define-command command-inspect ()
@@ -52,5 +52,5 @@
                                        "<h2>Documentation:</h2>"
                                        (write-to-string (doc (gethash input *available-commands*)))))
            (insert-help (ps:ps (setf (ps:@ document Body inner-H-T-M-L) (ps:lisp help-contents)))))
-      (web-view-execute *interface* (view help-buffer) insert-help)
+      (buffer-execute-js *interface* (view help-buffer) insert-help)
       (set-visible-active-buffer help-buffer))))

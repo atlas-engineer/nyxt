@@ -10,7 +10,7 @@
      (defparameter ,script-name
        (ps:ps ,@script-body))
      (defun ,script-name (&optional (buffer *active-buffer*))
-       (let ((script-result (web-view-execute *interface* (view buffer) ,script-name)))
+       (let ((script-result (buffer-execute-js *interface* (view buffer) ,script-name)))
          (when (and script-result (not (equalp "" script-result)))
            (cl-json:decode-json-from-string script-result))))))
 
@@ -21,7 +21,7 @@
      (ps:ps ,@body)))
 
 (defmacro with-parenscript ((symbol script) &body body)
-  `(web-view-execute *interface*
+  `(buffer-execute-js *interface*
     (view *active-buffer*) ,script
     (lambda (json-execution-result)
       (let ((,symbol (cl-json:decode-json-from-string json-execution-result)))
