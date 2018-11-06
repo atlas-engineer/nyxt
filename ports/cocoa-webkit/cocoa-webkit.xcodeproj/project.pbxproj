@@ -1,0 +1,378 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		EB2A55502053452C00F10BFE /* libxmlrpc_abyss.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBF7FE8F20534149005A099E /* libxmlrpc_abyss.3.39.dylib */; };
+		EB2A55522053455400F10BFE /* libxmlrpc_client.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EB2A55512053455400F10BFE /* libxmlrpc_client.3.39.dylib */; };
+		EB2A55542053457B00F10BFE /* libxmlrpc_packetsocket.8.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EB2A55532053457B00F10BFE /* libxmlrpc_packetsocket.8.39.dylib */; };
+		EB2A5555205345D700F10BFE /* libxmlrpc_server_abyss.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBF7FE9120534232005A099E /* libxmlrpc_server_abyss.3.39.dylib */; };
+		EB2A5556205345D700F10BFE /* libxmlrpc.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBF7FE8D2052CE46005A099E /* libxmlrpc.3.39.dylib */; };
+		EB2A555C205345D800F10BFE /* libxmlrpc_util.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EB2A5557205345D800F10BFE /* libxmlrpc_util.3.39.dylib */; };
+		EB2A555D205345D800F10BFE /* libxmlrpc_server_cgi.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EB2A5558205345D800F10BFE /* libxmlrpc_server_cgi.3.39.dylib */; };
+		EB2A555E205345D800F10BFE /* libxmlrpc_xmlparse.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EB2A5559205345D800F10BFE /* libxmlrpc_xmlparse.3.39.dylib */; };
+		EB2A555F205345D800F10BFE /* libxmlrpc_server.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EB2A555A205345D800F10BFE /* libxmlrpc_server.3.39.dylib */; };
+		EB2A5560205345D800F10BFE /* libxmlrpc_xmltok.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EB2A555B205345D800F10BFE /* libxmlrpc_xmltok.3.39.dylib */; };
+		EB2A55632053EB4B00F10BFE /* Server.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2A55622053EB4B00F10BFE /* Server.m */; };
+		EB2A556620540AD400F10BFE /* Global.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2A556520540AD400F10BFE /* Global.m */; };
+		EB3F03B5204DD5A60065EB14 /* Base.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3F03B4204DD5A60065EB14 /* Base.m */; };
+		EB3F03B8204DD9230065EB14 /* Minibuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3F03B7204DD9230065EB14 /* Minibuffer.m */; };
+		EB4AE9022038649500A4F82A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EB4AE9012038649500A4F82A /* main.m */; };
+		EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */; };
+		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
+		EBB1A1DD204750390056B075 /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBB1A1DC204750390056B075 /* Buffer.m */; };
+		EBBFBB65206813150033996B /* NextApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = EBBFBB64206813150033996B /* NextApplication.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EB4AE8FC2038649500A4F82A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		EB2A55512053455400F10BFE /* libxmlrpc_client.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_client.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_client.3.39.dylib; sourceTree = "<group>"; };
+		EB2A55532053457B00F10BFE /* libxmlrpc_packetsocket.8.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_packetsocket.8.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_packetsocket.8.39.dylib; sourceTree = "<group>"; };
+		EB2A5557205345D800F10BFE /* libxmlrpc_util.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_util.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_util.3.39.dylib; sourceTree = "<group>"; };
+		EB2A5558205345D800F10BFE /* libxmlrpc_server_cgi.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_server_cgi.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_server_cgi.3.39.dylib; sourceTree = "<group>"; };
+		EB2A5559205345D800F10BFE /* libxmlrpc_xmlparse.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_xmlparse.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_xmlparse.3.39.dylib; sourceTree = "<group>"; };
+		EB2A555A205345D800F10BFE /* libxmlrpc_server.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_server.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_server.3.39.dylib; sourceTree = "<group>"; };
+		EB2A555B205345D800F10BFE /* libxmlrpc_xmltok.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_xmltok.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_xmltok.3.39.dylib; sourceTree = "<group>"; };
+		EB2A55612053EB4B00F10BFE /* Server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
+		EB2A55622053EB4B00F10BFE /* Server.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Server.m; sourceTree = "<group>"; };
+		EB2A556420540AD400F10BFE /* Global.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Global.h; sourceTree = "<group>"; };
+		EB2A556520540AD400F10BFE /* Global.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Global.m; sourceTree = "<group>"; };
+		EB3F03B3204DD5A60065EB14 /* Base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Base.h; sourceTree = "<group>"; };
+		EB3F03B4204DD5A60065EB14 /* Base.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Base.m; sourceTree = "<group>"; };
+		EB3F03B6204DD9230065EB14 /* Minibuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Minibuffer.h; sourceTree = "<group>"; };
+		EB3F03B7204DD9230065EB14 /* Minibuffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Minibuffer.m; sourceTree = "<group>"; };
+		EB4AE8FE2038649500A4F82A /* cocoa-webkit */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "cocoa-webkit"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB4AE9012038649500A4F82A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		EB6876822057E9B70098FB5B /* NextApplicationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplicationDelegate.h; sourceTree = "<group>"; };
+		EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplicationDelegate.m; sourceTree = "<group>"; };
+		EB687685205964F50098FB5B /* AutokeyDictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutokeyDictionary.h; sourceTree = "<group>"; };
+		EB687686205964F50098FB5B /* AutokeyDictionary.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutokeyDictionary.m; sourceTree = "<group>"; };
+		EBB1A1DB204750390056B075 /* Buffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
+		EBB1A1DC204750390056B075 /* Buffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Buffer.m; sourceTree = "<group>"; };
+		EBBFBB63206813150033996B /* NextApplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplication.h; sourceTree = "<group>"; };
+		EBBFBB64206813150033996B /* NextApplication.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplication.m; sourceTree = "<group>"; };
+		EBF7FE8D2052CE46005A099E /* libxmlrpc.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc.3.39.dylib; sourceTree = "<group>"; };
+		EBF7FE8F20534149005A099E /* libxmlrpc_abyss.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_abyss.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_abyss.3.39.dylib; sourceTree = "<group>"; };
+		EBF7FE9120534232005A099E /* libxmlrpc_server_abyss.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxmlrpc_server_abyss.3.39.dylib; path = ../../../../../usr/local/lib/libxmlrpc_server_abyss.3.39.dylib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EB4AE8FB2038649500A4F82A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB2A555C205345D800F10BFE /* libxmlrpc_util.3.39.dylib in Frameworks */,
+				EB2A555D205345D800F10BFE /* libxmlrpc_server_cgi.3.39.dylib in Frameworks */,
+				EB2A555E205345D800F10BFE /* libxmlrpc_xmlparse.3.39.dylib in Frameworks */,
+				EB2A555F205345D800F10BFE /* libxmlrpc_server.3.39.dylib in Frameworks */,
+				EB2A5560205345D800F10BFE /* libxmlrpc_xmltok.3.39.dylib in Frameworks */,
+				EB2A5555205345D700F10BFE /* libxmlrpc_server_abyss.3.39.dylib in Frameworks */,
+				EB2A5556205345D700F10BFE /* libxmlrpc.3.39.dylib in Frameworks */,
+				EB2A55542053457B00F10BFE /* libxmlrpc_packetsocket.8.39.dylib in Frameworks */,
+				EB2A55522053455400F10BFE /* libxmlrpc_client.3.39.dylib in Frameworks */,
+				EB2A55502053452C00F10BFE /* libxmlrpc_abyss.3.39.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		EB4AE8F52038649500A4F82A = {
+			isa = PBXGroup;
+			children = (
+				EB4AE9002038649500A4F82A /* cocoa-webkit */,
+				EB4AE8FF2038649500A4F82A /* Products */,
+				EBF7FE8C2052CE46005A099E /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		EB4AE8FF2038649500A4F82A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EB4AE8FE2038649500A4F82A /* cocoa-webkit */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EB4AE9002038649500A4F82A /* cocoa-webkit */ = {
+			isa = PBXGroup;
+			children = (
+				EB4AE9012038649500A4F82A /* main.m */,
+				EBBFBB63206813150033996B /* NextApplication.h */,
+				EBBFBB64206813150033996B /* NextApplication.m */,
+				EB6876822057E9B70098FB5B /* NextApplicationDelegate.h */,
+				EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */,
+				EB687685205964F50098FB5B /* AutokeyDictionary.h */,
+				EB687686205964F50098FB5B /* AutokeyDictionary.m */,
+				EB2A556420540AD400F10BFE /* Global.h */,
+				EB2A556520540AD400F10BFE /* Global.m */,
+				EB2A55612053EB4B00F10BFE /* Server.h */,
+				EB2A55622053EB4B00F10BFE /* Server.m */,
+				EB3F03B3204DD5A60065EB14 /* Base.h */,
+				EB3F03B4204DD5A60065EB14 /* Base.m */,
+				EB3F03B6204DD9230065EB14 /* Minibuffer.h */,
+				EB3F03B7204DD9230065EB14 /* Minibuffer.m */,
+				EBB1A1DB204750390056B075 /* Buffer.h */,
+				EBB1A1DC204750390056B075 /* Buffer.m */,
+			);
+			path = "cocoa-webkit";
+			sourceTree = "<group>";
+		};
+		EBF7FE8C2052CE46005A099E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EB2A5558205345D800F10BFE /* libxmlrpc_server_cgi.3.39.dylib */,
+				EB2A555A205345D800F10BFE /* libxmlrpc_server.3.39.dylib */,
+				EB2A5557205345D800F10BFE /* libxmlrpc_util.3.39.dylib */,
+				EB2A5559205345D800F10BFE /* libxmlrpc_xmlparse.3.39.dylib */,
+				EB2A555B205345D800F10BFE /* libxmlrpc_xmltok.3.39.dylib */,
+				EB2A55532053457B00F10BFE /* libxmlrpc_packetsocket.8.39.dylib */,
+				EB2A55512053455400F10BFE /* libxmlrpc_client.3.39.dylib */,
+				EBF7FE9120534232005A099E /* libxmlrpc_server_abyss.3.39.dylib */,
+				EBF7FE8F20534149005A099E /* libxmlrpc_abyss.3.39.dylib */,
+				EBF7FE8D2052CE46005A099E /* libxmlrpc.3.39.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		EB4AE8FD2038649500A4F82A /* cocoa-webkit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EB4AE9052038649500A4F82A /* Build configuration list for PBXNativeTarget "cocoa-webkit" */;
+			buildPhases = (
+				EB4AE8FA2038649500A4F82A /* Sources */,
+				EB4AE8FB2038649500A4F82A /* Frameworks */,
+				EB4AE8FC2038649500A4F82A /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "cocoa-webkit";
+			productName = "cocoa-webkit";
+			productReference = EB4AE8FE2038649500A4F82A /* cocoa-webkit */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EB4AE8F62038649500A4F82A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1000;
+				ORGANIZATIONNAME = "Atlas Engineer";
+				TargetAttributes = {
+					EB4AE8FD2038649500A4F82A = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = EB4AE8F92038649500A4F82A /* Build configuration list for PBXProject "cocoa-webkit" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = EB4AE8F52038649500A4F82A;
+			productRefGroup = EB4AE8FF2038649500A4F82A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EB4AE8FD2038649500A4F82A /* cocoa-webkit */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EB4AE8FA2038649500A4F82A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBBFBB65206813150033996B /* NextApplication.m in Sources */,
+				EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */,
+				EBB1A1DD204750390056B075 /* Buffer.m in Sources */,
+				EB2A556620540AD400F10BFE /* Global.m in Sources */,
+				EB3F03B5204DD5A60065EB14 /* Base.m in Sources */,
+				EB3F03B8204DD9230065EB14 /* Minibuffer.m in Sources */,
+				EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */,
+				EB2A55632053EB4B00F10BFE /* Server.m in Sources */,
+				EB4AE9022038649500A4F82A /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		EB4AE9032038649500A4F82A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "/usr/local/include/**";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		EB4AE9042038649500A4F82A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "/usr/local/include/**";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		EB4AE9062038649500A4F82A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		EB4AE9072038649500A4F82A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		EB4AE8F92038649500A4F82A /* Build configuration list for PBXProject "cocoa-webkit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB4AE9032038649500A4F82A /* Debug */,
+				EB4AE9042038649500A4F82A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB4AE9052038649500A4F82A /* Build configuration list for PBXNativeTarget "cocoa-webkit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB4AE9062038649500A4F82A /* Debug */,
+				EB4AE9072038649500A4F82A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EB4AE8F62038649500A4F82A /* Project object */;
+}

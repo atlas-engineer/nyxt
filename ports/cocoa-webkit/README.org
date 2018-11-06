@@ -1,0 +1,6 @@
+* Next Cocoa Port
+This repository contains the source code for the Cocoa front-end for the
+Next browser. It is pre-alpha stage.
+
+* Status
+Pre-alpha. This software is not ready to be used.
