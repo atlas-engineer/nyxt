@@ -1,9 +1,9 @@
 //
 //  Buffer.m
-//  next-cocoa
+//  cocoa-webkit
 //
 //  Created by John Mercouris on 2/28/18.
-//  Copyright © 2018 Next. All rights reserved.
+//  Copyright © 2018 Atlas Engineer LLC. All rights reserved.
 //
 
 #import "Buffer.h"
