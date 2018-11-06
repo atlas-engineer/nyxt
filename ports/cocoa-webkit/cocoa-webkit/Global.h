@@ -1,9 +1,6 @@
 //
-//  Global.h
-//  cocoa-webkit
-//
-//  Created by John Mercouris on 3/10/18.
-//  Copyright © 2018 Atlas Engineer LLC. All rights reserved.
+// Copyright © 2017-2018 Atlas Engineer LLC.
+// Use of this file is governed by the license that can be found in LICENSE.
 //
 
 #import <Foundation/Foundation.h>
