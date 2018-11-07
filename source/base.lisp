@@ -47,7 +47,7 @@
         (buffer (buffer-make *interface*)))
     (setf (name buffer) "default")
     (setf (mode buffer) (document-mode))
-    (window-set-active-buffer *interface* buffer window)))
+    (window-set-active-buffer *interface* window buffer)))
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c") '(lambda () (kill-interface *interface*)))

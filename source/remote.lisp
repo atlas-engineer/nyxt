@@ -61,12 +61,12 @@
              windows)))
 
 (defmethod window-set-active-buffer ((interface remote-interface)
-                                     (buffer buffer)
-                                     (window window))
+                                     (window window)
+                                     (buffer buffer))
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call
-      "window.set.active.buffer" (id buffer) (id window))
+      "window.set.active.buffer" (id window) (id buffer))
      :host host :port port :url url)))
 
 (defmethod window-active-buffer ((interface remote-interface) window)

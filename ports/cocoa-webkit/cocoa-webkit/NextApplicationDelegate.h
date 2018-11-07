@@ -20,6 +20,7 @@
 - (int)minibufferSetHeight:(int)height forWindow:(NSString *)key;
 - (void)minibufferExecuteJavascript:(NSString *)javascript
                           forWindow:(NSString *)key;
+- (bool)setActiveBufferForWindow:(NSString *)window withBuffer:(NSString *)buffer;
 
 @end
 

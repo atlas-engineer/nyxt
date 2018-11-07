@@ -39,7 +39,7 @@ window_delete(xmlrpc_env * const envP,
         NextApplicationDelegate *delegate = [NSApp delegate];
         [delegate windowClose: [NSString stringWithFormat:@"%s", windowId]];
     });
-    return xmlrpc_bool_new(envP, 1);;
+    return xmlrpc_bool_new(envP, 1);
 }
 
 static xmlrpc_value *
@@ -56,8 +56,15 @@ window_set_active_buffer(xmlrpc_env *   const envP,
               xmlrpc_value * const paramArrayP,
               void *         const serverInfo,
               void *         const channelInfo) {
-    NextApplicationDelegate *delegate = [NSApp delegate];
-    return xmlrpc_build_value(envP, "s", [[delegate windowActive] UTF8String]);
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        void *windowId;
+        void *bufferId;
+        xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &windowId, &bufferId);
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        [delegate setActiveBufferForWindow:[NSString stringWithFormat:@"%s", windowId]
+                                withBuffer: [NSString stringWithFormat:@"%s", bufferId]];
+    });
+    return xmlrpc_bool_new(envP, 1);
 }
 
 static xmlrpc_value *

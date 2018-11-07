@@ -77,6 +77,12 @@
     return [[self buffers] insertElement:buffer];
 }
 
+- (bool)setActiveBufferForWindow:(NSString *)window withBuffer:(NSString *)buffer {
+    NSLog(@"%@", window);
+    NSLog(@"%@", buffer);
+    return true;
+}
+
 - (int)minibufferSetHeight:(int)height forWindow:(NSString *)key
 {
     return [[[[self windows] objectForKey:key] contentView] setMinibufferHeight: height];
