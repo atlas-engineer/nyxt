@@ -22,9 +22,7 @@
 
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
-                 (opts:arg-parser-failed #'handle-malformed-cli-arg)
-                 ;; (opts:missing-required-option #'handle-malformed-cli-arg)
-                 )
+                 (opts:arg-parser-failed #'handle-malformed-cli-arg))
     (opts:get-opts)))
 
 (defun start ()
