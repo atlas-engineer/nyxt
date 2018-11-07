@@ -25,6 +25,7 @@
     [self.webView setTranslatesAutoresizingMaskIntoConstraints:NO];
         
     [self addArrangedSubview:self.webView];
+    [self setURL:@"file:///Users/jmercouris/Downloads/webpage.html"];
     
     return self;
 }

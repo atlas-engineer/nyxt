@@ -4,12 +4,13 @@
 //
 
 #import "Base.h"
-#import "Buffer.h"
 #import "Minibuffer.h"
+
 
 @implementation Base
 
 @synthesize minibuffer;
+@synthesize buffer;
 @synthesize minibufferHeightConstraint;
 
 - (instancetype)init
@@ -28,14 +29,18 @@
                                    constant:10]];
 
     Buffer *buffer = [[Buffer alloc] init];
-    [buffer setURL:@"file:///Users/jmercouris/Downloads/webpage.html"];
-
+    [self setBuffer:buffer];
+    
     [[self minibuffer] addConstraint:[self minibufferHeightConstraint]];
 
     [self addArrangedSubview:buffer];
     [self addArrangedSubview:minibuffer];
     
     return self;
+}
+
+- (void)setActiveBuffer:(Buffer*)buffer {
+    [self replaceSubview:[self buffer] with:buffer];
 }
 
 - (int)setMinibufferHeight:(int)height

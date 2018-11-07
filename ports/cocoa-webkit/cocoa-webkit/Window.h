@@ -14,6 +14,7 @@
 
 - (id) init;
 - (void) close;
+- (void) setActiveBuffer:(Buffer*) buffer;
 
 @end
 

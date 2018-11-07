@@ -66,9 +66,13 @@
     return [[self buffers] insertElement:buffer];
 }
 
-- (bool)setActiveBufferForWindow:(NSString *)window withBuffer:(NSString *)buffer {
-    NSLog(@"%@", window);
-    NSLog(@"%@", buffer);
+- (bool)setActiveBufferForWindow:(NSString *)windowKey withBuffer:(NSString *)bufferKey {
+    Window *window;
+    Buffer *buffer;
+    window = [[self windows] objectForKey:windowKey];
+    buffer = [[self buffers] objectForKey:bufferKey];
+    
+    [window setActiveBuffer:buffer];
     return true;
 }
 
