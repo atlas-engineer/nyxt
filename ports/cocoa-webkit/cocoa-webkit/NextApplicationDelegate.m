@@ -11,6 +11,7 @@
 #import "Server.h"
 #import "Base.h"
 #import "Buffer.h"
+#import "Window.h"
 
 @implementation NextApplicationDelegate
 @synthesize windows;
@@ -28,30 +29,13 @@
 
 - (NSString *)windowMake
 {
-    NSRect windowRect = NSMakeRect(0, 0, 1024, 768);
-    NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
-    NSWindow *window = [[NSWindow alloc]
-                        initWithContentRect:windowRect
-                        styleMask:windowStyle
-                        backing:NSBackingStoreBuffered
-                        defer:NO];
-    [window setOpaque:YES];
-    [window setHasShadow:YES];
-    [window setTitle:@"Next"];
-    [window setBackgroundColor:[NSColor whiteColor]];
-    [window makeKeyAndOrderFront:self];
-
-    Base *baseView = [[Base alloc] init];
-    [baseView setFrame:[[window contentView] bounds]];
-    [window setContentView:baseView];
-
+    Window *window = [[Window alloc] init];
     return [[self windows] insertElement:window];
 }
 
 - (bool)windowClose:(NSString *)key
 {
-    NSWindow *window = [[self windows] objectForKey:key];
-    [window setReleasedWhenClosed:NO];
+    Window *window = [[self windows] objectForKey:key];
     [window close];
     [[self windows] removeObjectForKey:key];
     return YES;
@@ -59,15 +43,20 @@
 
 - (NSString*)windowActive
 {
-    NSWindow *window;
+    NSWindow *nswindow;
     NSWindow *activeWindow;
+    Window *window;
     activeWindow = [[NSApplication sharedApplication] keyWindow];
+
     for (id key in [[self windows] allKeys]) {
         window = [[self windows] objectForKey:key];
-        if (activeWindow == window) {
+        nswindow = [window window];
+        window = [[self windows] objectForKey:key];
+        if (activeWindow == nswindow) {
             return key;
         }
     }
+
     return @"-1"; // Return Error code
 }
 

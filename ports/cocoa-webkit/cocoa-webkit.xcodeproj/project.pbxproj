@@ -22,6 +22,7 @@
 		EB3F03B5204DD5A60065EB14 /* Base.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3F03B4204DD5A60065EB14 /* Base.m */; };
 		EB3F03B8204DD9230065EB14 /* Minibuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3F03B7204DD9230065EB14 /* Minibuffer.m */; };
 		EB4AE9022038649500A4F82A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EB4AE9012038649500A4F82A /* main.m */; };
+		EB51EC91219329D9003C6FFD /* Window.m in Sources */ = {isa = PBXBuildFile; fileRef = EB51EC90219329D9003C6FFD /* Window.m */; };
 		EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */; };
 		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
 		EBB1A1DD204750390056B075 /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBB1A1DC204750390056B075 /* Buffer.m */; };
@@ -58,6 +59,8 @@
 		EB3F03B7204DD9230065EB14 /* Minibuffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Minibuffer.m; sourceTree = "<group>"; };
 		EB4AE8FE2038649500A4F82A /* cocoa-webkit */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "cocoa-webkit"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB4AE9012038649500A4F82A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		EB51EC8F219329D9003C6FFD /* Window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
+		EB51EC90219329D9003C6FFD /* Window.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Window.m; sourceTree = "<group>"; };
 		EB6876822057E9B70098FB5B /* NextApplicationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplicationDelegate.h; sourceTree = "<group>"; };
 		EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplicationDelegate.m; sourceTree = "<group>"; };
 		EB687685205964F50098FB5B /* AutokeyDictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutokeyDictionary.h; sourceTree = "<group>"; };
@@ -117,6 +120,8 @@
 				EBBFBB64206813150033996B /* NextApplication.m */,
 				EB6876822057E9B70098FB5B /* NextApplicationDelegate.h */,
 				EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */,
+				EB51EC8F219329D9003C6FFD /* Window.h */,
+				EB51EC90219329D9003C6FFD /* Window.m */,
 				EB687685205964F50098FB5B /* AutokeyDictionary.h */,
 				EB687686205964F50098FB5B /* AutokeyDictionary.m */,
 				EB2A556420540AD400F10BFE /* Global.h */,
@@ -216,6 +221,7 @@
 				EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */,
 				EB2A55632053EB4B00F10BFE /* Server.m in Sources */,
 				EB4AE9022038649500A4F82A /* main.m in Sources */,
+				EB51EC91219329D9003C6FFD /* Window.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
