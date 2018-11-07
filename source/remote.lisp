@@ -6,50 +6,68 @@
 (import 'push-key-chord :s-xml-rpc-exports)
 
 (defclass window ()
-  ((id :accessor id)))
+  ((id :accessor id :initarg :id)
+   (active-buffer :accessor active-buffer)))
+
+(defclass buffer ()
+  ((id :accessor id :initarg :id)
+   (name :accessor name :initarg :name)
+   (mode :accessor mode :initarg :mode)
+   (view :accessor view :initarg :view)
+   (modes :accessor modes :initarg :modes)))
 
 (defclass remote-interface ()
   ((host :accessor host :initform "localhost")
    (active-connection :accessor active-connection :initform nil)
    (port :accessor port :initform 8082)
    (url :accessor url :initform "/RPC2")
-   (windows :accessor windows :initform (make-hash-table))
-   (buffers :accessor buffers :initform (make-hash-table))))
+   (windows :accessor windows :initform (make-hash-table :test #'equal))
+   (buffers :accessor buffers :initform (make-hash-table :test #'equal))))
 
 (defmethod start-interface ((interface remote-interface))
+  "Start the XML RPC Server."
   (setf (active-connection interface)
         (s-xml-rpc:start-xml-rpc-server :port 8081)))
 
 (defmethod kill-interface ((interface remote-interface))
+  "Kill the XML RPC Server."
   (when (active-connection interface)
     (s-xml-rpc:stop-server (active-connection interface))))
 
 (defmethod window-make ((interface remote-interface))
+  "Create a window and return the window object."
   (with-slots (host port url windows) interface
-    (let ((window (s-xml-rpc:xml-rpc-call
-                   (s-xml-rpc:encode-xml-rpc-call "window.make")
-                   :host host :port port :url url)))
-      (setf (gethash window windows) (make-instance 'window))
+    (let* ((window-id (s-xml-rpc:xml-rpc-call
+                       (s-xml-rpc:encode-xml-rpc-call "window.make")
+                       :host host :port port :url url))
+           (window (make-instance 'window :id window-id)))
+      (setf (gethash window-id windows) window)
       window)))
 
-(defmethod window-delete ((interface remote-interface) window)
+(defmethod window-delete ((interface remote-interface) (window window))
+  "Delete a window object and remove it from the hash of windows."
   (with-slots (host port url windows) interface
-    (setf (gethash window windows) nil)
     (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.delete" window)
-     :host host :port port :url url)))
+     (s-xml-rpc:encode-xml-rpc-call "window.delete" (id window))
+     :host host :port port :url url)
+    (remhash (id window) windows)))
 
 (defmethod window-active ((interface remote-interface))
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.active")
-     :host host :port port :url url)))
+  "Return the window object for the currently active window."
+  (with-slots (host port url windows) interface
+    (gethash (s-xml-rpc:xml-rpc-call
+              (s-xml-rpc:encode-xml-rpc-call "window.active")
+              :host host :port port :url url)
+             windows)))
 
 (defmethod window-set-active-buffer ((interface remote-interface) buffer window)
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call "window.set.active.buffer" buffer window)
      :host host :port port :url url)))
+
+(defmethod window-active-buffer ((interface remote-interface) window)
+  (active-buffer window))
 
 (defmethod minibuffer-set-height ((interface remote-interface) window height)
   (with-slots (host port url) interface
