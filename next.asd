@@ -8,6 +8,8 @@
                :cl-markup :usocket :bordeaux-threads :s-xml-rpc :unix-opts)
   :pathname "source/"
   :components ((:file "package")
+               (:file "remote")
+               (:file "web-view")
 	       (:file "macro")
                (:file "user")
 	       (:file "global")
@@ -28,6 +30,4 @@
 	       (:file "application-mode")
 	       (:file "document-mode")
 	       (:file "help")
-	       (:file "base")
-               (:file "remote")
-               (:file "web-view")))
+	       (:file "base")))
