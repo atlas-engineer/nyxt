@@ -33,8 +33,6 @@ reportIfFaultOccurred (xmlrpc_env * const envP) {
             bool commandPressed = (modifierFlags & NSEventModifierFlagCommand);
 
             xmlrpc_env env;
-            xmlrpc_value * resultP;
-            xmlrpc_bool consumed;
             const char * const serverUrl = "http://localhost:8081/RPC2";
             const char * const methodName = "PUSH-KEY-CHORD";
             
@@ -46,15 +44,12 @@ reportIfFaultOccurred (xmlrpc_env * const envP) {
             reportIfFaultOccurred(&env);
             
             // Make the remote procedure call
-            resultP = xmlrpc_client_call(&env, serverUrl, methodName,
-                                         "(bbbi)",
-                                         (xmlrpc_bool) controlPressed,
-                                         (xmlrpc_bool) alternatePressed,
-                                         (xmlrpc_bool) commandPressed,
-                                         (xmlrpc_int) characterCodePressed);
-            reportIfFaultOccurred(&env);
-            
-            xmlrpc_read_bool(&env, resultP, &consumed);
+            xmlrpc_client_call(&env, serverUrl, methodName,
+                               "(bbbi)",
+                               (xmlrpc_bool) controlPressed,
+                               (xmlrpc_bool) alternatePressed,
+                               (xmlrpc_bool) commandPressed,
+                               (xmlrpc_int) characterCodePressed);
             reportIfFaultOccurred(&env);
             xmlrpc_client_cleanup();
         });
