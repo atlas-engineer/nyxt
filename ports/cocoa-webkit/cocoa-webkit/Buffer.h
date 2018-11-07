@@ -5,9 +5,7 @@
 
 #import <WebKit/WebKit.h>
 
-@interface Buffer : NSStackView
-
-@property (assign) WKWebView *webView;
+@interface Buffer : WKWebView
 
 - (instancetype) init;
 - (void)setURL:(NSString *)URL;

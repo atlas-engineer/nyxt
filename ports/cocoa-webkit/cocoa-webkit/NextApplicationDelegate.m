@@ -78,7 +78,7 @@
 
 - (int)minibufferSetHeight:(int)height forWindow:(NSString *)key
 {
-    return [[[[self windows] objectForKey:key] contentView] setMinibufferHeight: height];
+    return [[[[self windows] objectForKey:key] base] setMinibufferHeight: height];
 }
 
 - (void)minibufferExecuteJavascript:(NSString *)javascript

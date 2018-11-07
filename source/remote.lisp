@@ -92,10 +92,11 @@
 (defmethod buffer-execute-javascript ((interface remote-interface) view script &optional callback)
   (declare (ignore view script callback)))
 
-(defmethod minibuffer-set-height ((interface remote-interface) window height)
+(defmethod minibuffer-set-height ((interface remote-interface)
+                                  (window window) height)
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "minibuffer.set.height" window height)
+     (s-xml-rpc:encode-xml-rpc-call "minibuffer.set.height" (id window) height)
      :host host :port port :url url)))
 
 (defmethod minibuffer-execute-javascript ((interface remote-interface) window javascript)
