@@ -1,0 +1,6 @@
+* Next WebKitGTK Port
+This folder contains the source code for the WebKitGTK front-end for the
+Next browser. It is pre-alpha stage.
+
+* Status
+Pre-alpha. This software is not ready to be used.
