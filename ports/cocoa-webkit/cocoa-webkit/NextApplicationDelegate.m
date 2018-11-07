@@ -35,7 +35,7 @@
 
 - (bool)windowClose:(NSString *)key
 {
-    Window *window = [[self windows] objectForKey:key];
+    Window *window = [[self windows] objectForKey:key];
     [window close];
     [[self windows] removeObjectForKey:key];
     return YES;
