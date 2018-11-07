@@ -37,18 +37,17 @@
   (initialize-history-db)
   ;; create the interface object
   (setf *interface* (make-instance 'remote-interface))
-  (kill-interface *interface*)
   (start-interface *interface*)
   ;; initialize default state
   (setf *minibuffer*
         (make-instance 'buffer
                        :name "minibuffer"
                        :mode (minibuffer-mode)))
-  (window-make *interface*)
-  (set-visible-active-buffer (generate-new-buffer
-                              "default"
-                              (document-mode)))
-  (set-url *start-page-url*))
+  (let ((window (window-make *interface*))
+        (buffer (buffer-make *interface*)))
+    (setf (name buffer) "default")
+    (setf (mode buffer) (document-mode))
+    (window-set-active-buffer *interface* buffer window)))
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c") '(lambda () (kill-interface *interface*)))

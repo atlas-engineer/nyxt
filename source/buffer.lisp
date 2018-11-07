@@ -2,12 +2,6 @@
 
 (in-package :next)
 
-(defclass buffer ()
-  ((name :accessor name :initarg :name)
-   (mode :accessor mode :initarg :mode)
-   (view :accessor view :initarg :view)
-   (modes :accessor modes :initarg :modes)))
-
 (defmethod print-object ((buffer buffer) stream)
   (format stream "~s" (name buffer)))
 

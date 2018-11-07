@@ -60,14 +60,37 @@
               :host host :port port :url url)
              windows)))
 
-(defmethod window-set-active-buffer ((interface remote-interface) buffer window)
+(defmethod window-set-active-buffer ((interface remote-interface)
+                                     (buffer buffer)
+                                     (window window))
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.set.active.buffer" buffer window)
+     (s-xml-rpc:encode-xml-rpc-call
+      "window.set.active.buffer" (id buffer) (id window))
      :host host :port port :url url)))
 
 (defmethod window-active-buffer ((interface remote-interface) window)
+  "Return the active buffer for a given window."
   (active-buffer window))
+
+(defmethod buffer-make ((interface remote-interface))
+  (with-slots (host port url buffers) interface
+    (let* ((buffer-id (s-xml-rpc:xml-rpc-call
+                       (s-xml-rpc:encode-xml-rpc-call "buffer.make")
+                       :host host :port port :url url))
+           (buffer (make-instance 'buffer :id buffer-id)))
+      (setf (gethash buffer-id buffers) buffer)
+      buffer)))
+
+(defmethod buffer-delete ((interface remote-interface) (buffer buffer))
+  (with-slots (host port url buffers) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "buffer.delete" buffer)
+     :host host :port port :url url)
+    (remhash (id buffer) buffers)))
+
+(defmethod buffer-execute-javascript ((interface remote-interface) view script &optional callback)
+  (declare (ignore view script callback)))
 
 (defmethod minibuffer-set-height ((interface remote-interface) window height)
   (with-slots (host port url) interface
@@ -80,21 +103,6 @@
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" window javascript)
      :host host :port port :url url)))
-
-(defmethod buffer-make ((interface remote-interface))
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "buffer.make")
-     :host host :port port :url url)))
-
-(defmethod buffer-delete ((interface remote-interface) buffer)
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "buffer.delete" buffer)
-     :host host :port port :url url)))
-
-(defmethod buffer-execute-javascript ((interface remote-interface) view script &optional callback)
-  (declare (ignore view script callback)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; METHODS BELOW ARE NOT NECESSARY - TEMPORARY FOR COMPILATION
