@@ -85,7 +85,7 @@
 (defmethod buffer-delete ((interface remote-interface) (buffer buffer))
   (with-slots (host port url buffers) interface
     (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "buffer.delete" buffer)
+     (s-xml-rpc:encode-xml-rpc-call "buffer.delete" (id buffer))
      :host host :port port :url url)
     (remhash (id buffer) buffers)))
 
