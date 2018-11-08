@@ -36,10 +36,6 @@
     return self;
 }
 
-- (void) setActiveBuffer:(Buffer*) buffer {
-    [[self base] setActiveBuffer:buffer];
-}
-
 - (void) close {
     [[self window] setReleasedWhenClosed:NO];
     [[self window] close];
