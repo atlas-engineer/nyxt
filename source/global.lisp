@@ -47,8 +47,6 @@
 (defvar *current-completions* ()
   "A global variable used to store current completions for a
   completion function that has a static list.")
-(defvar *interface* nil
-  "The CLOS object responsible for rendering the interface.")
 (defvar *minibuffer-closed-height* 10
   "The height of the minibuffer when closed.")
 (defvar *minibuffer-open-height* 300

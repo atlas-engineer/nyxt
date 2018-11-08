@@ -2,6 +2,9 @@
 
 (in-package :next)
 
+(defvar *interface* nil
+  "The CLOS object responsible for rendering the interface.")
+
 (defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer)))
@@ -113,9 +116,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expose Lisp Core XML RPC Endpoints ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun javascript-call-back (javascript-response callback-id)
-  (print javascript-response)
-  (print callback-id))
+(defun javascript-call-back (buffer-id javascript-response callback-id)
+  (let* ((buffer (gethash buffer-id (buffers *interface*)))
+         (callback (gethash callback-id (callbacks buffer))))
+    (when callback
+      (funcall callback javascript-response))))
 
 (import 'push-key-chord :s-xml-rpc-exports)
 (import 'javascript-call-back :s-xml-rpc-exports)

@@ -47,9 +47,10 @@
                     
                     // Make the remote procedure call
                     xmlrpc_client_call(&env, serverUrl, methodName,
-                                       "(si)",
+                                       "(sss)",
+                                       [[self identifier] UTF8String],
                                        [transformedResult UTF8String],
-                                       (xmlrpc_int) [self callBackCount]);
+                                       [[@([self callBackCount]) stringValue] UTF8String]);
                     xmlrpc_client_cleanup();
                 });
             }
