@@ -89,8 +89,9 @@
      :host host :port port :url url)
     (remhash (id buffer) buffers)))
 
-(defmethod buffer-execute-javascript ((interface remote-interface) view script &optional callback)
-  (declare (ignore view script callback)))
+(defmethod buffer-execute-javascript ((interface remote-interface)
+                                      (buffer buffer) script &optional callback)
+  (declare (ignore interface buffer script callback)))
 
 (defmethod minibuffer-set-height ((interface remote-interface)
                                   (window window) height)
