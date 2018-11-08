@@ -44,21 +44,8 @@
 
 - (NSString*)windowActive
 {
-    NSWindow *nswindow;
-    NSWindow *activeWindow;
-    Window *window;
-    activeWindow = [[NSApplication sharedApplication] keyWindow];
-
-    for (id key in [[self windows] allKeys]) {
-        window = [[self windows] objectForKey:key];
-        nswindow = [window window];
-        window = [[self windows] objectForKey:key];
-        if (activeWindow == nswindow) {
-            return key;
-        }
-    }
-
-    return @"-1"; // Return Error code
+    NSWindow *activeWindow = [[NSApplication sharedApplication] keyWindow];
+    return [activeWindow identifier];
 }
 
 - (bool)setActiveBufferForWindow:(NSString *)windowKey withBuffer:(NSString *)bufferKey

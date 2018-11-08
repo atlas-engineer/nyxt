@@ -7,7 +7,6 @@
 #import "Base.h"
 
 @implementation Window
-@synthesize window;
 @synthesize base;
 @synthesize identifier;
 
@@ -16,30 +15,24 @@
     if (self != nil) {
         NSRect windowRect = NSMakeRect(0, 0, 1024, 768);
         NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
-        NSWindow *window = [[NSWindow alloc]
-                            initWithContentRect:windowRect
-                            styleMask:windowStyle
-                            backing:NSBackingStoreBuffered
-                            defer:NO];
-        [window setOpaque:YES];
-        [window setHasShadow:YES];
-        [window setTitle:@"Next"];
-        [window setBackgroundColor:[NSColor whiteColor]];
-        [window makeKeyAndOrderFront:self];
+
+        [self setFrame:windowRect display:YES];
+        [self setBackingType:NSBackingStoreBuffered];
+        [self setStyleMask:windowStyle];
+        [self setOpaque:YES];
+        [self setHasShadow:YES];
+        [self setTitle:@"Next"];
+        [self setBackgroundColor:[NSColor whiteColor]];
+        [self makeKeyAndOrderFront:self];
         
         Base *baseView = [[Base alloc] init];
-        [baseView setFrame:[[window contentView] bounds]];
-        [window setContentView:baseView];
+        [baseView setFrame:[[self contentView] bounds]];
+        [self setContentView:baseView];
+        [self setReleasedWhenClosed:NO];
         
         [self setBase: baseView];
-        [self setWindow: window];
     }
     return self;
-}
-
-- (void) close {
-    [[self window] setReleasedWhenClosed:NO];
-    [[self window] close];
 }
 
 @end
