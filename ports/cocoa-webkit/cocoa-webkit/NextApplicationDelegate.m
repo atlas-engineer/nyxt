@@ -64,7 +64,6 @@
 {
     Window *window = [[self windows] objectForKey:windowKey];
     Buffer *buffer = [[self buffers] objectForKey:bufferKey];
-    
     [[window base] setActiveBuffer:buffer];
     return true;
 }
@@ -75,18 +74,21 @@
     return [[self buffers] insertElement:buffer];
 }
 
+- (bool)bufferClose:(NSString *)key
+{
+    [[self buffers] removeObjectForKey:key];
+    return YES;
+}
+
 - (NSString *)bufferExecuteJavascript:(NSString *)bufferKey withJavascript:(NSString *) javaScript
 {
     Buffer *buffer = [[self buffers] objectForKey:bufferKey];
-    [buffer stringByEvaluatingJavaScriptFromString:javaScript];
-
-    return @"tmp-js-callback-id";
+    return [buffer stringByEvaluatingJavaScriptFromString:javaScript];
 }
 
 - (int)minibufferSetHeight:(int)height forWindow:(NSString *)windowKey
 {
     Window *window = [[self windows] objectForKey:windowKey];
-    
     return [[window base] setMinibufferHeight:height];
 }
 

@@ -2,9 +2,6 @@
 
 (in-package :next)
 
-;; expose push-key-chord to server endpoint
-(import 'push-key-chord :s-xml-rpc-exports)
-
 (defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer)))
@@ -14,7 +11,8 @@
    (name :accessor name :initarg :name)
    (mode :accessor mode :initarg :mode)
    (view :accessor view :initarg :view)
-   (modes :accessor modes :initarg :modes)))
+   (modes :accessor modes :initarg :modes)
+   (callbacks :accessor callbacks :initform (make-hash-table :test #'equal))))
 
 (defclass remote-interface ()
   ((host :accessor host :initform "localhost")
@@ -90,11 +88,14 @@
     (remhash (id buffer) buffers)))
 
 (defmethod buffer-execute-javascript ((interface remote-interface)
-                                      (buffer buffer) javascript)
+                                      (buffer buffer) javascript &optional (callback nil))
   (with-slots (host port url buffers) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "buffer.execute.javascript" (id buffer) javascript)
-     :host host :port port :url url)))
+    (let ((callback-id
+            (s-xml-rpc:xml-rpc-call
+             (s-xml-rpc:encode-xml-rpc-call "buffer.execute.javascript" (id buffer) javascript)
+             :host host :port port :url url)))
+      (setf (gethash callback-id (callbacks buffer)) callback)
+      callback-id)))
 
 (defmethod minibuffer-set-height ((interface remote-interface)
                                   (window window) height)
@@ -108,6 +109,16 @@
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" window javascript)
      :host host :port port :url url)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Expose Lisp Core XML RPC Endpoints ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun javascript-call-back (javascript-response callback-id)
+  (print javascript-response)
+  (print callback-id))
+
+(import 'push-key-chord :s-xml-rpc-exports)
+(import 'javascript-call-back :s-xml-rpc-exports)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; METHODS BELOW ARE NOT NECESSARY - TEMPORARY FOR COMPILATION
