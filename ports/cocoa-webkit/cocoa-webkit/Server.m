@@ -97,7 +97,6 @@ buffer_execute_javascript(xmlrpc_env *   const envP,
     return xmlrpc_build_value(envP, "s", [operationResult UTF8String]);
 }
 
-
 static xmlrpc_value *
 minibuffer_set_height(xmlrpc_env *   const envP,
                       xmlrpc_value * const paramArrayP,

@@ -30,7 +30,8 @@
 - (NSString *)windowMake
 {
     Window *window = [[Window alloc] init];
-    return [[self windows] insertElement:window];
+    [window setIdentifier: [[self windows] insertElement:window]];
+    return [window identifier];
 }
 
 - (bool)windowClose:(NSString *)key
@@ -71,7 +72,8 @@
 - (NSString *)bufferMake
 {
     Buffer *buffer = [[Buffer alloc] init];
-    return [[self buffers] insertElement:buffer];
+    [buffer setIdentifier: [[self buffers] insertElement:buffer]];
+    return [buffer identifier];
 }
 
 - (bool)bufferClose:(NSString *)key

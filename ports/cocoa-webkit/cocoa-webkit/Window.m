@@ -9,6 +9,7 @@
 @implementation Window
 @synthesize window;
 @synthesize base;
+@synthesize identifier;
 
 - (id) init {
     self = [super init];

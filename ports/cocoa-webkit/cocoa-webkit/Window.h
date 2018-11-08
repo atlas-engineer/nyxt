@@ -11,6 +11,7 @@
 
 @property (strong, atomic, readwrite) NSWindow *window;
 @property (strong, atomic, readwrite) Base *base;
+@property (strong, atomic, readwrite) NSString *identifier;
 
 - (id) init;
 - (void) close;

@@ -12,9 +12,9 @@
 #define NAME "Next"
 #define VERSION "0.1"
 
-
 @implementation Buffer
 @synthesize callBackCount;
+@synthesize identifier;
 
 - (instancetype)init
 {

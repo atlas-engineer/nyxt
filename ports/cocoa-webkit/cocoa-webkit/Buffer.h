@@ -7,9 +7,10 @@
 
 @interface Buffer : WKWebView
 
+@property (nonatomic, readwrite) NSInteger callBackCount;
+@property (strong, atomic, readwrite) NSString *identifier;
+
 - (instancetype) init;
 - (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
-
-@property (nonatomic, readwrite) NSInteger callBackCount;
 
 @end
