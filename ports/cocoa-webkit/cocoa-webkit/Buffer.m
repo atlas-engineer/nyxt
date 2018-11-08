@@ -15,6 +15,20 @@
     return self;
 }
 
+- (void)stringByEvaluatingJavaScriptFromString:(NSString *)script
+{
+    [self evaluateJavaScript:script completionHandler:^(id result, NSError *error) {
+        if (error == nil) {
+            if (result != nil) {
+                // XML RPC CLIENT CALL HERE!!!
+                NSLog(@"%@", [NSString stringWithFormat:@"%@", result]);
+            }
+        } else {
+            NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
+        }
+    }];
+}
+
 - (void)setURL:(NSString *)URL
 {
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:URL]];

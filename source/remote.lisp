@@ -90,8 +90,11 @@
     (remhash (id buffer) buffers)))
 
 (defmethod buffer-execute-javascript ((interface remote-interface)
-                                      (buffer buffer) script &optional callback)
-  (declare (ignore interface buffer script callback)))
+                                      (buffer buffer) javascript)
+  (with-slots (host port url buffers) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "buffer.execute.javascript" (id buffer) javascript)
+     :host host :port port :url url)))
 
 (defmethod minibuffer-set-height ((interface remote-interface)
                                   (window window) height)

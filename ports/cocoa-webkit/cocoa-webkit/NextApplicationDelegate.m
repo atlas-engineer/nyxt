@@ -60,19 +60,27 @@
     return @"-1"; // Return Error code
 }
 
+- (bool)setActiveBufferForWindow:(NSString *)windowKey withBuffer:(NSString *)bufferKey
+{
+    Window *window = [[self windows] objectForKey:windowKey];
+    Buffer *buffer = [[self buffers] objectForKey:bufferKey];
+    
+    [[window base] setActiveBuffer:buffer];
+    return true;
+}
+
 - (NSString *)bufferMake
 {
     Buffer *buffer = [[Buffer alloc] init];
     return [[self buffers] insertElement:buffer];
 }
 
-- (bool)setActiveBufferForWindow:(NSString *)windowKey withBuffer:(NSString *)bufferKey
+- (NSString *)bufferExecuteJavascript:(NSString *)bufferKey withJavascript:(NSString *) javaScript
 {
-    Window *window = [[self windows] objectForKey:windowKey];
     Buffer *buffer = [[self buffers] objectForKey:bufferKey];
+    [buffer stringByEvaluatingJavaScriptFromString:javaScript];
 
-    [[window base] setActiveBuffer:buffer];
-    return true;
+    return @"tmp-js-callback-id";
 }
 
 - (int)minibufferSetHeight:(int)height forWindow:(NSString *)windowKey

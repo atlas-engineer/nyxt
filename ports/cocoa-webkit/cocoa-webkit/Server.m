@@ -81,6 +81,24 @@ buffer_make(xmlrpc_env *   const envP,
 }
 
 static xmlrpc_value *
+buffer_execute_javascript(xmlrpc_env *   const envP,
+                          xmlrpc_value * const paramArrayP,
+                          void *         const serverInfo,
+                          void *         const channelInfo) {
+    __block NSString* operationResult = @"";
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        void *bufferId;
+        void *javaScript;
+        xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &bufferId, &javaScript);
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        operationResult = [delegate bufferExecuteJavascript:[NSString stringWithFormat:@"%s", bufferId]
+                                             withJavascript:[NSString stringWithFormat:@"%s", javaScript]];
+    });
+    return xmlrpc_build_value(envP, "s", [operationResult UTF8String]);
+}
+
+
+static xmlrpc_value *
 minibuffer_set_height(xmlrpc_env *   const envP,
                       xmlrpc_value * const paramArrayP,
                       void *         const serverInfo,
@@ -124,6 +142,8 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
         "window.set.active.buffer", &window_set_active_buffer,};
     struct xmlrpc_method_info3 const bufferMake = {
         "buffer.make", &buffer_make,};
+    struct xmlrpc_method_info3 const bufferExecuteJavaScript = {
+        "buffer.execute.javascript", &buffer_execute_javascript,};
     struct xmlrpc_method_info3 const minibufferSetHeight = {
         "minibuffer.set.height", &minibuffer_set_height,};
     struct xmlrpc_method_info3 const minibufferExecuteJavascript = {
@@ -145,6 +165,7 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
     xmlrpc_registry_add_method3(&env, registryP, &windowActive);
     xmlrpc_registry_add_method3(&env, registryP, &windowSetActiveBuffer);
     xmlrpc_registry_add_method3(&env, registryP, &bufferMake);
+    xmlrpc_registry_add_method3(&env, registryP, &bufferExecuteJavaScript);
     xmlrpc_registry_add_method3(&env, registryP, &minibufferSetHeight);
     xmlrpc_registry_add_method3(&env, registryP, &minibufferExecuteJavascript);
 

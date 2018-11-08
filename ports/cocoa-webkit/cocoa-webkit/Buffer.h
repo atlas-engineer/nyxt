@@ -8,7 +8,6 @@
 @interface Buffer : WKWebView
 
 - (instancetype) init;
-- (void)setURL:(NSString *)URL;
-
+- (void)stringByEvaluatingJavaScriptFromString:(NSString *)script;
 
 @end
