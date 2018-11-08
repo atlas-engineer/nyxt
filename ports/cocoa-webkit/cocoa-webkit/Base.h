@@ -10,9 +10,9 @@
 
 @interface Base : NSStackView
 
-@property (assign) Buffer *buffer;
-@property (assign) Minibuffer *minibuffer;
-@property (assign) NSLayoutConstraint *minibufferHeightConstraint;
+@property (strong, atomic, readwrite) Buffer *buffer;
+@property (strong, atomic, readwrite) Minibuffer *minibuffer;
+@property (strong, atomic, readwrite) NSLayoutConstraint *minibufferHeightConstraint;
 
 - (instancetype) init;
 - (int)setMinibufferHeight:(int)height;

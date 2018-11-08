@@ -7,19 +7,11 @@
 
 @implementation Buffer
 
-- (void)drawRect:(NSRect)dirtyRect {
-    [[NSColor blackColor] setFill];
-    NSRectFill(dirtyRect);
-    [super drawRect:dirtyRect];
-}
-
 - (instancetype)init
 {
     self = [super init];
     [self setTranslatesAutoresizingMaskIntoConstraints:NO];
-    
     [self setURL:@"file:///Users/jmercouris/Downloads/webpage.html"];
-    
     return self;
 }
 

@@ -27,20 +27,19 @@
                                   attribute:NSLayoutAttributeNotAnAttribute
                                  multiplier:1.0f
                                    constant:10]];
-
-    Buffer *buffer = [[Buffer alloc] init];
-    [self setBuffer:buffer];
-    
+    [self setBuffer:[[Buffer alloc] init]];
     [[self minibuffer] addConstraint:[self minibufferHeightConstraint]];
 
-    [self addArrangedSubview:buffer];
-    [self addArrangedSubview:minibuffer];
+    [self addArrangedSubview:[self buffer]];
+    [self addArrangedSubview:[self minibuffer]];
     
     return self;
 }
 
-- (void)setActiveBuffer:(Buffer*)buffer {
+- (void)setActiveBuffer:(Buffer*)buffer
+{
     [self replaceSubview:[self buffer] with:buffer];
+    [self setBuffer:buffer];
 }
 
 - (int)setMinibufferHeight:(int)height

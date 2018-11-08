@@ -25,13 +25,13 @@ reportIfFaultOccurred (xmlrpc_env * const envP) {
 - (void)sendEvent:(NSEvent *)event
 {
     if ([event type] == NSEventTypeKeyDown) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            NSEventModifierFlags modifierFlags = [event modifierFlags];
-            char characterCodePressed = [[event charactersIgnoringModifiers] characterAtIndex: 0];
-            bool controlPressed = (modifierFlags & NSEventModifierFlagControl);
-            bool alternatePressed = (modifierFlags & NSEventModifierFlagOption);
-            bool commandPressed = (modifierFlags & NSEventModifierFlagCommand);
+        NSEventModifierFlags modifierFlags = [event modifierFlags];
+        char characterCodePressed = [[event charactersIgnoringModifiers] characterAtIndex: 0];
+        bool controlPressed = (modifierFlags & NSEventModifierFlagControl);
+        bool alternatePressed = (modifierFlags & NSEventModifierFlagOption);
+        bool commandPressed = (modifierFlags & NSEventModifierFlagCommand);
 
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
             xmlrpc_env env;
             const char * const serverUrl = "http://localhost:8081/RPC2";
             const char * const methodName = "PUSH-KEY-CHORD";
