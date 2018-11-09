@@ -12,6 +12,7 @@
 #import "Base.h"
 #import "Buffer.h"
 #import "Window.h"
+#import "Global.h"
 
 @implementation NextApplicationDelegate
 @synthesize windows;
@@ -90,6 +91,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification
 {
+    [Global sharedInstance];
     Server *server = [[Server alloc] init];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [server start];

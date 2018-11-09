@@ -5,14 +5,15 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#include <xmlrpc-c/client.h>
 
 @interface Global : NSObject
 {
-    NSWindow *_window;
+    xmlrpc_env env;
 }
 
 + (Global *)sharedInstance;
+- (xmlrpc_env) getXMLRPCEnv;
 
-@property(strong, nonatomic, readwrite) NSWindow *window;
 
 @end
