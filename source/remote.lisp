@@ -92,7 +92,7 @@
 
 (defmethod buffer-execute-javascript ((interface remote-interface)
                                       (buffer buffer) javascript &optional (callback nil))
-  (with-slots (host port url buffers) interface
+  (with-slots (host port url) interface
     (let ((callback-id
             (s-xml-rpc:xml-rpc-call
              (s-xml-rpc:encode-xml-rpc-call "buffer.execute.javascript" (id buffer) javascript)
@@ -107,7 +107,8 @@
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.set.height" (id window) height)
      :host host :port port :url url)))
 
-(defmethod minibuffer-execute-javascript ((interface remote-interface) window javascript)
+(defmethod minibuffer-execute-javascript ((interface remote-interface)
+                                          (window window) javascript &optional (callback nil))
   (with-slots (host port url) interface
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" window javascript)
