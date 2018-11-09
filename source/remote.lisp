@@ -7,7 +7,8 @@
 
 (defclass window ()
   ((id :accessor id :initarg :id)
-   (active-buffer :accessor active-buffer)))
+   (active-buffer :accessor active-buffer)
+   (minibuffer-callbacks :accessor minibuffer-callbacks:initform (make-hash-table :test #'equal))))
 
 (defclass buffer ()
   ((id :accessor id :initarg :id)
@@ -110,21 +111,31 @@
 (defmethod minibuffer-execute-javascript ((interface remote-interface)
                                           (window window) javascript &optional (callback nil))
   (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" window javascript)
-     :host host :port port :url url)))
+    (let ((callback-id
+            (s-xml-rpc:xml-rpc-call
+             (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" (id window) javascript)
+             :host host :port port :url url)))
+      (setf (gethash callback-id (minibuffer-callbacks window)) callback)
+      callback-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expose Lisp Core XML RPC Endpoints ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun javascript-call-back (buffer-id javascript-response callback-id)
+(defun buffer-javascript-call-back (buffer-id javascript-response callback-id)
   (let* ((buffer (gethash buffer-id (buffers *interface*)))
          (callback (gethash callback-id (callbacks buffer))))
     (when callback
       (funcall callback javascript-response))))
 
+(defun minibuffer-javascript-call-back (window-id javascript-response callback-id)
+  (let* ((window (gethash window-id (windows *interface*)))
+         (callback (gethash callback-id (minibuffer-callbacks window))))
+    (when callback
+      (funcall callback javascript-response))))
+
 (import 'push-key-chord :s-xml-rpc-exports)
-(import 'javascript-call-back :s-xml-rpc-exports)
+(import 'buffer-javascript-call-back :s-xml-rpc-exports)
+(import 'minibuffer-javascript-call-back :s-xml-rpc-exports)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; METHODS BELOW ARE NOT NECESSARY - TEMPORARY FOR COMPILATION

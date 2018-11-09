@@ -8,6 +8,10 @@
 
 @interface Minibuffer : WKWebView
 
-- (void)stringByEvaluatingJavaScriptFromString:(NSString *)script;
+@property (nonatomic, readwrite) NSInteger callBackCount;
+@property (strong, atomic, readwrite) NSString *identifier;
+
+
+- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
 
 @end
