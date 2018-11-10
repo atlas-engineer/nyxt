@@ -47,8 +47,12 @@ window_active(xmlrpc_env *   const envP,
             xmlrpc_value * const paramArrayP,
             void *         const serverInfo,
             void *         const channelInfo) {
-    NextApplicationDelegate *delegate = [NSApp delegate];
-    return xmlrpc_build_value(envP, "s", [[delegate windowActive] UTF8String]);
+    __block NSString* operationResult = @"";
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        operationResult = [delegate windowActive];
+    });
+    return xmlrpc_build_value(envP, "s", [operationResult UTF8String]);
 }
 
 static xmlrpc_value *

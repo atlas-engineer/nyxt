@@ -69,7 +69,8 @@
     (s-xml-rpc:xml-rpc-call
      (s-xml-rpc:encode-xml-rpc-call
       "window.set.active.buffer" (id window) (id buffer))
-     :host host :port port :url url)))
+     :host host :port port :url url)
+    (setf (active-buffer window) buffer)))
 
 (defmethod window-active-buffer ((interface remote-interface) window)
   "Return the active buffer for a given window."
