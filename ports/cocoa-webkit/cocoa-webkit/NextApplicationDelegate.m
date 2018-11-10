@@ -47,7 +47,10 @@
 - (NSString*)windowActive
 {
     NSWindow *activeWindow = [[NSApplication sharedApplication] keyWindow];
-    return [activeWindow identifier];
+    if (activeWindow) {
+        return [activeWindow identifier];
+    }
+    return @"-1";
 }
 
 - (bool)setActiveBufferForWindow:(NSString *)windowKey withBuffer:(NSString *)bufferKey
