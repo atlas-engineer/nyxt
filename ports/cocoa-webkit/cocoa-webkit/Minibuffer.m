@@ -13,7 +13,7 @@
 
 @implementation Minibuffer
 @synthesize callBackCount;
-@synthesize identifier;
+@synthesize parentWindowIdentifier;
 
 - (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script
 {
@@ -31,7 +31,7 @@
                     // Make the remote procedure call
                     xmlrpc_client_call(&env, serverUrl, methodName,
                                        "(sss)",
-                                       [[self identifier] UTF8String],
+                                       [[self parentWindowIdentifier] UTF8String],
                                        [transformedResult UTF8String],
                                        [[@([self callBackCount]) stringValue] UTF8String]);
                 });

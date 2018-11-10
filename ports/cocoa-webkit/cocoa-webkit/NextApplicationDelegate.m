@@ -32,6 +32,7 @@
 {
     Window *window = [[Window alloc] init];
     [window setIdentifier: [[self windows] insertElement:window]];
+    [[[window base] minibuffer] setParentWindowIdentifier: [window identifier]];
     return [window identifier];
 }
 
@@ -70,7 +71,7 @@
     return YES;
 }
 
-- (NSString *)bufferExecuteJavascript:(NSString *)bufferKey withJavascript:(NSString *) javaScript
+- (NSString *)bufferExecuteJavaScript:(NSString *)bufferKey withJavaScript:(NSString *) javaScript
 {
     Buffer *buffer = [[self buffers] objectForKey:bufferKey];
     return [buffer stringByEvaluatingJavaScriptFromString:javaScript];
@@ -82,11 +83,11 @@
     return [[window base] setMinibufferHeight:height];
 }
 
-- (void)minibufferExecuteJavascript:(NSString *)javascript
-                                forWindow:(NSString *)key
+- (NSString *)minibufferExecuteJavaScript:(NSString *)windowKey withJavaScript:(NSString *)javaScript
 {
-    [[[[self windows] objectForKey:key] contentView]
-     minibufferExecuteJavascript: javascript];
+    Window *window = [[self windows] objectForKey:windowKey];
+    Minibuffer *minibuffer = [[window base] minibuffer];
+    return [minibuffer stringByEvaluatingJavaScriptFromString:javaScript];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification
@@ -99,4 +100,3 @@
 }
 
 @end
-

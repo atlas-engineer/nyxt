@@ -91,8 +91,8 @@ buffer_execute_javascript(xmlrpc_env *   const envP,
         void *javaScript;
         xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &bufferId, &javaScript);
         NextApplicationDelegate *delegate = [NSApp delegate];
-        operationResult = [delegate bufferExecuteJavascript:[NSString stringWithFormat:@"%s", bufferId]
-                                             withJavascript:[NSString stringWithFormat:@"%s", javaScript]];
+        operationResult = [delegate bufferExecuteJavaScript:[NSString stringWithFormat:@"%s", bufferId]
+                                             withJavaScript:[NSString stringWithFormat:@"%s", javaScript]];
     });
     return xmlrpc_build_value(envP, "s", [operationResult UTF8String]);
 }
@@ -116,18 +116,16 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
                                xmlrpc_value * const paramArrayP,
                                void *         const serverInfo,
                                void *         const channelInfo) {
-    void *windowId;
-    void *javascript;
-    xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &windowId, &javascript);
-    
-
-    dispatch_async(dispatch_get_main_queue(), ^{
+    __block NSString* operationResult = @"";
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        void *windowId;
+        void *javaScript;
+        xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &windowId, &javaScript);
         NextApplicationDelegate *delegate = [NSApp delegate];
-        [delegate minibufferExecuteJavascript:[NSString stringWithFormat:@"%s", javascript]
-                                    forWindow:[NSString stringWithFormat:@"%s", windowId]];
+        operationResult = [delegate minibufferExecuteJavaScript:[NSString stringWithFormat:@"%s", windowId]
+                                             withJavaScript:[NSString stringWithFormat:@"%s", javaScript]];
     });
-    
-    return xmlrpc_string_new(envP, "Result");
+    return xmlrpc_string_new(envP, [operationResult UTF8String]);
 }
 
 - (void) start {

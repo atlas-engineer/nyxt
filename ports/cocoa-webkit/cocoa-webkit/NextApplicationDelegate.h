@@ -18,9 +18,9 @@
 - (NSString*)windowActive;
 - (bool)setActiveBufferForWindow:(NSString *)window withBuffer:(NSString *)buffer;
 - (NSString *)bufferMake;
-- (NSString *)bufferExecuteJavascript:(NSString *)bufferKey withJavascript:(NSString *) javaScript;
+- (NSString *)bufferExecuteJavaScript:(NSString *)bufferKey withJavaScript:(NSString *) javaScript;
 - (int)minibufferSetHeight:(int)height forWindow:(NSString *)key;
-- (void)minibufferExecuteJavascript:(NSString *)javascript forWindow:(NSString *)key;
+- (NSString *)minibufferExecuteJavaScript:(NSString *)windowKey withJavaScript:(NSString *)javaScript;
 
 
 @end

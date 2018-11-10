@@ -16,7 +16,6 @@
 
 - (instancetype) init;
 - (int)setMinibufferHeight:(int)height;
-- (void)minibufferExecuteJavascript:(NSString *)javascript;
 - (void)setActiveBuffer:(Buffer*)buffer;
 
 @end

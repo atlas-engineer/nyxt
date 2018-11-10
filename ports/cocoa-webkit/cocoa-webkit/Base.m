@@ -48,9 +48,4 @@
     return height;
 }
 
-- (void)minibufferExecuteJavascript:(NSString *)javascript
-{
-    [[self minibuffer] stringByEvaluatingJavaScriptFromString:javascript];
-}
-
 @end
