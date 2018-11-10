@@ -41,11 +41,7 @@
         (make-instance 'buffer
                        :name "minibuffer"
                        :mode (minibuffer-mode)))
-  (let ((window (window-make *interface*))
-        (buffer (buffer-make *interface*)))
-    (setf (name buffer) "default")
-    (setf (mode buffer) (document-mode))
-    (window-set-active-buffer *interface* window buffer)))
+  (make-window))
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c") '(lambda () (kill-interface *interface*)))

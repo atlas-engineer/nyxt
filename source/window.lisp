@@ -10,4 +10,9 @@
 
 (define-command make-window ()
   "Create a new window."
-  (window-make *interface*))
+  (let ((window (window-make *interface*))
+        (buffer (buffer-make *interface*)))
+    (setf (name buffer) "default")
+    (setf (mode buffer) (document-mode))
+    (window-set-active-buffer *interface* window buffer)
+    window))
