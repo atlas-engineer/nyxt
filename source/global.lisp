@@ -49,7 +49,7 @@
   completion function that has a static list.")
 (defvar *minibuffer-closed-height* 10
   "The height of the minibuffer when closed.")
-(defvar *minibuffer-open-height* 300
+(defvar *minibuffer-open-height* 200
   "The height of the minibuffer when open.")
 (deferredvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")

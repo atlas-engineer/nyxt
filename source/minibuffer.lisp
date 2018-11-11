@@ -16,29 +16,29 @@
    (completions :accessor completions)
    (completion-index :accessor completion-index)))
 
-(defmethod read-from-minibuffer (callback (self minibuffer-mode)
+(defmethod read-from-minibuffer (callback (minibuffer minibuffer-mode)
                                  &key completion setup cleanup empty-complete)
   (with-slots (callback-function completion-function callback-buffer
                setup-function cleanup-function empty-complete-immediate)
-      self
+      minibuffer
     (setf callback-function callback)
     (setf completion-function completion)
     (setf setup-function setup)
     (setf cleanup-function cleanup)
     (setf empty-complete-immediate empty-complete)
-    (setf callback-buffer *active-buffer*)
-    (setup-default self)
-    (update-display self)
+    (setf callback-buffer (active-buffer *interface*))
+    (setup-default minibuffer)
+    (show minibuffer)
+    ;; (update-display minibuffer)
     (when setup (funcall setup-function)))
-  (set-active-buffer *minibuffer*)
-  (minibuffer-set-height *minibuffer-open-height*))
+  (setf (active-buffer (window-active *interface*)) *minibuffer*))
 
-(defmethod return-input ((self minibuffer-mode))
-  (minibuffer-set-height *minibuffer-closed-height*)
-  (set-active-buffer (callback-buffer self))
+(defmethod return-input ((minibuffer minibuffer-mode))
+  (hide minibuffer)
+  (set-active-buffer (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completion-function)
-      self
+      minibuffer
     (if completion-function
 	;; if there's a completion function
 	(progn
@@ -49,20 +49,20 @@
 		;; if we can't find a completion
 		(when empty-complete-immediate
 		  ;; if we accept immediate output in place of completion
-		  (return-immediate self)))))
+		  (return-immediate minibuffer)))))
 	;; if there's no completion function
-	(return-immediate self))
+	(return-immediate minibuffer))
     (when cleanup-function
       (funcall cleanup-function))))
 
-(defmethod return-immediate ((self minibuffer-mode))
+(defmethod return-immediate ((minibuffer minibuffer-mode))
   "Return without completion"
-  (set-active-buffer (callback-buffer self))
-  (with-slots (callback-function cleanup-function) self
-    (funcall callback-function (input-buffer self))
+  (set-active-buffer (callback-buffer minibuffer))
+  (with-slots (callback-function cleanup-function) minibuffer
+    (funcall callback-function (input-buffer minibuffer))
     (when cleanup-function
       (funcall cleanup-function)))
-  (hide *interface*))
+  (hide minibuffer))
 
 (defmethod get-input-complete ((self minibuffer-mode)))
 
@@ -86,21 +86,25 @@
      (ps:chain document (open))
      (ps:chain document (close)))))
 
-(defmethod setup-default ((self minibuffer-mode))
-  (erase-document self)
-  (setf (input-buffer self) "")
-  (setf (cursor-index self) 0)
+(defmethod setup-default ((minibuffer minibuffer-mode))
+  (erase-document minibuffer)
+  (setf (input-buffer minibuffer) "")
+  (setf (cursor-index minibuffer) 0)
   (set-input
-   self
+   minibuffer
    (cl-markup:markup
     (:div :id "input" "input")
     (:div :id "completions" "completions"))))
 
 (defmethod show ((self minibuffer-mode))
-  (minibuffer-set-height *interface* (window-active *interface*) *minibuffer-open-height*))
+  (minibuffer-set-height *interface*
+                         (window-active *interface*)
+                         *minibuffer-open-height*))
 
 (defmethod hide ((self minibuffer-mode))
-  (minibuffer-set-height *interface* (window-active *interface*) *minibuffer-closed-height*))
+  (minibuffer-set-height *interface*
+                         (window-active *interface*)
+                         *minibuffer-closed-height*))
 
 (defmethod self-insert ((self minibuffer-mode) character)
   (setf (input-buffer self)
@@ -162,15 +166,8 @@
              (ps:lisp
               (concatenate 'string
                            (subseq input-buffer 0 cursor-index)
-                           "&#x25fc;"
-                           (subseq input-buffer cursor-index (length input-buffer)))))))
-    (minibuffer-execute-javascript
-     *interface* (window-active *interface*)
-     (ps:ps
-       (setf (ps:chain document (get-element-by-id "completions") inner-h-t-m-l)
-             (ps:lisp (cl-markup:markup
-                       (:ul (loop for item in completions
-                                  collect (cl-markup:markup (:li item)))))))))))
+                           "[]"
+                           (subseq input-buffer cursor-index (length input-buffer)))))))))
 
 (defmethod select-next ((self minibuffer-mode)))
 
