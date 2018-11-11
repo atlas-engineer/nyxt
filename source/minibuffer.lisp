@@ -16,21 +16,20 @@
    (completions :accessor completions)
    (completion-index :accessor completion-index)))
 
-(defmethod read-from-minibuffer (callback (minibuffer minibuffer-mode)
-                                 &key completion setup cleanup empty-complete)
-  (with-slots (callback-function completion-function callback-buffer
-               setup-function cleanup-function empty-complete-immediate)
-      minibuffer
-    (setf callback-function callback)
-    (setf completion-function completion)
-    (setf setup-function setup)
-    (setf cleanup-function cleanup)
-    (setf empty-complete-immediate empty-complete)
-    (setf callback-buffer (active-buffer *interface*))
-    (setup-default minibuffer)
-    (show minibuffer)
-    ;; (update-display minibuffer)
-    (when setup (funcall setup-function)))
+(defmethod read-from-minibuffer (callback-function
+                                 (minibuffer minibuffer-mode)
+                                 &key completion-function setup-function
+                                   cleanup-function empty-complete-immediate)
+  (setf (callback-function minibuffer) callback-function)
+  (setf (completion-function minibuffer) completion-function)
+  (setf (setup-function minibuffer) setup-function)
+  (setf (cleanup-function minibuffer) cleanup-function)
+  (setf (empty-complete-immediate minibuffer) empty-complete-immediate)
+  (setf (callback-buffer minibuffer) (active-buffer *interface*))
+  (setup-default minibuffer)
+  (update-display minibuffer)
+  (when setup-function (funcall setup-function))
+  (show minibuffer)
   (setf (active-buffer (window-active *interface*)) *minibuffer*))
 
 (defmethod return-input ((minibuffer minibuffer-mode))
