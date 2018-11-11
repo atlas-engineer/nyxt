@@ -98,8 +98,8 @@
   (set-input
    minibuffer
    (cl-markup:markup
-    (:div :id "input" "input")
-    (:div :id "completions" "completions"))))
+    (:div :id "input" "")
+    (:div :id "completions" ""))))
 
 (defmethod show ((minibuffer minibuffer))
   (minibuffer-set-height *interface*
