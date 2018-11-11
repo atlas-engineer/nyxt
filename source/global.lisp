@@ -47,7 +47,7 @@
 (defvar *current-completions* ()
   "A global variable used to store current completions for a
   completion function that has a static list.")
-(defvar *minibuffer-closed-height* 10
+(defvar *minibuffer-closed-height* 0
   "The height of the minibuffer when closed.")
 (defvar *minibuffer-open-height* 200
   "The height of the minibuffer when open.")

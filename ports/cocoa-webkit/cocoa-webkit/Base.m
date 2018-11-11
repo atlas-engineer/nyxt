@@ -26,7 +26,7 @@
                                      toItem:nil
                                   attribute:NSLayoutAttributeNotAnAttribute
                                  multiplier:1.0f
-                                   constant:10]];
+                                   constant:0]];
     [self setBuffer:[[Buffer alloc] init]];
     [[self minibuffer] addConstraint:[self minibufferHeightConstraint]];
 
