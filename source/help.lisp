@@ -27,9 +27,9 @@
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
-                       (mode *minibuffer*)
-                       :completion 'variable-complete
-                       :setup 'load-package-globals))
+                       *minibuffer*
+                       :completion-function 'variable-complete
+                       :setup-function 'load-package-globals))
     (let* ((help-buffer (generate-new-buffer
                          (concatenate 'string "HELP-" (symbol-name input)) (document-mode)))
            (help-contents (concatenate 'string "<h1>" (symbol-name input) "</h1>"
@@ -43,8 +43,8 @@
 (define-command command-inspect ()
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
-                       (mode *minibuffer*)
-                       :completion 'function-complete))
+                       *minibuffer*
+                       :completion-function 'function-complete))
     (let* ((help-buffer (generate-new-buffer
                          (concatenate 'string "HELP-" input) (document-mode)))
            (help-contents (concatenate 'string "<h1>" input "</h1>"

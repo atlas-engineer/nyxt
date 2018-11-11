@@ -37,8 +37,8 @@
 (define-command add-search-boxes ()
   "Add search boxes for a given search string"
   (with-result (input (read-from-minibuffer
-                       (mode *minibuffer*)
-                       :setup 'initialize-search-buffer))
+                       *minibuffer*
+                       :setup-function 'initialize-search-buffer))
     (buffer-execute-javascript *interface* (view *active-buffer*) (paren-add-search-boxes input))))
 
 (defparenstatic remove-search-hints

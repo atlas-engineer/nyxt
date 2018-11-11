@@ -30,7 +30,7 @@
 (define-command jump-to-heading ()
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6"
   (with-result (input (read-from-minibuffer
-                       (mode *minibuffer*)
-                       :completion 'heading-complete
-                       :setup 'setup-headings-jump))
+                       *minibuffer*
+                       :completion-function 'heading-complete
+                       :setup-function 'setup-headings-jump))
     (buffer-execute-javascript *interface* (view *active-buffer*) (paren-jump-to-heading input))))

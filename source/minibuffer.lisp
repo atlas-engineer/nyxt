@@ -4,8 +4,9 @@
 
 (defvar *minibuffer-mode-map* (make-hash-table :test 'equalp))
 
-(defclass minibuffer-mode (mode)
-  ((completion-function :accessor completion-function)
+(defclass minibuffer (buffer mode)
+  ((name :accessor name :initform "minibuffer")
+   (completion-function :accessor completion-function)
    (callback-function :accessor callback-function)
    (callback-buffer :accessor callback-buffer)
    (setup-function :accessor setup-function)
@@ -16,8 +17,13 @@
    (completions :accessor completions)
    (completion-index :accessor completion-index)))
 
+(defmethod initialize-instance :after ((minibuffer minibuffer)
+				       &key &allow-other-keys)
+  (setf (keymap minibuffer) *minibuffer-mode-map*)
+  (setf (mode minibuffer) minibuffer))
+
 (defmethod read-from-minibuffer (callback-function
-                                 (minibuffer minibuffer-mode)
+                                 (minibuffer minibuffer)
                                  &key completion-function setup-function
                                    cleanup-function empty-complete-immediate)
   (setf (callback-function minibuffer) callback-function)
@@ -32,7 +38,7 @@
   (show minibuffer)
   (setf (active-buffer (window-active *interface*)) *minibuffer*))
 
-(defmethod return-input ((minibuffer minibuffer-mode))
+(defmethod return-input ((minibuffer minibuffer))
   (hide minibuffer)
   (set-active-buffer (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function
@@ -41,7 +47,7 @@
     (if completion-function
 	;; if there's a completion function
 	(progn
-	  (let ((completion (get-input-complete (mode *minibuffer*))))
+	  (let ((completion (get-input-complete *minibuffer*)))
 	    (if completion
 		;; if we're able to find a completion
 		(funcall callback-function completion)
@@ -54,7 +60,7 @@
     (when cleanup-function
       (funcall cleanup-function))))
 
-(defmethod return-immediate ((minibuffer minibuffer-mode))
+(defmethod return-immediate ((minibuffer minibuffer))
   "Return without completion"
   (set-active-buffer (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function) minibuffer
@@ -63,29 +69,29 @@
       (funcall cleanup-function)))
   (hide minibuffer))
 
-(defmethod get-input-complete ((self minibuffer-mode)))
+(defmethod get-input-complete ((minibuffer minibuffer)))
 
-(defmethod cancel-input ((self minibuffer-mode))
-  (set-active-buffer (callback-buffer self))
-  (with-slots (cleanup-function) self
+(defmethod cancel-input ((minibuffer minibuffer))
+  (set-active-buffer (callback-buffer minibuffer))
+  (with-slots (cleanup-function) minibuffer
     (when cleanup-function
       (funcall cleanup-function)))
-  (hide self))
+  (hide minibuffer))
 
-(defmethod set-input ((self minibuffer-mode) input)
+(defmethod set-input ((minibuffer minibuffer) input)
   (when input
     (minibuffer-execute-javascript
      *interface* (window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
-(defmethod erase-document ((self minibuffer-mode))
+(defmethod erase-document ((minibuffer minibuffer))
   (minibuffer-execute-javascript
    *interface* (window-active *interface*)
    (ps:ps
      (ps:chain document (open))
      (ps:chain document (close)))))
 
-(defmethod setup-default ((minibuffer minibuffer-mode))
+(defmethod setup-default ((minibuffer minibuffer))
   (erase-document minibuffer)
   (setf (input-buffer minibuffer) "")
   (setf (cursor-index minibuffer) 0)
@@ -95,67 +101,67 @@
     (:div :id "input" "input")
     (:div :id "completions" "completions"))))
 
-(defmethod show ((self minibuffer-mode))
+(defmethod show ((minibuffer minibuffer))
   (minibuffer-set-height *interface*
                          (window-active *interface*)
                          *minibuffer-open-height*))
 
-(defmethod hide ((self minibuffer-mode))
+(defmethod hide ((minibuffer minibuffer))
   (minibuffer-set-height *interface*
                          (window-active *interface*)
                          *minibuffer-closed-height*))
 
-(defmethod self-insert ((self minibuffer-mode) character)
-  (setf (input-buffer self)
+(defmethod self-insert ((minibuffer minibuffer) character)
+  (setf (input-buffer minibuffer)
         (cl-strings:insert character
-                           (input-buffer self)
-                           :position (cursor-index self)))
-  (incf (cursor-index self))
-  (update-display self))
+                           (input-buffer minibuffer)
+                           :position (cursor-index minibuffer)))
+  (incf (cursor-index minibuffer))
+  (update-display minibuffer))
 
-(defmethod delete-forwards ((self minibuffer-mode))
-  (with-slots (input-buffer cursor-index) self
+(defmethod delete-forwards ((minibuffer minibuffer))
+  (with-slots (input-buffer cursor-index) minibuffer
     (unless (= cursor-index (length input-buffer))
       (setf input-buffer
             (concatenate 'string
                          (subseq input-buffer 0 cursor-index)
                          (subseq input-buffer (+ 1 cursor-index) (length input-buffer))))))
-  (update-display self))
+  (update-display minibuffer))
 
-(defmethod delete-backwards ((self minibuffer-mode))
-  (with-slots (input-buffer cursor-index) self
+(defmethod delete-backwards ((minibuffer minibuffer))
+  (with-slots (input-buffer cursor-index) minibuffer
     (unless (= cursor-index 0)
       (setf input-buffer
             (concatenate 'string
                          (subseq input-buffer 0 (- cursor-index 1))
                          (subseq input-buffer cursor-index (length input-buffer))))
       (decf cursor-index)))
-  (update-display self))
+  (update-display minibuffer))
 
-(defmethod cursor-forwards ((self minibuffer-mode))
-  (with-slots (input-buffer cursor-index) self
+(defmethod cursor-forwards ((minibuffer minibuffer))
+  (with-slots (input-buffer cursor-index) minibuffer
     (when (< cursor-index (length input-buffer))
       (incf cursor-index)))
-  (update-display self))
+  (update-display minibuffer))
 
-(defmethod cursor-backwards ((self minibuffer-mode))
-  (with-slots (input-buffer cursor-index) self
+(defmethod cursor-backwards ((minibuffer minibuffer))
+  (with-slots (input-buffer cursor-index) minibuffer
     (when (> cursor-index 0)
       (decf cursor-index)))
-  (update-display self))
+  (update-display minibuffer))
 
-(defmethod cursor-beginning ((self minibuffer-mode))
-  (with-slots (cursor-index) self
+(defmethod cursor-beginning ((minibuffer minibuffer))
+  (with-slots (cursor-index) minibuffer
     (setf cursor-index 0))
-  (update-display self))
+  (update-display minibuffer))
 
-(defmethod cursor-end ((self minibuffer-mode))
-  (with-slots (input-buffer cursor-index) self
+(defmethod cursor-end ((minibuffer minibuffer))
+  (with-slots (input-buffer cursor-index) minibuffer
     (setf cursor-index (length input-buffer)))
-  (update-display self))
+  (update-display minibuffer))
 
-(defmethod update-display ((self minibuffer-mode))
-  (with-slots (input-buffer cursor-index completions completion-function) self
+(defmethod update-display ((minibuffer minibuffer))
+  (with-slots (input-buffer cursor-index completions completion-function) minibuffer
     (when completion-function
       (setf completions (funcall completion-function input-buffer)))
     (minibuffer-execute-javascript
@@ -168,12 +174,6 @@
                            "[]"
                            (subseq input-buffer cursor-index (length input-buffer)))))))))
 
-(defmethod select-next ((self minibuffer-mode)))
+(defmethod select-next ((minibuffer minibuffer)))
 
-(defmethod select-previous ((self minibuffer-mode)))
-
-(defun minibuffer-mode ()
-  "Base mode for input"
-  (make-instance 'minibuffer-mode
-		 :name "minibuffer"
-		 :keymap *minibuffer-mode-map*))
+(defmethod select-previous ((minibuffer minibuffer)))

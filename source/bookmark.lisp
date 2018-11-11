@@ -42,7 +42,7 @@
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer (mode *minibuffer*)))
+  (with-result (url (read-from-minibuffer *minibuffer*))
     (%bookmark-url url)))
 
 (define-command bookmark-url-from-buffer ()
@@ -53,8 +53,8 @@
 (define-command bookmark-delete ()
   "Delete a bookmark from the bookmark database."
   (with-result (bookmark (read-from-minibuffer
-                          (mode *minibuffer*)
-                          :completion 'bookmark-complete))
+                          *minibuffer*
+                          :completion-function 'bookmark-complete))
     (let ((db (sqlite:connect
                (truename (probe-file *bookmark-db-path*)))))
       (sqlite:execute-non-query
@@ -64,9 +64,9 @@
 (define-command bookmark-anchor ()
   "Show link hints on screen, and allow the user to bookmark one"
   (with-result (selected-anchor (read-from-minibuffer
-                                 (mode *minibuffer*)
-                                 :setup 'setup-anchor
-                                 :cleanup 'remove-link-hints))
+                                 *minibuffer*
+                                 :setup-function 'setup-anchor
+                                 :cleanup-function 'remove-link-hints))
     (loop for hint in (link-hints (mode *active-buffer*))
           do (when (equalp (nth 0 hint) selected-anchor)
                (%bookmark-url (nth 1 hint))))))

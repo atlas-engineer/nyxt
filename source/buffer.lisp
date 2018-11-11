@@ -51,8 +51,8 @@
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
   (with-result (buffer (read-from-minibuffer
-                        (mode *minibuffer*)
-                        :completion 'buffer-complete))
+                        *minibuffer*
+                        :completion-function 'buffer-complete))
     (set-visible-active-buffer buffer)))
 
 (define-command make-visible-new-buffer ()
@@ -93,8 +93,8 @@ of the current buffer to the start page."
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
   (with-result (buffer (read-from-minibuffer
-                        (mode *minibuffer*)
-                        :completion 'buffer-complete))
+                        *minibuffer*
+                        :completion-function 'buffer-complete))
     (if (equalp buffer *active-buffer*)
         (delete-active-buffer)
         (%delete-buffer buffer))))
