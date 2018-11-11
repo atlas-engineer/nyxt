@@ -125,7 +125,9 @@
       (setf input-buffer
             (concatenate 'string
                          (subseq input-buffer 0 cursor-index)
-                         (subseq input-buffer (+ 1 cursor-index) (length input-buffer))))))
+                         (subseq input-buffer
+                                 (+ 1 cursor-index)
+                                 (length input-buffer))))))
   (update-display minibuffer))
 
 (defmethod delete-backwards ((minibuffer minibuffer))
