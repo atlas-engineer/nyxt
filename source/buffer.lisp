@@ -2,9 +2,6 @@
 
 (in-package :next)
 
-(defmethod print-object ((buffer buffer) stream)
-  (format stream "~s" (name buffer)))
-
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))
