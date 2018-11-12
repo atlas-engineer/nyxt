@@ -18,6 +18,7 @@
     self = [super init];
     [self setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [self setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [self setSpacing:0];
     [self setMinibuffer:[[Minibuffer alloc] init]];
     [self setMinibufferHeightConstraint:
      [NSLayoutConstraint constraintWithItem:self.minibuffer
