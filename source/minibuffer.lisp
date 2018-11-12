@@ -101,7 +101,11 @@
                                    :margin "0"
                                    :padding "4px 6px")
                              (ul :list-style "none"
-                                 :padding "0")))))
+                                 :padding "0")
+                             (.selected :background-color "green"
+                                        :color "white")
+                             (div :overflow-x "scroll"
+                                  :width "100%")))))
     (set-input minibuffer
                (cl-markup:markup
                 (:head (:style style))
@@ -169,21 +173,24 @@
     (setf cursor-index (length input-buffer)))
   (update-display minibuffer))
 
+(defun generate-completion-html (completions cursor-index)
+  (cl-markup:markup (:ul (loop for i from 0 for completion in completions
+                               collect
+                               (cl-markup:markup
+                                (:li :class (when (equal i cursor-index) "selected")
+                                     completion))))))
+
+(defun generate-input-html (input-buffer cursor-index)
+  (concatenate 'string (subseq input-buffer 0 cursor-index) "[]"
+               (subseq input-buffer cursor-index (length input-buffer))))
+
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer cursor-index completions completion-function) minibuffer
     (if completion-function
         (setf completions (funcall completion-function input-buffer))
         (setf completions nil))
-    (let ((input-text
-            (concatenate 'string
-                         (subseq input-buffer 0 cursor-index)
-                         "[]"
-                         (subseq input-buffer
-                                 cursor-index
-                                 (length input-buffer))))
-          (completion-html
-            (cl-markup:markup (:ul (loop for completion in completions
-                                         collect (cl-markup:markup (:li completion)))))))
+    (let ((input-text (generate-input-html input-buffer cursor-index))
+          (completion-html (generate-completion-html completions 0)))
       (minibuffer-execute-javascript
        *interface* (window-active *interface*)
        (ps:ps
