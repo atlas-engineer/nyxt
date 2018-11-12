@@ -95,15 +95,18 @@
   (erase-document minibuffer)
   (setf (input-buffer minibuffer) "")
   (setf (cursor-index minibuffer) 0)
-  (let ((style (cl-css:css '((* :font-family "monospace,monospace")
+  (let ((style (cl-css:css '((* :font-family "monospace,monospace"
+                                :font-size "14px")
                              (body :border-top "4px solid gray"
                                    :margin "0"
-                                   :padding "4px 6px")))))
+                                   :padding "4px 6px")
+                             (ul :list-style "none"
+                                 :padding "0")))))
     (set-input minibuffer
                (cl-markup:markup
                 (:head (:style style))
                 (:div :id "input" "")
-                (:div (:ul :id "completions"))))))
+                (:div :id "completions" "")))))
 
 (defmethod show ((minibuffer minibuffer))
   (minibuffer-set-height *interface*
@@ -168,17 +171,26 @@
 
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer cursor-index completions completion-function) minibuffer
-    (when completion-function
-      (setf completions (funcall completion-function input-buffer)))
-    (minibuffer-execute-javascript
-     *interface* (window-active *interface*)
-     (ps:ps
-       (setf (ps:chain document (get-element-by-id "input") inner-h-t-m-l)
-             (ps:lisp
-              (concatenate 'string
-                           (subseq input-buffer 0 cursor-index)
-                           "[]"
-                           (subseq input-buffer cursor-index (length input-buffer)))))))))
+    (if completion-function
+        (setf completions (funcall completion-function input-buffer))
+        (setf completions nil))
+    (let ((input-text
+            (concatenate 'string
+                         (subseq input-buffer 0 cursor-index)
+                         "[]"
+                         (subseq input-buffer
+                                 cursor-index
+                                 (length input-buffer))))
+          (completion-html
+            (cl-markup:markup (:ul (loop for completion in completions
+                                         collect (cl-markup:markup (:li completion)))))))
+      (minibuffer-execute-javascript
+       *interface* (window-active *interface*)
+       (ps:ps
+         (setf (ps:chain document (get-element-by-id "input") inner-h-t-m-l)
+               (ps:lisp input-text))
+         (setf (ps:chain document (get-element-by-id "completions") inner-h-t-m-l)
+               (ps:lisp completion-html)))))))
 
 (defmethod select-next ((minibuffer minibuffer)))
 
