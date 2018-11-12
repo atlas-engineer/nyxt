@@ -95,11 +95,15 @@
   (erase-document minibuffer)
   (setf (input-buffer minibuffer) "")
   (setf (cursor-index minibuffer) 0)
-  (set-input
-   minibuffer
-   (cl-markup:markup
-    (:div :id "input" "")
-    (:div :id "completions" ""))))
+  (let ((style (cl-css:css '((* :font-family "monospace,monospace")
+                             (body :border-top "4px solid gray"
+                                   :margin "0"
+                                   :padding "4px 6px")))))
+    (set-input minibuffer
+               (cl-markup:markup
+                (:head (:style style))
+                (:div :id "input" "")
+                (:div (:ul :id "completions"))))))
 
 (defmethod show ((minibuffer minibuffer))
   (minibuffer-set-height *interface*
