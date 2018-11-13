@@ -175,16 +175,16 @@
     (setf input-buffer-cursor (length input-buffer)))
   (update-display minibuffer))
 
+(defun generate-input-html (input-buffer cursor-index)
+  (concatenate 'string (subseq input-buffer 0 cursor-index) "[]"
+               (subseq input-buffer cursor-index (length input-buffer))))
+
 (defun generate-completion-html (completions cursor-index)
   (cl-markup:markup (:ul (loop for i from 0 for completion in completions
                                collect
                                (cl-markup:markup
                                 (:li :class (when (equal i cursor-index) "selected")
                                      completion))))))
-
-(defun generate-input-html (input-buffer cursor-index)
-  (concatenate 'string (subseq input-buffer 0 cursor-index) "[]"
-               (subseq input-buffer cursor-index (length input-buffer))))
 
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-buffer-cursor completion-function
@@ -198,9 +198,9 @@
       (minibuffer-execute-javascript
        *interface* (window-active *interface*)
        (ps:ps
-         (setf (ps:chain document (get-element-by-id "input") inner-h-t-m-l)
+         (setf (ps:chain document (get-element-by-id "input") |innerHTML|)
                (ps:lisp input-text))
-         (setf (ps:chain document (get-element-by-id "completions") inner-h-t-m-l)
+         (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
                (ps:lisp completion-html)))))))
 
 (defmethod select-next ((minibuffer minibuffer))
