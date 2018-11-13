@@ -99,12 +99,13 @@
   (setf (input-buffer-cursor minibuffer) 0)
   (let ((style (cl-css:css '((* :font-family "monospace,monospace"
                                 :font-size "14px")
-                             (body :border-top "4px solid gray"
+                             (body :border-top "6px solid gray"
                                    :margin "0"
                                    :padding "4px 6px")
                              (ul :list-style "none"
                                  :padding "0")
-                             (.selected :background-color "green"
+                             (li :padding "2px")
+                             (.selected :background-color "gray"
                                         :color "white")))))
     (set-input minibuffer
                (cl-markup:markup
