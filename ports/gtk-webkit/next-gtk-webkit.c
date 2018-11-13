@@ -35,7 +35,9 @@ static char *window_make_gui() {
 	GtkWidget *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
 	gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 600);
+	// TODO: Make title customizable from Lisp.
 	gtk_window_set_title(GTK_WINDOW(main_window), APPNAME);
+	gtk_window_set_wmclass(GTK_WINDOW(w), wmstr, APPNAME);
 
 	// Create a browser instance
 	WebKitWebView *web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
