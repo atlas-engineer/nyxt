@@ -45,19 +45,17 @@
   (hide minibuffer)
   (set-active-buffer (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function
-               empty-complete-immediate completion-function)
+               empty-complete-immediate completions completion-cursor)
       minibuffer
-    (if completion-function
-	;; if there's a completion function
-	(progn
-	  (let ((completion (get-input-complete *minibuffer*)))
-	    (if completion
-		;; if we're able to find a completion
-		(funcall callback-function completion)
-		;; if we can't find a completion
-		(when empty-complete-immediate
-		  ;; if we accept immediate output in place of completion
-		  (return-immediate minibuffer)))))
+    (if completions
+        (let ((completion (nth completion-cursor completions)))
+	  (if completion
+	      ;; if we're able to find a completion
+	      (funcall callback-function completion)
+	      ;; if we can't find a completion
+	      (when empty-complete-immediate
+	        ;; if we accept immediate output in place of completion
+	        (return-immediate minibuffer))))
 	;; if there's no completion function
 	(return-immediate minibuffer))
     (when cleanup-function
@@ -71,8 +69,6 @@
     (when cleanup-function
       (funcall cleanup-function)))
   (hide minibuffer))
-
-(defmethod get-input-complete ((minibuffer minibuffer)))
 
 (defmethod cancel-input ((minibuffer minibuffer))
   (set-active-buffer (callback-buffer minibuffer))
