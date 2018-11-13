@@ -42,7 +42,8 @@
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer *minibuffer*))
+  (with-result (url (read-from-minibuffer *minibuffer*
+                                          :input-prompt "Bookmark URL:"))
     (%bookmark-url url)))
 
 (define-command bookmark-url-from-buffer ()
@@ -54,6 +55,7 @@
   "Delete a bookmark from the bookmark database."
   (with-result (bookmark (read-from-minibuffer
                           *minibuffer*
+                          :input-prompt "Delete bookmark:"
                           :completion-function 'bookmark-complete))
     (let ((db (sqlite:connect
                (truename (probe-file *bookmark-db-path*)))))

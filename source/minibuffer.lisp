@@ -12,6 +12,7 @@
    (setup-function :accessor setup-function)
    (cleanup-function :accessor cleanup-function)
    (empty-complete-immediate :accessor empty-complete-immediate)
+   (input-prompt :accessor input-prompt :initform "Input:")
    (input-buffer :accessor input-buffer :initform "")
    (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
    (completions :accessor completions)
@@ -24,8 +25,11 @@
 
 (defmethod read-from-minibuffer (callback-function
                                  (minibuffer minibuffer)
-                                 &key completion-function setup-function
+                                 &key input-prompt completion-function setup-function
                                    cleanup-function empty-complete-immediate)
+  (if input-prompt
+      (setf (input-prompt minibuffer) input-prompt)
+      (setf (input-prompt minibuffer) "Input:"))
   (setf (callback-function minibuffer) callback-function)
   (setf (completion-function minibuffer) completion-function)
   (setf (completions minibuffer) nil)
@@ -96,9 +100,11 @@
   (setf (input-buffer-cursor minibuffer) 0)
   (let ((style (cl-css:css '((* :font-family "monospace,monospace"
                                 :font-size "14px")
-                             (body :border-top "6px solid gray"
+                             (body :border-top "4px solid dimgray"
                                    :margin "0"
                                    :padding "4px 6px")
+                             ("#prompt" :padding-right "4px"
+                                         :color "dimgray")
                              (ul :list-style "none"
                                  :padding "0")
                              (li :padding "2px")
@@ -108,7 +114,7 @@
                (cl-markup:markup
                 (:head (:style style))
                 (:body
-                 (:div :id "input" "")
+                 (:div (:span :id "prompt" "") (:span :id "input" ""))
                  (:div :id "completions" ""))))))
 
 (defmethod show ((minibuffer minibuffer))
@@ -196,6 +202,8 @@
       (minibuffer-execute-javascript
        *interface* (window-active *interface*)
        (ps:ps
+         (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+               (ps:lisp (input-prompt minibuffer)))
          (setf (ps:chain document (get-element-by-id "input") |innerHTML|)
                (ps:lisp input-text))
          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
