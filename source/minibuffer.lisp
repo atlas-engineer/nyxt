@@ -13,9 +13,9 @@
    (cleanup-function :accessor cleanup-function)
    (empty-complete-immediate :accessor empty-complete-immediate)
    (input-buffer :accessor input-buffer :initform "")
-   (cursor-index :accessor cursor-index :initform 0)
+   (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
    (completions :accessor completions)
-   (completion-index :accessor completion-index)))
+   (completion-cursor :accessor completion-cursor :initform 0)))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer)
 				       &key &allow-other-keys)
@@ -28,6 +28,8 @@
                                    cleanup-function empty-complete-immediate)
   (setf (callback-function minibuffer) callback-function)
   (setf (completion-function minibuffer) completion-function)
+  (setf (completions minibuffer) nil)
+  (setf (completion-cursor minibuffer) 0)
   (setf (setup-function minibuffer) setup-function)
   (setf (cleanup-function minibuffer) cleanup-function)
   (setf (empty-complete-immediate minibuffer) empty-complete-immediate)
@@ -94,7 +96,7 @@
 (defmethod setup-default ((minibuffer minibuffer))
   (erase-document minibuffer)
   (setf (input-buffer minibuffer) "")
-  (setf (cursor-index minibuffer) 0)
+  (setf (input-buffer-cursor minibuffer) 0)
   (let ((style (cl-css:css '((* :font-family "monospace,monospace"
                                 :font-size "14px")
                              (body :border-top "4px solid gray"
@@ -103,14 +105,13 @@
                              (ul :list-style "none"
                                  :padding "0")
                              (.selected :background-color "green"
-                                        :color "white")
-                             (div :overflow-x "scroll"
-                                  :width "100%")))))
+                                        :color "white")))))
     (set-input minibuffer
                (cl-markup:markup
                 (:head (:style style))
-                (:div :id "input" "")
-                (:div :id "completions" "")))))
+                (:body
+                 (:div :id "input" "")
+                 (:div :id "completions" ""))))))
 
 (defmethod show ((minibuffer minibuffer))
   (minibuffer-set-height *interface*
@@ -126,51 +127,52 @@
   (setf (input-buffer minibuffer)
         (cl-strings:insert character
                            (input-buffer minibuffer)
-                           :position (cursor-index minibuffer)))
-  (incf (cursor-index minibuffer))
+                           :position (input-buffer-cursor minibuffer)))
+  (incf (input-buffer-cursor minibuffer))
+  (setf (completion-cursor minibuffer) 0)
   (update-display minibuffer))
 
 (defmethod delete-forwards ((minibuffer minibuffer))
-  (with-slots (input-buffer cursor-index) minibuffer
-    (unless (= cursor-index (length input-buffer))
+  (with-slots (input-buffer input-buffer-cursor) minibuffer
+    (unless (= input-buffer-cursor (length input-buffer))
       (setf input-buffer
             (concatenate 'string
-                         (subseq input-buffer 0 cursor-index)
+                         (subseq input-buffer 0 input-buffer-cursor)
                          (subseq input-buffer
-                                 (+ 1 cursor-index)
+                                 (+ 1 input-buffer-cursor)
                                  (length input-buffer))))))
   (update-display minibuffer))
 
 (defmethod delete-backwards ((minibuffer minibuffer))
-  (with-slots (input-buffer cursor-index) minibuffer
-    (unless (= cursor-index 0)
+  (with-slots (input-buffer input-buffer-cursor) minibuffer
+    (unless (= input-buffer-cursor 0)
       (setf input-buffer
             (concatenate 'string
-                         (subseq input-buffer 0 (- cursor-index 1))
-                         (subseq input-buffer cursor-index (length input-buffer))))
-      (decf cursor-index)))
+                         (subseq input-buffer 0 (- input-buffer-cursor 1))
+                         (subseq input-buffer input-buffer-cursor (length input-buffer))))
+      (decf input-buffer-cursor)))
   (update-display minibuffer))
 
 (defmethod cursor-forwards ((minibuffer minibuffer))
-  (with-slots (input-buffer cursor-index) minibuffer
-    (when (< cursor-index (length input-buffer))
-      (incf cursor-index)))
+  (with-slots (input-buffer input-buffer-cursor) minibuffer
+    (when (< input-buffer-cursor (length input-buffer))
+      (incf input-buffer-cursor)))
   (update-display minibuffer))
 
 (defmethod cursor-backwards ((minibuffer minibuffer))
-  (with-slots (input-buffer cursor-index) minibuffer
-    (when (> cursor-index 0)
-      (decf cursor-index)))
+  (with-slots (input-buffer input-buffer-cursor) minibuffer
+    (when (> input-buffer-cursor 0)
+      (decf input-buffer-cursor)))
   (update-display minibuffer))
 
 (defmethod cursor-beginning ((minibuffer minibuffer))
-  (with-slots (cursor-index) minibuffer
-    (setf cursor-index 0))
+  (with-slots (input-buffer-cursor) minibuffer
+    (setf input-buffer-cursor 0))
   (update-display minibuffer))
 
 (defmethod cursor-end ((minibuffer minibuffer))
-  (with-slots (input-buffer cursor-index) minibuffer
-    (setf cursor-index (length input-buffer)))
+  (with-slots (input-buffer input-buffer-cursor) minibuffer
+    (setf input-buffer-cursor (length input-buffer)))
   (update-display minibuffer))
 
 (defun generate-completion-html (completions cursor-index)
@@ -185,12 +187,14 @@
                (subseq input-buffer cursor-index (length input-buffer))))
 
 (defmethod update-display ((minibuffer minibuffer))
-  (with-slots (input-buffer cursor-index completions completion-function) minibuffer
+  (with-slots (input-buffer input-buffer-cursor completion-function
+               completions completion-cursor)
+      minibuffer
     (if completion-function
         (setf completions (funcall completion-function input-buffer))
         (setf completions nil))
-    (let ((input-text (generate-input-html input-buffer cursor-index))
-          (completion-html (generate-completion-html completions 0)))
+    (let ((input-text (generate-input-html input-buffer input-buffer-cursor))
+          (completion-html (generate-completion-html completions completion-cursor)))
       (minibuffer-execute-javascript
        *interface* (window-active *interface*)
        (ps:ps
@@ -199,6 +203,12 @@
          (setf (ps:chain document (get-element-by-id "completions") inner-h-t-m-l)
                (ps:lisp completion-html)))))))
 
-(defmethod select-next ((minibuffer minibuffer)))
+(defmethod select-next ((minibuffer minibuffer))
+  (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
+    (incf (completion-cursor minibuffer))
+    (update-display minibuffer)))
 
-(defmethod select-previous ((minibuffer minibuffer)))
+(defmethod select-previous ((minibuffer minibuffer))
+  (when (> (completion-cursor minibuffer) 0)
+    (decf (completion-cursor minibuffer))
+    (update-display minibuffer)))
