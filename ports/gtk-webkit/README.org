@@ -4,3 +4,10 @@ Next browser. It is pre-alpha stage.
 
 * Status
 Pre-alpha. This software is not ready to be used.
+
+* Development
+
+Set the ~G_MESSAGES_DEBUG~ environment variable to ~all~ to enable debug
+messages from the shell.  For instance:
+
+: env G_MESSAGES_DEBUG=all ./next-gtk-webkit

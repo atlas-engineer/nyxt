@@ -1,10 +1,8 @@
 ## GNU Makefile.
 
+## WebKitGTK depends on Glib, GTK, and libsoup.
 CFLAGS += `pkg-config --cflags webkit2gtk-4.0`
 LDLIBS += `pkg-config --libs webkit2gtk-4.0`
-
-CFLAGS += `pkg-config --cflags xmlrpc_server_abyss`
-LDLIBS += `pkg-config --libs xmlrpc_server_abyss`
 
 all: next-gtk-webkit
 
