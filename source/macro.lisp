@@ -14,7 +14,7 @@
 
 ;; allow inlining of a parenscript function that can accept arguments,
 ;; useful for parenscript that will accept variables from lisp
-(defmacro defparen (name lambda-list &body body)
+(defmacro define-parenscript (name lambda-list &body body)
   `(defun ,name (,@lambda-list)
      (ps:ps ,@body)))
 

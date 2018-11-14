@@ -11,7 +11,7 @@
                         (loop for heading in headings
                            collect (ps:chain heading inner-text))))))
 
-(defparen paren-jump-to-heading (heading-inner-text)
+(define-parenscript paren-jump-to-heading (heading-inner-text)
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))

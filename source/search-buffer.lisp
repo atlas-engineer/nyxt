@@ -18,7 +18,7 @@
       (setf (ps:@ el id) index)
       el)))
 
-(defparen paren-add-search-boxes (search-string)
+(define-parenscript paren-add-search-boxes (search-string)
   (let* ((regex-string (ps:lisp (concatenate 'string search-string "[A-Za-z]*")))
          (regex-flags "gi")
          (matcher (ps:new (-reg-exp regex-string regex-flags)))

@@ -32,7 +32,7 @@
     (setf ratio (min ratio *zoom-ratio-max*))
     (setf *current-zoom-ratio* ratio)))
 
-(defparen %zoom-in-page ()
+(define-parenscript %zoom-in-page ()
   (ps:lisp (ensure-zoom-ratio-range #'+))
   (ps:let ((style (ps:chain document body style)))
     (setf (ps:@ style zoom) (ps:lisp *current-zoom-ratio*))))
@@ -41,7 +41,7 @@
   "Zoom in the current page."
   (buffer-execute-javascript *interface* (view *active-buffer*) (%zoom-in-page)))
 
-(defparen %zoom-out-page ()
+(define-parenscript %zoom-out-page ()
   (ps:lisp (ensure-zoom-ratio-range #'-))
   (ps:let ((style (ps:chain document body style)))
     (setf (ps:@ style zoom) (ps:lisp *current-zoom-ratio*))))
@@ -50,7 +50,7 @@
   "Zoom out the current page."
   (buffer-execute-javascript *interface* (view *active-buffer*) (%zoom-out-page)))
 
-(defparen %unzoom-page ()
+(define-parenscript %unzoom-page ()
   (ps:lisp (setf *current-zoom-ratio* *zoom-ratio-default*))
   (setf (ps:chain document body style zoom) (ps:lisp *zoom-ratio-default*)))
 
