@@ -29,8 +29,8 @@
     (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))
     new-buffer))
 
-(defun set-active-buffer (buffer)
-  (setf *active-buffer* buffer))
+(defmethod set-active-buffer ((buffer buffer))
+  (setf (active-buffer (window-active *interface*)) buffer))
 
 (defun set-visible-active-buffer (buffer)
   (set-active-buffer buffer)
