@@ -106,13 +106,16 @@ minibuffer_set_height(xmlrpc_env *   const envP,
                       xmlrpc_value * const paramArrayP,
                       void *         const serverInfo,
                       void *         const channelInfo) {
-    void *windowId;
-    xmlrpc_int minibufferHeight;
-    xmlrpc_decompose_value(envP, paramArrayP, "(si)", &windowId, &minibufferHeight);
-    NextApplicationDelegate *delegate = [NSApp delegate];
-    [delegate minibufferSetHeight:minibufferHeight
-                        forWindow:[NSString stringWithFormat:@"%s", windowId]];
-    return xmlrpc_int_new(envP, minibufferHeight);
+    __block NSInteger operationResult = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        void *windowId;
+        xmlrpc_int minibufferHeight;
+        xmlrpc_decompose_value(envP, paramArrayP, "(si)", &windowId, &minibufferHeight);
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        operationResult = [delegate minibufferSetHeight:minibufferHeight
+                                              forWindow:[NSString stringWithFormat:@"%s", windowId]];
+    });
+    return xmlrpc_int_new(envP, (int)operationResult);
 }
 
 static xmlrpc_value *
