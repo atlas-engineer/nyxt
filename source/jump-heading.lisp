@@ -26,11 +26,11 @@
                  (heading (read-from-minibuffer
                            *minibuffer*
                            :input-prompt "Jump to heading:"
-                           :completion-function
-                           (lambda (input)
-                             (fuzzy-match
-                              input
-                              (cl-json:decode-json-from-string headings))))))
+                           :completion-function (lambda (input)
+                                                  (fuzzy-match
+                                                   input
+                                                   (cl-json:decode-json-from-string
+                                                    headings))))))
     (buffer-execute-javascript *interface*
                                (active-buffer *interface*)
                                (paren-jump-to-heading heading))))
