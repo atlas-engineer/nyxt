@@ -10,7 +10,6 @@
   :pathname "source/"
   :components ((:file "package")
                (:file "remote")
-               (:file "web-view")
 	       (:file "macro")
                (:file "user")
 	       (:file "global")

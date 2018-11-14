@@ -24,31 +24,26 @@
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))
 
-(defun %bookmark-url (input)
+(defun %bookmark-url (url)
   (let ((db (sqlite:connect
 	     (truename (probe-file *bookmark-db-path*)))))
     (sqlite:execute-non-query
-     db "insert into bookmarks (url) values (?)" input)
+     db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
 
 (define-command bookmark-current-page ()
   "Bookmark the currently opened page in the active buffer."
-  (let ((db (sqlite:connect
-	     (truename (probe-file *bookmark-db-path*))))
-	(url (name *active-buffer*)))
-    (sqlite:execute-non-query
-     db "insert into bookmarks (url) values (?)" url)
-    (sqlite:disconnect db)))
+  (with-result (url (buffer-get-url))
+    (let ((db (sqlite:connect
+	       (truename (probe-file *bookmark-db-path*)))))
+      (sqlite:execute-non-query
+       db "insert into bookmarks (url) values (?)" url)
+      (sqlite:disconnect db))))
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
   (with-result (url (read-from-minibuffer *minibuffer*
                                           :input-prompt "Bookmark URL:"))
-    (%bookmark-url url)))
-
-(define-command bookmark-url-from-buffer ()
-  "Allow the user to bookmark a URL from the current active buffer."
-  (let ((url (web-view-get-url *interface* (view *active-buffer*))))
     (%bookmark-url url)))
 
 (define-command bookmark-delete ()

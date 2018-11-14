@@ -2,6 +2,9 @@
 
 (in-package :next)
 
+(define-parenstatic buffer-get-url
+    (ps:chain window location href))
+
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))
