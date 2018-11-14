@@ -1,0 +1,19 @@
+* Next ports
+
+Next is made of two programs:
+
+- The Lisp core which offers the user full control over the browsing.  It's 100%
+  Common Lisp.
+
+- The "port", which only purpose is to display a window with two components: the
+  minibuffer and the web view.
+
+The two parts communicate via [[http://xmlrpc.scripting.com/][XML-RPC]].  The Lisp core sends an XML-RPC request
+to the port (for example, "open this URL"); the port acts upon it and sends an
+XML-RPC response back to the Lisp core.
+
+The communication API is fully specified in =remote.lisp=, which is in the Lisp
+core source.
+
+This folder contains the different ports.  They are all independent and target
+various platforms.
