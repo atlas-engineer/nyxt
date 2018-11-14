@@ -12,8 +12,14 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 #include <libsoup/soup.h>
 
+#include "autokey-dictionary.h"
+
 #define APPNAME "Next"
 
+// TODO: Make local?
+static AutokeyDictionary *windows;
+
+// TODO: Quit properly.
 static void destroy_window(GtkWidget *widget, GtkWidget *window) {
 	gtk_main_quit();
 }
@@ -23,7 +29,7 @@ static gboolean close_web_view(WebKitWebView *webView, GtkWidget *window) {
 	return true;
 }
 
-static char *window_make_gui() {
+static GVariant *window_make() {
 	// Create an 800x600 window that will contain the browser instance
 	GtkWidget *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
@@ -54,8 +60,9 @@ static char *window_make_gui() {
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(main_window);
 
-	// TODO: Return the hash table key.
-	return "foo";
+
+	char *identifier = akd_insert_element(windows, main_window);
+	return g_variant_new_string(identifier);
 }
 
 static void server_callback(SoupServer *server, SoupMessage *msg,
@@ -90,8 +97,9 @@ static void server_callback(SoupServer *server, SoupMessage *msg,
 
 	g_debug("Method name: %s", method_name);
 
+	GVariant *operation_result = NULL;
 	if (strcmp(method_name, "window.make") == 0) {
-		window_make_gui();
+		operation_result = window_make();
 	}
 
 	/*
@@ -103,7 +111,7 @@ static void server_callback(SoupServer *server, SoupMessage *msg,
 
 	soup_xmlrpc_params_free(params);
 
-	soup_xmlrpc_message_set_response(msg, g_variant_new_string("foo"), &error);
+	soup_xmlrpc_message_set_response(msg, operation_result, &error);
 	if (error) {
 		g_warning("Failed to set XMLRPC response: %s", error->message);
 	}
@@ -132,7 +140,12 @@ int main(int argc, char *argv[]) {
 	g_debug("Starting XMLRPC server");
 	soup_server_add_handler(server, NULL, server_callback, NULL, NULL);
 
+	// Global indentifiers.
+	windows = akd_init(NULL);
+
 	gtk_main();
+
+	akd_free(windows);
 
 	return EXIT_SUCCESS;
 }

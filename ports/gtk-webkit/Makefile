@@ -6,6 +6,8 @@ LDLIBS += `pkg-config --libs webkit2gtk-4.0`
 
 all: next-gtk-webkit
 
+next-gtk-webkit: $(wildcard *.h)
+
 install: next-gtk-webkit
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f $< $(DESTDIR)$(PREFIX)/bin
