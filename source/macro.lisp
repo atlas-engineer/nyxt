@@ -9,10 +9,8 @@
   `(progn
      (defparameter ,script-name
        (ps:ps ,@script-body))
-     (defun ,script-name (&optional (buffer *active-buffer*))
-       (let ((script-result (buffer-execute-javascript *interface* (view buffer) ,script-name)))
-         (when (and script-result (not (equalp "" script-result)))
-           (cl-json:decode-json-from-string script-result))))))
+     (defun ,script-name (&optional (callback nil) (buffer (active-buffer *interface*)))
+       (buffer-execute-javascript *interface* buffer ,script-name callback))))
 
 ;; allow inlining of a parenscript function that can accept arguments,
 ;; useful for parenscript that will accept variables from lisp
