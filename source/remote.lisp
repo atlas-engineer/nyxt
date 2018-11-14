@@ -154,5 +154,4 @@
   (declare (ignore view function)))
 (defmethod web-view-set-url ((interface remote-interface) view url)
   (declare (ignore view url)))
-(defmethod web-view-get-url ((interface remote-interface) view)
-  (declare (ignore view)))
+

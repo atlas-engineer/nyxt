@@ -91,30 +91,30 @@
           (set-url (node-data child) t))))))
 
 (defun add-or-traverse-history (mode)
-  (let ((url (web-view-get-url *interface* (view (buffer mode))))
-	(active-node (active-history-node mode)))
-    ;; only add element to the history if it is different than the current
-    (when (equalp url (node-data active-node))
-      (return-from add-or-traverse-history t))
-    ;; check if parent exists
-    (when (node-parent active-node)
-      ;; check if parent node's url is equal
-      (when (equalp url (node-data (node-parent active-node)))
-    	;; set active-node to parent
-    	(setf (active-history-node mode) (node-parent active-node))
-    	(return-from add-or-traverse-history t)))
-    ;; loop through children to make sure node does not exist in children
-    (loop for child in (node-children active-node) do
-      (when (equalp (node-data child) url)
-    	(setf (active-history-node mode) child)
-    	(return-from add-or-traverse-history t)))
-    ;; if we made it this far, we must create a new node
-    (when url
-      (history-add url)) ; add to history database
-    (let ((new-node (make-node :parent active-node :data url)))
-      (push new-node (node-children active-node))
-      (setf (active-history-node mode) new-node)
-      (return-from add-or-traverse-history t))))
+  (with-result (url (buffer-get-url))
+    (let ((active-node (active-history-node mode)))
+      ;; only add element to the history if it is different than the current
+      (when (equalp url (node-data active-node))
+        (return-from add-or-traverse-history t))
+      ;; check if parent exists
+      (when (node-parent active-node)
+        ;; check if parent node's url is equal
+        (when (equalp url (node-data (node-parent active-node)))
+    	  ;; set active-node to parent
+    	  (setf (active-history-node mode) (node-parent active-node))
+    	  (return-from add-or-traverse-history t)))
+      ;; loop through children to make sure node does not exist in children
+      (loop for child in (node-children active-node) do
+        (when (equalp (node-data child) url)
+    	  (setf (active-history-node mode) child)
+    	  (return-from add-or-traverse-history t)))
+      ;; if we made it this far, we must create a new node
+      (when url
+        (history-add url)) ; add to history database
+      (let ((new-node (make-node :parent active-node :data url)))
+        (push new-node (node-children active-node))
+        (setf (active-history-node mode) new-node)
+        (return-from add-or-traverse-history t)))))
 
 (define-command set-url-new-buffer ()
   "Prompt the user for a url and set it in a new active / visible
@@ -139,8 +139,8 @@ buffer"
     (set-url-buffer input-url new-buffer disable-history)))
 
 (defun setup-url ()
-  (set-input (mode *minibuffer*)
-	     (web-view-get-url *interface* (view *active-buffer*))))
+  (with-result (url (buffer-get-url))
+    (set-input *minibuffer* url)))
 
 (defun set-url (input-url &optional disable-history)
   (let ((url (parse-url input-url)))
