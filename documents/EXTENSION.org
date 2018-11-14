@@ -20,12 +20,12 @@ Setting the start page can easily be achieved in the following manner:
 
 * Creating your own Parenscript
 You can call any parenscript within the browser through the convient
-defparen, and defparenstatic macros. A really simple example below
+defparen, and define-parenstatic macros. A really simple example below
 shows how you could set the body with the URL of the current page.
 
 #+NAME: hell-url
 #+BEGIN_SRC lisp
-(defparenstatic hello-url
+(define-parenstatic hello-url
     (defun set-body (text)
       (setf (ps:chain document body inner-text) text)
       ;; return nil to avoid json decode errors
@@ -33,7 +33,7 @@ shows how you could set the body with the URL of the current page.
   (set-body (ps:chain document -u-r-l)))
 #+END_SRC
 
-Defparenstatic will automatically generate a defparameter named
+Define-Parenstatic will automatically generate a defparameter named
 ~hello-url~ as in the case above, and a function ~(hello-url)~ that
 you can invoke to act upon the currently ~*active-buffer*~.
 * Running shell commands within Next
@@ -53,7 +53,7 @@ the command output.
 		 :name "shell-mode"
 		 :keymap *shell-mode-map*))
 
-(defparenstatic clear-shell-output
+(define-parenstatic clear-shell-output
     (setf (ps:chain document body inner-h-t-m-l) ""))
 
 (defparen append-output (output)
@@ -87,7 +87,7 @@ The following function provides a way to reload the current page.
 #+NAME: reload-page
 #+BEGIN_SRC lisp
 ;; Reload page with §
-(defparenstatic reload-page
+(define-parenstatic reload-page
   (ps:chain location (reload)))
 (define-key *global-map* (kbd "§") #'reload-page)
 #+END_SRC
@@ -98,9 +98,9 @@ one screen.
 
 #+NAME: scroll-page-up-and-down
 #+BEGIN_SRC lisp
-(defparenstatic scroll-page-down
+(define-parenstatic scroll-page-down
     (ps:chain window (scroll-by 0 (ps:@ window inner-height))))
-(defparenstatic scroll-page-up
+(define-parenstatic scroll-page-up
   (ps:chain window (scroll-by 0 (- (ps:@ window inner-height)))))
 
 ;; bind the new functions

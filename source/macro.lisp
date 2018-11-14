@@ -3,9 +3,9 @@
 (in-package :next)
 
 ;; used to allow inlining of parenscript compilation in a lisp file.
-;; with the syntax (defparenstatic name) allows definition of a paren
+;; with the syntax (define-parenstatic name) allows definition of a paren
 ;; to some constant of name "name"
-(defmacro defparenstatic (script-name &rest script-body)
+(defmacro define-parenstatic (script-name &rest script-body)
   `(progn
      (defparameter ,script-name
        (ps:ps ,@script-body))

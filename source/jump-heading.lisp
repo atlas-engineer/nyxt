@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defparenstatic get-headings
+(define-parenstatic get-headings
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))

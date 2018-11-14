@@ -3,7 +3,7 @@
 
 (in-package :next)
 
-(defparenstatic add-link-hints
+(define-parenstatic add-link-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -90,7 +90,7 @@
 	""))
   (hints-add (links-find window document)))
 
-(defparenstatic remove-link-hints
+(define-parenstatic remove-link-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))

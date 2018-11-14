@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defparenstatic initialize-search-buffer
+(define-parenstatic initialize-search-buffer
   (ps:defvar current-search 0)
   (ps:defvar match-count)
   (defun insert (str index value)
@@ -41,7 +41,7 @@
                        :setup-function 'initialize-search-buffer))
     (buffer-execute-javascript *interface* (view *active-buffer*) (paren-add-search-boxes input))))
 
-(defparenstatic remove-search-hints
+(define-parenstatic remove-search-hints
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -51,13 +51,13 @@
       (ps:chain el (remove))))
   (search-hints-remove-all))
 
-(defparenstatic next-search-hint
+(define-parenstatic next-search-hint
   (when (> match-count current-search)
     (setf current-search (+ current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
 
-(defparenstatic previous-search-hint
+(define-parenstatic previous-search-hint
   (when (> current-search 0)
     (setf current-search (- current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))

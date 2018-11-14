@@ -8,22 +8,22 @@
   ((active-history-node :accessor active-history-node :initarg :active-node)
    (link-hints :accessor link-hints)))
 
-(defparenstatic scroll-to-top
+(define-parenstatic scroll-to-top
     (ps:chain window (scroll-by 0 (- (ps:chain document body scroll-height)))))
 
-(defparenstatic scroll-to-bottom
+(define-parenstatic scroll-to-bottom
     (ps:chain window (scroll-by 0 (ps:chain document body scroll-height))))
 
-(defparenstatic scroll-down
+(define-parenstatic scroll-down
     (ps:chain window (scroll-by 0 (ps:lisp *scroll-distance*))))
 
-(defparenstatic scroll-up
+(define-parenstatic scroll-up
     (ps:chain window (scroll-by 0 (ps:lisp (- *scroll-distance*)))))
 
-(defparenstatic scroll-left
+(define-parenstatic scroll-left
     (ps:chain window (scroll-by (ps:lisp (- *horizontal-scroll-distance*)) 0)))
 
-(defparenstatic scroll-right
+(define-parenstatic scroll-right
     (ps:chain window (scroll-by (ps:lisp *horizontal-scroll-distance*) 0)))
 
 (defun ensure-zoom-ratio-range (zoom)
