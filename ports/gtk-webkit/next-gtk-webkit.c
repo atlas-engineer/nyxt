@@ -75,22 +75,25 @@ static GVariant *window_delete(const char *a_key) {
 static void server_callback(SoupServer *server, SoupMessage *msg,
 	const char *path, GHashTable *query,
 	SoupClientContext *context, gpointer data) {
-	SoupMessageHeadersIter iter;
-	const char *name, *value;
-
-	g_debug("%s %s HTTP/1.%d", msg->method, path,
-		soup_message_get_http_version(msg));
-	soup_message_headers_iter_init(&iter, msg->request_headers);
-	while (soup_message_headers_iter_next(&iter, &name, &value)) {
-		g_debug("%s: %s", name, value);
+	{
+		const char *name, *value;
+		SoupMessageHeadersIter iter;
+		GString *pretty_message = g_string_new("XMLRPC request:\n");
+		g_string_append_printf(pretty_message, "%s %s HTTP/1.%d\n", msg->method, path,
+			soup_message_get_http_version(msg));
+		soup_message_headers_iter_init(&iter, msg->request_headers);
+		while (soup_message_headers_iter_next(&iter, &name, &value)) {
+			g_string_append_printf(pretty_message, "%s: %s\n", name, value);
+		}
+		if (msg->request_body->length == 0) {
+			g_warning("Empty HTTP request");
+			return;
+		}
+		g_string_append_printf(pretty_message, "%s", msg->request_body->data);
+		g_debug("%s", pretty_message->str);
+		g_string_free(pretty_message, TRUE);
 	}
 
-	if (msg->request_body->length == 0) {
-		g_warning("Empty HTTP request");
-		return;
-	}
-
-	g_debug("%s", msg->request_body->data);
 	SoupXMLRPCParams *params = NULL;
 	GError *error = NULL;
 	char *method_name = soup_xmlrpc_parse_request(msg->request_body->data,
