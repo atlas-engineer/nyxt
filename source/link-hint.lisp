@@ -105,9 +105,9 @@
 currently active buffer."
   (with-result* ((links-json (add-link-hints))
                  (selected-anchor (read-from-minibuffer
-                                 *minibuffer*
-                                 :input-prompt "Go to link:"
-                                 :cleanup-function #'remove-link-hints)))
+                                   *minibuffer*
+                                   :input-prompt "Go to link:"
+                                   :cleanup-function #'remove-link-hints)))
     (let* ((link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
       (when selected-link
@@ -120,9 +120,9 @@ currently active buffer."
 buffer (not set to visible active buffer)."
   (with-result* ((links-json (add-link-hints))
                  (selected-anchor (read-from-minibuffer
-                                 *minibuffer*
-                                 :input-prompt "Open link in new buffer:"
-                                 :cleanup-function #'remove-link-hints)))
+                                   *minibuffer*
+                                   :input-prompt "Open link in new buffer:"
+                                   :cleanup-function #'remove-link-hints)))
     (let* ((new-buffer (make-buffer))
            (link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
@@ -136,9 +136,9 @@ buffer (not set to visible active buffer)."
 visible active buffer."
   (with-result* ((links-json (add-link-hints))
                  (selected-anchor (read-from-minibuffer
-                                 *minibuffer*
-                                 :input-prompt "Go to link in new buffer:"
-                                 :cleanup-function #'remove-link-hints)))
+                                   *minibuffer*
+                                   :input-prompt "Go to link in new buffer:"
+                                   :cleanup-function remove-link-hints)))
     (let* ((new-buffer (make-buffer))
            (link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
