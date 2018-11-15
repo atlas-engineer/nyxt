@@ -60,10 +60,12 @@
 
 (define-command bookmark-anchor ()
   "Show link hints on screen, and allow the user to bookmark one"
-  (with-result (selected-anchor (read-from-minibuffer
-                                 *minibuffer*
-                                 :setup-function 'setup-anchor
-                                 :cleanup-function 'remove-link-hints))
-    (loop for hint in (link-hints (mode *active-buffer*))
-          do (when (equalp (nth 0 hint) selected-anchor)
-               (%bookmark-url (nth 1 hint))))))
+  (with-result* ((links-json (add-link-hints))
+                 (selected-anchor (read-from-minibuffer
+                                   *minibuffer*
+                                   :input-prompt "Bookmark anchor:"
+                                   :cleanup-function #'remove-link-hints)))
+    (let* ((link-hints (cl-json:decode-json-from-string links-json))
+           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
+      (when selected-link
+        (%bookmark-url selected-link)))))
