@@ -105,13 +105,6 @@ buffer"
                      :empty-complete-immediate t))
     (set-url url)))
 
-(define-command set-url-from-bookmark ()
-  "Set the url for the current buffer from a bookmark."
-  (with-result (url (read-from-minibuffer
-                     *minibuffer*
-                     :completion-function 'bookmark-complete))
-    (set-url url)))
-
 (defun setup-anchor ()
   (erase-document (mode *minibuffer*))
   (let ((current-mode (mode *active-buffer*)))

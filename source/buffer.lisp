@@ -5,6 +5,9 @@
 (define-parenstatic buffer-get-url
     (ps:chain window location href))
 
+(define-parenscript buffer-set-url (url)
+  ((setf (ps:chain this document location href) (ps:lisp url))))
+
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))

@@ -70,3 +70,11 @@
       (when selected-link
         (%bookmark-url selected-link)))))
 
+(define-command set-url-from-bookmark ()
+  "Set the url for the current buffer from a bookmark."
+  (with-result (url (read-from-minibuffer
+                     *minibuffer*
+                     :completion-function 'bookmark-complete))
+    (buffer-execute-javascript *interface*
+                               (active-buffer *interface*)
+                               (buffer-set-url url))))
