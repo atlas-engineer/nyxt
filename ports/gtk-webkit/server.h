@@ -15,6 +15,7 @@ typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
 static AutokeyDictionary *windows;
 static GHashTable *server_callbacks;
 
+// TODO: Prefix all those functions with "server_".
 static GVariant *window_make(SoupXMLRPCParams *_params) {
 	Window *window = window_init();
 	window->identifier = akd_insert_element(windows, window);
@@ -39,7 +40,7 @@ static GVariant *window_delete(SoupXMLRPCParams *params) {
 	g_debug("Method parameter: %s", a_key);
 
 	Window *window = akd_object_for_key(windows, a_key);
-	gtk_widget_destroy(window->base);
+	window_close(window);
 	akd_remove_object_for_key(windows, a_key);
 	return g_variant_new_boolean(TRUE);
 }
