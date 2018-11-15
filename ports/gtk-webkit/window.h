@@ -58,7 +58,7 @@ Window *window_init() {
 
 void window_close(Window *window) {
 	gtk_widget_destroy(window->base);
-	// TODO: Kill buffer.
+	// TODO: Kill buffer?
 }
 
 void window_set_active_buffer(Window *window, Buffer *buffer) {

@@ -100,6 +100,29 @@ static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
 	return g_variant_new_string(buffer->identifier);
 }
 
+static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
+	GError *error = NULL;
+	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+	if (error) {
+		g_warning("Malformed method parameters: %s", error->message);
+		return g_variant_new_boolean(FALSE);
+	}
+	if (!g_variant_check_format_string(variant, "av", FALSE)) {
+		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+	}
+	// Variant type string is "av", and the embedded "v"'s type string is "s".
+	const char *a_key = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	g_debug("Method parameter: %s", a_key);
+
+	Buffer *buffer = akd_object_for_key(buffers, a_key);
+	buffer_close(buffer);
+	akd_remove_object_for_key(buffers, a_key);
+	return g_variant_new_boolean(TRUE);
+}
+
 static void server_handler(SoupServer *server, SoupMessage *msg,
 	const char *path, GHashTable *query,
 	SoupClientContext *context, gpointer data) {

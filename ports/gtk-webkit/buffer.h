@@ -22,3 +22,7 @@ Buffer *buffer_init() {
 	buffer_set_url(buffer, "https://next.atlas.engineer/");
 	return buffer;
 }
+
+void buffer_close(Buffer *buffer) {
+	gtk_widget_destroy(GTK_WIDGET(buffer->web_view));
+}
