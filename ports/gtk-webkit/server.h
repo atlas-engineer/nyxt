@@ -3,12 +3,41 @@ Copyright © 2018 Atlas Engineer LLC.
 Use of this file is governed by the license that can be found in LICENSE.
 */
 
+#include <stdarg.h>
 #include <glib.h>
 #include <libsoup/soup.h>
 
 #include "window.h"
 
 typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
+
+// The params variant type string is "av", and the embedded "v"'s type string
+// can be anything.
+// To ease params manipulation, we "unwrap" the variant array to return a tuple
+// of all element types.
+GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
+	GError *error = NULL;
+	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+	if (error) {
+		g_warning("Malformed method parameters: %s", error->message);
+		return NULL;
+	}
+	if (!g_variant_check_format_string(variant, "av", FALSE)) {
+		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		return NULL;
+	}
+
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
+	GVariantIter iter;
+	g_variant_iter_init(&iter, variant);
+	GVariant *child;
+	while (g_variant_iter_loop(&iter, "v", &child)) {
+		g_variant_builder_add_value(&builder, child);
+	}
+
+	return g_variant_builder_end(&builder);
+}
 
 static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 	Window *window = window_init();
@@ -17,21 +46,12 @@ static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 }
 
 static GVariant *server_window_delete(SoupXMLRPCParams *params) {
-	GError *error = NULL;
-	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-	if (error) {
-		g_warning("Malformed method parameters: %s", error->message);
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
-	if (!g_variant_check_format_string(variant, "av", FALSE)) {
-		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-		return g_variant_new_boolean(FALSE);
-	}
-	// Variant type string is "av", and the embedded "v"'s type string is "s".
-	const char *a_key = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
-		NULL);
+	const char *a_key = NULL;
+	g_variant_get(unwrapped_params, "(s)", &a_key);
 	g_debug("Method parameter: %s", a_key);
 
 	Window *window = akd_object_for_key(state.windows, a_key);
@@ -61,25 +81,13 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 }
 
 static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
-	GError *error = NULL;
-	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-	if (error) {
-		g_warning("Malformed method parameters: %s", error->message);
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
-	if (!g_variant_check_format_string(variant, "av", FALSE)) {
-		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-		return g_variant_new_boolean(FALSE);
-	}
-	// Variant type string is "av", and the two embedded "v"'s type string are "s".
-	const char *window_id = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
-		NULL);
-	const char *buffer_id = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 1)),
-		NULL);
+	const char *window_id = NULL;
+	const char *buffer_id = NULL;
+	g_variant_get(unwrapped_params, "(ss)", &window_id, &buffer_id);
 	g_debug("Method parameter: window_id %s, buffer_id %s", window_id, buffer_id);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
@@ -96,20 +104,12 @@ static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
 
 // TODO: Cocoa port does not have buffer_delete.
 static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
-	GError *error = NULL;
-	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-	if (error) {
-		g_warning("Malformed method parameters: %s", error->message);
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
-	if (!g_variant_check_format_string(variant, "av", FALSE)) {
-		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-	}
-	// Variant type string is "av", and the embedded "v"'s type string is "s".
-	const char *a_key = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
-		NULL);
+	const char *a_key = NULL;
+	g_variant_get(unwrapped_params, "(s)", &a_key);
 	g_debug("Method parameter: %s", a_key);
 
 	Buffer *buffer = akd_object_for_key(state.buffers, a_key);
@@ -119,25 +119,13 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
-	GError *error = NULL;
-	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-	if (error) {
-		g_warning("Malformed method parameters: %s", error->message);
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
-	if (!g_variant_check_format_string(variant, "av", FALSE)) {
-		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-		return g_variant_new_boolean(FALSE);
-	}
-	// Variant type string is "av", and the two embedded "v"'s type string are "s".
-	const char *buffer_id = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
-		NULL);
-	const char *javascript = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 1)),
-		NULL);
+	const char *buffer_id = NULL;
+	const char *javascript = NULL;
+	g_variant_get(unwrapped_params, "(ss)", &buffer_id, &javascript);
 	g_debug("Method parameter: buffer_id %s, javascript %s", buffer_id, javascript);
 
 	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
@@ -146,25 +134,16 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
-	GError *error = NULL;
-	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-	if (error) {
-		g_warning("Malformed method parameters: %s", error->message);
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
-	if (!g_variant_check_format_string(variant, "av", FALSE)) {
-		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-		return g_variant_new_boolean(FALSE);
-	}
-	// Variant type string is "av", and the two embedded "v"'s type string are "s".
-	const char *window_id = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
-		NULL);
-	int minibuffer_height = g_variant_get_int64(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 1)));
-	g_debug("Method parameter: window_id %s, minibuffer_height %i", window_id, minibuffer_height);
+	const char *window_id = NULL;
+	int minibuffer_height = 0;
+	g_variant_get(unwrapped_params, "(sx)", &window_id,
+		&minibuffer_height);
+	g_debug("Method parameter: window_id %s, minibuffer_height %i", window_id,
+		minibuffer_height);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
 	gint64 result = window_set_minibuffer_height(window, minibuffer_height);
@@ -172,25 +151,13 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
-	GError *error = NULL;
-	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-	if (error) {
-		g_warning("Malformed method parameters: %s", error->message);
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
-	if (!g_variant_check_format_string(variant, "av", FALSE)) {
-		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-		return g_variant_new_boolean(FALSE);
-	}
-	// Variant type string is "av", and the two embedded "v"'s type string are "s".
-	const char *window_id = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
-		NULL);
-	const char *javascript = g_variant_get_string(
-		g_variant_get_variant(
-			g_variant_get_child_value(variant, 1)),
-		NULL);
+	const char *window_id = NULL;
+	const char *javascript = NULL;
+	g_variant_get(unwrapped_params, "(ss)", &window_id, &javascript);
 	g_debug("Method parameter: window_id %s, javascript %s", window_id, javascript);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
