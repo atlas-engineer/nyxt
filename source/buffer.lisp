@@ -8,6 +8,13 @@
 (define-parenscript buffer-set-url (url)
   ((setf (ps:chain this document location href) (ps:lisp url))))
 
+(define-command make-buffer ()
+  "Create a new buffer."
+  (let ((buffer (buffer-make *interface*)))
+    (setf (name buffer) "default")
+    (setf (mode buffer) (document-mode))
+    buffer))
+
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))
