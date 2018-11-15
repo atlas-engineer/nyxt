@@ -31,6 +31,14 @@
                         :completion-function (buffer-completion-generator)))
     (set-active-buffer *interface* buffer)))
 
+(define-command make-visible-new-buffer ()
+  "Make a new empty buffer with the *default-new-buffer-url* loaded"
+  (let ((new-buffer (make-buffer)))
+    (set-active-buffer *interface* new-buffer)
+    (buffer-execute-javascript *interface*
+                               new-buffer
+                               (buffer-set-url *default-new-buffer-url*))))
+
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))
@@ -72,11 +80,6 @@
   (setf *buffers* (delete buffer *buffers*))
   (buffer-delete *interface* (view buffer)))
 
-(define-command make-visible-new-buffer ()
-  "Make a new empty buffer with the *default-new-buffer-url* loaded"
-  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-    (set-visible-active-buffer new-buffer)
-    (set-url *default-new-buffer-url*)))
 
 (define-command switch-buffer-previous ()
   "Switch to the previous buffer in the list of *buffers*, if the

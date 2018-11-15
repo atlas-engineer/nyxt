@@ -74,7 +74,7 @@ buffer"
                            :completion-function 'history-typed-complete
                            :empty-complete-immediate t))
     (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-      (set-visible-active-buffer new-buffer)
+      (set-active-buffer *interface* new-buffer)
       (set-url input-url))))
 
 (defun set-url-buffer (input-url buffer &optional disable-history)
