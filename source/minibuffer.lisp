@@ -47,7 +47,7 @@
 
 (defmethod return-input ((minibuffer minibuffer))
   (hide minibuffer)
-  (set-active-buffer (callback-buffer minibuffer))
+  (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
       minibuffer
@@ -67,7 +67,7 @@
 
 (defmethod return-immediate ((minibuffer minibuffer))
   "Return without completion"
-  (set-active-buffer (callback-buffer minibuffer))
+  (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function) minibuffer
     (funcall callback-function (input-buffer minibuffer))
     (when cleanup-function
@@ -75,7 +75,7 @@
   (hide minibuffer))
 
 (defmethod cancel-input ((minibuffer minibuffer))
-  (set-active-buffer (callback-buffer minibuffer))
+  (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (cleanup-function) minibuffer
     (when cleanup-function
       (funcall cleanup-function)))
@@ -188,7 +188,7 @@
                                collect
                                (cl-markup:markup
                                 (:li :class (when (equal i cursor-index) "selected")
-                                     (write completion)))))))
+                                     (princ-to-string completion)))))))
 
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-buffer-cursor completion-function

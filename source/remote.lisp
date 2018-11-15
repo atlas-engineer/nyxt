@@ -144,6 +144,12 @@
 (defmethod active-buffer ((interface remote-interface))
   (window-active-buffer interface (window-active interface)))
 
+(defmethod set-active-buffer ((interface remote-interface)
+                              (buffer buffer))
+  (let ((window-active (window-active interface)))
+    (setf (active-buffer window-active) buffer)
+    (window-set-active-buffer interface window-active buffer)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; METHODS BELOW ARE NOT NECESSARY - TEMPORARY FOR COMPILATION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

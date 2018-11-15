@@ -8,12 +8,28 @@
 (define-parenscript buffer-set-url (url)
   ((setf (ps:chain this document location href) (ps:lisp url))))
 
+(defmethod print-object ((buffer buffer) stream)
+  (format stream "~s" (name buffer)))
+
 (define-command make-buffer ()
   "Create a new buffer."
   (let ((buffer (buffer-make *interface*)))
     (setf (name buffer) "default")
     (setf (mode buffer) (document-mode))
     buffer))
+
+(defun buffer-completion-generator ()
+  (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
+    (lambda (input)
+      (fuzzy-match input buffers #'name))))
+
+(define-command switch-buffer ()
+  "Switch the active buffer in the current window."
+  (with-result (buffer (read-from-minibuffer
+                        *minibuffer*
+                        :input-prompt "Switch to buffer:"
+                        :completion-function (buffer-completion-generator)))
+    (set-active-buffer *interface* buffer)))
 
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
@@ -42,17 +58,12 @@
     (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))
     new-buffer))
 
-(defmethod set-active-buffer ((buffer buffer))
-  (setf (active-buffer (window-active *interface*)) buffer))
-
 (defun set-visible-active-buffer (buffer)
   (set-active-buffer buffer)
   (window-set-active-buffer *interface*
                             (view *active-buffer*)
                             (window-active *interface*)))
 
-(defun buffer-complete (input)
-  (fuzzy-match input *buffers* #'name))
 
 (defun get-active-buffer-index ()
   (position *active-buffer* *buffers* :test #'equalp))
@@ -60,13 +71,6 @@
 (defun %delete-buffer (buffer)
   (setf *buffers* (delete buffer *buffers*))
   (buffer-delete *interface* (view buffer)))
-
-(define-command switch-buffer ()
-  "Switch the active buffer in the current window."
-  (with-result (buffer (read-from-minibuffer
-                        *minibuffer*
-                        :completion-function 'buffer-complete))
-    (set-visible-active-buffer buffer)))
 
 (define-command make-visible-new-buffer ()
   "Make a new empty buffer with the *default-new-buffer-url* loaded"
