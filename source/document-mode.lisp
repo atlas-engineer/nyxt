@@ -105,48 +105,6 @@ buffer"
                      :empty-complete-immediate t))
     (set-url url)))
 
-(defun setup-anchor ()
-  (erase-document (mode *minibuffer*))
-  (let ((current-mode (mode *active-buffer*)))
-    (with-parenscript (link-hints add-link-hints)
-      (setf (link-hints current-mode) link-hints))))
-
-(define-command go-anchor ()
-  "Show a set of link hints, and go to the user inputted one in the
-currently active buffer."
-  (with-result (input (read-from-minibuffer
-                       *minibuffer*
-                       :setup-function 'setup-anchor
-                       :cleanup-function 'remove-link-hints))
-    (loop for hint in (link-hints (mode *active-buffer*))
-          do (when (equalp (nth 0 hint) input)
-               (set-url-buffer (nth 1 hint) *active-buffer* t)))))
-
-(define-command go-anchor-new-buffer ()
-  "Show a set of link hints, and open the user inputted one in a new
-buffer (not set to visible active buffer)."
-  (with-result (input (read-from-minibuffer
-                       *minibuffer*
-                       :setup-function 'setup-anchor
-                       :cleanup-function 'remove-link-hints))
-    (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-      (loop for hint in (link-hints (mode *active-buffer*))
-            do (when (equalp (nth 0 hint) input)
-                 (set-url-buffer (nth 1 hint) new-buffer t))))))
-
-(define-command go-anchor-new-buffer-focus ()
-  "Show a set of link hints, and open the user inputted one in a new
-visible active buffer."
-  (with-result (input (read-from-minibuffer
-                       *minibuffer*
-                       :setup-function 'setup-anchor))
-    (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-      (loop for hint in (link-hints (mode *active-buffer*))
-            do (when (equalp (nth 0 hint) input)
-                 (set-url-buffer (nth 1 hint) new-buffer t)))
-      (remove-link-hints)
-      (set-visible-active-buffer new-buffer))))
-
 (defun document-mode ()
   "Base mode for interacting with documents"
   (let* ((root (make-node :data "about:blank"))
