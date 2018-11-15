@@ -59,6 +59,6 @@
 (define-command execute-extended-command ()
   "Execute a command by name"
   (with-result (command (read-from-minibuffer
-                         (mode *minibuffer*)
-                         :completion 'complete-command))
+                         *minibuffer*
+                         :completion-function 'complete-command))
     (funcall (impl (gethash command *available-commands*)))))
