@@ -6,19 +6,10 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include <glib.h>
 #include <libsoup/soup.h>
 
-#include "autokey-dictionary.h"
 #include "window.h"
 
 typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
 
-typedef struct {
-	AutokeyDictionary *windows;
-	AutokeyDictionary *buffers;
-	GHashTable *server_callbacks;
-} ServerState;
-static ServerState state;
-
-// TODO: Prefix all those functions with "server_"?  Use separate .h?
 static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 	Window *window = window_init();
 	window->identifier = akd_insert_element(state.windows, window);
@@ -45,7 +36,6 @@ static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 
 	Window *window = akd_object_for_key(state.windows, a_key);
 	window_delete(window);
-	akd_remove_object_for_key(state.windows, a_key);
 	return g_variant_new_boolean(TRUE);
 }
 

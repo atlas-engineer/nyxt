@@ -20,7 +20,7 @@ Minibuffer *minibuffer_init() {
 }
 
 void minibuffer_delete(Minibuffer *minibuffer) {
-	gtk_widget_destroy(GTK_WIDGET(minibuffer->web_view));
+	// TODO: Should we clean up the minibuffer?
 }
 
 static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result,
