@@ -1,7 +1,7 @@
 * Next Developer Readme                                         :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#macos-setup][MacOS Setup]]
-  - [[#linux-setup-experimental][Linux Setup (Experimental)]]
+  - [[#gnu-linux-setup-experimental][GNU/Linux Setup (Experimental)]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
 - [[#help--community][Help & Community]]
@@ -24,9 +24,9 @@
 Next is written in Common Lisp. It can be built with
 [[https://ccl.clozure.com/][CCL]] and [[http://www.sbcl.org/][SBCL]].
 It is designed to be cross-platform compatible. Support for graphics is
-provided via Cocoa for MacOS and GTK for Linux. To download a prebuilt-binary,
+provided via Cocoa for MacOS and GTK for GNU/Linux. To download a prebuilt-binary,
 please see the "Releases" section of the GitHub repository
-([[https://github.com/next-browser/next/releases]]).
+([[https://github.com/atlas-engineer/next/releases]]).
 
 ** MacOS Setup
 *** Installing CCL
@@ -54,7 +54,7 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-** Linux Setup (Experimental)
+** GNU/Linux Setup (Experimental)
 *** Installing SBCL
 You can obtain SBCL either from your package manager or by downloading
 it directly from the SBCL repository.
@@ -84,29 +84,36 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-*** Install WebKit2GTK+
+*** Installing cl-webkit
+The cl-webkit bindings provide an interface to the WebKit2GTK+
+framework for manipulating and rendering web content.
+
+- Clone: https://github.com/atlas-engineer/cl-webkit to a path within
+  your local-projects. (=~/common-lisp/quicklisp/local-projects/cl-webkit=)
+*** Installing dependencies
 Find a package for your distribution which provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKit2GTK+).
 
-For Ubuntu this package is ~libwebkit2gtk-4.0-dev~
-For Debian this package is ~libwebkit2gtk~
-For Arch this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]]
+For Ubuntu this package is ~libwebkit2gtk-4.0-dev~.
+For Debian this package is ~libwebkit2gtk~.
+For Arch Linux this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]].
 
 #+begin_quote
-A note of caution about installing Webkit on Linux via your package
-manager: Your distribution supplied version of Webkit may not provide
-up-to-date versions of Webkit including the latest security
-patches. WebkitGTK+ tries to do the best job possible with maintaining
+A note of caution about installing WebKit on Linux via your package
+manager: Your distribution supplied version of WebKit may not provide
+up-to-date versions of WebKit including the latest security
+patches. WebKitGTK+ tries to do the best job possible with maintaining
 security patches upstream, but it is also additionally up to the the
 distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
-*** Install cl-webkit
-The cl-webkit bindings provide an interface to the Webkit2GTK+
-framework for manipulating and rendering web content.
 
-- Clone: https://github.com/next-browser/cl-webkit to a path within
-  your local-projects. (=~/common-lisp/quicklisp/local-projects/cl-webkit=)
+The rest of the dependencies:
+
+- sqlite
+- glib-networking (for WebKit)
+- gsettings-desktop-schemas (for WebKit)
+- gstreamer, gst-plugins-* (for HTML audio/video)
 
 ** Run from Source
 In a new Terminal execute the following:
@@ -124,10 +131,11 @@ In a new Terminal execute the following:
 ** Compile
 *** Build a Linux binary
 
-: cd next/next
-: make build-gtk
+Run
 
-the compiled binary will be present in the directory ~source~ as ~next-gtk~.
+: make
+
+and the compiled binary will be placed in the directory ~source~ as ~next-gtk~.
 
 *** MacOS Compilation
 From the CCL Source directory, execute
@@ -153,7 +161,7 @@ After you have found a TODO item that is available:
 - make a pull request
 
 ** IRC Channel
-You can find Next on Freenode IRC at #next-browser
+You can find Next on Freenode IRC at =#next-browser=.
 
 ** Mailing List
 Next maintains a GNU Mailman server located at
@@ -168,10 +176,12 @@ You can up for the [[http://mail.next-browser.com/listinfo/alpha][alpha mailing 
 feature requests, and early version testing.
 
 * Release Timeline
-Major releases are issued by incrementing the first digit. That is,
-release 1.20, and 2.20 are one major release away from each other. Minor
-releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
-two minor releases following major release 1.0.
+
+From version 0.9 onward, Next uses [[https://semver.org/][Semantic Versioning]].
+In short, given a version number MAJOR.MINOR.PATCH, we increment the:
+- MAJOR version when we make incompatible API changes,
+- MINOR version when we add functionality in a backwards-compatible manner, and
+- PATCH version when we make backwards-compatible bug fixes.
 
 ** 0.10
 *** TODO Jump to paragraph categorized based on content
@@ -189,13 +199,13 @@ two minor releases following major release 1.0.
 - Create trusted source for packages
 *** TODO Compilation Script
 The script should be able to produce a complete application bundle for
-MacOS, self contained dmg etc. On Linux it should do the equivalent,
-but with flatpak.
+MacOS, self contained dmg etc. On GNU/Linux it should do the equivalent,
+but with flatpak or [[https://guix.info/blog/2018/tarballs-the-ultimate-container-image-format/][guix pack]].
 
 **** TODO Compilation Script Linux
 **** TODO Compilation Script MacOS
-** 0.09
-*** TODO Linux Frontend
+** 0.9
+*** TODO GNU/Linux Frontend
 - Create frontend that renders the new Next GUI
 *** TODO MacOS Frontend
 - Create frontend that renders the new Next GUI
@@ -240,7 +250,7 @@ CLOSED: [2018-01-15 Mon 00:06]
 CLOSED: [2018-01-02 Tue 16:06]
 *** DONE GTK Port
 CLOSED: [2018-01-02 Tue 16:06]
-- Create Linux GTK Port
+- Create GNU/Linux GTK Port
 ** DONE 0.06
 CLOSED: [2017-12-17 Sun 01:13]
 *** DONE Fix Compilation
@@ -352,7 +362,7 @@ CLOSED: [2017-10-05 Thu 23:45]
 - Use `otool -L Next.app/Contents/MacOS/next` to find the linked
   frameworks that are not located in `Next.app/Contents/Frameworks`,
   manually copy them to `Next.app/Contents/Frameworks`
-- Use install_name_tool to update the now copied frameworks in 
+- Use install_name_tool to update the now copied frameworks in
   `Next.app/Contents/Frameworks`
 - For more info please see: http://doc.qt.io/qt-5/osx-deployment.html
 *** DONE Kill Buffer
@@ -484,7 +494,7 @@ Upon the definition of a "chained" keyboard binding, any elements
 in the chain may not be used individually. For example, binding
 "C-x C-s", will prohibit the binding of "C-x" by itself. This is
 because there would be ambiguity in regards to which key binding
-is intended to be invoked. 
+is intended to be invoked.
 
 *** DONE Ability to browse and change buffers
 CLOSED: [2017-09-05 Tue 00:58]
@@ -499,5 +509,3 @@ candidates
 CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
 - Organization of build systems into lisp files, no shell scripts
-
-
