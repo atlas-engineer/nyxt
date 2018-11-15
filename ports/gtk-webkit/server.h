@@ -86,7 +86,7 @@ static GVariant *server_set_active_buffer(SoupXMLRPCParams *params) {
 		NULL);
 	const char *buffer_id = g_variant_get_string(
 		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
+			g_variant_get_child_value(variant, 1)),
 		NULL);
 	g_debug("Method parameter: window_id %s, buffer_id %s", window_id, buffer_id);
 
@@ -143,13 +143,39 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 		NULL);
 	const char *javascript = g_variant_get_string(
 		g_variant_get_variant(
-			g_variant_get_child_value(variant, 0)),
+			g_variant_get_child_value(variant, 1)),
 		NULL);
 	g_debug("Method parameter: buffer_id %s, javascript %s", buffer_id, javascript);
 
 	Buffer *buffer = akd_object_for_key(buffers, buffer_id);
-	char *operation_result = buffer_evaluate(buffer, javascript);
-	return g_variant_new_string(operation_result);
+	char *result = buffer_evaluate(buffer, javascript);
+	return g_variant_new_string(result);
+}
+
+static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
+	GError *error = NULL;
+	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+	if (error) {
+		g_warning("Malformed method parameters: %s", error->message);
+		return g_variant_new_boolean(FALSE);
+	}
+	if (!g_variant_check_format_string(variant, "av", FALSE)) {
+		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		return g_variant_new_boolean(FALSE);
+	}
+	// Variant type string is "av", and the two embedded "v"'s type string are "s".
+	const char *window_id = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	int minibuffer_height = g_variant_get_int64(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 1)));
+	g_debug("Method parameter: window_id %s, minibuffer_height %i", window_id, minibuffer_height);
+
+	Window *window = akd_object_for_key(windows, window_id);
+	gint64 result = window_set_minibuffer_height(window, minibuffer_height);
+	return g_variant_new_int64(result);
 }
 
 static void server_handler(SoupServer *server, SoupMessage *msg,
@@ -195,11 +221,11 @@ static void server_handler(SoupServer *server, SoupMessage *msg,
 	}
 	g_debug("Method name: %s", method_name);
 
-	GVariant *operation_result = callback(params);
+	GVariant *result = callback(params);
 
 	soup_xmlrpc_params_free(params);
 
-	soup_xmlrpc_message_set_response(msg, operation_result, &error);
+	soup_xmlrpc_message_set_response(msg, result, &error);
 	if (error) {
 		g_warning("Failed to set XMLRPC response: %s", error->message);
 	}
@@ -233,6 +259,8 @@ void start_server() {
 	g_hash_table_insert(server_callbacks, "buffer.delete", &server_buffer_delete);
 	// TODO: Change API to "buffer.evaluate".
 	g_hash_table_insert(server_callbacks, "buffer.execute.javascript", &server_buffer_evaluate);
+	// TODO: Rename minibuffer.set.height to window.set.minibuffer.height.
+	g_hash_table_insert(server_callbacks, "minibuffer.set.height", &server_window_set_minibuffer_height);
 
 	// Global indentifiers.
 	windows = akd_init(NULL);

@@ -65,5 +65,6 @@ char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 	char *result = NULL;
 	webkit_web_view_run_javascript(buffer->web_view, javascript,
 		NULL, buffer_javascript_callback, &result);
+	// TODO: Call XML RPC with result.
 	return result;
 }
