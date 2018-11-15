@@ -2,6 +2,9 @@
 
 (in-package :next)
 
+(defmethod object-string ((object t))
+  (princ-to-string object))
+
 ;; data node used to represent tree history
 (defstruct node
   parent

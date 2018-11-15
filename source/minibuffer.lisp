@@ -188,7 +188,7 @@
                                collect
                                (cl-markup:markup
                                 (:li :class (when (equal i cursor-index) "selected")
-                                     (princ-to-string completion)))))))
+                                     (object-string completion)))))))
 
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-buffer-cursor completion-function

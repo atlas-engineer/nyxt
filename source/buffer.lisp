@@ -8,8 +8,8 @@
 (define-parenscript buffer-set-url (url)
   ((setf (ps:chain this document location href) (ps:lisp url))))
 
-(defmethod print-object ((buffer buffer) stream)
-  (format stream "~s" (name buffer)))
+(defmethod object-string ((buffer buffer))
+  (name buffer))
 
 (define-command make-buffer ()
   "Create a new buffer."
