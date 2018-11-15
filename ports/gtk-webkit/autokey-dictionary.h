@@ -16,7 +16,7 @@ AutokeyDictionary *akd_init(AutokeyDictionary *self) {
 		self = calloc(1, sizeof (AutokeyDictionary));
 	}
 	self->element_count = 0;
-	self->_dict = g_hash_table_new(NULL, NULL);
+	self->_dict = g_hash_table_new(g_str_hash, g_str_equal);
 }
 
 void akd_free(AutokeyDictionary *self) {
@@ -36,11 +36,12 @@ guint akd_count(AutokeyDictionary *self) {
 	return g_hash_table_size(self->_dict);
 }
 
-gpointer akd_object_for_key(AutokeyDictionary *self, char *a_key) {
+gpointer akd_object_for_key(AutokeyDictionary *self, const char *a_key) {
 	return g_hash_table_lookup(self->_dict, a_key);
 }
 
-void akd_remove_object_for_key(AutokeyDictionary *self, char *a_key) {
+void akd_remove_object_for_key(AutokeyDictionary *self, const char *a_key) {
+	// TODO: Free memory?
 	g_hash_table_remove(self->_dict, a_key);
 }
 

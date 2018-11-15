@@ -19,12 +19,13 @@ Use of this file is governed by the license that can be found in LICENSE.
 // TODO: Make local?
 static AutokeyDictionary *windows;
 
-// TODO: Quit properly.
 static void destroy_window(GtkWidget *widget, GtkWidget *window) {
+	// TODO: Call only on last window.
 	gtk_main_quit();
 }
 
 static gboolean close_web_view(WebKitWebView *webView, GtkWidget *window) {
+	// TODO: Call window_delete with identifier.
 	gtk_widget_destroy(window);
 	return true;
 }
@@ -60,9 +61,15 @@ static GVariant *window_make() {
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(main_window);
 
-
 	char *identifier = akd_insert_element(windows, main_window);
 	return g_variant_new_string(identifier);
+}
+
+static GVariant *window_delete(const char *a_key) {
+	GtkWidget *window = akd_object_for_key(windows, a_key);
+	gtk_widget_destroy(window);
+	akd_remove_object_for_key(windows, a_key);
+	return g_variant_new_boolean(TRUE);
 }
 
 static void server_callback(SoupServer *server, SoupMessage *msg,
@@ -100,14 +107,23 @@ static void server_callback(SoupServer *server, SoupMessage *msg,
 	GVariant *operation_result = NULL;
 	if (strcmp(method_name, "window.make") == 0) {
 		operation_result = window_make();
+	} else if (strcmp(method_name, "window.delete") == 0) {
+		GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+		if (error) {
+			g_warning("Malformed method parameters: %s", error->message);
+			return;
+		}
+		if (!g_variant_check_format_string(variant, "av", FALSE)) {
+			g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		}
+		// Variant type string is "av", and the embedded "v"'s type string is "s".
+		const char *a_key = g_variant_get_string(
+			g_variant_get_variant(
+				g_variant_get_child_value(variant, 0)),
+			NULL);
+		g_debug("Method parameter: %s", a_key);
+		operation_result = window_delete(a_key);
 	}
-
-	/*
-	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-	if (error) {
-	        g_warning("Malformed method parameters: %s\n", error->message);
-	}
-	*/
 
 	soup_xmlrpc_params_free(params);
 
