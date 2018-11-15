@@ -68,7 +68,7 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 	return g_variant_new_string("-1");
 }
 
-static GVariant *server_set_active_buffer(SoupXMLRPCParams *params) {
+static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 	GError *error = NULL;
 	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
 	if (error) {
@@ -102,6 +102,7 @@ static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
 	return g_variant_new_string(buffer->identifier);
 }
 
+// TODO: Cocoa port does not have buffer_delete.
 static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 	GError *error = NULL;
 	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
@@ -176,6 +177,34 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 	Window *window = akd_object_for_key(windows, window_id);
 	gint64 result = window_set_minibuffer_height(window, minibuffer_height);
 	return g_variant_new_int64(result);
+}
+
+static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
+	GError *error = NULL;
+	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+	if (error) {
+		g_warning("Malformed method parameters: %s", error->message);
+		return g_variant_new_boolean(FALSE);
+	}
+	if (!g_variant_check_format_string(variant, "av", FALSE)) {
+		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		return g_variant_new_boolean(FALSE);
+	}
+	// Variant type string is "av", and the two embedded "v"'s type string are "s".
+	const char *window_id = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	const char *javascript = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 1)),
+		NULL);
+	g_debug("Method parameter: window_id %s, javascript %s", window_id, javascript);
+
+	Window *window = akd_object_for_key(windows, window_id);
+	Minibuffer *minibuffer = window->minibuffer;
+	char *result = minibuffer_evaluate(minibuffer, javascript);
+	return g_variant_new_string(result);
 }
 
 static void server_handler(SoupServer *server, SoupMessage *msg,
@@ -254,13 +283,15 @@ void start_server() {
 	g_hash_table_insert(server_callbacks, "window.make", &server_window_make);
 	g_hash_table_insert(server_callbacks, "window.delete", &server_window_delete);
 	g_hash_table_insert(server_callbacks, "window.active", &server_window_active);
-	g_hash_table_insert(server_callbacks, "window.set.active.buffer", &server_set_active_buffer);
+	g_hash_table_insert(server_callbacks, "window.set.active.buffer", &server_window_set_active_buffer);
 	g_hash_table_insert(server_callbacks, "buffer.make", &server_buffer_make);
 	g_hash_table_insert(server_callbacks, "buffer.delete", &server_buffer_delete);
 	// TODO: Change API to "buffer.evaluate".
 	g_hash_table_insert(server_callbacks, "buffer.execute.javascript", &server_buffer_evaluate);
 	// TODO: Rename minibuffer.set.height to window.set.minibuffer.height.
 	g_hash_table_insert(server_callbacks, "minibuffer.set.height", &server_window_set_minibuffer_height);
+	// TODO: Change API to "minibuffer.evaluate".
+	g_hash_table_insert(server_callbacks, "minibuffer.execute.javascript", &server_minibuffer_evaluate);
 
 	// Global indentifiers.
 	windows = akd_init(NULL);
