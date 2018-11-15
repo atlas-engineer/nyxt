@@ -1,4 +1,4 @@
-;;; scroll.lisp --- scrolling helper functions
+;;; scroll.lisp --- scrolling functions
 
 (in-package :next)
 
