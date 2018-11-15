@@ -4,12 +4,10 @@ Use of this file is governed by the license that can be found in LICENSE.
 */
 
 #include <glib.h>
-#include <webkit2/webkit2.h>
 #include <libsoup/soup.h>
 
 #include "autokey-dictionary.h"
-
-#define APPNAME "Next"
+#include "window.h"
 
 typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
 
@@ -17,50 +15,10 @@ typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
 static AutokeyDictionary *windows;
 static GHashTable *server_callbacks;
 
-static void destroy_window(GtkWidget *widget, GtkWidget *window) {
-	// TODO: Call only on last window.
-	gtk_main_quit();
-}
-
-static gboolean close_web_view(WebKitWebView *webView, GtkWidget *window) {
-	// TODO: Call window_delete with identifier.
-	gtk_widget_destroy(window);
-	return true;
-}
-
 static GVariant *window_make(SoupXMLRPCParams *_params) {
-	// Create an 800x600 window that will contain the browser instance
-	GtkWidget *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-	gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 600);
-	// TODO: Make title customizable from Lisp.
-	gtk_window_set_title(GTK_WINDOW(main_window), APPNAME);
-	// TODO: Deprecated?
-	/* gtk_window_set_wmclass(GTK_WINDOW(main_window), APPNAME, APPNAME); */
-
-	// Create a browser instance
-	WebKitWebView *web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
-
-	// Put the browser area into the main window
-	gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(web_view));
-
-	// Set up callbacks so that if either the main window or the browser
-	// instance is closed, the program will exit
-	g_signal_connect(main_window, "destroy", G_CALLBACK(destroy_window), NULL);
-	g_signal_connect(web_view, "close", G_CALLBACK(close_web_view), main_window);
-
-	// Load a web page into the browser instance
-	webkit_web_view_load_uri(web_view, "https://next.atlas.engineer/");
-
-	// Make sure that when the browser area becomes visible, it will get
-	// mouse and keyboard events
-	gtk_widget_grab_focus(GTK_WIDGET(web_view));
-
-	// Make sure the main window and all its contents are visible
-	gtk_widget_show_all(main_window);
-
-	char *identifier = akd_insert_element(windows, main_window);
-	return g_variant_new_string(identifier);
+	Window *window = window_init();
+	window->identifier = akd_insert_element(windows, window);
+	return g_variant_new_string(window->identifier);
 }
 
 static GVariant *window_delete(SoupXMLRPCParams *params) {
@@ -80,19 +38,41 @@ static GVariant *window_delete(SoupXMLRPCParams *params) {
 		NULL);
 	g_debug("Method parameter: %s", a_key);
 
-	GtkWidget *window = akd_object_for_key(windows, a_key);
-	gtk_widget_destroy(window);
+	Window *window = akd_object_for_key(windows, a_key);
+	gtk_widget_destroy(window->base);
 	akd_remove_object_for_key(windows, a_key);
 	return g_variant_new_boolean(TRUE);
+}
+
+static GVariant *window_active(SoupXMLRPCParams *_params) {
+	// TODO: If we run a GTK application, then we could call
+	// gtk_application_get_active_window() and get the identifier from there.
+	// We could also lookup the active window in gtk_window_list_toplevels().
+	GHashTableIter iter;
+	gpointer key, value;
+
+	g_hash_table_iter_init(&iter, windows->_dict);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		Window *window = (Window *)value;
+		if (gtk_window_is_active(GTK_WINDOW(window->base))) {
+			g_debug("Active window identifier: %s", window->identifier);
+			return g_variant_new_string(window->identifier);
+		}
+	}
+
+	// TODO: Is "-1" a good name for a window that does not exist?
+	g_debug("No active window");
+	return g_variant_new_string("-1");
 }
 
 static void server_handler(SoupServer *server, SoupMessage *msg,
 	const char *path, GHashTable *query,
 	SoupClientContext *context, gpointer data) {
+	// Log request.
 	{
 		const char *name, *value;
 		SoupMessageHeadersIter iter;
-		GString *pretty_message = g_string_new("XMLRPC request:\n");
+		GString *pretty_message = g_string_new("HTTP request:\n");
 		g_string_append_printf(pretty_message, "%s %s HTTP/1.%d\n", msg->method, path,
 			soup_message_get_http_version(msg));
 		soup_message_headers_iter_init(&iter, msg->request_headers);
@@ -160,6 +140,7 @@ void start_server() {
 	server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
 	g_hash_table_insert(server_callbacks, "window.make", &window_make);
 	g_hash_table_insert(server_callbacks, "window.delete", &window_delete);
+	g_hash_table_insert(server_callbacks, "window.active", &window_active);
 
 	// Global indentifiers.
 	windows = akd_init(NULL);
