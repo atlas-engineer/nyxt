@@ -121,7 +121,7 @@ buffer (not set to visible active buffer)."
   (with-result* ((links-json (add-link-hints))
                  (selected-anchor (read-from-minibuffer
                                  *minibuffer*
-                                 :input-prompt "Go to link in new buffer:"
+                                 :input-prompt "Open link in new buffer:"
                                  :cleanup-function #'remove-link-hints)))
     (let* ((new-buffer (make-buffer))
            (link-hints (cl-json:decode-json-from-string links-json))
@@ -134,12 +134,16 @@ buffer (not set to visible active buffer)."
 (define-command go-anchor-new-buffer-focus ()
   "Show a set of link hints, and open the user inputted one in a new
 visible active buffer."
-  (with-result (input (read-from-minibuffer
-                       *minibuffer*
-                       :setup-function 'setup-anchor))
-    (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-      (loop for hint in (link-hints (mode *active-buffer*))
-            do (when (equalp (nth 0 hint) input)
-                 (set-url-buffer (nth 1 hint) new-buffer t)))
-      (remove-link-hints)
-      (set-visible-active-buffer new-buffer))))
+  (with-result* ((links-json (add-link-hints))
+                 (selected-anchor (read-from-minibuffer
+                                 *minibuffer*
+                                 :input-prompt "Go to link in new buffer:"
+                                 :cleanup-function #'remove-link-hints)))
+    (let* ((new-buffer (make-buffer))
+           (link-hints (cl-json:decode-json-from-string links-json))
+           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
+      (when selected-link
+        (buffer-execute-javascript *interface*
+                                   new-buffer
+                                   (buffer-set-url selected-link))
+        (set-active-buffer *interface* new-buffer)))))
