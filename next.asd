@@ -24,6 +24,7 @@
                ;; Core Packages
 	       (:file "bookmark")
                (:file "zoom")
+               (:file "scroll")
 	       (:file "history")
 	       (:file "search-buffer")
 	       (:file "jump-heading")
