@@ -74,6 +74,7 @@
   "Set the url for the current buffer from a bookmark."
   (with-result (url (read-from-minibuffer
                      *minibuffer*
+                     :input-prompt "Open bookmark:"
                      :completion-function 'bookmark-complete))
     (buffer-execute-javascript *interface*
                                (active-buffer *interface*)
