@@ -11,18 +11,19 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
 
-// TODO: Make local?
+// TODO: Make local?  Use struct?
 static AutokeyDictionary *windows;
+static AutokeyDictionary *buffers;
 static GHashTable *server_callbacks;
 
-// TODO: Prefix all those functions with "server_".
-static GVariant *window_make(SoupXMLRPCParams *_params) {
+// TODO: Prefix all those functions with "server_"?  Use separate .h?
+static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 	Window *window = window_init();
 	window->identifier = akd_insert_element(windows, window);
 	return g_variant_new_string(window->identifier);
 }
 
-static GVariant *window_delete(SoupXMLRPCParams *params) {
+static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 	GError *error = NULL;
 	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
 	if (error) {
@@ -45,7 +46,7 @@ static GVariant *window_delete(SoupXMLRPCParams *params) {
 	return g_variant_new_boolean(TRUE);
 }
 
-static GVariant *window_active(SoupXMLRPCParams *_params) {
+static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 	// TODO: If we run a GTK application, then we could call
 	// gtk_application_get_active_window() and get the identifier from there.
 	// We could also lookup the active window in gtk_window_list_toplevels().
@@ -64,6 +65,33 @@ static GVariant *window_active(SoupXMLRPCParams *_params) {
 	// TODO: Is "-1" a good name for a window that does not exist?
 	g_debug("No active window");
 	return g_variant_new_string("-1");
+}
+
+static GVariant *server_set_active_buffer(SoupXMLRPCParams *params) {
+	GError *error = NULL;
+	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+	if (error) {
+		g_warning("Malformed method parameters: %s", error->message);
+		return g_variant_new_boolean(FALSE);
+	}
+	if (!g_variant_check_format_string(variant, "av", FALSE)) {
+		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+	}
+	// Variant type string is "av", and the two embedded "v"'s type string are "s".
+	const char *window_id = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	const char *buffer_id = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	g_debug("Method parameter: window_id %s, buffer_id %s", window_id, buffer_id);
+
+	Window *window = akd_object_for_key(windows, window_id);
+	Buffer *buffer = akd_object_for_key(buffers, buffer_id);
+	window_set_active_buffer(window, buffer);
+	return g_variant_new_boolean(TRUE);
 }
 
 static void server_handler(SoupServer *server, SoupMessage *msg,
@@ -139,12 +167,13 @@ void start_server() {
 
 	// Register callbacks.
 	server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
-	g_hash_table_insert(server_callbacks, "window.make", &window_make);
-	g_hash_table_insert(server_callbacks, "window.delete", &window_delete);
-	g_hash_table_insert(server_callbacks, "window.active", &window_active);
+	g_hash_table_insert(server_callbacks, "window.make", &server_window_make);
+	g_hash_table_insert(server_callbacks, "window.delete", &server_window_delete);
+	g_hash_table_insert(server_callbacks, "window.active", &server_window_active);
 
 	// Global indentifiers.
 	windows = akd_init(NULL);
+	buffers = akd_init(NULL);
 }
 
 void stop_server() {

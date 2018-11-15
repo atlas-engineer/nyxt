@@ -60,3 +60,8 @@ void window_close(Window *window) {
 	gtk_widget_destroy(window->base);
 	// TODO: Kill buffer.
 }
+
+void window_set_active_buffer(Window *window, Buffer *buffer) {
+	window->buffer = buffer;
+	gtk_container_add(GTK_CONTAINER(window->base), GTK_WIDGET(buffer->web_view));
+}
