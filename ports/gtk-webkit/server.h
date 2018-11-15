@@ -94,6 +94,12 @@ static GVariant *server_set_active_buffer(SoupXMLRPCParams *params) {
 	return g_variant_new_boolean(TRUE);
 }
 
+static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
+	Buffer *buffer = buffer_init();
+	buffer->identifier = akd_insert_element(buffers, buffer);
+	return g_variant_new_string(buffer->identifier);
+}
+
 static void server_handler(SoupServer *server, SoupMessage *msg,
 	const char *path, GHashTable *query,
 	SoupClientContext *context, gpointer data) {
