@@ -32,6 +32,7 @@ static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 	}
 	if (!g_variant_check_format_string(variant, "av", FALSE)) {
 		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		return g_variant_new_boolean(FALSE);
 	}
 	// Variant type string is "av", and the embedded "v"'s type string is "s".
 	const char *a_key = g_variant_get_string(
@@ -41,7 +42,7 @@ static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 	g_debug("Method parameter: %s", a_key);
 
 	Window *window = akd_object_for_key(windows, a_key);
-	window_close(window);
+	window_delete(window);
 	akd_remove_object_for_key(windows, a_key);
 	return g_variant_new_boolean(TRUE);
 }
@@ -76,6 +77,7 @@ static GVariant *server_set_active_buffer(SoupXMLRPCParams *params) {
 	}
 	if (!g_variant_check_format_string(variant, "av", FALSE)) {
 		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		return g_variant_new_boolean(FALSE);
 	}
 	// Variant type string is "av", and the two embedded "v"'s type string are "s".
 	const char *window_id = g_variant_get_string(
@@ -118,9 +120,36 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 	g_debug("Method parameter: %s", a_key);
 
 	Buffer *buffer = akd_object_for_key(buffers, a_key);
-	buffer_close(buffer);
+	buffer_delete(buffer);
 	akd_remove_object_for_key(buffers, a_key);
 	return g_variant_new_boolean(TRUE);
+}
+
+static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
+	GError *error = NULL;
+	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+	if (error) {
+		g_warning("Malformed method parameters: %s", error->message);
+		return g_variant_new_boolean(FALSE);
+	}
+	if (!g_variant_check_format_string(variant, "av", FALSE)) {
+		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		return g_variant_new_boolean(FALSE);
+	}
+	// Variant type string is "av", and the two embedded "v"'s type string are "s".
+	const char *buffer_id = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	const char *javascript = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	g_debug("Method parameter: buffer_id %s, javascript %s", buffer_id, javascript);
+
+	Buffer *buffer = akd_object_for_key(buffers, buffer_id);
+	char *operation_result = buffer_evaluate(buffer, javascript);
+	return g_variant_new_string(operation_result);
 }
 
 static void server_handler(SoupServer *server, SoupMessage *msg,
@@ -199,6 +228,11 @@ void start_server() {
 	g_hash_table_insert(server_callbacks, "window.make", &server_window_make);
 	g_hash_table_insert(server_callbacks, "window.delete", &server_window_delete);
 	g_hash_table_insert(server_callbacks, "window.active", &server_window_active);
+	g_hash_table_insert(server_callbacks, "window.set.active.buffer", &server_set_active_buffer);
+	g_hash_table_insert(server_callbacks, "buffer.make", &server_buffer_make);
+	g_hash_table_insert(server_callbacks, "buffer.delete", &server_buffer_delete);
+	// TODO: Change API to "buffer.evaluate".
+	g_hash_table_insert(server_callbacks, "buffer.execute.javascript", &server_buffer_evaluate);
 
 	// Global indentifiers.
 	windows = akd_init(NULL);

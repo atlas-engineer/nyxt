@@ -8,8 +8,8 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include "buffer.h"
 
 typedef struct {
-	Buffer *buffer;
 	GtkWidget *base;
+	Buffer *buffer;
 	const char *identifier;
 } Window;
 
@@ -56,7 +56,7 @@ Window *window_init() {
 	return window;
 }
 
-void window_close(Window *window) {
+void window_delete(Window *window) {
 	gtk_widget_destroy(window->base);
 	// TODO: Kill buffer?
 }
