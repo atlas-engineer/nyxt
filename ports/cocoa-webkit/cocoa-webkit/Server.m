@@ -85,6 +85,20 @@ buffer_make(xmlrpc_env *   const envP,
 }
 
 static xmlrpc_value *
+buffer_delete(xmlrpc_env * const envP,
+              xmlrpc_value * const paramArrayP,
+              void *         const serverInfo,
+              void *         const channelInfo) {
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        void *bufferId;
+        xmlrpc_decompose_value(envP, paramArrayP, "(s)", &bufferId);
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        [delegate bufferDelete: [NSString stringWithFormat:@"%s", bufferId]];
+    });
+    return xmlrpc_bool_new(envP, 1);
+}
+
+static xmlrpc_value *
 buffer_execute_javascript(xmlrpc_env *   const envP,
                           xmlrpc_value * const paramArrayP,
                           void *         const serverInfo,
@@ -146,6 +160,8 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
         "window.set.active.buffer", &window_set_active_buffer,};
     struct xmlrpc_method_info3 const bufferMake = {
         "buffer.make", &buffer_make,};
+    struct xmlrpc_method_info3 const bufferDelete = {
+        "buffer.delete", &buffer_delete,};
     struct xmlrpc_method_info3 const bufferExecuteJavaScript = {
         "buffer.execute.javascript", &buffer_execute_javascript,};
     struct xmlrpc_method_info3 const minibufferSetHeight = {
@@ -169,6 +185,7 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
     xmlrpc_registry_add_method3(&env, registryP, &windowActive);
     xmlrpc_registry_add_method3(&env, registryP, &windowSetActiveBuffer);
     xmlrpc_registry_add_method3(&env, registryP, &bufferMake);
+    xmlrpc_registry_add_method3(&env, registryP, &bufferDelete);
     xmlrpc_registry_add_method3(&env, registryP, &bufferExecuteJavaScript);
     xmlrpc_registry_add_method3(&env, registryP, &minibufferSetHeight);
     xmlrpc_registry_add_method3(&env, registryP, &minibufferExecuteJavascript);
