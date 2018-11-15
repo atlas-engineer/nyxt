@@ -60,5 +60,6 @@
   "Execute a command by name"
   (with-result (command (read-from-minibuffer
                          *minibuffer*
+                         :input-prompt "Execute command:"
                          :completion-function 'complete-command))
     (funcall (impl (gethash command *available-commands*)))))
