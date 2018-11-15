@@ -36,7 +36,7 @@
     return [window identifier];
 }
 
-- (bool)windowClose:(NSString *)key
+- (bool)windowDelete:(NSString *)key
 {
     Window *window = [[self windows] objectForKey:key];
     [window close];
@@ -68,7 +68,7 @@
     return [buffer identifier];
 }
 
-- (bool)bufferClose:(NSString *)key
+- (bool)bufferDelete:(NSString *)key
 {
     [[self buffers] removeObjectForKey:key];
     return YES;

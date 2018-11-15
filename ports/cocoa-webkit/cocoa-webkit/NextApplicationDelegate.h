@@ -14,7 +14,7 @@
 @property (strong, atomic, readwrite) AutokeyDictionary *buffers;
 
 - (NSString *)windowMake;
-- (bool)windowClose:(NSString *)key;
+- (bool)windowDelete:(NSString *)key;
 - (NSString*)windowActive;
 - (bool)setActiveBufferForWindow:(NSString *)window withBuffer:(NSString *)buffer;
 - (NSString *)bufferMake;

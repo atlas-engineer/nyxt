@@ -37,7 +37,7 @@ window_delete(xmlrpc_env * const envP,
         void *windowId;
         xmlrpc_decompose_value(envP, paramArrayP, "(s)", &windowId);
         NextApplicationDelegate *delegate = [NSApp delegate];
-        [delegate windowClose: [NSString stringWithFormat:@"%s", windowId]];
+        [delegate windowDelete: [NSString stringWithFormat:@"%s", windowId]];
     });
     return xmlrpc_bool_new(envP, 1);
 }
