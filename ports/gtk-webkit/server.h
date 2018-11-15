@@ -54,7 +54,7 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 	GHashTableIter iter;
 	gpointer key, value;
 
-	g_hash_table_iter_init(&iter, windows->_dict);
+	g_hash_table_iter_init(&iter, windows->dict);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		Window *window = (Window *)value;
 		if (gtk_window_is_active(GTK_WINDOW(window->base))) {
