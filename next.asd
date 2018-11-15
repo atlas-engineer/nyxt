@@ -23,6 +23,7 @@
 	       (:file "keymap")
                ;; Core Packages
 	       (:file "bookmark")
+               (:file "zoom")
 	       (:file "history")
 	       (:file "search-buffer")
 	       (:file "jump-heading")
