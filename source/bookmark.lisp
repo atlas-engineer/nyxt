@@ -69,3 +69,4 @@
            (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
       (when selected-link
         (%bookmark-url selected-link)))))
+

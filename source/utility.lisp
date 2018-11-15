@@ -11,7 +11,8 @@
 (define-command load-file ()
   "Load a file by specifying the absolute path to that file."
   (with-result (file-name-input (read-from-minibuffer
-                                 (mode *minibuffer*)))
+                                 *minibuffer*
+                                 :input-prompt "Load file:"))
     (load file-name-input :if-does-not-exist nil)))
 
 (defun reload-init ()
@@ -20,10 +21,7 @@
 (define-command start-swank ()
   "Start a swank server that can be connected to in Emacs via
 slime. Default port is 4006."
-  (#+ccl ccl::call-in-event-process
-   #-ccl progn
-   #'(lambda ()
-       (swank:create-server :port *swank-port* :dont-close t))))
+  (swank:create-server :port *swank-port* :dont-close t))
 
 (defun parse-url (input-url)
   (if (equalp "s" (nth 0 (cl-strings:split input-url)))
@@ -44,3 +42,49 @@ slime. Default port is 4006."
 	  (cl-string-match:replace-re "  *" "+" search-string :all t))
 	 (url (concatenate 'string "https://duckduckgo.com/?q=" encoded-search-string)))
     url))
+
+(defun fuzzy-match (input candidates &optional accessor-function)
+  "fuzzy-match works by taking a string input from the user. the
+string is then populated with '*' between each character to create a
+regex. As an example, 'nt' will become 'n.*t.*' This will enable
+matching of 'next' or 'note' etc. This function currently limits the
+type of input that it accepts, only matching against alpha input. An
+advanced version of this command may allow for complete regex, but
+will have to consider malformed regex."
+  (let* ((cleaned-input (cl-string-match:replace-re
+                         "[^a-zA-Z]" "" input :all t))
+         (regex
+           (with-output-to-string (stream)
+             (loop for char across cleaned-input do
+               (princ #\. stream)
+               (princ #\* stream)
+               (princ char stream))
+             ;; match any chars after final char in cleaned-input
+             (princ #\. stream)
+             (princ #\* stream)))
+         (completions nil))
+    ;; use constructed regex to see which options match
+    (loop for candidate in candidates do
+      (when (cl-string-match:match-re
+             regex
+             (if accessor-function
+                 (funcall accessor-function candidate)
+                 candidate))
+        (push candidate completions)))
+    completions))
+
+;; utility functions for getting paths from the xdg directory
+;; specification in a namespaced directory for Next
+(defun xdg-data-home (&optional (file-name ""))
+  (merge-pathnames
+   file-name
+   (merge-pathnames
+    (make-pathname :directory '(:relative "next"))
+    (uiop:xdg-data-home))))
+
+(defun xdg-config-home (&optional (file-name ""))
+  (merge-pathnames
+   file-name
+   (merge-pathnames
+    (make-pathname :directory '(:relative "next"))
+    (uiop:xdg-config-home))))
