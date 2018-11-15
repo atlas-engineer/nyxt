@@ -16,8 +16,11 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 #define APPNAME "Next"
 
+typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
+
 // TODO: Make local?
 static AutokeyDictionary *windows;
+static GHashTable *server_callbacks;
 
 static void destroy_window(GtkWidget *widget, GtkWidget *window) {
 	// TODO: Call only on last window.
@@ -30,7 +33,7 @@ static gboolean close_web_view(WebKitWebView *webView, GtkWidget *window) {
 	return true;
 }
 
-static GVariant *window_make() {
+static GVariant *window_make(SoupXMLRPCParams *_params) {
 	// Create an 800x600 window that will contain the browser instance
 	GtkWidget *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
@@ -65,14 +68,30 @@ static GVariant *window_make() {
 	return g_variant_new_string(identifier);
 }
 
-static GVariant *window_delete(const char *a_key) {
+static GVariant *window_delete(SoupXMLRPCParams *params) {
+	GError *error = NULL;
+	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
+	if (error) {
+		g_warning("Malformed method parameters: %s", error->message);
+		return g_variant_new_boolean(FALSE);
+	}
+	if (!g_variant_check_format_string(variant, "av", FALSE)) {
+		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+	}
+	// Variant type string is "av", and the embedded "v"'s type string is "s".
+	const char *a_key = g_variant_get_string(
+		g_variant_get_variant(
+			g_variant_get_child_value(variant, 0)),
+		NULL);
+	g_debug("Method parameter: %s", a_key);
+
 	GtkWidget *window = akd_object_for_key(windows, a_key);
 	gtk_widget_destroy(window);
 	akd_remove_object_for_key(windows, a_key);
 	return g_variant_new_boolean(TRUE);
 }
 
-static void server_callback(SoupServer *server, SoupMessage *msg,
+static void server_handler(SoupServer *server, SoupMessage *msg,
 	const char *path, GHashTable *query,
 	SoupClientContext *context, gpointer data) {
 	{
@@ -105,28 +124,16 @@ static void server_callback(SoupServer *server, SoupMessage *msg,
 		return;
 	}
 
+	ServerCallback callback = NULL;
+	gboolean found = g_hash_table_lookup_extended(server_callbacks, method_name,
+			NULL, (gpointer *)&callback);
+	if (!found) {
+		g_warning("Unknown method: %s", method_name);
+		return;
+	}
 	g_debug("Method name: %s", method_name);
 
-	GVariant *operation_result = NULL;
-	if (strcmp(method_name, "window.make") == 0) {
-		operation_result = window_make();
-	} else if (strcmp(method_name, "window.delete") == 0) {
-		GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
-		if (error) {
-			g_warning("Malformed method parameters: %s", error->message);
-			return;
-		}
-		if (!g_variant_check_format_string(variant, "av", FALSE)) {
-			g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-		}
-		// Variant type string is "av", and the embedded "v"'s type string is "s".
-		const char *a_key = g_variant_get_string(
-			g_variant_get_variant(
-				g_variant_get_child_value(variant, 0)),
-			NULL);
-		g_debug("Method parameter: %s", a_key);
-		operation_result = window_delete(a_key);
-	}
+	GVariant *operation_result = callback(params);
 
 	soup_xmlrpc_params_free(params);
 
@@ -138,12 +145,7 @@ static void server_callback(SoupServer *server, SoupMessage *msg,
 	g_debug("Response: %d %s", msg->status_code, msg->reason_phrase);
 }
 
-int main(int argc, char *argv[]) {
-	// TODO: Use GtkApplication?
-	gtk_init(&argc, &argv);
-
-	// TODO: Start the xmlrpc server first?  If GUI is started, then we can
-	// report xmlrpc startup issue graphically.
+void start_server() {
 	// TODO: Server logging?
 	// TODO: libsoup's examples don't unref the server.  Should we?
 	SoupServer *server = soup_server_new(
@@ -157,7 +159,21 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	g_debug("Starting XMLRPC server");
-	soup_server_add_handler(server, NULL, server_callback, NULL, NULL);
+	soup_server_add_handler(server, NULL, server_handler, NULL, NULL);
+
+	// Register callbacks.
+	server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
+	g_hash_table_insert(server_callbacks, "window.make", &window_make);
+	g_hash_table_insert(server_callbacks, "window.delete", &window_delete);
+}
+
+int main(int argc, char *argv[]) {
+	// TODO: Use GtkApplication?
+	gtk_init(&argc, &argv);
+
+	// TODO: Start the xmlrpc server first?  If GUI is started, then we can
+	// report xmlrpc startup issue graphically.
+	start_server();
 
 	// Global indentifiers.
 	windows = akd_init(NULL);
