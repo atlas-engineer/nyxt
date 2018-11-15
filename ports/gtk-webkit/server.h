@@ -11,15 +11,17 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
 
-// TODO: Make local?  Use struct?
-static AutokeyDictionary *windows;
-static AutokeyDictionary *buffers;
-static GHashTable *server_callbacks;
+typedef struct {
+	AutokeyDictionary *windows;
+	AutokeyDictionary *buffers;
+	GHashTable *server_callbacks;
+} ServerState;
+static ServerState state;
 
 // TODO: Prefix all those functions with "server_"?  Use separate .h?
 static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 	Window *window = window_init();
-	window->identifier = akd_insert_element(windows, window);
+	window->identifier = akd_insert_element(state.windows, window);
 	return g_variant_new_string(window->identifier);
 }
 
@@ -41,9 +43,9 @@ static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 		NULL);
 	g_debug("Method parameter: %s", a_key);
 
-	Window *window = akd_object_for_key(windows, a_key);
+	Window *window = akd_object_for_key(state.windows, a_key);
 	window_delete(window);
-	akd_remove_object_for_key(windows, a_key);
+	akd_remove_object_for_key(state.windows, a_key);
 	return g_variant_new_boolean(TRUE);
 }
 
@@ -54,7 +56,7 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 	GHashTableIter iter;
 	gpointer key, value;
 
-	g_hash_table_iter_init(&iter, windows->dict);
+	g_hash_table_iter_init(&iter, state.windows->dict);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		Window *window = (Window *)value;
 		if (gtk_window_is_active(GTK_WINDOW(window->base))) {
@@ -90,15 +92,15 @@ static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 		NULL);
 	g_debug("Method parameter: window_id %s, buffer_id %s", window_id, buffer_id);
 
-	Window *window = akd_object_for_key(windows, window_id);
-	Buffer *buffer = akd_object_for_key(buffers, buffer_id);
+	Window *window = akd_object_for_key(state.windows, window_id);
+	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
 	window_set_active_buffer(window, buffer);
 	return g_variant_new_boolean(TRUE);
 }
 
 static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
 	Buffer *buffer = buffer_init();
-	buffer->identifier = akd_insert_element(buffers, buffer);
+	buffer->identifier = akd_insert_element(state.buffers, buffer);
 	return g_variant_new_string(buffer->identifier);
 }
 
@@ -120,9 +122,9 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 		NULL);
 	g_debug("Method parameter: %s", a_key);
 
-	Buffer *buffer = akd_object_for_key(buffers, a_key);
+	Buffer *buffer = akd_object_for_key(state.buffers, a_key);
 	buffer_delete(buffer);
-	akd_remove_object_for_key(buffers, a_key);
+	akd_remove_object_for_key(state.buffers, a_key);
 	return g_variant_new_boolean(TRUE);
 }
 
@@ -148,7 +150,7 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 		NULL);
 	g_debug("Method parameter: buffer_id %s, javascript %s", buffer_id, javascript);
 
-	Buffer *buffer = akd_object_for_key(buffers, buffer_id);
+	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
 	char *result = buffer_evaluate(buffer, javascript);
 	return g_variant_new_string(result);
 }
@@ -174,7 +176,7 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 			g_variant_get_child_value(variant, 1)));
 	g_debug("Method parameter: window_id %s, minibuffer_height %i", window_id, minibuffer_height);
 
-	Window *window = akd_object_for_key(windows, window_id);
+	Window *window = akd_object_for_key(state.windows, window_id);
 	gint64 result = window_set_minibuffer_height(window, minibuffer_height);
 	return g_variant_new_int64(result);
 }
@@ -201,7 +203,7 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 		NULL);
 	g_debug("Method parameter: window_id %s, javascript %s", window_id, javascript);
 
-	Window *window = akd_object_for_key(windows, window_id);
+	Window *window = akd_object_for_key(state.windows, window_id);
 	Minibuffer *minibuffer = window->minibuffer;
 	char *result = minibuffer_evaluate(minibuffer, javascript);
 	return g_variant_new_string(result);
@@ -242,7 +244,7 @@ static void server_handler(SoupServer *server, SoupMessage *msg,
 	}
 
 	ServerCallback callback = NULL;
-	gboolean found = g_hash_table_lookup_extended(server_callbacks, method_name,
+	gboolean found = g_hash_table_lookup_extended(state.server_callbacks, method_name,
 			NULL, (gpointer *)&callback);
 	if (!found) {
 		g_warning("Unknown method: %s", method_name);
@@ -278,26 +280,27 @@ void start_server() {
 	g_debug("Starting XMLRPC server");
 	soup_server_add_handler(server, NULL, server_handler, NULL, NULL);
 
-	// Register callbacks.
-	server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
-	g_hash_table_insert(server_callbacks, "window.make", &server_window_make);
-	g_hash_table_insert(server_callbacks, "window.delete", &server_window_delete);
-	g_hash_table_insert(server_callbacks, "window.active", &server_window_active);
-	g_hash_table_insert(server_callbacks, "window.set.active.buffer", &server_window_set_active_buffer);
-	g_hash_table_insert(server_callbacks, "buffer.make", &server_buffer_make);
-	g_hash_table_insert(server_callbacks, "buffer.delete", &server_buffer_delete);
-	// TODO: Change API to "buffer.evaluate".
-	g_hash_table_insert(server_callbacks, "buffer.execute.javascript", &server_buffer_evaluate);
-	// TODO: Rename minibuffer.set.height to window.set.minibuffer.height.
-	g_hash_table_insert(server_callbacks, "minibuffer.set.height", &server_window_set_minibuffer_height);
-	// TODO: Change API to "minibuffer.evaluate".
-	g_hash_table_insert(server_callbacks, "minibuffer.execute.javascript", &server_minibuffer_evaluate);
+	// Initialize global state.
+	state.server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
+	state.windows = akd_init(NULL);
+	state.buffers = akd_init(NULL);
 
-	// Global indentifiers.
-	windows = akd_init(NULL);
-	buffers = akd_init(NULL);
+	// Register callbacks.
+	g_hash_table_insert(state.server_callbacks, "window.make", &server_window_make);
+	g_hash_table_insert(state.server_callbacks, "window.delete", &server_window_delete);
+	g_hash_table_insert(state.server_callbacks, "window.active", &server_window_active);
+	g_hash_table_insert(state.server_callbacks, "window.set.active.buffer", &server_window_set_active_buffer);
+	g_hash_table_insert(state.server_callbacks, "buffer.make", &server_buffer_make);
+	g_hash_table_insert(state.server_callbacks, "buffer.delete", &server_buffer_delete);
+	// TODO: Change API to "buffer.evaluate".
+	g_hash_table_insert(state.server_callbacks, "buffer.execute.javascript", &server_buffer_evaluate);
+	// TODO: Rename minibuffer.set.height to window.set.minibuffer.height.
+	g_hash_table_insert(state.server_callbacks, "minibuffer.set.height", &server_window_set_minibuffer_height);
+	// TODO: Change API to "minibuffer.evaluate".
+	g_hash_table_insert(state.server_callbacks, "minibuffer.execute.javascript", &server_minibuffer_evaluate);
 }
 
 void stop_server() {
-	akd_free(windows);
+	akd_free(state.windows);
+	akd_free(state.buffers);
 }
