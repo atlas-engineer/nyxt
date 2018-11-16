@@ -47,6 +47,12 @@
                         :completion-function (buffer-completion-generator)))
     (%delete-buffer buffer)))
 
+(define-command delete-active-buffer ()
+  "Delete the currently active buffer, and make the next buffer
+*buffers* the visible buffer. If no other buffers exist, set the url
+of the current buffer to the start page."
+  (%delete-buffer (active-buffer *interface*)))
+
 (defmethod %delete-buffer ((buffer buffer))
   (when (equal (active-buffer *interface*) buffer)
     (make-visible-new-buffer))
@@ -104,17 +110,4 @@ item in the list, jump to the first item."
     (if (< (+ active-buffer-index 1) (length *buffers*))
         (set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
         (set-visible-active-buffer (nth 0 *buffers*)))))
-
-(define-command delete-active-buffer ()
-  "Delete the currently active buffer, and make the next buffer
-*buffers* the visible buffer. If no other buffers exist, set the url
-of the current buffer to the start page."
-  (if (> (length *buffers*) 1)
-      (let ((former-active-buffer *active-buffer*))
-        ;; switch-buffer-next changes value of *active-buffer*
-        ;; which in turn changes the value of former-active-buffer
-        (switch-buffer-next)
-        ;; therefore delete actually deletes the new *active-buffer*
-        (%delete-buffer former-active-buffer))
-      (set-url *start-page-url*)))
 
