@@ -53,7 +53,7 @@
       (setf (key-super-modifier key-chord) t))
     (setf (key-character-code key-chord) key-code)
     (push key-chord *key-sequence-stack*))
-  (consume-key-sequence))
+  (if (consume-key-sequence) 1 0))
 
 (defun consume-key-sequence ()
   ;; Iterate through all keymaps
