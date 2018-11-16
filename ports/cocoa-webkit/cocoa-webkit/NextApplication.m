@@ -16,7 +16,7 @@
 
 - (void)sendEvent:(NSEvent *)event
 {
-    if ([event type] == NSEventTypeKeyDown) {
+    if ([event type] == NSEventTypeKeyDown && [event timestamp] != 0) {
         NSEventModifierFlags modifierFlags = [event modifierFlags];
         char characterCodePressed = [[event charactersIgnoringModifiers] characterAtIndex: 0];
         bool controlPressed = (modifierFlags & NSEventModifierFlagControl);
@@ -41,7 +41,16 @@
             xmlrpc_read_int(&env, resultP, &consumed);
             if (!consumed) {
                 dispatch_sync(dispatch_get_main_queue(), ^{
-                    [super sendEvent:event];
+                    [super sendEvent: [NSEvent keyEventWithType:NSEventTypeKeyDown
+                                                       location:[event locationInWindow]
+                                                  modifierFlags:[event modifierFlags]
+                                                      timestamp:0
+                                                   windowNumber:[event windowNumber]
+                                                        context:nil
+                                                     characters:[event characters]
+                                    charactersIgnoringModifiers:[event charactersIgnoringModifiers]
+                                                      isARepeat:[event isARepeat]
+                                                        keyCode:[event keyCode]]];
                 });
             }
         });
