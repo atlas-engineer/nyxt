@@ -10,7 +10,7 @@
      (defparameter ,script-name
        (ps:ps ,@script-body))
      (defun ,script-name (&optional (callback nil) (buffer (active-buffer *interface*)))
-       (buffer-execute-javascript *interface* buffer ,script-name callback))))
+       (buffer-evaluate-javascript *interface* buffer ,script-name callback))))
 
 ;; allow inlining of a parenscript function that can accept arguments,
 ;; useful for parenscript that will accept variables from lisp
@@ -19,7 +19,7 @@
      (ps:ps ,@body)))
 
 (defmacro with-parenscript ((symbol script) &body body)
-  `(buffer-execute-javascript *interface*
+  `(buffer-evaluate-javascript *interface*
     (view *active-buffer*) ,script
     (lambda (json-execution-result)
       (let ((,symbol (cl-json:decode-json-from-string json-execution-result)))

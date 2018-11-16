@@ -11,6 +11,5 @@
 @property (strong, atomic, readwrite) NSString *identifier;
 
 - (instancetype) init;
-- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
-
+- (NSString *)evaluateJavaScript:(NSString *) javaScript;
 @end

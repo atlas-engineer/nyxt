@@ -111,7 +111,7 @@ currently active buffer."
     (let* ((link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
       (when selected-link
-        (buffer-execute-javascript *interface*
+        (buffer-evaluate-javascript *interface*
                                    (active-buffer *interface*)
                                    (buffer-set-url selected-link))))))
 
@@ -127,7 +127,7 @@ buffer (not set to visible active buffer)."
            (link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
       (when selected-link
-        (buffer-execute-javascript *interface*
+        (buffer-evaluate-javascript *interface*
                                    new-buffer
                                    (buffer-set-url selected-link))))))
 
@@ -143,7 +143,7 @@ visible active buffer."
            (link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
       (when selected-link
-        (buffer-execute-javascript *interface*
+        (buffer-evaluate-javascript *interface*
                                    new-buffer
                                    (buffer-set-url selected-link))
         (set-active-buffer *interface* new-buffer)))))

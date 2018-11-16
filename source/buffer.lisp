@@ -35,7 +35,7 @@
   "Make a new empty buffer with the *default-new-buffer-url* loaded"
   (let ((new-buffer (make-buffer)))
     (set-active-buffer *interface* new-buffer)
-    (buffer-execute-javascript *interface*
+    (buffer-evaluate-javascript *interface*
                                new-buffer
                                (buffer-set-url *default-new-buffer-url*))))
 

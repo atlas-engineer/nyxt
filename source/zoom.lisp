@@ -24,12 +24,12 @@
 
 (define-command zoom-in-page ()
   "Zoom in the current page."
-  (buffer-execute-javascript *interface* (active-buffer *interface*) (%zoom-in-page)))
+  (buffer-evaluate-javascript *interface* (active-buffer *interface*) (%zoom-in-page)))
 
 (define-command zoom-out-page ()
   "Zoom out the current page."
-  (buffer-execute-javascript *interface* (active-buffer *interface*) (%zoom-out-page)))
+  (buffer-evaluate-javascript *interface* (active-buffer *interface*) (%zoom-out-page)))
 
 (define-command unzoom-page ()
   "Unzoom the page."
-  (buffer-execute-javascript *interface* (active-buffer *interface*) (%unzoom-page)))
+  (buffer-evaluate-javascript *interface* (active-buffer *interface*) (%unzoom-page)))

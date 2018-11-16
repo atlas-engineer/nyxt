@@ -99,7 +99,7 @@ buffer_delete(xmlrpc_env * const envP,
 }
 
 static xmlrpc_value *
-buffer_execute_javascript(xmlrpc_env *   const envP,
+buffer_evaluate_javascript(xmlrpc_env *   const envP,
                           xmlrpc_value * const paramArrayP,
                           void *         const serverInfo,
                           void *         const channelInfo) {
@@ -109,7 +109,7 @@ buffer_execute_javascript(xmlrpc_env *   const envP,
         void *javaScript;
         xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &bufferId, &javaScript);
         NextApplicationDelegate *delegate = [NSApp delegate];
-        operationResult = [delegate bufferExecuteJavaScript:[NSString stringWithFormat:@"%s", bufferId]
+        operationResult = [delegate bufferEvaluateJavaScript:[NSString stringWithFormat:@"%s", bufferId]
                                              withJavaScript:[NSString stringWithFormat:@"%s", javaScript]];
     });
     return xmlrpc_build_value(envP, "s", [operationResult UTF8String]);
@@ -133,7 +133,7 @@ minibuffer_set_height(xmlrpc_env *   const envP,
 }
 
 static xmlrpc_value *
-minibuffer_execute_javascript(xmlrpc_env *   const envP,
+minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
                                xmlrpc_value * const paramArrayP,
                                void *         const serverInfo,
                                void *         const channelInfo) {
@@ -143,7 +143,7 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
         void *javaScript;
         xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &windowId, &javaScript);
         NextApplicationDelegate *delegate = [NSApp delegate];
-        operationResult = [delegate minibufferExecuteJavaScript:[NSString stringWithFormat:@"%s", windowId]
+        operationResult = [delegate minibufferEvaluateJavaScript:[NSString stringWithFormat:@"%s", windowId]
                                              withJavaScript:[NSString stringWithFormat:@"%s", javaScript]];
     });
     return xmlrpc_string_new(envP, [operationResult UTF8String]);
@@ -162,12 +162,12 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
         "buffer.make", &buffer_make,};
     struct xmlrpc_method_info3 const bufferDelete = {
         "buffer.delete", &buffer_delete,};
-    struct xmlrpc_method_info3 const bufferExecuteJavaScript = {
-        "buffer.execute.javascript", &buffer_execute_javascript,};
+    struct xmlrpc_method_info3 const bufferEvaluateJavaScript = {
+        "buffer.evaluate.javascript", &buffer_evaluate_javascript,};
     struct xmlrpc_method_info3 const minibufferSetHeight = {
         "minibuffer.set.height", &minibuffer_set_height,};
-    struct xmlrpc_method_info3 const minibufferExecuteJavascript = {
-        "minibuffer.execute.javascript", &minibuffer_execute_javascript,};
+    struct xmlrpc_method_info3 const minibufferEvaluateJavascript = {
+        "minibuffer.evaluate.javascript", &minibuffer_evaluate_javascript,};
 
     xmlrpc_server_abyss_parms serverparm;
     xmlrpc_registry * registryP;
@@ -186,9 +186,9 @@ minibuffer_execute_javascript(xmlrpc_env *   const envP,
     xmlrpc_registry_add_method3(&env, registryP, &windowSetActiveBuffer);
     xmlrpc_registry_add_method3(&env, registryP, &bufferMake);
     xmlrpc_registry_add_method3(&env, registryP, &bufferDelete);
-    xmlrpc_registry_add_method3(&env, registryP, &bufferExecuteJavaScript);
+    xmlrpc_registry_add_method3(&env, registryP, &bufferEvaluateJavaScript);
     xmlrpc_registry_add_method3(&env, registryP, &minibufferSetHeight);
-    xmlrpc_registry_add_method3(&env, registryP, &minibufferExecuteJavascript);
+    xmlrpc_registry_add_method3(&env, registryP, &minibufferEvaluateJavascript);
 
     if (env.fault_occurred) {
         printf("xmlrpc_registry_add_method3() failed.  %s\n",

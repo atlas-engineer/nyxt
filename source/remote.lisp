@@ -92,12 +92,12 @@
      :host host :port port :url url)
     (remhash (id buffer) buffers)))
 
-(defmethod buffer-execute-javascript ((interface remote-interface)
+(defmethod buffer-evaluate-javascript ((interface remote-interface)
                                       (buffer buffer) javascript &optional (callback nil))
   (with-slots (host port url) interface
     (let ((callback-id
             (s-xml-rpc:xml-rpc-call
-             (s-xml-rpc:encode-xml-rpc-call "buffer.execute.javascript" (id buffer) javascript)
+             (s-xml-rpc:encode-xml-rpc-call "buffer.evaluate.javascript" (id buffer) javascript)
              :host host :port port :url url)))
       (setf (gethash callback-id (callbacks buffer)) callback)
       callback-id)))
@@ -109,12 +109,12 @@
      (s-xml-rpc:encode-xml-rpc-call "minibuffer.set.height" (id window) height)
      :host host :port port :url url)))
 
-(defmethod minibuffer-execute-javascript ((interface remote-interface)
+(defmethod minibuffer-evaluate-javascript ((interface remote-interface)
                                           (window window) javascript &optional (callback nil))
   (with-slots (host port url) interface
     (let ((callback-id
             (s-xml-rpc:xml-rpc-call
-             (s-xml-rpc:encode-xml-rpc-call "minibuffer.execute.javascript" (id window) javascript)
+             (s-xml-rpc:encode-xml-rpc-call "minibuffer.evaluate.javascript" (id window) javascript)
              :host host :port port :url url)))
       (setf (gethash callback-id (minibuffer-callbacks window)) callback)
       callback-id)))

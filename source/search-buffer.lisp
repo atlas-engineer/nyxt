@@ -39,7 +39,7 @@
   (with-result (input (read-from-minibuffer
                        *minibuffer*
                        :setup-function 'initialize-search-buffer))
-    (buffer-execute-javascript *interface* (view *active-buffer*) (paren-add-search-boxes input))))
+    (buffer-evaluate-javascript *interface* (view *active-buffer*) (paren-add-search-boxes input))))
 
 (define-parenstatic remove-search-hints
   (defun qsa (context selector)

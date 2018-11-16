@@ -12,6 +12,6 @@
 @property (strong, atomic, readwrite) NSString *parentWindowIdentifier;
 
 
-- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
+- (NSString *)evaluateJavaScript:(NSString *) javaScript;
 
 @end

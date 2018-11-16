@@ -24,10 +24,10 @@
     return self;
 }
 
-- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script
+- (NSString *)evaluateJavaScript:(NSString *) javaScript
 {
     [self setCallBackCount:[self callBackCount] + 1];
-    [self evaluateJavaScript:script completionHandler:^(id result, NSError *error) {
+    [self evaluateJavaScript:javaScript completionHandler:^(id result, NSError *error) {
         if (error == nil) {
             if (result != nil) {
                 NSString* transformedResult = [NSString stringWithFormat:@"%@", result];

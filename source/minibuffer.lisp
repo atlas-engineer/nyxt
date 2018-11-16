@@ -83,12 +83,12 @@
 
 (defmethod set-input ((minibuffer minibuffer) input)
   (when input
-    (minibuffer-execute-javascript
+    (minibuffer-evaluate-javascript
      *interface* (window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
 (defmethod erase-document ((minibuffer minibuffer))
-  (minibuffer-execute-javascript
+  (minibuffer-evaluate-javascript
    *interface* (window-active *interface*)
    (ps:ps
      (ps:chain document (open))
@@ -199,7 +199,7 @@
         (setf completions nil))
     (let ((input-text (generate-input-html input-buffer input-buffer-cursor))
           (completion-html (generate-completion-html completions completion-cursor)))
-      (minibuffer-execute-javascript
+      (minibuffer-evaluate-javascript
        *interface* (window-active *interface*)
        (ps:ps
          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
