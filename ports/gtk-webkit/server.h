@@ -102,7 +102,6 @@ static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
 	return g_variant_new_string(buffer->identifier);
 }
 
-// TODO: Cocoa port does not have buffer_delete.
 static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 	GVariant *unwrapped_params = server_unwrap_params(params);
 	if (!unwrapped_params) {
@@ -249,12 +248,10 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "window.set.active.buffer", &server_window_set_active_buffer);
 	g_hash_table_insert(state.server_callbacks, "buffer.make", &server_buffer_make);
 	g_hash_table_insert(state.server_callbacks, "buffer.delete", &server_buffer_delete);
-	// TODO: Change API to "buffer.evaluate".
-	g_hash_table_insert(state.server_callbacks, "buffer.execute.javascript", &server_buffer_evaluate);
+	g_hash_table_insert(state.server_callbacks, "buffer.evaluate.javascript", &server_buffer_evaluate);
 	// TODO: Rename minibuffer.set.height to window.set.minibuffer.height.
 	g_hash_table_insert(state.server_callbacks, "minibuffer.set.height", &server_window_set_minibuffer_height);
-	// TODO: Change API to "minibuffer.evaluate".
-	g_hash_table_insert(state.server_callbacks, "minibuffer.execute.javascript", &server_minibuffer_evaluate);
+	g_hash_table_insert(state.server_callbacks, "minibuffer.evaluate.javascript", &server_minibuffer_evaluate);
 }
 
 void stop_server() {
