@@ -36,8 +36,21 @@
   (let ((new-buffer (make-buffer)))
     (set-active-buffer *interface* new-buffer)
     (buffer-evaluate-javascript *interface*
-                               new-buffer
-                               (buffer-set-url *default-new-buffer-url*))))
+                                new-buffer
+                                (buffer-set-url *default-new-buffer-url*))))
+
+(define-command delete-buffer ()
+  "Delete the buffer via minibuffer input."
+  (with-result (buffer (read-from-minibuffer
+                        *minibuffer*
+                        :input-prompt "Kill buffer:"
+                        :completion-function (buffer-completion-generator)))
+    (%delete-buffer buffer)))
+
+(defmethod %delete-buffer ((buffer buffer))
+  (when (equal (active-buffer *interface*) buffer)
+    (make-visible-new-buffer))
+  (buffer-delete *interface* buffer))
 
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
@@ -76,11 +89,6 @@
 (defun get-active-buffer-index ()
   (position *active-buffer* *buffers* :test #'equalp))
 
-(defun %delete-buffer (buffer)
-  (setf *buffers* (delete buffer *buffers*))
-  (buffer-delete *interface* (view buffer)))
-
-
 (define-command switch-buffer-previous ()
   "Switch to the previous buffer in the list of *buffers*, if the
 first item in the list, jump to the last item."
@@ -110,11 +118,3 @@ of the current buffer to the start page."
         (%delete-buffer former-active-buffer))
       (set-url *start-page-url*)))
 
-(define-command delete-buffer ()
-  "Delete the buffer via minibuffer input."
-  (with-result (buffer (read-from-minibuffer
-                        *minibuffer*
-                        :completion-function 'buffer-complete))
-    (if (equalp buffer *active-buffer*)
-        (delete-active-buffer)
-        (%delete-buffer buffer))))
