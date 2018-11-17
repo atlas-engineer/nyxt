@@ -36,10 +36,13 @@
 
 (define-command add-search-boxes ()
   "Add search boxes for a given search string"
+  (initialize-search-buffer)
   (with-result (input (read-from-minibuffer
                        *minibuffer*
-                       :setup-function 'initialize-search-buffer))
-    (buffer-evaluate-javascript *interface* (view *active-buffer*) (paren-add-search-boxes input))))
+                       :input-prompt "Search for:"))
+    (buffer-evaluate-javascript *interface*
+                                (active-buffer *interface*)
+                                (paren-add-search-boxes input))))
 
 (define-parenstatic remove-search-hints
   (defun qsa (context selector)
