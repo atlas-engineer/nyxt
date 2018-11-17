@@ -38,7 +38,7 @@
                                        (write-to-string (symbol-value input))))
            (insert-help (ps:ps (setf (ps:@ document Body inner-H-T-M-L) (ps:lisp help-contents)))))
       (buffer-evaluate-javascript *interface* (view help-buffer) insert-help)
-      (set-visible-active-buffer help-buffer))))
+      (set-active-buffer *interface* help-buffer))))
 
 (define-command command-inspect ()
   "Inspect a function and show it in a help buffer."
@@ -53,4 +53,4 @@
                                        (write-to-string (doc (gethash input *available-commands*)))))
            (insert-help (ps:ps (setf (ps:@ document Body inner-H-T-M-L) (ps:lisp help-contents)))))
       (buffer-evaluate-javascript *interface* (view help-buffer) insert-help)
-      (set-visible-active-buffer help-buffer))))
+      (set-active-buffer *interface* help-buffer))))
