@@ -6,7 +6,9 @@ LDLIBS += `pkg-config --libs webkit2gtk-4.0`
 
 all: next-gtk-webkit
 
-next-gtk-webkit: $(wildcard *.h)
+## Clang fails to parse command line if executable depends directly on headers.
+next-gtk-webkit: next-gtk-webkit.o
+next-gtk-webkit.o: $(wildcard *.h)
 
 install: next-gtk-webkit
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
