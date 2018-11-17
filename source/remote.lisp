@@ -160,6 +160,5 @@
 (defmethod cut ((interface remote-interface)))
 (defmethod web-view-set-url-loaded-callback ((interface remote-interface) view function)
   (declare (ignore view function)))
-(defmethod web-view-set-url ((interface remote-interface) view url)
-  (declare (ignore view url)))
+
 
