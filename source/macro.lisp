@@ -18,13 +18,6 @@
   `(defun ,name (,@lambda-list)
      (ps:ps ,@body)))
 
-(defmacro with-parenscript ((symbol script) &body body)
-  `(buffer-evaluate-javascript *interface*
-    (view *active-buffer*) ,script
-    (lambda (json-execution-result)
-      (let ((,symbol (cl-json:decode-json-from-string json-execution-result)))
-        ,@body))))
-
 (defmacro with-result ((symbol async-form) &body body)
   `(,(first async-form)
     (lambda (,symbol) ,@body)
