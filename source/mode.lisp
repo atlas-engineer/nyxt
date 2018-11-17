@@ -8,5 +8,5 @@
      (keymap :accessor keymap :initarg :keymap)
      (buffer :accessor buffer)))
 
-(defmethod setup ((mode mode) buffer)
+(defmethod setup ((mode mode) (buffer buffer))
   (setf (buffer mode) buffer))

@@ -5,11 +5,13 @@
 (defmethod object-string ((buffer buffer))
   (name buffer))
 
-(define-command make-buffer ()
+(define-command make-buffer (&optional (name "default")
+                                       (mode (document-mode)))
   "Create a new buffer."
   (let ((buffer (buffer-make *interface*)))
-    (setf (name buffer) "default")
-    (setf (mode buffer) (document-mode))
+    (setf (name buffer) name)
+    (setf (mode buffer) mode)
+    (setup mode buffer)
     buffer))
 
 (defun buffer-completion-generator ()
@@ -127,15 +129,3 @@ item in the list, jump to the first item."
 (defmethod add-or-switch-to-mode ((buffer buffer) mode)
   (add-mode buffer mode)
   (switch-mode buffer mode))
-
-(defun generate-new-buffer (name mode)
-  (let ((new-buffer
-	 (make-instance 'buffer
-			:name name
-			:mode mode
-			:modes (make-hash-table :test 'equalp)
-			:view (buffer-make *interface*))))
-    (push new-buffer *buffers*)
-    (setup mode new-buffer)
-    (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))
-    new-buffer))

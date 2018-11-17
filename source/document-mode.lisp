@@ -75,8 +75,8 @@
 			      :active-node root)))
     mode))
 
-(defmethod setup ((mode document-mode) buffer)
-  (call-next-method)
-  (web-view-set-url-loaded-callback *interface*
-                                    (view buffer)
-                                    (lambda () (add-or-traverse-history mode))))
+;; (defmethod setup ((mode document-mode) buffer)
+;;   (call-next-method)
+;;   (web-view-set-url-loaded-callback *interface*
+;;                                     (view buffer)
+;;                                     (lambda () (add-or-traverse-history mode))))
