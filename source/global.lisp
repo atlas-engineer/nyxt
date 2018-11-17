@@ -12,8 +12,6 @@
   "A global key map, available in every mode/buffer.")
 (defvar *minibuffer* nil
   "A variable to store the minibuffer.")
-(defvar *buffers* ()
-  "A list of all existing buffers.")
 (defvar *scroll-distance* 50
   "The distance scroll-down or scroll-up will scroll.")
 (defvar *horizontal-scroll-distance* 50

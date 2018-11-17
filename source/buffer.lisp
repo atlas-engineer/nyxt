@@ -47,9 +47,9 @@
     (%delete-buffer buffer)))
 
 (define-command delete-active-buffer ()
-  "Delete the currently active buffer, and make the next buffer
-*buffers* the visible buffer. If no other buffers exist, set the url
-of the current buffer to the start page."
+  "Delete the currently active buffer, and make the next buffer the
+visible buffer. If no other buffers exist, set the url of the current
+buffer to the start page."
   (%delete-buffer (active-buffer *interface*)))
 
 (define-parenstatic buffer-get-url
@@ -96,7 +96,7 @@ buffer"
   (position active-buffer buffers :test #'equal))
 
 (define-command switch-buffer-previous ()
-  "Switch to the previous buffer in the list of *buffers*, if the
+  "Switch to the previous buffer in the list of buffers, if the
 first item in the list, jump to the last item."
   (let* ((buffers (alexandria:hash-table-values (buffers *interface*)))
          (active-buffer (active-buffer *interface*))
@@ -106,7 +106,7 @@ first item in the list, jump to the last item."
 	(set-active-buffer *interface* (nth (- active-buffer-index 1) buffers)))))
 
 (define-command switch-buffer-next ()
-  "Switch to the next buffer in the list of *buffers*, if the last
+  "Switch to the next buffer in the list of buffers, if the last
 item in the list, jump to the first item."
   (let* ((buffers (alexandria:hash-table-values (buffers *interface*)))
          (active-buffer (active-buffer *interface*))
