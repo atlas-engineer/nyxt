@@ -27,11 +27,9 @@
 
 (define-command make-visible-new-buffer ()
   "Make a new empty buffer with the *default-new-buffer-url* loaded"
-  (let ((new-buffer (make-buffer)))
-    (set-active-buffer *interface* new-buffer)
-    (buffer-evaluate-javascript *interface*
-                                new-buffer
-                                (buffer-set-url *default-new-buffer-url*))))
+  (let ((buffer (make-buffer)))
+    (set-active-buffer *interface* buffer)
+    (set-url-buffer *default-new-buffer-url* buffer)))
 
 (defmethod %delete-buffer ((buffer buffer))
   (when (equal (active-buffer *interface*) buffer)
