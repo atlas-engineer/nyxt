@@ -69,7 +69,7 @@ the command output.
     (uiop:run-program input :force-shell t :output :string))))
 
 (defun open-new-shell ()
-  (set-visible-active-buffer
+  (set-active-buffer *interface*
    (generate-new-buffer "*shell*" (shell-mode))))
 
 (define-key *shell-mode-map* (kbd "c")

@@ -141,9 +141,3 @@ item in the list, jump to the first item."
     (setup mode new-buffer)
     (setf (gethash (class-name (class-of (mode new-buffer))) (modes new-buffer)) (mode new-buffer))
     new-buffer))
-
-(defun set-visible-active-buffer (buffer)
-  (set-active-buffer buffer)
-  (window-set-active-buffer *interface*
-                            (view *active-buffer*)
-                            (window-active *interface*)))
