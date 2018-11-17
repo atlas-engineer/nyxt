@@ -16,6 +16,7 @@ AutokeyDictionary *akd_init(AutokeyDictionary *self) {
 	}
 	self->element_count = 0;
 	self->dict = g_hash_table_new(g_str_hash, g_str_equal);
+	return self;
 }
 
 void akd_free(AutokeyDictionary *self) {
@@ -47,5 +48,5 @@ void akd_remove_object_for_key(AutokeyDictionary *self, const char *a_key) {
 
 // TODO: Not needed?
 GList *akd_all_keys(AutokeyDictionary *self) {
-	g_hash_table_get_keys(self->dict);
+	return g_hash_table_get_keys(self->dict);
 }
