@@ -19,7 +19,6 @@
 {
     self = [super init];
     [self setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [self setURL:@"file:///Users/jmercouris/Downloads/webpage.html"];
     [self setCallBackCount:0];
     return self;
 }
@@ -50,12 +49,6 @@
         }
     }];
     return [@([self callBackCount]) stringValue];
-}
-
-- (void)setURL:(NSString *)URL
-{
-    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:URL]];
-    [self loadRequest:urlRequest];
 }
 
 @end
