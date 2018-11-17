@@ -5,10 +5,11 @@ Use of this file is governed by the license that can be found in LICENSE.
 #define APPNAME "Next"
 
 #include <webkit2/webkit2.h>
+
 #include "buffer.h"
 #include "minibuffer.h"
-
 #include "server-state.h"
+#include "client.h"
 
 typedef struct {
 	GtkWidget *base;
@@ -51,6 +52,51 @@ void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
 	window_delete(window);
 }
 
+void window_event_callback(SoupSession *session, SoupMessage *msg, gpointer _data) {
+	GError *error = NULL;
+	g_debug("XMLRPC response: %s", msg->response_body->data);
+	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
+			msg->response_body->length, "b", &error);
+
+	if (!error) {
+		g_warning("Malformed XML-RPC response: %s", error->message);
+		return;
+	}
+
+	if (!g_variant_get_boolean(consumed)) {
+		// TODO: If not consumed, forward to GTK.
+		g_debug("Event not consumed, forwarding to GTK");
+	}
+}
+
+void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
+	g_debug("Key press value: %u", event->keyval);
+
+	GError *error = NULL;
+	gboolean control_pressed = event->state & GDK_CONTROL_MASK;
+	gboolean alt_pressed = event->state & GDK_MOD1_MASK;
+	gboolean super_pressed = event->state & GDK_SUPER_MASK;
+	// TODO: Send hardware_keycode?
+	GVariant *key_chord = g_variant_new("(bbbu)",
+			control_pressed,
+			alt_pressed,
+			super_pressed,
+			(guint32)event->keyval);
+
+	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+			"PUSH-KEY-CHORD", key_chord, &error);
+
+	if (error) {
+		g_warning("Malformed XML-RPC message: %s", error->message);
+		return;
+	}
+
+	soup_session_queue_message(xmlrpc_env, msg, &window_event_callback, NULL);
+	// TODO: The Lisp core does not seem to capture our XMLRPC message.  Something
+	// wrong with the client session setup?
+	g_debug("Key chord sent");
+}
+
 Window *window_init() {
 	Buffer *buffer = buffer_init();
 	// Make sure that when the browser area becomes visible, it will get
@@ -62,6 +108,10 @@ Window *window_init() {
 	GtkWidget *mainbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(minibuffer->web_view), FALSE, FALSE, 0);
+	// TODO: Connect to mainbox or window?
+	// TODO: send event on press and/or release?
+	g_signal_connect(mainbox, "key-press-event", G_CALLBACK(window_send_event), NULL);
+	g_signal_connect(mainbox, "key-release-event", G_CALLBACK(window_send_event), NULL);
 
 	Window *window = calloc(1, sizeof (Window));
 	// Create an 800x600 window that will contain the browser instance
@@ -90,7 +140,8 @@ Window *window_init() {
 
 void window_set_active_buffer(Window *window, Buffer *buffer) {
 	window->buffer = buffer;
-	gtk_container_add(GTK_CONTAINER(window->base), GTK_WIDGET(buffer->web_view));
+	// TODO: Need to add to the mainbox, not the base.
+	/* gtk_container_add(GTK_CONTAINER(window->base), GTK_WIDGET(buffer->web_view)); */
 }
 
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {
