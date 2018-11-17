@@ -35,7 +35,7 @@ shows how you could set the body with the URL of the current page.
 
 Define-Parenstatic will automatically generate a defparameter named
 ~hello-url~ as in the case above, and a function ~(hello-url)~ that
-you can invoke to act upon the currently ~*active-buffer*~.
+you can invoke to act upon the currently active buffer.
 * Running shell commands within Next
 Shell mode is an extension for running simple one liner shell commands
 and seeing the output. There is no history or variables. Use ~C-x s~
@@ -63,8 +63,9 @@ the command output.
                            (concatenate 'string output "<br />"))))))
 
 (defun run-shell-command (input)
-  (web-view-execute
-   (view *active-buffer*)
+  (buffer-evaluate-javascript
+   *interface*
+   (active-buffer *interface*)
    (append-output
     (uiop:run-program input :force-shell t :output :string))))
 
