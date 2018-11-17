@@ -142,10 +142,12 @@
 ;; Convenience methods and functions for Users of the API ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod active-buffer ((interface remote-interface))
+  "Get the active buffer for the active window."
   (window-active-buffer interface (window-active interface)))
 
 (defmethod set-active-buffer ((interface remote-interface)
                               (buffer buffer))
+  "Set the active buffer for the active window."
   (let ((window-active (window-active interface)))
     (setf (active-buffer window-active) buffer)
     (window-set-active-buffer interface window-active buffer)))
