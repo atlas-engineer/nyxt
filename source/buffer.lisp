@@ -33,6 +33,11 @@
                                 new-buffer
                                 (buffer-set-url *default-new-buffer-url*))))
 
+(defmethod %delete-buffer ((buffer buffer))
+  (when (equal (active-buffer *interface*) buffer)
+    (make-visible-new-buffer))
+  (buffer-delete *interface* buffer))
+
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
   (with-result (buffer (read-from-minibuffer
@@ -46,11 +51,6 @@
 *buffers* the visible buffer. If no other buffers exist, set the url
 of the current buffer to the start page."
   (%delete-buffer (active-buffer *interface*)))
-
-(defmethod %delete-buffer ((buffer buffer))
-  (when (equal (active-buffer *interface*) buffer)
-    (make-visible-new-buffer))
-  (buffer-delete *interface* buffer))
 
 (define-parenstatic buffer-get-url
     (ps:chain window location href))
@@ -92,6 +92,29 @@ buffer"
       (set-url-buffer url buffer)
       (set-active-buffer *interface* buffer))))
 
+(defmethod get-active-buffer-index ((active-buffer buffer) buffers)
+  (position active-buffer buffers :test #'equal))
+
+(define-command switch-buffer-previous ()
+  "Switch to the previous buffer in the list of *buffers*, if the
+first item in the list, jump to the last item."
+  (let* ((buffers (alexandria:hash-table-values (buffers *interface*)))
+         (active-buffer (active-buffer *interface*))
+         (active-buffer-index (get-active-buffer-index active-buffer buffers)))
+    (if (equalp 0 active-buffer-index)
+	(set-active-buffer *interface* (nth (- (length buffers) 1) buffers))
+	(set-active-buffer *interface* (nth (- active-buffer-index 1) buffers)))))
+
+(define-command switch-buffer-next ()
+  "Switch to the next buffer in the list of *buffers*, if the last
+item in the list, jump to the first item."
+  (let* ((buffers (alexandria:hash-table-values (buffers *interface*)))
+         (active-buffer (active-buffer *interface*))
+         (active-buffer-index (get-active-buffer-index active-buffer buffers)))
+    (if (< (+ active-buffer-index 1) (length buffers))
+        (set-active-buffer *interface* (nth (+ active-buffer-index 1) buffers))
+        (set-active-buffer *interface* (nth 0 buffers)))))
+
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))
@@ -124,23 +147,3 @@ buffer"
   (window-set-active-buffer *interface*
                             (view *active-buffer*)
                             (window-active *interface*)))
-
-(defun get-active-buffer-index ()
-  (position *active-buffer* *buffers* :test #'equalp))
-
-(define-command switch-buffer-previous ()
-  "Switch to the previous buffer in the list of *buffers*, if the
-first item in the list, jump to the last item."
-  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
-    (if (equalp 0 active-buffer-index)
-	(set-visible-active-buffer (nth (- (length *buffers*) 1) *buffers*))
-	(set-visible-active-buffer (nth (- active-buffer-index 1) *buffers*)))))
-
-(define-command switch-buffer-next ()
-  "Switch to the next buffer in the list of *buffers*, if the last
-item in the list, jump to the first item."
-  (let ((active-buffer-index (position *active-buffer* *buffers* :test #'equalp)))
-    (if (< (+ active-buffer-index 1) (length *buffers*))
-        (set-visible-active-buffer (nth (+ active-buffer-index 1) *buffers*))
-        (set-visible-active-buffer (nth 0 *buffers*)))))
-
