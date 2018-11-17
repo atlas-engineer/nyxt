@@ -66,45 +66,6 @@
         (setf (active-history-node mode) new-node)
         (return-from add-or-traverse-history t)))))
 
-(define-command set-url-new-buffer ()
-  "Prompt the user for a url and set it in a new active / visible
-buffer"
-  (with-result (input-url (read-from-minibuffer
-                           *minibuffer*
-                           :completion-function 'history-typed-complete
-                           :empty-complete-immediate t))
-    (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-      (set-active-buffer *interface* new-buffer)
-      (set-url input-url))))
-
-(defun set-url-buffer (input-url buffer &optional disable-history)
-  (setf (name buffer) input-url)
-  (unless disable-history
-    (history-typed-add input-url))
-  (web-view-set-url *interface* (view buffer) input-url))
-
-(defun %set-url-new-buffer (input-url &optional disable-history)
-  (let ((new-buffer (generate-new-buffer "default" (document-mode))))
-    (set-visible-active-buffer new-buffer)
-    (set-url-buffer input-url new-buffer disable-history)))
-
-(defun setup-url ()
-  (with-result (url (buffer-get-url))
-    (set-input *minibuffer* url)))
-
-(defun set-url (input-url &optional disable-history)
-  (let ((url (parse-url input-url)))
-    (set-url-buffer url *active-buffer* disable-history)))
-
-(define-command set-url-current-buffer ()
-  "Set the url for the current buffer, completing with history."
-  (with-result (url (read-from-minibuffer
-                     *minibuffer*
-                     :completion-function 'history-typed-complete
-                     :setup-function 'setup-url
-                     :empty-complete-immediate t))
-    (set-url url)))
-
 (defun document-mode ()
   "Base mode for interacting with documents"
   (let* ((root (make-node :data "about:blank"))

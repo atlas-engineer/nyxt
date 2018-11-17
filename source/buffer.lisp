@@ -2,12 +2,6 @@
 
 (in-package :next)
 
-(define-parenstatic buffer-get-url
-    (ps:chain window location href))
-
-(define-parenscript buffer-set-url (url)
-  ((setf (ps:chain this document location href) (ps:lisp url))))
-
 (defmethod object-string ((buffer buffer))
   (name buffer))
 
@@ -58,6 +52,46 @@ of the current buffer to the start page."
     (make-visible-new-buffer))
   (buffer-delete *interface* buffer))
 
+(define-parenstatic buffer-get-url
+    (ps:chain window location href))
+
+(define-parenscript buffer-set-url (url)
+  ((setf (ps:chain this document location href) (ps:lisp url))))
+
+(defmethod set-url-buffer (input-url (buffer buffer) &optional disable-history)
+  (let ((url (parse-url input-url)))
+    (setf (name buffer) url)
+    (unless disable-history
+      (history-typed-add input-url))
+    (buffer-evaluate-javascript *interface*
+                                buffer
+                                (buffer-set-url url))))
+
+(defun set-url (input-url &optional disable-history)
+  (let ((url (parse-url input-url)))
+    (set-url-buffer url (active-buffer *interface*) disable-history)))
+
+(define-command set-url-current-buffer ()
+  "Set the url for the current buffer, completing with history."
+  (with-result (url (read-from-minibuffer
+                     *minibuffer*
+                     :input-prompt "Open URL in buffer:"
+                     :completion-function 'history-typed-complete
+                     :empty-complete-immediate t))
+    (set-url url)))
+
+(define-command set-url-new-buffer ()
+  "Prompt the user for a url and set it in a new active / visible
+buffer"
+  (with-result (url (read-from-minibuffer
+                     *minibuffer*
+                     :input-prompt "Open URL in new buffer:"
+                     :completion-function 'history-typed-complete
+                     :empty-complete-immediate t))
+    (let ((buffer (make-buffer)))
+      (set-url-buffer url buffer)
+      (set-active-buffer *interface* buffer))))
+
 (defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
   (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
     (when (or (not found-mode) (and found-mode overwrite))
@@ -90,7 +124,6 @@ of the current buffer to the start page."
   (window-set-active-buffer *interface*
                             (view *active-buffer*)
                             (window-active *interface*)))
-
 
 (defun get-active-buffer-index ()
   (position *active-buffer* *buffers* :test #'equalp))
