@@ -54,11 +54,11 @@ void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
 
 void window_event_callback(SoupSession *session, SoupMessage *msg, gpointer _data) {
 	GError *error = NULL;
-	g_debug("XMLRPC response: %s", msg->response_body->data);
+	g_debug("XML-RPC response: %s", msg->response_body->data);
 	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
 			msg->response_body->length, "b", &error);
 
-	if (!error) {
+	if (error) {
 		g_warning("Malformed XML-RPC response: %s", error->message);
 		return;
 	}
@@ -77,11 +77,12 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 	gboolean alt_pressed = event->state & GDK_MOD1_MASK;
 	gboolean super_pressed = event->state & GDK_SUPER_MASK;
 	// TODO: Send hardware_keycode?
-	GVariant *key_chord = g_variant_new("(bbbu)",
+	GVariant *key_chord = g_variant_new("(bbbi)",
 			control_pressed,
 			alt_pressed,
 			super_pressed,
-			(guint32)event->keyval);
+			(gint32)event->keyval);
+	g_debug("XML-RPC message: %s %s", "PUSH-KEY-CHORD", g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
 			"PUSH-KEY-CHORD", key_chord, &error);
@@ -92,9 +93,6 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 	}
 
 	soup_session_queue_message(xmlrpc_env, msg, &window_event_callback, NULL);
-	// TODO: The Lisp core does not seem to capture our XMLRPC message.  Something
-	// wrong with the client session setup?
-	g_debug("Key chord sent");
 }
 
 Window *window_init() {

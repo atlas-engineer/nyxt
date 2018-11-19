@@ -13,10 +13,7 @@ int main(int argc, char *argv[]) {
 	// TODO: Start the xmlrpc server first?  If GUI is started, then we can
 	// report xmlrpc startup issue graphically.
 	start_server();
-
 	start_client();
-
-	// TODO: Send keypresses via XMLRPC to localhost:8081.
 
 	gtk_main();
 
