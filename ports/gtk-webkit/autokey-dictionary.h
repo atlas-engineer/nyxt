@@ -4,6 +4,10 @@ Use of this file is governed by the license that can be found in LICENSE.
 */
 #pragma once
 
+// The keys must be dynamically allocated strings.  They are automatically freed
+// when the hash table ref count reaches zero.  The values must be freed
+// manually.
+
 #include <glib.h>
 
 typedef struct {
@@ -11,12 +15,16 @@ typedef struct {
 	guint element_count;
 } AutokeyDictionary;
 
+static void akd_key_destroy_func(gpointer data) {
+	g_free(data);
+}
+
 AutokeyDictionary *akd_init(AutokeyDictionary *self) {
 	if (self == NULL) {
 		self = calloc(1, sizeof (AutokeyDictionary));
 	}
 	self->element_count = 0;
-	self->dict = g_hash_table_new(g_str_hash, g_str_equal);
+	self->dict = g_hash_table_new_full(g_str_hash, g_str_equal, &akd_key_destroy_func, NULL);
 	return self;
 }
 
