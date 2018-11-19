@@ -97,19 +97,22 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 
 Window *window_init() {
 	Buffer *buffer = buffer_init();
+	g_debug("Add buffer %p with view %p to window", buffer, buffer->web_view);
 	// Make sure that when the browser area becomes visible, it will get
 	// mouse and keyboard events
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
 
 	Minibuffer *minibuffer = minibuffer_init();
+	// TODO: What default shall we use for the minibuffer height?
+	gtk_widget_set_size_request(GTK_WIDGET(minibuffer->web_view), -1, 32);
 
 	GtkWidget *mainbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(minibuffer->web_view), FALSE, FALSE, 0);
 	// TODO: Connect to mainbox or window?
 	// TODO: send event on press and/or release?
 	g_signal_connect(mainbox, "key-press-event", G_CALLBACK(window_send_event), NULL);
-	g_signal_connect(mainbox, "key-release-event", G_CALLBACK(window_send_event), NULL);
+	/* g_signal_connect(mainbox, "key-release-event", G_CALLBACK(window_send_event), NULL); */
 
 	Window *window = calloc(1, sizeof (Window));
 	// Create an 800x600 window that will contain the browser instance
@@ -138,8 +141,16 @@ Window *window_init() {
 
 void window_set_active_buffer(Window *window, Buffer *buffer) {
 	window->buffer = buffer;
-	// TODO: Need to add to the mainbox, not the base.
-	/* gtk_container_add(GTK_CONTAINER(window->base), GTK_WIDGET(buffer->web_view)); */
+	g_debug("New active buffer %p with view %p", buffer, buffer->web_view);
+	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
+	GtkWidget *mainbox = GTK_WIDGET(children->data);
+	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
+	g_debug("Remove buffer view %p from window", box_children->data);
+	gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
+
+	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
+
+	gtk_widget_show_all(window->base);
 }
 
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {

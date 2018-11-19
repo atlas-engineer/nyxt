@@ -19,12 +19,17 @@ void buffer_set_url(Buffer *buffer, char *url) {
 Buffer *buffer_init() {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+	// We need to hold a reference to the view, otherwise changing buffer in the a
+	// window will unref+destroy the view.
+	g_object_ref(buffer->web_view);
+	g_debug("Init buffer %p with view %p", buffer, buffer->web_view);
 	buffer->callback_count = 0;
 	buffer_set_url(buffer, "https://next.atlas.engineer/");
 	return buffer;
 }
 
 void buffer_delete(Buffer *buffer) {
+	g_object_unref(buffer->web_view);
 	gtk_widget_destroy(GTK_WIDGET(buffer->web_view));
 }
 
