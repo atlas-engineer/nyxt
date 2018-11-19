@@ -13,7 +13,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 typedef struct {
 	WebKitWebView *web_view;
 	int callback_count;
-	const char *identifier;
+	char *identifier;
 } Buffer;
 
 void buffer_set_url(Buffer *buffer, const char *url) {
@@ -34,8 +34,13 @@ Buffer *buffer_init() {
 }
 
 void buffer_delete(Buffer *buffer) {
-	g_object_unref(buffer->web_view);
+	// Remove the extra ref added in buffer_init()?
+	/* g_object_unref(buffer->web_view); */
+	// TODO: What happens to the Window's web view when current buffer is deleted?
+
 	gtk_widget_destroy(GTK_WIDGET(buffer->web_view));
+	g_free(buffer->identifier);
+	g_free(buffer);
 }
 
 static void buffer_javascript_callback(GObject *object, GAsyncResult *result,

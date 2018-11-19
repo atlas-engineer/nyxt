@@ -13,7 +13,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 typedef struct {
 	WebKitWebView *web_view;
 	int callback_count;
-	const char *parent_window_identifier;
+	char *parent_window_identifier;
 } Minibuffer;
 
 Minibuffer *minibuffer_init() {
@@ -24,7 +24,9 @@ Minibuffer *minibuffer_init() {
 }
 
 void minibuffer_delete(Minibuffer *minibuffer) {
-	// TODO: Should we clean up the minibuffer?
+	gtk_widget_destroy(GTK_WIDGET(minibuffer->web_view));
+	g_free(minibuffer->parent_window_identifier);
+	g_free(minibuffer);
 }
 
 static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result,

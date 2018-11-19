@@ -16,17 +16,29 @@ Use of this file is governed by the license that can be found in LICENSE.
 typedef struct {
 	GtkWidget *base;
 	Buffer *buffer;
-	const char *identifier;
+	char *identifier;
 	Minibuffer *minibuffer;
 	int minibuffer_height;
 } Window;
 
 void window_destroy_callback(GtkWidget *_widget, Window *window) {
-	// TODO: We need to communicate the kill to the Lisp core.
-	g_debug("Delete window %s", window->identifier);
+	g_debug("Signal callback to destroy window %s", window->identifier);
 	akd_remove_object_for_key(state.windows, window->identifier);
+}
+
+void window_delete(Window *window) {
 	// We don't kill the buffer since it may be used by other windows.
+	g_debug("Delete window %s", window->identifier);
+	if (window->base != NULL && !gtk_widget_in_destruction(window->base)) {
+		// If window was destroyed externally, then this is already done.
+		g_debug("Destroy window widget %s", window->identifier);
+		gtk_widget_destroy(window->base);
+	}
+
 	minibuffer_delete(window->minibuffer);
+
+	g_free(window->identifier);
+	g_free(window);
 
 	if (g_hash_table_size(state.windows->dict) >= 1) {
 		return;
@@ -37,15 +49,6 @@ void window_destroy_callback(GtkWidget *_widget, Window *window) {
 	// server_window_delete.  We probably need add a "quit" request to the API.
 	g_debug("No more windows, quitting");
 	gtk_main_quit();
-}
-
-void window_delete(Window *window) {
-	// We need to destroy the widget here, then clean up in
-	// window_destroy_callback.  We don't destroy in window_destroy_callback since
-	// it's already done when called from the "destroy" signal handler.
-	g_debug("Destroy window widget %s", window->identifier);
-	gtk_widget_destroy(window->base);
-	window_destroy_callback(NULL, window);
 }
 
 // TODO: Not needed?

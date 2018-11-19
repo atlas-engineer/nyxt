@@ -44,7 +44,7 @@ GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
 
 static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 	Window *window = window_init();
-	window->identifier = akd_insert_element(state.windows, window);
+	window->identifier = strdup(akd_insert_element(state.windows, window));
 	window->minibuffer->parent_window_identifier = strdup(window->identifier);
 	return g_variant_new_string(window->identifier);
 }
@@ -58,8 +58,7 @@ static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 	g_variant_get(unwrapped_params, "(s)", &a_key);
 	g_debug("Method parameter: %s", a_key);
 
-	Window *window = akd_object_for_key(state.windows, a_key);
-	window_delete(window);
+	akd_remove_object_for_key(state.windows, a_key);
 	return g_variant_new_boolean(TRUE);
 }
 
@@ -102,7 +101,7 @@ static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 
 static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
 	Buffer *buffer = buffer_init();
-	buffer->identifier = akd_insert_element(state.buffers, buffer);
+	buffer->identifier = strdup(akd_insert_element(state.buffers, buffer));
 	return g_variant_new_string(buffer->identifier);
 }
 
@@ -115,8 +114,6 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 	g_variant_get(unwrapped_params, "(s)", &a_key);
 	g_debug("Method parameter: %s", a_key);
 
-	Buffer *buffer = akd_object_for_key(state.buffers, a_key);
-	buffer_delete(buffer);
 	akd_remove_object_for_key(state.buffers, a_key);
 	return g_variant_new_boolean(TRUE);
 }
@@ -246,8 +243,8 @@ void start_server() {
 
 	// Initialize global state.
 	state.server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
-	state.windows = akd_init(NULL);
-	state.buffers = akd_init(NULL);
+	state.windows = akd_init((GDestroyNotify)&window_delete);
+	state.buffers = akd_init((GDestroyNotify)&buffer_delete);
 
 	// Register callbacks.
 	g_hash_table_insert(state.server_callbacks, "window.make", &server_window_make);
@@ -264,4 +261,5 @@ void start_server() {
 void stop_server() {
 	akd_free(state.windows);
 	akd_free(state.buffers);
+	g_hash_table_unref(state.server_callbacks);
 }
