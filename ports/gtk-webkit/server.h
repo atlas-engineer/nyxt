@@ -77,9 +77,7 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 		}
 	}
 
-	// TODO: Is "-1" a good name for a window that does not exist?
-	g_debug("No active window");
-	return g_variant_new_string("-1");
+	return g_variant_new_string("<no active window>");
 }
 
 static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {

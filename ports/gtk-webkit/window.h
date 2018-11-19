@@ -123,6 +123,8 @@ Window *window_init() {
 	g_signal_connect(mainbox, "key-press-event", G_CALLBACK(window_send_event), NULL);
 	/* g_signal_connect(mainbox, "key-release-event", G_CALLBACK(window_send_event), NULL); */
 
+	// TODO: Focus on web view, not minibuffer.
+
 	Window *window = calloc(1, sizeof (Window));
 	// Create an 800x600 window that will contain the browser instance
 	window->base = gtk_window_new(GTK_WINDOW_TOPLEVEL);
