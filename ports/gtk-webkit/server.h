@@ -251,8 +251,7 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "buffer.make", &server_buffer_make);
 	g_hash_table_insert(state.server_callbacks, "buffer.delete", &server_buffer_delete);
 	g_hash_table_insert(state.server_callbacks, "buffer.evaluate.javascript", &server_buffer_evaluate);
-	// TODO: Rename minibuffer.set.height to window.set.minibuffer.height.
-	g_hash_table_insert(state.server_callbacks, "minibuffer.set.height", &server_window_set_minibuffer_height);
+	g_hash_table_insert(state.server_callbacks, "window.set.minibuffer.height", &server_window_set_minibuffer_height);
 	g_hash_table_insert(state.server_callbacks, "minibuffer.evaluate.javascript", &server_minibuffer_evaluate);
 }
 
