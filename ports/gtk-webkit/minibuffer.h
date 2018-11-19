@@ -13,7 +13,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 typedef struct {
 	WebKitWebView *web_view;
 	int callback_count;
-	char *parent_window_identifier;
+	const char *parent_window_identifier;
 } Minibuffer;
 
 Minibuffer *minibuffer_init() {

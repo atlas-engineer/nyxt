@@ -13,10 +13,10 @@ Use of this file is governed by the license that can be found in LICENSE.
 typedef struct {
 	WebKitWebView *web_view;
 	int callback_count;
-	char *identifier;
+	const char *identifier;
 } Buffer;
 
-void buffer_set_url(Buffer *buffer, char *url) {
+void buffer_set_url(Buffer *buffer, const char *url) {
 	webkit_web_view_load_uri(buffer->web_view, url);
 }
 
