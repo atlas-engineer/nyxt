@@ -19,6 +19,7 @@
    (callbacks :accessor callbacks :initform (make-hash-table :test #'equal))))
 
 (defmethod did-commit-navigation ((buffer buffer) url)
+  (setf (name buffer) url)
   (did-commit-navigation (mode buffer) url))
 
 (defclass remote-interface ()
