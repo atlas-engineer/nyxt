@@ -63,7 +63,13 @@
     }
 }
 
-- (bool)setActiveBufferForWindow:(NSString *)windowKey withBuffer:(NSString *)bufferKey
+- (int)setMinibufferHeightForWindow:(NSString *)windowKey height:(int)height
+{
+    Window *window = [[self windows] objectForKey:windowKey];
+    return [[window base] setMinibufferHeight:height];
+}
+
+- (bool)setActiveBufferForWindow:(NSString *)windowKey buffer:(NSString *)bufferKey
 {
     Window *window = [[self windows] objectForKey:windowKey];
     Buffer *buffer = [[self buffers] objectForKey:bufferKey];
@@ -84,19 +90,13 @@
     return YES;
 }
 
-- (NSString *)bufferEvaluateJavaScript:(NSString *)bufferKey withJavaScript:(NSString *) javaScript
+- (NSString *)bufferEvaluateJavaScript:(NSString *)bufferKey javaScript:(NSString *) javaScript
 {
     Buffer *buffer = [[self buffers] objectForKey:bufferKey];
     return [buffer evaluateJavaScript:javaScript];
 }
 
-- (int)minibufferSetHeight:(int)height forWindow:(NSString *)windowKey
-{
-    Window *window = [[self windows] objectForKey:windowKey];
-    return [[window base] setMinibufferHeight:height];
-}
-
-- (NSString *)minibufferEvaluateJavaScript:(NSString *)windowKey withJavaScript:(NSString *)javaScript
+- (NSString *)minibufferEvaluateJavaScript:(NSString *)windowKey javaScript:(NSString *)javaScript
 {
     Window *window = [[self windows] objectForKey:windowKey];
     Minibuffer *minibuffer = [[window base] minibuffer];
