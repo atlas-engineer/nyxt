@@ -19,7 +19,7 @@
    symbol-list))
 
 (defun variable-complete (input)
-  (fuzzy-match input *package-globals* #'symbol-name))
+  (fuzzy-match input *package-globals* :accessor-function #'symbol-name))
 
 (defun function-complete (input)
   (fuzzy-match input (alexandria:hash-table-keys *available-commands*)))

@@ -46,7 +46,8 @@ slime. Default port is 4006."
 	 (url (concatenate 'string "https://duckduckgo.com/?q=" encoded-search-string)))
     url))
 
-(defun fuzzy-match (input candidates &optional accessor-function)
+(defun fuzzy-match (input candidates &key (accessor-function nil)
+                                          (case-sensitive nil))
   "fuzzy-match works by taking a string input from the user. the
 string is then populated with '*' between each character to create a
 regex. As an example, 'nt' will become 'n.*t.*' This will enable
@@ -56,6 +57,9 @@ advanced version of this command may allow for complete regex, but
 will have to consider malformed regex."
   (let* ((cleaned-input (cl-string-match:replace-re
                          "[^a-zA-Z]" "" input :all t))
+         (cleaned-input (if case-sensitive
+                            cleaned-input
+                            (string-downcase cleaned-input)))
          (regex
            (with-output-to-string (stream)
              (loop for char across cleaned-input do
@@ -67,13 +71,16 @@ will have to consider malformed regex."
              (princ #\* stream)))
          (completions nil))
     ;; use constructed regex to see which options match
-    (loop for candidate in candidates do
-      (when (cl-string-match:match-re
-             regex
+    (flet ((candidate-representation (candidate)
              (if accessor-function
-                 (funcall accessor-function candidate)
-                 candidate))
-        (push candidate completions)))
+                 (funcall accessor-function candidate) candidate)))
+      (loop for candidate in candidates do
+        (when (cl-string-match:match-re
+               regex
+               (if case-sensitive
+                   (candidate-representation candidate)
+                   (string-downcase (candidate-representation candidate))))
+          (push candidate completions))))
     completions))
 
 ;; utility functions for getting paths from the xdg directory

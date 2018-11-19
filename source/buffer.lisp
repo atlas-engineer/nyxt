@@ -17,7 +17,7 @@
 (defun buffer-completion-generator ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
     (lambda (input)
-      (fuzzy-match input buffers #'name))))
+      (fuzzy-match input buffers :accessor-function #'name))))
 
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
