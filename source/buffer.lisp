@@ -14,7 +14,7 @@
     (setup mode buffer)
     buffer))
 
-(defun buffer-completion-generator ()
+(defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
     (lambda (input)
       (fuzzy-match input buffers :accessor-function #'name))))
@@ -24,7 +24,7 @@
   (with-result (buffer (read-from-minibuffer
                         *minibuffer*
                         :input-prompt "Switch to buffer:"
-                        :completion-function (buffer-completion-generator)))
+                        :completion-function (buffer-completion-fn)))
     (set-active-buffer *interface* buffer)))
 
 (define-command make-visible-new-buffer ()
@@ -43,7 +43,7 @@
   (with-result (buffer (read-from-minibuffer
                         *minibuffer*
                         :input-prompt "Kill buffer:"
-                        :completion-function (buffer-completion-generator)))
+                        :completion-function (buffer-completion-fn)))
     (%delete-buffer buffer)))
 
 (define-command delete-active-buffer ()

@@ -10,65 +10,66 @@
 
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."
-  (let ((parent (node-parent (active-history-node (mode (active-buffer *interface*))))))
+  (let ((parent (node-parent (active-history-node 
+                              (mode (active-buffer *interface*))))))
     (when parent
       (set-url (node-data parent) t))))
 
 (define-command history-forwards ()
   "Move forwards in history selecting the first child."
-  (let ((children (node-children (active-history-node (mode (active-buffer *interface*))))))
+  (let ((children (node-children (active-history-node
+                                  (mode (active-buffer *interface*))))))
     (unless (null children)
       (set-url (node-data (nth 0 children)) t))))
 
-(defun history-fowards-query-complete (input)
+(defun history-forwards-completion-fn ()
   ;; provide completion candidates to the history-forwards-query function
-  (let ((children
-	  ;; Find children of active document-mode instance
-	  (node-children (active-history-node
-			  ;; Find active document-mode instance from minibuffer callback
-			  (mode (callback-buffer (mode *minibuffer*)))))))
-    (when children
-      (fuzzy-match input (mapcar #'node-data children)))))
+  (let* ((mode (mode (active-buffer *interface*)))
+         (children (node-children (active-history-node mode))))
+    (lambda (input)
+      (if children
+          (fuzzy-match input children :accessor-function #'node-data)
+          (list "No children.")))))
 
 (define-command history-forwards-query ()
   "Move forwards in history querying if more than one child present."
   (with-result (input (read-from-minibuffer
                        *minibuffer*
-                       :completion-function 'history-fowards-query-complete))
-    (let ((children (node-children (active-history-node (mode (active-buffer *interface*))))))
-      (loop for child in children do
-        (when (equalp (node-data child) input)
-          (set-url (node-data child) t))))))
+                       :input-prompt "Navigate forwards to:"
+                       :completion-function (history-forwards-completion-fn)))
+    (set-url (node-data input))))
 
-(defun add-or-traverse-history (mode)
-  (with-result (url (buffer-get-url))
-    (let ((active-node (active-history-node mode)))
-      ;; only add element to the history if it is different than the current
-      (when (equalp url (node-data active-node))
-        (return-from add-or-traverse-history t))
-      ;; check if parent exists
-      (when (node-parent active-node)
-        ;; check if parent node's url is equal
-        (when (equalp url (node-data (node-parent active-node)))
-    	  ;; set active-node to parent
-    	  (setf (active-history-node mode) (node-parent active-node))
-    	  (return-from add-or-traverse-history t)))
-      ;; loop through children to make sure node does not exist in children
-      (loop for child in (node-children active-node) do
-        (when (equalp (node-data child) url)
-    	  (setf (active-history-node mode) child)
-    	  (return-from add-or-traverse-history t)))
-      ;; if we made it this far, we must create a new node
-      (when url
-        (history-add url)) ; add to history database
-      (let ((new-node (make-node :parent active-node :data url)))
-        (push new-node (node-children active-node))
-        (setf (active-history-node mode) new-node)
-        (return-from add-or-traverse-history t)))))
+(defmethod add-or-traverse-history ((mode mode) url)
+  (let ((active-node (active-history-node mode)))
+    ;; only add element to the history if it is different than the current
+    (when (equalp url (node-data active-node))
+      (return-from add-or-traverse-history t))
+    ;; check if parent exists
+    (when (node-parent active-node)
+      ;; check if parent node's url is equal
+      (when (equalp url (node-data (node-parent active-node)))
+    	;; set active-node to parent
+    	(setf (active-history-node mode) (node-parent active-node))
+    	(return-from add-or-traverse-history t)))
+    ;; loop through children to make sure node does not exist in children
+    (loop for child in (node-children active-node) do
+      (when (equalp (node-data child) url)
+    	(setf (active-history-node mode) child)
+    	(return-from add-or-traverse-history t)))
+    ;; if we made it this far, we must create a new node
+    (when url
+      (history-add url)) ; add to history database
+    (let ((new-node (make-instance 'node
+                                   :parent active-node
+                                   :data url)))
+      (push new-node (node-children active-node))
+      (setf (active-history-node mode) new-node)
+      (return-from add-or-traverse-history t))))
 
 (defun document-mode ()
   "Base mode for interacting with documents"
-  (let* ((root (make-node :data "about:blank"))
+  (let* ((root (make-instance 'node
+                              :data "about:blank"))
 	 (mode (make-instance 'document-mode
 			      :name "Document-Mode"
 			      :keymap *document-mode-map*
@@ -76,5 +77,4 @@
     mode))
 
 (defmethod did-commit-navigation ((mode mode) url)
-  (print "Did Navigate!")
-  (print url))
+  (add-or-traverse-history mode url))

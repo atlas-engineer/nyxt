@@ -6,10 +6,13 @@
   (princ-to-string object))
 
 ;; data node used to represent tree history
-(defstruct node
-  parent
-  children
-  data)
+(defclass node ()
+    ((parent :accessor node-parent :initarg :parent :initform nil)
+     (children :accessor node-children :initform nil)
+     (data :accessor node-data :initarg :data :initform nil)))
+
+(defmethod object-string ((node node))
+  (node-data node))
 
 (define-command load-file ()
   "Load a file by specifying the absolute path to that file."

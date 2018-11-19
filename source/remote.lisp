@@ -173,6 +173,3 @@
 (defmethod copy ((interface remote-interface)))
 (defmethod paste ((interface remote-interface)))
 (defmethod cut ((interface remote-interface)))
-
-
-
