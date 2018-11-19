@@ -43,6 +43,7 @@ GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
 static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 	Window *window = window_init();
 	window->identifier = akd_insert_element(state.windows, window);
+	window->minibuffer->parent_window_identifier = strdup(window->identifier);
 	return g_variant_new_string(window->identifier);
 }
 
@@ -158,7 +159,7 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	const char *window_id = NULL;
 	const char *javascript = NULL;
 	g_variant_get(unwrapped_params, "(ss)", &window_id, &javascript);
-	g_debug("Method parameter: window_id %s, javascript %s", window_id, javascript);
+	g_debug("Method parameters: window_id %s, javascript %s", window_id, javascript);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
 	Minibuffer *minibuffer = window->minibuffer;
@@ -196,7 +197,7 @@ static void server_handler(SoupServer *server, SoupMessage *msg,
 			&params,
 			&error);
 	if (error) {
-		g_warning("Malformed XMLRPC request: %s", error->message);
+		g_warning("Malformed XML-RPC request: %s", error->message);
 		return;
 	}
 
@@ -215,7 +216,7 @@ static void server_handler(SoupServer *server, SoupMessage *msg,
 
 	soup_xmlrpc_message_set_response(msg, result, &error);
 	if (error) {
-		g_warning("Failed to set XMLRPC response: %s", error->message);
+		g_warning("Failed to set XML-RPC response: %s", error->message);
 	}
 
 	g_debug("Response: %d %s", msg->status_code, msg->reason_phrase);
