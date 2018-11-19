@@ -20,6 +20,7 @@
     self = [super init];
     [self setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self setCallBackCount:0];
+    [self setNavigationDelegate:self];
     return self;
 }
 
@@ -49,6 +50,21 @@
         }
     }];
     return [@([self callBackCount]) stringValue];
+}
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
+    NSString *url = [[self URL] absoluteString];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
+        const char * const serverUrl = "http://localhost:8081/RPC2";
+        const char * const methodName = "BUFFER-DID-COMMIT-NAVIGATION";
+
+        // Make the remote procedure call
+        xmlrpc_client_call(&env, serverUrl, methodName,
+                           "(ss)",
+                           [[self identifier] UTF8String],
+                           [url UTF8String]);
+    });
 }
 
 @end

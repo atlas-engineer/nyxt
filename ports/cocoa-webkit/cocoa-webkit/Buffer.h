@@ -5,7 +5,7 @@
 
 #import <WebKit/WebKit.h>
 
-@interface Buffer : WKWebView
+@interface Buffer : WKWebView <WKNavigationDelegate>
 
 @property (nonatomic, readwrite) NSInteger callBackCount;
 @property (strong, atomic, readwrite) NSString *identifier;

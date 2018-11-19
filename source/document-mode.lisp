@@ -75,8 +75,6 @@
 			      :active-node root)))
     mode))
 
-;; (defmethod setup ((mode document-mode) buffer)
-;;   (call-next-method)
-;;   (web-view-set-url-loaded-callback *interface*
-;;                                     (view buffer)
-;;                                     (lambda () (add-or-traverse-history mode))))
+(defmethod did-commit-navigation ((mode mode) url)
+  (print "Did Navigate!")
+  (print url))

@@ -18,6 +18,9 @@
    (modes :accessor modes :initarg :modes)
    (callbacks :accessor callbacks :initform (make-hash-table :test #'equal))))
 
+(defmethod did-commit-navigation ((buffer buffer) url)
+  (did-commit-navigation (mode buffer) url))
+
 (defclass remote-interface ()
   ((host :accessor host :initform "localhost")
    (active-connection :accessor active-connection :initform nil)
@@ -141,6 +144,11 @@
     (when callback
       (funcall callback javascript-response))))
 
+(defun buffer-did-commit-navigation (buffer-id url)
+  (let ((buffer (gethash buffer-id (buffers *interface*))))
+    (did-commit-navigation buffer url)))
+
+(import 'buffer-did-commit-navigation :s-xml-rpc-exports)
 (import 'push-key-chord :s-xml-rpc-exports)
 (import 'buffer-javascript-call-back :s-xml-rpc-exports)
 (import 'minibuffer-javascript-call-back :s-xml-rpc-exports)

@@ -10,3 +10,6 @@
 
 (defmethod setup ((mode mode) (buffer buffer))
   (setf (buffer mode) buffer))
+
+(defmethod did-commit-navigation ((mode mode) url)
+  url)
