@@ -141,7 +141,7 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 	}
 	const char *window_id = NULL;
 	int minibuffer_height = 0;
-	g_variant_get(unwrapped_params, "(sx)", &window_id,
+	g_variant_get(unwrapped_params, "(si)", &window_id,
 		&minibuffer_height);
 	g_debug("Method parameter: window_id %s, minibuffer_height %i", window_id,
 		minibuffer_height);
