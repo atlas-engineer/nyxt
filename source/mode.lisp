@@ -3,7 +3,12 @@
 
 (in-package :next)
 
-(defclass mode ()
+(defmacro define-mode (name direct-superclasses direct-slots &body body)
+  `(progn
+     (defclass ,name ,direct-superclasses ,direct-slots)
+     (push (lambda () ,@body) *deferred-mode-initializations*)))
+
+(define-mode mode ()
     ((name :accessor name :initarg :name)
      (keymap :accessor keymap :initarg :keymap)
      (buffer :accessor buffer)))

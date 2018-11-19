@@ -3,9 +3,10 @@
 
 (in-package :next)
 
+
 (defvar *application-mode-map* (make-hash-table :test 'equalp))
 
-(defclass application-mode (mode) ())
+(define-mode application-mode (mode) ())
 
 (defun application-mode ()
   (make-instance 'application-mode
