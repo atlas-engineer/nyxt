@@ -29,6 +29,7 @@ void minibuffer_delete(Minibuffer *minibuffer) {
 	g_free(minibuffer);
 }
 
+// TODO: Factor minibuffer_javascript_callback and buffer_javascript_callback?
 static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
 	gchar *transformed_result = javascript_result(object, result, user_data);
@@ -45,8 +46,11 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 		"(sss)",
 		minibuffer->parent_window_identifier,
 		transformed_result,
+		// TODO: Free this:
 		g_strdup_printf("%i", minibuffer->callback_count));
 	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(params, TRUE));
+
+	g_free(transformed_result);
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
 			method_name, params, &error);

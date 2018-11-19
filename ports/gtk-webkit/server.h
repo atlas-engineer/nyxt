@@ -26,7 +26,6 @@ GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
 	}
 	if (!g_variant_check_format_string(variant, "av", FALSE)) {
 		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
-		g_error_free(error);
 		return NULL;
 	}
 
@@ -55,7 +54,7 @@ static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 		return g_variant_new_boolean(FALSE);
 	}
 	const char *a_key = NULL;
-	g_variant_get(unwrapped_params, "(s)", &a_key);
+	g_variant_get(unwrapped_params, "(&s)", &a_key);
 	g_debug("Method parameter: %s", a_key);
 
 	akd_remove_object_for_key(state.windows, a_key);
@@ -90,7 +89,7 @@ static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 	}
 	const char *window_id = NULL;
 	const char *buffer_id = NULL;
-	g_variant_get(unwrapped_params, "(ss)", &window_id, &buffer_id);
+	g_variant_get(unwrapped_params, "(&s&s)", &window_id, &buffer_id);
 	g_debug("Method parameter: window_id %s, buffer_id %s", window_id, buffer_id);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
@@ -111,7 +110,7 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 		return g_variant_new_boolean(FALSE);
 	}
 	const char *a_key = NULL;
-	g_variant_get(unwrapped_params, "(s)", &a_key);
+	g_variant_get(unwrapped_params, "(&s)", &a_key);
 	g_debug("Method parameter: %s", a_key);
 
 	akd_remove_object_for_key(state.buffers, a_key);
@@ -125,11 +124,12 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 	}
 	const char *buffer_id = NULL;
 	const char *javascript = NULL;
-	g_variant_get(unwrapped_params, "(ss)", &buffer_id, &javascript);
+	g_variant_get(unwrapped_params, "(&s&s)", &buffer_id, &javascript);
 	g_debug("Method parameter: buffer_id %s, javascript %s", buffer_id, javascript);
 
 	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
 	char *result = buffer_evaluate(buffer, javascript);
+	// TODO: Free result.
 	return g_variant_new_string(result);
 }
 
@@ -140,7 +140,7 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 	}
 	const char *window_id = NULL;
 	int minibuffer_height = 0;
-	g_variant_get(unwrapped_params, "(si)", &window_id,
+	g_variant_get(unwrapped_params, "(&si)", &window_id,
 		&minibuffer_height);
 	g_debug("Method parameter: window_id %s, minibuffer_height %i", window_id,
 		minibuffer_height);
@@ -157,12 +157,13 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	}
 	const char *window_id = NULL;
 	const char *javascript = NULL;
-	g_variant_get(unwrapped_params, "(ss)", &window_id, &javascript);
+	g_variant_get(unwrapped_params, "(&s&s)", &window_id, &javascript);
 	g_debug("Method parameters: window_id %s, javascript %s", window_id, javascript);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
 	Minibuffer *minibuffer = window->minibuffer;
 	char *result = minibuffer_evaluate(minibuffer, javascript);
+	// TODO: Free result.
 	return g_variant_new_string(result);
 }
 
