@@ -251,10 +251,10 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "window.delete", &server_window_delete);
 	g_hash_table_insert(state.server_callbacks, "window.active", &server_window_active);
 	g_hash_table_insert(state.server_callbacks, "window.set.active.buffer", &server_window_set_active_buffer);
+	g_hash_table_insert(state.server_callbacks, "window.set.minibuffer.height", &server_window_set_minibuffer_height);
 	g_hash_table_insert(state.server_callbacks, "buffer.make", &server_buffer_make);
 	g_hash_table_insert(state.server_callbacks, "buffer.delete", &server_buffer_delete);
 	g_hash_table_insert(state.server_callbacks, "buffer.evaluate.javascript", &server_buffer_evaluate);
-	g_hash_table_insert(state.server_callbacks, "window.set.minibuffer.height", &server_window_set_minibuffer_height);
 	g_hash_table_insert(state.server_callbacks, "minibuffer.evaluate.javascript", &server_minibuffer_evaluate);
 }
 
