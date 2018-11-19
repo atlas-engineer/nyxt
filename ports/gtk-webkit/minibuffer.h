@@ -7,6 +7,9 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include <webkit2/webkit2.h>
 #include <JavaScriptCore/JavaScript.h>
 
+#include "javascript.h"
+#include "client.h"
+
 typedef struct {
 	WebKitWebView *web_view;
 	int callback_count;
@@ -26,41 +29,38 @@ void minibuffer_delete(Minibuffer *minibuffer) {
 
 static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
-	WebKitJavascriptResult *js_result;
-	JSValueRef value;
-	JSGlobalContextRef context;
-	GError *error = NULL;
-	js_result = webkit_web_view_run_javascript_finish(WEBKIT_WEB_VIEW(object), result, &error);
-	if (!js_result) {
-		g_warning("Error running javascript: %s", error->message);
-		g_error_free(error);
+	gchar *transformed_result = javascript_result(object, result, user_data);
+	g_debug("javascript result: %s", transformed_result);
+	if (transformed_result == NULL) {
 		return;
 	}
 
-	context = webkit_javascript_result_get_global_context(js_result);
-	value = webkit_javascript_result_get_value(js_result);
-	if (JSValueIsString(context, value)) {
-		JSStringRef js_str_value;
-		gchar *str_value;
-		gsize str_length;
+	Minibuffer *minibuffer = (Minibuffer *)user_data;
 
-		js_str_value = JSValueToStringCopy(context, value, NULL);
-		str_length = JSStringGetMaximumUTF8CStringSize(js_str_value);
-		str_value = (gchar *)g_malloc(str_length);
-		JSStringGetUTF8CString(js_str_value, str_value, str_length);
-		JSStringRelease(js_str_value);
-		*((char **)user_data) = str_value;
-	} else {
-		g_warning("Error running javascript: unexpected return value");
+	GError *error = NULL;
+	const char *method_name = "MINIBUFFER-JAVASCRIPT-CALL-BACK";
+	GVariant *params = g_variant_new(
+		"(sss)",
+		minibuffer->parent_window_identifier,
+		transformed_result,
+		g_strdup_printf("%i", minibuffer->callback_count));
+	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(params, TRUE));
+
+	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+			method_name, params, &error);
+
+	if (error) {
+		g_warning("Malformed XML-RPC message: %s", error->message);
+		return;
 	}
-	webkit_javascript_result_unref(js_result);
+
+	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 }
 
 char *minibuffer_evaluate(Minibuffer *minibuffer, const char *javascript) {
 	minibuffer->callback_count++;
-	char *result = NULL;
 	webkit_web_view_run_javascript(minibuffer->web_view, javascript,
-		NULL, minibuffer_javascript_callback, &result);
-	// TODO: Call XML RPC with result.
-	return result;
+		NULL, minibuffer_javascript_callback, minibuffer);
+	g_debug("minibuffer_evaluate callback count: %i", minibuffer->callback_count);
+	return g_strdup_printf("%i", minibuffer->callback_count);
 }
