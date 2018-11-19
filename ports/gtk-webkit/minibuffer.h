@@ -30,7 +30,7 @@ void minibuffer_delete(Minibuffer *minibuffer) {
 static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
 	gchar *transformed_result = javascript_result(object, result, user_data);
-	g_debug("javascript result: %s", transformed_result);
+	g_debug("Javascript result: %s", transformed_result);
 	if (transformed_result == NULL) {
 		return;
 	}
@@ -51,6 +51,7 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 
 	if (error) {
 		g_warning("Malformed XML-RPC message: %s", error->message);
+		g_error_free(error);
 		return;
 	}
 

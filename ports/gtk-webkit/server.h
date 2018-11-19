@@ -21,10 +21,12 @@ GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
 	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
 	if (error) {
 		g_warning("Malformed method parameters: %s", error->message);
+		g_error_free(error);
 		return NULL;
 	}
 	if (!g_variant_check_format_string(variant, "av", FALSE)) {
 		g_warning("Malformed parameter value: %s", g_variant_get_type_string(variant));
+		g_error_free(error);
 		return NULL;
 	}
 
@@ -170,7 +172,7 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 static void server_handler(SoupServer *_server, SoupMessage *msg,
 	const char *path, GHashTable *_query,
 	SoupClientContext *_context, gpointer _data) {
-	// Log request.
+	// Log of the request.
 	{
 		const char *name, *value;
 		SoupMessageHeadersIter iter;
@@ -198,6 +200,7 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 			&error);
 	if (error) {
 		g_warning("Malformed XML-RPC request: %s", error->message);
+		g_error_free(error);
 		return;
 	}
 
@@ -210,6 +213,7 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 	}
 	g_debug("Method name: %s", method_name);
 
+	// TODO: Make floating result so that they are consumed in soup_xmlrpc_message_set_response?
 	GVariant *result = callback(params);
 
 	soup_xmlrpc_params_free(params);
@@ -217,6 +221,7 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 	soup_xmlrpc_message_set_response(msg, result, &error);
 	if (error) {
 		g_warning("Failed to set XML-RPC response: %s", error->message);
+		g_error_free(error);
 	}
 
 	g_debug("Response: %d %s", msg->status_code, msg->reason_phrase);
@@ -233,6 +238,7 @@ void start_server() {
 	soup_server_listen_all(server, 8082, 0, &error);
 	if (error) {
 		g_printerr("Unable to create server: %s\n", error->message);
+		g_error_free(error);
 		exit(1);
 	}
 	g_debug("Starting XMLRPC server");

@@ -42,7 +42,7 @@ void window_destroy_callback(GtkWidget *_widget, Window *window) {
 void window_delete(Window *window) {
 	// We need to destroy the widget here, then clean up in
 	// window_destroy_callback.  We don't destroy in window_destroy_callback since
-	// it's already done.
+	// it's already done when called from the "destroy" signal handler.
 	g_debug("Destroy window widget %s", window->identifier);
 	gtk_widget_destroy(window->base);
 	window_destroy_callback(NULL, window);
@@ -62,6 +62,7 @@ void window_event_callback(SoupSession *_session, SoupMessage *msg, gpointer _da
 
 	if (error) {
 		g_warning("Malformed XML-RPC response: %s", error->message);
+		g_error_free(error);
 		return;
 	}
 
@@ -93,6 +94,7 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
 
 	if (error) {
 		g_warning("Malformed XML-RPC message: %s", error->message);
+		g_error_free(error);
 		return;
 	}
 

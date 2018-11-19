@@ -28,6 +28,7 @@ Buffer *buffer_init() {
 	g_object_ref(buffer->web_view);
 	g_debug("Init buffer %p with view %p", buffer, buffer->web_view);
 	buffer->callback_count = 0;
+	// TODO: Leave Lisp to set the default URL?
 	buffer_set_url(buffer, "https://next.atlas.engineer/");
 	return buffer;
 }
@@ -40,7 +41,7 @@ void buffer_delete(Buffer *buffer) {
 static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
 	gchar *transformed_result = javascript_result(object, result, user_data);
-	g_debug("javascript result: %s", transformed_result);
+	g_debug("Javascript result: %s", transformed_result);
 	if (transformed_result == NULL) {
 		return;
 	}
@@ -49,6 +50,7 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 
 	GError *error = NULL;
 	const char *method_name = "BUFFER-JAVASCRIPT-CALL-BACK";
+	// TODO: Make floating params so that they are consumed in soup_xmlrpc_message_new?
 	GVariant *params = g_variant_new(
 		"(sss)",
 		buffer->identifier,
@@ -61,6 +63,7 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 
 	if (error) {
 		g_warning("Malformed XML-RPC message: %s", error->message);
+		g_error_free(error);
 		return;
 	}
 
