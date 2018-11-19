@@ -167,9 +167,9 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	return g_variant_new_string(result);
 }
 
-static void server_handler(SoupServer *server, SoupMessage *msg,
-	const char *path, GHashTable *query,
-	SoupClientContext *context, gpointer data) {
+static void server_handler(SoupServer *_server, SoupMessage *msg,
+	const char *path, GHashTable *_query,
+	SoupClientContext *_context, gpointer _data) {
 	// Log request.
 	{
 		const char *name, *value;
@@ -226,7 +226,7 @@ void start_server() {
 	// TODO: Server logging?
 	// TODO: libsoup's examples don't unref the server.  Should we?
 	SoupServer *server = soup_server_new(
-		/* SOUP_SERVER_SERVER_HEADER, APPNAME, */
+		SOUP_SERVER_SERVER_HEADER, APPNAME,
 		NULL);
 
 	GError *error = NULL;

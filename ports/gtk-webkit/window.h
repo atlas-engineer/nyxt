@@ -34,7 +34,7 @@ void window_destroy_callback(GtkWidget *_widget, Window *window) {
 
 	// No more windows, let's quit.
 	// TODO: This is dirty, since it could interupt the request response of
-	// server_window_delete.  We probably need add an "quit" request to the API.
+	// server_window_delete.  We probably need add a "quit" request to the API.
 	g_debug("No more windows, quitting");
 	gtk_main_quit();
 }
@@ -54,7 +54,7 @@ void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
 	window_delete(window);
 }
 
-void window_event_callback(SoupSession *session, SoupMessage *msg, gpointer _data) {
+void window_event_callback(SoupSession *_session, SoupMessage *msg, gpointer _data) {
 	GError *error = NULL;
 	g_debug("XML-RPC response: %s", msg->response_body->data);
 	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
@@ -71,8 +71,8 @@ void window_event_callback(SoupSession *session, SoupMessage *msg, gpointer _dat
 	}
 }
 
-void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
-	g_debug("Key press value: %u", event->keyval);
+void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
+	g_debug("Key press value: %i", (gint32)event->keyval);
 
 	const char *method_name = "PUSH-KEY-CHORD";
 
@@ -80,7 +80,7 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 	gboolean control_pressed = event->state & GDK_CONTROL_MASK;
 	gboolean alt_pressed = event->state & GDK_MOD1_MASK;
 	gboolean super_pressed = event->state & GDK_SUPER_MASK;
-	// TODO: Send hardware_keycode?
+	// TODO: Send both hardware_keycode and keyval?
 	GVariant *key_chord = g_variant_new("(bbbi)",
 			control_pressed,
 			alt_pressed,
@@ -158,6 +158,7 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 }
 
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {
+	// TODO: Size request must be done on a widget, not a web view.
 	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer), -1, height);
 	window->minibuffer_height = height;
 

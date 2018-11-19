@@ -9,7 +9,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 // Return value must be freed.
 gchar *javascript_result(GObject *object, GAsyncResult *result,
-	gpointer user_data) {
+	gpointer _data) {
 	WebKitJavascriptResult *js_result;
 	JSValueRef value;
 	JSGlobalContextRef context;
