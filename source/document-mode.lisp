@@ -29,7 +29,7 @@
     (lambda (input)
       (if children
           (fuzzy-match input children :accessor-function #'node-data)
-          (list "No children.")))))
+          (list "Cannot navigate forwards.")))))
 
 (define-command history-forwards-query ()
   "Move forwards in history querying if more than one child present."
@@ -37,7 +37,8 @@
                        *minibuffer*
                        :input-prompt "Navigate forwards to:"
                        :completion-function (history-forwards-completion-fn)))
-    (set-url (node-data input))))
+    (unless (equal input "Cannot navigate forwards.")
+      (set-url (node-data input)))))
 
 (defmethod add-or-traverse-history ((mode mode) url)
   (let ((active-node (active-history-node mode)))
@@ -66,6 +67,9 @@
       (setf (active-history-node mode) new-node)
       (return-from add-or-traverse-history t))))
 
+(defmethod did-commit-navigation ((mode mode) url)
+  (add-or-traverse-history mode url))
+
 (defun document-mode ()
   "Base mode for interacting with documents"
   (let* ((root (make-instance 'node
@@ -75,6 +79,3 @@
 			      :keymap *document-mode-map*
 			      :active-node root)))
     mode))
-
-(defmethod did-commit-navigation ((mode mode) url)
-  (add-or-traverse-history mode url))

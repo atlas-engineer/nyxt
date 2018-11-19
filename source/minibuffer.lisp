@@ -1,4 +1,4 @@
-;;;; minibuffer.lisp --- major mode for input
+;;; minibuffer.lisp --- major mode for input
 
 (in-package :next)
 
