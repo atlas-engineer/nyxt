@@ -2,6 +2,8 @@
 Copyright © 2018 Atlas Engineer LLC.
 Use of this file is governed by the license that can be found in LICENSE.
 */
+#pragma once
+
 #define APPNAME "Next"
 
 #include <webkit2/webkit2.h>
