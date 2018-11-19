@@ -92,7 +92,7 @@
       (setf (active-history-node mode) new-node)
       (return-from add-or-traverse-history t))))
 
-(defmethod did-commit-navigation ((mode mode) url)
+(defmethod did-commit-navigation ((mode document-mode) url)
   (add-or-traverse-history mode url))
 
 (defun document-mode ()
