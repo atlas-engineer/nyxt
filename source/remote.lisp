@@ -62,6 +62,13 @@
               :host host :port port :url url)
              windows)))
 
+(defmethod window-exists ((interface remote-interface) (window window))
+  "Return if a window exists."
+  (with-slots (host port url windows) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "window.exists" (id window))
+     :host host :port port :url url)))
+
 (defmethod window-set-active-buffer ((interface remote-interface)
                                      (window window)
                                      (buffer buffer))

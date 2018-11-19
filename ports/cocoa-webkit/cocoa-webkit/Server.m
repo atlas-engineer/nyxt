@@ -56,6 +56,21 @@ window_active(xmlrpc_env *   const envP,
 }
 
 static xmlrpc_value *
+window_exists(xmlrpc_env * const envP,
+              xmlrpc_value * const paramArrayP,
+              void *         const serverInfo,
+              void *         const channelInfo) {
+    __block bool operationResult;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        void *windowId;
+        xmlrpc_decompose_value(envP, paramArrayP, "(s)", &windowId);
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        operationResult = [delegate windowExists: [NSString stringWithFormat:@"%s", windowId]];
+    });
+    return xmlrpc_bool_new(envP, operationResult);
+}
+
+static xmlrpc_value *
 window_set_active_buffer(xmlrpc_env *   const envP,
               xmlrpc_value * const paramArrayP,
               void *         const serverInfo,
@@ -156,6 +171,8 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
         "window.delete", &window_delete,};
     struct xmlrpc_method_info3 const windowActive = {
         "window.active", &window_active,};
+    struct xmlrpc_method_info3 const windowExists = {
+        "window.exists", &window_exists,};
     struct xmlrpc_method_info3 const windowSetActiveBuffer = {
         "window.set.active.buffer", &window_set_active_buffer,};
     struct xmlrpc_method_info3 const bufferMake = {
@@ -183,6 +200,7 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
     xmlrpc_registry_add_method3(&env, registryP, &windowMake);
     xmlrpc_registry_add_method3(&env, registryP, &windowDelete);
     xmlrpc_registry_add_method3(&env, registryP, &windowActive);
+    xmlrpc_registry_add_method3(&env, registryP, &windowExists);
     xmlrpc_registry_add_method3(&env, registryP, &windowSetActiveBuffer);
     xmlrpc_registry_add_method3(&env, registryP, &bufferMake);
     xmlrpc_registry_add_method3(&env, registryP, &bufferDelete);

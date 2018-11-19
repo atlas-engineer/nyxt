@@ -53,6 +53,16 @@
     return @"-1";
 }
 
+- (bool)windowExists:(NSString *)key
+{
+    Window *window = [[self windows] objectForKey:key];
+    if (window) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
 - (bool)setActiveBufferForWindow:(NSString *)windowKey withBuffer:(NSString *)bufferKey
 {
     Window *window = [[self windows] objectForKey:windowKey];

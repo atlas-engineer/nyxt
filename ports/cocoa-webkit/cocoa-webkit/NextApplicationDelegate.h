@@ -16,6 +16,7 @@
 - (NSString *)windowMake;
 - (bool)windowDelete:(NSString *)key;
 - (NSString*)windowActive;
+- (bool)windowExists:(NSString *)key;
 - (bool)setActiveBufferForWindow:(NSString *)window withBuffer:(NSString *)buffer;
 - (NSString *)bufferMake;
 - (bool)bufferDelete:(NSString *)key;
