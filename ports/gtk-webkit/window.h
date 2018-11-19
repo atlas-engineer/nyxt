@@ -74,6 +74,8 @@ void window_event_callback(SoupSession *session, SoupMessage *msg, gpointer _dat
 void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 	g_debug("Key press value: %u", event->keyval);
 
+	const char *method_name = "PUSH-KEY-CHORD";
+
 	GError *error = NULL;
 	gboolean control_pressed = event->state & GDK_CONTROL_MASK;
 	gboolean alt_pressed = event->state & GDK_MOD1_MASK;
@@ -84,10 +86,10 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 			alt_pressed,
 			super_pressed,
 			(gint32)event->keyval);
-	g_debug("XML-RPC message: %s %s", "PUSH-KEY-CHORD", g_variant_print(key_chord, TRUE));
+	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
-			"PUSH-KEY-CHORD", key_chord, &error);
+			method_name, key_chord, &error);
 
 	if (error) {
 		g_warning("Malformed XML-RPC message: %s", error->message);
