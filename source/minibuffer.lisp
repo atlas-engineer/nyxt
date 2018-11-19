@@ -118,14 +118,14 @@
                  (:div :id "completions" ""))))))
 
 (defmethod show ((minibuffer minibuffer))
-  (minibuffer-set-height *interface*
-                         (window-active *interface*)
-                         *minibuffer-open-height*))
+  (window-set-minibuffer-height *interface*
+                                (window-active *interface*)
+                                *minibuffer-open-height*))
 
 (defmethod hide ((minibuffer minibuffer))
-  (minibuffer-set-height *interface*
-                         (window-active *interface*)
-                         *minibuffer-closed-height*))
+  (window-set-minibuffer-height *interface*
+                                (window-active *interface*)
+                                *minibuffer-closed-height*))
 
 (defmethod self-insert ((minibuffer minibuffer) character)
   (setf (input-buffer minibuffer)

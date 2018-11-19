@@ -83,6 +83,13 @@
   "Return the active buffer for a given window."
   (active-buffer window))
 
+(defmethod window-set-minibuffer-height ((interface remote-interface)
+                                         (window window) height)
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "window.set.minibuffer.height" (id window) height)
+     :host host :port port :url url)))
+
 (defmethod buffer-make ((interface remote-interface))
   (with-slots (host port url buffers) interface
     (let* ((buffer-id (s-xml-rpc:xml-rpc-call
@@ -108,13 +115,6 @@
              :host host :port port :url url)))
       (setf (gethash callback-id (callbacks buffer)) callback)
       callback-id)))
-
-(defmethod minibuffer-set-height ((interface remote-interface)
-                                  (window window) height)
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "minibuffer.set.height" (id window) height)
-     :host host :port port :url url)))
 
 (defmethod minibuffer-evaluate-javascript ((interface remote-interface)
                                           (window window) javascript &optional (callback nil))
