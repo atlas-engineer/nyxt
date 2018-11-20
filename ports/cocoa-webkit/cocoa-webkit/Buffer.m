@@ -46,7 +46,7 @@
                 });
             }
         } else {
-            NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
+            NSLog(@"evaluateJavaScript error : %@", [error description]);
         }
     }];
     return [@([self callBackCount]) stringValue];

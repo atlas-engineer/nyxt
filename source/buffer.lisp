@@ -56,7 +56,7 @@ buffer to the start page."
     (ps:chain window location href))
 
 (define-parenscript buffer-set-url (url)
-  ((setf (ps:chain this document location href) (ps:lisp url))))
+  ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
 
 (defmethod set-url-buffer (input-url (buffer buffer) &optional disable-history)
   (let ((url (parse-url input-url)))
