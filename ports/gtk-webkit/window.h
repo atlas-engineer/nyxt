@@ -76,7 +76,10 @@ void window_event_callback(SoupSession *_session, SoupMessage *msg, gpointer _da
 }
 
 void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
-	g_debug("Key press value: %i", (gint32)event->keyval);
+	g_debug("Key pressed:"
+		" code %i, symbol %i, name '%s', print '%s'",
+		event->hardware_keycode, (gint32)event->keyval, event->string,
+		gdk_keyval_name(event->keyval));
 
 	const char *method_name = "PUSH-KEY-CHORD";
 
