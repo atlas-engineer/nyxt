@@ -80,6 +80,22 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 	return g_variant_new_string("<no active window>");
 }
 
+static GVariant *server_window_exists(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_boolean(FALSE);
+	}
+	const char *a_key = NULL;
+	g_variant_get(unwrapped_params, "(&s)", &a_key);
+	g_debug("Method parameter: %s", a_key);
+
+	Window *window = akd_object_for_key(state.windows, a_key);
+	if (window) {
+		return g_variant_new_boolean(TRUE);
+	}
+	return g_variant_new_boolean(FALSE);
+}
+
 static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 	GVariant *unwrapped_params = server_unwrap_params(params);
 	if (!unwrapped_params) {
@@ -249,6 +265,7 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "window.make", &server_window_make);
 	g_hash_table_insert(state.server_callbacks, "window.delete", &server_window_delete);
 	g_hash_table_insert(state.server_callbacks, "window.active", &server_window_active);
+	g_hash_table_insert(state.server_callbacks, "window.exists", &server_window_exists);
 	g_hash_table_insert(state.server_callbacks, "window.set.active.buffer", &server_window_set_active_buffer);
 	g_hash_table_insert(state.server_callbacks, "window.set.minibuffer.height", &server_window_set_minibuffer_height);
 	g_hash_table_insert(state.server_callbacks, "buffer.make", &server_buffer_make);
