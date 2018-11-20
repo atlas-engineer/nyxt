@@ -14,7 +14,7 @@
     self = [super init];
     if (self != nil) {
         NSRect windowRect = NSMakeRect(0, 0, 1024, 768);
-        NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
+        NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 
         [self setFrame:windowRect display:YES];
         [self setBackingType:NSBackingStoreBuffered];
