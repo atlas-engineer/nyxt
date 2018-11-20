@@ -103,8 +103,10 @@
                              (body :border-top "4px solid dimgray"
                                    :margin "0"
                                    :padding "4px 6px")
+                             ("#cursor" :background-color "gray"
+                                        :color "white")
                              ("#prompt" :padding-right "4px"
-                                         :color "dimgray")
+                                        :color "dimgray")
                              (ul :list-style "none"
                                  :padding "0")
                              (li :padding "2px")
@@ -180,8 +182,12 @@
   (update-display minibuffer))
 
 (defun generate-input-html (input-buffer cursor-index)
-  (concatenate 'string (subseq input-buffer 0 cursor-index) "[]"
-               (subseq input-buffer cursor-index (length input-buffer))))
+  (cond ((equal "" input-buffer) (cl-markup:markup (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
+        ((eql cursor-index (length input-buffer)) (cl-markup:markup (:span input-buffer)
+                                                                    (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
+        (t (cl-markup:markup (:span (subseq input-buffer 0 cursor-index))
+                             (:span :id "cursor" (subseq input-buffer cursor-index (+ 1 cursor-index)))
+                             (:span (subseq input-buffer (+ 1  cursor-index)))))))
 
 (defun generate-completion-html (completions cursor-index)
   (cl-markup:markup (:ul (loop for i from 0 for completion in completions
