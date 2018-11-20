@@ -8,7 +8,8 @@
 (defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer)
-   (minibuffer-callbacks :accessor minibuffer-callbacks :initform (make-hash-table :test #'equal))))
+   (minibuffer-callbacks :accessor minibuffer-callbacks
+                         :initform (make-hash-table :test #'equal))))
 
 (defclass buffer ()
   ((id :accessor id :initarg :id)
@@ -16,7 +17,8 @@
    (mode :accessor mode :initarg :mode)
    (view :accessor view :initarg :view)
    (modes :accessor modes :initarg :modes)
-   (callbacks :accessor callbacks :initform (make-hash-table :test #'equal))))
+   (callbacks :accessor callbacks
+              :initform (make-hash-table :test #'equal))))
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
