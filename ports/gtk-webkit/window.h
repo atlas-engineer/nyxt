@@ -108,6 +108,7 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
 }
 
 Window *window_init() {
+	// TODO: Don't init buffer here?  Re-use last buffer?  Only create if none?
 	Buffer *buffer = buffer_init();
 	g_debug("Add buffer %p with view %p to window", buffer, buffer->web_view);
 	// Make sure that when the browser area becomes visible, it will get
@@ -125,8 +126,6 @@ Window *window_init() {
 	// TODO: send event on press and/or release?
 	g_signal_connect(mainbox, "key-press-event", G_CALLBACK(window_send_event), NULL);
 	/* g_signal_connect(mainbox, "key-release-event", G_CALLBACK(window_send_event), NULL); */
-
-	// TODO: Focus on web view, not minibuffer.
 
 	Window *window = calloc(1, sizeof (Window));
 	// Create an 800x600 window that will contain the browser instance
@@ -163,6 +162,8 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
 
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
+
+	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
 
 	gtk_widget_show_all(window->base);
 }
