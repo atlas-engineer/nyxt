@@ -39,7 +39,10 @@
   (start-interface *interface*)
   ;; initialize default state
   (setf *minibuffer* (make-instance 'minibuffer))
-  (make-window))
+  (multiple-value-bind (window buffer) (make-window)
+    (declare (ignore window))
+    (set-url-buffer *start-page-url* buffer))
+  t)
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (kbd "C-x C-c") '(lambda () (kill-interface *interface*)))

@@ -17,8 +17,8 @@
 	       (:file "utility")
                (:file "remote")
 	       (:file "mode")
-	       (:file "window")
 	       (:file "buffer")
+	       (:file "window")
 	       (:file "minibuffer")
 	       (:file "keymap")
                ;; Core Packages

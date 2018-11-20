@@ -12,6 +12,7 @@
     (setf (name buffer) name)
     (setf (mode buffer) mode)
     (setup mode buffer)
+    (set-url-buffer *default-new-buffer-url* buffer)
     buffer))
 
 (defun buffer-completion-fn ()
