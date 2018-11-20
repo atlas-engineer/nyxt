@@ -18,25 +18,62 @@
 {
     if ([event type] == NSEventTypeKeyDown && [event timestamp] != 0) {
         NSEventModifierFlags modifierFlags = [event modifierFlags];
-        char characterCodePressed = [[event charactersIgnoringModifiers] characterAtIndex: 0];
+        short keyCode = [event keyCode];
+        NSString* characters = [event charactersIgnoringModifiers];
         bool controlPressed = (modifierFlags & NSEventModifierFlagControl);
         bool alternatePressed = (modifierFlags & NSEventModifierFlagOption);
         bool commandPressed = (modifierFlags & NSEventModifierFlagCommand);
-        
+        bool functionPressed = (modifierFlags & NSEventModifierFlagFunction);
+        bool shiftPressed = (modifierFlags & NSEventModifierFlagShift);
+
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
             xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
             xmlrpc_value * resultP;
+            xmlrpc_value * modifiers;
             xmlrpc_int consumed;
             const char * const serverUrl = "http://localhost:8081/RPC2";
             const char * const methodName = "PUSH-KEY-CHORD";
-            
+
+            modifiers = xmlrpc_array_new(&env);
+
+            if (controlPressed) {
+                xmlrpc_value * itemP;
+                itemP = xmlrpc_string_new(&env, "C");
+                xmlrpc_array_append_item(&env, modifiers, itemP);
+                xmlrpc_DECREF(itemP);
+            };
+            if (alternatePressed) {
+                xmlrpc_value * itemP;
+                itemP = xmlrpc_string_new(&env, "M");
+                xmlrpc_array_append_item(&env, modifiers, itemP);
+                xmlrpc_DECREF(itemP);
+            };
+            if (commandPressed) {
+                xmlrpc_value * itemP;
+                itemP = xmlrpc_string_new(&env, "S");
+                xmlrpc_array_append_item(&env, modifiers, itemP);
+                xmlrpc_DECREF(itemP);
+            };
+            if (functionPressed) {
+                xmlrpc_value * itemP;
+                itemP = xmlrpc_string_new(&env, "F");
+                xmlrpc_array_append_item(&env, modifiers, itemP);
+                xmlrpc_DECREF(itemP);
+            };
+            if (shiftPressed) {
+                xmlrpc_value * itemP;
+                itemP = xmlrpc_string_new(&env, "s");
+                xmlrpc_array_append_item(&env, modifiers, itemP);
+                xmlrpc_DECREF(itemP);
+            };
+
             // Make the remote procedure call
             resultP = xmlrpc_client_call(&env, serverUrl, methodName,
-                                         "(bbbi)",
-                                         (xmlrpc_bool) controlPressed,
-                                         (xmlrpc_bool) alternatePressed,
-                                         (xmlrpc_bool) commandPressed,
-                                         (xmlrpc_int) characterCodePressed);
+                                         "(isA)",
+                                         (xmlrpc_int) keyCode,
+                                         [characters UTF8String],
+                                         modifiers);
+            xmlrpc_DECREF(modifiers);
             
             xmlrpc_read_int(&env, resultP, &consumed);
             if (!consumed) {
