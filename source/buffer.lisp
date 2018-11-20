@@ -6,7 +6,7 @@
   (name buffer))
 
 (define-command make-buffer (&optional (name "default")
-                                       (mode (document-mode)))
+                                       (mode (funcall *default-new-buffer-mode*)))
   "Create a new buffer."
   (let ((buffer (buffer-make *interface*)))
     (setf (name buffer) name)

@@ -2,7 +2,6 @@
 
 (in-package :next)
 
-
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
@@ -28,12 +27,13 @@
 (defun start ()
   (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))
-  (initialize-default-key-bindings)
   (map nil 'funcall *deferred-mode-initializations*)
-  ;; load the user configuration if it exists
-  (load *init-file-path* :if-does-not-exist nil)
   (initialize-bookmark-db)
   (initialize-history-db)
+  (initialize-default-key-bindings)
+  (setf *default-new-buffer-mode* #'document-mode)
+  ;; load the user configuration if it exists
+  (load *init-file-path* :if-does-not-exist nil)
   ;; create the interface object
   (setf *interface* (make-instance 'remote-interface))
   (start-interface *interface*)
