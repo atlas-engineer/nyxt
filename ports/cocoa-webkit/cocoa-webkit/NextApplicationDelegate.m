@@ -50,7 +50,7 @@
     if (activeWindow) {
         return [activeWindow identifier];
     }
-    return @"-1";
+    return @"<no active window>";
 }
 
 - (bool)windowExists:(NSString *)key
