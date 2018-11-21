@@ -13,5 +13,4 @@ next_core:
 	$(LISP)	--non-interactive \
 		--eval '(require "asdf")' \
 		--load next.asd \
-		--eval '(setq *exit-timeout* nil)' \
 		--eval '(asdf:make :next)'
