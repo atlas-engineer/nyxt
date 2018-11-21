@@ -8,12 +8,7 @@
 (define-command make-buffer (&optional (name "default")
                                        (mode (funcall *default-new-buffer-mode*)))
   "Create a new buffer."
-  (let ((buffer (buffer-make *interface*)))
-    (setf (name buffer) name)
-    (setf (mode buffer) mode)
-    (setup mode buffer)
-    (set-url-buffer *default-new-buffer-url* buffer)
-    buffer))
+  (%buffer-make *interface* name mode))
 
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
@@ -34,24 +29,19 @@
     (set-active-buffer *interface* buffer)
     (set-url-buffer *default-new-buffer-url* buffer)))
 
-(defmethod %delete-buffer ((buffer buffer))
-  (when (equal (active-buffer *interface*) buffer)
-    (make-visible-new-buffer))
-  (buffer-delete *interface* buffer))
-
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
   (with-result (buffer (read-from-minibuffer
                         *minibuffer*
                         :input-prompt "Kill buffer:"
                         :completion-function (buffer-completion-fn)))
-    (%delete-buffer buffer)))
+    (buffer-delete *interface* buffer)))
 
 (define-command delete-active-buffer ()
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
-  (%delete-buffer (active-buffer *interface*)))
+  (buffer-delete *interface* (active-buffer *interface*)))
 
 (define-parenstatic buffer-get-url
     (ps:chain window location href))

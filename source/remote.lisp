@@ -75,6 +75,10 @@
      (s-xml-rpc:encode-xml-rpc-call "window.exists" (id window))
      :host host :port port :url url)))
 
+(defmethod synchronize-existing-windows (interface remore-interface)
+  ;;TODO
+  )
+
 (defmethod window-set-active-buffer ((interface remote-interface)
                                      (window window)
                                      (buffer buffer))
@@ -105,12 +109,29 @@
       (setf (gethash buffer-id buffers) buffer)
       buffer)))
 
+(defmethod %buffer-make ((interface remote-interface)
+                         &optional
+                           (name "default")
+                           (mode (funcall *default-new-buffer-mode*)))
+  (let ((buffer (buffer-make interface)))
+    (setf (name buffer) name)
+    (setf (mode buffer) mode)
+    (setup mode buffer)
+    (set-url-buffer *default-new-buffer-url* buffer)
+    buffer))
+
 (defmethod buffer-delete ((interface remote-interface) (buffer buffer))
-  (with-slots (host port url buffers) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "buffer.delete" (id buffer))
-     :host host :port port :url url)
-    (remhash (id buffer) buffers)))
+  (let ((parent-window (find-if
+                        (lambda (window) (eql (active-buffer window) buffer))
+                        (alexandria:hash-table-values (windows *interface*)))))
+    (with-slots (host port url buffers) interface
+      (when parent-window
+        (window-set-active-buffer interface parent-window
+                                  (%buffer-make interface)))
+      (s-xml-rpc:xml-rpc-call
+       (s-xml-rpc:encode-xml-rpc-call "buffer.delete" (id buffer))
+       :host host :port port :url url)
+      (remhash (id buffer) buffers))))
 
 (defmethod buffer-evaluate-javascript ((interface remote-interface)
                                       (buffer buffer) javascript &optional (callback nil))
