@@ -16,6 +16,11 @@ typedef struct {
 	char *parent_window_identifier;
 } Minibuffer;
 
+typedef struct {
+	Minibuffer *minibuffer;
+	int callback_id;
+} MinibufferInfo;
+
 Minibuffer *minibuffer_init() {
 	Minibuffer *minibuffer = calloc(1, sizeof (Minibuffer));
 	minibuffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -38,18 +43,19 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 		return;
 	}
 
-	Minibuffer *minibuffer = (Minibuffer *)user_data;
+	MinibufferInfo *minibuffer_info = (MinibufferInfo *)user_data;
 
 	GError *error = NULL;
 	const char *method_name = "MINIBUFFER-JAVASCRIPT-CALL-BACK";
 	GVariant *params = g_variant_new(
 		"(sss)",
-		minibuffer->parent_window_identifier,
+		minibuffer_info->minibuffer->parent_window_identifier,
 		transformed_result,
 		// TODO: Free this:
-		g_strdup_printf("%i", minibuffer->callback_count));
+		g_strdup_printf("%i", minibuffer_info->callback_id));
 	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(params, TRUE));
 
+	g_free(minibuffer_info);
 	g_free(transformed_result);
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
@@ -66,8 +72,17 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 
 char *minibuffer_evaluate(Minibuffer *minibuffer, const char *javascript) {
 	minibuffer->callback_count++;
+
+	// If another minibuffer_evaluate is run before the callback is called, there
+	// will be a race condition upon accessing callback_count.
+	// Thus we send a copy of callback_count via a BufferInfo to the callback.
+	// The MinibufferInfo must be freed in the callback.
+	MinibufferInfo *minibuffer_info = g_new(MinibufferInfo, 1);
+	minibuffer_info->minibuffer = minibuffer;
+	minibuffer_info->callback_id = minibuffer->callback_count;
+
 	webkit_web_view_run_javascript(minibuffer->web_view, javascript,
-		NULL, minibuffer_javascript_callback, minibuffer);
-	g_debug("minibuffer_evaluate callback count: %i", minibuffer->callback_count);
-	return g_strdup_printf("%i", minibuffer->callback_count);
+		NULL, minibuffer_javascript_callback, minibuffer_info);
+	g_debug("minibuffer_evaluate callback count: %i", minibuffer_info->callback_id);
+	return g_strdup_printf("%i", minibuffer_info->callback_id);
 }

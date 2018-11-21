@@ -16,6 +16,11 @@ typedef struct {
 	char *identifier;
 } Buffer;
 
+typedef struct {
+	Buffer *buffer;
+	int callback_id;
+} BufferInfo;
+
 void buffer_set_url(Buffer *buffer, const char *url) {
 	webkit_web_view_load_uri(buffer->web_view, url);
 }
@@ -51,19 +56,20 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 		return;
 	}
 
-	Buffer *buffer = (Buffer *)user_data;
+	BufferInfo *buffer_info = (BufferInfo *)user_data;
 
 	GError *error = NULL;
 	const char *method_name = "BUFFER-JAVASCRIPT-CALL-BACK";
 	// TODO: Make floating params so that they are consumed in soup_xmlrpc_message_new?
 	GVariant *params = g_variant_new(
 		"(sss)",
-		buffer->identifier,
+		buffer_info->buffer->identifier,
 		transformed_result,
 		// TODO: Free this:
-		g_strdup_printf("%i", buffer->callback_count));
+		g_strdup_printf("%i", buffer_info->callback_id));
 	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(params, TRUE));
 
+	g_free(buffer_info);
 	g_free(transformed_result);
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
@@ -80,8 +86,17 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 
 char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 	buffer->callback_count++;
+
+	// If another buffer_evaluate is run before the callback is called, there will
+	// be a race condition upon accessing callback_count.
+	// Thus we send a copy of callback_count via a BufferInfo to the callback.
+	// The BufferInfo must be freed in the callback.
+	BufferInfo *buffer_info = g_new(BufferInfo, 1);
+	buffer_info->buffer = buffer;
+	buffer_info->callback_id = buffer->callback_count;
+
 	webkit_web_view_run_javascript(buffer->web_view, javascript,
-		NULL, buffer_javascript_callback, buffer);
-	g_debug("buffer_evaluate callback count: %i", buffer->callback_count);
-	return g_strdup_printf("%i", buffer->callback_count);
+		NULL, buffer_javascript_callback, buffer_info);
+	g_debug("buffer_evaluate callback count: %i", buffer_info->callback_id);
+	return g_strdup_printf("%i", buffer_info->callback_id);
 }
