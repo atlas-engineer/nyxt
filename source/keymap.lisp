@@ -20,20 +20,14 @@
   key-string
   modifiers)
 
-(defvar *character-conversion-table* (make-hash-table :test 'equalp))
-(setf (gethash "SPACE" *character-conversion-table*) (char-code #\Space))
-(setf (gethash "BACKSPACE" *character-conversion-table*) 127)
-(setf (gethash "RETURN" *character-conversion-table*) (char-code #\Return))
-(setf (gethash "HYPHEN" *character-conversion-table*) (char-code #\-))
-(setf (gethash "ESCAPE" *character-conversion-table*) (char-code #\Esc))
-
 (defun push-key-chord (key-code key-string modifiers)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
   ;; consume-key-sequence
+  (declare (ignore key-code)) ;; current implementation ignores keycode
   (let ((key-chord (make-key-chord
-                    :key-code key-code
+                    :key-code nil
                     :key-string key-string
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp)))))
@@ -44,9 +38,8 @@
 (defun consume-key-sequence ()
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
-  (let ((key-maps (list
-		   *global-map*
-		   (keymap (mode (active-buffer *interface*))))))
+  (let ((key-maps (list *global-map*
+		        (keymap (mode (active-buffer *interface*))))))
     (dolist (map key-maps)
       (when (gethash *key-chord-stack* map)
 	;; If not prefix key, consume
@@ -90,7 +83,7 @@
 	  do (let* ((keys (cl-strings:split key-chord-string "-"))
                     (key-chord (make-key-chord
                                 :key-code nil
-                                :key-string (last keys) ;; key string map
+                                :key-string (car (last keys)) ;; TODO: key string map
                                 :modifiers (sort (butlast keys) #'string-lessp))))
 	       (push key-chord key-sequence)))
     key-sequence))
