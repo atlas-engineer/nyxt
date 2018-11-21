@@ -33,4 +33,7 @@
                ;; Core Modes
 	       (:file "application-mode")
 	       (:file "document-mode")
-	       (:file "base")))
+	       (:file "base"))
+  :build-operation "program-op"
+  :build-pathname "next-core"
+  :entry-point "next:start")
