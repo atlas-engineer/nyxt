@@ -83,7 +83,18 @@
 	  do (let* ((keys (cl-strings:split key-chord-string "-"))
                     (key-chord (make-key-chord
                                 :key-code nil
-                                :key-string (car (last keys)) ;; TODO: key string map
+                                :key-string (gethash (car (last keys))
+                                                     *character-conversion-table*
+                                                     (car (last keys)))
                                 :modifiers (sort (butlast keys) #'string-lessp))))
 	       (push key-chord key-sequence)))
     key-sequence))
+
+(defun set-aqua-conversion-table ()
+  (setf (gethash "SPACE" *character-conversion-table*) " ")
+  (setf (gethash "BACKSPACE" *character-conversion-table*) "")
+  (setf (gethash "RETURN" *character-conversion-table*) "")
+  (setf (gethash "HYPHEN" *character-conversion-table*) "-")
+  (setf (gethash "ESCAPE" *character-conversion-table*) ""))
+
+(defun set-x-conversion-table ())
