@@ -14,6 +14,25 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include "client.h"
 
 typedef struct {
+	int mod;
+	char *name;
+} Modifier;
+
+// See the documentation of "enum GdkModifierType".
+static Modifier modifier_names[] = {
+	{.mod = GDK_SHIFT_MASK, .name = "s"},
+	{.mod = GDK_LOCK_MASK, .name = "Lock"},
+	{.mod = GDK_CONTROL_MASK, .name = "C"},
+	{.mod = GDK_MOD1_MASK, .name = "M"}, // Usually "Alt".
+	/* {.mod = GDK_MOD2_MASK, .name = "M2"}, */
+	/* {.mod = GDK_MOD3_MASK, .name = "M3"}, */
+	/* {.mod = GDK_MOD4_MASK, .name = "M4"}, */
+	{.mod = GDK_SUPER_MASK, .name = "S"},
+	{.mod = GDK_HYPER_MASK, .name = "H"},
+	{.mod = GDK_META_MASK, .name = "Meta"},
+};
+
+typedef struct {
 	GtkWidget *base;
 	Buffer *buffer;
 	char *identifier;
@@ -81,18 +100,32 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
 		event->hardware_keycode, (gint32)event->keyval,
 		gdk_keyval_name(event->keyval), event->string);
 
+	GError *error = NULL;
 	const char *method_name = "PUSH-KEY-CHORD";
 
-	GError *error = NULL;
-	gboolean control_pressed = event->state & GDK_CONTROL_MASK;
-	gboolean alt_pressed = event->state & GDK_MOD1_MASK;
-	gboolean super_pressed = event->state & GDK_SUPER_MASK;
-	// TODO: Send both hardware_keycode and keyval?
-	GVariant *key_chord = g_variant_new("(bbbi)",
-			control_pressed,
-			alt_pressed,
-			super_pressed,
-			(gint32)event->keyval);
+	// event->string is deprecated but it's very much what we want.
+	// For characters like Escape, this value is '\u001b', which is understood by
+	// s-xml-rpc as 0x1b, so we are fine.
+	gchar *keyval_string = event->string;
+	if (keyval_string[0] == '\0') {
+		// Some keys like F1 don't have a printed representation, so we send the
+		// associated GDK symbol then.  On the Lisp side, it can be associated with
+		// the proper string via set-gtk-conversion-table.
+		keyval_string = gdk_keyval_name(event->keyval);
+	}
+
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
+	for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
+		if (event->state & modifier_names[i].mod) {
+			g_variant_builder_add(&builder, "s", modifier_names[i].name);
+		}
+	}
+
+	GVariant *key_chord = g_variant_new("(isas)",
+			event->hardware_keycode,
+			keyval_string,
+			&builder);
 	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
