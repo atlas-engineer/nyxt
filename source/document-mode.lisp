@@ -30,8 +30,8 @@
   (define-key *document-mode-map* (kbd "S-s p") 'previous-search-hint)
   (define-key *document-mode-map* (kbd "S-s k") 'remove-search-hints)
   (define-key *document-mode-map* (kbd "C-.") 'jump-to-heading)
-  (define-key *document-mode-map* (kbd "M->") 'scroll-to-bottom)
-  (define-key *document-mode-map* (kbd "M-<") 'scroll-to-top))
+  (define-key *document-mode-map* (kbd "M-s->") 'scroll-to-bottom)
+  (define-key *document-mode-map* (kbd "M-s-<") 'scroll-to-top))
 
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."
