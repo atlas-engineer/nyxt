@@ -7,7 +7,7 @@
 
 (defclass window ()
   ((id :accessor id :initarg :id)
-   (active-buffer :accessor active-buffer)
+   (active-buffer :accessor active-buffer :initform nil)
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))))
 
@@ -79,7 +79,7 @@
   ;;TODO
   )
 
-(defmethod window-set-active-buffer ((interface remote-interface)
+(defmethod %window-set-active-buffer ((interface remote-interface)
                                      (window window)
                                      (buffer buffer))
   (with-slots (host port url) interface
@@ -88,6 +88,21 @@
       "window.set.active.buffer" (id window) (id buffer))
      :host host :port port :url url)
     (setf (active-buffer window) buffer)))
+
+(defmethod window-set-active-buffer ((interface remote-interface)
+                                      (window window)
+                                      (buffer buffer))
+    (let ((parent-window (find-if
+                          (lambda (window) (eql (active-buffer window) buffer))
+                          (alexandria:hash-table-values (windows *interface*)))))
+      (if parent-window ;; if visible on screen perform swap, otherwise just show
+          (let ((temp-buffer (buffer-make *interface*))
+                (buffer-swap (active-buffer window)))
+            (%window-set-active-buffer interface parent-window temp-buffer)
+            (%window-set-active-buffer interface window buffer)
+            (%window-set-active-buffer interface parent-window buffer-swap)
+            (buffer-delete interface temp-buffer))
+          (%window-set-active-buffer interface window buffer))))
 
 (defmethod window-active-buffer ((interface remote-interface) window)
   "Return the active buffer for a given window."
@@ -188,5 +203,5 @@
                               (buffer buffer))
   "Set the active buffer for the active window."
   (let ((window-active (window-active interface)))
-    (setf (active-buffer window-active) buffer)
-    (window-set-active-buffer interface window-active buffer)))
+    (window-set-active-buffer interface window-active buffer)
+    (setf (active-buffer window-active) buffer)))
