@@ -49,7 +49,7 @@ gpointer akd_object_for_key(AutokeyDictionary *self, const char *a_key) {
 }
 
 void akd_remove_object_for_key(AutokeyDictionary *self, const char *a_key) {
-	// g_hash_table_remove() call akd_key_destroy_func() to free the key and
+	// g_hash_table_remove() calls akd_key_destroy_func() to free the key and
 	// value_destroy_func (passed in akd_init()) to free the value.
 	g_hash_table_remove(self->dict, a_key);
 }
