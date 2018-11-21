@@ -31,7 +31,6 @@
                     :key-string key-string
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp)))))
-    (print key-chord)
     (push key-chord *key-chord-stack*))
   (if (consume-key-sequence) 1 0))
 
@@ -90,11 +89,11 @@
 	       (push key-chord key-sequence)))
     key-sequence))
 
-(defun set-aqua-conversion-table ()
+(defun set-cocoa-conversion-table ()
   (setf (gethash "SPACE" *character-conversion-table*) " ")
   (setf (gethash "BACKSPACE" *character-conversion-table*) "")
   (setf (gethash "RETURN" *character-conversion-table*) "")
   (setf (gethash "HYPHEN" *character-conversion-table*) "-")
   (setf (gethash "ESCAPE" *character-conversion-table*) ""))
 
-(defun set-x-conversion-table ())
+(defun set-gtk-conversion-table ())
