@@ -211,6 +211,6 @@ gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 	window->minibuffer_height = height;
 
 	gint natural_height;
-	gtk_widget_get_preferred_height(GTK_WIDGET(window->minibuffer), NULL, &natural_height);
+	gtk_widget_get_preferred_height(GTK_WIDGET(window->minibuffer->web_view), NULL, &natural_height);
 	return natural_height;
 }
