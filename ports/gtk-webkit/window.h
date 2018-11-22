@@ -107,7 +107,13 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
 	// For characters like Escape, this value is '\u001b', which is understood by
 	// s-xml-rpc as 0x1b, so we are fine.
 	gchar *keyval_string = event->string;
-	if (keyval_string[0] == '\0') {
+	if (event->state & GDK_CONTROL_MASK &&
+		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
+		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
+		// The control modifier turns the A-Za-z event->string into ASCII control
+		// characters.
+		keyval_string = gdk_keyval_name(event->keyval);
+	} else if (keyval_string[0] == '\0') {
 		// Some keys like F1 don't have a printed representation, so we send the
 		// associated GDK symbol then.  On the Lisp side, it can be associated with
 		// the proper string via set-gtk-conversion-table.
