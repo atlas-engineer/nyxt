@@ -1,4 +1,5 @@
 LISP?=sbcl
+LISP_FLAGS?=--non-interactive
 
 help:
 	@echo 'Makefile for Next. Please run this Makefile from the directory '
@@ -10,7 +11,7 @@ help:
 	@echo '                                                               '
 
 next_core:
-	$(LISP)	--non-interactive \
+	$(LISP)	$(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load next.asd \
 		--eval '(asdf:make :next)'
