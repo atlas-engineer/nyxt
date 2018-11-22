@@ -184,25 +184,27 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 static void server_handler(SoupServer *_server, SoupMessage *msg,
 	const char *path, GHashTable *_query,
 	SoupClientContext *_context, gpointer _data) {
-	// Log of the request.
+	// Log of the request.  This is quite verbose and not so useful, so we comment it out.
+	/*
 	{
-		const char *name, *value;
-		SoupMessageHeadersIter iter;
-		GString *pretty_message = g_string_new("HTTP request:\n");
-		g_string_append_printf(pretty_message, "%s %s HTTP/1.%d\n", msg->method, path,
-			soup_message_get_http_version(msg));
-		soup_message_headers_iter_init(&iter, msg->request_headers);
-		while (soup_message_headers_iter_next(&iter, &name, &value)) {
-			g_string_append_printf(pretty_message, "%s: %s\n", name, value);
-		}
-		if (msg->request_body->length == 0) {
-			g_warning("Empty HTTP request");
-			return;
-		}
-		g_string_append_printf(pretty_message, "%s", msg->request_body->data);
-		g_debug("%s", pretty_message->str);
-		g_string_free(pretty_message, TRUE);
+	        const char *name, *value;
+	        SoupMessageHeadersIter iter;
+	        GString *pretty_message = g_string_new("HTTP request:\n");
+	        g_string_append_printf(pretty_message, "%s %s HTTP/1.%d\n", msg->method, path,
+	                soup_message_get_http_version(msg));
+	        soup_message_headers_iter_init(&iter, msg->request_headers);
+	        while (soup_message_headers_iter_next(&iter, &name, &value)) {
+	                g_string_append_printf(pretty_message, "%s: %s\n", name, value);
+	        }
+	        if (msg->request_body->length == 0) {
+	                g_warning("Empty HTTP request");
+	                return;
+	        }
+	        g_string_append_printf(pretty_message, "%s", msg->request_body->data);
+	        g_debug("%s", pretty_message->str);
+	        g_string_free(pretty_message, TRUE);
 	}
+	*/
 
 	SoupXMLRPCParams *params = NULL;
 	GError *error = NULL;
