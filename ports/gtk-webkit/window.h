@@ -207,13 +207,20 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
 	g_signal_connect(buffer->web_view, "key-press-event", G_CALLBACK(window_send_event), NULL);
 
-	gtk_widget_show_all(window->base);
+	// We don't show all widgets, otherwise it would re-show the minibuffer if it
+	// was hidden.
+	gtk_widget_show(GTK_WIDGET(buffer->web_view));
 }
 
-// TODO: Minibuffer never closes.
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 	g_debug("Resize window %p minibuffer", window);
+	if (height == 0) {
+		gtk_widget_hide(GTK_WIDGET(window->minibuffer->web_view));
+		return 0;
+	}
+
 	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height);
+	gtk_widget_show(GTK_WIDGET(window->minibuffer->web_view));
 	window->minibuffer_height = height;
 
 	gint natural_height;
