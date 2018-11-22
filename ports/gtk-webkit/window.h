@@ -201,9 +201,10 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	gtk_widget_show_all(window->base);
 }
 
+// TODO: Minibuffer never closes.
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {
-	// TODO: Size request must be done on a widget, not a web view.
-	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer), -1, height);
+	g_debug("Resize window %p minibuffer", window);
+	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height);
 	window->minibuffer_height = height;
 
 	gint natural_height;
