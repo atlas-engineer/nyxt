@@ -24,6 +24,7 @@
         [self setTitle:@"Next"];
         [self setBackgroundColor:[NSColor whiteColor]];
         [self makeKeyAndOrderFront:self];
+        [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
         
         Base *baseView = [[Base alloc] init];
         [baseView setFrame:[[self contentView] bounds]];
