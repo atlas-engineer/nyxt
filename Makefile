@@ -13,17 +13,23 @@ help:
 
 core:
 	$(LISP)	--eval '(require "asdf")' \
+		--non-interactive \
 		--load next.asd \
 		--eval '(asdf:make :next)'
 
-next-cocoa: core
+next-cocoa:
+	$(LISP)	--eval '(require "asdf")' \
+		--non-interactive \
+		--load next.asd \
+		--eval '(asdf:make :next/cocoa/release)'
 	mkdir -p build/Next.app
 	mkdir -p build/Next.app/Contents/MacOS
 	mkdir -p build/Next.app/Contents/Resources
 	cp assets/Info.plist build/Next.app/Contents/Info.plist
 	cp assets/next.icns build/Next.app/Contents/Resources/next.icns
 	mv next build/Next.app/Contents/MacOS
+
 clean:
 	rm -rf build
 
-.PHONY: clean cocoa core help
+.PHONY: clean next-cocoa core help

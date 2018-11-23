@@ -41,20 +41,30 @@
 
 (asdf:defsystem :next/cocoa
   :depends-on (:next)
-  :pathname "source/ports"
-  :components ((:file "cocoa")))
+  :components ((:module "source/ports"
+                :components
+                ((:file "cocoa")))))
 
 (asdf:defsystem :next/cocoa/release
   :depends-on (:next/cocoa)
-  :pathname "source/ports"
-  :components ((:file "cocoa-release")))
+  :components ((:module "source/ports"
+                :components
+                ((:file "cocoa-release"))))
+  :build-operation "program-op"
+  :build-pathname "next"
+  :entry-point "next:start")
 
 (asdf:defsystem :next/gtk
   :depends-on (:next)
-  :pathname "source/ports"
-  :components ((:file "gtk")))
+  :components ((:module "source/ports"
+                :components
+                ((:file "gtk")))))
 
 (asdf:defsystem :next/gtk/release
   :depends-on (:next/gtk)
-  :pathname "source/ports"
-  :components ((:file "gtk-release")))
+  :components ((:module "source/ports"
+                :components
+                ((:file "gtk-release"))))
+  :build-operation "program-op"
+  :build-pathname "next"
+  :entry-point "next:start")
