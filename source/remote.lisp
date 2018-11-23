@@ -184,7 +184,10 @@
     (did-commit-navigation buffer url)))
 
 (defun window-will-close (window-id)
-  (remhash window-id (windows *interface*)))
+  (let ((windows (windows *interface*)))
+    (remhash window-id windows)
+    (when (equal 0 (length (alexandria:hash-table-values windows)))
+      (uiop:quit))))
 
 (import 'buffer-did-commit-navigation :s-xml-rpc-exports)
 (import 'push-key-chord :s-xml-rpc-exports)
