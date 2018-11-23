@@ -25,6 +25,7 @@ next-cocoa:
 	mkdir -p build/Next.app
 	mkdir -p build/Next.app/Contents/MacOS
 	mkdir -p build/Next.app/Contents/Resources
+	mkdir -p build/Next.app/Contents/Frameworks
 	cp assets/Info.plist build/Next.app/Contents/Info.plist
 	cp assets/next.icns build/Next.app/Contents/Resources/next.icns
 	mv next build/Next.app/Contents/MacOS
