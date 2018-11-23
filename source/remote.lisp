@@ -75,10 +75,6 @@
      (s-xml-rpc:encode-xml-rpc-call "window.exists" (id window))
      :host host :port port :url url)))
 
-(defmethod synchronize-existing-windows (interface remore-interface)
-  ;;TODO
-  )
-
 (defmethod %window-set-active-buffer ((interface remote-interface)
                                      (window window)
                                      (buffer buffer))
@@ -187,10 +183,14 @@
   (let ((buffer (gethash buffer-id (buffers *interface*))))
     (did-commit-navigation buffer url)))
 
+(defun window-will-close (window-id)
+  (remhash window-id (windows *interface*)))
+
 (import 'buffer-did-commit-navigation :s-xml-rpc-exports)
 (import 'push-key-chord :s-xml-rpc-exports)
 (import 'buffer-javascript-call-back :s-xml-rpc-exports)
 (import 'minibuffer-javascript-call-back :s-xml-rpc-exports)
+(import 'window-will-close :s-xml-rpc-exports)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convenience methods and functions for Users of the API ;;

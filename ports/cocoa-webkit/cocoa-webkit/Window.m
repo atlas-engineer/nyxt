@@ -5,6 +5,10 @@
 
 #import "Window.h"
 #import "Base.h"
+#include <xmlrpc-c/base.h>
+#include <xmlrpc-c/client.h>
+#include <xmlrpc-c/config.h>
+#include "Global.h"
 
 @implementation Window
 @synthesize base;
@@ -14,8 +18,10 @@
     self = [super init];
     if (self != nil) {
         NSRect windowRect = NSMakeRect(0, 0, 1024, 768);
-        NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
+        NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable |
+        NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskClosable;
 
+        [self setDelegate:self];
         [self setFrame:windowRect display:YES];
         [self setBackingType:NSBackingStoreBuffered];
         [self setStyleMask:windowStyle];
@@ -34,6 +40,19 @@
         [self setBase: baseView];
     }
     return self;
+}
+
+- (void)windowWillClose:(NSNotification *)notification {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
+        const char * const serverUrl = "http://localhost:8081/RPC2";
+        const char * const methodName = "WINDOW-WILL-CLOSE";
+        
+        // Make the remote procedure call
+        xmlrpc_client_call(&env, serverUrl, methodName,
+                           "(s)",
+                           [[self identifier] UTF8String]);
+    });
 }
 
 @end

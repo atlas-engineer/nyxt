@@ -7,7 +7,7 @@
 #import "Base.h"
 
 
-@interface Window : NSWindow
+@interface Window : NSWindow <NSWindowDelegate>
 
 @property (strong, atomic, readwrite) Base *base;
 @property (strong, atomic, readwrite) NSString *identifier;
