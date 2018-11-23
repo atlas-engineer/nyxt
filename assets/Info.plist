@@ -16,7 +16,5 @@
 	<string>Next</string>
 	<key>CFBundleIdentifier</key>
 	<string>engineer.Atlas.Next</string>
-	<key>LSBackgroundOnly</key>
-	<true/>
 </dict>
 </plist>
