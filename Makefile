@@ -7,11 +7,23 @@ help:
 	@echo '                                                               '
 	@echo '                                                               '
 	@echo 'Usage:                                                         '
-	@echo '   make next_core   create an executable of the Next core.     '
+	@echo '   make core   create an executable of the Next core.          '
+	@echo '   make next-cocoa  create Next with the Cocoa port            '
 	@echo '                                                               '
 
-next_core:
-	$(LISP)	$(LISP_FLAGS) \
-		--eval '(require "asdf")' \
+core:
+	$(LISP)	--eval '(require "asdf")' \
 		--load next.asd \
 		--eval '(asdf:make :next)'
+
+next-cocoa: core
+	mkdir -p build/Next.app
+	mkdir -p build/Next.app/Contents/MacOS
+	mkdir -p build/Next.app/Contents/Resources
+	cp assets/Info.plist build/Next.app/Contents/Info.plist
+	cp assets/next.icns build/Next.app/Contents/Resources/next.icns
+	mv next build/Next.app/Contents/MacOS
+clean:
+	rm -rf build
+
+.PHONY: clean cocoa core help

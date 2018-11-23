@@ -40,7 +40,21 @@
   :entry-point "next:start")
 
 (asdf:defsystem :next/cocoa
-  :depends-on (:next))
+  :depends-on (:next)
+  :pathname "source/ports"
+  :components ((:file "cocoa")))
+
+(asdf:defsystem :next/cocoa/release
+  :depends-on (:next/cocoa)
+  :pathname "source/ports"
+  :components ((:file "cocoa-release")))
 
 (asdf:defsystem :next/gtk
-  :depends-on (:next))
+  :depends-on (:next)
+  :pathname "source/ports"
+  :components ((:file "gtk")))
+
+(asdf:defsystem :next/gtk/release
+  :depends-on (:next/gtk)
+  :pathname "source/ports"
+  :components ((:file "gtk-release")))

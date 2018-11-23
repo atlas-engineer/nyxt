@@ -27,9 +27,7 @@
 (defun start ()
   (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))
-  (cond
-    ((uiop:os-macosx-p) (set-cocoa-conversion-table))
-    ((uiop:os-unix-p) (set-gtk-conversion-table)))
+  (port:set-conversion-table)
   (map nil 'funcall *deferred-mode-initializations*)
   (initialize-bookmark-db)
   (initialize-history-db)
@@ -45,6 +43,8 @@
   (multiple-value-bind (window buffer) (make-window)
     (declare (ignore window))
     (set-url-buffer *start-page-url* buffer))
+  ;; stay alive while running as a standalone program
+  (port:run-loop)
   t)
 
 (defun initialize-default-key-bindings ()
