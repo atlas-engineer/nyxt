@@ -1,6 +1,5 @@
-# Ignore App
-*.app
-*.dmg
+# Ignore build direcotry
+build/
 
 # Ignore PNG and XCF
 *.png
@@ -24,3 +23,4 @@
 *.sx32fsl
 *.wx64fsl
 *.wx32fsl
+
