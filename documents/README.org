@@ -140,10 +140,11 @@ In a new Terminal execute the following:
 ** Compile
 *** Build a Linux binary
 
-: cd source
-: make build-gtk
+Run
 
-the compiled binary will be present in the directory ~source~ as ~next-gtk~.
+: make
+
+and the compiled binary will be placed in the directory ~source~ as ~next-gtk~.
 
 *** MacOS Compilation
 From the CCL Source directory, execute
@@ -169,7 +170,7 @@ After you have found a TODO item that is available:
 - make a pull request
 
 ** IRC Channel
-You can find Next on Freenode IRC at #next-browser
+You can find Next on Freenode IRC at =#next-browser=.
 
 ** Mailing List
 Next maintains a GNU Mailman server located at
@@ -184,10 +185,12 @@ You can up for the [[http://mail.next-browser.com/listinfo/alpha][alpha mailing 
 feature requests, and early version testing.
 
 * Release Timeline
-Major releases are issued by incrementing the first digit. That is,
-release 1.20, and 2.20 are one major release away from each other. Minor
-releases are issued by incrementing by 0.01. That is, 1.01, and 1.02 are
-two minor releases following major release 1.0.
+
+From version 0.9 onward, Next uses [[https://semver.org/][Semantic Versioning]].
+In short, given a version number MAJOR.MINOR.PATCH, we increment the:
+- MAJOR version when we make incompatible API changes,
+- MINOR version when we add functionality in a backwards-compatible manner, and
+- PATCH version when we make backwards-compatible bug fixes.
 
 ** 0.10
 *** TODO Jump to paragraph categorized based on content
@@ -210,7 +213,7 @@ but with flatpak or [[https://guix.info/blog/2018/tarballs-the-ultimate-containe
 
 **** TODO Compilation Script Linux
 **** TODO Compilation Script MacOS
-** 0.09
+** 0.9
 *** TODO GNU/Linux Frontend
 - Create frontend that renders the new Next GUI
 *** TODO MacOS Frontend

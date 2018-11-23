@@ -34,9 +34,9 @@
 (defvar *swank-port* 4006
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in Next to avoid collisions).")
-(defvar *start-page-url* "http://next.atlas.engineer/quickstart"
+(defvar *start-page-url* "https://next.atlas.engineer/quickstart"
   "The url of the first buffer opened by Next when started.")
-(defvar *default-new-buffer-url* "http://next.atlas.engineer/start"
+(defvar *default-new-buffer-url* "https://next.atlas.engineer/start"
   "The url set to a new blank buffer opened by Next.")
 (defvar *default-new-buffer-mode* nil
   "The mode a buffer will open in by default")
