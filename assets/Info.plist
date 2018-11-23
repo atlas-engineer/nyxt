@@ -16,11 +16,5 @@
     <string>Next</string>
     <key>CFBundleIdentifier</key>
     <string>Next.browser</string>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <!--Include to allow all connections-->
-      <key>NSAllowsArbitraryLoads</key>
-      <true/>
-    </dict>
   </dict>
 </plist>
