@@ -70,6 +70,7 @@
     (let ((char (code-char code)))
       (define-key *minibuffer-mode-map* (key (string char))
         (lambda () (self-insert *minibuffer* (string char))))))
+  (define-key *minibuffer-mode-map* (key "HYPHEN") #'(lambda () (self-insert *minibuffer* "-")))
   (define-key *minibuffer-mode-map* (key "SPACE") #'(lambda () (self-insert *minibuffer* " ")))
   (define-key *minibuffer-mode-map* (key "C-f") #'(lambda () (cursor-forwards *minibuffer*)))
   (define-key *minibuffer-mode-map* (key "C-b") #'(lambda () (cursor-backwards *minibuffer*)))
