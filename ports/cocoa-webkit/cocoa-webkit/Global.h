@@ -15,5 +15,4 @@
 + (Global *)sharedInstance;
 - (xmlrpc_env) getXMLRPCEnv;
 
-
 @end

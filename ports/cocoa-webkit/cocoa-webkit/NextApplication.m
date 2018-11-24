@@ -24,7 +24,7 @@
         bool alternatePressed = (modifierFlags & NSEventModifierFlagOption);
         bool commandPressed = (modifierFlags & NSEventModifierFlagCommand);
         bool functionPressed = (modifierFlags & NSEventModifierFlagFunction);
-
+        
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
             xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
             xmlrpc_value * resultP;
@@ -32,9 +32,9 @@
             xmlrpc_int consumed;
             const char * const serverUrl = "http://localhost:8081/RPC2";
             const char * const methodName = "PUSH-KEY-CHORD";
-
+            
             modifiers = xmlrpc_array_new(&env);
-
+            
             if (controlPressed) {
                 xmlrpc_value * itemP;
                 itemP = xmlrpc_string_new(&env, "C");
@@ -59,7 +59,7 @@
                 xmlrpc_array_append_item(&env, modifiers, itemP);
                 xmlrpc_DECREF(itemP);
             };
-
+            
             // Make the remote procedure call
             resultP = xmlrpc_client_call(&env, serverUrl, methodName,
                                          "(isA)",

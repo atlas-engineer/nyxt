@@ -30,9 +30,9 @@ window_make(xmlrpc_env *   const envP,
 
 static xmlrpc_value *
 window_delete(xmlrpc_env * const envP,
-            xmlrpc_value * const paramArrayP,
-            void *         const serverInfo,
-            void *         const channelInfo) {
+              xmlrpc_value * const paramArrayP,
+              void *         const serverInfo,
+              void *         const channelInfo) {
     dispatch_sync(dispatch_get_main_queue(), ^{
         void *windowId;
         xmlrpc_decompose_value(envP, paramArrayP, "(s)", &windowId);
@@ -44,9 +44,9 @@ window_delete(xmlrpc_env * const envP,
 
 static xmlrpc_value *
 window_active(xmlrpc_env *   const envP,
-            xmlrpc_value * const paramArrayP,
-            void *         const serverInfo,
-            void *         const channelInfo) {
+              xmlrpc_value * const paramArrayP,
+              void *         const serverInfo,
+              void *         const channelInfo) {
     __block NSString* operationResult = @"";
     dispatch_sync(dispatch_get_main_queue(), ^{
         NextApplicationDelegate *delegate = [NSApp delegate];
@@ -72,9 +72,9 @@ window_exists(xmlrpc_env * const envP,
 
 static xmlrpc_value *
 window_set_active_buffer(xmlrpc_env *   const envP,
-              xmlrpc_value * const paramArrayP,
-              void *         const serverInfo,
-              void *         const channelInfo) {
+                         xmlrpc_value * const paramArrayP,
+                         void *         const serverInfo,
+                         void *         const channelInfo) {
     dispatch_sync(dispatch_get_main_queue(), ^{
         void *windowId;
         void *bufferId;
@@ -88,9 +88,9 @@ window_set_active_buffer(xmlrpc_env *   const envP,
 
 static xmlrpc_value *
 window_set_minibuffer_height(xmlrpc_env *   const envP,
-                      xmlrpc_value * const paramArrayP,
-                      void *         const serverInfo,
-                      void *         const channelInfo) {
+                             xmlrpc_value * const paramArrayP,
+                             void *         const serverInfo,
+                             void *         const channelInfo) {
     __block NSInteger operationResult = 0;
     dispatch_sync(dispatch_get_main_queue(), ^{
         void *windowId;
@@ -132,9 +132,9 @@ buffer_delete(xmlrpc_env * const envP,
 
 static xmlrpc_value *
 buffer_evaluate_javascript(xmlrpc_env *   const envP,
-                          xmlrpc_value * const paramArrayP,
-                          void *         const serverInfo,
-                          void *         const channelInfo) {
+                           xmlrpc_value * const paramArrayP,
+                           void *         const serverInfo,
+                           void *         const channelInfo) {
     __block NSString* operationResult = @"";
     dispatch_sync(dispatch_get_main_queue(), ^{
         void *bufferId;
@@ -142,7 +142,7 @@ buffer_evaluate_javascript(xmlrpc_env *   const envP,
         xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &bufferId, &javaScript);
         NextApplicationDelegate *delegate = [NSApp delegate];
         operationResult = [delegate bufferEvaluateJavaScript:[NSString stringWithFormat:@"%s", bufferId]
-                                             javaScript:[NSString stringWithFormat:@"%s", javaScript]];
+                                                  javaScript:[NSString stringWithFormat:@"%s", javaScript]];
     });
     return xmlrpc_build_value(envP, "s", [operationResult UTF8String]);
 }
@@ -159,7 +159,7 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
         xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &windowId, &javaScript);
         NextApplicationDelegate *delegate = [NSApp delegate];
         operationResult = [delegate minibufferEvaluateJavaScript:[NSString stringWithFormat:@"%s", windowId]
-                                             javaScript:[NSString stringWithFormat:@"%s", javaScript]];
+                                                      javaScript:[NSString stringWithFormat:@"%s", javaScript]];
     });
     return xmlrpc_string_new(envP, [operationResult UTF8String]);
 }
@@ -185,7 +185,7 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
         "buffer.evaluate.javascript", &buffer_evaluate_javascript,};
     struct xmlrpc_method_info3 const minibufferEvaluateJavascript = {
         "minibuffer.evaluate.javascript", &minibuffer_evaluate_javascript,};
-
+    
     xmlrpc_server_abyss_parms serverparm;
     xmlrpc_registry * registryP;
     xmlrpc_env env;
@@ -207,7 +207,7 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
     xmlrpc_registry_add_method3(&env, registryP, &bufferEvaluateJavaScript);
     xmlrpc_registry_add_method3(&env, registryP, &windowSetMinibufferHeight);
     xmlrpc_registry_add_method3(&env, registryP, &minibufferEvaluateJavascript);
-
+    
     if (env.fault_occurred) {
         printf("xmlrpc_registry_add_method3() failed.  %s\n",
                env.fault_string);
@@ -218,7 +218,7 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
     serverparm.registryP        = registryP;
     serverparm.port_number      = 8082;
     serverparm.log_file_name    = "/tmp/next_xmlrpc_log";
-        
+    
     xmlrpc_server_abyss(&env, &serverparm, XMLRPC_APSIZE(log_file_name));
     if (env.fault_occurred) {
         printf("xmlrpc_server_abyss() failed.  %s\n", env.fault_string);

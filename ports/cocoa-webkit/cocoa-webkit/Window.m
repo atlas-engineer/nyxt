@@ -20,7 +20,7 @@
         NSRect windowRect = NSMakeRect(0, 0, 1024, 768);
         NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable |
         NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskClosable;
-
+        
         [self setDelegate:self];
         [self setFrame:windowRect display:YES];
         [self setBackingType:NSBackingStoreBuffered];

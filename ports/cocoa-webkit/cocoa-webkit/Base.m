@@ -30,7 +30,7 @@
                                    constant:0]];
     [self setBuffer:[[Buffer alloc] init]];
     [[self minibuffer] addConstraint:[self minibufferHeightConstraint]];
-
+    
     [self addArrangedSubview:[self buffer]];
     [self addArrangedSubview:[self minibuffer]];
     

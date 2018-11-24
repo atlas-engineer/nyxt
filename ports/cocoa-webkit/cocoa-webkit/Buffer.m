@@ -58,7 +58,7 @@
         xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
         const char * const serverUrl = "http://localhost:8081/RPC2";
         const char * const methodName = "BUFFER-DID-COMMIT-NAVIGATION";
-
+        
         // Make the remote procedure call
         xmlrpc_client_call(&env, serverUrl, methodName,
                            "(ss)",
