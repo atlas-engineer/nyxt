@@ -7,7 +7,7 @@ int main(int argc, const char * argv[])
 {
     NextApplication *app = [NextApplication sharedApplication];
     [app setDelegate:[[NextApplicationDelegate alloc] init]];
-    [app setActivationPolicy:NSApplicationActivationPolicyAccessory];
+    [app setActivationPolicy:NSApplicationActivationPolicyRegular];
     [app run];
     
     return 0;
