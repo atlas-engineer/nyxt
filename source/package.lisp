@@ -12,4 +12,5 @@
   (:use :common-lisp :next)
   (:export
    :set-conversion-table
-   :run-loop))
+   :run-loop
+   :run-program))

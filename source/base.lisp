@@ -25,6 +25,7 @@
     (opts:get-opts)))
 
 (defun start ()
+  (port:run-program)
   (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))
   (port:set-conversion-table)
@@ -65,7 +66,7 @@
   (define-key *global-map* (kbd "C-x 5 2") 'make-window)
   (define-key *global-map* (kbd "C-x 5 0") 'delete-window)
   ;;; define self-insert commands for minibuffer for every type of character
-  (loop for code below 128 do
+  (loop for code below char-code-limit do
     (let ((char (code-char code)))
       (define-key *minibuffer-mode-map* (kbd (string char))
         (lambda () (self-insert *minibuffer* (string char))))))
