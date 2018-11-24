@@ -95,6 +95,10 @@
 (defmethod did-commit-navigation ((mode document-mode) url)
   (add-or-traverse-history mode url))
 
+(defmethod setup ((mode document-mode) (buffer buffer))
+  (set-url-buffer *default-new-buffer-url* buffer)
+  (call-next-method))
+
 (defun document-mode ()
   "Base mode for interacting with documents"
   (let* ((root (make-instance 'node

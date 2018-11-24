@@ -128,7 +128,6 @@
     (setf (name buffer) name)
     (setf (mode buffer) mode)
     (setup mode buffer)
-    (set-url-buffer *default-new-buffer-url* buffer)
     buffer))
 
 (defmethod buffer-delete ((interface remote-interface) (buffer buffer))
