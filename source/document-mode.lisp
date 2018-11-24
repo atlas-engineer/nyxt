@@ -31,7 +31,9 @@
   (define-key *document-mode-map* (key "S-s k") 'remove-search-hints)
   (define-key *document-mode-map* (key "C-.") 'jump-to-heading)
   (define-key *document-mode-map* (key "M-s->") 'scroll-to-bottom)
-  (define-key *document-mode-map* (key "M-s-<") 'scroll-to-top))
+  (define-key *document-mode-map* (key "M-s-<") 'scroll-to-top)
+  (define-key *document-mode-map* (key "M->") 'scroll-to-bottom)
+  (define-key *document-mode-map* (key "M-<") 'scroll-to-top))
 
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."
