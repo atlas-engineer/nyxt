@@ -4,16 +4,9 @@
 CFLAGS += `pkg-config --cflags webkit2gtk-4.0`
 LDLIBS += `pkg-config --libs webkit2gtk-4.0`
 
-all: next-gtk-webkit
-
 ## Clang fails to parse command line if executable depends directly on headers.
 next-gtk-webkit: next-gtk-webkit.o
 next-gtk-webkit.o: $(wildcard *.h)
-
-install: next-gtk-webkit
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp -f $< $(DESTDIR)$(PREFIX)/bin
-	chmod 755 $(DESTDIR)$(PREFIX)/bin/$<
 
 .PHONY: debug
 debug:

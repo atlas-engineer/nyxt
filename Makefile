@@ -1,26 +1,37 @@
 LISP?=sbcl
 LISP_FLAGS?=--non-interactive
 
+
+## TODO: Use ifeq() to detect system.
+
+.PHONY: help
 help:
 	@echo 'Makefile for Next. Please run this Makefile from the directory '
 	@echo 'it is located in.                                              '
 	@echo '                                                               '
 	@echo 'Usage:                                                         '
-	@echo '   make core        create an executable of the Next core.     '
-	@echo '   make next-cocoa  create Next with the Cocoa port.           '
+	@echo '   make core        Create an executable of the Next core.     '
+	@echo '   make next-cocoa  Create Next with the Cocoa port.           '
+	@echo '   make next-gtk    Create Next with the GTK port.             '
+	@echo '   make install     Install the GTK port.  Set DESTDIR to      '
+	@echo '                      change the target destinatation.         '
 	@echo '                                                               '
 
+.PHONY: core
 core:
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load next.asd \
 		--eval '(asdf:make :next)'
 
-next-cocoa:
+next:
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load next.asd \
 		--eval '(asdf:make :next/release)'
+
+## TODO: Update the rule once we have the resulting .app.
+next-cocoa: next
 	xcodebuild -project ports/cocoa-webkit/cocoa-webkit.xcodeproj
 	mkdir -p build/Next.app
 	mkdir -p build/Next.app/Contents/MacOS
@@ -41,7 +52,25 @@ next-cocoa:
 	mv next build/Next.app/Contents/MacOS
 	mv ports/cocoa-webkit/build/Release/cocoa-webkit build/Next.app/Contents/MacOS/cocoa-webkit
 
+ports/gtk-webkit/next-gtk-webkit:
+	$(MAKE) -C ports/gtk-webkit
+.PHONY: next-gtk
+next-gtk: next ports/gtk-webkit/next-gtk-webkit
+
+## TODO: Add install rule for Cocoa?
+.PHONY: install
+install: next next-gtk
+	mkdir -p "$(DESTDIR)$(PREFIX)/bin"
+	cp -f $< "$(DESTDIR)$(PREFIX)/bin/"
+	cp -f ports/gtk-webkit/next-gtk-webkit "$(DESTDIR)$(PREFIX)/bin/"
+	chmod 755 $(DESTDIR)$(PREFIX)/bin/$<
+	mkdir -p "$(DESTDIR)$(PREFIX)/share/xsessions/"
+	cp -f assets/next.desktop "$(DESTDIR)$(PREFIX)/share/xsessions/"
+	$(foreach i, 16 32 128 256 512, mkdir -p "$(DESTDIR)$(PREFIX)/share/icons/hicolor/$(i)x$(i)/apps/" && \
+		cp -f "assets/next_$(i)x$(i).png" "$(DESTDIR)$(PREFIX)/share/icons/hicolor/$(i)x$(i)/apps/next.png";)
+
+.PHONY: clean
 clean:
 	rm -rf build
 
-.PHONY: clean next-cocoa core help
+# TODO: Fetch dependencies with Quicklisp?

@@ -9,3 +9,5 @@
   (setf (gethash "ESCAPE" *character-conversion-table*) ""))
 
 (defun run-loop ())
+
+(defun run-program ())
