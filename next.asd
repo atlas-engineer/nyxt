@@ -3,6 +3,7 @@
 
 (asdf:defsystem :next
   :serial t
+  :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria :cl-strings :cl-string-match :puri
                :queues.simple-queue :sqlite :parenscript :cl-json :swank
                :cl-markup :cl-css :usocket :bordeaux-threads :s-xml-rpc
@@ -34,37 +35,21 @@
                  ;; Core Modes
 	         (:file "application-mode")
 	         (:file "document-mode")
-	         (:file "base"))))
+	         (:file "base")))
+               (:module "source/ports"
+                :components
+                ((:file "cocoa" :if-feature :darwin)
+                 (:file "gtk" :if-feature :linux))))
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:start")
 
-(asdf:defsystem :next/cocoa
+(asdf:defsystem :next/release
   :depends-on (:next)
   :components ((:module "source/ports"
                 :components
-                ((:file "cocoa")))))
-
-(asdf:defsystem :next/cocoa/release
-  :depends-on (:next/cocoa)
-  :components ((:module "source/ports"
-                :components
-                ((:file "cocoa-release"))))
-  :build-operation "program-op"
-  :build-pathname "next"
-  :entry-point "next:start")
-
-(asdf:defsystem :next/gtk
-  :depends-on (:next)
-  :components ((:module "source/ports"
-                :components
-                ((:file "gtk")))))
-
-(asdf:defsystem :next/gtk/release
-  :depends-on (:next/gtk)
-  :components ((:module "source/ports"
-                :components
-                ((:file "gtk-release"))))
+                ((:file "cocoa-release" :if-feature :darwin)
+                 (:file "gtk-release" :if-feature :linux))))
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:start")

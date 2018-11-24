@@ -11,16 +11,16 @@ help:
 	@echo '                                                               '
 
 core:
-	$(LISP)	--eval '(require "asdf")' \
-		--non-interactive \
+	$(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
 		--load next.asd \
 		--eval '(asdf:make :next)'
 
 next-cocoa:
-	$(LISP)	--eval '(require "asdf")' \
-		--non-interactive \
+	$(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
 		--load next.asd \
-		--eval '(asdf:make :next/cocoa/release)'
+		--eval '(asdf:make :next/release)'
 	xcodebuild -project ports/cocoa-webkit/cocoa-webkit.xcodeproj
 	mkdir -p build/Next.app
 	mkdir -p build/Next.app/Contents/MacOS
