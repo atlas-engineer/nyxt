@@ -5,7 +5,7 @@
 ;;; *global-map* --> major-mode-map --> minor-mode-maps
 ;;;
 ;;; keys are defined with the following syntax:
-;;; (define-key *global-map* (kbd "C-x o") #'function-reference)
+;;; (define-key *global-map* (key "C-x o") #'function-reference)
 ;;; in the previous example, the sequence of keys:
 ;;; "control+x", "o" would invoke the "function-reference"
 
@@ -67,7 +67,7 @@
        (pop key-sequence)
        (setf (gethash key-sequence mode-map) "prefix")))
 
-(defun kbd (key-sequence-string)
+(defun key (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"
   ;; Firstly, break it apart into chords: "C-x" and "C-s"
   ;; Then, break apart the chords into individual keys
@@ -88,4 +88,3 @@
                                 :modifiers (sort (butlast keys) #'string-lessp))))
 	       (push key-chord key-sequence)))
     key-sequence))
-

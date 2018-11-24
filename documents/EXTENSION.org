@@ -73,13 +73,13 @@ the command output.
   (set-active-buffer *interface*
    (generate-new-buffer "*shell*" (shell-mode))))
 
-(define-key *shell-mode-map* (kbd "c")
+(define-key *shell-mode-map* (key "c")
   (:input *minibuffer* run-shell-command))
 
-(define-key *shell-mode-map* (kbd "k")
+(define-key *shell-mode-map* (key "k")
   #'clear-shell-output)
 
-(define-key *global-map* (kbd "C-x s")
+(define-key *global-map* (key "C-x s")
   #'open-new-shell)
 #+END_SRC
 * Reloading the page
@@ -90,7 +90,7 @@ The following function provides a way to reload the current page.
 ;; Reload page with §
 (define-parenstatic reload-page
   (ps:chain location (reload)))
-(define-key *global-map* (kbd "§") #'reload-page)
+(define-key *global-map* (key "§") #'reload-page)
 #+END_SRC
 
 * Scroll the page up and down by a screen
@@ -105,6 +105,6 @@ one screen.
   (ps:chain window (scroll-by 0 (- (ps:@ window inner-height)))))
 
 ;; bind the new functions
-(define-key *global-map* (kbd "C-v") #'scroll-page-down)
-(define-key *global-map* (kbd "M-v") #'scroll-page-up)
+(define-key *global-map* (key "C-v") #'scroll-page-down)
+(define-key *global-map* (key "M-v") #'scroll-page-up)
 #+END_SRC

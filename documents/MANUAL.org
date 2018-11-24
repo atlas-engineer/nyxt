@@ -274,7 +274,7 @@ Keys are defined with the following syntax:
 
 #+NAME: define key
 #+BEGIN_SRC lisp
-(define-key *global-map* (kbd "C-x o") #'function-example)
+(define-key *global-map* (key "C-x o") #'function-example)
 #+END_SRC
 
 in the previous example, the sequence of keys: ~control+x~, lift hands
@@ -302,7 +302,7 @@ by Oleh Krehel in his fantastic package for Emacs titled [[https://github.com/ab
   ("p" switch-buffer-previous)
   ("n" switch-buffer-next))
 
-(define-key *global-map* (kbd "M-s") #'hydra-switch-buffer)
+(define-key *global-map* (key "M-s") #'hydra-switch-buffer)
 #+END_SRC
 
 In the example above, the ~defhydra~ form will generate a function
@@ -351,4 +351,3 @@ therefore takes the following look:
                (mode *minibuffer*)))
   (print variable-name-to-bind-minibuffer-input))
 #+END_SRC
-

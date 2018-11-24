@@ -7,8 +7,8 @@
 (define-mode help-mode (mode)
     ()
     (load-package-globals)
-    (define-key *help-mode-map* (kbd "C-p") 'scroll-up)
-    (define-key *help-mode-map* (kbd "C-n") 'scroll-down))
+    (define-key *help-mode-map* (key "C-p") 'scroll-up)
+    (define-key *help-mode-map* (key "C-n") 'scroll-down))
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)

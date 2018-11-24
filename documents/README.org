@@ -34,7 +34,7 @@ configuration set in your =.swank.lisp=.
 #+NAME: config
 #+BEGIN_SRC language
 (setf swank:*globally-redirect-io* t)
-(setf swank:*communication-style* :fd-handler) 
+(setf swank:*communication-style* :fd-handler)
 #+END_SRC
 
 ** MacOS Setup
@@ -479,14 +479,14 @@ buffer.
 CLOSED: [2017-08-12 Sat 16:34]
 The following syntax should be used to set a key binding:
 
-(define-key x-mode-map (kbd "C-h") 'function)
+(define-key x-mode-map (key "C-h") 'function)
 
     Where x-mode-map is a keymap relating to a mode (major or minor).
 
     Where 'function is a function that is passed to define-key to
     trigger a function upon a key press.
 
-(kbd "C-h") defines that the keyboard sequence Control + h is
+(key "C-h") defines that the keyboard sequence Control + h is
 represented. For the keyboard syntax, the following keys are
 described:
 
@@ -496,7 +496,7 @@ described:
 
 A chain of key bindings may be set in the following manner:
 
-(kbd "C-x C-s") will denote the following key presses, Ctrl + x, followed
+(key "C-x C-s") will denote the following key presses, Ctrl + x, followed
 by Ctrl + s immediately thereafter.
 
 Upon the definition of a "chained" keyboard binding, any elements
