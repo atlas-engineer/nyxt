@@ -39,7 +39,7 @@
                (:module "source/ports"
                 :components
                 ((:file "cocoa" :if-feature :darwin)
-                 (:file "gtk" :if-feature :linux))))
+                 (:file "gtk" :if-feature (:and :unix (:not :darwin))))))
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:start")
@@ -49,7 +49,7 @@
   :components ((:module "source/ports"
                 :components
                 ((:file "cocoa-release" :if-feature :darwin)
-                 (:file "gtk-release" :if-feature :linux))))
+                 (:file "gtk-release" :if-feature (:and :unix (:not :darwin))))))
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:start")
