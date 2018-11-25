@@ -46,9 +46,6 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
-(defvar *current-completions* ()
-  "A global variable used to store current completions for a
-  completion function that has a static list.")
 (defvar *minibuffer-closed-height* 0
   "The height of the minibuffer when closed.")
 (defvar *minibuffer-open-height* 200
