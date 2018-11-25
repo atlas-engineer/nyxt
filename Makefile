@@ -1,6 +1,10 @@
-LISP?=sbcl
-LISP_FLAGS?=--non-interactive
+LISP ?= sbcl
+LISP_FLAGS ?= --non-interactive
 
+PREFIX = /usr/local
+prefix = $(PREFIX)
+BINDIR = $(PREFIX)/bin
+DATADIR = $(PREFIX)/share
 
 ## TODO: Use ifeq() to detect system.
 
@@ -13,6 +17,7 @@ help:
 	@echo '   make install     Install the GTK port.  Set DESTDIR to      '
 	@echo '                      change the target destinatation.         '
 	@echo '                                                               '
+	@echo 'Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.  '
 
 .PHONY: core
 core:
@@ -57,14 +62,14 @@ next-gtk: next ports/gtk-webkit/next-gtk-webkit
 ## TODO: Add install rule for Cocoa?
 .PHONY: install
 install: next next-gtk
-	mkdir -p "$(DESTDIR)$(PREFIX)/bin"
-	cp -f $< "$(DESTDIR)$(PREFIX)/bin/"
-	cp -f ports/gtk-webkit/next-gtk-webkit "$(DESTDIR)$(PREFIX)/bin/"
-	chmod 755 $(DESTDIR)$(PREFIX)/bin/$<
-	mkdir -p "$(DESTDIR)$(PREFIX)/share/xsessions/"
-	cp -f assets/next.desktop "$(DESTDIR)$(PREFIX)/share/xsessions/"
-	$(foreach i, 16 32 128 256 512, mkdir -p "$(DESTDIR)$(PREFIX)/share/icons/hicolor/$(i)x$(i)/apps/" && \
-		cp -f "assets/next_$(i)x$(i).png" "$(DESTDIR)$(PREFIX)/share/icons/hicolor/$(i)x$(i)/apps/next.png";)
+	mkdir -p "$(DESTDIR)$(BINDIR)"
+	cp -f $< "$(DESTDIR)$(BINDIR)/"
+	cp -f ports/gtk-webkit/next-gtk-webkit "$(DESTDIR)$(BINDIR)/"
+	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
+	mkdir -p "$(DESTDIR)$(DATADIR)/xsessions/"
+	cp -f assets/next.desktop "$(DESTDIR)$(DATADIR)/xsessions/"
+	$(foreach i, 16 32 128 256 512, mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/$(i)x$(i)/apps/" && \
+		cp -f "assets/next_$(i)x$(i).png" "$(DESTDIR)$(DATADIR)/icons/hicolor/$(i)x$(i)/apps/next.png";)
 
 .PHONY: clean
 clean:
