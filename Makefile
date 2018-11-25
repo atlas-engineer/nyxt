@@ -2,9 +2,11 @@
 SHELL = /bin/sh
 
 LISP ?= sbcl
-LISP_FLAGS ?= --non-interactive
-## If you want to disable SBCL's user init file:
-# LISP_FLAGS = --non-interactive --no-user-init
+LISP_FLAGS ?= --non-interactive --no-userinit
+## If you want to enable SBCL's user init file:
+# LISP_FLAGS = --non-interactive
+
+NEXT_INTERNAL_QUICKLISP = true
 
 PREFIX = /usr/local
 prefix = $(PREFIX)
@@ -19,14 +21,20 @@ lisp_files := next.asd source/*.lisp source/ports/*.lisp
 
 .PHONY: core
 core: $(lisp_files)
-	$(LISP) $(LISP_FLAGS) \
+	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
 		--eval '(asdf:make :next)'
 
 next: $(lisp_files)
-	$(LISP) $(LISP_FLAGS) \
+	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
 		--eval '(asdf:make :next/release)'
 
@@ -97,7 +105,6 @@ deps: $(QUICKLISP_DIR)
 		--load "$(QUICKLISP_DIR)"/setup.lisp \
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
-		--eval '(require :cffi)' --eval '(push "~/.guix-profile/lib" cffi:*foreign-library-directories*)' \
 		--eval '(ql:quickload :next/release)'
 
 clean_deps:

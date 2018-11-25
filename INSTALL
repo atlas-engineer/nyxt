@@ -7,3 +7,13 @@ Usage:
                       change the target destinatation.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
+
+If NEXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
+dependencies will be fetched with Quicklisp into the
+QUICKLISP_DIR directory.
+
+Otherwise, the dependencies will have to be locally installed
+on your system.  You might have to accomodate the LISP_FLAGS
+to, say, use your local install of Quicklisp.  For instance
+
+   make next-gtk NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=--non-interactive
