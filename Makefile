@@ -6,8 +6,6 @@ prefix = $(PREFIX)
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
 
-## TODO: Use ifeq() to detect system.
-
 .PHONY: help
 help:
 	@echo 'Usage:                                                         '
@@ -19,14 +17,16 @@ help:
 	@echo '                                                               '
 	@echo 'Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.  '
 
+deps := next.asd source/*.lisp source/ports/*lisp
+
 .PHONY: core
-core:
+core: $(deps)
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load next.asd \
 		--eval '(asdf:make :next)'
 
-next:
+next: $(deps)
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load next.asd \
@@ -54,12 +54,12 @@ next-cocoa: next
 	mv next build/Next.app/Contents/MacOS
 	mv ports/cocoa-webkit/build/Release/cocoa-webkit build/Next.app/Contents/MacOS/cocoa-webkit
 
-ports/gtk-webkit/next-gtk-webkit:
-	$(MAKE) -C ports/gtk-webkit
 .PHONY: next-gtk
-next-gtk: next ports/gtk-webkit/next-gtk-webkit
+next-gtk: next
+	$(MAKE) -C ports/gtk-webkit
 
 ## TODO: Add install rule for Cocoa?
+## TODO: Set version in next.desktop.
 .PHONY: install
 install: next next-gtk
 	mkdir -p "$(DESTDIR)$(BINDIR)"
@@ -68,8 +68,16 @@ install: next next-gtk
 	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
 	mkdir -p "$(DESTDIR)$(DATADIR)/xsessions/"
 	cp -f assets/next.desktop "$(DESTDIR)$(DATADIR)/xsessions/"
-	$(foreach i, 16 32 128 256 512, mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/$(i)x$(i)/apps/" && \
-		cp -f "assets/next_$(i)x$(i).png" "$(DESTDIR)$(DATADIR)/icons/hicolor/$(i)x$(i)/apps/next.png";)
+	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/16x16/apps/"
+	cp -f assets/next_16x16.png "$(DESTDIR)$(DATADIR)/icons/hicolor/16x16/apps/next.png"
+	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/32x32/apps/"
+	cp -f assets/next_32x32.png "$(DESTDIR)$(DATADIR)/icons/hicolor/32x32/apps/next.png"
+	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/128x128/apps/"
+	cp -f assets/next_128x128.png "$(DESTDIR)$(DATADIR)/icons/hicolor/128x128/apps/next.png"
+	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/256x256/apps/"
+	cp -f assets/next_256x256.png "$(DESTDIR)$(DATADIR)/icons/hicolor/256x256/apps/next.png"
+	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/512x512/apps/"
+	cp -f assets/next_512x512.png "$(DESTDIR)$(DATADIR)/icons/hicolor/512x512/apps/next.png"
 
 .PHONY: clean
 clean:
