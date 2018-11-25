@@ -23,8 +23,6 @@
   (define-key *document-mode-map* (key "S-b o") 'set-url-from-bookmark)
   (define-key *document-mode-map* (key "S-b s") 'bookmark-current-page)
   (define-key *document-mode-map* (key "S-b g") 'bookmark-anchor)
-  (define-key *document-mode-map* (key "C-[") 'switch-buffer-previous)
-  (define-key *document-mode-map* (key "C-]") 'switch-buffer-next)
   (define-key *document-mode-map* (key "S-s s") 'add-search-boxes)
   (define-key *document-mode-map* (key "S-s n") 'next-search-hint)
   (define-key *document-mode-map* (key "S-s p") 'previous-search-hint)

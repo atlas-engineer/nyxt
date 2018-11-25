@@ -50,6 +50,8 @@
 
 (defun initialize-default-key-bindings ()
   (define-key *global-map* (key "C-x C-c") '(lambda () (kill-interface *interface*)))
+  (define-key *global-map* (key "C-[") 'switch-buffer-previous)
+  (define-key *global-map* (key "C-]") 'switch-buffer-next)
   (define-key *global-map* (key "C-x b") 'switch-buffer)
   (define-key *global-map* (key "C-x k") 'delete-buffer)
   (define-key *global-map* (key "M-l") 'set-url-new-buffer)
