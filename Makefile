@@ -10,14 +10,7 @@ DATADIR = $(PREFIX)/share
 
 .PHONY: help
 help:
-	@echo 'Usage:                                                         '
-	@echo '   make core        Create an executable of the Next core.     '
-	@echo '   make next-cocoa  Create Next with the Cocoa port.           '
-	@echo '   make next-gtk    Create Next with the GTK port.             '
-	@echo '   make install     Install the GTK port.  Set DESTDIR to      '
-	@echo '                      change the target destinatation.         '
-	@echo '                                                               '
-	@echo 'Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.  '
+	@cat INSTALL
 
 lisp_files := next.asd source/*.lisp source/ports/*.lisp
 
