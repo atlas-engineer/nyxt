@@ -6,9 +6,6 @@ LISP_FLAGS?=--non-interactive
 
 .PHONY: help
 help:
-	@echo 'Makefile for Next. Please run this Makefile from the directory '
-	@echo 'it is located in.                                              '
-	@echo '                                                               '
 	@echo 'Usage:                                                         '
 	@echo '   make core        Create an executable of the Next core.     '
 	@echo '   make next-cocoa  Create Next with the Cocoa port.           '
