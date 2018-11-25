@@ -1,3 +1,6 @@
+## We use some Bourne shell syntax.
+SHELL = /bin/sh
+
 LISP ?= sbcl
 LISP_FLAGS ?= --non-interactive
 ## If you want to disable SBCL's user init file:
@@ -63,16 +66,10 @@ install: next next-gtk
 	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
 	mkdir -p "$(DESTDIR)$(DATADIR)/xsessions/"
 	cp -f assets/next.desktop "$(DESTDIR)$(DATADIR)/xsessions/"
-	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/16x16/apps/"
-	cp -f assets/next_16x16.png "$(DESTDIR)$(DATADIR)/icons/hicolor/16x16/apps/next.png"
-	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/32x32/apps/"
-	cp -f assets/next_32x32.png "$(DESTDIR)$(DATADIR)/icons/hicolor/32x32/apps/next.png"
-	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/128x128/apps/"
-	cp -f assets/next_128x128.png "$(DESTDIR)$(DATADIR)/icons/hicolor/128x128/apps/next.png"
-	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/256x256/apps/"
-	cp -f assets/next_256x256.png "$(DESTDIR)$(DATADIR)/icons/hicolor/256x256/apps/next.png"
-	mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/512x512/apps/"
-	cp -f assets/next_512x512.png "$(DESTDIR)$(DATADIR)/icons/hicolor/512x512/apps/next.png"
+	for i in 16 32 128 256 512; do \
+		mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/" ; \
+		cp -f assets/next_$${i}x$${i}.png "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/next.png" ; \
+		done
 
 .PHONY: clean
 clean:
