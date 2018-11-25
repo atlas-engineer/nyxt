@@ -1,5 +1,7 @@
 LISP ?= sbcl
 LISP_FLAGS ?= --non-interactive
+## If you want to disable SBCL's user init file:
+# LISP_FLAGS = --non-interactive --no-user-init
 
 PREFIX = /usr/local
 prefix = $(PREFIX)
@@ -83,4 +85,31 @@ install: next next-gtk
 clean:
 	rm -rf build
 
-# TODO: Fetch dependencies with Quicklisp?
+QUICKLISP_URL = https://beta.quicklisp.org/quicklisp.lisp
+DOWNLOAD_AGENT = curl
+DOWNLOAD_AGENT_FLAGS = --output
+QUICKLISP_DIR = quicklisp
+
+quicklisp.lisp:
+	$(DOWNLOAD_AGENT) $(DOWNLOAD_AGENT_FLAGS) $@ $(QUICKLISP_URL)
+
+$(QUICKLISP_DIR): quicklisp.lisp
+	mkdir -p $(QUICKLISP_DIR)
+	$(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--load $< \
+		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")'
+
+.PHONY: deps
+deps: $(QUICKLISP_DIR)
+	$(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--load "$(QUICKLISP_DIR)"/setup.lisp \
+		--eval '(ql:quickload :trivial-features)' \
+		--load next.asd \
+		--eval '(require :cffi)' --eval '(push "~/.guix-profile/lib" cffi:*foreign-library-directories*)' \
+		--eval '(ql:quickload :next/release)'
+
+clean_deps:
+	rm -rf quicklisp.lisp
+	rm -rf $(QUICKLISP_DIR)
