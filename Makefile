@@ -17,16 +17,16 @@ help:
 	@echo '                                                               '
 	@echo 'Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.  '
 
-deps := next.asd source/*.lisp source/ports/*lisp
+lisp_files := next.asd source/*.lisp source/ports/*.lisp
 
 .PHONY: core
-core: $(deps)
+core: $(lisp_files)
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load next.asd \
 		--eval '(asdf:make :next)'
 
-next: $(deps)
+next: $(lisp_files)
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load next.asd \
