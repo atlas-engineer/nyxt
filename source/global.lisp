@@ -50,6 +50,9 @@
   "The height of the minibuffer when closed.")
 (defvar *minibuffer-open-height* 200
   "The height of the minibuffer when open.")
+(defvar *platform-port-poll-interval* 0.015
+  "The speed at which to poll the XML-RPC endpoint of a platform-port
+  to see if it is ready to begin accepting XML-RPC commands.")
 (deferredvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
 (deferredvar *history-db-path* (xdg-data-home "history.db")

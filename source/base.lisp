@@ -48,11 +48,11 @@
             (setf port-running t))
         (SB-BSD-SOCKETS:CONNECTION-REFUSED-ERROR ()
           (print "Connection refused")
-          (sleep 0.15)
+          (sleep *platform-port-poll-interval*)
           (setf port-running nil))
         (SB-BSD-SOCKETS:HOST-NOT-FOUND-ERROR ()
           (print "Host not found")
-          (sleep 0.15)))))
+          (sleep *platform-port-poll-interval*)))))
   ;; stay alive while running as a standalone program
   (port:run-loop)
   t)
