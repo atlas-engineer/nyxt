@@ -35,11 +35,11 @@
                  ;; Core Modes
 	         (:file "application-mode")
 	         (:file "document-mode")
-	         (:file "base")))
-               (:module "source/ports"
-                :components
-                ((:file "cocoa" :if-feature :darwin)
-                 (:file "gtk" :if-feature (:and :unix (:not :darwin))))))
+                 ;; Port Compatibility Layers
+                 (:file "ports/cocoa" :if-feature :darwin)
+                 (:file "ports/gtk" :if-feature (:and :unix (:not :darwin)))
+                 ;; Base
+	         (:file "base"))))
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:start")
