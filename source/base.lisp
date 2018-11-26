@@ -26,7 +26,6 @@
 
 (defun start ()
   (port:run-program)
-  (port:set-conversion-table)
   (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
@@ -40,13 +39,25 @@
   (start-interface *interface*)
   ;; initialize default state
   (setf *minibuffer* (make-instance 'minibuffer))
-  (multiple-value-bind (window buffer) (make-window)
-    (declare (ignore window))
-    (set-url-buffer *start-page-url* buffer))
+  (let ((port-running nil))
+    (loop while (not port-running) do
+      (handler-case
+          (multiple-value-bind (window buffer) (make-window)
+            (declare (ignore window))
+            (set-url-buffer *start-page-url* buffer)
+            (setf port-running t))
+        (SB-BSD-SOCKETS:CONNECTION-REFUSED-ERROR ()
+          (print "Connection refused")
+          (sleep 0.15)
+          (setf port-running nil))
+        (SB-BSD-SOCKETS:HOST-NOT-FOUND-ERROR ()
+          (print "Host not found")
+          (sleep 0.15)))))
   ;; stay alive while running as a standalone program
   (port:run-loop)
   t)
 
+(port:set-conversion-table)
 (define-key *global-map* (key "C-x C-c") '(lambda () (kill-interface *interface*)))
 (define-key *global-map* (key "C-[") 'switch-buffer-previous)
 (define-key *global-map* (key "C-]") 'switch-buffer-next)
