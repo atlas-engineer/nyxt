@@ -4,11 +4,9 @@
 
 (defvar *help-mode-map* (make-hash-table :test 'equalp))
 
-(define-mode help-mode (mode)
-    ()
-    (load-package-globals)
-    (define-key *help-mode-map* (key "C-p") 'scroll-up)
-    (define-key *help-mode-map* (key "C-n") 'scroll-down))
+(define-mode help-mode (mode) ()
+  (define-key *help-mode-map* (key "C-p") 'scroll-up)
+  (define-key *help-mode-map* (key "C-n") 'scroll-down))
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)
@@ -34,6 +32,7 @@
 
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
+  (load-package-globals)
   (with-result (input (read-from-minibuffer
                        *minibuffer*
                        :completion-function 'variable-complete
