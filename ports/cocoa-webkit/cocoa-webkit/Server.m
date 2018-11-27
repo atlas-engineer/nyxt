@@ -29,6 +29,23 @@ window_make(xmlrpc_env *   const envP,
 }
 
 static xmlrpc_value *
+window_set_title(xmlrpc_env * const envP,
+                 xmlrpc_value * const paramArrayP,
+                 void *         const serverInfo,
+                 void *         const channelInfo) {
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        void *windowId;
+        void *title;
+
+        xmlrpc_decompose_value(envP, paramArrayP, "(ss)", &windowId, &title);
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        [delegate window: [NSString stringWithFormat:@"%s", windowId]
+                setTitle: [NSString stringWithFormat:@"%s", title]];
+    });
+    return xmlrpc_bool_new(envP, 1);
+}
+
+static xmlrpc_value *
 window_delete(xmlrpc_env * const envP,
               xmlrpc_value * const paramArrayP,
               void *         const serverInfo,
@@ -167,6 +184,8 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
 - (void) start {
     struct xmlrpc_method_info3 const windowMake = {
         "window.make", &window_make,};
+    struct xmlrpc_method_info3 const windowSetTitle = {
+        "window.set.title", &window_set_title,};
     struct xmlrpc_method_info3 const windowDelete = {
         "window.delete", &window_delete,};
     struct xmlrpc_method_info3 const windowActive = {
@@ -198,6 +217,7 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
     }
     
     xmlrpc_registry_add_method3(&env, registryP, &windowMake);
+    xmlrpc_registry_add_method3(&env, registryP, &windowSetTitle);
     xmlrpc_registry_add_method3(&env, registryP, &windowDelete);
     xmlrpc_registry_add_method3(&env, registryP, &windowActive);
     xmlrpc_registry_add_method3(&env, registryP, &windowExists);

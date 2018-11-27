@@ -36,6 +36,12 @@
     return [window identifier];
 }
 
+- (void)window:(NSString *)key setTitle:(NSString *)title
+{
+    Window *window = [[self windows] objectForKey:key];
+    [window setTitle:title];
+}
+
 - (bool)windowDelete:(NSString *)key
 {
     Window *window = [[self windows] objectForKey:key];
