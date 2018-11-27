@@ -73,7 +73,7 @@
 (define-key *global-map* (key "M-l") 'set-url-new-buffer)
 (define-key *global-map* (key "S-b k") 'bookmark-delete)
 (define-key *global-map* (key "C-t") 'make-visible-new-buffer)
-(define-key *global-map* (key "C-b u") 'bookmark-url)
+(define-key *global-map* (key "C-m u") 'bookmark-url)
 (define-key *global-map* (key "C-x w") 'delete-active-buffer)
 (define-key *global-map* (key "C-h v") 'variable-inspect)
 (define-key *global-map* (key "C-h c") 'command-inspect)
