@@ -26,7 +26,7 @@ next: $(lisp_files)
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
-		--eval '(asdf:make :next/release)'
+		--eval '(asdf:make :next)'
 
 ## TODO: Update the rule once we have the resulting .app.
 next-cocoa: next
@@ -96,7 +96,7 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--load $< \
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
-		--eval '(ql:quickload :next/release)'
+		--eval '(ql:quickload :next)'
 
 clean_deps:
 	rm -rf quicklisp.lisp
