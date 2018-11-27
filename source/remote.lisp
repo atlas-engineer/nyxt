@@ -197,7 +197,8 @@
       (uiop:quit))))
 
 (import 'buffer-did-commit-navigation :s-xml-rpc-exports)
-(import 'push-key-chord :s-xml-rpc-exports)
+(import 'push-key-event :s-xml-rpc-exports)
+(import 'consume-key-sequence :s-xml-rpc-exports)
 (import 'buffer-javascript-call-back :s-xml-rpc-exports)
 (import 'minibuffer-javascript-call-back :s-xml-rpc-exports)
 (import 'window-will-close :s-xml-rpc-exports)

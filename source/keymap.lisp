@@ -20,7 +20,7 @@
   key-string
   modifiers)
 
-(defun push-key-chord (key-code key-string modifiers)
+(defun push-key-event (key-code key-string modifiers sender)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
@@ -32,13 +32,27 @@
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp)))))
     (push key-chord *key-chord-stack*))
-  (if (consume-key-sequence) 1 0))
+  (if (consume-key-sequence-p sender) 1 0))
 
-(defun consume-key-sequence ()
+(defun consume-key-sequence-p (sender)
+  (let ((key-maps (list *global-map*
+		        (keymap
+                         (mode (active-buffer
+                                (gethash sender (windows *interface*))))))))
+    (dolist (map key-maps)
+      (when (gethash *key-chord-stack* map)
+        (return-from consume-key-sequence-p t))))
+  ;; If we made it to this point, key did not exist, return false,
+  ;; allowing the key to be consumed by other widgets
+  (setf *key-chord-stack* ()))
+
+(defun consume-key-sequence (sender)
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
   (let ((key-maps (list *global-map*
-		        (keymap (mode (active-buffer *interface*))))))
+		        (keymap
+                         (mode (active-buffer
+                                (gethash sender (windows *interface*))))))))
     (dolist (map key-maps)
       (when (gethash *key-chord-stack* map)
 	;; If not prefix key, consume
