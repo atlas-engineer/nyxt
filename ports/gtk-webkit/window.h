@@ -48,6 +48,31 @@ void window_destroy_callback(GtkWidget *_widget, Window *window) {
 void window_delete(Window *window) {
 	// We don't kill the buffer since it may be used by other windows.
 	g_debug("Delete window %s", window->identifier);
+
+	// Notify the Lisp core.
+	{
+		GError *error = NULL;
+		const char *method_name = "WINDOW-WILL-CLOSE";
+		GVariant *window_id = g_variant_new("(s)", window->identifier);
+		g_debug("XML-RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
+
+		SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+				method_name, window_id, &error);
+
+		if (error) {
+			g_warning("Malformed XML-RPC message: %s", error->message);
+			g_error_free(error);
+			// If the XML-RPC request fails, we should still close the window on the GTK
+			// side.
+		} else {
+			// Send synchronously so that if this is the last window, we don't quit
+			// GTK before actually sending the message.
+			soup_session_send_message(xmlrpc_env, msg);
+			// TODO: g_free(msg) crashes the program, why?
+			/* g_free(msg); */
+		}
+	}
+
 	if (window->base != NULL && !gtk_widget_in_destruction(window->base)) {
 		// If window was destroyed externally, then this is already done.
 		g_debug("Destroy window widget %s", window->identifier);
