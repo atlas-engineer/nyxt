@@ -1,9 +1,9 @@
-(in-package :port)
+(in-package :next)
 
-(defun run-loop ()
+(defmethod run-loop ((port port))
   #+sbcl(loop (sb-sys:serve-all-events)))
 
-(defun run-program ()
+(defmethod run-program ((port port))
   ;; TODO: Make path configurable from the build system.
   (let* ((path  "next-gtk-webkit"))
     (bt:make-thread

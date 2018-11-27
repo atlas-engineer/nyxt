@@ -25,7 +25,7 @@
     (opts:get-opts)))
 
 (defun start ()
-  (port:run-program)
+  (run-program *port*)
   (map nil 'funcall *deferred-variables*)
   (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
@@ -54,10 +54,11 @@
           (print "Host not found")
           (sleep *platform-port-poll-interval*)))))
   ;; stay alive while running as a standalone program
-  (port:run-loop)
+  (run-loop *port*)
   t)
 
-(port:set-conversion-table)
+(setf *port* (make-instance 'port))
+(set-conversion-table *port*)
 (define-key *global-map* (key "C-x C-c") '(lambda () (kill-interface *interface*)))
 (define-key *global-map* (key "C-[") 'switch-buffer-previous)
 (define-key *global-map* (key "C-]") 'switch-buffer-next)

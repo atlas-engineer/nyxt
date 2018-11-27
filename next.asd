@@ -17,6 +17,7 @@
 	         (:file "hook")
 	         (:file "command")
 	         (:file "utility")
+                 (:file "port")
                  (:file "remote")
 	         (:file "mode")
 	         (:file "buffer")
