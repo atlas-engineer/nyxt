@@ -1,5 +1,9 @@
-# Ignore build direcotry
+# Ignore build directory
 build/
+
+# Automatically fetched dependencies
+quicklisp/
+quicklisp.lisp
 
 # Ignore PNG and XCF
 *.png
@@ -23,4 +27,3 @@ build/
 *.sx32fsl
 *.wx64fsl
 *.wx32fsl
-
