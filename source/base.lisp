@@ -30,21 +30,11 @@
   (kill-program *port*)
   (uiop:quit))
 
-(defun start ()
+(defun start-with-port ()
   (run-program *port*)
-  (map nil 'funcall *deferred-variables*)
-  (ensure-directories-exist (xdg-data-home))
-  (map nil 'funcall *deferred-mode-initializations*)
-  (initialize-bookmark-db)
-  (initialize-history-db)
-  (setf *default-new-buffer-mode* #'document-mode)
-  ;; load the user configuration if it exists
-  (load *init-file-path* :if-does-not-exist nil)
-  ;; create the interface object
-  (setf *interface* (make-instance 'remote-interface))
-  (start-interface *interface*)
-  ;; initialize default state
-  (setf *minibuffer* (make-instance 'minibuffer))
+  (start :execute-port t))
+
+(defun initialize-port ()
   (let ((port-running nil))
     (loop while (not port-running) do
       (handler-case
@@ -58,9 +48,25 @@
           (setf port-running nil))
         (SB-BSD-SOCKETS:HOST-NOT-FOUND-ERROR ()
           (print "Host not found")
-          (sleep *platform-port-poll-interval*)))))
-  ;; stay alive while running as a standalone program
-  (run-loop *port*)
+          (sleep *platform-port-poll-interval*))))))
+
+(defun start (&key (execute-port nil))
+  (map nil 'funcall *deferred-variables*)
+  (ensure-directories-exist (xdg-data-home))
+  (map nil 'funcall *deferred-mode-initializations*)
+  (initialize-bookmark-db)
+  (initialize-history-db)
+  (setf *default-new-buffer-mode* #'document-mode)
+  ;; load the user configuration if it exists
+  (load *init-file-path* :if-does-not-exist nil)
+  ;; create the interface object
+  (setf *interface* (make-instance 'remote-interface))
+  (start-interface *interface*)
+  ;; initialize default state
+  (setf *minibuffer* (make-instance 'minibuffer))
+  (initialize-port)
+  (when execute-port
+    (run-loop *port*))
   t)
 
 (setf *port* (make-instance 'port))

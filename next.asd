@@ -43,14 +43,4 @@
 	         (:file "base"))))
   :build-operation "program-op"
   :build-pathname "next"
-  :entry-point "next:start")
-
-(asdf:defsystem :next/release
-  :depends-on (:next)
-  :components ((:module "source/ports"
-                :components
-                ((:file "cocoa-release" :if-feature :darwin)
-                 (:file "gtk-release" :if-feature (:and :unix (:not :darwin))))))
-  :build-operation "program-op"
-  :build-pathname "next"
-  :entry-point "next:start")
+  :entry-point "next:start-with-port")
