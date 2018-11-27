@@ -108,6 +108,14 @@ static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 
 	Window *window = akd_object_for_key(state.windows, window_id);
 	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
+	if (window == NULL) {
+		g_warning("Non-existent window %s", window_id);
+		return g_variant_new_boolean(FALSE);
+	}
+	if (buffer == NULL) {
+		g_warning("Non-existent buffer %s", buffer_id);
+		return g_variant_new_boolean(FALSE);
+	}
 	window_set_active_buffer(window, buffer);
 	return g_variant_new_boolean(TRUE);
 }
@@ -142,6 +150,10 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 	g_debug("Method parameter: buffer_id %s, javascript \"%s\"", buffer_id, javascript);
 
 	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
+	if (!buffer) {
+		g_warning("Non-existent buffer %s", buffer_id);
+		return g_variant_new_string("");
+	}
 	char *result = buffer_evaluate(buffer, javascript);
 	// TODO: Free result.
 	return g_variant_new_string(result);
@@ -160,6 +172,10 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 		minibuffer_height);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
+	if (!window) {
+		g_warning("Non-existent window %s", window_id);
+		return g_variant_new_int64(0);
+	}
 	gint64 result = window_set_minibuffer_height(window, minibuffer_height);
 	return g_variant_new_int64(result);
 }

@@ -219,6 +219,15 @@ Window *window_init() {
 }
 
 void window_set_active_buffer(Window *window, Buffer *buffer) {
+	if (window == NULL) {
+		g_warning("Non-existent window");
+		return;
+	}
+	if (buffer == NULL) {
+		g_warning("Non-existent buffer");
+		return;
+	}
+
 	window->buffer = buffer;
 	g_debug("New active buffer %p with view %p", buffer, buffer->web_view);
 	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
