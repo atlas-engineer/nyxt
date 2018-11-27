@@ -24,6 +24,12 @@
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
     (opts:get-opts)))
 
+(define-command kill ()
+  "Quit Next."
+  (kill-interface *interface*)
+  (kill-program *port*)
+  (uiop:quit))
+
 (defun start ()
   (run-program *port*)
   (map nil 'funcall *deferred-variables*)
@@ -59,7 +65,7 @@
 
 (setf *port* (make-instance 'port))
 (set-conversion-table *port*)
-(define-key *global-map* (key "C-x C-c") '(lambda () (kill-interface *interface*)))
+(define-key *global-map* (key "C-x C-c") 'kill)
 (define-key *global-map* (key "C-[") 'switch-buffer-previous)
 (define-key *global-map* (key "C-]") 'switch-buffer-next)
 (define-key *global-map* (key "C-x b") 'switch-buffer)
