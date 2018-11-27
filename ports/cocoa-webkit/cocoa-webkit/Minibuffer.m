@@ -23,7 +23,7 @@
             if (result != nil) {
                 NSString* transformedResult = [NSString stringWithFormat:@"%@", result];
                 // Call XML RPC With Result
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
                     xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
                     const char * const serverUrl = "http://localhost:8081/RPC2";
                     const char * const methodName = "MINIBUFFER-JAVASCRIPT-CALL-BACK";

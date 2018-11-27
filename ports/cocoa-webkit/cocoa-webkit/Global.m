@@ -34,7 +34,7 @@ reportIfFaultOccurred (xmlrpc_env * const envP) {
 - (id)init {
     self = [super init];
     if (self) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             // Initialize our error-handling environment.
             xmlrpc_env_init(&self->env);
             // Start up our XML-RPC client library.

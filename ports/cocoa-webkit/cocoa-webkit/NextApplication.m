@@ -11,12 +11,15 @@
 #include <xmlrpc-c/client.h>
 #include <xmlrpc-c/config.h>
 #include "Global.h"
+#include "NextApplicationDelegate.h"
 
 @implementation NextApplication
 
 - (void)sendEvent:(NSEvent *)event
 {
     if ([event type] == NSEventTypeKeyDown && [event timestamp] != 0) {
+        NextApplicationDelegate *delegate = [NSApp delegate];
+        NSString *activeWindow = [delegate windowActive];
         NSEventModifierFlags modifierFlags = [event modifierFlags];
         short keyCode = [event keyCode];
         NSString* characters = [event charactersIgnoringModifiers];
@@ -25,13 +28,12 @@
         bool commandPressed = (modifierFlags & NSEventModifierFlagCommand);
         bool functionPressed = (modifierFlags & NSEventModifierFlagFunction);
         
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
             xmlrpc_value * resultP;
             xmlrpc_value * modifiers;
             xmlrpc_int consumed;
             const char * const serverUrl = "http://localhost:8081/RPC2";
-            const char * const methodName = "PUSH-KEY-CHORD";
             
             modifiers = xmlrpc_array_new(&env);
             
@@ -61,11 +63,12 @@
             };
             
             // Make the remote procedure call
-            resultP = xmlrpc_client_call(&env, serverUrl, methodName,
-                                         "(isA)",
+            resultP = xmlrpc_client_call(&env, serverUrl, "PUSH-KEY-EVENT",
+                                         "(isAs)",
                                          (xmlrpc_int) keyCode,
                                          [characters UTF8String],
-                                         modifiers);
+                                         modifiers,
+                                         [activeWindow UTF8String]);
             xmlrpc_DECREF(modifiers);
             
             xmlrpc_read_int(&env, resultP, &consumed);
@@ -82,6 +85,10 @@
                                                       isARepeat:[event isARepeat]
                                                         keyCode:[event keyCode]]];
                 });
+            } else {
+                xmlrpc_client_call(&env, serverUrl, "CONSUME-KEY-SEQUENCE",
+                                   "(s)",
+                                   [activeWindow UTF8String]);
             }
         });
     } else {
