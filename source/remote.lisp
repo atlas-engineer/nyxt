@@ -52,6 +52,13 @@
       (setf (gethash window-id windows) window)
       window)))
 
+(defmethod window-set-title ((interface remote-interface) (window window) title)
+  "Set the title for a given window."
+  (with-slots (host port url windows) interface
+    (s-xml-rpc:xml-rpc-call
+     (s-xml-rpc:encode-xml-rpc-call "window.set.title" (id window) title)
+     :host host :port port :url url)))
+
 (defmethod window-delete ((interface remote-interface) (window window))
   "Delete a window object and remove it from the hash of windows."
   (with-slots (host port url windows) interface
