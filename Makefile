@@ -81,7 +81,8 @@ QUICKLISP_DIR = quicklisp
 quicklisp.lisp:
 	$(DOWNLOAD_AGENT) $(DOWNLOAD_AGENT_FLAGS) $@ $(QUICKLISP_URL)
 
-$(QUICKLISP_DIR): quicklisp.lisp
+$(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
+	rm -rf $(QUICKLISP_DIR)
 	mkdir -p $(QUICKLISP_DIR)
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -89,10 +90,10 @@ $(QUICKLISP_DIR): quicklisp.lisp
 		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")'
 
 .PHONY: deps
-deps: $(QUICKLISP_DIR)
+deps: $(QUICKLISP_DIR)/setup.lisp
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--load "$(QUICKLISP_DIR)"/setup.lisp \
+		--load $< \
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
 		--eval '(ql:quickload :next/release)'
