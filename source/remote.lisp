@@ -130,14 +130,22 @@
     (setup mode buffer)
     buffer))
 
+(defmethod %get-inactive-buffer ((interface remote-interface))
+  (let ((active-buffers
+          (mapcar #'active-buffer
+                      (alexandria:hash-table-values (windows *interface*))))
+        (buffers (alexandria:hash-table-values (buffers *interface*))))
+    (first (set-difference buffers active-buffers))))
+
 (defmethod buffer-delete ((interface remote-interface) (buffer buffer))
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
-                        (alexandria:hash-table-values (windows *interface*)))))
+                        (alexandria:hash-table-values (windows *interface*))))
+        (replacement-buffer (or (%get-inactive-buffer interface)
+                                (%buffer-make interface))))
     (with-slots (host port url buffers) interface
       (when parent-window
-        (window-set-active-buffer interface parent-window
-                                  (%buffer-make interface)))
+        (window-set-active-buffer interface parent-window replacement-buffer))
       (s-xml-rpc:xml-rpc-call
        (s-xml-rpc:encode-xml-rpc-call "buffer.delete" (id buffer))
        :host host :port port :url url)
