@@ -2,6 +2,9 @@
 ;;; next.asd
 
 (asdf:defsystem :next
+  :version "1.0.0"
+  :author "Atlas Engineer LLC"
+  :license "BSD 3-Clause"
   :serial t
   :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria :cl-strings :cl-string-match :puri
