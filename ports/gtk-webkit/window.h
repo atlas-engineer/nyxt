@@ -78,7 +78,7 @@ void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
 
 void window_event_callback(SoupSession *_session, SoupMessage *msg, gpointer _data) {
 	GError *error = NULL;
-	g_debug("XML-RPC response: %s", msg->response_body->data);
+	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
 	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
 			msg->response_body->length, "b", &error);
 

@@ -139,7 +139,7 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 	const char *buffer_id = NULL;
 	const char *javascript = NULL;
 	g_variant_get(unwrapped_params, "(&s&s)", &buffer_id, &javascript);
-	g_debug("Method parameter: buffer_id %s, javascript %s", buffer_id, javascript);
+	g_debug("Method parameter: buffer_id %s, javascript \"%s\"", buffer_id, javascript);
 
 	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
 	char *result = buffer_evaluate(buffer, javascript);
@@ -172,7 +172,7 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	const char *window_id = NULL;
 	const char *javascript = NULL;
 	g_variant_get(unwrapped_params, "(&s&s)", &window_id, &javascript);
-	g_debug("Method parameters: window_id %s, javascript %s", window_id, javascript);
+	g_debug("Method parameters: window_id %s, javascript \"%s\"", window_id, javascript);
 
 	Window *window = akd_object_for_key(state.windows, window_id);
 	Minibuffer *minibuffer = window->minibuffer;
@@ -237,8 +237,6 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 		g_warning("Failed to set XML-RPC response: %s", error->message);
 		g_error_free(error);
 	}
-
-	g_debug("Response: %d %s", msg->status_code, msg->reason_phrase);
 }
 
 void start_server() {
