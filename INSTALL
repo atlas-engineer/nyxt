@@ -1,6 +1,5 @@
 Usage:
 
-   make core        Create an executable of the Next core.
    make next-cocoa  Create Next with the Cocoa port.
    make next-gtk    Create Next with the GTK port.
    make install     Install the GTK port.  Set DESTDIR to
