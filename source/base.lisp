@@ -30,6 +30,17 @@
   (kill-program *port*))
 
 (defun start-with-port ()
+  (multiple-value-bind (options free-args)
+      (parse-cli-args)
+    (when (getf options :help)
+      (opts:describe :prefix "Next command line usage:")
+      (uiop:quit))
+    (when (getf options :verbose)
+      (format t "Arguments parsed: ~a and ~a~&" options free-args))
+    ;; We can have many URLs as positional arguments.
+    (if free-args
+        ;; TODO: Handle multiple URLs.
+        (setf *start-page-url* (car free-args))))
   (run-program *port*)
   (start)
   (run-loop *port*))
