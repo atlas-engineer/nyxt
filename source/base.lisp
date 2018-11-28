@@ -32,7 +32,8 @@
 
 (defun start-with-port ()
   (run-program *port*)
-  (start :execute-port t))
+  (start)
+  (run-loop *port*))
 
 (defun initialize-port ()
   (let ((port-running nil))
@@ -50,10 +51,10 @@
           (print "Host not found")
           (sleep *platform-port-poll-interval*))))))
 
-(defun start (&key (execute-port nil))
+(defun start ()
   (map nil 'funcall *deferred-variables*)
-  (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
+  (ensure-directories-exist (xdg-data-home))
   (initialize-bookmark-db)
   (initialize-history-db)
   (setf *default-new-buffer-mode* #'document-mode)
@@ -65,8 +66,6 @@
   ;; initialize default state
   (setf *minibuffer* (make-instance 'minibuffer))
   (initialize-port)
-  (when execute-port
-    (run-loop *port*))
   t)
 
 (setf *port* (make-instance 'port))
