@@ -22,7 +22,8 @@
            :short #\i
            :long "init-file"
            :arg-parser #'identity
-           :description "Set path to initialization file."))
+           :description "Set path to initialization file.
+Set to '-' to read standard input instead."))
 
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
