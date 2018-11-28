@@ -10,7 +10,7 @@
 (defvar *available-hooks* (make-hash-table :test #'equalp)
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)
-  "A hash of all available commands")
+  "A hash of all available commands.")
 (defvar *deferred-variables* ()
   "A list of functions which set globals which are deferred until startup for evaluation.")
 (defvar *deferred-mode-initializations* ()
@@ -40,9 +40,9 @@
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in Next to avoid collisions).")
 (defvar *start-page-url* "https://next.atlas.engineer/quickstart"
-  "The url of the first buffer opened by Next when started.")
+  "The URL of the first buffer opened by Next when started.")
 (defvar *default-new-buffer-url* "https://next.atlas.engineer/start"
-  "The url set to a new blank buffer opened by Next.")
+  "The URL set to a new blank buffer opened by Next.")
 (defvar *default-new-buffer-mode* nil
   "The mode a buffer will open in by default")
 (defvar *package-symbols* nil
