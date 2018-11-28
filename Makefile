@@ -49,6 +49,16 @@ next-cocoa: next
 	cp ports/cocoa-webkit/libxmlrpc_xmltok.3.39.dylib       build/Next.app/Contents/Frameworks
 	mv next build/Next.app/Contents/MacOS
 	mv ports/cocoa-webkit/build/Release/cocoa-webkit build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_server_cgi.3.39.dylib    @executable_path/../Frameworks/libxmlrpc_server_cgi.3.39.dylib   build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc.3.39.dylib		    @executable_path/../Frameworks/libxmlrpc.3.39.dylib              build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_xmltok.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_xmltok.3.39.dylib       build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_util.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_util.3.39.dylib         build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_packetsocket.8.39.dylib  @executable_path/../Frameworks/libxmlrpc_packetsocket.8.39.dylib build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_server_abyss.3.39.dylib  @executable_path/../Frameworks/libxmlrpc_server_abyss.3.39.dylib build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_server.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_server.3.39.dylib       build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_abyss.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_abyss.3.39.dylib        build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_client.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_client.3.39.dylib       build/Next.app/Contents/MacOS/cocoa-webkit
+	install_name_tool -change /usr/local/lib/libxmlrpc_xmlparse.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_xmlparse.3.39.dylib     build/Next.app/Contents/MacOS/cocoa-webkit
 
 .PHONY: next-gtk
 next-gtk: next
