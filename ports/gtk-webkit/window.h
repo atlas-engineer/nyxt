@@ -101,32 +101,14 @@ void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
 	window_delete(window);
 }
 
-void window_event_callback(SoupSession *_session, SoupMessage *msg, gpointer _data) {
-	GError *error = NULL;
-	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
-	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
-			msg->response_body->length, "b", &error);
-
-	if (error) {
-		g_warning("Malformed XML-RPC response: %s", error->message);
-		g_error_free(error);
-		return;
-	}
-
-	if (!g_variant_get_boolean(consumed)) {
-		// TODO: If not consumed, forward to GTK.
-		g_debug("Event not consumed, forwarding to GTK");
-	}
-}
-
-void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
+gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 	g_debug("Key pressed:"
 		" code %i, symbol %i, name '%s', print '%s'",
 		event->hardware_keycode, (gint32)event->keyval,
 		gdk_keyval_name(event->keyval), event->string);
 
 	GError *error = NULL;
-	const char *method_name = "PUSH-KEY-CHORD";
+	const char *method_name = "PUSH-KEY-EVENT";
 
 	// event->string is deprecated but it's very much what we want.
 	// For characters like Escape, this value is '\u001b', which is understood by
@@ -153,10 +135,12 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
 		}
 	}
 
-	GVariant *key_chord = g_variant_new("(isas)",
+	Window *window = data;
+	GVariant *key_chord = g_variant_new("(isass)",
 			event->hardware_keycode,
 			keyval_string,
-			&builder);
+			&builder,
+			window->identifier);
 	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
@@ -165,10 +149,36 @@ void window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer _data) {
 	if (error) {
 		g_warning("Malformed XML-RPC message: %s", error->message);
 		g_error_free(error);
-		return;
+		return TRUE;
 	}
 
-	soup_session_queue_message(xmlrpc_env, msg, &window_event_callback, NULL);
+	soup_session_send_message(xmlrpc_env, msg);
+
+	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
+
+	// TODO: Ideally we should receive a boolean.  See on Lisp side.
+	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
+			msg->response_body->length, "i", &error);
+
+	if (error) {
+		g_warning("Malformed XML-RPC response: %s", error->message);
+		g_error_free(error);
+		return TRUE;
+	}
+
+	if (!g_variant_get_int32(consumed)) {
+		g_debug("Event not consumed, forwarding to GTK");
+		return FALSE;
+	}
+
+	method_name = "CONSUME-KEY-SEQUENCE";
+	GVariant *arg = g_variant_new("(s)",
+			window->identifier);
+	msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+			method_name, arg, &error);
+	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
+
+	return TRUE;
 }
 
 Window *window_init() {
@@ -186,12 +196,6 @@ Window *window_init() {
 	GtkWidget *mainbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(minibuffer->web_view), FALSE, FALSE, 0);
-	// TODO: Connect to mainbox or window?
-	// TODO: send event on press and/or release?
-
-	g_signal_connect(minibuffer->web_view, "key-press-event", G_CALLBACK(window_send_event), NULL);
-	g_signal_connect(mainbox, "key-press-event", G_CALLBACK(window_send_event), NULL);
-	/* g_signal_connect(mainbox, "key-release-event", G_CALLBACK(window_send_event), NULL); */
 
 	Window *window = calloc(1, sizeof (Window));
 	// Create an 800x600 window that will contain the browser instance
@@ -209,6 +213,12 @@ Window *window_init() {
 	// instance is closed, it is handled properly.
 	g_signal_connect(window->base, "destroy", G_CALLBACK(window_destroy_callback), window);
 	g_signal_connect(buffer->web_view, "close", G_CALLBACK(window_close_web_view_callback), window);
+
+	// TODO: Connect to mainbox or window?
+	// TODO: send event on press and/or release?
+	g_signal_connect(minibuffer->web_view, "key-press-event", G_CALLBACK(window_send_event), window);
+	g_signal_connect(mainbox, "key-press-event", G_CALLBACK(window_send_event), window);
+	/* g_signal_connect(mainbox, "key-release-event", G_CALLBACK(window_send_event), NULL); */
 
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(window->base);
@@ -239,7 +249,7 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
-	g_signal_connect(buffer->web_view, "key-press-event", G_CALLBACK(window_send_event), NULL);
+	g_signal_connect(buffer->web_view, "key-press-event", G_CALLBACK(window_send_event), window);
 
 	// We don't show all widgets, otherwise it would re-show the minibuffer if it
 	// was hidden.
