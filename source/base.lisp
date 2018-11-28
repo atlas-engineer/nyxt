@@ -27,8 +27,7 @@
 (define-command kill ()
   "Quit Next."
   (kill-interface *interface*)
-  (kill-program *port*)
-  (uiop:quit))
+  (kill-program *port*))
 
 (defun start-with-port ()
   (run-program *port*)
