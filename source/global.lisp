@@ -2,6 +2,11 @@
 
 (in-package :next)
 
+(defvar *options* ()
+  "The list of command line options.")
+(defvar *free-args* ()
+  "The list of positional command line arguments.")
+
 (defvar *available-hooks* (make-hash-table :test #'equalp)
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)

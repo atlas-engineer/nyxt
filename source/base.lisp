@@ -37,10 +37,8 @@
       (uiop:quit))
     (when (getf options :verbose)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
-    ;; We can have many URLs as positional arguments.
-    (if free-args
-        ;; TODO: Handle multiple URLs.
-        (setf *start-page-url* (car free-args))))
+    (setf *options* options
+          *free-args* free-args))
   (run-program *port*)
   (start)
   (run-loop *port*))
@@ -51,7 +49,14 @@
       (handler-case
           (multiple-value-bind (window buffer) (make-window)
             (declare (ignore window))
+            (when *free-args*
+              (setf *start-page-url* (car *free-args*)))
             (set-url-buffer *start-page-url* buffer)
+            ;; We can have many URLs as positional arguments.
+            (loop for url in (cdr *free-args*) do
+              (let ((buffer (make-buffer)))
+                (set-url-buffer url buffer)
+                (set-active-buffer *interface* buffer)))
             (setf port-running t))
         (SB-BSD-SOCKETS:CONNECTION-REFUSED-ERROR ()
           (print "Connection refused")
