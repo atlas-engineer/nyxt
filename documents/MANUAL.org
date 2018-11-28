@@ -62,8 +62,8 @@ the keyboard. It works like this:
 The full key-bindings for link-hint based navigate are found below:
 
 1. ~C-g~: Go to link in current tab
-2. ~M-g~: Create new tab with link, keep focus on current tab
-3. ~S-g~: Create new tab with link, focus on new tab
+2. ~M-g~: Create new tab with link, focus on new tab
+3. ~C-u M-g~: Create new tab with link, keep focus on current tab
 
 ** Visiting URLs
 When ambiguous URLs are inputted, Next will attempt the best guess
@@ -150,13 +150,13 @@ two tabs that are next to each other.
 There are a number of keybindings provided to enable searching within
 a buffer.
 
-1. ~S-s s~: Search for a Given Term: This command will place a red box
+1. ~C-s s~: Search for a Given Term: This command will place a red box
    next to every match on a given web-page.
-2. ~S-s n~: Next match: This command will move the next match
+2. ~C-s n~: Next match: This command will move the next match
    to the top of the browser screen.
-3. ~S-s p~: Previous match: This command will move the previous match
+3. ~C-s p~: Previous match: This command will move the previous match
    to the top of the browser screen.
-4. ~S-s k~: Clear Search: Remove the read search boxes from the screen.
+4. ~C-s k~: Clear Search: Remove the read search boxes from the screen.
 
 ** History
 History is represented as a tree that you can traverse. More complex
@@ -197,11 +197,11 @@ automatically for you. The bookmark database is a SQLITE database that
 contains one table with two columns: id, url. In order to navigate
 and manage your bookmarks, a few functions are provided:
 
-1. ~S-b k~: Delete Bookmark
-2. ~S-b o~: Open Bookmark
-3. ~S-b s~: Bookmark Current Page
-4. ~S-b u~: Bookmark URL (input URL via minibuffer)
-5. ~S-b g~: Bookmark Anchor (input URL via link hints)
+1. ~C-m k~: Delete Bookmark
+2. ~C-m o~: Open Bookmark
+3. ~C-m s~: Bookmark Current Page
+4. ~C-m u~: Bookmark URL (input URL via minibuffer)
+5. ~C-m g~: Bookmark Anchor (input URL via link hints)
 
 ** Exiting
 To exit Next enter the key-combination ~C-x C-c~ and the program will
@@ -219,8 +219,8 @@ complete.
 The help system allows you to look up variable and function docstrings
 directly within Next. Docstrings will appear in a new help buffer.
 
-1. ~S-h v~: Look up a variable docstring
-2. ~S-h c~: Look up a command docstring
+1. ~C-h v~: Look up a variable docstring
+2. ~C-h c~: Look up a command docstring
 
 ** Slime with a compiled version of Next
 Slime provides a way of interacting with Next, and with Lisp code in
@@ -290,28 +290,6 @@ The following keys exist as special keys:
 1. ~C~: Control
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
-
-** Hydras
-Hydras are a great way to bundle functionality together under a common
-prefix. Next provides a rough adaption of the functionality provided
-by Oleh Krehel in his fantastic package for Emacs titled [[https://github.com/abo-abo/hydra][Hydra]].
-
-#+NAME: sample hydra
-#+BEGIN_SRC lisp
-(defhydra switch-buffer
-  ("p" switch-buffer-previous)
-  ("n" switch-buffer-next))
-
-(define-key *global-map* (key "M-s") #'hydra-switch-buffer)
-#+END_SRC
-
-In the example above, the ~defhydra~ form will generate a function
-with the name ~hydra-switch-buffer~. When this function is invoked, it
-will open up the minibuffer showing a list of commands, and the keys
-to invoke them. In this case typing =p= then =RET= would invoke
-=switch-buffer-previous=. Hydras are a pseudo-modal way of interacting
-with the browser by making it easy to remember related sets of
-hotkeys.
 
 ** Loading Files
 To load a file again, or reload an init file use the function
