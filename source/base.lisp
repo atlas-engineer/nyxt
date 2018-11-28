@@ -82,13 +82,14 @@
   (initialize-history-db)
   (setf *default-new-buffer-mode* #'document-mode)
   ;; load the user configuration if it exists
-  (if (not (string= *init-file-path* "-"))
-      (load *init-file-path* :if-does-not-exist nil)
+  (if (string= (pathname-name *init-file-path*) "-")
       ;; TODO: Don't block when nothing is found
-      (format t "Initializing from standard input...")
-      (loop for object = (read *standard-input* nil :eof)
-            until (eq object :eof)
-            do (eval object)))
+      (progn
+        (format t "Initializing from standard input...")
+        (loop for object = (read *standard-input* nil :eof)
+              until (eq object :eof)
+              do (eval object)))
+      (load *init-file-path* :if-does-not-exist nil))
   ;; create the interface object
   (setf *interface* (make-instance 'remote-interface))
   (start-interface *interface*)
