@@ -40,10 +40,14 @@ configuration set in your =.swank.lisp=.
 ** MacOS Setup
 *** Installing SBCL
 To install SBCL via Macports:
-+ =port install sbcl=
+- =port install sbcl=
 
 To install SBCL via Homebrew:
-+ =brew install sbcl=
+- =brew install sbcl=
+
+To install SBCL from source, Download SBCL:
+[[http://www.sbcl.org/platform-table.html]], full installation
+instructions can be found here: [[http://www.sbcl.org/getting.html]].
 
 *** Manually Installing Quicklisp (optional)
 The official quicklisp website can provide updated links
@@ -66,14 +70,9 @@ on the quicklisp website.
 You can obtain SBCL either from your package manager or by downloading
 it directly from the SBCL repository.
 
-- To install SBCL from source, Download SBCL:
-  [[http://www.sbcl.org/platform-table.html]], full installation
-  instructions can be found here: [[http://www.sbcl.org/getting.html]]
-
-#+begin_quote
-Next is also compatible with CCL, but due to upstream issues in a
-dependency, the stability of Next is best with SBCL.
-#+end_quote
+To install SBCL from source, Download SBCL:
+[[http://www.sbcl.org/platform-table.html]], full installation
+instructions can be found here: [[http://www.sbcl.org/getting.html]].
 
 *** Manually Installing Quicklisp (optional)
 The official quicklisp website can provide updated links
