@@ -1,8 +1,7 @@
 (in-package :next)
 
 (defclass port ()
-  ((running-process :accessor running-process)
-   (running :accessor running :initform t)))
+  ((running-process :accessor running-process)))
 
 (defmethod set-conversion-table ((port port))
   (setf (gethash "SPACE" *character-conversion-table*) " ")
@@ -27,8 +26,7 @@
    (list "kill" "-15"
          (write-to-string
           (uiop/launch-program:process-info-pid
-           (running-process port)))))
-  (setf (running port) nil))
+           (running-process port))))))
 
 (define-key *global-map* (key "S-t") 'make-visible-new-buffer)
 (define-key *global-map* (key "S-n") 'make-window)
