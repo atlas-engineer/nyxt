@@ -1,3 +1,5 @@
+#+TODO: TASK | DONE
+
 * Next Developer Readme                                                 :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#macos-setup][MacOS Setup]]
@@ -8,8 +10,8 @@
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
 - [[#release-timeline][Release Timeline]]
-  - [[#010][0.10]]
-  - [[#09][0.9]]
+  - [[#110][1.1.0]]
+  - [[#100][1.0.0]]
   - [[#008][0.08]]
   - [[#007][0.07]]
   - [[#006][0.06]]
@@ -162,39 +164,28 @@ You can find Next on Freenode IRC at =#next-browser=.
 
 * Release Timeline
 
-From version 0.9 onward, Next uses [[https://semver.org/][Semantic Versioning]].
-In short, given a version number MAJOR.MINOR.PATCH, we increment the:
+Next uses [[https://semver.org/][Semantic Versioning]].  In short, given a version number
+MAJOR.MINOR.PATCH, we increment the:
 - MAJOR version when we make incompatible API changes,
 - MINOR version when we add functionality in a backwards-compatible manner, and
 - PATCH version when we make backwards-compatible bug fixes.
 
-** 0.10
-*** TODO Jump to paragraph categorized based on content
-- Develop first content analysis functions to be used for keyword
-  generation
-- Use the keyword generation to extend upon the current jump to
-  heading built into next to allow jumping to a paragraph (many
-  websites do not use h1, h2 tags, especially ones with user created
-  content)
-*** TODO Maintain Scroll Position
-- When jumping back and forth through history, maintain the scroll
-  position
-*** TODO Package System
-- Create way for users to install packages easily
-- Create trusted source for packages
-*** TODO Compilation Script
-The script should be able to produce a complete application bundle for
-MacOS, self contained dmg etc. On GNU/Linux it should do the equivalent,
-but with flatpak or [[https://guix.info/blog/2018/tarballs-the-ultimate-container-image-format/][guix pack]].
-
-**** TODO Compilation Script Linux
-**** TODO Compilation Script MacOS
-** 0.9
-*** TODO GNU/Linux Frontend
+** TASK 1.1.0
+*** TASK VI Emulation Layer
++ Add a VI Emulation layer to support VIM like keybindings and
+  functionality
+*** TASK Ad Blocking Support
++ Add support for content blocking using the Webkit API
+** DONE 1.0.0
+CLOSED: [2018-11-28 Wed 18:10]
+*** DONE TODO GNU/Linux Frontend
+CLOSED: [2018-11-28 Wed 18:10]
 - Create frontend that renders the new Next GUI
-*** TODO MacOS Frontend
+*** DONE TODO MacOS Frontend
+CLOSED: [2018-11-28 Wed 18:10]
 - Create frontend that renders the new Next GUI
-*** TODO Lisp Core Remote Backend
+*** DONE TODO Lisp Core Remote Backend
+CLOSED: [2018-11-28 Wed 18:10]
 - Create abstract interface for controlling frontends.
 - Interface must be asynchronous
 - Interface should be connection agnostic, should support BSD style
