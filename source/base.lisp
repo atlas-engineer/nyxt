@@ -17,7 +17,12 @@
     (:name :verbose
            :short #\v
            :long "verbose"
-           :description "Print debugging information to stdout."))
+           :description "Print debugging information to stdout.")
+    (:name :init-file
+           :short #\i
+           :long "init-file"
+           :arg-parser #'identity
+           :description "Set path to initialization file."))
 
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
@@ -68,6 +73,9 @@
 
 (defun start ()
   (map nil 'funcall *deferred-variables*)
+  (when (getf *options* :init-file)
+    (setf *init-file-path* (getf *options* :init-file)))
+  (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
   (ensure-directories-exist (xdg-data-home))
   (initialize-bookmark-db)
