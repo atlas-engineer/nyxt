@@ -178,13 +178,13 @@ MAJOR.MINOR.PATCH, we increment the:
 + Add support for content blocking using the Webkit API
 ** DONE 1.0.0
 CLOSED: [2018-11-28 Wed 18:10]
-*** DONE TODO GNU/Linux Frontend
+*** DONE GNU/Linux Frontend
 CLOSED: [2018-11-28 Wed 18:10]
 - Create frontend that renders the new Next GUI
-*** DONE TODO MacOS Frontend
+*** DONE MacOS Frontend
 CLOSED: [2018-11-28 Wed 18:10]
 - Create frontend that renders the new Next GUI
-*** DONE TODO Lisp Core Remote Backend
+*** DONE Lisp Core Remote Backend
 CLOSED: [2018-11-28 Wed 18:10]
 - Create abstract interface for controlling frontends.
 - Interface must be asynchronous
