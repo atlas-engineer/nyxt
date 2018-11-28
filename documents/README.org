@@ -1,16 +1,15 @@
-* Next Developer Readme                                         :TOC:
+* Next Developer Readme                                                 :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#macos-setup][MacOS Setup]]
-  - [[#gnu-linux-setup-experimental][GNU/Linux Setup (Experimental)]]
+  - [[#gnulinux-setup][GNU/Linux Setup]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
 - [[#help--community][Help & Community]]
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
-  - [[#mailing-list][Mailing List]]
 - [[#release-timeline][Release Timeline]]
   - [[#010][0.10]]
-  - [[#009][0.09]]
+  - [[#09][0.9]]
   - [[#008][0.08]]
   - [[#007][0.07]]
   - [[#006][0.06]]
@@ -21,12 +20,11 @@
   - [[#001][0.01]]
 
 * Developer Installation
-Next is written in Common Lisp. It can be built with
-[[https://ccl.clozure.com/][CCL]] and [[http://www.sbcl.org/][SBCL]].
+Next is written in Common Lisp. It can be built with any standard
+Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] support is tested.
+
 It is designed to be cross-platform compatible. Support for graphics is
-provided via Cocoa for MacOS and GTK for GNU/Linux. To download a prebuilt-binary,
-please see the "Releases" section of the GitHub repository
-([[https://github.com/atlas-engineer/next/releases]]).
+provided via Cocoa for MacOS and GTK for GNU/Linux.
 
 When using Next with Emacs/Slime, make sure to have the following
 configuration set in your =.swank.lisp=.
@@ -38,46 +36,14 @@ configuration set in your =.swank.lisp=.
 #+END_SRC
 
 ** MacOS Setup
-*** Installing CCL
-- Download CCL: [[https://ccl.clozure.com/download.html]], full
-  installation instructions can be found here:
-  [[https://ccl.clozure.com/install.html]]. Brief installation
-  instructions can be found below:
-
-1. Copy the downloaded CCL directory to ~/usr/local/src/ccl~
-2. Copy the script located at ~ccl/scripts/ccl64~ somewhere into your
-   executable path
-3. Optionally make an alias, or rename ~ccl64~ to ~ccl~
-*** Installing Quicklisp
-The official quicklisp website can provide updated links
-to downloads, and instructions:
-
-https://www.quicklisp.org
-
-To install quicklisp:
-
-- Download https://beta.quicklisp.org/quicklisp.lisp
-- Execute ~ccl --load quicklisp.lisp~ to load quicklisp
-- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
-- Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
-
-more detailed instructions and other resources are readily available
-on the quicklisp website.
-** GNU/Linux Setup (Experimental)
 *** Installing SBCL
-You can obtain SBCL either from your package manager or by downloading
-it directly from the SBCL repository.
+To install SBCL via Macports:
++ =port install sbcl=
 
-- To install SBCL from source, Download SBCL:
-  [[http://www.sbcl.org/platform-table.html]], full installation
-  instructions can be found here: [[http://www.sbcl.org/getting.html]]
+To install SBCL via Homebrew:
++ =brew install sbcl=
 
-#+begin_quote
-Next is also compatible with CCL, but due to upstream issues in a
-dependency, the stability of Next is best with SBCL.
-#+end_quote
-
-*** Installing Quicklisp
+*** Manually Installing Quicklisp (optional)
 The official quicklisp website can provide updated links
 to downloads, and instructions:
 
@@ -93,12 +59,36 @@ To install quicklisp:
 
 more detailed instructions and other resources are readily available
 on the quicklisp website.
-*** Installing cl-webkit
-The cl-webkit bindings provide an interface to the WebKit2GTK+
-framework for manipulating and rendering web content.
+** GNU/Linux Setup
+*** Installing SBCL
+You can obtain SBCL either from your package manager or by downloading
+it directly from the SBCL repository.
 
-- Clone: https://github.com/atlas-engineer/cl-webkit to a path within
-  your local-projects. (=~/common-lisp/quicklisp/local-projects/cl-webkit=)
+- To install SBCL from source, Download SBCL:
+  [[http://www.sbcl.org/platform-table.html]], full installation
+  instructions can be found here: [[http://www.sbcl.org/getting.html]]
+
+#+begin_quote
+Next is also compatible with CCL, but due to upstream issues in a
+dependency, the stability of Next is best with SBCL.
+#+end_quote
+
+*** Manually Installing Quicklisp (optional)
+The official quicklisp website can provide updated links
+to downloads, and instructions:
+
+https://www.quicklisp.org
+
+To install quicklisp:
+
+- Download https://beta.quicklisp.org/quicklisp.lisp
+- Execute ~lisp --load quicklisp.lisp~ to load quicklisp (replace
+  ~lisp~ with ~sbcl~ or ~ccl~)
+- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
+- Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
+
+more detailed instructions and other resources are readily available
+on the quicklisp website.
 *** Installing dependencies
 Find a package for your distribution which provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKit2GTK+).
@@ -133,24 +123,22 @@ In a new Terminal execute the following:
 3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
    system definition (you can not use relative pathnames).
 4. Execute ~(ql:quickload :next)~ to load the Next system into your
-   Lisp image. To load the MacOS version quickload ~:next/cocoa~. To
-   load the GTK version quickload ~:next/gtk~.
-5. Execute ~(next:start)~ to open your first Next window.
+   Lisp image.
+5. Start your platform-port (the GTK or Cocoa platform-port application)
+6. Execute ~(next:start)~ to open your first Next window.
 
 ** Compile
+If you look within the Makefile you'll find many options you can
+specify. You can specify to use your Lisp's init file, to use your
+global installation of quicklisp, or to automatically download and
+install a separate quicklisp installation for Next. Please see the
+Makefile for more details.
+
 *** Build a Linux binary
-
-Run
-
-: make
-
-and the compiled binary will be placed in the directory ~source~ as ~next-gtk~.
+Execute =make next-gtk=.
 
 *** MacOS Compilation
-From the CCL Source directory, execute
-
-1. ~ccl --no-init --load make.lisp~
-2. The compiled binary will be present in build/Next
+Execute =make next-cocoa=.
 
 * Help & Community
 There are several ways to ask for help from the community. The first
@@ -171,18 +159,6 @@ After you have found a TODO item that is available:
 
 ** IRC Channel
 You can find Next on Freenode IRC at =#next-browser=.
-
-** Mailing List
-Next maintains a GNU Mailman server located at
-[[http://mail.next-browser.com/listinfo]].
-
-*** Developer Mailing List
-You can sign up for the [[http://mail.next-browser.com/listinfo/development][developer mailing list]] to participate in
-discussions on the engineering and programming of Next.
-
-*** Alpha Mailing List
-You can up for the [[http://mail.next-browser.com/listinfo/alpha][alpha mailing list]] to participate in discussions on
-feature requests, and early version testing.
 
 * Release Timeline
 
