@@ -2,9 +2,12 @@
 
 (in-package :next)
 
+(defvar *minibuffer* nil
+  "A variable to store the minibuffer.")
+
 (defvar *minibuffer-mode-map* (make-hash-table :test 'equalp))
 
-(defclass minibuffer (buffer mode)
+(define-mode minibuffer (buffer mode)
   ((name :accessor name :initform "minibuffer")
    (completion-function :accessor completion-function)
    (callback-function :accessor callback-function)
@@ -16,7 +19,26 @@
    (input-buffer :accessor input-buffer :initform "")
    (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
    (completions :accessor completions)
-   (completion-cursor :accessor completion-cursor :initform 0)))
+   (completion-cursor :accessor completion-cursor :initform 0))
+  (define-key *minibuffer-mode-map* (key "HYPHEN") #'(lambda () (self-insert *minibuffer* "-")))
+  (define-key *minibuffer-mode-map* (key "SPACE") #'(lambda () (self-insert *minibuffer* " ")))
+  (define-key *minibuffer-mode-map* (key "C-f") #'(lambda () (cursor-forwards *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-b") #'(lambda () (cursor-backwards *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "Right") #'(lambda () (cursor-forwards *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "Left") #'(lambda () (cursor-backwards *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-d") #'(lambda () (delete-forwards *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "DELETE") #'(lambda () (delete-forwards *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "BACKSPACE") #'(lambda () (delete-backwards *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-a") #'(lambda () (cursor-beginning *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-e") #'(lambda () (cursor-end *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "RETURN") #'(lambda () (return-input *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-RETURN") #'(lambda () (return-immediate *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-g") #'(lambda () (cancel-input *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "ESCAPE") #'(lambda () (cancel-input *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-n") #'(lambda () (select-next *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-p") #'(lambda () (select-previous *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "Down") #'(lambda () (select-next *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "Up") #'(lambda () (select-previous *minibuffer*))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer)
 				       &key &allow-other-keys)

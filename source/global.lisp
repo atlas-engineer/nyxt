@@ -19,8 +19,6 @@
   "A global key map, available in every mode/buffer.")
 (defvar *character-conversion-table* (make-hash-table :test 'equalp)
   "A table used to convert between special characters across different operating systems.")
-(defvar *minibuffer* nil
-  "A variable to store the minibuffer.")
 (defvar *scroll-distance* 50
   "The distance scroll-down or scroll-up will scroll.")
 (defvar *horizontal-scroll-distance* 50
