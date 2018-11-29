@@ -27,6 +27,8 @@
         bool alternatePressed = (modifierFlags & NSEventModifierFlagOption);
         bool commandPressed = (modifierFlags & NSEventModifierFlagCommand);
         bool functionPressed = (modifierFlags & NSEventModifierFlagFunction);
+        bool shiftPressed = (modifierFlags & NSEventModifierFlagShift);
+
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
@@ -58,6 +60,12 @@
             if (functionPressed) {
                 xmlrpc_value * itemP;
                 itemP = xmlrpc_string_new(&env, "F");
+                xmlrpc_array_append_item(&env, modifiers, itemP);
+                xmlrpc_DECREF(itemP);
+            };
+            if (shiftPressed) {
+                xmlrpc_value * itemP;
+                itemP = xmlrpc_string_new(&env, "s");
                 xmlrpc_array_append_item(&env, modifiers, itemP);
                 xmlrpc_DECREF(itemP);
             };
