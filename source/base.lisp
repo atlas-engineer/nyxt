@@ -61,8 +61,7 @@ Set to '-' to read standard input instead."))
             ;; We can have many URLs as positional arguments.
             (loop for url in (cdr *free-args*) do
               (let ((buffer (make-buffer)))
-                (set-url-buffer url buffer)
-                (set-active-buffer *interface* buffer)))
+                (set-url-buffer url buffer)))
             (setf port-running t))
         (SB-BSD-SOCKETS:CONNECTION-REFUSED-ERROR ()
           (print "Connection refused")
