@@ -18,5 +18,5 @@ int main(int argc, char *argv[]) {
 	gtk_main();
 
 	stop_server();
-	return EXIT_SUCCESS;
+	return 0;
 }
