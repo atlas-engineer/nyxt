@@ -35,33 +35,37 @@
   (if (consume-key-sequence-p sender) 1 0))
 
 (defun consume-key-sequence-p (sender)
-  (let ((key-maps (list *global-map*
-		        (keymap
-                         (mode (active-buffer
-                                (gethash sender (windows *interface*))))))))
-    (dolist (map key-maps)
-      (when (gethash *key-chord-stack* map)
-        (return-from consume-key-sequence-p t))))
-  ;; If we made it to this point, key did not exist, return false,
-  ;; allowing the key to be consumed by other widgets
-  (setf *key-chord-stack* ()))
+  (let* ((active-buffer (active-buffer (gethash sender (windows *interface*))))
+         (key-maps (list *global-map* (keymap (mode active-buffer)))))
+    (flet ((is-in-maps? (key-maps)
+             (dolist (map key-maps)
+               (when (gethash *key-chord-stack* map)
+                 (return-from is-in-maps? t)))))
+      (cond ((eql active-buffer *minibuffer*) t)
+            ((is-in-maps? key-maps) t)
+            (t (setf *key-chord-stack* ()))))))
 
 (defun consume-key-sequence (sender)
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
-  (let ((key-maps (list *global-map*
-		        (keymap
-                         (mode (active-buffer
-                                (gethash sender (windows *interface*))))))))
+  (let* ((active-buffer (active-buffer (gethash sender (windows *interface*))))
+         (key-maps (list *global-map* (keymap (mode active-buffer)))))
     (dolist (map key-maps)
-      (when (gethash *key-chord-stack* map)
-	;; If not prefix key, consume
-	(when (not (equalp (gethash *key-chord-stack* map) "prefix"))
-	  (funcall (gethash *key-chord-stack* map))
-	  (setf *key-chord-stack* ()))
-	(return-from consume-key-sequence t)))
-    ;; If we made it to this point, key did not exist, return false,
-    ;; allowing the key to be consumed by other widgets
+      (let ((bound (gethash *key-chord-stack* map)))
+        (cond ((equalp "prefix" bound)
+               (return-from consume-key-sequence t))
+              (bound
+               (progn
+                 (funcall bound)
+                 (setf *key-chord-stack* ())
+                 (return-from consume-key-sequence t)))
+              ((equalp map *minibuffer-mode-map*)
+               (progn
+                 (self-insert *minibuffer* (key-chord-key-string
+                                            (first *key-chord-stack*)))
+                 (setf *key-chord-stack* ())
+                 (return-from consume-key-sequence t))))))
+    ;; not found in any key-maps
     (setf *key-chord-stack* ())))
 
 (defun define-key (mode-map key-sequence function)
