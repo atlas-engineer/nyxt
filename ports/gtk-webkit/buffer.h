@@ -21,6 +21,58 @@ typedef struct {
 	int callback_id;
 } BufferInfo;
 
+
+static void buffer_web_view_load_changed(WebKitWebView *web_view,
+	WebKitLoadEvent load_event,
+	gpointer data) {
+	const char *uri = NULL;
+	switch (load_event) {
+	case WEBKIT_LOAD_STARTED:
+		/* New load, we have now a provisional URI */
+		uri = webkit_web_view_get_uri(web_view);
+		/* Here we could start a spinner or update the
+		 * location bar with the provisional URI */
+		break;
+	case WEBKIT_LOAD_REDIRECTED:
+		// TODO: Let the core know that we have been redirected?
+		uri = webkit_web_view_get_uri(web_view);
+		break;
+	case WEBKIT_LOAD_COMMITTED:
+		/* The load is being performed. Current URI is
+		 * the final one and it won't change unless a new
+		 * load is requested or a navigation within the
+		 * same page is performed */
+		uri = webkit_web_view_get_uri(web_view);
+		break;
+	case WEBKIT_LOAD_FINISHED:
+		/* Load finished, we can now stop the spinner */
+		return;
+	}
+	g_debug("Load changed: %s", uri);
+
+	Buffer *buffer = data;
+	GError *error = NULL;
+	const char *method_name = "BUFFER-DID-COMMIT-NAVIGATION";
+	GVariant *buffer_id = g_variant_new("(s)", buffer->identifier);
+	GVariant *uri_variant = g_variant_new("(s)", uri);
+	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(uri_variant, TRUE));
+
+	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+			method_name, uri_variant, &error);
+
+	if (error) {
+		g_warning("Malformed XML-RPC message: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
+	// TODO: Free message?
+	/* g_free(msg); */
+
+	// TODO: Free URI string?
+	/* g_free(uri); */
+}
+
 void buffer_set_url(Buffer *buffer, const char *url) {
 	webkit_web_view_load_uri(buffer->web_view, url);
 }
@@ -28,13 +80,14 @@ void buffer_set_url(Buffer *buffer, const char *url) {
 Buffer *buffer_init() {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+	g_signal_connect(buffer->web_view, "load-changed", G_CALLBACK(buffer_web_view_load_changed), buffer);
 	// We need to hold a reference to the view, otherwise changing buffer in the a
 	// window will unref+destroy the view.
 	g_object_ref(buffer->web_view);
 	g_debug("Init buffer %p with view %p", buffer, buffer->web_view);
 	buffer->callback_count = 0;
-	// TODO: Leave Lisp to set the default URL?
-	buffer_set_url(buffer, "https://next.atlas.engineer/");
+	// So far we leave the core to set the default URL, otherwise the load-changed
+	// signal would be emitted while the buffer identifier is still empty.
 	return buffer;
 }
 
