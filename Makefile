@@ -79,7 +79,10 @@ install-next: next
 	cp -f $< "$(DESTDIR)$(BINDIR)/"
 	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
 	mkdir -p "$(DESTDIR)$(DATADIR)/xsessions/"
-	cp -f assets/next.desktop "$(DESTDIR)$(DATADIR)/xsessions/"
+	$(LISP) $(LISP_FLAGS) --eval '(require "asdf")' --load next.asd \
+		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))'
+	sed "s/VERSION/$$(cat version)/" assets/next.desktop > "$(DESTDIR)$(DATADIR)/xsessions/next.desktop"
+	rm version
 	for i in 16 32 128 256 512; do \
 		mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/" ; \
 		cp -f assets/next_$${i}x$${i}.png "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/next.png" ; \
