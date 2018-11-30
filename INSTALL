@@ -1,9 +1,17 @@
 Usage:
 
-   make next-cocoa  Create Next with the Cocoa port.
-   make next-gtk    Create Next with the GTK port.
-   make install     Install the GTK port.  Set DESTDIR to
-                      change the target destinatation.
+   make next-cocoa        Create Next with the Cocoa port.
+
+   make next              Create the Lisp core.
+   make install-next      Install the Lisp core.
+
+   make next-gtk          Create the GTK port.
+   make install-next-gtk  Install the GTK port.
+
+   make all               Create the Lisp core and the GTK port.
+   make install           Install the Lisp core and the GTK port.
+
+Set DESTDIR to change the target destinatation.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
@@ -13,6 +21,6 @@ QUICKLISP_DIR directory.
 
 Otherwise, the dependencies will have to be locally installed
 on your system.  You might have to accomodate the LISP_FLAGS
-to, say, use your local install of Quicklisp.  For instance
+to, say, use your local install of Quicklisp.  For instance:
 
-   make next-gtk NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=--non-interactive
+   make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=--non-interactive

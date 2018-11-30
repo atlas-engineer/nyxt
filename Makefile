@@ -61,16 +61,22 @@ next-cocoa: next
 	install_name_tool -change /usr/local/lib/libxmlrpc_xmlparse.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_xmlparse.3.39.dylib     build/Next.app/Contents/MacOS/cocoa-webkit
 
 .PHONY: next-gtk
-next-gtk: next
+next-gtk:
 	$(MAKE) -C ports/gtk-webkit
+
+.PHONY: all
+all: next next-gtk
+
+.PHONY: install-next-gtk
+install-next-gtk: next-gtk
+	$(MAKE) -C ports/gtk-webkit install
 
 ## TODO: Add install rule for Cocoa?
 ## TODO: Set version in next.desktop.
-.PHONY: install
-install: next next-gtk
+.PHONY: install-next
+install-next: next
 	mkdir -p "$(DESTDIR)$(BINDIR)"
 	cp -f $< "$(DESTDIR)$(BINDIR)/"
-	cp -f ports/gtk-webkit/next-gtk-webkit "$(DESTDIR)$(BINDIR)/"
 	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
 	mkdir -p "$(DESTDIR)$(DATADIR)/xsessions/"
 	cp -f assets/next.desktop "$(DESTDIR)$(DATADIR)/xsessions/"
@@ -78,6 +84,9 @@ install: next next-gtk
 		mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/" ; \
 		cp -f assets/next_$${i}x$${i}.png "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/next.png" ; \
 		done
+
+.PHONY: install
+install: install-next install-next-gtk
 
 .PHONY: clean
 clean:
