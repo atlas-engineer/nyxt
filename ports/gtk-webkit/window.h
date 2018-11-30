@@ -245,9 +245,7 @@ Window *window_init() {
 	// Create an 800x600 window that will contain the browser instance
 	window->base = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window->base), 800, 600);
-	// TODO: Make title customizable from Lisp.
-	gtk_window_set_title(GTK_WINDOW(window->base), APPNAME);
-	// TODO: Deprecated?
+	// TODO: Deprecated?  Do we need this at all?
 	/* gtk_window_set_wmclass(GTK_WINDOW(main_window), APPNAME, APPNAME); */
 
 	// Put the browser area into the main window
@@ -314,4 +312,8 @@ gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 	gint natural_height;
 	gtk_widget_get_preferred_height(GTK_WIDGET(window->minibuffer->web_view), NULL, &natural_height);
 	return natural_height;
+}
+
+void window_set_title(Window *window, const char *title) {
+	gtk_window_set_title(GTK_WINDOW(window->base), title);
 }

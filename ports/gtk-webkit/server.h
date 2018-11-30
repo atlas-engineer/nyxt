@@ -48,6 +48,24 @@ static GVariant *server_window_make(SoupXMLRPCParams *_params) {
 	return g_variant_new_string(window->identifier);
 }
 
+static GVariant *server_window_set_title(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_boolean(FALSE);
+	}
+	const char *a_key = NULL;
+	const char *title = NULL;
+	g_variant_get(unwrapped_params, "(&s&s)", &a_key, &title);
+	g_debug("Method parameter: %s, %s", a_key, title);
+
+	Window *window = akd_object_for_key(state.windows, a_key);
+	if (!window) {
+		return g_variant_new_boolean(FALSE);
+	}
+	window_set_title(window, title);
+	return g_variant_new_boolean(TRUE);
+}
+
 static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 	GVariant *unwrapped_params = server_unwrap_params(params);
 	if (!unwrapped_params) {
@@ -90,10 +108,10 @@ static GVariant *server_window_exists(SoupXMLRPCParams *params) {
 	g_debug("Method parameter: %s", a_key);
 
 	Window *window = akd_object_for_key(state.windows, a_key);
-	if (window) {
-		return g_variant_new_boolean(TRUE);
+	if (!window) {
+		return g_variant_new_boolean(FALSE);
 	}
-	return g_variant_new_boolean(FALSE);
+	return g_variant_new_boolean(TRUE);
 }
 
 static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
@@ -279,6 +297,7 @@ void start_server() {
 
 	// Register callbacks.
 	g_hash_table_insert(state.server_callbacks, "window.make", &server_window_make);
+	g_hash_table_insert(state.server_callbacks, "window.set.title", &server_window_set_title);
 	g_hash_table_insert(state.server_callbacks, "window.delete", &server_window_delete);
 	g_hash_table_insert(state.server_callbacks, "window.active", &server_window_active);
 	g_hash_table_insert(state.server_callbacks, "window.exists", &server_window_exists);
