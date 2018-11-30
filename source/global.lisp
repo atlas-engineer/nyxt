@@ -7,6 +7,11 @@
 (defvar *free-args* ()
   "The list of positional command line arguments.")
 
+(defvar *core-port* 8081
+  "The XML-RPC server port of the Lisp core.")
+(defvar *platform-port-socket* '(:host "localhost" :port 8082)
+  "The XML-RPC remote socket of the platform-port.")
+
 (defvar *available-hooks* (make-hash-table :test #'equalp)
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)

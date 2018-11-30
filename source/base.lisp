@@ -91,6 +91,8 @@ Set to '-' to read standard input instead."))
               do (eval object)))
       (load *init-file-path* :if-does-not-exist nil))
   ;; create the interface object
+  ;; TODO: This is used to check for existing instances. Shouldn't this be the
+  ;; first thing in START to avoid initializing a useless config?
   (setf *interface* (make-instance 'remote-interface))
   (start-interface *interface*)
   ;; initialize default state

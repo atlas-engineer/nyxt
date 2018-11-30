@@ -25,9 +25,9 @@
   (did-commit-navigation (mode buffer) url))
 
 (defclass remote-interface ()
-  ((host :accessor host :initform "localhost")
+  ((host :accessor host :initform (getf *platform-port-socket* :host))
    (active-connection :accessor active-connection :initform nil)
-   (port :accessor port :initform 8082)
+   (port :accessor port :initform (getf *platform-port-socket* :port))
    (url :accessor url :initform "/RPC2")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))))
@@ -35,7 +35,16 @@
 (defmethod start-interface ((interface remote-interface))
   "Start the XML RPC Server."
   (setf (active-connection interface)
-        (s-xml-rpc:start-xml-rpc-server :port 8081)))
+        (handler-case
+            (s-xml-rpc:start-xml-rpc-server :port *core-port*)
+          (SB-BSD-SOCKETS:ADDRESS-IN-USE-ERROR ()
+            (format t "Port ~a already in use, request to open URL(s) ~a~%"
+                    *core-port* *free-args*)
+            ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
+            (s-xml-rpc:xml-rpc-call
+             (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" *free-args*)
+             :port *core-port*)
+            (uiop:quit)))))
 
 (defmethod kill-interface ((interface remote-interface))
   "Kill the XML RPC Server."
@@ -203,12 +212,27 @@
     (when (equal 0 (length (alexandria:hash-table-values windows)))
       (uiop:quit))))
 
+(defun make-buffers (urls)
+  "Create new buffers from URLs."
+  ;; The new active buffer should be the first created buffer.
+  ;; TODO: set-active-buffer cannot work if no window is currently focused.
+  ;; Make Next remember last active window?
+  (when urls
+    (let ((buffer (make-buffer)))
+      (set-url-buffer (car urls) buffer)
+      ;; (set-active-buffer *interface* buffer)
+      )
+    (loop for url in (cdr urls) do
+      (let ((buffer (make-buffer)))
+        (set-url-buffer url buffer)))))
+
 (import 'buffer-did-commit-navigation :s-xml-rpc-exports)
 (import 'push-key-event :s-xml-rpc-exports)
 (import 'consume-key-sequence :s-xml-rpc-exports)
 (import 'buffer-javascript-call-back :s-xml-rpc-exports)
 (import 'minibuffer-javascript-call-back :s-xml-rpc-exports)
 (import 'window-will-close :s-xml-rpc-exports)
+(import 'make-buffers :s-xml-rpc-exports)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convenience methods and functions for Users of the API ;;
