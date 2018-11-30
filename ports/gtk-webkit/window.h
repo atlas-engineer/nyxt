@@ -145,6 +145,12 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 		}
 	}
 
+	// Translate ISO_Left_Tab to shift-TAB.
+	if (event->keyval == GDK_ISO_Left_Tab) {
+		event->keyval = GDK_Tab;
+		event->state |= GDK_SHIFT_MASK;
+	}
+
 	GError *error = NULL;
 	const char *method_name = "PUSH-KEY-EVENT";
 
