@@ -7,6 +7,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 #define APPNAME "Next"
 
 #include <webkit2/webkit2.h>
+#include <gdk/gdkkeysyms-compat.h>
 
 #include "buffer.h"
 #include "minibuffer.h"
@@ -30,6 +31,27 @@ static Modifier modifier_names[] = {
 	{.mod = GDK_SUPER_MASK, .name = "S"},
 	{.mod = GDK_HYPER_MASK, .name = "H"},
 	{.mod = GDK_META_MASK, .name = "Meta"},
+};
+
+static guint key_blacklist[] = {
+	GDK_ISO_Level2_Latch,
+	GDK_ISO_Level3_Shift,
+	GDK_ISO_Level3_Latch,
+	GDK_ISO_Level3_Lock,
+	GDK_ISO_Level5_Shift,
+	GDK_ISO_Level5_Latch,
+	GDK_ISO_Level5_Lock,
+	GDK_ISO_Group_Shift,
+	GDK_ISO_Group_Latch,
+	GDK_ISO_Group_Lock,
+	GDK_ISO_Next_Group,
+	GDK_ISO_Next_Group_Lock,
+	GDK_ISO_Prev_Group,
+	GDK_ISO_Prev_Group_Lock,
+	GDK_ISO_First_Group,
+	GDK_ISO_First_Group_Lock,
+	GDK_ISO_Last_Group,
+	GDK_ISO_Last_Group_Lock,
 };
 
 typedef struct {
@@ -103,9 +125,25 @@ void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
 
 gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 	g_debug("Key pressed:"
-		" code %i, symbol %i, name '%s', print '%s'",
+		" code %i, symbol %i, name '%s', print '%s, is_modifier %i",
 		event->hardware_keycode, (gint32)event->keyval,
-		gdk_keyval_name(event->keyval), event->string);
+		gdk_keyval_name(event->keyval), event->string, event->is_modifier);
+
+	// Don't  modifiers, otherwise the core could see them as self-inserting
+	// character, which would print "Control_L" and the like in the minibuffer.
+	if (event->is_modifier) {
+		// Forward to GTK.
+		return FALSE;
+	}
+
+	// Don't pass GDK_ISO_Level3_Shift and the like, those (non-modifier) keys
+	// alter the keymap upstream, we only want the result.
+	for (int i = 0; i < (sizeof key_blacklist)/(sizeof key_blacklist[0]); i++) {
+		if (event->keyval == key_blacklist[i]) {
+			// Forward to GTK.
+			return FALSE;
+		}
+	}
 
 	GError *error = NULL;
 	const char *method_name = "PUSH-KEY-EVENT";
