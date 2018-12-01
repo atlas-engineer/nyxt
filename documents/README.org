@@ -136,10 +136,10 @@ install a separate quicklisp installation for Next. Please see the
 Makefile for more details.
 
 *** Build a Linux binary
-Execute =make next-gtk=.
+Execute =make all=.
 
 *** MacOS Compilation
-Execute =make next-cocoa=.
+Execute =make cocoa-webkit=.
 
 * Help & Community
 There are several ways to ask for help from the community. The first

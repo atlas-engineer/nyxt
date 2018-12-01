@@ -29,7 +29,7 @@ next: $(lisp_files)
 		--eval '(asdf:make :next)'
 
 ## TODO: Update the rule once we have the resulting .app.
-next-cocoa: next
+cocoa-webkit: next
 	xcodebuild -project ports/cocoa-webkit/cocoa-webkit.xcodeproj
 	mkdir -p build/Next.app
 	mkdir -p build/Next.app/Contents/MacOS
@@ -60,15 +60,15 @@ next-cocoa: next
 	install_name_tool -change /usr/local/lib/libxmlrpc_client.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_client.3.39.dylib       build/Next.app/Contents/MacOS/cocoa-webkit
 	install_name_tool -change /usr/local/lib/libxmlrpc_xmlparse.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_xmlparse.3.39.dylib     build/Next.app/Contents/MacOS/cocoa-webkit
 
-.PHONY: next-gtk
-next-gtk:
+.PHONY: gtk-webkit
+gtk-webkit:
 	$(MAKE) -C ports/gtk-webkit
 
 .PHONY: all
-all: next next-gtk
+all: next gtk-webkit
 
-.PHONY: install-next-gtk
-install-next-gtk: next-gtk
+.PHONY: install-gtk-webkit
+install-gtk-webkit: gtk-webkit
 	$(MAKE) -C ports/gtk-webkit install
 
 ## TODO: Add install rule for Cocoa?
@@ -89,7 +89,7 @@ install-next: next
 		done
 
 .PHONY: install
-install: install-next install-next-gtk
+install: install-next install-gtk-webkit
 
 .PHONY: clean
 clean:
