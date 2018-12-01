@@ -28,6 +28,7 @@ next: $(lisp_files)
 		--load next.asd \
 		--eval '(asdf:make :next)'
 
+## TODO: Add install rule for Cocoa?
 ## TODO: Update the rule once we have the resulting .app.
 cocoa-webkit: next
 	xcodebuild -project ports/cocoa-webkit/cocoa-webkit.xcodeproj
@@ -71,13 +72,8 @@ all: next gtk-webkit
 install-gtk-webkit: gtk-webkit
 	$(MAKE) -C ports/gtk-webkit install
 
-## TODO: Add install rule for Cocoa?
-## TODO: Set version in next.desktop.
-.PHONY: install-next
-install-next: next
-	mkdir -p "$(DESTDIR)$(BINDIR)"
-	cp -f $< "$(DESTDIR)$(BINDIR)/"
-	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
+.PHONY: install-assets
+install-assets:
 	mkdir -p "$(DESTDIR)$(DATADIR)/xsessions/"
 	$(LISP) $(LISP_FLAGS) --eval '(require "asdf")' --load next.asd \
 		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))'
@@ -88,8 +84,14 @@ install-next: next
 		cp -f assets/next_$${i}x$${i}.png "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/next.png" ; \
 		done
 
+.PHONY: install-next
+install-next: next
+	mkdir -p "$(DESTDIR)$(BINDIR)"
+	cp -f $< "$(DESTDIR)$(BINDIR)/"
+	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
+
 .PHONY: install
-install: install-next install-gtk-webkit
+install: install-next install-gtk-webkit install-assets
 
 .PHONY: clean
 clean:
