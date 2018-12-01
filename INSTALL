@@ -11,7 +11,8 @@ Usage:
    make all                 Create the Lisp core and the GTK-WebKit port.
    make install             Install the Lisp core and the GTK-WebKit port.
 
-Set DESTDIR to change the target destinatation.
+Set DESTDIR to change the target destinatation.  It should be
+an absolute path.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
