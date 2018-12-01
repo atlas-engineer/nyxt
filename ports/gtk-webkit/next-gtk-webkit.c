@@ -4,6 +4,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 */
 
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include "server.h"
 
 int main(int argc, char *argv[]) {
@@ -18,5 +19,5 @@ int main(int argc, char *argv[]) {
 	gtk_main();
 
 	stop_server();
-	return 0;
+	return EXIT_SUCCESS;
 }
