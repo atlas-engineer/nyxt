@@ -7,9 +7,18 @@
   :license "BSD 3-Clause"
   :serial t
   :defsystem-depends-on ("trivial-features")
-  :depends-on (:alexandria :cl-strings :cl-string-match :puri
-               :queues.simple-queue :sqlite :parenscript :cl-json :swank
-               :cl-markup :cl-css :usocket :bordeaux-threads :s-xml-rpc
+  :depends-on (:alexandria
+               :cl-strings
+               :cl-string-match
+               :puri
+               :sqlite
+               :parenscript
+               :cl-json
+               :swank
+               :cl-markup
+               :cl-css
+               :bordeaux-threads
+               :s-xml-rpc
                :unix-opts)
   :components ((:module "source"
                 :components
