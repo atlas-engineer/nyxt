@@ -129,8 +129,8 @@
                   ("#container" :display "flex"
                                 :flex-flow "column"
                                 :height "100%")
-                  ("#input" :height "15px"
-                            :padding-bottom "5px")
+                  ("#input" :padding-bottom "4px"
+                            :border-bottom "solid 1px lightgray")
                   ("#completions" :flex-grow "1"
                                   :overflow-y "auto")
                   ("#cursor" :background-color "gray"
@@ -138,7 +138,8 @@
                   ("#prompt" :padding-right "4px"
                              :color "dimgray")
                   (ul :list-style "none"
-                      :padding "0")
+                      :padding "0"
+                      :margin "0")
                   (li :padding "2px")
                   (.selected :background-color "gray"
                              :color "white")))))
