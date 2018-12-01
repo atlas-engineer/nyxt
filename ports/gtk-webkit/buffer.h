@@ -53,12 +53,11 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	Buffer *buffer = data;
 	GError *error = NULL;
 	const char *method_name = "BUFFER-DID-COMMIT-NAVIGATION";
-	GVariant *buffer_id = g_variant_new("(s)", buffer->identifier);
-	GVariant *uri_variant = g_variant_new("(s)", uri);
-	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(uri_variant, TRUE));
+	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
+	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
-			method_name, uri_variant, &error);
+			method_name, arg, &error);
 
 	if (error) {
 		g_warning("Malformed XML-RPC message: %s", error->message);
