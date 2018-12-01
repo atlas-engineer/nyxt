@@ -1,5 +1,6 @@
-# Ignore build directory
+# Ignore build artifacts
 build/
+version
 
 # Automatically fetched dependencies
 quicklisp/
