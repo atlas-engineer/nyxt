@@ -8,10 +8,22 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 #include "autokey-dictionary.h"
 
+#ifndef NEXT_PLATFORM_PORT
+#define NEXT_PLATFORM_PORT 8082
+#endif
+#ifndef NEXT_CORE_SOCKET
+#define NEXT_CORE_SOCKET "http://localhost:8081/RPC2"
+#endif
+
 typedef struct {
+	gint port;
+	gchar *core_socket;
 	AutokeyDictionary *windows;
 	AutokeyDictionary *buffers;
 	GHashTable *server_callbacks;
 } ServerState;
 
-static ServerState state;
+static ServerState state = {
+	.port = NEXT_PLATFORM_PORT,
+	.core_socket = NEXT_CORE_SOCKET,
+};

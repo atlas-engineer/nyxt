@@ -274,14 +274,13 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 }
 
 void start_server() {
-	// TODO: Server logging?
 	// TODO: libsoup's examples don't unref the server.  Should we?
 	SoupServer *server = soup_server_new(
 		SOUP_SERVER_SERVER_HEADER, APPNAME,
 		NULL);
 
 	GError *error = NULL;
-	soup_server_listen_all(server, 8082, 0, &error);
+	soup_server_listen_all(server, state.port, 0, &error);
 	if (error) {
 		g_printerr("Unable to create server: %s\n", error->message);
 		g_error_free(error);

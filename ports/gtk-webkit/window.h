@@ -78,7 +78,7 @@ void window_delete(Window *window) {
 		GVariant *window_id = g_variant_new("(s)", window->identifier);
 		g_debug("XML-RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
 
-		SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+		SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 				method_name, window_id, &error);
 
 		if (error) {
@@ -187,7 +187,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 			window->identifier);
 	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(key_chord, TRUE));
 
-	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, key_chord, &error);
 
 	if (error) {
@@ -218,7 +218,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 	method_name = "CONSUME-KEY-SEQUENCE";
 	GVariant *arg = g_variant_new("(s)",
 			window->identifier);
-	msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+	msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, arg, &error);
 	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 

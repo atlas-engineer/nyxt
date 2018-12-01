@@ -58,7 +58,7 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 	g_free(minibuffer_info);
 	g_free(transformed_result);
 
-	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, params, &error);
 
 	if (error) {

@@ -8,6 +8,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include <JavaScriptCore/JavaScript.h>
 
 #include "javascript.h"
+#include "server-state.h"
 #include "client.h"
 
 typedef struct {
@@ -56,7 +57,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
 	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
-	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, arg, &error);
 
 	if (error) {
@@ -124,7 +125,7 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	g_free(buffer_info);
 	g_free(transformed_result);
 
-	SoupMessage *msg = soup_xmlrpc_message_new("http://localhost:8081/RPC2",
+	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, params, &error);
 
 	if (error) {
