@@ -129,7 +129,7 @@
                   ("#container" :display "flex"
                                 :flex-flow "column"
                                 :height "100%")
-                  ("#input" :padding-bottom "4px"
+                  ("#input" :padding "6px 0"
                             :border-bottom "solid 1px lightgray")
                   ("#completions" :flex-grow "1"
                                   :overflow-y "auto")
