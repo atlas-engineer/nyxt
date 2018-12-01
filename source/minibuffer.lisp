@@ -120,26 +120,36 @@
   (erase-document minibuffer)
   (setf (input-buffer minibuffer) "")
   (setf (input-buffer-cursor minibuffer) 0)
-  (let ((style (cl-css:css '((* :font-family "monospace,monospace"
-                                :font-size "14px")
-                             (body :border-top "4px solid dimgray"
-                                   :margin "0"
-                                   :padding "4px 6px")
-                             ("#cursor" :background-color "gray"
-                                        :color "white")
-                             ("#prompt" :padding-right "4px"
-                                        :color "dimgray")
-                             (ul :list-style "none"
-                                 :padding "0")
-                             (li :padding "2px")
-                             (.selected :background-color "gray"
-                                        :color "white")))))
+  (let ((style (cl-css:css
+                '((* :font-family "monospace,monospace"
+                     :font-size "14px")
+                  (body :border-top "4px solid dimgray"
+                        :margin "0"
+                        :padding "4px 6px")
+                  ("#container" :display "flex"
+                                :flex-flow "column"
+                                :height "100%")
+                  ("#input" :padding-bottom "4px"
+                            :border-bottom "solid 1px lightgray")
+                  ("#completions" :flex-grow "1"
+                                  :overflow-y "auto")
+                  ("#cursor" :background-color "gray"
+                             :color "white")
+                  ("#prompt" :padding-right "4px"
+                             :color "dimgray")
+                  (ul :list-style "none"
+                      :padding "0"
+                      :margin "0")
+                  (li :padding "2px")
+                  (.selected :background-color "gray"
+                             :color "white")))))
     (set-input minibuffer
                (cl-markup:markup
                 (:head (:style style))
                 (:body
-                 (:div (:span :id "prompt" "") (:span :id "input" ""))
-                 (:div :id "completions" ""))))))
+                 (:div :id "container"
+                  (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
+                  (:div :id "completions" "")))))))
 
 (defmethod show ((minibuffer minibuffer))
   (window-set-minibuffer-height *interface*
@@ -216,6 +226,7 @@
                                collect
                                (cl-markup:markup
                                 (:li :class (when (equal i cursor-index) "selected")
+                                     :id (when (equal i cursor-index) "selected")
                                      (object-string completion)))))))
 
 (defmethod update-display ((minibuffer minibuffer))
@@ -232,7 +243,7 @@
        (ps:ps
          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                (ps:lisp (input-prompt minibuffer)))
-         (setf (ps:chain document (get-element-by-id "input") |innerHTML|)
+         (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                (ps:lisp input-text))
          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
                (ps:lisp completion-html)))))))
