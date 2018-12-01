@@ -125,7 +125,7 @@
                      :font-size "14px")
                   (body :border-top "4px solid dimgray"
                         :margin "0"
-                        :padding "4px 6px")
+                        :padding "0 6px")
                   ("#container" :display "flex"
                                 :flex-flow "column"
                                 :height "100%")
@@ -251,9 +251,17 @@
 (defmethod select-next ((minibuffer minibuffer))
   (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
     (incf (completion-cursor minibuffer))
-    (update-display minibuffer)))
+    (update-display minibuffer)
+    (minibuffer-evaluate-javascript
+     *interface* (window-active *interface*)
+     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
+                      (scroll-into-view false))))))
 
 (defmethod select-previous ((minibuffer minibuffer))
   (when (> (completion-cursor minibuffer) 0)
     (decf (completion-cursor minibuffer))
-    (update-display minibuffer)))
+    (update-display minibuffer)
+        (minibuffer-evaluate-javascript
+     *interface* (window-active *interface*)
+     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
+                      (scroll-into-view true))))))
