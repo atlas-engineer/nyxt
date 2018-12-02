@@ -126,15 +126,15 @@ you have. Feel free to open issues for any task, suggestion or
 conversation you wish to have.
 
 ** Contribution
-To contribute, please find a task within this document that has a TODO
+To contribute, please find a task within this document that has a TASK
 label affixed. Upon finding a task that you'd like to work on,
 ideally, ensure that it is not already being worked on.
 
-After you have found a TODO item that is available:
+After you have found a TASK item that is available:
 
-- make a fork of the repository
-- add your changes
-- make a pull request
+- make a fork of the repository,
+- add your changes,
+- make a pull request.
 
 ** IRC Channel
 You can find Next on Freenode IRC at =#next-browser=.
