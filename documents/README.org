@@ -5,8 +5,9 @@
   - [[#installing-sbcl][Installing SBCL]]
   - [[#manually-installing-quicklisp-(optional)][Manually Installing Quicklisp (optional)]]
   - [[#gnu/linux-dependencies][GNU/Linux dependencies]]
-  - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
+  - [[#run][Run]]
+  - [[#run-from-source][Run from Source]]
 - [[#help--community][Help & Community]]
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
@@ -91,8 +92,57 @@ distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
+** Compile
+
+- GNU/Linux:
+#+BEGIN_SRC sh
+make all
+#+END_SRC
+
+- MacOS:
+
+#+BEGIN_SRC sh
+make cocoa-webkit
+#+END_SRC
+
+If you look within the Makefile you'll find many options you can
+specify. You can specify to use your Lisp's init file, to use your
+global installation of Quicklisp, or to automatically download and
+install a separate quicklisp installation for Next. Run ~make~ to display some
+documentation. Please see the Makefile for more details.
+
+** Run
+
+The compilation must have produced two executables:
+
+- =next= in the root folder.
+- A platform port executable in the appropriate =ports/= subfolder.
+
+For =next= to work, it must find the platform port.  There are a few options:
+
+- Either add the appropriate platform-port folder (e.g. the GTK or Cocoa
+  platform-port application) to your =$PATH=. For instance you can add
+  #+BEGIN_SRC sh
+  export PATH=$PATH:/path/to/next/ports/gtk-webkit
+  #+END_SRC
+  to your user initialization file.
+
+- Or install the platform-port executable into an well known =$PATH= folder, for
+  instance =/usr/local/bin=.
+
+Now go ahead and start =path/to/next/next=!
+
 ** Run from Source
-In a new shell execute the following:
+
+If you are developing Next, you might prefer to directly run Next from the
+source so that you can skip the compilation step and iterate faster.
+
+First, make sure the platform port is properly installed as explained in the
+previous section.
+
+Second, make sure that Quicklisp is set up as explained in the Quicklisp section.
+
+Then in a shell execute the following:
 
 1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
    supported Common Lisp compiler).
@@ -101,23 +151,7 @@ In a new shell execute the following:
    system definition (you can not use relative pathnames).
 4. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image.
-5. Add the platform-port (the GTK or Cocoa platform-port application) to your
-   `$PATH`.
-6. Start your platform-port (the GTK or Cocoa platform-port application).
-7. Execute ~(next:start)~ to open your first Next window.
-
-** Compile
-If you look within the Makefile you'll find many options you can
-specify. You can specify to use your Lisp's init file, to use your
-global installation of Quicklisp, or to automatically download and
-install a separate quicklisp installation for Next. Run ~make~ to display some
-documentation. Please see the Makefile for more details.
-
-*** Build a Linux binary
-Execute =make all=.
-
-*** MacOS Compilation
-Execute =make cocoa-webkit=.
+5. Execute ~(next:start)~ to open your first Next window.
 
 * Help & Community
 There are several ways to ask for help from the community. The first
