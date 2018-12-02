@@ -122,6 +122,10 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--load next.asd \
 		--eval '(ql:quickload :next)'
 
-clean_deps:
+.PHONY: clean-deps
+clean-deps:
 	rm -rf quicklisp.lisp
 	rm -rf $(QUICKLISP_DIR)
+
+.PHONY: clean-all
+clean-all: clean clean-deps
