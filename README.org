@@ -53,16 +53,25 @@ open up new links, or switch tabs with the power of fuzzy completion.
 
 * Getting Started
 ** Install Next
-See the [[https://github.com/atlas-engineer/next/releases][releases]] section for pre-built binaries. To perform an
-installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
+See the [[https://github.com/atlas-engineer/next/releases][releases]] section for pre-built binaries. Some operating systems provide
+packages for Next:
+
+- [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
+- [[https://guix.info][Guix]]
+
+Guix is a package manager that can be installed on any GNU/Linux distribution;
+should Next be missing from your distribution, there is always the possibility
+to install Guix on your system and use it to install Next.
+
+To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
 The GNU/Linux version requires some dependencies:
 
 - sqlite
 - webkitgtk, also known as webkit2gtk (make sure to use the most recent version
   for security reasons)
-- glib-networking (for Webkit)
-- gsettings-desktop-schemas (for Webkit)
+- glib-networking (for WebKitGTK+)
+- gsettings-desktop-schemas (for WebKitGTK+)
 - gstreamer, gst-plugins-* for HTML audio/video
 
 ** Quickstart Keys
