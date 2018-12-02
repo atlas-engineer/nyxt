@@ -70,7 +70,7 @@ all: next gtk-webkit
 
 .PHONY: install-gtk-webkit
 install-gtk-webkit: gtk-webkit
-	$(MAKE) -C ports/gtk-webkit install
+	$(MAKE) -C ports/gtk-webkit install DESTDIR=$(DESTDIR) PREFIX=$(PREFIX)
 
 .PHONY: install-assets
 install-assets:
