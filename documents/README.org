@@ -69,14 +69,14 @@ More detailed instructions and other resources are readily available
 on the quicklisp website.
 
 ** GNU/Linux dependencies
-- WebKitGTK2
+- WebKitGTK+ (latest version)
 - SQLite
-- glib-networking (for WebKit)
-- gsettings-desktop-schemas (for WebKit)
+- glib-networking (for WebKitGTK+)
+- gsettings-desktop-schemas (for WebKitGTK+)
 - gstreamer, gst-plugins-* (for HTML audio/video)
 
-Install the WebKitGTK2 package of your distribution that provides
-~libwebkit2gtk-4.0.so~ (the shared library for WebKit2GTK+).
+Install the WebKitGTK+ package of your distribution that provides
+~libwebkit2gtk-4.0.so~ (the shared library for WebKitGTK+).
 
 - For most Debian-based systems (including Ubuntu) this package is ~libwebkit2gtk-4.0-dev~.
 - For Arch Linux this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]].
