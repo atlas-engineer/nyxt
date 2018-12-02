@@ -51,36 +51,35 @@
         (_ #f)))))
 
 (define-public next-gtk-webkit
-  (let ((commit "d2cca20629859c628fc178c0fabda3670c7336ae"))
-    (package
-      (name "next-gtk-webkit")
-      (version (git-version "1.0.0" "1" commit))
-      (source (local-file %source-dir  #:recursive? #t #:select? git-file?))
-      (build-system glib-or-gtk-build-system)
-      (arguments
-       `(#:tests? #f                    ; no tests
-         #:make-flags (list "gtk-webkit"
-                            "CC=gcc"
-                            (string-append "PREFIX=" %output))
-         #:phases
-         (modify-phases %standard-phases
-           (delete 'configure)
-           (replace 'install
-             (lambda* (#:key (make-flags '()) #:allow-other-keys)
-               (apply invoke "make" "install-gtk-webkit" make-flags))))))
-      (inputs
-       `(("glib-networking" ,glib-networking)
-         ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-         ("webkitgtk" ,webkitgtk)))
-      (native-inputs
-       `(("pkg-config" ,pkg-config)))
-      (home-page "https://next.atlas.engineer")
-      (synopsis "Infinitely extensible web-browser (user interface only)")
-      (description "Next is a keyboard-oriented, extensible web-browser
+  (package
+    (name "next-gtk-webkit")
+    (version (string-append "1.0.0" "-" "master"))
+    (source (local-file %source-dir #:recursive? #t #:select? git-file?))
+    (build-system glib-or-gtk-build-system)
+    (arguments
+     `(#:tests? #f                      ; no tests
+       #:make-flags (list "gtk-webkit"
+                          "CC=gcc"
+                          (string-append "PREFIX=" %output))
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'configure)
+         (replace 'install
+           (lambda* (#:key (make-flags '()) #:allow-other-keys)
+             (apply invoke "make" "install-gtk-webkit" make-flags))))))
+    (inputs
+     `(("glib-networking" ,glib-networking)
+       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
+       ("webkitgtk" ,webkitgtk)))
+    (native-inputs
+     `(("pkg-config" ,pkg-config)))
+    (home-page "https://next.atlas.engineer")
+    (synopsis "Infinitely extensible web-browser (user interface only)")
+    (description "Next is a keyboard-oriented, extensible web-browser
 inspired by Emacs and designed for power users.  The application has familiar
 key-bindings, is fully configurable and extensible in Lisp, and has powerful
 features for productive professionals.")
-      (license bsd-3))))
+    (license bsd-3)))
 
 (define-public sbcl-next
   (package
