@@ -75,7 +75,12 @@ install-gtk-webkit: gtk-webkit
 .PHONY: install-assets
 install-assets:
 	mkdir -p "$(DESTDIR)$(DATADIR)/applications/"
-	$(LISP) $(LISP_FLAGS) --eval '(require "asdf")' --load next.asd \
+	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--eval '(ql:quickload :trivial-features)' \
+		--load next.asd \
 		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))'
 	sed "s/VERSION/$$(cat version)/" assets/next.desktop > "$(DESTDIR)$(DATADIR)/applications/next.desktop"
 	rm version
