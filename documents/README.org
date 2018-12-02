@@ -2,8 +2,9 @@
 
 * Next Developer Readme                                                 :TOC:
 - [[#developer-installation][Developer Installation]]
-  - [[#macos-setup][MacOS Setup]]
-  - [[#gnulinux-setup][GNU/Linux Setup]]
+  - [[#installing-sbcl][Installing SBCL]]
+  - [[#manually-installing-quicklisp-(optional)][Manually Installing Quicklisp (optional)]]
+  - [[#gnu/linux-dependencies][GNU/Linux dependencies]]
   - [[#run-from-source][Run from Source]]
   - [[#compile][Compile]]
 - [[#help--community][Help & Community]]
@@ -37,8 +38,10 @@ configuration set in your =.swank.lisp=.
 (setf swank:*communication-style* :fd-handler)
 #+END_SRC
 
-** MacOS Setup
-*** Installing SBCL
+** Installing SBCL
+You can obtain SBCL either from your package manager or by downloading
+it directly from the SBCL repository.
+
 To install SBCL via Macports:
 - =port install sbcl=
 
@@ -49,54 +52,34 @@ To install SBCL from source, Download SBCL:
 [[http://www.sbcl.org/platform-table.html]], full installation
 instructions can be found here: [[http://www.sbcl.org/getting.html]].
 
-*** Manually Installing Quicklisp (optional)
-The official quicklisp website can provide updated links
+** Manually Installing Quicklisp (optional)
+The official Quicklisp website can provide updated links
 to downloads, and instructions:
 
 https://www.quicklisp.org
 
-To install quicklisp:
+To install Quicklisp:
 
-- Download https://beta.quicklisp.org/quicklisp.lisp
-- Execute ~lisp --load quicklisp.lisp~ to load quicklisp (replace
-  ~lisp~ with ~sbcl~ or ~ccl~)
-- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
-- Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
+- Download https://beta.quicklisp.org/quicklisp.lisp.
+- Execute ~sbcl --load quicklisp.lisp~ to load Quicklisp.
+- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install.
+- Evaluate in the REPL ~(ql:add-to-init-file)~ to add Quicklisp to your Lisp init file.
 
-more detailed instructions and other resources are readily available
+More detailed instructions and other resources are readily available
 on the quicklisp website.
-** GNU/Linux Setup
-*** Installing SBCL
-You can obtain SBCL either from your package manager or by downloading
-it directly from the SBCL repository.
 
-To install SBCL from source, Download SBCL:
-[[http://www.sbcl.org/platform-table.html]], full installation
-instructions can be found here: [[http://www.sbcl.org/getting.html]].
+** GNU/Linux dependencies
+- WebKitGTK2
+- SQLite
+- glib-networking (for WebKit)
+- gsettings-desktop-schemas (for WebKit)
+- gstreamer, gst-plugins-* (for HTML audio/video)
 
-*** Manually Installing Quicklisp (optional)
-The official quicklisp website can provide updated links
-to downloads, and instructions:
-
-https://www.quicklisp.org
-
-To install quicklisp:
-
-- Download https://beta.quicklisp.org/quicklisp.lisp
-- Execute ~lisp --load quicklisp.lisp~ to load quicklisp (replace
-  ~lisp~ with ~sbcl~ or ~ccl~)
-- Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install
-- Evaluate in the REPL ~(ql:add-to-init-file)~ to add quicklisp to your ccl init file
-
-more detailed instructions and other resources are readily available
-on the quicklisp website.
-*** Installing dependencies
-Find a package for your distribution which provides
+Install the WebKitGTK2 package of your distribution taht provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKit2GTK+).
 
-For Ubuntu this package is ~libwebkit2gtk-4.0-dev~.
-For Debian this package is ~libwebkit2gtk~.
-For Arch Linux this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]].
+- For most Debian-based systems (including Ubuntu) this package is ~libwebkit2gtk-4.0-dev~.
+- For Arch Linux this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]].
 
 #+begin_quote
 A note of caution about installing WebKit on Linux via your package
@@ -108,25 +91,20 @@ distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
-The rest of the dependencies:
-
-- sqlite
-- glib-networking (for WebKit)
-- gsettings-desktop-schemas (for WebKit)
-- gstreamer, gst-plugins-* (for HTML audio/video)
-
 ** Run from Source
-In a new Terminal execute the following:
+In a new shell execute the following:
 
-1. ~lisp~ to create a new Lisp Repl (replace ~lisp~ with ~sbcl~ or
-   ~ccl~)
-2. Execute ~(require :asdf)~ if asdf is not already loaded
+1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
+   supported Common Lisp compiler).
+2. Execute ~(require :asdf)~ if ASDF is not already loaded.
 3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
    system definition (you can not use relative pathnames).
 4. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image.
-5. Start your platform-port (the GTK or Cocoa platform-port application)
-6. Execute ~(next:start)~ to open your first Next window.
+5. Add the platform-port (the GTK or Cocoa platform-port application) to your
+   `$PATH`.
+6. Start your platform-port (the GTK or Cocoa platform-port application).
+7. Execute ~(next:start)~ to open your first Next window.
 
 ** Compile
 If you look within the Makefile you'll find many options you can
