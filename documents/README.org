@@ -75,7 +75,7 @@ on the quicklisp website.
 - gsettings-desktop-schemas (for WebKit)
 - gstreamer, gst-plugins-* (for HTML audio/video)
 
-Install the WebKitGTK2 package of your distribution taht provides
+Install the WebKitGTK2 package of your distribution that provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKit2GTK+).
 
 - For most Debian-based systems (including Ubuntu) this package is ~libwebkit2gtk-4.0-dev~.
@@ -152,7 +152,7 @@ MAJOR.MINOR.PATCH, we increment the:
 + Add a VI Emulation layer to support VIM like keybindings and
   functionality
 *** TASK Ad Blocking Support
-+ Add support for content blocking using the Webkit API
++ Add support for content blocking using the WebKit API
 ** DONE 1.0.0
 CLOSED: [2018-11-28 Wed 18:10]
 *** DONE GNU/Linux Frontend
@@ -167,7 +167,7 @@ CLOSED: [2018-11-28 Wed 18:10]
 - Interface must be asynchronous
 - Interface should be connection agnostic, should support BSD style
   sockets for first iteration, and Unix domain sockets for second
-  interation
+  iteration
 ** DONE 0.08
 CLOSED: [2018-03-02 Fri 14:21]
 *** DONE Execute Extended Command
@@ -265,12 +265,12 @@ CLOSED: [2017-11-24 Fri 16:37]
 - Allow keybinding invocation within repl overriding ccl cocoa IDE
 *** DONE History
 CLOSED: [2017-11-26 Sun 17:59]
-- History will be stored in a db (possibly sqlite)
+- History will be stored in a DB (possibly sqlite)
 **** DONE History is searchable
 CLOSED: [2017-11-26 Sun 17:59]
 - History has a query language that can be used to look for different
   things (e.g. date, include exclude regex, etc)
-- Because history is stored in sqlite db, user can create queries
+- Because history is stored in sqlite DB, user can create queries
   against their history
 **** DONE Set-url history suggestion
 CLOSED: [2017-11-26 Sun 20:03]
@@ -289,10 +289,10 @@ CLOSED: [2017-10-23 Mon 01:23]
 - Modularize GUI backend
 **** DONE Write Cocoa backend
 CLOSED: [2017-10-15 Tue 13:45]
-- Use CCL Cocoa Library to use native webkit backend
+- Use CCL Cocoa Library to use native WebKit backend
 *** DONE Bookmarks
 CLOSED: [2017-10-10 Tue 01:06]
-- Bookmarks will be stored in a db (possibly sqlite) with information
+- Bookmarks will be stored in a DB (possibly sqlite) with information
   about them, they'll be navigable via a completion buffer
 ** DONE 0.03
 CLOSED: [2017-10-05 Thu 23:50]
