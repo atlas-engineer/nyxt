@@ -76,8 +76,6 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 }
 
 char *minibuffer_evaluate(Minibuffer *minibuffer, const char *javascript) {
-	minibuffer->callback_count++;
-
 	// If another minibuffer_evaluate is run before the callback is called, there
 	// will be a race condition upon accessing callback_count.
 	// Thus we send a copy of callback_count via a BufferInfo to the callback.
@@ -85,6 +83,8 @@ char *minibuffer_evaluate(Minibuffer *minibuffer, const char *javascript) {
 	MinibufferInfo *minibuffer_info = g_new(MinibufferInfo, 1);
 	minibuffer_info->minibuffer = minibuffer;
 	minibuffer_info->callback_id = minibuffer->callback_count;
+
+	minibuffer->callback_count++;
 
 	webkit_web_view_run_javascript(minibuffer->web_view, javascript,
 		NULL, minibuffer_javascript_callback, minibuffer_info);

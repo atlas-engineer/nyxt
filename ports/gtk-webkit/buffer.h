@@ -143,8 +143,6 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 }
 
 char *buffer_evaluate(Buffer *buffer, const char *javascript) {
-	buffer->callback_count++;
-
 	// If another buffer_evaluate is run before the callback is called, there will
 	// be a race condition upon accessing callback_count.
 	// Thus we send a copy of callback_count via a BufferInfo to the callback.
@@ -152,6 +150,8 @@ char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 	BufferInfo *buffer_info = g_new(BufferInfo, 1);
 	buffer_info->buffer = buffer;
 	buffer_info->callback_id = buffer->callback_count;
+
+	buffer->callback_count++;
 
 	webkit_web_view_run_javascript(buffer->web_view, javascript,
 		NULL, buffer_javascript_callback, buffer_info);
