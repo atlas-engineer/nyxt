@@ -30,13 +30,11 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	switch (load_event) {
 	case WEBKIT_LOAD_STARTED:
 		/* New load, we have now a provisional URI */
-		uri = webkit_web_view_get_uri(web_view);
 		/* Here we could start a spinner or update the
 		 * location bar with the provisional URI */
 		break;
 	case WEBKIT_LOAD_REDIRECTED:
 		// TODO: Let the core know that we have been redirected?
-		uri = webkit_web_view_get_uri(web_view);
 		break;
 	case WEBKIT_LOAD_COMMITTED:
 		/* The load is being performed. Current URI is
@@ -49,6 +47,11 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		/* Load finished, we can now stop the spinner */
 		return;
 	}
+
+	if (uri == NULL) {
+		return;
+	}
+
 	g_debug("Load changed: %s", uri);
 
 	Buffer *buffer = data;
