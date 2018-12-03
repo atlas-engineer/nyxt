@@ -21,6 +21,7 @@ gchar *javascript_result(GObject *object, GAsyncResult *result,
 		return NULL;
 	}
 
+	// TODO: Deprecated, use jsc_value_get_context instead.
 	context = webkit_javascript_result_get_global_context(js_result);
 	value = webkit_javascript_result_get_value(js_result);
 	if (!JSValueIsString(context, value)) {
