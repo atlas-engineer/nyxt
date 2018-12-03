@@ -51,11 +51,8 @@ Set to '-' to read standard input instead."))
   (let ((port-running nil))
     (loop while (not port-running) do
       (handler-case
-          (multiple-value-bind (window buffer) (make-window)
-            (declare (ignore window))
-            (when *free-args*
-              (setf *start-page-url* (car *free-args*)))
-            (set-url-buffer *start-page-url* buffer)
+          (let ((buffer (nth-value 1 (make-window))))
+            (set-url-buffer (if *free-args* (car *free-args*) *start-page-url*) buffer)
             ;; We can have many URLs as positional arguments.
             (loop for url in (cdr *free-args*) do
               (let ((buffer (make-buffer)))
