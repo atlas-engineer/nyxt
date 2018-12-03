@@ -55,7 +55,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	GError *error = NULL;
 	const char *method_name = "BUFFER-DID-COMMIT-NAVIGATION";
 	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
-	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+	g_message("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, arg, &error);
@@ -114,14 +114,19 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	GError *error = NULL;
 	const char *method_name = "BUFFER-JAVASCRIPT-CALL-BACK";
 	// TODO: Make floating params so that they are consumed in soup_xmlrpc_message_new?
+	char *id = g_strdup_printf("%i", buffer_info->callback_id);
 	GVariant *params = g_variant_new(
 		"(sss)",
 		buffer_info->buffer->identifier,
 		transformed_result,
-		// TODO: Free this:
-		g_strdup_printf("%i", buffer_info->callback_id));
-	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(params, TRUE));
+		id);
+	g_message("XML-RPC message: %s (buffer id, javascript, callback id) = (%s, ..., %s)",
+		method_name,
+		buffer_info->buffer->identifier,
+		id);
+	g_debug("Javascript: %s", transformed_result);
 
+	g_free(id);
 	g_free(buffer_info);
 	g_free(transformed_result);
 

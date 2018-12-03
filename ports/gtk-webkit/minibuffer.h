@@ -47,14 +47,19 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 
 	GError *error = NULL;
 	const char *method_name = "MINIBUFFER-JAVASCRIPT-CALL-BACK";
+	char *id = g_strdup_printf("%i", minibuffer_info->callback_id);
 	GVariant *params = g_variant_new(
 		"(sss)",
 		minibuffer_info->minibuffer->parent_window_identifier,
 		transformed_result,
-		// TODO: Free this:
-		g_strdup_printf("%i", minibuffer_info->callback_id));
-	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(params, TRUE));
+		id);
+	g_message("XML-RPC message: %s (minibuffer id, javascript, callback id) = (%s, ..., %s)",
+		method_name,
+		minibuffer_info->minibuffer->parent_window_identifier,
+		id);
+	g_debug("Javascript: %s", transformed_result);
 
+	g_free(id);
 	g_free(minibuffer_info);
 	g_free(transformed_result);
 

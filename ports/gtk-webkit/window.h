@@ -25,6 +25,8 @@ static Modifier modifier_names[] = {
 	{.mod = GDK_LOCK_MASK, .name = "Lock"},
 	{.mod = GDK_CONTROL_MASK, .name = "C"},
 	{.mod = GDK_MOD1_MASK, .name = "M"}, // Usually "Alt".
+	// M is sometimes also seen as M2-M4, which can confuse the Lisp side.
+	// I'm not sure that we need M2-M4 at all.
 	/* {.mod = GDK_MOD2_MASK, .name = "M2"}, */
 	/* {.mod = GDK_MOD3_MASK, .name = "M3"}, */
 	/* {.mod = GDK_MOD4_MASK, .name = "M4"}, */
@@ -69,14 +71,12 @@ void window_destroy_callback(GtkWidget *_widget, Window *window) {
 
 void window_delete(Window *window) {
 	// We don't kill the buffer since it may be used by other windows.
-	g_debug("Delete window %s", window->identifier);
-
-	// Notify the Lisp core.
 	{
+		// Notify the Lisp core.
 		GError *error = NULL;
 		const char *method_name = "WINDOW-WILL-CLOSE";
 		GVariant *window_id = g_variant_new("(s)", window->identifier);
-		g_debug("XML-RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
+		g_message("XML-RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
 
 		SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 				method_name, window_id, &error);
@@ -119,7 +119,7 @@ void window_delete(Window *window) {
 
 // TODO: Not needed?
 void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
-	g_debug("Closing web view");
+	g_warning("Closing web view");
 	window_delete(window);
 }
 
@@ -185,7 +185,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 			keyval_string,
 			&builder,
 			window->identifier);
-	g_debug("XML-RPC message: %s %s", method_name, g_variant_print(key_chord, TRUE));
+	g_message("XML-RPC message: %s %s", method_name, g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, key_chord, &error);
@@ -197,7 +197,6 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 	}
 
 	soup_session_send_message(xmlrpc_env, msg);
-
 	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
 
 	// TODO: Ideally we should receive a boolean.  See on Lisp side.
@@ -216,10 +215,11 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 	}
 
 	method_name = "CONSUME-KEY-SEQUENCE";
-	GVariant *arg = g_variant_new("(s)",
+	GVariant *id = g_variant_new("(s)",
 			window->identifier);
+	g_message("XML-RPC message: %s, window id %s", method_name, window->identifier);
 	msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, arg, &error);
+			method_name, id, &error);
 	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 
 	return TRUE;
@@ -280,17 +280,20 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 		return;
 	}
 
+	g_message("Window %s switches from buffer %s to %s",
+		window->identifier, window->buffer->identifier, buffer->identifier);
 	window->buffer = buffer;
-	g_debug("New active buffer %p with view %p", buffer, buffer->web_view);
 	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
 	GtkWidget *mainbox = GTK_WIDGET(children->data);
 	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
 	g_debug("Remove buffer view %p from window", box_children->data);
+	// TODO: Need to make sure it does not decrease the ref count to zero.
 	gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
 
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
+	// We only send key-press events, since we don't need such fine-grained tuning from the Lisp side.
 	g_signal_connect(buffer->web_view, "key-press-event", G_CALLBACK(window_send_event), window);
 
 	// We don't show all widgets, otherwise it would re-show the minibuffer if it
@@ -299,7 +302,7 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 }
 
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {
-	g_debug("Resize window %p minibuffer", window);
+	g_message("Window %s resizes its minibuffer to %li", window->identifier, height);
 	if (height == 0) {
 		gtk_widget_hide(GTK_WIDGET(window->minibuffer->web_view));
 		return 0;
