@@ -243,8 +243,9 @@ Window *window_init() {
 	// Create an 800x600 window that will contain the browser instance
 	window->base = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window->base), 800, 600);
-	// TODO: Deprecated?  Do we need this at all?
-	/* gtk_window_set_wmclass(GTK_WINDOW(main_window), APPNAME, APPNAME); */
+
+	// Deprecated, but we want it to be "Next", not "Next-gtk-webkit".
+	gtk_window_set_wmclass(GTK_WINDOW(window->base), g_string_ascii_down(g_string_new(APPNAME))->str, APPNAME);
 
 	// Put the browser area into the main window
 	gtk_container_add(GTK_CONTAINER(window->base), mainbox);
