@@ -39,11 +39,6 @@ char *akd_insert_element(AutokeyDictionary *self, gpointer object) {
 	return element_key;
 }
 
-// TODO: Not needed?
-guint akd_count(AutokeyDictionary *self) {
-	return g_hash_table_size(self->dict);
-}
-
 gpointer akd_object_for_key(AutokeyDictionary *self, const char *a_key) {
 	return g_hash_table_lookup(self->dict, a_key);
 }
@@ -52,11 +47,4 @@ void akd_remove_object_for_key(AutokeyDictionary *self, const char *a_key) {
 	// g_hash_table_remove() calls akd_key_destroy_func() to free the key and
 	// value_destroy_func (passed in akd_init()) to free the value.
 	g_hash_table_remove(self->dict, a_key);
-}
-
-// TODO: Include "keyEnumerator"?
-
-// TODO: Not needed?
-GList *akd_all_keys(AutokeyDictionary *self) {
-	return g_hash_table_get_keys(self->dict);
 }
