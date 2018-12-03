@@ -45,9 +45,7 @@ Set to '-' to read standard input instead."))
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
     (setf *options* options
           *free-args* free-args))
-  (run-program *port*)
-  (start)
-  (run-loop *port*))
+  (start :with-platform-port-p t))
 
 (defun initialize-port ()
   (let ((port-running nil))
@@ -71,25 +69,26 @@ Set to '-' to read standard input instead."))
           (print "Host not found")
           (sleep *platform-port-poll-interval*))))))
 
-(defun start ()
+(defun start (&key (with-platform-port-p nil))
   (map nil 'funcall *deferred-variables*)
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
   (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
   (ensure-directories-exist (xdg-data-home))
-  (initialize-bookmark-db)
-  (initialize-history-db)
   (setf *default-new-buffer-mode* #'document-mode)
   ;; load the user configuration if it exists
   (if (string= (pathname-name *init-file-path*) "-")
-      ;; TODO: Don't block when nothing is found
       (progn
         (format t "Initializing from standard input...")
         (loop for object = (read *standard-input* nil :eof)
               until (eq object :eof)
               do (eval object)))
       (load *init-file-path* :if-does-not-exist nil))
+  (initialize-bookmark-db)
+  (initialize-history-db)
+  (when with-platform-port-p
+    (run-program *port*))
   ;; create the interface object
   ;; TODO: This is used to check for existing instances. Shouldn't this be the
   ;; first thing in START to avoid initializing a useless config?
@@ -98,6 +97,8 @@ Set to '-' to read standard input instead."))
   ;; initialize default state
   (setf *minibuffer* (make-instance 'minibuffer))
   (initialize-port)
+  (when with-platform-port-p
+    (run-loop *port*))
   t)
 
 (setf *port* (make-instance 'port))
