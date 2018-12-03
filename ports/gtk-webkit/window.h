@@ -234,8 +234,6 @@ Window *window_init() {
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
 
 	Minibuffer *minibuffer = minibuffer_init();
-	// TODO: What default shall we use for the minibuffer height?
-	gtk_widget_set_size_request(GTK_WIDGET(minibuffer->web_view), -1, 32);
 
 	GtkWidget *mainbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
