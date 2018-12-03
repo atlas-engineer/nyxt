@@ -215,13 +215,11 @@
 (defun make-buffers (urls)
   "Create new buffers from URLs."
   ;; The new active buffer should be the first created buffer.
-  ;; TODO: set-active-buffer cannot work if no window is currently focused.
-  ;; Make Next remember last active window?
   (when urls
-    (let ((buffer (make-buffer)))
+    (let ((buffer (make-buffer))
+          (window (window-make *interface*)))
       (set-url-buffer (car urls) buffer)
-      ;; (set-active-buffer *interface* buffer)
-      )
+      (window-set-active-buffer *interface* window buffer))
     (loop for url in (cdr urls) do
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))
