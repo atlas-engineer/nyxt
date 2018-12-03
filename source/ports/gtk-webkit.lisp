@@ -25,7 +25,8 @@
 (defmethod run-program ((port port))
   (setf (running-process port)
         (uiop:launch-program (cons *gtk-webkit-command* *gtk-webkit-args*)
-                             :output *gtk-webkit-log*)))
+                             :output *gtk-webkit-log*
+                             :error-output :output)))
 
 (defmethod kill-program ((port port))
   (uiop:run-program
