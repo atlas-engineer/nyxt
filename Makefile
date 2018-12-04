@@ -72,9 +72,11 @@ all: next gtk-webkit
 install-gtk-webkit: gtk-webkit
 	$(MAKE) -C ports/gtk-webkit install DESTDIR=$(DESTDIR) PREFIX=$(PREFIX)
 
-.PHONY: install-assets
-install-assets:
-	mkdir -p "$(DESTDIR)$(DATADIR)/applications/"
+## We use a temporary "version" file to generate the final next.desktop with the
+## right version number.  Since "version" is a file target, third-party
+## packaging systems can choose to generate "version" in advance before calling
+## "make install-assets", so that they won't need to rely on Quicklisp.
+version:
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -82,6 +84,10 @@ install-assets:
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
 		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))'
+
+.PHONY: install-assets
+install-assets: version
+	mkdir -p "$(DESTDIR)$(DATADIR)/applications/"
 	sed "s/VERSION/$$(cat version)/" assets/next.desktop > "$(DESTDIR)$(DATADIR)/applications/next.desktop"
 	rm version
 	for i in 16 32 128 256 512; do \
