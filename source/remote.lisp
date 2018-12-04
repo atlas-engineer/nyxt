@@ -38,7 +38,7 @@
         (handler-case
             (s-xml-rpc:start-xml-rpc-server :port *core-port*)
           (SB-BSD-SOCKETS:ADDRESS-IN-USE-ERROR ()
-            (format t "Port ~a already in use, request to open URL(s) ~a~%"
+            (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
                     *core-port* *free-args*)
             ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
             (s-xml-rpc:xml-rpc-call
