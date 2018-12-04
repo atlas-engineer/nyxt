@@ -232,17 +232,9 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 }
 
 Window *window_init() {
-	// TODO: Don't init buffer here?  Re-use last buffer?  Only create if none?
-	Buffer *buffer = buffer_init();
-	g_debug("Add buffer %p with view %p to window", buffer, buffer->web_view);
-	// Make sure that when the browser area becomes visible, it will get
-	// mouse and keyboard events
-	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
-
 	Minibuffer *minibuffer = minibuffer_init();
 
 	GtkWidget *mainbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(minibuffer->web_view), FALSE, FALSE, 0);
 
 	Window *window = calloc(1, sizeof (Window));
@@ -267,7 +259,6 @@ Window *window_init() {
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(window->base);
 
-	window->buffer = buffer;
 	window->minibuffer = minibuffer;
 	return window;
 }
@@ -282,14 +273,23 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 		return;
 	}
 
+	// When window is first set up, there is only a minibuffer.
+	char *previous_buffer_id = NULL;
+	if (window->buffer != NULL) {
+		previous_buffer_id = window->buffer->identifier;
+	}
 	g_message("Window %s switches from buffer %s to %s",
-		window->identifier, window->buffer->identifier, buffer->identifier);
+		window->identifier, previous_buffer_id, buffer->identifier);
+
 	window->buffer = buffer;
+
 	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
 	GtkWidget *mainbox = GTK_WIDGET(children->data);
 	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
-	g_debug("Remove buffer view %p from window", box_children->data);
-	gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
+	if (g_list_length(box_children) > 1) {
+		g_debug("Remove buffer view %p from window", box_children->data);
+		gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
+	}
 
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 
