@@ -120,7 +120,18 @@ The compilation must have produced two executables:
 
 For =next= to work, it must find the platform port.  There are a few options:
 
-- Either add the appropriate platform-port folder (e.g. the GTK or Cocoa
+- Either specify the path in your Next config file (=~/.config/next/init.lisp=):
+  #+BEGIN_SRC lisp
+(in-package :next)
+
+;; Use development platform port.
+(setf *gtk-webkit-command*
+      (format nil "~a/common-lisp/next/ports/gtk-webkit/next-gtk-webkit"
+              (uiop:getenv "HOME")))
+;; ...
+  #+END_SRC
+
+- Or add the appropriate platform-port folder (e.g. the GTK or Cocoa
   platform-port application) to your =$PATH=. For instance you can add
   #+BEGIN_SRC sh
   export PATH=$PATH:/path/to/next/ports/gtk-webkit
