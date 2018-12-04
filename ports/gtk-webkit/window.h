@@ -123,12 +123,6 @@ void window_delete(Window *window) {
 	gtk_main_quit();
 }
 
-// TODO: Not needed?
-void window_close_web_view_callback(WebKitWebView *_web_view, Window *window) {
-	g_warning("Closing web view");
-	window_delete(window);
-}
-
 gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
 	g_debug("Key pressed:"
 		" code %i, symbol %i, name '%s', print '%s, is_modifier %i",
@@ -265,7 +259,6 @@ Window *window_init() {
 	// Set up callbacks so that if either the main window or the browser
 	// instance is closed, it is handled properly.
 	g_signal_connect(window->base, "destroy", G_CALLBACK(window_destroy_callback), window);
-	g_signal_connect(buffer->web_view, "close", G_CALLBACK(window_close_web_view_callback), window);
 
 	// We only send key-press events, since we don't need such fine-grained tuning
 	// from the Lisp side.
