@@ -38,12 +38,13 @@
         (handler-case
             (s-xml-rpc:start-xml-rpc-server :port *core-port*)
           (SB-BSD-SOCKETS:ADDRESS-IN-USE-ERROR ()
-            (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
-                    *core-port* *free-args*)
-            ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
-            (s-xml-rpc:xml-rpc-call
-             (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" *free-args*)
-             :port *core-port*)
+            (let ((url-list (or *free-args* (list *default-new-buffer-url*))))
+              (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
+                      *core-port* url-list)
+              ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
+              (s-xml-rpc:xml-rpc-call
+               (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" url-list)
+               :port *core-port*))
             (uiop:quit)))))
 
 (defmethod kill-interface ((interface remote-interface))
