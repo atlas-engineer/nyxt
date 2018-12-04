@@ -22,7 +22,6 @@ end-user allowing for infinite customization.
   - [[#slime-with-a-compiled-version-of-next][Slime with a compiled version of Next]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
-  - [[#hydras][Hydras]]
   - [[#loading-files][Loading Files]]
   - [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
   - [[#getting-input-from-the-user][Getting input from the user]]
