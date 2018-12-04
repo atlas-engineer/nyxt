@@ -70,7 +70,8 @@ void window_destroy_callback(GtkWidget *_widget, Window *window) {
 }
 
 void window_delete(Window *window) {
-	// TODO: Why do we need to remove the buffer from the window to prevent a web view corruption?
+	// TODO: Why do we need to remove the buffer from the window to prevent a web
+	// view corruption?
 	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
 	GtkWidget *mainbox = GTK_WIDGET(children->data);
 	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
@@ -96,8 +97,7 @@ void window_delete(Window *window) {
 			// Send synchronously so that if this is the last window, we don't quit
 			// GTK before actually sending the message.
 			soup_session_send_message(xmlrpc_env, msg);
-			// TODO: g_free(msg) crashes the program, why?
-			/* g_free(msg); */
+			// 'msg' is freed automatically.
 		}
 	}
 

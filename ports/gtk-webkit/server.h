@@ -270,11 +270,10 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 	}
 	g_message("Method name: %s", method_name);
 
-	// TODO: Make floating result so that they are consumed in soup_xmlrpc_message_set_response?
 	GVariant *result = callback(params);
-
 	soup_xmlrpc_params_free(params);
 
+	// 'result' is floating and soup_xmlrpc_message_set_response will consume it.
 	soup_xmlrpc_message_set_response(msg, result, &error);
 	if (error) {
 		g_warning("Failed to set XML-RPC response: %s", error->message);
