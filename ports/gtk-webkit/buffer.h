@@ -69,11 +69,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		return;
 	}
 	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
-	// TODO: Free message?
-	/* g_free(msg); */
-
-	// TODO: Free URI string?
-	/* g_free(uri); */
+	// 'msg' and 'uri' are freed automatically.
 }
 
 void buffer_set_url(Buffer *buffer, const char *url) {
@@ -116,7 +112,6 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 
 	GError *error = NULL;
 	const char *method_name = "BUFFER-JAVASCRIPT-CALL-BACK";
-	// TODO: Make floating params so that they are consumed in soup_xmlrpc_message_new?
 	char *id = g_strdup_printf("%i", buffer_info->callback_id);
 	GVariant *params = g_variant_new(
 		"(sss)",
@@ -133,6 +128,7 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	g_free(buffer_info);
 	g_free(transformed_result);
 
+	// 'params' is floating and soup_xmlrpc_message_new will consume it.
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, params, &error);
 
