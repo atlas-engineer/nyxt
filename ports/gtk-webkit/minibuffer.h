@@ -8,7 +8,6 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include <JavaScriptCore/JavaScript.h>
 
 #include "javascript.h"
-#include "client.h"
 
 typedef struct {
 	WebKitWebView *web_view;
@@ -34,45 +33,12 @@ void minibuffer_delete(Minibuffer *minibuffer) {
 	g_free(minibuffer);
 }
 
-// TODO: Factor minibuffer_javascript_callback and buffer_javascript_callback?
 static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
-	gchar *transformed_result = javascript_result(object, result, user_data);
-	g_debug("Javascript result: %s", transformed_result);
-	if (transformed_result == NULL) {
-		return;
-	}
-
 	MinibufferInfo *minibuffer_info = (MinibufferInfo *)user_data;
-
-	GError *error = NULL;
-	const char *method_name = "MINIBUFFER-JAVASCRIPT-CALL-BACK";
-	char *id = g_strdup_printf("%i", minibuffer_info->callback_id);
-	GVariant *params = g_variant_new(
-		"(sss)",
-		minibuffer_info->minibuffer->parent_window_identifier,
-		transformed_result,
-		id);
-	g_message("XML-RPC message: %s (minibuffer id, javascript, callback id) = (%s, ..., %s)",
-		method_name,
-		minibuffer_info->minibuffer->parent_window_identifier,
-		id);
-	g_debug("Javascript: %s", transformed_result);
-
-	g_free(id);
+	javascript_transform_result(object, result, minibuffer_info->minibuffer->parent_window_identifier,
+		minibuffer_info->callback_id);
 	g_free(minibuffer_info);
-	g_free(transformed_result);
-
-	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, params, &error);
-
-	if (error) {
-		g_warning("Malformed XML-RPC message: %s", error->message);
-		g_error_free(error);
-		return;
-	}
-
-	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 }
 
 char *minibuffer_evaluate(Minibuffer *minibuffer, const char *javascript) {

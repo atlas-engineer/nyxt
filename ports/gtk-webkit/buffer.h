@@ -8,8 +8,6 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include <JavaScriptCore/JavaScript.h>
 
 #include "javascript.h"
-#include "server-state.h"
-#include "client.h"
 
 typedef struct {
 	WebKitWebView *web_view;
@@ -102,43 +100,10 @@ void buffer_delete(Buffer *buffer) {
 
 static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
-	gchar *transformed_result = javascript_result(object, result, user_data);
-	g_debug("Javascript result: %s", transformed_result);
-	if (transformed_result == NULL) {
-		return;
-	}
-
 	BufferInfo *buffer_info = (BufferInfo *)user_data;
-
-	GError *error = NULL;
-	const char *method_name = "BUFFER-JAVASCRIPT-CALL-BACK";
-	char *id = g_strdup_printf("%i", buffer_info->callback_id);
-	GVariant *params = g_variant_new(
-		"(sss)",
-		buffer_info->buffer->identifier,
-		transformed_result,
-		id);
-	g_message("XML-RPC message: %s (buffer id, javascript, callback id) = (%s, ..., %s)",
-		method_name,
-		buffer_info->buffer->identifier,
-		id);
-	g_debug("Javascript: %s", transformed_result);
-
-	g_free(id);
+	javascript_transform_result(object, result, buffer_info->buffer->identifier,
+		buffer_info->callback_id);
 	g_free(buffer_info);
-	g_free(transformed_result);
-
-	// 'params' is floating and soup_xmlrpc_message_new will consume it.
-	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, params, &error);
-
-	if (error) {
-		g_warning("Malformed XML-RPC message: %s", error->message);
-		g_error_free(error);
-		return;
-	}
-
-	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 }
 
 char *buffer_evaluate(Buffer *buffer, const char *javascript) {
