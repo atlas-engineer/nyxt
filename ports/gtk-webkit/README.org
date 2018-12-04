@@ -1,5 +1,5 @@
-* Next WebKitGTK Port
-This folder contains the source code for the WebKitGTK front-end for the
+* Next WebKitGTK+ Port
+This folder contains the source code for the WebKitGTK+ front-end for the
 Next browser.
 
 * Development
