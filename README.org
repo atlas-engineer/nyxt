@@ -1,9 +1,9 @@
 #+html: <img src="assets/next_256x256.png" align="right"/>
 * Next Web Browser
-Next is a keyboard-oriented, extensible web-browser inspired by Emacs
-and designed for power users. The application has familiar
-key-bindings, is fully configurable and extensible in Lisp, and has
-powerful features for productive professionals.
+Next is a keyboard-oriented, extensible web-browser designed for power
+users. The application has familiar key-bindings, is fully
+configurable and extensible in Lisp, and has powerful features for
+productive professionals.
 
 * Features
 Next includes many features designed to enable you to focus on being
@@ -88,7 +88,7 @@ The following keys exist as special keys:
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
 
-** Customize and EXTend Next
+** Customize and Extend Next
 Customization is possible through the creation of a
 =~/.config/next/init.lisp= file. From here you
 can override and redefine any of the functions by defining your init
