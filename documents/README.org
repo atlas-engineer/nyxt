@@ -194,12 +194,23 @@ MAJOR.MINOR.PATCH, we increment the:
 - MINOR version when we add functionality in a backwards-compatible manner, and
 - PATCH version when we make backwards-compatible bug fixes.
 
-** TASK 1.1.0
+** TASK 1.2.0
 *** TASK VI Emulation Layer
 + Add a VI Emulation layer to support VIM like keybindings and
   functionality
 *** TASK Ad Blocking Support
 + Add support for content blocking using the WebKit API
+
+** DONE 1.1.0
+*** DONE Overhaul start-up and exit processes
+*** DONE Add --init-file command line parameter
+*** DONE Fix a number of issues with GTK-WebKit
+*** DONE Enhance logging with GTK-WebKit
+See /tmp/next-webkit-gtk.log by default.
+Debug message can be included by exporting the =G_MESSAGES_DEBUG=all=
+environement variable.
+*** DONE Add recipe for Guix
+*** DONE Scroll selection in minibuffer
 ** DONE 1.0.0
 CLOSED: [2018-11-28 Wed 18:10]
 *** DONE GNU/Linux Frontend
