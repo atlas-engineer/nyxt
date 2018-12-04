@@ -53,7 +53,7 @@
 (define-public next-gtk-webkit
   (package
     (name "next-gtk-webkit")
-    (version (string-append "1.0.0" "-" "master"))
+    (version "HEAD")
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system glib-or-gtk-build-system)
     (arguments
@@ -105,8 +105,6 @@ features for productive professionals.")
                       (define expected-fasl (string-append
                                              lib
                                              "/lib/sbcl/next--system.fasl"))
-                      (pk actual-fasl)
-                      (pk expected-fasl)
                       (copy-file actual-fasl expected-fasl)
                       #t))
                   (add-after 'create-symlinks 'build-program
