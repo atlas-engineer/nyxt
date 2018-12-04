@@ -122,6 +122,9 @@ features for productive professionals.")
                     ;; the illegal version will result in NIL in the .desktop
                     ;; file.
                     (lambda* (#:key outputs #:allow-other-keys)
+                      (with-output-to-file "version"
+                        (lambda _
+                          (format #t "~a" ,(package-version next-gtk-webkit))))
                       (invoke "make" "install-assets"
                               (string-append "PREFIX="
                                              (assoc-ref outputs "out"))))))))
