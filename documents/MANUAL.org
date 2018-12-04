@@ -312,7 +312,7 @@ An example of a trivial command definition can be seen below.
 #+BEGIN_SRC lisp
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer (mode *minibuffer*)))
+  (with-result (url (read-from-minibuffer *minibuffer*))
     (%bookmark-url url)))
 #+END_SRC
 
@@ -325,7 +325,6 @@ therefore takes the following look:
 #+NAME: read-from-minibuffer-example
 #+BEGIN_SRC lisp
 (with-result (variable-name-to-bind-minibuffer-input
-              (read-from-minibuffer
-               (mode *minibuffer*)))
+              (read-from-minibuffer  *minibuffer*))
   (print variable-name-to-bind-minibuffer-input))
 #+END_SRC
