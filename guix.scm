@@ -144,6 +144,9 @@ features for productive professionals.")
        ("unix-opts" ,sbcl-unix-opts)))
     (synopsis "Infinitely extensible web-browser (with Lisp development files)")))
 
+;; TODO: For now, "next" is useless compared to sbcl-next because Guix keeps
+;; references to all SBCL inputs.  This is because the SBCL-generated executable
+;; embeds the absolute path to all Lisp libraries.
 (define-public next
   (package
     (inherit next-gtk-webkit)
@@ -168,4 +171,4 @@ features for productive professionals.")
      `(("next-gtk-webkit" ,next-gtk-webkit)))
     (synopsis "Infinitely extensible web-browser")))
 
-next
+sbcl-next
