@@ -106,6 +106,7 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	g_free(buffer_info);
 }
 
+// Caller must free the result.
 char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 	// If another buffer_evaluate is run before the callback is called, there will
 	// be a race condition upon accessing callback_count.

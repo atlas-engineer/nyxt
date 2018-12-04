@@ -179,8 +179,9 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 	}
 	char *callback_id = buffer_evaluate(buffer, javascript);
 	g_message("Method result(s): callback id %s", callback_id);
-	// TODO: Free result.
-	return g_variant_new_string(callback_id);
+	GVariant *callback_variant = g_variant_new_string(callback_id);
+	g_free(callback_id);
+	return callback_variant;
 }
 
 static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
@@ -220,8 +221,9 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	Minibuffer *minibuffer = window->minibuffer;
 	char *callback_id = minibuffer_evaluate(minibuffer, javascript);
 	g_message("Method result(s): callback id %s", callback_id);
-	// TODO: Free result.
-	return g_variant_new_string(callback_id);
+	GVariant *callback_variant = g_variant_new_string(callback_id);
+	g_free(callback_id);
+	return callback_variant;
 }
 
 static void server_handler(SoupServer *_server, SoupMessage *msg,
