@@ -53,8 +53,8 @@ open up new links, or switch tabs with the power of fuzzy completion.
 
 * Getting Started
 ** Install Next
-See the [[https://github.com/atlas-engineer/next/releases][releases]] section for pre-built binaries. Some operating systems provide
-packages for Next:
+See the [[https://next.atlas.engineer/download][downloads]] section for pre-built binaries. Some operating
+systems provide packages for Next:
 
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
 - [[https://guix.info][Guix]]
