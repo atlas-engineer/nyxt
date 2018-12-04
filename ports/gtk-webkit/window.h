@@ -255,6 +255,10 @@ Window *window_init() {
 	g_signal_connect(window->base, "destroy", G_CALLBACK(window_destroy_callback), window);
 	g_signal_connect(buffer->web_view, "close", G_CALLBACK(window_close_web_view_callback), window);
 
+	// We only send key-press events, since we don't need such fine-grained tuning
+	// from the Lisp side.
+	g_signal_connect(window->base, "key-press-event", G_CALLBACK(window_send_event), window);
+
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(window->base);
 
@@ -286,9 +290,6 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
 
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
-	// We only send key-press events, since we don't need such fine-grained tuning
-	// from the Lisp side.
-	g_signal_connect(buffer->web_view, "key-press-event", G_CALLBACK(window_send_event), window);
 
 	// We don't show all widgets, otherwise it would re-show the minibuffer if it
 	// was hidden.
