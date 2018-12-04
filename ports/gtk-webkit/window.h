@@ -70,7 +70,13 @@ void window_destroy_callback(GtkWidget *_widget, Window *window) {
 }
 
 void window_delete(Window *window) {
-	// We don't kill the buffer since it may be used by other windows.
+	// TODO: Why do we need to remove the buffer from the window to prevent a web view corruption?
+	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
+	GtkWidget *mainbox = GTK_WIDGET(children->data);
+	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
+	g_debug("Remove buffer view %p from window", box_children->data);
+	gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
+
 	{
 		// Notify the Lisp core.
 		GError *error = NULL;
@@ -284,7 +290,6 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	GtkWidget *mainbox = GTK_WIDGET(children->data);
 	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
 	g_debug("Remove buffer view %p from window", box_children->data);
-	// TODO: Need to make sure it does not decrease the ref count to zero.
 	gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
 
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
