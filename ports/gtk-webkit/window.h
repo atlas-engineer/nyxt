@@ -191,7 +191,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 			keyval_string,
 			&builder,
 			window->identifier);
-	g_message("XML-RPC message: %s %s", method_name, g_variant_print(key_chord, TRUE));
+	g_message("XML-RPC message: %s %s = %s", method_name, "(keycode, keyval, modifiers, window id)", g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, key_chord, &error);
@@ -226,6 +226,12 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 	g_message("XML-RPC message: %s, window id %s", method_name, window->identifier);
 	msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, id, &error);
+	// TODO: There is a possible race condition here: if two keys are pressed very
+	// fast before the first CONSUME-KEY-SEQUENCE is received by the Lisp core,
+	// then when the first CONSUME-KEY-SEQUENCE is received, *key-chord-stack*
+	// will contain the two keys.  The second CONSUME-KEY-SEQUENCE will have an
+	// empty *key-chord-stack*.  In practice, those key presses would have to be
+	// programmatically generated at the system level, so it's mostly a non-issue.
 	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 
 	return TRUE;
