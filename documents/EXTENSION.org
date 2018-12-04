@@ -36,6 +36,7 @@ shows how you could set the body with the URL of the current page.
 Define-Parenstatic will automatically generate a defparameter named
 ~hello-url~ as in the case above, and a function ~(hello-url)~ that
 you can invoke to act upon the currently active buffer.
+
 * Running shell commands within Next
 Shell mode is an extension for running simple one liner shell commands
 and seeing the output. There is no history or variables. Use ~C-x s~
@@ -82,6 +83,7 @@ the command output.
 (define-key *global-map* (key "C-x s")
   #'open-new-shell)
 #+END_SRC
+
 * Reloading the page
 The following function provides a way to reload the current page.
 
