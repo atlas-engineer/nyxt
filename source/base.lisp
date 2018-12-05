@@ -81,7 +81,10 @@ Set to '-' to read standard input instead."))
         (loop for object = (read *standard-input* nil :eof)
               until (eq object :eof)
               do (eval object)))
-      (load *init-file-path* :if-does-not-exist nil))
+      ;; ignore loading errors
+      (handler-case (load *init-file-path* :if-does-not-exist nil)
+        (error (c)
+          (format t "Error: we could not load your init file: ~a~&" c))))
   (initialize-bookmark-db)
   (initialize-history-db)
   (when with-platform-port-p
