@@ -12,6 +12,7 @@
 #include <xmlrpc-c/server.h>
 #include <xmlrpc-c/server_abyss.h>
 #include <xmlrpc-c/config.h>
+#include "Global.h"
 
 @implementation Server
 
@@ -236,7 +237,7 @@ minibuffer_evaluate_javascript(xmlrpc_env *   const envP,
     
     serverparm.config_file_name = NULL;   /* Select the modern normal API */
     serverparm.registryP        = registryP;
-    serverparm.port_number      = 8082;
+    serverparm.port_number      = [[[Global sharedInstance] port] intValue];
     serverparm.log_file_name    = "/tmp/next_xmlrpc_log";
     
     xmlrpc_server_abyss(&env, &serverparm, XMLRPC_APSIZE(log_file_name));

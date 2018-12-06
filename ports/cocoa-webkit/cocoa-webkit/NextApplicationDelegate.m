@@ -111,7 +111,6 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification
 {
-    [Global sharedInstance];
     Server *server = [[Server alloc] init];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [server start];

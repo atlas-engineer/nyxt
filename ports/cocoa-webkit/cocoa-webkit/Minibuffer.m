@@ -25,7 +25,7 @@
                 // Call XML RPC With Result
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
                     xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
-                    const char * const serverUrl = "http://localhost:8081/RPC2";
+                    const char * const serverUrl = [[[Global sharedInstance] coreSocket] UTF8String];
                     const char * const methodName = "MINIBUFFER-JAVASCRIPT-CALL-BACK";
                     
                     // Make the remote procedure call

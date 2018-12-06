@@ -35,7 +35,7 @@
             xmlrpc_value * resultP;
             xmlrpc_value * modifiers;
             xmlrpc_int consumed;
-            const char * const serverUrl = "http://localhost:8081/RPC2";
+            const char * const serverUrl = [[[Global sharedInstance] coreSocket] UTF8String];
             
             modifiers = xmlrpc_array_new(&env);
             
