@@ -17,4 +17,7 @@
 + (Global *)sharedInstance;
 - (xmlrpc_env) getXMLRPCEnv;
 
+@property (strong, atomic, readwrite) NSString *port;
+@property (strong, atomic, readwrite) NSString *coreSocket;
+
 @end

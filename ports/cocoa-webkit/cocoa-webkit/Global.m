@@ -10,6 +10,9 @@
 
 @implementation Global
 
+@synthesize port;
+@synthesize coreSocket;
+
 + (Global *)sharedInstance {
     static dispatch_once_t onceToken;
     static Global *instance = nil;
@@ -30,6 +33,9 @@ reportIfFaultOccurred (xmlrpc_env * const envP) {
 - (id)init {
     self = [super init];
     if (self) {
+        [self setPort:@"8082"];
+        [self setCoreSocket:@"http://localhost:8081/RPC2"];
+        
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             // Initialize our error-handling environment.
             xmlrpc_env_init(&self->env);
