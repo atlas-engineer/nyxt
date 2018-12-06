@@ -4,13 +4,9 @@
 //
 
 #import "Global.h"
-#include <xmlrpc-c/base.h>
-#include <xmlrpc-c/client.h>
-#include <xmlrpc-c/config.h>
 
 #define NAME "Next"
 #define VERSION "0.1"
-
 
 @implementation Global
 
