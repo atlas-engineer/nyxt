@@ -13,8 +13,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 gchar *javascript_result(GObject *object, GAsyncResult *result,
 	gpointer _data) {
 	WebKitJavascriptResult *js_result;
-	JSValueRef value;
-	JSGlobalContextRef context;
+	JSCValue *value;
 	GError *error = NULL;
 	js_result = webkit_web_view_run_javascript_finish(WEBKIT_WEB_VIEW(object), result, &error);
 	if (!js_result) {
@@ -23,25 +22,19 @@ gchar *javascript_result(GObject *object, GAsyncResult *result,
 		return NULL;
 	}
 
-	// TODO: Deprecated, use jsc_value_get_context instead.
-	context = webkit_javascript_result_get_global_context(js_result);
-	value = webkit_javascript_result_get_value(js_result);
-	if (!JSValueIsString(context, value)) {
-		g_warning("Error running javascript: unexpected return value");
-		webkit_javascript_result_unref(js_result);
+	value = webkit_javascript_result_get_js_value(js_result);
+
+	JSCException *exception;
+	gchar *str_value;
+	str_value = jsc_value_to_string(value);
+	exception = jsc_context_get_exception(jsc_value_get_context(value));
+	if (exception) {
+		g_warning("Error running javascript: %s", jsc_exception_get_message(exception));
 		return NULL;
 	}
 
-	JSStringRef js_str_value;
-	gchar *str_value;
-	gsize str_length;
-
-	js_str_value = JSValueToStringCopy(context, value, NULL);
-	str_length = JSStringGetMaximumUTF8CStringSize(js_str_value);
-	str_value = (gchar *)g_malloc(str_length);
-	JSStringGetUTF8CString(js_str_value, str_value, str_length);
-	JSStringRelease(js_str_value);
-
+	g_debug("Script result: %s\n", str_value);
+	webkit_javascript_result_unref(js_result);
 	return str_value;
 }
 
