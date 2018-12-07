@@ -3,8 +3,8 @@
 * Next Developer Readme                                                 :TOC:
 - [[#developer-installation][Developer Installation]]
   - [[#installing-sbcl][Installing SBCL]]
-  - [[#manually-installing-quicklisp-(optional)][Manually Installing Quicklisp (optional)]]
-  - [[#gnu/linux-dependencies][GNU/Linux dependencies]]
+  - [[#manually-installing-quicklisp-optional][Manually Installing Quicklisp (optional)]]
+  - [[#gnulinux-dependencies][GNU/Linux dependencies]]
   - [[#compile][Compile]]
   - [[#run][Run]]
   - [[#run-from-source][Run from Source]]
@@ -12,6 +12,7 @@
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
 - [[#release-timeline][Release Timeline]]
+  - [[#120][1.2.0]]
   - [[#110][1.1.0]]
   - [[#100][1.0.0]]
   - [[#008][0.08]]
