@@ -85,11 +85,11 @@ argparse_getvalue(struct argparse *self, const struct argparse_option *opt,
     case ARGPARSE_OPT_INTEGER:
         errno = 0; 
         if (self->optvalue) {
-            *(int *)opt->value = strtol(self->optvalue, (char **)&s, 0);
+            *(int *)opt->value = (int)strtol(self->optvalue, (char **)&s, 0);
             self->optvalue     = NULL;
         } else if (self->argc > 1) {
             self->argc--;
-            *(int *)opt->value = strtol(*++self->argv, (char **)&s, 0);
+            *(int *)opt->value = (int)strtol(*++self->argv, (char **)&s, 0);
         } else {
             argparse_error(self, opt, "requires a value", flags);
         }
@@ -363,10 +363,10 @@ argparse_usage(struct argparse *self)
             pos += fprintf(stdout, "=<str>");
         }
         if (pos <= usage_opts_width) {
-            pad = usage_opts_width - pos;
+            pad = (int)usage_opts_width - (int)pos;
         } else {
             fputc('\n', stdout);
-            pad = usage_opts_width;
+            pad = (int)usage_opts_width;
         }
         fprintf(stdout, "%*s%s\n", pad + 2, "", options->help);
     }
