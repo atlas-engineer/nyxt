@@ -26,7 +26,7 @@ int main(int argc, const char * argv[])
     struct argparse argparse;
     argparse_init(&argparse, options, usages, 0);
     argparse_describe(&argparse,
-                      "\ncoca-Webkit is the platform front end for the Lisp core.",NULL);
+                      "Coca-Webkit is the platform front end for the Lisp core.",NULL);
     argc = argparse_parse(&argparse, argc, argv);
     if (coreSocket != NULL)
         printf("path: %s\n", coreSocket);
