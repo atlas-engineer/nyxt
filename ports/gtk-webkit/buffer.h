@@ -40,6 +40,16 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		 * load is requested or a navigation within the
 		 * same page is performed */
 		uri = webkit_web_view_get_uri(web_view);
+
+		// TODO: Notify Lisp core on invalid TLS certificate, leave to the Lisp core
+		// the possibility to load the non-HTTPS URL.
+		if (g_str_has_prefix(uri, "https://")) {
+			GTlsCertificateFlags tls_flags;
+			if (webkit_web_view_get_tls_info(web_view, NULL, &tls_flags) && tls_flags) {
+				g_warning("Invalid TLS certificate");
+			}
+		}
+
 		break;
 	case WEBKIT_LOAD_FINISHED:
 		/* Load finished, we can now stop the spinner */
