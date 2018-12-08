@@ -35,7 +35,7 @@
                                  [@([self callBackCount]) stringValue]]];
             NSURLSession *session = [NSURLSession sharedSession];
             [[session dataTaskWithRequest:[request request]] resume];
-        } else {
+        } else if ([error description]) {
             NSLog(@"evaluateJavaScript error : %@", [error description]);
         }
     }];
