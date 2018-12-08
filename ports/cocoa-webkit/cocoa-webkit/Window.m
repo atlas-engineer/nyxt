@@ -5,10 +5,8 @@
 
 #import "Window.h"
 #import "Base.h"
-#include <xmlrpc-c/base.h>
-#include <xmlrpc-c/client.h>
-#include <xmlrpc-c/config.h>
 #include "Global.h"
+#include "XMLRPCRequest.h"
 
 @implementation Window
 @synthesize base;
@@ -43,16 +41,13 @@
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
-        const char * const serverUrl = [[[Global sharedInstance] coreSocket] UTF8String];
-        const char * const methodName = "WINDOW-WILL-CLOSE";
-        
-        // Make the remote procedure call
-        xmlrpc_client_call(&env, serverUrl, methodName,
-                           "(s)",
-                           [[self identifier] UTF8String]);
-    });
+    NSString *coreSocket = [[Global sharedInstance] coreSocket];
+    XMLRPCRequest *request = [[XMLRPCRequest alloc] initWithURL:
+                              [NSURL URLWithString:coreSocket]];
+    [request setMethod:@"WINDOW-WILL-CLOSE"
+        withParameters:@[[self identifier]]];
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:[request request]] resume];
 }
 
 @end

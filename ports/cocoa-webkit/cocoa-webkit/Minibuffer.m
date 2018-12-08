@@ -4,11 +4,8 @@
 //
 
 #import "Minibuffer.h"
-
-#include <xmlrpc-c/base.h>
-#include <xmlrpc-c/client.h>
-#include <xmlrpc-c/config.h>
 #include "Global.h"
+#include "XMLRPCRequest.h"
 
 
 @implementation Minibuffer
@@ -19,28 +16,23 @@
 {
     [self setCallBackCount:[self callBackCount] + 1];
     [self evaluateJavaScript:javaScript completionHandler:^(id result, NSError *error) {
-        if (error == nil) {
-            if (result != nil) {
-                NSString* transformedResult = [NSString stringWithFormat:@"%@", result];
-                // Call XML RPC With Result
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-                    xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
-                    const char * const serverUrl = [[[Global sharedInstance] coreSocket] UTF8String];
-                    const char * const methodName = "MINIBUFFER-JAVASCRIPT-CALL-BACK";
-                    
-                    // Make the remote procedure call
-                    xmlrpc_client_call(&env, serverUrl, methodName,
-                                       "(sss)",
-                                       [[self parentWindowIdentifier] UTF8String],
-                                       [transformedResult UTF8String],
-                                       [[@([self callBackCount]) stringValue] UTF8String]);
-                });
-            }
+        if (error == nil && result != nil) {
+            NSString* transformedResult = [NSString stringWithFormat:@"%@", result];
+            NSString *coreSocket = [[Global sharedInstance] coreSocket];
+            XMLRPCRequest *request = [[XMLRPCRequest alloc] initWithURL:
+                                      [NSURL URLWithString:coreSocket]];
+            [request setMethod:@"MINIBUFFER-JAVASCRIPT-CALL-BACK"
+                withParameters:@[[self parentWindowIdentifier],
+                                 transformedResult,
+                                 [@([self callBackCount]) stringValue]]];
+            NSURLSession *session = [NSURLSession sharedSession];
+            [[session dataTaskWithRequest:[request request]] resume];
         } else {
             NSLog(@"evaluateJavaScript error : %@", [error description]);
         }
     }];
     return [@([self callBackCount]) stringValue];
 }
+
 
 @end
