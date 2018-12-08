@@ -5,17 +5,10 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#include <xmlrpc-c/base.h>
-#include <xmlrpc-c/client.h>
-#include <xmlrpc-c/config.h>
 
-@interface Global : NSObject
-{
-    xmlrpc_env env;
-}
+@interface Global : NSObject {}
 
 + (Global *)sharedInstance;
-- (xmlrpc_env) getXMLRPCEnv;
 
 @property (strong, atomic, readwrite) NSString *port;
 @property (strong, atomic, readwrite) NSString *coreSocket;

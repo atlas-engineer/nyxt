@@ -24,16 +24,6 @@
 		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
 		EBB1A1DD204750390056B075 /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBB1A1DC204750390056B075 /* Buffer.m */; };
 		EBBFBB65206813150033996B /* NextApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = EBBFBB64206813150033996B /* NextApplication.m */; };
-		EBD9FD9021A86EF5000B2486 /* libxmlrpc_abyss.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD8F21A86EF5000B2486 /* libxmlrpc_abyss.3.39.dylib */; };
-		EBD9FD9421A86F82000B2486 /* libxmlrpc_server_abyss.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD9321A86F82000B2486 /* libxmlrpc_server_abyss.3.39.dylib */; };
-		EBD9FD9621A86F9D000B2486 /* libxmlrpc_client.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD9521A86F9D000B2486 /* libxmlrpc_client.3.39.dylib */; };
-		EBD9FD9821A86FB5000B2486 /* libxmlrpc.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD9721A86FB5000B2486 /* libxmlrpc.3.39.dylib */; };
-		EBD9FD9A21A86FDC000B2486 /* libxmlrpc_packetsocket.8.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD9921A86FDC000B2486 /* libxmlrpc_packetsocket.8.39.dylib */; };
-		EBD9FD9C21A86FE7000B2486 /* libxmlrpc_xmltok.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD9B21A86FE7000B2486 /* libxmlrpc_xmltok.3.39.dylib */; };
-		EBD9FD9E21A86FF1000B2486 /* libxmlrpc_xmlparse.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD9D21A86FF1000B2486 /* libxmlrpc_xmlparse.3.39.dylib */; };
-		EBD9FDA021A86FFB000B2486 /* libxmlrpc_util.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FD9F21A86FFB000B2486 /* libxmlrpc_util.3.39.dylib */; };
-		EBD9FDA221A87005000B2486 /* libxmlrpc_server.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FDA121A87005000B2486 /* libxmlrpc_server.3.39.dylib */; };
-		EBD9FDA421A8700F000B2486 /* libxmlrpc_server_cgi.3.39.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD9FDA321A8700F000B2486 /* libxmlrpc_server_cgi.3.39.dylib */; };
 		EBF73B1921BB25AD0065B745 /* argparse.c in Sources */ = {isa = PBXBuildFile; fileRef = EBF73B1721BB25AC0065B745 /* argparse.c */; };
 /* End PBXBuildFile section */
 
@@ -85,16 +75,6 @@
 		EBB1A1DC204750390056B075 /* Buffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Buffer.m; sourceTree = "<group>"; };
 		EBBFBB63206813150033996B /* NextApplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplication.h; sourceTree = "<group>"; };
 		EBBFBB64206813150033996B /* NextApplication.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplication.m; sourceTree = "<group>"; };
-		EBD9FD8F21A86EF5000B2486 /* libxmlrpc_abyss.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_abyss.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FD9321A86F82000B2486 /* libxmlrpc_server_abyss.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_server_abyss.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FD9521A86F9D000B2486 /* libxmlrpc_client.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_client.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FD9721A86FB5000B2486 /* libxmlrpc.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FD9921A86FDC000B2486 /* libxmlrpc_packetsocket.8.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_packetsocket.8.39.dylib; sourceTree = "<group>"; };
-		EBD9FD9B21A86FE7000B2486 /* libxmlrpc_xmltok.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_xmltok.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FD9D21A86FF1000B2486 /* libxmlrpc_xmlparse.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_xmlparse.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FD9F21A86FFB000B2486 /* libxmlrpc_util.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_util.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FDA121A87005000B2486 /* libxmlrpc_server.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_server.3.39.dylib; sourceTree = "<group>"; };
-		EBD9FDA321A8700F000B2486 /* libxmlrpc_server_cgi.3.39.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libxmlrpc_server_cgi.3.39.dylib; sourceTree = "<group>"; };
 		EBF73B1721BB25AC0065B745 /* argparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = argparse.c; sourceTree = "<group>"; };
 		EBF73B1821BB25AD0065B745 /* argparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = argparse.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -104,16 +84,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EBD9FDA421A8700F000B2486 /* libxmlrpc_server_cgi.3.39.dylib in Frameworks */,
-				EBD9FD9821A86FB5000B2486 /* libxmlrpc.3.39.dylib in Frameworks */,
-				EBD9FD9C21A86FE7000B2486 /* libxmlrpc_xmltok.3.39.dylib in Frameworks */,
-				EBD9FDA021A86FFB000B2486 /* libxmlrpc_util.3.39.dylib in Frameworks */,
-				EBD9FD9A21A86FDC000B2486 /* libxmlrpc_packetsocket.8.39.dylib in Frameworks */,
-				EBD9FD9421A86F82000B2486 /* libxmlrpc_server_abyss.3.39.dylib in Frameworks */,
-				EBD9FDA221A87005000B2486 /* libxmlrpc_server.3.39.dylib in Frameworks */,
-				EBD9FD9021A86EF5000B2486 /* libxmlrpc_abyss.3.39.dylib in Frameworks */,
-				EBD9FD9621A86F9D000B2486 /* libxmlrpc_client.3.39.dylib in Frameworks */,
-				EBD9FD9E21A86FF1000B2486 /* libxmlrpc_xmlparse.3.39.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,7 +97,6 @@
 				EBF73B1621BB25720065B745 /* argparse */,
 				EB4AE9002038649500A4F82A /* cocoa-webkit */,
 				EB4AE8FF2038649500A4F82A /* Products */,
-				EBF7FE8C2052CE46005A099E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -194,23 +163,6 @@
 				EBF73B1821BB25AD0065B745 /* argparse.h */,
 			);
 			path = argparse;
-			sourceTree = "<group>";
-		};
-		EBF7FE8C2052CE46005A099E /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				EBD9FDA321A8700F000B2486 /* libxmlrpc_server_cgi.3.39.dylib */,
-				EBD9FDA121A87005000B2486 /* libxmlrpc_server.3.39.dylib */,
-				EBD9FD9F21A86FFB000B2486 /* libxmlrpc_util.3.39.dylib */,
-				EBD9FD9D21A86FF1000B2486 /* libxmlrpc_xmlparse.3.39.dylib */,
-				EBD9FD9B21A86FE7000B2486 /* libxmlrpc_xmltok.3.39.dylib */,
-				EBD9FD9921A86FDC000B2486 /* libxmlrpc_packetsocket.8.39.dylib */,
-				EBD9FD9321A86F82000B2486 /* libxmlrpc_server_abyss.3.39.dylib */,
-				EBD9FD9521A86F9D000B2486 /* libxmlrpc_client.3.39.dylib */,
-				EBD9FD8F21A86EF5000B2486 /* libxmlrpc_abyss.3.39.dylib */,
-				EBD9FD9721A86FB5000B2486 /* libxmlrpc.3.39.dylib */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

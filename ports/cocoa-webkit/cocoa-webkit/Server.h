@@ -6,7 +6,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
-@interface Server : NSObject
+@interface Server : NSObject <NSPortDelegate>
 {
     NSObject *applicationDelegate;
 }
