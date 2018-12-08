@@ -7,9 +7,16 @@
 #import <AppKit/AppKit.h>
 #import "GCDAsyncSocket.h"
 
+@class GCDAsyncSocket;
+
 @interface Server : NSObject <GCDAsyncSocketDelegate>
 {
-    GCDAsyncSocket *socket;
+    dispatch_queue_t socketQueue;
+    
+    GCDAsyncSocket *listenSocket;
+    NSMutableArray *connectedSockets;
+    
+    BOOL isRunning;
 }
 
 - (void) start;
