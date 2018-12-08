@@ -7,7 +7,6 @@
 #include "Global.h"
 #include "XMLRPCRequest.h"
 
-
 @implementation Minibuffer
 @synthesize callBackCount;
 @synthesize parentWindowIdentifier;
@@ -33,6 +32,5 @@
     }];
     return [@([self callBackCount]) stringValue];
 }
-
 
 @end

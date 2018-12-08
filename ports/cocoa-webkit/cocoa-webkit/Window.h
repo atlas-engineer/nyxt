@@ -6,7 +6,6 @@
 #import <Cocoa/Cocoa.h>
 #import "Base.h"
 
-
 @interface Window : NSWindow <NSWindowDelegate>
 
 @property (strong, atomic, readwrite) Base *base;

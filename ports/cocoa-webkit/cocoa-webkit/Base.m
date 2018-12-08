@@ -6,7 +6,6 @@
 #import "Base.h"
 #import "Minibuffer.h"
 
-
 @implementation Base
 
 @synthesize minibuffer;
