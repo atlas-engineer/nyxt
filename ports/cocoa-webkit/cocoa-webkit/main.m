@@ -28,11 +28,7 @@ int main(int argc, const char * argv[])
     argparse_describe(&argparse,
                       "Coca-Webkit is the platform front end for the Lisp core.",NULL);
     argc = argparse_parse(&argparse, argc, argv);
-    if (coreSocket != NULL)
-        printf("path: %s\n", coreSocket);
-    if (port != 0)
-        printf("int_num: %d\n", port);
-    
+
     Global *global = [Global sharedInstance];
     [global setCoreSocket:[NSString stringWithUTF8String:coreSocket]];
     [global setPort:[@(port) stringValue]];
