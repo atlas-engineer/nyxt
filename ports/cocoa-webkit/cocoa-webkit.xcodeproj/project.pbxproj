@@ -13,6 +13,9 @@
 		EB3F03B8204DD9230065EB14 /* Minibuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3F03B7204DD9230065EB14 /* Minibuffer.m */; };
 		EB4AE9022038649500A4F82A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EB4AE9012038649500A4F82A /* main.m */; };
 		EB51EC91219329D9003C6FFD /* Window.m in Sources */ = {isa = PBXBuildFile; fileRef = EB51EC90219329D9003C6FFD /* Window.m */; };
+		EB582F8421BBED6000A63FD3 /* NSStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */; };
+		EB582F8521BBED6000A63FD3 /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8321BBED6000A63FD3 /* NSData+Base64.m */; };
+		EB582F8821BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */; };
 		EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */; };
 		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
 		EBB1A1DD204750390056B075 /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBB1A1DC204750390056B075 /* Buffer.m */; };
@@ -55,6 +58,13 @@
 		EB4AE9012038649500A4F82A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		EB51EC8F219329D9003C6FFD /* Window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
 		EB51EC90219329D9003C6FFD /* Window.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Window.m; sourceTree = "<group>"; };
+		EB582F8021BBED6000A63FD3 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
+		EB582F8121BBED6000A63FD3 /* NSStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStringAdditions.h; sourceTree = "<group>"; };
+		EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSStringAdditions.m; sourceTree = "<group>"; };
+		EB582F8321BBED6000A63FD3 /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64.m"; sourceTree = "<group>"; };
+		EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultEncoder.m; sourceTree = "<group>"; };
+		EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultEncoder.h; sourceTree = "<group>"; };
+		EB582F8A21BBF02700A63FD3 /* XMLRPCEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCEncoder.h; sourceTree = "<group>"; };
 		EB6876822057E9B70098FB5B /* NextApplicationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplicationDelegate.h; sourceTree = "<group>"; };
 		EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplicationDelegate.m; sourceTree = "<group>"; };
 		EB687685205964F50098FB5B /* AutokeyDictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutokeyDictionary.h; sourceTree = "<group>"; };
@@ -101,6 +111,7 @@
 		EB4AE8F52038649500A4F82A = {
 			isa = PBXGroup;
 			children = (
+				EB582F7F21BBED2F00A63FD3 /* xmlrpc */,
 				EBF73B1621BB25720065B745 /* argparse */,
 				EB4AE9002038649500A4F82A /* cocoa-webkit */,
 				EB4AE8FF2038649500A4F82A /* Products */,
@@ -140,6 +151,20 @@
 				EBB1A1DC204750390056B075 /* Buffer.m */,
 			);
 			path = "cocoa-webkit";
+			sourceTree = "<group>";
+		};
+		EB582F7F21BBED2F00A63FD3 /* xmlrpc */ = {
+			isa = PBXGroup;
+			children = (
+				EB582F8021BBED6000A63FD3 /* NSData+Base64.h */,
+				EB582F8321BBED6000A63FD3 /* NSData+Base64.m */,
+				EB582F8121BBED6000A63FD3 /* NSStringAdditions.h */,
+				EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */,
+				EB582F8A21BBF02700A63FD3 /* XMLRPCEncoder.h */,
+				EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultEncoder.h */,
+				EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */,
+			);
+			path = xmlrpc;
 			sourceTree = "<group>";
 		};
 		EBF73B1621BB25720065B745 /* argparse */ = {
@@ -227,6 +252,7 @@
 			files = (
 				EBBFBB65206813150033996B /* NextApplication.m in Sources */,
 				EBF73B1921BB25AD0065B745 /* argparse.c in Sources */,
+				EB582F8821BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m in Sources */,
 				EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */,
 				EBB1A1DD204750390056B075 /* Buffer.m in Sources */,
 				EB2A556620540AD400F10BFE /* Global.m in Sources */,
@@ -234,7 +260,9 @@
 				EB3F03B8204DD9230065EB14 /* Minibuffer.m in Sources */,
 				EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */,
 				EB2A55632053EB4B00F10BFE /* Server.m in Sources */,
+				EB582F8421BBED6000A63FD3 /* NSStringAdditions.m in Sources */,
 				EB4AE9022038649500A4F82A /* main.m in Sources */,
+				EB582F8521BBED6000A63FD3 /* NSData+Base64.m in Sources */,
 				EB51EC91219329D9003C6FFD /* Window.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

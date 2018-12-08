@@ -13,6 +13,7 @@
 #import "Buffer.h"
 #import "Window.h"
 #import "Global.h"
+#import "XMLRPCDefaultEncoder.h"
 
 @implementation NextApplicationDelegate
 @synthesize windows;
@@ -111,6 +112,10 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification
 {
+    XMLRPCDefaultEncoder *encoder = [[XMLRPCDefaultEncoder alloc] init];
+    [encoder setMethod:@"hello.world" withParameters:@[@"Hello, World!", @42]];
+    NSLog(@"%@", [encoder encode]);
+    
     Server *server = [[Server alloc] init];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [server start];
