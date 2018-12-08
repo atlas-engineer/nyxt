@@ -9,7 +9,7 @@
 #include <xmlrpc-c/client.h>
 #include <xmlrpc-c/config.h>
 #include "Global.h"
-
+#include "XMLRPCRequest.h"
 
 @implementation Buffer
 @synthesize callBackCount;
@@ -55,15 +55,13 @@
 - (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
     NSString *url = [[self URL] absoluteString];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        xmlrpc_env env = [[Global sharedInstance] getXMLRPCEnv];
-        const char * const serverUrl = [[[Global sharedInstance] coreSocket] UTF8String];
-        const char * const methodName = "BUFFER-DID-COMMIT-NAVIGATION";
-        
-        // Make the remote procedure call
-        xmlrpc_client_call(&env, serverUrl, methodName,
-                           "(ss)",
-                           [[self identifier] UTF8String],
-                           [url UTF8String]);
+        NSString *coreSocket = [[Global sharedInstance] coreSocket];
+        XMLRPCRequest *request = [[XMLRPCRequest alloc]
+                                  initWithURL: [NSURL URLWithString:coreSocket]];
+        [request setMethod:@"BUFFER-DID-COMMIT-NAVIGATION"
+            withParameters:@[[self identifier], url]];
+        NSURLSession *session = [NSURLSession sharedSession];
+        [[session dataTaskWithRequest:[request request]] resume];
     });
 }
 

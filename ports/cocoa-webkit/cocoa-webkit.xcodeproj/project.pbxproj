@@ -16,6 +16,7 @@
 		EB582F8421BBED6000A63FD3 /* NSStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */; };
 		EB582F8521BBED6000A63FD3 /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8321BBED6000A63FD3 /* NSData+Base64.m */; };
 		EB582F8821BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */; };
+		EB582F8D21BBF36800A63FD3 /* XMLRPCRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8C21BBF36800A63FD3 /* XMLRPCRequest.m */; };
 		EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */; };
 		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
 		EBB1A1DD204750390056B075 /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBB1A1DC204750390056B075 /* Buffer.m */; };
@@ -65,6 +66,8 @@
 		EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultEncoder.m; sourceTree = "<group>"; };
 		EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultEncoder.h; sourceTree = "<group>"; };
 		EB582F8A21BBF02700A63FD3 /* XMLRPCEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCEncoder.h; sourceTree = "<group>"; };
+		EB582F8B21BBF36800A63FD3 /* XMLRPCRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLRPCRequest.h; sourceTree = "<group>"; };
+		EB582F8C21BBF36800A63FD3 /* XMLRPCRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLRPCRequest.m; sourceTree = "<group>"; };
 		EB6876822057E9B70098FB5B /* NextApplicationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplicationDelegate.h; sourceTree = "<group>"; };
 		EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplicationDelegate.m; sourceTree = "<group>"; };
 		EB687685205964F50098FB5B /* AutokeyDictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutokeyDictionary.h; sourceTree = "<group>"; };
@@ -163,6 +166,8 @@
 				EB582F8A21BBF02700A63FD3 /* XMLRPCEncoder.h */,
 				EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultEncoder.h */,
 				EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */,
+				EB582F8B21BBF36800A63FD3 /* XMLRPCRequest.h */,
+				EB582F8C21BBF36800A63FD3 /* XMLRPCRequest.m */,
 			);
 			path = xmlrpc;
 			sourceTree = "<group>";
@@ -258,6 +263,7 @@
 				EB2A556620540AD400F10BFE /* Global.m in Sources */,
 				EB3F03B5204DD5A60065EB14 /* Base.m in Sources */,
 				EB3F03B8204DD9230065EB14 /* Minibuffer.m in Sources */,
+				EB582F8D21BBF36800A63FD3 /* XMLRPCRequest.m in Sources */,
 				EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */,
 				EB2A55632053EB4B00F10BFE /* Server.m in Sources */,
 				EB582F8421BBED6000A63FD3 /* NSStringAdditions.m in Sources */,
