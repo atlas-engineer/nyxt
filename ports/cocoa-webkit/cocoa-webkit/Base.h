@@ -7,7 +7,6 @@
 #import "Minibuffer.h"
 #import "Buffer.h"
 
-
 @interface Base : NSStackView
 
 @property (strong, atomic, readwrite) Buffer *buffer;

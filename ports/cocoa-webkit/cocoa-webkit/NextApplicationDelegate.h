@@ -7,7 +7,6 @@
 #import <AppKit/AppKit.h>
 #import "AutokeyDictionary.h"
 
-
 @interface NextApplicationDelegate : NSObject <NSApplicationDelegate>
 
 @property (strong, atomic, readwrite) AutokeyDictionary *windows;
@@ -24,7 +23,6 @@
 - (bool)bufferDelete:(NSString *)key;
 - (NSString *)bufferEvaluateJavaScript:(NSString *)bufferKey javaScript:(NSString *) javaScript;
 - (NSString *)minibufferEvaluateJavaScript:(NSString *)windowKey javaScript:(NSString *)javaScript;
-
 
 @end
 
