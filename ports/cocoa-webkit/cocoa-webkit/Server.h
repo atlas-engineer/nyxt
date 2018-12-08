@@ -5,10 +5,11 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#import "GCDAsyncSocket.h"
 
-@interface Server : NSObject <NSPortDelegate>
+@interface Server : NSObject <GCDAsyncSocketDelegate>
 {
-    NSObject *applicationDelegate;
+    GCDAsyncSocket *socket;
 }
 
 - (void) start;

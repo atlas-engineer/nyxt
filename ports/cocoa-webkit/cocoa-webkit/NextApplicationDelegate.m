@@ -8,7 +8,6 @@
 #import <AppKit/AppKit.h>
 #import <Webkit/Webkit.h>
 
-#import "Server.h"
 #import "Base.h"
 #import "Buffer.h"
 #import "Window.h"
@@ -18,6 +17,7 @@
 @implementation NextApplicationDelegate
 @synthesize windows;
 @synthesize buffers;
+@synthesize server;
 
 - (id) init
 {
@@ -112,10 +112,8 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification
 {   
-    Server *server = [[Server alloc] init];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [server start];
-    });
+    [self setServer: [[Server alloc] init]];
+    [[self server] start];
 }
 
 @end

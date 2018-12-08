@@ -5,20 +5,49 @@
 
 #import "Server.h"
 #import "NextApplicationDelegate.h"
-#include "Global.h"
 
 @implementation Server
 
-- (void) start {
-    [[[Global sharedInstance] port] intValue];
-    NSSocketPort *server = [[NSSocketPort alloc] initWithTCPPort:1234];
-    [server setDelegate: self];
-    [[NSRunLoop mainRunLoop] addPort: server forMode: NSDefaultRunLoopMode];
-    [[NSRunLoop mainRunLoop] run];
+- (id) init {
+    self = [super init];
+    if (self != nil) {
+        socket = [[GCDAsyncSocket alloc]
+                  initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+    }
+    return self;
 }
 
-- (void)handlePortMessage:(NSPortMessage *)portMessage {
-    printf("Message Received\n");
+-(void) start {
+    NSError *err;
+    [socket connectToHost:@"127.0.0.1" onPort:8080 error:&err];
+    NSLog(@"%@", err);
+    NSLog(@"Server Started.");
+}
+
+- (void)onSocket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
+{
+    NSData *strData = [data subdataWithRange:NSMakeRange(0, [data length])];
+    NSString *msg = [[NSString alloc] initWithData:strData encoding:NSUTF8StringEncoding];
+    if(msg)
+    {
+        NSLog(@"RX:%@",msg);
+    }
+}
+
+- (void)onSocket:(GCDAsyncSocket *)sock willDisconnectWithError:(NSError *)err
+{
+    NSLog(@"error - disconnecting");
+    //you'd probably want to start reconnecting procedure here...
+}
+
+- (void)onSocketDidDisconnect:(GCDAsyncSocket *)sock
+{
+    NSLog(@"disconnected");
+}
+
+- (void)onSocket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(UInt16)port
+{
+    NSLog(@"connected");
 }
 
 @end
