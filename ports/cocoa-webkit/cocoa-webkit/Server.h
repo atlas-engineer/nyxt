@@ -6,11 +6,12 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
-@interface Server : NSObject <NSPortDelegate>
+@interface Server : NSObject
 {
-    NSObject *applicationDelegate;
+    
 }
 
 - (void) start;
+- (void) stop;
 
 @end
