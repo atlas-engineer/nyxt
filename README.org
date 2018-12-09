@@ -57,11 +57,17 @@ See the [[https://next.atlas.engineer/download][downloads]] section for pre-buil
 systems provide packages for Next:
 
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
-- [[https://guix.info][Guix]]
+- [[https://guix.info][Guix]]: Install with =guix package --install sbcl-next=.
 
 Guix is a package manager that can be installed on any GNU/Linux distribution;
 should Next be missing from your distribution, there is always the possibility
 to install Guix on your system and use it to install Next.
+
+- If Guix is easily available for your distribution (e.g. as a package), then
+  this is definitely the simplest route.
+
+- If not, or if you want to help developing Next, then building from source is
+  the commended route.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
