@@ -24,8 +24,6 @@
 		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
 		EBB1A1DD204750390056B075 /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBB1A1DC204750390056B075 /* Buffer.m */; };
 		EBBFBB65206813150033996B /* NextApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = EBBFBB64206813150033996B /* NextApplication.m */; };
-		EBCFE46821BC72000022272A /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = EBCFE46421BC71FF0022272A /* GCDAsyncUdpSocket.m */; };
-		EBCFE46921BC72000022272A /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = EBCFE46721BC71FF0022272A /* GCDAsyncSocket.m */; };
 		EBF73B1921BB25AD0065B745 /* argparse.c in Sources */ = {isa = PBXBuildFile; fileRef = EBF73B1721BB25AC0065B745 /* argparse.c */; };
 /* End PBXBuildFile section */
 
@@ -77,11 +75,6 @@
 		EBB1A1DC204750390056B075 /* Buffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Buffer.m; sourceTree = "<group>"; };
 		EBBFBB63206813150033996B /* NextApplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplication.h; sourceTree = "<group>"; };
 		EBBFBB64206813150033996B /* NextApplication.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplication.m; sourceTree = "<group>"; };
-		EBCFE46421BC71FF0022272A /* GCDAsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncUdpSocket.m; sourceTree = "<group>"; };
-		EBCFE46521BC71FF0022272A /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
-		EBCFE46621BC71FF0022272A /* GCDAsyncUdpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncUdpSocket.h; sourceTree = "<group>"; };
-		EBCFE46721BC71FF0022272A /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
-		EBCFE46A21BC721A0022272A /* CocoaAsyncSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CocoaAsyncSocket.h; sourceTree = "<group>"; };
 		EBF73B1721BB25AC0065B745 /* argparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = argparse.c; sourceTree = "<group>"; };
 		EBF73B1821BB25AD0065B745 /* argparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = argparse.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -100,7 +93,6 @@
 		EB4AE8F52038649500A4F82A = {
 			isa = PBXGroup;
 			children = (
-				EBCFE46321BC71B40022272A /* cocoaasyncsocket */,
 				EB582F7F21BBED2F00A63FD3 /* xmlrpc */,
 				EBF73B1621BB25720065B745 /* argparse */,
 				EB4AE9002038649500A4F82A /* cocoa-webkit */,
@@ -162,18 +154,6 @@
 				EB582F8F21BC17CA00A63FD3 /* XMLRPCResponse.m */,
 			);
 			path = xmlrpc;
-			sourceTree = "<group>";
-		};
-		EBCFE46321BC71B40022272A /* cocoaasyncsocket */ = {
-			isa = PBXGroup;
-			children = (
-				EBCFE46521BC71FF0022272A /* GCDAsyncSocket.h */,
-				EBCFE46721BC71FF0022272A /* GCDAsyncSocket.m */,
-				EBCFE46621BC71FF0022272A /* GCDAsyncUdpSocket.h */,
-				EBCFE46421BC71FF0022272A /* GCDAsyncUdpSocket.m */,
-				EBCFE46A21BC721A0022272A /* CocoaAsyncSocket.h */,
-			);
-			path = cocoaasyncsocket;
 			sourceTree = "<group>";
 		};
 		EBF73B1621BB25720065B745 /* argparse */ = {
@@ -253,12 +233,10 @@
 				EB3F03B5204DD5A60065EB14 /* Base.m in Sources */,
 				EB582F9621BC17D200A63FD3 /* XMLRPCEventBasedParser.m in Sources */,
 				EB3F03B8204DD9230065EB14 /* Minibuffer.m in Sources */,
-				EBCFE46821BC72000022272A /* GCDAsyncUdpSocket.m in Sources */,
 				EB582F8D21BBF36800A63FD3 /* XMLRPCRequest.m in Sources */,
 				EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */,
 				EB2A55632053EB4B00F10BFE /* Server.m in Sources */,
 				EB582F8421BBED6000A63FD3 /* NSStringAdditions.m in Sources */,
-				EBCFE46921BC72000022272A /* GCDAsyncSocket.m in Sources */,
 				EB4AE9022038649500A4F82A /* main.m in Sources */,
 				EB582F8521BBED6000A63FD3 /* NSData+Base64.m in Sources */,
 				EB51EC91219329D9003C6FFD /* Window.m in Sources */,

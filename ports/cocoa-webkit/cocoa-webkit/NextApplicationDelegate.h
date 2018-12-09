@@ -6,14 +6,11 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import "AutokeyDictionary.h"
-#import "Server.h"
 
 @interface NextApplicationDelegate : NSObject <NSApplicationDelegate>
 
 @property (strong, atomic, readwrite) AutokeyDictionary *windows;
 @property (strong, atomic, readwrite) AutokeyDictionary *buffers;
-@property (strong, atomic, readwrite) Server *server;
-
 
 - (NSString *)windowMake;
 - (void)window:(NSString *)key setTitle:(NSString *)title;

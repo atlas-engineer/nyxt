@@ -5,18 +5,10 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import "GCDAsyncSocket.h"
 
-@class GCDAsyncSocket;
-
-@interface Server : NSObject <GCDAsyncSocketDelegate>
+@interface Server : NSObject <NSPortDelegate>
 {
-    dispatch_queue_t socketQueue;
-    
-    GCDAsyncSocket *listenSocket;
-    NSMutableArray *connectedSockets;
-    
-    BOOL isRunning;
+    NSObject *applicationDelegate;
 }
 
 - (void) start;
