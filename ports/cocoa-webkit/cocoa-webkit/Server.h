@@ -7,6 +7,8 @@
 #import <AppKit/AppKit.h>
 #import "GCDAsyncSocket.h"
 
+@class GCDAsyncSocket;
+
 @interface Server : NSObject <GCDAsyncSocketDelegate>
 {
     dispatch_queue_t socketQueue;
