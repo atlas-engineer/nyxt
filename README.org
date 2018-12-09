@@ -75,7 +75,7 @@ The GNU/Linux version requires some dependencies:
 
 - sqlite
 - webkitgtk, also known as webkit2gtk (make sure to use the most recent version
-  for security reasons)
+  for security reasons -- /Debian Stable won't do/)
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
 - gstreamer, gst-plugins-* for HTML audio/video
