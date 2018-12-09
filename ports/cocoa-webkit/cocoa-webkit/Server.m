@@ -20,7 +20,8 @@
         [webServer addDefaultHandlerForMethod:@"GET"
                                  requestClass:[GCDWebServerRequest class]
                                  processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
-                                     return [GCDWebServerDataResponse responseWithHTML:@"<html><body><p>Hello World</p></body></html>"];
+                                     return [GCDWebServerDataResponse responseWithHTML:
+                                             @"<html><body><p>Hello World</p></body></html>"];
                                  }];
         
         // Use convenience method that runs server on port 8080
