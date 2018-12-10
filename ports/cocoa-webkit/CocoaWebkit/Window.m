@@ -6,7 +6,7 @@
 #import "Window.h"
 #import "Base.h"
 #include "Global.h"
-#include "XMLRPCRequest.h"
+#include "XMLRPCRequestEncoder.h"
 
 @implementation Window
 @synthesize base;
@@ -42,7 +42,7 @@
 
 - (void)windowWillClose:(NSNotification *)notification {
     NSString *coreSocket = [[Global sharedInstance] coreSocket];
-    XMLRPCRequest *request = [[XMLRPCRequest alloc] initWithURL:
+    XMLRPCRequestEncoder *request = [[XMLRPCRequestEncoder alloc] initWithURL:
                               [NSURL URLWithString:coreSocket]];
     [request setMethod:@"WINDOW-WILL-CLOSE"
         withParameters:@[[self identifier]]];

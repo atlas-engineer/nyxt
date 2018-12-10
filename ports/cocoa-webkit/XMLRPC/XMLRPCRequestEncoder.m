@@ -3,13 +3,15 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //
 
-#import "XMLRPCRequest.h"
+#import "XMLRPCRequestEncoder.h"
 #import "XMLRPCEncoder.h"
 #import "XMLRPCDefaultEncoder.h"
+#import "XMLRPCDecoder.h"
+#import "XMLRPCDefaultDecoder.h"
 
 static const NSTimeInterval DEFAULT_TIMEOUT = 240;
 
-@implementation XMLRPCRequest
+@implementation XMLRPCRequestEncoder
 
 - (id)initWithURL: (NSURL *)URL withEncoder: (id<XMLRPCEncoder>)encoder {
     self = [super init];

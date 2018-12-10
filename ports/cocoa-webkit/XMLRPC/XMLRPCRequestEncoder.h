@@ -7,11 +7,10 @@
 
 #import "XMLRPCEncoder.h"
 
-@interface XMLRPCRequest : NSObject {
+@interface XMLRPCRequestEncoder : NSObject {
     NSMutableURLRequest *myRequest;
     id<XMLRPCEncoder> myXMLEncoder;
     NSTimeInterval myTimeout;
-    
     id extra;
 }
 
@@ -48,6 +47,7 @@
 - (void)setValue: (NSString *)value forHTTPHeaderField: (NSString *)header;
     
 - (id) extra;
+
 - (void) setExtra:(id) extraObject;
 
 @end

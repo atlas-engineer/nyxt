@@ -1,7 +1,7 @@
-#import "XMLRPCResponse.h"
+#import "XMLRPCResponseDecoder.h"
 #import "XMLRPCEventBasedParser.h"
 
-@implementation XMLRPCResponse
+@implementation XMLRPCResponseDecoder
 
 - (id)initWithData: (NSData *)data {
     if (!data) {

@@ -5,7 +5,7 @@
 
 #import "Minibuffer.h"
 #include "Global.h"
-#include "XMLRPCRequest.h"
+#include "XMLRPCRequestEncoder.h"
 
 @implementation Minibuffer
 @synthesize callBackCount;
@@ -18,7 +18,7 @@
         if (error == nil && result != nil) {
             NSString* transformedResult = [NSString stringWithFormat:@"%@", result];
             NSString *coreSocket = [[Global sharedInstance] coreSocket];
-            XMLRPCRequest *request = [[XMLRPCRequest alloc] initWithURL:
+            XMLRPCRequestEncoder *request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                       [NSURL URLWithString:coreSocket]];
             [request setMethod:@"MINIBUFFER-JAVASCRIPT-CALL-BACK"
                 withParameters:@[[self parentWindowIdentifier],

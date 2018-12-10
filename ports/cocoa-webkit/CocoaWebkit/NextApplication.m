@@ -9,8 +9,8 @@
 #import "NextApplication.h"
 #include "Global.h"
 #include "NextApplicationDelegate.h"
-#include "XMLRPCRequest.h"
-#include "XMLRPCResponse.h"
+#include "XMLRPCRequestEncoder.h"
+#include "XMLRPCResponseDecoder.h"
 
 @implementation NextApplication
 
@@ -30,7 +30,7 @@
         if (modifierFlags & NSEventModifierFlagShift) {[modifiers addObject:@"s"];}
         
         NSString *coreSocket = [[Global sharedInstance] coreSocket];
-        XMLRPCRequest *request = [[XMLRPCRequest alloc]
+        XMLRPCRequestEncoder *request = [[XMLRPCRequestEncoder alloc]
                                   initWithURL: [NSURL URLWithString:coreSocket]];
         [request setMethod:@"PUSH-KEY-EVENT"
             withParameters:@[keyCode, characters, modifiers, activeWindow]];
@@ -38,7 +38,7 @@
         [[session dataTaskWithRequest:[request request]
                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error)
           {
-              XMLRPCResponse *RPCResponse = [[XMLRPCResponse alloc] initWithData:data];
+              XMLRPCResponseDecoder *RPCResponse = [[XMLRPCResponseDecoder alloc] initWithData:data];
               // When Not Consumed, send the event to the Cocoa Application
               if ([[RPCResponse object] intValue] == 0) {
                   dispatch_sync(dispatch_get_main_queue(), ^{

@@ -2,7 +2,7 @@
 
 @class XMLRPCDecoder;
 
-@interface XMLRPCResponse : NSObject {
+@interface XMLRPCResponseDecoder : NSObject {
     NSString *myBody;
     id myObject;
     BOOL isFault;

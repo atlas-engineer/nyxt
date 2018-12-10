@@ -5,7 +5,7 @@
 
 #import "Buffer.h"
 #include "Global.h"
-#include "XMLRPCRequest.h"
+#include "XMLRPCRequestEncoder.h"
 
 @implementation Buffer
 @synthesize callBackCount;
@@ -27,7 +27,7 @@
         if (error == nil && result != nil) {
             NSString* transformedResult = [NSString stringWithFormat:@"%@", result];
             NSString *coreSocket = [[Global sharedInstance] coreSocket];
-            XMLRPCRequest *request = [[XMLRPCRequest alloc] initWithURL:
+            XMLRPCRequestEncoder *request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                       [NSURL URLWithString:coreSocket]];
             [request setMethod:@"BUFFER-JAVASCRIPT-CALL-BACK"
                 withParameters:@[[self identifier],
@@ -45,7 +45,7 @@
 - (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
     NSString *url = [[self URL] absoluteString];
     NSString *coreSocket = [[Global sharedInstance] coreSocket];
-    XMLRPCRequest *request = [[XMLRPCRequest alloc] initWithURL:
+    XMLRPCRequestEncoder *request = [[XMLRPCRequestEncoder alloc] initWithURL:
                               [NSURL URLWithString:coreSocket]];
     [request setMethod:@"BUFFER-DID-COMMIT-NAVIGATION"
         withParameters:@[[self identifier], url]];
