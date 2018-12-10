@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EB019A3621BE7D630061623C /* XMLRPCDefaultDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB019A3521BE7D630061623C /* XMLRPCDefaultDecoder.m */; };
+		EB019A3621BE7D630061623C /* XMLRPCDefaultRequestDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB019A3521BE7D630061623C /* XMLRPCDefaultRequestDecoder.m */; };
 		EB019A3C21BE89B20061623C /* XMLRPCRequestDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB019A3B21BE89B20061623C /* XMLRPCRequestDecoder.m */; };
 		EB2A55632053EB4B00F10BFE /* Server.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2A55622053EB4B00F10BFE /* Server.m */; };
 		EB2A556620540AD400F10BFE /* Global.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2A556520540AD400F10BFE /* Global.m */; };
@@ -17,7 +17,7 @@
 		EB51EC91219329D9003C6FFD /* Window.m in Sources */ = {isa = PBXBuildFile; fileRef = EB51EC90219329D9003C6FFD /* Window.m */; };
 		EB582F8421BBED6000A63FD3 /* NSStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */; };
 		EB582F8521BBED6000A63FD3 /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8321BBED6000A63FD3 /* NSData+Base64.m */; };
-		EB582F8821BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */; };
+		EB582F8821BBEFC800A63FD3 /* XMLRPCDefaultRequestEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultRequestEncoder.m */; };
 		EB582F8D21BBF36800A63FD3 /* XMLRPCRequestEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8C21BBF36800A63FD3 /* XMLRPCRequestEncoder.m */; };
 		EB582F9021BC17CA00A63FD3 /* XMLRPCResponseDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F8F21BC17CA00A63FD3 /* XMLRPCResponseDecoder.m */; };
 		EB582F9521BC17D200A63FD3 /* XMLRPCEventBasedParserDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F9221BC17D100A63FD3 /* XMLRPCEventBasedParserDelegate.m */; };
@@ -57,8 +57,8 @@
 
 /* Begin PBXFileReference section */
 		EB019A3321BE7CFE0061623C /* XMLRPCDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDecoder.h; sourceTree = "<group>"; };
-		EB019A3421BE7D630061623C /* XMLRPCDefaultDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultDecoder.h; sourceTree = "<group>"; };
-		EB019A3521BE7D630061623C /* XMLRPCDefaultDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultDecoder.m; sourceTree = "<group>"; };
+		EB019A3421BE7D630061623C /* XMLRPCDefaultRequestDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultRequestDecoder.h; sourceTree = "<group>"; };
+		EB019A3521BE7D630061623C /* XMLRPCDefaultRequestDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultRequestDecoder.m; sourceTree = "<group>"; };
 		EB019A3A21BE89B20061623C /* XMLRPCRequestDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCRequestDecoder.h; sourceTree = "<group>"; };
 		EB019A3B21BE89B20061623C /* XMLRPCRequestDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCRequestDecoder.m; sourceTree = "<group>"; };
 		EB2A55612053EB4B00F10BFE /* Server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
@@ -77,8 +77,8 @@
 		EB582F8121BBED6000A63FD3 /* NSStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStringAdditions.h; sourceTree = "<group>"; };
 		EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSStringAdditions.m; sourceTree = "<group>"; };
 		EB582F8321BBED6000A63FD3 /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64.m"; sourceTree = "<group>"; };
-		EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultEncoder.m; sourceTree = "<group>"; };
-		EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultEncoder.h; sourceTree = "<group>"; };
+		EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultRequestEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultRequestEncoder.m; sourceTree = "<group>"; };
+		EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultRequestEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultRequestEncoder.h; sourceTree = "<group>"; };
 		EB582F8A21BBF02700A63FD3 /* XMLRPCEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCEncoder.h; sourceTree = "<group>"; };
 		EB582F8B21BBF36800A63FD3 /* XMLRPCRequestEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLRPCRequestEncoder.h; sourceTree = "<group>"; };
 		EB582F8C21BBF36800A63FD3 /* XMLRPCRequestEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLRPCRequestEncoder.m; sourceTree = "<group>"; };
@@ -141,6 +141,48 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EB019A3D21BE904C0061623C /* DefaultEncoder */ = {
+			isa = PBXGroup;
+			children = (
+				EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultRequestEncoder.h */,
+				EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultRequestEncoder.m */,
+			);
+			path = DefaultEncoder;
+			sourceTree = "<group>";
+		};
+		EB019A3E21BE906E0061623C /* DefaultDecoder */ = {
+			isa = PBXGroup;
+			children = (
+				EB019A3421BE7D630061623C /* XMLRPCDefaultRequestDecoder.h */,
+				EB019A3521BE7D630061623C /* XMLRPCDefaultRequestDecoder.m */,
+				EB582F9121BC17D100A63FD3 /* XMLRPCEventBasedParser.h */,
+				EB582F9321BC17D200A63FD3 /* XMLRPCEventBasedParser.m */,
+				EB582F9421BC17D200A63FD3 /* XMLRPCEventBasedParserDelegate.h */,
+				EB582F9221BC17D100A63FD3 /* XMLRPCEventBasedParserDelegate.m */,
+			);
+			path = DefaultDecoder;
+			sourceTree = "<group>";
+		};
+		EB019A3F21BE90840061623C /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				EB582F8021BBED6000A63FD3 /* NSData+Base64.h */,
+				EB582F8321BBED6000A63FD3 /* NSData+Base64.m */,
+				EB582F8121BBED6000A63FD3 /* NSStringAdditions.h */,
+				EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */,
+			);
+			path = Utility;
+			sourceTree = "<group>";
+		};
+		EB019A4021BE90CD0061623C /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				EB582F8A21BBF02700A63FD3 /* XMLRPCEncoder.h */,
+				EB019A3321BE7CFE0061623C /* XMLRPCDecoder.h */,
+			);
+			path = Protocol;
+			sourceTree = "<group>";
+		};
 		EB4AE8F52038649500A4F82A = {
 			isa = PBXGroup;
 			children = (
@@ -190,24 +232,14 @@
 		EB582F7F21BBED2F00A63FD3 /* XMLRPC */ = {
 			isa = PBXGroup;
 			children = (
-				EB582F8021BBED6000A63FD3 /* NSData+Base64.h */,
-				EB582F8321BBED6000A63FD3 /* NSData+Base64.m */,
-				EB582F8121BBED6000A63FD3 /* NSStringAdditions.h */,
-				EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */,
-				EB582F8A21BBF02700A63FD3 /* XMLRPCEncoder.h */,
-				EB019A3321BE7CFE0061623C /* XMLRPCDecoder.h */,
-				EB019A3421BE7D630061623C /* XMLRPCDefaultDecoder.h */,
-				EB019A3521BE7D630061623C /* XMLRPCDefaultDecoder.m */,
-				EB582F8921BBEFD300A63FD3 /* XMLRPCDefaultEncoder.h */,
-				EB582F8721BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m */,
+				EB019A3F21BE90840061623C /* Utility */,
+				EB019A4021BE90CD0061623C /* Protocol */,
+				EB019A3D21BE904C0061623C /* DefaultEncoder */,
+				EB019A3E21BE906E0061623C /* DefaultDecoder */,
 				EB582F8B21BBF36800A63FD3 /* XMLRPCRequestEncoder.h */,
 				EB582F8C21BBF36800A63FD3 /* XMLRPCRequestEncoder.m */,
 				EB019A3A21BE89B20061623C /* XMLRPCRequestDecoder.h */,
 				EB019A3B21BE89B20061623C /* XMLRPCRequestDecoder.m */,
-				EB582F9121BC17D100A63FD3 /* XMLRPCEventBasedParser.h */,
-				EB582F9321BC17D200A63FD3 /* XMLRPCEventBasedParser.m */,
-				EB582F9421BC17D200A63FD3 /* XMLRPCEventBasedParserDelegate.h */,
-				EB582F9221BC17D100A63FD3 /* XMLRPCEventBasedParserDelegate.m */,
 				EB582F8E21BC17CA00A63FD3 /* XMLRPCResponseDecoder.h */,
 				EB582F8F21BC17CA00A63FD3 /* XMLRPCResponseDecoder.m */,
 			);
@@ -349,12 +381,12 @@
 			files = (
 				EB582F9021BC17CA00A63FD3 /* XMLRPCResponseDecoder.m in Sources */,
 				EBED66BD21BDCA3400BD9491 /* GCDWebServerDataResponse.m in Sources */,
-				EB019A3621BE7D630061623C /* XMLRPCDefaultDecoder.m in Sources */,
+				EB019A3621BE7D630061623C /* XMLRPCDefaultRequestDecoder.m in Sources */,
 				EBED66C121BDCA3400BD9491 /* GCDWebServerDataRequest.m in Sources */,
 				EBED66C221BDCA3400BD9491 /* GCDWebServerFileRequest.m in Sources */,
 				EBBFBB65206813150033996B /* NextApplication.m in Sources */,
 				EBF73B1921BB25AD0065B745 /* argparse.c in Sources */,
-				EB582F8821BBEFC800A63FD3 /* XMLRPCDefaultEncoder.m in Sources */,
+				EB582F8821BBEFC800A63FD3 /* XMLRPCDefaultRequestEncoder.m in Sources */,
 				EBED66B721BDCA3400BD9491 /* GCDWebServerRequest.m in Sources */,
 				EBED66BE21BDCA3400BD9491 /* GCDWebServerStreamedResponse.m in Sources */,
 				EBED66BF21BDCA3400BD9491 /* GCDWebServerURLEncodedFormRequest.m in Sources */,

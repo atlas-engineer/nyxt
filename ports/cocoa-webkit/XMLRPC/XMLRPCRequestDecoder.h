@@ -10,6 +10,8 @@
     id<XMLRPCDecoder> myXMLDecoder;
 }
 
+- (id)initWithData: (NSData *)data withDecoder: (id<XMLRPCDecoder>)decoder;
+
 - (id)initWithData: (NSData *)data;
 
 - (NSString *)method;

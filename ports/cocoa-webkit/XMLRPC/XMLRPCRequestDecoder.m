@@ -4,18 +4,21 @@
 //  
 
 #import "XMLRPCRequestDecoder.h"
+#import "XMLRPCDefaultRequestDecoder.h"
 
 @implementation XMLRPCRequestDecoder
 
-- (id)initWithData: (NSData *)data {
-    
-    return nil;
+- (id)initWithData: (NSData *)data withDecoder: (id<XMLRPCDecoder>)decoder {
+    self = [super init];
+    if (self) {
+        myXMLDecoder = decoder;
+        [decoder decodeWithData:data];
+    }
+    return self;
 }
 
-- (id)initWithData: (NSData *)data withDecoder: (id<XMLRPCDecoder>)decoder {
-    myXMLDecoder = decoder;
-    
-    return nil;
+- (id)initWithData: (NSData *)data {
+    return [self initWithData:data withDecoder:[[XMLRPCDefaultRequestDecoder alloc] init]];
 }
 
 - (NSString *)method {

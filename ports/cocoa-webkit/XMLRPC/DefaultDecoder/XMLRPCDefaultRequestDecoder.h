@@ -6,7 +6,7 @@
 #import <Foundation/Foundation.h>
 #import "XMLRPCDecoder.h"
 
-@interface XMLRPCDefaultDecoder : NSObject <XMLRPCDecoder> {
+@interface XMLRPCDefaultRequestDecoder : NSObject <XMLRPCDecoder> {
     NSString *myMethod;
     NSArray *myParameters;
 }

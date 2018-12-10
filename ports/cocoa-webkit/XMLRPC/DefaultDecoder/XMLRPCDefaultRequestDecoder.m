@@ -3,9 +3,9 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //  
 
-#import "XMLRPCDefaultDecoder.h"
+#import "XMLRPCDefaultRequestDecoder.h"
 
-@implementation XMLRPCDefaultDecoder
+@implementation XMLRPCDefaultRequestDecoder
 
 - (id)init {
     if (self = [super init]) {

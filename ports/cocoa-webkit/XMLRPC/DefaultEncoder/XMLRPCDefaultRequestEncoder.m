@@ -3,11 +3,11 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //
 
-#import "XMLRPCDefaultEncoder.h"
+#import "XMLRPCDefaultRequestEncoder.h"
 #import "NSStringAdditions.h"
 #import "NSData+Base64.h"
 
-@interface XMLRPCDefaultEncoder (XMLRPCEncoderPrivate)
+@interface XMLRPCDefaultRequestEncoder (XMLRPCEncoderPrivate)
 
 - (NSString *)valueTag: (NSString *)tag value: (NSString *)value;
 
@@ -31,7 +31,7 @@
 
 @end
 
-@implementation XMLRPCDefaultEncoder
+@implementation XMLRPCDefaultRequestEncoder
 
 - (id)init {
     if (self = [super init]) {
@@ -82,7 +82,7 @@
 
 @end
 
-@implementation XMLRPCDefaultEncoder (XMLRPCEncoderPrivate)
+@implementation XMLRPCDefaultRequestEncoder (XMLRPCEncoderPrivate)
 
 - (NSString *)valueTag: (NSString *)tag value: (NSString *)value {
     return [NSString stringWithFormat: @"<value><%@>%@</%@></value>", tag, value, tag];

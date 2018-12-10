@@ -13,7 +13,7 @@
 #import "Buffer.h"
 #import "Window.h"
 #import "Global.h"
-#import "XMLRPCDefaultEncoder.h"
+#import "XMLRPCDefaultRequestEncoder.h"
 
 @implementation NextApplicationDelegate
 @synthesize windows;

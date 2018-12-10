@@ -5,9 +5,9 @@
 
 #import "XMLRPCRequestEncoder.h"
 #import "XMLRPCEncoder.h"
-#import "XMLRPCDefaultEncoder.h"
+#import "XMLRPCDefaultRequestEncoder.h"
 #import "XMLRPCDecoder.h"
-#import "XMLRPCDefaultDecoder.h"
+#import "XMLRPCDefaultRequestDecoder.h"
 
 static const NSTimeInterval DEFAULT_TIMEOUT = 240;
 
@@ -29,7 +29,7 @@ static const NSTimeInterval DEFAULT_TIMEOUT = 240;
 }
 
 - (id)initWithURL: (NSURL *)URL {
-    return [self initWithURL:URL withEncoder:[[XMLRPCDefaultEncoder alloc] init]];
+    return [self initWithURL:URL withEncoder:[[XMLRPCDefaultRequestEncoder alloc] init]];
 }
 
 - (void)setURL: (NSURL *)URL {
