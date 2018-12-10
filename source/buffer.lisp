@@ -46,6 +46,9 @@ buffer to the start page."
 (define-parenstatic buffer-get-url
     (ps:chain window location href))
 
+(define-parenstatic buffer-get-title
+    (ps:chain document title))
+
 (define-parenscript buffer-set-url (url)
   ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
 

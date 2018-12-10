@@ -92,7 +92,15 @@
       (setf (active-history-node mode) new-node)
       (return-from add-or-traverse-history t))))
 
+(define-command set-default-window-title ()
+  "Set current window title to 'Next - TITLE - URL."
+  (with-result* ((url (buffer-get-url))
+                 (title (buffer-get-title)))
+    (window-set-title *interface* (window-active *interface*)
+                      (concatenate 'string "Next - " title " - " url))))
+
 (defmethod did-commit-navigation ((mode document-mode) url)
+  (set-default-window-title)
   (add-or-traverse-history mode url))
 
 (defmethod setup ((mode document-mode) (buffer buffer))
