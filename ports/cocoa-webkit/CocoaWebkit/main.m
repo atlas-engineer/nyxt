@@ -32,9 +32,7 @@ int main(int argc, const char * argv[])
     Global *global = [Global sharedInstance];
     [global setCoreSocket:[NSString stringWithUTF8String:coreSocket]];
     [global setPort:[@(port) stringValue]];
-    
-    NSLog(@"Starting server with: Port: %@ Core Socket: %@", [global port], [global coreSocket]);
-    
+        
     NextApplication *app = [NextApplication sharedApplication];
     [app setDelegate:[[NextApplicationDelegate alloc] init]];
     [app setActivationPolicy:NSApplicationActivationPolicyRegular];

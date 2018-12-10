@@ -137,10 +137,10 @@
 		EB4AE8F52038649500A4F82A = {
 			isa = PBXGroup;
 			children = (
-				EBED669621BDCA3400BD9491 /* gcdwebserver */,
-				EB582F7F21BBED2F00A63FD3 /* xmlrpc */,
-				EBF73B1621BB25720065B745 /* argparse */,
-				EB4AE9002038649500A4F82A /* cocoa-webkit */,
+				EBED669621BDCA3400BD9491 /* GCDWebServer */,
+				EB582F7F21BBED2F00A63FD3 /* XMLRPC */,
+				EBF73B1621BB25720065B745 /* ArgParse */,
+				EB4AE9002038649500A4F82A /* CocoaWebkit */,
 				EB4AE8FF2038649500A4F82A /* Products */,
 				EBED669221BDC99700BD9491 /* Frameworks */,
 			);
@@ -154,7 +154,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		EB4AE9002038649500A4F82A /* cocoa-webkit */ = {
+		EB4AE9002038649500A4F82A /* CocoaWebkit */ = {
 			isa = PBXGroup;
 			children = (
 				EB4AE9012038649500A4F82A /* main.m */,
@@ -177,10 +177,10 @@
 				EBB1A1DB204750390056B075 /* Buffer.h */,
 				EBB1A1DC204750390056B075 /* Buffer.m */,
 			);
-			path = "cocoa-webkit";
+			path = CocoaWebkit;
 			sourceTree = "<group>";
 		};
-		EB582F7F21BBED2F00A63FD3 /* xmlrpc */ = {
+		EB582F7F21BBED2F00A63FD3 /* XMLRPC */ = {
 			isa = PBXGroup;
 			children = (
 				EB582F8021BBED6000A63FD3 /* NSData+Base64.h */,
@@ -199,7 +199,7 @@
 				EB582F8E21BC17CA00A63FD3 /* XMLRPCResponse.h */,
 				EB582F8F21BC17CA00A63FD3 /* XMLRPCResponse.m */,
 			);
-			path = xmlrpc;
+			path = XMLRPC;
 			sourceTree = "<group>";
 		};
 		EBED669221BDC99700BD9491 /* Frameworks */ = {
@@ -210,14 +210,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		EBED669621BDCA3400BD9491 /* gcdwebserver */ = {
+		EBED669621BDCA3400BD9491 /* GCDWebServer */ = {
 			isa = PBXGroup;
 			children = (
 				EBED669721BDCA3400BD9491 /* Core */,
 				EBED66A421BDCA3400BD9491 /* Responses */,
 				EBED66AD21BDCA3400BD9491 /* Requests */,
 			);
-			path = gcdwebserver;
+			path = GCDWebServer;
 			sourceTree = "<group>";
 		};
 		EBED669721BDCA3400BD9491 /* Core */ = {
@@ -269,13 +269,13 @@
 			path = Requests;
 			sourceTree = "<group>";
 		};
-		EBF73B1621BB25720065B745 /* argparse */ = {
+		EBF73B1621BB25720065B745 /* ArgParse */ = {
 			isa = PBXGroup;
 			children = (
 				EBF73B1721BB25AC0065B745 /* argparse.c */,
 				EBF73B1821BB25AD0065B745 /* argparse.h */,
 			);
-			path = argparse;
+			path = ArgParse;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
