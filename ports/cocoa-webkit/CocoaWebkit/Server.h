@@ -3,20 +3,19 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //
 
-#import <Foundation/Foundation.h>
 #import "GCDWebServer.h"
-#import "GCDWebServerDataResponse.h"
 #import "GCDWebServerDataRequest.h"
+#import "GCDWebServerDataResponse.h"
 #include "Global.h"
 #import "NextApplicationDelegate.h"
 #import "XMLRPCRequestDecoder.h"
+#import <Foundation/Foundation.h>
 
-@interface Server : NSObject
-{
+@interface Server : NSObject {
     GCDWebServer* webServer;
 }
 
-- (void) start;
-- (void) stop;
+- (void)start;
+- (void)stop;
 
 @end

@@ -104,7 +104,7 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* _Nu
  *
  *  @warning This property must be set if a body is present.
  */
-@property(nonatomic, copy, nullable) NSString* contentType;
+@property (nonatomic, copy, nullable) NSString* contentType;
 
 /**
  *  Sets the content length for the body of the response. If a body is present
@@ -116,14 +116,14 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* _Nu
  *  The default value is "NSUIntegerMax" i.e. the response has no body or its length
  *  is undefined.
  */
-@property(nonatomic) NSUInteger contentLength;
+@property (nonatomic) NSUInteger contentLength;
 
 /**
  *  Sets the HTTP status code for the response.
  *
  *  The default value is 200 i.e. "OK".
  */
-@property(nonatomic) NSInteger statusCode;
+@property (nonatomic) NSInteger statusCode;
 
 /**
  *  Sets the caching hint for the response using the "Cache-Control" header.
@@ -131,21 +131,21 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* _Nu
  *
  *  The default value is 0 i.e. "no-cache".
  */
-@property(nonatomic) NSUInteger cacheControlMaxAge;
+@property (nonatomic) NSUInteger cacheControlMaxAge;
 
 /**
  *  Sets the last modified date for the response using the "Last-Modified" header.
  *
  *  The default value is nil.
  */
-@property(nonatomic, nullable) NSDate* lastModifiedDate;
+@property (nonatomic, nullable) NSDate* lastModifiedDate;
 
 /**
  *  Sets the ETag for the response using the "ETag" header.
  *
  *  The default value is nil.
  */
-@property(nonatomic, copy, nullable) NSString* eTag;
+@property (nonatomic, copy, nullable) NSString* eTag;
 
 /**
  *  Enables gzip encoding for the response body.
@@ -157,7 +157,7 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* _Nu
  *  be able to determine the body length when connection is closed per
  *  HTTP/1.1 specifications.
  */
-@property(nonatomic, getter=isGZipContentEncodingEnabled) BOOL gzipContentEncodingEnabled;
+@property (nonatomic, getter=isGZipContentEncodingEnabled) BOOL gzipContentEncodingEnabled;
 
 /**
  *  Creates an empty response.

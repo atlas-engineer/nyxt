@@ -7,10 +7,10 @@
 
 @interface NSString (NSStringAdditions)
 
-+ (NSString *)stringByGeneratingUUID;
++ (NSString*)stringByGeneratingUUID;
 
-- (NSString *)unescapedString;
+- (NSString*)unescapedString;
 
-- (NSString *)escapedString;
+- (NSString*)escapedString;
 
 @end

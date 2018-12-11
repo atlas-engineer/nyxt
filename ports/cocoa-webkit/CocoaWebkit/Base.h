@@ -3,17 +3,17 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //
 
-#import <Cocoa/Cocoa.h>
-#import "Minibuffer.h"
 #import "Buffer.h"
+#import "Minibuffer.h"
+#import <Cocoa/Cocoa.h>
 
 @interface Base : NSStackView
 
-@property (strong, atomic, readwrite) Buffer *buffer;
-@property (strong, atomic, readwrite) Minibuffer *minibuffer;
-@property (strong, atomic, readwrite) NSLayoutConstraint *minibufferHeightConstraint;
+@property (strong, atomic, readwrite) Buffer* buffer;
+@property (strong, atomic, readwrite) Minibuffer* minibuffer;
+@property (strong, atomic, readwrite) NSLayoutConstraint* minibufferHeightConstraint;
 
-- (instancetype) init;
+- (instancetype)init;
 - (int)setMinibufferHeight:(int)height;
 - (void)setActiveBuffer:(Buffer*)buffer;
 

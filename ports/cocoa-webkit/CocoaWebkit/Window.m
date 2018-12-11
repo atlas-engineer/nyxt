@@ -1,7 +1,7 @@
 //
 // Copyright © 2017-2018 Atlas Engineer LLC.
 // Use of this file is governed by the license that can be found in LICENSE.
-//  
+//
 
 #import "Window.h"
 #import "Base.h"
@@ -12,13 +12,12 @@
 @synthesize base;
 @synthesize identifier;
 
-- (id) init {
+- (id)init {
     self = [super init];
     if (self != nil) {
         NSRect windowRect = NSMakeRect(0, 0, 1024, 768);
-        NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable |
-        NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskClosable;
-        
+        NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskClosable;
+
         [self setDelegate:self];
         [self setFrame:windowRect display:YES];
         [self setBackingType:NSBackingStoreBuffered];
@@ -29,24 +28,24 @@
         [self setBackgroundColor:[NSColor whiteColor]];
         [self makeKeyAndOrderFront:self];
         [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-        
-        Base *baseView = [[Base alloc] init];
+
+        Base* baseView = [[Base alloc] init];
         [baseView setFrame:[[self contentView] bounds]];
         [self setContentView:baseView];
         [self setReleasedWhenClosed:NO];
-        
-        [self setBase: baseView];
+
+        [self setBase:baseView];
     }
     return self;
 }
 
-- (void)windowWillClose:(NSNotification *)notification {
-    NSString *coreSocket = [[Global sharedInstance] coreSocket];
-    XMLRPCRequestEncoder *request = [[XMLRPCRequestEncoder alloc] initWithURL:
-                              [NSURL URLWithString:coreSocket]];
+- (void)windowWillClose:(NSNotification*)notification {
+    NSString* coreSocket = [[Global sharedInstance] coreSocket];
+    XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
+                                                                      [NSURL URLWithString:coreSocket]];
     [request setMethod:@"WINDOW-WILL-CLOSE"
-        withParameters:@[[self identifier]]];
-    NSURLSession *session = [NSURLSession sharedSession];
+        withParameters:@[ [self identifier] ]];
+    NSURLSession* session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:[request request]] resume];
 }
 

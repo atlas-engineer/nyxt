@@ -9,8 +9,8 @@
 @interface Minibuffer : WKWebView
 
 @property (nonatomic, readwrite) NSInteger callBackCount;
-@property (strong, atomic, readwrite) NSString *parentWindowIdentifier;
+@property (strong, atomic, readwrite) NSString* parentWindowIdentifier;
 
-- (NSString *)evaluateJavaScript:(NSString *) javaScript;
+- (NSString*)evaluateJavaScript:(NSString*)javaScript;
 
 @end

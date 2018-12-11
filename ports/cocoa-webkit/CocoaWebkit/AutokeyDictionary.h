@@ -8,14 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
-@interface AutokeyDictionary : NSMutableDictionary
-{
-    NSMutableDictionary *_dict;
+@interface AutokeyDictionary : NSMutableDictionary {
+    NSMutableDictionary* _dict;
 }
 
-- (NSString *) insertElement:(NSObject *) object;
-- (void) removeObjectForKey:(id) aKey;
-- (NSArray *) allKeys;
+- (NSString*)insertElement:(NSObject*)object;
+- (void)removeObjectForKey:(id)aKey;
+- (NSArray*)allKeys;
 
 @property (nonatomic, readwrite) NSInteger elementCount;
 

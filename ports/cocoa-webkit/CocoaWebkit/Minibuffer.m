@@ -11,25 +11,25 @@
 @synthesize callBackCount;
 @synthesize parentWindowIdentifier;
 
-- (NSString *)evaluateJavaScript:(NSString *) javaScript
-{
+- (NSString*)evaluateJavaScript:(NSString*)javaScript {
     [self setCallBackCount:[self callBackCount] + 1];
-    [self evaluateJavaScript:javaScript completionHandler:^(id result, NSError *error) {
-        if (error == nil && result != nil) {
-            NSString* transformedResult = [NSString stringWithFormat:@"%@", result];
-            NSString *coreSocket = [[Global sharedInstance] coreSocket];
-            XMLRPCRequestEncoder *request = [[XMLRPCRequestEncoder alloc] initWithURL:
-                                      [NSURL URLWithString:coreSocket]];
-            [request setMethod:@"MINIBUFFER-JAVASCRIPT-CALL-BACK"
-                withParameters:@[[self parentWindowIdentifier],
-                                 transformedResult,
-                                 [@([self callBackCount]) stringValue]]];
-            NSURLSession *session = [NSURLSession sharedSession];
-            [[session dataTaskWithRequest:[request request]] resume];
-        } else if ([error description]) {
-            NSLog(@"evaluateJavaScript error : %@", [error description]);
-        }
-    }];
+    [self evaluateJavaScript:javaScript
+           completionHandler:^(id result, NSError* error) {
+               if (error == nil && result != nil) {
+                   NSString* transformedResult = [NSString stringWithFormat:@"%@", result];
+                   NSString* coreSocket = [[Global sharedInstance] coreSocket];
+                   XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
+                                                                                     [NSURL URLWithString:coreSocket]];
+                   [request setMethod:@"MINIBUFFER-JAVASCRIPT-CALL-BACK"
+                       withParameters:@[ [self parentWindowIdentifier],
+                           transformedResult,
+                           [@([self callBackCount]) stringValue] ]];
+                   NSURLSession* session = [NSURLSession sharedSession];
+                   [[session dataTaskWithRequest:[request request]] resume];
+               } else if ([error description]) {
+                   NSLog(@"evaluateJavaScript error : %@", [error description]);
+               }
+           }];
     return [@([self callBackCount]) stringValue];
 }
 

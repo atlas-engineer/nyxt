@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  of the HTTP response from memory.
  */
 @interface GCDWebServerDataResponse : GCDWebServerResponse
-@property(nonatomic, copy) NSString* contentType;  // Redeclare as non-null
+@property (nonatomic, copy) NSString* contentType; // Redeclare as non-null
 
 /**
  *  Creates a response with data in memory and a given content type.

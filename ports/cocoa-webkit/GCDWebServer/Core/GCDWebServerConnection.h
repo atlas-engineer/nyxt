@@ -48,47 +48,47 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Returns the GCDWebServer that owns the connection.
  */
-@property(nonatomic, readonly) GCDWebServer* server;
+@property (nonatomic, readonly) GCDWebServer* server;
 
 /**
  *  Returns YES if the connection is using IPv6.
  */
-@property(nonatomic, readonly, getter=isUsingIPv6) BOOL usingIPv6;
+@property (nonatomic, readonly, getter=isUsingIPv6) BOOL usingIPv6;
 
 /**
  *  Returns the address of the local peer (i.e. server) of the connection
  *  as a raw "struct sockaddr".
  */
-@property(nonatomic, readonly) NSData* localAddressData;
+@property (nonatomic, readonly) NSData* localAddressData;
 
 /**
  *  Returns the address of the local peer (i.e. server) of the connection
  *  as a string.
  */
-@property(nonatomic, readonly) NSString* localAddressString;
+@property (nonatomic, readonly) NSString* localAddressString;
 
 /**
  *  Returns the address of the remote peer (i.e. client) of the connection
  *  as a raw "struct sockaddr".
  */
-@property(nonatomic, readonly) NSData* remoteAddressData;
+@property (nonatomic, readonly) NSData* remoteAddressData;
 
 /**
  *  Returns the address of the remote peer (i.e. client) of the connection
  *  as a string.
  */
-@property(nonatomic, readonly) NSString* remoteAddressString;
+@property (nonatomic, readonly) NSString* remoteAddressString;
 
 /**
  *  Returns the total number of bytes received from the remote peer (i.e. client)
  *  so far.
  */
-@property(nonatomic, readonly) NSUInteger totalBytesRead;
+@property (nonatomic, readonly) NSUInteger totalBytesRead;
 
 /**
  *  Returns the total number of bytes sent to the remote peer (i.e. client) so far.
  */
-@property(nonatomic, readonly) NSUInteger totalBytesWritten;
+@property (nonatomic, readonly) NSUInteger totalBytesWritten;
 
 @end
 

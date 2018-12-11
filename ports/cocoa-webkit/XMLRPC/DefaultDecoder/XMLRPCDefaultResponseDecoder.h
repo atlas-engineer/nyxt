@@ -2,19 +2,19 @@
 
 @class XMLRPCEventBasedParserDelegate;
 
-@interface XMLRPCDefaultResponseDecoder : NSObject<NSXMLParserDelegate> {
-    NSXMLParser *myParser;
-    XMLRPCEventBasedParserDelegate *myParserDelegate;
+@interface XMLRPCDefaultResponseDecoder : NSObject <NSXMLParserDelegate> {
+    NSXMLParser* myParser;
+    XMLRPCEventBasedParserDelegate* myParserDelegate;
     BOOL isFault;
 }
 
-- (id)initWithData: (NSData *)data;
+- (id)initWithData:(NSData*)data;
 
 - (id)parse;
 
 - (void)abortParsing;
 
-- (NSError *)parserError;
+- (NSError*)parserError;
 
 - (BOOL)isFault;
 

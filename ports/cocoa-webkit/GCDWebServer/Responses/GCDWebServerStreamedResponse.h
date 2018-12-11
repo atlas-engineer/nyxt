@@ -53,7 +53,7 @@ typedef void (^GCDWebServerAsyncStreamBlock)(GCDWebServerBodyReaderCompletionBlo
  *  the body of the HTTP response using a GCD block.
  */
 @interface GCDWebServerStreamedResponse : GCDWebServerResponse
-@property(nonatomic, copy) NSString* contentType;  // Redeclare as non-null
+@property (nonatomic, copy) NSString* contentType; // Redeclare as non-null
 
 /**
  *  Creates a response with streamed data and a given content type.

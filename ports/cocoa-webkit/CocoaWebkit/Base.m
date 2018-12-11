@@ -12,38 +12,35 @@
 @synthesize buffer;
 @synthesize minibufferHeightConstraint;
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     [self setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [self setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self setSpacing:0];
     [self setMinibuffer:[[Minibuffer alloc] init]];
     [self setMinibufferHeightConstraint:
-     [NSLayoutConstraint constraintWithItem:self.minibuffer
-                                  attribute:NSLayoutAttributeHeight
-                                  relatedBy:NSLayoutRelationEqual
-                                     toItem:nil
-                                  attribute:NSLayoutAttributeNotAnAttribute
-                                 multiplier:1.0f
-                                   constant:0]];
+              [NSLayoutConstraint constraintWithItem:self.minibuffer
+                                           attribute:NSLayoutAttributeHeight
+                                           relatedBy:NSLayoutRelationEqual
+                                              toItem:nil
+                                           attribute:NSLayoutAttributeNotAnAttribute
+                                          multiplier:1.0f
+                                            constant:0]];
     [self setBuffer:[[Buffer alloc] init]];
     [[self minibuffer] addConstraint:[self minibufferHeightConstraint]];
-    
+
     [self addArrangedSubview:[self buffer]];
     [self addArrangedSubview:[self minibuffer]];
-    
+
     return self;
 }
 
-- (void)setActiveBuffer:(Buffer*)buffer
-{
+- (void)setActiveBuffer:(Buffer*)buffer {
     [self replaceSubview:[self buffer] with:buffer];
     [self setBuffer:buffer];
 }
 
-- (int)setMinibufferHeight:(int)height
-{
+- (int)setMinibufferHeight:(int)height {
     [[self minibufferHeightConstraint] setConstant:height];
     return height;
 }

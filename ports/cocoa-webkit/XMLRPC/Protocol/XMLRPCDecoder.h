@@ -1,7 +1,7 @@
 //
 // Copyright © 2017-2018 Atlas Engineer LLC.
 // Use of this file is governed by the license that can be found in LICENSE.
-//  
+//
 
 #import <Foundation/Foundation.h>
 
@@ -21,10 +21,10 @@ typedef enum {
 
 @protocol XMLRPCDecoder <NSObject>
 
-- (void)decodeWithData:(NSData*) data;
+- (void)decodeWithData:(NSData*)data;
 
-- (NSString *)method;
+- (NSString*)method;
 
-- (NSArray *)parameters;
+- (NSArray*)parameters;
 
 @end

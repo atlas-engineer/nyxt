@@ -8,46 +8,46 @@
 #import "XMLRPCEncoder.h"
 
 @interface XMLRPCRequestEncoder : NSObject {
-    NSMutableURLRequest *myRequest;
+    NSMutableURLRequest* myRequest;
     id<XMLRPCEncoder> myXMLEncoder;
     NSTimeInterval myTimeout;
     id extra;
 }
 
-- (id)initWithURL: (NSURL *)URL;
+- (id)initWithURL:(NSURL*)URL;
 
-- (void)setURL: (NSURL *)URL;
+- (void)setURL:(NSURL*)URL;
 
-- (NSURL *)URL;
+- (NSURL*)URL;
 
-- (void)setUserAgent: (NSString *)userAgent;
+- (void)setUserAgent:(NSString*)userAgent;
 
-- (NSString *)userAgent;
+- (NSString*)userAgent;
 
-- (void)setEncoder: (id<XMLRPCEncoder>) encoder;
+- (void)setEncoder:(id<XMLRPCEncoder>)encoder;
 
-- (void)setMethod: (NSString *)method;
+- (void)setMethod:(NSString*)method;
 
-- (void)setMethod: (NSString *)method withParameter: (id)parameter;
+- (void)setMethod:(NSString*)method withParameter:(id)parameter;
 
-- (void)setMethod: (NSString *)method withParameters: (NSArray *)parameters;
+- (void)setMethod:(NSString*)method withParameters:(NSArray*)parameters;
 
-- (void)setTimeoutInterval: (NSTimeInterval)timeout;
+- (void)setTimeoutInterval:(NSTimeInterval)timeout;
 
-- (NSString *)method;
+- (NSString*)method;
 
-- (NSArray *)parameters;
+- (NSArray*)parameters;
 
 - (NSTimeInterval)timeout;
 
-- (NSString *)body;
+- (NSString*)body;
 
-- (NSURLRequest *)request;
+- (NSURLRequest*)request;
 
-- (void)setValue: (NSString *)value forHTTPHeaderField: (NSString *)header;
-    
-- (id) extra;
+- (void)setValue:(NSString*)value forHTTPHeaderField:(NSString*)header;
 
-- (void) setExtra:(id) extraObject;
+- (id)extra;
+
+- (void)setExtra:(id)extraObject;
 
 @end

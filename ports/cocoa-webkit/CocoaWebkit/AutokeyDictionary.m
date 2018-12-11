@@ -8,21 +8,18 @@
 @implementation AutokeyDictionary
 @synthesize elementCount;
 
-- (instancetype) init
-{
+- (instancetype)init {
     self = [super init];
-    if (self)
-    {
+    if (self) {
         [self setElementCount:0];
         _dict = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
 
-- (NSString *) insertElement:(NSObject *) object
-{
-    NSString *elementKey = [@([self elementCount]) stringValue];
-    [_dict setValue:object forKey: elementKey];
+- (NSString*)insertElement:(NSObject*)object {
+    NSString* elementKey = [@([self elementCount]) stringValue];
+    [_dict setValue:object forKey:elementKey];
     [self setElementCount:[self elementCount] + 1];
     return elementKey;
 }
@@ -39,7 +36,7 @@
     [_dict removeObjectForKey:aKey];
 }
 
-- (NSEnumerator *)keyEnumerator {
+- (NSEnumerator*)keyEnumerator {
     return [_dict keyEnumerator];
 }
 

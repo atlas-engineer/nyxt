@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  GCDWebServerFileRequest is deallocated. If you want to preserve this file,
  *  you must move it to a different location beforehand.
  */
-@property(nonatomic, readonly) NSString* temporaryPath;
+@property (nonatomic, readonly) NSString* temporaryPath;
 
 @end
 

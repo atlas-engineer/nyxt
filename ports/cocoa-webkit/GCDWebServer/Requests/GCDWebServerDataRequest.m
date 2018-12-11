@@ -32,45 +32,45 @@
 #import "GCDWebServerPrivate.h"
 
 @interface GCDWebServerDataRequest ()
-@property(nonatomic) NSMutableData* data;
+@property (nonatomic) NSMutableData* data;
 @end
 
 @implementation GCDWebServerDataRequest {
-  NSString* _text;
-  id _jsonObject;
+    NSString* _text;
+    id _jsonObject;
 }
 
 - (BOOL)open:(NSError**)error {
-  if (self.contentLength != NSUIntegerMax) {
-    _data = [[NSMutableData alloc] initWithCapacity:self.contentLength];
-  } else {
-    _data = [[NSMutableData alloc] init];
-  }
-  if (_data == nil) {
-    if (error) {
-      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"Failed allocating memory" }];
+    if (self.contentLength != NSUIntegerMax) {
+        _data = [[NSMutableData alloc] initWithCapacity:self.contentLength];
+    } else {
+        _data = [[NSMutableData alloc] init];
     }
-    return NO;
-  }
-  return YES;
+    if (_data == nil) {
+        if (error) {
+            *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"Failed allocating memory" }];
+        }
+        return NO;
+    }
+    return YES;
 }
 
 - (BOOL)writeData:(NSData*)data error:(NSError**)error {
-  [_data appendData:data];
-  return YES;
+    [_data appendData:data];
+    return YES;
 }
 
 - (BOOL)close:(NSError**)error {
-  return YES;
+    return YES;
 }
 
 - (NSString*)description {
-  NSMutableString* description = [NSMutableString stringWithString:[super description]];
-  if (_data) {
-    [description appendString:@"\n\n"];
-    [description appendString:GCDWebServerDescribeData(_data, (NSString*)self.contentType)];
-  }
-  return description;
+    NSMutableString* description = [NSMutableString stringWithString:[super description]];
+    if (_data) {
+        [description appendString:@"\n\n"];
+        [description appendString:GCDWebServerDescribeData(_data, (NSString*)self.contentType)];
+    }
+    return description;
 }
 
 @end
@@ -78,27 +78,27 @@
 @implementation GCDWebServerDataRequest (Extensions)
 
 - (NSString*)text {
-  if (_text == nil) {
-    if ([self.contentType hasPrefix:@"text/"]) {
-      NSString* charset = GCDWebServerExtractHeaderValueParameter(self.contentType, @"charset");
-      _text = [[NSString alloc] initWithData:self.data encoding:GCDWebServerStringEncodingFromCharset(charset)];
-    } else {
-      GWS_DNOT_REACHED();
+    if (_text == nil) {
+        if ([self.contentType hasPrefix:@"text/"]) {
+            NSString* charset = GCDWebServerExtractHeaderValueParameter(self.contentType, @"charset");
+            _text = [[NSString alloc] initWithData:self.data encoding:GCDWebServerStringEncodingFromCharset(charset)];
+        } else {
+            GWS_DNOT_REACHED();
+        }
     }
-  }
-  return _text;
+    return _text;
 }
 
 - (id)jsonObject {
-  if (_jsonObject == nil) {
-    NSString* mimeType = GCDWebServerTruncateHeaderValue(self.contentType);
-    if ([mimeType isEqualToString:@"application/json"] || [mimeType isEqualToString:@"text/json"] || [mimeType isEqualToString:@"text/javascript"]) {
-      _jsonObject = [NSJSONSerialization JSONObjectWithData:_data options:0 error:NULL];
-    } else {
-      GWS_DNOT_REACHED();
+    if (_jsonObject == nil) {
+        NSString* mimeType = GCDWebServerTruncateHeaderValue(self.contentType);
+        if ([mimeType isEqualToString:@"application/json"] || [mimeType isEqualToString:@"text/json"] || [mimeType isEqualToString:@"text/javascript"]) {
+            _jsonObject = [NSJSONSerialization JSONObjectWithData:_data options:0 error:NULL];
+        } else {
+            GWS_DNOT_REACHED();
+        }
     }
-  }
-  return _jsonObject;
+    return _jsonObject;
 }
 
 @end

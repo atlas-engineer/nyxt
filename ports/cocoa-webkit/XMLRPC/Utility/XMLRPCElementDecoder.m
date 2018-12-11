@@ -1,63 +1,63 @@
 //
 // Copyright © 2017-2018 Atlas Engineer LLC.
 // Use of this file is governed by the license that can be found in LICENSE.
-//  
+//
 
 #import "XMLRPCElementDecoder.h"
 #import "NSData+Base64.h"
 
 @implementation XMLRPCElementDecoder
 
-+ (NSDate *)parseDateString: (NSString *)dateString withFormat: (NSString *)format {
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    NSDate *result = nil;
-    [dateFormatter setDateFormat: format];
-    result = [dateFormatter dateFromString: dateString];
++ (NSDate*)parseDateString:(NSString*)dateString withFormat:(NSString*)format {
+    NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+    NSDate* result = nil;
+    [dateFormatter setDateFormat:format];
+    result = [dateFormatter dateFromString:dateString];
     return result;
 }
 
-+ (NSNumber *)parseInteger: (NSString *)value {
-    return [NSNumber numberWithInteger: [value integerValue]];
++ (NSNumber*)parseInteger:(NSString*)value {
+    return [NSNumber numberWithInteger:[value integerValue]];
 }
 
-+ (NSNumber *)parseDouble: (NSString *)value {
-    return [NSNumber numberWithDouble: [value doubleValue]];
++ (NSNumber*)parseDouble:(NSString*)value {
+    return [NSNumber numberWithDouble:[value doubleValue]];
 }
 
-+ (NSNumber *)parseBoolean: (NSString *)value {
-    if ([value isEqualToString: @"1"]) {
-        return [NSNumber numberWithBool: YES];
++ (NSNumber*)parseBoolean:(NSString*)value {
+    if ([value isEqualToString:@"1"]) {
+        return [NSNumber numberWithBool:YES];
     }
-    
-    return [NSNumber numberWithBool: NO];
+
+    return [NSNumber numberWithBool:NO];
 }
 
-+ (NSString *)parseString: (NSString *)value {
-    return [value stringByTrimmingCharactersInSet: [NSCharacterSet whitespaceAndNewlineCharacterSet]];
++ (NSString*)parseString:(NSString*)value {
+    return [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
-+ (NSDate *)parseDate: (NSString *)value {
-    NSDate *result = nil;
-    
-    result = [self parseDateString: value withFormat: @"yyyyMMdd'T'HH:mm:ss"];
-    
++ (NSDate*)parseDate:(NSString*)value {
+    NSDate* result = nil;
+
+    result = [self parseDateString:value withFormat:@"yyyyMMdd'T'HH:mm:ss"];
+
     if (!result) {
-        result = [self parseDateString: value withFormat: @"yyyy'-'MM'-'dd'T'HH:mm:ss"];
+        result = [self parseDateString:value withFormat:@"yyyy'-'MM'-'dd'T'HH:mm:ss"];
     }
-    
+
     if (!result) {
-        result = [self parseDateString: value withFormat: @"yyyy'-'MM'-'dd'T'HH:mm:ssZ"];
+        result = [self parseDateString:value withFormat:@"yyyy'-'MM'-'dd'T'HH:mm:ssZ"];
     }
-    
+
     if (!result) {
-        result = (NSDate *)[NSNull null];
+        result = (NSDate*)[NSNull null];
     }
-    
+
     return result;
 }
 
-+ (NSData *)parseData: (NSString *)value {
-    return [NSData dataFromBase64String: value];
++ (NSData*)parseData:(NSString*)value {
+    return [NSData dataFromBase64String:value];
 }
 
 @end

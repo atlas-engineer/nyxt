@@ -92,29 +92,29 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
 /**
  *  Returns the HTTP method for the request.
  */
-@property(nonatomic, readonly) NSString* method;
+@property (nonatomic, readonly) NSString* method;
 
 /**
  *  Returns the URL for the request.
  */
-@property(nonatomic, readonly) NSURL* URL;
+@property (nonatomic, readonly) NSURL* URL;
 
 /**
  *  Returns the HTTP headers for the request.
  */
-@property(nonatomic, readonly) NSDictionary* headers;
+@property (nonatomic, readonly) NSDictionary* headers;
 
 /**
  *  Returns the path component of the URL for the request.
  */
-@property(nonatomic, readonly) NSString* path;
+@property (nonatomic, readonly) NSString* path;
 
 /**
  *  Returns the parsed and unescaped query component of the URL for the request.
  *
  *  @warning This property will be nil if there is no query in the URL.
  */
-@property(nonatomic, readonly, nullable) NSDictionary* query;
+@property (nonatomic, readonly, nullable) NSDictionary* query;
 
 /**
  *  Returns the content type for the body of the request parsed from the
@@ -124,7 +124,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
  *  "application/octet-stream" if a body is present but there was no
  *  "Content-Type" header.
  */
-@property(nonatomic, readonly, nullable) NSString* contentType;
+@property (nonatomic, readonly, nullable) NSString* contentType;
 
 /**
  *  Returns the content length for the body of the request parsed from the
@@ -134,54 +134,54 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
  *  if there is a body but no "Content-Length" header, typically because
  *  chunked transfer encoding is used.
  */
-@property(nonatomic, readonly) NSUInteger contentLength;
+@property (nonatomic, readonly) NSUInteger contentLength;
 
 /**
  *  Returns the parsed "If-Modified-Since" header or nil if absent or malformed.
  */
-@property(nonatomic, readonly, nullable) NSDate* ifModifiedSince;
+@property (nonatomic, readonly, nullable) NSDate* ifModifiedSince;
 
 /**
  *  Returns the parsed "If-None-Match" header or nil if absent or malformed.
  */
-@property(nonatomic, readonly, nullable) NSString* ifNoneMatch;
+@property (nonatomic, readonly, nullable) NSString* ifNoneMatch;
 
 /**
  *  Returns the parsed "Range" header or (NSUIntegerMax, 0) if absent or malformed.
  *  The range will be set to (offset, length) if expressed from the beginning
  *  of the entity body, or (NSUIntegerMax, length) if expressed from its end.
  */
-@property(nonatomic, readonly) NSRange byteRange;
+@property (nonatomic, readonly) NSRange byteRange;
 
 /**
  *  Returns YES if the client supports gzip content encoding according to the
  *  "Accept-Encoding" header.
  */
-@property(nonatomic, readonly) BOOL acceptsGzipContentEncoding;
+@property (nonatomic, readonly) BOOL acceptsGzipContentEncoding;
 
 /**
  *  Returns the address of the local peer (i.e. server) for the request
  *  as a raw "struct sockaddr".
  */
-@property(nonatomic, readonly) NSData* localAddressData;
+@property (nonatomic, readonly) NSData* localAddressData;
 
 /**
  *  Returns the address of the local peer (i.e. server) for the request
  *  as a string.
  */
-@property(nonatomic, readonly) NSString* localAddressString;
+@property (nonatomic, readonly) NSString* localAddressString;
 
 /**
  *  Returns the address of the remote peer (i.e. client) for the request
  *  as a raw "struct sockaddr".
  */
-@property(nonatomic, readonly) NSData* remoteAddressData;
+@property (nonatomic, readonly) NSData* remoteAddressData;
 
 /**
  *  Returns the address of the remote peer (i.e. client) for the request
  *  as a string.
  */
-@property(nonatomic, readonly) NSString* remoteAddressString;
+@property (nonatomic, readonly) NSString* remoteAddressString;
 
 /**
  *  This method is the designated initializer for the class.

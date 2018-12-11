@@ -297,19 +297,19 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
 /**
  *  Sets the delegate for the server.
  */
-@property(nonatomic, weak, nullable) id<GCDWebServerDelegate> delegate;
+@property (nonatomic, weak, nullable) id<GCDWebServerDelegate> delegate;
 
 /**
  *  Returns YES if the server is currently running.
  */
-@property(nonatomic, readonly, getter=isRunning) BOOL running;
+@property (nonatomic, readonly, getter=isRunning) BOOL running;
 
 /**
  *  Returns the port used by the server.
  *
  *  @warning This property is only valid if the server is running.
  */
-@property(nonatomic, readonly) NSUInteger port;
+@property (nonatomic, readonly) NSUInteger port;
 
 /**
  *  Returns the Bonjour name used by the server.
@@ -317,7 +317,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *  @warning This property is only valid if the server is running and Bonjour
  *  registration has successfully completed, which can take up to a few seconds.
  */
-@property(nonatomic, readonly, nullable) NSString* bonjourName;
+@property (nonatomic, readonly, nullable) NSString* bonjourName;
 
 /**
  *  Returns the Bonjour service type used by the server.
@@ -325,7 +325,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *  @warning This property is only valid if the server is running and Bonjour
  *  registration has successfully completed, which can take up to a few seconds.
  */
-@property(nonatomic, readonly, nullable) NSString* bonjourType;
+@property (nonatomic, readonly, nullable) NSString* bonjourType;
 
 /**
  *  This method is the designated initializer for the class.
@@ -385,7 +385,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *
  *  @warning This property is only valid if the server is running.
  */
-@property(nonatomic, readonly, nullable) NSURL* serverURL;
+@property (nonatomic, readonly, nullable) NSURL* serverURL;
 
 /**
  *  Returns the server's Bonjour URL.
@@ -395,7 +395,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *  Also be aware this property will not automatically update if the Bonjour hostname
  *  has been dynamically changed after the server started running (this should be rare).
  */
-@property(nonatomic, readonly, nullable) NSURL* bonjourServerURL;
+@property (nonatomic, readonly, nullable) NSURL* bonjourServerURL;
 
 /**
  *  Returns the server's public URL.
@@ -403,7 +403,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *  @warning This property is only valid if the server is running and NAT port
  *  mapping is active.
  */
-@property(nonatomic, readonly, nullable) NSURL* publicServerURL;
+@property (nonatomic, readonly, nullable) NSURL* publicServerURL;
 
 /**
  *  Starts the server on port 8080 (OS X & iOS Simulator) or port 80 (iOS)
@@ -605,7 +605,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *
  *  @warning The current directory must not contain any prior recording files.
  */
-@property(nonatomic, getter=isRecordingEnabled) BOOL recordingEnabled;
+@property (nonatomic, getter=isRecordingEnabled) BOOL recordingEnabled;
 
 /**
  *  Runs tests by playing back pre-recorded HTTP requests in the given directory

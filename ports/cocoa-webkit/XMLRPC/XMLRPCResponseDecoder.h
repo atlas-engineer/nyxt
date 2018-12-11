@@ -3,23 +3,23 @@
 @class XMLRPCDecoder;
 
 @interface XMLRPCResponseDecoder : NSObject {
-    NSString *myBody;
+    NSString* myBody;
     id myObject;
     BOOL isFault;
 }
 
-- (id)initWithData: (NSData *)data;
+- (id)initWithData:(NSData*)data;
 
 - (BOOL)isFault;
 
-- (NSNumber *)faultCode;
+- (NSNumber*)faultCode;
 
-- (NSString *)faultString;
+- (NSString*)faultString;
 
 - (id)object;
 
-- (NSString *)body;
+- (NSString*)body;
 
-- (NSString *)description;
+- (NSString*)description;
 
 @end

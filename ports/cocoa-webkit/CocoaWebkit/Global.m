@@ -10,9 +10,9 @@
 @synthesize port;
 @synthesize coreSocket;
 
-+ (Global *)sharedInstance {
++ (Global*)sharedInstance {
     static dispatch_once_t onceToken;
-    static Global *instance = nil;
+    static Global* instance = nil;
     dispatch_once(&onceToken, ^{
         instance = [[Global alloc] init];
     });

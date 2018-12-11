@@ -8,8 +8,8 @@
 @interface Buffer : WKWebView <WKNavigationDelegate>
 
 @property (nonatomic, readwrite) NSInteger callBackCount;
-@property (strong, atomic, readwrite) NSString *identifier;
+@property (strong, atomic, readwrite) NSString* identifier;
 
-- (instancetype) init;
-- (NSString *)evaluateJavaScript:(NSString *) javaScript;
+- (instancetype)init;
+- (NSString*)evaluateJavaScript:(NSString*)javaScript;
 @end

@@ -7,12 +7,12 @@
 
 @protocol XMLRPCEncoder <NSObject>
 
-- (NSString *)encode;
+- (NSString*)encode;
 
-- (void)setMethod: (NSString *)method withParameters: (NSArray *)parameters;
+- (void)setMethod:(NSString*)method withParameters:(NSArray*)parameters;
 
-- (NSString *)method;
+- (NSString*)method;
 
-- (NSArray *)parameters;
+- (NSArray*)parameters;
 
 @end

@@ -3,29 +3,29 @@
 
 @implementation XMLRPCDefaultResponseDecoder
 
-- (id)initWithData: (NSData *)data {
+- (id)initWithData:(NSData*)data {
     if (!data) {
         return nil;
     }
-    
+
     if (self = [self init]) {
-        myParser = [[NSXMLParser alloc] initWithData: data];
+        myParser = [[NSXMLParser alloc] initWithData:data];
         myParserDelegate = nil;
         isFault = NO;
     }
-    
+
     return self;
 }
 
 - (id)parse {
-    [myParser setDelegate: self];
-    
+    [myParser setDelegate:self];
+
     [myParser parse];
-    
+
     if ([myParser parserError]) {
         return nil;
     }
-    
+
     return [myParserDelegate elementValue];
 }
 
@@ -33,7 +33,7 @@
     [myParser abortParsing];
 }
 
-- (NSError *)parserError {
+- (NSError*)parserError {
     return [myParser parserError];
 }
 
@@ -45,16 +45,16 @@
 
 @implementation XMLRPCDefaultResponseDecoder (NSXMLParserDelegate)
 
-- (void)parser: (NSXMLParser *)parser didStartElement: (NSString *)element namespaceURI: (NSString *)namespaceURI qualifiedName: (NSString *)qualifiedName attributes: (NSDictionary *)attributes {
-    if ([element isEqualToString: @"fault"]) {
+- (void)parser:(NSXMLParser*)parser didStartElement:(NSString*)element namespaceURI:(NSString*)namespaceURI qualifiedName:(NSString*)qualifiedName attributes:(NSDictionary*)attributes {
+    if ([element isEqualToString:@"fault"]) {
         isFault = YES;
-    } else if ([element isEqualToString: @"value"]) {
-        myParserDelegate = [[XMLRPCEventBasedParserDelegate alloc] initWithParent: nil];
-        [myParser setDelegate: myParserDelegate];
+    } else if ([element isEqualToString:@"value"]) {
+        myParserDelegate = [[XMLRPCEventBasedParserDelegate alloc] initWithParent:nil];
+        [myParser setDelegate:myParserDelegate];
     }
 }
 
-- (void)parser: (NSXMLParser *)parser parseErrorOccurred: (NSError *)parseError {
+- (void)parser:(NSXMLParser*)parser parseErrorOccurred:(NSError*)parseError {
     [self abortParsing];
 }
 

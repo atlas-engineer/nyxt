@@ -3,14 +3,15 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //
 
-#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
 
-@interface Global : NSObject {}
+@interface Global : NSObject {
+}
 
-+ (Global *)sharedInstance;
++ (Global*)sharedInstance;
 
-@property (strong, atomic, readwrite) NSString *port;
-@property (strong, atomic, readwrite) NSString *coreSocket;
+@property (strong, atomic, readwrite) NSString* port;
+@property (strong, atomic, readwrite) NSString* coreSocket;
 
 @end

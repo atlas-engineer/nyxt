@@ -38,18 +38,18 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Returns the control name retrieved from the part headers.
  */
-@property(nonatomic, readonly) NSString* controlName;
+@property (nonatomic, readonly) NSString* controlName;
 
 /**
  *  Returns the content type retrieved from the part headers or "text/plain"
  *  if not available (per HTTP specifications).
  */
-@property(nonatomic, readonly) NSString* contentType;
+@property (nonatomic, readonly) NSString* contentType;
 
 /**
  *  Returns the MIME type component of the content type for the part.
  */
-@property(nonatomic, readonly) NSString* mimeType;
+@property (nonatomic, readonly) NSString* mimeType;
 
 @end
 
@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Returns the data for the part.
  */
-@property(nonatomic, readonly) NSData* data;
+@property (nonatomic, readonly) NSData* data;
 
 /**
  *  Returns the data for the part interpreted as text. If the content
@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  The text encoding used to interpret the data is extracted from the
  *  "Content-Type" header or defaults to UTF-8.
  */
-@property(nonatomic, readonly, nullable) NSString* string;
+@property (nonatomic, readonly, nullable) NSString* string;
 
 @end
 
@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Returns the file name retrieved from the part headers.
  */
-@property(nonatomic, readonly) NSString* fileName;
+@property (nonatomic, readonly) NSString* fileName;
 
 /**
  *  Returns the path to the temporary file containing the part data.
@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  GCDWebServerMultiPartFile is deallocated. If you want to preserve this file,
  *  you must move it to a different location beforehand.
  */
-@property(nonatomic, readonly) NSString* temporaryPath;
+@property (nonatomic, readonly) NSString* temporaryPath;
 
 @end
 
@@ -107,13 +107,13 @@ NS_ASSUME_NONNULL_BEGIN
  *  Returns the argument parts from the multipart encoded form as
  *  name / GCDWebServerMultiPartArgument pairs.
  */
-@property(nonatomic, readonly) NSArray* arguments;
+@property (nonatomic, readonly) NSArray* arguments;
 
 /**
  *  Returns the files parts from the multipart encoded form as
  *  name / GCDWebServerMultiPartFile pairs.
  */
-@property(nonatomic, readonly) NSArray* files;
+@property (nonatomic, readonly) NSArray* files;
 
 /**
  *  Returns the MIME type for multipart encoded forms
