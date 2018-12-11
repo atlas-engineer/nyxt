@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		EB019A3621BE7D630061623C /* XMLRPCDefaultRequestDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB019A3521BE7D630061623C /* XMLRPCDefaultRequestDecoder.m */; };
 		EB019A3C21BE89B20061623C /* XMLRPCRequestDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB019A3B21BE89B20061623C /* XMLRPCRequestDecoder.m */; };
+		EB144ED321BFD8BE0016A560 /* XMLRPCElementParser.m in Sources */ = {isa = PBXBuildFile; fileRef = EB144ED221BFD8BE0016A560 /* XMLRPCElementParser.m */; };
 		EB2A55632053EB4B00F10BFE /* Server.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2A55622053EB4B00F10BFE /* Server.m */; };
 		EB2A556620540AD400F10BFE /* Global.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2A556520540AD400F10BFE /* Global.m */; };
 		EB3F03B5204DD5A60065EB14 /* Base.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3F03B4204DD5A60065EB14 /* Base.m */; };
@@ -61,6 +62,8 @@
 		EB019A3521BE7D630061623C /* XMLRPCDefaultRequestDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultRequestDecoder.m; sourceTree = "<group>"; };
 		EB019A3A21BE89B20061623C /* XMLRPCRequestDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCRequestDecoder.h; sourceTree = "<group>"; };
 		EB019A3B21BE89B20061623C /* XMLRPCRequestDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCRequestDecoder.m; sourceTree = "<group>"; };
+		EB144ED121BFD8BE0016A560 /* XMLRPCElementParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCElementParser.h; sourceTree = "<group>"; };
+		EB144ED221BFD8BE0016A560 /* XMLRPCElementParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCElementParser.m; sourceTree = "<group>"; };
 		EB2A55612053EB4B00F10BFE /* Server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
 		EB2A55622053EB4B00F10BFE /* Server.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Server.m; sourceTree = "<group>"; };
 		EB2A556420540AD400F10BFE /* Global.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Global.h; sourceTree = "<group>"; };
@@ -170,6 +173,8 @@
 				EB582F8321BBED6000A63FD3 /* NSData+Base64.m */,
 				EB582F8121BBED6000A63FD3 /* NSStringAdditions.h */,
 				EB582F8221BBED6000A63FD3 /* NSStringAdditions.m */,
+				EB144ED121BFD8BE0016A560 /* XMLRPCElementParser.h */,
+				EB144ED221BFD8BE0016A560 /* XMLRPCElementParser.m */,
 			);
 			path = Utility;
 			sourceTree = "<group>";
@@ -392,6 +397,7 @@
 				EBED66BF21BDCA3400BD9491 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				EB582F9521BC17D200A63FD3 /* XMLRPCEventBasedParserDelegate.m in Sources */,
 				EBED66C021BDCA3400BD9491 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EB144ED321BFD8BE0016A560 /* XMLRPCElementParser.m in Sources */,
 				EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */,
 				EBB1A1DD204750390056B075 /* Buffer.m in Sources */,
 				EB2A556620540AD400F10BFE /* Global.m in Sources */,

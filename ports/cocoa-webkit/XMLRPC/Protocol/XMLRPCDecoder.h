@@ -5,9 +5,23 @@
 
 #import <Foundation/Foundation.h>
 
+typedef enum {
+    XMLRPCElementTypeMethodName,
+    XMLRPCElementTypeArray,
+    XMLRPCElementTypeDictionary,
+    XMLRPCElementTypeMember,
+    XMLRPCElementTypeName,
+    XMLRPCElementTypeInteger,
+    XMLRPCElementTypeDouble,
+    XMLRPCElementTypeBoolean,
+    XMLRPCElementTypeString,
+    XMLRPCElementTypeDate,
+    XMLRPCElementTypeData
+} XMLRPCElementType;
+
 @protocol XMLRPCDecoder <NSObject>
 
-- (id)decodeWithData:(NSData*) data;
+- (void)decodeWithData:(NSData*) data;
 
 - (NSString *)method;
 

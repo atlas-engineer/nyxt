@@ -1,17 +1,6 @@
 #import <Foundation/Foundation.h>
-
-typedef enum {
-    XMLRPCElementTypeArray,
-    XMLRPCElementTypeDictionary,
-    XMLRPCElementTypeMember,
-    XMLRPCElementTypeName,
-    XMLRPCElementTypeInteger,
-    XMLRPCElementTypeDouble,
-    XMLRPCElementTypeBoolean,
-    XMLRPCElementTypeString,
-    XMLRPCElementTypeDate,
-    XMLRPCElementTypeData
-} XMLRPCElementType;
+#import "XMLRPCDecoder.h"
+#import "XMLRPCElementParser.h"
 
 @interface XMLRPCEventBasedParserDelegate : NSObject<NSXMLParserDelegate> {
     // Without ARC this reference is effectively unretained so don't use strong reference here.

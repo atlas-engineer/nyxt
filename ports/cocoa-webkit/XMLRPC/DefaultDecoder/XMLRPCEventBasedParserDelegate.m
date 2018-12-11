@@ -1,25 +1,10 @@
 #import "XMLRPCEventBasedParserDelegate.h"
-#import "NSData+Base64.h"
 
 @interface XMLRPCEventBasedParserDelegate (XMLRPCEventBasedParserDelegatePrivate)
 
 - (BOOL)isDictionaryElementType: (XMLRPCElementType)elementType;
 
 - (void)addElementValueToParent;
-
-- (NSDate *)parseDateString: (NSString *)dateString withFormat: (NSString *)format;
-
-- (NSNumber *)parseInteger: (NSString *)value;
-
-- (NSNumber *)parseDouble: (NSString *)value;
-
-- (NSNumber *)parseBoolean: (NSString *)value;
-
-- (NSString *)parseString: (NSString *)value;
-
-- (NSDate *)parseDate: (NSString *)value;
-
-- (NSData *)parseData: (NSString *)value;
 
 @end
 
@@ -117,29 +102,29 @@
         NSString *elementValue = nil;
         
         if ((myElementType != XMLRPCElementTypeArray) && ![self isDictionaryElementType: myElementType]) {
-            elementValue = [self parseString: myElementValue];
+            elementValue = [XMLRPCElementParser parseString: myElementValue];
             myElementValue = nil;
         }
         
         switch (myElementType) {
             case XMLRPCElementTypeInteger:
-                myElementValue = [self parseInteger: elementValue];
+                myElementValue = [XMLRPCElementParser parseInteger: elementValue];
                 break;
             case XMLRPCElementTypeDouble:
-                myElementValue = [self parseDouble: elementValue];
+                myElementValue = [XMLRPCElementParser parseDouble: elementValue];
                 break;
             case XMLRPCElementTypeBoolean:
-                myElementValue = [self parseBoolean: elementValue];
+                myElementValue = [XMLRPCElementParser parseBoolean: elementValue];
                 break;
             case XMLRPCElementTypeString:
             case XMLRPCElementTypeName:
                 myElementValue = elementValue;
                 break;
             case XMLRPCElementTypeDate:
-                myElementValue = [self parseDate: elementValue];
+                myElementValue = [XMLRPCElementParser parseDate: elementValue];
                 break;
             case XMLRPCElementTypeData:
-                myElementValue = [self parseData: elementValue];
+                myElementValue = [XMLRPCElementParser parseData: elementValue];
                 break;
             default:
                 break;
@@ -220,58 +205,6 @@
         default:
             break;
     }
-}
-
-- (NSDate *)parseDateString: (NSString *)dateString withFormat: (NSString *)format {
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    NSDate *result = nil;
-    [dateFormatter setDateFormat: format];
-    result = [dateFormatter dateFromString: dateString];
-    return result;
-}
-
-- (NSNumber *)parseInteger: (NSString *)value {
-    return [NSNumber numberWithInteger: [value integerValue]];
-}
-
-- (NSNumber *)parseDouble: (NSString *)value {
-    return [NSNumber numberWithDouble: [value doubleValue]];
-}
-
-- (NSNumber *)parseBoolean: (NSString *)value {
-    if ([value isEqualToString: @"1"]) {
-        return [NSNumber numberWithBool: YES];
-    }
-    
-    return [NSNumber numberWithBool: NO];
-}
-
-- (NSString *)parseString: (NSString *)value {
-    return [value stringByTrimmingCharactersInSet: [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-}
-
-- (NSDate *)parseDate: (NSString *)value {
-    NSDate *result = nil;
-    
-    result = [self parseDateString: value withFormat: @"yyyyMMdd'T'HH:mm:ss"];
-    
-    if (!result) {
-        result = [self parseDateString: value withFormat: @"yyyy'-'MM'-'dd'T'HH:mm:ss"];
-    }
-    
-    if (!result) {
-        result = [self parseDateString: value withFormat: @"yyyy'-'MM'-'dd'T'HH:mm:ssZ"];
-    }
-    
-    if (!result) {
-        result = (NSDate *)[NSNull null];
-    }
-
-    return result;
-}
-
-- (NSData *)parseData: (NSString *)value {
-    return [NSData dataFromBase64String: value];
 }
 
 @end

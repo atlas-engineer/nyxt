@@ -9,7 +9,7 @@
 #import "GCDWebServer.h"
 #import "GCDWebServerDataResponse.h"
 #import "GCDWebServerDataRequest.h"
-#import "XMLRPCResponseDecoder.h"
+#import "XMLRPCRequestDecoder.h"
 
 @implementation Server
 
@@ -20,10 +20,10 @@
                               path:@"/RPC2"
                       requestClass:[GCDWebServerDataRequest class]
                       processBlock:^GCDWebServerResponse *(GCDWebServerDataRequest* request) {
-                          XMLRPCResponseDecoder *response = [[XMLRPCResponseDecoder alloc]
-                                                      initWithData:[request data]];
-                          NSLog(@"XMLRPC Description: %@", [response description]);
-                          return [GCDWebServerDataResponse responseWithText:@"<xml>"];
+                          XMLRPCRequestDecoder *requestDecoder = [[XMLRPCRequestDecoder alloc]
+                                                                  initWithData:[request data]];
+                          NSLog(@"XML-RPC METHOD: %@", [requestDecoder method]);
+                          return [GCDWebServerDataResponse responseWithText:@"<xml></xml>"];
                       }];
     
     // Use convenience method that runs server on port 8080

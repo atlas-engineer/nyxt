@@ -5,10 +5,19 @@
 
 #import <Foundation/Foundation.h>
 #import "XMLRPCDecoder.h"
+#import "XMLRPCElementParser.h"
 
-@interface XMLRPCDefaultRequestDecoder : NSObject <XMLRPCDecoder> {
-    NSString *myMethod;
-    NSArray *myParameters;
+@interface XMLRPCDefaultRequestDecoder : NSObject <XMLRPCDecoder, NSXMLParserDelegate> {
+    NSXMLParser *parser;
+    NSString *method;
+    NSMutableArray *parameters;
+    
+    XMLRPCElementType elementType;
+    NSString *elementKey;
+    id elementValue;
 }
+
+- (NSString *)method;
+- (NSArray *)parameters;
 
 @end
