@@ -64,9 +64,9 @@
     }
 }
 
-- (int)setMinibufferHeightForWindow:(NSString*)windowKey height:(int)height {
+- (int)setMinibufferHeightForWindow:(NSString*)windowKey height:(NSNumber*)height {
     Window* window = [[self windows] objectForKey:windowKey];
-    return [[window base] setMinibufferHeight:height];
+    return [[window base] setMinibufferHeight: [height intValue]];
 }
 
 - (bool)setActiveBufferForWindow:(NSString*)windowKey buffer:(NSString*)bufferKey {

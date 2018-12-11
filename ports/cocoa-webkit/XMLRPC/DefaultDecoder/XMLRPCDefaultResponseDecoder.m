@@ -45,7 +45,11 @@
 
 @implementation XMLRPCDefaultResponseDecoder (NSXMLParserDelegate)
 
-- (void)parser:(NSXMLParser*)parser didStartElement:(NSString*)element namespaceURI:(NSString*)namespaceURI qualifiedName:(NSString*)qualifiedName attributes:(NSDictionary*)attributes {
+- (void)parser:(NSXMLParser*)parser
+    didStartElement:(NSString*)element
+  namespaceURI:(NSString*)namespaceURI
+ qualifiedName:(NSString*)qualifiedName
+    attributes:(NSDictionary*)attributes {
     if ([element isEqualToString:@"fault"]) {
         isFault = YES;
     } else if ([element isEqualToString:@"value"]) {

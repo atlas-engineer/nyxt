@@ -18,7 +18,7 @@
 - (NSString*)windowActive;
 - (bool)windowExists:(NSString*)key;
 - (bool)setActiveBufferForWindow:(NSString*)window buffer:(NSString*)buffer;
-- (int)setMinibufferHeightForWindow:(NSString*)windowKey height:(int)height;
+- (int)setMinibufferHeightForWindow:(NSString*)windowKey height:(NSNumber*)height;
 - (NSString*)bufferMake;
 - (bool)bufferDelete:(NSString*)key;
 - (NSString*)bufferEvaluateJavaScript:(NSString*)bufferKey javaScript:(NSString*)javaScript;
