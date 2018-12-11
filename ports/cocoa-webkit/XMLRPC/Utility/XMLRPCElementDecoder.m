@@ -3,10 +3,10 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //  
 
-#import "XMLRPCElementParser.h"
+#import "XMLRPCElementDecoder.h"
 #import "NSData+Base64.h"
 
-@implementation XMLRPCElementParser
+@implementation XMLRPCElementDecoder
 
 + (NSDate *)parseDateString: (NSString *)dateString withFormat: (NSString *)format {
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];

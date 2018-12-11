@@ -102,29 +102,29 @@
         NSString *elementValue = nil;
         
         if ((myElementType != XMLRPCElementTypeArray) && ![self isDictionaryElementType: myElementType]) {
-            elementValue = [XMLRPCElementParser parseString: myElementValue];
+            elementValue = [XMLRPCElementDecoder parseString: myElementValue];
             myElementValue = nil;
         }
         
         switch (myElementType) {
             case XMLRPCElementTypeInteger:
-                myElementValue = [XMLRPCElementParser parseInteger: elementValue];
+                myElementValue = [XMLRPCElementDecoder parseInteger: elementValue];
                 break;
             case XMLRPCElementTypeDouble:
-                myElementValue = [XMLRPCElementParser parseDouble: elementValue];
+                myElementValue = [XMLRPCElementDecoder parseDouble: elementValue];
                 break;
             case XMLRPCElementTypeBoolean:
-                myElementValue = [XMLRPCElementParser parseBoolean: elementValue];
+                myElementValue = [XMLRPCElementDecoder parseBoolean: elementValue];
                 break;
             case XMLRPCElementTypeString:
             case XMLRPCElementTypeName:
                 myElementValue = elementValue;
                 break;
             case XMLRPCElementTypeDate:
-                myElementValue = [XMLRPCElementParser parseDate: elementValue];
+                myElementValue = [XMLRPCElementDecoder parseDate: elementValue];
                 break;
             case XMLRPCElementTypeData:
-                myElementValue = [XMLRPCElementParser parseData: elementValue];
+                myElementValue = [XMLRPCElementDecoder parseData: elementValue];
                 break;
             default:
                 break;

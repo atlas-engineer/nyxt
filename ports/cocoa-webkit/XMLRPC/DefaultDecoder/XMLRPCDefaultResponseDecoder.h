@@ -2,7 +2,7 @@
 
 @class XMLRPCEventBasedParserDelegate;
 
-@interface XMLRPCEventBasedParser : NSObject<NSXMLParserDelegate> {
+@interface XMLRPCDefaultResponseDecoder : NSObject<NSXMLParserDelegate> {
     NSXMLParser *myParser;
     XMLRPCEventBasedParserDelegate *myParserDelegate;
     BOOL isFault;

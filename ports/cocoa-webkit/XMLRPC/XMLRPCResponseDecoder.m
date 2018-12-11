@@ -1,5 +1,5 @@
 #import "XMLRPCResponseDecoder.h"
-#import "XMLRPCEventBasedParser.h"
+#import "XMLRPCDefaultResponseDecoder.h"
 
 @implementation XMLRPCResponseDecoder
 
@@ -10,7 +10,7 @@
 
     self = [super init];
     if (self) {
-        XMLRPCEventBasedParser *parser = [[XMLRPCEventBasedParser alloc] initWithData: data];
+        XMLRPCDefaultResponseDecoder *parser = [[XMLRPCDefaultResponseDecoder alloc] initWithData: data];
         
         if (!parser) {
             return nil;

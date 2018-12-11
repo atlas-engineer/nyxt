@@ -1,7 +1,7 @@
-#import "XMLRPCEventBasedParser.h"
+#import "XMLRPCDefaultResponseDecoder.h"
 #import "XMLRPCEventBasedParserDelegate.h"
 
-@implementation XMLRPCEventBasedParser
+@implementation XMLRPCDefaultResponseDecoder
 
 - (id)initWithData: (NSData *)data {
     if (!data) {
@@ -43,7 +43,7 @@
 
 @end
 
-@implementation XMLRPCEventBasedParser (NSXMLParserDelegate)
+@implementation XMLRPCDefaultResponseDecoder (NSXMLParserDelegate)
 
 - (void)parser: (NSXMLParser *)parser didStartElement: (NSString *)element namespaceURI: (NSString *)namespaceURI qualifiedName: (NSString *)qualifiedName attributes: (NSDictionary *)attributes {
     if ([element isEqualToString: @"fault"]) {

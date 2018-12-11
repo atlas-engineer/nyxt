@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "XMLRPCDecoder.h"
-#import "XMLRPCElementParser.h"
+#import "XMLRPCElementDecoder.h"
 
 @interface XMLRPCEventBasedParserDelegate : NSObject<NSXMLParserDelegate> {
     // Without ARC this reference is effectively unretained so don't use strong reference here.
@@ -13,25 +13,17 @@
 
 - (id)initWithParent: (XMLRPCEventBasedParserDelegate *)parent;
 
-#pragma mark -
-
 - (void)setParent: (XMLRPCEventBasedParserDelegate *)parent;
 
 - (XMLRPCEventBasedParserDelegate *)parent;
-
-#pragma mark -
 
 - (void)setElementType: (XMLRPCElementType)elementType;
 
 - (XMLRPCElementType)elementType;
 
-#pragma mark -
-
 - (void)setElementKey: (NSString *)elementKey;
 
 - (NSString *)elementKey;
-
-#pragma mark -
 
 - (void)setElementValue: (id)elementValue;
 

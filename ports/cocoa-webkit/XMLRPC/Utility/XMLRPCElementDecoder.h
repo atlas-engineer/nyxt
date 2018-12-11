@@ -5,7 +5,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface XMLRPCElementParser : NSObject
+@interface XMLRPCElementDecoder : NSObject
 
 + (NSDate *)parseDateString: (NSString *)dateString withFormat: (NSString *)format;
 

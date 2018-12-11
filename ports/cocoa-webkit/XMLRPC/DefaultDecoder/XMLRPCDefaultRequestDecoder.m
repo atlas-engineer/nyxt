@@ -81,7 +81,7 @@ didStartElement:(NSString*)element
  qualifiedName: (NSString *)qualifiedName {
     if (elementValue != nil) {
         NSString *tmpElement;
-        tmpElement = [XMLRPCElementParser parseString: elementValue];
+        tmpElement = [XMLRPCElementDecoder parseString: elementValue];
         elementValue = nil;
         
         switch (elementType) {
@@ -92,19 +92,19 @@ didStartElement:(NSString*)element
                 method = tmpElement;
                 break;
             case XMLRPCElementTypeInteger:
-                [parameters addObject: [XMLRPCElementParser parseInteger: tmpElement]];
+                [parameters addObject: [XMLRPCElementDecoder parseInteger: tmpElement]];
                 break;
             case XMLRPCElementTypeDouble:
-                [parameters addObject: [XMLRPCElementParser parseDouble: tmpElement]];
+                [parameters addObject: [XMLRPCElementDecoder parseDouble: tmpElement]];
                 break;
             case XMLRPCElementTypeBoolean:
-                [parameters addObject: [XMLRPCElementParser parseBoolean: tmpElement]];
+                [parameters addObject: [XMLRPCElementDecoder parseBoolean: tmpElement]];
                 break;
             case XMLRPCElementTypeDate:
-                [parameters addObject: [XMLRPCElementParser parseDate: tmpElement]];
+                [parameters addObject: [XMLRPCElementDecoder parseDate: tmpElement]];
                 break;
             case XMLRPCElementTypeData:
-                [parameters addObject: [XMLRPCElementParser parseData: tmpElement]];
+                [parameters addObject: [XMLRPCElementDecoder parseData: tmpElement]];
                 break;
             default:
                 break;

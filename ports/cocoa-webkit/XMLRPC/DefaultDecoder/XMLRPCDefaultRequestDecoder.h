@@ -5,7 +5,7 @@
 
 #import <Foundation/Foundation.h>
 #import "XMLRPCDecoder.h"
-#import "XMLRPCElementParser.h"
+#import "XMLRPCElementDecoder.h"
 
 @interface XMLRPCDefaultRequestDecoder : NSObject <XMLRPCDecoder, NSXMLParserDelegate> {
     NSXMLParser *parser;

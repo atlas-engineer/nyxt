@@ -4,11 +4,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
+#import "GCDWebServer.h"
+#import "GCDWebServerDataResponse.h"
+#import "GCDWebServerDataRequest.h"
+#include "Global.h"
+#import "NextApplicationDelegate.h"
+#import "XMLRPCRequestDecoder.h"
 
 @interface Server : NSObject
 {
-    
+    GCDWebServer* webServer;
 }
 
 - (void) start;
