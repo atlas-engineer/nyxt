@@ -13,7 +13,6 @@
         parameters = [[NSMutableArray alloc] init];
         
         elementType = XMLRPCElementTypeString;
-        elementKey = nil;
         elementValue = [[NSMutableString alloc] init];
     }
     return self;
@@ -80,16 +79,36 @@ didStartElement:(NSString*)element
  didEndElement:(NSString *)element
   namespaceURI: (NSString *)namespaceURI
  qualifiedName: (NSString *)qualifiedName {
-    NSString *tmpElement;
-    tmpElement = [XMLRPCElementParser parseString: elementValue];
-    elementValue = nil;
-
-    switch (elementType) {
-        case XMLRPCElementTypeMethodName:
-            method = tmpElement;
-            break;
-        default:
-            break;
+    if (elementValue != nil) {
+        NSString *tmpElement;
+        tmpElement = [XMLRPCElementParser parseString: elementValue];
+        elementValue = nil;
+        
+        switch (elementType) {
+            case XMLRPCElementTypeString:
+                [parameters addObject:tmpElement];
+                break;
+            case XMLRPCElementTypeMethodName:
+                method = tmpElement;
+                break;
+            case XMLRPCElementTypeInteger:
+                [parameters addObject: [XMLRPCElementParser parseInteger: tmpElement]];
+                break;
+            case XMLRPCElementTypeDouble:
+                [parameters addObject: [XMLRPCElementParser parseDouble: tmpElement]];
+                break;
+            case XMLRPCElementTypeBoolean:
+                [parameters addObject: [XMLRPCElementParser parseBoolean: tmpElement]];
+                break;
+            case XMLRPCElementTypeDate:
+                [parameters addObject: [XMLRPCElementParser parseDate: tmpElement]];
+                break;
+            case XMLRPCElementTypeData:
+                [parameters addObject: [XMLRPCElementParser parseData: tmpElement]];
+                break;
+            default:
+                break;
+        }
     }
 }
 

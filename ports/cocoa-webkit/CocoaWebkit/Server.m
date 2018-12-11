@@ -23,6 +23,8 @@
                           XMLRPCRequestDecoder *requestDecoder = [[XMLRPCRequestDecoder alloc]
                                                                   initWithData:[request data]];
                           NSLog(@"XML-RPC METHOD: %@", [requestDecoder method]);
+                          NSLog(@"XML-RPC PARAMETERS: %@", [requestDecoder parameters]);
+
                           return [GCDWebServerDataResponse responseWithText:@"<xml></xml>"];
                       }];
     
