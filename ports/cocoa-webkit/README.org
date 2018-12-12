@@ -5,7 +5,10 @@ Next browser.
 This project use ~clang-format~ for source code formatting in the
 WebKit style. To recursively format the project:
 
-~find cocoa-webkit/ -iname "*.h" -o -iname "*.m" | xargs clang-format-mp-7.0 -i -style="WebKit"~
+#+NAME: format
+#+BEGIN_SRC sh
+find cocoa-webkit/ -iname "*.h" -o -iname "*.m" | xargs clang-format-mp-7.0 -i -style="WebKit"
+#+END_SRC
 
 In the above command, replace ~clang-format-mp-7.0~ with the
 appropriate name/path for your installation.
