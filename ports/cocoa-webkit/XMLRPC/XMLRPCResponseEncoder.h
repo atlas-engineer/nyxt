@@ -10,8 +10,9 @@
 
 @interface XMLRPCResponseEncoder : NSObject {
     id<XMLRPCEncoder> myXMLEncoder;
-    NSArray* parameters;
 }
+
+- (id)initWithParameters:(NSArray*)parameters;
 
 - (void)setEncoder:(id<XMLRPCEncoder>)encoder;
 

@@ -10,6 +10,7 @@
 #include "Global.h"
 #import "NextApplicationDelegate.h"
 #import "XMLRPCRequestDecoder.h"
+#import "XMLRPCResponseEncoder.h"
 
 @interface Server : NSObject {
     GCDWebServer* webServer;

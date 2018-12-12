@@ -17,8 +17,9 @@
          path:@"/RPC2"
          requestClass:[GCDWebServerDataRequest class]
          processBlock:^GCDWebServerResponse*(GCDWebServerDataRequest* request) {
-             XMLRPCRequestDecoder* requestDecoder = [[XMLRPCRequestDecoder alloc]
+             XMLRPCRequestDecoder *requestDecoder = [[XMLRPCRequestDecoder alloc]
                                                      initWithData:[request data]];
+             XMLRPCResponseEncoder *responseEncoder;
              NSString *method = [requestDecoder method];
              NSArray *parameters = [requestDecoder parameters];
              
@@ -30,7 +31,11 @@
                  dispatch_sync(dispatch_get_main_queue(), ^{
                      NextApplicationDelegate *delegate = [NSApp delegate];
                      operationResult = [delegate windowMake];
+                     NSLog(@"Operation Result: %@", operationResult);
                  });
+                 responseEncoder = [[XMLRPCResponseEncoder alloc]
+                                    initWithParameters:@[operationResult]];
+                 NSLog(@"Response Body: %@", [responseEncoder body]);
              }
              else if ([method isEqualToString:@"window.set.title"]) {
                  dispatch_sync(dispatch_get_main_queue(), ^{

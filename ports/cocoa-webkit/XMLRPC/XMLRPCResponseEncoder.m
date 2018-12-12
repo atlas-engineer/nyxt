@@ -11,8 +11,8 @@
 - (id)initWithParameters:(NSArray*)parameters withEncoder:(id<XMLRPCEncoder>)encoder {
     self = [super init];
     if (self) {
-        parameters = [[NSArray alloc] initWithArray:parameters];
         myXMLEncoder = encoder;
+        [myXMLEncoder setParameters: [[NSArray alloc] initWithArray:parameters]];
     }
     
     return self;
