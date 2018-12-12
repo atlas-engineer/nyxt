@@ -16,5 +16,11 @@
 	<string>Next</string>
 	<key>CFBundleIdentifier</key>
 	<string>engineer.Atlas.Next</string>
+        <key>NSAppTransportSecurity</key>
+        <dict>
+          <key>NSAllowsLocalNetworking</key>
+          <true/>
+        </dict>
+
 </dict>
 </plist>
