@@ -23,9 +23,6 @@
              NSString *method = [requestDecoder method];
              NSArray *parameters = [requestDecoder parameters];
              
-             NSLog(@"Method: %@", method);
-             NSLog(@"Parameters: %@", parameters);
-             
              if ([method isEqualToString:@"window.make"]) {
                  __block NSString* operationResult = @"";
                  dispatch_sync(dispatch_get_main_queue(), ^{
@@ -35,7 +32,7 @@
                  });
                  responseEncoder = [[XMLRPCResponseEncoder alloc]
                                     initWithParameters:@[operationResult]];
-                 NSLog(@"Response Body: %@", [responseEncoder body]);
+                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
              }
              else if ([method isEqualToString:@"window.set.title"]) {
                  dispatch_sync(dispatch_get_main_queue(), ^{
