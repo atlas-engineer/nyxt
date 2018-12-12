@@ -53,8 +53,8 @@ open up new links, or switch tabs with the power of fuzzy completion.
 
 * Getting Started
 ** Install Next
-See the [[https://next.atlas.engineer/download][downloads]] section for pre-built binaries. Some operating
-systems provide packages for Next:
+See the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating systems
+provide packages for Next:
 
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
 - [[https://guix.info][Guix]]: Install with =guix package --install sbcl-next=.
@@ -70,15 +70,6 @@ to install Guix on your system and use it to install Next.
   the commended route.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
-
-The GNU/Linux version requires some dependencies:
-
-- sqlite
-- webkitgtk, also known as webkit2gtk (make sure to use the most recent version
-  for security reasons -- /Debian Stable won't do/)
-- glib-networking (for WebKitGTK+)
-- gsettings-desktop-schemas (for WebKitGTK+)
-- gstreamer, gst-plugins-* for HTML audio/video
 
 ** Quickstart Keys
 - ~C-l~:     Load URL in tab

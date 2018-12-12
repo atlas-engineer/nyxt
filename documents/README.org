@@ -71,7 +71,8 @@ More detailed instructions and other resources are readily available
 on the quicklisp website.
 
 ** GNU/Linux dependencies
-- WebKitGTK+ (latest version)
+- WebKitGTK+ also known as webkit2gtk (make sure to use the most
+  recent version for security reasons -- /Debian Stable won't do/)
 - SQLite
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
