@@ -32,34 +32,11 @@ next: $(lisp_files)
 ## TODO: Update the rule once we have the resulting .app.
 cocoa-webkit: next
 	xcodebuild -project ports/cocoa-webkit/cocoa-webkit.xcodeproj
-	mkdir -p build/Next.app
-	mkdir -p build/Next.app/Contents/MacOS
-	mkdir -p build/Next.app/Contents/Resources
-	mkdir -p build/Next.app/Contents/Frameworks
+	mkdir -p build/Next.app/Contents/MacOS build/Next.app/Contents/Resources
 	cp assets/Info.plist build/Next.app/Contents/Info.plist
 	cp assets/next.icns build/Next.app/Contents/Resources/next.icns
-	cp ports/cocoa-webkit/libxmlrpc.3.39.dylib              build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_abyss.3.39.dylib        build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_client.3.39.dylib       build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_packetsocket.8.39.dylib build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_server.3.39.dylib       build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_server_abyss.3.39.dylib build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_server_cgi.3.39.dylib   build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_util.3.39.dylib         build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_xmlparse.3.39.dylib     build/Next.app/Contents/Frameworks
-	cp ports/cocoa-webkit/libxmlrpc_xmltok.3.39.dylib       build/Next.app/Contents/Frameworks
 	mv next build/Next.app/Contents/MacOS
 	mv ports/cocoa-webkit/build/Release/cocoa-webkit build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_server_cgi.3.39.dylib    @executable_path/../Frameworks/libxmlrpc_server_cgi.3.39.dylib   build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc.3.39.dylib		    @executable_path/../Frameworks/libxmlrpc.3.39.dylib              build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_xmltok.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_xmltok.3.39.dylib       build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_util.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_util.3.39.dylib         build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_packetsocket.8.39.dylib  @executable_path/../Frameworks/libxmlrpc_packetsocket.8.39.dylib build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_server_abyss.3.39.dylib  @executable_path/../Frameworks/libxmlrpc_server_abyss.3.39.dylib build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_server.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_server.3.39.dylib       build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_abyss.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_abyss.3.39.dylib        build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_client.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_client.3.39.dylib       build/Next.app/Contents/MacOS/cocoa-webkit
-	install_name_tool -change /usr/local/lib/libxmlrpc_xmlparse.3.39.dylib	    @executable_path/../Frameworks/libxmlrpc_xmlparse.3.39.dylib     build/Next.app/Contents/MacOS/cocoa-webkit
 
 .PHONY: gtk-webkit
 gtk-webkit:
