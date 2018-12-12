@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2012 Eric Czarny <eczarny@gmail.com>
+// Copyright (C) 2012 Eric Czarny.
 // Use of this file is governed by the license that can be found in LICENSE.
 //
 
@@ -17,7 +17,7 @@
     if (!object) {
         return nil;
     }
-    
+
     if ([object isKindOfClass:[NSArray class]]) {
         return [XMLRPCElementEncoder encodeArray:object];
     } else if ([object isKindOfClass:[NSDictionary class]]) {
@@ -40,45 +40,45 @@
 + (NSString*)encodeArray:(NSArray*)array {
     NSMutableString* buffer = [NSMutableString string];
     NSEnumerator* enumerator = [array objectEnumerator];
-    
+
     [buffer appendString:@"<value><array><data>"];
-    
+
     id object = nil;
-    
+
     while (object = [enumerator nextObject]) {
         [buffer appendString:[self encodeObject:object]];
     }
-    
+
     [buffer appendString:@"</data></array></value>"];
-    
+
     return (NSString*)buffer;
 }
 
 + (NSString*)encodeDictionary:(NSDictionary*)dictionary {
     NSMutableString* buffer = [NSMutableString string];
     NSEnumerator* enumerator = [dictionary keyEnumerator];
-    
+
     [buffer appendString:@"<value><struct>"];
-    
+
     NSString* key = nil;
     NSObject* val;
-    
+
     while (key = [enumerator nextObject]) {
         [buffer appendString:@"<member>"];
         [buffer appendFormat:@"<name>%@</name>", [self encodeString:key omitTag:YES]];
-        
+
         val = [dictionary objectForKey:key];
         if (val != [NSNull null]) {
             [buffer appendString:[self encodeObject:val]];
         } else {
             [buffer appendString:@"<value><nil/></value>"];
         }
-        
+
         [buffer appendString:@"</member>"];
     }
-    
+
     [buffer appendString:@"</struct></value>"];
-    
+
     return (NSString*)buffer;
 }
 
@@ -92,7 +92,7 @@
 
 + (NSString*)encodeNumber:(NSNumber*)number {
     NSString* numberType = [NSString stringWithCString:[number objCType] encoding:NSUTF8StringEncoding];
-    
+
     if ([numberType isEqualToString:@"d"]) {
         return [XMLRPCElementEncoder valueTag:@"double" value:[number stringValue]];
     } else {
@@ -108,7 +108,7 @@
     unsigned components = kCFCalendarUnitYear | kCFCalendarUnitMonth | kCFCalendarUnitDay | kCFCalendarUnitHour | kCFCalendarUnitMinute | kCFCalendarUnitSecond;
     NSDateComponents* dateComponents = [[NSCalendar currentCalendar] components:components fromDate:date];
     NSString* buffer = [NSString stringWithFormat:@"%.4ld%.2ld%.2ldT%.2ld:%.2ld:%.2ld", (long)[dateComponents year], (long)[dateComponents month], (long)[dateComponents day], (long)[dateComponents hour], (long)[dateComponents minute], (long)[dateComponents second], nil];
-    
+
     return [XMLRPCElementEncoder valueTag:@"dateTime.iso8601" value:buffer];
 }
 
