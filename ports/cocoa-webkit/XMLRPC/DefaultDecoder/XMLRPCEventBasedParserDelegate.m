@@ -1,3 +1,8 @@
+//
+// Copyright (C) 2012 Eric Czarny <eczarny@gmail.com>
+// Use of this file is governed by the license that can be found in LICENSE.
+//
+
 #import "XMLRPCEventBasedParserDelegate.h"
 
 @interface XMLRPCEventBasedParserDelegate (XMLRPCEventBasedParserDelegatePrivate)

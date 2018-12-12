@@ -1,7 +1,7 @@
 //
-// Copyright © 2017-2018 Atlas Engineer LLC.
+// Copyright (C) 2012 Eric Czarny <eczarny@gmail.com>
 // Use of this file is governed by the license that can be found in LICENSE.
-//  
+//
 
 #import "XMLRPCElementEncoder.h"
 #import "NSData+Base64.h"
