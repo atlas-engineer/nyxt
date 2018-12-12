@@ -1,10 +1,8 @@
 //
-//  NextApplication.m
-//  next-cocoa
+// Copyright © 2017-2018 Atlas Engineer LLC.
+// Use of this file is governed by the license that can be found in LICENSE.
 //
-//  Created by John Mercouris on 3/25/18.
-//  Copyright © 2018 Next. All rights reserved.
-//
+
 
 #import "NextApplication.h"
 #include "Global.h"
