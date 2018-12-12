@@ -8,11 +8,9 @@
 #import "XMLRPCEncoder.h"
 
 
-@interface XMLRCPResponseEncoder : NSObject {
-    NSMutableURLRequest* myRequest;
+@interface XMLRPCResponseEncoder : NSObject {
     id<XMLRPCEncoder> myXMLEncoder;
-    NSTimeInterval myTimeout;
-    id extra;
+    NSArray* parameters;
 }
 
 - (void)setEncoder:(id<XMLRPCEncoder>)encoder;

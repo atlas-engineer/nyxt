@@ -27,7 +27,7 @@
 		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
 		EB9CCB3B21C13433005DCAFF /* XMLRPCElementEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CCB3A21C13433005DCAFF /* XMLRPCElementEncoder.m */; };
 		EB9CCB3E21C137CF005DCAFF /* XMLRPCDefaultResponseEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CCB3D21C137CF005DCAFF /* XMLRPCDefaultResponseEncoder.m */; };
-		EB9CCB4121C13924005DCAFF /* XMLRCPResponseEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CCB4021C13924005DCAFF /* XMLRCPResponseEncoder.m */; };
+		EB9CCB4121C13924005DCAFF /* XMLRPCResponseEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CCB4021C13924005DCAFF /* XMLRPCResponseEncoder.m */; };
 		EBB1A1DD204750390056B075 /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBB1A1DC204750390056B075 /* Buffer.m */; };
 		EBBFBB65206813150033996B /* NextApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = EBBFBB64206813150033996B /* NextApplication.m */; };
 		EBED669421BDC99800BD9491 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EBED669321BDC99700BD9491 /* libz.tbd */; };
@@ -102,8 +102,8 @@
 		EB9CCB3A21C13433005DCAFF /* XMLRPCElementEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCElementEncoder.m; sourceTree = "<group>"; };
 		EB9CCB3C21C137CF005DCAFF /* XMLRPCDefaultResponseEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultResponseEncoder.h; sourceTree = "<group>"; };
 		EB9CCB3D21C137CF005DCAFF /* XMLRPCDefaultResponseEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCDefaultResponseEncoder.m; sourceTree = "<group>"; };
-		EB9CCB3F21C13924005DCAFF /* XMLRCPResponseEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRCPResponseEncoder.h; sourceTree = "<group>"; };
-		EB9CCB4021C13924005DCAFF /* XMLRCPResponseEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRCPResponseEncoder.m; sourceTree = "<group>"; };
+		EB9CCB3F21C13924005DCAFF /* XMLRPCResponseEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCResponseEncoder.h; sourceTree = "<group>"; };
+		EB9CCB4021C13924005DCAFF /* XMLRPCResponseEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCResponseEncoder.m; sourceTree = "<group>"; };
 		EBB1A1DB204750390056B075 /* Buffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		EBB1A1DC204750390056B075 /* Buffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Buffer.m; sourceTree = "<group>"; };
 		EBBFBB63206813150033996B /* NextApplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplication.h; sourceTree = "<group>"; };
@@ -256,8 +256,8 @@
 				EB019A3E21BE906E0061623C /* DefaultDecoder */,
 				EB582F8B21BBF36800A63FD3 /* XMLRPCRequestEncoder.h */,
 				EB582F8C21BBF36800A63FD3 /* XMLRPCRequestEncoder.m */,
-				EB9CCB3F21C13924005DCAFF /* XMLRCPResponseEncoder.h */,
-				EB9CCB4021C13924005DCAFF /* XMLRCPResponseEncoder.m */,
+				EB9CCB3F21C13924005DCAFF /* XMLRPCResponseEncoder.h */,
+				EB9CCB4021C13924005DCAFF /* XMLRPCResponseEncoder.m */,
 				EB019A3A21BE89B20061623C /* XMLRPCRequestDecoder.h */,
 				EB019A3B21BE89B20061623C /* XMLRPCRequestDecoder.m */,
 				EB582F8E21BC17CA00A63FD3 /* XMLRPCResponseDecoder.h */,
@@ -402,7 +402,7 @@
 				EB582F9021BC17CA00A63FD3 /* XMLRPCResponseDecoder.m in Sources */,
 				EBED66BD21BDCA3400BD9491 /* GCDWebServerDataResponse.m in Sources */,
 				EB019A3621BE7D630061623C /* XMLRPCDefaultRequestDecoder.m in Sources */,
-				EB9CCB4121C13924005DCAFF /* XMLRCPResponseEncoder.m in Sources */,
+				EB9CCB4121C13924005DCAFF /* XMLRPCResponseEncoder.m in Sources */,
 				EBED66C121BDCA3400BD9491 /* GCDWebServerDataRequest.m in Sources */,
 				EBED66C221BDCA3400BD9491 /* GCDWebServerFileRequest.m in Sources */,
 				EBBFBB65206813150033996B /* NextApplication.m in Sources */,

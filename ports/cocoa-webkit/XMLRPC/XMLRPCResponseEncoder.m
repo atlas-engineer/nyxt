@@ -3,9 +3,25 @@
 // Use of this file is governed by the license that can be found in LICENSE.
 //  
 
-#import "XMLRCPResponseEncoder.h"
+#import "XMLRPCResponseEncoder.h"
+#import "XMLRPCDefaultResponseEncoder.h"
 
-@implementation XMLRCPResponseEncoder
+@implementation XMLRPCResponseEncoder
+
+- (id)initWithParameters:(NSArray*)parameters withEncoder:(id<XMLRPCEncoder>)encoder {
+    self = [super init];
+    if (self) {
+        parameters = [[NSArray alloc] initWithArray:parameters];
+        myXMLEncoder = encoder;
+    }
+    
+    return self;
+}
+
+- (id)initWithParameters:(NSArray*)parameters {
+    return [self initWithParameters:parameters
+                        withEncoder:[[XMLRPCDefaultResponseEncoder alloc] init]];
+}
 
 - (void)setEncoder:(id<XMLRPCEncoder>)encoder {
     NSString* method = [myXMLEncoder method];

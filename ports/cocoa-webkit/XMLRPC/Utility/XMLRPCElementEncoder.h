@@ -24,4 +24,3 @@
 + (NSString*)encodeData:(NSData*)data;
 
 @end
-
