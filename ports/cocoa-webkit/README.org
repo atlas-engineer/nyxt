@@ -1,3 +1,21 @@
 * Next Cocoa Port
 This repository contains the source code for the Cocoa front-end for the
 Next browser.
+* Development
+This project use ~clang-format~ for source code formatting in the
+WebKit style. To recursively format the project:
+
+~find cocoa-webkit/ -iname "*.h" -o -iname "*.m" | xargs
+clang-format-mp-7.0 -i -style="WebKit"~
+
+In the above command, replace ~clang-format-mp-7.0~ with the
+appropriate name/path for your installation.
+
+To compile, simply load the Xcode project and compile. There are no
+external dependencies, or paths to load/set-up.
+* License
+This repository contains source code directly embedded from other
+projects. When appropriate, these subfolders will include a LICENSE
+file indicating the origin of the source code contained therein, as
+well as appropriate license declarations within the header of every
+file.
