@@ -80,6 +80,11 @@
     return myParameters;
 }
 
+- (void)setParameters:(NSArray *)parameters {
+    myParameters = parameters;
+}
+
+
 @end
 
 @implementation XMLRPCDefaultRequestEncoder (XMLRPCEncoderPrivate)

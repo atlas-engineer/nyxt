@@ -11,6 +11,8 @@
 
 - (void)setMethod:(NSString*)method withParameters:(NSArray*)parameters;
 
+- (void)setParameters:(NSArray*)parameters;
+
 - (NSString*)method;
 
 - (NSArray*)parameters;
