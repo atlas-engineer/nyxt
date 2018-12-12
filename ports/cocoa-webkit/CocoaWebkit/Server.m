@@ -139,7 +139,7 @@
 }
 
 - (void)start {
-    [webServer startWithPort:8082 bonjourName:nil];
+    [webServer startWithPort:[[[Global sharedInstance] port] intValue] bonjourName:nil];
 }
 
 - (void)stop {
