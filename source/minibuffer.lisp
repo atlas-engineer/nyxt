@@ -12,6 +12,7 @@
    (setup-function :accessor setup-function)
    (cleanup-function :accessor cleanup-function)
    (empty-complete-immediate :accessor empty-complete-immediate)
+   (display-mode :accessor display-mode :initform :nil)
    (input-prompt :accessor input-prompt :initform "Input:")
    (input-buffer :accessor input-buffer :initform "")
    (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
@@ -49,6 +50,7 @@
   (if input-prompt
       (setf (input-prompt minibuffer) input-prompt)
       (setf (input-prompt minibuffer) "Input:"))
+  (setf (display-mode minibuffer) :read)
   (setf (callback-function minibuffer) callback-function)
   (setf (completion-function minibuffer) completion-function)
   (setf (completions minibuffer) nil)
@@ -66,6 +68,7 @@
 
 (defmethod return-input ((minibuffer minibuffer))
   (hide minibuffer)
+  (setf (display-mode minibuffer) :nil)
   (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
@@ -85,15 +88,16 @@
       (funcall cleanup-function))))
 
 (defmethod return-immediate ((minibuffer minibuffer))
-  "Return without completion"
+  (hide minibuffer)
+  (setf (display-mode minibuffer) :nil)
   (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function) minibuffer
     (funcall callback-function (input-buffer minibuffer))
     (when cleanup-function
-      (funcall cleanup-function)))
-  (hide minibuffer))
+      (funcall cleanup-function))))
 
 (defmethod cancel-input ((minibuffer minibuffer))
+  (setf (display-mode minibuffer) :nil)
   (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (cleanup-function) minibuffer
     (when cleanup-function
@@ -262,3 +266,28 @@
      *interface* (window-active *interface*)
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view true))))))
+
+(defmethod echo ((minibuffer minibuffer) text)
+  (unless (eql (display-mode minibuffer) :read)
+    (setf (display-mode minibuffer) :echo)
+    (erase-document minibuffer)
+    (window-set-minibuffer-height *interface*
+                                  (window-active *interface*)
+                                  *minibuffer-echo-height*)
+    (let ((style (cl-css:css
+                  '((* :font-family "monospace,monospace"
+                       :font-size "14px")
+                    (body :border-top "4px solid dimgray"
+                          :margin "0"
+                          :padding "0 6px")
+                    (p :margin "0")))))
+      (set-input minibuffer
+                 (cl-markup:markup
+                  (:head (:style style))
+                  (:body
+                   (:p text)))))))
+
+(defmethod echo-dismiss ((minibuffer minibuffer))
+  (when (eql (display-mode minibuffer) :echo)
+    (hide minibuffer)
+    (erase-document minibuffer)))
