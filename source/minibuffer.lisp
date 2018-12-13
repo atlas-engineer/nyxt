@@ -2,9 +2,6 @@
 
 (in-package :next)
 
-(defvar *minibuffer* nil
-  "A variable to store the minibuffer.")
-
 (defvar *minibuffer-mode-map* (make-hash-table :test 'equalp))
 
 (define-mode minibuffer (buffer mode)

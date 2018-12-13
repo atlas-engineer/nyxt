@@ -12,6 +12,8 @@
 (defvar *platform-port-socket* '(:host "localhost" :port 8082)
   "The XML-RPC remote socket of the platform-port.")
 
+(defvar *minibuffer* nil
+  "A variable to store the minibuffer.")
 (defvar *available-hooks* (make-hash-table :test #'equalp)
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)
