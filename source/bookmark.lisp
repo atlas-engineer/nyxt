@@ -38,7 +38,8 @@
 	       (truename (probe-file *bookmark-db-path*)))))
       (sqlite:execute-non-query
        db "insert into bookmarks (url) values (?)" url)
-      (sqlite:disconnect db))))
+      (sqlite:disconnect db)))
+  (echo *minibuffer* "Current page bookmarked."))
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
