@@ -24,6 +24,9 @@
   (setf (name buffer) url)
   (did-commit-navigation (mode buffer) url))
 
+(defmethod did-finish-navigation ((buffer buffer) url)
+  (did-finish-navigation (mode buffer) url))
+
 (defclass remote-interface ()
   ((host :accessor host :initform (getf *platform-port-socket* :host))
    (active-connection :accessor active-connection :initform nil)
@@ -207,6 +210,10 @@
   (let ((buffer (gethash buffer-id (buffers *interface*))))
     (did-commit-navigation buffer url)))
 
+(defun buffer-did-finish-navigation (buffer-id url)
+  (let ((buffer (gethash buffer-id (buffers *interface*))))
+    (did-finish-navigation buffer url)))
+
 (defun window-will-close (window-id)
   (let ((windows (windows *interface*)))
     (remhash window-id windows)
@@ -226,6 +233,7 @@
         (set-url-buffer url buffer)))))
 
 (import 'buffer-did-commit-navigation :s-xml-rpc-exports)
+(import 'buffer-did-finish-navigation :s-xml-rpc-exports)
 (import 'push-key-event :s-xml-rpc-exports)
 (import 'consume-key-sequence :s-xml-rpc-exports)
 (import 'buffer-javascript-call-back :s-xml-rpc-exports)

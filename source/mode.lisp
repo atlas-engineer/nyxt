@@ -18,3 +18,6 @@
 
 (defmethod did-commit-navigation ((mode mode) url)
   url)
+
+(defmethod did-finish-navigation ((mode mode) url)
+  url)
