@@ -52,4 +52,15 @@
     [[session dataTaskWithRequest:[request request]] resume];
 }
 
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    NSString* url = [[self URL] absoluteString];
+    NSString* coreSocket = [[Global sharedInstance] coreSocket];
+    XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
+                                     [NSURL URLWithString:coreSocket]];
+    [request setMethod:@"BUFFER-DID-FINISH-NAVIGATION"
+        withParameters:@[ [self identifier], url ]];
+    NSURLSession* session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:[request request]] resume];
+}
+
 @end
