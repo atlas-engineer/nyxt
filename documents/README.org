@@ -68,7 +68,7 @@ To install Quicklisp:
 - Evaluate in the REPL ~(ql:add-to-init-file)~ to add Quicklisp to your Lisp init file.
 
 More detailed instructions and other resources are readily available
-on the quicklisp website.
+on the Quicklisp website.
 
 ** GNU/Linux dependencies
 - WebKitGTK+ also known as webkit2gtk (make sure to use the most
@@ -112,7 +112,7 @@ make cocoa-webkit
 If you look within the Makefile you'll find many options you can
 specify. You can specify to use your Lisp's init file, to use your
 global installation of Quicklisp, or to automatically download and
-install a separate quicklisp installation for Next. Run ~make~ to display some
+install a separate Quicklisp installation for Next. Run ~make~ to display some
 documentation. Please see the Makefile for more details.
 
 ** Run
@@ -270,7 +270,7 @@ CLOSED: [2018-01-02 Tue 16:06]
 CLOSED: [2017-12-17 Sun 01:13]
 *** DONE Fix Compilation
 CLOSED: [2017-12-17 Sun 01:13]
-- Compilation loading of quicklisp should check both ~/.quicklisp as
+- Compilation loading of Quicklisp should check both ~/.quicklisp as
   well as ~/quicklisp and load whichever it finds first
 *** DONE User Customization Example
 CLOSED: [2017-12-17 Sun 01:10]
