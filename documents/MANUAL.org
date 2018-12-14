@@ -15,6 +15,7 @@ end-user allowing for infinite customization.
   - [[#searching][Searching]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
+  - [[#clearing-the-echo-area][Clearing the Echo Area]]
   - [[#exiting][Exiting]]
 - [[#advanced-topics][Advanced Topics]]
   - [[#execute-extended-command][Execute Extended Command]]
@@ -40,7 +41,7 @@ provided.
 6. ~M-<~: Jump to top of page
 
 ** Zooming page
-Use the zoom keybindings to make everything on a webpage larger or smaller.
+Use the zoom keybindings to make everything on a web page larger or smaller.
 These keybindings mimic the Emacs counterpart:
 
 1. ~C-x C-=~: Increase size
@@ -202,6 +203,11 @@ and manage your bookmarks, a few functions are provided:
 4. ~C-m u~: Bookmark URL (input URL via minibuffer)
 5. ~C-m g~: Bookmark Anchor (input URL via link hints)
 
+** Clearing the Echo Area
+In the area at the bottom of the screen where the minibuffer resides,
+Next will occasionally display messages. These can be dismissed by
+using the binding ~C-x q~.
+
 ** Exiting
 To exit Next enter the key-combination ~C-x C-c~ and the program will
 quit. All of your open tabs and form data will not be persisted. The
@@ -303,7 +309,7 @@ A convenience function for reloading the init file called
 ** Creating your own interactive commands
 Creating your own invokable commands is the same as creating any other
 ~defun~ except the form is ~define-command~. A docstring is highly
-reccommend and will produce a style warning when it is missing.
+recommended and will produce a style warning when it is missing.
 
 An example of a trivial command definition can be seen below.
 
