@@ -107,7 +107,11 @@
 
 (defmethod did-commit-navigation ((mode document-mode) url)
   (set-default-window-title)
-  (add-or-traverse-history mode url))
+  (add-or-traverse-history mode url)
+  (echo *minibuffer* (concatenate 'string "Loading: " url ".")))
+
+(defmethod did-finish-navigation ((mode document-mode) url)
+  (echo *minibuffer* (concatenate 'string "Finished loading: " url ".")))
 
 (defmethod setup ((mode document-mode) (buffer buffer))
   (set-url-buffer *default-new-buffer-url* buffer)
