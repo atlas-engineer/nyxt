@@ -41,7 +41,9 @@
   (define-key *minibuffer-mode-map* (key "C-n") #'(lambda () (select-next *minibuffer*)))
   (define-key *minibuffer-mode-map* (key "C-p") #'(lambda () (select-previous *minibuffer*)))
   (define-key *minibuffer-mode-map* (key "Down") #'(lambda () (select-next *minibuffer*)))
-  (define-key *minibuffer-mode-map* (key "Up") #'(lambda () (select-previous *minibuffer*))))
+  (define-key *minibuffer-mode-map* (key "Up") #'(lambda () (select-previous *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-v") #'(lambda () (paste *minibuffer*)))
+  (define-key *minibuffer-mode-map* (key "C-y") #'(lambda () (paste *minibuffer*))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer)
 				       &key &allow-other-keys)
@@ -167,12 +169,12 @@
                                 (window-active *interface*)
                                 *minibuffer-closed-height*))
 
-(defmethod self-insert ((minibuffer minibuffer) character)
+(defmethod self-insert ((minibuffer minibuffer) characters)
   (setf (input-buffer minibuffer)
-        (cl-strings:insert character
+        (cl-strings:insert characters
                            (input-buffer minibuffer)
                            :position (input-buffer-cursor minibuffer)))
-  (incf (input-buffer-cursor minibuffer))
+  (incf (input-buffer-cursor minibuffer) (length characters))
   (setf (completion-cursor minibuffer) 0)
   (update-display minibuffer))
 
@@ -358,3 +360,6 @@
   (when (eql (display-mode minibuffer) :echo)
     (hide minibuffer)
     (erase-document minibuffer)))
+
+(defmethod paste ((minibuffer minibuffer))
+  (self-insert *minibuffer* (trivial-clipboard:text)))

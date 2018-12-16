@@ -19,7 +19,8 @@
                :cl-css
                :bordeaux-threads
                :s-xml-rpc
-               :unix-opts)
+               :unix-opts
+               :trivial-clipboard)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
