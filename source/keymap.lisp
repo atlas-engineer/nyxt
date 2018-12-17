@@ -21,8 +21,9 @@
   modifiers)
 
 (defun serialize-key-chord (key-chord)
-  (let ((*package* (find-package 'next)))
-    (format nil "~a" key-chord)))
+  (append (list (key-chord-key-code key-chord)
+                (key-chord-key-string key-chord))
+          (key-chord-modifiers key-chord)))
 
 (defun look-up-key-chord-stack (key-chords map)
   (let ((key (mapcar #'serialize-key-chord key-chords)))
