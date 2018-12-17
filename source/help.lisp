@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defvar *help-mode-map* (make-hash-table :test 'equalp))
+(defvar *help-mode-map* (make-hash-table :test 'equal))
 
 (define-mode help-mode (mode) ()
   (define-key *help-mode-map* (key "C-p") 'scroll-up)

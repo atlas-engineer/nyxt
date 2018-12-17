@@ -4,7 +4,7 @@
 (in-package :next)
 
 
-(defvar *application-mode-map* (make-hash-table :test 'equalp))
+(defvar *application-mode-map* (make-hash-table :test 'equal))
 
 (define-mode application-mode (mode) ())
 

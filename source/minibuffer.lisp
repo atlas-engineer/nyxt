@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defvar *minibuffer-mode-map* (make-hash-table :test 'equalp))
+(defvar *minibuffer-mode-map* (make-hash-table :test 'equal))
 
 (define-mode minibuffer (buffer mode)
   ((name :accessor name :initform "minibuffer")

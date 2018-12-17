@@ -22,7 +22,7 @@
   "A list of functions which set globals which are deferred until startup for evaluation.")
 (defvar *deferred-mode-initializations* ()
   "A list of functions invoked on start for modes.")
-(defvar *global-map* (make-hash-table :test 'equalp)
+(defvar *global-map* (make-hash-table :test 'equal)
   "A global key map, available in every mode/buffer.")
 (defvar *character-conversion-table* (make-hash-table :test 'equalp)
   "A table used to convert between special characters across different operating systems.")

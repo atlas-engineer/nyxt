@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defvar *document-mode-map* (make-hash-table :test 'equalp))
+(defvar *document-mode-map* (make-hash-table :test 'equal))
 
 (define-mode document-mode (mode)
   ((active-history-node :accessor active-history-node :initarg :active-node)
