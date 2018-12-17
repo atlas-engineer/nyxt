@@ -45,7 +45,7 @@ the command output.
 
 #+NAME: shell-mode
 #+BEGIN_SRC lisp
-(defvar *shell-mode-map* (make-hash-table :test 'equalp))
+(defvar *shell-mode-map* (make-hash-table :test 'equal))
 
 (defclass shell-mode (mode) ())
 
