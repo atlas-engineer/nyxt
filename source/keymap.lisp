@@ -20,6 +20,14 @@
   key-string
   modifiers)
 
+(defun serialize-key-chord (key-chord)
+  (let ((*package* (find-package 'next)))
+    (format nil "~a" key-chord)))
+
+(defun look-up-key-chord-stack (key-chords map)
+  (let ((key (mapcar #'serialize-key-chord key-chords)))
+    (gethash key map)))
+
 (defun push-key-event (key-code key-string modifiers sender)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
@@ -39,7 +47,7 @@
          (key-maps (list *global-map* (keymap (mode active-buffer)))))
     (flet ((is-in-maps? (key-maps)
              (dolist (map key-maps)
-               (when (gethash *key-chord-stack* map)
+               (when (look-up-key-chord-stack *key-chord-stack* map)
                  (return-from is-in-maps? t)))))
       (cond ((eql active-buffer *minibuffer*) t)
             ((is-in-maps? key-maps) t)
@@ -49,9 +57,10 @@
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
   (let* ((active-buffer (active-buffer (gethash sender (windows *interface*))))
-         (key-maps (list *global-map* (keymap (mode active-buffer)))))
+         (key-maps (list *global-map* (keymap (mode active-buffer))))
+         (serialized-key-stack (mapcar #'serialize-key-chord *key-chord-stack*)))
     (dolist (map key-maps)
-      (let ((bound (gethash *key-chord-stack* map)))
+      (let ((bound (gethash serialized-key-stack map)))
         (cond ((equalp "prefix" bound)
                (return-from consume-key-sequence t))
               (bound
@@ -104,5 +113,5 @@
                                                      *character-conversion-table*
                                                      (car (last keys)))
                                 :modifiers (sort (butlast keys) #'string-lessp))))
-	       (push key-chord key-sequence)))
+	       (push (serialize-key-chord key-chord) key-sequence)))
     key-sequence))
