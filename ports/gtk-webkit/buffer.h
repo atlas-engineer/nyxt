@@ -25,6 +25,8 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	WebKitLoadEvent load_event,
 	gpointer data) {
 	const char *uri = NULL;
+	const char *method_name = "BUFFER-DID-COMMIT-NAVIGATION";
+
 	switch (load_event) {
 	case WEBKIT_LOAD_STARTED:
 		/* New load, we have now a provisional URI */
@@ -53,7 +55,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		break;
 	case WEBKIT_LOAD_FINISHED:
 		/* Load finished, we can now stop the spinner */
-		return;
+		method_name = "BUFFER-DID-FINISH-NAVIGATION";
 	}
 
 	if (uri == NULL) {
@@ -64,7 +66,6 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 
 	Buffer *buffer = data;
 	GError *error = NULL;
-	const char *method_name = "BUFFER-DID-COMMIT-NAVIGATION";
 	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
 	g_message("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
