@@ -35,6 +35,7 @@
     `(progn
        (defun ,name ,arglist
          (run-hook ,keyword-symbol)
+         (echo-dismiss *minibuffer*)
          ,@body)
        (make-instance 'command
                       :name (symbol-name ',name)
