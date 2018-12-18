@@ -5,8 +5,9 @@
 (define-command delete-window ()
   "Delete the currently active window."
   (let ((active-window (window-active *interface*)))
-    (when active-window
-      (window-delete *interface* active-window))))
+    (cond ((and active-window (> (hash-table-count (windows *interface*)) 1))
+           (window-delete *interface* active-window))
+          (active-window (echo *minibuffer* "Can't delete sole window.")))))
 
 (define-command make-window ()
   "Create a new window."
