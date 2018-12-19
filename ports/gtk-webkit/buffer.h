@@ -147,6 +147,9 @@ void buffer_set_url(Buffer *buffer, const char *url) {
 */
 
 void buffer_set_cookie_file(Buffer *buffer, const char *path) {
+	if (path == NULL) {
+		return;
+	}
 	WebKitCookieManager *cookie_manager =
 		webkit_web_context_get_cookie_manager(webkit_web_view_get_context(buffer->web_view));
 	webkit_cookie_manager_set_persistent_storage(cookie_manager,
