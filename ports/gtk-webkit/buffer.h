@@ -80,6 +80,64 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	// 'msg' and 'uri' are freed automatically.
 }
 
+gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
+	WebKitPolicyDecision *decision, WebKitPolicyDecisionType type, gpointer buffer) {
+	switch (type) {
+	case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+		// TODO: Force-load the URL in a new buffer on a specific keybinding.
+		// TODO: Handle special resources, like file:///...
+		return FALSE;
+	case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION: {
+		WebKitNavigationAction *action;
+		action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
+
+		// Don't load if this was started without user interaction.
+		if (!webkit_navigation_action_is_user_gesture(action)) {
+			g_debug("Policy: New window: Ignore without user interaction");
+			webkit_policy_decision_ignore(decision);
+			return TRUE;
+		}
+
+		if (webkit_navigation_action_get_navigation_type(action) ==
+			WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
+			g_debug("Policy: New window: Load in new buffer");
+			webkit_policy_decision_ignore(decision);
+			// New window can be triggered with the following HTML:
+			// <a href="http://example.org" target="_blank">New window</a>
+			GError *error = NULL;
+			WebKitURIRequest *request = webkit_navigation_action_get_request(action);
+			const char *method_name = "MAKE-BUFFERS";
+
+			// Warning: we need to pass a list of URLs, even if we pass only one URL.
+			GVariantBuilder builder;
+			g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
+			g_variant_builder_add(&builder, "s", webkit_uri_request_get_uri(request));
+
+			GVariant *arg = g_variant_new("(as)", &builder);
+			g_message("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+
+			SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
+					method_name, arg, &error);
+
+			if (error) {
+				g_warning("Malformed XML-RPC message: %s", error->message);
+				g_error_free(error);
+				// TODO: Return TRUE or FALSE?
+				return FALSE;
+			}
+			soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
+			return TRUE;
+		}
+		return FALSE;
+	}
+	case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
+		// TODO: Manage/block resources here.  Maybe entry-point for downloads?
+		return FALSE;
+	}
+
+	return FALSE;
+}
+
 void buffer_set_url(Buffer *buffer, const char *url) {
 	webkit_web_view_load_uri(buffer->web_view, url);
 }
@@ -88,6 +146,7 @@ Buffer *buffer_init() {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 	g_signal_connect(buffer->web_view, "load-changed", G_CALLBACK(buffer_web_view_load_changed), buffer);
+	g_signal_connect(buffer->web_view, "decide-policy", G_CALLBACK(buffer_web_view_decide_policy), buffer);
 	// We need to hold a reference to the view, otherwise changing buffer in the a
 	// window will unref+destroy the view.
 	g_object_ref(buffer->web_view);
