@@ -33,7 +33,8 @@
   (define-key *document-mode-map* (key "M-s-<") 'scroll-to-top)
   (define-key *document-mode-map* (key "M->") 'scroll-to-bottom)
   (define-key *document-mode-map* (key "M-<") 'scroll-to-top)
-  (define-key *document-mode-map* (key "C-w") 'copy-url))
+  (define-key *document-mode-map* (key "C-w") 'copy-url)
+  (define-key *document-mode-map* (key "M-w") 'copy-title))
 
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."
@@ -105,6 +106,11 @@
   "Save current URL to clipboard."
   (with-result (url (buffer-get-url))
     (trivial-clipboard:text url)))
+
+(define-command copy-title ()
+  "Save current page title to clipboard."
+  (with-result (title (buffer-get-title))
+    (trivial-clipboard:text title)))
 
 (defmethod did-commit-navigation ((mode document-mode) url)
   (set-default-window-title)
