@@ -307,12 +307,15 @@ gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 		return 0;
 	}
 
-	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height);
+	// TODO: Changing the size request of an existing object does not seem to work here.
+	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, 200);
 	gtk_widget_show(GTK_WIDGET(window->minibuffer->web_view));
 	window->minibuffer_height = height;
 
+	gint minimum_height;
 	gint natural_height;
-	gtk_widget_get_preferred_height(GTK_WIDGET(window->minibuffer->web_view), NULL, &natural_height);
+	gtk_widget_get_preferred_height(GTK_WIDGET(window->minibuffer->web_view), &minimum_height, &natural_height);
+	g_debug("minimum height %li, natural_height %li", minimum_height, natural_height);
 	return natural_height;
 }
 
