@@ -100,62 +100,45 @@
       (ps:chain el (remove))))
   (hints-remove-all))
 
+(defmacro query-anchors (prompt (symbol) &body body)
+  `(with-result* ((links-json (add-link-hints))
+                  (selected-anchor (read-from-minibuffer
+                                    *minibuffer*
+                                    :input-prompt ,prompt
+                                    :cleanup-function #'remove-link-hints)))
+     (let* ((link-hints (cl-json:decode-json-from-string links-json))
+            (,symbol (cadr (assoc selected-anchor link-hints :test #'equalp))))
+       (when ,symbol
+         ,@body))))
+
 (define-command go-anchor ()
   "Show a set of link hints, and go to the user inputted one in the
 currently active buffer."
-  (with-result* ((links-json (add-link-hints))
-                 (selected-anchor (read-from-minibuffer
-                                   *minibuffer*
-                                   :input-prompt "Go to link:"
-                                   :cleanup-function #'remove-link-hints)))
-    (let* ((link-hints (cl-json:decode-json-from-string links-json))
-           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
-      (when selected-link
-        (buffer-evaluate-javascript *interface*
-                                   (active-buffer *interface*)
-                                   (buffer-set-url selected-link))))))
+  (query-anchors "Go to link:" (selected-link)
+    (buffer-evaluate-javascript *interface*
+                                (active-buffer *interface*)
+                                (buffer-set-url selected-link))))
 
 (define-command go-anchor-new-buffer ()
   "Show a set of link hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
-  (with-result* ((links-json (add-link-hints))
-                 (selected-anchor (read-from-minibuffer
-                                   *minibuffer*
-                                   :input-prompt "Open link in new buffer:"
-                                   :cleanup-function #'remove-link-hints)))
-    (let* ((new-buffer (make-buffer))
-           (link-hints (cl-json:decode-json-from-string links-json))
-           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
-      (when selected-link
-        (buffer-evaluate-javascript *interface*
-                                   new-buffer
-                                   (buffer-set-url selected-link))))))
+  (query-anchors "Open link in new buffer:" (selected-link)
+    (let ((new-buffer (make-buffer)))
+      (buffer-evaluate-javascript *interface*
+                                  new-buffer
+                                  (buffer-set-url selected-link)))))
 
 (define-command go-anchor-new-buffer-focus ()
   "Show a set of link hints, and open the user inputted one in a new
 visible active buffer."
-  (with-result* ((links-json (add-link-hints))
-                 (selected-anchor (read-from-minibuffer
-                                   *minibuffer*
-                                   :input-prompt "Go to link in new buffer:"
-                                   :cleanup-function remove-link-hints)))
-    (let* ((new-buffer (make-buffer))
-           (link-hints (cl-json:decode-json-from-string links-json))
-           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
-      (when selected-link
-        (buffer-evaluate-javascript *interface*
-                                   new-buffer
-                                   (buffer-set-url selected-link))
-        (set-active-buffer *interface* new-buffer)))))
+  (query-anchors "Go to link in new buffer:" (selected-link)
+    (let ((new-buffer (make-buffer)))
+      (buffer-evaluate-javascript *interface*
+                                  new-buffer
+                                  (buffer-set-url selected-link))
+      (set-active-buffer *interface* new-buffer))))
 
 (define-command copy-anchor-url ()
   "Show a set of link hints, and copy the URL of the user inputted one."
-  (with-result* ((links-json (add-link-hints))
-                 (selected-anchor (read-from-minibuffer
-                                   *minibuffer*
-                                   :input-prompt "Copy link URL:"
-                                   :cleanup-function #'remove-link-hints)))
-    (let* ((link-hints (cl-json:decode-json-from-string links-json))
-           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
-      (when selected-link
-        (trivial-clipboard:text selected-link)))))
+  (query-anchors "Copy link URL:" (selected-link)
+    (trivial-clipboard:text selected-link)))
