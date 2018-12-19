@@ -134,7 +134,11 @@
 (defmethod buffer-make ((interface remote-interface))
   (with-slots (host port url buffers) interface
     (let* ((buffer-id (s-xml-rpc:xml-rpc-call
-                       (s-xml-rpc:encode-xml-rpc-call "buffer.make")
+                       (s-xml-rpc:encode-xml-rpc-call
+                        "buffer.make"
+                        ;; TODO: When we need more options, we will need to pass
+                        ;; a dictionary.
+                        (namestring (merge-pathnames *cookie-path-dir* "cookies.txt")))
                        :host host :port port :url url))
            (buffer (make-instance 'buffer :id buffer-id)))
       (setf (gethash buffer-id buffers) buffer)
