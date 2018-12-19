@@ -63,4 +63,24 @@
     [[session dataTaskWithRequest:[request request]] resume];
 }
 
+- (void)webView:(WKWebView *)webView
+decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
+decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
+{
+    // This is a 'new window action' (aka target="_blank") > open this URL
+    // in a new window by invoking MAKE-BUFFERS
+    if (!navigationAction.targetFrame) {
+        NSString *url = [[[navigationAction request] URL] absoluteString];
+        NSString* coreSocket = [[Global sharedInstance] coreSocket];
+        XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
+                                         [NSURL URLWithString:coreSocket]];
+        // Make Buffers Expects an array of URLs
+        [request setMethod:@"MAKE-BUFFERS"
+            withParameters:@[@[url]]];
+        NSURLSession* session = [NSURLSession sharedSession];
+        [[session dataTaskWithRequest:[request request]] resume];
+    }
+    decisionHandler(WKNavigationActionPolicyAllow);
+}
+
 @end
