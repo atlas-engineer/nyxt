@@ -139,13 +139,6 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 	return FALSE;
 }
 
-// TODO: Delete unused buffer_set_url?
-/*
-void buffer_set_url(Buffer *buffer, const char *url) {
-        webkit_web_view_load_uri(buffer->web_view, url);
-}
-*/
-
 void buffer_set_cookie_file(Buffer *buffer, const char *path) {
 	if (path == NULL) {
 		return;
