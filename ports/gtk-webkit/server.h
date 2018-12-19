@@ -141,8 +141,16 @@ static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 	return g_variant_new_boolean(TRUE);
 }
 
-static GVariant *server_buffer_make(SoupXMLRPCParams *_params) {
-	Buffer *buffer = buffer_init();
+static GVariant *server_buffer_make(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_string("");
+	}
+	const char *cookie_file = NULL;
+	g_variant_get(unwrapped_params, "(&s)", &cookie_file);
+	g_message("Method parameter(s): %s", cookie_file);
+
+	Buffer *buffer = buffer_init(cookie_file);
 	buffer->identifier = strdup(akd_insert_element(state.buffers, buffer));
 	g_message("Method result(s): buffer id %s", buffer->identifier);
 	return g_variant_new_string(buffer->identifier);

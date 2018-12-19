@@ -139,15 +139,30 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 	return FALSE;
 }
 
+// TODO: Delete unused buffer_set_url?
+/*
 void buffer_set_url(Buffer *buffer, const char *url) {
-	webkit_web_view_load_uri(buffer->web_view, url);
+        webkit_web_view_load_uri(buffer->web_view, url);
+}
+*/
+
+void buffer_set_cookie_file(Buffer *buffer, const char *path) {
+	WebKitCookieManager *cookie_manager =
+		webkit_web_context_get_cookie_manager(webkit_web_view_get_context(buffer->web_view));
+	webkit_cookie_manager_set_persistent_storage(cookie_manager,
+		path,
+	        // TODO: Make format configurable?
+		WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT);
 }
 
-Buffer *buffer_init() {
+Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+	buffer_set_cookie_file(buffer, cookie_file);
+
 	g_signal_connect(buffer->web_view, "load-changed", G_CALLBACK(buffer_web_view_load_changed), buffer);
 	g_signal_connect(buffer->web_view, "decide-policy", G_CALLBACK(buffer_web_view_decide_policy), buffer);
+
 	// We need to hold a reference to the view, otherwise changing buffer in the a
 	// window will unref+destroy the view.
 	g_object_ref(buffer->web_view);
