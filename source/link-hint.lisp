@@ -147,3 +147,15 @@ visible active buffer."
                                    new-buffer
                                    (buffer-set-url selected-link))
         (set-active-buffer *interface* new-buffer)))))
+
+(define-command copy-anchor-url ()
+  "Show a set of link hints, and copy the URL of the user inputted one."
+  (with-result* ((links-json (add-link-hints))
+                 (selected-anchor (read-from-minibuffer
+                                   *minibuffer*
+                                   :input-prompt "Copy link URL:"
+                                   :cleanup-function #'remove-link-hints)))
+    (let* ((link-hints (cl-json:decode-json-from-string links-json))
+           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
+      (when selected-link
+        (trivial-clipboard:text selected-link)))))

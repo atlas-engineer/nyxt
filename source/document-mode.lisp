@@ -12,6 +12,7 @@
   (define-key *document-mode-map* (key "C-g") 'go-anchor)
   (define-key *document-mode-map* (key "M-g") 'go-anchor-new-buffer-focus)
   (define-key *document-mode-map* (key "C-u M-g") 'go-anchor-new-buffer)
+  (define-key *document-mode-map* (key "C-x C-w") 'copy-anchor-url)
   (define-key *document-mode-map* (key "C-f") 'history-forwards)
   (define-key *document-mode-map* (key "C-b") 'history-backwards)
   (define-key *document-mode-map* (key "C-p") 'scroll-up)
