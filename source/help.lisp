@@ -91,3 +91,7 @@
   (make-instance 'help-mode
 		 :name "Help-Mode"
 		 :keymap *help-mode-map*))
+
+(define-command next-version ()
+  "Version numbers of this version of Next."
+  (echo *minibuffer* *version*))
