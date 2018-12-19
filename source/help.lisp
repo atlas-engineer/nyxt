@@ -93,5 +93,7 @@
 		 :keymap *help-mode-map*))
 
 (define-command next-version ()
-  "Version numbers of this version of Next."
-  (echo *minibuffer* *version*))
+  "Version number of this version of Next.
+The version number is stored in the clipboard."
+  (trivial-clipboard:text *version*)
+  (echo *minibuffer* (format nil "Version ~a" *version*)))

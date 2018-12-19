@@ -83,6 +83,6 @@
           (uiop:run-program (list "git" "describe" version "--always")
                             :output '(:string :stripped t))
         (concatenate 'string
-                     "Version " version
+                     version
                      (when (string/= tag-commit current-commit)
                        (format nil "-~a" current-commit)))))))
