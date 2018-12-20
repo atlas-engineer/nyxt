@@ -10,7 +10,7 @@
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)
-	     (push s l))))
+             (push s l))))
 
 (defun load-package-symbols ()
   (setf *package-symbols* (package-symbols :next)))
@@ -89,8 +89,8 @@
 (defun help-mode ()
   "Base mode for interacting with documents"
   (make-instance 'help-mode
-		 :name "Help-Mode"
-		 :keymap *help-mode-map*))
+                 :name "Help-Mode"
+                 :keymap *help-mode-map*))
 
 (define-command next-version ()
   "Version number of this version of Next.

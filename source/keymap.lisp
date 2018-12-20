@@ -106,13 +106,13 @@
   (let ((key-sequence ()))
     ;; Iterate through all key chords (space delimited)
     (loop for key-chord-string in (cl-strings:split key-sequence-string " ")
-	  ;; Iterate through all keys in chord (hyphen delimited)
-	  do (let* ((keys (cl-strings:split key-chord-string "-"))
+          ;; Iterate through all keys in chord (hyphen delimited)
+          do (let* ((keys (cl-strings:split key-chord-string "-"))
                     (key-chord (make-key-chord
                                 :key-code nil
                                 :key-string (gethash (car (last keys))
                                                      *character-conversion-table*
                                                      (car (last keys)))
                                 :modifiers (sort (butlast keys) #'string-lessp))))
-	       (push (serialize-key-chord key-chord) key-sequence)))
+               (push (serialize-key-chord key-chord) key-sequence)))
     key-sequence))

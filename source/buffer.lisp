@@ -101,8 +101,8 @@ first item in the list, jump to the last item."
          (active-buffer (active-buffer *interface*))
          (active-buffer-index (get-active-buffer-index active-buffer buffers)))
     (if (equalp 0 active-buffer-index)
-	(set-active-buffer *interface* (nth (- (length buffers) 1) buffers))
-	(set-active-buffer *interface* (nth (- active-buffer-index 1) buffers)))))
+        (set-active-buffer *interface* (nth (- (length buffers) 1) buffers))
+        (set-active-buffer *interface* (nth (- active-buffer-index 1) buffers)))))
 
 (define-command switch-buffer-next ()
   "Switch to the next buffer in the list of buffers, if the last

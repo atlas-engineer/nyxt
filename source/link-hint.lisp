@@ -22,22 +22,22 @@
        (>= (ps:@ rect top) 0)
        (>= (ps:@ rect left) 0)
        (<= (ps:@ rect bottom) (or (ps:@ window inner-height)
-				  (ps:@ document document-element client-height)))
+                                  (ps:@ document document-element client-height)))
        (<= (ps:@ rect right) (or (ps:@ window inner-width)
-				 (ps:@ document document-element client-width))))))
+                                 (ps:@ document document-element client-width))))))
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the link"
     (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
-	       :left (+ (ps:@ window page-x-offset) (- (ps:@ rect left) 20))))
+               :left (+ (ps:@ window page-x-offset) (- (ps:@ rect left) 20))))
   (defun hint-create-element (link hint)
     "Creates a DOM element to be used as a hint"
     (ps:let* ((rect (ps:chain link (get-bounding-client-rect)))
-	      (position (hint-determine-position rect))
-	      (el (ps:chain document (create-element "span"))))
+              (position (hint-determine-position rect))
+              (el (ps:chain document (create-element "span"))))
       (when (< (ps:@ position left) 0)
-	(setf (ps:@ position left) (+ (ps:@ position left) 20)))
+        (setf (ps:@ position left) (+ (ps:@ position left) 20)))
       (when (< (ps:@ position top) 0)
-	(setf (ps:@ position top) (+ (ps:@ position top) 20)))
+        (setf (ps:@ position top) (+ (ps:@ position top) 20)))
       (setf (ps:@ el class-name) "next-link-hint")
       (setf (ps:@ el style background) "rgba(255, 255, 255, 0.75)")
       (setf (ps:@ el style border) "1px solid red")
@@ -56,19 +56,19 @@
   (defun hints-add (links)
     "Adds hints on links"
     (ps:let* ((links-length (length links))
-	   (hints (hints-generate links-length)))
+           (hints (hints-generate links-length)))
       (ps:chain -j-s-o-n
-		(stringify
-		 (loop for i from 0 to (- links-length 1)
-		    collect (list
-			     (ps:@ (hint-add (elt links i) (elt hints i)) inner-text)
-			     (ps:@ (elt links i) href)))))))
+                (stringify
+                 (loop for i from 0 to (- links-length 1)
+                    collect (list
+                             (ps:@ (hint-add (elt links i) (elt hints i)) inner-text)
+                             (ps:@ (elt links i) href)))))))
   (defun hints-determine-chars-length (length)
     "Finds out how many chars long the hints must be"
     (ps:let ((i 1))
       ;; 26 chars in alphabet
       (loop while (> length (expt 26 i))
-	 do (incf i))
+         do (incf i))
       i))
   (defun hints-generate (length)
     "Generates hints that will appear on the links"
@@ -80,14 +80,14 @@
     "Generates strings of specified length"
     (ps:let ((minimum (1+ (ps:chain -math (pow 26 (- chars-length 1))))))
       (loop for i from minimum to (+ minimum length)
-	 collect (string-generate i))))
+         collect (string-generate i))))
   (defun string-generate (n)
     "Generates a string from a number"
     (if (>= n 0)
-	(+ (string-generate (floor (- (/ n 26) 1)))
-	   (code-char (+ 65
-			 (rem n 26))))
-	""))
+        (+ (string-generate (floor (- (/ n 26) 1)))
+           (code-char (+ 65
+                         (rem n 26))))
+        ""))
   (hints-add (links-find window document)))
 
 (define-parenstatic remove-link-hints

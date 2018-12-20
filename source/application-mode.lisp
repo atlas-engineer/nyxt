@@ -10,5 +10,5 @@
 
 (defun application-mode ()
   (make-instance 'application-mode
-		 :name "Application-Mode"
-		 :keymap *application-mode-map*))
+                 :name "Application-Mode"
+                 :keymap *application-mode-map*))

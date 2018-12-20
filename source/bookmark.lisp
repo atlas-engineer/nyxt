@@ -7,26 +7,26 @@
   (unless (probe-file *bookmark-db-path*)
     (close (open *bookmark-db-path* :direction :probe :if-does-not-exist :create))
     (let ((db (sqlite:connect
-	       (truename (probe-file *bookmark-db-path*)))))
+               (truename (probe-file *bookmark-db-path*)))))
       (sqlite:execute-non-query
-       db"create table bookmarks (id integer primary key, url text not null)")
+       db "create table bookmarks (id integer primary key, url text not null)")
       (sqlite:execute-non-query
        db "insert into bookmarks (url) values (?)" "about:blank")
       (sqlite:disconnect db))))
 
 (defun bookmark-complete (input)
   (let* ((db (sqlite:connect
-	      (truename (probe-file *bookmark-db-path*))))
-	 (candidates
-	  (sqlite:execute-to-list
-	   db "select url from bookmarks where url like ?"
-	   (format nil "%~a%" input))))
+              (truename (probe-file *bookmark-db-path*))))
+         (candidates
+           (sqlite:execute-to-list
+            db "select url from bookmarks where url like ?"
+            (format nil "%~a%" input))))
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))
 
 (defun %bookmark-url (url)
   (let ((db (sqlite:connect
-	     (truename (probe-file *bookmark-db-path*)))))
+             (truename (probe-file *bookmark-db-path*)))))
     (sqlite:execute-non-query
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
@@ -35,7 +35,7 @@
   "Bookmark the currently opened page in the active buffer."
   (with-result (url (buffer-get-url))
     (let ((db (sqlite:connect
-	       (truename (probe-file *bookmark-db-path*)))))
+               (truename (probe-file *bookmark-db-path*)))))
       (sqlite:execute-non-query
        db "insert into bookmarks (url) values (?)" url)
       (sqlite:disconnect db)))
@@ -78,5 +78,5 @@
                      :input-prompt "Open bookmark:"
                      :completion-function 'bookmark-complete))
     (buffer-evaluate-javascript *interface*
-                               (active-buffer *interface*)
-                               (buffer-set-url url))))
+                                (active-buffer *interface*)
+                                (buffer-set-url url))))

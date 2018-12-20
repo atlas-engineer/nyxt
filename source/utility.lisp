@@ -45,8 +45,8 @@ slime. Default port is 4006."
 
 (defun generate-search-query (search-string)
   (let* ((encoded-search-string
-	  (cl-string-match:replace-re "  *" "+" search-string :all t))
-	 (url (concatenate 'string "https://duckduckgo.com/?q=" encoded-search-string)))
+           (cl-string-match:replace-re "  *" "+" search-string :all t))
+         (url (concatenate 'string "https://duckduckgo.com/?q=" encoded-search-string)))
     url))
 
 (defun fuzzy-match (input candidates &key (accessor-function nil)

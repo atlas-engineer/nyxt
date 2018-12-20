@@ -46,7 +46,7 @@
   (define-key *minibuffer-mode-map* (key "C-y") #'(lambda () (paste *minibuffer*))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer)
-				       &key &allow-other-keys)
+                                       &key &allow-other-keys)
   (setf (keymap minibuffer) *minibuffer-mode-map*)
   (setf (mode minibuffer) minibuffer))
 
@@ -82,15 +82,15 @@
       minibuffer
     (if completions
         (let ((completion (nth completion-cursor completions)))
-	  (if completion
-	      ;; if we're able to find a completion
-	      (funcall callback-function completion)
-	      ;; if we can't find a completion
-	      (when empty-complete-immediate
-	        ;; if we accept immediate output in place of completion
-	        (return-immediate minibuffer))))
-	;; if there's no completion function
-	(return-immediate minibuffer))
+          (if completion
+              ;; if we're able to find a completion
+              (funcall callback-function completion)
+              ;; if we can't find a completion
+              (when empty-complete-immediate
+                ;; if we accept immediate output in place of completion
+                (return-immediate minibuffer))))
+        ;; if there's no completion function
+        (return-immediate minibuffer))
     (when cleanup-function
       (funcall cleanup-function))))
 

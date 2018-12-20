@@ -76,14 +76,14 @@
     (when (node-parent active-node)
       ;; check if parent node's url is equal
       (when (equalp url (node-data (node-parent active-node)))
-    	;; set active-node to parent
-    	(setf (active-history-node mode) (node-parent active-node))
-    	(return-from add-or-traverse-history t)))
+        ;; set active-node to parent
+        (setf (active-history-node mode) (node-parent active-node))
+        (return-from add-or-traverse-history t)))
     ;; loop through children to make sure node does not exist in children
     (loop for child in (node-children active-node) do
       (when (equalp (node-data child) url)
-    	(setf (active-history-node mode) child)
-    	(return-from add-or-traverse-history t)))
+        (setf (active-history-node mode) child)
+        (return-from add-or-traverse-history t)))
     ;; if we made it this far, we must create a new node
     (when url
       (history-add url)) ; add to history database
@@ -122,8 +122,8 @@
   "Base mode for interacting with documents"
   (let* ((root (make-instance 'node
                               :data "about:blank"))
-	 (mode (make-instance 'document-mode
-			      :name "Document-Mode"
-			      :keymap *document-mode-map*
-			      :active-node root)))
+         (mode (make-instance 'document-mode
+                              :name "Document-Mode"
+                              :keymap *document-mode-map*
+                              :active-node root)))
     mode))
