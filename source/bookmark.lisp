@@ -72,7 +72,7 @@
         (%bookmark-url selected-link)))))
 
 (define-command set-url-from-bookmark ()
-  "Set the url for the current buffer from a bookmark."
+  "Set the URL for the current buffer from a bookmark."
   (with-result (url (read-from-minibuffer
                      *minibuffer*
                      :input-prompt "Open bookmark:"

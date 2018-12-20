@@ -66,7 +66,7 @@ buffer to the start page."
     (set-url-buffer url (active-buffer *interface*) disable-history)))
 
 (define-command set-url-current-buffer ()
-  "Set the url for the current buffer, completing with history."
+  "Set the URL for the current buffer, completing with history."
   (with-result (url (read-from-minibuffer
                      *minibuffer*
                      :input-prompt "Open URL in buffer:"
@@ -75,7 +75,7 @@ buffer to the start page."
     (set-url url)))
 
 (define-command set-url-new-buffer ()
-  "Prompt the user for a url and set it in a new active / visible
+  "Prompt the user for a URL and set it in a new active / visible
 buffer"
   (with-result (url (read-from-minibuffer
                      *minibuffer*
