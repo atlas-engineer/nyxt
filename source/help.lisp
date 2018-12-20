@@ -95,5 +95,5 @@
 (define-command next-version ()
   "Version number of this version of Next.
 The version number is stored in the clipboard."
-  (trivial-clipboard:text *version*)
-  (echo *minibuffer* (format nil "Version ~a" *version*)))
+  (trivial-clipboard:text +version+)
+  (echo *minibuffer* (format nil "Version ~a" +version+)))

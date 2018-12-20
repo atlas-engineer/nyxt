@@ -74,7 +74,7 @@
 (deferredvar *cookie-path-dir* (xdg-data-home)
   "The path for cookies in the GTK Version of Next")
 
-(defparameter *version*
+(defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next))))
     (multiple-value-bind (current-commit)
         (uiop:run-program (list "git" "describe" "--always")
