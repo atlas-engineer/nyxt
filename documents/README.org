@@ -9,18 +9,6 @@
 - [[#help--community][Help & Community]]
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
-- [[#release-timeline][Release Timeline]]
-  - [[#120][1.2.0]]
-  - [[#110][1.1.0]]
-  - [[#100][1.0.0]]
-  - [[#008][0.08]]
-  - [[#007][0.07]]
-  - [[#006][0.06]]
-  - [[#005][0.05]]
-  - [[#004][0.04]]
-  - [[#003][0.03]]
-  - [[#002][0.02]]
-  - [[#001][0.01]]
 
 * Developer Installation
 Next is written in Common Lisp. It can be built with any standard
