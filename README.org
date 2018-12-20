@@ -100,3 +100,7 @@ request with your new extension appended to EXTENSION.org.
 ** Documentation
 For full documentation about Next, how it works, and how to extend it
 please see the [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org][user manual]].
+
+** History of changes
+
+See [[file:documents/CHANGELOG.org][CHANGELOG.org]].
