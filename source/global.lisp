@@ -65,6 +65,9 @@
 (defvar *platform-port-poll-interval* 0.015
   "The speed at which to poll the XML-RPC endpoint of a platform-port
   to see if it is ready to begin accepting XML-RPC commands.")
+(defvar *temp-directory* "/tmp/"
+  "The path where to create the \"next-$USER\" subfolder for temporary data storage.
+This is were the platform port log is stored.")
 (deferredvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
 (deferredvar *history-db-path* (xdg-data-home "history.db")
