@@ -169,14 +169,22 @@ void buffer_web_view_download_started(WebKitWebContext *context,
 	*/
 }
 
+gboolean buffer_web_view_web_process_crashed(WebKitWebView *web_view, Buffer *buffer) {
+	g_warning("Buffer %s web process crashed", buffer->identifier);
+	return FALSE;
+}
+
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 	buffer_set_cookie_file(buffer, cookie_file);
 
-	g_signal_connect(buffer->web_view, "load-changed", G_CALLBACK(buffer_web_view_load_changed), buffer);
-	g_signal_connect(buffer->web_view, "decide-policy", G_CALLBACK(buffer_web_view_decide_policy), buffer);
-
+	g_signal_connect(buffer->web_view, "load-changed",
+		G_CALLBACK(buffer_web_view_load_changed), buffer);
+	g_signal_connect(buffer->web_view, "decide-policy",
+		G_CALLBACK(buffer_web_view_decide_policy), buffer);
+	g_signal_connect(buffer->web_view, "web-process-crash",
+		G_CALLBACK(buffer_web_view_web_process_crashed), buffer);
 
 	WebKitWebContext *context = webkit_web_view_get_context(buffer->web_view);
 	g_signal_connect(context, "download-started", G_CALLBACK(buffer_web_view_download_started), buffer);
