@@ -74,6 +74,11 @@ buffer to the start page."
                      :empty-complete-immediate t))
     (set-url url)))
 
+(define-command reload-current-buffer ()
+  "Reload current buffer."
+  (with-result (url (buffer-get-url))
+    (set-url url 'disable-history)))
+
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new active / visible
 buffer"

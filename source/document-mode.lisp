@@ -20,6 +20,7 @@
   (define-key *document-mode-map* (key "C-x C-HYPHEN") 'zoom-out-page)
   (define-key *document-mode-map* (key "C-x C-0") 'unzoom-page)
   (define-key *document-mode-map* (key "C-l") 'set-url-current-buffer)
+  (define-key *document-mode-map* (key "C-r") 'reload-current-buffer)
   (define-key *document-mode-map* (key "C-m o") 'set-url-from-bookmark)
   (define-key *document-mode-map* (key "C-m s") 'bookmark-current-page)
   (define-key *document-mode-map* (key "C-m g") 'bookmark-anchor)
