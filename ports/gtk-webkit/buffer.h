@@ -132,7 +132,12 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 		return FALSE;
 	}
 	case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
-		// TODO: Manage/block resources here.  Maybe entry-point for downloads?
+		// Entry-point for downloads.
+		if (!webkit_response_policy_decision_is_mime_type_supported(WEBKIT_RESPONSE_POLICY_DECISION(decision))) {
+			g_debug("Policy: Response: Download");
+			webkit_policy_decision_download(decision);
+			return TRUE;
+		}
 		return FALSE;
 	}
 
@@ -151,6 +156,19 @@ void buffer_set_cookie_file(Buffer *buffer, const char *path) {
 		WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT);
 }
 
+void buffer_web_view_download_started(WebKitWebContext *context,
+	WebKitDownload *download, Buffer *buffer) {
+	const char *uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
+	g_debug("Download starting: %s", uri);
+	/*
+	Signal handlers accessible from here:
+	        - decide-destination
+	        - failed
+	        - finished
+	        - received-data
+	*/
+}
+
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -158,6 +176,10 @@ Buffer *buffer_init(const char *cookie_file) {
 
 	g_signal_connect(buffer->web_view, "load-changed", G_CALLBACK(buffer_web_view_load_changed), buffer);
 	g_signal_connect(buffer->web_view, "decide-policy", G_CALLBACK(buffer_web_view_decide_policy), buffer);
+
+
+	WebKitWebContext *context = webkit_web_view_get_context(buffer->web_view);
+	g_signal_connect(context, "download-started", G_CALLBACK(buffer_web_view_download_started), buffer);
 
 	// We need to hold a reference to the view, otherwise changing buffer in the a
 	// window will unref+destroy the view.
