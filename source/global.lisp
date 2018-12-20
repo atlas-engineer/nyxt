@@ -75,14 +75,16 @@
   "The path for cookies in the GTK Version of Next")
 
 (defparameter +version+
-  (let ((version (asdf/component:component-version (asdf:find-system :next))))
-    (multiple-value-bind (current-commit)
-        (uiop:run-program (list "git" "describe" "--always")
-                          :output '(:string :stripped t))
-      (multiple-value-bind (tag-commit)
-          (uiop:run-program (list "git" "describe" version "--always")
+  (let ((version (asdf/component:component-version (asdf:find-system :next)))
+        (directory (asdf:system-source-directory :next)))
+    (uiop:with-current-directory (directory)
+      (multiple-value-bind (current-commit)
+          (uiop:run-program (list "git" "describe" "--always")
                             :output '(:string :stripped t))
-        (concatenate 'string
-                     version
-                     (when (string/= tag-commit current-commit)
-                       (format nil "-~a" current-commit)))))))
+        (multiple-value-bind (tag-commit)
+            (uiop:run-program (list "git" "describe" version "--always")
+                              :output '(:string :stripped t))
+          (concatenate 'string
+                       version
+                       (when (string/= tag-commit current-commit)
+                         (format nil "-~a" current-commit))))))))
