@@ -8,13 +8,35 @@ MAJOR.MINOR.PATCH, we increment the:
 - MINOR version when we add functionality in a backwards-compatible manner, and
 - PATCH version when we make backwards-compatible bug fixes.
 
-** TASK 1.2.0
+** TASK 1.3.0
 *** TASK VI Emulation Layer
 + Add a VI Emulation layer to support VIM like keybindings and
   functionality
 *** TASK Ad Blocking Support
 + Add support for content blocking using the WebKit API
-
+*** TASK Fix search/occur implementation
+*** TASK Add download support
+** TASK 1.2.0
+*** DONE Add RELOAD-CURRENT-BUFFER command and bind it to C-r
+*** DONE Add NEXT-VERSION command
+It reports the commit hash if it was not built on a tag version.
+*** TASK Add per-buffer cookie support
+GTK implementation works.
+Cocoa implementation is missing.
+*** DONE Report page load status to echo area
+*** DONE Add COPY-TITLE command and bind it to M-w
+*** DONE Add COPY-ANCHOR-URL command and bind it to C-x C-w
+*** DONE Add COPY-URL command and bind it to C-w
+*** DONE Add PASTE command to minibuffer and bind it to C-v and C-y
+*** DONE Add common movement commands to minibuffer
+For instance ~cursor-forwards-word~ is bound to =M-f= by default.
+*** DONE Add "echo area" to display status messaages
+*** DONE Set window title dynamically
+*** DONE Embed/Replace build dependencies in the Cocoa port
+It now builds out of the box, with no need for external libraries.
+*** DONE Add commandline arguments to the Cocoa platform port
+*** DONE Report user configuration errors
+*** DONE Save platform logs to /tmp/next-$USER/
 ** DONE 1.1.0
 *** DONE Overhaul start-up and exit processes
 *** DONE Add --init-file command line parameter
