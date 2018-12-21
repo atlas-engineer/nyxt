@@ -80,14 +80,16 @@ This is were the platform port log is stored.")
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
         (directory (asdf:system-source-directory :next)))
-    (uiop:with-current-directory (directory)
-      (multiple-value-bind (current-commit)
-          (uiop:run-program (list "git" "describe" "--always")
-                            :output '(:string :stripped t))
-        (multiple-value-bind (tag-commit)
-            (uiop:run-program (list "git" "describe" version "--always")
-                              :output '(:string :stripped t))
-          (concatenate 'string
-                       version
-                       (when (string/= tag-commit current-commit)
-                         (format nil "-~a" current-commit))))))))
+    (or (ignore-errors
+         (uiop:with-current-directory (directory)
+           (multiple-value-bind (current-commit)
+               (uiop:run-program (list "git" "describe" "--always")
+                                 :output '(:string :stripped t))
+             (multiple-value-bind (tag-commit)
+                 (uiop:run-program (list "git" "describe" version "--always")
+                                   :output '(:string :stripped t))
+               (concatenate 'string
+                            version
+                            (when (string/= tag-commit current-commit)
+                              (format nil "-~a" current-commit)))))))
+        version)))
