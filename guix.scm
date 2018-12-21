@@ -29,6 +29,7 @@
              (gnu packages gstreamer)
              (gnu packages gtk)
              (gnu packages pkg-config)
+             (gnu packages gcc)
              (gnu packages webkit))
 
 (define %source-dir (dirname (current-filename)))
@@ -53,13 +54,16 @@
 (define-public next-gtk-webkit
   (package
     (name "next-gtk-webkit")
-    (version "HEAD")
+    (version "0.0.0")                   ; Because this can be checkout.
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system glib-or-gtk-build-system)
     (arguments
      `(#:tests? #f                      ; no tests
        #:make-flags (list "gtk-webkit"
-                          "CC=gcc"
+                          (string-append
+                           "CC="
+                           (assoc-ref %build-inputs "gcc-7")
+                           "/bin/gcc")
                           (string-append "PREFIX=" %output))
        #:phases
        (modify-phases %standard-phases
@@ -70,9 +74,10 @@
     (inputs
      `(("glib-networking" ,glib-networking)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("webkitgtk" ,webkitgtk)))
+       ("webkitgtk" ,webkitgtk-2.22)))
     (native-inputs
-     `(("pkg-config" ,pkg-config)))
+     `(("gcc-7" ,gcc-7) ; needed because webkitgtk-2.22 is compiled with gcc-7
+       ("pkg-config" ,pkg-config)))
     (home-page "https://next.atlas.engineer")
     (synopsis "Infinitely extensible web-browser (user interface only)")
     (description "Next is a keyboard-oriented, extensible web-browser
@@ -142,7 +147,8 @@ features for productive professionals.")
        ("cl-css" ,sbcl-cl-css)
        ("bordeaux-threads" ,sbcl-bordeaux-threads)
        ("s-xml-rpc" ,sbcl-s-xml-rpc)
-       ("unix-opts" ,sbcl-unix-opts)))
+       ("unix-opts" ,sbcl-unix-opts)
+       ("trivial-clipboard" ,sbcl-trivial-clipboard)))
     (synopsis "Infinitely extensible web-browser (with Lisp development files)")))
 
 ;; TODO: For now, "next" is useless compared to sbcl-next because Guix keeps
