@@ -82,6 +82,9 @@
 
 (defmethod window-active ((interface remote-interface))
   "Return the window object for the currently active window."
+  ;; TODO: Maybe return last focused window instead of NIL if no window is
+  ;; currently focused.  Currently, many functions fail when run, say, from the
+  ;; REPL, if no window is focused.
   (with-slots (host port url windows) interface
     (gethash (s-xml-rpc:xml-rpc-call
               (s-xml-rpc:encode-xml-rpc-call "window.active")
@@ -126,10 +129,13 @@
 
 (defmethod window-set-minibuffer-height ((interface remote-interface)
                                          (window window) height)
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.set.minibuffer.height" (id window) height)
-     :host host :port port :url url)))
+  ;; WINDOW could be empty if, for instance, nothing window was focused when
+  ;; calling WINDOW-ACTIVE.
+  (when (and interface window (id window))
+    (with-slots (host port url) interface
+      (s-xml-rpc:xml-rpc-call
+       (s-xml-rpc:encode-xml-rpc-call "window.set.minibuffer.height" (id window) height)
+       :host host :port port :url url))))
 
 (defmethod buffer-make ((interface remote-interface))
   (with-slots (host port url buffers) interface
