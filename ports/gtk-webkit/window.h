@@ -233,6 +233,9 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 
 Window *window_init() {
 	Minibuffer *minibuffer = minibuffer_init();
+	// TODO: Initial minibuffer size must be set here or else it will stick to 0.
+	// This seems to be related to the resizing issue below.
+	gtk_widget_set_size_request(GTK_WIDGET(minibuffer->web_view), -1, 200);
 
 	GtkWidget *mainbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(minibuffer->web_view), FALSE, FALSE, 0);
@@ -309,6 +312,7 @@ gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 
 	// TODO: Changing the size request of an existing object does not seem to work here.
 	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, 200);
+	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height);
 	gtk_widget_show(GTK_WIDGET(window->minibuffer->web_view));
 	window->minibuffer_height = height;
 
