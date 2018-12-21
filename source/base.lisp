@@ -87,11 +87,13 @@ Set to '-' to read standard input instead."))
           (format t "Error: we could not load your init file: ~a~&" c))))
   (initialize-bookmark-db)
   (initialize-history-db)
-  (when with-platform-port-p
-    (run-program *port*))
   ;; create the interface object
   (setf *interface* (make-instance 'remote-interface))
   (start-interface *interface*)
+  ;; Start the port after the interface so that we don't overwrite the log when
+  ;; an instance is already running.
+  (when with-platform-port-p
+    (run-program *port*))
   ;; initialize default state
   (setf *minibuffer* (make-instance 'minibuffer))
   (initialize-port)
