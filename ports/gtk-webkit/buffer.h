@@ -183,7 +183,7 @@ Buffer *buffer_init(const char *cookie_file) {
 		G_CALLBACK(buffer_web_view_load_changed), buffer);
 	g_signal_connect(buffer->web_view, "decide-policy",
 		G_CALLBACK(buffer_web_view_decide_policy), buffer);
-	g_signal_connect(buffer->web_view, "web-process-crash",
+	g_signal_connect(buffer->web_view, "web-process-crashed",
 		G_CALLBACK(buffer_web_view_web_process_crashed), buffer);
 
 	WebKitWebContext *context = webkit_web_view_get_context(buffer->web_view);

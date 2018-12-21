@@ -32,7 +32,7 @@ Minibuffer *minibuffer_init() {
 	minibuffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 	minibuffer->callback_count = 0;
 
-	g_signal_connect(minibuffer->web_view, "web-process-crash",
+	g_signal_connect(minibuffer->web_view, "web-process-crashed",
 		G_CALLBACK(minibuffer_web_view_web_process_crashed), minibuffer);
 
 	return minibuffer;
