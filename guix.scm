@@ -1,6 +1,7 @@
 ;;; Commentary:
 ;;
-;; GNU Guix development package.  To build and install, run:
+;; GNU Guix development package.  To build and install, clone this 
+;; repository, cd into it and run:
 ;;
 ;;   guix package -f guix.scm
 ;;
