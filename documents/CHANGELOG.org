@@ -16,13 +16,12 @@ MAJOR.MINOR.PATCH, we increment the:
 + Add support for content blocking using the WebKit API
 *** TASK Fix search/occur implementation
 *** TASK Add download support
-** TASK 1.2.0
+** DONE 1.2.0
 *** DONE Add RELOAD-CURRENT-BUFFER command and bind it to C-r
 *** DONE Add NEXT-VERSION command
 It reports the commit hash if it was not built on a tag version.
-*** TASK Add per-buffer cookie support
-GTK implementation works.
-Cocoa implementation is missing.
+*** DONE Add cookie support
+GTK implementation has per-buffer cookie support.
 *** DONE Report page load status to echo area
 *** DONE Add COPY-TITLE command and bind it to M-w
 *** DONE Add COPY-ANCHOR-URL command and bind it to C-x C-w
