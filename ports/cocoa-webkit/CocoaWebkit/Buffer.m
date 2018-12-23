@@ -68,8 +68,8 @@ decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
 decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
     // This is a 'new window action' (aka target="_blank") > open this URL
-    // in a new window by invoking MAKE-BUFFERS
-    if (!navigationAction.targetFrame) {
+    // in a new window by invoking MAKE-BUFFERS on the Lisp Core
+    if (![navigationAction targetFrame]) {
         NSString *url = [[[navigationAction request] URL] absoluteString];
         NSString* coreSocket = [[Global sharedInstance] coreSocket];
         XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
