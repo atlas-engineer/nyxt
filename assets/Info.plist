@@ -1,26 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>NSPrincipalClass</key>
-	<string>Next-application</string>
-	<key>CFBundleIconFile</key>
-	<string>next.icns</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleGetInfoString</key>
-	<string>Next</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleExecutable</key>
-	<string>Next</string>
-	<key>CFBundleIdentifier</key>
-	<string>engineer.Atlas.Next</string>
-        <key>NSAppTransportSecurity</key>
-        <dict>
-          <key>NSAllowsLocalNetworking</key>
-          <true/>
-        </dict>
-
-</dict>
+  <dict>
+    <key>NSPrincipalClass</key>
+    <string>NextApplication</string>
+    <key>CFBundleIconFile</key>
+    <string>next.icns</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleGetInfoString</key>
+    <string>Next</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleExecutable</key>
+    <string>Next</string>
+    <key>CFBundleIdentifier</key>
+    <string>engineer.Atlas.Next</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSAllowsLocalNetworking</key>
+      <true/>
+    </dict>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+	<key>CFBundleURLName</key>
+	<string>http URL</string>
+	<key>CFBundleURLSchemes</key>
+	<array>
+	  <string>http</string>
+	</array>
+      </dict>
+      <dict>
+	<key>CFBundleURLName</key>
+	<string>https URL</string>
+	<key>CFBundleURLSchemes</key>
+	<array>
+	  <string>https</string>
+	</array>
+      </dict>
+    </array>
+  </dict>
 </plist>

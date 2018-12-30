@@ -12,6 +12,23 @@
 
 @implementation NextApplication
 
+- (id)init {
+    self = [super init];
+    if (self) {
+        NSAppleEventManager *em = [NSAppleEventManager sharedAppleEventManager];
+        [em
+         setEventHandler:self
+         andSelector:@selector(getUrl:withReplyEvent:)
+         forEventClass:kInternetEventClass
+         andEventID:kAEGetURL];
+        
+        CFStringRef bundleID = (CFStringRef)CFBridgingRetain([[NSBundle mainBundle] bundleIdentifier]);
+        LSSetDefaultHandlerForURLScheme(CFSTR("http"), bundleID);
+        LSSetDefaultHandlerForURLScheme(CFSTR("https"), bundleID);
+    }
+    return self;
+}
+
 - (void)sendEvent:(NSEvent*)event {
     if ([event type] == NSEventTypeKeyDown && [event timestamp] != 0) {
         NextApplicationDelegate* delegate = [NSApp delegate];
@@ -68,6 +85,22 @@
     } else {
         [super sendEvent:event];
     }
+}
+
+- (void)getUrl:(NSAppleEventDescriptor *)event
+withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+{
+    // Get the URL
+    NSString *url = [[event paramDescriptorForKeyword:keyDirectObject]
+                        stringValue];
+    NSString* coreSocket = [[Global sharedInstance] coreSocket];
+    XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
+                                     [NSURL URLWithString:coreSocket]];
+    // Make Buffers Expects an array of URLs
+    [request setMethod:@"MAKE-BUFFERS"
+        withParameters:@[@[url]]];
+    NSURLSession* session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:[request request]] resume];
 }
 
 @end
