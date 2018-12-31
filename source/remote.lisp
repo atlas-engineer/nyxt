@@ -226,7 +226,7 @@
   (let ((windows (windows *interface*)))
     (remhash window-id windows)
     (when (equal 0 (length (alexandria:hash-table-values windows)))
-      (uiop:quit))))
+      (kill))))
 
 (defun make-buffers (urls)
   "Create new buffers from URLs."
