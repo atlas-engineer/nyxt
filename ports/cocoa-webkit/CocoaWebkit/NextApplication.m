@@ -21,10 +21,6 @@
          andSelector:@selector(getUrl:withReplyEvent:)
          forEventClass:kInternetEventClass
          andEventID:kAEGetURL];
-        
-        CFStringRef bundleID = (CFStringRef)CFBridgingRetain([[NSBundle mainBundle] bundleIdentifier]);
-        LSSetDefaultHandlerForURLScheme(CFSTR("http"), bundleID);
-        LSSetDefaultHandlerForURLScheme(CFSTR("https"), bundleID);
     }
     return self;
 }
