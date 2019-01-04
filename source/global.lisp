@@ -68,7 +68,7 @@
 (defvar *temp-directory* "/tmp/"
   "The path where to create the \"next-$USER\" subfolder for temporary data storage.
 This is were the platform port log is stored.")
-(defvar *default-minibuffer-style*
+(defvar *minibuffer-style*
   (cl-css:css
    '((* :font-family "monospace,monospace"
         :font-size "14px")
@@ -93,7 +93,7 @@ This is were the platform port log is stored.")
      (li :padding "2px")
      (.selected :background-color "gray"
                 :color "white")))
-  "The default CSS applied to a minibuffer when it is set-up.")
+  "The CSS applied to a minibuffer when it is set-up.")
 (deferredvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
 (deferredvar *history-db-path* (xdg-data-home "history.db")

@@ -130,7 +130,7 @@
   (setf (input-buffer-cursor minibuffer) 0)
   (set-input minibuffer
              (cl-markup:markup
-              (:head (:style *default-minibuffer-style*))
+              (:head (:style *minibuffer-style*))
               (:body
                (:div :id "container"
                      (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
