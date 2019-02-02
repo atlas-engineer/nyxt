@@ -241,11 +241,13 @@ with a running Common Lisp process for compilation, debugging,
 documentation lookup, and so on.
 #+end_quote
 
-To use Slime with a compiled version of Next use the keybinding ~S-h
-s~ to launch a Swank server. Slime will connect to the Swank server
-and give you completion, debugging, documentation, etc. The default
-port for Swank on Next is ~4006~ to avoid collisions with the default
-Swank port of ~4005~ within an Emacs ~*inferior-lisp*~ process.
+To use Slime with a compiled version of Next launch a Swank server in
+Next with the keybinding ~C-h s~ or ~M-x start-swank~.
+
+Slime can connect to the Swank server and give you completion,
+debugging, documentation, etc. The default port for Swank on Next is
+~4006~ to avoid collisions with the default Swank port of ~4005~
+within an Emacs ~*inferior-lisp*~ process.
 
 After launching the Swank server in Next- within Emacs execute:
 
