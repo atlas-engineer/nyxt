@@ -5,6 +5,9 @@ users. The application has familiar key-bindings, is fully
 configurable and extensible in Lisp, and has powerful features for
 productive professionals.
 
+*Warning:* Next is under heavy development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
+instabilities or feature wishes.
+
 * Features
 Next includes many features designed to enable you to focus on being
 productive. A few of them are demonstrated below.
