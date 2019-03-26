@@ -1,0 +1,23 @@
+PyQt port for Next.
+
+* Installation
+
+Create a Python3 virtual env:
+: python3 -m venv ~/.venvs/where/you/want/next
+: source ~/.venvs/where/you/want/next/bin/activate
+
+Install Python dependencies:
+
+: make install
+or
+: pip3 install -r requirements.txt
+
+Run:
+
+: make run
+or
+: python3 next-pyqt.py
+
+* Documentation
+
+https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtwebenginewidgets/qwebengineview.html
