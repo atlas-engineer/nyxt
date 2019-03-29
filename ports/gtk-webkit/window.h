@@ -129,7 +129,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 		event->hardware_keycode, (gint32)event->keyval,
 		gdk_keyval_name(event->keyval), event->string, event->is_modifier);
 
-	// Don't  modifiers, otherwise the core could see them as self-inserting
+	// Don't pass modifiers alone, otherwise the core could see them as self-inserting
 	// character, which would print "Control_L" and the like in the minibuffer.
 	if (event->is_modifier) {
 		// Forward to GTK.
