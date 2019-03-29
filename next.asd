@@ -21,7 +21,8 @@
                :s-xml-rpc
                :unix-opts
                :trivial-clipboard
-               :find-port)
+               :find-port
+               :log4cl)
   :components ((:module "source"
                 :components
                 (;; Core Functionality

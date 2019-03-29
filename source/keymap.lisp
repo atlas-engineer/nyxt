@@ -40,25 +40,39 @@
                     :key-string key-string
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp)))))
+    (log:debug key-chord)
     (push key-chord *key-chord-stack*))
   (if (consume-key-sequence-p sender) 1 0))
 
 (defun consume-key-sequence-p (sender)
-  (let* ((active-buffer (active-buffer (gethash sender (windows *interface*))))
-         (key-maps (list *global-map* (keymap (mode active-buffer)))))
+  (let* ((active-window (gethash sender (windows *interface*)))
+         (active-buffer (active-buffer active-window))
+         (local-map (if (minibuffer-active active-window)
+                        *minibuffer-mode-map*
+                        (keymap (mode active-buffer))))
+         ;; TODO: Shouldn't we give higher priority to the buffer keymap?
+         (key-maps (list *global-map* local-map)))
     (flet ((is-in-maps? (key-maps)
              (dolist (map key-maps)
                (when (look-up-key-chord-stack *key-chord-stack* map)
                  (return-from is-in-maps? t)))))
-      (cond ((eql active-buffer *minibuffer*) t)
-            ((is-in-maps? key-maps) t)
+      (cond ((minibuffer-active active-window)
+             (log:debug "Minibuffer active" )
+             t)
+            ((is-in-maps? key-maps)
+             (log:debug "Found in maps")
+             t)
             (t (setf *key-chord-stack* ()))))))
 
 (defun consume-key-sequence (sender)
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
-  (let* ((active-buffer (active-buffer (gethash sender (windows *interface*))))
-         (key-maps (list *global-map* (keymap (mode active-buffer))))
+  (let* ((active-window (gethash sender (windows *interface*)))
+         (active-buffer (active-buffer active-window))
+         (local-map (if (minibuffer-active active-window)
+                        *minibuffer-mode-map*
+                        (keymap (mode active-buffer))))
+         (key-maps (list *global-map* local-map))
          (serialized-key-stack (mapcar #'serialize-key-chord *key-chord-stack*)))
     (dolist (map key-maps)
       (let ((bound (gethash serialized-key-stack map)))
@@ -66,11 +80,14 @@
                (return-from consume-key-sequence t))
               (bound
                (progn
+                 (log:debug "Key sequence bound")
                  (funcall bound)
                  (setf *key-chord-stack* ())
                  (return-from consume-key-sequence t)))
               ((equalp map *minibuffer-mode-map*)
                (progn
+                 (log:debug "Insert ~s in minibuffer" (key-chord-key-string
+                                                       (first *key-chord-stack*)))
                  (self-insert *minibuffer* (key-chord-key-string
                                             (first *key-chord-stack*)))
                  (setf *key-chord-stack* ())

@@ -70,8 +70,7 @@
       (funcall setup-function)
       (setup-default minibuffer))
   (update-display minibuffer)
-  (show minibuffer)
-  (setf (active-buffer (window-active *interface*)) *minibuffer*))
+  (show minibuffer))
 
 (defmethod return-input ((minibuffer minibuffer))
   (hide minibuffer)
@@ -104,6 +103,7 @@
       (funcall cleanup-function))))
 
 (defmethod cancel-input ((minibuffer minibuffer))
+  (log:debug (callback-buffer minibuffer))
   (setf (display-mode minibuffer) :nil)
   (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (cleanup-function) minibuffer
@@ -137,11 +137,13 @@
                      (:div :id "completions" ""))))))
 
 (defmethod show ((minibuffer minibuffer))
+  (setf (minibuffer-active (window-active *interface*)) t)
   (window-set-minibuffer-height *interface*
                                 (window-active *interface*)
                                 *minibuffer-open-height*))
 
 (defmethod hide ((minibuffer minibuffer))
+  (setf (minibuffer-active (window-active *interface*)) nil)
   (window-set-minibuffer-height *interface*
                                 (window-active *interface*)
                                 *minibuffer-closed-height*))

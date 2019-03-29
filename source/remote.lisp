@@ -8,6 +8,7 @@
 (defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)
+   (minibuffer-active :accessor minibuffer-active :initform nil)
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))))
 
@@ -129,6 +130,7 @@
       (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
           (let ((temp-buffer (buffer-make *interface*))
                 (buffer-swap (active-buffer window)))
+            (log:debug "Swapping with buffer from existing window.")
             (%window-set-active-buffer interface window-with-same-buffer temp-buffer)
             (%window-set-active-buffer interface window buffer)
             (%window-set-active-buffer interface window-with-same-buffer buffer-swap)
@@ -267,6 +269,7 @@
   "Get the active buffer for the active window."
   (window-active-buffer interface (window-active interface)))
 
+;; TODO: Prevent setting the minibuffer as the active buffer.
 (defmethod set-active-buffer ((interface remote-interface)
                               (buffer buffer))
   "Set the active buffer for the active window."
