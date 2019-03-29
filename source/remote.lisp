@@ -121,15 +121,17 @@
 (defmethod window-set-active-buffer ((interface remote-interface)
                                       (window window)
                                       (buffer buffer))
-    (let ((parent-window (find-if
-                          (lambda (window) (eql (active-buffer window) buffer))
+  ;; TODO: Replace this swapping business with a simple swap + a "refresh rendering" RPC call?
+    (let ((window-with-same-buffer (find-if
+                          (lambda (other-window) (and (not (eq other-window window))
+                                                      (eql (active-buffer other-window) buffer)))
                           (alexandria:hash-table-values (windows *interface*)))))
-      (if parent-window ;; if visible on screen perform swap, otherwise just show
+      (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
           (let ((temp-buffer (buffer-make *interface*))
                 (buffer-swap (active-buffer window)))
-            (%window-set-active-buffer interface parent-window temp-buffer)
+            (%window-set-active-buffer interface window-with-same-buffer temp-buffer)
             (%window-set-active-buffer interface window buffer)
-            (%window-set-active-buffer interface parent-window buffer-swap)
+            (%window-set-active-buffer interface window-with-same-buffer buffer-swap)
             (buffer-delete interface temp-buffer))
           (%window-set-active-buffer interface window buffer))))
 
