@@ -28,6 +28,7 @@
   (did-finish-navigation (mode buffer) url))
 
 (defclass remote-interface ()
+  ;; TODO: remote-interface HOST and PORT should derive from *platform-port-socket* dynamically.
   ((host :accessor host :initform (getf *platform-port-socket* :host))
    (active-connection :accessor active-connection :initform nil)
    (port :accessor port :initform (getf *platform-port-socket* :port))
@@ -46,10 +47,18 @@
               (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
                       *core-port* url-list)
               ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
-              (s-xml-rpc:xml-rpc-call
-               (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" url-list)
-               :port *core-port*))
-            (uiop:quit)))))
+              (handler-case
+                  (progn
+                    (s-xml-rpc:xml-rpc-call
+                     (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" url-list)
+                     :port *core-port*)
+                    (uiop:quit))
+                (error (c)
+                  (let ((new-port (find-port:find-port)))
+                    (format *error-output* "Port ~a does not seem to be used by Next, trying ~a instead.~%"
+                            *core-port* new-port)
+                    (setf *core-port* new-port)
+                    (s-xml-rpc:start-xml-rpc-server :port *core-port*)))))))))
 
 (defmethod kill-interface ((interface remote-interface))
   "Kill the XML RPC Server."

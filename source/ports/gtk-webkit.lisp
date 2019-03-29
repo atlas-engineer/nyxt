@@ -14,9 +14,23 @@
 (defvar *gtk-webkit-command* #'gtk-webkit-command-path
   "Path to the GTK-Webkit platform port executable.
 This can be either a string or a function of zero argument returning a string.")
-(defvar *gtk-webkit-args* (list "--port" (write-to-string (getf *platform-port-socket* :port))
-                                "--core-socket" (format nil "http://localhost:~a/RPC2" *core-port*))
-  "Arguments to pass to the GTK-Webkit platform port executable.")
+
+(defun gtk-webkit-list-args ()
+  "Derive platform port arguments dynamically at runtime.
+This is useful if, for instance, the *CORE-PORT* gets changed after startup."
+  (unless (find-port:port-open-p (getf *platform-port-socket* :port))
+    (let ((new-port (find-port:find-port)))
+      (format *error-output* "Platform port socket ~a seems busy, trying ~a instead.~%"
+              (getf *platform-port-socket* :port) new-port)
+      (setf (getf *platform-port-socket* :port) new-port)
+      (setf (port *interface*) new-port)))
+  (list "--port" (write-to-string (getf *platform-port-socket* :port))
+        "--core-socket" (format nil "http://localhost:~a/RPC2" *core-port*)))
+
+(defvar *gtk-webkit-args* #'gtk-webkit-list-args
+  "Arguments to pass to the GTK-Webkit platform port executable.
+This can be either a string or a function of zero argument returning a string.")
+
 (defvar *gtk-webkit-log* #P"next-gtk-webkit.log"
   "Where to store the log of the GTK-Webkit platform port.")
 
@@ -40,13 +54,17 @@ This can be either a string or a function of zero argument returning a string.")
                               *temp-directory*))
         (port-path (if (functionp *gtk-webkit-command*)
                        (funcall *gtk-webkit-command*)
-                       *gtk-webkit-command*)))
+                       *gtk-webkit-command*))
+        (port-args (if (functionp *gtk-webkit-args*)
+                       (funcall *gtk-webkit-args*)
+                       *gtk-webkit-args*)))
     ;; WARNING: :mode is an SBCL / CMUCL extension.
     (ensure-directories-exist user-temp-directory :mode #o700)
     (format t "Current directory: ~a~%" *default-pathname-defaults*)
-    (format t "Trying platform port ~a~%" port-path)
+    (format t "Platform port path: ~a~%" port-path)
+    (format t "Platform port arguments: ~a~%" port-args)
     (setf (running-process port)
-          (uiop:launch-program (cons port-path *gtk-webkit-args*)
+          (uiop:launch-program (cons port-path port-args)
                                :output (merge-pathnames *gtk-webkit-log* user-temp-directory)
                                :error-output :output))))
 

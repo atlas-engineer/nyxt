@@ -20,7 +20,8 @@
                :bordeaux-threads
                :s-xml-rpc
                :unix-opts
-               :trivial-clipboard)
+               :trivial-clipboard
+               :find-port)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
