@@ -51,6 +51,7 @@ Set to '-' to read standard input instead."))
 
 (defun initialize-port ()
   (let ((port-running nil))
+    ;; TODO: Limit loop.
     (loop while (not port-running) do
       (handler-case
           (let ((buffer (nth-value 1 (make-window))))
@@ -91,7 +92,8 @@ Set to '-' to read standard input instead."))
   (initialize-bookmark-db)
   (initialize-history-db)
   ;; create the interface object
-  (setf *interface* (make-instance 'remote-interface))
+  (unless *interface*
+    (setf *interface* (make-instance 'remote-interface)))
   (start-interface *interface*)
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.
