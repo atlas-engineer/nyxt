@@ -100,7 +100,9 @@ Set to '-' to read standard input instead."))
   (setf *minibuffer* (make-instance 'minibuffer))
   (initialize-port)
   (when with-platform-port-p
-    (run-loop *port*))
+    (run-loop *port*)
+    (log:debug "Platform port exited")
+    (kill-interface *interface*))
   t)
 
 (setf *port* (make-instance 'port))

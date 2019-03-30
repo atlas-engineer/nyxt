@@ -64,6 +64,7 @@
 (defmethod kill-interface ((interface remote-interface))
   "Kill the XML RPC Server."
   (when (active-connection interface)
+    (log:debug "Stopping server")
     (s-xml-rpc:stop-server (active-connection interface))))
 
 (defmethod window-make ((interface remote-interface))
@@ -237,9 +238,9 @@
 
 (defun window-will-close (window-id)
   (let ((windows (windows *interface*)))
-    (remhash window-id windows)
-    (when (equal 0 (length (alexandria:hash-table-values windows)))
-      (kill))))
+    (log:debug "Closing window ID ~a (new total: ~a)" window-id
+               (1- (length (alexandria:hash-table-values windows))))
+    (remhash window-id windows)))
 
 (defun make-buffers (urls)
   "Create new buffers from URLs."
