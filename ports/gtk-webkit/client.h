@@ -9,5 +9,5 @@ Use of this file is governed by the license that can be found in LICENSE.
 static SoupSession *xmlrpc_env;
 
 void start_client() {
-	xmlrpc_env = soup_session_new();
+	xmlrpc_env = soup_session_new_with_options("timeout", 5);
 }
