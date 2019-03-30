@@ -123,7 +123,43 @@ void window_delete(Window *window) {
 	gtk_main_quit();
 }
 
-gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data) {
+gboolean window_consume_event(SoupSession *session, SoupMessage *msg, gpointer window_data) {
+	GError *error = NULL;
+	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
+
+	// TODO: Ideally we should receive a boolean.  See on Lisp side.
+	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
+			msg->response_body->length, "i", &error);
+
+	if (error) {
+		g_warning("%s: '%s'", error->message,
+			strndup(msg->response_body->data, msg->response_body->length));
+		g_error_free(error);
+		return TRUE;
+	}
+
+	if (!g_variant_get_int32(consumed)) {
+		g_debug("Event not consumed, forwarding to GTK");
+		return FALSE;
+	}
+
+	Window *window = window_data;
+	const char *method_name = "CONSUME-KEY-SEQUENCE";
+	GVariant *id = g_variant_new("(s)",
+			window->identifier);
+	g_message("XML-RPC message: %s, window id %s", method_name, window->identifier);
+	msg = soup_xmlrpc_message_new(state.core_socket,
+			method_name, id, &error);
+	// TODO: There is a possible race condition here: if two keys are pressed very
+	// fast before the first CONSUME-KEY-SEQUENCE is received by the Lisp core,
+	// then when the first CONSUME-KEY-SEQUENCE is received, *key-chord-stack*
+	// will contain the two keys.  The second CONSUME-KEY-SEQUENCE will have an
+	// empty *key-chord-stack*.  In practice, those key presses would have to be
+	// programmatically generated at the system level, so it's mostly a non-issue.
+	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
+}
+
+gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer window_data) {
 	g_debug("Key pressed:"
 		" code %i, symbol %i, name '%s', print '%s, is_modifier %i",
 		event->hardware_keycode, (gint32)event->keyval,
@@ -179,7 +215,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 		}
 	}
 
-	Window *window = data;
+	Window *window = window_data;
 	GVariant *key_chord = g_variant_new("(isass)",
 			event->hardware_keycode,
 			keyval_string,
@@ -196,38 +232,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer data
 		return TRUE;
 	}
 
-	soup_session_send_message(xmlrpc_env, msg);
-	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
-
-	// TODO: Ideally we should receive a boolean.  See on Lisp side.
-	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
-			msg->response_body->length, "i", &error);
-
-	if (error) {
-		g_warning("Malformed XML-RPC response: %s", error->message);
-		g_error_free(error);
-		return TRUE;
-	}
-
-	if (!g_variant_get_int32(consumed)) {
-		g_debug("Event not consumed, forwarding to GTK");
-		return FALSE;
-	}
-
-	method_name = "CONSUME-KEY-SEQUENCE";
-	GVariant *id = g_variant_new("(s)",
-			window->identifier);
-	g_message("XML-RPC message: %s, window id %s", method_name, window->identifier);
-	msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, id, &error);
-	// TODO: There is a possible race condition here: if two keys are pressed very
-	// fast before the first CONSUME-KEY-SEQUENCE is received by the Lisp core,
-	// then when the first CONSUME-KEY-SEQUENCE is received, *key-chord-stack*
-	// will contain the two keys.  The second CONSUME-KEY-SEQUENCE will have an
-	// empty *key-chord-stack*.  In practice, those key presses would have to be
-	// programmatically generated at the system level, so it's mostly a non-issue.
-	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
-
+	soup_session_queue_message(xmlrpc_env, msg, (SoupSessionCallback)window_consume_event, window);
 	return TRUE;
 }
 
