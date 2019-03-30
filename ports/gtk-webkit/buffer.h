@@ -24,7 +24,7 @@ typedef struct {
 static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	WebKitLoadEvent load_event,
 	gpointer data) {
-	const char *uri = NULL;
+	const char *uri = webkit_web_view_get_uri(web_view);
 	const char *method_name = "BUFFER-DID-COMMIT-NAVIGATION";
 
 	switch (load_event) {
@@ -41,7 +41,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		 * the final one and it won't change unless a new
 		 * load is requested or a navigation within the
 		 * same page is performed */
-		uri = webkit_web_view_get_uri(web_view);
+		uri = webkit_web_view_get_uri(web_view); // TODO: Only need to set URI at the beginning?
 
 		// TODO: Notify Lisp core on invalid TLS certificate, leave to the Lisp core
 		// the possibility to load the non-HTTPS URL.
