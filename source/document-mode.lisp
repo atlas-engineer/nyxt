@@ -119,7 +119,9 @@
   (echo *minibuffer* (concatenate 'string "Loading: " url ".")))
 
 (defmethod did-finish-navigation ((mode document-mode) url)
-  (echo *minibuffer* (concatenate 'string "Finished loading: " url ".")))
+  (echo *minibuffer* (concatenate 'string "Finished loading: " url "."))
+  ;; TODO: Wait some time before dismissing the minibuffer.
+  (echo-dismiss *minibuffer*))
 
 (defmethod setup ((mode document-mode) (buffer buffer))
   (set-url-buffer *default-new-buffer-url* buffer)
