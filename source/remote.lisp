@@ -67,37 +67,36 @@
     (log:debug "Stopping server")
     (s-xml-rpc:stop-server (active-connection interface))))
 
+(defmethod %xml-rpc-send ((interface remote-interface) (method string) &rest args)
+  ;; TODO: Make %xml-rpc-send asynchronous?
+  ;; If the platform port ever hangs, the next %xml-rpc-send will hang the Lisp core too.
+  (with-slots (host port url) interface
+    (s-xml-rpc:xml-rpc-call
+     (apply #'s-xml-rpc:encode-xml-rpc-call method args)
+     :host host :port port :url url)))
+
 (defmethod window-make ((interface remote-interface))
   "Create a window and return the window object."
-  (with-slots (host port url windows) interface
-    (let* ((window-id (s-xml-rpc:xml-rpc-call
-                       (s-xml-rpc:encode-xml-rpc-call "window.make")
-                       :host host :port port :url url))
-           (window (make-instance 'window :id window-id)))
-      (setf (gethash window-id windows) window)
-      window)))
+  (let* ((window-id (%xml-rpc-send interface "window.make"))
+         (window (make-instance 'window :id window-id)))
+    (with-slots (windows) interface
+      (setf (gethash window-id windows) window))
+    window))
 
 (defmethod window-set-title ((interface remote-interface) (window window) title)
   "Set the title for a given window."
-  (with-slots (host port url windows) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.set.title" (id window) title)
-     :host host :port port :url url)))
+  (%xml-rpc-send interface "window.set.title" (id window) title))
 
 (defmethod window-delete ((interface remote-interface) (window window))
   "Delete a window object and remove it from the hash of windows."
-  (with-slots (host port url windows) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.delete" (id window))
-     :host host :port port :url url)
+  (%xml-rpc-send interface "window.delete" (id window))
+  (with-slots (windows) interface
     (remhash (id window) windows)))
 
 (defmethod window-active ((interface remote-interface))
   "Return the window object for the currently active window."
-  (with-slots (host port url windows) interface
-    (let ((window (gethash (s-xml-rpc:xml-rpc-call
-                            (s-xml-rpc:encode-xml-rpc-call "window.active")
-                            :host host :port port :url url)
+  (with-slots (windows) interface
+    (let ((window (gethash (%xml-rpc-send interface "window.active")
                            windows)))
       (when window
         (setf (last-active-window interface) window))
@@ -105,20 +104,13 @@
 
 (defmethod window-exists ((interface remote-interface) (window window))
   "Return if a window exists."
-  (with-slots (host port url windows) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.exists" (id window))
-     :host host :port port :url url)))
+  (%xml-rpc-send interface "window.exists" (id window)))
 
 (defmethod %window-set-active-buffer ((interface remote-interface)
-                                     (window window)
-                                     (buffer buffer))
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call
-      "window.set.active.buffer" (id window) (id buffer))
-     :host host :port port :url url)
-    (setf (active-buffer window) buffer)))
+                                      (window window)
+                                      (buffer buffer))
+  (%xml-rpc-send interface "window.set.active.buffer" (id window) (id buffer))
+  (setf (active-buffer window) buffer))
 
 (defmethod window-set-active-buffer ((interface remote-interface)
                                       (window window)
@@ -144,23 +136,18 @@
 
 (defmethod window-set-minibuffer-height ((interface remote-interface)
                                          window height)
-  (with-slots (host port url) interface
-    (s-xml-rpc:xml-rpc-call
-     (s-xml-rpc:encode-xml-rpc-call "window.set.minibuffer.height" (id window) height)
-     :host host :port port :url url)))
+  (%xml-rpc-send interface "window.set.minibuffer.height" (id window) height))
 
 (defmethod buffer-make ((interface remote-interface))
-  (with-slots (host port url buffers) interface
-    (let* ((buffer-id (s-xml-rpc:xml-rpc-call
-                       (s-xml-rpc:encode-xml-rpc-call
-                        "buffer.make"
-                        ;; TODO: When we need more options, we will need to pass
-                        ;; a dictionary.
-                        (namestring (merge-pathnames *cookie-path-dir* "cookies.txt")))
-                       :host host :port port :url url))
-           (buffer (make-instance 'buffer :id buffer-id)))
-      (setf (gethash buffer-id buffers) buffer)
-      buffer)))
+  (let* ((buffer-id (%xml-rpc-send
+                     interface "buffer.make"
+                     ;; TODO: When we need more options, we will need to pass
+                     ;; a dictionary.
+                     (namestring (merge-pathnames *cookie-path-dir* "cookies.txt"))))
+         (buffer (make-instance 'buffer :id buffer-id)))
+    (with-slots (buffers) interface
+      (setf (gethash buffer-id buffers) buffer))
+    buffer))
 
 (defmethod %buffer-make ((interface remote-interface)
                          &optional
@@ -185,33 +172,25 @@
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
                                 (%buffer-make interface))))
-    (with-slots (host port url buffers) interface
-      (when parent-window
-        (window-set-active-buffer interface parent-window replacement-buffer))
-      (s-xml-rpc:xml-rpc-call
-       (s-xml-rpc:encode-xml-rpc-call "buffer.delete" (id buffer))
-       :host host :port port :url url)
+    (%xml-rpc-send interface "buffer.delete" (id buffer))
+    (when parent-window
+      (window-set-active-buffer interface parent-window replacement-buffer))
+    (with-slots (buffers) interface
       (remhash (id buffer) buffers))))
 
 (defmethod buffer-evaluate-javascript ((interface remote-interface)
-                                      (buffer buffer) javascript &optional (callback nil))
-  (with-slots (host port url) interface
-    (let ((callback-id
-            (s-xml-rpc:xml-rpc-call
-             (s-xml-rpc:encode-xml-rpc-call "buffer.evaluate.javascript" (id buffer) javascript)
-             :host host :port port :url url)))
-      (setf (gethash callback-id (callbacks buffer)) callback)
-      callback-id)))
+                                       (buffer buffer) javascript &optional (callback nil))
+  (let ((callback-id
+          (%xml-rpc-send interface "buffer.evaluate.javascript" (id buffer) javascript)))
+    (setf (gethash callback-id (callbacks buffer)) callback)
+    callback-id))
 
 (defmethod minibuffer-evaluate-javascript ((interface remote-interface)
-                                          (window window) javascript &optional (callback nil))
-  (with-slots (host port url) interface
-    (let ((callback-id
-            (s-xml-rpc:xml-rpc-call
-             (s-xml-rpc:encode-xml-rpc-call "minibuffer.evaluate.javascript" (id window) javascript)
-             :host host :port port :url url)))
-      (setf (gethash callback-id (minibuffer-callbacks window)) callback)
-      callback-id)))
+                                           (window window) javascript &optional (callback nil))
+  (let ((callback-id
+          (%xml-rpc-send interface "minibuffer.evaluate.javascript" (id window) javascript)))
+    (setf (gethash callback-id (minibuffer-callbacks window)) callback)
+    callback-id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expose Lisp Core XML RPC Endpoints ;;
