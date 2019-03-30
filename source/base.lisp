@@ -43,6 +43,7 @@ Set to '-' to read standard input instead."))
       (uiop:quit))
     (when (getf options :verbose)
       (log:config :debug)
+      (setf (uiop:getenv "G_MESSAGES_DEBUG") "all")
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
     (setf *options* options
           *free-args* free-args))
