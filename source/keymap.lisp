@@ -57,7 +57,7 @@
                (when (look-up-key-chord-stack *key-chord-stack* map)
                  (return-from is-in-maps? t)))))
       (cond ((minibuffer-active active-window)
-             (log:debug "Minibuffer active" )
+             (log:debug "Minibuffer active")
              t)
             ((is-in-maps? key-maps)
              (log:debug "Found in maps")
