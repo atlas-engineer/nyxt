@@ -64,6 +64,11 @@ typedef struct {
 	int minibuffer_height;
 } Window;
 
+typedef struct {
+	GdkEventKey event; // Must be a copy, not a pointer since the event can be freed.
+	Window *window;
+} WindowEvent;
+
 void window_destroy_callback(GtkWidget *_widget, Window *window) {
 	g_debug("Signal callback to destroy window %s", window->identifier);
 	akd_remove_object_for_key(state.windows, window->identifier);
@@ -123,7 +128,44 @@ void window_delete(Window *window) {
 	gtk_main_quit();
 }
 
-gboolean window_consume_event(SoupSession *session, SoupMessage *msg, gpointer window_data) {
+void window_generate_keypress_event(WindowEvent *window_event) {
+	// We need to generate key press events programmatically from the call back
+	// when the key press was not consumed.  The original event might have been
+	// freed, which is why we need to copy it's content into the callback
+	// payload (window_data).
+	g_debug("Event not consumed, forwarding to GTK");
+
+	GdkEvent *event = gdk_event_new(GDK_KEY_PRESS);
+
+	// REVIEW: Set window to base or buffer->web_view ?
+	event->key.window =
+		g_object_ref(gtk_widget_get_window(GTK_WIDGET(window_event->window->base)));
+
+	// The "send_event" field is used to mark the event as an "unconsumed"
+	// keypress.  The distinction allows us to avoid looping indefinitely.
+	event->key.send_event = TRUE;
+	// REVIEW: Seems that there is no event time at this point,
+	// gtk_get_current_event_time() and GDK_CURRENT_TIME return 0.
+	event->key.time = GDK_CURRENT_TIME;
+	event->key.state = window_event->event.state;
+	event->key.keyval = window_event->event.keyval;
+	event->key.string = window_event->event.string;
+	event->key.length = strlen(event->key.string);
+	event->key.hardware_keycode = window_event->event.hardware_keycode;
+	event->key.group = window_event->event.group;
+	event->key.is_modifier = window_event->event.is_modifier;
+
+	GdkDevice *device = NULL;
+	GdkDisplay *display = gdk_display_get_default();
+	GdkSeat *seat = gdk_display_get_default_seat(display);
+	device = gdk_seat_get_keyboard(seat);
+	gdk_event_set_device(event, device);
+
+	gtk_main_do_event(event);
+	gdk_event_free(event);
+}
+
+void window_consume_event(SoupSession *session, SoupMessage *msg, gpointer window_data) {
 	GError *error = NULL;
 	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
 
@@ -135,15 +177,16 @@ gboolean window_consume_event(SoupSession *session, SoupMessage *msg, gpointer w
 		g_warning("%s: '%s'", error->message,
 			strndup(msg->response_body->data, msg->response_body->length));
 		g_error_free(error);
-		return TRUE;
+		return;
 	}
 
+	WindowEvent *window_event = (WindowEvent *)window_data;
 	if (!g_variant_get_int32(consumed)) {
-		g_debug("Event not consumed, forwarding to GTK");
-		return FALSE;
+		window_generate_keypress_event(window_event);
+		return;
 	}
 
-	Window *window = window_data;
+	Window *window = window_event->window;
 	const char *method_name = "CONSUME-KEY-SEQUENCE";
 	GVariant *id = g_variant_new("(s)",
 			window->identifier);
@@ -161,14 +204,21 @@ gboolean window_consume_event(SoupSession *session, SoupMessage *msg, gpointer w
 
 gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer window_data) {
 	g_debug("Key pressed:"
-		" code %i, symbol %i, name '%s', print '%s, is_modifier %i",
+		" code %i, symbol %i, name '%s', print '%s', is_modifier %i, explicitly %i, time %u",
 		event->hardware_keycode, (gint32)event->keyval,
-		gdk_keyval_name(event->keyval), event->string, event->is_modifier);
+		gdk_keyval_name(event->keyval), event->string, event->is_modifier,
+		event->send_event, event->time);
+
+	if (event->send_event) {
+		// This event was generated from a non-generated keypress unconsumed by the Lisp core.
+		g_debug("Forward unconsumed event to GTK");
+		return FALSE;
+	}
 
 	// Don't pass modifiers alone, otherwise the core could see them as self-inserting
 	// character, which would print "Control_L" and the like in the minibuffer.
 	if (event->is_modifier) {
-		// Forward to GTK.
+		g_debug("Forward modifier-only to GTK");
 		return FALSE;
 	}
 
@@ -176,7 +226,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer wind
 	// alter the keymap upstream, we only want the result.
 	for (int i = 0; i < (sizeof key_blacklist)/(sizeof key_blacklist[0]); i++) {
 		if (event->keyval == key_blacklist[i]) {
-			// Forward to GTK.
+			g_debug("Forward unsupported special keys to GTK");
 			return FALSE;
 		}
 	}
@@ -232,7 +282,13 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer wind
 		return TRUE;
 	}
 
-	soup_session_queue_message(xmlrpc_env, msg, (SoupSessionCallback)window_consume_event, window);
+	WindowEvent *window_event = g_new(WindowEvent, 1);
+	window_event->window = window;
+	window_event->event = *event; // Copy the event to keep access to it in case it's freed later.
+	window_event->event.string = g_strdup(event->string);
+
+	soup_session_queue_message(xmlrpc_env, msg, (SoupSessionCallback)window_consume_event,
+		window_event);
 	return TRUE;
 }
 
