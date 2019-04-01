@@ -113,7 +113,6 @@ Set to '-' to read standard input instead."))
   (initialize-port)
   (when with-platform-port-p
     (run-loop *port*)
-    (log:debug "Platform port exited")
     (kill-interface *interface*))
   t)
 
