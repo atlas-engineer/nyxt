@@ -47,7 +47,16 @@ Set to '-' to read standard input instead."))
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
     (setf *options* options
           *free-args* free-args))
-  (start :with-platform-port-p t))
+  (handler-case (start :with-platform-port-p t)
+    ;; Catch a C-c, don't print a full stacktrace.
+    (#+sbcl sb-sys:interactive-interrupt
+      #+ccl  ccl:interrupt-signal-condition
+      #+clisp system::simple-interrupt-condition
+      #+ecl ext:interactive-interrupt
+      #+allegro excl:interrupt-signal
+      () (progn
+           (format t "Bye!~&")
+           (uiop:quit)))))
 
 (defun initialize-port ()
   (let ((port-running nil))
