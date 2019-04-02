@@ -22,17 +22,18 @@
 - (id)init {
     self = [super init];
     if (self) {
-        [self setWindows:[[AutokeyDictionary alloc] init]];
-        [self setBuffers:[[AutokeyDictionary alloc] init]];
+        [self setWindows:[[NSMutableDictionary alloc] init]];
+        [self setBuffers:[[NSMutableDictionary alloc] init]];
     }
     return self;
 }
 
-- (NSString*)windowMake {
+- (void)windowMake:(NSString*)key {
     Window* window = [[Window alloc] init];
-    [window setIdentifier:[[self windows] insertElement:window]];
+    [window setIdentifier: key];
     [[[window base] minibuffer] setParentWindowIdentifier:[window identifier]];
-    return [window identifier];
+    [[self windows] setValue:window forKey:key];
+    return;
 }
 
 - (void)window:(NSString*)key setTitle:(NSString*)title {
@@ -76,10 +77,11 @@
     return true;
 }
 
-- (NSString*)bufferMake {
+- (void)bufferMake:(NSString*)key {
     Buffer* buffer = [[Buffer alloc] init];
-    [buffer setIdentifier:[[self buffers] insertElement:buffer]];
-    return [buffer identifier];
+    [buffer setIdentifier:key];
+    [[self buffers] setValue:buffer forKey:key];
+    return;
 }
 
 - (bool)bufferDelete:(NSString*)key {
