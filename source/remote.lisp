@@ -87,10 +87,10 @@
 
 (defmethod window-make ((interface remote-interface))
   "Create a window and return the window object."
-  (let* ((window-id (%xml-rpc-send interface "window.make"))
+  (let* ((window-id (get-unique-window-identifier interface))
          (window (make-instance 'window :id window-id)))
-    (with-slots (windows) interface
-      (setf (gethash window-id windows) window))
+    (setf (gethash window-id (windows interface)) window)
+    (%xml-rpc-send interface "window.make" window-id)
     window))
 
 (defmethod window-set-title ((interface remote-interface) (window window) title)
@@ -149,12 +149,13 @@
   (%xml-rpc-send interface "window.set.minibuffer.height" (id window) height))
 
 (defmethod buffer-make ((interface remote-interface))
-  (let* ((buffer-id (%xml-rpc-send
-                     interface "buffer.make"
-                     (namestring (merge-pathnames *cookie-path-dir* "cookies.txt"))))
+  (let* ((buffer-id (get-unique-buffer-identifier interface))
+         (cookies-path (namestring (merge-pathnames *cookie-path-dir* "cookies.txt")))
          (buffer (make-instance 'buffer :id buffer-id)))
-    (with-slots (buffers) interface
-      (setf (gethash buffer-id buffers) buffer))
+    (setf (gethash buffer-id (buffers interface)) buffer)
+    (%xml-rpc-send interface "buffer.make" buffer-id
+                   (list
+                    :cookies-path cookies-path))
     buffer))
 
 (defmethod %buffer-make ((interface remote-interface)
