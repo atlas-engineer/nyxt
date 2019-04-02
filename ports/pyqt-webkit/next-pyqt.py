@@ -11,6 +11,9 @@ from PyQt5.QtWidgets import QWidget
 
 from xmlrpc.server import SimpleXMLRPCServer
 
+#: xmlrpc port
+RPC_PORT = 8082
+
 # Qt
 URL_START = "http://next.atlas.engineer/"
 
@@ -48,7 +51,7 @@ def set_minibuffer(name):
     Use the client in another python shell like this:
 
     from xmlrpc.client import ServerProxy
-    client = ServerProxy("http://localhost:8282")
+    client = ServerProxy("http://localhost:8082")
     print(client.set_minibuffer("me"))
     """
     html = mb_prompt.replace("minibuffer", name)
@@ -62,7 +65,7 @@ class RPCThread(QThread):
         # sleep a little bit to make sure QApplication is running.
         self.sleep(1)
         print("--- starting server…")
-        self.rpcserver = SimpleXMLRPCServer(("localhost", 8282), allow_none=True)
+        self.rpcserver = SimpleXMLRPCServer(("localhost", RPC_PORT), allow_none=True)
         self.rpcserver.register_function(hello)
         self.rpcserver.register_function(set_minibuffer)
 
