@@ -439,6 +439,14 @@ The primary function of this macro is to automatically add the required
     ;;     0)
     ))
 
+(defun send-signal (interface name &optional arg)
+  "Send a custom signal by name. For manual tests only."
+  (with-slots (host port url) interface
+    (let ((val (s-xml-rpc:xml-rpc-call
+                (s-xml-rpc:encode-xml-rpc-call name arg)
+                :host host :port port :url url)))
+      (format t "return value: ~a~&" val))))
+
 ;; All functions in this list should be defined with `define-endpoint' for security reasons.
 (import '|buffer.did.commit.navigation| :s-xml-rpc-exports)
 (import '|buffer.did.finish.navigation| :s-xml-rpc-exports)
