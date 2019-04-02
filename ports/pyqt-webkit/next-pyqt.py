@@ -11,6 +11,39 @@ from PyQt5.QtWidgets import QWidget
 
 from xmlrpc.server import SimpleXMLRPCServer
 
+"""
+This is a Next port with Qt's Web Engine, through PyQt.
+
+An important thing is to not modify a Qt widget directly, but through Qt signals.
+
+It is possible to test this from the Python or the Lisp REPL.
+
+To send signals to the web engine from Lisp:
+- start the PyQt port (make run)
+- start lisp, quickload next
+- create an interface and start it:
+
+    (defparameter myinterface (make-instance 'remote-interface))
+    (start-interface myinterface)
+    ;; "xml-rpc server /RPC2:8081"
+
+Now you can use any built-in methods (window-make myinterface) or send
+custom signals with
+
+    (send-signal myinterface "set_minibuffer" "yiha from CL!")
+
+which prints its return value (an html snippet) and which should
+change your minibuffer prompt.
+
+
+You can try the client in another python shell:
+
+    from xmlrpc.client import ServerProxy
+    client = ServerProxy("http://localhost:8082")
+    print(client.set_minibuffer("me"))
+
+"""
+
 #: xmlrpc port
 RPC_PORT = 8082
 
@@ -46,13 +79,7 @@ def hello(name):
 
 def set_minibuffer(name):
     """
-    Don't modify a Qt widget directly, but through Qt signals.
-
-    Use the client in another python shell like this:
-
-    from xmlrpc.client import ServerProxy
-    client = ServerProxy("http://localhost:8082")
-    print(client.set_minibuffer("me"))
+    Change the minibuffer prompt and return its current html.
     """
     html = mb_prompt.replace("minibuffer", name)
     wrapper = partial(minibuffer.setHtml, html)
