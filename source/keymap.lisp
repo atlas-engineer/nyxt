@@ -14,14 +14,9 @@
 (defvar *key-chord-stack* ()
   "A stack that keeps track of the key chords a user has inputted")
 
-;; A struct used to describe a key-chord
-(defstruct key-chord
-  key-code
-  key-string
-  modifiers)
-
 (defun serialize-key-chord (key-chord)
-  (append (list (key-chord-key-code key-chord)
+  ;; current implementation ignores keycode
+  (append (list nil
                 (key-chord-key-string key-chord))
           (key-chord-modifiers key-chord)))
 
@@ -29,20 +24,25 @@
   (let ((key (mapcar #'serialize-key-chord key-chords)))
     (gethash key map)))
 
-(defun push-key-event (key-code key-string modifiers sender)
+(defun push-key-event (key-code key-string modifiers low-level-data sender)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
   ;; consume-key-sequence
-  (declare (ignore key-code)) ;; current implementation ignores keycode
   (let ((key-chord (make-key-chord
-                    :key-code nil
+                    :key-code key-code
                     :key-string key-string
                     :modifiers (when (listp modifiers)
-                                 (sort modifiers #'string-lessp)))))
+                                 (sort modifiers #'string-lessp))
+                    :low-level-data low-level-data)))
     (log:debug key-chord)
-    (push key-chord *key-chord-stack*))
-  (if (consume-key-sequence-p sender) 1 0))
+    (push key-chord *key-chord-stack*)
+    (if (consume-key-sequence-p sender)
+        (consume-key-sequence sender)
+        (generate-input-event *interface*
+                              (gethash sender (windows *interface*))
+                              key-chord)))
+  t)
 
 (defun consume-key-sequence-p (sender)
   (let* ((active-window (gethash sender (windows *interface*)))
@@ -92,7 +92,7 @@
                                             (first *key-chord-stack*)))
                  (setf *key-chord-stack* ())
                  (return-from consume-key-sequence t))))))
-    ;; not found in any key-maps
+    (log:debug "Not found in any keymaps")
     (setf *key-chord-stack* ())))
 
 (defun define-key (mode-map key-sequence function)

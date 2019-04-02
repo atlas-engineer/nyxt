@@ -35,6 +35,7 @@ static Modifier modifier_names[] = {
 	{.mod = GDK_META_MASK, .name = "Meta"},
 };
 
+
 typedef struct {
 	char *old;
 	char *new;
@@ -48,6 +49,16 @@ static KeyTranslation key_translations[] = {
 	{.old = "", .new = "ESCAPE"},
 	{.old = "\r", .new = "RETURN"},
 };
+
+guint window_string_to_modifier(gchar *s) {
+	for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
+		if (g_strcmp0(modifier_names[i].name, s) == 0) {
+			return modifier_names[i].mod;
+		}
+	}
+	return 0;
+}
+
 
 static guint key_blacklist[] = {
 	GDK_ISO_Level2_Latch,
@@ -163,8 +174,10 @@ void window_generate_keypress_event(WindowEvent *window_event) {
 	event->key.time = GDK_CURRENT_TIME;
 	event->key.state = window_event->event.state;
 	event->key.keyval = window_event->event.keyval;
-	event->key.string = window_event->event.string;
-	event->key.length = strlen(event->key.string);
+	if (window_event->event.string != NULL) {
+		event->key.string = window_event->event.string;
+		event->key.length = strlen(event->key.string);
+	}
 	event->key.hardware_keycode = window_event->event.hardware_keycode;
 	event->key.group = window_event->event.group;
 	event->key.is_modifier = window_event->event.is_modifier;
@@ -177,6 +190,7 @@ void window_generate_keypress_event(WindowEvent *window_event) {
 
 	gtk_main_do_event(event);
 	gdk_event_free(event);
+	g_free(window_event);
 }
 
 void window_consume_event(SoupSession *session, SoupMessage *msg, gpointer window_data) {
@@ -288,12 +302,13 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer wind
 	}
 
 	Window *window = window_data;
-	GVariant *key_chord = g_variant_new("(isass)",
+	GVariant *key_chord = g_variant_new("(isasis)",
 			event->hardware_keycode,
 			keyval_string,
 			&builder,
+			event->keyval,
 			window->identifier);
-	g_message("XML-RPC message: %s %s = %s", method_name, "(keycode, keyval, modifiers, window id)", g_variant_print(key_chord, TRUE));
+	g_message("XML-RPC message: %s %s = %s", method_name, "(keycode, keyval, modifiers, low level data, window id)", g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, key_chord, &error);
@@ -304,13 +319,19 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer wind
 		return TRUE;
 	}
 
+	// If using the callback strategy to forward input events to GTK, uncomment the following.
+	/*
 	WindowEvent *window_event = g_new(WindowEvent, 1);
 	window_event->window = window;
 	window_event->event = *event; // Copy the event to keep access to it in case it's freed later.
 	window_event->event.string = g_strdup(event->string);
 
 	soup_session_queue_message(xmlrpc_env, msg, (SoupSessionCallback)window_consume_event,
-		window_event);
+	        window_event);
+	*/
+
+	// Other strategy: Leave input event generation to the Lisp.
+	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 	return TRUE;
 }
 

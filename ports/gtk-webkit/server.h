@@ -263,6 +263,64 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	return callback_variant;
 }
 
+static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_boolean(FALSE);
+	}
+	const char *window_id = NULL;
+	guint hardware_keycode = 0; // We are given an integer "i", not a uint16.
+	gchar *keyval_string = NULL;
+	guint modifiers = 0; // modifiers
+	guint keyval = 0;
+
+	{
+		if (!g_variant_check_format_string(unwrapped_params, "(siavi)", FALSE)) {
+			g_warning("Malformed input event: %s", g_variant_get_type_string(unwrapped_params));
+			return g_variant_new_boolean(FALSE);
+		}
+		GVariantIter *iter;
+		g_variant_get(unwrapped_params, "(siavi)", &window_id, &hardware_keycode,
+			&iter, &keyval);
+
+		GVariant *str_variant;
+		while (g_variant_iter_loop(iter, "v", &str_variant)) {
+			gchar *str;
+			g_variant_get(str_variant, "s", &str);
+			guint mod = window_string_to_modifier(str);
+			if (mod != 0) {
+				modifiers |= mod;
+			}
+		}
+		g_variant_iter_free(iter);
+	}
+
+	g_message("Method parameter(s): window id '%s', hardware_keycode %i, modifiers %i, keyval %i",
+		window_id, hardware_keycode, modifiers, keyval);
+
+	Window *window = akd_object_for_key(state.windows, window_id);
+	if (!window) {
+		g_warning("Non-existent window %s", window_id);
+		return g_variant_new_boolean(FALSE);
+	}
+
+	GdkEventKey event_key = {
+		.hardware_keycode = hardware_keycode,
+		.keyval = keyval,
+		.state = modifiers,
+		.group = 0,
+		.string = NULL,
+		.is_modifier = 0,
+	};
+
+	WindowEvent *window_event = g_new(WindowEvent, 1);
+	window_event->event = event_key;
+	window_event->window = window;
+	window_generate_keypress_event(window_event);
+
+	return g_variant_new_boolean(TRUE);
+}
+
 static void server_handler(SoupServer *_server, SoupMessage *msg,
 	const char *path, GHashTable *_query,
 	SoupClientContext *_context, gpointer _data) {
@@ -355,6 +413,7 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "buffer.delete", &server_buffer_delete);
 	g_hash_table_insert(state.server_callbacks, "buffer.evaluate.javascript", &server_buffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "minibuffer.evaluate.javascript", &server_minibuffer_evaluate);
+	g_hash_table_insert(state.server_callbacks, "generate.input.event", &server_generate_input_event);
 }
 
 void stop_server() {

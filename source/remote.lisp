@@ -21,6 +21,13 @@
    (callbacks :accessor callbacks
               :initform (make-hash-table :test #'equal))))
 
+;; A struct used to describe a key-chord
+(defstruct key-chord
+  key-code
+  key-string
+  modifiers
+  low-level-data)
+
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
   (did-commit-navigation (mode buffer) url))
@@ -211,6 +218,24 @@ startup after the remote-interface was set up."
           (%xml-rpc-send interface "minibuffer.evaluate.javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
+
+(defmethod generate-input-event ((interface remote-interface)
+                                 (window window)
+                                 (event key-chord))
+  "For now, we only generate keyboard events.
+In the future, we could also support other input device events such as mouse
+events."
+  (log:debug "Generate input ~a for window ~a"
+             (list
+              (key-chord-key-code event)
+              (key-chord-modifiers event)
+              (key-chord-low-level-data event))
+             (id window))
+  (%xml-rpc-send interface "generate.input.event"
+                 (id window)
+                 (key-chord-key-code event)
+                 (or (key-chord-modifiers event) (list ""))
+                 (key-chord-low-level-data event)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expose Lisp Core XML RPC Endpoints ;;
