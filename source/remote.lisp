@@ -29,14 +29,15 @@
   (did-finish-navigation (mode buffer) url))
 
 (defclass remote-interface ()
-  ;; TODO: remote-interface HOST and PORT should derive from *platform-port-socket* dynamically.
   ((host :accessor host :initform (getf *platform-port-socket* :host))
    (active-connection :accessor active-connection :initform nil)
    (port :accessor port :initform (getf *platform-port-socket* :port))
    (url :accessor url :initform "/RPC2")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
+   (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
-   (buffers :accessor buffers :initform (make-hash-table :test #'equal))))
+   (buffers :accessor buffers :initform (make-hash-table :test #'equal))
+   (total-buffer-count :accessor total-buffer-count :initform 0)))
 
 (defmethod start-interface ((interface remote-interface))
   "Start the XML RPC Server."
@@ -55,6 +56,7 @@
                      :port *core-port*)
                     (uiop:quit))
                 (error (c)
+                  (declare (ignore c))
                   (let ((new-port (find-port:find-port)))
                     (format *error-output* "Port ~a does not seem to be used by Next, trying ~a instead.~%"
                             *core-port* new-port)
@@ -74,6 +76,14 @@
     (s-xml-rpc:xml-rpc-call
      (apply #'s-xml-rpc:encode-xml-rpc-call method args)
      :host host :port port :url url)))
+
+(defmethod get-unique-window-identifier ((interface remote-interface))
+  (incf (total-window-count interface))
+  (format nil "~a" (total-window-count interface)))
+
+(defmethod get-unique-buffer-identifier ((interface remote-interface))
+  (incf (total-buffer-count interface))
+  (format nil "~a" (total-buffer-count interface)))
 
 (defmethod window-make ((interface remote-interface))
   "Create a window and return the window object."
@@ -141,8 +151,6 @@
 (defmethod buffer-make ((interface remote-interface))
   (let* ((buffer-id (%xml-rpc-send
                      interface "buffer.make"
-                     ;; TODO: When we need more options, we will need to pass
-                     ;; a dictionary.
                      (namestring (merge-pathnames *cookie-path-dir* "cookies.txt"))))
          (buffer (make-instance 'buffer :id buffer-id)))
     (with-slots (buffers) interface
