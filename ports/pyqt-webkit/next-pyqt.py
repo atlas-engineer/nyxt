@@ -1,15 +1,14 @@
-from functools import partial
 
-from PyQt5.QtCore import QUrl
+from functools import partial
+from xmlrpc.server import SimpleXMLRPCServer
+
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QPushButton
-from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
 
-from xmlrpc.server import SimpleXMLRPCServer
+from window import make_window
+from window import set_title
 
 """
 This is a Next port with Qt's Web Engine, through PyQt.
@@ -47,30 +46,15 @@ You can try the client in another python shell:
 #: xmlrpc port
 RPC_PORT = 8082
 
-# Qt
-URL_START = "http://next.atlas.engineer/"
-
 app = QApplication([])
-window = QWidget()
-layout = QVBoxLayout()
+# let's just create a window at startup for development.
+make_window()
 
-webview = QWebEngineView()
-webview.setUrl(QUrl(URL_START))
-
-minibuffer = QWebEngineView()
 mb_prompt = """
 <html>
 <div> hello minibuffer </div>
 </html>
 """
-minibuffer.setHtml(mb_prompt)
-
-layout.addWidget(webview)
-layout.addWidget(minibuffer)
-
-window.setWindowTitle("Next browser")
-window.setLayout(layout)
-window.show()
 
 # xmlrpc
 def hello(name):
@@ -78,24 +62,37 @@ def hello(name):
     return "hello " + name
 
 def set_minibuffer(name):
+    # TODO: do in thread.
     """
     Change the minibuffer prompt and return its current html.
     """
     html = mb_prompt.replace("minibuffer", name)
-    wrapper = partial(minibuffer.setHtml, html)
-    QTimer.singleShot(0, wrapper)
-    return html
+    # wrapper = partial(minibuffer.setHtml, html)
+    # QTimer.singleShot(0, wrapper)
+    # return html
 
 
 class RPCThread(QThread):
+    """
+    Run the rpcxml server in another thread from the (blocking) GUI main loop.
+    """
     def run(self):
+        """
+        Register functions and start the server.
+
+        Functions must fire events with `QTimer.singleShot`.
+        """
         # sleep a little bit to make sure QApplication is running.
         self.sleep(1)
         print("--- starting server…")
         self.rpcserver = SimpleXMLRPCServer(("localhost", RPC_PORT), allow_none=True)
         self.rpcserver.register_function(hello)
         self.rpcserver.register_function(set_minibuffer)
+        # Register all functions.
+        self.rpcserver.register_function(set_title, "window.set.title")
+        self.rpcserver.register_function(make_window, "window.make")
 
+        # Serve.
         self.rpcserver.serve_forever()
 
 class RPCWidget(QWidget):
