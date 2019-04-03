@@ -7,7 +7,8 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QWidget
 
-from window import make_window
+from window import window_make
+from window import window_delete
 from window import set_title
 
 """
@@ -48,7 +49,7 @@ RPC_PORT = 8082
 
 app = QApplication([])
 # let's just create a window at startup for development.
-make_window()
+window_make()
 
 mb_prompt = """
 <html>
@@ -90,7 +91,7 @@ class RPCThread(QThread):
         self.rpcserver.register_function(set_minibuffer)
         # Register all functions.
         self.rpcserver.register_function(set_title, "window.set.title")
-        self.rpcserver.register_function(make_window, "window.make")
+        self.rpcserver.register_function(window_make, "window.make")
 
         # Serve.
         self.rpcserver.serve_forever()
