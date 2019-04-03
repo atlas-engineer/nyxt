@@ -53,11 +53,13 @@ as a string.")
 (defun default-port-args ()
   "Derive platform port arguments dynamically at runtime.
 This is useful if, for instance, the *CORE-PORT* gets changed after startup."
+  ;; TODO: Make sure that it works if platform port is started manually.
   (unless (find-port:port-open-p (getf *platform-port-socket* :port))
     (let ((new-port (find-port:find-port)))
       (format *error-output* "Platform port socket ~a seems busy, trying ~a instead.~%"
               (getf *platform-port-socket* :port) new-port)
       (setf (getf *platform-port-socket* :port) new-port)
+      ;; TODO: The following can be removed once the interface port is derived dynamically.
       (setf (port *interface*) new-port)))
   (list "--port" (write-to-string (getf *platform-port-socket* :port))
         "--core-socket" (format nil "http://localhost:~a/RPC2" *core-port*)))
