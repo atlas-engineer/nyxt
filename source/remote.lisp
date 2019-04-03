@@ -29,15 +29,26 @@
   (did-finish-navigation (mode buffer) url))
 
 (defclass remote-interface ()
-  ((host :accessor host :initform (getf *platform-port-socket* :host))
+  ((platform-port :initform *platform-port-socket*)
    (active-connection :accessor active-connection :initform nil)
-   (port :accessor port :initform (getf *platform-port-socket* :port))
    (url :accessor url :initform "/RPC2")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
    (total-buffer-count :accessor total-buffer-count :initform 0)))
+
+(defmethod host ((interface remote-interface))
+  "Retrieve the host of the platform port dynamically.
+It's important that it is dynamic since the platform port can be reconfigured on
+startup after the remote-interface was set up."
+  (getf (platform-port interface) :host))
+
+(defmethod port ((interface remote-interface))
+  "Retrieve the port of the platform port dynamically.
+It's important that it is dynamic since the platform port can be reconfigured on
+startup after the remote-interface was set up."
+  (getf (platform-port interface) :port))
 
 (defmethod start-interface ((interface remote-interface))
   "Start the XML RPC Server."
