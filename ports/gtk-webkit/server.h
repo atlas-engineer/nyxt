@@ -41,9 +41,18 @@ GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
 	return g_variant_builder_end(&builder);
 }
 
-static GVariant *server_window_make(SoupXMLRPCParams *_params) {
+static GVariant *server_window_make(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_boolean(FALSE);
+	}
+	const char *a_key = NULL;
+	g_variant_get(unwrapped_params, "(&s)", &a_key);
+	g_message("Method parameter(s): %s", a_key);
+
 	Window *window = window_init();
-	window->identifier = strdup(akd_insert_element(state.windows, window));
+	g_hash_table_insert(state.windows, strdup(a_key), window);
+	window->identifier = strdup(a_key);
 	window->minibuffer->parent_window_identifier = strdup(window->identifier);
 	g_message("Method result(s): window id %s", window->identifier);
 	return g_variant_new_string(window->identifier);
@@ -59,7 +68,7 @@ static GVariant *server_window_set_title(SoupXMLRPCParams *params) {
 	g_variant_get(unwrapped_params, "(&s&s)", &a_key, &title);
 	g_message("Method parameter(s): %s, %s", a_key, title);
 
-	Window *window = akd_object_for_key(state.windows, a_key);
+	Window *window = g_hash_table_lookup(state.windows, a_key);
 	if (!window) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -76,7 +85,7 @@ static GVariant *server_window_delete(SoupXMLRPCParams *params) {
 	g_variant_get(unwrapped_params, "(&s)", &a_key);
 	g_message("Method parameter(s): %s", a_key);
 
-	akd_remove_object_for_key(state.windows, a_key);
+	g_hash_table_remove(state.windows, a_key);
 	return g_variant_new_boolean(TRUE);
 }
 
@@ -88,7 +97,7 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 	gpointer key, value;
 
 	char *id = "<no active window>";
-	g_hash_table_iter_init(&iter, state.windows->dict);
+	g_hash_table_iter_init(&iter, state.windows);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		Window *window = (Window *)value;
 		if (gtk_window_is_active(GTK_WINDOW(window->base))) {
@@ -110,7 +119,7 @@ static GVariant *server_window_exists(SoupXMLRPCParams *params) {
 	g_variant_get(unwrapped_params, "(&s)", &a_key);
 	g_message("Method parameter(s): %s", a_key);
 
-	Window *window = akd_object_for_key(state.windows, a_key);
+	Window *window = g_hash_table_lookup(state.windows, a_key);
 	if (!window) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -127,8 +136,8 @@ static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 	g_variant_get(unwrapped_params, "(&s&s)", &window_id, &buffer_id);
 	g_message("Method parameter(s): window id %s, buffer id %s", window_id, buffer_id);
 
-	Window *window = akd_object_for_key(state.windows, window_id);
-	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
+	Window *window = g_hash_table_lookup(state.windows, window_id);
+	Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_id);
 	if (window == NULL) {
 		g_warning("Non-existent window %s", window_id);
 		return g_variant_new_boolean(FALSE);
@@ -146,12 +155,32 @@ static GVariant *server_buffer_make(SoupXMLRPCParams *params) {
 	if (!unwrapped_params) {
 		return g_variant_new_string("");
 	}
-	const char *cookie_file = NULL;
-	g_variant_get(unwrapped_params, "(&s)", &cookie_file);
-	g_message("Method parameter(s): %s", cookie_file);
+	const char *a_key = NULL;
+	GHashTable *options = g_hash_table_new(g_str_hash, g_str_equal);
+	// Options are passed as a list of string.  We could have used a dictionary,
+	// but the Cocoa XML-RPC library does not support it.
+	{
+		GVariantIter *iter;
+		g_variant_get(unwrapped_params, "(&sav)", &a_key, &iter);
 
-	Buffer *buffer = buffer_init(cookie_file);
-	buffer->identifier = strdup(akd_insert_element(state.buffers, buffer));
+		GVariant *str_variant;
+		gchar *key = NULL;
+		gchar *value = NULL;
+		while (g_variant_iter_loop(iter, "v", &str_variant)) {
+			if (key == NULL) {
+				g_variant_get(str_variant, "s", &key);
+			} else {
+				g_variant_get(str_variant, "s", &value);
+				g_hash_table_insert(options, key, value);
+			}
+		}
+		g_variant_iter_free(iter);
+	}
+	g_message("Method parameter(s): buffer ID %s, cookie file %s", a_key,
+		g_hash_table_lookup(options, "COOKIES-PATH"));
+	Buffer *buffer = buffer_init(g_hash_table_lookup(options, "COOKIES-PATH"));
+	g_hash_table_insert(state.buffers, strdup(a_key), buffer);
+	buffer->identifier = strdup(a_key);
 	g_message("Method result(s): buffer id %s", buffer->identifier);
 	return g_variant_new_string(buffer->identifier);
 }
@@ -165,7 +194,7 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 	g_variant_get(unwrapped_params, "(&s)", &a_key);
 	g_message("Method parameter(s): %s", a_key);
 
-	akd_remove_object_for_key(state.buffers, a_key);
+	g_hash_table_remove(state.buffers, a_key);
 	return g_variant_new_boolean(TRUE);
 }
 
@@ -180,7 +209,7 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 	g_message("Method parameter(s): buffer id %s", buffer_id);
 	g_debug("Javascript: \"%s\"", buffer_id, javascript);
 
-	Buffer *buffer = akd_object_for_key(state.buffers, buffer_id);
+	Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_id);
 	if (!buffer) {
 		g_warning("Non-existent buffer %s", buffer_id);
 		return g_variant_new_string("");
@@ -204,7 +233,7 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 	g_message("Method parameter(s): window id %s, minibuffer height %i", window_id,
 		minibuffer_height);
 
-	Window *window = akd_object_for_key(state.windows, window_id);
+	Window *window = g_hash_table_lookup(state.windows, window_id);
 	if (!window) {
 		g_warning("Non-existent window %s", window_id);
 		return g_variant_new_int64(0);
@@ -225,7 +254,7 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	g_message("Method parameter(s): window id %s", window_id);
 	g_debug("Javascript: \"%s\"", window_id, javascript);
 
-	Window *window = akd_object_for_key(state.windows, window_id);
+	Window *window = g_hash_table_lookup(state.windows, window_id);
 	Minibuffer *minibuffer = window->minibuffer;
 	char *callback_id = minibuffer_evaluate(minibuffer, javascript);
 	g_message("Method result(s): callback id %s", callback_id);
@@ -309,8 +338,10 @@ void start_server() {
 
 	// Initialize global state.
 	state.server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
-	state.windows = akd_init((GDestroyNotify)&window_delete);
-	state.buffers = akd_init((GDestroyNotify)&buffer_delete);
+	state.windows = g_hash_table_new_full(g_str_hash, g_str_equal,
+			&g_free, (GDestroyNotify)&window_delete);
+	state.buffers = g_hash_table_new_full(g_str_hash, g_str_equal,
+			&g_free, (GDestroyNotify)&buffer_delete);
 
 	// Register callbacks.
 	g_hash_table_insert(state.server_callbacks, "window.make", &server_window_make);
@@ -327,7 +358,7 @@ void start_server() {
 }
 
 void stop_server() {
-	akd_free(state.windows);
-	akd_free(state.buffers);
+	g_hash_table_unref(state.windows);
+	g_hash_table_unref(state.buffers);
 	g_hash_table_unref(state.server_callbacks);
 }

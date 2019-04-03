@@ -71,7 +71,7 @@ typedef struct {
 
 void window_destroy_callback(GtkWidget *_widget, Window *window) {
 	g_debug("Signal callback to destroy window %s", window->identifier);
-	akd_remove_object_for_key(state.windows, window->identifier);
+	g_hash_table_remove(state.windows, window->identifier);
 }
 
 void window_delete(Window *window) {
@@ -117,7 +117,7 @@ void window_delete(Window *window) {
 	g_free(window->identifier);
 	g_free(window);
 
-	if (g_hash_table_size(state.windows->dict) >= 1) {
+	if (g_hash_table_size(state.windows) >= 1) {
 		return;
 	}
 
