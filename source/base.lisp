@@ -116,8 +116,6 @@ Set to '-' to read standard input instead."))
     (kill-interface *interface*))
   t)
 
-(setf *port* (make-instance 'port))
-(set-conversion-table *port*)
 (define-key *global-map* (key "C-x C-c") 'kill)
 (define-key *global-map* (key "C-[") 'switch-buffer-previous)
 (define-key *global-map* (key "C-]") 'switch-buffer-next)
