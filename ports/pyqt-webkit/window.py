@@ -20,12 +20,17 @@ WINDOW_NB = -1
 
 URL_START = "http://next.atlas.engineer/"
 
+#: A dictionnary of current windows mapping an identifier (int) to a window (Window).
+# We keep a dict instead of a list even if identifiers are integers,
+# because windows can be deleted.
+WINDOWS = {}
+
 def get_window_id():
     global WINDOW_NB
     WINDOW_NB += 1
     return WINDOW_NB
 
-#: A window.
+#: A window contains a base widget, a layout, an id (int), a minibuffer.
 class Window():
     #: the actual QWidget.
     widget = None
@@ -62,28 +67,36 @@ class Window():
         self.widget.setWindowTitle("Next browser from window {}".format(self.identifier))
         QTimer.singleShot(0, partial(self.widget.setLayout, self.layout))
 
-#: A dictionnary of current windows mapping an identifier (int) to a window (Window).
-# We keep a dict instead of a list even if identifiers are integers,
-# because windows can be deleted.
-WINDOWS = {}
-
 
 def window_make():
     """
     Create a window and return its identifier (int).
     """
-
+    # TODO: we can see a window but not its webview and minibuffer.
     window = Window()
-    # layout = QVBoxLayout()
-
     window.widget.show()
 
     WINDOWS[window.identifier] = window
     print("--- new window created, id {}".format(window.identifier))
     return window.identifier
 
-def window_delete(window):
-    pass
+def window_delete(window_id):
+    window = WINDOWS.get(window_id)
+    # TODO: passes, but no effect.
+    if window.layout is not None:
+        # https://stackoverflow.com/questions/9374063/remove-widgets-and-layout-as-well
+        while window.layout.count():
+            item = window.layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                print("--- deleting widget {}".format(widget))
+                widget.deleteLater()
+
+        del window.layout
+
+    del WINDOWS[window_id]
+    print("--- deleted window {}. Remaining windows: {}".format(window_id, WINDOWS))
+    return True
 
 def window_send_event(widget, event, data):
     pass

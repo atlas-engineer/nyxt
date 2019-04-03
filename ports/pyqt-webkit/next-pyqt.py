@@ -92,6 +92,7 @@ class RPCThread(QThread):
         # Register all functions.
         self.rpcserver.register_function(set_title, "window.set.title")
         self.rpcserver.register_function(window_make, "window.make")
+        self.rpcserver.register_function(window_delete, "window.delete")
 
         # Serve.
         self.rpcserver.serve_forever()
