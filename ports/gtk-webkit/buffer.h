@@ -25,7 +25,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	WebKitLoadEvent load_event,
 	gpointer data) {
 	const char *uri = webkit_web_view_get_uri(web_view);
-	const char *method_name = "BUFFER-DID-COMMIT-NAVIGATION";
+	const char *method_name = "buffer.did.commit.navigation";
 
 	switch (load_event) {
 	case WEBKIT_LOAD_STARTED:
@@ -55,7 +55,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		break;
 	case WEBKIT_LOAD_FINISHED:
 		/* Load finished, we can now stop the spinner */
-		method_name = "BUFFER-DID-FINISH-NAVIGATION";
+		method_name = "buffer.did.finish.navigation";
 	}
 
 	if (uri == NULL) {
@@ -107,7 +107,7 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 			// <a href="http://example.org" target="_blank">New window</a>
 			GError *error = NULL;
 			WebKitURIRequest *request = webkit_navigation_action_get_request(action);
-			const char *method_name = "MAKE-BUFFERS";
+			const char *method_name = "make.buffers";
 
 			// Warning: we need to pass a list of URLs, even if we pass only one URL.
 			GVariantBuilder builder;

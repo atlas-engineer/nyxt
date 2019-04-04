@@ -111,7 +111,7 @@ void window_delete(Window *window) {
 	{
 		// Notify the Lisp core.
 		GError *error = NULL;
-		const char *method_name = "WINDOW-WILL-CLOSE";
+		const char *method_name = "window.will.close";
 		GVariant *window_id = g_variant_new("(s)", window->identifier);
 		g_message("XML-RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
 
@@ -215,7 +215,7 @@ void window_consume_event(SoupSession *session, SoupMessage *msg, gpointer windo
 	}
 
 	Window *window = window_event->window;
-	const char *method_name = "CONSUME-KEY-SEQUENCE";
+	const char *method_name = "consume.key.sequence";
 	GVariant *id = g_variant_new("(s)",
 			window->identifier);
 	g_message("XML-RPC message: %s, window id %s", method_name, window->identifier);
@@ -266,7 +266,7 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer wind
 	}
 
 	GError *error = NULL;
-	const char *method_name = "PUSH-KEY-EVENT";
+	const char *method_name = "push.key.event";
 
 	// event->string is deprecated but it's very much what we want.
 	// For characters like Escape, this value is '\u001b', which is understood by
