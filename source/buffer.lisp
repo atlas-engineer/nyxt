@@ -130,3 +130,14 @@ item in the list, jump to the first item."
 (defmethod add-or-switch-to-mode ((buffer buffer) mode)
   (add-mode buffer mode)
   (switch-mode buffer mode))
+
+(defparameter *proxy-url* "socks://127.0.0.1:9050" )
+(defparameter *proxy-ignore-list* (list "localhost" "localhost:8080"))
+
+(define-command toggle-proxy ()
+  "Switch to the next buffer in the list of buffers, if the last
+item in the list, jump to the first item."
+  ;; TODO: Get current proxy to know if we are on or off.
+  (let* ((active-buffer (active-buffer *interface*)))
+    (set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
+    (echo *minibuffer* "Proxy set.")))

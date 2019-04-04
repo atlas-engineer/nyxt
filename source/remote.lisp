@@ -250,6 +250,10 @@ events."
                  (or (key-chord-modifiers event) (list ""))
                  (key-chord-low-level-data event)))
 
+(defmethod set-proxy ((interface remote-interface) (buffer buffer) proxy-uri ignore-hosts)
+  (%xml-rpc-send interface "set.proxy" (list (id buffer))
+                 "custom" proxy-uri ignore-hosts))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expose Lisp Core XML RPC Endpoints ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
