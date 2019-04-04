@@ -29,7 +29,7 @@
   (did-finish-navigation (mode buffer) url))
 
 (defclass remote-interface ()
-  ((platform-port :initform *platform-port-socket*)
+  ((platform-port :accessor platform-port :initform *platform-port-socket*)
    (active-connection :accessor active-connection :initform nil)
    (url :accessor url :initform "/RPC2")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
@@ -83,10 +83,10 @@ startup after the remote-interface was set up."
 (defmethod %xml-rpc-send ((interface remote-interface) (method string) &rest args)
   ;; TODO: Make %xml-rpc-send asynchronous?
   ;; If the platform port ever hangs, the next %xml-rpc-send will hang the Lisp core too.
-  (with-slots (host port url) interface
+  (with-slots (url) interface
     (s-xml-rpc:xml-rpc-call
      (apply #'s-xml-rpc:encode-xml-rpc-call method args)
-     :host host :port port :url url)))
+     :host (host interface) :port (port interface) :url url)))
 
 (defmethod get-unique-window-identifier ((interface remote-interface))
   (incf (total-window-count interface))
