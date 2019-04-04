@@ -35,6 +35,20 @@ static Modifier modifier_names[] = {
 	{.mod = GDK_META_MASK, .name = "Meta"},
 };
 
+typedef struct {
+	char *old;
+	char *new;
+} KeyTranslation;
+
+static KeyTranslation key_translations[] = {
+	{.old = "", .new = "BACKSPACE"},
+	{.old = " ", .new = "SPACE"},
+	{.old = "", .new = "DELETE"},
+	{.old = "-", .new = "HYPHEN"},
+	{.old = "", .new = "ESCAPE"},
+	{.old = "\r", .new = "RETURN"},
+};
+
 static guint key_blacklist[] = {
 	GDK_ISO_Level2_Latch,
 	GDK_ISO_Level3_Shift,
@@ -252,9 +266,17 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer wind
 		keyval_string = gdk_keyval_name(event->keyval);
 	} else if (keyval_string[0] == '\0') {
 		// Some keys like F1 don't have a printed representation, so we send the
-		// associated GDK symbol then.  On the Lisp side, it can be associated with
-		// the proper string via set-gtk-conversion-table.
+		// associated GDK symbol then.
 		keyval_string = gdk_keyval_name(event->keyval);
+	}
+
+	// If at this point the keyval_string is not standard, we use the key
+	// translation to set it to a standard name.
+	for (int i = 0; i < (sizeof key_translations)/(sizeof key_translations[0]); i++) {
+		if (g_strcmp0(keyval_string, key_translations[i].old) == 0) {
+			keyval_string = key_translations[i].new;
+			break;
+		}
 	}
 
 	GVariantBuilder builder;

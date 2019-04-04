@@ -82,11 +82,22 @@ To perform an installation from source, please see the [[https://github.com/atla
 - ~C-f~:     Forwards history
 - ~C-x C-c~: Quit
 
+The symbols represent modifiers:
+
+- ~C~: Control key
+- ~S~: Super (Windows key, Command key)
+- ~M~: Meta (Alt key, Option key)
+- ~s~: Shift key
+
 The following keys exist as special keys:
 
-1. ~C~: Control Key
-2. ~S~: Super (Windows key, Command Key)
-3. ~M~: Meta (Alt key, Option Key)
+- ~BACKSPACE~
+- ~DELETE~
+- ~ESCAPE~
+- ~HYPHEN~
+- ~RETURN~
+- ~SPACE~
+- ~TAB~
 
 ** Customize and Extend Next
 Customization is possible through the creation of a

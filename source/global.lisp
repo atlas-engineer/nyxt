@@ -24,8 +24,6 @@
   "A list of functions invoked on start for modes.")
 (defvar *global-map* (make-hash-table :test 'equal)
   "A global key map, available in every mode/buffer.")
-(defvar *character-conversion-table* (make-hash-table :test 'equalp)
-  "A table used to convert between special characters across different operating systems.")
 (defvar *scroll-distance* 50
   "The distance scroll-down or scroll-up will scroll.")
 (defvar *horizontal-scroll-distance* 50

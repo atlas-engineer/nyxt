@@ -127,9 +127,7 @@
           do (let* ((keys (cl-strings:split key-chord-string "-"))
                     (key-chord (make-key-chord
                                 :key-code nil
-                                :key-string (gethash (car (last keys))
-                                                     *character-conversion-table*
-                                                     (car (last keys)))
+                                :key-string (car (last keys))
                                 :modifiers (sort (butlast keys) #'string-lessp))))
                (push (serialize-key-chord key-chord) key-sequence)))
     key-sequence))
