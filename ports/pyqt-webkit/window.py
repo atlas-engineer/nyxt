@@ -23,6 +23,7 @@ URL_START = "http://next.atlas.engineer/"
 #: A dictionnary of current windows mapping an identifier (int) to a window (Window).
 # We keep a dict instead of a list even if identifiers are integers,
 # because windows can be deleted.
+# xxx: we probably want QMutex.
 WINDOWS = {}
 
 def get_window_id():
@@ -83,6 +84,10 @@ def window_make():
 def window_delete(window_id):
     window = WINDOWS.get(window_id)
     # TODO: passes, but no effect.
+    if not window:
+        print("could not find a window of id {}".format(window_id))
+        print("windows: {}".format(WINDOWS))
+        return False
     if window.layout is not None:
         # https://stackoverflow.com/questions/9374063/remove-widgets-and-layout-as-well
         while window.layout.count():

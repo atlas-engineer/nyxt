@@ -89,6 +89,10 @@ class RPCThread(QThread):
         self.rpcserver = SimpleXMLRPCServer(("localhost", RPC_PORT), allow_none=True)
         self.rpcserver.register_function(hello)
         self.rpcserver.register_function(set_minibuffer)
+
+        # Allow introspection.
+        # Use with client.system.listMethods()
+        self.rpcserver.register_introspection_functions()
         # Register all functions.
         self.rpcserver.register_function(set_title, "window.set.title")
         self.rpcserver.register_function(window_make, "window.make")
