@@ -317,3 +317,15 @@ char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 	g_debug("buffer_evaluate callback count: %i", buffer_info->callback_id);
 	return g_strdup_printf("%i", buffer_info->callback_id);
 }
+
+void buffer_set_proxy(Buffer *buffer, WebKitNetworkProxyMode mode,
+	const gchar *proxy_uri, const gchar *const *ignore_hosts) {
+	WebKitWebContext *context = webkit_web_view_get_context(buffer->web_view);
+
+	WebKitNetworkProxySettings *settings = NULL;
+	if (mode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM) {
+		settings = webkit_network_proxy_settings_new(proxy_uri, ignore_hosts);
+	}
+	webkit_web_context_set_network_proxy_settings(context, mode, settings);
+	g_debug("Proxy set");
+}

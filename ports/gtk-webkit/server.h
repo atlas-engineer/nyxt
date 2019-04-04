@@ -356,6 +356,90 @@ static GVariant *server_list_methods(SoupXMLRPCParams *_params) {
 	return g_variant_builder_end(&builder);
 }
 
+/* ITER cannot be used after this call.  RESULT must be freed. */
+GList *server_unwrap_string_list(GVariantIter *iter) {
+	GVariant *str_variant;
+	gchar *str;
+	GList *result = NULL;
+	while (g_variant_iter_loop(iter, "v", &str_variant)) {
+		g_variant_get(str_variant, "s", &str);
+		result = g_list_append(result, str);
+	}
+	g_variant_iter_free(iter);
+	return result;
+}
+
+/* The GList can be freed but not its elements which are share with the result.
+The result must be freed. */
+char **server_string_list_to_array_pointer(GList *list) {
+	guint length = g_list_length(list);
+	if (length == 0) {
+		return NULL;
+	}
+
+	char **result = g_new(char *, 1+length);
+	GList *old_list = list;
+	int i = 0;
+	while (list != NULL) {
+		result[i] = list->data;
+		i++;
+		list = list->next;
+	}
+	// Make sure it's NULL-terminated so that we can detect the end of the array.
+	result[g_list_length(old_list)] = NULL;
+	return result;
+}
+
+static GVariant *server_set_proxy(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_boolean(FALSE);
+	}
+	GList *buffer_ids = NULL;
+	const char *mode = NULL;
+	const char *proxy_uri = NULL;
+	char **ignore_hosts = NULL;
+	// ignore_hosts is passed as a list of string variants.
+	{
+		GVariantIter *iter;
+		GVariantIter *iter_buffers;
+		g_variant_get(unwrapped_params, "(av&s&sav)", &iter_buffers, &mode, &proxy_uri, &iter);
+
+		buffer_ids = server_unwrap_string_list(iter_buffers);
+		GList *ignore_hosts_list = server_unwrap_string_list(iter);
+		ignore_hosts = server_string_list_to_array_pointer(ignore_hosts_list);
+		g_list_free(ignore_hosts_list);
+	}
+
+	{
+		gchar *pretty_ignore_hosts = g_strjoinv(",", ignore_hosts);
+		char **buffer_ids_buf = server_string_list_to_array_pointer(buffer_ids);
+		gchar *pretty_buffer_ids = g_strjoinv(",", buffer_ids_buf);
+		g_message("Method parameter(s): buffer ID(s) %s, set proxy=%s, URI=%s, ignore_hosts=%s",
+			pretty_buffer_ids, mode, proxy_uri, pretty_ignore_hosts);
+		g_free(buffer_ids_buf);
+		g_free(pretty_buffer_ids);
+		g_free(pretty_ignore_hosts);
+	}
+
+	int mode_enum = WEBKIT_NETWORK_PROXY_MODE_DEFAULT;
+	if (g_strcmp0(mode, "custom") == 0) {
+		mode_enum = WEBKIT_NETWORK_PROXY_MODE_CUSTOM;
+	} else if (g_strcmp0(mode, "none") == 0) {
+		mode_enum = WEBKIT_NETWORK_PROXY_MODE_NO_PROXY;
+	}
+
+	while (buffer_ids != NULL) {
+		Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_ids->data);
+		buffer_set_proxy(buffer, mode_enum, proxy_uri, (const char *const *)ignore_hosts);
+		buffer_ids = buffer_ids->next;
+	}
+
+	g_free(ignore_hosts);
+	g_list_free(buffer_ids);
+	return g_variant_new_boolean(TRUE);
+}
+
 static void server_handler(SoupServer *_server, SoupMessage *msg,
 	const char *path, GHashTable *_query,
 	SoupClientContext *_context, gpointer _data) {
@@ -452,6 +536,7 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "buffer.evaluate.javascript", &server_buffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "minibuffer.evaluate.javascript", &server_minibuffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "generate.input.event", &server_generate_input_event);
+	g_hash_table_insert(state.server_callbacks, "set.proxy", &server_set_proxy);
 }
 
 void stop_server() {
