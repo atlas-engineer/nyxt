@@ -95,6 +95,10 @@ startup after the remote-interface was set up."
      (apply #'s-xml-rpc:encode-xml-rpc-call method args)
      :host (host interface) :port (port interface) :url url)))
 
+(defmethod list-methods ((interface remote-interface))
+  "Return the unsorted list of XML-RPC methods supported by the platform port."
+  (%xml-rpc-send interface "listMethods"))
+
 (defmethod get-unique-window-identifier ((interface remote-interface))
   (incf (total-window-count interface))
   (format nil "~a" (total-window-count interface)))

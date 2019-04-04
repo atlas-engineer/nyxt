@@ -30,6 +30,15 @@ Set to '-' to read standard input instead."))
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
     (opts:get-opts)))
 
+;; TODO: This is rather low level and should probably not be a command.
+;; We can safely remove it once we can EVAL within Next.
+(define-command server-methods-inspect ()
+  "List the XML-RPC methods supported by the platform port."
+  (echo *minibuffer* (cl-strings:join
+                      (sort (list-methods *interface*) #'string<)
+                      :separator "
+")))
+
 (define-command kill ()
   "Quit Next."
   (kill-interface *interface*)
@@ -127,6 +136,7 @@ Set to '-' to read standard input instead."))
 (define-key *global-map* (key "C-t") 'make-visible-new-buffer)
 (define-key *global-map* (key "C-m u") 'bookmark-url)
 (define-key *global-map* (key "C-x w") 'delete-active-buffer)
+;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
 (define-key *global-map* (key "C-h v") 'variable-inspect)
 (define-key *global-map* (key "C-h c") 'command-inspect)
 (define-key *global-map* (key "C-o") 'load-file)
