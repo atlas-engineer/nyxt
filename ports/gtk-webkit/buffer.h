@@ -13,6 +13,11 @@ typedef struct {
 	WebKitWebView *web_view;
 	int callback_count;
 	char *identifier;
+	// WebKit does not seem to expose any accessor to the proxy settings, so we
+	// need to store them ourselves.
+	WebKitNetworkProxyMode _proxy_mode;
+	const char *_proxy_uri;
+	const char *const *_ignore_hosts;
 } Buffer;
 
 typedef struct {
@@ -327,5 +332,19 @@ void buffer_set_proxy(Buffer *buffer, WebKitNetworkProxyMode mode,
 		settings = webkit_network_proxy_settings_new(proxy_uri, ignore_hosts);
 	}
 	webkit_web_context_set_network_proxy_settings(context, mode, settings);
+	buffer->_proxy_mode = mode;
+	buffer->_proxy_uri = strdup(proxy_uri);
+	buffer->_ignore_hosts = ignore_hosts;
 	g_debug("Proxy set");
+}
+
+void buffer_get_proxy(Buffer *buffer, WebKitNetworkProxyMode *mode,
+	const gchar **proxy_uri, const gchar *const **ignore_hosts) {
+	*mode = buffer->_proxy_mode;
+	*proxy_uri = "";
+	*ignore_hosts = NULL;
+	if (*mode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM) {
+		*proxy_uri = buffer->_proxy_uri;
+		*ignore_hosts = buffer->_ignore_hosts;
+	}
 }

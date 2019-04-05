@@ -435,9 +435,46 @@ static GVariant *server_set_proxy(SoupXMLRPCParams *params) {
 		buffer_ids = buffer_ids->next;
 	}
 
-	g_free(ignore_hosts);
+	// TODO: Don't free ignore_hosts if we need to store them in the Buffer struct?
+	// More elegant way to do this?
+	/* g_free(ignore_hosts); */
 	g_list_free(buffer_ids);
 	return g_variant_new_boolean(TRUE);
+}
+
+static GVariant *server_get_proxy(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_boolean(FALSE);
+	}
+	const char *a_key = NULL;
+	g_variant_get(unwrapped_params, "(&s)", &a_key);
+	g_message("Method parameter(s): %s", a_key);
+
+	WebKitNetworkProxyMode mode;
+	const gchar *proxy_uri = NULL;
+	const gchar *const *ignore_hosts = NULL;
+	buffer_get_proxy(g_hash_table_lookup(state.buffers, a_key),
+		&mode, &proxy_uri, &ignore_hosts);
+
+	char *mode_string = "default";
+	if (mode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM) {
+		mode_string = "custom";
+	} else if (mode == WEBKIT_NETWORK_PROXY_MODE_NO_PROXY) {
+		mode_string = "none";
+	}
+
+	// TODO: Shouldn't the hosts be a sublist?
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
+	g_variant_builder_add(&builder, "s", mode_string);
+	g_variant_builder_add(&builder, "s", proxy_uri);
+	while (ignore_hosts != NULL && ignore_hosts[0] != NULL) {
+		g_variant_builder_add(&builder, "s", ignore_hosts[0]);
+		ignore_hosts++;
+	}
+
+	return g_variant_builder_end(&builder);
 }
 
 static void server_handler(SoupServer *_server, SoupMessage *msg,
@@ -537,6 +574,7 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "minibuffer.evaluate.javascript", &server_minibuffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "generate.input.event", &server_generate_input_event);
 	g_hash_table_insert(state.server_callbacks, "set.proxy", &server_set_proxy);
+	g_hash_table_insert(state.server_callbacks, "get.proxy", &server_get_proxy);
 }
 
 void stop_server() {
