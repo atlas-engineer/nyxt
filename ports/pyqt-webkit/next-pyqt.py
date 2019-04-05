@@ -4,6 +4,8 @@ from xmlrpc.server import SimpleXMLRPCServer
 
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QWidget
 
@@ -77,6 +79,10 @@ class RPCThread(QThread):
     """
     Run the rpcxml server in another thread from the (blocking) GUI main loop.
     """
+    # Signals, to create GUI elements into the main Qt thread.
+    window_make = pyqtSignal()
+    window_delete = pyqtSignal(int)
+
     def run(self):
         """
         Register functions and start the server.
@@ -90,13 +96,14 @@ class RPCThread(QThread):
         self.rpcserver.register_function(hello)
         self.rpcserver.register_function(set_minibuffer)
 
-        # Allow introspection.
+        # Allow xmlrpc introspection.
         # Use with client.system.listMethods()
         self.rpcserver.register_introspection_functions()
         # Register all functions.
         self.rpcserver.register_function(set_title, "window.set.title")
-        self.rpcserver.register_function(window_make, "window.make")
-        self.rpcserver.register_function(window_delete, "window.delete")
+        # TODO: works, but we don't get the return value anymore.
+        self.rpcserver.register_function(partial(self.window_make.emit), "window.make")
+        self.rpcserver.register_function(partial(self.window_delete.emit), "window.delete")
 
         # Serve.
         self.rpcserver.serve_forever()
@@ -104,10 +111,15 @@ class RPCThread(QThread):
 class RPCWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+
+        # Start the xmlprc thread.
         self.thread = RPCThread(self)
         self.thread.start()
 
 rpcwidget = RPCWidget()
+# Connect signals (outside the thread).
+rpcwidget.thread.window_make.connect(window_make)
+rpcwidget.thread.window_delete.connect(window_delete)
 
 # Qt main loop.
 print("--- Qt loop")

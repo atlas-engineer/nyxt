@@ -52,7 +52,7 @@ class Window():
         assert self.identifier >= 0
 
         webview = QWebEngineView()
-        QTimer.singleShot(0, partial(webview.setUrl, QUrl(URL_START)))
+        webview.setUrl(QUrl(URL_START))
 
         minibuffer = QWebEngineView()
         mb_prompt = """
@@ -60,30 +60,28 @@ class Window():
         <div> hello minibuffer </div>
         </html>
         """
-        QTimer.singleShot(0, partial(minibuffer.setHtml, mb_prompt))
+        minibuffer.setHtml(mb_prompt)
 
         self.layout.addWidget(webview)
         self.layout.addWidget(minibuffer)
 
         self.widget.setWindowTitle("Next browser from window {}".format(self.identifier))
-        QTimer.singleShot(0, partial(self.widget.setLayout, self.layout))
+        self.widget.setLayout(self.layout)
 
 
 def window_make():
     """
     Create a window and return its identifier (int).
     """
-    # TODO: we can see a window but not its webview and minibuffer.
     window = Window()
     window.widget.show()
-
     WINDOWS[window.identifier] = window
     print("--- new window created, id {}".format(window.identifier))
     return window.identifier
 
 def window_delete(window_id):
     window = WINDOWS.get(window_id)
-    # TODO: passes, but no effect.
+    # xxx: works, re-check if everything's necessary.
     if not window:
         print("could not find a window of id {}".format(window_id))
         print("windows: {}".format(WINDOWS))
