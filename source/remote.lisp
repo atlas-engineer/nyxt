@@ -258,6 +258,9 @@ events."
                      "custom")
                  proxy-uri ignore-hosts))
 
+(defmethod get-proxy ((interface remote-interface) (buffer buffer))
+  (%xml-rpc-send interface "get.proxy" (id buffer)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expose Lisp Core XML RPC Endpoints ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
