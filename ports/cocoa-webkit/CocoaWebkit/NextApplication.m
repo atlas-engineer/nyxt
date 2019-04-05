@@ -25,13 +25,32 @@
     return self;
 }
 
++ (NSString*)mapCharactersForEventWithCharacters:(NSString*)characters  keyCode:(short)code {
+    // From the documentation on key codes: The property’s value is hardware-independent.
+    switch (code) {
+        case 27: return @"HYPHEN";
+        case 36: return @"RETURN";
+        case 48: return @"TAB";
+        case 49: return @"SPACE";
+        case 51: return @"BACKSPACE";
+        case 53: return @"ESCAPE";
+        case 117: return @"DELETE";
+        case 123: return @"Left";
+        case 124: return @"Right";
+        case 125: return @"Down";
+        case 126: return @"Up";
+    }
+    return characters;
+}
+
 - (void)sendEvent:(NSEvent*)event {
     if ([event type] == NSEventTypeKeyDown && [event timestamp] != 0) {
         NextApplicationDelegate* delegate = [NSApp delegate];
         NSString* activeWindow = [delegate windowActive];
         NSEventModifierFlags modifierFlags = [event modifierFlags];
         NSNumber* keyCode = [NSNumber numberWithShort:[event keyCode]];
-        NSString* characters = [event charactersIgnoringModifiers];
+        NSString* characters = [NextApplication mapCharactersForEventWithCharacters:[event charactersIgnoringModifiers]
+                                                                            keyCode:[event keyCode]];
         NSMutableArray* modifiers = [[NSMutableArray alloc] init];
         if (modifierFlags & NSEventModifierFlagControl) {
             [modifiers addObject:@"C"];
@@ -42,19 +61,17 @@
         if (modifierFlags & NSEventModifierFlagCommand) {
             [modifiers addObject:@"S"];
         }
-        if (modifierFlags & NSEventModifierFlagFunction) {
-            [modifiers addObject:@"F"];
-        }
         if (modifierFlags & NSEventModifierFlagShift) {
             [modifiers addObject:@"s"];
         }
 
         NSString* coreSocket = [[Global sharedInstance] coreSocket];
         XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc]
-            initWithURL:[NSURL URLWithString:coreSocket]];
+                                         initWithURL:[NSURL URLWithString:coreSocket]];
         [request setMethod:@"PUSH-KEY-EVENT"
             withParameters:@[ keyCode, characters, modifiers, activeWindow ]];
         NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        
         [[session dataTaskWithRequest:[request request]
                     completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
                         XMLRPCResponseDecoder* RPCResponse = [[XMLRPCResponseDecoder alloc] initWithData:data];
