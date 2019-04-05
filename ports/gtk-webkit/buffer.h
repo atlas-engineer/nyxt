@@ -255,7 +255,8 @@ gboolean buffer_web_view_web_process_crashed(WebKitWebView *web_view, Buffer *bu
 
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
-	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+	WebKitWebContext *context = webkit_web_context_new();
+	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(context));
 	buffer_set_cookie_file(buffer, cookie_file);
 
 	g_signal_connect(buffer->web_view, "load-changed",
@@ -265,7 +266,6 @@ Buffer *buffer_init(const char *cookie_file) {
 	g_signal_connect(buffer->web_view, "web-process-crashed",
 		G_CALLBACK(buffer_web_view_web_process_crashed), buffer);
 
-	WebKitWebContext *context = webkit_web_view_get_context(buffer->web_view);
 	g_signal_connect(context, "download-started", G_CALLBACK(buffer_web_view_download_started), buffer);
 
 	// We need to hold a reference to the view, otherwise changing buffer in the a
