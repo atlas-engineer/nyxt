@@ -135,9 +135,15 @@ item in the list, jump to the first item."
 (defparameter *proxy-ignore-list* (list "localhost" "localhost:8080"))
 
 (define-command toggle-proxy ()
-  "Switch to the next buffer in the list of buffers, if the last
-item in the list, jump to the first item."
-  ;; TODO: Get current proxy to know if we are on or off.
-  (let* ((active-buffer (active-buffer *interface*)))
-    (set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
-    (echo *minibuffer* "Proxy set.")))
+  "Toggle between system proxy and the proxy settings *PROXY-URL* and
+*PROXY-IGNORE-LIST*."
+  (let* ((active-buffer (active-buffer *interface*))
+         (proxy-settings (get-proxy *interface* active-buffer)))
+    (if (string= (first proxy-settings) "default")
+        (progn
+          (set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
+          (echo *minibuffer* (format nil "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*)))
+        (progn
+          (set-proxy *interface* active-buffer)
+          (echo *minibuffer* "Proxy unset.")))
+    (log:info (get-proxy *interface* active-buffer))))
