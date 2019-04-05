@@ -24,12 +24,11 @@
              NSArray *parameters = [requestDecoder parameters];
              
              if ([method isEqualToString:@"window.make"]) {
-                 __block NSString* operationResult = @"";
                  dispatch_sync(dispatch_get_main_queue(), ^{
                      NextApplicationDelegate *delegate = [NSApp delegate];
-                     operationResult = [delegate windowMake];});
+                     [delegate windowMake:[parameters objectAtIndex:0]];});
                  responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[operationResult]];
+                                    initWithParameters:@[@YES]];
                  return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
              }
              else if ([method isEqualToString:@"window.set.title"]) {
@@ -93,12 +92,11 @@
                  return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
              }
              else if ([method isEqualToString:@"buffer.make"]) {
-                 __block NSString* operationResult = @"";
                  dispatch_sync(dispatch_get_main_queue(), ^{
                      NextApplicationDelegate *delegate = [NSApp delegate];
-                     operationResult = [delegate bufferMake];});
+                     [delegate bufferMake: [parameters objectAtIndex:0]];});
                  responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[operationResult]];
+                                    initWithParameters:@[@YES]];
                  return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
              }
              else if ([method isEqualToString:@"buffer.delete"]) {

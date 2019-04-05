@@ -29,14 +29,26 @@
   (did-finish-navigation (mode buffer) url))
 
 (defclass remote-interface ()
-  ;; TODO: remote-interface HOST and PORT should derive from *platform-port-socket* dynamically.
-  ((host :accessor host :initform (getf *platform-port-socket* :host))
+  ((platform-port :accessor platform-port :initform *platform-port-socket*)
    (active-connection :accessor active-connection :initform nil)
-   (port :accessor port :initform (getf *platform-port-socket* :port))
    (url :accessor url :initform "/RPC2")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
+   (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
-   (buffers :accessor buffers :initform (make-hash-table :test #'equal))))
+   (buffers :accessor buffers :initform (make-hash-table :test #'equal))
+   (total-buffer-count :accessor total-buffer-count :initform 0)))
+
+(defmethod host ((interface remote-interface))
+  "Retrieve the host of the platform port dynamically.
+It's important that it is dynamic since the platform port can be reconfigured on
+startup after the remote-interface was set up."
+  (getf (platform-port interface) :host))
+
+(defmethod port ((interface remote-interface))
+  "Retrieve the port of the platform port dynamically.
+It's important that it is dynamic since the platform port can be reconfigured on
+startup after the remote-interface was set up."
+  (getf (platform-port interface) :port))
 
 (defmethod start-interface ((interface remote-interface))
   "Start the XML RPC Server."
@@ -55,6 +67,7 @@
                      :port *core-port*)
                     (uiop:quit))
                 (error (c)
+                  (declare (ignore c))
                   (let ((new-port (find-port:find-port)))
                     (format *error-output* "Port ~a does not seem to be used by Next, trying ~a instead.~%"
                             *core-port* new-port)
@@ -70,17 +83,25 @@
 (defmethod %xml-rpc-send ((interface remote-interface) (method string) &rest args)
   ;; TODO: Make %xml-rpc-send asynchronous?
   ;; If the platform port ever hangs, the next %xml-rpc-send will hang the Lisp core too.
-  (with-slots (host port url) interface
+  (with-slots (url) interface
     (s-xml-rpc:xml-rpc-call
      (apply #'s-xml-rpc:encode-xml-rpc-call method args)
-     :host host :port port :url url)))
+     :host (host interface) :port (port interface) :url url)))
+
+(defmethod get-unique-window-identifier ((interface remote-interface))
+  (incf (total-window-count interface))
+  (format nil "~a" (total-window-count interface)))
+
+(defmethod get-unique-buffer-identifier ((interface remote-interface))
+  (incf (total-buffer-count interface))
+  (format nil "~a" (total-buffer-count interface)))
 
 (defmethod window-make ((interface remote-interface))
   "Create a window and return the window object."
-  (let* ((window-id (%xml-rpc-send interface "window.make"))
+  (let* ((window-id (get-unique-window-identifier interface))
          (window (make-instance 'window :id window-id)))
-    (with-slots (windows) interface
-      (setf (gethash window-id windows) window))
+    (setf (gethash window-id (windows interface)) window)
+    (%xml-rpc-send interface "window.make" window-id)
     window))
 
 (defmethod window-set-title ((interface remote-interface) (window window) title)
@@ -139,14 +160,13 @@
   (%xml-rpc-send interface "window.set.minibuffer.height" (id window) height))
 
 (defmethod buffer-make ((interface remote-interface))
-  (let* ((buffer-id (%xml-rpc-send
-                     interface "buffer.make"
-                     ;; TODO: When we need more options, we will need to pass
-                     ;; a dictionary.
-                     (namestring (merge-pathnames *cookie-path-dir* "cookies.txt"))))
+  (let* ((buffer-id (get-unique-buffer-identifier interface))
+         (cookies-path (namestring (merge-pathnames *cookie-path-dir* "cookies.txt")))
          (buffer (make-instance 'buffer :id buffer-id)))
-    (with-slots (buffers) interface
-      (setf (gethash buffer-id buffers) buffer))
+    (setf (gethash buffer-id (buffers interface)) buffer)
+    (%xml-rpc-send interface "buffer.make" buffer-id
+                   (list
+                    :cookies-path cookies-path))
     buffer))
 
 (defmethod %buffer-make ((interface remote-interface)

@@ -24,7 +24,6 @@
 		EB582F9521BC17D200A63FD3 /* XMLRPCEventBasedParserDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F9221BC17D100A63FD3 /* XMLRPCEventBasedParserDelegate.m */; };
 		EB582F9621BC17D200A63FD3 /* XMLRPCDefaultResponseDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB582F9321BC17D200A63FD3 /* XMLRPCDefaultResponseDecoder.m */; };
 		EB6876842057E9B70098FB5B /* NextApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */; };
-		EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = EB687686205964F50098FB5B /* AutokeyDictionary.m */; };
 		EB9CCB3B21C13433005DCAFF /* XMLRPCElementEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CCB3A21C13433005DCAFF /* XMLRPCElementEncoder.m */; };
 		EB9CCB3E21C137CF005DCAFF /* XMLRPCDefaultResponseEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CCB3D21C137CF005DCAFF /* XMLRPCDefaultResponseEncoder.m */; };
 		EB9CCB4121C13924005DCAFF /* XMLRPCResponseEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CCB4021C13924005DCAFF /* XMLRPCResponseEncoder.m */; };
@@ -96,8 +95,6 @@
 		EB582F9421BC17D200A63FD3 /* XMLRPCEventBasedParserDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLRPCEventBasedParserDelegate.h; sourceTree = "<group>"; };
 		EB6876822057E9B70098FB5B /* NextApplicationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextApplicationDelegate.h; sourceTree = "<group>"; };
 		EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NextApplicationDelegate.m; sourceTree = "<group>"; };
-		EB687685205964F50098FB5B /* AutokeyDictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutokeyDictionary.h; sourceTree = "<group>"; };
-		EB687686205964F50098FB5B /* AutokeyDictionary.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutokeyDictionary.m; sourceTree = "<group>"; };
 		EB9CCB3921C13433005DCAFF /* XMLRPCElementEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCElementEncoder.h; sourceTree = "<group>"; };
 		EB9CCB3A21C13433005DCAFF /* XMLRPCElementEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XMLRPCElementEncoder.m; sourceTree = "<group>"; };
 		EB9CCB3C21C137CF005DCAFF /* XMLRPCDefaultResponseEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XMLRPCDefaultResponseEncoder.h; sourceTree = "<group>"; };
@@ -231,8 +228,6 @@
 				EB6876832057E9B70098FB5B /* NextApplicationDelegate.m */,
 				EB51EC8F219329D9003C6FFD /* Window.h */,
 				EB51EC90219329D9003C6FFD /* Window.m */,
-				EB687685205964F50098FB5B /* AutokeyDictionary.h */,
-				EB687686205964F50098FB5B /* AutokeyDictionary.m */,
 				EB2A556420540AD400F10BFE /* Global.h */,
 				EB2A556520540AD400F10BFE /* Global.m */,
 				EB2A55612053EB4B00F10BFE /* Server.h */,
@@ -415,7 +410,6 @@
 				EB582F9521BC17D200A63FD3 /* XMLRPCEventBasedParserDelegate.m in Sources */,
 				EBED66C021BDCA3400BD9491 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EB144ED321BFD8BE0016A560 /* XMLRPCElementDecoder.m in Sources */,
-				EB687687205964F50098FB5B /* AutokeyDictionary.m in Sources */,
 				EBB1A1DD204750390056B075 /* Buffer.m in Sources */,
 				EB2A556620540AD400F10BFE /* Global.m in Sources */,
 				EBED66BC21BDCA3400BD9491 /* GCDWebServerFileResponse.m in Sources */,

@@ -6,8 +6,6 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 // This is kept outside of server.h because window.h also needs it.
 
-#include "autokey-dictionary.h"
-
 #ifndef NEXT_PLATFORM_PORT
 #define NEXT_PLATFORM_PORT 8082
 #endif
@@ -18,8 +16,8 @@ Use of this file is governed by the license that can be found in LICENSE.
 typedef struct {
 	gint port;
 	gchar *core_socket;
-	AutokeyDictionary *windows;
-	AutokeyDictionary *buffers;
+	GHashTable *windows;
+	GHashTable *buffers;
 	GHashTable *server_callbacks;
 } ServerState;
 

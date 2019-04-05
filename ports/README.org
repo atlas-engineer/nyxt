@@ -17,3 +17,67 @@ core source.
 
 This folder contains the different ports.  They are all independent and target
 various platforms.
+
+** Input event forwarding
+
+A tricky part in this architecture evolves around input event handling (key
+presses, etc.).
+
+Input events are first captured by the platform port (e.g. GDK).
+But we want to intercept it and send it to the Lisp core so that the Lisp has
+full control over what to do with the input event.
+
+In case the Lisp core has no use of the input event, we let know that platform
+port that it can process it.  This is necessary for instance to write in HTML
+text fields.
+
+As of commit 2218c96e67e006a44a770a81fe1b0b65ba7eb490, all XML-RPC request from
+the Lisp core are /synchronous/.  This means that the platform port cannot send
+the input event /synchronously/ too, or else we could have a dead-lock: both
+processes would be waiting for each other's XML-RPC response.
+
+Since the platform port must be /asynchronous/, two strategies prevail:
+
+1. Send the input event asynchronously and from a callback check whether the
+   input event was consumed by the Lisp core or not.  If it was not consumed,
+   then we must forward the input event to the platform port again.
+   Since we are in an XML-RPC callback, we are not in the same context in which
+   the input event was first intercepted, which means that we might have to
+   re-generate the input event programmatically (this is the case in GTK for instance).
+
+2. Send the input event asynchronously and don't wait for an answer.  The Lisp
+   core either consumes the input or event, or sends a new XML-RPC request back
+   to the platform port with the Lisp input event as argument.
+   As for the first strategy, at this point the platform point is in a different
+   context and we must re-generate the input event programmatically.
+
+In both bases, to avoid an infinite loop, we must forward the input event with a
+"marker" (something unique in the event structure for instance) so that the
+platform port does not send it to the Lisp core again.
+
+To sum up in terms of XML-RPC calls:
+
+1. Callback strategy:
+   - Platform port: send =PUSH-KEY-EVENT= with the corresponding input event as
+     argument, and specify a callback.
+   - Lisp core: The ~push-key-event~ procedure checks whether the associated
+     binding is found in a keymap.  It returns a boolean value.
+   - Platform port: From the callback, we check the boolean that was returned.
+     If it indicates that the event was consumed, we do nothing.  Otherwise we
+     regenerate the binding with a special marker.
+
+2. Lisp core event generation strategy:
+   - Platform port: send =PUSH-KEY-EVENT= with the corresponding input event as
+     argument.
+   - Lisp core: The ~push-key-event~ procedure checks whether the associated
+     binding is found in a keymap.  If it is found, call the corresponding
+     command.  If not, send the =GENERATE-INPUT-EVENT= XML-RPC message with the
+     Lisp input event as argument.
+   - Platform port: The ~generate_input_event~ procedure
+     regenerates the input event with a special marker from the message
+     argument.
+
+While similar, the Lisp core event generation strategy has some benefits:
+
+- It's easier to understand in terms of process communication.
+- It allows the Lisp core to generate input events at any moment.
