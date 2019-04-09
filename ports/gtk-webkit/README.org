@@ -12,3 +12,11 @@ messages from the shell.  For instance:
 This also works when starting ~next~ directly:
 
 : env G_MESSAGES_DEBUG=all next
+
+or simply with
+
+: next --verbose
+
+To fire up the GTK+ inspector, run it with
+
+: GTK_DEBUG=interactive next
