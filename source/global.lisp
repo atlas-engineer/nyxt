@@ -63,9 +63,6 @@
 (defvar *platform-port-poll-interval* 0.015
   "The speed at which to poll the XML-RPC endpoint of a platform-port
   to see if it is ready to begin accepting XML-RPC commands.")
-(defvar *temp-directory* "/tmp/"
-  "The path where to create the \"next-$USER\" subfolder for temporary data storage.
-This is were the platform port log is stored.")
 (defvar *minibuffer-style*
   (cl-css:css
    '((* :font-family "monospace,monospace"
