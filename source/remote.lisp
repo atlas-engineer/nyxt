@@ -18,6 +18,9 @@
    (mode :accessor mode :initarg :mode)
    (view :accessor view :initarg :view)
    (modes :accessor modes :initarg :modes)
+   (resource-query-functions :accessor resource-query-functions
+                             :initarg :resource-query-functions
+                             :initform nil)
    (callbacks :accessor callbacks
               :initform (make-hash-table :test #'equal))))
 
@@ -281,6 +284,29 @@ events."
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))
 
+(defun |request.resource| (buffer-id url event-type is-new-window is-known-type input)
+  "Return whether URL should be loaded or not."
+  (declare (ignore event-type input))
+  (let ((buffer (gethash buffer-id (buffers *interface*))))
+    (cond
+      (is-new-window
+       (log:info "Load ~a in new window" url)
+       (|make.buffers| url)
+       0)
+      ((not is-known-type)
+       (log:info "Buffer ~a downloads ~a" buffer url)
+       0)
+      (t
+       (log:info "Forwarding ~a back to platform port" url)
+       1))
+    ;; TODO: Move the cond to RESOURCE-QUERY-FUNCTIONS to let the user customize
+    ;; the behaviour.
+    ;; (if (loop for function in (resource-query-functions buffer)
+    ;;           always (funcall function url buffer-id))
+    ;;     1
+    ;;     0)
+    ))
+
 (import '|buffer.did.commit.navigation| :s-xml-rpc-exports)
 (import '|buffer.did.finish.navigation| :s-xml-rpc-exports)
 (import '|push.key.event| :s-xml-rpc-exports)
@@ -289,6 +315,7 @@ events."
 (import '|minibuffer.javascript.call.back| :s-xml-rpc-exports)
 (import '|window.will.close| :s-xml-rpc-exports)
 (import '|make.buffers| :s-xml-rpc-exports)
+(import '|request.resource| :s-xml-rpc-exports)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convenience methods and functions for Users of the API ;;

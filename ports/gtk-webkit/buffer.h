@@ -81,67 +81,145 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	// 'msg' and 'uri' are freed automatically.
 }
 
+typedef struct  {
+	WebKitPolicyDecision *decision;
+	const gchar *uri;
+} DecisionInfo;
+
+void buffer_navigated_callback(SoupSession *session, SoupMessage *msg, gpointer data) {
+	GError *error = NULL;
+	g_debug("Buffer navigation XML-RPC response: %s", msg->response_body->data);
+
+	// TODO: Use boolean instead of integer when Atlas' s-xml-rpc package is in
+	// Quicklisp.
+	GVariant *loadv = soup_xmlrpc_parse_response(msg->response_body->data,
+			msg->response_body->length, "i", &error);
+
+	if (error) {
+		g_warning("%s: '%s'", error->message,
+			strndup(msg->response_body->data, msg->response_body->length));
+		g_error_free(error);
+		return;
+	}
+
+	gint32 load = g_variant_get_int32(loadv);
+
+	DecisionInfo *decision_info = data;
+	WebKitPolicyDecision *decision = decision_info->decision;
+	if (load != 0) {
+		// TODO: Should we download or use when it's a RESPONSE?
+		g_debug("Load resource '%s'", decision_info->uri);
+		webkit_policy_decision_use(decision);
+	} else {
+		g_debug("Ignore resource '%s'", decision_info->uri);
+		webkit_policy_decision_ignore(decision);
+	}
+
+	g_free(decision_info);
+	return;
+}
+
 gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
-	WebKitPolicyDecision *decision, WebKitPolicyDecisionType type, gpointer buffer) {
+	WebKitPolicyDecision *decision, WebKitPolicyDecisionType type, gpointer bufferp) {
+	WebKitNavigationAction *action = NULL;
+
+	gboolean is_new_window = false;
+	gboolean is_known_type = true;
 	switch (type) {
-	case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
-		// TODO: Force-load the URL in a new buffer on a specific keybinding.
-		// TODO: Handle special resources, like file:///...
-		return FALSE;
-	case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION: {
-		WebKitNavigationAction *action;
+	case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION: {
 		action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
-
-		// Don't load if this was started without user interaction.
-		if (!webkit_navigation_action_is_user_gesture(action)) {
-			g_debug("Policy: New window: Ignore without user interaction");
-			webkit_policy_decision_ignore(decision);
-			return TRUE;
-		}
-
-		if (webkit_navigation_action_get_navigation_type(action) ==
-			WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
-			g_debug("Policy: New window: Load in new buffer");
-			webkit_policy_decision_ignore(decision);
-			// New window can be triggered with the following HTML:
-			// <a href="http://example.org" target="_blank">New window</a>
-			GError *error = NULL;
-			WebKitURIRequest *request = webkit_navigation_action_get_request(action);
-			const char *method_name = "make.buffers";
-
-			// Warning: we need to pass a list of URLs, even if we pass only one URL.
-			GVariantBuilder builder;
-			g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
-			g_variant_builder_add(&builder, "s", webkit_uri_request_get_uri(request));
-
-			GVariant *arg = g_variant_new("(as)", &builder);
-			g_message("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
-
-			SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-					method_name, arg, &error);
-
-			if (error) {
-				g_warning("Malformed XML-RPC message: %s", error->message);
-				g_error_free(error);
-				// TODO: Return TRUE or FALSE?
-				return FALSE;
-			}
-			soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
-			return TRUE;
-		}
-		return FALSE;
+		break;
 	}
-	case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
-		// Entry-point for downloads.
+	case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION: {
+		is_new_window = true;
+		action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
+		break;
+	}
+	case WEBKIT_POLICY_DECISION_TYPE_RESPONSE: {
 		if (!webkit_response_policy_decision_is_mime_type_supported(WEBKIT_RESPONSE_POLICY_DECISION(decision))) {
-			g_debug("Policy: Response: Download");
-			webkit_policy_decision_download(decision);
-			return TRUE;
+			is_known_type = false;
 		}
+		break;
+	}
+	}
+
+	WebKitURIRequest *request;
+	if (action) {
+		request = webkit_navigation_action_get_request(action);
+	} else {
+		request = webkit_response_policy_decision_get_request(WEBKIT_RESPONSE_POLICY_DECISION(decision));
+	}
+	const gchar *uri = webkit_uri_request_get_uri(request);
+
+	gchar *event_type = "other";
+	if (action) {
+		switch (webkit_navigation_action_get_navigation_type(action)) {
+		case WEBKIT_NAVIGATION_TYPE_LINK_CLICKED: {
+			event_type = "link-click";
+			break;
+		}
+		case WEBKIT_NAVIGATION_TYPE_FORM_SUBMITTED: {
+			event_type = "form-submission";
+			break;
+		}
+		case WEBKIT_NAVIGATION_TYPE_BACK_FORWARD: {
+			event_type = "backward-of-forward";
+			break;
+		}
+		case WEBKIT_NAVIGATION_TYPE_RELOAD: {
+			event_type = "reload";
+			break;
+		}
+		case WEBKIT_NAVIGATION_TYPE_FORM_RESUBMITTED: {
+			event_type = "form-resubmission";
+			break;
+		}
+		case WEBKIT_NAVIGATION_TYPE_OTHER: {
+			break;
+		}
+		}
+	}
+
+	// No need for webkit_navigation_action_is_user_gesture if mouse_button and
+	// modifiers tell us the same information.
+	guint mouse_button = 0;
+	guint modifiers = 0;
+	if (action) {
+		mouse_button = webkit_navigation_action_get_mouse_button(action);
+		modifiers = webkit_navigation_action_get_modifiers(action);
+	}
+
+	const char *method_name = "request.resource";
+
+	// TODO: Encode mouse + modifiers properly.
+	// TODO: Test if it's a redirect?
+	Buffer *buffer = bufferp;
+	GVariant *arg = g_variant_new("(sssbbi)", buffer->identifier, uri,
+			event_type,
+			is_new_window,
+			is_known_type,
+			mouse_button+modifiers);
+	g_message("XML-RPC message: %s (buffer id, URI, event_type, is_new_window, is_known_type, input) = %s", method_name, g_variant_print(arg, TRUE));
+
+	GError *error = NULL;
+	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
+			method_name, arg, &error);
+
+	if (error) {
+		g_warning("Malformed XML-RPC message: %s", error->message);
+		g_error_free(error);
+		// TODO: Return TRUE or FALSE?
 		return FALSE;
 	}
 
-	return FALSE;
+	DecisionInfo *decision_info = g_new(DecisionInfo, 1);
+	decision_info->decision = decision;
+	decision_info->uri = uri;
+	soup_session_queue_message(xmlrpc_env, msg, (SoupSessionCallback)buffer_navigated_callback, decision_info);
+
+	// Keep a reference on the decision so that in won't be freed before the callback.
+	g_object_ref(decision);
+	return TRUE;
 }
 
 void buffer_set_cookie_file(Buffer *buffer, const char *path) {
@@ -156,10 +234,11 @@ void buffer_set_cookie_file(Buffer *buffer, const char *path) {
 		WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT);
 }
 
+// TODO: Remove this once all downloads have been transfered to the Lisp core.
 void buffer_web_view_download_started(WebKitWebContext *context,
 	WebKitDownload *download, Buffer *buffer) {
 	const char *uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
-	g_debug("Download starting: %s", uri);
+	g_warning("Download starting: %s", uri);
 	/*
 	Signal handlers accessible from here:
 	        - decide-destination
