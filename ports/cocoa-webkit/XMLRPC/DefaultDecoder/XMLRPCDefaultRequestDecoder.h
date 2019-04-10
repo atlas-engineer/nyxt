@@ -10,7 +10,8 @@
 @interface XMLRPCDefaultRequestDecoder : NSObject <XMLRPCDecoder, NSXMLParserDelegate> {
     NSXMLParser* parser;
     NSString* method;
-    NSMutableArray* parameters;
+    NSMutableArray* stack;
+    NSMutableArray* insertionStack;
 
     XMLRPCElementType elementType;
     NSString* elementKey;

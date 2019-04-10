@@ -10,8 +10,9 @@
 - (id)init {
     if (self = [super init]) {
         method = [[NSString alloc] init];
-        parameters = [[NSMutableArray alloc] init];
-        
+        stack = [[NSMutableArray alloc] init];
+        insertionStack = [[NSMutableArray alloc] init];
+
         elementType = XMLRPCElementTypeString;
         elementValue = [[NSMutableString alloc] init];
     }
@@ -30,7 +31,7 @@
 }
 
 - (NSArray*)parameters {
-    return parameters;
+    return stack;
 }
 
 - (void)setElementType:(XMLRPCElementType)element {
@@ -54,10 +55,12 @@
        namespaceURI:(NSString*)namespaceURI
       qualifiedName:(NSString*)qualifiedName
          attributes:(NSDictionary*)attributeDict {
-    if ([element isEqualToString:@"array"]) {
-        [self setElementType:XMLRPCElementTypeArray];
-    } else if ([element isEqualToString:@"methodName"]) {
+    if ([element isEqualToString:@"methodName"]) {
         [self setElementType:XMLRPCElementTypeMethodName];
+    } else if ([element isEqualToString:@"array"]) {
+        NSMutableArray* array = [[NSMutableArray alloc] init];
+        [self addObject:array];
+        [insertionStack addObject:array];
     } else if ([element isEqualToString:@"struct"]) {
         [self setElementType:XMLRPCElementTypeDictionary];
     } else if ([element isEqualToString:@"int"] || [element isEqualToString:@"i4"]) {
@@ -76,39 +79,47 @@
 }
 
 - (void)parser:(NSXMLParser*)parser
-    didEndElement:(NSString*)element
-     namespaceURI:(NSString*)namespaceURI
-    qualifiedName:(NSString*)qualifiedName {
-    if (elementValue != nil) {
-        NSString* tmpElement;
-        tmpElement = [XMLRPCElementDecoder parseString:elementValue];
-        elementValue = nil;
-
+ didEndElement:(NSString*)elementName
+  namespaceURI:(NSString*)namespaceURI
+ qualifiedName:(NSString*)qualifiedName {
+    if ([elementName isEqualToString:@"array"]) {
+        [insertionStack removeLastObject];
+    } else if (elementValue != nil) {
+        NSString* tmpElement = [XMLRPCElementDecoder parseString:elementValue];
+        elementValue = nil; // reset element value
         switch (elementType) {
-        case XMLRPCElementTypeString:
-            [parameters addObject:tmpElement];
-            break;
-        case XMLRPCElementTypeMethodName:
-            method = tmpElement;
-            break;
-        case XMLRPCElementTypeInteger:
-            [parameters addObject:[XMLRPCElementDecoder parseInteger:tmpElement]];
-            break;
-        case XMLRPCElementTypeDouble:
-            [parameters addObject:[XMLRPCElementDecoder parseDouble:tmpElement]];
-            break;
-        case XMLRPCElementTypeBoolean:
-            [parameters addObject:[XMLRPCElementDecoder parseBoolean:tmpElement]];
-            break;
-        case XMLRPCElementTypeDate:
-            [parameters addObject:[XMLRPCElementDecoder parseDate:tmpElement]];
-            break;
-        case XMLRPCElementTypeData:
-            [parameters addObject:[XMLRPCElementDecoder parseData:tmpElement]];
-            break;
-        default:
-            break;
+            case XMLRPCElementTypeMethodName:
+                method = tmpElement;
+                break;
+            case XMLRPCElementTypeString:
+                [self addObject:tmpElement];
+                break;
+            case XMLRPCElementTypeInteger:
+                [self addObject:[XMLRPCElementDecoder parseInteger:tmpElement]];
+                break;
+            case XMLRPCElementTypeDouble:
+                [self addObject:[XMLRPCElementDecoder parseDouble:tmpElement]];
+                break;
+            case XMLRPCElementTypeBoolean:
+                [self addObject:[XMLRPCElementDecoder parseBoolean:tmpElement]];
+                break;
+            case XMLRPCElementTypeDate:
+                [self addObject:[XMLRPCElementDecoder parseDate:tmpElement]];
+                break;
+            case XMLRPCElementTypeData:
+                [self addObject:[XMLRPCElementDecoder parseData:tmpElement]];
+                break;
+            default:
+                break;
         }
+    }
+}
+
+- (void)addObject:(id) object {
+    if ([insertionStack count] > 0) {
+        [[insertionStack lastObject] addObject:object];
+    } else {
+        [stack addObject:object];
     }
 }
 
