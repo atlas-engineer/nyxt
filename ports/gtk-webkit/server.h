@@ -207,7 +207,7 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 	const char *javascript = NULL;
 	g_variant_get(unwrapped_params, "(&s&s)", &buffer_id, &javascript);
 	g_message("Method parameter(s): buffer id %s", buffer_id);
-	g_debug("Javascript: \"%s\"", buffer_id, javascript);
+	g_debug("Javascript: \"%s\"", javascript);
 
 	Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_id);
 	if (!buffer) {
@@ -252,7 +252,7 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 	const char *javascript = NULL;
 	g_variant_get(unwrapped_params, "(&s&s)", &window_id, &javascript);
 	g_message("Method parameter(s): window id %s", window_id);
-	g_debug("Javascript: \"%s\"", window_id, javascript);
+	g_debug("Javascript: \"%s\"", javascript);
 
 	Window *window = g_hash_table_lookup(state.windows, window_id);
 	Minibuffer *minibuffer = window->minibuffer;
