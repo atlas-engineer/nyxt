@@ -129,7 +129,6 @@
              }
              else if ([method isEqualToString:@"generate.input.event"]) {
                  NSMutableArray* lowLevelData = [parameters objectAtIndex: 3];
-                 NSLog(@"Low Level Data: %@", lowLevelData);
                  dispatch_sync(dispatch_get_main_queue(), ^{
                      [NSApp sendEvent:[NSEvent keyEventWithType:NSEventTypeKeyDown
                                                        location:CGPointZero
