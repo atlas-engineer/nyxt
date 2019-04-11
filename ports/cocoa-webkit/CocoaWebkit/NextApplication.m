@@ -64,37 +64,19 @@
         if (modifierFlags & NSEventModifierFlagShift) {
             [modifiers addObject:@"s"];
         }
-
+        
         NSString* coreSocket = [[Global sharedInstance] coreSocket];
         XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc]
                                          initWithURL:[NSURL URLWithString:coreSocket]];
-        [request setMethod:@"PUSH-KEY-EVENT"
-            withParameters:@[ keyCode, characters, modifiers, activeWindow ]];
-        NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
         
-        [[session dataTaskWithRequest:[request request]
-                    completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
-                        XMLRPCResponseDecoder* RPCResponse = [[XMLRPCResponseDecoder alloc] initWithData:data];
-                        // When Not Consumed, send the event to the Cocoa Application
-                        if ([[RPCResponse object] intValue] == 0) {
-                            dispatch_sync(dispatch_get_main_queue(), ^{
-                                [super sendEvent:[NSEvent keyEventWithType:NSEventTypeKeyDown
-                                                                        location:[event locationInWindow]
-                                                                   modifierFlags:[event modifierFlags]
-                                                                       timestamp:0
-                                                                    windowNumber:[event windowNumber]
-                                                                         context:nil
-                                                                      characters:[event characters]
-                                                     charactersIgnoringModifiers:[event charactersIgnoringModifiers]
-                                                                       isARepeat:[event isARepeat]
-                                                                         keyCode:[event keyCode]]];
-                            });
-                        } else {
-                            [request setMethod:@"CONSUME-KEY-SEQUENCE" withParameters:@[ activeWindow ]];
-                            [[session dataTaskWithRequest:[request request]] resume];
-                        }
-                    }] resume];
-
+        NSArray* lowLevelData = @[[[NSNumber alloc] initWithInteger:[event modifierFlags]],
+                                  [[NSNumber alloc] initWithInteger:[event windowNumber]],
+                                  [event characters],
+                                  [event charactersIgnoringModifiers]];
+        [request setMethod:@"PUSH-KEY-EVENT"
+            withParameters:@[ keyCode, characters, modifiers, lowLevelData, activeWindow ]];
+        NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        [[session dataTaskWithRequest:[request request]] resume];
     } else {
         [super sendEvent:event];
     }

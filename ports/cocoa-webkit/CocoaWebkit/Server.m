@@ -127,7 +127,25 @@
                                     initWithParameters:@[operationResult]];
                  return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
              }
-             
+             else if ([method isEqualToString:@"generate.input.event"]) {
+                 NSMutableArray* lowLevelData = [parameters objectAtIndex: 3];
+                 NSLog(@"Low Level Data: %@", lowLevelData);
+                 dispatch_sync(dispatch_get_main_queue(), ^{
+                     [NSApp sendEvent:[NSEvent keyEventWithType:NSEventTypeKeyDown
+                                                       location:CGPointZero
+                                                  modifierFlags:[[lowLevelData objectAtIndex:0] integerValue]
+                                                      timestamp:0
+                                                   windowNumber:(NSInteger)[lowLevelData objectAtIndex:1]
+                                                        context:nil
+                                                     characters:[lowLevelData objectAtIndex:2]
+                                    charactersIgnoringModifiers:[lowLevelData objectAtIndex:3]
+                                                      isARepeat:NO
+                                                        keyCode:(short)[parameters objectAtIndex: 1]]];});
+                 responseEncoder = [[XMLRPCResponseEncoder alloc]
+                                    initWithParameters:@[@YES]];
+                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+             }
+
              responseEncoder = [[XMLRPCResponseEncoder alloc]
                                 initWithParameters:@[@"Unsupported operation!"]];
              return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
