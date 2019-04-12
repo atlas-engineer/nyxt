@@ -37,9 +37,11 @@ slime. Default port is 4006."
           ;; - hello world
           ;; - https://www.google.com/search?q=hello world
           (let ((url (puri:parse-uri input-url)))
-            (if (puri:uri-scheme url)
-                input-url
-                (concatenate 'string "https://" input-url)))
+            (cond
+              ((puri:uri-scheme url) input-url)
+              ((probe-file input-url)
+               (concatenate 'string "file://" input-url))
+              (t (concatenate 'string "https://" input-url))))
         (puri:uri-parse-error ()
           input-url))))
 

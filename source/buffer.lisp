@@ -57,9 +57,11 @@ buffer to the start page."
     (setf (name buffer) url)
     (unless disable-history
       (history-typed-add input-url))
-    (buffer-evaluate-javascript *interface*
-                                buffer
-                                (buffer-set-url url))))
+    (if (cl-strings:starts-with url "file://")
+        (buffer-load *interface* buffer url)
+        (buffer-evaluate-javascript *interface*
+                                    buffer
+                                    (buffer-set-url url)))))
 
 (defun set-url (input-url &optional disable-history)
   (let ((url (parse-url input-url)))

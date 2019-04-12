@@ -209,6 +209,10 @@ void buffer_delete(Buffer *buffer) {
 	g_free(buffer);
 }
 
+void buffer_load(Buffer *buffer, const char *uri) {
+	webkit_web_view_load_uri(buffer->web_view, uri);
+}
+
 static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
 	BufferInfo *buffer_info = (BufferInfo *)user_data;

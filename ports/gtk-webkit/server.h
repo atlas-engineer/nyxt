@@ -198,6 +198,26 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 	return g_variant_new_boolean(TRUE);
 }
 
+static GVariant *server_buffer_load(SoupXMLRPCParams *params) {
+	GVariant *unwrapped_params = server_unwrap_params(params);
+	if (!unwrapped_params) {
+		return g_variant_new_boolean(FALSE);
+	}
+	const char *buffer_id = NULL;
+	const char *uri = NULL;
+	g_variant_get(unwrapped_params, "(&s&s)", &buffer_id, &uri);
+	g_message("Method parameter(s): buffer id %s, URI %s", buffer_id, uri);
+
+	Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_id);
+	if (!buffer) {
+		g_warning("Non-existent buffer %s", buffer_id);
+		return g_variant_new_boolean(FALSE);
+	}
+
+	buffer_load(buffer, uri);
+	return g_variant_new_boolean(TRUE);
+}
+
 static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 	GVariant *unwrapped_params = server_unwrap_params(params);
 	if (!unwrapped_params) {
@@ -411,6 +431,7 @@ void start_server() {
 	g_hash_table_insert(state.server_callbacks, "window.set.minibuffer.height", &server_window_set_minibuffer_height);
 	g_hash_table_insert(state.server_callbacks, "buffer.make", &server_buffer_make);
 	g_hash_table_insert(state.server_callbacks, "buffer.delete", &server_buffer_delete);
+	g_hash_table_insert(state.server_callbacks, "buffer.load", &server_buffer_load);
 	g_hash_table_insert(state.server_callbacks, "buffer.evaluate.javascript", &server_buffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "minibuffer.evaluate.javascript", &server_minibuffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "generate.input.event", &server_generate_input_event);
