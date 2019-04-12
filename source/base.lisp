@@ -69,7 +69,6 @@ Set to '-' to read standard input instead."))
             (loop for url in (cdr *free-args*) do
               (let ((buffer (make-buffer)))
                 (set-url-buffer url buffer)))
-            (log:debug (active-buffer *interface*))
             (setf port-running t))
         (SB-BSD-SOCKETS:CONNECTION-REFUSED-ERROR ()
           (format *error-output* "Polling platform port...~%")
