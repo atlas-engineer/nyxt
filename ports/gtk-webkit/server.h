@@ -298,7 +298,7 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 	g_message("Method parameter(s): window id '%s', hardware_keycode %i, modifiers %i, keyval %i",
 		window_id, hardware_keycode, modifiers, keyval);
 
-	Window *window = akd_object_for_key(state.windows, window_id);
+	Window *window = g_hash_table_lookup(state.windows, window_id);
 	if (!window) {
 		g_warning("Non-existent window %s", window_id);
 		return g_variant_new_boolean(FALSE);
