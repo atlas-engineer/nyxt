@@ -153,7 +153,7 @@ void window_delete(Window *window) {
 	gtk_main_quit();
 }
 
-void window_generate_keypress_event(WindowEvent *window_event) {
+void window_generate_input_event(WindowEvent *window_event) {
 	// We need to generate key press events programmatically from the call back
 	// when the key press was not consumed.  The original event might have been
 	// freed, which is why we need to copy it's content into the callback
@@ -210,7 +210,7 @@ void window_consume_event(SoupSession *session, SoupMessage *msg, gpointer windo
 
 	WindowEvent *window_event = (WindowEvent *)window_data;
 	if (!g_variant_get_int32(consumed)) {
-		window_generate_keypress_event(window_event);
+		window_generate_input_event(window_event);
 		return;
 	}
 

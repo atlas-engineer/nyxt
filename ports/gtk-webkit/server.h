@@ -336,7 +336,7 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 	WindowEvent *window_event = g_new(WindowEvent, 1);
 	window_event->event = event_key;
 	window_event->window = window;
-	window_generate_keypress_event(window_event);
+	window_generate_input_event(window_event);
 
 	return g_variant_new_boolean(TRUE);
 }
