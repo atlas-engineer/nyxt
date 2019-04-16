@@ -32,6 +32,7 @@
   (let ((key-chord (make-key-chord
                     :key-code key-code
                     :key-string key-string
+                    :position (list x y)
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp))
                     :low-level-data low-level-data)))
