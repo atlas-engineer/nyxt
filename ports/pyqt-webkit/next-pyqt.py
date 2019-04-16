@@ -51,7 +51,7 @@ RPC_PORT = 8082
 
 app = QApplication([])
 # let's just create a window at startup for development.
-window_make()
+window_make("0")
 
 mb_prompt = """
 <html>
@@ -79,15 +79,13 @@ class RPCThread(QThread):
     """
     Run the rpcxml server in another thread from the (blocking) GUI main loop.
     """
-    # Signals, to create GUI elements into the main Qt thread.
-    window_make = pyqtSignal()
+    #: Signals, to create GUI elements into the main Qt thread.
+    window_make = pyqtSignal(int)
     window_delete = pyqtSignal(int)
 
     def run(self):
         """
         Register functions and start the server.
-
-        Functions must fire events with `QTimer.singleShot`.
         """
         # sleep a little bit to make sure QApplication is running.
         self.sleep(1)

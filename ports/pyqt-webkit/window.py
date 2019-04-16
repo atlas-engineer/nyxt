@@ -15,9 +15,6 @@ MODIFIER_NAMES = []
 
 KEY_BLACKLIST = []
 
-#: Variable keeping the next available window id. Starts at 0.
-WINDOW_NB = -1
-
 URL_START = "http://next.atlas.engineer/"
 
 #: A dictionnary of current windows mapping an identifier (int) to a window (Window).
@@ -25,11 +22,6 @@ URL_START = "http://next.atlas.engineer/"
 # because windows can be deleted.
 # xxx: we probably want QMutex.
 WINDOWS = {}
-
-def get_window_id():
-    global WINDOW_NB
-    WINDOW_NB += 1
-    return WINDOW_NB
 
 #: A window contains a base widget, a layout, an id (int), a minibuffer.
 class Window():
@@ -45,11 +37,11 @@ class Window():
     #: minibuffer height (px)
     minibuffer_height = 200
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, identifier, *args, **kwargs):
         self.widget = QWidget()
         self.layout = QVBoxLayout()
-        self.identifier = get_window_id()
-        assert self.identifier >= 0
+        identifier = int(identifier)
+        self.identifier = identifier
 
         webview = QWebEngineView()
         webview.setUrl(QUrl(URL_START))
@@ -69,15 +61,18 @@ class Window():
         self.widget.setLayout(self.layout)
 
 
-def window_make():
+def window_make(identifier):
     """
-    Create a window and return its identifier (int).
+    Create a window, assign it the given unique identifier.
+    - uid: string
+
+    return: True (not important)
     """
-    window = Window()
+    window = Window(identifier=identifier)
     window.widget.show()
     WINDOWS[window.identifier] = window
     print("--- new window created, id {}".format(window.identifier))
-    return window.identifier
+    return True
 
 def window_delete(window_id):
     window = WINDOWS.get(window_id)
