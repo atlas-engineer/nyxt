@@ -15,6 +15,8 @@
   (define-key *document-mode-map* (key "C-x C-w") 'copy-anchor-url)
   (define-key *document-mode-map* (key "C-f") 'history-forwards)
   (define-key *document-mode-map* (key "C-b") 'history-backwards)
+  (define-key *document-mode-map* (key "button9") 'history-forwards)
+  (define-key *document-mode-map* (key "button8") 'history-backwards)
   (define-key *document-mode-map* (key "C-p") 'scroll-up)
   (define-key *document-mode-map* (key "C-n") 'scroll-down)
   (define-key *document-mode-map* (key "C-x C-=") 'zoom-in-page)
