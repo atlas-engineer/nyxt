@@ -243,7 +243,7 @@ gboolean window_send_event(gpointer window_data,
 	}
 
 	GError *error = NULL;
-	const char *method_name = "push.key.event";
+	const char *method_name = "push.input.event";
 	Window *window = window_data;
 	GVariant *key_chord = g_variant_new("(isasddis)",
 			hardware_keycode,
