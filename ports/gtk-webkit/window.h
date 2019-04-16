@@ -191,8 +191,6 @@ void window_generate_input_event(WindowEvent *window_event) {
 	case GDK_BUTTON_PRESS: {
 		event->button.window =
 			g_object_ref(gtk_widget_get_window(GTK_WIDGET(window_event->window->buffer->web_view)));
-		// REVIEW: Seems that there is no event time at this point,
-		// gtk_get_current_event_time() and GDK_CURRENT_TIME return 0.
 		g_debug("Generating button press");
 		event->button.time = GDK_CURRENT_TIME;
 		GdkEventButton *e = (GdkEventButton *)&window_event->event;
@@ -200,6 +198,20 @@ void window_generate_input_event(WindowEvent *window_event) {
 		event->button.state = e->state;
 		event->button.x = e->x;
 		event->button.y = e->y;
+		break;
+	}
+	case GDK_SCROLL: {
+		event->button.window =
+			g_object_ref(gtk_widget_get_window(GTK_WIDGET(window_event->window->buffer->web_view)));
+		g_debug("Generating scroll press");
+		event->button.time = GDK_CURRENT_TIME;
+		GdkEventScroll *e = (GdkEventScroll *)&window_event->event;
+		event->scroll.direction = e->direction;
+		event->scroll.state = e->state;
+		event->scroll.delta_x = e->delta_x;
+		event->scroll.delta_y = e->delta_y;
+		event->scroll.x = e->x;
+		event->scroll.y = e->y;
 		break;
 	}
 	}
@@ -405,7 +417,7 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 	gchar *event_string = g_strdup_printf("button%d", event->button);
 	return window_send_event(window,
 		       event_string, event->state,
-		       event->button, event->button,
+		       0, event->button,
 		       event->x, event->y);
 }
 
@@ -439,37 +451,38 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 		}
 	}
 
-	gchar *event_string = "button?";
+	guint button = 0;
 	switch (event->direction) {
 	case GDK_SCROLL_UP:
-		event_string = "button4";
+		button = 4;
 		break;
 	case GDK_SCROLL_DOWN:
-		event_string = "button5";
+		button = 5;
 		break;
 	case GDK_SCROLL_LEFT:
-		event_string = "button6";
+		button = 6;
 		break;
 	case GDK_SCROLL_RIGHT:
-		event_string = "button7";
+		button = 7;
 		break;
 	case GDK_SCROLL_SMOOTH: {
 		if (event->delta_y < 0) {
-			event_string = "button4";
+			button = 4;
 		} else if (event->delta_y > 0) {
-			event_string = "button5";
+			button = 5;
 		} else if (event->delta_x < 0) {
-			event_string = "button6";
+			button = 6;
 		} else if (event->delta_x > 0) {
-			event_string = "button7";
+			button = 7;
 		}
 		break;
 	}
 	}
 
+	gchar *event_string = g_strdup_printf("button%d", button);
 	return window_send_event(window,
 		       event_string, event->state,
-		       0, 0,
+		       event->direction, button,
 		       event->x, event->y);
 }
 

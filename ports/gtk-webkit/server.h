@@ -328,14 +328,32 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 
 	GdkEvent event;
 	if (x != -1) {
-		GdkEventButton event_button = {
-			.button = keyval,
-			.state = modifiers,
-			.x = x,
-			.y = y,
-		};
-		event = (GdkEvent)event_button;
-		event.type = GDK_BUTTON_PRESS;
+		// TODO: Rename hardware_keycode to something that fits mouse buttons.
+		if (hardware_keycode != 0) {
+			GdkEventScroll event_scroll = {
+				.state = modifiers,
+				.direction = hardware_keycode,
+				.x = x,
+				.y = y,
+				.delta_x = -1,
+				.delta_y = -1,
+			};
+			if (keyval == 5 || keyval == 7) {
+				event_scroll.delta_x = 1;
+				event_scroll.delta_y = 1;
+			}
+			event = (GdkEvent)event_scroll;
+			event.type = GDK_SCROLL;
+		} else {
+			GdkEventButton event_button = {
+				.button = keyval,
+				.state = modifiers,
+				.x = x,
+				.y = y,
+			};
+			event = (GdkEvent)event_button;
+			event.type = GDK_BUTTON_PRESS;
+		}
 	} else {
 		GdkEventKey event_key = {
 			.hardware_keycode = hardware_keycode,
