@@ -90,7 +90,7 @@ typedef struct {
 } Window;
 
 typedef struct {
-	GdkEventKey event; // Must be a copy, not a pointer since the event can be freed.
+	GdkEvent event; // Must be a copy, not a pointer since the event can be freed.
 	Window *window;
 } WindowEvent;
 
@@ -160,27 +160,49 @@ void window_generate_input_event(WindowEvent *window_event) {
 	// payload (window_data).
 	g_debug("Event not consumed, forwarding to GTK");
 
-	GdkEvent *event = gdk_event_new(GDK_KEY_PRESS);
+	GdkEvent *event = gdk_event_new(window_event->event.type);
 
 	// REVIEW: Set window to base or buffer->web_view ?
-	event->key.window =
+	event->any.window =
 		g_object_ref(gtk_widget_get_window(GTK_WIDGET(window_event->window->base)));
 
 	// The "send_event" field is used to mark the event as an "unconsumed"
 	// keypress.  The distinction allows us to avoid looping indefinitely.
-	event->key.send_event = TRUE;
-	// REVIEW: Seems that there is no event time at this point,
-	// gtk_get_current_event_time() and GDK_CURRENT_TIME return 0.
-	event->key.time = GDK_CURRENT_TIME;
-	event->key.state = window_event->event.state;
-	event->key.keyval = window_event->event.keyval;
-	if (window_event->event.string != NULL) {
-		event->key.string = window_event->event.string;
-		event->key.length = strlen(event->key.string);
+	event->any.send_event = TRUE;
+
+	switch (window_event->event.type) {
+	case GDK_KEY_PRESS: {
+		g_debug("Generating key press");
+		// REVIEW: Seems that there is no event time at this point,
+		// gtk_get_current_event_time() and GDK_CURRENT_TIME return 0.
+		event->key.time = GDK_CURRENT_TIME;
+		GdkEventKey *e = (GdkEventKey *)&window_event->event;
+		event->key.state = e->state;
+		event->key.keyval = e->keyval;
+		if (e->string != NULL) {
+			event->key.string = e->string;
+			event->key.length = strlen(event->key.string);
+		}
+		event->key.hardware_keycode = e->hardware_keycode;
+		event->key.group = e->group;
+		event->key.is_modifier = e->is_modifier;
+		break;
 	}
-	event->key.hardware_keycode = window_event->event.hardware_keycode;
-	event->key.group = window_event->event.group;
-	event->key.is_modifier = window_event->event.is_modifier;
+	case GDK_BUTTON_PRESS: {
+		event->button.window =
+			g_object_ref(gtk_widget_get_window(GTK_WIDGET(window_event->window->buffer->web_view)));
+		// REVIEW: Seems that there is no event time at this point,
+		// gtk_get_current_event_time() and GDK_CURRENT_TIME return 0.
+		g_debug("Generating button press");
+		event->button.time = GDK_CURRENT_TIME;
+		GdkEventButton *e = (GdkEventButton *)&window_event->event;
+		event->button.button = e->button;
+		event->button.state = e->state;
+		event->button.x = e->x;
+		event->button.y = e->y;
+		break;
+	}
+	}
 
 	GdkDevice *device = NULL;
 	GdkDisplay *display = gdk_display_get_default();
@@ -351,12 +373,14 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 
 gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer buffer_data) {
 	g_debug("Button pressed:"
-		" type %i, button %u, root coord (%g,%g), rel coord (%g, %g), modifiers %i, explicitly %i, time %u",
+		" type %i, button %u, root coord (%g, %g), rel coord (%g, %g), modifiers %i, explicitly %i, time %u",
 		event->type,
 		event->button,
 		event->x_root, event->y_root,
 		event->x, event->y,
-		event->state, event->send_event, event->time);
+		event->state,
+		event->axes, event->device,
+		event->send_event, event->time);
 
 	if (event->send_event) {
 		// This event was generated from a non-generated keypress unconsumed by the
@@ -381,13 +405,13 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 	gchar *event_string = g_strdup_printf("button%d", event->button);
 	return window_send_event(window,
 		       event_string, event->state,
-		       0, 0,
+		       event->button, event->button,
 		       event->x, event->y);
 }
 
 gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data) {
 	g_debug("Scroll event:"
-		" type %i, direction %i, root coord (%g,%g), rel coord (%g, %g), delta (%g, %g), modifiers %i, explicitly %i, time %u",
+		" type %i, direction %i, root coord (%g, %g), rel coord (%g, %g), delta (%g, %g), modifiers %i, explicitly %i, time %u",
 		event->type,
 		event->direction,
 		event->x_root, event->y_root,

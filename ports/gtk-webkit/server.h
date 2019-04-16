@@ -293,15 +293,17 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 	gchar *keyval_string = NULL;
 	guint modifiers = 0; // modifiers
 	guint keyval = 0;
+	gdouble x = -1;
+	gdouble y = -1;
 
 	{
-		if (!g_variant_check_format_string(unwrapped_params, "(siavi)", FALSE)) {
+		if (!g_variant_check_format_string(unwrapped_params, "(siavidd)", FALSE)) {
 			g_warning("Malformed input event: %s", g_variant_get_type_string(unwrapped_params));
 			return g_variant_new_boolean(FALSE);
 		}
 		GVariantIter *iter;
-		g_variant_get(unwrapped_params, "(siavi)", &window_id, &hardware_keycode,
-			&iter, &keyval);
+		g_variant_get(unwrapped_params, "(siavidd)", &window_id, &hardware_keycode,
+			&iter, &keyval, &x, &y);
 
 		GVariant *str_variant;
 		while (g_variant_iter_loop(iter, "v", &str_variant)) {
@@ -315,8 +317,8 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 		g_variant_iter_free(iter);
 	}
 
-	g_message("Method parameter(s): window id '%s', hardware_keycode %i, modifiers %i, keyval %i",
-		window_id, hardware_keycode, modifiers, keyval);
+	g_message("Method parameter(s): window id '%s', hardware_keycode %i, keyval %i, modifiers %i",
+		window_id, hardware_keycode, keyval, modifiers);
 
 	Window *window = g_hash_table_lookup(state.windows, window_id);
 	if (!window) {
@@ -324,17 +326,31 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 		return g_variant_new_boolean(FALSE);
 	}
 
-	GdkEventKey event_key = {
-		.hardware_keycode = hardware_keycode,
-		.keyval = keyval,
-		.state = modifiers,
-		.group = 0,
-		.string = NULL,
-		.is_modifier = 0,
-	};
+	GdkEvent event;
+	if (x != -1) {
+		GdkEventButton event_button = {
+			.button = keyval,
+			.state = modifiers,
+			.x = x,
+			.y = y,
+		};
+		event = (GdkEvent)event_button;
+		event.type = GDK_BUTTON_PRESS;
+	} else {
+		GdkEventKey event_key = {
+			.hardware_keycode = hardware_keycode,
+			.keyval = keyval,
+			.state = modifiers,
+			.group = 0,
+			.string = NULL,
+			.is_modifier = 0,
+		};
+		event = (GdkEvent)event_key;
+		event.type = GDK_KEY_PRESS;
+	}
 
 	WindowEvent *window_event = g_new(WindowEvent, 1);
-	window_event->event = event_key;
+	window_event->event = event;
 	window_event->window = window;
 	window_generate_input_event(window_event);
 
