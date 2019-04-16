@@ -230,85 +230,32 @@ void window_consume_event(SoupSession *session, SoupMessage *msg, gpointer windo
 	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 }
 
-gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer window_data) {
-	g_debug("Key pressed:"
-		" code %i, symbol %i, name '%s', print '%s', is_modifier %i, explicitly %i, time %u",
-		event->hardware_keycode, (gint32)event->keyval,
-		gdk_keyval_name(event->keyval), event->string, event->is_modifier,
-		event->send_event, event->time);
-
-	if (event->send_event) {
-		// This event was generated from a non-generated keypress unconsumed by the Lisp core.
-		g_debug("Forward unconsumed event to GTK");
-		return FALSE;
-	}
-
-	// Don't pass modifiers alone, otherwise the core could see them as self-inserting
-	// character, which would print "Control_L" and the like in the minibuffer.
-	if (event->is_modifier) {
-		g_debug("Forward modifier-only to GTK");
-		return FALSE;
-	}
-
-	// Don't pass GDK_ISO_Level3_Shift and the like, those (non-modifier) keys
-	// alter the keymap upstream, we only want the result.
-	for (int i = 0; i < (sizeof key_blacklist)/(sizeof key_blacklist[0]); i++) {
-		if (event->keyval == key_blacklist[i]) {
-			g_debug("Forward unsupported special keys to GTK");
-			return FALSE;
-		}
-	}
-
-	// Translate ISO_Left_Tab to shift-TAB.
-	if (event->keyval == GDK_ISO_Left_Tab) {
-		event->keyval = GDK_Tab;
-		event->state |= GDK_SHIFT_MASK;
-	}
-
-	GError *error = NULL;
-	const char *method_name = "push.key.event";
-
-	// event->string is deprecated but it's very much what we want.
-	// For characters like Escape, this value is '\u001b', which is understood by
-	// s-xml-rpc as 0x1b, so we are fine.
-	gchar *keyval_string = event->string;
-	if (event->state & GDK_CONTROL_MASK &&
-		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
-		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
-		// The control modifier turns the A-Za-z event->string into ASCII control
-		// characters.
-		keyval_string = gdk_keyval_name(event->keyval);
-	} else if (keyval_string[0] == '\0') {
-		// Some keys like F1 don't have a printed representation, so we send the
-		// associated GDK symbol then.
-		keyval_string = gdk_keyval_name(event->keyval);
-	}
-
-	// If at this point the keyval_string is not standard, we use the key
-	// translation to set it to a standard name.
-	for (int i = 0; i < (sizeof key_translations)/(sizeof key_translations[0]); i++) {
-		if (g_strcmp0(keyval_string, key_translations[i].old) == 0) {
-			keyval_string = key_translations[i].new;
-			break;
-		}
-	}
-
+gboolean window_send_event(gpointer window_data,
+	gchar *event_string, guint modifiers,
+	guint16 hardware_keycode, guint keyval,
+	gdouble x, gdouble y) {
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
 	for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
-		if (event->state & modifier_names[i].mod) {
+		if (modifiers & modifier_names[i].mod) {
 			g_variant_builder_add(&builder, "s", modifier_names[i].name);
 		}
 	}
 
+	GError *error = NULL;
+	const char *method_name = "push.key.event";
 	Window *window = window_data;
-	GVariant *key_chord = g_variant_new("(isasis)",
-			event->hardware_keycode,
-			keyval_string,
+	GVariant *key_chord = g_variant_new("(isasddis)",
+			hardware_keycode,
+			event_string,
 			&builder,
-			event->keyval,
+			x, y,
+			keyval,
 			window->identifier);
-	g_message("XML-RPC message: %s %s = %s", method_name, "(keycode, keyval, modifiers, low level data, window id)", g_variant_print(key_chord, TRUE));
+	g_message("XML-RPC message: %s %s = %s",
+		method_name,
+		"(keycode, keystring, modifiers, x, y, low level data, window id)",
+		g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, key_chord, &error);
@@ -335,6 +282,173 @@ gboolean window_send_event(GtkWidget *_widget, GdkEventKey *event, gpointer wind
 	return TRUE;
 }
 
+gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer window_data) {
+	g_debug("Key pressed:"
+		" code %i, symbol %i, name '%s', print '%s', is_modifier %i, explicitly %i, time %u",
+		event->hardware_keycode, (gint32)event->keyval,
+		gdk_keyval_name(event->keyval), event->string, event->is_modifier,
+		event->send_event, event->time);
+
+	if (event->send_event) {
+		// This event was generated from a non-generated keypress unconsumed by the
+		// Lisp core.  This must be the first test.
+		g_debug("Forward unconsumed event to GTK");
+		return FALSE;
+	}
+
+	// Don't pass modifiers alone, otherwise the core could see them as self-inserting
+	// character, which would print "Control_L" and the like in the minibuffer.
+	if (event->is_modifier) {
+		g_debug("Forward modifier-only to GTK");
+		return FALSE;
+	}
+
+	// Don't pass GDK_ISO_Level3_Shift and the like, those (non-modifier) keys
+	// alter the keymap upstream, we only want the result.
+	for (int i = 0; i < (sizeof key_blacklist)/(sizeof key_blacklist[0]); i++) {
+		if (event->keyval == key_blacklist[i]) {
+			g_debug("Forward unsupported special keys to GTK");
+			return FALSE;
+		}
+	}
+
+	// Translate ISO_Left_Tab to shift-TAB.
+	if (event->keyval == GDK_ISO_Left_Tab) {
+		event->keyval = GDK_Tab;
+		event->state |= GDK_SHIFT_MASK;
+	}
+
+	// event->string is deprecated but it's very much what we want.
+	// For characters like Escape, this value is '\u001b', which is understood by
+	// s-xml-rpc as 0x1b, so we are fine.
+	gchar *keyval_string = event->string;
+	if (event->state & GDK_CONTROL_MASK &&
+		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
+		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
+		// The control modifier turns the A-Za-z event->string into ASCII control
+		// characters.
+		keyval_string = gdk_keyval_name(event->keyval);
+	} else if (keyval_string[0] == '\0') {
+		// Some keys like F1 don't have a printed representation, so we send the
+		// associated GDK symbol then.
+		keyval_string = gdk_keyval_name(event->keyval);
+	}
+
+	// If at this point the keyval_string is not standard, we use the key
+	// translation to set it to a standard name.
+	for (int i = 0; i < (sizeof key_translations)/(sizeof key_translations[0]); i++) {
+		if (g_strcmp0(keyval_string, key_translations[i].old) == 0) {
+			keyval_string = key_translations[i].new;
+			break;
+		}
+	}
+
+	return window_send_event(window_data,
+		       keyval_string, event->state,
+		       event->hardware_keycode, event->keyval,
+		       -1, -1);
+}
+
+gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer buffer_data) {
+	g_debug("Button pressed:"
+		" type %i, button %u, root coord (%g,%g), rel coord (%g, %g), modifiers %i, explicitly %i, time %u",
+		event->type,
+		event->button,
+		event->x_root, event->y_root,
+		event->x, event->y,
+		event->state, event->send_event, event->time);
+
+	if (event->send_event) {
+		// This event was generated from a non-generated keypress unconsumed by the
+		// Lisp core.  This must be the first test.
+		g_debug("Forward unconsumed event to GTK");
+		return FALSE;
+	}
+
+	Buffer *buffer = buffer_data;
+	Window *window = NULL;
+	GHashTableIter iter;
+	gpointer key, value;
+	g_hash_table_iter_init(&iter, state.windows);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		Window *w = (Window *)value;
+		if (w->buffer = buffer) {
+			window = w;
+			break;
+		}
+	}
+
+	gchar *event_string = g_strdup_printf("button%d", event->button);
+	return window_send_event(window,
+		       event_string, event->state,
+		       0, 0,
+		       event->x, event->y);
+}
+
+gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data) {
+	g_debug("Scroll event:"
+		" type %i, direction %i, root coord (%g,%g), rel coord (%g, %g), delta (%g, %g), modifiers %i, explicitly %i, time %u",
+		event->type,
+		event->direction,
+		event->x_root, event->y_root,
+		event->x, event->y,
+		event->delta_x, event->delta_y,
+		event->state, event->send_event, event->time);
+
+	if (event->send_event) {
+		// This event was generated from a non-generated keypress unconsumed by the
+		// Lisp core.  This must be the first test.
+		g_debug("Forward unconsumed event to GTK");
+		return FALSE;
+	}
+
+	Buffer *buffer = buffer_data;
+	Window *window = NULL;
+	GHashTableIter iter;
+	gpointer key, value;
+	g_hash_table_iter_init(&iter, state.windows);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		Window *w = (Window *)value;
+		if (w->buffer = buffer) {
+			window = w;
+			break;
+		}
+	}
+
+	gchar *event_string = "button?";
+	switch (event->direction) {
+	case GDK_SCROLL_UP:
+		event_string = "button4";
+		break;
+	case GDK_SCROLL_DOWN:
+		event_string = "button5";
+		break;
+	case GDK_SCROLL_LEFT:
+		event_string = "button6";
+		break;
+	case GDK_SCROLL_RIGHT:
+		event_string = "button7";
+		break;
+	case GDK_SCROLL_SMOOTH: {
+		if (event->delta_y < 0) {
+			event_string = "button4";
+		} else if (event->delta_y > 0) {
+			event_string = "button5";
+		} else if (event->delta_x < 0) {
+			event_string = "button6";
+		} else if (event->delta_x > 0) {
+			event_string = "button7";
+		}
+		break;
+	}
+	}
+
+	return window_send_event(window,
+		       event_string, event->state,
+		       0, 0,
+		       event->x, event->y);
+}
+
 Window *window_init() {
 	Minibuffer *minibuffer = minibuffer_init();
 	// TODO: Initial minibuffer size must be set here or else it will stick to 0.
@@ -359,9 +473,10 @@ Window *window_init() {
 	// instance is closed, it is handled properly.
 	g_signal_connect(window->base, "destroy", G_CALLBACK(window_destroy_callback), window);
 
-	// We only send key-press events, since we don't need such fine-grained tuning
+	// We only send *-press events, since we don't need such fine-grained tuning
 	// from the Lisp side.
-	g_signal_connect(window->base, "key-press-event", G_CALLBACK(window_send_event), window);
+	g_signal_connect(window->base, "key-press-event", G_CALLBACK(window_key_event), window);
+	g_signal_connect(window->base, "button-press-event", G_CALLBACK(window_button_event), window);
 
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(window->base);

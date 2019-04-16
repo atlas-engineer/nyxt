@@ -258,6 +258,10 @@ gboolean buffer_web_view_web_process_crashed(WebKitWebView *web_view, Buffer *bu
 	return FALSE;
 }
 
+// Forward declaration because input events need to know about windows.
+gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer window_data);
+gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data);
+
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	WebKitWebContext *context = webkit_web_context_new();
@@ -272,6 +276,10 @@ Buffer *buffer_init(const char *cookie_file) {
 		G_CALLBACK(buffer_web_view_web_process_crashed), buffer);
 
 	g_signal_connect(context, "download-started", G_CALLBACK(buffer_web_view_download_started), buffer);
+
+	// Mouse events are captured by the web view first, so we must intercept them here.
+	g_signal_connect(buffer->web_view, "button-press-event", G_CALLBACK(window_button_event), buffer);
+	g_signal_connect(buffer->web_view, "scroll-event", G_CALLBACK(window_scroll_event), buffer);
 
 	// We need to hold a reference to the view, otherwise changing buffer in the a
 	// window will unref+destroy the view.

@@ -24,7 +24,7 @@
   (let ((key (mapcar #'serialize-key-chord key-chords)))
     (gethash key map)))
 
-(defun |push.key.event| (key-code key-string modifiers low-level-data sender)
+(defun |push.key.event| (key-code key-string modifiers x y low-level-data sender)
   ;; Adds a new chord to key-sequence
   ;; For example, it may add C-M-s or C-x
   ;; to a stack which will be consumed by
@@ -35,7 +35,6 @@
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp))
                     :low-level-data low-level-data)))
-    (log:debug key-chord)
     (push key-chord *key-chord-stack*)
     (if (consume-key-sequence-p sender)
         (|consume.key.sequence| sender)
