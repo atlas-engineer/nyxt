@@ -1,6 +1,7 @@
 
 from functools import partial
 from xmlrpc.server import SimpleXMLRPCServer
+from xmlrpc.client import ServerProxy
 
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import QTimer
@@ -11,6 +12,7 @@ from PyQt5.QtWidgets import QWidget
 
 from window import window_make
 from window import window_delete
+from window import window_send_event
 from window import set_title
 
 """
@@ -46,8 +48,18 @@ You can try the client in another python shell:
 
 """
 
-#: xmlrpc port
+#: xmlrpc port of the platform port
 RPC_PORT = 8082
+
+#: xmlrpc port of the lisp core
+# TODO: make dynamic
+LISP_RPC_PORT = 8081
+
+core_client = ServerProxy("http://localhost:{}".format(LISP_RPC_PORT))
+# listMethod and any other method fails with the same error message.
+# print(core_client.system.listMethods())
+# getattr(core_client, "PUSH-KEY-EVENT")()
+# import ipdb; ipdb.set_trace()
 
 app = QApplication([])
 # let's just create a window at startup for development.

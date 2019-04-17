@@ -194,7 +194,7 @@ def window_delete(window_id):
     return True
 
 def window_send_event(widget, event, data):
-    pass
+    method_name = "PUSH-KEY-EVENT"
 
 def set_title(id, title, **kwargs):
     """
