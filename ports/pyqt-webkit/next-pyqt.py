@@ -57,8 +57,11 @@ LISP_RPC_PORT = 8081
 
 core_client = ServerProxy("http://localhost:{}".format(LISP_RPC_PORT))
 # listMethod and any other method fails with the same error message.
+# print(core_client.listMethods)
 # print(core_client.system.listMethods())
-# getattr(core_client, "PUSH-KEY-EVENT")()
+# getattr(core_client, "window-make")("1")
+getattr(core_client, "ping")()
+# getattr(core_client, "MAKE-BUFFERS")(["http://ddg.gg"])
 # import ipdb; ipdb.set_trace()
 
 app = QApplication([])

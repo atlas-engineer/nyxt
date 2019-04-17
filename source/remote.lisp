@@ -460,6 +460,9 @@ The primary function of this macro is to automatically add the required
                 :host host :port port :url url)))
       (format t "return value: ~a~&" val))))
 
+(defun ping ()
+  (format t "ping~%"))
+
 ;; Register xmlprc functions.
 ;; All functions in this list should be defined with `define-endpoint' for security reasons.
 (import '|buffer.did.commit.navigation| :s-xml-rpc-exports)
@@ -471,6 +474,7 @@ The primary function of this macro is to automatically add the required
 (import '|window.will.close| :s-xml-rpc-exports)
 (import '|make.buffers| :s-xml-rpc-exports)
 (import '|request.resource| :s-xml-rpc-exports)
+(import 'ping :s-xml-rpc-exports)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convenience methods and functions for Users of the API ;;
