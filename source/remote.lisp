@@ -460,6 +460,7 @@ The primary function of this macro is to automatically add the required
                 :host host :port port :url url)))
       (format t "return value: ~a~&" val))))
 
+;; Register xmlprc functions.
 ;; All functions in this list should be defined with `define-endpoint' for security reasons.
 (import '|buffer.did.commit.navigation| :s-xml-rpc-exports)
 (import '|buffer.did.finish.navigation| :s-xml-rpc-exports)
