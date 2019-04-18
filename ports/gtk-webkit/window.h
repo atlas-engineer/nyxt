@@ -513,7 +513,6 @@ Window *window_init() {
 	// We only send *-press events, since we don't need such fine-grained tuning
 	// from the Lisp side.
 	g_signal_connect(window->base, "key-press-event", G_CALLBACK(window_key_event), window);
-	g_signal_connect(window->base, "button-press-event", G_CALLBACK(window_button_event), window);
 
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(window->base);
