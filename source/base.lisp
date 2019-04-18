@@ -67,11 +67,14 @@ Set to '-' to read standard input instead."))
            (format t "Bye!~&")
            (uiop:quit)))))
 
-(defun initialize-port ()
-  (let ((port-running nil))
-    ;; TODO: Limit loop.
-    (loop while (not port-running) do
+(defmethod initialize-port ((interface remote-interface))
+  (let* ((port-running nil)
+         (max-seconds-to-wait 5.0)
+         (max-attemps (/ max-seconds-to-wait *platform-port-poll-interval*)))
+    (loop while (not port-running)
+          repeat max-attemps do
       (handler-case
+          ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
           (let ((buffer (nth-value 1 (make-window))))
             (set-url-buffer (if *free-args* (car *free-args*) *start-page-url*) buffer)
             ;; We can have many URLs as positional arguments.
@@ -79,13 +82,10 @@ Set to '-' to read standard input instead."))
               (let ((buffer (make-buffer)))
                 (set-url-buffer url buffer)))
             (setf port-running t))
-        (SB-BSD-SOCKETS:CONNECTION-REFUSED-ERROR ()
-          (format *error-output* "Polling platform port...~%")
+        (error (_)
+          (log:info "Polling platform port '~a'...~%" (platform-port interface))
           (sleep *platform-port-poll-interval*)
-          (setf port-running nil))
-        (SB-BSD-SOCKETS:HOST-NOT-FOUND-ERROR ()
-          (format *error-output* "Platform port not found.~%")
-          (sleep *platform-port-poll-interval*))))))
+          (setf port-running nil))))))
 
 (defun start (&key (with-platform-port-p nil))
   (map nil 'funcall *deferred-variables*)
@@ -120,7 +120,7 @@ Set to '-' to read standard input instead."))
     (run-program *port*))
   ;; initialize default state
   (setf *minibuffer* (make-instance 'minibuffer))
-  (initialize-port)
+  (initialize-port *interface*)
   (when with-platform-port-p
     (run-loop *port*)
     (kill-interface *interface*))
