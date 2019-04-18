@@ -63,26 +63,33 @@ startup after the remote-interface was set up."
 (defmethod start-interface ((interface remote-interface))
   "Start the XML RPC Server."
   (setf (active-connection interface)
+        ;; TODO: Ideally, s-xml-rpc should send an implementation-independent
+        ;; condition.
         (handler-case
             (s-xml-rpc:start-xml-rpc-server :port *core-port*)
-          (SB-BSD-SOCKETS:ADDRESS-IN-USE-ERROR ()
-            (let ((url-list (or *free-args* (list *default-new-buffer-url*))))
-              (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
-                      *core-port* url-list)
-              ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
-              (handler-case
-                  (progn
-                    (s-xml-rpc:xml-rpc-call
-                     (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" url-list)
-                     :port *core-port*)
-                    (uiop:quit))
-                (error (c)
-                  (declare (ignore c))
-                  (let ((new-port (find-port:find-port)))
-                    (format *error-output* "Port ~a does not seem to be used by Next, trying ~a instead.~%"
-                            *core-port* new-port)
-                    (setf *core-port* new-port)
-                    (s-xml-rpc:start-xml-rpc-server :port *core-port*)))))))))
+          (#+sbcl sb-bsd-sockets:address-in-use-error
+           #+ccl ccl:socket-error
+           (e)
+            (when (#+sbcl t
+                   #+ccl (eq (ccl:socket-error-identifier e) :address-in-use))
+              (let ((url-list (or *free-args* (list *default-new-buffer-url*))))
+                (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
+                        *core-port* url-list)
+                ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
+                (handler-case
+                    (progn
+                      (s-xml-rpc:xml-rpc-call
+                       (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" url-list)
+                       :port *core-port*)
+                      (uiop:quit))
+                  (error (c)
+                    (declare (ignore c))
+                    (let ((new-port (find-port:find-port)))
+                      (format *error-output* "Port ~a does not seem to be used by Next, trying ~a instead.~%"
+                              *core-port* new-port)
+                      (setf *core-port* new-port)
+                      (s-xml-rpc:start-xml-rpc-server :port *core-port*))))))))))
+
 
 (defmethod kill-interface ((interface remote-interface))
   "Kill the XML RPC Server."
