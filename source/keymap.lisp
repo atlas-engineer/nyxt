@@ -85,13 +85,16 @@
                  (setf *key-chord-stack* ())
                  (return-from |consume.key.sequence| t)))
               ((equalp map *minibuffer-mode-map*)
-               (progn
-                 (log:debug "Insert ~s in minibuffer" (key-chord-key-string
-                                                       (first *key-chord-stack*)))
-                 (self-insert *minibuffer* (key-chord-key-string
-                                            (first *key-chord-stack*)))
-                 (setf *key-chord-stack* ())
-                 (return-from |consume.key.sequence| t))))))
+               (if (member "R" (key-chord-modifiers (first *key-chord-stack*))
+                           :test #'string-equal)
+                   (log:debug "Key released")
+                   (progn
+                     (log:debug "Insert ~s in minibuffer" (key-chord-key-string
+                                                           (first *key-chord-stack*)))
+                     (self-insert *minibuffer* (key-chord-key-string
+                                                (first *key-chord-stack*)))))
+               (setf *key-chord-stack* ())
+               (return-from |consume.key.sequence| t)))))
     (log:debug "Not found in any keymaps")
     (setf *key-chord-stack* ())))
 
