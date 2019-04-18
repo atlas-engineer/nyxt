@@ -171,8 +171,13 @@ void window_generate_input_event(WindowEvent *window_event) {
 	event->any.send_event = TRUE;
 
 	switch (window_event->event.type) {
-	case GDK_KEY_PRESS: {
-		g_debug("Generating key press");
+	case GDK_KEY_PRESS:
+	case GDK_KEY_RELEASE: {
+		gchar *type = "press";
+		if (window_event->event.type == GDK_KEY_RELEASE) {
+			type = "release";
+		}
+		g_debug("Generating key %s", type);
 		// REVIEW: Seems that there is no event time at this point,
 		// gtk_get_current_event_time() and GDK_CURRENT_TIME return 0.
 		event->key.time = GDK_CURRENT_TIME;
@@ -188,10 +193,15 @@ void window_generate_input_event(WindowEvent *window_event) {
 		event->key.is_modifier = e->is_modifier;
 		break;
 	}
-	case GDK_BUTTON_PRESS: {
+	case GDK_BUTTON_PRESS:
+	case GDK_BUTTON_RELEASE: {
 		event->button.window =
 			g_object_ref(gtk_widget_get_window(GTK_WIDGET(window_event->window->buffer->web_view)));
-		g_debug("Generating button press");
+		gchar *type = "press";
+		if (window_event->event.type == GDK_BUTTON_RELEASE) {
+			type = "release";
+		}
+		g_debug("Generating button %s", type);
 		event->button.time = GDK_CURRENT_TIME;
 		GdkEventButton *e = (GdkEventButton *)&window_event->event;
 		event->button.button = e->button;
@@ -267,13 +277,17 @@ void window_consume_event(SoupSession *session, SoupMessage *msg, gpointer windo
 gboolean window_send_event(gpointer window_data,
 	gchar *event_string, guint modifiers,
 	guint16 hardware_keycode, guint keyval,
-	gdouble x, gdouble y) {
+	gdouble x, gdouble y,
+	gboolean released) {
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
 	for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
 		if (modifiers & modifier_names[i].mod) {
 			g_variant_builder_add(&builder, "s", modifier_names[i].name);
 		}
+	}
+	if (released) {
+		g_variant_builder_add(&builder, "s", "R");
 	}
 
 	GError *error = NULL;
@@ -317,11 +331,18 @@ gboolean window_send_event(gpointer window_data,
 }
 
 gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer window_data) {
-	g_debug("Key pressed:"
-		" code %i, symbol %i, name '%s', print '%s', is_modifier %i, explicitly %i, time %u",
-		event->hardware_keycode, (gint32)event->keyval,
-		gdk_keyval_name(event->keyval), event->string, event->is_modifier,
-		event->send_event, event->time);
+	{
+		gchar *type = "pressed";
+		if (event->type == GDK_KEY_RELEASE) {
+			type = "released";
+		}
+		g_debug("Key %s:"
+			" code %i, symbol %i, name '%s', print '%s', is_modifier %i, explicitly %i, time %u",
+			type,
+			event->hardware_keycode, (gint32)event->keyval,
+			gdk_keyval_name(event->keyval), event->string, event->is_modifier,
+			event->send_event, event->time);
+	}
 
 	if (event->send_event) {
 		// This event was generated from a non-generated keypress unconsumed by the
@@ -380,20 +401,27 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 	return window_send_event(window_data,
 		       keyval_string, event->state,
 		       event->hardware_keycode, event->keyval,
-		       -1, -1);
+		       -1, -1,
+		       event->type == GDK_KEY_RELEASE);
 }
 
 gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer buffer_data) {
-	g_debug("Button pressed:"
-		" type %i, button %u, root coord (%g, %g), rel coord (%g, %g), modifiers %i, explicitly %i, time %u",
-		event->type,
-		event->button,
-		event->x_root, event->y_root,
-		event->x, event->y,
-		event->state,
-		event->axes, event->device,
-		event->send_event, event->time);
-
+	{
+		gchar *type = "pressed";
+		if (event->type == GDK_BUTTON_RELEASE) {
+			type = "released";
+		}
+		g_debug("Button %s:"
+			" type %i, button %u, root coord (%g, %g), rel coord (%g, %g), modifiers %i, explicitly %i, time %u",
+			type,
+			event->type,
+			event->button,
+			event->x_root, event->y_root,
+			event->x, event->y,
+			event->state,
+			event->axes, event->device,
+			event->send_event, event->time);
+	}
 	if (event->send_event) {
 		// This event was generated from a non-generated keypress unconsumed by the
 		// Lisp core.  This must be the first test.
@@ -418,7 +446,8 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 	return window_send_event(window,
 		       event_string, event->state,
 		       0, event->button,
-		       event->x, event->y);
+		       event->x, event->y,
+		       event->type == GDK_BUTTON_RELEASE);
 }
 
 gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data) {
@@ -483,7 +512,8 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 	return window_send_event(window,
 		       event_string, event->state,
 		       event->direction, button,
-		       event->x, event->y);
+		       event->x, event->y,
+		       false);
 }
 
 Window *window_init() {
@@ -510,9 +540,9 @@ Window *window_init() {
 	// instance is closed, it is handled properly.
 	g_signal_connect(window->base, "destroy", G_CALLBACK(window_destroy_callback), window);
 
-	// We only send *-press events, since we don't need such fine-grained tuning
-	// from the Lisp side.
+	// Only key events can be captured here, button events are captured by the web view in the buffer.
 	g_signal_connect(window->base, "key-press-event", G_CALLBACK(window_key_event), window);
+	g_signal_connect(window->base, "key-release-event", G_CALLBACK(window_key_event), window);
 
 	// Make sure the main window and all its contents are visible
 	gtk_widget_show_all(window->base);

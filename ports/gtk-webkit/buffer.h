@@ -279,6 +279,7 @@ Buffer *buffer_init(const char *cookie_file) {
 
 	// Mouse events are captured by the web view first, so we must intercept them here.
 	g_signal_connect(buffer->web_view, "button-press-event", G_CALLBACK(window_button_event), buffer);
+	g_signal_connect(buffer->web_view, "button-release-event", G_CALLBACK(window_button_event), buffer);
 	g_signal_connect(buffer->web_view, "scroll-event", G_CALLBACK(window_scroll_event), buffer);
 
 	// We need to hold a reference to the view, otherwise changing buffer in the a

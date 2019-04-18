@@ -295,6 +295,7 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 	guint keyval = 0;
 	gdouble x = -1;
 	gdouble y = -1;
+	gboolean released = false;
 
 	{
 		if (!g_variant_check_format_string(unwrapped_params, "(siavidd)", FALSE)) {
@@ -309,9 +310,13 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 		while (g_variant_iter_loop(iter, "v", &str_variant)) {
 			gchar *str;
 			g_variant_get(str_variant, "s", &str);
-			guint mod = window_string_to_modifier(str);
-			if (mod != 0) {
-				modifiers |= mod;
+			if (g_strcmp0(str, "R") == 0) {
+				released = true;
+			} else {
+				guint mod = window_string_to_modifier(str);
+				if (mod != 0) {
+					modifiers |= mod;
+				}
 			}
 		}
 		g_variant_iter_free(iter);
@@ -352,7 +357,11 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 				.y = y,
 			};
 			event = (GdkEvent)event_button;
-			event.type = GDK_BUTTON_PRESS;
+			if (released) {
+				event.type = GDK_BUTTON_RELEASE;
+			} else {
+				event.type = GDK_BUTTON_PRESS;
+			}
 		}
 	} else {
 		GdkEventKey event_key = {
@@ -364,7 +373,11 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 			.is_modifier = 0,
 		};
 		event = (GdkEvent)event_key;
-		event.type = GDK_KEY_PRESS;
+		if (released) {
+			event.type = GDK_KEY_RELEASE;
+		} else {
+			event.type = GDK_KEY_PRESS;
+		}
 	}
 
 	WindowEvent *window_event = g_new(WindowEvent, 1);
