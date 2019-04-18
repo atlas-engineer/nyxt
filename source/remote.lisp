@@ -70,8 +70,8 @@ startup after the remote-interface was set up."
           (#+sbcl sb-bsd-sockets:address-in-use-error
            #+ccl ccl:socket-error
            (e)
-            (when (#+sbcl t
-                   #+ccl (eq (ccl:socket-error-identifier e) :address-in-use))
+            (when #+sbcl t
+                  #+ccl (eq (ccl:socket-error-identifier e) :address-in-use)
               (let ((url-list (or *free-args* (list *default-new-buffer-url*))))
                 (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
                         *core-port* url-list)
