@@ -2,9 +2,9 @@
 SHELL = /bin/sh
 
 LISP ?= sbcl
-LISP_FLAGS ?= --non-interactive --no-userinit
+LISP_FLAGS ?= --no-userinit
 ## If you want to enable SBCL's user init file:
-# LISP_FLAGS = --non-interactive
+# LISP_FLAGS =
 
 NEXT_INTERNAL_QUICKLISP = true
 
@@ -26,7 +26,8 @@ next: $(lisp_files)
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
-		--eval '(asdf:make :next)'
+		--eval '(asdf:make :next)' \
+		--eval '(uiop:quit)'
 
 ## TODO: Add install rule for Cocoa?
 ## TODO: Update the rule once we have the resulting .app.
@@ -60,7 +61,9 @@ version:
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
-		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))'
+		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))' \
+		--eval '(uiop:quit)'
+
 
 .PHONY: install-assets
 install-assets: version
@@ -99,7 +102,8 @@ $(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load $< \
-		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")'
+		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")' \
+		--eval '(uiop:quit)'
 
 .PHONY: deps
 deps: $(QUICKLISP_DIR)/setup.lisp
@@ -108,7 +112,8 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--load $< \
 		--eval '(ql:quickload :trivial-features)' \
 		--load next.asd \
-		--eval '(ql:quickload :next)'
+		--eval '(ql:quickload :next)' \
+		--eval '(uiop:quit)'
 
 .PHONY: clean-deps
 clean-deps:

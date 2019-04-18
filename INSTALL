@@ -24,4 +24,4 @@ Otherwise, the dependencies will have to be locally installed
 on your system.  You might have to accomodate the LISP_FLAGS
 to, say, use your local install of Quicklisp.  For instance:
 
-   make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=--non-interactive
+   make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
