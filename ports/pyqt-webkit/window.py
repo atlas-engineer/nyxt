@@ -88,7 +88,7 @@ class MyQWidget(QWidget):
             self.current_event = event
             print("-- modifiers: {}, key: {}".format(self.modifiers_stack, event.key()))
             print("-- send push-key-event now")
-            self.get_key_sequence()
+        self.get_key_sequence()
 
     def get_modifiers_list(self):
         """
@@ -97,7 +97,7 @@ class MyQWidget(QWidget):
         return [modifiers[key] for key in self.modifiers_stack]
 
     def get_key_sequence(self):
-        """Return a string representing the key sequence: keycode, keyval,
+        """Return a string representing the sequence: keycode, keyval,
         list of modifiers, low level data, window id.
         """
         if self.current_event:

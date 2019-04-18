@@ -55,14 +55,17 @@ RPC_PORT = 8082
 # TODO: make dynamic
 LISP_RPC_PORT = 8081
 
-core_client = ServerProxy("http://localhost:{}".format(LISP_RPC_PORT))
-# listMethod and any other method fails with the same error message.
-# print(core_client.listMethods)
-# print(core_client.system.listMethods())
-# getattr(core_client, "window-make")("1")
-getattr(core_client, "ping")()
-# getattr(core_client, "MAKE-BUFFERS")(["http://ddg.gg"])
-# import ipdb; ipdb.set_trace()
+core_client = ServerProxy("http://localhost:{}".format(LISP_RPC_PORT),
+                          verbose=True)
+
+def client_run(client, cmd, *args):
+    # Call this command (str). Don't forget to uppercase it.
+    print("\nCalling {} {}:".format(cmd, args))
+    return getattr(client, cmd.upper())(*args)
+
+print("client methods: {}".format(core_client.system.listMethods()))
+client_run(core_client, "ping")
+# client_run(core_client, "make-buffers", ["http://ddg.gg"])
 
 app = QApplication([])
 # let's just create a window at startup for development.
