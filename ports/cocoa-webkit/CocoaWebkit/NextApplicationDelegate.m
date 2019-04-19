@@ -65,8 +65,8 @@
     }
 }
 
-- (int)setMinibufferHeightForWindow:(NSString*)windowKey height:(NSNumber*)height {
-    Window* window = [[self windows] objectForKey:windowKey];
+- (int)setMinibufferHeightForWindow:(NSString*)key height:(NSNumber*)height {
+    Window* window = [[self windows] objectForKey:key];
     return [[window base] setMinibufferHeight: [height intValue]];
 }
 
@@ -89,18 +89,18 @@
     return YES;
 }
 
-- (NSString*)bufferEvaluateJavaScript:(NSString*)bufferKey javaScript:(NSString*)javaScript {
-    Buffer* buffer = [[self buffers] objectForKey:bufferKey];
 - (bool)bufferLoad:(NSString*)key url:(NSString*)url {
     Buffer* buffer = [[self buffers] objectForKey:key];
     return [buffer loadUrl:url];
 }
 
+- (NSString*)bufferEvaluateJavaScript:(NSString*)key javaScript:(NSString*)javaScript {
+    Buffer* buffer = [[self buffers] objectForKey:key];
     return [buffer evaluateJavaScript:javaScript];
 }
 
-- (NSString*)minibufferEvaluateJavaScript:(NSString*)windowKey javaScript:(NSString*)javaScript {
-    Window* window = [[self windows] objectForKey:windowKey];
+- (NSString*)minibufferEvaluateJavaScript:(NSString*)key javaScript:(NSString*)javaScript {
+    Window* window = [[self windows] objectForKey:key];
     Minibuffer* minibuffer = [[window base] minibuffer];
     return [minibuffer evaluateJavaScript:javaScript];
 }
