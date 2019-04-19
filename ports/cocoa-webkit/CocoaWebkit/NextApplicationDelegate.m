@@ -91,6 +91,11 @@
 
 - (NSString*)bufferEvaluateJavaScript:(NSString*)bufferKey javaScript:(NSString*)javaScript {
     Buffer* buffer = [[self buffers] objectForKey:bufferKey];
+- (bool)bufferLoad:(NSString*)key url:(NSString*)url {
+    Buffer* buffer = [[self buffers] objectForKey:key];
+    return [buffer loadUrl:url];
+}
+
     return [buffer evaluateJavaScript:javaScript];
 }
 

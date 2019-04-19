@@ -107,6 +107,15 @@
                                     initWithParameters:@[@YES]];
                  return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
              }
+             else if ([method isEqualToString:@"buffer.load"]) {
+                 dispatch_sync(dispatch_get_main_queue(), ^{
+                     NextApplicationDelegate *delegate = [NSApp delegate];
+                     [delegate bufferLoad:[parameters objectAtIndex:0]
+                                      url:[parameters objectAtIndex:1]];});
+                 responseEncoder = [[XMLRPCResponseEncoder alloc]
+                                    initWithParameters:@[@YES]];
+                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+             }
              else if ([method isEqualToString:@"buffer.evaluate.javascript"]) {
                  __block NSString* operationResult = @"";
                  dispatch_sync(dispatch_get_main_queue(), ^{
