@@ -11,7 +11,7 @@
 @property (strong, atomic, readwrite) NSMutableDictionary* windows;
 @property (strong, atomic, readwrite) NSMutableDictionary* buffers;
 
-- (void)windowMake:(NSString*) key;
+- (void)windowMake:(NSString*)key;
 - (void)window:(NSString*)key setTitle:(NSString*)title;
 - (bool)windowDelete:(NSString*)key;
 - (NSString*)windowActive;
@@ -20,7 +20,8 @@
 - (int)setMinibufferHeightForWindow:(NSString*)windowKey height:(NSNumber*)height;
 - (void)bufferMake:(NSString*) key;
 - (bool)bufferDelete:(NSString*)key;
-- (NSString*)bufferEvaluateJavaScript:(NSString*)bufferKey javaScript:(NSString*)javaScript;
-- (NSString*)minibufferEvaluateJavaScript:(NSString*)windowKey javaScript:(NSString*)javaScript;
+- (bool)bufferLoad:(NSString*)key url:(NSString*)url;
+- (NSString*)bufferEvaluateJavaScript:(NSString*)key javaScript:(NSString*)javaScript;
+- (NSString*)minibufferEvaluateJavaScript:(NSString*)key javaScript:(NSString*)javaScript;
 
 @end

@@ -11,5 +11,6 @@
 @property (strong, atomic, readwrite) NSString* identifier;
 
 - (instancetype)init;
+- (bool)loadUrl:(NSString*)url;
 - (NSString*)evaluateJavaScript:(NSString*)javaScript;
 @end

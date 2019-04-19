@@ -201,6 +201,9 @@ startup after the remote-interface was set up."
     (with-slots (buffers) interface
       (remhash (id buffer) buffers))))
 
+(defmethod buffer-load ((interface remote-interface) (buffer buffer) uri)
+  (%xml-rpc-send interface "buffer.load" (id buffer) uri))
+
 (defmethod buffer-evaluate-javascript ((interface remote-interface)
                                        (buffer buffer) javascript &optional (callback nil))
   (let ((callback-id

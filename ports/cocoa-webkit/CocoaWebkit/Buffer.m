@@ -19,6 +19,11 @@
     return self;
 }
 
+- (bool)loadUrl:(NSString*) url {
+    [self loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+    return YES;
+}
+
 - (NSString*)evaluateJavaScript:(NSString*)javaScript {
     [self setCallBackCount:[self callBackCount] + 1];
     [self evaluateJavaScript:javaScript
