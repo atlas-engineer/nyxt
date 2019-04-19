@@ -158,10 +158,6 @@ startup after the remote-interface was set up."
           (buffer-delete interface temp-buffer))
         (%window-set-active-buffer interface window buffer))))
 
-(defmethod window-active-buffer ((interface remote-interface) window)
-  "Return the active buffer for a given window."
-  (active-buffer window))
-
 (defmethod window-set-minibuffer-height ((interface remote-interface)
                                          window height)
   (%xml-rpc-send interface "window.set.minibuffer.height" (id window) height))
@@ -295,7 +291,7 @@ events."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
-  (window-active-buffer interface (window-active interface)))
+  (active-buffer (window-active interface)))
 
 ;; TODO: Prevent setting the minibuffer as the active buffer.
 (defmethod set-active-buffer ((interface remote-interface)
