@@ -51,13 +51,13 @@ slime. Default port is 4006."
 
 (defun fuzzy-match (input candidates &key (accessor-function nil)
                                           (case-sensitive nil))
-  "fuzzy-match works by taking a string input from the user. the
+  "fuzzy-match works by taking a string input from the user. The
 string is then populated with '*' between each character to create a
-regex. As an example, 'nt' will become 'n.*t.*' This will enable
-matching of 'next' or 'note' etc. This function currently limits the
-type of input that it accepts, only matching against alpha input. An
-advanced version of this command may allow for complete regex, but
-will have to consider malformed regex."
+regex. As an example, 'nt' will become 'n.*t.*'. This will enable
+matching of 'next' or 'note', etc. This function currently limits the
+type of input that it accepts, only matching against alphabetical input. An
+advanced version of this command may allow for complete regular expressions, but
+will have to consider malformed ones."
   (let* ((cleaned-input (cl-string-match:replace-re
                          "[^a-zA-Z]" "" input :all t))
          (cleaned-input (if case-sensitive
