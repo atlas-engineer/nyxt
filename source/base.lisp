@@ -100,6 +100,8 @@ Set to '-' to read standard input instead."))
   (initialize-bookmark-db)
   (initialize-history-db)
   ;; create the interface object
+  (unless (eq swank:*communication-style* :fd-handler)
+    (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler" swank:*communication-style*))
   (unless *interface*
     (setf *interface* (make-instance 'remote-interface)))
   (start-interface *interface*)
