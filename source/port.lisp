@@ -5,6 +5,9 @@
 (defvar *port* nil
   "The CLOS object responible for handling the platform port.")
 
+;; TODO: Function-values for slots are not a good idea: should the value change,
+;; we have no way to access the old value.
+
 (defclass port ()
   ((name :initarg :name :accessor name
          :documentation "Basename of the executable.")
@@ -16,7 +19,7 @@ string.")
          :documentation "List of strings passed as argument to the executable.
 It can also be a function of no argument, returning a list of strings.")
    (log-file :initarg :log-file :initform #'derive-logfile-from-name
-        :documentation "Log file for the platform port.
+             :documentation "Log file for the platform port.
 It can also be a function that takes NAME as argument and returns the log file
 as a string.")
    (running-process :accessor running-process)))
