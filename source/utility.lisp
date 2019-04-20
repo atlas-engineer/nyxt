@@ -30,20 +30,18 @@ slime. Default port is 4006."
   (swank:create-server :port *swank-port* :dont-close t))
 
 (defun parse-url (input-url)
-  (if (equalp "s" (nth 0 (cl-strings:split input-url)))
-      (generate-search-query (subseq input-url 2))
-      (handler-case
-          ;; puri:parse-uri fails on crazy inputs like:
-          ;; - hello world
-          ;; - https://www.google.com/search?q=hello world
-          (let ((url (puri:parse-uri input-url)))
-            (cond
-              ((puri:uri-scheme url) input-url)
-              ((probe-file input-url)
-               (concatenate 'string "file://" input-url))
-              (t (concatenate 'string "https://" input-url))))
-        (puri:uri-parse-error ()
-          input-url))))
+  (handler-case
+      ;; puri:parse-uri fails on crazy inputs like:
+      ;; - hello world
+      ;; - https://www.google.com/search?q=hello world
+      (let ((url (puri:parse-uri input-url)))
+        (cond
+          ((puri:uri-scheme url) input-url)
+          ((probe-file input-url)
+           (concatenate 'string "file://" input-url))
+          (t (generate-search-query input-url))))
+    (puri:uri-parse-error ()
+      input-url)))
 
 (defun generate-search-query (search-string)
   (let* ((encoded-search-string
