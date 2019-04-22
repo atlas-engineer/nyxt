@@ -17,7 +17,10 @@
     NextApplicationDelegate *delegate;
 }
 
+@property (strong, atomic, readwrite) NSMutableDictionary* XMLRPCMethods;
+
 - (void)start;
 - (void)stop;
+- (void)registerMethod:(NSString*)methodName withBlock:(GCDWebServerDataResponse* (^)(NSArray*))executionBlock;
 
 @end

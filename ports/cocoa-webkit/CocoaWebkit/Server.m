@@ -6,12 +6,155 @@
 #import "Server.h"
 
 @implementation Server
+@synthesize XMLRPCMethods;
 
 - (id)init {
     self = [super init];
     if (self) {
         webServer = [[GCDWebServer alloc] init];
         delegate = [NSApp delegate];
+        [self setXMLRPCMethods:[[NSMutableDictionary alloc] init]];
+        [self registerMethod:@"window.make" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                [delegate windowMake:[parameters objectAtIndex:0]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"window.set.title" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                [delegate window: [parameters objectAtIndex:0]
+                        setTitle: [parameters objectAtIndex:1]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"window.delete" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                [delegate windowDelete: [parameters objectAtIndex:0]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"window.active" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            __block NSString* operationResult = @"";
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                operationResult = [delegate windowActive];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[operationResult]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"window.exists" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            __block bool operationResult;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                operationResult = [delegate windowExists: [parameters objectAtIndex:0]];});
+            NSObject *objectResult;
+            if (operationResult) {
+                objectResult = @YES;
+            } else {
+                objectResult = @NO;
+            }
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[objectResult]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+
+        }];
+        [self registerMethod:@"window.set.active.buffer" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                [delegate setActiveBufferForWindow: [parameters objectAtIndex:0]
+                                            buffer: [parameters objectAtIndex:1]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+
+        }];
+        [self registerMethod:@"window.set.minibuffer.height" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            __block NSNumber *operationResult;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                operationResult = [NSNumber numberWithInt:[delegate setMinibufferHeightForWindow: [parameters objectAtIndex:0]
+                                                                                          height: [parameters objectAtIndex:1]]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[operationResult]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+
+        }];
+        [self registerMethod:@"buffer.make" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                [delegate bufferMake: [parameters objectAtIndex:0]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+
+        }];
+        [self registerMethod:@"buffer.delete" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                [delegate bufferDelete: [parameters objectAtIndex:0]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"buffer.load" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                [delegate bufferLoad:[parameters objectAtIndex:0]
+                                 url:[parameters objectAtIndex:1]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"buffer.evaluate.javascript" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            __block NSString* operationResult = @"";
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                operationResult = [delegate bufferEvaluateJavaScript:[parameters objectAtIndex:0]
+                                                          javaScript:[parameters objectAtIndex:1]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[operationResult]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"minibuffer.evaluate.javascript" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            __block NSString* operationResult = @"";
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NextApplicationDelegate *delegate = [NSApp delegate];
+                operationResult = [delegate minibufferEvaluateJavaScript:[parameters objectAtIndex:0]
+                                                              javaScript:[parameters objectAtIndex:1]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[operationResult]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"generate.input.event" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            NSMutableArray* lowLevelData = [parameters objectAtIndex: 3];
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                [NSApp sendEvent:[NSEvent keyEventWithType:NSEventTypeKeyDown
+                                                  location:CGPointZero
+                                             modifierFlags:[[lowLevelData objectAtIndex:0] integerValue]
+                                                 timestamp:0
+                                              windowNumber:(NSInteger)[lowLevelData objectAtIndex:1]
+                                                   context:nil
+                                                characters:[lowLevelData objectAtIndex:2]
+                               charactersIgnoringModifiers:[lowLevelData objectAtIndex:3]
+                                                 isARepeat:NO
+                                                   keyCode:(short)[parameters objectAtIndex: 1]]];});
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                               initWithParameters:@[@YES]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        [self registerMethod:@"listMethods" withBlock:^GCDWebServerDataResponse *(NSArray *parameters) {
+            XMLRPCResponseEncoder* responseEncoder = [[XMLRPCResponseEncoder alloc]
+                                                      initWithParameters:@[[self listMethods]]];
+            return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+        }];
+        
+        __unsafe_unretained typeof(self) weakSelf = self;
         [webServer
          addHandlerForMethod:@"POST"
          path:@"/RPC2"
@@ -19,147 +162,26 @@
          processBlock:^GCDWebServerResponse*(GCDWebServerDataRequest* request) {
              XMLRPCRequestDecoder *requestDecoder = [[XMLRPCRequestDecoder alloc]
                                                      initWithData:[request data]];
-             XMLRPCResponseEncoder *responseEncoder;
              NSString *method = [requestDecoder method];
              NSArray *parameters = [requestDecoder parameters];
-             
-             if ([method isEqualToString:@"window.make"]) {
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     [delegate windowMake:[parameters objectAtIndex:0]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"window.set.title"]) {
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     [delegate window: [parameters objectAtIndex:0]
-                             setTitle: [parameters objectAtIndex:1]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"window.delete"]) {
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     [delegate windowDelete: [parameters objectAtIndex:0]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"window.active"]) {
-                 __block NSString* operationResult = @"";
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     operationResult = [delegate windowActive];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[operationResult]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"window.exists"]) {
-                 __block bool operationResult;
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     operationResult = [delegate windowExists: [parameters objectAtIndex:0]];});
-                 NSObject *objectResult;
-                 if (operationResult) {
-                     objectResult = @YES;
-                 } else {
-                     objectResult = @NO;
-                 }
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[objectResult]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"window.set.active.buffer"]) {
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     [delegate setActiveBufferForWindow: [parameters objectAtIndex:0]
-                                                 buffer: [parameters objectAtIndex:1]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"window.set.minibuffer.height"]) {
-                 __block NSNumber *operationResult;
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     operationResult = [NSNumber numberWithInt:[delegate setMinibufferHeightForWindow: [parameters objectAtIndex:0]
-                                                                                               height: [parameters objectAtIndex:1]]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[operationResult]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"buffer.make"]) {
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     [delegate bufferMake: [parameters objectAtIndex:0]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"buffer.delete"]) {
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     [delegate bufferDelete: [parameters objectAtIndex:0]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"buffer.load"]) {
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     [delegate bufferLoad:[parameters objectAtIndex:0]
-                                      url:[parameters objectAtIndex:1]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"buffer.evaluate.javascript"]) {
-                 __block NSString* operationResult = @"";
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     operationResult = [delegate bufferEvaluateJavaScript:[parameters objectAtIndex:0]
-                                                               javaScript:[parameters objectAtIndex:1]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[operationResult]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"minibuffer.evaluate.javascript"]) {
-                 __block NSString* operationResult = @"";
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     NextApplicationDelegate *delegate = [NSApp delegate];
-                     operationResult = [delegate minibufferEvaluateJavaScript:[parameters objectAtIndex:0]
-                                                                   javaScript:[parameters objectAtIndex:1]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[operationResult]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-             else if ([method isEqualToString:@"generate.input.event"]) {
-                 NSMutableArray* lowLevelData = [parameters objectAtIndex: 3];
-                 dispatch_sync(dispatch_get_main_queue(), ^{
-                     [NSApp sendEvent:[NSEvent keyEventWithType:NSEventTypeKeyDown
-                                                       location:CGPointZero
-                                                  modifierFlags:[[lowLevelData objectAtIndex:0] integerValue]
-                                                      timestamp:0
-                                                   windowNumber:(NSInteger)[lowLevelData objectAtIndex:1]
-                                                        context:nil
-                                                     characters:[lowLevelData objectAtIndex:2]
-                                    charactersIgnoringModifiers:[lowLevelData objectAtIndex:3]
-                                                      isARepeat:NO
-                                                        keyCode:(short)[parameters objectAtIndex: 1]]];});
-                 responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                    initWithParameters:@[@YES]];
-                 return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
-             }
-
-             responseEncoder = [[XMLRPCResponseEncoder alloc]
-                                initWithParameters:@[@"Unsupported operation!"]];
-             return [GCDWebServerDataResponse responseWithText:[responseEncoder body]];
+             return [weakSelf executeMethod:method withParameters:parameters];
          }];
     }
     return self;
+}
+- (void)registerMethod:(NSString*)methodName withBlock:(GCDWebServerDataResponse* (^)(NSArray*))executionBlock {
+    [[self XMLRPCMethods] setValue:executionBlock forKey:methodName];
+}
+
+- (GCDWebServerDataResponse*)executeMethod:(NSString*)methodName withParameters:(NSArray*)parameters {
+    GCDWebServerDataResponse*(^block)(NSArray*) = [[self XMLRPCMethods] objectForKey:methodName];
+    return block(parameters);
+}
+
+- (NSArray*)listMethods {
+    NSLog(@"%@", [[self XMLRPCMethods] allKeys]);
+
+    return [[self XMLRPCMethods] allKeys];
 }
 
 - (void)start {
