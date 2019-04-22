@@ -38,7 +38,7 @@
     (log:debug key-chord)
     (push key-chord *key-chord-stack*)
     (if (consume-key-sequence-p sender)
-        (consume-key-sequence sender)
+        (|consume.key.sequence| sender)
         (generate-input-event *interface*
                               (gethash sender (windows *interface*))
                               key-chord)))
