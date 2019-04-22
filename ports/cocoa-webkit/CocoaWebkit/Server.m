@@ -179,8 +179,6 @@
 }
 
 - (NSArray*)listMethods {
-    NSLog(@"%@", [[self XMLRPCMethods] allKeys]);
-
     return [[self XMLRPCMethods] allKeys];
 }
 
