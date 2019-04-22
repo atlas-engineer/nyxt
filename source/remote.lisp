@@ -19,7 +19,12 @@
    (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
                     :documentation "The path where the system will create/save the history database.")
    (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
-                     :documentation "The path where the system will create/save the bookmark database.")))
+                     :documentation "The path where the system will create/save the bookmark database.")
+   (search-engines :accessor search-engines :initform '(("default" . "https://duckduckgo.com/?q=~a")
+                                                        ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
+                   :documentation "An association list of all the search engines you can use in the minibuffer.
+The 'default' engine is use when the query is not a valid URL, or the first
+keyword is not recognized.")))
 
 (defclass buffer ()
   ((id :accessor id :initarg :id)
