@@ -240,7 +240,7 @@
         (char (input-buffer minibuffer) (input-buffer-cursor minibuffer)))))
 
 (defun cursor-forwards-word (&optional (minibuffer (minibuffer *interface*)))
-  (let ((stop-characters '(#\: #\/ #\- #\.)))
+  (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (if (intersection stop-characters (list (char-at-cursor minibuffer)))
           (loop while (and
@@ -256,7 +256,7 @@
 
 ;; TODO: Re-use cursor-forwards-word
 (defun cursor-backwards-word (&optional (minibuffer (minibuffer *interface*)))
-  (let ((stop-characters '(#\: #\/ #\- #\.)))
+  (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (if (intersection stop-characters (list (char-at-cursor minibuffer)))
           (loop while (and
