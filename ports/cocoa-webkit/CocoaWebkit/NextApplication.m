@@ -73,7 +73,7 @@
                                   [[NSNumber alloc] initWithInteger:[event windowNumber]],
                                   [event characters],
                                   [event charactersIgnoringModifiers]];
-        [request setMethod:@"PUSH-KEY-EVENT"
+        [request setMethod:@"push.key.event"
             withParameters:@[ keyCode, characters, modifiers, lowLevelData, activeWindow ]];
         NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
         [[session dataTaskWithRequest:[request request]] resume];
@@ -92,7 +92,7 @@ withReplyEvent:(NSAppleEventDescriptor *)replyEvent
     XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                      [NSURL URLWithString:coreSocket]];
     // Make Buffers Expects an array of URLs
-    [request setMethod:@"MAKE-BUFFERS"
+    [request setMethod:@"make.buffers"
         withParameters:@[@[url]]];
     NSURLSession* session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:[request request]] resume];

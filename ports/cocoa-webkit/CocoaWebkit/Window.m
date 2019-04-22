@@ -43,7 +43,7 @@
     NSString* coreSocket = [[Global sharedInstance] coreSocket];
     XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                                                       [NSURL URLWithString:coreSocket]];
-    [request setMethod:@"WINDOW-WILL-CLOSE"
+    [request setMethod:@"window.will.close"
         withParameters:@[ [self identifier] ]];
     NSURLSession* session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:[request request]] resume];

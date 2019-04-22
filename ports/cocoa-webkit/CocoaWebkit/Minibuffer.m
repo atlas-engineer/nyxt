@@ -20,7 +20,7 @@
                    NSString* coreSocket = [[Global sharedInstance] coreSocket];
                    XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                                                                      [NSURL URLWithString:coreSocket]];
-                   [request setMethod:@"MINIBUFFER-JAVASCRIPT-CALL-BACK"
+                   [request setMethod:@"minibuffer.javascript.call.back"
                        withParameters:@[ [self parentWindowIdentifier],
                            transformedResult,
                            [@([self callBackCount]) stringValue] ]];

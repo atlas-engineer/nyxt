@@ -33,7 +33,7 @@
                    NSString* coreSocket = [[Global sharedInstance] coreSocket];
                    XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                                                                      [NSURL URLWithString:coreSocket]];
-                   [request setMethod:@"BUFFER-JAVASCRIPT-CALL-BACK"
+                   [request setMethod:@"buffer.javascript.call.back"
                        withParameters:@[ [self identifier],
                            transformedResult,
                            [@([self callBackCount]) stringValue] ]];
@@ -51,7 +51,7 @@
     NSString* coreSocket = [[Global sharedInstance] coreSocket];
     XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                                                       [NSURL URLWithString:coreSocket]];
-    [request setMethod:@"BUFFER-DID-COMMIT-NAVIGATION"
+    [request setMethod:@"buffer.did.commit.navigation"
         withParameters:@[ [self identifier], url ]];
     NSURLSession* session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:[request request]] resume];
@@ -62,7 +62,7 @@
     NSString* coreSocket = [[Global sharedInstance] coreSocket];
     XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                      [NSURL URLWithString:coreSocket]];
-    [request setMethod:@"BUFFER-DID-FINISH-NAVIGATION"
+    [request setMethod:@"buffer.did.finish.navigation"
         withParameters:@[ [self identifier], url ]];
     NSURLSession* session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:[request request]] resume];
@@ -80,7 +80,7 @@ decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
         XMLRPCRequestEncoder* request = [[XMLRPCRequestEncoder alloc] initWithURL:
                                          [NSURL URLWithString:coreSocket]];
         // Make Buffers Expects an array of URLs
-        [request setMethod:@"MAKE-BUFFERS"
+        [request setMethod:@"make.buffers"
             withParameters:@[@[url]]];
         NSURLSession* session = [NSURLSession sharedSession];
         [[session dataTaskWithRequest:[request request]] resume];
