@@ -27,33 +27,31 @@ slime. Default port is 4006."
   (swank:create-server :port *swank-port* :dont-close t))
 
 (defun parse-url (input-url)
-  (let ((engine (assoc (nth 0 (cl-strings:split input-url))
+  (let ((engine (assoc (first (cl-strings:split input-url))
                        *search-engines* :test #'string=))
         (default (assoc "default"
                         *search-engines* :test #'string=)))
     (if engine
         (generate-search-query (subseq input-url
-                                       (length (nth 0 (cl-strings:split input-url))))
+                                       (length (first (cl-strings:split input-url))))
                                (cdr engine))
-      (if (string= "s" (nth 0 (cl-strings:split input-url)))
-          (generate-search-query (subseq input-url 2) (cdr default))
-        (handler-case
-            ;; puri:parse-uri fails on crazy inputs like:
-            ;; - hello world
-            ;; - https://www.google.com/search?q=hello world
-            (let ((url (puri:parse-uri input-url)))
-              (cond
-               ((puri:uri-scheme url) input-url)
-               ((probe-file input-url)
-                (concatenate 'string "file://" input-url))
-               (t (generate-search-query input-url (cdr default)))))
-          (puri:uri-parse-error ()
-                                input-url))))))
+      (handler-case
+          ;; puri:parse-uri fails on crazy inputs like:
+          ;; - hello world
+          ;; - https://www.google.com/search?q=hello world
+          (let ((url (puri:parse-uri input-url)))
+            (cond
+             ((puri:uri-scheme url) input-url)
+             ((probe-file input-url)
+              (concatenate 'string "file://" input-url))
+             (t (generate-search-query input-url (cdr default)))))
+        (puri:uri-parse-error ()
+                              input-url)))))
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
            (cl-string-match:replace-re "  *" "+" search-string :all t))
-         (url (concatenate 'string search-url encoded-search-string)))
+         (url (format nil search-url encoded-search-string)))
     url))
 
 (defun fuzzy-match (input candidates &key (accessor-function nil)
