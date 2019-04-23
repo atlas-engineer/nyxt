@@ -68,6 +68,7 @@
       (buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
+;; TODO: Fix command-evaluate
 (define-command command-evaluate ()
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
