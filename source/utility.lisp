@@ -45,8 +45,7 @@ slime. Default port is 4006."
              ((probe-file input-url)
               (concatenate 'string "file://" input-url))
              (t (generate-search-query input-url (cdr default)))))
-        (puri:uri-parse-error ()
-                              input-url)))))
+        (puri:uri-parse-error () input-url)))))
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
