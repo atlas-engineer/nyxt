@@ -111,7 +111,6 @@ Set to '-' to read standard input instead."))
               swank:*communication-style*))
   (unless *interface*
     (setf *interface* (make-instance 'remote-interface)))
-  (start-interface *interface*)
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.
   (when with-platform-port-p
