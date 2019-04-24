@@ -102,9 +102,19 @@ startup after the remote-interface was set up."
   ;; TODO: Make %xml-rpc-send asynchronous?
   ;; If the platform port ever hangs, the next %xml-rpc-send will hang the Lisp core too.
   (with-slots (url) interface
-    (s-xml-rpc:xml-rpc-call
-     (apply #'s-xml-rpc:encode-xml-rpc-call method args)
-     :host (host interface) :port (port interface) :url url)))
+    (handler-case
+        (let ((result (s-xml-rpc:xml-rpc-call
+                       (apply #'s-xml-rpc:encode-xml-rpc-call method args)
+                       :host (host interface) :port (port interface) :url url)))
+          (when (or (string= method "set.proxy")
+                    ;; (string= method "get.proxy")
+                    )
+            (log:debug "XML-RESULT" result))
+          result)
+      (s-xml-rpc:xml-rpc-fault (c)
+        (log:warn "~a" c)
+        (echo *minibuffer* (format nil "Platform port failed to respond to '~a': ~a" method c))
+        (error c)))))
 
 (defmethod list-methods ((interface remote-interface))
   "Return the unsorted list of XML-RPC methods supported by the platform port."
