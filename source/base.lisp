@@ -105,8 +105,6 @@ Set to '-' to read standard input instead."))
     (setf *init-file-path* (getf *options* :init-file)))
   (map nil 'funcall *deferred-mode-initializations*)
   (load-init-file)
-  (initialize-bookmark-db)
-  (initialize-history-db)
   ;; create the interface object
   (unless (eq swank:*communication-style* :fd-handler)
     (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"

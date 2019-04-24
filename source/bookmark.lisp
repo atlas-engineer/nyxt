@@ -2,21 +2,20 @@
 
 (in-package :next)
 
-(defun initialize-bookmark-db ()
+(defun %initialize-bookmark-db (path)
   "Create a database file if necessary and make a table for bookmarks"
-  (unless (probe-file *bookmark-db-path*)
-    (close (open (ensure-parent-exists *bookmark-db-path*) :direction :probe :if-does-not-exist :create))
-    (let ((db (sqlite:connect
-               (truename (probe-file *bookmark-db-path*)))))
-      (sqlite:execute-non-query
-       db "create table bookmarks (id integer primary key, url text not null)")
-      (sqlite:execute-non-query
-       db "insert into bookmarks (url) values (?)" "about:blank")
-      (sqlite:disconnect db))))
+  (close (open (ensure-parent-exists path) :direction :probe :if-does-not-exist :create))
+  (let ((db (sqlite:connect
+             (truename (probe-file path)))))
+    (sqlite:execute-non-query
+     db "create table bookmarks (id integer primary key, url text not null)")
+    (sqlite:execute-non-query
+     db "insert into bookmarks (url) values (?)" "about:blank")
+    (sqlite:disconnect db)))
 
 (defun bookmark-complete (input)
   (let* ((db (sqlite:connect
-              (truename (probe-file *bookmark-db-path*))))
+              (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db)))
          (candidates
            (sqlite:execute-to-list
             db "select url from bookmarks where url like ?"
@@ -26,7 +25,7 @@
 
 (defun %bookmark-url (url)
   (let ((db (sqlite:connect
-             (truename (probe-file *bookmark-db-path*)))))
+             (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db))))
     (sqlite:execute-non-query
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
@@ -35,7 +34,7 @@
   "Bookmark the currently opened page in the active buffer."
   (with-result (url (buffer-get-url))
     (let ((db (sqlite:connect
-               (truename (probe-file *bookmark-db-path*)))))
+               (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db))))
       (sqlite:execute-non-query
        db "insert into bookmarks (url) values (?)" url)
       (sqlite:disconnect db)))
@@ -54,7 +53,7 @@
                           :input-prompt "Delete bookmark:"
                           :completion-function 'bookmark-complete))
     (let ((db (sqlite:connect
-               (truename (probe-file *bookmark-db-path*)))))
+               (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db))))
       (sqlite:execute-non-query
        db "delete from bookmarks where url = ?" bookmark)
       (sqlite:disconnect db))))

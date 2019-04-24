@@ -106,3 +106,12 @@ will have to consider malformed ones."
   "Create parent directories of PATH if they don't exist and return PATH."
   (ensure-directories-exist (directory-namestring path))
   path)
+
+(defun ensure-file-exists (path &optional (init-function))
+  "Create file pointed by PATH if it does not exists.  Return PATH's truename.
+When non-nil, INIT-FUNCTION is used to create the file, else the file will be empty."
+  (unless (probe-file path)
+    (if init-function
+        (funcall init-function path)
+        (close (open (ensure-parent-exists path) :direction :probe :if-does-not-exist :create))))
+  (truename path))
