@@ -565,6 +565,9 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 	gboolean found = g_hash_table_lookup_extended(state.server_callbacks, method_name,
 			NULL, (gpointer *)&callback);
 	if (!found) {
+		soup_xmlrpc_message_set_fault(msg,
+			SOUP_XMLRPC_FAULT_SERVER_ERROR_REQUESTED_METHOD_NOT_FOUND,
+			"Unknown method: %s", method_name);
 		g_warning("Unknown method: %s", method_name);
 		return;
 	}
