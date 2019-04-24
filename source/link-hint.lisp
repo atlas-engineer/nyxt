@@ -103,7 +103,7 @@
 (defmacro query-anchors (prompt (symbol) &body body)
   `(with-result* ((links-json (add-link-hints))
                   (selected-anchor (read-from-minibuffer
-                                    *minibuffer*
+                                    (minibuffer *interface*)
                                     :input-prompt ,prompt
                                     :cleanup-function #'remove-link-hints)))
      (let* ((link-hints (cl-json:decode-json-from-string links-json))

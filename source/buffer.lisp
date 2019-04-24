@@ -18,7 +18,7 @@
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
   (with-result (buffer (read-from-minibuffer
-                        *minibuffer*
+                        (minibuffer *interface*)
                         :input-prompt "Switch to buffer:"
                         :completion-function (buffer-completion-fn)))
     (set-active-buffer *interface* buffer)))
@@ -32,7 +32,7 @@
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
   (with-result (buffer (read-from-minibuffer
-                        *minibuffer*
+                        (minibuffer *interface*)
                         :input-prompt "Kill buffer:"
                         :completion-function (buffer-completion-fn)))
     (buffer-delete *interface* buffer)))
@@ -70,7 +70,7 @@ buffer to the start page."
 (define-command set-url-current-buffer ()
   "Set the URL for the current buffer, completing with history."
   (with-result (url (read-from-minibuffer
-                     *minibuffer*
+                     (minibuffer *interface*)
                      :input-prompt "Open URL in buffer:"
                      :completion-function 'history-typed-complete
                      :empty-complete-immediate t))
@@ -85,7 +85,7 @@ buffer to the start page."
   "Prompt the user for a URL and set it in a new active / visible
 buffer"
   (with-result (url (read-from-minibuffer
-                     *minibuffer*
+                     (minibuffer *interface*)
                      :input-prompt "Open URL in new buffer:"
                      :completion-function 'history-typed-complete
                      :empty-complete-immediate t))
@@ -142,8 +142,8 @@ item in the list, jump to the first item."
     (if (string= (first proxy-settings) "default")
         (progn
           (set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
-          (echo *minibuffer* (format nil "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*)))
+          (echo (minibuffer *interface*) (format nil "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*)))
         (progn
           (set-proxy *interface* active-buffer)
-          (echo *minibuffer* "Proxy unset.")))
+          (echo (minibuffer *interface*) "Proxy unset.")))
     (log:info (get-proxy *interface* active-buffer))))

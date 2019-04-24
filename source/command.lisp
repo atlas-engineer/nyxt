@@ -35,7 +35,7 @@
     `(progn
        (defun ,name ,arglist
          (run-hook ,keyword-symbol)
-         (echo-dismiss *minibuffer*)
+         (echo-dismiss (minibuffer *interface*))
          ,@body)
        (make-instance 'command
                       :name (symbol-name ',name)
@@ -60,7 +60,7 @@
 (define-command execute-extended-command ()
   "Execute a command by name"
   (with-result (command (read-from-minibuffer
-                         *minibuffer*
+                         (minibuffer *interface*)
                          :input-prompt "Execute command:"
                          :completion-function 'complete-command))
     (funcall (impl (gethash command *available-commands*)))))

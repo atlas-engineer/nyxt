@@ -24,7 +24,7 @@
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6"
   (with-result* ((headings (get-headings))
                  (heading (read-from-minibuffer
-                           *minibuffer*
+                           (minibuffer *interface*)
                            :input-prompt "Jump to heading:"
                            :completion-function (lambda (input)
                                                   (fuzzy-match

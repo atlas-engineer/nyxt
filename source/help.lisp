@@ -34,7 +34,7 @@
   "Inspect a variable and show it in a help buffer."
   (load-package-globals)
   (with-result (input (read-from-minibuffer
-                       *minibuffer*
+                       (minibuffer *interface*)
                        :completion-function 'variable-complete
                        :input-prompt "Inspect variable:"))
     (let* ((help-buffer (make-buffer
@@ -53,7 +53,7 @@
 (define-command command-inspect ()
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
-                       *minibuffer*
+                       (minibuffer *interface*)
                        :input-prompt "Inspect command:"
                        :completion-function 'function-complete))
     (let* ((help-buffer (make-buffer
@@ -72,7 +72,7 @@
 (define-command command-evaluate ()
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
-                       *minibuffer*
+                       (minibuffer *interface*)
                        :input-prompt "Evalute form:"))
     (let* ((result-buffer (make-buffer
                            (concatenate 'string "EVALUATION RESULT-" input)
@@ -97,4 +97,4 @@
   "Version number of this version of Next.
 The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
-  (echo *minibuffer* (format nil "Version ~a" +version+)))
+  (echo (minibuffer *interface*) (format nil "Version ~a" +version+)))

@@ -38,7 +38,7 @@
   "Add search boxes for a given search string"
   (initialize-search-buffer)
   (with-result (input (read-from-minibuffer
-                       *minibuffer*
+                       (minibuffer *interface*)
                        :input-prompt "Search for:"))
     (buffer-evaluate-javascript *interface*
                                 (active-buffer *interface*)

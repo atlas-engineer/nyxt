@@ -43,6 +43,8 @@
                          :documentation "The XML-RPC remote socket of the platform-port.")
    (active-connection :accessor active-connection :initform nil)
    (url :accessor url :initform "/RPC2")
+   (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
+               :documentation "The minibuffer object.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
@@ -114,7 +116,7 @@ startup after the remote-interface was set up."
           result)
       (s-xml-rpc:xml-rpc-fault (c)
         (log:warn "~a" c)
-        (echo *minibuffer* (format nil "Platform port failed to respond to '~a': ~a" method c))
+        (echo (minibuffer *interface*) (format nil "Platform port failed to respond to '~a': ~a" method c))
         (error c)))))
 
 (defmethod list-methods ((interface remote-interface))

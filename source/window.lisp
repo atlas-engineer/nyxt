@@ -9,7 +9,7 @@
     (cond ((and active-window (> window-count 1))
            (window-delete *interface* active-window))
           (active-window
-           (echo *minibuffer* "Can't delete sole window.")))))
+           (echo (minibuffer *interface*) "Can't delete sole window.")))))
 
 (define-command make-window ()
   "Create a new window."

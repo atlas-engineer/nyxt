@@ -10,8 +10,6 @@
 (defvar *interface* nil
   "The CLOS object responsible for rendering the interface.")
 
-(defvar *minibuffer* nil
-  "A variable to store the minibuffer.")
 (defvar *available-hooks* (make-hash-table :test #'equalp)
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)

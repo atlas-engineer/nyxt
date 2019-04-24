@@ -34,7 +34,7 @@ Set to '-' to read standard input instead."))
 ;; We can safely remove it once we can EVAL within Next.
 (define-command server-methods-inspect ()
   "List the XML-RPC methods supported by the platform port."
-  (echo *minibuffer* (cl-strings:join
+  (echo (minibuffer *interface*) (cl-strings:join
                       (sort (list-methods *interface*) #'string<)
                       :separator "
 ")))
@@ -115,8 +115,6 @@ Set to '-' to read standard input instead."))
   ;; an instance is already running.
   (when with-platform-port-p
     (run-program *port*))
-  ;; initialize default state
-  (setf *minibuffer* (make-instance 'minibuffer))
   (initialize-port *interface*)
   (when with-platform-port-p
     (run-loop *port*)
@@ -141,4 +139,4 @@ Set to '-' to read standard input instead."))
 (define-key *global-map* (key "M-x") 'execute-extended-command)
 (define-key *global-map* (key "C-x 5 2") 'make-window)
 (define-key *global-map* (key "C-x 5 0") 'delete-window)
-(define-key *global-map* (key "C-x q") (lambda () (echo-dismiss *minibuffer*)))
+(define-key *global-map* (key "C-x q") (lambda () (echo-dismiss (minibuffer *interface*))))

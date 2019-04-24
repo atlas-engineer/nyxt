@@ -48,7 +48,7 @@
   (let* ((active-window (gethash sender (windows *interface*)))
          (active-buffer (active-buffer active-window))
          (local-map (if (minibuffer-active active-window)
-                        *minibuffer-mode-map*
+                        (keymap (minibuffer *interface*))
                         (keymap (mode active-buffer))))
          ;; TODO: Shouldn't we give higher priority to the buffer keymap?
          (key-maps (list *global-map* local-map)))
@@ -70,7 +70,7 @@
   (let* ((active-window (gethash sender (windows *interface*)))
          (active-buffer (active-buffer active-window))
          (local-map (if (minibuffer-active active-window)
-                        *minibuffer-mode-map*
+                        (keymap (minibuffer *interface*))
                         (keymap (mode active-buffer))))
          (key-maps (list *global-map* local-map))
          (serialized-key-stack (mapcar #'serialize-key-chord *key-chord-stack*)))
@@ -84,15 +84,14 @@
                  (funcall bound)
                  (setf *key-chord-stack* ())
                  (return-from |consume.key.sequence| t)))
-              ((equalp map *minibuffer-mode-map*)
+              ((equalp map (keymap (minibuffer *interface*)))
                (if (member "R" (key-chord-modifiers (first *key-chord-stack*))
                            :test #'string-equal)
                    (log:debug "Key released")
                    (progn
                      (log:debug "Insert ~s in minibuffer" (key-chord-key-string
                                                            (first *key-chord-stack*)))
-                     (self-insert *minibuffer* (key-chord-key-string
-                                                (first *key-chord-stack*)))))
+                     (self-insert (key-chord-key-string (first *key-chord-stack*)))))
                (setf *key-chord-stack* ())
                (return-from |consume.key.sequence| t)))))
     (log:debug "Not found in any keymaps")

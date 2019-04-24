@@ -65,7 +65,7 @@
 (define-command history-forwards-query ()
   "Move forwards in history querying if more than one child present."
   (with-result (input (read-from-minibuffer
-                       *minibuffer*
+                       (minibuffer *interface*)
                        :input-prompt "Navigate forwards to:"
                        :completion-function (history-forwards-completion-fn)))
     (unless (equal input "Cannot navigate forwards.")
@@ -118,12 +118,12 @@
 (defmethod did-commit-navigation ((mode document-mode) url)
   (set-default-window-title)
   (add-or-traverse-history mode url)
-  (echo *minibuffer* (concatenate 'string "Loading: " url ".")))
+  (echo (minibuffer *interface*) (concatenate 'string "Loading: " url ".")))
 
 (defmethod did-finish-navigation ((mode document-mode) url)
-  (echo *minibuffer* (concatenate 'string "Finished loading: " url "."))
+  (echo (minibuffer *interface*) (concatenate 'string "Finished loading: " url "."))
   ;; TODO: Wait some time before dismissing the minibuffer.
-  (echo-dismiss *minibuffer*))
+  (echo-dismiss (minibuffer *interface*)))
 
 (defmethod setup ((mode document-mode) (buffer buffer))
   (set-url-buffer *default-new-buffer-url* buffer)
