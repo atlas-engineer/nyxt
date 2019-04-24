@@ -80,7 +80,7 @@ startup after the remote-interface was set up."
                 (handler-case
                     (progn
                       (s-xml-rpc:xml-rpc-call
-                       (s-xml-rpc:encode-xml-rpc-call "MAKE-BUFFERS" url-list)
+                       (s-xml-rpc:encode-xml-rpc-call "make.buffers" url-list)
                        :port *core-port*)
                       (uiop:quit))
                   (error (c)
