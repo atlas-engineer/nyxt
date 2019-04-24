@@ -83,7 +83,7 @@ Set to '-' to read standard input instead."))
                 (set-url-buffer url buffer)))
             (setf port-running t))
         (error ()
-          (log:info "Polling platform port '~a'...~%" (platform-port interface))
+          (log:info "Polling platform port '~a'...~%" (platform-port-socket interface))
           (sleep *platform-port-poll-interval*)
           (setf port-running nil))))))
 

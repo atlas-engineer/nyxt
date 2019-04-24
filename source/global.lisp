@@ -7,10 +7,8 @@
 (defvar *free-args* ()
   "The list of positional command line arguments.")
 
-(defvar *core-port* 8081
-  "The XML-RPC server port of the Lisp core.")
-(defvar *platform-port-socket* '(:host "localhost" :port 8082)
-  "The XML-RPC remote socket of the platform-port.")
+(defvar *interface* nil
+  "The CLOS object responsible for rendering the interface.")
 
 (defvar *minibuffer* nil
   "A variable to store the minibuffer.")

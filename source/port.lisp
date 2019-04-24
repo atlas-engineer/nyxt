@@ -55,15 +55,15 @@ as a string.")
 
 (defun default-port-args ()
   "Derive platform port arguments dynamically at runtime.
-This is useful if, for instance, the *CORE-PORT* gets changed after startup."
+This is useful if, for instance, the socket gets changed after startup."
   ;; TODO: Make sure that it works if platform port is started manually.
-  (unless (find-port:port-open-p (getf *platform-port-socket* :port))
+  (unless (find-port:port-open-p (getf (platform-port-socket *interface*) :port))
     (let ((new-port (find-port:find-port)))
       (format *error-output* "Platform port socket ~a seems busy, trying ~a instead.~%"
-              (getf *platform-port-socket* :port) new-port)
-      (setf (getf *platform-port-socket* :port) new-port)))
-  (list "--port" (write-to-string (getf *platform-port-socket* :port))
-        "--core-socket" (format nil "http://localhost:~a/RPC2" *core-port*)))
+              (getf (platform-port-socket *interface*) :port) new-port)
+      (setf (getf (platform-port-socket *interface*) :port) new-port)))
+  (list "--port" (write-to-string (getf (platform-port-socket *interface*) :port))
+        "--core-socket" (format nil "http://localhost:~a/RPC2" (core-port *interface*))))
 
 (defmethod run-loop ((port port))
   (uiop:wait-process (running-process port)))

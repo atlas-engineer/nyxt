@@ -2,9 +2,6 @@
 
 (in-package :next)
 
-(defvar *interface* nil
-  "The CLOS object responsible for rendering the interface.")
-
 (defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)
@@ -40,7 +37,10 @@
   (did-finish-navigation (mode buffer) url))
 
 (defclass remote-interface ()
-  ((platform-port :accessor platform-port :initform *platform-port-socket*)
+  ((core-port :accessor core-port :initform 8081
+              :documentation "The XML-RPC server port of the Lisp core.")
+   (platform-port-socket :accessor platform-port-socket :initform '(:host "localhost" :port 8082)
+                         :documentation "The XML-RPC remote socket of the platform-port.")
    (active-connection :accessor active-connection :initform nil)
    (url :accessor url :initform "/RPC2")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
@@ -53,13 +53,13 @@
   "Retrieve the host of the platform port dynamically.
 It's important that it is dynamic since the platform port can be reconfigured on
 startup after the remote-interface was set up."
-  (getf (platform-port interface) :host))
+  (getf (platform-port-socket interface) :host))
 
 (defmethod port ((interface remote-interface))
   "Retrieve the port of the platform port dynamically.
 It's important that it is dynamic since the platform port can be reconfigured on
 startup after the remote-interface was set up."
-  (getf (platform-port interface) :port))
+  (getf (platform-port-socket interface) :port))
 
 (defmethod start-interface ((interface remote-interface))
   "Start the XML RPC Server."
@@ -67,7 +67,7 @@ startup after the remote-interface was set up."
         ;; TODO: Ideally, s-xml-rpc should send an implementation-independent
         ;; condition.
         (handler-case
-            (s-xml-rpc:start-xml-rpc-server :port *core-port*)
+            (s-xml-rpc:start-xml-rpc-server :port (core-port *interface*))
           (#+sbcl sb-bsd-sockets:address-in-use-error
            #+ccl ccl:socket-error
            (#+ccl e
@@ -76,21 +76,21 @@ startup after the remote-interface was set up."
                   #+ccl (eq (ccl:socket-error-identifier e) :address-in-use)
               (let ((url-list (or *free-args* (list *default-new-buffer-url*))))
                 (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
-                        *core-port* url-list)
+                        (core-port *interface*) url-list)
                 ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
                 (handler-case
                     (progn
                       (s-xml-rpc:xml-rpc-call
                        (s-xml-rpc:encode-xml-rpc-call "make.buffers" url-list)
-                       :port *core-port*)
+                       :port (core-port *interface*))
                       (uiop:quit))
                   (error (c)
                     (declare (ignore c))
                     (let ((new-port (find-port:find-port)))
                       (format *error-output* "Port ~a does not seem to be used by Next, trying ~a instead.~%"
-                              *core-port* new-port)
-                      (setf *core-port* new-port)
-                      (s-xml-rpc:start-xml-rpc-server :port *core-port*))))))))))
+                              (core-port *interface*) new-port)
+                      (setf (core-port *interface*) new-port)
+                      (s-xml-rpc:start-xml-rpc-server :port (core-port *interface*)))))))))))
 
 
 (defmethod kill-interface ((interface remote-interface))
