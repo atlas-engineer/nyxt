@@ -87,23 +87,25 @@ Set to '-' to read standard input instead."))
           (sleep *platform-port-poll-interval*)
           (setf port-running nil))))))
 
+(defun load-init-file (&optional (init-file *init-file-path*))
+  "Load the user configuration if it exists."
+  (handler-case (if (string= (pathname-name init-file) "-")
+                    (progn
+                      (log:info "Initializing from standard input...")
+                      (loop for object = (read *standard-input* nil :eof)
+                            until (eq object :eof)
+                            do (eval object)))
+                    (load init-file :if-does-not-exist nil))
+    (error (c)
+      (log:warn "Error: we could not load your init file: ~a" c))))
+
 (defun start (&key (with-platform-port-p nil))
   (map nil 'funcall *deferred-variables*)
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
   (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
-  ;; load the user configuration if it exists
-  (if (string= (pathname-name *init-file-path*) "-")
-      (progn
-        (format *error-output* "Initializing from standard input...~%")
-        (loop for object = (read *standard-input* nil :eof)
-              until (eq object :eof)
-              do (eval object)))
-      ;; ignore loading errors
-      (handler-case (load *init-file-path* :if-does-not-exist nil)
-        (error (c)
-          (format t "Error: we could not load your init file: ~a~&" c))))
+  (load-init-file)
   (initialize-bookmark-db)
   (initialize-history-db)
   ;; create the interface object
