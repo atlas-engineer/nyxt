@@ -316,9 +316,11 @@ events."
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))
 
-(defun |request.resource| (buffer-id url event-type is-new-window is-known-type input)
+(defun |request.resource| (buffer-id url event-type is-new-window is-known-type
+                           mouse-button modifiers)
   "Return whether URL should be loaded or not."
-  (declare (ignore event-type input))
+  (declare (ignore event-type))
+  (log:debug "Mouse ~a, modifiers ~a" mouse-button modifiers)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
     (cond
       (is-new-window

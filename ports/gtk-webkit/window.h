@@ -15,28 +15,6 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include "client.h"
 
 typedef struct {
-	int mod;
-	char *name;
-} Modifier;
-
-// See the documentation of "enum GdkModifierType".
-static Modifier modifier_names[] = {
-	{.mod = GDK_SHIFT_MASK, .name = "s"},
-	{.mod = GDK_LOCK_MASK, .name = "Lock"},
-	{.mod = GDK_CONTROL_MASK, .name = "C"},
-	{.mod = GDK_MOD1_MASK, .name = "M"}, // Usually "Alt".
-	// M is sometimes also seen as M2-M4, which can confuse the Lisp side.
-	// I'm not sure that we need M2-M4 at all.
-	/* {.mod = GDK_MOD2_MASK, .name = "M2"}, */
-	/* {.mod = GDK_MOD3_MASK, .name = "M3"}, */
-	/* {.mod = GDK_MOD4_MASK, .name = "M4"}, */
-	{.mod = GDK_SUPER_MASK, .name = "S"},
-	{.mod = GDK_HYPER_MASK, .name = "H"},
-	{.mod = GDK_META_MASK, .name = "Meta"},
-};
-
-
-typedef struct {
 	char *old;
 	char *new;
 } KeyTranslation;

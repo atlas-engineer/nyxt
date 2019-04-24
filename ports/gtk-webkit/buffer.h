@@ -10,6 +10,27 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include "javascript.h"
 
 typedef struct {
+	int mod;
+	char *name;
+} Modifier;
+
+// See the documentation of "enum GdkModifierType".
+static Modifier modifier_names[] = {
+	{.mod = GDK_SHIFT_MASK, .name = "s"},
+	{.mod = GDK_LOCK_MASK, .name = "Lock"},
+	{.mod = GDK_CONTROL_MASK, .name = "C"},
+	{.mod = GDK_MOD1_MASK, .name = "M"}, // Usually "Alt".
+	// M is sometimes also seen as M2-M4, which can confuse the Lisp side.
+	// I'm not sure that we need M2-M4 at all.
+	/* {.mod = GDK_MOD2_MASK, .name = "M2"}, */
+	/* {.mod = GDK_MOD3_MASK, .name = "M3"}, */
+	/* {.mod = GDK_MOD4_MASK, .name = "M4"}, */
+	{.mod = GDK_SUPER_MASK, .name = "S"},
+	{.mod = GDK_HYPER_MASK, .name = "H"},
+	{.mod = GDK_META_MASK, .name = "Meta"},
+};
+
+typedef struct {
 	WebKitWebView *web_view;
 	int callback_count;
 	char *identifier;
@@ -187,24 +208,33 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 
 	// No need for webkit_navigation_action_is_user_gesture if mouse_button and
 	// modifiers tell us the same information.
-	guint mouse_button = 0;
-	guint modifiers = 0;
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
+	gchar *mouse_button = "";
 	if (action) {
-		mouse_button = webkit_navigation_action_get_mouse_button(action);
-		modifiers = webkit_navigation_action_get_modifiers(action);
+		guint button = webkit_navigation_action_get_mouse_button(action);
+		mouse_button = g_strdup_printf("button%d", button);
+
+		guint modifiers = webkit_navigation_action_get_modifiers(action);
+		for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
+			if (modifiers & modifier_names[i].mod) {
+				g_variant_builder_add(&builder, "s", modifier_names[i].name);
+			}
+		}
 	}
 
 	const char *method_name = "request.resource";
 
-	// TODO: Encode mouse + modifiers properly.
 	// TODO: Test if it's a redirect?
 	Buffer *buffer = bufferp;
-	GVariant *arg = g_variant_new("(sssbbi)", buffer->identifier, uri,
+	GVariant *arg = g_variant_new("(sssbbsas)", buffer->identifier, uri,
 			event_type,
 			is_new_window,
 			is_known_type,
-			mouse_button+modifiers);
-	g_message("XML-RPC message: %s (buffer id, URI, event_type, is_new_window, is_known_type, input) = %s", method_name, g_variant_print(arg, TRUE));
+			mouse_button,
+			&builder);
+	g_message("XML-RPC message: %s (buffer id, URI, event_type, is_new_window, is_known_type, button, modifiers) = %s",
+		method_name, g_variant_print(arg, TRUE));
 
 	GError *error = NULL;
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
@@ -217,6 +247,9 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 		return FALSE;
 	}
 
+	if (action) {
+		g_free(mouse_button);
+	}
 	DecisionInfo *decision_info = g_new(DecisionInfo, 1);
 	decision_info->decision = decision;
 	decision_info->uri = uri;
