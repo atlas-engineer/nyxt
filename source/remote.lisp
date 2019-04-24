@@ -70,7 +70,8 @@ startup after the remote-interface was set up."
             (s-xml-rpc:start-xml-rpc-server :port *core-port*)
           (#+sbcl sb-bsd-sockets:address-in-use-error
            #+ccl ccl:socket-error
-           (e)
+           (#+ccl e
+            )
             (when #+sbcl t
                   #+ccl (eq (ccl:socket-error-identifier e) :address-in-use)
               (let ((url-list (or *free-args* (list *default-new-buffer-url*))))
