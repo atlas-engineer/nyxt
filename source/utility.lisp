@@ -101,3 +101,8 @@ will have to consider malformed ones."
    (merge-pathnames
     (make-pathname :directory '(:relative "next"))
     (uiop:xdg-config-home))))
+
+(defun ensure-parent-exists (path)
+  "Create parent directories of PATH if they don't exist and return PATH."
+  (ensure-directories-exist (directory-namestring path))
+  path)

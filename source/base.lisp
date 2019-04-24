@@ -103,14 +103,14 @@ Set to '-' to read standard input instead."))
   (map nil 'funcall *deferred-variables*)
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
-  (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
   (load-init-file)
   (initialize-bookmark-db)
   (initialize-history-db)
   ;; create the interface object
   (unless (eq swank:*communication-style* :fd-handler)
-    (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler" swank:*communication-style*))
+    (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"
+              swank:*communication-style*))
   (unless *interface*
     (setf *interface* (make-instance 'remote-interface)))
   (start-interface *interface*)

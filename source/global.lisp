@@ -91,7 +91,7 @@
   "The path where the system will create/save the history database.")
 (deferredvar *bookmark-db-path* (xdg-data-home "bookmark.db")
   "The path where the system will create/save the bookmark database.")
-(deferredvar *cookie-path-dir* (xdg-data-home)
+(deferredvar *cookies-path* (xdg-data-home "cookies.txt")
   "The path for cookies in the GTK Version of Next")
 
 (defparameter +version+

@@ -190,7 +190,8 @@ startup after the remote-interface was set up."
 
 (defmethod buffer-make ((interface remote-interface))
   (let* ((buffer-id (get-unique-buffer-identifier interface))
-         (cookies-path (namestring (merge-pathnames *cookie-path-dir* "cookies.txt")))
+         (cookies-path (namestring (ensure-parent-exists
+                                    (merge-pathnames *cookies-path* "cookies.txt"))))
          (buffer (make-instance 'buffer :id buffer-id)))
     (setf (gethash buffer-id (buffers interface)) buffer)
     (%xml-rpc-send interface "buffer.make" buffer-id

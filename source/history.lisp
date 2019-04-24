@@ -5,7 +5,8 @@
 (defun initialize-history-db ()
   "Create a database file if necessary and make a table for bookmarks"
   (unless (probe-file *history-db-path*)
-    (close (open *history-db-path* :direction :probe :if-does-not-exist :create))
+    (close (open (ensure-parent-exists *history-db-path*)
+                 :direction :probe :if-does-not-exist :create))
     (let ((db (sqlite:connect
                (truename (probe-file *history-db-path*)))))
       (sqlite:execute-non-query
