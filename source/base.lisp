@@ -93,7 +93,6 @@ Set to '-' to read standard input instead."))
     (setf *init-file-path* (getf *options* :init-file)))
   (ensure-directories-exist (xdg-data-home))
   (map nil 'funcall *deferred-mode-initializations*)
-  (setf *default-new-buffer-mode* #'document-mode)
   ;; load the user configuration if it exists
   (if (string= (pathname-name *init-file-path*) "-")
       (progn

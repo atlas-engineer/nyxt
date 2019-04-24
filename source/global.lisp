@@ -44,8 +44,6 @@
   "The URL of the first buffer opened by Next when started.")
 (defvar *default-new-buffer-url* "https://next.atlas.engineer/start"
   "The URL set to a new blank buffer opened by Next.")
-(defvar *default-new-buffer-mode* nil
-  "The mode a buffer will open in by default")
 (defvar *package-symbols* nil
   "The package symbols available, populated by helper function
   load-package-symbols.")

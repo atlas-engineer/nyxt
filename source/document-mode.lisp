@@ -138,3 +138,6 @@
                               :keymap *document-mode-map*
                               :active-node root)))
     mode))
+
+(defvar *default-new-buffer-mode* #'document-mode
+  "The mode a buffer will open in by default")
