@@ -11,6 +11,7 @@
 
 (in-package :next)
 
+;; TODO: Move key-chord-stack* to REMOTE-INTERFACE.
 (defvar *key-chord-stack* ()
   "A stack that keeps track of the key chords a user has inputted")
 

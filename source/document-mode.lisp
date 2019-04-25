@@ -2,6 +2,8 @@
 
 (in-package :next)
 
+;; TODO: Make all *-mode-maps local to the mode.  Make sure they can be
+;; configured by the user.
 (defvar *document-mode-map* (make-hash-table :test 'equal))
 
 (define-mode document-mode ()

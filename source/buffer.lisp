@@ -131,6 +131,7 @@ item in the list, jump to the first item."
   (add-mode buffer mode)
   (switch-mode buffer mode))
 
+;; TODO: Make proxy variable local?  Better: make a tor-mode.
 (defparameter *proxy-url* "socks://127.0.0.1:9050" )
 (defparameter *proxy-ignore-list* (list "localhost" "localhost:8080"))
 
