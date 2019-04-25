@@ -146,14 +146,14 @@
     (setf (minibuffer-active active-window) t)
     (window-set-minibuffer-height interface
                                   active-window
-                                  *minibuffer-open-height*)))
+                                  (minibuffer-open-height active-window))))
 
 (defmethod hide ((interface remote-interface))
   (let ((active-window (window-active interface)))
     (setf (minibuffer-active active-window) nil)
     (window-set-minibuffer-height *interface*
                                   active-window
-                                  *minibuffer-closed-height*)))
+                                  (minibuffer-closed-height active-window))))
 
 (defun self-insert (characters &optional (minibuffer (minibuffer *interface*)))
   "Insert CHARACTERS in MINIBUFFER."
@@ -325,24 +325,25 @@
                       (scroll-into-view true))))))
 
 (defmethod echo ((minibuffer minibuffer) text)
-  (unless (eql (display-mode minibuffer) :read)
-    (setf (display-mode minibuffer) :echo)
-    (erase-document minibuffer)
-    (window-set-minibuffer-height *interface*
-                                  (window-active *interface*)
-                                  *minibuffer-echo-height*)
-    (let ((style (cl-css:css
-                  '((* :font-family "monospace,monospace"
-                       :font-size "14px")
-                    (body :border-top "4px solid dimgray"
-                          :margin "0"
-                          :padding "0 6px")
-                    (p :margin "0")))))
-      (set-input minibuffer
-                 (cl-markup:markup
-                  (:head (:style style))
-                  (:body
-                   (:p text)))))))
+  (let ((active-window (window-active *interface*)))
+    (unless (eql (display-mode minibuffer) :read)
+      (setf (display-mode minibuffer) :echo)
+      (erase-document minibuffer)
+      (window-set-minibuffer-height *interface*
+                                    active-window
+                                    (minibuffer-echo-height active-window))
+      (let ((style (cl-css:css
+                    '((* :font-family "monospace,monospace"
+                         :font-size "14px")
+                      (body :border-top "4px solid dimgray"
+                            :margin "0"
+                            :padding "0 6px")
+                      (p :margin "0")))))
+        (set-input minibuffer
+                   (cl-markup:markup
+                    (:head (:style style))
+                    (:body
+                     (:p text))))))))
 
 (defmethod echo-dismiss ((minibuffer minibuffer))
   (when (eql (display-mode minibuffer) :echo)

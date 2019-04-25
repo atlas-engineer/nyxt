@@ -29,12 +29,6 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
-(defvar *minibuffer-closed-height* 0
-  "The height of the minibuffer when closed.")
-(defvar *minibuffer-open-height* 200
-  "The height of the minibuffer when open.")
-(defvar *minibuffer-echo-height* 25
-  "The height of the minibuffer when echoing.")
 (defvar *platform-port-poll-interval* 0.015
   "The speed at which to poll the XML-RPC endpoint of a platform-port
   to see if it is ready to begin accepting XML-RPC commands.")

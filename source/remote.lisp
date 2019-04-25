@@ -7,7 +7,13 @@
    (active-buffer :accessor active-buffer :initform nil)
    (minibuffer-active :accessor minibuffer-active :initform nil)
    (minibuffer-callbacks :accessor minibuffer-callbacks
-                         :initform (make-hash-table :test #'equal))))
+                         :initform (make-hash-table :test #'equal))
+   (minibuffer-closed-height :accessor minibuffer-closed-height :initform 0
+                             :documentation "The height of the minibuffer when closed.")
+   (minibuffer-open-height :accessor minibuffer-open-height :initform 200
+                           :documentation "The height of the minibuffer when open.")
+   (minibuffer-echo-height :accessor minibuffer-echo-height :initform 25
+                           :documentation "The height of the minibuffer when echoing.")))
 
 (defclass buffer ()
   ((id :accessor id :initarg :id)
