@@ -9,11 +9,12 @@
                         (cons 'fundamental-mode direct-superclasses))
        ,direct-slots
        (:documentation ,docstring))
+     (defmethod initialize-instance :after ((%mode ,name) &key)
+       ,@body)
      (defun ,name ()
        ,docstring
        (make-instance ',name
-                      :name (format nil "~a-mode" ',name)))
-     (push (lambda () ,@body) *deferred-mode-initializations*)))
+                      :name (format nil "~a-mode" ',name)))))
 
 (define-mode fundamental-mode (t)
     "The root of all modes."

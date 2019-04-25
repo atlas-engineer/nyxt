@@ -9,7 +9,8 @@
     (;; No slots.
      )
   (define-key *help-mode-map* (key "C-p") 'scroll-up)
-  (define-key *help-mode-map* (key "C-n") 'scroll-down))
+  (define-key *help-mode-map* (key "C-n") 'scroll-down)
+  (setf (keymap %mode) *help-mode-map*))
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)

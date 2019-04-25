@@ -32,7 +32,8 @@
   (define-key *minibuffer-mode-map* (key "Down") #'select-next)
   (define-key *minibuffer-mode-map* (key "Up") #'select-previous)
   (define-key *minibuffer-mode-map* (key "C-v") #'paste)
-  (define-key *minibuffer-mode-map* (key "C-y") #'paste))
+  (define-key *minibuffer-mode-map* (key "C-y") #'paste)
+  (setf (keymap %mode) *minibuffer-mode-map*))
 
 (defclass minibuffer (buffer)
   ((mode :accessor mode :initarg :mode :initform 'minibuffer-mode)
@@ -78,8 +79,7 @@
 (defmethod initialize-instance :after ((minibuffer minibuffer)
                                        &key &allow-other-keys)
   (when (symbolp (mode minibuffer))
-    (setf (mode minibuffer) (make-instance (mode minibuffer))))
-  (setf (keymap (mode minibuffer)) *minibuffer-mode-map*))
+    (setf (mode minibuffer) (make-instance (mode minibuffer)))))
 
 (defmethod read-from-minibuffer (callback-function
                                  (minibuffer minibuffer)

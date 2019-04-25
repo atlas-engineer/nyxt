@@ -113,7 +113,6 @@ Set to '-' to read standard input instead."))
 (defun start (&key (with-platform-port-p nil))
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
-  (map nil 'funcall *deferred-mode-initializations*)
   (load-init-file)
   ;; create the interface object
   (unless (eq swank:*communication-style* :fd-handler)

@@ -14,8 +14,6 @@
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)
   "A hash of all available commands.")
-(defvar *deferred-mode-initializations* ()
-  "A list of functions invoked on start for modes.")
 (defvar *global-map* (make-hash-table :test 'equal)
   "A global key map, available in every mode/buffer.")
 (defvar *swank-port* 4006

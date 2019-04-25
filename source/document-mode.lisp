@@ -39,11 +39,8 @@
   (define-key *document-mode-map* (key "M->") 'scroll-to-bottom)
   (define-key *document-mode-map* (key "M-<") 'scroll-to-top)
   (define-key *document-mode-map* (key "C-w") 'copy-url)
-  (define-key *document-mode-map* (key "M-w") 'copy-title))
-
-(defmethod initialize-instance :after ((mode document-mode)
-                                       &key &allow-other-keys)
-  (setf (keymap mode) *document-mode-map*))
+  (define-key *document-mode-map* (key "M-w") 'copy-title)
+  (setf (keymap %mode) *document-mode-map*))
 
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."

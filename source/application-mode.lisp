@@ -3,8 +3,6 @@
 
 (in-package :next)
 
-(defvar *application-mode-map* (make-hash-table :test 'equal))
-
 (define-mode application-mode ()
     "Mode that forwards all keys to the platform port."
   ())
