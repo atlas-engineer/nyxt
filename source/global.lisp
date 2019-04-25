@@ -14,8 +14,6 @@
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)
   "A hash of all available commands.")
-(defvar *deferred-variables* ()
-  "A list of functions which set globals which are deferred until startup for evaluation.")
 (defvar *deferred-mode-initializations* ()
   "A list of functions invoked on start for modes.")
 (defvar *global-map* (make-hash-table :test 'equal)
@@ -29,15 +27,6 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
-
-(deferredvar *init-file-path* (xdg-config-home "init.lisp")
-  "The path where the system will look to load an init file from.")
-(deferredvar *history-db-path* (xdg-data-home "history.db")
-  "The path where the system will create/save the history database.")
-(deferredvar *bookmark-db-path* (xdg-data-home "bookmark.db")
-  "The path where the system will create/save the bookmark database.")
-(deferredvar *cookies-path* (xdg-data-home "cookies.txt")
-  "The path for cookies in the GTK Version of Next")
 
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))

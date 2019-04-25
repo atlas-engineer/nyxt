@@ -15,7 +15,8 @@
 
 (defun bookmark-complete (input)
   (let* ((db (sqlite:connect
-              (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db)))
+              (ensure-file-exists (bookmark-db-path (window-active *interface*))
+                                  #'%initialize-bookmark-db)))
          (candidates
            (sqlite:execute-to-list
             db "select url from bookmarks where url like ?"
@@ -25,7 +26,8 @@
 
 (defun %bookmark-url (url)
   (let ((db (sqlite:connect
-             (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db))))
+             (ensure-file-exists (bookmark-db-path (window-active *interface*))
+                                 #'%initialize-bookmark-db))))
     (sqlite:execute-non-query
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
@@ -34,7 +36,8 @@
   "Bookmark the currently opened page in the active buffer."
   (with-result (url (buffer-get-url))
     (let ((db (sqlite:connect
-               (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db))))
+               (ensure-file-exists (bookmark-db-path (window-active *interface*))
+                                   #'%initialize-bookmark-db))))
       (sqlite:execute-non-query
        db "insert into bookmarks (url) values (?)" url)
       (sqlite:disconnect db)))
@@ -53,7 +56,8 @@
                           :input-prompt "Delete bookmark:"
                           :completion-function 'bookmark-complete))
     (let ((db (sqlite:connect
-               (ensure-file-exists *bookmark-db-path* #'%initialize-bookmark-db))))
+               (ensure-file-exists (bookmark-db-path (window-active *interface*))
+                                   #'%initialize-bookmark-db))))
       (sqlite:execute-non-query
        db "delete from bookmarks where url = ?" bookmark)
       (sqlite:disconnect db))))

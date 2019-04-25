@@ -28,8 +28,3 @@
     `(progn ,@body)
     `(with-result ,(first bindings)
        (with-result* ,(rest bindings) ,@body))))
-
-(defmacro deferredvar (variable value &optional (documentation nil))
-  `(progn
-     (defvar ,variable nil ,documentation)
-     (push (lambda () (setf ,variable ,value)) *deferred-variables*)))

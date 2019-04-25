@@ -91,6 +91,10 @@ Set to '-' to read standard input instead."))
           (let ((buffer (make-buffer)))
             (set-url-buffer url buffer)))))))
 
+(defvar *init-file-path* (xdg-config-home "init.lisp")
+  "The path where the system will look to load an init file from.")
+
+;; TODO: Turn into a command?
 (defun load-init-file (&optional (init-file *init-file-path*))
   "Load the user configuration if it exists."
   (handler-case (if (string= (pathname-name init-file) "-")
@@ -101,10 +105,12 @@ Set to '-' to read standard input instead."))
                             do (eval object)))
                     (load init-file :if-does-not-exist nil))
     (error (c)
-      (log:warn "Error: we could not load your init file: ~a" c))))
+      (log:warn "Error: we could not load your init file: ~a" c)
+      (when *interface*
+        (echo (minibuffer *interface*)
+              (format nil "Error: we could not load your init file: ~a" c))))))
 
 (defun start (&key (with-platform-port-p nil))
-  (map nil 'funcall *deferred-variables*)
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
   (map nil 'funcall *deferred-mode-initializations*)

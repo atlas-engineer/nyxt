@@ -21,9 +21,6 @@
                                  :input-prompt "Load file:"))
     (load file-name-input :if-does-not-exist nil)))
 
-(defun reload-init ()
-  (load *init-file-path*))
-
 (define-command start-swank ()
   "Start a swank server that can be connected to in Emacs via
 slime. Default port is 4006."

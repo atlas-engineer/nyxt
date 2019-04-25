@@ -13,7 +13,11 @@
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
                            :documentation "The height of the minibuffer when open.")
    (minibuffer-echo-height :accessor minibuffer-echo-height :initform 25
-                           :documentation "The height of the minibuffer when echoing.")))
+                           :documentation "The height of the minibuffer when echoing.")
+   (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
+                    :documentation "The path where the system will create/save the history database.")
+   (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
+                     :documentation "The path where the system will create/save the bookmark database.")))
 
 (defclass buffer ()
   ((id :accessor id :initarg :id)
@@ -46,7 +50,10 @@ distance scroll-left or scroll-right will scroll.")
    (zoom-ratio-max :accessor zoom-ratio-max :initform 5.0
                    :documentation "The maximum zoom ratio relative to the default.")
    (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0
-                       :documentation "The default zoom ratio.")))
+                       :documentation "The default zoom ratio.")
+   (cookies-path :accessor cookies-path :initform (xdg-data-home "cookies.txt")
+                 :documentation "The path where cookies are stored.  Not all
+platform ports might support this.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
   (when (symbolp (mode buffer))
@@ -230,15 +237,14 @@ startup after the remote-interface was set up."
 (defmethod buffer-make ((interface remote-interface)
                         &key name mode)
   (let* ((buffer-id (get-unique-buffer-identifier interface))
-         (cookies-path (namestring (ensure-parent-exists
-                                    (merge-pathnames *cookies-path* "cookies.txt"))))
          (buffer (apply #'make-instance 'buffer :id buffer-id
                         (append (when name `(:name ,name))
                                 (when mode `(:mode ,mode))))))
+    (ensure-parent-exists (cookies-path buffer))
     (setf (gethash buffer-id (buffers interface)) buffer)
     (%xml-rpc-send interface "buffer.make" buffer-id
                    (list
-                    :cookies-path cookies-path))
+                    :cookies-path (namestring (cookies-path buffer))))
     buffer))
 
 (defmethod %buffer-make ((interface remote-interface)
