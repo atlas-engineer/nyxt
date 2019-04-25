@@ -74,6 +74,10 @@ distance scroll-left or scroll-right will scroll.")
                          :documentation "The XML-RPC remote socket of the platform-port.")
    (port :accessor port :initform (make-instance 'port)
          :documentation "The CLOS object responible for handling the platform port.")
+   (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.015
+                                :documentation "The speed at which to poll the
+XML-RPC endpoint of a platform-port to see if it is ready to begin accepting
+XML-RPC commands.")
    (active-connection :accessor active-connection :initform nil)
    (url :accessor url :initform "/RPC2")
    (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)

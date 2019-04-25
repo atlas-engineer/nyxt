@@ -70,7 +70,7 @@ Set to '-' to read standard input instead."))
 (defmethod initialize-port ((interface remote-interface))
   (let* ((port-running nil)
          (max-seconds-to-wait 5.0)
-         (max-attemps (/ max-seconds-to-wait *platform-port-poll-interval*)))
+         (max-attemps (/ max-seconds-to-wait (platform-port-poll-interval interface))))
     (loop while (not port-running)
           repeat max-attemps do
       (handler-case
@@ -80,7 +80,7 @@ Set to '-' to read standard input instead."))
         (error (c)
           (log:debug "Could not communicate with port: ~a" c)
           (log:info "Polling platform port '~a'...~%" (platform-port-socket interface))
-          (sleep *platform-port-poll-interval*)
+          (sleep (platform-port-poll-interval interface))
           (setf port-running nil))))
     (when port-running
           ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.

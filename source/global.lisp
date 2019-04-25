@@ -29,9 +29,6 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
-(defvar *platform-port-poll-interval* 0.015
-  "The speed at which to poll the XML-RPC endpoint of a platform-port
-  to see if it is ready to begin accepting XML-RPC commands.")
 
 (deferredvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
