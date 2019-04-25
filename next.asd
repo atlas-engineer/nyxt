@@ -22,7 +22,8 @@
                :unix-opts
                :trivial-clipboard
                :find-port
-               :log4cl)
+               :log4cl
+               :closer-mop)
   :components ((:module "source"
                 :components
                 (;; Core Functionality

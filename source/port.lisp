@@ -2,9 +2,6 @@
 
 (in-package :next)
 
-(defvar *port* nil
-  "The CLOS object responible for handling the platform port.")
-
 ;; TODO: Function-values for slots are not a good idea: should the value change,
 ;; we have no way to access the old value.
 

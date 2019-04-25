@@ -1,3 +1,3 @@
 (in-package :next)
 
-(setf *port* (make-instance 'port :name "next-gtk-webkit"))
+(set-default 'port 'name "next-gtk-webkit")

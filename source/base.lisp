@@ -42,7 +42,7 @@ Set to '-' to read standard input instead."))
 (define-command kill ()
   "Quit Next."
   (kill-interface *interface*)
-  (kill-program *port*))
+  (kill-program (port *interface*)))
 
 (defun start-with-port ()
   (multiple-value-bind (options free-args)
@@ -114,10 +114,10 @@ Set to '-' to read standard input instead."))
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.
   (when with-platform-port-p
-    (run-program *port*))
+    (run-program (port *interface*)))
   (initialize-port *interface*)
   (when with-platform-port-p
-    (run-loop *port*)
+    (run-loop (port *interface*))
     (kill-interface *interface*))
   t)
 

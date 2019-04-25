@@ -41,6 +41,8 @@
               :documentation "The XML-RPC server port of the Lisp core.")
    (platform-port-socket :accessor platform-port-socket :initform '(:host "localhost" :port 8082)
                          :documentation "The XML-RPC remote socket of the platform-port.")
+   (port :accessor port :initform (make-instance 'port)
+         :documentation "The CLOS object responible for handling the platform port.")
    (active-connection :accessor active-connection :initform nil)
    (url :accessor url :initform "/RPC2")
    (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
@@ -57,7 +59,7 @@ It's important that it is dynamic since the platform port can be reconfigured on
 startup after the remote-interface was set up."
   (getf (platform-port-socket interface) :host))
 
-(defmethod port ((interface remote-interface))
+(defmethod host-port ((interface remote-interface))
   "Retrieve the port of the platform port dynamically.
 It's important that it is dynamic since the platform port can be reconfigured on
 startup after the remote-interface was set up."
@@ -108,7 +110,7 @@ startup after the remote-interface was set up."
     (handler-case
         (let ((result (s-xml-rpc:xml-rpc-call
                        (apply #'s-xml-rpc:encode-xml-rpc-call method args)
-                       :host (host interface) :port (port interface) :url url)))
+                       :host (host interface) :port (host-port interface) :url url)))
           (when (or (string= method "set.proxy")
                     ;; (string= method "get.proxy")
                     )
