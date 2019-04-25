@@ -24,6 +24,8 @@ The mode is instantiated on buffer initialization.")
                              :initform nil)
    (callbacks :accessor callbacks
               :initform (make-hash-table :test #'equal))
+   (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
+                           :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50
                     :documentation "The distance scroll-down or scroll-up will scroll.")
    (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50
@@ -104,7 +106,9 @@ startup after the remote-interface was set up."
             )
             (when #+sbcl t
                   #+ccl (eq (ccl:socket-error-identifier e) :address-in-use)
-              (let ((url-list (or *free-args* (list *default-new-buffer-url*))))
+                  (let ((url-list (or *free-args* (list
+                                                   (closer-mop:slot-definition-initform
+                                                    (find-slot 'buffer 'default-new-buffer-url))))))
                 (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
                         (core-port interface) url-list)
                 ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).

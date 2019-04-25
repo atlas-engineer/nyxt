@@ -24,10 +24,10 @@
     (set-active-buffer *interface* buffer)))
 
 (define-command make-visible-new-buffer ()
-  "Make a new empty buffer with the *default-new-buffer-url* loaded"
+  "Make a new empty buffer with the default-new-buffer-url loaded."
   (let ((buffer (make-buffer)))
     (set-active-buffer *interface* buffer)
-    (set-url-buffer *default-new-buffer-url* buffer)))
+    (set-url-buffer (default-new-buffer-url buffer) buffer)))
 
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."

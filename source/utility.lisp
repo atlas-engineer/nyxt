@@ -116,6 +116,15 @@ When non-nil, INIT-FUNCTION is used to create the file, else the file will be em
         (close (open (ensure-parent-exists path) :direction :probe :if-does-not-exist :create))))
   (truename path))
 
+(defun find-slot (class slot-name)
+  "CLASS can be a symbol or a class."
+  (when (symbolp class)
+    (setf class (closer-mop:ensure-finalized (find-class class))))
+  (find-if (lambda (slot)
+                         (eq (closer-mop:slot-definition-name slot)
+                             slot-name))
+                       (closer-mop:class-slots class)))
+
 (defun set-default (class-name slot-name value)
   "Set default value of slot SLOT-NAME from class CLASS-NAME.
 Return the class."
@@ -123,10 +132,7 @@ Return the class."
   ;; coupled, it seems that both must be changed together.  We need to change
   ;; the class-slots and not the class-direct-slots.  TODO: Explain why.
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
-         (slot (find-if (lambda (slot)
-                         (eq (closer-mop:slot-definition-name slot)
-                             slot-name))
-                       (closer-mop:class-slots class))))
+         (slot (find-slot class slot-name)))
     (setf
      (closer-mop:slot-definition-initform slot) value
      (closer-mop:slot-definition-initfunction slot) (lambda () value))

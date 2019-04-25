@@ -23,8 +23,6 @@
 (defvar *swank-port* 4006
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in Next to avoid collisions).")
-(defvar *default-new-buffer-url* "https://next.atlas.engineer/start"
-  "The URL set to a new blank buffer opened by Next.")
 (defvar *package-symbols* nil
   "The package symbols available, populated by helper function
   load-package-symbols.")

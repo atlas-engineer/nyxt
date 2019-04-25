@@ -132,5 +132,5 @@
   (echo-dismiss (minibuffer *interface*)))
 
 (defmethod setup ((mode document-mode) (buffer buffer))
-  (set-url-buffer *default-new-buffer-url* buffer)
+  (set-url-buffer (default-new-buffer-url buffer) buffer)
   (call-next-method))
