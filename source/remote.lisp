@@ -74,7 +74,9 @@ distance scroll-left or scroll-right will scroll.")
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
-   (total-buffer-count :accessor total-buffer-count :initform 0)))
+   (total-buffer-count :accessor total-buffer-count :initform 0)
+   (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
+                   :documentation "The URL of the first buffer opened by Next when started.")))
 
 (defmethod host ((interface remote-interface))
   "Retrieve the host of the platform port dynamically.
