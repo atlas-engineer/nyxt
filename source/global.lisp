@@ -20,16 +20,6 @@
   "A list of functions invoked on start for modes.")
 (defvar *global-map* (make-hash-table :test 'equal)
   "A global key map, available in every mode/buffer.")
-(defvar *current-zoom-ratio* 1.0
-  "The current zoom relative to the default zoom.")
-(defvar *zoom-ratio-step* 0.2
-  "The step size for zooming in and out.")
-(defvar *zoom-ratio-min* 0.2
-  "The minimum zoom ratio relative to the default.")
-(defvar *zoom-ratio-max* 5.0
-  "The maximum zoom ratio relative to the default.")
-(defvar *zoom-ratio-default* 1.0
-  "The default zoom ratio.")
 (defvar *swank-port* 4006
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in Next to avoid collisions).")

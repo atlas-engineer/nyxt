@@ -28,7 +28,17 @@ The mode is instantiated on buffer initialization.")
                     :documentation "The distance scroll-down or scroll-up will scroll.")
    (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50
                                :documentation "Horizontal scroll distance. The
-distance scroll-left or scroll-right will scroll.")))
+distance scroll-left or scroll-right will scroll.")
+   (current-zoom-ratio :accessor current-zoom-ratio :initform 1.0
+                       :documentation "The current zoom relative to the default zoom.")
+   (zoom-ratio-step :accessor zoom-ratio-step :initform 0.2
+                    :documentation "The step size for zooming in and out.")
+   (zoom-ratio-min :accessor zoom-ratio-min :initform 0.2
+                   :documentation "The minimum zoom ratio relative to the default.")
+   (zoom-ratio-max :accessor zoom-ratio-max :initform 5.0
+                   :documentation "The maximum zoom ratio relative to the default.")
+   (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0
+                       :documentation "The default zoom ratio.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
   (when (symbolp (mode buffer))
