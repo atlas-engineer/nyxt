@@ -20,7 +20,7 @@ typedef struct {
 	int callback_id;
 } MinibufferInfo;
 
-gboolean minibuffer_web_view_web_process_crashed(WebKitWebView *web_view,
+gboolean minibuffer_web_view_web_process_crashed(WebKitWebView *_web_view,
 	Minibuffer *minibuffer) {
 	g_warning("Window %s minibuffer web process crashed",
 		minibuffer->parent_window_identifier);

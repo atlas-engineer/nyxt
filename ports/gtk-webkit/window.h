@@ -215,7 +215,7 @@ void window_generate_input_event(WindowEvent *window_event) {
 	g_free(window_event);
 }
 
-void window_consume_event(SoupSession *session, SoupMessage *msg, gpointer window_data) {
+void window_consume_event(SoupSession *_session, SoupMessage *msg, gpointer window_data) {
 	GError *error = NULL;
 	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
 
@@ -397,7 +397,6 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 			event->x_root, event->y_root,
 			event->x, event->y,
 			event->state,
-			event->axes, event->device,
 			event->send_event, event->time);
 	}
 	if (event->send_event) {
@@ -414,7 +413,7 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 	g_hash_table_iter_init(&iter, state.windows);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		Window *w = (Window *)value;
-		if (w->buffer = buffer) {
+		if (w->buffer == buffer) {
 			window = w;
 			break;
 		}
@@ -452,7 +451,7 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 	g_hash_table_iter_init(&iter, state.windows);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		Window *w = (Window *)value;
-		if (w->buffer = buffer) {
+		if (w->buffer == buffer) {
 			window = w;
 			break;
 		}

@@ -290,7 +290,6 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 	}
 	const char *window_id = NULL;
 	guint hardware_keycode = 0; // We are given an integer "i", not a uint16.
-	gchar *keyval_string = NULL;
 	guint modifiers = 0; // modifiers
 	guint keyval = 0;
 	gdouble x = -1;
@@ -525,7 +524,7 @@ static GVariant *server_get_proxy(SoupXMLRPCParams *params) {
 }
 
 static void server_handler(SoupServer *_server, SoupMessage *msg,
-	const char *path, GHashTable *_query,
+	const char *_path, GHashTable *_query,
 	SoupClientContext *_context, gpointer _data) {
 	// Log of the request.  This is quite verbose and not so useful, so we comment it out.
 	/*
@@ -533,7 +532,7 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 	        const char *name, *value;
 	        SoupMessageHeadersIter iter;
 	        GString *pretty_message = g_string_new("HTTP request:\n");
-	        g_string_append_printf(pretty_message, "%s %s HTTP/1.%d\n", msg->method, path,
+	        g_string_append_printf(pretty_message, "%s %s HTTP/1.%d\n", msg->method, _path,
 	                soup_message_get_http_version(msg));
 	        soup_message_headers_iter_init(&iter, msg->request_headers);
 	        while (soup_message_headers_iter_next(&iter, &name, &value)) {

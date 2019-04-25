@@ -112,7 +112,7 @@ typedef struct  {
 	const gchar *uri;
 } DecisionInfo;
 
-void buffer_navigated_callback(SoupSession *session, SoupMessage *msg, gpointer data) {
+void buffer_navigated_callback(SoupSession *_session, SoupMessage *msg, gpointer data) {
 	GError *error = NULL;
 	g_debug("Buffer navigation XML-RPC response: %s", msg->response_body->data);
 
@@ -145,7 +145,7 @@ void buffer_navigated_callback(SoupSession *session, SoupMessage *msg, gpointer 
 	return;
 }
 
-gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
+gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 	WebKitPolicyDecision *decision, WebKitPolicyDecisionType type, gpointer bufferp) {
 	WebKitNavigationAction *action = NULL;
 
@@ -273,8 +273,8 @@ void buffer_set_cookie_file(Buffer *buffer, const char *path) {
 }
 
 // TODO: Remove this once all downloads have been transfered to the Lisp core.
-void buffer_web_view_download_started(WebKitWebContext *context,
-	WebKitDownload *download, Buffer *buffer) {
+void buffer_web_view_download_started(WebKitWebContext *_context,
+	WebKitDownload *download, Buffer *_buffer) {
 	const char *uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
 	g_warning("Download starting: %s", uri);
 	/*
@@ -286,7 +286,7 @@ void buffer_web_view_download_started(WebKitWebContext *context,
 	*/
 }
 
-gboolean buffer_web_view_web_process_crashed(WebKitWebView *web_view, Buffer *buffer) {
+gboolean buffer_web_view_web_process_crashed(WebKitWebView *_web_view, Buffer *buffer) {
 	g_warning("Buffer %s web process crashed", buffer->identifier);
 	return FALSE;
 }

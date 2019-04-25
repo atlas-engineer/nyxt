@@ -10,7 +10,6 @@ Use of this file is governed by the license that can be found in LICENSE.
 int main(int argc, char *argv[]) {
 	// TODO: Use GtkApplication?
 	GError *error = NULL;
-	gchar *log = NULL;
 	char *default_port = g_strdup_printf("%i", NEXT_PLATFORM_PORT);
 	GOptionEntry options[] = {
 		{"port", 'p', 0, G_OPTION_ARG_INT, &state.port, "Port the XML-RPC server listens to", default_port},
