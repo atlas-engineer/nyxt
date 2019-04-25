@@ -20,11 +20,6 @@
   "A list of functions invoked on start for modes.")
 (defvar *global-map* (make-hash-table :test 'equal)
   "A global key map, available in every mode/buffer.")
-(defvar *scroll-distance* 50
-  "The distance scroll-down or scroll-up will scroll.")
-(defvar *horizontal-scroll-distance* 50
-  "Horizontal scroll distance. The distance scroll-left or scroll-right
-  will scroll.")
 (defvar *current-zoom-ratio* 1.0
   "The current zoom relative to the default zoom.")
 (defvar *zoom-ratio-step* 0.2

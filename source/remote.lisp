@@ -23,7 +23,12 @@ The mode is instantiated on buffer initialization.")
                              :initarg :resource-query-functions
                              :initform nil)
    (callbacks :accessor callbacks
-              :initform (make-hash-table :test #'equal))))
+              :initform (make-hash-table :test #'equal))
+   (scroll-distance :accessor scroll-distance :initform 50
+                    :documentation "The distance scroll-down or scroll-up will scroll.")
+   (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50
+                               :documentation "Horizontal scroll distance. The
+distance scroll-left or scroll-right will scroll.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
   (when (symbolp (mode buffer))
