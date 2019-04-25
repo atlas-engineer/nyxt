@@ -4,8 +4,10 @@
 
 (defvar *document-mode-map* (make-hash-table :test 'equal))
 
-(define-mode document-mode (mode)
-  ((active-history-node :accessor active-history-node :initarg :active-node)
+(define-mode document-mode ()
+  "Base mode for interacting with documents."
+    ((active-history-node :accessor active-history-node :initarg :active-node
+                          :initform (make-instance 'node :data "about:blank"))
    (link-hints :accessor link-hints))
   (define-key *document-mode-map* (key "M-f") 'history-forwards-query)
   (define-key *document-mode-map* (key "M-b") 'history-backwards)
@@ -39,6 +41,10 @@
   (define-key *document-mode-map* (key "C-w") 'copy-url)
   (define-key *document-mode-map* (key "M-w") 'copy-title))
 
+(defmethod initialize-instance :after ((mode document-mode)
+                                       &key &allow-other-keys)
+  (setf (keymap mode) *document-mode-map*))
+
 (define-command history-backwards ()
   "Move up to parent node to iterate backwards in history tree."
   (let ((parent (node-parent (active-history-node
@@ -71,7 +77,7 @@
     (unless (equal input "Cannot navigate forwards.")
       (set-url (node-data input)))))
 
-(defmethod add-or-traverse-history ((mode mode) url)
+(defmethod add-or-traverse-history ((mode fundamental-mode) url)
   (let ((active-node (active-history-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
@@ -128,16 +134,3 @@
 (defmethod setup ((mode document-mode) (buffer buffer))
   (set-url-buffer *default-new-buffer-url* buffer)
   (call-next-method))
-
-(defun document-mode ()
-  "Base mode for interacting with documents"
-  (let* ((root (make-instance 'node
-                              :data "about:blank"))
-         (mode (make-instance 'document-mode
-                              :name "Document-Mode"
-                              :keymap *document-mode-map*
-                              :active-node root)))
-    mode))
-
-(defvar *default-new-buffer-mode* #'document-mode
-  "The mode a buffer will open in by default")

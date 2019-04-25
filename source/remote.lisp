@@ -12,7 +12,11 @@
 (defclass buffer ()
   ((id :accessor id :initarg :id)
    (name :accessor name :initarg :name)
-   (mode :accessor mode :initarg :mode)
+   (mode :accessor mode :initarg :mode
+         ;; TODO: This is rather clunky.  Use separate slot for the class symbol?
+         :initform 'document-mode
+         :documentation "The :initform and :initarg must be the class symbol.
+The mode is instantiated on buffer initialization.")
    (view :accessor view :initarg :view)
    (modes :accessor modes :initarg :modes)
    (resource-query-functions :accessor resource-query-functions
@@ -20,6 +24,10 @@
                              :initform nil)
    (callbacks :accessor callbacks
               :initform (make-hash-table :test #'equal))))
+
+(defmethod initialize-instance :after ((buffer buffer) &key)
+  (when (symbolp (mode buffer))
+    (setf (mode buffer) (make-instance (mode buffer)))))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord
@@ -188,11 +196,14 @@ startup after the remote-interface was set up."
                                          window height)
   (%xml-rpc-send interface "window.set.minibuffer.height" (id window) height))
 
-(defmethod buffer-make ((interface remote-interface))
+(defmethod buffer-make ((interface remote-interface)
+                        &key name mode)
   (let* ((buffer-id (get-unique-buffer-identifier interface))
          (cookies-path (namestring (ensure-parent-exists
                                     (merge-pathnames *cookies-path* "cookies.txt"))))
-         (buffer (make-instance 'buffer :id buffer-id)))
+         (buffer (apply #'make-instance 'buffer :id buffer-id
+                        (append (when name `(:name ,name))
+                                (when mode `(:mode ,mode))))))
     (setf (gethash buffer-id (buffers interface)) buffer)
     (%xml-rpc-send interface "buffer.make" buffer-id
                    (list
@@ -202,11 +213,10 @@ startup after the remote-interface was set up."
 (defmethod %buffer-make ((interface remote-interface)
                          &optional
                            (name "default")
-                           (mode (funcall *default-new-buffer-mode*)))
-  (let ((buffer (buffer-make interface)))
-    (setf (name buffer) name)
-    (setf (mode buffer) mode)
-    (setup mode buffer)
+                           mode)
+  (let* ((buffer (buffer-make interface :name name :mode mode)))
+    (when (mode buffer)
+      (setup (mode buffer) buffer))
     buffer))
 
 (defmethod %get-inactive-buffer ((interface remote-interface))

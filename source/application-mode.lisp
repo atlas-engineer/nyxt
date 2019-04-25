@@ -3,12 +3,8 @@
 
 (in-package :next)
 
-
 (defvar *application-mode-map* (make-hash-table :test 'equal))
 
-(define-mode application-mode (mode) ())
-
-(defun application-mode ()
-  (make-instance 'application-mode
-                 :name "Application-Mode"
-                 :keymap *application-mode-map*))
+(define-mode application-mode ()
+    "Mode that forwards all keys to the platform port."
+  ())

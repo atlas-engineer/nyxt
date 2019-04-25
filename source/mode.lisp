@@ -3,21 +3,29 @@
 
 (in-package :next)
 
-(defmacro define-mode (name direct-superclasses direct-slots &body body)
+(defmacro define-mode (name direct-superclasses docstring direct-slots &body body)
   `(progn
-     (defclass ,name ,direct-superclasses ,direct-slots)
+     (defclass ,name ,(unless (eq (car direct-superclasses) t)
+                        (cons 'fundamental-mode direct-superclasses))
+       ,direct-slots
+       (:documentation ,docstring))
+     (defun ,name ()
+       ,docstring
+       (make-instance ',name
+                      :name (format nil "~a-mode" ',name)))
      (push (lambda () ,@body) *deferred-mode-initializations*)))
 
-(define-mode mode ()
+(define-mode fundamental-mode (t)
+    "The root of all modes."
     ((name :accessor name :initarg :name)
-     (keymap :accessor keymap :initarg :keymap)
+     (keymap :accessor keymap :initarg :keymap :initform (make-hash-table :test 'equal))
      (buffer :accessor buffer)))
 
-(defmethod setup ((mode mode) (buffer buffer))
+(defmethod setup ((mode fundamental-mode) (buffer buffer))
   (setf (buffer mode) buffer))
 
-(defmethod did-commit-navigation ((mode mode) url)
+(defmethod did-commit-navigation ((mode fundamental-mode) url)
   url)
 
-(defmethod did-finish-navigation ((mode mode) url)
+(defmethod did-finish-navigation ((mode fundamental-mode) url)
   url)

@@ -6,7 +6,7 @@
   (name buffer))
 
 (define-command make-buffer (&optional (name "default")
-                                       (mode (funcall *default-new-buffer-mode*)))
+                                       mode)
   "Create a new buffer."
   (%buffer-make *interface* name mode))
 

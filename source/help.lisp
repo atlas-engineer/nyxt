@@ -4,7 +4,10 @@
 
 (defvar *help-mode-map* (make-hash-table :test 'equal))
 
-(define-mode help-mode (mode) ()
+(define-mode help-mode ()
+  "Mode for displaying documentation."
+    (;; No slots.
+     )
   (define-key *help-mode-map* (key "C-p") 'scroll-up)
   (define-key *help-mode-map* (key "C-n") 'scroll-down))
 
@@ -86,12 +89,6 @@
                                      (ps:lisp result-contents)))))
       (buffer-evaluate-javascript *interface* result-buffer insert-results)
       (set-active-buffer *interface* result-buffer))))
-
-(defun help-mode ()
-  "Base mode for interacting with documents"
-  (make-instance 'help-mode
-                 :name "Help-Mode"
-                 :keymap *help-mode-map*))
 
 (define-command next-version ()
   "Version number of this version of Next.
