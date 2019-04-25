@@ -10,18 +10,28 @@
 (defvar *interface* nil
   "The CLOS object responsible for rendering the interface.")
 
+;; TODO: Move commands with their hooks to a REMOTE-INTERFACE slot?
 (defvar *available-hooks* (make-hash-table :test #'equalp)
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)
   "A hash of all available commands.")
+
+;; TODO: Move global-map to a REMOTE-INTERFACE slot?
 (defvar *global-map* (make-hash-table :test 'equal)
   "A global key map, available in every mode/buffer.")
+
 (defvar *swank-port* 4006
   "The port that swank will open a new server on (default Emacs slime port
   is 4005, default set to 4006 in Next to avoid collisions).")
+
+;; TODO: Unused.  Remove?  Might be useful when we introspect classes.
 (defvar *package-symbols* nil
   "The package symbols available, populated by helper function
   load-package-symbols.")
+
+;; TODO: This is barely useful since we don't have any global.  It is used by
+;; INSPECT-VARIABLE.  We need to augment the function so that we can inspect
+;; *INTERFACE* and classes.
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")

@@ -13,6 +13,7 @@
   (declare (ignore key))
   (funcall value))
 
+;; TODO: Fix run-hook: it needs to know the function name.
 (defun run-hook (hook-name)
   (let ((hook-functions-hash (gethash hook-name *available-hooks*)))
     (when hook-functions-hash
