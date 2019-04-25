@@ -74,18 +74,22 @@ Set to '-' to read standard input instead."))
     (loop while (not port-running)
           repeat max-attemps do
       (handler-case
-          ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
-          (let ((buffer (nth-value 1 (make-window))))
-            (set-url-buffer (if *free-args* (car *free-args*) *start-page-url*) buffer)
-            ;; We can have many URLs as positional arguments.
-            (loop for url in (cdr *free-args*) do
-              (let ((buffer (make-buffer)))
-                (set-url-buffer url buffer)))
-            (setf port-running t))
-        (error ()
+          (progn
+            (when (list-methods interface)
+              (setf port-running t)))
+        (error (c)
+          (log:debug "Could not communicate with port: ~a" c)
           (log:info "Polling platform port '~a'...~%" (platform-port-socket interface))
           (sleep *platform-port-poll-interval*)
-          (setf port-running nil))))))
+          (setf port-running nil))))
+    (when port-running
+          ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
+      (let ((buffer (nth-value 1 (make-window))))
+        (set-url-buffer (if *free-args* (car *free-args*) *start-page-url*) buffer)
+        ;; We can have many URLs as positional arguments.
+        (loop for url in (cdr *free-args*) do
+          (let ((buffer (make-buffer)))
+            (set-url-buffer url buffer)))))))
 
 (defun load-init-file (&optional (init-file *init-file-path*))
   "Load the user configuration if it exists."
