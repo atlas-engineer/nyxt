@@ -108,17 +108,13 @@ startup after the remote-interface was set up."
   ;; If the platform port ever hangs, the next %xml-rpc-send will hang the Lisp core too.
   (with-slots (url) interface
     (handler-case
-        (let ((result (s-xml-rpc:xml-rpc-call
-                       (apply #'s-xml-rpc:encode-xml-rpc-call method args)
-                       :host (host interface) :port (host-port interface) :url url)))
-          (when (or (string= method "set.proxy")
-                    ;; (string= method "get.proxy")
-                    )
-            (log:debug "XML-RESULT" result))
-          result)
+        (s-xml-rpc:xml-rpc-call
+         (apply #'s-xml-rpc:encode-xml-rpc-call method args)
+         :host (host interface) :port (host-port interface) :url url)
       (s-xml-rpc:xml-rpc-fault (c)
         (log:warn "~a" c)
-        (echo (minibuffer *interface*) (format nil "Platform port failed to respond to '~a': ~a" method c))
+        (echo (minibuffer *interface*)
+              (format nil "Platform port failed to respond to '~a': ~a" method c))
         (error c)))))
 
 (defmethod list-methods ((interface remote-interface))
