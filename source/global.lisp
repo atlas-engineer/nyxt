@@ -32,32 +32,7 @@
 (defvar *platform-port-poll-interval* 0.015
   "The speed at which to poll the XML-RPC endpoint of a platform-port
   to see if it is ready to begin accepting XML-RPC commands.")
-(defvar *minibuffer-style*
-  (cl-css:css
-   '((* :font-family "monospace,monospace"
-        :font-size "14px")
-     (body :border-top "4px solid dimgray"
-           :margin "0"
-           :padding "0 6px")
-     ("#container" :display "flex"
-                   :flex-flow "column"
-                   :height "100%")
-     ("#input" :padding "6px 0"
-               :border-bottom "solid 1px lightgray")
-     ("#completions" :flex-grow "1"
-                     :overflow-y "auto"
-                     :overflow-x "auto")
-     ("#cursor" :background-color "gray"
-                :color "white")
-     ("#prompt" :padding-right "4px"
-                :color "dimgray")
-     (ul :list-style "none"
-         :padding "0"
-         :margin "0")
-     (li :padding "2px")
-     (.selected :background-color "gray"
-                :color "white")))
-  "The CSS applied to a minibuffer when it is set-up.")
+
 (deferredvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
 (deferredvar *history-db-path* (xdg-data-home "history.db")
