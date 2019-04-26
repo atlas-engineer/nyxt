@@ -1,7 +1,7 @@
 ;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 ;;; next.asd
 
-(asdf:defsystem :next
+(defsystem next
   :version "1.2.0"
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
@@ -60,3 +60,49 @@
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:start-with-port")
+
+(defsystem next/engine
+                                        ; Can't depend on next!
+  :depends-on (lparallel)
+
+                                        ; So we include package
+                                        ; definitions for requirees of
+                                        ; this system.
+  :components ((:module base :pathname "source/"
+                        :components ((:file "package")
+                                     (:file "config")))
+               (:module source :pathname "source/"
+                        :depends-on (base)
+                        :components ((:file "engine")))))
+  
+(defsystem next/engine/https
+  :depends-on (next/engine
+               dexador  
+               puri)
+  :components ((:module source :pathname "source/"
+                        :components ((:file "download")))))
+
+(defsystem next/t
+  :in-order-to ((test-op (test-op next/engine/t))))
+
+;;; TODO fix upstream ASDF to successfully locate and load
+;;;      DEFSYSTEM-DEPENDS-ON clauses
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (ignore-errors (asdf:find-system :prove-asdf))
+    (ql:quickload :prove-asdf)))
+
+(defsystem next/engine/t
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (prove
+                      next/engine/https)
+  :components ((:module source/t :pathname "source/t/"
+                :components ((:test-file "manager"))))
+  :perform (asdf:test-op (op c) (uiop:symbol-call
+                                 :prove-asdf 'run-test-system c)))
+
+
+
+
+
+
+
