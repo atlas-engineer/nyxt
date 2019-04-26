@@ -83,7 +83,7 @@ Set to '-' to read standard input instead."))
           (sleep (platform-port-poll-interval interface))
           (setf port-running nil))))
     (when port-running
-          ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
+      ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
       (let ((buffer (nth-value 1 (make-window))))
         (set-url-buffer (if *free-args* (car *free-args*) (start-page-url interface)) buffer)
         ;; We can have many URLs as positional arguments.

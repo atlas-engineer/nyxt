@@ -11,10 +11,6 @@
 
 (in-package :next)
 
-;; TODO: Move key-chord-stack* to REMOTE-INTERFACE.
-(defvar *key-chord-stack* ()
-  "A stack that keeps track of the key chords a user has inputted")
-
 (defun serialize-key-chord (key-chord)
   ;; current implementation ignores keycode
   (append (list nil
@@ -37,7 +33,7 @@
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp))
                     :low-level-data low-level-data)))
-    (push key-chord *key-chord-stack*)
+    (push key-chord (key-chord-stack *interface*))
     (if (consume-key-sequence-p sender)
         (|consume.key.sequence| sender)
         (%%generate-input-event *interface*
@@ -55,7 +51,7 @@
          (key-maps (list *global-map* local-map)))
     (flet ((is-in-maps? (key-maps)
              (dolist (map key-maps)
-               (when (look-up-key-chord-stack *key-chord-stack* map)
+               (when (look-up-key-chord-stack (key-chord-stack *interface*) map)
                  (return-from is-in-maps? t)))))
       (cond ((minibuffer-active active-window)
              (log:debug "Minibuffer active")
@@ -63,7 +59,7 @@
             ((is-in-maps? key-maps)
              (log:debug "Found in maps")
              t)
-            (t (setf *key-chord-stack* ()))))))
+            (t (setf (key-chord-stack *interface*) ()))))))
 
 (defun |consume.key.sequence| (sender)
   ;; Iterate through all keymaps
@@ -74,7 +70,7 @@
                         (keymap (mode (minibuffer *interface*)))
                         (keymap (mode active-buffer))))
          (key-maps (list *global-map* local-map))
-         (serialized-key-stack (mapcar #'serialize-key-chord *key-chord-stack*)))
+         (serialized-key-stack (mapcar #'serialize-key-chord (key-chord-stack *interface*))))
     (dolist (map key-maps)
       (let ((bound (gethash serialized-key-stack map)))
         (cond ((equalp "prefix" bound)
@@ -83,20 +79,20 @@
                (progn
                  (log:debug "Key sequence bound")
                  (funcall bound)
-                 (setf *key-chord-stack* ())
+                 (setf (key-chord-stack *interface*) ())
                  (return-from |consume.key.sequence| t)))
               ((equalp map (keymap (mode (minibuffer *interface*))))
-               (if (member "R" (key-chord-modifiers (first *key-chord-stack*))
+               (if (member "R" (key-chord-modifiers (first (key-chord-stack *interface*)))
                            :test #'string-equal)
                    (log:debug "Key released")
                    (progn
                      (log:debug "Insert ~s in minibuffer" (key-chord-key-string
-                                                           (first *key-chord-stack*)))
-                     (self-insert (key-chord-key-string (first *key-chord-stack*)))))
-               (setf *key-chord-stack* ())
+                                                           (first (key-chord-stack *interface*))))
+                     (self-insert (key-chord-key-string (first (key-chord-stack *interface*))))))
+               (setf (key-chord-stack *interface*) ())
                (return-from |consume.key.sequence| t)))))
     (log:debug "Not found in any keymaps")
-    (setf *key-chord-stack* ())))
+    (setf (key-chord-stack *interface*) ())))
 
 (defun define-key (mode-map key-sequence function)
   ;; A sequence of "C-x" "C-s" "C-a" will be broken

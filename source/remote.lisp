@@ -97,7 +97,9 @@ XML-RPC commands.")
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
    (total-buffer-count :accessor total-buffer-count :initform 0)
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
-                   :documentation "The URL of the first buffer opened by Next when started.")))
+                   :documentation "The URL of the first buffer opened by Next when started.")
+   (key-chord-stack :accessor key-chord-stack :initform '()
+                    :documentation "A stack that keeps track of the key chords a user has inputted.")))
 
 (defmethod host ((interface remote-interface))
   "Retrieve the host of the platform port dynamically.
