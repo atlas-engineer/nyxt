@@ -94,7 +94,7 @@ Set to '-' to read standard input instead."))
 (defvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
 
-;; TODO: Turn into a command?
+;; TODO: Turn into a command?  Factor with LOAD-FILE command.
 (defun load-init-file (&optional (init-file *init-file-path*))
   "Load the user configuration if it exists."
   (handler-case (if (string= (pathname-name init-file) "-")
@@ -103,12 +103,14 @@ Set to '-' to read standard input instead."))
                       (loop for object = (read *standard-input* nil :eof)
                             until (eq object :eof)
                             do (eval object)))
-                    (load init-file :if-does-not-exist nil))
+                    (progn
+                      (log:info "Initializing from ~a..." init-file)
+                      (load init-file :if-does-not-exist nil)))
     (error (c)
-      (log:warn "Error: we could not load your init file: ~a" c)
+      (log:warn "Error: we could not load your init file ~a: ~a" init-file c)
       (when *interface*
         (echo (minibuffer *interface*)
-              (format nil "Error: we could not load your init file: ~a" c))))))
+              (format nil "Error: we could not load your init file ~a: ~a" init-file c))))))
 
 (defun start (&key (with-platform-port-p nil))
   (when (getf *options* :init-file)
