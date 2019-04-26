@@ -2,15 +2,14 @@
 
 (in-package :next)
 
-(defvar *help-mode-map* (make-hash-table :test 'equal))
-
 (define-mode help-mode ()
   "Mode for displaying documentation."
-    (;; No slots.
-     )
-  (define-key *help-mode-map* (key "C-p") 'scroll-up)
-  (define-key *help-mode-map* (key "C-n") 'scroll-down)
-  (setf (keymap %mode) *help-mode-map*))
+    ((keymap
+      :initform
+      (let ((map (make-keymap)))
+        (define-key map (key "C-p") 'scroll-up)
+        (define-key map (key "C-n") 'scroll-down)
+        map))))
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)

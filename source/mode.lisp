@@ -19,7 +19,7 @@
 (define-mode fundamental-mode (t)
     "The root of all modes."
     ((name :accessor name :initarg :name)
-     (keymap :accessor keymap :initarg :keymap :initform (make-hash-table :test 'equal))
+     (keymap :accessor keymap :initarg :keymap :initform (make-keymap))
      (buffer :accessor buffer)))
 
 (defmethod setup ((mode fundamental-mode) (buffer buffer))

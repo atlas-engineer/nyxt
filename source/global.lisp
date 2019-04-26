@@ -11,12 +11,13 @@
   "The CLOS object responsible for rendering the interface.")
 
 ;; TODO: Move commands with their hooks to a REMOTE-INTERFACE slot?
+;; Better: make this part of modes, so that we can have mode-specific commands.
 (defvar *available-hooks* (make-hash-table :test #'equalp)
   "A hash of all available hooks.")
 (defvar *available-commands* (make-hash-table :test #'equalp)
   "A hash of all available commands.")
 
-;; TODO: Move global-map to a REMOTE-INTERFACE slot?
+;; TODO: Move global-map to a REMOTE-INTERFACE slot?  Or to fundamental mode?
 (defvar *global-map* (make-hash-table :test 'equal)
   "A global key map, available in every mode/buffer.")
 

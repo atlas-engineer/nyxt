@@ -134,3 +134,7 @@ Return the class."
      (closer-mop:slot-definition-initform slot) value
      (closer-mop:slot-definition-initfunction slot) (lambda () value))
     class))
+
+(defun make-keymap ()
+  "Return an empty keymap."
+  (make-hash-table :test 'equal))
