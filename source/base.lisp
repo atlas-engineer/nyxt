@@ -120,8 +120,9 @@ Set to '-' to read standard input instead."))
   (unless (eq swank:*communication-style* :fd-handler)
     (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"
               swank:*communication-style*))
-  (unless *interface*
-    (setf *interface* (make-instance 'remote-interface)))
+  (when *interface*
+    (kill-interface *interface*))
+  (setf *interface* (make-instance 'remote-interface))
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.
   (when with-platform-port-p
@@ -129,7 +130,8 @@ Set to '-' to read standard input instead."))
   (initialize-port *interface*)
   (when with-platform-port-p
     (run-loop (port *interface*))
-    (kill-interface *interface*))
+    (kill-interface *interface*)
+    (setf *interface* nil))
   t)
 
 (define-key *global-map* (key "C-x C-c") 'kill)

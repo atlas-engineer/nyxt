@@ -151,7 +151,8 @@ startup after the remote-interface was set up."
   "Kill the XML RPC Server."
   (when (active-connection interface)
     (log:debug "Stopping server")
-    (s-xml-rpc:stop-server (active-connection interface))))
+    (ignore-errors
+     (s-xml-rpc:stop-server (active-connection interface)))))
 
 (defmethod %xml-rpc-send ((interface remote-interface) (method string) &rest args)
   ;; TODO: Make %xml-rpc-send asynchronous?
@@ -185,6 +186,10 @@ startup after the remote-interface was set up."
          (window (make-instance 'window :id window-id)))
     (setf (gethash window-id (windows interface)) window)
     (%xml-rpc-send interface "window.make" window-id)
+    (unless (last-active-window interface)
+      ;; When starting from a REPL, it's possible that the window is spawned in
+      ;; the background and %%window-active would then return nil.
+      (setf (last-active-window interface) window))
     window))
 
 (defmethod %%window-set-title ((interface remote-interface) (window window) title)
