@@ -2,19 +2,19 @@
 
 (in-package :next)
 
-;; used to allow inlining of parenscript compilation in a lisp file.
-;; with the syntax (define-parenstatic name) allows definition of a paren
-;; to some constant of name "name"
 (defmacro define-parenstatic (script-name &rest script-body)
+  "Define parenscript SCRIPT-NAME at compile time.
+SCRIPT-NAME is both a variable containing the script and a function evaluating
+it on the platform port."
   `(progn
      (defparameter ,script-name
        (ps:ps ,@script-body))
      (defun ,script-name (&optional (callback nil) (buffer (active-buffer *interface*)))
        (%%buffer-evaluate-javascript *interface* buffer ,script-name callback))))
 
-;; allow inlining of a parenscript function that can accept arguments,
-;; useful for parenscript that will accept variables from lisp
 (defmacro define-parenscript (name lambda-list &body body)
+  "Inline a parenscript function that can accept arguments.
+This is useful for parenscript that will accept variables from Lisp."
   `(defun ,name (,@lambda-list)
      (ps:ps ,@body)))
 

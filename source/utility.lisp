@@ -83,9 +83,9 @@ will have to consider malformed ones."
           (push candidate completions))))
     completions))
 
-;; utility functions for getting paths from the xdg directory
-;; specification in a namespaced directory for Next
 (defun xdg-data-home (&optional (file-name ""))
+  "Return XDG_DATA_HOME as per XDG directory specification.
+FILE-NAME is appended to the result."
   (merge-pathnames
    file-name
    (merge-pathnames
@@ -93,6 +93,8 @@ will have to consider malformed ones."
     (uiop:xdg-data-home))))
 
 (defun xdg-config-home (&optional (file-name ""))
+  "Return XDG_CONFIG_HOME as per XDG directory specification.
+FILE-NAME is appended to the result."
   (merge-pathnames
    file-name
    (merge-pathnames
