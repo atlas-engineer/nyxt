@@ -144,13 +144,13 @@
 
 (defmethod set-input ((minibuffer minibuffer) input)
   (when input
-    (minibuffer-evaluate-javascript
-     *interface* (window-active *interface*)
+    (%%minibuffer-evaluate-javascript
+     *interface* (%%window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
 (defmethod erase-document ((minibuffer minibuffer))
-  (minibuffer-evaluate-javascript
-   *interface* (window-active *interface*)
+  (%%minibuffer-evaluate-javascript
+   *interface* (%%window-active *interface*)
    (ps:ps
      (ps:chain document (open))
      (ps:chain document (close)))))
@@ -168,18 +168,18 @@
                      (:div :id "completions" ""))))))
 
 (defmethod show ((interface remote-interface))
-  (let ((active-window (window-active interface)))
+  (let ((active-window (%%window-active interface)))
     (setf (minibuffer-active active-window) t)
-    (window-set-minibuffer-height interface
-                                  active-window
-                                  (minibuffer-open-height active-window))))
+    (%%window-set-minibuffer-height interface
+                                    active-window
+                                    (minibuffer-open-height active-window))))
 
 (defmethod hide ((interface remote-interface))
-  (let ((active-window (window-active interface)))
+  (let ((active-window (%%window-active interface)))
     (setf (minibuffer-active active-window) nil)
-    (window-set-minibuffer-height *interface*
-                                  active-window
-                                  (minibuffer-closed-height active-window))))
+    (%%window-set-minibuffer-height *interface*
+                                    active-window
+                                    (minibuffer-closed-height active-window))))
 
 (defun self-insert (characters &optional (minibuffer (minibuffer *interface*)))
   "Insert CHARACTERS in MINIBUFFER."
@@ -322,8 +322,8 @@
         (setf completions nil))
     (let ((input-text (generate-input-html input-buffer input-buffer-cursor))
           (completion-html (generate-completion-html completions completion-cursor)))
-      (minibuffer-evaluate-javascript
-       *interface* (window-active *interface*)
+      (%%minibuffer-evaluate-javascript
+       *interface* (%%window-active *interface*)
        (ps:ps
          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                (ps:lisp (input-prompt minibuffer)))
@@ -336,8 +336,8 @@
   (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
     (incf (completion-cursor minibuffer))
     (update-display minibuffer)
-    (minibuffer-evaluate-javascript
-     *interface* (window-active *interface*)
+    (%%minibuffer-evaluate-javascript
+     *interface* (%%window-active *interface*)
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view false))))))
 
@@ -345,19 +345,19 @@
   (when (> (completion-cursor minibuffer) 0)
     (decf (completion-cursor minibuffer))
     (update-display minibuffer)
-        (minibuffer-evaluate-javascript
-     *interface* (window-active *interface*)
+    (%%minibuffer-evaluate-javascript
+     *interface* (%%window-active *interface*)
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view true))))))
 
 (defmethod echo ((minibuffer minibuffer) text)
-  (let ((active-window (window-active *interface*)))
+  (let ((active-window (%%window-active *interface*)))
     (unless (eql (display-mode minibuffer) :read)
       (setf (display-mode minibuffer) :echo)
       (erase-document minibuffer)
-      (window-set-minibuffer-height *interface*
-                                    active-window
-                                    (minibuffer-echo-height active-window))
+      (%%window-set-minibuffer-height *interface*
+                                      active-window
+                                      (minibuffer-echo-height active-window))
       (let ((style (cl-css:css
                     '((* :font-family "monospace,monospace"
                          :font-size "14px")

@@ -10,7 +10,7 @@
      (defparameter ,script-name
        (ps:ps ,@script-body))
      (defun ,script-name (&optional (callback nil) (buffer (active-buffer *interface*)))
-       (buffer-evaluate-javascript *interface* buffer ,script-name callback))))
+       (%%buffer-evaluate-javascript *interface* buffer ,script-name callback))))
 
 ;; allow inlining of a parenscript function that can accept arguments,
 ;; useful for parenscript that will accept variables from lisp

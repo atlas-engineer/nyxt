@@ -8,7 +8,7 @@
 (define-command make-buffer (&optional (name "default")
                                        mode)
   "Create a new buffer."
-  (%buffer-make *interface* name mode))
+  (buffer-make *interface* name mode))
 
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
@@ -35,13 +35,13 @@
                         (minibuffer *interface*)
                         :input-prompt "Kill buffer:"
                         :completion-function (buffer-completion-fn)))
-    (buffer-delete *interface* buffer)))
+    (%%buffer-delete *interface* buffer)))
 
 (define-command delete-active-buffer ()
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
-  (buffer-delete *interface* (active-buffer *interface*)))
+  (%%buffer-delete *interface* (active-buffer *interface*)))
 
 (define-parenstatic buffer-get-url
     (ps:chain window location href))
@@ -58,10 +58,10 @@ buffer to the start page."
     (unless disable-history
       (history-typed-add input-url))
     (if (cl-strings:starts-with url "file://")
-        (buffer-load *interface* buffer url)
-        (buffer-evaluate-javascript *interface*
-                                    buffer
-                                    (buffer-set-url url)))))
+        (%%buffer-load *interface* buffer url)
+        (%%buffer-evaluate-javascript *interface*
+                                      buffer
+                                      (buffer-set-url url)))))
 
 (defun set-url (input-url &optional disable-history)
   (let ((url (parse-url input-url)))
@@ -139,12 +139,12 @@ item in the list, jump to the first item."
   "Toggle between system proxy and the proxy settings *PROXY-URL* and
 *PROXY-IGNORE-LIST*."
   (let* ((active-buffer (active-buffer *interface*))
-         (proxy-settings (get-proxy *interface* active-buffer)))
+         (proxy-settings (%%get-proxy *interface* active-buffer)))
     (if (string= (first proxy-settings) "default")
         (progn
-          (set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
+          (%%set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
           (echo (minibuffer *interface*) (format nil "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*)))
         (progn
-          (set-proxy *interface* active-buffer)
+          (%%set-proxy *interface* active-buffer)
           (echo (minibuffer *interface*) "Proxy unset.")))
-    (log:info (get-proxy *interface* active-buffer))))
+    (log:info (%%get-proxy *interface* active-buffer))))

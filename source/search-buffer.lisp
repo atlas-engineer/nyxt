@@ -40,7 +40,7 @@
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
                        :input-prompt "Search for:"))
-    (buffer-evaluate-javascript *interface*
+    (%%buffer-evaluate-javascript *interface*
                                 (active-buffer *interface*)
                                 (paren-add-search-boxes input))))
 

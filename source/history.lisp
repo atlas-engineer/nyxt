@@ -20,7 +20,7 @@
 
 (defun history-add (url)
   (let ((db (sqlite:connect
-             (ensure-file-exists (history-db-path (window-active *interface*))
+             (ensure-file-exists (history-db-path (%%window-active *interface*))
                                  #'%initialize-history-db))))
     (sqlite:execute-non-query
      db "insert into history (url) values (?)" url)
@@ -28,7 +28,7 @@
 
 (defun history-typed-add (url)
   (let ((db (sqlite:connect
-             (ensure-file-exists (history-db-path (window-active *interface*))
+             (ensure-file-exists (history-db-path (%%window-active *interface*))
                                  #'%initialize-history-db))))
     (sqlite:execute-non-query
      db "insert into typed (url) values (?)" url)
@@ -36,7 +36,7 @@
 
 (defun history-typed-complete (input)
   (let* ((db (sqlite:connect
-              (ensure-file-exists (history-db-path (window-active *interface*))
+              (ensure-file-exists (history-db-path (%%window-active *interface*))
                                   #'%initialize-history-db)))
          (candidates
           (sqlite:execute-to-list

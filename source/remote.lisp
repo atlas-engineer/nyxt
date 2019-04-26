@@ -1,5 +1,7 @@
 ;;; remote.lisp --- remote gui interface
 
+;; We prefix all functions communicating over RPC with "%%".
+
 (in-package :next)
 
 (defclass window ()
@@ -163,7 +165,7 @@ startup after the remote-interface was set up."
               (format nil "Platform port failed to respond to '~a': ~a" method c))
         (error c)))))
 
-(defmethod list-methods ((interface remote-interface))
+(defmethod %%list-methods ((interface remote-interface))
   "Return the unsorted list of XML-RPC methods supported by the platform port."
   (%xml-rpc-send interface "listMethods"))
 
@@ -175,7 +177,7 @@ startup after the remote-interface was set up."
   (incf (total-buffer-count interface))
   (format nil "~a" (total-buffer-count interface)))
 
-(defmethod window-make ((interface remote-interface))
+(defmethod %%window-make ((interface remote-interface))
   "Create a window and return the window object."
   (let* ((window-id (get-unique-window-identifier interface))
          (window (make-instance 'window :id window-id)))
@@ -183,17 +185,17 @@ startup after the remote-interface was set up."
     (%xml-rpc-send interface "window.make" window-id)
     window))
 
-(defmethod window-set-title ((interface remote-interface) (window window) title)
+(defmethod %%window-set-title ((interface remote-interface) (window window) title)
   "Set the title for a given window."
   (%xml-rpc-send interface "window.set.title" (id window) title))
 
-(defmethod window-delete ((interface remote-interface) (window window))
+(defmethod %%window-delete ((interface remote-interface) (window window))
   "Delete a window object and remove it from the hash of windows."
   (%xml-rpc-send interface "window.delete" (id window))
   (with-slots (windows) interface
     (remhash (id window) windows)))
 
-(defmethod window-active ((interface remote-interface))
+(defmethod %%window-active ((interface remote-interface))
   "Return the window object for the currently active window."
   (with-slots (windows) interface
     (let ((window (gethash (%xml-rpc-send interface "window.active")
@@ -202,11 +204,11 @@ startup after the remote-interface was set up."
         (setf (last-active-window interface) window))
       (last-active-window interface))))
 
-(defmethod window-exists ((interface remote-interface) (window window))
+(defmethod %%window-exists ((interface remote-interface) (window window))
   "Return if a window exists."
   (%xml-rpc-send interface "window.exists" (id window)))
 
-(defmethod %window-set-active-buffer ((interface remote-interface)
+(defmethod %%window-set-active-buffer ((interface remote-interface)
                                       (window window)
                                       (buffer buffer))
   (%xml-rpc-send interface "window.set.active.buffer" (id window) (id buffer))
@@ -221,21 +223,21 @@ startup after the remote-interface was set up."
                                                               (eql (active-buffer other-window) buffer)))
                                   (alexandria:hash-table-values (windows *interface*)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (buffer-make *interface*))
+        (let ((temp-buffer (%%buffer-make *interface*))
               (buffer-swap (active-buffer window)))
           (log:debug "Swapping with buffer from existing window.")
-          (%window-set-active-buffer interface window-with-same-buffer temp-buffer)
-          (%window-set-active-buffer interface window buffer)
-          (%window-set-active-buffer interface window-with-same-buffer buffer-swap)
-          (buffer-delete interface temp-buffer))
-        (%window-set-active-buffer interface window buffer))))
+          (%%window-set-active-buffer interface window-with-same-buffer temp-buffer)
+          (%%window-set-active-buffer interface window buffer)
+          (%%window-set-active-buffer interface window-with-same-buffer buffer-swap)
+          (%%buffer-delete interface temp-buffer))
+        (%%window-set-active-buffer interface window buffer))))
 
-(defmethod window-set-minibuffer-height ((interface remote-interface)
+(defmethod %%window-set-minibuffer-height ((interface remote-interface)
                                          window height)
   (%xml-rpc-send interface "window.set.minibuffer.height" (id window) height))
 
-(defmethod buffer-make ((interface remote-interface)
-                        &key name mode)
+(defmethod %%buffer-make ((interface remote-interface)
+                          &key name mode)
   (let* ((buffer-id (get-unique-buffer-identifier interface))
          (buffer (apply #'make-instance 'buffer :id buffer-id
                         (append (when name `(:name ,name))
@@ -247,11 +249,12 @@ startup after the remote-interface was set up."
                     :cookies-path (namestring (cookies-path buffer))))
     buffer))
 
-(defmethod %buffer-make ((interface remote-interface)
-                         &optional
-                           (name "default")
-                           mode)
-  (let* ((buffer (buffer-make interface :name name :mode mode)))
+;; TODO: Use keys instead of &optional.
+(defmethod buffer-make ((interface remote-interface)
+                        &optional
+                          (name "default")
+                          mode)
+  (let* ((buffer (%%buffer-make interface :name name :mode mode)))
     (when (mode buffer)
       (setup (mode buffer) buffer))
     buffer))
@@ -263,36 +266,36 @@ startup after the remote-interface was set up."
         (buffers (alexandria:hash-table-values (buffers *interface*))))
     (first (set-difference buffers active-buffers))))
 
-(defmethod buffer-delete ((interface remote-interface) (buffer buffer))
+(defmethod %%buffer-delete ((interface remote-interface) (buffer buffer))
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
-                                (%buffer-make interface))))
+                                (buffer-make interface))))
     (%xml-rpc-send interface "buffer.delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))
     (with-slots (buffers) interface
       (remhash (id buffer) buffers))))
 
-(defmethod buffer-load ((interface remote-interface) (buffer buffer) uri)
+(defmethod %%buffer-load ((interface remote-interface) (buffer buffer) uri)
   (%xml-rpc-send interface "buffer.load" (id buffer) uri))
 
-(defmethod buffer-evaluate-javascript ((interface remote-interface)
+(defmethod %%buffer-evaluate-javascript ((interface remote-interface)
                                        (buffer buffer) javascript &optional (callback nil))
   (let ((callback-id
           (%xml-rpc-send interface "buffer.evaluate.javascript" (id buffer) javascript)))
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
-(defmethod minibuffer-evaluate-javascript ((interface remote-interface)
+(defmethod %%minibuffer-evaluate-javascript ((interface remote-interface)
                                            (window window) javascript &optional (callback nil))
   (let ((callback-id
           (%xml-rpc-send interface "minibuffer.evaluate.javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 
-(defmethod generate-input-event ((interface remote-interface)
+(defmethod %%generate-input-event ((interface remote-interface)
                                  (window window)
                                  (event key-chord))
   "For now, we only generate keyboard events.
@@ -313,7 +316,7 @@ events."
                  (float (or (first (key-chord-position event)) -1.0))
                  (float (or (second (key-chord-position event)) -1.0))))
 
-(defmethod set-proxy ((interface remote-interface) (buffer buffer)
+(defmethod %%set-proxy ((interface remote-interface) (buffer buffer)
                       &optional (proxy-uri "") (ignore-hosts (list nil)))
   (%xml-rpc-send interface "set.proxy" (list (id buffer))
                  (if (string= proxy-uri "")
@@ -321,7 +324,7 @@ events."
                      "custom")
                  proxy-uri ignore-hosts))
 
-(defmethod get-proxy ((interface remote-interface) (buffer buffer))
+(defmethod %%get-proxy ((interface remote-interface) (buffer buffer))
   (%xml-rpc-send interface "get.proxy" (id buffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -358,7 +361,7 @@ events."
   ;; The new active buffer should be the first created buffer.
   (when urls
     (let ((buffer (make-buffer))
-          (window (window-make *interface*)))
+          (window (%%window-make *interface*)))
       (set-url-buffer (car urls) buffer)
       (window-set-active-buffer *interface* window buffer))
     (loop for url in (cdr urls) do
@@ -405,12 +408,12 @@ events."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
-  (active-buffer (window-active interface)))
+  (active-buffer (%%window-active interface)))
 
 ;; TODO: Prevent setting the minibuffer as the active buffer.
 (defmethod set-active-buffer ((interface remote-interface)
                               (buffer buffer))
   "Set the active buffer for the active window."
-  (let ((window-active (window-active interface)))
-    (window-set-active-buffer interface window-active buffer)
-    (setf (active-buffer window-active) buffer)))
+  (let ((%%window-active (%%window-active interface)))
+    (window-set-active-buffer interface %%window-active buffer)
+    (setf (active-buffer %%window-active) buffer)))

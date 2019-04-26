@@ -115,27 +115,27 @@
   "Show a set of link hints, and go to the user inputted one in the
 currently active buffer."
   (query-anchors "Go to link:" (selected-link)
-    (buffer-evaluate-javascript *interface*
-                                (active-buffer *interface*)
-                                (buffer-set-url selected-link))))
+    (%%buffer-evaluate-javascript *interface*
+                                  (active-buffer *interface*)
+                                  (buffer-set-url selected-link))))
 
 (define-command go-anchor-new-buffer ()
   "Show a set of link hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
   (query-anchors "Open link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
-      (buffer-evaluate-javascript *interface*
-                                  new-buffer
-                                  (buffer-set-url selected-link)))))
+      (%%buffer-evaluate-javascript *interface*
+                                    new-buffer
+                                    (buffer-set-url selected-link)))))
 
 (define-command go-anchor-new-buffer-focus ()
   "Show a set of link hints, and open the user inputted one in a new
 visible active buffer."
   (query-anchors "Go to link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
-      (buffer-evaluate-javascript *interface*
-                                  new-buffer
-                                  (buffer-set-url selected-link))
+      (%%buffer-evaluate-javascript *interface*
+                                    new-buffer
+                                    (buffer-set-url selected-link))
       (set-active-buffer *interface* new-buffer))))
 
 (define-command copy-anchor-url ()

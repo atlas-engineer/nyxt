@@ -31,6 +31,6 @@
                                                    input
                                                    (cl-json:decode-json-from-string
                                                     headings))))))
-    (buffer-evaluate-javascript *interface*
-                               (active-buffer *interface*)
-                               (paren-jump-to-heading heading))))
+    (%%buffer-evaluate-javascript *interface*
+                                  (active-buffer *interface*)
+                                  (paren-jump-to-heading heading))))

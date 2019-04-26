@@ -35,7 +35,7 @@ Set to '-' to read standard input instead."))
 (define-command server-methods-inspect ()
   "List the XML-RPC methods supported by the platform port."
   (echo (minibuffer *interface*) (cl-strings:join
-                      (sort (list-methods *interface*) #'string<)
+                      (sort (%%list-methods *interface*) #'string<)
                       :separator "
 ")))
 
@@ -75,7 +75,7 @@ Set to '-' to read standard input instead."))
           repeat max-attemps do
       (handler-case
           (progn
-            (when (list-methods interface)
+            (when (%%list-methods interface)
               (setf port-running t)))
         (error (c)
           (log:debug "Could not communicate with port: ~a" c)

@@ -51,7 +51,7 @@
                            (:p (write-to-string (symbol-value input)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (buffer-evaluate-javascript *interface* help-buffer insert-help)
+      (%%buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
 (define-command command-inspect ()
@@ -69,7 +69,7 @@
                            (:p (write-to-string (doc (gethash input *available-commands*))))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (buffer-evaluate-javascript *interface* help-buffer insert-help)
+      (%%buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
 ;; TODO: Fix command-evaluate
@@ -88,7 +88,7 @@
                            (:p (eval (read-from-string input)))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp result-contents)))))
-      (buffer-evaluate-javascript *interface* result-buffer insert-results)
+      (%%buffer-evaluate-javascript *interface* result-buffer insert-results)
       (set-active-buffer *interface* result-buffer))))
 
 (define-command next-version ()

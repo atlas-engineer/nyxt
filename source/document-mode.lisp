@@ -107,8 +107,8 @@
   "Set current window title to 'Next - TITLE - URL."
   (with-result* ((url (buffer-get-url))
                  (title (buffer-get-title)))
-    (window-set-title *interface* (window-active *interface*)
-                      (concatenate 'string "Next - " title " - " url))))
+    (%%window-set-title *interface* (%%window-active *interface*)
+                        (concatenate 'string "Next - " title " - " url))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
