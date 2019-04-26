@@ -18,26 +18,31 @@
      db "insert into typed (url) values (?)" "about:blank")
     (sqlite:disconnect db)))
 
+(defun ensure-history-db ()
+  "Returns the pathname of the history database"
+  (ensure-file-exists 
+   (anaphora:aif (window-active *interface*)
+                 (history-db-path anaphora:it)
+                 ;;; FIXME: when we want to have multiple history-db
+                 (some (lambda (window)
+                         (history-db-path window))
+                       (alexandria:hash-table-values (windows *interface*))))
+   #'%initialize-history-db))
+       
 (defun history-add (url)
-  (let ((db (sqlite:connect
-             (ensure-file-exists (history-db-path (window-active *interface*))
-                                 #'%initialize-history-db))))
+  (let ((db (sqlite:connect (ensure-history-db))))
     (sqlite:execute-non-query
      db "insert into history (url) values (?)" url)
     (sqlite:disconnect db)))
 
 (defun history-typed-add (url)
-  (let ((db (sqlite:connect
-             (ensure-file-exists (history-db-path (window-active *interface*))
-                                 #'%initialize-history-db))))
+  (let ((db (sqlite:connect (ensure-history-db))))
     (sqlite:execute-non-query
      db "insert into typed (url) values (?)" url)
     (sqlite:disconnect db)))
 
 (defun history-typed-complete (input)
-  (let* ((db (sqlite:connect
-              (ensure-file-exists (history-db-path (window-active *interface*))
-                                  #'%initialize-history-db)))
+  (let* ((db (sqlite:connect (ensure-history-db)))
          (candidates
           (sqlite:execute-to-list
            db "select url from typed where url like ?"
