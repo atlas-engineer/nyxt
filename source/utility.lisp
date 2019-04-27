@@ -33,9 +33,10 @@ slime. Default port is 4006."
          (default (assoc "default"
                          (search-engines window) :test #'string=)))
     (if engine
-        (generate-search-query (subseq input-url
-                                       (length (first (cl-strings:split input-url))))
-                               (cdr engine))
+        (generate-search-query
+         (subseq input-url
+                 (length (first (cl-strings:split input-url))))
+         (cdr engine))
       (handler-case
           ;; puri:parse-uri fails on crazy inputs like:
           ;; - hello world
