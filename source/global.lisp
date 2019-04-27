@@ -35,11 +35,6 @@
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
   function load package-globals")
-(defvar *search-engines* '(("default" . "https://duckduckgo.com/?q=~a")
-                           ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
-  "An association list of all the search engines you can use in the minibuffer.
-The 'default' engine is use when the query is not a valid URL, or the first
-keyword is not recognised.")
 
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))

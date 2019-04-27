@@ -27,10 +27,11 @@ slime. Default port is 4006."
   (swank:create-server :port *swank-port* :dont-close t))
 
 (defun parse-url (input-url)
-  (let ((engine (assoc (first (cl-strings:split input-url))
-                       *search-engines* :test #'string=))
-        (default (assoc "default"
-                        *search-engines* :test #'string=)))
+  (let* ((window (window-active *interface*))
+         (engine (assoc (first (cl-strings:split input-url))
+                       (search-engines window) :test #'string=))
+         (default (assoc "default"
+                         (search-engines window) :test #'string=)))
     (if engine
         (generate-search-query (subseq input-url
                                        (length (first (cl-strings:split input-url))))
