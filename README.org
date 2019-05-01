@@ -17,7 +17,9 @@ Switch easily between your open tabs by fuzzy search. If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 ~epl~, and any other valid series of letters.
 
+
 #+html: <img src="https://next.atlas.engineer/static/image/tab_switch.gif" align="center"/>
+
 
 ** History as a tree
 History is represented as a tree that you can traverse. More complex
@@ -39,7 +41,9 @@ erasing your history, Next offers smart navigation and prompts the
 user. Do you wish to go forwards to ~Gray Parrot~ or to
 ~Budgerigar~?
 
+
 #+html: <img src="https://next.atlas.engineer/static/image/tree_forward.gif" align="center"/>
+
 
 ** Lightning fast navigation
 Next is lightweight and fast. The interface does not get in your way,
@@ -52,7 +56,9 @@ on the page, or even open it in a new tab.
 Fuzzy completion means intelligent completion. Find your bookmarks,
 open up new links, or switch tabs with the power of fuzzy completion.
 
+
 #+html: <img src="https://next.atlas.engineer/static/image/fast_navigation.gif" align="center"/>
+
 
 * Getting Started
 ** Install Next
