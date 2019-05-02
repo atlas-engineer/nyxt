@@ -289,14 +289,16 @@ startup after the remote-interface was set up."
   (%xml-rpc-send interface "buffer.load" (id buffer) uri))
 
 (defmethod %%buffer-evaluate-javascript ((interface remote-interface)
-                                       (buffer buffer) javascript &optional (callback nil))
+                                         (buffer buffer) javascript
+                                         &optional (callback nil))
   (let ((callback-id
           (%xml-rpc-send interface "buffer.evaluate.javascript" (id buffer) javascript)))
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
 (defmethod %%minibuffer-evaluate-javascript ((interface remote-interface)
-                                           (window window) javascript &optional (callback nil))
+                                             (window window) javascript
+                                             &optional (callback nil))
   (let ((callback-id
           (%xml-rpc-send interface "minibuffer.evaluate.javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
