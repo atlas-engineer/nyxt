@@ -22,6 +22,7 @@ A constructor named NAME is also defined."
        (make-instance ',name
                       :name (format nil "~a-mode" ',name)))))
 
+;; TODO: Rename to root-mode.
 (define-mode fundamental-mode (t)
     "The root of all modes."
     ((name :accessor name :initarg :name) ;; TODO: What's the use of mode's NAME slot?
