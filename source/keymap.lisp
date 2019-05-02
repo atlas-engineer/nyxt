@@ -41,6 +41,8 @@
                                 key-chord)))
   t)
 
+;; TODO: If we move the global mode to root-mode, how do we make sure which one has priority?
+;; What about reserving a prefix key for application mode and root mode?
 (defun consume-key-sequence-p (sender)
   (let* ((active-window (gethash sender (windows *interface*)))
          (active-buffer (active-buffer active-window))
@@ -110,6 +112,15 @@
      do
        (pop key-sequence)
        (setf (gethash key-sequence mode-map) "prefix")))
+
+;; TODO: Merge define-key functions and derive mode-map from mode-name?
+(defun define-key-default (mode-name key-sequence function)
+  (set-default
+   mode-name 'keymap
+   (let ((map (eval (closer-mop:slot-definition-initform
+                     (find-slot mode-name 'keymap)))))
+     (define-key map key-sequence function)
+     map)))
 
 (defun key (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"
