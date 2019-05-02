@@ -168,6 +168,9 @@ startup after the remote-interface was set up."
               (format nil "Platform port failed to respond to '~a': ~a" method c))
         (error c)))))
 
+;; TODO: Move to separate packages
+;; next-script
+;; next-rpc
 (defmethod %%list-methods ((interface remote-interface))
   "Return the unsorted list of XML-RPC methods supported by the platform port."
   (%xml-rpc-send interface "listMethods"))
