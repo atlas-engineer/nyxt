@@ -33,12 +33,17 @@
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp))
                     :low-level-data low-level-data)))
-    (push key-chord (key-chord-stack *interface*))
-    (if (consume-key-sequence-p sender)
-        (|consume.key.sequence| sender)
-        (%%generate-input-event *interface*
-                                (gethash sender (windows *interface*))
-                                key-chord)))
+    ;; Don't stack the release key-chords or else pressing "C-x" then "C-+""
+    ;; will be understood as "C-x C-R-x C-+ C-R-+".
+    (when (or (null (key-chord-stack *interface*))
+              (not (member "R" (key-chord-modifiers key-chord)
+                           :test #'string=)))
+      (push key-chord (key-chord-stack *interface*))
+      (if (consume-key-sequence-p sender)
+          (|consume.key.sequence| sender)
+          (%%generate-input-event *interface*
+                                  (gethash sender (windows *interface*))
+                                  key-chord))))
   t)
 
 ;; TODO: If we move the global mode to root-mode, how do we make sure which one has priority?
@@ -54,12 +59,13 @@
     (flet ((is-in-maps? (key-maps)
              (dolist (map key-maps)
                (when (look-up-key-chord-stack (key-chord-stack *interface*) map)
-                 (return-from is-in-maps? t)))))
+                 (return-from is-in-maps? map)))))
       (cond ((minibuffer-active active-window)
              (log:debug "Minibuffer active")
              t)
             ((is-in-maps? key-maps)
-             (log:debug "Found in maps")
+             (log:debug "~a found in map ~a" (mapcar #'serialize-key-chord (key-chord-stack *interface*))
+                        (is-in-maps? key-maps))
              t)
             (t (setf (key-chord-stack *interface*) ()))))))
 
@@ -85,7 +91,7 @@
                  (return-from |consume.key.sequence| t)))
               ((equalp map (keymap (mode (minibuffer *interface*))))
                (if (member "R" (key-chord-modifiers (first (key-chord-stack *interface*)))
-                           :test #'string-equal)
+                           :test #'string=)
                    (log:debug "Key released")
                    (progn
                      (log:debug "Insert ~s in minibuffer" (key-chord-key-string
