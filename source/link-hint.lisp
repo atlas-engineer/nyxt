@@ -3,7 +3,7 @@
 
 (in-package :next)
 
-(define-parenstatic add-link-hints
+(define-parenscript add-link-hints ()
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -90,7 +90,7 @@
         ""))
   (hints-add (links-find window document)))
 
-(define-parenstatic remove-link-hints
+(define-parenscript remove-link-hints ()
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -115,27 +115,21 @@
   "Show a set of link hints, and go to the user inputted one in the
 currently active buffer."
   (query-anchors "Go to link:" (selected-link)
-    (%%buffer-evaluate-javascript *interface*
-                                  (active-buffer *interface*)
-                                  (buffer-set-url selected-link))))
+    (buffer-set-url :url selected-link :buffer (active-buffer *interface*))))
 
 (define-command go-anchor-new-buffer ()
   "Show a set of link hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
   (query-anchors "Open link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
-      (%%buffer-evaluate-javascript *interface*
-                                    new-buffer
-                                    (buffer-set-url selected-link)))))
+      (buffer-set-url :url selected-link :buffer new-buffer))))
 
 (define-command go-anchor-new-buffer-focus ()
   "Show a set of link hints, and open the user inputted one in a new
 visible active buffer."
   (query-anchors "Go to link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
-      (%%buffer-evaluate-javascript *interface*
-                                    new-buffer
-                                    (buffer-set-url selected-link))
+      (buffer-set-url :url selected-link :buffer new-buffer)
       (set-active-buffer *interface* new-buffer))))
 
 (define-command copy-anchor-url ()

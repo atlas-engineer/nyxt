@@ -43,12 +43,13 @@ visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
   (%%buffer-delete *interface* (active-buffer *interface*)))
 
-(define-parenstatic buffer-get-url
-    (ps:chain window location href))
+(define-parenscript buffer-get-url ()
+  (ps:chain window location href))
 
-(define-parenstatic buffer-get-title
-    (ps:chain document title))
+(define-parenscript buffer-get-title ()
+  (ps:chain document title))
 
+;; This needs to be a funtion call in Javascript.
 (define-parenscript buffer-set-url (url)
   ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
 
@@ -59,9 +60,9 @@ buffer to the start page."
       (history-typed-add input-url))
     (if (cl-strings:starts-with url "file://")
         (%%buffer-load *interface* buffer url)
-        (%%buffer-evaluate-javascript *interface*
-                                      buffer
-                                      (buffer-set-url url)))))
+        ;; We need to specify the buffer here since this we may reach this point
+        ;; on initialization before ACTIVE-BUFFER can be used.
+        (buffer-set-url :url url :buffer buffer))))
 
 (defun set-url (input-url &optional disable-history)
   (let ((url (parse-url input-url)))

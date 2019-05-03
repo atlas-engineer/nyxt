@@ -80,6 +80,4 @@
                      (minibuffer *interface*)
                      :input-prompt "Open bookmark:"
                      :completion-function 'bookmark-complete))
-    (%%buffer-evaluate-javascript *interface*
-                                  (active-buffer *interface*)
-                                  (buffer-set-url url))))
+    (buffer-set-url :url url :buffer (active-buffer *interface*))))

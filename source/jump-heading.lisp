@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(define-parenstatic get-headings
+(define-parenscript get-headings ()
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -31,6 +31,4 @@
                                                    input
                                                    (cl-json:decode-json-from-string
                                                     headings))))))
-    (%%buffer-evaluate-javascript *interface*
-                                  (active-buffer *interface*)
-                                  (paren-jump-to-heading heading))))
+    (paren-jump-to-heading :heading-inner-text heading)))

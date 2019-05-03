@@ -82,15 +82,14 @@
   (when (symbolp (mode minibuffer))
     (setf (mode minibuffer) (make-instance (mode minibuffer)))))
 
-(defmethod read-from-minibuffer (callback-function
-                                 (minibuffer minibuffer)
-                                 &key input-prompt completion-function setup-function
+(defmethod read-from-minibuffer ((minibuffer minibuffer)
+                                 &key callback input-prompt completion-function setup-function
                                    cleanup-function empty-complete-immediate)
   (if input-prompt
       (setf (input-prompt minibuffer) input-prompt)
       (setf (input-prompt minibuffer) "Input:"))
   (setf (display-mode minibuffer) :read)
-  (setf (callback-function minibuffer) callback-function)
+  (setf (callback-function minibuffer) callback)
   (setf (completion-function minibuffer) completion-function)
   (setf (completions minibuffer) nil)
   (setf (completion-cursor minibuffer) 0)

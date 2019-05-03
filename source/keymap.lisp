@@ -79,7 +79,7 @@
                (return-from |consume.key.sequence| t))
               (bound
                (progn
-                 (log:debug "Key sequence bound")
+                 (log:debug "Key sequence ~a bound to ~a" serialized-key-stack bound)
                  (funcall bound)
                  (setf (key-chord-stack *interface*) ())
                  (return-from |consume.key.sequence| t)))
