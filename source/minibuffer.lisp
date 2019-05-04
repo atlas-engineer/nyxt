@@ -8,32 +8,33 @@
      (keymap
       :initform
       (let ((map (make-keymap)))
-        (define-key map (key "HYPHEN") #'(lambda () (self-insert "-")))
-        (define-key map (key "SPACE") #'(lambda () (self-insert " ")))
-        (define-key map (key "C-f") #'cursor-forwards)
-        (define-key map (key "M-f") #'cursor-forwards-word)
-        (define-key map (key "C-b") #'cursor-backwards)
-        (define-key map (key "M-b") #'cursor-backwards-word)
-        (define-key map (key "M-d") #'delete-forwards-word)
-        (define-key map (key "M-BACKSPACE") #'delete-backwards-word)
-        (define-key map (key "Right") #'cursor-forwards)
-        (define-key map (key "Left") #'cursor-backwards)
-        (define-key map (key "C-d") #'delete-forwards)
-        (define-key map (key "DELETE") #'delete-forwards)
-        (define-key map (key "BACKSPACE") #'delete-backwards)
-        (define-key map (key "C-a") #'cursor-beginning)
-        (define-key map (key "C-e") #'cursor-end)
-        (define-key map (key "C-k") #'kill-line)
-        (define-key map (key "RETURN") #'return-input)
-        (define-key map (key "C-RETURN") #'return-immediate)
-        (define-key map (key "C-g") #'cancel-input)
-        (define-key map (key "ESCAPE") #'cancel-input)
-        (define-key map (key "C-n") #'select-next)
-        (define-key map (key "C-p") #'select-previous)
-        (define-key map (key "Down") #'select-next)
-        (define-key map (key "Up") #'select-previous)
-        (define-key map (key "C-v") #'paste)
-        (define-key map (key "C-y") #'paste)
+        (define-key (key "HYPHEN") #'(lambda () (self-insert "-"))
+          (key "SPACE") #'(lambda () (self-insert " "))
+          (key "C-f") #'cursor-forwards
+          (key "M-f") #'cursor-forwards-word
+          (key "C-b") #'cursor-backwards
+          (key "M-b") #'cursor-backwards-word
+          (key "M-d") #'delete-forwards-word
+          (key "M-BACKSPACE") #'delete-backwards-word
+          (key "Right") #'cursor-forwards
+          (key "Left") #'cursor-backwards
+          (key "C-d") #'delete-forwards
+          (key "DELETE") #'delete-forwards
+          (key "BACKSPACE") #'delete-backwards
+          (key "C-a") #'cursor-beginning
+          (key "C-e") #'cursor-end
+          (key "C-k") #'kill-line
+          (key "RETURN") #'return-input
+          (key "C-RETURN") #'return-immediate
+          (key "C-g") #'cancel-input
+          (key "ESCAPE") #'cancel-input
+          (key "C-n") #'select-next
+          (key "C-p") #'select-previous
+          (key "Down") #'select-next
+          (key "Up") #'select-previous
+          (key "C-v") #'paste
+          (key "C-y") #'paste
+          :keymap map)
         map))))
 
 (defclass minibuffer (buffer)

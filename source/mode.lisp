@@ -28,6 +28,11 @@ A constructor named NAME is also defined."
      (keymap :accessor keymap :initarg :keymap :initform (make-keymap))
      (buffer :accessor buffer)))
 
+(defun root-mode-default-keymap ()
+  "Return the default keymap of root mode."
+  (eval (closer-mop:slot-definition-initform
+         (find-slot (find-class 'root-mode) 'keymap))))
+
 (defmethod setup ((mode root-mode) (buffer buffer))
   (setf (buffer mode) buffer))
 

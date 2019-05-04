@@ -1,11 +1,9 @@
 ;;; keymap.lisp --- lisp subroutines for key binding detection
 
-;;; keymaps are executed in priority from most specific to least
-;;; that is, the order of execution for keymaps is:
-;;; *global-map* --> major-mode-map --> minor-mode-maps
-;;;
 ;;; keys are defined with the following syntax:
-;;; (define-key *global-map* (key "C-x o") #'function-reference)
+;;;
+;;; (define-key (key "C-x o") #'function-reference)
+;;;
 ;;; in the previous example, the sequence of keys:
 ;;; "control+x", "o" would invoke the "function-reference"
 
@@ -55,7 +53,7 @@
                         (keymap (mode (minibuffer *interface*)))
                         (keymap (mode active-buffer))))
          ;; TODO: Shouldn't we give higher priority to the buffer keymap?
-         (key-maps (list *global-map* local-map)))
+         (key-maps (list (root-mode-default-keymap) local-map)))
     (flet ((is-in-maps? (key-maps)
              (dolist (map key-maps)
                (when (look-up-key-chord-stack (key-chord-stack *interface*) map)
@@ -77,7 +75,7 @@
          (local-map (if (minibuffer-active active-window)
                         (keymap (mode (minibuffer *interface*)))
                         (keymap (mode active-buffer))))
-         (key-maps (list *global-map* local-map))
+         (key-maps (list (root-mode-default-keymap) local-map))
          (serialized-key-stack (mapcar #'serialize-key-chord (key-chord-stack *interface*))))
     (dolist (map key-maps)
       (let ((bound (gethash serialized-key-stack map)))
@@ -102,31 +100,56 @@
     (log:debug "Not found in any keymaps")
     (setf (key-chord-stack *interface*) ())))
 
-(defun define-key (mode-map key-sequence function)
-  ;; A sequence of "C-x" "C-s" "C-a" will be broken
-  ;; up into three keys for the mode map, these are
-  ;; "C-x" "C-s" "C-a" - points to function
-  ;; "C-x" "C-s"       - set to "prefix"
-  ;; "C-x"             - set to "prefix"
-  ;;
-  ;; When a key is set to "prefix" it will not
-  ;; consume the stack, so that a sequence of keys
-  ;; longer than one key-chord can be recorded
-  (setf (gethash key-sequence mode-map) function)
-  ;; generate prefix representations
-  (loop while key-sequence
-     do
-       (pop key-sequence)
-       (setf (gethash key-sequence mode-map) "prefix")))
+;; TODO: Should FUNCTION be a command in DEFINE-KEY?
+(defun define-key (&rest key-function-pairs
+                         &key mode keymap
+                         &allow-other-keys)
+  "Bind KEY-SEQUENCE to FUNCTION.
+The KEY function transforms key chord strings to valid key sequences.
+When MODE is provided (as a symbol referring to a class name), the binding is
+registered into the mode class and all future mode instance will use the
+binding.
+If MODE and KEYMAP are nil, the binding is registered into root-mode.
 
-;; TODO: Merge define-key functions and derive mode-map from mode-name?
-(defun define-key-default (mode-name key-sequence function)
-  (set-default
-   mode-name 'keymap
-   (let ((map (eval (closer-mop:slot-definition-initform
-                     (find-slot mode-name 'keymap)))))
-     (define-key map key-sequence function)
-     map)))
+Examples:
+
+  (define-key (\"C-x C-c\") 'kill)
+  (define-key (\"C-n\") 'scroll-down
+              :mode 'document-mode)
+  ;; Only affect the first mode of the current buffer:
+  (define-key (\"C-c C-c\") '
+              :keymap (keymap (mode (active-buffer *interface*))))"
+  (remf key-function-pairs :mode)
+  (remf key-function-pairs :keymap)
+  (flet ((set-key (mode-map key-sequence function)
+           ;; A sequence of "C-x" "C-s" "C-a" will be broken
+           ;; up into three keys for the mode map, these are
+           ;; "C-x" "C-s" "C-a" - points to function
+           ;; "C-x" "C-s"       - set to "prefix"
+           ;; "C-x"             - set to "prefix"
+           ;;
+           ;; When a key is set to "prefix" it will not
+           ;; consume the stack, so that a sequence of keys
+           ;; longer than one key-chord can be recorded
+           (setf (gethash key-sequence mode-map) function)
+           ;; generate prefix representations
+           (loop while key-sequence
+                 do (pop key-sequence)
+                    (setf (gethash key-sequence mode-map) "prefix"))))
+    (when (and (null mode) (null keymap))
+      (setf mode 'root-mode
+            ;; keymap (find-slot mode 'keymap)
+            ))
+    (loop for (key-sequence function . rest) on key-function-pairs by #'cddr
+          do (when mode
+               (set-default
+                mode 'keymap
+                (let ((map (eval (closer-mop:slot-definition-initform
+                                  (find-slot mode 'keymap)))))
+                  (set-key map key-sequence function)
+                  map)))
+             (when keymap
+               (set-key keymap key-sequence function)))))
 
 (defun key (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"

@@ -10,37 +10,38 @@
      (keymap
       :initform
       (let ((map (make-keymap)))
-        (define-key map (key "M-f") 'history-forwards-query)
-        (define-key map (key "M-b") 'history-backwards)
-        (define-key map (key "C-g") 'go-anchor)
-        (define-key map (key "M-g") 'go-anchor-new-buffer-focus)
-        (define-key map (key "C-u M-g") 'go-anchor-new-buffer)
-        (define-key map (key "C-x C-w") 'copy-anchor-url)
-        (define-key map (key "C-f") 'history-forwards)
-        (define-key map (key "C-b") 'history-backwards)
-        (define-key map (key "button9") 'history-forwards)
-        (define-key map (key "button8") 'history-backwards)
-        (define-key map (key "C-p") 'scroll-up)
-        (define-key map (key "C-n") 'scroll-down)
-        (define-key map (key "C-x C-=") 'zoom-in-page)
-        (define-key map (key "C-x C-HYPHEN") 'zoom-out-page)
-        (define-key map (key "C-x C-0") 'unzoom-page)
-        (define-key map (key "C-l") 'set-url-current-buffer)
-        (define-key map (key "C-r") 'reload-current-buffer)
-        (define-key map (key "C-m o") 'set-url-from-bookmark)
-        (define-key map (key "C-m s") 'bookmark-current-page)
-        (define-key map (key "C-m g") 'bookmark-anchor)
-        (define-key map (key "C-s s") 'add-search-boxes)
-        (define-key map (key "C-s n") 'next-search-hint)
-        (define-key map (key "C-s p") 'previous-search-hint)
-        (define-key map (key "C-s k") 'remove-search-hints)
-        (define-key map (key "C-.") 'jump-to-heading)
-        (define-key map (key "M-s->") 'scroll-to-bottom)
-        (define-key map (key "M-s-<") 'scroll-to-top)
-        (define-key map (key "M->") 'scroll-to-bottom)
-        (define-key map (key "M-<") 'scroll-to-top)
-        (define-key map (key "C-w") 'copy-url)
-        (define-key map (key "M-w") 'copy-title)
+        (define-key (key "M-f") 'history-forwards-query
+          (key "M-b") 'history-backwards
+          (key "C-g") 'go-anchor
+          (key "M-g") 'go-anchor-new-buffer-focus
+          (key "C-u M-g") 'go-anchor-new-buffer
+          (key "C-x C-w") 'copy-anchor-url
+          (key "C-f") 'history-forwards
+          (key "C-b") 'history-backwards
+          (key "button9") 'history-forwards
+          (key "button8") 'history-backwards
+          (key "C-p") 'scroll-up
+          (key "C-n") 'scroll-down
+          (key "C-x C-=") 'zoom-in-page
+          (key "C-x C-HYPHEN") 'zoom-out-page
+          (key "C-x C-0") 'unzoom-page
+          (key "C-l") 'set-url-current-buffer
+          (key "C-r") 'reload-current-buffer
+          (key "C-m o") 'set-url-from-bookmark
+          (key "C-m s") 'bookmark-current-page
+          (key "C-m g") 'bookmark-anchor
+          (key "C-s s") 'add-search-boxes
+          (key "C-s n") 'next-search-hint
+          (key "C-s p") 'previous-search-hint
+          (key "C-s k") 'remove-search-hints
+          (key "C-.") 'jump-to-heading
+          (key "M-s->") 'scroll-to-bottom
+          (key "M-s-<") 'scroll-to-top
+          (key "M->") 'scroll-to-bottom
+          (key "M-<") 'scroll-to-top
+          (key "C-w") 'copy-url
+          (key "M-w") 'copy-title
+          :keymap map)
         map))))
 
 (define-command history-backwards ()

@@ -7,8 +7,9 @@
     ((keymap
       :initform
       (let ((map (make-keymap)))
-        (define-key map (key "C-p") 'scroll-up)
-        (define-key map (key "C-n") 'scroll-down)
+        (define-key (key "C-p") 'scroll-up
+          (key "C-n") 'scroll-down
+          :keymap map)
         map))))
 
 (defun package-symbols (p)
