@@ -21,10 +21,10 @@
                                  :input-prompt "Load file:"))
     (load file-name-input :if-does-not-exist nil)))
 
-(define-command start-swank ()
-  "Start a swank server that can be connected to in Emacs via
-slime. Default port is 4006."
-  (swank:create-server :port *swank-port* :dont-close t))
+(define-command start-swank (&optional (swank-port *swank-port*))
+  "Start a Swank server that can be connected to, for instance, in Emacs via
+SLIME."
+  (swank:create-server :port swank-port :dont-close t))
 
 (defun parse-url (input-url)
   (handler-case

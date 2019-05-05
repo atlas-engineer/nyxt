@@ -18,7 +18,7 @@
   "A hash of all available commands.")
 
 (defvar *swank-port* 4006
-  "The port that swank will open a new server on (default Emacs slime port
+  "The port that Swank will open a new server on (default Emacs SLIME port
   is 4005, default set to 4006 in Next to avoid collisions).")
 
 ;; TODO: Unused.  Remove?  Might be useful when we introspect classes.
