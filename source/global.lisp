@@ -8,7 +8,13 @@
   "The list of positional command line arguments.")
 
 (defvar *interface* nil
-  "The CLOS object responsible for rendering the interface.")
+  "The entry-point object to a complete instance of Next.
+It can be initialized with
+
+  (setf *interface* (make-instance 'remote-interface))
+
+Much of Next code assumes a valid *interface*.  This could change in the future
+when multiple interfaces are supported.")
 
 ;; TODO: Move commands with their hooks to a REMOTE-INTERFACE slot?
 ;; Better: make this part of modes, so that we can have mode-specific commands.
@@ -19,19 +25,19 @@
 
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port
-  is 4005, default set to 4006 in Next to avoid collisions).")
+is 4005, default set to 4006 in Next to avoid collisions).")
 
 ;; TODO: Unused.  Remove?  Might be useful when we introspect classes.
 (defvar *package-symbols* nil
   "The package symbols available, populated by helper function
-  load-package-symbols.")
+`load-package-symbols'.")
 
 ;; TODO: This is barely useful since we don't have any global.  It is used by
-;; INSPECT-VARIABLE.  We need to augment the function so that we can inspect
+;; INSPECT-VARIABLE.  We need to augment the latter function so that we can inspect
 ;; *INTERFACE* and classes.
 (defvar *package-globals* nil
   "The package global variables available, populated by helper
-  function load package-globals")
+function `load-package-globals'.")
 
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
