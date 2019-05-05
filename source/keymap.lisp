@@ -20,10 +20,9 @@
     (gethash key map)))
 
 (defun |push.input.event| (key-code key-string modifiers x y low-level-data sender)
-  ;; Adds a new chord to key-sequence
-  ;; For example, it may add C-M-s or C-x
-  ;; to a stack which will be consumed by
-  ;; |consume.key.sequence|.
+  "Add a new key chord to the interface key-chord-stack.
+For example, it may add C-M-s or C-x to a stack which will be consumed by
+`|consume.key.sequence|'."
   (let ((key-chord (make-key-chord
                     :key-code key-code
                     :key-string key-string
@@ -137,9 +136,7 @@ Examples:
                  do (pop key-sequence)
                     (setf (gethash key-sequence mode-map) "prefix"))))
     (when (and (null mode) (null keymap))
-      (setf mode 'root-mode
-            ;; keymap (find-slot mode 'keymap)
-            ))
+      (setf mode 'root-mode))
     (loop for (key-sequence function . rest) on key-function-pairs by #'cddr
           do (when mode
                (set-default
