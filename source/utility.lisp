@@ -21,7 +21,7 @@
                                  :input-prompt "Load file:"))
     (load file-name-input :if-does-not-exist nil)))
 
-(define-command start-swank (&optional (swank-port *swank-port*))
+(define-command start-swank (root-mode &optional (swank-port *swank-port*))
   "Start a Swank server that can be connected to, for instance, in Emacs via
 SLIME."
   (swank:create-server :port swank-port :dont-close t))

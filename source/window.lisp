@@ -11,8 +11,17 @@
           (active-window
            (echo (minibuffer *interface*) "Can't delete sole window.")))))
 
-(define-command make-window ()
+(defun make-window ()
   "Create a new window."
+  (let ((window (%%window-make *interface*))
+        (buffer (make-buffer)))
+    (window-set-active-buffer *interface* window buffer)
+    (values window buffer)))
+
+(define-command new-window ()
+  "Create a new window.
+This command is meant to be used interactively.
+For Lisp code, see `make-window'."
   (let ((window (%%window-make *interface*))
         (buffer (make-buffer)))
     (window-set-active-buffer *interface* window buffer)

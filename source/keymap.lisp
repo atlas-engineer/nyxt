@@ -77,13 +77,15 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
          (key-maps (list (root-mode-default-keymap) local-map))
          (serialized-key-stack (mapcar #'serialize-key-chord (key-chord-stack *interface*))))
     (dolist (map key-maps)
-      (let ((bound (gethash serialized-key-stack map)))
-        (cond ((equalp "prefix" bound)
+      (let ((bound-function (gethash serialized-key-stack map)))
+        (cond ((equalp "prefix" bound-function)
                (return-from |consume.key.sequence| t))
-              (bound
+              (bound-function
                (progn
-                 (log:debug "Key sequence ~a bound to ~a" serialized-key-stack bound)
-                 (funcall bound)
+                 (log:debug "Key sequence ~a bound to ~a" serialized-key-stack bound-function)
+                 (funcall bound-function (mode (if (minibuffer-active active-window)
+                                                   (minibuffer *interface*)
+                                                   active-buffer)))
                  (setf (key-chord-stack *interface*) ())
                  (return-from |consume.key.sequence| t)))
               ((equalp map (keymap (mode (minibuffer *interface*))))
@@ -93,18 +95,17 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
                    (progn
                      (log:debug "Insert ~s in minibuffer" (key-chord-key-string
                                                            (first (key-chord-stack *interface*))))
-                     (self-insert (key-chord-key-string (first (key-chord-stack *interface*))))))
+                     (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
                (setf (key-chord-stack *interface*) ())
                (return-from |consume.key.sequence| t)))))
     (log:debug "Not found in any keymaps")
     (setf (key-chord-stack *interface*) ())))
 
-;; TODO: Should FUNCTION be a command in DEFINE-KEY?
-(defun define-key (&rest key-function-pairs
+(defun define-key (&rest key-command-pairs
                          &key mode keymap
                          &allow-other-keys)
-  "Bind KEY-SEQUENCE to FUNCTION.
-The KEY function transforms key chord strings to valid key sequences.
+  "Bind KEY to COMMAND.
+The KEY command transforms key chord strings to valid key sequences.
 When MODE is provided (as a symbol referring to a class name), the binding is
 registered into the mode class and all future mode instance will use the
 binding.
@@ -118,35 +119,35 @@ Examples:
   ;; Only affect the first mode of the current buffer:
   (define-key (\"C-c C-c\") '
               :keymap (keymap (mode (active-buffer *interface*))))"
-  (remf key-function-pairs :mode)
-  (remf key-function-pairs :keymap)
-  (flet ((set-key (mode-map key-sequence function)
+  (remf key-command-pairs :mode)
+  (remf key-command-pairs :keymap)
+  (flet ((set-key (mode-map key-sequence command)
            ;; A sequence of "C-x" "C-s" "C-a" will be broken
            ;; up into three keys for the mode map, these are
-           ;; "C-x" "C-s" "C-a" - points to function
+           ;; "C-x" "C-s" "C-a" - points to command
            ;; "C-x" "C-s"       - set to "prefix"
            ;; "C-x"             - set to "prefix"
            ;;
            ;; When a key is set to "prefix" it will not
            ;; consume the stack, so that a sequence of keys
            ;; longer than one key-chord can be recorded
-           (setf (gethash key-sequence mode-map) function)
+           (setf (gethash key-sequence mode-map) command)
            ;; generate prefix representations
            (loop while key-sequence
                  do (pop key-sequence)
                     (setf (gethash key-sequence mode-map) "prefix"))))
     (when (and (null mode) (null keymap))
       (setf mode 'root-mode))
-    (loop for (key-sequence function . rest) on key-function-pairs by #'cddr
+    (loop for (key-sequence command . rest) on key-command-pairs by #'cddr
           do (when mode
                (set-default
                 mode 'keymap
                 (let ((map (eval (closer-mop:slot-definition-initform
                                   (find-slot mode 'keymap)))))
-                  (set-key map key-sequence function)
+                  (set-key map key-sequence command)
                   map)))
              (when keymap
-               (set-key keymap key-sequence function)))))
+               (set-key keymap key-sequence command)))))
 
 (defun key (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"

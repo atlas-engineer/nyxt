@@ -16,27 +16,19 @@
   (let (l) (do-symbols (s p l)
              (push s l))))
 
-(defun load-package-symbols ()
-  (setf *package-symbols* (package-symbols :next)))
-
-(defun load-package-globals ()
-  (setf *package-globals* (filter-globals (package-symbols :next))))
-
-(defun filter-globals (symbol-list)
-  (remove-if-not
-   (lambda (symbol)
-     (cl-string-match:match-re "[*]+[a-zA-Z\-]+[*]" (symbol-name symbol)))
-   symbol-list))
-
 (defun variable-complete (input)
-  (fuzzy-match input *package-globals* :accessor-function #'symbol-name))
+  (fuzzy-match input (package-variables) :accessor-function #'symbol-name))
 
 (defun function-complete (input)
-  (fuzzy-match input (alexandria:hash-table-keys *available-commands*)))
+  (fuzzy-match input (list-commands)
+               :accessor-function #'(lambda (c)
+                                      (closer-mop:generic-function-name
+                                       (closer-mop:method-generic-function c)))))
 
+;; TODO: This is barely useful as is since we don't have any global.  We need to
+;; augment the latter function so that we can inspect *INTERFACE* and classes.
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
-  (load-package-globals)
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
                        :completion-function 'variable-complete
@@ -54,19 +46,24 @@
       (%%buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
+;; TODO: Have both "function-inspect" and "command-inspect"?
 (define-command command-inspect ()
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
                        :input-prompt "Inspect command:"
                        :completion-function 'function-complete))
-    (let* ((help-buffer (make-buffer
-                         (concatenate 'string "HELP-" input)
+    (let* ((input-sym (closer-mop:generic-function-name
+                       (closer-mop:method-generic-function input)))
+
+           (help-buffer (make-buffer
+                         (concatenate 'string "HELP-" (symbol-name input-sym))
                          (help-mode)))
            (help-contents (cl-markup:markup
-                           (:h1 input)
+                           (:h1 (symbol-name input-sym))
                            (:h2 "Documentation")
-                           (:p (write-to-string (doc (gethash input *available-commands*))))))
+                           (:p (write-to-string
+                                (documentation input t)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (%%buffer-evaluate-javascript *interface* help-buffer insert-help)

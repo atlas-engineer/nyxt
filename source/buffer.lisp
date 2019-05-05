@@ -5,10 +5,18 @@
 (defmethod object-string ((buffer buffer))
   (name buffer))
 
-(define-command make-buffer (&optional (name "default")
+(defun make-buffer (&optional (name "default")
                                        mode)
-  "Create a new buffer."
+  "Create a new buffer.
+This function is meant to be used on the Lisp side."
   (buffer-make *interface* name mode))
+
+(define-command new-buffer (root-mode &optional (name "default")
+                                       mode)
+  "Create a new buffer.
+This command is meant to be used interactively.
+See the `make-buffer' function for Lisp code."
+  (make-buffer name mode))
 
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*))))

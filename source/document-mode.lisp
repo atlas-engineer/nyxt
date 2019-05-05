@@ -44,14 +44,14 @@
           :keymap map)
         map))))
 
-(define-command history-backwards ()
+(define-command history-backwards (document-mode)
   "Move up to parent node to iterate backwards in history tree."
   (let ((parent (node-parent (active-history-node
                               (mode (active-buffer *interface*))))))
     (when parent
       (set-url (node-data parent) t))))
 
-(define-command history-forwards ()
+(define-command history-forwards (document-mode)
   "Move forwards in history selecting the first child."
   (let ((children (node-children (active-history-node
                                   (mode (active-buffer *interface*))))))
@@ -59,15 +59,16 @@
       (set-url (node-data (nth 0 children)) t))))
 
 (defun history-forwards-completion-fn ()
-  ;; provide completion candidates to the history-forwards-query function
+  "Provide completion candidates to the `history-forwards-query' function."
   (let* ((mode (mode (active-buffer *interface*)))
          (children (node-children (active-history-node mode))))
     (lambda (input)
       (if children
           (fuzzy-match input children :accessor-function #'node-data)
+          ;; TODO: Echo error instead of listing it in candidates.
           (list "Cannot navigate forwards.")))))
 
-(define-command history-forwards-query ()
+(define-command history-forwards-query (document-mode)
   "Move forwards in history querying if more than one child present."
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
@@ -103,25 +104,25 @@
       (setf (active-history-node mode) new-node)
       (return-from add-or-traverse-history t))))
 
-(define-command set-default-window-title ()
+(define-command set-default-window-title (document-mode)
   "Set current window title to 'Next - TITLE - URL."
   (with-result* ((url (buffer-get-url))
                  (title (buffer-get-title)))
     (%%window-set-title *interface* (%%window-active *interface*)
                         (concatenate 'string "Next - " title " - " url))))
 
-(define-command copy-url ()
+(define-command copy-url (document-mode)
   "Save current URL to clipboard."
   (with-result (url (buffer-get-url))
     (trivial-clipboard:text url)))
 
-(define-command copy-title ()
+(define-command copy-title (document-mode)
   "Save current page title to clipboard."
   (with-result (title (buffer-get-title))
     (trivial-clipboard:text title)))
 
 (defmethod did-commit-navigation ((mode document-mode) url)
-  (set-default-window-title)
+  (set-default-window-title mode)
   (add-or-traverse-history mode url)
   (echo (minibuffer *interface*) (concatenate 'string "Loading: " url ".")))
 
