@@ -140,8 +140,7 @@ Examples:
       (setf mode 'root-mode))
     (loop for (key-sequence command . rest) on key-command-pairs by #'cddr
           do (when mode
-               (set-default
-                mode 'keymap
+               (setf (get-default mode 'keymap)
                 (let ((map (eval (closer-mop:slot-definition-initform
                                   (find-slot mode 'keymap)))))
                   (set-key map key-sequence command)
