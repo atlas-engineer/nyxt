@@ -4,31 +4,35 @@
 
 (defun %initialize-history-db (path)
   "Create a database file if necessary and make a table for bookmarks"
-  (close (open (ensure-parent-exists path)
-               :direction :probe :if-does-not-exist :create))
-  (let ((db (sqlite:connect
-             (truename (probe-file path)))))
-    (sqlite:execute-non-query
-     db "create table history (id integer primary key, url text not null)")
-    (sqlite:execute-non-query
-     db "create table typed (id integer primary key, url text not null, visits integer default 1, unique (url) on conflict replace)")
-    (sqlite:execute-non-query
-     db "insert into history (url) values (?)" "about:blank")
-    (sqlite:execute-non-query
-     db "insert into typed (url) values (?)" "about:blank")
-    (sqlite:disconnect db))
   (if (probe-file path)
       (let ((db (sqlite:connect
                  (truename (probe-file path)))))
+        ;; Make sure new fields exist.
         (unless (string= "visits" (cadar (last (sqlite:execute-to-list db "pragma table_info(typed)"))))
-          (sqlite:execute-non-query db "alter table typed add visits integer default 1")))))
+          (sqlite:execute-non-query db "alter table typed add visits integer default 1")))
+      (progn
+        (close (open (ensure-parent-exists path)
+                     :direction :probe :if-does-not-exist :create))
+        (let ((db (sqlite:connect
+                   (truename (probe-file path)))))
+          (sqlite:execute-non-query
+           db "create table history (id integer primary key, url text not null)")
+          (sqlite:execute-non-query
+           db "create table typed (id integer primary key, url text not null, visits integer default 1, unique (url) on conflict replace)")
+          (sqlite:execute-non-query
+           db "insert into history (url) values (?)" "about:blank")
+          (sqlite:execute-non-query
+           db "insert into typed (url) values (?)" "about:blank")
+          (sqlite:disconnect db)))))
 
 (defun ensure-history-db ()
   "Returns the pathname of the history database"
   (ensure-file-exists
    (anaphora:aif (%%window-active *interface*)
                  (history-db-path anaphora:it)
-                 ;;; FIXME: when we want to have multiple history-db
+                 ;; This additional window fallback should not be necessary
+                 ;; anymore now that `%%window-make' sets `last-active-window'
+                 ;; so that `%%window-active' always returns a result.
                  (some (lambda (window)
                          (history-db-path window))
                        (alexandria:hash-table-values (windows *interface*))))
