@@ -23,7 +23,7 @@
    (search-engines :accessor search-engines :initform '(("default" . "https://duckduckgo.com/?q=~a")
                                                         ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
                    :documentation "An association list of all the search engines you can use in the minibuffer.
-The 'default' engine is use when the query is not a valid URL, or the first
+The 'default' engine is used when the query is not a valid URL, or the first
 keyword is not recognized.")))
 
 (defclass buffer ()
