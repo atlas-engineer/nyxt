@@ -82,8 +82,7 @@ Otherwise list all commands."
                                         (mode (active-buffer *interface*))))))
                :accessor-function #'symbol-name))
 
-;; TODO: Rename to execute-command.
-(define-command execute-extended-command ()
+(define-command execute-command ()
   "Execute a command by name"
   (with-result (command (read-from-minibuffer
                          (minibuffer *interface*)
