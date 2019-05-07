@@ -1,7 +1,5 @@
 (in-package :next)
 
-(setf *port* (make-instance 'port))
-
 (defmethod run-program ((port port))
   (let* ((path (uiop/image:argv0))
                 (path (cl-strings:shorten path (- (length path) 4) :truncate-string ""))
