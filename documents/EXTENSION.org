@@ -15,73 +15,76 @@ Setting the start page can easily be achieved in the following manner:
 
 #+NAME: start-page-set
 #+BEGIN_SRC lisp
-(setf *start-page-url* "about:blank")
+(setf (get-default 'remote-interface 'start-page-url) "about:blank")
 #+END_SRC
 
 * Creating your own Parenscript
 You can call any parenscript within the browser through the convient
-define-parenscript, and define-parenstatic macros. A really simple example below
+~define-parenscript~ macro. A really simple example below
 shows how you could set the body with the URL of the current page.
 
 #+NAME: hell-url
 #+BEGIN_SRC lisp
-(define-parenstatic hello-url
-    (defun set-body (text)
-      (setf (ps:chain document body inner-text) text)
-      ;; return nil to avoid json decode errors
-      nil)
+(define-parenscript hello-url ()
+  (defun set-body (text)
+    (setf (ps:chain document body inner-text) text)
+    ;; return nil to avoid json decode errors
+    nil)
   (set-body (ps:chain document -u-r-l)))
 #+END_SRC
 
-Define-Parenstatic will automatically generate a defparameter named
-~hello-url~ as in the case above, and a function ~(hello-url)~ that
-you can invoke to act upon the currently active buffer.
+A ~define-parenscript~ without arguments will automatically generate a
+~defparameter~ named ~hello-url~ with the actual Javascript, and a function
+~(hello-url)~ that you can invoke to act upon the currently active buffer.
 
 * Running shell commands within Next
 Shell mode is an extension for running simple one liner shell commands
 and seeing the output. There is no history or variables. Use ~C-x s~
-to enter ~*shell-mode*~ and ~c~ to enter a command and ~k~ to clear
+to enter a ~*shell*~ buffer, ~c~ to enter a command and ~k~ to clear
 the command output.
 
 #+NAME: shell-mode
 #+BEGIN_SRC lisp
-(defvar *shell-mode-map* (make-hash-table :test 'equal))
+(define-mode shell-mode ()
+    "A basic shell prompt."
+    ((keymap
+      :initform
+      (let ((map (make-keymap)))
+        (define-key (key "M-f") 'history-forwards-query
+          (key "c") #'run-shell-command
+          (key "k") #'run-shell-command
+          :keymap map)
+        map))))
 
-(defclass shell-mode (mode) ())
-
-(defun shell-mode ()
-  (make-instance 'application-mode
-		 :name "shell-mode"
-		 :keymap *shell-mode-map*))
-
-(define-parenstatic clear-shell-output
+(define-parenscript clear-shell-output ()
     (setf (ps:chain document body inner-h-t-m-l) ""))
+
+(define-command clear-shell (shell-mode)
+  (%%buffer-evaluate-javascript
+   *interface* (active-buffer *interface*)
+   (clear-shell-output)))
 
 (define-parenscript append-output (output)
   (setf (ps:chain document body inner-h-t-m-l)
         (ps:chain document body inner-h-t-m-l
                   (concat (ps:lisp
-                           (concatenate 'string output "<br />"))))))
+                           (format nil "<pre><code>~a</code></pre><br/>" output))))))
 
-(defun run-shell-command (input)
-  (buffer-evaluate-javascript
-   *interface*
-   (active-buffer *interface*)
-   (append-output
-    (uiop:run-program input :force-shell t :output :string))))
+(define-command run-shell-command (shell-mode)
+  (with-result
+      (input (read-from-minibuffer
+              (minibuffer *interface*)
+              :input-prompt "Run in shell:"))
+    (%%buffer-evaluate-javascript
+     *interface* (active-buffer *interface*)
+     (append-output
+      :output
+      (uiop:run-program input :force-shell t :output :string)))))
 
-(defun open-new-shell ()
-  (set-active-buffer *interface*
-   (generate-new-buffer "*shell*" (shell-mode))))
+(define-command shell ()
+  (set-active-buffer *interface* (make-buffer "*shell*" 'shell-mode)))
 
-(define-key *shell-mode-map* (key "c")
-  (:input *minibuffer* run-shell-command))
-
-(define-key *shell-mode-map* (key "k")
-  #'clear-shell-output)
-
-(define-key *global-map* (key "C-x s")
-  #'open-new-shell)
+(define-key (key "C-x s") #'shell)
 #+END_SRC
 
 * Reloading the page
@@ -89,10 +92,15 @@ The following function provides a way to reload the current page.
 
 #+NAME: reload-page
 #+BEGIN_SRC lisp
-;; Reload page with §
-(define-parenstatic reload-page
+;; Reload page with C-r
+(define-parenscript %reload-page ()
   (ps:chain location (reload)))
-(define-key *global-map* (key "§") #'reload-page)
+
+(define-command reload-page ()
+  "Reload page."
+  (%reload-page))
+
+(define-key (key "C-r") #'reload-page)
 #+END_SRC
 
 * Scroll the page up and down by a screen
@@ -101,12 +109,21 @@ one screen.
 
 #+NAME: scroll-page-up-and-down
 #+BEGIN_SRC lisp
-(define-parenstatic scroll-page-down
-    (ps:chain window (scroll-by 0 (ps:@ window inner-height))))
-(define-parenstatic scroll-page-up
+(define-parenscript %scroll-page-down ()
+  (ps:chain window (scroll-by 0 (ps:@ window inner-height))))
+
+(define-parensscript %scroll-page-up ()
   (ps:chain window (scroll-by 0 (- (ps:@ window inner-height)))))
 
+(define-command scroll-page-down ()
+  "Scroll down by one page height."
+  (%scroll-page-down))
+
+(define-command scroll-page-up ()
+  "Scroll up by one page height."
+  (%scroll-page-up))
+
 ;; bind the new functions
-(define-key *global-map* (key "C-v") #'scroll-page-down)
-(define-key *global-map* (key "M-v") #'scroll-page-up)
+(define-key (key "C-v") #'scroll-page-down)
+(define-key (key "M-v") #'scroll-page-up)
 #+END_SRC
