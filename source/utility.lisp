@@ -14,13 +14,6 @@
 (defmethod object-string ((node node))
   (node-data node))
 
-(define-command load-file ()
-  "Load a file by specifying the absolute path to that file."
-  (with-result (file-name-input (read-from-minibuffer
-                                 (minibuffer *interface*)
-                                 :input-prompt "Load file:"))
-    (load file-name-input :if-does-not-exist nil)))
-
 (define-command start-swank (root-mode &optional (swank-port *swank-port*))
   "Start a Swank server that can be connected to, for instance, in Emacs via
 SLIME."

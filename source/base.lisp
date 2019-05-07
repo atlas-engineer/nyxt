@@ -94,28 +94,42 @@ Set to '-' to read standard input instead."))
 (defvar *init-file-path* (xdg-config-home "init.lisp")
   "The path where the system will look to load an init file from.")
 
-;; TODO: Turn into a command?  Factor with LOAD-FILE command.
-(defun load-init-file (&optional (init-file *init-file-path*))
-  "Load the user configuration if it exists."
-  (handler-case (if (string= (pathname-name init-file) "-")
+(defun load-lisp-file (file)
+  "Load the provided lisp file.
+Interactively, prompt for FILE.
+If FILE is \"-\", read from the standard input."
+  (handler-case (if (string= (pathname-name file) "-")
                     (progn
-                      (log:info "Initializing from standard input...")
+                      (log:info "Loading configuration from standard input...")
                       (loop for object = (read *standard-input* nil :eof)
                             until (eq object :eof)
                             do (eval object)))
                     (progn
-                      (log:info "Initializing from ~a..." init-file)
-                      (load init-file :if-does-not-exist nil)))
+                      (log:info "Loading configuration from ~a..." file)
+                      (load file :if-does-not-exist nil)))
     (error (c)
-      (log:warn "Error: we could not load your init file ~a: ~a" init-file c)
+      (log:warn "Error: we could not load the Lisp file ~a: ~a" file c)
       (when *interface*
         (echo (minibuffer *interface*)
-              (format nil "Error: we could not load your init file ~a: ~a" init-file c))))))
+              (format nil "Error: we could not load the Lisp file ~a: ~a" file c))))))
+
+(define-command load-file ()
+  "Load the provided lisp file.
+Interactively, prompt for FILE.
+If FILE is \"-\", read from the standard input."
+  (with-result (file-name-input (read-from-minibuffer
+                                 (minibuffer *interface*)
+                                 :input-prompt "Load file:"))
+    (load-lisp-file file-name-input)))
+
+(define-command load-init-file (root-mode &optional (init-file *init-file-path*))
+  "Load or reload the init file."
+  (load-lisp-file init-file))
 
 (defun start (&key (with-platform-port-p nil))
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
-  (load-init-file)
+  (load-lisp-file *init-file-path*)
   ;; create the interface object
   (unless (eq swank:*communication-style* :fd-handler)
     (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"
@@ -135,7 +149,7 @@ Set to '-' to read standard input instead."))
   t)
 
 (define-key (key "C-x C-c") 'kill)
-(define-key (key "C-[") 'switch-buffer-previous)
+(define-key (key "C-[") 'switch-buffer-previous) ; TODO: C-[ does not work with GTK.
 (define-key (key "C-]") 'switch-buffer-next)
 (define-key (key "C-x b") 'switch-buffer)
 (define-key (key "C-x k") 'delete-buffer)
