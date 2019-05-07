@@ -107,35 +107,21 @@ returns:
    :empty-complete is a truthy value, the function will accept the
    EXACT text inputted into the minibuffer.
 
-Below is a concrete example that may help clarify the usage of ~RET~
+** Buffers ("tabs")
+Many browsers implement the concept of multiple views with "tabs".  Tabs are
+inherently flawed as they don't scale: it's hard to manage more than a few dozen
+of them.
 
-#+NAME: input-complete-empty
-#+BEGIN_SRC lisp
-(:input-complete *minibuffer* set-url-new-buffer
-history-typed-complete :empty-complete t)
-#+END_SRC
+In Next, multiple views are implemented as "buffers".  Each buffer can use its
+own set of "modes".  A mode is a collection of settings, key bindings, commands,
+etc.  Regular web pages use the ~document-mode~ by default.
 
-In the above case ~set-url-new-buffer~ will attempt to be completed by
-~history-typed-complete~. If there are no suitable candidates, e.g.
-the user is attempting to visit a URL they have never visited before,
-~:empty-complete t~ will allow the ~return-input~ to return the literal
-input to ~set-url-new-buffer~.
+The standard keybindings for buffer management are:
 
-** Tabs (Buffers)
-Tabs are represented by a concept known as "buffers". Buffers are
-known in other GUIs as Views. Unlike in other GUI systems, the
-controller for a view can dynamically change. Given a buffer composed
-of a web-view and a document-mode model, one can dynamically set the
-controller to any other mode. This enables run-time specialization and
-modification of widget behavior.
-
-The standard keybindings for tab management (within document-mode)
-are:
-
-1. ~C-x b~: Switch tab
-2. ~C-x k~: Kill tab
-3. ~M-l~: New document-mode tab
-4. ~C-l~: Change URL of current document
+1. ~C-x b~: Switch buffer
+2. ~C-x k~: Kill buffer
+3. ~M-l~: Open URL in new buffer
+4. ~C-l~: Change URL of current buffer
 5. ~C-t~: Make new empty buffer
 
 *** Switching Tabs by Order
@@ -163,7 +149,7 @@ History is represented as a tree that you can traverse. More complex
 than the "forwards-backwards" abstraction found in other browsers,
 the tree makes sure you never lose track of where you've been.
 
-In the example below, the User performs the following actions:
+In the example below, the user performs the following actions:
 
 1. Starts page ~Athens~
 2. Visits page ~Ancient Greek~
@@ -172,7 +158,7 @@ In the example below, the User performs the following actions:
 5. Returns to page ~Athens~
 6. Executes ~forwards~ keybind in history
 
-It is at this point that a normal browser would NOT be able to
+It is at this point that a normal browser would /not/ be able to
 navigate you forwards to your visit of ~Ancient Greek~. Instead of
 erasing your history, Next offers smart navigation and prompts the
 user. Do you wish to go forwards to ~Ancient Greek~ or to
@@ -191,11 +177,10 @@ forward command will simply visit the first child of the current node
 in the tree.
 
 ** Bookmarks
-Bookmarks are located in a database located in
-=~/.local/share/next/bookmark.db=. This directory and database will be created
-automatically for you. The bookmark database is a SQLITE database that
-contains one table with two columns: id, url. In order to navigate
-and manage your bookmarks, a few functions are provided:
+Bookmarks are stored in a database located in
+=~/.local/share/next/bookmark.db= by default. This (SQLite) database contains
+one table with two columns: id, url. In order to navigate and manage your
+bookmarks, a few functions are provided:
 
 1. ~C-m k~: Delete Bookmark
 2. ~C-m o~: Open Bookmark
@@ -216,9 +201,8 @@ and other information within your cache.
 
 * Advanced Topics
 ** Execute Extended Command
-You can execute any command by name by typing =M-x= or =ESCAPE
-x=. This will bring up a list of candidates that you can fuzzily
-complete.
+You can execute any command by name by typing =M-x=. This will bring up a list
+of candidates that you can fuzzily complete.
 
 ** Help
 The help system allows you to look up variable and function docstrings
@@ -227,11 +211,11 @@ directly within Next. Docstrings will appear in a new help buffer.
 1. ~C-h v~: Look up a variable docstring
 2. ~C-h c~: Look up a command docstring
 
-** Slime with a compiled version of Next
-Slime provides a way of interacting with Next, and with Lisp code in
-general (in a REPL like manner).
+** SLIME with a compiled version of Next
+=SLIME= provides a way of interacting with Next, and with Lisp code in
+general (e.g. in a [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][REPL]]).
 
-From the Slime Manual:
+From the SLIME manual:
 #+begin_quote
 SLIME extends Emacs with support for interactive programming in Common
 Lisp. The features are centered around slime-mode, an Emacs minor-mode
@@ -241,18 +225,18 @@ with a running Common Lisp process for compilation, debugging,
 documentation lookup, and so on.
 #+end_quote
 
-To use Slime with a compiled version of Next use the keybinding ~S-h
-s~ to launch a Swank server. Slime will connect to the Swank server
-and give you completion, debugging, documentation, etc. The default
-port for Swank on Next is ~4006~ to avoid collisions with the default
-Swank port of ~4005~ within an Emacs ~*inferior-lisp*~ process.
+To use SLIME with a compiled version of Next use the keybinding ~S-h s~ to
+launch a Swank server. SLIME will connect to the Swank server and give you
+completion, debugging, documentation, etc. The port for Swank is define in
+~*swank-port*~ and its default value is different from that of Swank on Emacs to
+avoid collisions with an Emacs ~*inferior-lisp*~ process.
 
-After launching the Swank server in Next- within Emacs execute:
+After launching the Swank server in Next, execute the following within Emacs:
 
 1. ~M-x~
 2. ~slime-connect~
 3. Enter ~127.0.0.1~ for the host
-4. Enter ~4006~ for the port (Next variable ~*swank-port*~)
+4. Enter the port number set in the Next variable ~*swank-port*~ (e.g. ~4006~)
 
 To customize the port that Swank starts on, edit the global variable
 ~*swank-port*~ in your init file.
@@ -264,7 +248,7 @@ customizations. If the directory =~/.config/next/= does not already
 exist, you will have to make it.
 
 The first line of an init file should contain the following package
-declaration in order to modify Next specific variables and functions:
+declaration in order to modify Next-specific variables and functions:
 
 #+NAME: package
 #+BEGIN_SRC lisp
@@ -279,22 +263,20 @@ Keys are defined with the following syntax:
 
 #+NAME: define key
 #+BEGIN_SRC lisp
-(define-key *global-map* (key "C-x o") #'function-example)
+(define-key (key "C-x o") #'example)
 #+END_SRC
 
-in the previous example, the sequence of keys: ~control+x~, lift hands
-off control key, ~o~ would invoke the "function-example". Additionally
-important to note is that the key sequence ~control+x~ is now
-registered as a special type keybinding, a prefix. A prefix key can,
-but should not be mapped. If a subsequent mapping was to bind
-~control+x~, it would be unclear to Next what keybinding invocation
-the user is trying to type.
+In the previous example, the key sequence =C-x o= would invoke the ~example~
+command.
+If later on another command is bound to =C-x=, all other bindings starting with
+=C-x= will be overridden.
 
 The following keys exist as special keys:
 
 1. ~C~: Control
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
+4. ~s~: Shift key
 
 ** Loading Files
 To load a file again, or reload an init file use the function
@@ -304,7 +286,7 @@ file you wish to load.
 1. ~C-o~: Load File
 
 A convenience function for reloading the init file called
-~reload-init~ can also be keybound.
+~load-init-file~ can also be keybound.
 
 ** Creating your own interactive commands
 Creating your own invokable commands is the same as creating any other
@@ -317,19 +299,19 @@ An example of a trivial command definition can be seen below.
 #+BEGIN_SRC lisp
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer *minibuffer*))
+  (with-result (url (read-from-minibuffer (minibuffer *interface*)))
     (%bookmark-url url)))
 #+END_SRC
 
 ** Getting input from the user
 Getting input from the user via the minibuffer is an asynchronous
 command. That is why the ~read-from-minibuffer~ function is wrapped
-within a continuation passing style macro ~with-result~. The form
+within a continuation-passing-style macro ~with-result~. The form
 therefore takes the following look:
 
 #+NAME: read-from-minibuffer-example
 #+BEGIN_SRC lisp
 (with-result (variable-name-to-bind-minibuffer-input
-              (read-from-minibuffer  *minibuffer*))
+              (read-from-minibuffer (minibuffer *interface*)))
   (print variable-name-to-bind-minibuffer-input))
 #+END_SRC
