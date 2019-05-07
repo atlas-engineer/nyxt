@@ -401,5 +401,6 @@
     (hide *interface*)
     (erase-document minibuffer)))
 
-(defun paste (&optional (minibuffer (minibuffer *interface*)))
-  (self-insert (trivial-clipboard:text) minibuffer))
+(define-command paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+  "Paste clipboard text to input."
+  (insert (trivial-clipboard:text) minibuffer))
