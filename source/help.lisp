@@ -3,7 +3,7 @@
 (in-package :next)
 
 (define-mode help-mode ()
-  "Mode for displaying documentation."
+    "Mode for displaying documentation."
     ((keymap
       :initform
       (let ((map (make-keymap)))

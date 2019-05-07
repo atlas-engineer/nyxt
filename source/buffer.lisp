@@ -8,6 +8,7 @@
 (defun make-buffer (&optional (name "default")
                                        mode)
   "Create a new buffer.
+MODE is a mode symbol.
 This function is meant to be used on the Lisp side."
   (buffer-make *interface* name mode))
 
