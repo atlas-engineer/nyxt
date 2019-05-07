@@ -8,6 +8,15 @@ MAJOR.MINOR.PATCH, we increment the:
 - MINOR version when we add functionality in a backwards-compatible manner, and
 - PATCH version when we make backwards-compatible bug fixes.
 
+** Future
+*** PyQt platform port (with QtWebEngine)
+A PyQt platform port would have the benefits of being cross-platform while
+offering an alternative web renderer.
+
+Because of WKWebKit library limitations, the cocoa-webkit platform port misses
+some features such as proxy support, per-buffer cookie file, network resource
+interception.  To address these limitations, the PyQt platform port could become
+the default for macOS.
 ** TASK 1.3.0
 *** TASK VI Emulation Layer
 + Add a VI Emulation layer to support VIM like keybindings and
@@ -32,10 +41,16 @@ Add support for multiple search engines.
 *** DONE Sort history by number of visits (thanks to /wednesday/)
 *** DONE Add support for local HTML (file:// protocol)
 *** DONE Add experimental proxy support
+Due to limitations in the WKWebview API, the Cocoa version lacks proxy
+support.
 *** DONE Add mouse support
 *** DONE Intercept all network events
 This makes it possible to implement, for instance, ad-blocking, fully from the
 Lisp side.
+
+Due to limitations in the WKWebview API, the Cocoa version lacks the
+ability to do any processing on a per URI resource basis. The
+consequence of this means no Adblocking, no Downloads.
 *** DONE Input events (e.g. key presses, mouse buttons) can be generated programatically
 *** DONE Move platform-specific key translation to the platform port
 *** DONE Clean up on exit
@@ -48,6 +63,10 @@ Platform port polling is only done for a limited time to avoid hung processes.
 *** DONE Improve logging and error reporting
 In particular, some errors are reporting in the echo area.
 *** DONE Save platform port log to XDG_DATA_HOME/next/
+*** DONE Add experimental support for =next-gtk-webkit= on macOS
+Though it works on macOS, WebkitGTK+ is very slow since it does not utilize the
+native graphical frameworks/libraries. Users can see our Macports subtree to
+install WebkitGTK+ and compile Next manually.
 *** DONE Rename ~execute-extended-command~ to ~execute-command~
 *** DONE Rename ~reload-init~ to ~load-init-file~
 *** DONE Remove ~define-parenstatic~ macro
@@ -62,6 +81,9 @@ As per the specifications, =-= is not a valid XML-RPC character in method names.
 It reports the commit hash if it was not built on a tag version.
 *** DONE Add cookie support
 GTK implementation has per-buffer cookie support.
+
+Due to limitations in the WKWebview API, the Cocoa version lacks the
+ability to specify a per-buffer or application-wide cookies directory.
 *** DONE Report page load status to echo area
 *** DONE Add COPY-TITLE command and bind it to M-w
 *** DONE Add COPY-ANCHOR-URL command and bind it to C-x C-w
