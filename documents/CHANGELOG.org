@@ -16,6 +16,46 @@ MAJOR.MINOR.PATCH, we increment the:
 + Add support for content blocking using the WebKit API
 *** TASK Fix search/occur implementation
 *** TASK Add download support
+** 1.2.1
+*** DONE Improve =next-gtk-webkit= stability
+In particular, removes a race condition that would often hang the browser on key
+presses.
+*** DONE Make almost everything stateless but *interface*
+Most globals are gone.
+Everything is properly initialized just-in-time so that it won't fail if the
+user forgets to initialize something manually.
+~(next:start)~ can safely be run multiple times in a row while producing the
+same result.
+*** DONE Improve search engine support (thanks to /wednesday/)
+Fall back to a search engine query if input is not a URI.
+Add support for multiple search engines.
+*** DONE Sort history by number of visits (thanks to /wednesday/)
+*** DONE Add support for local HTML (file:// protocol)
+*** DONE Add experimental proxy support
+*** DONE Add mouse support
+*** DONE Intercept all network events
+This makes it possible to implement, for instance, ad-blocking, fully from the
+Lisp side.
+*** DONE Input events (e.g. key presses, mouse buttons) can be generated programatically
+*** DONE Move platform-specific key translation to the platform port
+*** DONE Clean up on exit
+Catch SIGTERM (C-c in a shell), kill the interface on exit, etc.
+*** DONE Don't give up so easily on startup
+Next will now try to find free ports automatically.
+It will find the platform ports automatically if run from source.
+Platform port polling is only done for a limited time to avoid hung processes.
+*** DONE Add experimental Clozure Common Lisp (CCL) support
+*** DONE Improve logging and error reporting
+In particular, some errors are reporting in the echo area.
+*** DONE Save platform port log to XDG_DATA_HOME/next/
+*** DONE Rename ~execute-extended-command~ to ~execute-command~
+*** DONE Rename ~reload-init~ to ~load-init-file~
+*** DONE Remove ~define-parenstatic~ macro
+Both macros are merged into ~define-parenscript~.
+*** DONE Rename ~mode~ to ~root-mode~
+*** DONE Replace the =-= in XML-RPC method names with =.=
+As per the specifications, =-= is not a valid XML-RPC character in method names.
+*** DONE Prefix all RPC calls with =%%= in the Lisp core
 ** DONE 1.2.0
 *** DONE Add RELOAD-CURRENT-BUFFER command and bind it to C-r
 *** DONE Add NEXT-VERSION command
