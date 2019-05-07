@@ -144,9 +144,10 @@ item in the list, jump to the first item."
 (defparameter *proxy-url* "socks://127.0.0.1:9050" )
 (defparameter *proxy-ignore-list* (list "localhost" "localhost:8080"))
 
-(define-command toggle-proxy ()
+(define-command %toggle-proxy ()
   "Toggle between system proxy and the proxy settings *PROXY-URL* and
-*PROXY-IGNORE-LIST*."
+*PROXY-IGNORE-LIST*.
+Warning: This is experimental and will be removed in future versions."
   (let* ((active-buffer (active-buffer *interface*))
          (proxy-settings (%%get-proxy *interface* active-buffer)))
     (if (string= (first proxy-settings) "default")

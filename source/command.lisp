@@ -61,6 +61,7 @@ ARGLIST must be a list of optional arguments."
 ;; TODO: Find a reliable way to identify commands.  We could use a class (we
 ;; used to have a COMMAND class) or some sort of symbol properties, or intern
 ;; the symbol into a special package (see `intern' documentation).
+;; TODO: See cl:get or make a command class.
 (defun list-commands (&optional mode)
   "List commands.
 When MODE is a mode symbol, list only the commands that apply in this mode.
