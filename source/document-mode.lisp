@@ -25,7 +25,6 @@
           (key "C-x C-=") 'zoom-in-page
           (key "C-x C-HYPHEN") 'zoom-out-page
           (key "C-x C-0") 'unzoom-page
-          (key "C-l") 'set-url-current-buffer
           (key "C-r") 'reload-current-buffer
           (key "C-m o") 'set-url-from-bookmark
           (key "C-m s") 'bookmark-current-page

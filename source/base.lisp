@@ -153,6 +153,7 @@ If FILE is \"-\", read from the standard input."
 (define-key (key "C-]") 'switch-buffer-next)
 (define-key (key "C-x b") 'switch-buffer)
 (define-key (key "C-x k") 'delete-buffer)
+(define-key (key "C-l") 'set-url-current-buffer)
 (define-key (key "M-l") 'set-url-new-buffer)
 (define-key (key "C-m k") 'bookmark-delete)
 (define-key (key "C-t") 'make-visible-new-buffer)
