@@ -1,6 +1,6 @@
 ;;; Commentary:
 ;;
-;; GNU Guix development package.  To build and install, clone this 
+;; GNU Guix development package.  To build and install, clone this
 ;; repository, cd into it and run:
 ;;
 ;;   guix package -f guix.scm
@@ -75,9 +75,9 @@
     (inputs
      `(("glib-networking" ,glib-networking)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("webkitgtk" ,webkitgtk-2.22)))
+       ("webkitgtk" ,webkitgtk-2.24)))
     (native-inputs
-     `(("gcc-7" ,gcc-7) ; needed because webkitgtk-2.22 is compiled with gcc-7
+     `(("gcc-7" ,gcc-7) ; needed because webkitgtk-2.24 is compiled with gcc-7
        ("pkg-config" ,pkg-config)))
     (home-page "https://next.atlas.engineer")
     (synopsis "Infinitely extensible web-browser (user interface only)")
@@ -137,6 +137,10 @@ features for productive professionals.")
        ;; Lisp libraries:
        ("trivial-features" ,sbcl-trivial-features)
        ("alexandria" ,sbcl-alexandria)
+       ("anaphora" ,sbcl-anaphora)
+       ("closer-mop" ,sbcl-closer-mop)
+       ("find-port" ,sbcl-find-port)
+       ("log4cl" ,sbcl-log4cl)
        ("cl-strings" ,sbcl-cl-strings)
        ("cl-string-match" ,sbcl-cl-string-match)
        ("puri" ,sbcl-puri)
