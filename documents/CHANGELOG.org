@@ -25,7 +25,7 @@ the default for macOS.
 + Add support for content blocking using the WebKit API
 *** TASK Fix search/occur implementation
 *** TASK Add download support
-** 1.2.1
+** DONE 1.2.1
 *** DONE Improve =next-gtk-webkit= stability
 In particular, removes a race condition that would often hang the browser on key
 presses.
