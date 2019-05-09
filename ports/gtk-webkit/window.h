@@ -352,8 +352,6 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 	}
 
 	// event->string is deprecated but it's very much what we want.
-	// For characters like Escape, this value is '\u001b', which is understood by
-	// s-xml-rpc as 0x1b, so we are fine.
 	gchar *keyval_string = event->string;
 	if (event->state & GDK_CONTROL_MASK &&
 		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
@@ -374,6 +372,13 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 			keyval_string = key_translations[i].new;
 			break;
 		}
+	}
+
+	// C-[ and C-] are turned to \u001b and \u001d (escape) respectively.  Fix this.
+	if (g_strcmp0(gdk_keyval_name(event->keyval), "bracketleft") == 0) {
+		keyval_string = "[";
+	} else if (g_strcmp0(gdk_keyval_name(event->keyval), "bracketright") == 0) {
+		keyval_string = "]";
 	}
 
 	return window_send_event(window_data,

@@ -149,7 +149,7 @@ If FILE is \"-\", read from the standard input."
   t)
 
 (define-key (key "C-x C-c") 'kill)
-(define-key (key "C-[") 'switch-buffer-previous) ; TODO: C-[ does not work with GTK.
+(define-key (key "C-[") 'switch-buffer-previous)
 (define-key (key "C-]") 'switch-buffer-next)
 (define-key (key "C-x b") 'switch-buffer)
 (define-key (key "C-x k") 'delete-buffer)
