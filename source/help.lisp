@@ -69,20 +69,23 @@
       (%%buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
-;; TODO: Fix command-evaluate
 (define-command command-evaluate ()
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
-                       :input-prompt "Evalute form:"))
+                       :input-prompt "Evaluate Lisp:"))
     (let* ((result-buffer (make-buffer
                            (concatenate 'string "EVALUATION RESULT-" input)
                            (help-mode)))
+           (result (write-to-string
+                    (handler-case
+                        (eval (read-from-string input))
+                      (error (c) (format nil "~a" c)))))
            (result-contents (cl-markup:markup
-                           (:h1 "Form")
-                           (:p input)
-                           (:h1 "Result")
-                           (:p (eval (read-from-string input)))))
+                             (:h1 "Form")
+                             (:p input)
+                             (:h1 "Result")
+                             (:p result)))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp result-contents)))))
       (%%buffer-evaluate-javascript *interface* result-buffer insert-results)
