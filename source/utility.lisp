@@ -38,7 +38,8 @@ SLIME."
               (cond
                 ((puri:uri-scheme url) input-url)
                 ((probe-file input-url)
-                 (concatenate 'string "file://" input-url))
+                 (format nil "file://~a"
+                         (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*)))
                 (t (generate-search-query input-url (cdr default)))))
           (puri:uri-parse-error () input-url)))))
 
