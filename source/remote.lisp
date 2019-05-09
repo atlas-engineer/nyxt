@@ -132,9 +132,8 @@ startup after the remote-interface was set up."
             )
             (when #+sbcl t
                   #+ccl (eq (ccl:socket-error-identifier e) :address-in-use)
-                  (let ((url-list (or *free-args* (list
-                                                   (closer-mop:slot-definition-initform
-                                                    (find-slot 'buffer 'default-new-buffer-url))))))
+                  (let ((url-list (or *free-args*
+                                      (list (get-default 'buffer 'default-new-buffer-url)))))
                 (format *error-output* "Port ~a already in use, requesting to open URL(s) ~a.~%"
                         (core-port interface) url-list)
                 ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
