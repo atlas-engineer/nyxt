@@ -69,6 +69,14 @@
       (%%buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
+(defun evaluate (string)
+  "Evaluate all expressions in string and return a list of values.
+This does not use an implicit PROGN to allow evaluating top-level expressions."
+  (with-input-from-string (input string)
+    (loop for object = (read input nil :eof)
+          until (eq object :eof)
+          collect (eval object))))
+
 (define-command command-evaluate ()
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
@@ -77,17 +85,18 @@
     (let* ((result-buffer (make-buffer
                            (concatenate 'string "EVALUATION RESULT-" input)
                            (help-mode)))
-           (result (write-to-string
-                    (handler-case
-                        (eval (read-from-string input))
-                      (error (c) (format nil "~a" c)))))
-           (result-contents (cl-markup:markup
-                             (:h1 "Form")
-                             (:p input)
-                             (:h1 "Result")
-                             (:p result)))
+           (results (handler-case
+                        (mapcar #'write-to-string (evaluate input))
+                      (error (c) (format nil "~a" c))))
+           (result-contents (apply #'concatenate 'string
+                                   (cl-markup:markup
+                                    (:h1 "Form")
+                                    (:p input)
+                                    (:h1 "Result"))
+                                   (loop for result in results
+                                         collect (cl-markup:markup (:p result)))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp result-contents)))))
+                                        (ps:lisp result-contents)))))
       (%%buffer-evaluate-javascript *interface* result-buffer insert-results)
       (set-active-buffer *interface* result-buffer))))
 
