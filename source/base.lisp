@@ -64,6 +64,8 @@ Set to '-' to read standard input instead."))
       #+ecl ext:interactive-interrupt
       #+allegro excl:interrupt-signal
       () (progn
+           (kill-interface *interface*)
+           (kill-program (port *interface*))
            (format t "Bye!~&")
            (uiop:quit)))))
 
