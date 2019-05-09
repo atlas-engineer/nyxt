@@ -123,9 +123,9 @@ When non-nil, INIT-FUNCTION is used to create the file, else the file will be em
   (when (symbolp class)
     (setf class (closer-mop:ensure-finalized (find-class class))))
   (find-if (lambda (slot)
-                         (eq (closer-mop:slot-definition-name slot)
-                             slot-name))
-                       (closer-mop:class-slots class)))
+             (eq (closer-mop:slot-definition-name slot)
+                 slot-name))
+           (closer-mop:class-slots class)))
 
 (defun get-default (class-name slot-name)
   "Get default value of slot SLOT-NAME from class CLASS-NAME.
