@@ -50,11 +50,12 @@ void javascript_transform_result(GObject *object, GAsyncResult *result,
 	const char *method_name = "buffer.javascript.call.back";
 	char *callback_string = g_strdup_printf("%i", callback_id);
 	GVariant *params = g_variant_new(
-		"(sss)",
+		"(ssss)",
+		state.auth,
 		identifier,
 		transformed_result,
 		callback_string);
-	g_message("XML-RPC message: %s (buffer id, javascript, callback id) = (%s, ..., %s)",
+	g_message("XML-RPC message: %s (auth, buffer id, javascript, callback id) = (%s, ..., %s)",
 		method_name,
 		identifier,
 		callback_string);

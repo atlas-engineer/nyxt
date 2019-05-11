@@ -19,6 +19,7 @@ typedef struct {
 	GHashTable *windows;
 	GHashTable *buffers;
 	GHashTable *server_callbacks;
+	gchar *auth;
 } ServerState;
 
 static ServerState state = {

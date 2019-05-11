@@ -92,7 +92,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 
 	Buffer *buffer = data;
 	GError *error = NULL;
-	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
+	GVariant *arg = g_variant_new("(sss)", state.auth, buffer->identifier, uri);
 	g_message("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
@@ -227,13 +227,13 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 
 	// TODO: Test if it's a redirect?
 	Buffer *buffer = bufferp;
-	GVariant *arg = g_variant_new("(sssbbsas)", buffer->identifier, uri,
+	GVariant *arg = g_variant_new("(ssssbbsas)", state.auth, buffer->identifier, uri,
 			event_type,
 			is_new_window,
 			is_known_type,
 			mouse_button,
 			&builder);
-	g_message("XML-RPC message: %s (buffer id, URI, event_type, is_new_window, is_known_type, button, modifiers) = %s",
+	g_message("XML-RPC message: %s (auth, buffer id, URI, event_type, is_new_window, is_known_type, button, modifiers) = %s",
 		method_name, g_variant_print(arg, TRUE));
 
 	GError *error = NULL;

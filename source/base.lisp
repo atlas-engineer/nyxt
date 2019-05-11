@@ -129,6 +129,9 @@ If FILE is \"-\", read from the standard input."
   (load-lisp-file init-file))
 
 (defun start (&key (with-platform-port-p nil))
+  ;; Randomness should be seeded as early as possible to avoid generating deterministic tokens.
+  (setf *random-state* (make-random-state t))
+
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
   (load-lisp-file *init-file-path*)

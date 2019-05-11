@@ -19,7 +19,7 @@
   (let ((key (mapcar #'serialize-key-chord key-chords)))
     (gethash key map)))
 
-(defun |push.input.event| (key-code key-string modifiers x y low-level-data sender)
+(define-endpoint |push.input.event| (key-code key-string modifiers x y low-level-data sender)
   "Add a new key chord to the interface key-chord-stack.
 For example, it may add C-M-s or C-x to a stack which will be consumed by
 `|consume.key.sequence|'."
@@ -37,7 +37,7 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
                            :test #'string=)))
       (push key-chord (key-chord-stack *interface*))
       (if (consume-key-sequence-p sender)
-          (|consume.key.sequence| sender)
+          (consume-key-sequence sender)
           (%%generate-input-event *interface*
                                   (gethash sender (windows *interface*))
                                   key-chord))))
@@ -66,7 +66,10 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
              t)
             (t (setf (key-chord-stack *interface*) ()))))))
 
-(defun |consume.key.sequence| (sender)
+(define-endpoint |consume.key.sequence| (sender)
+  (consume-key-sequence sender))
+
+(defun consume-key-sequence (sender)
   ;; Iterate through all keymaps
   ;; If key recognized, execute function
   (let* ((active-window (gethash sender (windows *interface*)))
@@ -79,7 +82,7 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
     (dolist (map key-maps)
       (let ((bound-function (gethash serialized-key-stack map)))
         (cond ((equalp "prefix" bound-function)
-               (return-from |consume.key.sequence| t))
+               (return-from consume-key-sequence t))
               (bound-function
                (progn
                  (log:debug "Key sequence ~a bound to ~a" serialized-key-stack bound-function)
@@ -87,7 +90,7 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
                                                    (minibuffer *interface*)
                                                    active-buffer)))
                  (setf (key-chord-stack *interface*) ())
-                 (return-from |consume.key.sequence| t)))
+                 (return-from consume-key-sequence t)))
               ((equalp map (keymap (mode (minibuffer *interface*))))
                (if (member "R" (key-chord-modifiers (first (key-chord-stack *interface*)))
                            :test #'string=)
@@ -97,7 +100,7 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
                                                            (first (key-chord-stack *interface*))))
                      (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
                (setf (key-chord-stack *interface*) ())
-               (return-from |consume.key.sequence| t)))))
+               (return-from consume-key-sequence t)))))
     (log:debug "Not found in any keymaps")
     (setf (key-chord-stack *interface*) ())))
 

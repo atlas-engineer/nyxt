@@ -82,7 +82,14 @@ platform ports might support this.")))
   (did-finish-navigation (mode buffer) url))
 
 (defclass remote-interface ()
-  ((core-port :accessor core-port :initform 8081
+  ((auth :accessor interface-auth :initform
+         ;; TODO: Use `random-data' instead of `strong-random'.
+         ;; Right now, s-xml chokes on some invalid xml characters,
+         ;; so we cannot use the full space of a byte
+         (map 'string
+              (alexandria:compose #'code-char (alexandria:curry #'+ (char-code #\A)) #'ironclad:strong-random)
+              (alexandria:iota 64 :start (- (char-code #\z) (char-code #\A)) :step 0)))
+   (core-port :accessor core-port :initform 8081
               :documentation "The XML-RPC server port of the Lisp core.")
    (platform-port-socket :accessor platform-port-socket :initform '(:host "localhost" :port 8082)
                          :documentation "The XML-RPC remote socket of the platform-port.")
@@ -346,7 +353,21 @@ events."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expose Lisp Core XML RPC Endpoints ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun |buffer.javascript.call.back| (buffer-id javascript-response callback-id)
+(defmacro define-endpoint (name (&rest arglist) &body body)
+  "Define a XML-RPC endpoint NAME.
+The primary function of this macro is to automatically add the required
+'authentication' argument to all calls."
+  (alexandria:with-gensyms (auth tmp-fn)
+    (push auth arglist)
+    `(progn
+       (defun ,tmp-fn ,(rest arglist) ,@body)
+       (defun ,name ,arglist
+         (if (equal ,auth (interface-auth *interface*))
+             (,tmp-fn ,@(rest arglist))
+             ;; We failed the auth check, bail out.
+             (error "Received improperly authenticated request over RPC."))))))
+
+(define-endpoint |buffer.javascript.call.back| (buffer-id javascript-response callback-id)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
     ;; Buffer might not exist, e.g. if it has been deleted in the mean time.
     (when buffer
@@ -354,27 +375,27 @@ events."
         (when callback
           (funcall callback javascript-response))))))
 
-(defun |minibuffer.javascript.call.back| (window-id javascript-response callback-id)
+(define-endpoint |minibuffer.javascript.call.back| (window-id javascript-response callback-id)
   (let* ((window (gethash window-id (windows *interface*)))
          (callback (gethash callback-id (minibuffer-callbacks window))))
     (when callback
       (funcall callback javascript-response))))
 
-(defun |buffer.did.commit.navigation| (buffer-id url)
+(define-endpoint |buffer.did.commit.navigation| (buffer-id url)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
     (did-commit-navigation buffer url)))
 
-(defun |buffer.did.finish.navigation| (buffer-id url)
+(define-endpoint |buffer.did.finish.navigation| (buffer-id url)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
     (did-finish-navigation buffer url)))
 
-(defun |window.will.close| (window-id)
+(define-endpoint |window.will.close| (window-id)
   (let ((windows (windows *interface*)))
     (log:debug "Closing window ID ~a (new total: ~a)" window-id
                (1- (length (alexandria:hash-table-values windows))))
     (remhash window-id windows)))
 
-(defun |make.buffers| (urls)
+(define-endpoint |make.buffers| (urls)
   "Create new buffers from URLs."
   ;; The new active buffer should be the first created buffer.
   (when urls
@@ -386,7 +407,7 @@ events."
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))
 
-(defun |request.resource| (buffer-id url event-type is-new-window is-known-type
+(define-endpoint |request.resource| (buffer-id url event-type is-new-window is-known-type
                            mouse-button modifiers)
   "Return whether URL should be loaded or not."
   (declare (ignore event-type))
@@ -411,6 +432,7 @@ events."
     ;;     0)
     ))
 
+;; All functions in this list should be defined with `define-endpoint' for security reasons.
 (import '|buffer.did.commit.navigation| :s-xml-rpc-exports)
 (import '|buffer.did.finish.navigation| :s-xml-rpc-exports)
 (import '|push.input.event| :s-xml-rpc-exports)

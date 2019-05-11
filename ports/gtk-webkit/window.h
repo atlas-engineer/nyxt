@@ -90,7 +90,7 @@ void window_delete(Window *window) {
 		// Notify the Lisp core.
 		GError *error = NULL;
 		const char *method_name = "window.will.close";
-		GVariant *window_id = g_variant_new("(s)", window->identifier);
+		GVariant *window_id = g_variant_new("(ss)", state.auth, window->identifier);
 		g_message("XML-RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
 
 		SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
@@ -238,9 +238,9 @@ void window_consume_event(SoupSession *_session, SoupMessage *msg, gpointer wind
 
 	Window *window = window_event->window;
 	const char *method_name = "consume.key.sequence";
-	GVariant *id = g_variant_new("(s)",
-			window->identifier);
-	g_message("XML-RPC message: %s, window id %s", method_name, window->identifier);
+	GVariant *id = g_variant_new("(ss)",
+			state.auth, window->identifier);
+	g_message("XML-RPC message: %s, auth: %s, window id %s", method_name, state.auth, window->identifier);
 	msg = soup_xmlrpc_message_new(state.core_socket,
 			method_name, id, &error);
 	// TODO: There is a possible race condition here: if two keys are pressed very
@@ -271,7 +271,8 @@ gboolean window_send_event(gpointer window_data,
 	GError *error = NULL;
 	const char *method_name = "push.input.event";
 	Window *window = window_data;
-	GVariant *key_chord = g_variant_new("(isasddis)",
+	GVariant *key_chord = g_variant_new("(sisasddis)",
+			state.auth,
 			hardware_keycode,
 			event_string,
 			&builder,
@@ -280,7 +281,7 @@ gboolean window_send_event(gpointer window_data,
 			window->identifier);
 	g_message("XML-RPC message: %s %s = %s",
 		method_name,
-		"(keycode, keystring, modifiers, x, y, low level data, window id)",
+		"(auth, keycode, keystring, modifiers, x, y, low level data, window id)",
 		g_variant_print(key_chord, TRUE));
 
 	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,

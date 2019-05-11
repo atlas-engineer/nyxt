@@ -26,6 +26,16 @@ int main(int argc, char *argv[]) {
 	}
 	g_free(default_port);
 
+	// Fail hard if no authentication variable is provided.
+	const char* auth = getenv("NEXT_RPC_AUTH_TOKEN");
+	if (!auth || !strcmp(auth, "")) {
+		g_error("An auth token must be provided over the NEXT_RPC_AUTH_TOKEN env var.");
+		return EXIT_FAILURE;
+	}
+	state.auth = strdup(auth);
+	// Overwrite env var to reduce chance of it being read later on.
+	unsetenv("NEXT_RPC_AUTH_TOKEN");
+
 	// TODO: Start the xmlrpc server first?  If GUI is started, then we can
 	// report xmlrpc startup issue graphically.
 	start_server();

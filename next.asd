@@ -24,7 +24,8 @@
                :trivial-clipboard
                :find-port
                :log4cl
-               :closer-mop)
+               :closer-mop
+               :ironclad)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
