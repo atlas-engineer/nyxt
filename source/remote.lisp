@@ -146,9 +146,8 @@ startup after the remote-interface was set up."
                 ;; TODO: Check for errors (S-XML-RPC:XML-RPC-FAULT).
                 (handler-case
                     (progn
-                      (s-xml-rpc:xml-rpc-call
-                       (s-xml-rpc:encode-xml-rpc-call "make.buffers" url-list)
-                       :port (core-port interface))
+                      (%xml-rpc-send-core interface "make.buffers" url-list)
+
                       (uiop:quit))
                   (error ()
                     (let ((new-port (find-port:find-port)))
@@ -165,14 +164,24 @@ startup after the remote-interface was set up."
     (ignore-errors
      (s-xml-rpc:stop-server (active-connection interface)))))
 
-(defmethod %xml-rpc-send ((interface remote-interface) (method string) &rest args)
+(defun %xml-rpc-send (interface method &rest args)
+  (xml-rpc-send interface method t args))
+
+(defun %xml-rpc-send-core (interface method &rest args)
+  (xml-rpc-send interface method nil args))
+
+(defmethod xml-rpc-send ((interface remote-interface) (method string) host-p (args list))
   ;; TODO: Make %xml-rpc-send asynchronous?
   ;; If the platform port ever hangs, the next %xml-rpc-send will hang the Lisp core too.
+  ;; Always ensure we send the auth token as the first argument
+  (push (interface-auth interface) args)
   (with-slots (url) interface
     (handler-case
         (s-xml-rpc:xml-rpc-call
          (apply #'s-xml-rpc:encode-xml-rpc-call method args)
-         :host (host interface) :port (host-port interface) :url url)
+         :host (host interface)
+         :port (funcall (if host-p #'host-port #'core-port) interface)
+         :url url)
       (s-xml-rpc:xml-rpc-fault (c)
         (log:warn "~a" c)
         (echo (minibuffer *interface*)

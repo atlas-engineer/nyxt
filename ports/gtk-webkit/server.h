@@ -12,11 +12,18 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 typedef GVariant * (*ServerCallback) (SoupXMLRPCParams *);
 
+// Check if 'auth' is valid.
+static gboolean server_validate_auth(const gchar* auth) {
+	return g_strcmp0(auth, state.auth) == 0;
+}
+
 // The params variant type string is "av", and the embedded "v"'s type string
 // can be anything.
 // To ease params manipulation, we "unwrap" the variant array to return a tuple
 // of all element types.
-GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
+// This method also handles and strips the authentication token used for security.
+// Callsites must pass in a valid auth_result and fail if it returns false for security reasons.
+GVariant *server_unwrap_params(SoupXMLRPCParams *params, gboolean* auth_result) {
 	GError *error = NULL;
 	GVariant *variant = soup_xmlrpc_params_parse(params, NULL, &error);
 	if (error) {
@@ -34,6 +41,13 @@ GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
 	GVariantIter iter;
 	g_variant_iter_init(&iter, variant);
 	GVariant *child;
+
+	// Get first element as auth token.
+	g_variant_iter_loop(&iter, "v", &child);
+	const char* auth = g_variant_get_string(child, NULL);
+	// Check for auth
+	*auth_result = server_validate_auth(auth);
+
 	while (g_variant_iter_loop(&iter, "v", &child)) {
 		g_variant_builder_add_value(&builder, child);
 	}
@@ -42,7 +56,10 @@ GVariant *server_unwrap_params(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_window_make(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -59,7 +76,10 @@ static GVariant *server_window_make(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_window_set_title(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -77,7 +97,10 @@ static GVariant *server_window_set_title(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_window_delete(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -111,7 +134,10 @@ static GVariant *server_window_active(SoupXMLRPCParams *_params) {
 }
 
 static GVariant *server_window_exists(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -127,7 +153,10 @@ static GVariant *server_window_exists(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -151,7 +180,10 @@ static GVariant *server_window_set_active_buffer(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_buffer_make(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_string("");
 	}
@@ -186,7 +218,10 @@ static GVariant *server_buffer_make(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -199,7 +234,10 @@ static GVariant *server_buffer_delete(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_buffer_load(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -219,7 +257,10 @@ static GVariant *server_buffer_load(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -242,7 +283,10 @@ static GVariant *server_buffer_evaluate(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -264,7 +308,10 @@ static GVariant *server_window_set_minibuffer_height(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -284,7 +331,10 @@ static GVariant *server_minibuffer_evaluate(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -387,6 +437,8 @@ static GVariant *server_generate_input_event(SoupXMLRPCParams *params) {
 	return g_variant_new_boolean(TRUE);
 }
 
+// This method does not check authentication at all as it does not unwrap params.
+// This is fine though, as it does not expose anything sensitive.
 static GVariant *server_list_methods(SoupXMLRPCParams *_params) {
 	GHashTableIter iter;
 	gpointer key;
@@ -437,7 +489,10 @@ char **server_string_list_to_array_pointer(GList *list) {
 }
 
 static GVariant *server_set_proxy(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -489,7 +544,10 @@ static GVariant *server_set_proxy(SoupXMLRPCParams *params) {
 }
 
 static GVariant *server_get_proxy(SoupXMLRPCParams *params) {
-	GVariant *unwrapped_params = server_unwrap_params(params);
+	gboolean auth = false;
+	GVariant *unwrapped_params = server_unwrap_params(params, &auth);
+	if (!auth) return NULL;
+
 	if (!unwrapped_params) {
 		return g_variant_new_boolean(FALSE);
 	}
@@ -574,6 +632,16 @@ static void server_handler(SoupServer *_server, SoupMessage *msg,
 
 	GVariant *result = callback(params);
 	soup_xmlrpc_params_free(params);
+
+	// TODO: Find a cleaner way of error reporting that supports other
+	// forms of application errors.
+	if (!result) {
+		soup_xmlrpc_message_set_fault(msg,
+			SOUP_XMLRPC_FAULT_SYSTEM_ERROR,
+			"Received request with incorrect authorization, aborting!");
+		g_warning("Received request with incorrect authorization, aborting!");
+		return;
+	}
 
 	// 'result' is floating and soup_xmlrpc_message_set_response will consume it.
 	soup_xmlrpc_message_set_response(msg, result, &error);
