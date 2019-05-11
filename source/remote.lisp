@@ -347,10 +347,12 @@ events."
 ;; Expose Lisp Core XML RPC Endpoints ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun |buffer.javascript.call.back| (buffer-id javascript-response callback-id)
-  (let* ((buffer (gethash buffer-id (buffers *interface*)))
-         (callback (gethash callback-id (callbacks buffer))))
-    (when callback
-      (funcall callback javascript-response))))
+  (let ((buffer (gethash buffer-id (buffers *interface*))))
+    ;; Buffer might not exist, e.g. if it has been deleted in the mean time.
+    (when buffer
+      (let ((callback (gethash callback-id (callbacks buffer))))
+        (when callback
+          (funcall callback javascript-response))))))
 
 (defun |minibuffer.javascript.call.back| (window-id javascript-response callback-id)
   (let* ((window (gethash window-id (windows *interface*)))
