@@ -374,7 +374,7 @@ The primary function of this macro is to automatically add the required
          (if (equal ,auth (interface-auth *interface*))
              (,tmp-fn ,@(rest arglist))
              ;; We failed the auth check, bail out.
-             (error "Received improperly authenticated request over RPC."))))))
+             (warn "Received improperly authenticated request over RPC."))))))
 
 (define-endpoint |buffer.javascript.call.back| (buffer-id javascript-response callback-id)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
