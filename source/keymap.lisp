@@ -66,8 +66,14 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
              t)
             (t (setf (key-chord-stack *interface*) ()))))))
 
+#|
+;; This endpoint is only necessary if key sequences are consumed from the input
+;; event callback in the platform port.  This has been deprecated in favour of
+;; event generation, but we keep it around in case the new approach happens to
+;; be not satisfying.
 (define-endpoint |consume.key.sequence| (sender)
   (consume-key-sequence sender))
+|#
 
 (defun consume-key-sequence (sender)
   ;; Iterate through all keymaps
