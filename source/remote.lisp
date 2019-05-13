@@ -83,12 +83,7 @@ platform ports might support this.")))
 
 (defclass remote-interface ()
   ((auth :accessor interface-auth :initform
-         ;; TODO: Use `random-data' instead of `strong-random'.
-         ;; Right now, s-xml chokes on some invalid xml characters,
-         ;; so we cannot use the full space of a byte
-         (map 'string
-              (alexandria:compose #'code-char (alexandria:curry #'+ (char-code #\A)) #'ironclad:strong-random)
-              (alexandria:iota 64 :start (- (char-code #\z) (char-code #\A)) :step 0)))
+         (ironclad:byte-array-to-hex-string (ironclad:random-data 64)))
    (core-port :accessor core-port :initform 8081
               :documentation "The XML-RPC server port of the Lisp core.")
    (platform-port-socket :accessor platform-port-socket :initform '(:host "localhost" :port 8082)
