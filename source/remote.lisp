@@ -405,6 +405,9 @@ The primary function of this macro is to automatically add the required
     (remhash window-id windows)))
 
 (define-endpoint |make.buffers| (urls)
+  (make-buffers urls))
+
+(defun make-buffers (urls)
   "Create new buffers from URLs."
   ;; The new active buffer should be the first created buffer.
   (when urls
@@ -417,7 +420,7 @@ The primary function of this macro is to automatically add the required
         (set-url-buffer url buffer)))))
 
 (define-endpoint |request.resource| (buffer-id url event-type is-new-window is-known-type
-                           mouse-button modifiers)
+                                               mouse-button modifiers)
   "Return whether URL should be loaded or not."
   (declare (ignore event-type))
   (log:debug "Mouse ~a, modifiers ~a" mouse-button modifiers)
@@ -425,7 +428,7 @@ The primary function of this macro is to automatically add the required
     (cond
       (is-new-window
        (log:info "Load ~a in new window" url)
-       (|make.buffers| url)
+       (make-buffers url)
        0)
       ((not is-known-type)
        (log:info "Buffer ~a downloads ~a" buffer url)
