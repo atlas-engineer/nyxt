@@ -30,18 +30,16 @@ SLIME."
          (subseq input-url
                  (length (first (cl-strings:split input-url))))
          (cdr engine))
-        (handler-case
-            ;; puri:parse-uri fails on crazy inputs like:
-            ;; - hello world
-            ;; - https://www.google.com/search?q=hello world
-            (let ((url (puri:parse-uri input-url)))
-              (cond
-                ((puri:uri-scheme url) input-url)
-                ((probe-file input-url)
-                 (format nil "file://~a"
-                         (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*)))
-                (t (generate-search-query input-url (cdr default)))))
-          (puri:uri-parse-error () input-url)))))
+        ;; puri:parse-uri fails on crazy inputs like:
+        ;; - hello world
+        ;; - https://www.google.com/search?q=hello world
+        (let ((url (ignore-errors (puri:parse-uri input-url))))
+          (cond
+            ((and url (puri:uri-scheme url)) input-url)
+            ((probe-file input-url)
+             (format nil "file://~a"
+                     (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*)))
+            (t (generate-search-query input-url (cdr default))))))))
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
