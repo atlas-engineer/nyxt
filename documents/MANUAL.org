@@ -76,12 +76,28 @@ included.
 2. ~M-l~: New document-mode tab
 
 ** Searching via search engine
-To search via search engine, within the the new URL prompt, simply
-enter "s your search query". In the previous example, a search engine
-would query "your search query".
+From the new URL prompt, any input that is not recognized as a URL will be
+searched using the default search engine.  Any query that starts with a known
+search engine prefix will use the corresponding search engine for the query.
 
-Therefore, the complete steps to searching are ~C-l~ or ~M-l~, then,
-when the prompt appears, enter "s <search terms>".
+For instance, to search "parrot" on Wikipedia:
+- =C-l= or =M-l= to open a new URL prompt.
+- =wiki parrot=
+- =Return=
+
+From a Lisp REPL, you can query the list of search engines with
+#+begin_src lisp
+(get-default 'window 'search-engines)
+#+end_src
+
+It will return something like
+
+#+begin_src lisp
+'(("default" . "https://duckduckgo.com/?q=~a")
+  ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
+#+end_src
+
+The =~a= in the search engine URI is a place holder for the search pattern.
 
 ** Jumping to Headings
 Jumping to different headings based on fuzzy completion is available
