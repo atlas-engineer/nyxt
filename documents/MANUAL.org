@@ -99,6 +99,23 @@ It will return something like
 
 The =~a= in the search engine URI is a place holder for the search pattern.
 
+To set the list of search engines, do:
+
+#+begin_src lisp
+(setf (get-default 'window 'search-engines)
+      '(("default" . "https://duckduckgo.com/?q=~a")
+        ("yt" . "https://www.youtube.com/results?search_query=~a")
+        ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a")))
+#+end_src
+
+and to append a search engine do the list, you can do
+
+#+begin_src lisp
+(nconc (eval (get-default 'window 'search-engines))
+       '(("q" . "http://quickdocs.org/search?q=~a")
+         ("yt" . "https://www.youtube.com/results?search_query=~a")))
+#+end_src
+
 ** Jumping to Headings
 Jumping to different headings based on fuzzy completion is available
 via the following keybindings:
