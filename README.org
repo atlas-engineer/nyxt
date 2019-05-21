@@ -8,6 +8,11 @@ productive professionals.
 *Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
 instabilities or feature wishes.
 
+*Security warning for macOS users:* The Cocoa webkit platform port has been
+dropped and it's currently not possible to build it without exposing Next to a
+remote-execution vulnerability.  We recommend macOS users to wait for the next
+release which will feature a new platform port.
+
 * Features
 Next includes many features designed to enable you to focus on being
 productive. A few of them are demonstrated below.

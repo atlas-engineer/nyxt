@@ -25,6 +25,17 @@ the default for macOS.
 + Add support for content blocking using the WebKit API
 *** TASK Fix search/occur implementation
 *** TASK Add download support
+** DONE 1.2.2
+*** Use authenticated RPC to mitigate remote-execution vulnerability
+*** Cocoa-webkit support has been dropped
+The WKWebKit library is too poor for our use in Next.
+Cocoa-webkit will be replaced with a QtWebengine platform port in a coming version.
+*** Fix C-[ and C-] bindings with gtk-webkit
+*** Allow loading HTML files specified with relative path
+*** Properly terminate platform port on SIGTERM
+*** Support multiple expressions in command-evaluate
+*** Fix ~delete-buffer~ command
+*** Properly fall back to default search engine on invalid URI
 ** DONE 1.2.1
 *** DONE Improve =next-gtk-webkit= stability
 In particular, removes a race condition that would often hang the browser on key
