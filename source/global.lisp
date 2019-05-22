@@ -20,6 +20,14 @@ when multiple interfaces are supported.")
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Next to avoid collisions).")
 
+(defparameter +platform-port-name+ "engineer.atlas.next.platform")
+(defparameter +platform-port-object+ "/engineer/atlas/next/platform")
+(defparameter +platform-port-interface+ +platform-port-name+)
+
+(defparameter +core-name+ "engineer.atlas.next.core")
+(defparameter +core-object+ "/engineer/atlas/next/core") ; TODO: Rename +core-object-path+
+(defparameter +core-interface+ +core-name+)
+
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
         (directory (asdf:system-source-directory :next)))

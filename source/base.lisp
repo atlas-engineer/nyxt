@@ -30,14 +30,8 @@ Set to '-' to read standard input instead."))
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
     (opts:get-opts)))
 
-;; TODO: This is rather low level and should probably not be a command.
-;; We can safely remove it once we can EVAL within Next.
-(define-command server-methods-inspect ()
-  "List the XML-RPC methods supported by the platform port."
-  (echo (minibuffer *interface*) (cl-strings:join
-                      (sort (%%list-methods *interface*) #'string<)
-                      :separator "
-")))
+;; TODO: Find a way to list/introspect available platform port methods from a
+;; running Next.
 
 (define-command kill ()
   "Quit Next."
@@ -69,7 +63,14 @@ Set to '-' to read standard input instead."))
            (format t "Bye!~&")
            (uiop:quit)))))
 
+(defun ping-platform-port (&optional (bus-type (dbus:session-server-addresses)))
+  (dbus:with-open-bus (bus bus-type)
+    (member +platform-port-name+ (dbus:list-names bus)
+            :test #'string=)))
+
 (defmethod initialize-port ((interface remote-interface))
+  ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
+  ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
   (let* ((port-running nil)
          (max-seconds-to-wait 5.0)
          (max-attemps (/ max-seconds-to-wait (platform-port-poll-interval interface))))
@@ -77,11 +78,11 @@ Set to '-' to read standard input instead."))
           repeat max-attemps do
       (handler-case
           (progn
-            (when (%%list-methods interface)
+            (when (ping-platform-port)
               (setf port-running t)))
         (error (c)
           (log:debug "Could not communicate with port: ~a" c)
-          (log:info "Polling platform port '~a'...~%" (platform-port-socket interface))
+          (log:info "Polling platform port...~%" )
           (sleep (platform-port-poll-interval interface))
           (setf port-running nil))))
     (when port-running
@@ -129,9 +130,9 @@ If FILE is \"-\", read from the standard input."
   (load-lisp-file init-file))
 
 (defun start (&key (with-platform-port-p nil))
-  ;; Randomness should be seeded as early as possible to avoid generating deterministic tokens.
+  ;; Randomness should be seeded as early as possible to avoid generating
+  ;; deterministic tokens.
   (setf *random-state* (make-random-state t))
-
   (when (getf *options* :init-file)
     (setf *init-file-path* (getf *options* :init-file)))
   (load-lisp-file *init-file-path*)

@@ -12,9 +12,8 @@
          :documentation "Full path to the executable.
 It can also be a function that takes NAME as argument and returns the path as a
 string.")
-   (args :initarg :args :initform #'default-args
-         :documentation "List of strings passed as argument to the executable.
-It can also be a function of no argument, returning a list of strings.")
+   (args :initarg :args :initform nil
+         :documentation "List of strings passed as argument to the executable.")
    (log-file :initarg :log-file :initform #'derive-logfile-from-name
              :documentation "Log file for the platform port.
 It can also be a function that takes NAME as argument and returns the log file
@@ -50,18 +49,6 @@ as a string.")
                       (merge-pathnames ".local/share/" (format nil "~a/" (uiop:getenv "HOME"))))))
     (merge-pathnames (format nil "next/~a.log" name) xdg-data)))
 
-(defun default-args ()
-  "Derive platform port arguments dynamically at runtime.
-This is useful if, for instance, the socket gets changed after startup."
-  ;; TODO: Make sure that it works if platform port is started manually.
-  (unless (find-port:port-open-p (getf (platform-port-socket *interface*) :port))
-    (let ((new-port (find-port:find-port)))
-      (format *error-output* "Platform port socket ~a seems busy, trying ~a instead.~%"
-              (getf (platform-port-socket *interface*) :port) new-port)
-      (setf (getf (platform-port-socket *interface*) :port) new-port)))
-  (list "--port" (write-to-string (getf (platform-port-socket *interface*) :port))
-        "--core-socket" (format nil "http://localhost:~a/RPC2" (core-port *interface*))))
-
 (defmethod run-loop ((port port))
   (uiop:wait-process (running-process port)))
 
@@ -74,12 +61,10 @@ This is useful if, for instance, the socket gets changed after startup."
     (log:info "Platform port arguments: ~a" port-args)
     (log:info "Platform port log file: ~a" port-log-file)
     (ensure-directories-exist (directory-namestring port-log-file))
-    (setf (uiop:getenv "NEXT_RPC_AUTH_TOKEN") (interface-auth *interface*))
     (setf (running-process port)
           (uiop:launch-program (cons port-path port-args)
                                :output port-log-file
-                               :error-output :output))
-    (setf (uiop:getenv "NEXT_RPC_AUTH_TOKEN") "")))
+                               :error-output :output))))
 
 (defmethod kill-program ((port port))
   (uiop:run-program

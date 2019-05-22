@@ -18,13 +18,12 @@
                :cl-markup
                :cl-css
                :bordeaux-threads
-               :s-xml-rpc
                :unix-opts
                :trivial-clipboard
-               :find-port
                :log4cl
                :closer-mop
-               :ironclad)
+               :ironclad
+               :dbus)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
