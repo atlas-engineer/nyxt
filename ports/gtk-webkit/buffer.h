@@ -51,7 +51,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	WebKitLoadEvent load_event,
 	gpointer data) {
 	const char *uri = webkit_web_view_get_uri(web_view);
-	const char *method_name = "buffer.did.commit.navigation";
+	const char *method_name = "buffer_did_commit_navigation";
 
 	switch (load_event) {
 	case WEBKIT_LOAD_STARTED:
@@ -81,7 +81,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		break;
 	case WEBKIT_LOAD_FINISHED:
 		/* Load finished, we can now stop the spinner */
-		method_name = "buffer.did.finish.navigation";
+		method_name = "buffer_did_finish_navigation";
 	}
 
 	if (uri == NULL) {
@@ -92,18 +92,14 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 
 	Buffer *buffer = data;
 	GError *error = NULL;
-	GVariant *arg = g_variant_new("(sss)", state.auth, buffer->identifier, uri);
-	g_message("XML-RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
+	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
-	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, arg, &error);
-
-	if (error) {
-		g_warning("Malformed XML-RPC message: %s", error->message);
-		g_error_free(error);
-		return;
-	}
-	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		method_name,
+		arg,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 	// 'msg' and 'uri' are freed automatically.
 }
 
@@ -112,27 +108,27 @@ typedef struct  {
 	const gchar *uri;
 } DecisionInfo;
 
-void buffer_navigated_callback(SoupSession *_session, SoupMessage *msg, gpointer data) {
+void buffer_navigated_callback(GObject *_source, GAsyncResult *res, gpointer data) {
 	GError *error = NULL;
-	g_debug("Buffer navigation XML-RPC response: %s", msg->response_body->data);
 
-	// TODO: Use boolean instead of integer when Atlas' s-xml-rpc package is in
-	// Quicklisp.
-	GVariant *loadv = soup_xmlrpc_parse_response(msg->response_body->data,
-			msg->response_body->length, "i", &error);
+	GVariant *loadv = g_dbus_connection_call_finish(state.connection,
+			res,
+			&error);
 
 	if (error) {
-		g_warning("%s: '%s'", error->message,
-			strndup(msg->response_body->data, msg->response_body->length));
+		g_warning("%s", error->message);
 		g_error_free(error);
 		return;
 	}
 
-	gint32 load = g_variant_get_int32(loadv);
+	g_debug("Buffer navigation RPC response: %s", g_variant_print(loadv, TRUE));
+	gboolean load;
+	g_variant_get(loadv, "(b)", &load);
+	g_variant_unref(loadv);
 
 	DecisionInfo *decision_info = data;
 	WebKitPolicyDecision *decision = decision_info->decision;
-	if (load != 0) {
+	if (load) {
 		// TODO: Should we download or use when it's a RESPONSE?
 		g_debug("Load resource '%s'", decision_info->uri);
 		webkit_policy_decision_use(decision);
@@ -223,29 +219,18 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 		}
 	}
 
-	const char *method_name = "request.resource";
+	const char *method_name = "request_resource";
 
 	// TODO: Test if it's a redirect?
 	Buffer *buffer = bufferp;
-	GVariant *arg = g_variant_new("(ssssbbsas)", state.auth, buffer->identifier, uri,
+	GVariant *arg = g_variant_new("(sssbbsas)", buffer->identifier, uri,
 			event_type,
 			is_new_window,
 			is_known_type,
 			mouse_button,
 			&builder);
-	g_message("XML-RPC message: %s (auth, buffer id, URI, event_type, is_new_window, is_known_type, button, modifiers) = %s",
+	g_message("RPC message: %s (buffer id, URI, event_type, is_new_window, is_known_type, button, modifiers) = %s",
 		method_name, g_variant_print(arg, TRUE));
-
-	GError *error = NULL;
-	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, arg, &error);
-
-	if (error) {
-		g_warning("Malformed XML-RPC message: %s", error->message);
-		g_error_free(error);
-		// TODO: Return TRUE or FALSE?
-		return FALSE;
-	}
 
 	if (action) {
 		g_free(mouse_button);
@@ -253,7 +238,13 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 	DecisionInfo *decision_info = g_new(DecisionInfo, 1);
 	decision_info->decision = decision;
 	decision_info->uri = uri;
-	soup_session_queue_message(xmlrpc_env, msg, (SoupSessionCallback)buffer_navigated_callback, decision_info);
+
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		method_name,
+		arg,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL,
+		(GAsyncReadyCallback)buffer_navigated_callback, decision_info);
 
 	// Keep a reference on the decision so that in won't be freed before the callback.
 	g_object_ref(decision);

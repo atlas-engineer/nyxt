@@ -6,7 +6,6 @@ Use of this file is governed by the license that can be found in LICENSE.
 
 #include <webkit2/webkit2.h>
 #include <JavaScriptCore/JavaScript.h>
-#include "client.h"
 #include "server-state.h"
 
 // Return value must be freed.
@@ -47,15 +46,14 @@ void javascript_transform_result(GObject *object, GAsyncResult *result,
 	}
 
 	GError *error = NULL;
-	const char *method_name = "buffer.javascript.call.back";
+	const char *method_name = "buffer_javascript_call_back";
 	char *callback_string = g_strdup_printf("%i", callback_id);
 	GVariant *params = g_variant_new(
-		"(ssss)",
-		state.auth,
+		"(sss)",
 		identifier,
 		transformed_result,
 		callback_string);
-	g_message("XML-RPC message: %s (auth, buffer id, javascript, callback id) = (%s, ..., %s)",
+	g_message("RPC message: %s (buffer id, javascript, callback id) = (%s, ..., %s)",
 		method_name,
 		identifier,
 		callback_string);
@@ -64,15 +62,23 @@ void javascript_transform_result(GObject *object, GAsyncResult *result,
 	g_free(callback_string);
 	g_free(transformed_result);
 
-	// 'params' is floating and soup_xmlrpc_message_new will consume it.
-	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, params, &error);
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		method_name,
+		params, // 'params' is floating and the call should consume it.
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 
-	if (error) {
-		g_warning("Malformed XML-RPC message: %s", error->message);
-		g_error_free(error);
-		return;
-	}
+	/*
+	        GDBusMessage *message = g_dbus_message_new_method_call(CORE_NAME,
+	                        CORE_OBJECT,
+	                        CORE_INTERFACE,
+	                        method_name, );
 
-	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
+
+	        g_dbus_connection_send_message(connection, message,
+	                G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, &error);
+	        g_dbus_connection_call_sync
+
+	        g_object_unref(message);
+	*/
 }

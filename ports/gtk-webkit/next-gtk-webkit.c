@@ -1,5 +1,5 @@
 /*
-Copyright © 2018 Atlas Engineer LLC.
+Copyright © 2018-2019 Atlas Engineer LLC.
 Use of this file is governed by the license that can be found in LICENSE.
 */
 
@@ -7,42 +7,38 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include <stdlib.h>
 #include "server.h"
 
+static void on_name_acquired(GDBusConnection *connection,
+	const gchar *name,
+	gpointer user_data) {
+	g_message("Starting platform port");
+}
+
+static void on_name_lost(GDBusConnection *_connection,
+	const gchar *_name,
+	gpointer _user_data) {
+	g_message("Platform port disconnected");
+	// TODO: Call stop_server here?
+	exit(1);
+}
+
 int main(int argc, char *argv[]) {
 	// TODO: Use GtkApplication?
-	GError *error = NULL;
-	char *default_port = g_strdup_printf("%i", NEXT_PLATFORM_PORT);
-	GOptionEntry options[] = {
-		{"port", 'p', 0, G_OPTION_ARG_INT, &state.port, "Port the XML-RPC server listens to", default_port},
-		{"core-socket", 's', 0, G_OPTION_ARG_STRING, &state.core_socket, "Socket of the Lisp core", NEXT_CORE_SOCKET},
-		{NULL}
-	};
+	guint owner_id = g_bus_own_name(G_BUS_TYPE_SESSION,
+			PLATFORM_PORT_NAME,
+			G_BUS_NAME_OWNER_FLAGS_NONE,
+			start_server,
+			on_name_acquired,
+			on_name_lost,
+			NULL,
+			NULL);
 
-	gtk_init_with_args(&argc, &argv, "", options, NULL, &error);
-	if (error) {
-		g_error("%s", error->message);
-		g_error_free(error);
-		g_free(default_port);
-		return EXIT_FAILURE;
-	}
-	g_free(default_port);
-
-	// Fail hard if no authentication variable is provided.
-	const char* auth = getenv("NEXT_RPC_AUTH_TOKEN");
-	if (!auth || !strcmp(auth, "")) {
-		g_error("An auth token must be provided over the NEXT_RPC_AUTH_TOKEN env var.");
-		return EXIT_FAILURE;
-	}
-	state.auth = strdup(auth);
-	// Overwrite env var to reduce chance of it being read later on.
-	unsetenv("NEXT_RPC_AUTH_TOKEN");
-
-	// TODO: Start the xmlrpc server first?  If GUI is started, then we can
-	// report xmlrpc startup issue graphically.
-	start_server();
-	start_client();
+	// TODO: Start the RPC server first?  If GUI is started, then we can
+	// report RPC startup issues graphically.
 
 	gtk_main();
 
 	stop_server();
+
+	g_bus_unown_name(owner_id);
 	return EXIT_SUCCESS;
 }

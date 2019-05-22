@@ -12,7 +12,6 @@ Use of this file is governed by the license that can be found in LICENSE.
 #include "buffer.h"
 #include "minibuffer.h"
 #include "server-state.h"
-#include "client.h"
 
 typedef struct {
 	char *old;
@@ -89,23 +88,23 @@ void window_delete(Window *window) {
 	{
 		// Notify the Lisp core.
 		GError *error = NULL;
-		const char *method_name = "window.will.close";
-		GVariant *window_id = g_variant_new("(ss)", state.auth, window->identifier);
-		g_message("XML-RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
+		const char *method_name = "window_will_close";
+		GVariant *window_id = g_variant_new("(s)", window->identifier);
+		g_message("RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
 
-		SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-				method_name, window_id, &error);
+		// Send synchronously so that if this is the last window, we don't quit
+		// GTK before actually sending the message.
+		g_dbus_connection_call_sync(state.connection,
+			CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+			method_name,
+			window_id,
+			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 
-		if (error) {
-			g_warning("Malformed XML-RPC message: %s", error->message);
+		if (error != NULL) {
+			g_warning("Error in RPC call: %s", error->message);
 			g_error_free(error);
-			// If the XML-RPC request fails, we should still close the window on the GTK
+			// If the RPC request fails, we should still close the window on the GTK
 			// side.
-		} else {
-			// Send synchronously so that if this is the last window, we don't quit
-			// GTK before actually sending the message.
-			soup_session_send_message(xmlrpc_env, msg);
-			// 'msg' is freed automatically.
 		}
 	}
 
@@ -217,7 +216,7 @@ void window_generate_input_event(WindowEvent *window_event) {
 
 void window_consume_event(SoupSession *_session, SoupMessage *msg, gpointer window_data) {
 	GError *error = NULL;
-	g_debug("Window event XML-RPC response: %s", msg->response_body->data);
+	g_debug("Window event RPC response: %s", msg->response_body->data);
 
 	// TODO: Ideally we should receive a boolean.  See on Lisp side.
 	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
@@ -237,19 +236,22 @@ void window_consume_event(SoupSession *_session, SoupMessage *msg, gpointer wind
 	}
 
 	Window *window = window_event->window;
-	const char *method_name = "consume.key.sequence";
-	GVariant *id = g_variant_new("(ss)",
-			state.auth, window->identifier);
-	g_message("XML-RPC message: %s, auth: %s, window id %s", method_name, state.auth, window->identifier);
-	msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, id, &error);
+	const char *method_name = "consume_key_sequence";
+	GVariant *id = g_variant_new("(s)",
+			window->identifier);
+	g_message("RPC message: %s, window id %s", method_name, window->identifier);
+
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		method_name,
+		id,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 	// TODO: There is a possible race condition here: if two keys are pressed very
 	// fast before the first CONSUME-KEY-SEQUENCE is received by the Lisp core,
 	// then when the first CONSUME-KEY-SEQUENCE is received, *key-chord-stack*
 	// will contain the two keys.  The second CONSUME-KEY-SEQUENCE will have an
 	// empty *key-chord-stack*.  In practice, those key presses would have to be
 	// programmatically generated at the system level, so it's mostly a non-issue.
-	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
 }
 
 gboolean window_send_event(gpointer window_data,
@@ -269,29 +271,19 @@ gboolean window_send_event(gpointer window_data,
 	}
 
 	GError *error = NULL;
-	const char *method_name = "push.input.event";
+	const char *method_name = "push_input_event";
 	Window *window = window_data;
-	GVariant *key_chord = g_variant_new("(sisasddis)",
-			state.auth,
+	GVariant *key_chord = g_variant_new("(isasddis)",
 			hardware_keycode,
 			event_string,
 			&builder,
 			x, y,
 			keyval,
 			window->identifier);
-	g_message("XML-RPC message: %s %s = %s",
+	g_message("RPC message: %s %s = %s",
 		method_name,
-		"(auth, keycode, keystring, modifiers, x, y, low level data, window id)",
+		"(keycode, keystring, modifiers, x, y, low level data, window id)",
 		g_variant_print(key_chord, TRUE));
-
-	SoupMessage *msg = soup_xmlrpc_message_new(state.core_socket,
-			method_name, key_chord, &error);
-
-	if (error) {
-		g_warning("Malformed XML-RPC message: %s", error->message);
-		g_error_free(error);
-		return TRUE;
-	}
 
 	// If using the callback strategy to forward input events to GTK, uncomment the following.
 	/*
@@ -300,12 +292,16 @@ gboolean window_send_event(gpointer window_data,
 	window_event->event = *event; // Copy the event to keep access to it in case it's freed later.
 	window_event->event.string = g_strdup(event->string);
 
-	soup_session_queue_message(xmlrpc_env, msg, (SoupSessionCallback)window_consume_event,
+	g_dbus_connection_call(state.connection, ... method_name, key_chord, ... (GAsyncReadyCallback)window_consume_event,
 	        window_event);
 	*/
 
 	// Other strategy: Leave input event generation to the Lisp.
-	soup_session_queue_message(xmlrpc_env, msg, NULL, NULL);
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		method_name,
+		key_chord,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 	return TRUE;
 }
 
