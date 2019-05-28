@@ -28,15 +28,8 @@
                             (some (lambda (window)
                                     (history-db-path window))
                                   (alexandria:hash-table-values (windows *interface*))))))
-    (if (probe-file path)
-        (let ((db (sqlite:connect
-                   (truename (probe-file path)))))
-          ;; Make sure new fields exist.
-          (unless (string= "visits" (cadar (last (sqlite:execute-to-list db "pragma table_info(typed)"))))
-            (sqlite:execute-non-query db "alter table typed add visits integer default 1")
-            (sqlite:disconnect db))
-          path)
-        (ensure-file-exists path #'%initialize-history-db))))
+    (unless (probe-file path)
+      (ensure-file-exists path #'%initialize-history-db))))
 
 (defun history-add (url)
   (let ((db (sqlite:connect (ensure-history-db))))
