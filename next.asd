@@ -7,8 +7,7 @@
   :license "BSD 3-Clause"
   :serial t
   :defsystem-depends-on ("trivial-features")
-  :depends-on (:anaphora
-               :alexandria
+  :depends-on (:alexandria
                :cl-strings
                :cl-string-match
                :puri
