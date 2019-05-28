@@ -28,8 +28,9 @@
                             (some (lambda (window)
                                     (history-db-path window))
                                   (alexandria:hash-table-values (windows *interface*))))))
-    (unless (probe-file path)
-      (ensure-file-exists path #'%initialize-history-db))))
+    (if (probe-file path)
+        path
+        (ensure-file-exists path #'%initialize-history-db))))
 
 (defun history-add (url)
   (let ((db (sqlite:connect (ensure-history-db))))
