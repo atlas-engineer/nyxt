@@ -20,14 +20,14 @@
 
 (defun ensure-history-db ()
   "Return the pathname of the history database."
-  (let ((path (anaphora:aif (%%window-active *interface*)
-                            (history-db-path anaphora:it)
-                            ;; This additional window fallback should not be necessary
-                            ;; anymore now that `%%window-make' sets `last-active-window'
-                            ;; so that `%%window-active' always returns a result.
-                            (some (lambda (window)
-                                    (history-db-path window))
-                                  (alexandria:hash-table-values (windows *interface*))))))
+  (let* ((path (if (%%window-active *interface*)
+                   (history-db-path (%%window-active *interface*))
+                   ;; This additional window fallback should not be necessary
+                   ;; anymore now that `%%window-make' sets `last-active-window'
+                   ;; so that `%%window-active' always returns a result.
+                   (some (lambda (window)
+                           (history-db-path window))
+                         (alexandria:hash-table-values (windows *interface*))))))
     (if (probe-file path)
         path
         (ensure-file-exists path #'%initialize-history-db))))
