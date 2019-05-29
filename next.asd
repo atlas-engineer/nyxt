@@ -9,6 +9,7 @@
   :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria
                :cl-strings
+               :str
                :cl-string-match
                :puri
                :sqlite
