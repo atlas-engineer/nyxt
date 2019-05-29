@@ -39,9 +39,15 @@
     (sqlite:disconnect db)))
 
 (defun history-typed-add (url)
-  (let ((db (sqlite:connect (ensure-history-db))))
+  "Add this url to the history, increment its number of visits."
+  (let* ((db (sqlite:connect (ensure-history-db)))
+         ;; Would be better done in one query,
+         ;; but without "insert ... on conflict" which was added in sqlite 3.24.
+         (visits (or (sqlite:execute-single db "select visits from typed where url like ? limit 1;" url)
+                     0))
+         (visits (incf visits)))
     (sqlite:execute-non-query
-     db "insert into typed (url, visits) values (?, 1) on conflict (url) do update set visits = typed.visits + 1" url)
+     db "insert or replace into typed (url, visits) values (?, ?)" url visits)
     (sqlite:disconnect db)))
 
 (defun history-typed-complete (input)
