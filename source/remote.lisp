@@ -104,22 +104,24 @@ commands.")
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
   "Start the RPC server."
-  (setf (active-connection interface)
-        (handler-case
-            (bt:make-thread
-             (lambda ()
-               (dbus:with-open-bus (bus (dbus:session-server-addresses))
-                 (format t "Bus connection name: ~A~%" (dbus:bus-name bus))
-                 (dbus:request-name bus +core-name+)
-                 (dbus:publish-objects bus))))
-          (end-of-file ()
-            (let ((url-list (or *free-args*
-                                (list (get-default 'buffer 'default-new-buffer-url)))))
-              ;; TODO: Check for single-instance differently.
-              (format *error-output* "Next already started, requesting to open URL(s) ~a.~%"
-                      url-list)
-              (%rpc-send interface "make_buffers" url-list)
-              (uiop:quit))))))
+  (let ((lock (bt:make-lock))
+        (condition (bt:make-condition-variable)))
+    (setf (active-connection interface)
+          (bt:make-thread
+           (lambda ()
+             (dbus:with-open-bus (bus (dbus:session-server-addresses))
+               (let ((status (dbus:request-name bus +core-name+ :do-not-queue)))
+                 (when (eq status :exists)
+                   (let ((url-list (or *free-args*
+                                       (list (get-default 'buffer 'default-new-buffer-url)))))
+                     (log:info  "Next already started, requesting to open URL(s) ~a." url-list)
+                     (%rpc-send-self "make_buffers" '("as") '() url-list)
+                     (uiop:quit))))
+               (log:info "Bus connection name: ~A" (dbus:bus-name bus))
+               (bt:condition-notify condition)
+               (dbus:publish-objects bus)))))
+    (bt:acquire-lock lock)
+    (bt:condition-wait condition lock)))
 
 (defmethod kill-interface ((interface remote-interface))
   "Stop the RPC server."
@@ -127,6 +129,43 @@ commands.")
     (log:debug "Stopping server")
     ;; TODO: How do we close the connection?
     (bt:destroy-thread (active-connection interface))))
+
+(defun %dbus-call-object-method (bus object-path bus-name interface
+                                 method-name arg-types result-types &rest args)
+  "Call D-Bus METHOD-NAME over OBJECT-PATH.
+ARG-TYPES and RESULT-TYPES are a list of strings.
+Each string is a D-Bus type.
+Example:
+
+  '(\"as\" \"i\")
+
+for an array of string as first argument and an integer as second argument.
+
+This function fills a hole in in the Common Lisp dbus library where methods
+cannot be called if they don't provide inttrospection data.  See
+https://github.com/death/dbus/issues/23."
+  (let ((object (dbus/introspect::make-object
+                 (dbus:bus-connection bus) object-path bus-name
+                 (list (dbus/introspect::make-interface
+                        interface
+                        (list
+                         (dbus/introspect::make-method method-name
+                                                       (cl-strings:join arg-types) ; signature.
+                                                       (loop with i = 0
+                                                             repeat (length arg-types)
+                                                             do (incf i)
+                                                             collect (format nil "arg~a" i)) ; Arg names.
+                                                       arg-types
+                                                       result-types))
+                        nil nil)))))
+    (apply #'dbus:object-invoke object interface method-name args)))
+
+(defun %rpc-send-self (method arg-types result-types &rest args)
+  "Call METHOD with ARGS.
+ARG-TYPES and RESULT-TYPES are as per `%dbus-call-object-method'."
+  (dbus:with-open-bus (bus (dbus:session-server-addresses))
+    (apply #'%dbus-call-object-method bus +core-object+ +core-name+ +core-interface+
+                              method arg-types result-types args)))
 
 (defmethod %rpc-send ((interface remote-interface) (method string) &rest args)
   ;; TODO: Make %rpc-send asynchronous?
