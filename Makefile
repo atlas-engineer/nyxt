@@ -29,16 +29,6 @@ next: $(lisp_files)
 		--eval '(asdf:make :next)' \
 		--eval '(uiop:quit)'
 
-## TODO: Add install rule for Cocoa?
-## TODO: Update the rule once we have the resulting .app.
-cocoa-webkit: next
-	xcodebuild -project ports/cocoa-webkit/cocoa-webkit.xcodeproj
-	mkdir -p build/Next.app/Contents/MacOS build/Next.app/Contents/Resources
-	cp assets/Info.plist build/Next.app/Contents/Info.plist
-	cp assets/next.icns build/Next.app/Contents/Resources/next.icns
-	mv next build/Next.app/Contents/MacOS
-	mv ports/cocoa-webkit/build/Release/cocoa-webkit build/Next.app/Contents/MacOS/cocoa-webkit
-
 .PHONY: gtk-webkit
 gtk-webkit:
 	$(MAKE) -C ports/gtk-webkit

@@ -1,7 +1,5 @@
 Usage:
 
-   make cocoa-webkit        Create Next with the Cocoa-WebKit port.
-
    make next                Create the Lisp core.
    make install-next        Install the Lisp core.
 
