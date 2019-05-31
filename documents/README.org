@@ -19,7 +19,7 @@ Next is written in Common Lisp. It can be built with any standard
 Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] support is tested.
 
 It is designed to be cross-platform compatible. Support for graphics is
-provided via Cocoa for MacOS and GTK for GNU/Linux.
+provided via QT for MacOS and GTK for GNU/Linux.
 
 When using Next with Emacs/Slime, make sure to have the following
 configuration set in your =.swank.lisp=.
@@ -95,9 +95,7 @@ make all
 
 - MacOS:
 
-#+BEGIN_SRC sh
-make cocoa-webkit
-#+END_SRC
+Pending the QT Port Completion
 
 If you look within the Makefile you'll find many options you can
 specify. You can specify to use your Lisp's init file, to use your
@@ -125,7 +123,7 @@ For =next= to work, it must find the platform port.  There are a few options:
 ;; ...
   #+END_SRC
 
-- Or add the appropriate platform-port folder (e.g. the GTK or Cocoa
+- Or add the appropriate platform-port folder (e.g. the GTK or QT
   platform-port application) to your =$PATH=. For instance you can add
   #+BEGIN_SRC sh
   export PATH=$PATH:/path/to/next/ports/gtk-webkit
