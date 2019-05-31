@@ -136,7 +136,7 @@ SIGNATURE must be the D-Bus encoded type string of ARGS.
 For an array of string, that would be \"as\"."
   (dbus:with-open-bus (bus (dbus:session-server-addresses))
     (dbus:invoke-method (dbus:bus-connection bus) method-name
-                        :path +core-object+
+                        :path +core-object-path+
                         :destination +core-name+
                         :interface +core-interface+
                         :signature signature
@@ -148,7 +148,7 @@ For an array of string, that would be \"as\"."
   ;; Always ensure we send the auth token as the first argument
   ;; TODO: Catch connection errors and execution errors.
   (dbus:with-open-bus (bus (dbus:session-server-addresses))
-    (dbus:with-introspected-object (platform-port bus +platform-port-object+ +platform-port-name+)
+    (dbus:with-introspected-object (platform-port bus +platform-port-object-path+ +platform-port-name+)
       (apply #'platform-port +platform-port-interface+ method args))))
 
 ;; TODO: Move to separate packages:
@@ -326,7 +326,7 @@ events."
 ;; Expose Lisp Core RPC endpoints.
 
 (dbus:define-dbus-object core-object
-  (:path +core-object+))
+  (:path +core-object-path+))
 
 (dbus:define-dbus-method (core-object buffer-javascript-call-back)
     ((buffer-id :string) (javascript-response :string) (callback-id :string))

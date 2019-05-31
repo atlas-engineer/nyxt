@@ -21,11 +21,11 @@ when multiple interfaces are supported.")
 is 4005, default set to 4006 in Next to avoid collisions).")
 
 (defparameter +platform-port-name+ "engineer.atlas.next.platform")
-(defparameter +platform-port-object+ "/engineer/atlas/next/platform")
+(defparameter +platform-port-object-path+ "/engineer/atlas/next/platform")
 (defparameter +platform-port-interface+ +platform-port-name+)
 
 (defparameter +core-name+ "engineer.atlas.next.core")
-(defparameter +core-object+ "/engineer/atlas/next/core") ; TODO: Rename +core-object-path+
+(defparameter +core-object-path+ "/engineer/atlas/next/core")
 (defparameter +core-interface+ +core-name+)
 
 (defparameter +version+
