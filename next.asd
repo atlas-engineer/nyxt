@@ -52,7 +52,6 @@
                  (:file "application-mode")
                  (:file "document-mode")
                  ;; Port Compatibility Layers
-                 (:file "ports/cocoa-webkit" :if-feature :darwin)
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base
                  (:file "base"))))
