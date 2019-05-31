@@ -270,7 +270,6 @@ gboolean window_send_event(gpointer window_data,
 		g_variant_builder_add(&builder, "s", "R");
 	}
 
-	GError *error = NULL;
 	const char *method_name = "push_input_event";
 	Window *window = window_data;
 	GVariant *key_chord = g_variant_new("(isasddis)",
@@ -583,7 +582,7 @@ gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 	gint minimum_height;
 	gint natural_height;
 	gtk_widget_get_preferred_height(GTK_WIDGET(window->minibuffer->web_view), &minimum_height, &natural_height);
-	g_debug("minimum height %li, natural_height %li", minimum_height, natural_height);
+	g_debug("minimum height %i, natural_height %i", minimum_height, natural_height);
 	return natural_height;
 }
 

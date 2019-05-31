@@ -91,7 +91,6 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	g_debug("Load changed: %s", uri);
 
 	Buffer *buffer = data;
-	GError *error = NULL;
 	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
 	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
