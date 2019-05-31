@@ -95,7 +95,7 @@ void window_delete(Window *window) {
 		// Send synchronously so that if this is the last window, we don't quit
 		// GTK before actually sending the message.
 		g_dbus_connection_call_sync(state.connection,
-			CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+			CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
 			method_name,
 			window_id,
 			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
@@ -242,7 +242,7 @@ void window_consume_event(SoupSession *_session, SoupMessage *msg, gpointer wind
 	g_message("RPC message: %s, window id %s", method_name, window->identifier);
 
 	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
 		method_name,
 		id,
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
@@ -298,7 +298,7 @@ gboolean window_send_event(gpointer window_data,
 
 	// Other strategy: Leave input event generation to the Lisp.
 	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
 		method_name,
 		key_chord,
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);

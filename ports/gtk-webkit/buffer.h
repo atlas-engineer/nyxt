@@ -96,7 +96,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
 	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
 		method_name,
 		arg,
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
@@ -240,7 +240,7 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 	decision_info->uri = uri;
 
 	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
 		method_name,
 		arg,
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL,

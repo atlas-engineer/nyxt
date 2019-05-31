@@ -63,14 +63,14 @@ void javascript_transform_result(GObject *object, GAsyncResult *result,
 	g_free(transformed_result);
 
 	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT, CORE_INTERFACE,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
 		method_name,
 		params, // 'params' is floating and the call should consume it.
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 
 	/*
 	        GDBusMessage *message = g_dbus_message_new_method_call(CORE_NAME,
-	                        CORE_OBJECT,
+	                        CORE_OBJECT_PATH,
 	                        CORE_INTERFACE,
 	                        method_name, );
 

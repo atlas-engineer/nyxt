@@ -463,7 +463,7 @@ void start_server(GDBusConnection *connection,
 		g_dbus_node_info_new_for_xml(state.introspection_xml, NULL);
 
 	guint registration_id = g_dbus_connection_register_object(connection,
-			PLATFORM_PORT_OBJECT,
+			PLATFORM_PORT_OBJECT_PATH,
 			introspection_data->interfaces[0],
 			&interface_vtable,
 			NULL,                                 /* user_data */
