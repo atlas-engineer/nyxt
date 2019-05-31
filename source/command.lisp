@@ -19,7 +19,7 @@
 
 (defmacro define-command (name (&optional (mode 'root-mode) &rest arglist) &body body)
   "Define new command NAME.
-MODE most be a subclass of root-mode.
+MODE must be a subclass of root-mode.
 ARGLIST must be a list of optional arguments."
   (let ((documentation (if (stringp (first body))
                            (first body)
