@@ -470,6 +470,8 @@ void start_server(GDBusConnection *connection,
 			NULL,                                 /* user_data_free_func */
 			NULL);                                /* GError** */
 
+	state.registration_id = registration_id;
+
 	// Initialize global state.
 	state.server_callbacks = g_hash_table_new(g_str_hash, g_str_equal);
 	state.windows = g_hash_table_new_full(g_str_hash, g_str_equal,
@@ -506,4 +508,5 @@ void stop_server() {
 	g_hash_table_unref(state.windows);
 	g_hash_table_unref(state.buffers);
 	g_hash_table_unref(state.server_callbacks);
+	g_dbus_connection_unregister_object(state.connection, state.registration_id);
 }

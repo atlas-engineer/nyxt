@@ -19,6 +19,7 @@ typedef struct {
 	GHashTable *server_callbacks;
 	GDBusConnection *connection;
 	const gchar *introspection_xml;
+	guint registration_id;
 } ServerState;
 
 static ServerState state = {
