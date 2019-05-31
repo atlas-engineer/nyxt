@@ -115,7 +115,7 @@ commands.")
                    (let ((url-list (or *free-args*
                                        (list (get-default 'buffer 'default-new-buffer-url)))))
                      (log:info  "Next already started, requesting to open URL(s) ~a." url-list)
-                     (%rpc-send-self "make_buffers" '("as") '() url-list)
+                     (%rpc-send-self "make_buffers" "as" url-list)
                      (uiop:quit))))
                (log:info "Bus connection name: ~A" (dbus:bus-name bus))
                (bt:condition-notify condition)
@@ -130,42 +130,17 @@ commands.")
     ;; TODO: How do we close the connection?
     (bt:destroy-thread (active-connection interface))))
 
-(defun %dbus-call-object-method (bus object-path bus-name interface
-                                 method-name arg-types result-types &rest args)
-  "Call D-Bus METHOD-NAME over OBJECT-PATH.
-ARG-TYPES and RESULT-TYPES are a list of strings.
-Each string is a D-Bus type.
-Example:
-
-  '(\"as\" \"i\")
-
-for an array of string as first argument and an integer as second argument.
-
-This function fills a hole in in the Common Lisp dbus library where methods
-cannot be called if they don't provide inttrospection data.  See
-https://github.com/death/dbus/issues/23."
-  (let ((object (dbus/introspect::make-object
-                 (dbus:bus-connection bus) object-path bus-name
-                 (list (dbus/introspect::make-interface
-                        interface
-                        (list
-                         (dbus/introspect::make-method method-name
-                                                       (cl-strings:join arg-types) ; signature.
-                                                       (loop with i = 0
-                                                             repeat (length arg-types)
-                                                             do (incf i)
-                                                             collect (format nil "arg~a" i)) ; Arg names.
-                                                       arg-types
-                                                       result-types))
-                        nil nil)))))
-    (apply #'dbus:object-invoke object interface method-name args)))
-
-(defun %rpc-send-self (method arg-types result-types &rest args)
-  "Call METHOD with ARGS.
-ARG-TYPES and RESULT-TYPES are as per `%dbus-call-object-method'."
+(defun %rpc-send-self (method-name signature &rest args)
+  "Call METHOD over ARGS.
+SIGNATURE must be the D-Bus encoded type string of ARGS.
+For an array of string, that would be \"as\"."
   (dbus:with-open-bus (bus (dbus:session-server-addresses))
-    (apply #'%dbus-call-object-method bus +core-object+ +core-name+ +core-interface+
-                              method arg-types result-types args)))
+    (dbus:invoke-method (dbus:bus-connection bus) method-name
+                        :path +core-object+
+                        :destination +core-name+
+                        :interface +core-interface+
+                        :signature signature
+                        :arguments args)))
 
 (defmethod %rpc-send ((interface remote-interface) (method string) &rest args)
   ;; TODO: Make %rpc-send asynchronous?
