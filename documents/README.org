@@ -66,6 +66,7 @@ on the Quicklisp website.
 - SQLite
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
+- libfixposix
 - gstreamer, gst-plugins-* (for HTML audio/video)
 
 Install the WebKitGTK+ package of your distribution that provides
