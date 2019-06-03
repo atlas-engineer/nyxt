@@ -198,7 +198,10 @@
   "Insert key-chord-stack in MINIBUFFER."
   (let ((key-string (key-chord-key-string (first (key-chord-stack *interface*))))
         (translation-table '(("HYPHEN" "-")
-                             ("SPACE" " "))))
+                             ;; Regular spaces are concatenated into a single
+                             ;; one by HTML rendering, so we use a non-breaking
+                             ;; space to avoid confusing the user.
+                             ("SPACE" " "))))
     (setf key-string (or (cadr (assoc key-string translation-table :test #'string=))
                          key-string))
     (insert key-string)))
