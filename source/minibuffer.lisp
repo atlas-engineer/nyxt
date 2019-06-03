@@ -321,6 +321,13 @@
   "Delete all characters from cursor position until the end of the line."
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (setf input-buffer (subseq input-buffer 0 input-buffer-cursor)))
+    (update-display minibuffer))
+
+(define-command kill-whole-line (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+  "Delete all characters in the input."
+    (with-slots (input-buffer input-buffer-cursor) minibuffer
+      (setf input-buffer ""
+            input-buffer-cursor 0))
   (update-display minibuffer))
 
 (defun generate-input-html (input-buffer cursor-index)
