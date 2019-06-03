@@ -137,7 +137,6 @@ features for productive professionals.")
        ;; Lisp libraries:
        ("trivial-features" ,sbcl-trivial-features)
        ("alexandria" ,sbcl-alexandria)
-       ("anaphora" ,sbcl-anaphora)
        ("closer-mop" ,sbcl-closer-mop)
        ("find-port" ,sbcl-find-port)
        ("log4cl" ,sbcl-log4cl)

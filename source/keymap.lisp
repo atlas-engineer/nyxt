@@ -19,10 +19,16 @@
   (let ((key (mapcar #'serialize-key-chord key-chords)))
     (gethash key map)))
 
-(define-endpoint |push.input.event| (key-code key-string modifiers x y low-level-data sender)
   "Add a new key chord to the interface key-chord-stack.
 For example, it may add C-M-s or C-x to a stack which will be consumed by
-`|consume.key.sequence|'."
+`consume-key-sequence'."
+(dbus:define-dbus-method (core-object push-input-event)
+    ((key-code :int32) (key-string :string) (modifiers (:array :string))
+     (x :double) (y :double)
+     (low-level-data :int32) (sender :string))
+    ()
+  (:interface +core-interface+)
+  (:name "push_input_event")
   (let ((key-chord (make-key-chord
                     :key-code key-code
                     :key-string key-string
@@ -41,7 +47,7 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
           (%%generate-input-event *interface*
                                   (gethash sender (windows *interface*))
                                   key-chord))))
-  t)
+  (values))
 
 ;; TODO: If we move the global mode to root-mode, how do we make sure which one has priority?
 ;; What about reserving a prefix key for application mode and root mode?
@@ -71,7 +77,9 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
 ;; event callback in the platform port.  This has been deprecated in favour of
 ;; event generation, but we keep it around in case the new approach happens to
 ;; be not satisfying.
-(define-endpoint |consume.key.sequence| (sender)
+(dbus:define-dbus-object (core-object consume-key-sequence)
+  ((sender :string))
+  ()
   (consume-key-sequence sender))
 |#
 

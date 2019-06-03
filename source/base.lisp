@@ -30,14 +30,8 @@ Set to '-' to read standard input instead."))
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
     (opts:get-opts)))
 
-;; TODO: This is rather low level and should probably not be a command.
-;; We can safely remove it once we can EVAL within Next.
-(define-command server-methods-inspect ()
-  "List the XML-RPC methods supported by the platform port."
-  (echo (minibuffer *interface*) (cl-strings:join
-                      (sort (%%list-methods *interface*) #'string<)
-                      :separator "
-")))
+;; TODO: Find a way to list/introspect available platform port methods from a
+;; running Next.
 
 (define-command kill ()
   "Quit Next."
@@ -69,7 +63,14 @@ Set to '-' to read standard input instead."))
            (format t "Bye!~&")
            (uiop:quit)))))
 
+(defun ping-platform-port (&optional (bus-type (dbus:session-server-addresses)))
+  (dbus:with-open-bus (bus bus-type)
+    (member +platform-port-name+ (dbus:list-names bus)
+            :test #'string=)))
+
 (defmethod initialize-port ((interface remote-interface))
+  ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
+  ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
   (let* ((port-running nil)
          (max-seconds-to-wait 5.0)
          (max-attemps (/ max-seconds-to-wait (platform-port-poll-interval interface))))
@@ -77,11 +78,11 @@ Set to '-' to read standard input instead."))
           repeat max-attemps do
       (handler-case
           (progn
-            (when (%%list-methods interface)
+            (when (ping-platform-port)
               (setf port-running t)))
         (error (c)
           (log:debug "Could not communicate with port: ~a" c)
-          (log:info "Polling platform port '~a'...~%" (platform-port-socket interface))
+          (log:info "Polling platform port...~%" )
           (sleep (platform-port-poll-interval interface))
           (setf port-running nil))))
     (when port-running
@@ -93,8 +94,11 @@ Set to '-' to read standard input instead."))
           (let ((buffer (make-buffer)))
             (set-url-buffer url buffer)))))))
 
-(defvar *init-file-path* (xdg-config-home "init.lisp")
-  "The path where the system will look to load an init file from.")
+(defun init-file-path (&optional (file "init.lisp"))
+  ;; This can't be a regular variable or else the value will be hard-coded at
+  ;; compile time.  It seems to be hard-coded with (eval-when (:execute) ...) as well.
+  "The path where the system will look to load an init file from."
+  (xdg-config-home (or (getf *options* :init-file) file)))
 
 (defun load-lisp-file (file)
   "Load the provided lisp file.
@@ -124,17 +128,15 @@ If FILE is \"-\", read from the standard input."
                                  :input-prompt "Load file:"))
     (load-lisp-file file-name-input)))
 
-(define-command load-init-file (root-mode &optional (init-file *init-file-path*))
+(define-command load-init-file (root-mode &optional (init-file (init-file-path)))
   "Load or reload the init file."
   (load-lisp-file init-file))
 
 (defun start (&key (with-platform-port-p nil))
-  ;; Randomness should be seeded as early as possible to avoid generating deterministic tokens.
+  ;; Randomness should be seeded as early as possible to avoid generating
+  ;; deterministic tokens.
   (setf *random-state* (make-random-state t))
-
-  (when (getf *options* :init-file)
-    (setf *init-file-path* (getf *options* :init-file)))
-  (load-lisp-file *init-file-path*)
+  (load-lisp-file (init-file-path))
   ;; create the interface object
   (unless (eq swank:*communication-style* :fd-handler)
     (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"

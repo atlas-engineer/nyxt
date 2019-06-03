@@ -20,22 +20,16 @@
 
 (defun ensure-history-db ()
   "Return the pathname of the history database."
-  (let ((path (anaphora:aif (%%window-active *interface*)
-                            (history-db-path anaphora:it)
-                            ;; This additional window fallback should not be necessary
-                            ;; anymore now that `%%window-make' sets `last-active-window'
-                            ;; so that `%%window-active' always returns a result.
-                            (some (lambda (window)
-                                    (history-db-path window))
-                                  (alexandria:hash-table-values (windows *interface*))))))
+  (let* ((path (if (%%window-active *interface*)
+                   (history-db-path (%%window-active *interface*))
+                   ;; This additional window fallback should not be necessary
+                   ;; anymore now that `%%window-make' sets `last-active-window'
+                   ;; so that `%%window-active' always returns a result.
+                   (some (lambda (window)
+                           (history-db-path window))
+                         (alexandria:hash-table-values (windows *interface*))))))
     (if (probe-file path)
-        (let ((db (sqlite:connect
-                   (truename (probe-file path)))))
-          ;; Make sure new fields exist.
-          (unless (string= "visits" (cadar (last (sqlite:execute-to-list db "pragma table_info(typed)"))))
-            (sqlite:execute-non-query db "alter table typed add visits integer default 1")
-            (sqlite:disconnect db))
-          path)
+        path
         (ensure-file-exists path #'%initialize-history-db))))
 
 (defun history-add (url)
@@ -45,9 +39,15 @@
     (sqlite:disconnect db)))
 
 (defun history-typed-add (url)
-  (let ((db (sqlite:connect (ensure-history-db))))
+  "Add this url to the history, increment its number of visits."
+  (let* ((db (sqlite:connect (ensure-history-db)))
+         ;; Would be better done in one query,
+         ;; but without "insert ... on conflict" which was added in sqlite 3.24.
+         (visits (or (sqlite:execute-single db "select visits from typed where url like ? limit 1;" url)
+                     0))
+         (visits (incf visits)))
     (sqlite:execute-non-query
-     db "insert into typed (url, visits) values (?, 1) on conflict (url) do update set visits = typed.visits + 1" url)
+     db "insert or replace into typed (url, visits) values (?, ?)" url visits)
     (sqlite:disconnect db)))
 
 (defun history-typed-complete (input)
@@ -55,6 +55,6 @@
          (candidates
           (sqlite:execute-to-list
            db "select url from typed where url like ? order by visits desc"
-           (format nil "%~a%" input))))
+           (format nil "%~a%" (cl-strings:replace-all input " " "%")))))
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))

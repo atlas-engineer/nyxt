@@ -20,6 +20,13 @@ SLIME."
   (swank:create-server :port swank-port :dont-close t))
 
 (defun parse-url (input-url)
+  "From user input, return the full url to visit.
+
+If the first word references a search engine, generate a search query.
+If the input starts with an uri scheme, open it as is.
+If the input is actually a file path, open it.
+Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
+Otherwise, build a search query with the default search engine."
   (let* ((window (%%window-active *interface*))
          (engine (assoc (first (cl-strings:split input-url))
                         (search-engines window) :test #'string=))
@@ -39,6 +46,9 @@ SLIME."
             ((probe-file input-url)
              (format nil "file://~a"
                      (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*)))
+            ((puri:uri-p (ignore-errors
+                           (puri:parse-uri (str:concat "https://" input-url))))
+             (str:concat "https://" input-url))
             (t (generate-search-query input-url (cdr default))))))))
 
 (defun generate-search-query (search-string search-url)

@@ -34,6 +34,8 @@
           (key "Up") #'select-previous
           (key "C-v") #'paste
           (key "C-y") #'paste
+          (key "C-w") #'copy-candidate
+          (key "TAB") #'insert-candidate
           :keymap map)
         map))))
 
@@ -198,7 +200,10 @@
   "Insert key-chord-stack in MINIBUFFER."
   (let ((key-string (key-chord-key-string (first (key-chord-stack *interface*))))
         (translation-table '(("HYPHEN" "-")
-                             ("SPACE" " "))))
+                             ;; Regular spaces are concatenated into a single
+                             ;; one by HTML rendering, so we use a non-breaking
+                             ;; space to avoid confusing the user.
+                             ("SPACE" " "))))
     (setf key-string (or (cadr (assoc key-string translation-table :test #'string=))
                          key-string))
     (insert key-string)))
@@ -318,6 +323,13 @@
   "Delete all characters from cursor position until the end of the line."
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (setf input-buffer (subseq input-buffer 0 input-buffer-cursor)))
+    (update-display minibuffer))
+
+(define-command kill-whole-line (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+  "Delete all characters in the input."
+    (with-slots (input-buffer input-buffer-cursor) minibuffer
+      (setf input-buffer ""
+            input-buffer-cursor 0))
   (update-display minibuffer))
 
 (defun generate-input-html (input-buffer cursor-index)
@@ -404,3 +416,23 @@
 (define-command paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (insert (trivial-clipboard:text) minibuffer))
+
+(defmethod get-candidate ((minibuffer minibuffer))
+  "Return the current candidate in the minibuffer."
+  (with-slots (completions completion-cursor)
+      minibuffer
+    (and completions
+         (nth completion-cursor completions))))
+
+(define-command copy-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+  "Paste clipboard text to input."
+  (let ((candidate (get-candidate minibuffer)))
+    (when candidate
+      (trivial-clipboard:text candidate))))
+
+(define-command insert-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+  "Paste clipboard text to input."
+  (let ((candidate (get-candidate minibuffer)))
+    (when candidate
+      (kill-whole-line (mode minibuffer) minibuffer)
+      (insert candidate minibuffer))))

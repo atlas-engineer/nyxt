@@ -7,9 +7,9 @@
   :license "BSD 3-Clause"
   :serial t
   :defsystem-depends-on ("trivial-features")
-  :depends-on (:anaphora
-               :alexandria
+  :depends-on (:alexandria
                :cl-strings
+               :str
                :cl-string-match
                :puri
                :sqlite
@@ -19,13 +19,12 @@
                :cl-markup
                :cl-css
                :bordeaux-threads
-               :s-xml-rpc
                :unix-opts
                :trivial-clipboard
-               :find-port
                :log4cl
                :closer-mop
-               :ironclad)
+               :ironclad
+               :dbus)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
@@ -54,7 +53,6 @@
                  (:file "application-mode")
                  (:file "document-mode")
                  ;; Port Compatibility Layers
-                 (:file "ports/cocoa-webkit" :if-feature :darwin)
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base
                  (:file "base"))))
