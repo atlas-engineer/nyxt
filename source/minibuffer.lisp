@@ -35,6 +35,7 @@
           (key "C-v") #'paste
           (key "C-y") #'paste
           (key "C-w") #'copy-candidate
+          (key "TAB") #'insert-candidate
           :keymap map)
         map))))
 
@@ -428,3 +429,10 @@
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
       (trivial-clipboard:text candidate))))
+
+(define-command insert-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+  "Paste clipboard text to input."
+  (let ((candidate (get-candidate minibuffer)))
+    (when candidate
+      (kill-whole-line (mode minibuffer) minibuffer)
+      (insert candidate minibuffer))))
