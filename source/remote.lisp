@@ -202,6 +202,12 @@ For an array of string, that would be \"as\"."
   "Return if a window exists."
   (%rpc-send interface "window_exists" (id window)))
 
+(defun list-windows (interface)
+  "List the windows of the given interface. For dev purposes."
+  (maphash (lambda (key val)
+             (format t "~a ~a~&" key val))
+          (windows interface)))
+
 (defmethod %%window-set-active-buffer ((interface remote-interface)
                                       (window window)
                                       (buffer buffer))
