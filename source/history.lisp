@@ -55,6 +55,6 @@
          (candidates
           (sqlite:execute-to-list
            db "select url from typed where url like ? order by visits desc"
-           (format nil "%~a%" input))))
+           (format nil "%~a%" (cl-strings:replace-all input " " "%")))))
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))
