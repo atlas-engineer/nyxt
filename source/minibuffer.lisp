@@ -34,6 +34,7 @@
           (key "Up") #'select-previous
           (key "C-v") #'paste
           (key "C-y") #'paste
+          (key "C-w") #'copy-candidate
           :keymap map)
         map))))
 
@@ -414,3 +415,16 @@
 (define-command paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (insert (trivial-clipboard:text) minibuffer))
+
+(defmethod get-candidate ((minibuffer minibuffer))
+  "Return the current candidate in the minibuffer."
+  (with-slots (completions completion-cursor)
+      minibuffer
+    (and completions
+         (nth completion-cursor completions))))
+
+(define-command copy-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+  "Paste clipboard text to input."
+  (let ((candidate (get-candidate minibuffer)))
+    (when candidate
+      (trivial-clipboard:text candidate))))
