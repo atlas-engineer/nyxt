@@ -25,6 +25,7 @@ static KeyTranslation key_translations[] = {
 	{.old = "-", .new = "HYPHEN"},
 	{.old = "", .new = "ESCAPE"},
 	{.old = "\r", .new = "RETURN"},
+	{.old = "\t", .new = "TAB"},
 };
 
 guint window_string_to_modifier(gchar *s) {
