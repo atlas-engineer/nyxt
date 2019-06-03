@@ -94,8 +94,11 @@ Set to '-' to read standard input instead."))
           (let ((buffer (make-buffer)))
             (set-url-buffer url buffer)))))))
 
-(defvar *init-file-path* (xdg-config-home "init.lisp")
-  "The path where the system will look to load an init file from.")
+(defun init-file-path (&optional (file "init.lisp"))
+  ;; This can't be a regular variable or else the value will be hard-coded at
+  ;; compile time.  It seems to be hard-coded with (eval-when (:execute) ...) as well.
+  "The path where the system will look to load an init file from."
+  (xdg-config-home (or (getf *options* :init-file) file)))
 
 (defun load-lisp-file (file)
   "Load the provided lisp file.
@@ -125,7 +128,7 @@ If FILE is \"-\", read from the standard input."
                                  :input-prompt "Load file:"))
     (load-lisp-file file-name-input)))
 
-(define-command load-init-file (root-mode &optional (init-file *init-file-path*))
+(define-command load-init-file (root-mode &optional (init-file (init-file-path)))
   "Load or reload the init file."
   (load-lisp-file init-file))
 
@@ -133,9 +136,7 @@ If FILE is \"-\", read from the standard input."
   ;; Randomness should be seeded as early as possible to avoid generating
   ;; deterministic tokens.
   (setf *random-state* (make-random-state t))
-  (when (getf *options* :init-file)
-    (setf *init-file-path* (getf *options* :init-file)))
-  (load-lisp-file *init-file-path*)
+  (load-lisp-file (init-file-path))
   ;; create the interface object
   (unless (eq swank:*communication-style* :fd-handler)
     (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"
