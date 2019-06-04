@@ -134,7 +134,9 @@
   (setf (display-mode minibuffer) :nil)
   (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function) minibuffer
-    (funcall callback-function (input-buffer minibuffer))
+    (let ((normalized-input (cl-strings:replace-all (input-buffer minibuffer)
+                                                    " " " ")))
+      (funcall callback-function normalized-input))
     (when cleanup-function
       (funcall cleanup-function))))
 
