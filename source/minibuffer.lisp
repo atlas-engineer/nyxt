@@ -424,7 +424,7 @@
   (with-slots (completions completion-cursor)
       minibuffer
     (and completions
-         (nth completion-cursor completions))))
+         (format nil "~a" (nth completion-cursor completions)))))
 
 (define-command copy-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
