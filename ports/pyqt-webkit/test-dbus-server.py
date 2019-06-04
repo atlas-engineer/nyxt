@@ -1,8 +1,4 @@
-usage = """Usage:
-python example-signal-emitter.py &
-python example-signal-recipient.py
-python example-signal-recipient.py --exit-service
-"""
+# https://wiki.qt.io/Qt_for_Python_DBusIntegration
 
 from PyQt5.QtWidgets import QApplication
 from dbus.mainloop.pyqt5 import DBusQtMainLoop
@@ -16,17 +12,14 @@ class TestObject(dbus.service.Object):
         dbus.service.Object.__init__(self, conn, object_path)
 
     @dbus.service.method('com.example.TestInterface')
-    def Ping(self):
+    def ping(self):
         return 'pong'
 
 
 if __name__ == '__main__':
+    app = QApplication([])
     DBusQtMainLoop(set_as_default=True)
-
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName('com.example.TestService', session_bus)
     object = TestObject(session_bus)
-
-    app = QApplication([])
     app.exec_()
-    print(usage)
