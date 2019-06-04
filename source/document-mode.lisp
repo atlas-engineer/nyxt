@@ -29,7 +29,7 @@
           (key "C-m o") 'set-url-from-bookmark
           (key "C-m s") 'bookmark-current-page
           (key "C-m g") 'bookmark-anchor
-          (key "C-s s") 'add-search-boxes
+          (key "C-s s") 'add-search-hints
           (key "C-s n") 'next-search-hint
           (key "C-s p") 'previous-search-hint
           (key "C-s k") 'remove-search-hints

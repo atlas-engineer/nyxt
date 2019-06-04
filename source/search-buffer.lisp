@@ -18,33 +18,31 @@
       (setf (ps:@ el id) index)
       el)))
 
-(define-parenscript paren-add-search-boxes (search-string)
+(define-parenscript %add-search-hints (search-string)
   (let* ((regex-string (ps:lisp (concatenate 'string search-string "[A-Za-z]*")))
          (regex-flags "gi")
          (matcher (ps:new (-reg-exp regex-string regex-flags)))
          (body (ps:chain document body inner-h-t-m-l))
          (last-match t)
          (matches (loop while (setf last-match (ps:chain matcher (exec body)))
-                     collect (ps:chain last-match index))))
+                        collect (ps:chain last-match index))))
     (setf match-count (length matches))
     (setf matches (ps:chain matches (reverse)))
     (loop for i from 0 to (- match-count 1)
-       do (setf body (insert body (ps:elt matches i)
-                             (ps:chain (create-search-span (- match-count i)) outer-h-t-m-l))))
+          do (setf body (insert body (ps:elt matches i)
+                                (ps:chain (create-search-span (- match-count i)) outer-h-t-m-l))))
     (setf (ps:chain document body inner-h-t-m-l) body))
   nil)
 
-(define-command add-search-boxes ()
-  "Add search boxes for a given search string"
+(define-command add-search-hints ()
+  "Add search boxes for a given search string."
   (initialize-search-buffer)
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
                        :input-prompt "Search for:"))
-    (%%buffer-evaluate-javascript *interface*
-                                (active-buffer *interface*)
-                                (paren-add-search-boxes :search-string input))))
+    (%add-search-hints :search-string input)))
 
-(define-parenscript remove-search-hints ()
+(define-parenscript %remove-search-hints ()
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -54,14 +52,26 @@
       (ps:chain el (remove))))
   (search-hints-remove-all))
 
-(define-parenscript next-search-hint ()
+(define-command remove-search-hints ()
+  "Remove all search hints."
+  (%remove-search-hints))
+
+(define-parenscript %next-search-hint ()
   (when (> match-count current-search)
     (setf current-search (+ current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
 
-(define-parenscript previous-search-hint ()
+(define-command next-search-hint ()
+  "Go to next search hint."
+  (%next-search-hint))
+
+(define-parenscript %previous-search-hint ()
   (when (> current-search 0)
     (setf current-search (- current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
+
+(define-command previous-search-hint ()
+  "Go to previous search hint."
+  (%previous-search-hint))
