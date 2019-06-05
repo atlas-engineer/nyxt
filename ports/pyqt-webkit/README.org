@@ -3,8 +3,12 @@ PyQt port for Next.
 * Installation
 
 Create a Python3 virtual env:
-: python3 -m venv ~/.venvs/where/you/want/next
-: source ~/.venvs/where/you/want/next/bin/activate
+: virtualenv nextqt --system-site-packages
+: source nextqt/bin/activate
+
+On Debian-like systems:
+
+: apt install qdbus-qt5
 
 Install Python dependencies:
 
