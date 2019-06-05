@@ -4,10 +4,14 @@
 
 (define-parenscript initialize-search-buffer ()
   (ps:defvar current-search 0)
-  (ps:defvar match-count)
+  (ps:defvar index 0)
   (defun insert (str index value)
-    (+ (ps:chain str (substr 0 index)) value (ps:chain str (substr index))))
-  (defun create-search-span (index)
+    (+ (ps:chain str (substr 0 index)) value (ps:chain str (substr index)))))
+
+;; TODO: Draw a box over the word instead?
+(define-parenscript %add-search-hints (search-string)
+  (defun create-search-span ()
+    (setf index (+ 1 index))
     (ps:let* ((el (ps:chain document (create-element "span"))))
       (setf (ps:@ el class-name) "next-search-hint")
       (setf (ps:@ el style background) "rgba(255, 255, 255, 0.75)")
@@ -15,23 +19,51 @@
       (setf (ps:@ el style font-weight) "bold")
       (setf (ps:@ el style text-align) "center")
       (setf (ps:@ el text-content) index)
+      ;; TODO: Ensure uniqueness of match IDs.
       (setf (ps:@ el id) index)
-      el)))
+      el))
 
-(define-parenscript %add-search-hints (search-string)
-  (let* ((regex-string (ps:lisp (concatenate 'string search-string "[A-Za-z]*")))
-         (regex-flags "gi")
-         (matcher (ps:new (-reg-exp regex-string regex-flags)))
-         (body (ps:chain document body inner-h-t-m-l))
-         (last-match t)
-         (matches (loop while (setf last-match (ps:chain matcher (exec body)))
-                        collect (ps:chain last-match index))))
-    (setf match-count (length matches))
-    (setf matches (ps:chain matches (reverse)))
-    (loop for i from 0 to (- match-count 1)
-          do (setf body (insert body (ps:elt matches i)
-                                (ps:chain (create-search-span (- match-count i)) outer-h-t-m-l))))
-    (setf (ps:chain document body inner-h-t-m-l) body))
+  ;; TODO: Ignore HTML comments.
+  (ps:defun walk-dom (node proc)
+    (when (and node (not (ps:chain node first-child)))
+      (funcall proc node (ps:lisp search-string)))
+    (setf node (ps:chain node first-child))
+    (loop while node
+          do (walk-dom node proc)
+          do (setf node (ps:chain node next-sibling))))
+
+  (ps:defun split-string-at (string regexp)
+    "Like a regular split-string except that the matching regexp is included in the following string.
+For instance
+  (split-string-at \"foo@bar\" \"@\")
+returns
+  (\"foo\" \"@bar\")"
+    (let* ((regex-string (ps:lisp search-string))
+           (regex-flags "gi")
+           (matcher (ps:new (-reg-exp regex-string regex-flags)))
+           (last-match nil)
+           (remaining ""))
+      (loop with next-to-last-index = 0
+            while (setf last-match (ps:chain matcher (exec string)))
+            collect (ps:chain string (substring next-to-last-index (ps:chain last-match index))) into result
+            do (setf next-to-last-index (ps:chain last-match index))
+               (setf remaining (ps:chain string (substring (ps:chain last-match index))))
+            finally (progn (ps:chain result (push remaining))
+                           result))))
+
+  (ps:defun insert-hint (node search-string)
+    (let ((new-el (ps:chain document (create-element "span")))
+          (fragments (split-string-at (ps:@ node text-content)
+                                      (ps:lisp search-string))))
+      (when  (< 1 (length fragments))
+        (ps:chain new-el (append-child
+                          (ps:chain document (create-text-node (ps:elt fragments 0)))))
+        (loop for fragment in (ps:chain fragments (slice 1))
+              do (ps:chain new-el (append-child (create-search-span)))
+                 (ps:chain new-el (append-child
+                                   (ps:chain document (create-text-node fragment)))))
+        (ps:chain node (replace-with new-el)))))
+  (walk-dom (ps:chain document body) insert-hint)
   nil)
 
 (define-command add-search-hints ()
@@ -57,7 +89,7 @@
   (%remove-search-hints))
 
 (define-parenscript %next-search-hint ()
-  (when (> match-count current-search)
+  (when (> index current-search)
     (setf current-search (+ current-search 1)))
   (let ((element (ps:chain document (get-element-by-id current-search))))
     (ps:chain element (scroll-into-view t))))
