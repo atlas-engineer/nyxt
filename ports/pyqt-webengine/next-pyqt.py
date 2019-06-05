@@ -14,23 +14,20 @@ from window import set_title
 """
 This is a Next port with Qt's Web Engine, through PyQt.
 
-An important thing is to not modify a Qt widget directly, but through Qt signals.
-
 It is possible to test this from the Python or the Lisp REPL.
 
-To send signals to the web engine from Lisp:
+To send commands to the web engine from Lisp:
 - start the PyQt port (make run)
 - start lisp, quickload next
 - create an interface and start it:
 
-Now you can use any built-in methods (window-make myinterface) or send
+Now you can use any built-in methods such as (window-make myinterface) or send
 custom signals with
 
     (send-signal myinterface "set_minibuffer" "yiha from CL!")
 
 which prints its return value (an html snippet) and which should
 change your minibuffer prompt.
-
 """
 
 
