@@ -41,25 +41,35 @@
           "C-w" 'copy-url
           "M-w" 'copy-title
           :keymap map)
-        map))))
+        map)))
+  ;; Init.
+  ;; TODO: Do we need to set the default URL?  Maybe not.
+  ;; (set-url-buffer (default-new-buffer-url (buffer %mode))
+  ;;                 (buffer %mode))
+  )
 
 (define-command history-backwards (document-mode)
   "Move up to parent node to iterate backwards in history tree."
-  (let ((parent (node-parent (active-history-node
-                              (mode (active-buffer *interface*))))))
+  (let ((parent (node-parent (active-history-node document-mode
+                                                  ;; TODO: Test!
+                              ;; (mode (active-buffer *interface*))
+                                                  ))))
     (when parent
       (set-url (node-data parent) t))))
 
 (define-command history-forwards (document-mode)
   "Move forwards in history selecting the first child."
   (let ((children (node-children (active-history-node
-                                  (mode (active-buffer *interface*))))))
+                                  document-mode
+                                  ;; (mode (active-buffer *interface*))
+                                  ))))
     (unless (null children)
       (set-url (node-data (nth 0 children)) t))))
 
 (defun history-forwards-completion-fn ()
   "Provide completion candidates to the `history-forwards-query' function."
-  (let* ((mode (mode (active-buffer *interface*)))
+  ;; TODO: Find right mode.
+  (let* ((mode (first (modes (active-buffer *interface*))))
          (children (node-children (active-history-node mode))))
     (lambda (input)
       (if children
@@ -129,7 +139,3 @@
   (echo (minibuffer *interface*) (concatenate 'string "Finished loading: " url "."))
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss (minibuffer *interface*)))
-
-(defmethod setup ((mode document-mode) (buffer buffer))
-  (set-url-buffer (default-new-buffer-url buffer) buffer)
-  (call-next-method))

@@ -84,12 +84,13 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
               (bound-function
                (progn
                  (log:debug "Key sequence ~a bound to ~a" serialized-key-stack bound-function)
-                 (funcall bound-function (mode (if (minibuffer-active active-window)
-                                                   (minibuffer *interface*)
-                                                   active-buffer)))
+                 ;; TODO: Find the mode associated to the bound-function.
+                 (funcall bound-function (first (modes (if (minibuffer-active active-window)
+                                                           (minibuffer *interface*)
+                                                           active-buffer))))
                  (setf (key-chord-stack *interface*) ())
                  (return-from consume-key-sequence t)))
-              ((equalp map (keymap (mode (minibuffer *interface*))))
+              ((equalp map (keymap (first (modes (minibuffer *interface*)))))
                (if (member "R" (key-chord-modifiers (first (key-chord-stack *interface*)))
                            :test #'string=)
                    (log:debug "Key released")
@@ -107,8 +108,8 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
                           (active-buffer (active-buffer window)))
   "Return the list of keymaps for the current buffer, ordered by priority."
   (let* ((local-map (if (minibuffer-active window)
-                        (keymap (mode (minibuffer *interface*)))
-                        (keymap (mode active-buffer)))))
+                        (keymap (first (modes (minibuffer *interface*))))
+                        (keymap (first (modes active-buffer))))))
     (list local-map (root-mode-default-keymap))))
 
 (defun define-key (&rest key-command-pairs

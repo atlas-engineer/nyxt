@@ -5,15 +5,16 @@
 (defmethod object-string ((buffer buffer))
   (name buffer))
 
-(defun make-buffer (&optional (name "default")
-                                       mode)
+(defun make-buffer (&key (name "default")
+                         default-modes)
   "Create a new buffer.
 MODE is a mode symbol.
 This function is meant to be used on the Lisp side."
-  (buffer-make *interface* name mode))
+  (%%buffer-make *interface* :name name :default-modes default-modes))
 
 (define-command new-buffer (root-mode &optional (name "default")
                                        mode)
+  ;; TODO: Ask for modes interactively?
   "Create a new buffer.
 This command is meant to be used interactively.
 See the `make-buffer' function for Lisp code."

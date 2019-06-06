@@ -40,7 +40,7 @@
         map))))
 
 (defclass minibuffer (buffer)
-  ((mode :accessor mode :initarg :mode :initform 'minibuffer-mode)
+  ((default-modes :initform '(minibuffer-mode))
    (completion-function :accessor completion-function)
    (callback-function :accessor callback-function)
    (callback-buffer :accessor callback-buffer)
@@ -80,11 +80,6 @@
                                              :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
-(defmethod initialize-instance :after ((minibuffer minibuffer)
-                                       &key &allow-other-keys)
-  (when (symbolp (mode minibuffer))
-    (setf (mode minibuffer) (make-instance (mode minibuffer)))))
-
 (defmethod read-from-minibuffer ((minibuffer minibuffer)
                                  &key callback input-prompt completion-function setup-function
                                    cleanup-function empty-complete-immediate)
@@ -122,9 +117,9 @@
               ;; if we can't find a completion
               (when empty-complete-immediate
                 ;; if we accept immediate output in place of completion
-                (return-immediate (mode minibuffer) minibuffer))))
+                (return-immediate (first (modes minibuffer)) minibuffer))))
         ;; if there's no completion function
-        (return-immediate (mode minibuffer) minibuffer))
+        (return-immediate (first (modes minibuffer)) minibuffer))
     (when cleanup-function
       (funcall cleanup-function))))
 
@@ -301,7 +296,7 @@
   "Delete characters from cursor position until the end of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (let* ((current-cursor-position input-buffer-cursor)
-           (new-cursor-position (cursor-forwards-word (mode minibuffer) minibuffer))
+           (new-cursor-position (cursor-forwards-word (first (modes minibuffer)) minibuffer))
            (transpose-distance (- new-cursor-position current-cursor-position)))
       (setf input-buffer
             (concatenate 'string
@@ -314,7 +309,7 @@
   "Delete characters from cursor position until the beginning of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (let ((current-cursor-position input-buffer-cursor)
-          (new-cursor-position (cursor-backwards-word (mode minibuffer) minibuffer)))
+          (new-cursor-position (cursor-backwards-word (first (modes minibuffer)) minibuffer)))
       (setf input-buffer
             (concatenate 'string
                          (subseq input-buffer 0 new-cursor-position)
@@ -436,5 +431,5 @@
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
-      (kill-whole-line (mode minibuffer) minibuffer)
+      (kill-whole-line (first (modes minibuffer)) minibuffer)
       (insert candidate minibuffer))))

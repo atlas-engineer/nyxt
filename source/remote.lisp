@@ -29,13 +29,13 @@ keyword is not recognized.")))
 (defclass buffer ()
   ((id :accessor id :initarg :id)
    (name :accessor name :initarg :name)
-   (mode :accessor mode :initarg :mode
-         ;; TODO: This is rather clunky.  Use separate slot for the class symbol?
-         :initform 'document-mode
-         :documentation "The :initform and :initarg must be the class symbol.
-The mode is instantiated on buffer initialization.")
+   (modes :accessor modes :initarg :modes :initform '()
+          :documentation "The list of mode instances.")
+   (default-modes :accessor default-modes :initarg :default-modes
+                  :initform '(document-mode)
+                  :documentation "The list of symbols of class to
+instantiate on buffer creation, unless specified.")
    (view :accessor view :initarg :view)
-   (modes :accessor modes :initarg :modes)
    (resource-query-functions :accessor resource-query-functions
                              :initarg :resource-query-functions
                              :initform nil)
@@ -63,8 +63,8 @@ distance scroll-left or scroll-right will scroll.")
 platform ports might support this.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
-  (when (symbolp (mode buffer))
-    (setf (mode buffer) (make-instance (mode buffer)))))
+  (dolist (mode-class (default-modes buffer))
+    (push (funcall mode-class :buffer buffer) (modes buffer))))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord
@@ -76,10 +76,12 @@ platform ports might support this.")))
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
-  (did-commit-navigation (mode buffer) url))
+  ;; TODO: Call on all modes.
+  (did-commit-navigation (first (modes buffer)) url))
 
 (defmethod did-finish-navigation ((buffer buffer) url)
-  (did-finish-navigation (mode buffer) url))
+  ;; TODO: Call on all modes.
+  (did-finish-navigation (first (modes buffer)) url))
 
 (defclass remote-interface ()
   ((port :accessor port :initform (make-instance 'port)
@@ -231,25 +233,15 @@ For an array of string, that would be \"as\"."
   (%rpc-send interface "window_set_minibuffer_height" (id window) height))
 
 (defmethod %%buffer-make ((interface remote-interface)
-                          &key name mode)
+                          &key name default-modes)
   (let* ((buffer-id (get-unique-buffer-identifier interface))
          (buffer (apply #'make-instance 'buffer :id buffer-id
                         (append (when name `(:name ,name))
-                                (when mode `(:mode ,mode))))))
+                                (when default-modes `(:default-modes ,default-modes))))))
     (ensure-parent-exists (cookies-path buffer))
     (setf (gethash buffer-id (buffers interface)) buffer)
     (%rpc-send interface "buffer_make" buffer-id
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
-    buffer))
-
-;; TODO: Use keys instead of &optional.
-(defmethod buffer-make ((interface remote-interface)
-                        &optional
-                          (name "default")
-                          mode)
-  (let* ((buffer (%%buffer-make interface :name name :mode mode)))
-    (when (mode buffer)
-      (setup (mode buffer) buffer))
     buffer))
 
 (defmethod %get-inactive-buffer ((interface remote-interface))
@@ -264,7 +256,7 @@ For an array of string, that would be \"as\"."
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
-                                (buffer-make interface))))
+                                (%%buffer-make interface))))
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))

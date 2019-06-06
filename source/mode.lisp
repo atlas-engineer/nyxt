@@ -17,24 +17,24 @@ A constructor named NAME is also defined."
        (:documentation ,docstring))
      (defmethod initialize-instance :after ((%mode ,name) &key)
        ,@body)
-     (defun ,name ()
+     ;; TODO: This should not be a defun, but a define-command, and it should call the destructor when toggling off.
+     (defun ,name (&rest args &key &allow-other-keys)
        ,docstring
-       (make-instance ',name
-                      :name (format nil "~a-mode" ',name)))))
+       (apply #'make-instance ',name
+              :name (format nil "~a-mode" ',name)
+              args))))
 
 (define-mode root-mode (t)
     "The root of all modes."
     ((name :accessor name :initarg :name) ;; TODO: What's the use of mode's NAME slot?
-     (keymap :accessor keymap :initarg :keymap :initform (make-keymap))
-     (buffer :accessor buffer)))
+     (buffer :accessor buffer :initarg :buffer)
+     (destructor :accessor destructor)  ; TODO: Use it.  Better name?
+     (keymap :accessor keymap :initarg :keymap :initform (make-keymap))))
 
 (defun root-mode-default-keymap ()
   "Return the default keymap of root mode."
   (eval (closer-mop:slot-definition-initform
          (find-slot (find-class 'root-mode) 'keymap))))
-
-(defmethod setup ((mode root-mode) (buffer buffer))
-  (setf (buffer mode) buffer))
 
 (defmethod did-commit-navigation ((mode root-mode) url)
   url)

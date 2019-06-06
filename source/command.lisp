@@ -30,7 +30,7 @@ ARGLIST must be a list of optional arguments."
                   (rest body)
                   body)))
     `(progn
-       (defmethod ,name ,(cons `(%mode ,mode) arglist)
+       (defmethod ,name ,(cons `(,mode ,mode) arglist)
          ,documentation
          (echo-dismiss (minibuffer *interface*))
          ,@body))))
@@ -80,7 +80,8 @@ Otherwise list all commands."
                           (closer-mop:method-generic-function c)))
                        (list-commands (class-name
                                        (class-of
-                                        (mode (active-buffer *interface*))))))
+                                        ;; TODO: Find commands from all modes.
+                                        (first (modes (active-buffer *interface*)))))))
                :accessor-function #'symbol-name))
 
 (define-command execute-command ()
@@ -89,4 +90,5 @@ Otherwise list all commands."
                          (minibuffer *interface*)
                          :input-prompt "Execute command:"
                          :completion-function 'command-complete))
-    (funcall command (mode (active-buffer *interface*)))))
+    ;; TODO: Call on the right mode.
+    (funcall command (first (modes (active-buffer *interface*))))))
