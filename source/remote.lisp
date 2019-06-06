@@ -64,7 +64,9 @@ platform ports might support this.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
   (dolist (mode-class (default-modes buffer))
-    (push (funcall mode-class :buffer buffer) (modes buffer))))
+    ;; ":activate t" should not be necessary here since (modes buffer) should be
+    ;; empty.
+    (funcall mode-class :buffer buffer :activate t)))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord

@@ -127,21 +127,6 @@ item in the list, jump to the first item."
         (set-active-buffer *interface* (nth (+ active-buffer-index 1) buffers))
         (set-active-buffer *interface* (nth 0 buffers)))))
 
-(defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
-  (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
-    (when (or (not found-mode) (and found-mode overwrite))
-      (setf (buffer mode) buffer)
-      (setf (gethash (class-name (class-of mode)) (modes buffer)) mode))))
-
-(defmethod switch-mode ((buffer buffer) mode)
-  (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
-    (when found-mode
-      (setf (mode buffer) found-mode))))
-
-(defmethod add-or-switch-to-mode ((buffer buffer) mode)
-  (add-mode buffer mode)
-  (switch-mode buffer mode))
-
 ;; TODO: Make proxy variable local?  Better: make a tor-mode.
 (defparameter *proxy-url* "socks://127.0.0.1:9050" )
 (defparameter *proxy-ignore-list* (list "localhost" "localhost:8080"))
