@@ -119,8 +119,8 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
     (setf (key-chord-stack *interface*) ())))
 
 (defun define-key (&rest key-command-pairs
-                         &key mode keymap
-                         &allow-other-keys)
+                   &key mode keymap
+                   &allow-other-keys)
   "Bind KEY to COMMAND.
 The KEY command transforms key chord strings to valid key sequences.
 When MODE is provided (as a symbol referring to a class name), the binding is
@@ -136,8 +136,8 @@ Examples:
   ;; Only affect the first mode of the current buffer:
   (define-key \"C-c C-c\" 'reload
               :keymap (keymap (mode (active-buffer *interface*))))"
-  (remf key-command-pairs :mode)
-  (remf key-command-pairs :keymap)
+  (dolist (key (remove-if-not #'keywordp key-command-pairs))
+    (remf key-command-pairs key))
   (flet ((set-key (mode-map key-sequence-string command)
            ;; A sequence of "C-x" "C-s" "C-a" will be broken
            ;; up into three keys for the mode map, these are
@@ -159,10 +159,10 @@ Examples:
     (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
           do (when mode
                (setf (get-default mode 'keymap)
-                (let ((map (eval (closer-mop:slot-definition-initform
-                                  (find-slot mode 'keymap)))))
-                  (set-key map key-sequence-string command)
-                  map)))
+                     (let ((map (eval (closer-mop:slot-definition-initform
+                                       (find-slot mode 'keymap)))))
+                       (set-key map key-sequence-string command)
+                       map)))
              (when keymap
                (set-key keymap key-sequence-string command)))))
 
