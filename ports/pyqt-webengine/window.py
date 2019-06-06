@@ -18,10 +18,8 @@ KEY_BLACKLIST = []
 
 URL_START = "http://next.atlas.engineer/"
 
-#: A dictionnary of current windows mapping an identifier (int) to a window (Window).
-# We keep a dict instead of a list even if identifiers are integers,
-# because windows can be deleted.
-# xxx: we probably want QMutex.
+#: A dictionnary of current windows mapping an identifier (str) to a window (Window).
+# Do we want QMutex ?
 WINDOWS = {}
 
 #: Key modifiers.
@@ -127,8 +125,8 @@ class Window():
     #: layout, that holds the webview and the minibuffer. We need to
     #save it for later deletion.
     layout = None
-    #: window identifier (int, starting from 0).
-    identifier = 0
+    #: window identifier (str)
+    identifier = "0"
     buffer = None
     minibuffer = None
     #: minibuffer height (px)
@@ -137,7 +135,7 @@ class Window():
     def __init__(self, identifier, *args, **kwargs):
         self.widget = MyQWidget()
         self.layout = QVBoxLayout()
-        identifier = int(identifier)
+        identifier = identifier
         self.identifier = identifier
 
         webview = QWebEngineView()
@@ -165,17 +163,19 @@ def window_make(identifier):
 
     return: True (not important)
     """
+    assert isinstance(identifier, str)
     window = Window(identifier=identifier)
     window.widget.show()
     WINDOWS[window.identifier] = window
     print("--- new window created, id {}".format(window.identifier))
     return True
 
-def window_delete(window_id):
-    window = WINDOWS.get(window_id)
+def window_delete(identifier):
+    assert isinstance(identifier, str)
+    window = WINDOWS.get(identifier)
     # xxx: works, re-check if everything's necessary.
     if not window:
-        print("could not find a window of id {}".format(window_id))
+        print("could not find a window of id {}".format(identifier))
         print("windows: {}".format(WINDOWS))
         return False
     if window.layout is not None:
@@ -189,22 +189,23 @@ def window_delete(window_id):
 
         del window.layout
 
-    del WINDOWS[window_id]
-    print("--- deleted window {}. Remaining windows: {}".format(window_id, WINDOWS))
+    del WINDOWS[identifier]
+    print("--- deleted window {}. Remaining windows: {}".format(identifier, WINDOWS))
     return True
 
 def window_send_event(widget, event, data):
     method_name = "PUSH-KEY-EVENT"
 
-def set_title(id, title, **kwargs):
+def set_title(identifier, title, **kwargs):
     """
-    Set the title of the window of id `id` (str).
+    Set the title of the window of identifier `identifier` (str).
     Return the new title if it was changed, a blank string otherwise.
     """
-    print("--- set title: {}, {}".format(id, title))
-    window = WINDOWS.get(id)
+    print("--- set title: {}, {}".format(identifier, title))
+    assert isinstance(identifier, str)
+    window = WINDOWS.get(identifier)
     if window:
-        window.base.setWindowTitle(title)
-        print("-- title set for window {} !".format(id))
+        window.widget.setWindowTitle(title)
+        print("-- title set for window {} !".format(identifier))
         return title
     return ""

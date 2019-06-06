@@ -1,15 +1,19 @@
 from functools import partial
-from dbus.mainloop.pyqt5 import DBusQtMainLoop
+# from dbus.mainloop.pyqt5 import DBusQtMainLoop
+from dbus.mainloop.glib import DBusGMainLoop
+import dbus
+import dbus.service
 
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QWidget
 
-from window import window_make
-from window import window_delete
-from window import window_send_event
-from window import set_title
+import window
+# from window import window_make
+# from window import window_delete
+# from window import window_send_event
+# from window import set_title
 
 """
 This is a Next port with Qt's Web Engine, through PyQt.
@@ -29,6 +33,31 @@ custom signals with
 which prints its return value (an html snippet) and which should
 change your minibuffer prompt.
 """
+
+PLATFORM_PORT_OBJECT_PATH = "/engineer/atlas/next/platform"
+PLATFORM_PORT_NAME = "engineer.atlas.next.platform"
+
+
+class DBusWindow(dbus.service.Object):
+    def __init__(self, conn, object_path=PLATFORM_PORT_OBJECT_PATH):
+        dbus.service.Object.__init__(self, conn, object_path)
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def ping(self):
+        return 'pong'
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_make(self, uid):
+        print("--- make_window")
+        return window.window_make(uid)
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_set_title(self, uid, title):
+        return window.set_title(uid, title)
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_delete(self, uid):
+        return window.window_delete(uid)
 
 
 def client_run(client, cmd, *args):
@@ -52,7 +81,11 @@ def set_minibuffer(name):
 
 
 if __name__ == '__main__':
-    DBusQtMainLoop(set_as_default=True)
     app = QApplication([])
-    window_make("0")
+    # DBusQtMainLoop(set_as_default=True)
+    DBusGMainLoop(set_as_default=True)
+    session_bus = dbus.SessionBus()
+    name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)
+    object = DBusWindow(session_bus)
+    window.window_make("0")
     app.exec_()
