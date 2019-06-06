@@ -32,7 +32,8 @@ ARGLIST must be a list of optional arguments."
     `(progn
        (defmethod ,name ,(cons `(,mode ,mode) arglist)
          ,documentation
-         (echo-dismiss (minibuffer *interface*))
+         (when *interface*
+           (echo-dismiss (minibuffer *interface*)))
          ,@body))))
 
 (defun package-defined-symbols (&optional (package (find-package :next)))
