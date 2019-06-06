@@ -10,10 +10,6 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QWidget
 
 import window
-# from window import window_make
-# from window import window_delete
-# from window import window_send_event
-# from window import set_title
 
 """
 This is a Next port with Qt's Web Engine, through PyQt.
@@ -28,15 +24,8 @@ To send commands to the web engine from Lisp:
     (in-package :next)
     (start)
 
-this creates an `*interface*` object.
-
-Now you can use any built-in methods such as (window-make *interface*) or send
-custom signals with
-
-    (send-signal myinterface "set_minibuffer" "yiha from CL!")
-
-which prints its return value (an html snippet) and should
-change your minibuffer prompt.
+this creates an `*interface*` object. 
+Now you can use any built-in methods such as (window-make *interface*).
 """
 
 PLATFORM_PORT_OBJECT_PATH = "/engineer/atlas/next/platform"
