@@ -1,12 +1,5 @@
 ;;; keymap.lisp --- lisp subroutines for key binding detection
 
-;;; keys are defined with the following syntax:
-;;;
-;;; (define-key (key "C-x o") #'function-reference)
-;;;
-;;; in the previous example, the sequence of keys:
-;;; "control+x", "o" would invoke the "function-reference"
-
 (in-package :next)
 
 (defun serialize-key-chord (key-chord)
@@ -49,26 +42,20 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
                                   key-chord))))
   (values))
 
-;; TODO: If we move the global mode to root-mode, how do we make sure which one has priority?
-;; What about reserving a prefix key for application mode and root mode?
 (defun consume-key-sequence-p (sender)
   (let* ((active-window (gethash sender (windows *interface*)))
          (active-buffer (active-buffer active-window))
-         (local-map (if (minibuffer-active active-window)
-                        (keymap (mode (minibuffer *interface*)))
-                        (keymap (mode active-buffer))))
-         ;; TODO: Shouldn't we give higher priority to the buffer keymap?
-         (key-maps (list (root-mode-default-keymap) local-map)))
-    (flet ((is-in-maps? (key-maps)
-             (dolist (map key-maps)
+         (keymaps (current-keymaps active-window active-buffer)))
+    (flet ((is-in-maps? (keymaps)
+             (dolist (map keymaps)
                (when (look-up-key-chord-stack (key-chord-stack *interface*) map)
                  (return-from is-in-maps? map)))))
       (cond ((minibuffer-active active-window)
              (log:debug "Minibuffer active")
              t)
-            ((is-in-maps? key-maps)
+            ((is-in-maps? keymaps)
              (log:debug "~a found in map ~a" (mapcar #'serialize-key-chord (key-chord-stack *interface*))
-                        (is-in-maps? key-maps))
+                        (is-in-maps? keymaps))
              t)
             (t (setf (key-chord-stack *interface*) ()))))))
 
@@ -88,12 +75,9 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
   ;; If key recognized, execute function
   (let* ((active-window (gethash sender (windows *interface*)))
          (active-buffer (active-buffer active-window))
-         (local-map (if (minibuffer-active active-window)
-                        (keymap (mode (minibuffer *interface*)))
-                        (keymap (mode active-buffer))))
-         (key-maps (list (root-mode-default-keymap) local-map))
+         (keymaps (current-keymaps active-window active-buffer))
          (serialized-key-stack (mapcar #'serialize-key-chord (key-chord-stack *interface*))))
-    (dolist (map key-maps)
+    (dolist (map keymaps)
       (let ((bound-function (gethash serialized-key-stack map)))
         (cond ((equalp "prefix" bound-function)
                (return-from consume-key-sequence t))
@@ -117,6 +101,15 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
                (return-from consume-key-sequence t)))))
     (log:debug "Not found in any keymaps")
     (setf (key-chord-stack *interface*) ())))
+
+;; TODO: Add override map and all mode maps.  Remove root-mode-default-keymap.
+(defun current-keymaps (window &optional
+                          (active-buffer (active-buffer window)))
+  "Return the list of keymaps for the current buffer, ordered by priority."
+  (let* ((local-map (if (minibuffer-active window)
+                        (keymap (mode (minibuffer *interface*)))
+                        (keymap (mode active-buffer)))))
+    (list local-map (root-mode-default-keymap))))
 
 (defun define-key (&rest key-command-pairs
                    &key mode keymap
