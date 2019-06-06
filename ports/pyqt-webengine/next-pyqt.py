@@ -82,6 +82,10 @@ class DBusWindow(dbus.service.Object):
         window.set_minibuffer(identifier, html)
         return html
 
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def set_minibuffer_height(self, identifier, height):
+        window.set_minibuffer_height(identifier, height)
+
 
 if __name__ == '__main__':
     app = QApplication([])

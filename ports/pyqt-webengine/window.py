@@ -134,6 +134,7 @@ class Window():
     minibuffer_height = 200
 
     def __init__(self, identifier, *args, **kwargs):
+        minibuffer_size = 150
         self.widget = MyQWidget()
         self.layout = QVBoxLayout()
         identifier = identifier
@@ -149,6 +150,7 @@ class Window():
         </html>
         """
         self.minibuffer.setHtml(default_prompt)
+        self.minibuffer.setFixedHeight(minibuffer_size)
 
         self.layout.addWidget(webview)
         self.layout.addWidget(self.minibuffer)
@@ -159,10 +161,12 @@ class Window():
     def set_minibuffer(self, text, *args, **kwargs):
         self.minibuffer.setHtml(text)
 
+    def set_minibuffer_height(self, height):
+        self.minibuffer.setFixedHeight(height)
+
 def window_make(identifier):
     """
-    Create a window, assign it the given unique identifier.
-    - uid: string
+    Create a window, assign it the given unique identifier (str).
 
     return: True (not important)
     """
@@ -228,5 +232,14 @@ def set_minibuffer(identifier, text):
     window = WINDOWS.get(identifier)
     if window:
         window.set_minibuffer(text)
+    else:
+        print("--- no window of id {}".format(identifier))
+
+def set_minibuffer_height(identifier, height):
+    assert isinstance(identifier, str)
+    assert isinstance(height, int)
+    window = WINDOWS.get(identifier)
+    if window:
+        window.set_minibuffer_height(height)
     else:
         print("--- no window of id {}".format(identifier))

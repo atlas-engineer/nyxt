@@ -22,6 +22,7 @@ def main():
         # We must use getattr because of dotted function names/signal names.
         command = "window_delete"
         args = [window_id,]
+
     elif "-t" in sys.argv:
         # Set title.
         window_id = sys.argv[-2]
@@ -29,6 +30,12 @@ def main():
         title = "hello " + title
         command = "window_set_title"
         args = [window_id, title]
+
+    elif "-h" in sys.argv:
+        # set minibuffer height (int).
+        command = "set_minibuffer_height"
+        args = [sys.argv[-2], int(sys.argv[-1])]
+
     elif "-k" in sys.argv:
         # kill all windows.
         command = "window_killall"
@@ -37,6 +44,7 @@ def main():
         # Set minibuffer.
         command = "set_minibuffer"
         args = [sys.argv[-2], sys.argv[-1]]
+
     else:
         # Make window.
         # give a pseudo random str as window id, we don't keep count of windows here.
