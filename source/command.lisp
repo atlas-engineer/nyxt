@@ -44,14 +44,10 @@ ARGLIST must be a list of optional arguments."
     symbols))
 
 (defun package-variables ()
-  (loop for sym in (package-defined-symbols)
-        when (boundp sym)
-        collect sym))
+  (remove-if-not #'boundp (package-defined-symbols)))
 
 (defun package-functions ()
-  (loop for sym in (package-defined-symbols)
-        when (fboundp sym)
-        collect sym))
+  (remove-if-not #'fboundp (package-defined-symbols)))
 
 (defun package-methods ()
   (loop for sym in (package-defined-symbols)
