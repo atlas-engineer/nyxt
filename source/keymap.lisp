@@ -130,15 +130,15 @@ If MODE and KEYMAP are nil, the binding is registered into root-mode.
 
 Examples:
 
-  (define-key (\"C-x C-c\") 'kill)
-  (define-key (\"C-n\") 'scroll-down
+  (define-key \"C-x C-c\" 'kill)
+  (define-key \"C-n\" 'scroll-down
               :mode 'document-mode)
   ;; Only affect the first mode of the current buffer:
-  (define-key (\"C-c C-c\") '
+  (define-key \"C-c C-c\" 'reload
               :keymap (keymap (mode (active-buffer *interface*))))"
   (remf key-command-pairs :mode)
   (remf key-command-pairs :keymap)
-  (flet ((set-key (mode-map key-sequence command)
+  (flet ((set-key (mode-map key-sequence-string command)
            ;; A sequence of "C-x" "C-s" "C-a" will be broken
            ;; up into three keys for the mode map, these are
            ;; "C-x" "C-s" "C-a" - points to command
@@ -148,22 +148,23 @@ Examples:
            ;; When a key is set to "prefix" it will not
            ;; consume the stack, so that a sequence of keys
            ;; longer than one key-chord can be recorded
-           (setf (gethash key-sequence mode-map) command)
-           ;; generate prefix representations
-           (loop while key-sequence
-                 do (pop key-sequence)
-                    (setf (gethash key-sequence mode-map) "prefix"))))
+           (let ((key-sequence (key key-sequence-string)))
+             (setf (gethash key-sequence mode-map) command)
+             ;; generate prefix representations
+             (loop while key-sequence
+                   do (pop key-sequence)
+                      (setf (gethash key-sequence mode-map) "prefix")))))
     (when (and (null mode) (null keymap))
       (setf mode 'root-mode))
-    (loop for (key-sequence command . rest) on key-command-pairs by #'cddr
+    (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
           do (when mode
                (setf (get-default mode 'keymap)
                 (let ((map (eval (closer-mop:slot-definition-initform
                                   (find-slot mode 'keymap)))))
-                  (set-key map key-sequence command)
+                  (set-key map key-sequence-string command)
                   map)))
              (when keymap
-               (set-key keymap key-sequence command)))))
+               (set-key keymap key-sequence-string command)))))
 
 (defun key (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"

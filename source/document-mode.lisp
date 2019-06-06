@@ -10,36 +10,36 @@
      (keymap
       :initform
       (let ((map (make-keymap)))
-        (define-key (key "M-f") 'history-forwards-query
-          (key "M-b") 'history-backwards
-          (key "C-g") 'go-anchor
-          (key "M-g") 'go-anchor-new-buffer-focus
-          (key "C-u M-g") 'go-anchor-new-buffer
-          (key "C-x C-w") 'copy-anchor-url
-          (key "C-f") 'history-forwards
-          (key "C-b") 'history-backwards
-          (key "button9") 'history-forwards
-          (key "button8") 'history-backwards
-          (key "C-p") 'scroll-up
-          (key "C-n") 'scroll-down
-          (key "C-x C-=") 'zoom-in-page
-          (key "C-x C-HYPHEN") 'zoom-out-page
-          (key "C-x C-0") 'unzoom-page
-          (key "C-r") 'reload-current-buffer
-          (key "C-m o") 'set-url-from-bookmark
-          (key "C-m s") 'bookmark-current-page
-          (key "C-m g") 'bookmark-anchor
-          (key "C-s s") 'add-search-hints
-          (key "C-s n") 'next-search-hint
-          (key "C-s p") 'previous-search-hint
-          (key "C-s k") 'remove-search-hints
-          (key "C-.") 'jump-to-heading
-          (key "M-s->") 'scroll-to-bottom
-          (key "M-s-<") 'scroll-to-top
-          (key "M->") 'scroll-to-bottom
-          (key "M-<") 'scroll-to-top
-          (key "C-w") 'copy-url
-          (key "M-w") 'copy-title
+        (define-key "M-f" 'history-forwards-query
+          "M-b" 'history-backwards
+          "C-g" 'go-anchor
+          "M-g" 'go-anchor-new-buffer-focus
+          "C-u M-g" 'go-anchor-new-buffer
+          "C-x C-w" 'copy-anchor-url
+          "C-f" 'history-forwards
+          "C-b" 'history-backwards
+          "button9" 'history-forwards
+          "button8" 'history-backwards
+          "C-p" 'scroll-up
+          "C-n" 'scroll-down
+          "C-x C-=" 'zoom-in-page
+          "C-x C-HYPHEN" 'zoom-out-page
+          "C-x C-0" 'unzoom-page
+          "C-r" 'reload-current-buffer
+          "C-m o" 'set-url-from-bookmark
+          "C-m s" 'bookmark-current-page
+          "C-m g" 'bookmark-anchor
+          "C-s s" 'add-search-hints
+          "C-s n" 'next-search-hint
+          "C-s p" 'previous-search-hint
+          "C-s k" 'remove-search-hints
+          "C-." 'jump-to-heading
+          "M-s->" 'scroll-to-bottom
+          "M-s-<" 'scroll-to-top
+          "M->" 'scroll-to-bottom
+          "M-<" 'scroll-to-top
+          "C-w" 'copy-url
+          "M-w" 'copy-title
           :keymap map)
         map))))
 

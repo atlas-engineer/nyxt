@@ -8,34 +8,34 @@
      (keymap
       :initform
       (let ((map (make-keymap)))
-        (define-key (key "HYPHEN") #'self-insert
-          (key "SPACE") #'self-insert
-          (key "C-f") #'cursor-forwards
-          (key "M-f") #'cursor-forwards-word
-          (key "C-b") #'cursor-backwards
-          (key "M-b") #'cursor-backwards-word
-          (key "M-d") #'delete-forwards-word
-          (key "M-BACKSPACE") #'delete-backwards-word
-          (key "Right") #'cursor-forwards
-          (key "Left") #'cursor-backwards
-          (key "C-d") #'delete-forwards
-          (key "DELETE") #'delete-forwards
-          (key "BACKSPACE") #'delete-backwards
-          (key "C-a") #'cursor-beginning
-          (key "C-e") #'cursor-end
-          (key "C-k") #'kill-line
-          (key "RETURN") #'return-input
-          (key "C-RETURN") #'return-immediate
-          (key "C-g") #'cancel-input
-          (key "ESCAPE") #'cancel-input
-          (key "C-n") #'select-next
-          (key "C-p") #'select-previous
-          (key "Down") #'select-next
-          (key "Up") #'select-previous
-          (key "C-v") #'paste
-          (key "C-y") #'paste
-          (key "C-w") #'copy-candidate
-          (key "TAB") #'insert-candidate
+        (define-key "HYPHEN" #'self-insert
+          "SPACE" #'self-insert
+          "C-f" #'cursor-forwards
+          "M-f" #'cursor-forwards-word
+          "C-b" #'cursor-backwards
+          "M-b" #'cursor-backwards-word
+          "M-d" #'delete-forwards-word
+          "M-BACKSPACE" #'delete-backwards-word
+          "Right" #'cursor-forwards
+          "Left" #'cursor-backwards
+          "C-d" #'delete-forwards
+          "DELETE" #'delete-forwards
+          "BACKSPACE" #'delete-backwards
+          "C-a" #'cursor-beginning
+          "C-e" #'cursor-end
+          "C-k" #'kill-line
+          "RETURN" #'return-input
+          "C-RETURN" #'return-immediate
+          "C-g" #'cancel-input
+          "ESCAPE" #'cancel-input
+          "C-n" #'select-next
+          "C-p" #'select-previous
+          "Down" #'select-next
+          "Up" #'select-previous
+          "C-v" #'paste
+          "C-y" #'paste
+          "C-w" #'copy-candidate
+          "TAB" #'insert-candidate
           :keymap map)
         map))))
 
