@@ -128,6 +128,7 @@ class Window():
     #: window identifier (str)
     identifier = "0"
     buffer = None
+    #: the minibuffer is a webview too
     minibuffer = None
     #: minibuffer height (px)
     minibuffer_height = 200
@@ -141,20 +142,22 @@ class Window():
         webview = QWebEngineView()
         webview.setUrl(QUrl(URL_START))
 
-        minibuffer = QWebEngineView()
-        mb_prompt = """
+        self.minibuffer = QWebEngineView()
+        default_prompt = """
         <html>
         <div> hello minibuffer </div>
         </html>
         """
-        minibuffer.setHtml(mb_prompt)
+        self.minibuffer.setHtml(default_prompt)
 
         self.layout.addWidget(webview)
-        self.layout.addWidget(minibuffer)
+        self.layout.addWidget(self.minibuffer)
 
         self.widget.setWindowTitle("Next browser from window {}".format(self.identifier))
         self.widget.setLayout(self.layout)
 
+    def set_minibuffer(self, text, *args, **kwargs):
+        self.minibuffer.setHtml(text)
 
 def window_make(identifier):
     """
@@ -216,3 +219,14 @@ def set_title(identifier, title, **kwargs):
         print("-- title set for window {} !".format(identifier))
         return title
     return ""
+
+def set_minibuffer(identifier, text):
+    """
+    Set the minibuffer of the window of id `identifier`.
+    """
+    assert isinstance(identifier, str)
+    window = WINDOWS.get(identifier)
+    if window:
+        window.set_minibuffer(text)
+    else:
+        print("--- no window of id {}".format(identifier))

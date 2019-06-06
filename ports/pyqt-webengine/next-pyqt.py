@@ -23,14 +23,19 @@ It is possible to test this from the Python or the Lisp REPL.
 To send commands to the web engine from Lisp:
 - start the PyQt port (make run)
 - start lisp, quickload next
-- create an interface and start it:
+- start and initialize the lisp side:
 
-Now you can use any built-in methods such as (window-make myinterface) or send
+    (in-package :next)
+    (start)
+
+this creates an `*interface*` object.
+
+Now you can use any built-in methods such as (window-make *interface*) or send
 custom signals with
 
     (send-signal myinterface "set_minibuffer" "yiha from CL!")
 
-which prints its return value (an html snippet) and which should
+which prints its return value (an html snippet) and should
 change your minibuffer prompt.
 """
 
@@ -63,25 +68,19 @@ class DBusWindow(dbus.service.Object):
     def window_killall(self):
         return window.window_killall()
 
-
-def client_run(client, cmd, *args):
-    pass
-
-
-def set_minibuffer(name):
-    # TODO: do in thread.
-    """
-    Change the minibuffer prompt and return its current html.
-    """
-    mb_prompt = """
-    <html>
-    <div> hello minibuffer </div>
-    </html>
-    """
-    html = mb_prompt.replace("minibuffer", name)
-    # wrapper = partial(minibuffer.setHtml, html)
-    # QTimer.singleShot(0, wrapper)
-    return html
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def set_minibuffer(self, identifier, text):
+        """
+        Change the minibuffer of the given window with `text` and return its current html.
+        """
+        prompt = """
+        <html>
+        <div> hello minibuffer </div>
+        </html>
+        """
+        html = prompt.replace("minibuffer", text)
+        window.set_minibuffer(identifier, html)
+        return html
 
 
 if __name__ == '__main__':
@@ -90,6 +89,6 @@ if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)
-    object = DBusWindow(session_bus)
+    dbuswindow = DBusWindow(session_bus)
     window.window_make("0")
     app.exec_()

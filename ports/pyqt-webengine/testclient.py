@@ -32,6 +32,11 @@ def main():
     elif "-k" in sys.argv:
         # kill all windows.
         command = "window_killall"
+
+    elif "-m" in sys.argv:
+        # Set minibuffer.
+        command = "set_minibuffer"
+        args = [sys.argv[-2], sys.argv[-1]]
     else:
         # Make window.
         # give a pseudo random str as window id, we don't keep count of windows here.
