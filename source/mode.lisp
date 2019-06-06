@@ -28,26 +28,31 @@ If :ACTIVATE is omitted, the mode is toggled."
      ;; call the destructor when toggling off.
      ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
      ;; Should probably always have root-mode.
-     (defun ,name (&rest args &key (buffer) (activate t explicit?) &allow-other-keys)
-       ,docstring
-       (let* ((buffer (or buffer
-                          (active-buffer *interface*)))
-              (existing-instance (find-if (lambda (m) (eq (class-of m) ',name))
-                                          (modes buffer))))
-         (unless explicit?
-           (setf activate (not existing-instance)))
-         (if activate
-             (unless existing-instance
-               ;; TODO: Should we move mode to the front when it already exists?
-               (push (apply #'make-instance ',name
-                            :name (format nil "~a" ',name)
-                            args)
-                     (modes buffer)))
-             (when existing-instance
-               (when (destructor existing-instance)
-                 (funcall (destructor existing-instance)))
-               (setf (modes buffer) (delete existing-instance
-                                                   (modes buffer)))))))))
+     ,(unless (eq name 'root-mode)
+        ;; REVIEW: Here we define the command manually instead of using
+        ;; define-command, because this last macro depends on modes and thus
+        ;; define-mode itself.
+        `(defmethod ,name ((root-mode root-mode) &rest args &key (buffer) (activate t explicit?)
+                           &allow-other-keys)
+           ,docstring
+           (let* ((buffer (or buffer
+                              (active-buffer *interface*)))
+                  (existing-instance (find-if (lambda (m) (eq (class-of m) ',name))
+                                              (modes buffer))))
+             (unless explicit?
+               (setf activate (not existing-instance)))
+             (if activate
+                 (unless existing-instance
+                   ;; TODO: Should we move mode to the front when it already exists?
+                   (push (apply #'make-instance ',name
+                                :name (format nil "~a" ',name)
+                                args)
+                         (modes buffer)))
+                 (when existing-instance
+                   (when (destructor existing-instance)
+                     (funcall (destructor existing-instance)))
+                   (setf (modes buffer) (delete existing-instance
+                                                (modes buffer))))))))))
 
 (define-mode root-mode (t)
     "The root of all modes."
