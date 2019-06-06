@@ -59,6 +59,10 @@ class DBusWindow(dbus.service.Object):
     def window_delete(self, uid):
         return window.window_delete(uid)
 
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_killall(self):
+        return window.window_killall()
+
 
 def client_run(client, cmd, *args):
     pass

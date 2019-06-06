@@ -196,6 +196,13 @@ def window_delete(identifier):
 def window_send_event(widget, event, data):
     method_name = "PUSH-KEY-EVENT"
 
+def window_killall():
+    ids = list(WINDOWS.keys())  # list, not dict_keys object.
+    length = len(ids)
+    for id in ids:
+        window_delete(id)
+    print("-- {} windows deleted.".format(length))
+
 def set_title(identifier, title, **kwargs):
     """
     Set the title of the window of identifier `identifier` (str).
