@@ -45,8 +45,7 @@
 
 (defun consume-key-sequence-p (sender)
   (let* ((active-window (gethash sender (windows *interface*)))
-         (active-buffer (active-buffer active-window))
-         (keymaps (current-keymaps active-window active-buffer)))
+         (keymaps (current-keymaps active-window)))
     (flet ((is-in-maps? (keymaps)
              (dolist (map keymaps)
                (when (look-up-key-chord-stack (key-chord-stack *interface*) map)
@@ -76,7 +75,7 @@
   ;; If key recognized, execute function
   (let* ((active-window (gethash sender (windows *interface*)))
          (active-buffer (active-buffer active-window))
-         (keymaps (current-keymaps active-window active-buffer))
+         (keymaps (current-keymaps active-window))
          (serialized-key-stack (mapcar #'serialize-key-chord (key-chord-stack *interface*))))
     (dolist (map keymaps)
       (let ((bound-function (gethash serialized-key-stack map)))
@@ -104,24 +103,25 @@
     (log:debug "Not found in any keymaps")
     (setf (key-chord-stack *interface*) ())))
 
-;; TODO: Add override map and all mode maps.  Remove root-mode-default-keymap.
-(defun current-keymaps (window &optional
-                          (active-buffer (active-buffer window)))
+;; TODO: Add override map to the list.
+(defun current-keymaps (window)
   "Return the list of keymaps for the current buffer, ordered by priority."
-  (let* ((local-map (if (minibuffer-active window)
-                        (keymap (first (modes (minibuffer *interface*))))
-                        (keymap (first (modes active-buffer))))))
-    (list local-map (root-mode-default-keymap))))
+  (delete-if #'null (mapcar #'keymap (modes (if (minibuffer-active window)
+                                                (minibuffer *interface*)
+                                                (active-buffer window))))))
 
 (defun define-key (&rest key-command-pairs
-                   &key mode keymap
+                   &key mode (scheme :emacs) keymap
                    &allow-other-keys)
   "Bind KEY to COMMAND.
 The KEY command transforms key chord strings to valid key sequences.
 When MODE is provided (as a symbol referring to a class name), the binding is
-registered into the mode class and all future mode instance will use the
+registered into the mode class and all future mode instances will use the
 binding.
 If MODE and KEYMAP are nil, the binding is registered into root-mode.
+
+If SCHEME is unspecified, it defaults to :EMACS.  SCHEME is only useful together
+with MODE, it does not have any effect on KEYMAP.
 
 Examples:
 
@@ -153,11 +153,24 @@ Examples:
       (setf mode 'root-mode))
     (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
           do (when mode
-               (setf (get-default mode 'keymap)
-                     (let ((map (eval (closer-mop:slot-definition-initform
-                                       (find-slot mode 'keymap)))))
+               (setf (get-default mode 'keymap-schemes)
+                     (let* ((map-scheme (closer-mop:slot-definition-initform
+                                         (find-slot mode 'keymap-schemes)))
+                            ;; REVIEW: The return value of
+                            ;; slot-definition-initform should be evaluated, but
+                            ;; this only works if it is not a list.  Since we
+                            ;; use a property list for the map-scheme, we need
+                            ;; to check manually if it has been initialized.  We
+                            ;; could make this cleaner by using a dedicated
+                            ;; structure for map-scheme
+                            (map-scheme (if (ignore-errors (getf map-scheme :emacs))
+                                            map-scheme
+                                            (eval map-scheme)))
+                            (map (or (getf map-scheme scheme)
+                                     (make-keymap))))
                        (set-key map key-sequence-string command)
-                       map)))
+                       (setf (getf map-scheme scheme) map)
+                       map-scheme)))
              (when keymap
                (set-key keymap key-sequence-string command)))))
 

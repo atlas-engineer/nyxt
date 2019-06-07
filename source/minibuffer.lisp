@@ -5,7 +5,7 @@
 (define-mode minibuffer-mode ()
     "Mode for the minibuffer."
     ((name :accessor name :initform "minibuffer")
-     (keymap
+     (keymap-schemes
       :initform
       (let ((map (make-keymap)))
         (define-key "HYPHEN" #'self-insert
@@ -37,7 +37,9 @@
           "C-w" #'copy-candidate
           "TAB" #'insert-candidate
           :keymap map)
-        map))))
+        (list :emacs map
+              :vi-normal map
+              :vi-insert map)))))
 
 (defclass minibuffer (buffer)
   ((default-modes :initform '(minibuffer-mode))

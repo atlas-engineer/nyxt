@@ -4,13 +4,18 @@
 
 (define-mode help-mode ()
     "Mode for displaying documentation."
-    ((keymap
+    ((keymap-schemes
       :initform
-      (let ((map (make-keymap)))
+      (let ((emacs-map (make-keymap))
+            (vi-map (make-keymap)))
         (define-key "C-p" 'scroll-up
           "C-n" 'scroll-down
-          :keymap map)
-        map))))
+          :keymap emacs-map)
+        (define-key :keymap vi-map
+          "k" 'scroll-up
+          "j" 'scroll-down)
+        (list :emacs emacs-map
+              :vi-normal vi-map)))))
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)

@@ -155,4 +155,5 @@ The second value is the initfunction."
 
 (defun make-keymap ()
   "Return an empty keymap."
+  ;; TODO: Make a dedicated type?  So that we can have KEYMAP-P among others.
   (make-hash-table :test 'equal))

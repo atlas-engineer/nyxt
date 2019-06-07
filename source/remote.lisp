@@ -32,9 +32,14 @@ keyword is not recognized.")))
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
-                  :initform '(document-mode)
+                  :initform '(document-mode root-mode)
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
+   (current-keymap-scheme :accessor current-keymap-scheme ; TODO: Name keymap-scheme instead?
+                          :initarg :current-keymap-scheme
+                          :initform :emacs
+                          :documentation "The keymap scheme that will be used
+for all modes in the current buffer.")
    (view :accessor view :initarg :view)
    (resource-query-functions :accessor resource-query-functions
                              :initarg :resource-query-functions
@@ -63,10 +68,14 @@ distance scroll-left or scroll-right will scroll.")
 platform ports might support this.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
-  (dolist (mode-class (default-modes buffer))
-    ;; ":activate t" should not be necessary here since (modes buffer) should be
-    ;; empty.
-    (funcall mode-class :buffer buffer :activate t)))
+  (let ((root-mode (make-instance 'root-mode :buffer buffer)))
+    (dolist (mode-class (default-modes buffer))
+      ;; ":activate t" should not be necessary here since (modes buffer) should be
+      ;; empty.
+      ;; For now, root-mode does not have an associated command.
+      (if (eq mode-class 'root-mode)
+          (push root-mode (modes buffer))
+          (funcall mode-class root-mode :buffer buffer :activate t)))))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord

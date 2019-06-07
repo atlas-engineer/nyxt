@@ -7,9 +7,10 @@
     ((active-history-node :accessor active-history-node :initarg :active-node
                           :initform (make-instance 'node :data "about:blank"))
      (link-hints :accessor link-hints)
-     (keymap
+     (keymap-schemes
       :initform
-      (let ((map (make-keymap)))
+      (let ((emacs-map (make-keymap))
+            (vi-map (make-keymap)))
         (define-key "M-f" 'history-forwards-query
           "M-b" 'history-backwards
           "C-g" 'go-anchor
@@ -40,8 +41,14 @@
           "M-<" 'scroll-to-top
           "C-w" 'copy-url
           "M-w" 'copy-title
-          :keymap map)
-        map)))
+          :keymap emacs-map)
+        (define-key :keymap vi-map
+          "j" 'scroll-down
+          "k" 'scroll-up
+          "G" 'scroll-to-bottom
+          "g g" 'scroll-to-top)
+        (list :emacs emacs-map
+              :vi-normal vi-map))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
   ;; (set-url-buffer (default-new-buffer-url (buffer %mode))

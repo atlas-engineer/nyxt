@@ -61,12 +61,15 @@ If :ACTIVATE is omitted, the mode is toggled."
      (buffer :accessor buffer :initarg :buffer)
      (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
      (destructor :accessor destructor)  ; TODO: Use it.  Better name?
-     (keymap :accessor keymap :initarg :keymap :initform (make-keymap))))
+     ;; (keymap :accessor keymap :initarg :keymap :initform (make-keymap))
+     (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes
+                     :initform (list :emacs (make-keymap)))))
 
-(defun root-mode-default-keymap ()
-  "Return the default keymap of root mode."
-  (eval (closer-mop:slot-definition-initform
-         (find-slot (find-class 'root-mode) 'keymap))))
+(defmethod keymap ((mode root-mode))
+  "Return the keymap of MODE according to its buffer keymap scheme.
+If there is no corresponding keymap, return nil."
+  (getf (keymap-schemes mode)
+        (current-keymap-scheme (buffer mode))))
 
 (defmethod did-commit-navigation ((mode root-mode) url)
   url)
