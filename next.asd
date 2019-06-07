@@ -55,7 +55,8 @@
                  ;; Port Compatibility Layers
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base
-                 (:file "base"))))
+                 (:file "base")
+                 (:file "vi"))))
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:start-with-port")

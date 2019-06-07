@@ -12,9 +12,10 @@
   (let ((key (mapcar #'serialize-key-chord key-chords)))
     (gethash key map)))
 
-  "Add a new key chord to the interface key-chord-stack.
-For example, it may add C-M-s or C-x to a stack which will be consumed by
-`consume-key-sequence'."
+;; TODO: Merge push-input-event, consume-key-sequence and consume-key-sequence-p.
+;; "Add a new key chord to the interface key-chord-stack.
+;; For example, it may add C-M-s or C-x to a stack which will be consumed by
+;; `consume-key-sequence'."
 (dbus:define-dbus-method (core-object push-input-event)
     ((key-code :int32) (key-string :string) (modifiers (:array :string))
      (x :double) (y :double)
