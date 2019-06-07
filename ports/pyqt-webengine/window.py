@@ -137,6 +137,7 @@ class Window():
         minibuffer_size = 150
         self.widget = MyQWidget()
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
         identifier = identifier
         self.identifier = identifier
 
