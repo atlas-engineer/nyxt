@@ -175,3 +175,13 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-x 5 2" 'make-window)
 (define-key "C-x 5 0" 'delete-window)
 (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*))))
+
+(define-key :scheme :vi-normal
+  "s-:" 'execute-command
+  ":" 'execute-command
+  "b" 'switch-buffer
+  "d" 'delete-buffer
+  "o" 'set-url-current-buffer
+  "O" 'set-url-new-buffer
+  "a" 'bookmark-url
+  "Z Z" 'kill)
