@@ -46,6 +46,7 @@ If :ACTIVATE is omitted, the mode is toggled."
                    ;; TODO: Should we move mode to the front when it already exists?
                    (push (apply #'make-instance ',name
                                 :name (format nil "~a" ',name)
+                                :buffer buffer
                                 args)
                          (modes buffer)))
                  (when existing-instance
