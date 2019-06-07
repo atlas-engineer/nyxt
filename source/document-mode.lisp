@@ -43,8 +43,26 @@
           "M-w" 'copy-title
           :keymap emacs-map)
         (define-key :keymap vi-map
+          "H" 'history-backwards
+          "L" 'history-forwards
+          "f" 'go-anchor
+          "F" 'go-anchor-new-buffer-focus
+          "; f" 'go-anchor-new-buffer
+          "button9" 'history-forwards
+          "button8" 'history-backwards
           "j" 'scroll-down
           "k" 'scroll-up
+          "z i" 'zoom-in-page
+          "z o" 'zoom-out-page
+          "z z" 'unzoom-page
+          "r" 'reload-current-buffer
+          "y u" 'copy-url
+          "y t" 'copy-title
+          "C-." 'jump-to-heading        ; TODO: VI binding for this?
+          "/" 'add-search-hints
+          "n" 'next-search-hint
+          "p" 'previous-search-hint
+          "?" 'remove-search-hints
           "G" 'scroll-to-bottom
           "g g" 'scroll-to-top)
         (list :emacs emacs-map
