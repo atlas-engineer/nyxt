@@ -69,7 +69,7 @@ platform ports might support this.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
   (let ((root-mode (make-instance 'root-mode :buffer buffer)))
-    (dolist (mode-class (default-modes buffer))
+    (dolist (mode-class (reverse (default-modes buffer)))
       ;; ":activate t" should not be necessary here since (modes buffer) should be
       ;; empty.
       ;; For now, root-mode does not have an associated command.
