@@ -140,18 +140,30 @@ When non-nil, INIT-FUNCTION is used to create the file, else the file will be em
 The second value is the initfunction."
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
          (slot (find-slot class slot-name)))
+    ;; TODO: We should unquote quoted list, this would remove the need to call `eval'.
     (closer-mop:slot-definition-initform slot)))
 
 (defun (setf get-default) (value class-name slot-name)
-  "Return VALUE."
+  "Set default value of SLOT-NAME from CLASS-NAME.
+Return VALUE."
   ;; Warning: This is quite subtle: the :initform and :initfunction are tightly
   ;; coupled, it seems that both must be changed together.  We need to change
   ;; the class-slots and not the class-direct-slots.  TODO: Explain why.
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
          (slot (find-slot class slot-name)))
-    (setf
-     (closer-mop:slot-definition-initfunction slot) (lambda () value)
-     (closer-mop:slot-definition-initform slot) value)))
+    (setf (closer-mop:slot-definition-initfunction slot) (lambda () value))
+    ;; Lists must be stored with a quote.
+    (setf (closer-mop:slot-definition-initform slot) (if (listp value)
+                                                         `',value
+                                                         value))))
+
+(defun add-to-default-list (value class-name slot-name)
+  "Add VALUE to the list SLOT-NAME from CLASS-NAME.
+If VALUE is already present, move it to the head of the list."
+  (setf (get-default class-name slot-name)
+        (remove-duplicates (cons value
+                                 (eval (get-default class-name slot-name)))
+                           :from-end t)))
 
 (defun make-keymap ()
   "Return an empty keymap."
