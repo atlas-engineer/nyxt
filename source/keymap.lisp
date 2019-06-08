@@ -2,17 +2,43 @@
 
 (in-package :next)
 
+(defun prefix ()
+  "Dummy function used for prefix bindings."
+  nil)
+
 (defun serialize-key-chord (key-chord)
-  ;; current implementation ignores keycode
+  ;; TODO: Make use of keycode?
   (append (list nil
                 (key-chord-key-string key-chord))
           (key-chord-modifiers key-chord)))
 
-(defun look-up-key-chord-stack (key-chords map)
-  (let ((key (mapcar #'serialize-key-chord key-chords)))
-    (gethash key map)))
+(defun serialize-key-chord-stack (key-chord-stack)
+  (mapcar #'serialize-key-chord key-chord-stack))
 
-;; TODO: Merge push-input-event, consume-key-sequence and consume-key-sequence-p.
+;; TODO: Add override map to the list.
+(defun current-keymaps (window)
+  "Return the list of (keymap . mode) for the current buffer, ordered by priority."
+  (delete-if #'null (mapcar (lambda (mode) (when (keymap mode)
+                                             (cons (keymap mode) mode)))
+                            (modes (if (minibuffer-active window)
+                                       (minibuffer *interface*)
+                                       (active-buffer window))))))
+
+(defun look-up-key-chord-stack (window key-chord-stack)
+  "Return the function bound to key-chord-stack for current window.
+The resulting function wraprs around the method and its associated mode so that
+it can be called without argument."
+  ;; TODO: Translate shifted keys.
+  (let* ((key (serialize-key-chord-stack key-chord-stack))
+         (fun+mode (loop for (keymap . mode) in (current-keymaps window)
+                         for fun = (gethash key keymap)
+                         when fun
+                           return (cons fun mode))))
+    (when fun+mode
+      (if (eq (first fun+mode) #'prefix)
+          (first fun+mode)
+          (lambda () (funcall (first fun+mode) (cdr fun+mode)))))))
+
 ;; "Add a new key chord to the interface key-chord-stack.
 ;; For example, it may add C-M-s or C-x to a stack which will be consumed by
 ;; `consume-key-sequence'."
@@ -36,79 +62,35 @@
               (not (member "R" (key-chord-modifiers key-chord)
                            :test #'string=)))
       (push key-chord (key-chord-stack *interface*))
-      (if (consume-key-sequence-p sender)
-          (consume-key-sequence sender)
-          (%%generate-input-event *interface*
-                                  (gethash sender (windows *interface*))
-                                  key-chord))))
-  (values))
+      (let* ((active-window (gethash sender (windows *interface*)))
+             (bound-function (look-up-key-chord-stack active-window
+                                                      (key-chord-stack *interface*))))
+        (cond
+          ((eq bound-function #'prefix)
+           (log:debug "Prefix binding"))
 
-(defun consume-key-sequence-p (sender)
-  (let* ((active-window (gethash sender (windows *interface*)))
-         (keymaps (current-keymaps active-window)))
-    (flet ((is-in-maps? (keymaps)
-             (dolist (map keymaps)
-               (when (look-up-key-chord-stack (key-chord-stack *interface*) map)
-                 (return-from is-in-maps? map)))))
-      (cond ((minibuffer-active active-window)
-             (log:debug "Minibuffer active")
-             t)
-            ((is-in-maps? keymaps)
-             (log:debug "~a found in map ~a" (mapcar #'serialize-key-chord (key-chord-stack *interface*))
-                        (is-in-maps? keymaps))
-             t)
-            (t (setf (key-chord-stack *interface*) ()))))))
+          ((functionp bound-function)
+           (funcall bound-function)
+           (log:debug "Key sequence ~a bound to ~a"
+                      (serialize-key-chord-stack (key-chord-stack *interface*))
+                      bound-function)
+           (setf (key-chord-stack *interface*) nil))
 
-#|
-;; This endpoint is only necessary if key sequences are consumed from the input
-;; event callback in the platform port.  This has been deprecated in favour of
-;; event generation, but we keep it around in case the new approach happens to
-;; be not satisfying.
-(dbus:define-dbus-object (core-object consume-key-sequence)
-  ((sender :string))
-  ()
-  (consume-key-sequence sender))
-|#
-
-(defun consume-key-sequence (sender)
-  ;; Iterate through all keymaps
-  ;; If key recognized, execute function
-  (let* ((active-window (gethash sender (windows *interface*)))
-         (active-buffer (active-buffer active-window))
-         (keymaps (current-keymaps active-window))
-         (serialized-key-stack (mapcar #'serialize-key-chord (key-chord-stack *interface*))))
-    (dolist (map keymaps)
-      (let ((bound-function (gethash serialized-key-stack map)))
-        (cond ((equalp "prefix" bound-function)
-               (return-from consume-key-sequence t))
-              (bound-function
+          ((minibuffer-active active-window)
+           (if (member "R" (key-chord-modifiers (first (key-chord-stack *interface*)))
+                       :test #'string=)
+               (log:debug "Key released")
                (progn
-                 (log:debug "Key sequence ~a bound to ~a" serialized-key-stack bound-function)
-                 ;; TODO: Find the mode associated to the bound-function.
-                 (funcall bound-function (first (modes (if (minibuffer-active active-window)
-                                                           (minibuffer *interface*)
-                                                           active-buffer))))
-                 (setf (key-chord-stack *interface*) ())
-                 (return-from consume-key-sequence t)))
-              ((equalp map (keymap (first (modes (minibuffer *interface*)))))
-               (if (member "R" (key-chord-modifiers (first (key-chord-stack *interface*)))
-                           :test #'string=)
-                   (log:debug "Key released")
-                   (progn
-                     (log:debug "Insert ~s in minibuffer" (key-chord-key-string
-                                                           (first (key-chord-stack *interface*))))
-                     (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
-               (setf (key-chord-stack *interface*) ())
-               (return-from consume-key-sequence t)))))
-    (log:debug "Not found in any keymaps")
-    (setf (key-chord-stack *interface*) ())))
+                 (log:debug "Insert ~s in minibuffer" (key-chord-key-string
+                                                       (first (key-chord-stack *interface*))))
+                 (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
+           (setf (key-chord-stack *interface*) nil))
 
-;; TODO: Add override map to the list.
-(defun current-keymaps (window)
-  "Return the list of keymaps for the current buffer, ordered by priority."
-  (delete-if #'null (mapcar #'keymap (modes (if (minibuffer-active window)
-                                                (minibuffer *interface*)
-                                                (active-buffer window))))))
+          (t (%%generate-input-event *interface*
+                                     active-window
+                                     key-chord)
+             (setf (key-chord-stack *interface*) nil))))))
+  (values))
 
 (defun define-key (&rest key-command-pairs
                    &key mode (scheme :emacs) keymap
@@ -148,7 +130,7 @@ Examples:
              ;; generate prefix representations
              (loop while key-sequence
                    do (pop key-sequence)
-                      (setf (gethash key-sequence mode-map) "prefix")))))
+                      (setf (gethash key-sequence mode-map) #'prefix)))))
     (when (and (null mode) (null keymap))
       (setf mode 'root-mode))
     (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
