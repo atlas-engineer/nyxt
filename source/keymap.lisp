@@ -6,14 +6,22 @@
   "Dummy function used for prefix bindings."
   nil)
 
-(defun serialize-key-chord (key-chord)
+(defun serialize-key-chord (key-chord &key normalize)
   ;; TODO: Make use of keycode?
+  ;; TODO: Case opposite to Caps-Lock status?
+  "When NORMALIZE is non-nil, remove the shift modifier and upcase the keys."
+  (when (and normalize
+             (member "s" (key-chord-modifiers key-chord) :test #'string=))
+    (setf (key-chord-modifiers key-chord)
+          (delete "s" (key-chord-modifiers key-chord) :test #'string=))
+    (string-upcase (key-chord-key-string key-chord)))
   (append (list nil
                 (key-chord-key-string key-chord))
           (key-chord-modifiers key-chord)))
 
-(defun serialize-key-chord-stack (key-chord-stack)
-  (mapcar #'serialize-key-chord key-chord-stack))
+(defun serialize-key-chord-stack (key-chord-stack &key normalize)
+  (mapcar (lambda (k) (serialize-key-chord k :normalize normalize))
+          key-chord-stack))
 
 ;; TODO: Add override map to the list.
 (defun current-keymaps (window)
@@ -30,8 +38,12 @@ The resulting function wraprs around the method and its associated mode so that
 it can be called without argument."
   ;; TODO: Translate shifted keys.
   (let* ((key (serialize-key-chord-stack key-chord-stack))
+         (key-normal (serialize-key-chord-stack key-chord-stack :normalize t))
          (fun+mode (loop for (keymap . mode) in (current-keymaps window)
                          for fun = (gethash key keymap)
+                         unless fun
+                           do (log:debug "Key-chord ~a normalized to ~a" key key-normal)
+                              (setf fun (gethash key-normal keymap))
                          when fun
                            return (cons fun mode))))
     (when fun+mode
