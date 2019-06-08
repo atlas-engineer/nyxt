@@ -575,8 +575,9 @@ gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 	}
 
 	// TODO: Changing the size request of an existing object does not seem to work here.
+	// Hard-code it to 200 for now to make sure Next is usable.
 	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, 200);
-	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height);
+	/* gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height); */
 	gtk_widget_show(GTK_WIDGET(window->minibuffer->web_view));
 	window->minibuffer_height = height;
 
