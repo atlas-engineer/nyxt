@@ -11,8 +11,8 @@
           "i" 'vi-insert-mode
           :keymap map)
         (list :vi-normal map))))
-  (let ((active-buffer (active-buffer *interface*)))
-    (vi-insert-mode (first (modes active-buffer)) :activate nil)
+  (let ((active-buffer (buffer %mode)))
+    (vi-insert-mode %mode :activate nil :buffer active-buffer)
     (setf (current-keymap-scheme active-buffer) :vi-normal)
     (echo (minibuffer *interface*) "VI normal mode")))
 
@@ -25,7 +25,7 @@
         (define-key "ESCAPE" 'vi-normal-mode
           :keymap map)
         (list :vi-insert map))))
-  (let ((active-buffer (active-buffer *interface*)))
-    (vi-normal-mode (first (modes (active-buffer *interface*))) :activate nil)
+  (let ((active-buffer (buffer %mode)))
+    (vi-normal-mode %mode :activate nil :buffer active-buffer)
     (setf (current-keymap-scheme active-buffer) :vi-insert)
     (echo (minibuffer *interface*) "VI insert mode")))
