@@ -34,13 +34,13 @@ If :ACTIVATE is omitted, the mode is toggled."
         ;; REVIEW: Here we define the command manually instead of using
         ;; define-command, because this last macro depends on modes and thus
         ;; define-mode itself.
-        `(defmethod ,name ((root-mode root-mode) &rest args &key (buffer) (activate t explicit?)
+        `(defmethod ,name ((root-mode root-mode) &rest args &key (buffer (active-buffer *interface*)) (activate t explicit?)
                            &allow-other-keys)
            ,docstring
-           (let* ((buffer (or buffer
-                              (active-buffer *interface*)))
-                  (existing-instance (find-if (lambda (m) (eq (class-of m) ',name))
-                                              (modes buffer))))
+           (let ((existing-instance
+                  (find-if (lambda (m)
+                             (eq (class-name (class-of m)) ',name))
+                           (modes buffer))))
              (unless explicit?
                (setf activate (not existing-instance)))
              (if activate
@@ -53,7 +53,7 @@ If :ACTIVATE is omitted, the mode is toggled."
                          (modes buffer)))
                  (when existing-instance
                    (when (destructor existing-instance)
-                     (funcall (destructor existing-instance)))
+                     (funcall (destructor existing-instance) existing-instance))
                    (setf (modes buffer) (delete existing-instance
                                                 (modes buffer))))))))))
 
@@ -62,8 +62,9 @@ If :ACTIVATE is omitted, the mode is toggled."
     ((name :accessor name :initarg :name) ;; TODO: What's the use of mode's NAME slot?
      (buffer :accessor buffer :initarg :buffer)
      (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
-     (destructor :accessor destructor)  ; TODO: Use it.  Better name?
-     ;; (keymap :accessor keymap :initarg :keymap :initform (make-keymap))
+     (destructor :accessor destructor  ; TODO: Better name?
+                 :documentation
+                 "A lambda function which takes the mode as argument.")
      (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes
                      :initform (list :emacs (make-keymap)))))
 
