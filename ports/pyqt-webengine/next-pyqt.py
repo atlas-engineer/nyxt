@@ -37,43 +37,57 @@ class DBusWindow(dbus.service.Object):
         dbus.service.Object.__init__(self, conn, object_path)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
-    def ping(self):
-        return 'pong'
-
-    @dbus.service.method(PLATFORM_PORT_NAME)
-    def window_make(self, uid):
+    def window_make(self, window_id):
         print("--- make_window")
-        return "lol"
+        return ("s", window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
-    def window_set_title(self, uid, title):
-        return window.set_title(uid, title)
+    def window_set_title(self, window_id, title):
+        return window.set_title(window_id, title)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
-    def window_delete(self, uid):
-        return window.window_delete(uid)
+    def window_delete(self, window_id):
+        return window.window_delete(window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
-    def window_killall(self):
-        return window.window_killall()
+    def window_active(self):
+        pass
 
     @dbus.service.method(PLATFORM_PORT_NAME)
-    def set_minibuffer(self, identifier, text):
-        """
-        Change the minibuffer of the given window with `text` and return its current html.
-        """
-        prompt = """
-        <html>
-        <div> hello minibuffer </div>
-        </html>
-        """
-        html = prompt.replace("minibuffer", text)
-        window.set_minibuffer(identifier, html)
-        return html
+    def window_exists(self, window_id):
+        pass
 
     @dbus.service.method(PLATFORM_PORT_NAME)
-    def set_minibuffer_height(self, identifier, height):
-        window.set_minibuffer_height(identifier, height)
+    def window_set_active_buffer(self, window_id, buffer_id):
+        pass
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_set_minibuffer_height(self, window_id, height):
+        pass
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def buffer_make(self, buffer_id):
+        pass
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def buffer_delete(self, buffer_id):
+        pass
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def buffer_load(self, buffer_id, url):
+        pass
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def buffer_evaluate_javascript(self, buffer_id, javascript):
+        pass
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def minibuffer_evaluate_javascript(self, window_id, javascript):
+        pass
+
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def generate_input_event(self):
+        pass
 
 
 if __name__ == '__main__':
