@@ -40,6 +40,12 @@ instantiate on buffer creation, unless specified.")
                           :initform :emacs
                           :documentation "The keymap scheme that will be used
 for all modes in the current buffer.")
+   (forward-input-events :accessor forward-input-events :initarg :forward-input-events
+                         :initform t
+                         :documentation "When non-nil, keyboard events are
+forwarded to the platform port when no binding is found.  Pointer
+events (e.g. mouse events) are not affected by this, they are always
+forwarded when no binding is found.")
    (view :accessor view :initarg :view)
    (resource-query-functions :accessor resource-query-functions
                              :initarg :resource-query-functions

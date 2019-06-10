@@ -83,6 +83,11 @@ it can be called without argument."
           (first fun+mode)
           (lambda () (funcall (first fun+mode) (cdr fun+mode)))))))
 
+(defun pointer-event-p (key-chord)
+  "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."
+  (check-type key-chord key-chord)
+  (not (= -1 (first (key-chord-position key-chord)))))
+
 ;; "Add a new key chord to the interface key-chord-stack.
 ;; For example, it may add C-M-s or C-x to a stack which will be consumed by
 ;; `consume-key-sequence'."
@@ -107,6 +112,7 @@ it can be called without argument."
                            :test #'string=)))
       (push key-chord (key-chord-stack *interface*))
       (let* ((active-window (gethash sender (windows *interface*)))
+             (active-buffer (active-buffer active-window))
              (bound-function (look-up-key-chord-stack active-window
                                                       (key-chord-stack *interface*))))
         (cond
@@ -130,10 +136,13 @@ it can be called without argument."
                  (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
            (setf (key-chord-stack *interface*) nil))
 
-          (t (%%generate-input-event *interface*
-                                     active-window
-                                     key-chord)
-             (setf (key-chord-stack *interface*) nil))))))
+          ((or (forward-input-events active-buffer)
+               (pointer-event-p key-chord))
+           (%%generate-input-event *interface*
+                                   active-window
+                                   key-chord)
+           (setf (key-chord-stack *interface*) nil))
+          (t (setf (key-chord-stack *interface*) nil))))))
   (values))
 
 (defun define-key (&rest key-command-pairs
