@@ -40,6 +40,15 @@ instantiate on buffer creation, unless specified.")
                           :initform :emacs
                           :documentation "The keymap scheme that will be used
 for all modes in the current buffer.")
+   (override-map :accessor override-map
+                 :initarg :override-map
+                 :initform (let ((map (make-keymap)))
+                             (define-key :keymap map
+                               "M-x" 'execute-command)
+                             map)
+                 :documentation "This keymap is always looked up first, it
+overrides all other bindings.  No libraries should ever touch the override-map,
+this is left for the user to customize to their needs.")
    (forward-input-events :accessor forward-input-events :initarg :forward-input-events
                          :initform t
                          :documentation "When non-nil, keyboard events are

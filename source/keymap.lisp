@@ -55,20 +55,21 @@ sequence of keys longer than one key-chord can be recorded."
   (mapcar (lambda (k) (serialize-key-chord k :normalize normalize))
           key-chord-stack))
 
-;; TODO: Add override map to the list.
 (defun current-keymaps (window)
   "Return the list of (keymap . mode) for the current buffer, ordered by priority."
-  (delete-if #'null (mapcar (lambda (mode) (when (keymap mode)
-                                             (cons (keymap mode) mode)))
-                            (modes (if (minibuffer-active window)
-                                       (minibuffer *interface*)
-                                       (active-buffer window))))))
+  (let ((buffer (active-buffer window)))
+    (cons (cons (override-map buffer)
+                (first (modes buffer)))
+          (delete-if #'null (mapcar (lambda (mode) (when (keymap mode)
+                                                     (cons (keymap mode) mode)))
+                                    (modes (if (minibuffer-active window)
+                                               (minibuffer *interface*)
+                                               (active-buffer window))))))))
 
 (defun look-up-key-chord-stack (window key-chord-stack)
   "Return the function bound to key-chord-stack for current window.
 The resulting function wraprs around the method and its associated mode so that
 it can be called without argument."
-  ;; TODO: Translate shifted keys.
   (let* ((key-sequence (serialize-key-chord-stack key-chord-stack))
          (key-sequence-normal (serialize-key-chord-stack key-chord-stack :normalize t))
          (fun+mode (loop for (keymap . mode) in (current-keymaps window)
