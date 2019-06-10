@@ -2,6 +2,38 @@
 
 (in-package :next)
 
+(defclass keymap ()
+  ((table :initarg :table :accessor table)))
+
+(defun make-keymap ()
+  "Return an empty keymap."
+  (make-instance 'keymap :table (make-hash-table :test 'equal)))
+
+(defun keymapp (arg)
+  (typep arg 'keymap))
+
+(defmethod set-key ((map keymap) key-sequence-string command)
+  "Bind KEY-SEQUENCE-STRING to COMMAND in MAP.
+
+A sequence of \"C-x\" \"C-s\" \"C-a\" will be broken up into three keys for the
+mode map, which are
+
+  \"C-x\" \"C-s\" \"C-a\" - points to COMMAND
+  \"C-x\" \"C-s\"         - set to \"prefix\"
+  \"C-x\"                 - set to \"prefix\"
+
+When a key is set to \"prefix\" it will not consume the stack, so that a
+sequence of keys longer than one key-chord can be recorded."
+  (let ((key-sequence (key key-sequence-string)))
+    (setf (gethash key-sequence (table map)) command)
+    ;; generate prefix representations
+    (loop while key-sequence
+          do (pop key-sequence)
+             (setf (gethash key-sequence (table map)) #'prefix))))
+
+(defmethod get-key ((map keymap) key-sequence)
+  (gethash key-sequence (table map)))
+
 (defun prefix ()
   "Dummy function used for prefix bindings."
   nil)
@@ -37,13 +69,13 @@
 The resulting function wraprs around the method and its associated mode so that
 it can be called without argument."
   ;; TODO: Translate shifted keys.
-  (let* ((key (serialize-key-chord-stack key-chord-stack))
-         (key-normal (serialize-key-chord-stack key-chord-stack :normalize t))
+  (let* ((key-sequence (serialize-key-chord-stack key-chord-stack))
+         (key-sequence-normal (serialize-key-chord-stack key-chord-stack :normalize t))
          (fun+mode (loop for (keymap . mode) in (current-keymaps window)
-                         for fun = (gethash key keymap)
+                         for fun = (get-key keymap key-sequence)
                          unless fun
-                           do (log:debug "Key-chord ~a normalized to ~a" key key-normal)
-                              (setf fun (gethash key-normal keymap))
+                           do (log:debug "Key-chord ~a normalized to ~a" key-sequence key-sequence-normal)
+                              (setf fun (get-key keymap key-sequence-normal))
                          when fun
                            return (cons fun mode))))
     (when fun+mode
@@ -127,46 +159,30 @@ Examples:
               :keymap (keymap (mode (active-buffer *interface*))))"
   (dolist (key (remove-if-not #'keywordp key-command-pairs))
     (remf key-command-pairs key))
-  (flet ((set-key (mode-map key-sequence-string command)
-           ;; A sequence of "C-x" "C-s" "C-a" will be broken
-           ;; up into three keys for the mode map, these are
-           ;; "C-x" "C-s" "C-a" - points to command
-           ;; "C-x" "C-s"       - set to "prefix"
-           ;; "C-x"             - set to "prefix"
-           ;;
-           ;; When a key is set to "prefix" it will not
-           ;; consume the stack, so that a sequence of keys
-           ;; longer than one key-chord can be recorded
-           (let ((key-sequence (key key-sequence-string)))
-             (setf (gethash key-sequence mode-map) command)
-             ;; generate prefix representations
-             (loop while key-sequence
-                   do (pop key-sequence)
-                      (setf (gethash key-sequence mode-map) #'prefix)))))
-    (when (and (null mode) (null keymap))
-      (setf mode 'root-mode))
-    (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
-          do (when mode
-               (setf (get-default mode 'keymap-schemes)
-                     (let* ((map-scheme (closer-mop:slot-definition-initform
-                                         (find-slot mode 'keymap-schemes)))
-                            ;; REVIEW: The return value of
-                            ;; slot-definition-initform should be evaluated, but
-                            ;; this only works if it is not a list.  Since we
-                            ;; use a property list for the map-scheme, we need
-                            ;; to check manually if it has been initialized.  We
-                            ;; could make this cleaner by using a dedicated
-                            ;; structure for map-scheme
-                            (map-scheme (if (ignore-errors (getf map-scheme :emacs))
-                                            map-scheme
-                                            (eval map-scheme)))
-                            (map (or (getf map-scheme scheme)
-                                     (make-keymap))))
-                       (set-key map key-sequence-string command)
-                       (setf (getf map-scheme scheme) map)
-                       map-scheme)))
-             (when keymap
-               (set-key keymap key-sequence-string command)))))
+  (when (and (null mode) (not (keymapp keymap)))
+    (setf mode 'root-mode))
+  (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
+        do (when mode
+             (setf (get-default mode 'keymap-schemes)
+                   (let* ((map-scheme (closer-mop:slot-definition-initform
+                                       (find-slot mode 'keymap-schemes)))
+                          ;; REVIEW: The return value of
+                          ;; slot-definition-initform should be evaluated, but
+                          ;; this only works if it is not a list.  Since we
+                          ;; use a property list for the map-scheme, we need
+                          ;; to check manually if it has been initialized.  We
+                          ;; could make this cleaner by using a dedicated
+                          ;; structure for map-scheme
+                          (map-scheme (if (ignore-errors (getf map-scheme :emacs))
+                                          map-scheme
+                                          (eval map-scheme)))
+                          (map (or (getf map-scheme scheme)
+                                   (make-keymap))))
+                     (set-key map key-sequence-string command)
+                     (setf (getf map-scheme scheme) map)
+                     map-scheme)))
+           (when (keymapp keymap)
+             (set-key keymap key-sequence-string command))))
 
 (defun key (key-sequence-string)
   ;; Take a key-sequence-string in the form of "C-x C-s"

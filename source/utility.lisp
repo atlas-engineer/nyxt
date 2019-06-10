@@ -164,8 +164,3 @@ If VALUE is already present, move it to the head of the list."
         (remove-duplicates (cons value
                                  (eval (get-default class-name slot-name)))
                            :from-end t)))
-
-(defun make-keymap ()
-  "Return an empty keymap."
-  ;; TODO: Make a dedicated type?  So that we can have KEYMAP-P among others.
-  (make-hash-table :test 'equal))
