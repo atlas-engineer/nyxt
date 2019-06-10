@@ -33,7 +33,7 @@ def main():
 
     elif "-h" in sys.argv:
         # set minibuffer height (int).
-        command = "set_minibuffer_height"
+        command = "window_set_minibuffer_height"
         args = [sys.argv[-2], int(sys.argv[-1])]
 
     elif "-k" in sys.argv:
@@ -42,7 +42,7 @@ def main():
 
     elif "-m" in sys.argv:
         # Set minibuffer.
-        command = "set_minibuffer"
+        command = "window_set_minibuffer"
         args = [sys.argv[-2], sys.argv[-1]]
 
     else:
