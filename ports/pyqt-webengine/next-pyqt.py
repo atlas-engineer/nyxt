@@ -1,6 +1,6 @@
 from functools import partial
-# from dbus.mainloop.pyqt5 import DBusQtMainLoop
-from dbus.mainloop.glib import DBusGMainLoop
+from dbus.mainloop.pyqt5 import DBusQtMainLoop
+# from dbus.mainloop.glib import DBusGMainLoop
 import dbus
 import dbus.service
 
@@ -24,7 +24,7 @@ To send commands to the web engine from Lisp:
     (in-package :next)
     (start)
 
-this creates an `*interface*` object. 
+this creates an `*interface*` object.
 Now you can use any built-in methods such as (window-make *interface*).
 """
 
@@ -43,7 +43,7 @@ class DBusWindow(dbus.service.Object):
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_make(self, uid):
         print("--- make_window")
-        return window.window_make(uid)
+        return "lol"
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_title(self, uid, title):
@@ -78,8 +78,8 @@ class DBusWindow(dbus.service.Object):
 
 if __name__ == '__main__':
     app = QApplication([])
-    # DBusQtMainLoop(set_as_default=True)
-    DBusGMainLoop(set_as_default=True)
+    DBusQtMainLoop(set_as_default=True)
+    # DBusGMainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)
     dbuswindow = DBusWindow(session_bus)
