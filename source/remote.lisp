@@ -109,7 +109,7 @@ commands.")
     (setf (active-connection interface)
           (bt:make-thread
            (lambda ()
-             (dbus:with-open-bus (bus (dbus:session-server-addresses))
+             (dbus:with-open-bus (bus (server-addresses))
                (let ((status (dbus:request-name bus +core-name+ :do-not-queue)))
                  (when (eq status :exists)
                    (let ((url-list (or *free-args*
@@ -122,6 +122,14 @@ commands.")
                (dbus:publish-objects bus)))))
     (bt:acquire-lock lock)
     (bt:condition-wait condition lock)))
+
+(defun server-addresses ()
+  (let ((server-addresses (dbus:session-server-addresses)))
+    (if server-addresses
+        server-addresses
+        (dbus:parse-server-addresses-string
+         (format nil "unix:path=~a"
+                 (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))))))
 
 (defmethod kill-interface ((interface remote-interface))
   "Stop the RPC server."
