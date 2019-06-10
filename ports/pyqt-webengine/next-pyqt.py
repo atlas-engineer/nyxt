@@ -32,10 +32,11 @@ class DBusWindow(dbus.service.Object):
     def __init__(self, conn, object_path=PLATFORM_PORT_OBJECT_PATH):
         dbus.service.Object.__init__(self, conn, object_path)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_make(self, window_id):
         print("--- make_window")
-        return ("s", window_id)
+        print(window_id)
+        return window_id
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_title(self, window_id, title):
