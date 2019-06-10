@@ -386,26 +386,42 @@
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view true))))))
 
-(defmethod echo ((minibuffer minibuffer) text)
-  (let ((active-window (%%window-active *interface*)))
-    (unless (eql (display-mode minibuffer) :read)
-      (setf (display-mode minibuffer) :echo)
-      (erase-document minibuffer)
-      (%%window-set-minibuffer-height *interface*
-                                      active-window
-                                      (minibuffer-echo-height active-window))
-      (let ((style (cl-css:css
-                    '((* :font-family "monospace,monospace"
-                         :font-size "14px")
-                      (body :border-top "4px solid dimgray"
-                            :margin "0"
-                            :padding "0 6px")
-                      (p :margin "0")))))
-        (set-input minibuffer
-                   (cl-markup:markup
-                    (:head (:style style))
-                    (:body
-                     (:p text))))))))
+(defun echo (&rest args)
+  "Echo ARGS in the minibuffer.
+Accepted keyword argument:
+
+  :minibuffer
+  :window
+
+The first argument can be a format string and the following arguments will be
+interpreted by `format'. "
+  (let ((minibuffer (when *interface* (minibuffer *interface*)))
+        (window (when *interface* (%%window-active *interface*))))
+    (when (evenp (length args))
+      (setf minibuffer (getf args :minibuffer))
+      (setf window (getf args :window))
+      (dolist (key (remove-if-not #'keywordp args))
+        (remf args key)))
+    (if (and minibuffer window)
+        (unless (eql (display-mode minibuffer) :read)
+          (setf (display-mode minibuffer) :echo)
+          (erase-document minibuffer)
+          (%%window-set-minibuffer-height *interface*
+                                          window
+                                          (minibuffer-echo-height window))
+          (let ((style (cl-css:css
+                        '((* :font-family "monospace,monospace"
+                             :font-size "14px")
+                          (body :border-top "4px solid dimgray"
+                                :margin "0"
+                                :padding "0 6px")
+                          (p :margin "0")))))
+            (set-input minibuffer
+                       (cl-markup:markup
+                        (:head (:style style))
+                        (:body
+                         (:p (apply #'format nil args)))))))
+        (log:warn "Can't echo ~a without minibuffer or interface" args))))
 
 (defmethod echo-dismiss ((minibuffer minibuffer))
   (when (eql (display-mode minibuffer) :echo)

@@ -158,9 +158,9 @@
 (defmethod did-commit-navigation ((mode document-mode) url)
   (set-default-window-title mode)
   (add-or-traverse-history mode url)
-  (echo (minibuffer *interface*) (concatenate 'string "Loading: " url ".")))
+  (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode document-mode) url)
-  (echo (minibuffer *interface*) (concatenate 'string "Finished loading: " url "."))
+  (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss (minibuffer *interface*)))

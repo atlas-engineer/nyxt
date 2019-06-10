@@ -109,4 +109,4 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
   "Version number of this version of Next.
 The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
-  (echo (minibuffer *interface*) (format nil "Version ~a" +version+)))
+  (echo "Version ~a" +version+))

@@ -140,8 +140,8 @@ Warning: This is experimental and will be removed in future versions."
     (if (string= (first proxy-settings) "default")
         (progn
           (%%set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
-          (echo (minibuffer *interface*) (format nil "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*)))
+          (echo "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*))
         (progn
           (%%set-proxy *interface* active-buffer)
-          (echo (minibuffer *interface*) "Proxy unset.")))
+          (echo "Proxy unset.")))
     (log:info (%%get-proxy *interface* active-buffer))))

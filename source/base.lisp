@@ -114,10 +114,9 @@ If FILE is \"-\", read from the standard input."
                       (log:info "Loading configuration from ~a..." file)
                       (load file :if-does-not-exist nil)))
     (error (c)
+      ;; TODO: Handle warning from `echo'.
       (log:warn "Error: we could not load the Lisp file ~a: ~a" file c)
-      (when *interface*
-        (echo (minibuffer *interface*)
-              (format nil "Error: we could not load the Lisp file ~a: ~a" file c))))))
+      (echo "Error: we could not load the Lisp file ~a: ~a" file c))))
 
 (define-command load-file ()
   "Load the provided lisp file.
