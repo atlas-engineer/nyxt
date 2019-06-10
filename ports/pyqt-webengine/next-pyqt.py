@@ -1,13 +1,9 @@
-from functools import partial
 from dbus.mainloop.pyqt5 import DBusQtMainLoop
 # from dbus.mainloop.glib import DBusGMainLoop
 import dbus
 import dbus.service
 
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QWidget
 
 import window
 
