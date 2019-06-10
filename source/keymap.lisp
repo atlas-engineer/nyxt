@@ -185,21 +185,23 @@ Examples:
              (set-key keymap key-sequence-string command))))
 
 (defun key (key-sequence-string)
-  ;; Take a key-sequence-string in the form of "C-x C-s"
-  ;; Firstly, break it apart into chords: "C-x" and "C-s"
-  ;; Then, break apart the chords into individual keys
-  ;; Use those individual keys to create a "key" struct
-  ;; that describes the chord. We now have two "keys"
-  ;; connect these two keys in a list <key> C-x, <key> C-s
-  ;; this is will serve as the key to our key->function map
-  (let ((key-sequence ()))
+  "Turn KEY-SEQUENCE-STRING into a sequence of serialized key-chords.
+The return value is a list of strings.  The KEY-SEQUENCE-STRING is in the form
+of \"C-x C-s\".
+
+Firstly, we break it apart into chords: \"C-x\" and \"C-s\".  Then, we break
+apart the chords into individual keys.  We use those individual keys to create a
+`key' struct that describes the chord.  We now have two `key's.  We connect
+these two keys in a list in reverse (<key C-s> <key C-x>) to
+match (key-chord-stack *interface*).
+
+This can serve as the key in the keymap."
+  (serialize-key-chord-stack
+   (nreverse
     ;; Iterate through all key chords (space delimited)
     (loop for key-chord-string in (cl-strings:split key-sequence-string " ")
-          ;; Iterate through all keys in chord (hyphen delimited)
-          do (let* ((keys (cl-strings:split key-chord-string "-"))
-                    (key-chord (make-key-chord
-                                :key-code nil
-                                :key-string (car (last keys))
-                                :modifiers (sort (butlast keys) #'string-lessp))))
-               (push (serialize-key-chord key-chord) key-sequence)))
-    key-sequence))
+          for keys = (cl-strings:split key-chord-string "-")
+          collect (make-key-chord
+                   :key-code nil
+                   :key-string (car (last keys))
+                   :modifiers (sort (butlast keys) #'string-lessp))))))
