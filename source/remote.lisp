@@ -127,6 +127,7 @@ commands.")
   (let ((server-addresses (dbus:session-server-addresses)))
     (if server-addresses
         server-addresses
+        ;; Check for MacOS dbus session address.
         (dbus:parse-server-addresses-string
          (format nil "unix:path=~a"
                  (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))))))
