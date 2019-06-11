@@ -1,9 +1,9 @@
 import logging
 
+import buffers
 import minibuffer
 
-from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
 
@@ -13,7 +13,6 @@ class Modifier():
 
 MODIFIER_NAMES = []
 KEY_BLACKLIST = []
-URL_START = "http://next.atlas.engineer/"
 
 #: A dictionnary of current windows mapping an identifier (str) to a window (Window).
 WINDOWS = {}
@@ -110,17 +109,16 @@ class MyQWidget(QWidget):
 class Window():
     #: the actual QWidget.
     widget = None
-    #: layout, that holds the webview and the minibuffer. We need to
-    #  save it for later deletion.
+    #: layout, that holds the buffer and the minibuffer.
     layout = None
     #: window identifier (str)
     identifier = "0"
+    #: the buffer
     buffer = None
     #: the minibuffer is an object
     minibuffer = None
     #: minibuffer height (px)
     minibuffer_height = 20
-    webview = None
 
     def __init__(self, identifier, *args, **kwargs):
         self.widget = MyQWidget()
@@ -128,13 +126,11 @@ class Window():
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.identifier = identifier
 
-        self.webview = QWebEngineView()
-        self.webview.setUrl(QUrl(URL_START))
-
+        self.buffer = buffers.Buffer()
         self.minibuffer = minibuffer.MiniBuffer()
         self.minibuffer.set_height(self.minibuffer_height)
 
-        self.layout.addWidget(self.webview)
+        self.layout.addWidget(self.buffer.view)
         self.layout.addWidget(self.minibuffer.view)
         self.widget.setLayout(self.layout)
 
