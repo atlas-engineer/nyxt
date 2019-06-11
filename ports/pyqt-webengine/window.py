@@ -122,7 +122,7 @@ class Window():
     #: the actual QWidget.
     widget = None
     #: layout, that holds the webview and the minibuffer. We need to
-    #save it for later deletion.
+    #  save it for later deletion.
     layout = None
     #: window identifier (str)
     identifier = "0"
@@ -131,6 +131,7 @@ class Window():
     minibuffer = None
     #: minibuffer height (px)
     minibuffer_height = 200
+    webview = None
 
     def __init__(self, identifier, *args, **kwargs):
         minibuffer_size = 150
@@ -140,8 +141,8 @@ class Window():
         identifier = identifier
         self.identifier = identifier
 
-        webview = QWebEngineView()
-        webview.setUrl(QUrl(URL_START))
+        self.webview = QWebEngineView()
+        self.webview.setUrl(QUrl(URL_START))
 
         self.minibuffer = QWebEngineView()
         default_prompt = """
@@ -152,7 +153,7 @@ class Window():
         self.minibuffer.setHtml(default_prompt)
         self.minibuffer.setFixedHeight(minibuffer_size)
 
-        self.layout.addWidget(webview)
+        self.layout.addWidget(self.webview)
         self.layout.addWidget(self.minibuffer)
 
         self.widget.setWindowTitle("Next browser from window {}".format(self.identifier))
@@ -163,6 +164,7 @@ class Window():
 
     def set_minibuffer_height(self, height):
         self.minibuffer.setFixedHeight(height)
+
 
 def window_make(identifier):
     """
