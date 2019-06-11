@@ -75,14 +75,15 @@ it can be called without argument."
          (fun+mode (loop for (keymap . mode) in (current-keymaps window)
                          for fun = (get-key keymap key-sequence)
                          unless fun
-                           do (log:debug "Key-chord ~a normalized to ~a" key-sequence key-sequence-normal)
-                              (setf fun (get-key keymap key-sequence-normal))
+                           do (setf fun (get-key keymap key-sequence-normal))
                          when fun
                            return (cons fun mode))))
     (when fun+mode
       (if (eq (first fun+mode) #'prefix)
           (first fun+mode)
-          (lambda () (funcall (first fun+mode) (rest fun+mode)))))))
+          (lambda ()
+            (log:debug "Calling method ~a from mode ~a." (first fun+mode) (rest fun+mode))
+            (funcall (first fun+mode) (rest fun+mode)))))))
 
 (defun pointer-event-p (key-chord)
   "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."
@@ -120,15 +121,16 @@ it can be called without argument."
            (log:debug "Prefix binding"))
 
           ((functionp bound-function)
+           (log:debug "Key sequence ~a bound to:"
+                      (serialize-key-chord-stack (key-chord-stack *interface*)))
            (funcall bound-function)
-           (log:debug "Key sequence ~a bound to ~a"
-                      (serialize-key-chord-stack (key-chord-stack *interface*))
-                      bound-function)
            (setf (key-chord-stack *interface*) nil))
 
           ((minibuffer-active active-window)
            (if (member-string "R" (key-chord-modifiers (first (key-chord-stack *interface*))))
-               (log:debug "Key released")
+               (progn
+                 ;; (log:debug "Key released") ; TODO: This makes the debug trace too verbose.  Middle ground?
+                 nil)
                (progn
                  (log:debug "Insert ~s in minibuffer" (key-chord-key-string
                                                        (first (key-chord-stack *interface*))))

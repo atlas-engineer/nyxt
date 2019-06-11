@@ -427,7 +427,7 @@ events."
   (:interface +core-interface+)
   (:name "request_resource")
   (declare (ignore event-type))
-  (log:debug "Mouse ~a, modifiers ~a" mouse-button modifiers)
+  (log:debug "Request following resource with mouse ~s, modifiers ~a" mouse-button modifiers)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
     (cond
       (is-new-window
