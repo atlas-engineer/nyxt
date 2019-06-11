@@ -75,10 +75,9 @@ Otherwise list all commands."
                (mapcar (lambda (c)
                          (closer-mop:generic-function-name
                           (closer-mop:method-generic-function c)))
-                       (list-commands (class-name
-                                       (class-of
-                                        ;; TODO: Find commands from all modes.
-                                        (first (modes (active-buffer *interface*)))))))
+                       (delete-duplicates
+                        (loop for mode in (modes (active-buffer *interface*))
+                              append (list-commands (class-name (class-of mode))))))
                :accessor-function #'symbol-name))
 
 (define-command execute-command ()
@@ -87,5 +86,7 @@ Otherwise list all commands."
                          (minibuffer *interface*)
                          :input-prompt "Execute command:"
                          :completion-function 'command-complete))
-    ;; TODO: Call on the right mode.
-    (funcall command (first (modes (active-buffer *interface*))))))
+    (let ((mode (find-if (lambda (mode)
+                           (member command (list-commands (class-name (class-of mode)))))
+                         (modes (active-buffer *interface*)))))
+      (funcall command mode))))
