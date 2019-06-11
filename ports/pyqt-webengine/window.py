@@ -1,3 +1,4 @@
+import logging
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -37,16 +38,6 @@ modifiers = {
 def is_modifier(key):
     return key in modifiers.keys()
 
-#: Key translation
-key_translations = {
-    "^H": "BACKSPACE",
-    # TODO:
-}
-
-#: Ignore those keys. They are uncommon or useless.
-# # TODO: what are ISO_Level3_Shift ? altgr
-KEY_BLACKLIST = []
-
 
 class MyQWidget(QWidget):
     """
@@ -59,16 +50,16 @@ class MyQWidget(QWidget):
 
     def keyPressEvent(self, event):
         key = event.key()
-        print("-- key: {}".format(event.key()))
+        logging.info("-- key: {}".format(event.key()))
         if event.key() == Qt.Key_Control:
-            print("-- control key")
+            logging.info("-- control key")
         elif event.key() == Qt.Key_Shift:
-            print("-- shift key")
+            logging.info("-- shift key")
         if is_modifier(key):
             self.modifiers_stack.append(key)
             # It's ok Qt, we handled it, don't handle it.
             # return True
-        print("-- modifiers: {}".format(self.modifiers_stack))
+        logging.info("-- modifiers: {}".format(self.modifiers_stack))
 
     def keyReleaseEvent(self, event):
         """
@@ -83,8 +74,8 @@ class MyQWidget(QWidget):
             # return True  # fails
         else:
             self.current_event = event
-            print("-- modifiers: {}, key: {}".format(self.modifiers_stack, event.key()))
-            print("-- send push-key-event now")
+            logging.info("-- modifiers: {}, key: {}".format(self.modifiers_stack, event.key()))
+            logging.info("-- send push-key-event now")
         self.get_key_sequence()
 
     def get_modifiers_list(self):
@@ -105,16 +96,16 @@ class MyQWidget(QWidget):
                 "low level data",
                 "window id",
             )
-            print("-- key sequence: {}".format(out))
+            logging.info("-- key sequence: {}".format(out))
 
     def mouseDoubleClickEvent(self, event):
-        print("--- double click")
+        logging.info("--- double click")
 
     def mouseReleaseEvent(self, event):
-        print("- mouse release")
+        logging.info("- mouse release")
 
     def mousePressEvent(self, event):
-        print("-- mouse press")
+        logging.info("-- mouse press")
 
 
 #: A window contains a base widget, a layout, an id (int), a minibuffer.
@@ -176,16 +167,17 @@ def window_make(identifier):
     window = Window(identifier=identifier)
     window.widget.show()
     WINDOWS[window.identifier] = window
-    print("--- new window created, id {}".format(window.identifier))
-    return True
+    logging.info("--- new window created, id {}".format(window.identifier))
+    return identifier
+
 
 def window_delete(identifier):
     assert isinstance(identifier, str)
     window = WINDOWS.get(identifier)
     # xxx: works, re-check if everything's necessary.
     if not window:
-        print("could not find a window of id {}".format(identifier))
-        print("windows: {}".format(WINDOWS))
+        logging.info("could not find a window of id {}".format(identifier))
+        logging.info("windows: {}".format(WINDOWS))
         return False
     if window.layout is not None:
         # https://stackoverflow.com/questions/9374063/remove-widgets-and-layout-as-well
@@ -193,13 +185,13 @@ def window_delete(identifier):
             item = window.layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
-                print("--- deleting widget {}".format(widget))
+                logging.info("--- deleting widget {}".format(widget))
                 widget.deleteLater()
 
         del window.layout
 
     del WINDOWS[identifier]
-    print("--- deleted window {}. Remaining windows: {}".format(identifier, WINDOWS))
+    logging.info("--- deleted window {}. Remaining windows: {}".format(identifier, WINDOWS))
     return True
 
 def window_send_event(widget, event, data):
@@ -210,19 +202,19 @@ def window_killall():
     length = len(ids)
     for id in ids:
         window_delete(id)
-    print("-- {} windows deleted.".format(length))
+    logging.info("-- {} windows deleted.".format(length))
 
 def set_title(identifier, title, **kwargs):
     """
     Set the title of the window of identifier `identifier` (str).
     Return the new title if it was changed, a blank string otherwise.
     """
-    print("--- set title: {}, {}".format(identifier, title))
+    logging.info("--- set title: {}, {}".format(identifier, title))
     assert isinstance(identifier, str)
     window = WINDOWS.get(identifier)
     if window:
         window.widget.setWindowTitle(title)
-        print("-- title set for window {} !".format(identifier))
+        logging.info("-- title set for window {} !".format(identifier))
         return title
     return ""
 
@@ -235,7 +227,7 @@ def set_minibuffer(identifier, text):
     if window:
         window.set_minibuffer(text)
     else:
-        print("--- no window of id {}".format(identifier))
+        logging.info("--- no window of id {}".format(identifier))
 
 def set_minibuffer_height(identifier, height):
     assert isinstance(identifier, str)
@@ -244,4 +236,4 @@ def set_minibuffer_height(identifier, height):
     if window:
         window.set_minibuffer_height(height)
     else:
-        print("--- no window of id {}".format(identifier))
+        logging.info("--- no window of id {}".format(identifier))

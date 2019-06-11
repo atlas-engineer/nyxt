@@ -1,3 +1,5 @@
+import logging
+
 import utility
 import window
 
@@ -6,6 +8,8 @@ import dbus
 import dbus.service
 from dbus.mainloop.pyqt5 import DBusQtMainLoop
 from PyQt5.QtWidgets import QApplication
+
+logging.basicConfig(level=logging.INFO)
 
 """
 This is a Next port with Qt's Web Engine, through PyQt.
@@ -34,8 +38,7 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_make(self, window_id):
-        window.window_make(window_id)
-        return window_id
+        return window.window_make(window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_title(self, window_id, title):
