@@ -64,7 +64,8 @@ If :ACTIVATE is omitted, the mode is toggled."
      (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
      (destructor :accessor destructor  ; TODO: Better name?
                  :documentation
-                 "A lambda function which takes the mode as argument.")
+                 "A lambda function which tears down the mode upon deactivation.
+It takes the mode as argument.")
      (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes
                      :initform (list :emacs (make-keymap)))))
 
