@@ -1,11 +1,11 @@
-from dbus.mainloop.pyqt5 import DBusQtMainLoop
+import utility
+import window
+
 # from dbus.mainloop.glib import DBusGMainLoop
 import dbus
 import dbus.service
-
+from dbus.mainloop.pyqt5 import DBusQtMainLoop
 from PyQt5.QtWidgets import QApplication
-
-import window
 
 """
 This is a Next port with Qt's Web Engine, through PyQt.
@@ -91,15 +91,20 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def generate_input_event(self):
-        pass
+        utility.generate_input_event()
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication([])
     DBusQtMainLoop(set_as_default=True)
     # DBusGMainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
-    name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)
-    dbuswindow = DBusWindow(session_bus)
+    # name/dbuswindow MUST be defined even if not used.
+    name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
+    dbuswindow = DBusWindow(session_bus)  # noqa: F841
     window.window_make("0")
     app.exec_()
+
+
+if __name__ == '__main__':
+    main()

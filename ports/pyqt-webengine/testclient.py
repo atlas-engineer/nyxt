@@ -9,6 +9,7 @@ Simple code to send dbus signals to the running server.
 For development.
 """
 
+
 def main():
     OBJECT_PATH = "/engineer/atlas/next/platform"
     INTERFACE_PATH = "engineer.atlas.next.platform"
@@ -21,7 +22,7 @@ def main():
         window_id = sys.argv[-1]
         # We must use getattr because of dotted function names/signal names.
         command = "window_delete"
-        args = [window_id,]
+        args = [window_id, ]
 
     elif "-t" in sys.argv:
         # Set title.
@@ -40,6 +41,10 @@ def main():
         # kill all windows.
         command = "window_killall"
 
+    elif "-e" in sys.argv:
+        # generate an input event
+        command = "generate_input_event"
+
     elif "-m" in sys.argv:
         # Set minibuffer.
         command = "window_set_minibuffer"
@@ -51,7 +56,7 @@ def main():
         uid = str(random.randrange(10))
         print("-- window make id {}:".format(uid))
         command = "window_make"
-        args = [uid,]
+        args = [uid, ]
 
     # Run command.
     try:

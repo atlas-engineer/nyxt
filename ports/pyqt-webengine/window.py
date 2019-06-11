@@ -1,7 +1,4 @@
-from functools import partial
-
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QTimer
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QVBoxLayout
@@ -36,6 +33,7 @@ modifiers = {
     Qt.Key_Hyper_R: "H",
 }
 
+
 def is_modifier(key):
     return key in modifiers.keys()
 
@@ -48,6 +46,7 @@ key_translations = {
 #: Ignore those keys. They are uncommon or useless.
 # # TODO: what are ISO_Level3_Shift ? altgr
 KEY_BLACKLIST = []
+
 
 class MyQWidget(QWidget):
     """
