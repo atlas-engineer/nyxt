@@ -164,3 +164,8 @@ If VALUE is already present, move it to the head of the list."
         (remove-duplicates (cons value
                                  (eval (get-default class-name slot-name)))
                            :from-end t)))
+
+(defun member-string (string list)
+  "Return the tail of LIST beginning whose first element is STRING."
+  (check-type string string)
+  (member string list :test #'string=))

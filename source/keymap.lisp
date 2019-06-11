@@ -43,7 +43,7 @@ sequence of keys longer than one key-chord can be recorded."
   ;; TODO: Case opposite to Caps-Lock status?
   "When NORMALIZE is non-nil, remove the shift modifier and upcase the keys."
   (when (and normalize
-             (member "s" (key-chord-modifiers key-chord) :test #'string=))
+             (member-string "s" (key-chord-modifiers key-chord)))
     (setf (key-chord-modifiers key-chord)
           (delete "s" (key-chord-modifiers key-chord) :test #'string=))
     (string-upcase (key-chord-key-string key-chord)))
@@ -109,8 +109,7 @@ it can be called without argument."
     ;; Don't stack the release key-chords or else pressing "C-x" then "C-+""
     ;; will be understood as "C-x C-R-x C-+ C-R-+".
     (when (or (null (key-chord-stack *interface*))
-              (not (member "R" (key-chord-modifiers key-chord)
-                           :test #'string=)))
+              (not (member-string "R" (key-chord-modifiers key-chord))))
       (push key-chord (key-chord-stack *interface*))
       (let* ((active-window (gethash sender (windows *interface*)))
              (active-buffer (active-buffer active-window))
@@ -128,8 +127,7 @@ it can be called without argument."
            (setf (key-chord-stack *interface*) nil))
 
           ((minibuffer-active active-window)
-           (if (member "R" (key-chord-modifiers (first (key-chord-stack *interface*)))
-                       :test #'string=)
+           (if (member-string "R" (key-chord-modifiers (first (key-chord-stack *interface*))))
                (log:debug "Key released")
                (progn
                  (log:debug "Insert ~s in minibuffer" (key-chord-key-string
