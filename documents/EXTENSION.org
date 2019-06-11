@@ -112,7 +112,7 @@ one screen.
 (define-parenscript %scroll-page-down ()
   (ps:chain window (scroll-by 0 (ps:@ window inner-height))))
 
-(define-parensscript %scroll-page-up ()
+(define-parenscript %scroll-page-up ()
   (ps:chain window (scroll-by 0 (- (ps:@ window inner-height)))))
 
 (define-command scroll-page-down ()
