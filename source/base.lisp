@@ -90,7 +90,7 @@ Set to '-' to read standard input instead."))
       (let ((buffer (nth-value 1 (make-window))))
         (set-url-buffer (if *free-args* (car *free-args*) (start-page-url interface)) buffer)
         ;; We can have many URLs as positional arguments.
-        (loop for url in (cdr *free-args*) do
+        (loop for url in (rest *free-args*) do
           (let ((buffer (make-buffer)))
             (set-url-buffer url buffer)))))))
 

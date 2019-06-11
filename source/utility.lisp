@@ -36,7 +36,7 @@ Otherwise, build a search query with the default search engine."
         (generate-search-query
          (subseq input-url
                  (length (first (cl-strings:split input-url))))
-         (cdr engine))
+         (rest engine))
         ;; puri:parse-uri fails on crazy inputs like:
         ;; - hello world
         ;; - https://www.google.com/search?q=hello world
@@ -49,7 +49,7 @@ Otherwise, build a search query with the default search engine."
             ((puri:uri-p (ignore-errors
                            (puri:parse-uri (str:concat "https://" input-url))))
              (str:concat "https://" input-url))
-            (t (generate-search-query input-url (cdr default))))))))
+            (t (generate-search-query input-url (rest default))))))))
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string

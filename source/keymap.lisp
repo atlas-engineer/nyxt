@@ -82,7 +82,7 @@ it can be called without argument."
     (when fun+mode
       (if (eq (first fun+mode) #'prefix)
           (first fun+mode)
-          (lambda () (funcall (first fun+mode) (cdr fun+mode)))))))
+          (lambda () (funcall (first fun+mode) (rest fun+mode)))))))
 
 (defun pointer-event-p (key-chord)
   "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."

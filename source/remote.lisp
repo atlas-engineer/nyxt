@@ -415,7 +415,7 @@ events."
           (window (%%window-make *interface*)))
       (set-url-buffer (car urls) buffer)
       (window-set-active-buffer *interface* window buffer))
-    (loop for url in (cdr urls) do
+    (loop for url in (rest urls) do
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))
 
