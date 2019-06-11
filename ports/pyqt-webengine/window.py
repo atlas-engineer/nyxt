@@ -157,11 +157,11 @@ class Window():
         self.minibuffer.setFixedHeight(height)
 
 
-def window_make(identifier):
+def window_make(identifier: str):
     """
     Create a window, assign it the given unique identifier (str).
 
-    return: True (not important)
+    return: The Window identifier
     """
     assert isinstance(identifier, str)
     window = Window(identifier=identifier)
