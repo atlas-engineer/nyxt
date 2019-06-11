@@ -28,7 +28,6 @@ def main():
         # Set title.
         window_id = sys.argv[-2]
         title = sys.argv[-1]
-        title = "hello " + title
         command = "window_set_title"
         args = [window_id, title]
 
@@ -45,10 +44,11 @@ def main():
         # generate an input event
         command = "generate_input_event"
 
-    elif "-m" in sys.argv:
+    elif "-mj" in sys.argv:
         # Set minibuffer.
-        command = "window_set_minibuffer"
-        args = [sys.argv[-2], sys.argv[-1]]
+        command = "minibuffer_evaluate_javascript"
+        script = "document.body.innerHTML = \"{}\"".format(sys.argv[-1])
+        args = [sys.argv[-2], script]
 
     else:
         # Make window.

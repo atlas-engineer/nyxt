@@ -38,7 +38,7 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_make(self, window_id):
-        return window.window_make(window_id)
+        return window.make(window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_title(self, window_id, title):
@@ -46,11 +46,11 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_delete(self, window_id):
-        return window.window_delete(window_id)
+        return window.delete(window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_killall(self):
-        return window.window_killall()
+        return window.killall()
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_active(self):
@@ -58,7 +58,7 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_exists(self, window_id):
-        pass
+        return window.exists(window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_active_buffer(self, window_id, buffer_id):
@@ -67,10 +67,6 @@ class DBusWindow(dbus.service.Object):
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_minibuffer_height(self, window_id, height):
         window.set_minibuffer_height(window_id, height)
-
-    @dbus.service.method(PLATFORM_PORT_NAME)
-    def window_set_minibuffer(self, window_id, text):
-        window.set_minibuffer(window_id, text)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def buffer_make(self, buffer_id):
@@ -85,12 +81,12 @@ class DBusWindow(dbus.service.Object):
         pass
 
     @dbus.service.method(PLATFORM_PORT_NAME)
-    def buffer_evaluate_javascript(self, buffer_id, javascript):
+    def buffer_evaluate_javascript(self, buffer_id, script):
         pass
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
-    def minibuffer_evaluate_javascript(self, window_id, javascript):
-        pass
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
+    def minibuffer_evaluate_javascript(self, window_id, script):
+        window.minibuffer_evaluate_javascript(window_id, script)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def generate_input_event(self):
@@ -105,7 +101,7 @@ def main():
     # name/dbuswindow MUST be defined even if not used.
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
     dbuswindow = DBusWindow(session_bus)  # noqa: F841
-    window.window_make("0")
+    window.make("0")
     app.exec_()
 
 
