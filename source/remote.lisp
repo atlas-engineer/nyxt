@@ -102,12 +102,12 @@ platform ports might support this.")))
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
-  ;; TODO: Call on all modes.
-  (did-commit-navigation (first (modes buffer)) url))
+  (dolist (mode (modes buffer))
+    (did-commit-navigation mode url)))
 
 (defmethod did-finish-navigation ((buffer buffer) url)
-  ;; TODO: Call on all modes.
-  (did-finish-navigation (first (modes buffer)) url))
+  (dolist (mode (modes buffer))
+    (did-finish-navigation mode url)))
 
 (defclass remote-interface ()
   ((port :accessor port :initform (make-instance 'port)

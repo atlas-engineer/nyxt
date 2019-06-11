@@ -113,7 +113,7 @@
     (unless (equal input "Cannot navigate forwards.")
       (set-url (node-data input)))))
 
-(defmethod add-or-traverse-history ((mode root-mode) url)
+(defmethod add-or-traverse-history ((mode document-mode) url)
   (let ((active-node (active-history-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
