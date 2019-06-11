@@ -47,3 +47,17 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   "Scroll right the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   (%scroll-right))
+
+(define-parenscript %scroll-page-down ()
+  (ps:chain window (scroll-by 0 (ps:@ window inner-height))))
+
+(define-parenscript %scroll-page-up ()
+  (ps:chain window (scroll-by 0 (- (ps:@ window inner-height)))))
+
+(define-command scroll-page-down ()
+  "Scroll down by one page height."
+  (%scroll-page-down))
+
+(define-command scroll-page-up ()
+  "Scroll up by one page height."
+  (%scroll-page-up))

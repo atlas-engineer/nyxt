@@ -64,7 +64,9 @@
           "p" 'previous-search-hint
           "?" 'remove-search-hints
           "G" 'scroll-to-bottom
-          "g g" 'scroll-to-top)
+          "g g" 'scroll-to-top
+          "SPACE" 'scroll-page-down
+          "s-SPACE" 'scroll-page-up)
         (list :emacs emacs-map
               :vi-normal vi-map))))
   ;; Init.
