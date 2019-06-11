@@ -248,12 +248,21 @@ static GVariant *server_generate_input_event(GVariant *parameters) {
 				.direction = hardware_keycode,
 				.x = x,
 				.y = y,
-				.delta_x = -1,
-				.delta_y = -1,
+				.delta_x = 0,
+				.delta_y = 0,
 			};
-			if (keyval == 5 || keyval == 7) {
-				event_scroll.delta_x = 1;
+			if (keyval == 4) {
+				event_scroll.delta_x = 0;
+				event_scroll.delta_y = -1;
+			} else if (keyval == 5) {
+				event_scroll.delta_x = 0;
 				event_scroll.delta_y = 1;
+			} else if (keyval == 6) {
+				event_scroll.delta_x = -1;
+				event_scroll.delta_y = 0;
+			} else if (keyval == 7) {
+				event_scroll.delta_x = 1;
+				event_scroll.delta_y = 0;
 			}
 			event = (GdkEvent)event_scroll;
 			event.type = GDK_SCROLL;
