@@ -165,6 +165,15 @@ two tabs that are next to each other.
 1. ~C-[~: Switch tab previous
 2. ~C-]~: Switch tab next
 
+*** Modes
+A mode is a collection of features, ranging from key bindings to network
+options.  It can be enabled or disabled on a per-buffer basis via the command of
+the same name, e.g. ~vi-normal-mode~.
+
+Each buffer has its own list of modes.  The first mode in the list has highest
+priority: this is important, for instance, to determine which key binding takes
+precedence in case of conflict.  See [[Keybinding]] for more details.
+
 ** Searching
 There are a number of keybindings provided to enable searching within
 a buffer.
@@ -292,12 +301,32 @@ Following the package declaration, you can write or override any
 functions and variables.
 
 ** Keybinding
-Keys are defined with the following syntax:
+Keys are defined with the ~define-key~ command.  The command takes multiple forms:
 
 #+NAME: define key
 #+BEGIN_SRC lisp
-(define-key (key "C-x o") #'example)
+;; Bind multiple keys in root-mode using the default scheme.
+(define-key
+  "C-x o" 'example
+  "SPACE" 'scroll-page-down)
+
+;; Bind in root-mode using the vi-normal scheme.
+(define-key :scheme :vi-normal
+  "C-x o" 'example
+  "SPACE" 'scroll-page-down)
+
+;; Bind in document-mode using the vi-normal scheme.
+(define-key :mode document-mode :scheme :vi-normal
+  "C-x C-c s" 'save-history)
+
+;; Bind in current buffer's first mode.  This won't affect other buffers.
+(define-key :keymap (getf (keymap-scheme
+                           (first (modes (active-buffer *interface*))))
+                          :emacs)
+  "C-x C-c h" 'hello-local-world)
 #+END_SRC
+
+Read on for an explanation of the meanings of =:keymap= and =:scheme=.
 
 In the previous example, the key sequence =C-x o= would invoke the ~example~
 command.
@@ -310,6 +339,46 @@ The following keys exist as special keys:
 2. ~S~: Super (Windows key, Command Key)
 3. ~M~: Meta (Alt key, Option Key)
 4. ~s~: Shift key
+
+*** Keymaps and key binding schemes
+
+A keymap is a collection of key-to-command bindings.
+
+Modes can define key binding schemes, which are sets of keymaps indexed by a
+scheme name like =:emacs=.
+
+The currently active key binding scheme is selected by the ~current-key-scheme~
+buffer slot.  When a key is hit, Next looks up the keymaps of the corresponding
+scheme for all active modes in the current buffer.
+
+You can change the default binding scheme for any buffer by setting
+~current-key-scheme~ to the appropriate value.  For instance to set VI bindings
+by default:
+
+#+begin_src lisp
+(add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
+#+end_src
+
+*** Override map
+
+The /override map/ is the first keymap that is looked up for a binding when a
+key is pressed.  Override maps are stored in every buffer.  They are exposed to
+the user as a mean to override any binding from any mode.  They should not be
+modified by any library.
+
+*** VI-style bindings
+
+[[https://en.wikipedia.org/wiki/Vi][VI]] is a model text editor that is famous for its /modal/ key bindings.
+In /normal mode/, all keys are commands, they won't insert any text anywhere.
+
+In /insert mode/, all textual keys insert the corresponding text.
+
+Next offers two modes, =vi-normal-mode= and =vi-insert-mode= to simulate this
+behaviour.  For instance, in =vi-normal-mode=, =j= scrolls the page down and =k=
+scrolls up.
+
+To go from /normal mode/ to /insert mode/, press =i=.
+To go from /insert mode/ to /normal mode/, press =ESCAPE=.
 
 ** Loading Files
 To load a file again, or reload an init file use the function
