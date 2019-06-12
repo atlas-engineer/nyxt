@@ -116,6 +116,7 @@ it can be called without argument."
              (active-buffer (active-buffer active-window))
              (bound-function (look-up-key-chord-stack active-window
                                                       (key-chord-stack *interface*))))
+        (setf (last-key-chords active-buffer) (list key-chord))
         (cond
           ((eq bound-function #'prefix)
            (log:debug "Prefix binding"))

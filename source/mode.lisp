@@ -69,6 +69,12 @@ It takes the mode as argument.")
      (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes
                      :initform (list :emacs (make-keymap)))))
 
+(defmethod mode-active? ((buffer buffer) mode-symbol)
+  "Return non-nil if a mode corresponding to MODE-SYMBOL is active in BUFFER.
+MODE-SYMBOL can be for instance \"'root-mode\"."
+  (member mode-symbol (mapcar (alexandria:compose #'class-name #'class-of)
+                              (modes buffer))))
+
 (defmethod keymap ((mode root-mode))
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."

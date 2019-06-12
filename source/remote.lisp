@@ -55,6 +55,11 @@ this is left for the user to customize to their needs.")
 forwarded to the platform port when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
+   (last-key-chords :accessor last-key-chords
+                    :initform '()
+                    ;; TODO: Store multiple key chords?  Maybe when implementing keyboard macros.
+                    :documentation "The last key chords that were received for the current buffer.
+For now we only store the very last key chord.")
    (view :accessor view :initarg :view)
    (resource-query-functions :accessor resource-query-functions
                              :initarg :resource-query-functions
