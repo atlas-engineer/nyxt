@@ -16,7 +16,7 @@ typedef struct {
 
 // See the documentation of "enum GdkModifierType".
 static Modifier modifier_names[] = {
-	{.mod = GDK_SHIFT_MASK, .name = "s"},
+	{.mod = GDK_SHIFT_MASK, .name = "Shift"},
 	{.mod = GDK_LOCK_MASK, .name = "Lock"},
 	{.mod = GDK_CONTROL_MASK, .name = "C"},
 	{.mod = GDK_MOD1_MASK, .name = "M"}, // Usually "Alt".

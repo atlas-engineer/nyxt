@@ -68,7 +68,7 @@
           "C-f" 'scroll-page-down
           "C-b" 'scroll-page-up
           "SPACE" 'scroll-page-down
-          "s-SPACE" 'scroll-page-up)
+          "Shift-SPACE" 'scroll-page-up)
         (list :emacs emacs-map
               :vi-normal vi-map))))
   ;; Init.
