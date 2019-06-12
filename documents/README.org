@@ -69,6 +69,23 @@ on the Quicklisp website.
 - libfixposix
 - gstreamer, gst-plugins-* (for HTML audio/video)
 
+If your distribution does not install libraries in a [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
+have to let know your Lisp compiler where to find them.  To do so, add the
+library directories to ~cffi:*foreign-library-directories*~ list.  For instance,
+if you are running Guix you may want to expose =~/.guix-profile/lib= to the
+compiler by adding the following snippet to =~/.sbclrc=:
+
+#+begin_src lisp
+(require "asdf")
+
+(let ((guix-profile (format nil "~a/.guix-profile/lib/" (uiop:getenv "HOME"))))
+  (when (and (probe-file guix-profile)
+             (ignore-errors (asdf:load-system "cffi")))
+    (push guix-profile
+          (symbol-value (find-symbol (string '*foreign-library-directories*)
+                                     (find-package 'cffi))))))
+#+end_src
+
 Install the WebKitGTK+ package of your distribution that provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKitGTK+).
 
