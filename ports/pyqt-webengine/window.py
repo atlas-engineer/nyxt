@@ -73,6 +73,17 @@ class MyQWidget(QWidget):
             self.current_event = event
             logging.info("Modifiers: {}, key: {}".format(self.modifiers_stack, event.key()))
             logging.info("Send push-key-event now")
+            import dbus
+            bus = dbus.SessionBus()
+            CORE_INTERFACE = "engineer.atlas.next.core"
+            CORE_OBJECT_PATH = "/engineer/atlas/next/core"
+            proxy = bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
+            logging.info("dbus to push-input-event")
+            # xxx: this is a blocking synchronous call.
+            # type signature: int, str, array of strings, double, double, int, str
+            # TODO: fix active-buffer
+            event = proxy.push_input_event(event.key(), event.text(), self.get_modifiers_list(), 0.0, 0.0, 0, "", dbus_interface=CORE_INTERFACE)
+
         self.get_key_sequence()
 
     def get_modifiers_list(self):
