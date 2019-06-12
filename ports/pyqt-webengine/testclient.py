@@ -45,7 +45,7 @@ def main():
         command = "generate_input_event"
 
     elif "-mj" in sys.argv:
-        # Set minibuffer.
+        # Minibuffer evaluate JS.
         command = "minibuffer_evaluate_javascript"
         script = "document.body.innerHTML = \"{}\"".format(sys.argv[-1])
         args = [sys.argv[-2], script]

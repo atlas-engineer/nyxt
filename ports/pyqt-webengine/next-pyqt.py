@@ -44,7 +44,7 @@ class DBusWindow(dbus.service.Object):
     def window_set_title(self, window_id, title):
         return window.set_title(window_id, title)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_delete(self, window_id):
         return window.delete(window_id)
 
