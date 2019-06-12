@@ -198,6 +198,12 @@ For an array of string, that would be \"as\"."
   (with-slots (windows) interface
     (remhash (id window) windows)))
 
+(defmethod %%window-delete ((interface remote-interface) (window_id string))
+  "Delete a window given its id (string)."
+  (%rpc-send interface "window_delete" window_id)
+  (with-slots (windows) interface
+    (remhash window_id windows)))
+
 (defmethod %%window-active ((interface remote-interface))
   "Return the window object for the currently active window."
   (with-slots (windows) interface
