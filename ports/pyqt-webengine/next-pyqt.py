@@ -56,7 +56,7 @@ class DBusWindow(dbus.service.Object):
     def window_active(self):
         pass
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_exists(self, window_id):
         return window.exists(window_id)
 
@@ -64,11 +64,11 @@ class DBusWindow(dbus.service.Object):
     def window_set_active_buffer(self, window_id, buffer_id):
         pass
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='si')
     def window_set_minibuffer_height(self, window_id, height):
         window.set_minibuffer_height(window_id, height)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def buffer_make(self, buffer_id):
         pass
 

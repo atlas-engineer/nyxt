@@ -217,6 +217,12 @@ For an array of string, that would be \"as\"."
   "Return if a window exists."
   (%rpc-send interface "window_exists" (id window)))
 
+(defmethod %%window-exists ((interface remote-interface) (window-id string))
+  "Return if a window exists, from its identifier (string). Utility function."
+  ;; we don't use (gethash window-id (windows interface)) because,
+  ;; with manual tests, it can get out of sync.
+  (%rpc-send interface "window_exists" window-id))
+
 (defun list-windows (interface)
   "List the windows of the given interface. For dev purposes."
   (maphash (lambda (key val)
@@ -251,6 +257,12 @@ For an array of string, that would be \"as\"."
                                          window height)
   (%rpc-send interface "window_set_minibuffer_height" (id window) height))
 
+(defmethod %%window-set-minibuffer-height ((interface remote-interface)
+                                           (window-id string)
+                                           height)
+  "window-id: string. Developer utility."
+  (%rpc-send interface "window_set_minibuffer_height" window-id height))
+
 (defmethod %%buffer-make ((interface remote-interface)
                           &key name mode)
   (let* ((buffer-id (get-unique-buffer-identifier interface))
@@ -262,6 +274,12 @@ For an array of string, that would be \"as\"."
     (%rpc-send interface "buffer_make" buffer-id
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
     buffer))
+
+(defun list-buffers (interface)
+  "Print the buffers of the given interface with their id."
+  (maphash (lambda (key val)
+                 (format t "~a ~a~&" key val))
+               (buffers interface)))
 
 ;; TODO: Use keys instead of &optional.
 (defmethod buffer-make ((interface remote-interface)
@@ -303,13 +321,24 @@ For an array of string, that would be \"as\"."
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
+
+
 (defmethod %%minibuffer-evaluate-javascript ((interface remote-interface)
                                              (window window) javascript
-                                             &optional (callback nil))
+                                             &optional callback)
+  ;; JS example: document.body.innerHTML = 'hello'
   (let ((callback-id
-          (%rpc-send interface "minibuffer_evaluate_javascript" (id window) javascript)))
+         (%rpc-send interface "minibuffer_evaluate_javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
+
+(defmethod %%minibuffer-evaluate-javascript ((interface remote-interface)
+                                             (window-id string) javascript
+                                             &optional callback)
+  "window-id: string"
+  (%%minibuffer-evaluate-javascript interface
+                                    (gethash window-id (windows interface))
+                                    javascript callback))
 
 (defmethod %%generate-input-event ((interface remote-interface)
                                    (window window)
