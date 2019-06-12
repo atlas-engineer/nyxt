@@ -70,11 +70,14 @@ Otherwise list all commands."
                       (closer-mop:subclassp (find-class mode) first-specializer )))
         collect m))
 
+(defun command-symbol (command)
+  "Return the symbol of a command."
+  (closer-mop:generic-function-name
+   (closer-mop:method-generic-function command)))
+
 (defun command-complete (input)
   (fuzzy-match input
-               (mapcar (lambda (c)
-                         (closer-mop:generic-function-name
-                          (closer-mop:method-generic-function c)))
+               (mapcar #'command-symbol
                        (delete-duplicates
                         (loop for mode in (modes (active-buffer *interface*))
                               append (list-commands (class-name (class-of mode))))))
@@ -87,6 +90,7 @@ Otherwise list all commands."
                          :input-prompt "Execute command:"
                          :completion-function 'command-complete))
     (let ((mode (find-if (lambda (mode)
-                           (member command (list-commands (class-name (class-of mode)))))
+                           (member command (mapcar #'command-symbol
+                                                   (list-commands (class-name (class-of mode))))))
                          (modes (active-buffer *interface*)))))
       (funcall command mode))))
