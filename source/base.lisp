@@ -175,6 +175,7 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*))))
 
 (define-key :scheme :vi-normal
+  "W" 'make-visible-new-buffer
   ":" 'execute-command
   "b" 'switch-buffer
   "d" 'delete-buffer
