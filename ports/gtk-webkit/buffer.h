@@ -208,7 +208,7 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 	gchar *mouse_button = "";
 	if (action) {
 		guint button = webkit_navigation_action_get_mouse_button(action);
-		mouse_button = g_strdup_printf("button%d", button);
+		mouse_button = g_strdup_printf("Button%d", button);
 
 		guint modifiers = webkit_navigation_action_get_modifiers(action);
 		for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {

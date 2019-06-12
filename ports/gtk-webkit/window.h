@@ -19,13 +19,13 @@ typedef struct {
 } KeyTranslation;
 
 static KeyTranslation key_translations[] = {
-	{.old = "", .new = "BACKSPACE"},
-	{.old = " ", .new = "SPACE"},
-	{.old = "", .new = "DELETE"},
-	{.old = "-", .new = "HYPHEN"},
-	{.old = "", .new = "ESCAPE"},
-	{.old = "\r", .new = "RETURN"},
-	{.old = "\t", .new = "TAB"},
+	{.old = "", .new = "Backspace"},
+	{.old = " ", .new = "Space"},
+	{.old = "", .new = "Delete"},
+	{.old = "-", .new = "Hyphen"},
+	{.old = "", .new = "Escape"},
+	{.old = "\r", .new = "Return"},
+	{.old = "\t", .new = "Tab"},
 };
 
 guint window_string_to_modifier(gchar *s) {
@@ -421,7 +421,7 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 		}
 	}
 
-	gchar *event_string = g_strdup_printf("button%d", event->button);
+	gchar *event_string = g_strdup_printf("Button%d", event->button);
 	return window_send_event(window,
 		       event_string, event->state,
 		       0, event->button,
@@ -487,7 +487,7 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 	}
 	}
 
-	gchar *event_string = g_strdup_printf("button%d", button);
+	gchar *event_string = g_strdup_printf("Button%d", button);
 	return window_send_event(window,
 		       event_string, event->state,
 		       event->direction, button,

@@ -19,12 +19,12 @@
           "C-x C-w" 'copy-anchor-url
           "C-f" 'history-forwards
           "C-b" 'history-backwards
-          "button9" 'history-forwards
-          "button8" 'history-backwards
+          "Button9" 'history-forwards
+          "Button8" 'history-backwards
           "C-p" 'scroll-up
           "C-n" 'scroll-down
           "C-x C-=" 'zoom-in-page
-          "C-x C-HYPHEN" 'zoom-out-page
+          "C-x C-Hyphen" 'zoom-out-page
           "C-x C-0" 'unzoom-page
           "C-r" 'reload-current-buffer
           "C-m o" 'set-url-from-bookmark
@@ -48,8 +48,8 @@
           "f" 'go-anchor
           "F" 'go-anchor-new-buffer-focus
           "; f" 'go-anchor-new-buffer
-          "button9" 'history-forwards
-          "button8" 'history-backwards
+          "Button9" 'history-forwards
+          "Button8" 'history-backwards
           "j" 'scroll-down
           "k" 'scroll-up
           "z i" 'zoom-in-page
@@ -67,8 +67,8 @@
           "g g" 'scroll-to-top
           "C-f" 'scroll-page-down
           "C-b" 'scroll-page-up
-          "SPACE" 'scroll-page-down
-          "Shift-SPACE" 'scroll-page-up)
+          "Space" 'scroll-page-down
+          "Shift-Space" 'scroll-page-up)
         (list :emacs emacs-map
               :vi-normal vi-map))))
   ;; Init.

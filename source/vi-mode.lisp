@@ -9,7 +9,7 @@
       (let ((map (make-keymap)))
         (define-key
           "i" 'vi-insert-mode
-          "button1" 'vi-button1
+          "Button1" 'vi-button1
           :keymap map)
         (list :vi-normal map)))
      (destructor
@@ -33,8 +33,8 @@
       :initform
       (let ((map (make-keymap)))
         (define-key :keymap map
-          "ESCAPE" 'vi-normal-mode
-          "button1" 'vi-button1)
+          "Escape" 'vi-normal-mode
+          "Button1" 'vi-button1)
         (list :vi-insert map)))
      (destructor
       :initform

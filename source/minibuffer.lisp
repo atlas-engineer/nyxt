@@ -8,26 +8,26 @@
      (keymap-schemes
       :initform
       (let ((map (make-keymap)))
-        (define-key "HYPHEN" #'self-insert
-          "SPACE" #'self-insert
+        (define-key "Hyphen" #'self-insert
+          "Space" #'self-insert
           "C-f" #'cursor-forwards
           "M-f" #'cursor-forwards-word
           "C-b" #'cursor-backwards
           "M-b" #'cursor-backwards-word
           "M-d" #'delete-forwards-word
-          "M-BACKSPACE" #'delete-backwards-word
+          "M-Backspace" #'delete-backwards-word
           "Right" #'cursor-forwards
           "Left" #'cursor-backwards
           "C-d" #'delete-forwards
-          "DELETE" #'delete-forwards
-          "BACKSPACE" #'delete-backwards
+          "Delete" #'delete-forwards
+          "Backspace" #'delete-backwards
           "C-a" #'cursor-beginning
           "C-e" #'cursor-end
           "C-k" #'kill-line
-          "RETURN" #'return-input
-          "C-RETURN" #'return-immediate
+          "Return" #'return-input
+          "C-Return" #'return-immediate
           "C-g" #'cancel-input
-          "ESCAPE" #'cancel-input
+          "Escape" #'cancel-input
           "C-n" #'select-next
           "C-p" #'select-previous
           "Down" #'select-next
@@ -35,7 +35,7 @@
           "C-v" #'paste
           "C-y" #'paste
           "C-w" #'copy-candidate
-          "TAB" #'insert-candidate
+          "Tab" #'insert-candidate
           :keymap map)
         (list :emacs map
               :vi-normal map
@@ -198,11 +198,12 @@
 (define-command self-insert (minibuffer-mode)
   "Insert key-chord-stack in MINIBUFFER."
   (let ((key-string (key-chord-key-string (first (key-chord-stack *interface*))))
-        (translation-table '(("HYPHEN" "-")
+        (translation-table '(("Hyphen" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking
                              ;; space to avoid confusing the user.
-                             ("SPACE" " "))))
+                             ;; TODO: We should type-check those names.
+                             ("Space" " "))))
     (setf key-string (or (cadr (assoc key-string translation-table :test #'string=))
                          key-string))
     (insert key-string)))
