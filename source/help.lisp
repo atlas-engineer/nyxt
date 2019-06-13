@@ -39,8 +39,8 @@
                        :completion-function 'variable-complete
                        :input-prompt "Inspect variable:"))
     (let* ((help-buffer (make-buffer
-                         (concatenate 'string "HELP-" (symbol-name input))
-                         (help-mode)))
+                         :name (concatenate 'string "HELP-" (symbol-name input))
+                         :default-modes '(help-mode root-mode)))
            (help-contents (cl-markup:markup
                            (:h1 (symbol-name input))
                            (:p (documentation input 'variable))
@@ -62,8 +62,8 @@
                        (closer-mop:method-generic-function input)))
 
            (help-buffer (make-buffer
-                         (concatenate 'string "HELP-" (symbol-name input-sym))
-                         (help-mode)))
+                         :name (concatenate 'string "HELP-" (symbol-name input-sym))
+                         :default-modes '(help-mode root-mode)))
            (help-contents (cl-markup:markup
                            (:h1 (symbol-name input-sym))
                            (:h2 "Documentation")
@@ -88,8 +88,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                        (minibuffer *interface*)
                        :input-prompt "Evaluate Lisp:"))
     (let* ((result-buffer (make-buffer
-                           (concatenate 'string "EVALUATION RESULT-" input)
-                           (help-mode)))
+                           :name (concatenate 'string "EVALUATION RESULT-" input)
+                           :default-modes '(help-mode root-mode)))
            (results (handler-case
                         (mapcar #'write-to-string (evaluate input))
                       (error (c) (format nil "~a" c))))
