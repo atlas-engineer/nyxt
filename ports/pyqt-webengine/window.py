@@ -31,6 +31,7 @@ modifiers = {
     Qt.Key_Hyper_R: "H",
 }
 
+CORE_INTERFACE = "engineer.atlas.next.core"
 
 def is_modifier(key):
     return key in modifiers.keys()
@@ -45,6 +46,18 @@ class MyQWidget(QWidget):
     #: Current event (key and all). We send all input event to the core.
     current_event = None
 
+    #: Identifier (string) of the parent window.
+    parent_identifier = ""
+
+    # lisp core dbus proxy.
+    # Used to send events (push_input_event) asynchronously.
+    core_dbus_proxy = None
+
+    def __init__(self, core_dbus_proxy=None, identifier=""):
+        self.core_dbus_proxy = core_dbus_proxy
+        self.parent_identifier = identifier
+        super().__init__()
+
     def keyPressEvent(self, event):
         key = event.key()
         logging.info("Key: {}".format(event.key()))
@@ -57,6 +70,13 @@ class MyQWidget(QWidget):
             # It's ok Qt, we handled it, don't handle it.
             # return True
         logging.info("Modifiers: {}".format(self.modifiers_stack))
+
+    def handle_reply(self, r):
+        # push_input_event doesn't receive return values.
+        logging.info("async reply received: {}".format(r))
+
+    def handle_error(self, e):
+        logging.info("async error: {}".format(e))
 
     def keyReleaseEvent(self, event):
         """
@@ -71,22 +91,19 @@ class MyQWidget(QWidget):
             # return True  # fails
         else:
             self.current_event = event
-            logging.info("Modifiers: {}, key: {}".format(self.modifiers_stack, event.key()))
-            logging.info("Send push-key-event now")
-            import dbus
-            bus = dbus.SessionBus()
-            CORE_INTERFACE = "engineer.atlas.next.core"
-            CORE_OBJECT_PATH = "/engineer/atlas/next/core"
-            proxy = bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
-            logging.info("dbus to push-input-event")
-            # xxx: this is a blocking synchronous call.
+            logging.info("Sending push-key-event now with key {} and modifiers {}".format(
+                event.key(), self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
-            # TODO: fix active-buffer
-            event = proxy.push_input_event(event.key(),
-                                           event.text(),
-                                           self.get_modifiers_list(), 0.0, 0.0, 0,
-                                           "0",  # sender. The window id. # TODO:
-                                           dbus_interface=CORE_INTERFACE)
+            self.core_dbus_proxy.push_input_event(event.key(),
+                                          event.text(),
+                                          self.get_modifiers_list(),
+                                          0.0, 0.0, 0,
+                                          self.parent_identifier,  # sender
+                                          # Give handlers to make the call asynchronous.
+                                          # lambdas don't work.
+                                          reply_handler=self.handle_reply,
+                                          error_handler=self.handle_error,
+                                          dbus_interface=CORE_INTERFACE)
 
         self.get_key_sequence()
 
@@ -135,8 +152,9 @@ class Window():
     #: minibuffer height (px)
     minibuffer_height = 20
 
-    def __init__(self, identifier, *args, **kwargs):
-        self.widget = MyQWidget()
+    def __init__(self, identifier, core_dbus_proxy=None):
+        self.widget = MyQWidget(core_dbus_proxy=core_dbus_proxy, identifier=identifier)
+
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.identifier = identifier
@@ -150,14 +168,16 @@ class Window():
         self.widget.setLayout(self.layout)
 
 
-def make(identifier: str):
-    """
-    Create a window, assign it the given unique identifier (str).
+def make(identifier: str, core_dbus_proxy):
+    """Create a window, assign it the given unique identifier (str).
+
+    We must pass a reference to the lisp core's dbus proxy, in order
+    to send asynchronous input events (key, mouse etc).
 
     return: The Window identifier
     """
     assert isinstance(identifier, str)
-    window = Window(identifier=identifier)
+    window = Window(identifier=identifier, core_dbus_proxy=core_dbus_proxy)
     window.widget.show()
     WINDOWS[window.identifier] = window
     logging.info("New window created, id {}".format(window.identifier))

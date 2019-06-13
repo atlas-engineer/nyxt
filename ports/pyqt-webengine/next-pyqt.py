@@ -33,12 +33,16 @@ PLATFORM_PORT_NAME = "engineer.atlas.next.platform"
 
 
 class DBusWindow(dbus.service.Object):
-    def __init__(self, conn, object_path=PLATFORM_PORT_OBJECT_PATH):
+    # lisp core dbus proxy.
+    core_dbus_proxy = None
+
+    def __init__(self, conn, object_path=PLATFORM_PORT_OBJECT_PATH, core_dbus_proxy=None):
         dbus.service.Object.__init__(self, conn, object_path)
+        self.core_dbus_proxy = core_dbus_proxy
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_make(self, window_id):
-        return window.make(window_id)
+        return window.make(window_id, self.core_dbus_proxy)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_title(self, window_id, title):
@@ -60,9 +64,9 @@ class DBusWindow(dbus.service.Object):
     def window_exists(self, window_id):
         return window.exists(window_id)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def window_set_active_buffer(self, window_id, buffer_id):
-        pass
+        return True  # TODO:
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='si')
     def window_set_minibuffer_height(self, window_id, height):
@@ -100,8 +104,14 @@ def main():
     session_bus = dbus.SessionBus()
     # name/dbuswindow MUST be defined even if not used.
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
-    dbuswindow = DBusWindow(session_bus)  # noqa: F841
-    window.make("0")
+
+    CORE_INTERFACE = "engineer.atlas.next.core"
+    CORE_OBJECT_PATH = "/engineer/atlas/next/core"
+    core_dbus_proxy = session_bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
+
+    dbuswindow = DBusWindow(session_bus, core_dbus_proxy=core_dbus_proxy)  # noqa: F841
+
+    window.make("0", core_dbus_proxy)
     app.exec_()
 
 
