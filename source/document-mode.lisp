@@ -39,6 +39,8 @@
           "M-s-<" 'scroll-to-top
           "M->" 'scroll-to-bottom
           "M-<" 'scroll-to-top
+          "C-v" 'scroll-page-down
+          "M-v" 'scroll-page-up
           "C-w" 'copy-url
           "M-w" 'copy-title
           :keymap emacs-map)
