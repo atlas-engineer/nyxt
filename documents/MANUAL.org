@@ -111,7 +111,7 @@ To set the list of search engines, do:
 and to append a search engine do the list, you can do
 
 #+begin_src lisp
-(nconc (eval (get-default 'window 'search-engines))
+(nconc (get-default 'window 'search-engines))
        '(("q" . "http://quickdocs.org/search?q=~a")
          ("yt" . "https://www.youtube.com/results?search_query=~a")))
 #+end_src

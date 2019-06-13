@@ -139,9 +139,19 @@ When non-nil, INIT-FUNCTION is used to create the file, else the file will be em
   "Get default value of slot SLOT-NAME from class CLASS-NAME.
 The second value is the initfunction."
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
-         (slot (find-slot class slot-name)))
-    ;; TODO: We should unquote quoted list, this would remove the need to call `eval'.
-    (closer-mop:slot-definition-initform slot)))
+         (slot (find-slot class slot-name))
+         (value (closer-mop:slot-definition-initform slot)))
+    ;; When querying quoted lists, the return value of slot-definition-initform
+    ;; is quoted.  We unquote it here so that the caller does not have to do it.
+    ;; Besides, when the slot value is updated with SETF, the list is stored
+    ;; unquoted.  By unquoting here, we make sure that all calls to GET-DEFAULT
+    ;; have consistent return types.  WARNING: This could be limitating if slot
+    ;; was meant to actually store a quoted list.  Should this happen, we would
+    ;; have to take some provision.
+    (if (and (listp value)
+             (eq 'quote (first value)))
+        (eval value)
+        value)))
 
 (defun (setf get-default) (value class-name slot-name)
   "Set default value of SLOT-NAME from CLASS-NAME.
@@ -152,17 +162,14 @@ Return VALUE."
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
          (slot (find-slot class slot-name)))
     (setf (closer-mop:slot-definition-initfunction slot) (lambda () value))
-    ;; Lists must be stored with a quote.
-    (setf (closer-mop:slot-definition-initform slot) (if (listp value)
-                                                         `',value
-                                                         value))))
+    (setf (closer-mop:slot-definition-initform slot) value)))
 
 (defun add-to-default-list (value class-name slot-name)
   "Add VALUE to the list SLOT-NAME from CLASS-NAME.
 If VALUE is already present, move it to the head of the list."
   (setf (get-default class-name slot-name)
         (remove-duplicates (cons value
-                                 (eval (get-default class-name slot-name)))
+                                 (get-default class-name slot-name))
                            :from-end t)))
 
 (defun member-string (string list)
