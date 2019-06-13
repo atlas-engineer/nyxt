@@ -71,7 +71,7 @@ class MyQWidget(QWidget):
             # return True
         logging.info("Modifiers: {}".format(self.modifiers_stack))
 
-    def handle_reply(self, r):
+    def handle_reply(self):
         # push_input_event doesn't receive return values.
         logging.info("async reply received: {}".format(r))
 
