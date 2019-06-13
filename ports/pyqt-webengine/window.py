@@ -82,7 +82,11 @@ class MyQWidget(QWidget):
             # xxx: this is a blocking synchronous call.
             # type signature: int, str, array of strings, double, double, int, str
             # TODO: fix active-buffer
-            event = proxy.push_input_event(event.key(), event.text(), self.get_modifiers_list(), 0.0, 0.0, 0, "", dbus_interface=CORE_INTERFACE)
+            event = proxy.push_input_event(event.key(),
+                                           event.text(),
+                                           self.get_modifiers_list(), 0.0, 0.0, 0,
+                                           "0",  # sender. The window id. # TODO:
+                                           dbus_interface=CORE_INTERFACE)
 
         self.get_key_sequence()
 
