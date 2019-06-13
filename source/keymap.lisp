@@ -52,8 +52,10 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
 ;; TODO: If we move the global mode to root-mode, how do we make sure which one has priority?
 ;; What about reserving a prefix key for application mode and root mode?
 (defun consume-key-sequence-p (sender)
-  (let* ((active-window (gethash sender (windows *interface*)))
-         (active-buffer (active-buffer active-window))
+  (let* ((active-window (or (gethash sender (windows *interface*))
+                            (error "no active window for sender ~a" sender)))
+         (active-buffer (or (active-buffer active-window)
+                            (error "no active buffer for sender ~a and active-window ~a" sender active-window)))
          (local-map (if (minibuffer-active active-window)
                         (keymap (mode (minibuffer *interface*)))
                         (keymap (mode active-buffer))))
