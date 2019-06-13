@@ -50,6 +50,10 @@ def main():
         script = "document.body.innerHTML = \"{}\"".format(sys.argv[-1])
         args = [sys.argv[-2], script]
 
+    elif "-w" in sys.argv:
+        # list windows.
+        command = "window_list"
+
     else:
         # Make window.
         # give a pseudo random str as window id, we don't keep count of windows here.

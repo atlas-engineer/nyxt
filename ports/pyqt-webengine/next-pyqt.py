@@ -64,6 +64,10 @@ class DBusWindow(dbus.service.Object):
     def window_exists(self, window_id):
         return window.exists(window_id)
 
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_list(self):
+        return window.list_windows()
+
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def window_set_active_buffer(self, window_id, buffer_id):
         return True  # TODO:

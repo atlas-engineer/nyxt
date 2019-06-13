@@ -220,6 +220,14 @@ def killall():
         delete(id)
     logging.info("{} windows deleted.".format(length))
 
+def list_windows():
+    """
+    Print all windows with their ID.
+    For development.
+    """
+    print("Windows: ")
+    for key, val in WINDOWS.items():
+        print("{}: {}".format(key, val))
 
 def set_title(identifier, title, **kwargs):
     """
