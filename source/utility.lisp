@@ -156,3 +156,35 @@ The second value is the initfunction."
 (defun make-keymap ()
   "Return an empty keymap."
   (make-hash-table :test 'equal))
+
+(defmethod %%minibuffer-evaluate-javascript ((interface remote-interface)
+                                             (window-id string) javascript
+                                             &optional callback)
+  "window-id: string. Dev purposes."
+  (%%minibuffer-evaluate-javascript interface
+                                    (gethash window-id (windows interface))
+                                    javascript callback))
+
+(defmethod %%window-delete ((interface remote-interface) (window-id string))
+  "window-id: string. Dev purposes."
+  (%rpc-send interface "window_delete" window-id)
+  (with-slots (windows) interface
+    (remhash window-id windows)))
+
+(defmethod %%window-exists ((interface remote-interface) (window-id string))
+  "window-id: string. Dev purposes."
+  ;; we don't use (gethash window-id (windows interface)) because,
+  ;; with manual tests, it can get out of sync.
+  (%rpc-send interface "window_exists" window-id))
+
+(defmethod %%window-set-minibuffer-height ((interface remote-interface)
+                                           (window-id string)
+                                           height)
+  "window-id: string. Dev purposes."
+  (%rpc-send interface "window_set_minibuffer_height" window-id height))
+
+(defun list-windows (interface)
+  "List the windows of the given interface. Dev purposes."
+  (maphash (lambda (key val)
+             (format t "~a ~a~&" key val))
+          (windows interface)))
