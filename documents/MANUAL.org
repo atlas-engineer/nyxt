@@ -417,3 +417,37 @@ therefore takes the following look:
               (read-from-minibuffer (minibuffer *interface*)))
   (print variable-name-to-bind-minibuffer-input))
 #+END_SRC
+
+** Network resource dispatch (including ad-blocking)
+
+The dispatching of network queries can be fully customized in the
+=resource-query-function= slot of the =buffer= class.
+
+See the ~resource-query-default~ function for an example which dispatches
+downloads, new window requests,
+
+This function can also serve as an entry point to URL-based resource blocking.
+
+*** Resource blodking (Ad-blocking)
+
+Next provides the =blocker-mode=.  It filters networks requests (including
+ads)by the host name.  A default filter list is automatically updated from
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts.
+
+Multiple lists of hosts can be added and blocker mode will filter based on all
+the lists.
+
+To add a list, add an instance of the ~hostlist~ class to the ~hostlists~ slot.
+For instance, you can add this to your =init.lisp=.
+
+#+begin_src lisp
+(add-to-default-list
+ (make-instance 'hostlist
+                :hosts '("platform.twitter.com"
+                         "syndication.twitter.com"
+                         "m.media-amazon.com"))
+ 'blocker-mode 'hostlists)
+#+end_src
+
+The =hostlist= class also support fetching the list from a URL.
+The list can be persisted to the file specified in the =path= slot.

@@ -24,7 +24,8 @@
                :log4cl
                :closer-mop
                :ironclad
-               :dbus)
+               :dbus
+               :dexador)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
@@ -53,6 +54,7 @@
                  (:file "application-mode")
                  (:file "document-mode")
                  (:file "vi-mode")
+                 (:file "blocker-mode")
                  ;; Port Compatibility Layers
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base
