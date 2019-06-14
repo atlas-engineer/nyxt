@@ -60,8 +60,8 @@
    :callback (lambda (response)
                (cond
                  ((and (string= response "INPUT")
-                       (mode-active? (buffer root-mode) 'vi-normal-mode))
+                       (find-mode (buffer root-mode) 'vi-normal-mode))
                   (vi-insert-mode root-mode))
                  ((and (not (string= response "INPUT"))
-                       (mode-active? (buffer root-mode) 'vi-insert-mode))
+                       (find-mode (buffer root-mode) 'vi-insert-mode))
                   (vi-normal-mode root-mode))))))
