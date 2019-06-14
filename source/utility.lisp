@@ -142,14 +142,17 @@ The second value is the initfunction."
          (slot (find-slot class slot-name))
          (value (closer-mop:slot-definition-initform slot)))
     ;; When querying quoted lists, the return value of slot-definition-initform
-    ;; is quoted.  We unquote it here so that the caller does not have to do it.
+    ;; is quoted.  For lists declared with LIST, the return value is a list starting with symbol LIST.
+    ;; In those cases, we eval it here so that the caller does not have to do it.
     ;; Besides, when the slot value is updated with SETF, the list is stored
-    ;; unquoted.  By unquoting here, we make sure that all calls to GET-DEFAULT
+    ;; unquoted / without LIST.  By evaluating here, we make sure that all calls to GET-DEFAULT
     ;; have consistent return types.  WARNING: This could be limitating if slot
     ;; was meant to actually store a quoted list.  Should this happen, we would
     ;; have to take some provision.
     (if (and (listp value)
-             (eq 'quote (first value)))
+             (or
+              (eq 'quote (first value))
+              (eq 'list (first value))))
         (eval value)
         value)))
 
