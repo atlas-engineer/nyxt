@@ -184,7 +184,7 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 			break;
 		}
 		case WEBKIT_NAVIGATION_TYPE_BACK_FORWARD: {
-			event_type = "backward-of-forward";
+			event_type = "backward-or-forward";
 			break;
 		}
 		case WEBKIT_NAVIGATION_TYPE_RELOAD: {
