@@ -61,9 +61,10 @@ forwarded when no binding is found.")
                     :documentation "The last key chords that were received for the current buffer.
 For now we only store the very last key chord.")
    (view :accessor view :initarg :view)
-   (resource-query-functions :accessor resource-query-functions
-                             :initarg :resource-query-functions
-                             :initform nil)
+   (resource-query-function :accessor resource-query-function
+                            ;; TODO: What about having multiple functions?  And what about moving this to modes?
+                            :initarg :resource-query-function
+                            :initform #'resource-query-default)
    (callbacks :accessor callbacks
               :initform (make-hash-table :test #'equal))
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
@@ -424,34 +425,64 @@ events."
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))
 
-;; Return whether URL should be loaded or not.
+(defmethod resource-query-default ((buffer buffer)
+                                   &key url
+                                     event-type
+                                     (is-new-window nil)
+                                     (is-known-type t)
+                                     (mouse-button "")
+                                     (modifiers '()))
+  "Return non-nil to let platform port load URL.
+Return nil otherwise.
+
+Deal with URL with the following rules:
+- If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
+- If IS-KNOWN-TYPE is nil, download the file.  (TODO: Implement it!)
+- Otherwise return non-nil to let the platform port load the URL."
+  (declare (ignore event-type))         ; TODO: Do something with the event type?
+  (cond
+    ((or is-new-window
+         ;; TODO: Streamline the customization of this binding.
+         (and (equal modifiers '("C"))
+              (string= mouse-button "button1")))
+     (log:info "Load ~a in new buffer" url)
+     (make-buffers url)
+     nil)
+    ((not is-known-type)
+     (log:info "Buffer ~a downloads ~a" buffer url)
+     nil)
+    (t
+     (log:info "Forwarding ~a back to platform port" url)
+     t)))
+
+;; Return non-nil to tell the platform port to load the URL.
 (dbus:define-dbus-method (core-object request-resource)
     ((buffer-id :string) (url :string) (event-type :string) (is-new-window :boolean)
      (is-known-type :boolean) (mouse-button :string) (modifiers (:array :string)))
     (:boolean)
   (:interface +core-interface+)
   (:name "request_resource")
-  (declare (ignore event-type))
-  (log:debug "Request following resource with mouse ~s, modifiers ~a" mouse-button modifiers)
+  (unless (member-string event-type '("other"
+                                      "link-click"
+                                      "form-submission"
+                                      "form-resubmission"
+                                      "backward-or-forward"
+                                      "reload"))
+    (setf event-type "other"))
+  (setf event-type (intern event-type "KEYWORD"))
+  ;; TODO: We need to define an EVENT type, e.g. with
+  ;; (deftype event () '(member :other :link-click ...))
+  ;; https://stackoverflow.com/questions/578290/common-lisp-equivalent-to-c-enums#
+  (log:debug "Request resource ~s with mouse ~s, modifiers ~a" url mouse-button modifiers)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
-    (cond
-      (is-new-window
-       (log:info "Load ~a in new window" url)
-       (make-buffers url)
-       nil)
-      ((not is-known-type)
-       (log:info "Buffer ~a downloads ~a" buffer url)
-       nil)
-      (t
-       (log:info "Forwarding ~a back to platform port" url)
-       t))
-    ;; TODO: Move the cond to RESOURCE-QUERY-FUNCTIONS to let the user customize
-    ;; the behaviour.
-    ;; (if (loop for function in (resource-query-functions buffer)
-    ;;           always (funcall function url buffer-id))
-    ;;     1
-    ;;     0)
-    ))
+    (funcall (resource-query-function buffer)
+             buffer
+             :url url
+             :event-type event-type
+             :is-new-window is-new-window
+             :is-known-type is-known-type
+             :mouse-button mouse-button
+             :modifiers modifiers)))
 
 
 ;; Convenience methods and functions for users of the API.
