@@ -11,7 +11,7 @@
                :cl-strings
                :str
                :cl-string-match
-               :puri
+               :quri
                :sqlite
                :parenscript
                :cl-json

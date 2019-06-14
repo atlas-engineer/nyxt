@@ -37,17 +37,17 @@ Otherwise, build a search query with the default search engine."
          (subseq input-url
                  (length (first (cl-strings:split input-url))))
          (rest engine))
-        ;; puri:parse-uri fails on crazy inputs like:
-        ;; - hello world
-        ;; - https://www.google.com/search?q=hello world
-        (let ((url (ignore-errors (puri:parse-uri input-url))))
+        (let ((recognized-scheme (ignore-errors (quri:uri-scheme (quri:uri input-url)))))
           (cond
-            ((and url (puri:uri-scheme url)) input-url)
-            ((probe-file input-url)
+            ((and recognized-scheme
+                  (not (string= "file" recognized-scheme)))
+             input-url)
+            ((or (string= "file" recognized-scheme)
+                 (probe-file input-url))
              (format nil "file://~a"
                      (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*)))
-            ((puri:uri-p (ignore-errors
-                           (puri:parse-uri (str:concat "https://" input-url))))
+            ((quri:uri-p (ignore-errors
+                           (quri:uri (str:concat "https://" input-url))))
              (str:concat "https://" input-url))
             (t (generate-search-query input-url (rest default))))))))
 

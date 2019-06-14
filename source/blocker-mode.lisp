@@ -87,9 +87,9 @@ Auto-update file if older than N days."
                                    (modifiers '()))
   "Block resource queries from blacklisted hosts.
 Fall back on `resource-query-default'."
-  ;; TODO: Use quri:uri-domain.
+  ;; TODO: Use quri:uri-domain?
   (if (blacklisted-host-p (find-mode buffer 'blocker-mode)
-                          (ignore-errors (puri:uri-host (puri:parse-uri url))))
+                          (ignore-errors (quri:uri-host (quri:uri url))))
       (progn
         (log:info "Dropping ~a" url)
         nil)
