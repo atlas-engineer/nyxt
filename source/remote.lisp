@@ -419,7 +419,7 @@ events."
   (when urls
     (let ((buffer (make-buffer))
           (window (%%window-make *interface*)))
-      (set-url-buffer (car urls) buffer)
+      (set-url-buffer (first urls) buffer)
       (window-set-active-buffer *interface* window buffer))
     (loop for url in (rest urls) do
       (let ((buffer (make-buffer)))

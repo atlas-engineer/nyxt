@@ -214,5 +214,5 @@ This can serve as the key in the keymap."
           for keys = (cl-strings:split key-chord-string "-")
           collect (make-key-chord
                    :key-code nil
-                   :key-string (car (last keys))
+                   :key-string (first (last keys))
                    :modifiers (sort (butlast keys) #'string-lessp))))))

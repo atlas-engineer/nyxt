@@ -20,7 +20,7 @@ To arguments have a special meanings beside the slot value of the mode:
 - :ACTIVATE is used to choose whether to enable or disable the mode.
 If :ACTIVATE is omitted, the mode is toggled."
   `(progn
-     (defclass ,name ,(unless (eq (car direct-superclasses) t)
+     (defclass ,name ,(unless (eq (first direct-superclasses) t)
                         (cons 'root-mode direct-superclasses))
        ,direct-slots
        (:documentation ,docstring))
