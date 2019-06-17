@@ -105,14 +105,13 @@ these fixes.
 #+end_quote
 
 ** Compile
-
 The Next program consists of 2 dedicated executable files: the Lisp core and
-the WebKit port. There are 2 ways to build them according to whether you want
+the platform port. There are 2 ways to build them according to whether you want
 to use [[https://github.com/roswell/roswell][Roswell]].
 
-*** Not Using Roswell
+*** Compile Image with a Lisp Implementation
 
-The following command will build both Lisp core and the WebKit port.
+The following command will build both Lisp core and the platform port.
 
 - GNU/Linux:
 #+BEGIN_SRC sh
@@ -129,23 +128,31 @@ global installation of Quicklisp, or to automatically download and
 install a separate Quicklisp installation for Next. Run ~make~ to display some
 documentation. Please see the Makefile for more details.
 
-*** Using Roswell
+*** Compile with Roswell
 
-Roswell can be used to build the Lisp core. A Roswell script is provided under
-=roswell/= directory. In order to compile it, simple run:
+Roswell can be used to build the Lisp core. This method uses the existing
+systems installed on your system.
+
+A Roswell script is provided under the project root. You have to make sure
+that this project can be found by Roswell (Quicklisp). You may create a
+symbolic link of this project in the =~/.roswell/local-projects/= directory to
+achieve it.
+
+In order to compile the Lisp core, simple run:
 
 #+BEGIN_SRC sh
 ros build next.ros
 #+END_SRC
 
-An executable file will be generated under =roswell/= directory. Please note
-that this method uses the systems maintained by the Roswell.
+An executable file named `next` will be generated under the project root.
 
-Afterwards, you need to build the WebKit port:
+Afterwards, you need to build the platform port:
 
 #+BEGIN_SRC sh
 make install-gtk-webkit
 #+END_SRC
+
+You may simply type =make= to display documentation.
 
 Please refer to the next section to make the 2 parts work together.
 
