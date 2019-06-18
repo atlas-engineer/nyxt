@@ -434,6 +434,18 @@ static GVariant *server_get_proxy(GVariant *parameters) {
 	return g_variant_builder_end(&builder);
 }
 
+// TODO: Some settings take an integer or a string (e.g. the user agent).
+static GVariant *server_buffer_set(GVariant *parameters) {
+	const char *id = NULL;
+	const char *setting = NULL;
+	gboolean value;
+	g_variant_get(parameters, "(&s&sb)", &id, &setting, &value);
+	g_message("Method parameter(s): buffer ID %s, setting %s, value %i", id, setting, value);
+	buffer_set(g_hash_table_lookup(state.buffers, id), setting, value);
+
+	return g_variant_new("(b)", TRUE);
+}
+
 void server_handler(GDBusConnection *_connection,
 	const gchar *_sender,
 	const gchar *_object_path,
@@ -507,8 +519,9 @@ void start_server(GDBusConnection *connection,
 	g_hash_table_insert(state.server_callbacks, "buffer_evaluate_javascript", &server_buffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "minibuffer_evaluate_javascript", &server_minibuffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "generate_input_event", &server_generate_input_event);
-	g_hash_table_insert(state.server_callbacks, "set_proxy", &server_set_proxy);
+	g_hash_table_insert(state.server_callbacks, "set_proxy", &server_set_proxy); // TODO: Rename buffer_set_proxy?
 	g_hash_table_insert(state.server_callbacks, "get_proxy", &server_get_proxy);
+	g_hash_table_insert(state.server_callbacks, "buffer_set", &server_buffer_set);
 }
 
 void stop_server() {

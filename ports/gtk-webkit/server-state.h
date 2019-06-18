@@ -96,6 +96,12 @@ static ServerState state = {
 		"      <arg type='as' name='whitelist' direction='in'/>"
 		"      <arg type='b' name='status' direction='out'/>"
 		"    </method>"
+		"    <method name='buffer_set'>"
+		"      <arg type='s' name='buffer_id' direction='in'/>"
+		"      <arg type='s' name='setting' direction='in'/>"
+		"      <arg type='b' name='value' direction='in'/>"
+		"      <arg type='b' name='status' direction='out'/>"
+		"    </method>"
 		"  </interface>"
 		"</node>"
 };

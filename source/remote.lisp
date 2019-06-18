@@ -349,6 +349,15 @@ MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
 ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send interface "get_proxy" (id buffer)))
 
+(defmethod %%buffer-set ((interface remote-interface) (buffer buffer)
+                       (setting string) value)
+  "Set SETTING to VALUE for BUFFER.
+The valid SETTINGs are specified by the platform, e.g. for WebKitGTK it is
+https://webkitgtk.org/reference/webkit2gtk/stable/WebKitSettings.html.
+
+TODO: Only booleans are supported for now."
+  (%rpc-send interface "buffer_set" (id buffer) setting value))
+
 
 ;; Expose Lisp Core RPC endpoints.
 
