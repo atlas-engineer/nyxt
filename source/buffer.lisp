@@ -126,22 +126,3 @@ item in the list, jump to the first item."
     (if (< (+ active-buffer-index 1) (length buffers))
         (set-active-buffer *interface* (nth (+ active-buffer-index 1) buffers))
         (set-active-buffer *interface* (nth 0 buffers)))))
-
-;; TODO: Make proxy variable local?  Better: make a tor-mode.
-(defparameter *proxy-url* "socks://127.0.0.1:9050" )
-(defparameter *proxy-ignore-list* (list "localhost" "localhost:8080"))
-
-(define-command %toggle-proxy ()
-  "Toggle between system proxy and the proxy settings *PROXY-URL* and
-*PROXY-IGNORE-LIST*.
-Warning: This is experimental and will be removed in future versions."
-  (let* ((active-buffer (active-buffer *interface*))
-         (proxy-settings (%%get-proxy *interface* active-buffer)))
-    (if (string= (first proxy-settings) "default")
-        (progn
-          (%%set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
-          (echo "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*))
-        (progn
-          (%%set-proxy *interface* active-buffer)
-          (echo "Proxy unset.")))
-    (log:info (%%get-proxy *interface* active-buffer))))

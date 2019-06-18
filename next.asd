@@ -55,6 +55,7 @@
                  (:file "document-mode")
                  (:file "vi-mode")
                  (:file "blocker-mode")
+                 (:file "proxy-mode")
                  ;; Port Compatibility Layers
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base

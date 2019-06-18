@@ -344,6 +344,9 @@ events."
                  proxy-uri ignore-hosts))
 
 (defmethod %%get-proxy ((interface remote-interface) (buffer buffer))
+  "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy configuration.
+MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
+ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send interface "get_proxy" (id buffer)))
 
 

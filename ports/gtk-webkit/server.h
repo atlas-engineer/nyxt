@@ -325,18 +325,16 @@ static GVariant *server_list_methods(SoupXMLRPCParams *_params) {
 
 /* ITER cannot be used after this call.  RESULT must be freed. */
 GList *server_unwrap_string_list(GVariantIter *iter) {
-	GVariant *str_variant;
-	gchar *str;
+	gchar *str = NULL;
 	GList *result = NULL;
-	while (g_variant_iter_loop(iter, "v", &str_variant)) {
-		g_variant_get(str_variant, "s", &str);
-		result = g_list_append(result, str);
+	while (g_variant_iter_loop(iter, "s", &str)) {
+		result = g_list_append(result, strdup(str));
 	}
 	g_variant_iter_free(iter);
 	return result;
 }
 
-/* The GList can be freed but not its elements which are share with the result.
+/* The GList can be freed but not its elements which are shared with the result.
 The result must be freed. */
 char **server_string_list_to_array_pointer(GList *list) {
 	guint length = g_list_length(list);
@@ -366,7 +364,7 @@ static GVariant *server_set_proxy(GVariant *parameters) {
 	{
 		GVariantIter *iter;
 		GVariantIter *iter_buffers;
-		g_variant_get(parameters, "(av&s&sav)", &iter_buffers, &mode, &proxy_uri, &iter);
+		g_variant_get(parameters, "(as&s&sas)", &iter_buffers, &mode, &proxy_uri, &iter);
 
 		buffer_ids = server_unwrap_string_list(iter_buffers);
 		GList *ignore_hosts_list = server_unwrap_string_list(iter);
@@ -416,7 +414,7 @@ static GVariant *server_get_proxy(GVariant *parameters) {
 	buffer_get_proxy(g_hash_table_lookup(state.buffers, a_key),
 		&mode, &proxy_uri, &ignore_hosts);
 
-	char *mode_string = "default";
+	char *mode_string = "default"; // System proxy.
 	if (mode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM) {
 		mode_string = "custom";
 	} else if (mode == WEBKIT_NETWORK_PROXY_MODE_NO_PROXY) {

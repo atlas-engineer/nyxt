@@ -89,6 +89,13 @@ static ServerState state = {
 		"      <arg type='d' name='y' direction='in'/>"
 		"      <arg type='b' name='status' direction='out'/>"
 		"    </method>"
+		"    <method name='set_proxy'>"
+		"      <arg type='as' name='buffer_ids' direction='in'/>"
+		"      <arg type='s' name='mode' direction='in'/>"
+		"      <arg type='s' name='address' direction='in'/>"
+		"      <arg type='as' name='whitelist' direction='in'/>"
+		"      <arg type='b' name='status' direction='out'/>"
+		"    </method>"
 		"  </interface>"
 		"</node>"
 };
