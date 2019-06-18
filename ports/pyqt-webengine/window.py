@@ -3,9 +3,12 @@ import logging
 import buffers
 import minibuffer
 
-from PyQt5.QtCore import Qt
+import dbus
+from PyQt5.QtCore import QEvent, Qt, QCoreApplication
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QKeyEvent
+
 
 
 #: A dictionary of current windows mapping an identifier (str) to a window (Window).
@@ -26,7 +29,7 @@ modifiers = {
 }
 
 CORE_INTERFACE = "engineer.atlas.next.core"
-
+CORE_OBJECT_PATH = "/engineer/atlas/next/core"
 
 def get_window(identifier):
     window = WINDOWS.get(identifier)
@@ -50,16 +53,33 @@ class MyQWidget(QWidget):
     current_event = None
 
     #: Identifier (string) of the parent window.
+    # XXX: this clearly is sub-optimal: Window.identifier,
+    # window.qtwidget being MyQWidget, MyQWidget.parent_identifier being window.identifier
     parent_identifier = ""
 
     # lisp core dbus proxy.
     # Used to send events (push_input_event) asynchronously.
+    session_bus = None
     core_dbus_proxy = None
 
-    def __init__(self, core_dbus_proxy=None, identifier=""):
-        self.core_dbus_proxy = core_dbus_proxy
+    def __init__(self, identifier="<no id>"):
+        self.core_dbus_proxy = self.get_core_dbus_proxy()
         self.parent_identifier = identifier
         super().__init__()
+
+    def get_core_dbus_proxy(self):
+        """If it doesn't exist, create a dbus proxy to communicate with the
+        lisp core.
+        """
+        logging.info("session bus again")
+        if not self.session_bus:
+            self.session_bus = dbus.SessionBus()
+
+        logging.info("and core bus…")
+        if not self.core_dbus_proxy:
+            self.core_dbus_proxy = self.session_bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
+        logging.info("buses ok")
+        return self.core_dbus_proxy
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -76,7 +96,7 @@ class MyQWidget(QWidget):
 
     def handle_reply(self):
         # push_input_event doesn't receive return values.
-        logging.info("async reply received: {}".format(r))
+        logging.info("async reply received.")
 
     def handle_error(self, e):
         logging.info("error callback received: {}".format(e))
@@ -94,20 +114,20 @@ class MyQWidget(QWidget):
             # return True  # fails
         else:
             self.current_event = event
-            logging.info("Here we would send push-key-event with key {} and modifiers {}".format(
+            logging.info("Sending push-key-event with key {} and modifiers {}".format(
                 event.key(), self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
-            # self.core_dbus_proxy.push_input_event(
-            #     event.key(),
-            #     event.text(),
-            #     self.get_modifiers_list(),
-            #     0.0, 0.0, 0,
-            #     self.parent_identifier,  # sender
-            #     # Give handlers to make the call asynchronous.
-            #     # lambdas don't work.
-            #     reply_handler=self.handle_reply,
-            #     error_handler=self.handle_error,
-            #     dbus_interface=CORE_INTERFACE)
+            self.core_dbus_proxy.push_input_event(
+                event.key(),
+                event.text(),
+                self.get_modifiers_list(),
+                0.0, 0.0, 0,
+                self.parent_identifier,  # sender
+                # Give handlers to make the call asynchronous.
+                # lambdas don't work.
+                reply_handler=self.handle_reply,
+                error_handler=self.handle_error,
+                dbus_interface=CORE_INTERFACE)
 
         self.get_key_sequence()
 
@@ -159,7 +179,7 @@ class Window():
     minibuffer_height = 20
 
     def __init__(self, identifier=None):
-        self.qtwindow = MyQWidget()
+        self.qtwindow = MyQWidget(identifier=identifier)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
