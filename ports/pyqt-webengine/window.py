@@ -151,6 +151,8 @@ class Window():
     identifier = "0"
     #: the buffer
     buffer = None
+    #: buffer height (px)
+    buffer_height = 480
     #: the minibuffer is an object
     minibuffer = None
     #: minibuffer height (px)
@@ -164,6 +166,7 @@ class Window():
         self.identifier = identifier
 
         self.buffer = buffers.Buffer()
+        self.buffer.set_height(self.buffer_height)
         self.minibuffer = minibuffer.MiniBuffer()
         self.minibuffer.set_height(self.minibuffer_height)
 

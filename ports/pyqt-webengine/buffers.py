@@ -36,6 +36,9 @@ class Buffer():
         self.view.page().runJavaScript(script)
         "0"  # TODO: callback ID
 
+    def set_height(self, height):
+        self.view.setFixedHeight(height)
+
     def load(self, url):
         self.view.setUrl(QUrl(url))
         return True
