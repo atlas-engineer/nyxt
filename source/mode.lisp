@@ -50,12 +50,14 @@ If :ACTIVATE is omitted, the mode is toggled."
                                 :name (format nil "~a" ',name)
                                 :buffer buffer
                                 args)
-                         (modes buffer)))
+                         (modes buffer))
+                   (echo "~a enabled." ',name))
                  (when existing-instance
                    (when (destructor existing-instance)
                      (funcall (destructor existing-instance) existing-instance))
                    (setf (modes buffer) (delete existing-instance
-                                                (modes buffer))))))))))
+                                                (modes buffer)))
+                   (echo "~a disabled." ',name))))))))
 
 (define-mode root-mode (t)
     "The root of all modes."

@@ -7,7 +7,5 @@
     ((destructor
       :initform
       (lambda (mode)
-        (%%buffer-set *interface* (buffer mode) "enable-javascript" t)
-        (echo "Noscript disabled."))))
-  (%%buffer-set *interface* (buffer %mode) "enable-javascript" nil)
-  (echo "Noscript enabled."))
+        (%%buffer-set *interface* (buffer mode) "enable-javascript" t))))
+  (%%buffer-set *interface* (buffer %mode) "enable-javascript" nil))

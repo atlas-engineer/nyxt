@@ -65,11 +65,9 @@ Auto-update file if older than N days."
       :initform
       (lambda (mode)
         (setf (resource-query-function (buffer mode))
-              (get-default 'buffer 'resource-query-function))
-        (echo "Blocker mode disabled."))))
+              (get-default 'buffer 'resource-query-function)))))
   (let ((active-buffer (buffer %mode)))
-    (setf (resource-query-function active-buffer) #'resource-query-block)
-    (echo "Blocker mode enabled.")))
+    (setf (resource-query-function active-buffer) #'resource-query-block)))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE."
