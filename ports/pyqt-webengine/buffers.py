@@ -21,11 +21,12 @@ class Buffer():
     """
     view = None
     scripts = {}
+    identifier = "0"
 
-    def __init__(self):
+    def __init__(self, identifier=None):
         super(Buffer, self).__init__()
         self.view = QWebEngineView()
-        self.set_url("http://next.atlas.engineer/")
+        self.identifier = identifier
 
     def evaluate_javascript(self, script):
         # This method should return an identifier to the LISP
@@ -33,9 +34,14 @@ class Buffer():
         # port will make a call to the LISP core with the results of
         # that computation, and the associated identifier.
         self.view.page().runJavaScript(script)
+        "0"  # callback ID
 
     def load(self, url):
         self.view.setUrl(QUrl(url))
+        return True
+
+    def delete(self):
+        self.view.hide()
         return True
 
 

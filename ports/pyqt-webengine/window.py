@@ -4,6 +4,7 @@ import buffers
 import minibuffer
 
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication
 
 
 #: A dictionary of current windows mapping an identifier (str) to a window (Window).
@@ -33,7 +34,7 @@ class Window():
     #: minibuffer height (px)
     minibuffer_height = 20
 
-    def __init__(self, identifier):
+    def __init__(self, identifier=None):
         self.qtwindow = QWidget()
 
         self.layout = QVBoxLayout()
@@ -47,6 +48,7 @@ class Window():
         self.layout.addWidget(self.buffer.view)
         self.layout.addWidget(self.minibuffer.view)
         self.qtwindow.setLayout(self.layout)
+        self.qtwindow.show()
 
     def set_title(self, title):
         """
@@ -69,6 +71,7 @@ class Window():
     def set_minibuffer_height(self, height):
         assert isinstance(height, int)
         self.minibuffer.set_height(height)
+        return True
 
     def minibuffer_evaluate_javascript(self, script):
         self.minibuffer.evaluate_javascript(script)
@@ -79,8 +82,12 @@ class Window():
         self.qtwindow.hide()
         return True
 
+    def exists(self):
+        if self.qtwindow.isVisible():
+            return True
 
-def make(identifier: str, core_dbus_proxy):
+
+def make(identifier: str):
     """Create a window, assign it the given unique identifier (str).
 
     We must pass a reference to the lisp core's dbus proxy, in order
@@ -89,12 +96,17 @@ def make(identifier: str, core_dbus_proxy):
     return: The Window identifier
     """
     assert isinstance(identifier, str)
-    window = Window(identifier=identifier, core_dbus_proxy=core_dbus_proxy)
-    window.widget.show()
+    window = Window(identifier=identifier)
     WINDOWS[window.identifier] = window
     logging.info("New window created, id {}".format(window.identifier))
     return identifier
 
 
-def exists(identifier):
-    return True
+def active():
+    """
+    Return the active window.
+    """
+    active_window = QApplication.activeWindow()
+    for key, value in WINDOWS.items():
+        if value.qtwindow == active_window:
+            return value.identifier

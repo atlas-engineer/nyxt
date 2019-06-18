@@ -34,7 +34,7 @@ PLATFORM_PORT_NAME = "engineer.atlas.next.platform"
 
 
 class DBusWindow(dbus.service.Object):
-    # lisp core dbus proxy.
+    # Lisp core dbus proxy.
     core_dbus_proxy = None
 
     def __init__(self, conn, object_path=PLATFORM_PORT_OBJECT_PATH, core_dbus_proxy=None):
@@ -45,7 +45,7 @@ class DBusWindow(dbus.service.Object):
     def window_make(self, window_id):
         return window.make(window_id)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def window_set_title(self, window_id, title):
         _window = window.get_window(window_id)
         return _window.set_title(title)
@@ -53,24 +53,19 @@ class DBusWindow(dbus.service.Object):
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_delete(self, window_id):
         _window = window.get_window(window_id)
-        return _window.delete(window_id)
-
-    #  DEVELOPER HELP FUNCTION
-    @dbus.service.method(PLATFORM_PORT_NAME)
-    def window_killall(self):
-        return utility.killall()
+        return _window.delete()
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_active(self):
-        pass
+        return window.active()
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_exists(self, window_id):
-        return window.exists(window_id)
-
-    @dbus.service.method(PLATFORM_PORT_NAME)
-    def window_list(self):
-        return window.list_windows()
+        try:
+            _window = window.get_window(window_id)
+            return _window.exists()
+        except Exception:
+            return False
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def window_set_active_buffer(self, window_id, buffer_id):
@@ -81,7 +76,7 @@ class DBusWindow(dbus.service.Object):
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='si')
     def window_set_minibuffer_height(self, window_id, height):
         _window = window.get_window(window_id)
-        _window.set_minibuffer_height(height)
+        return _window.set_minibuffer_height(height)
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def buffer_make(self, buffer_id):
@@ -89,12 +84,13 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def buffer_delete(self, buffer_id):
-        pass
+        _buffer = buffers.get_buffer(buffer_id)
+        return _buffer.delete()
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def buffer_load(self, buffer_id, url):
         _buffer = buffers.get_buffer(buffer_id)
-        _buffer.load(url)
+        return _buffer.load(url)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def buffer_evaluate_javascript(self, buffer_id, script):
@@ -104,11 +100,22 @@ class DBusWindow(dbus.service.Object):
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def minibuffer_evaluate_javascript(self, window_id, script):
         _window = window.get_window(window_id)
-        _window.minibuffer_evaluate_javascript(script)
+        return _window.minibuffer_evaluate_javascript(script)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def generate_input_event(self):
-        utility.generate_input_event()
+        pass
+        # utility.generate_input_event()
+
+    #  DEVELOPER HELP FUNCTION
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_killall(self):
+        return utility.killall()
+
+    #  DEVELOPER HELP FUNCTION
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def window_list(self):
+        return utility.list_windows()
 
 
 def main():
@@ -118,14 +125,10 @@ def main():
     session_bus = dbus.SessionBus()
     # name/dbuswindow MUST be defined even if not used.
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
-
-    CORE_INTERFACE = "engineer.atlas.next.core"
-    CORE_OBJECT_PATH = "/engineer/atlas/next/core"
-    core_dbus_proxy = session_bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
-
-    dbuswindow = DBusWindow(session_bus, core_dbus_proxy=core_dbus_proxy)  # noqa: F841
-
-    window.make("0", core_dbus_proxy)
+    # CORE_INTERFACE = "engineer.atlas.next.core"
+    # CORE_OBJECT_PATH = "/engineer/atlas/next/core"
+    # core_dbus_proxy = session_bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
+    dbuswindow = DBusWindow(session_bus)  # noqa: F841
     app.exec_()
 
 
