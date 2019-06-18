@@ -14,7 +14,7 @@ class Modifier():
 MODIFIER_NAMES = []
 KEY_BLACKLIST = []
 
-#: A dictionnary of current windows mapping an identifier (str) to a window (Window).
+#: A dictionary of current windows mapping an identifier (str) to a window (Window).
 WINDOWS = {}
 
 #: Key modifiers.
@@ -32,6 +32,7 @@ modifiers = {
 }
 
 CORE_INTERFACE = "engineer.atlas.next.core"
+
 
 def is_modifier(key):
     return key in modifiers.keys()
@@ -94,16 +95,17 @@ class MyQWidget(QWidget):
             logging.info("Sending push-key-event now with key {} and modifiers {}".format(
                 event.key(), self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
-            self.core_dbus_proxy.push_input_event(event.key(),
-                                          event.text(),
-                                          self.get_modifiers_list(),
-                                          0.0, 0.0, 0,
-                                          self.parent_identifier,  # sender
-                                          # Give handlers to make the call asynchronous.
-                                          # lambdas don't work.
-                                          reply_handler=self.handle_reply,
-                                          error_handler=self.handle_error,
-                                          dbus_interface=CORE_INTERFACE)
+            self.core_dbus_proxy.push_input_event(
+                event.key(),
+                event.text(),
+                self.get_modifiers_list(),
+                0.0, 0.0, 0,
+                self.parent_identifier,  # sender
+                # Give handlers to make the call asynchronous.
+                # lambdas don't work.
+                reply_handler=self.handle_reply,
+                error_handler=self.handle_error,
+                dbus_interface=CORE_INTERFACE)
 
         self.get_key_sequence()
 
@@ -137,10 +139,18 @@ class MyQWidget(QWidget):
         logging.info("Mouse press")
 
 
-#: A window contains a base widget, a layout, an id (int), a minibuffer.
+def get_window(identifier):
+    window = WINDOWS.get(identifier)
+    if window:
+        return window
+    else:
+        raise Exception("Window ID: {} not found!".format(identifier))
+
+
+#: A window contains a window widget, a layout, an id (int), a minibuffer.
 class Window():
     #: the actual QWidget.
-    widget = None
+    qtwindow = None
     #: layout, that holds the buffer and the minibuffer.
     layout = None
     #: window identifier (str)
@@ -152,8 +162,8 @@ class Window():
     #: minibuffer height (px)
     minibuffer_height = 20
 
-    def __init__(self, identifier, core_dbus_proxy=None):
-        self.widget = MyQWidget(core_dbus_proxy=core_dbus_proxy, identifier=identifier)
+    def __init__(self, identifier):
+        self.qtwindow = MyQWidget(identifier=identifier)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -165,7 +175,38 @@ class Window():
 
         self.layout.addWidget(self.buffer.view)
         self.layout.addWidget(self.minibuffer.view)
-        self.widget.setLayout(self.layout)
+        self.qtwindow.setLayout(self.layout)
+
+    def set_title(self, title):
+        """
+        Set the title of the window.
+        """
+        logging.info("Set title: {}, {}".format(self.identifier, title))
+        self.qtwindow.setWindowTitle(title)
+        logging.info("Title set for window {} !".format(self.identifier))
+        return title
+
+    def set_active_buffer(self, buffer):
+        """
+        Set the active buffer of the window to buffer.
+        """
+        self.layout.removeWidget(self.buffer.view)
+        self.layout.insertWidget(0, buffer.view)
+        self.buffer = buffer
+        return True
+
+    def set_minibuffer_height(self, height):
+        assert isinstance(height, int)
+        self.minibuffer.set_height(height)
+
+    def minibuffer_evaluate_javascript(self, script):
+        self.minibuffer.evaluate_javascript(script)
+        return "0"  # callback ID
+
+    def delete(self):
+        # del self.qtwindow
+        self.qtwindow.hide()
+        return True
 
 
 def make(identifier: str, core_dbus_proxy):
@@ -184,80 +225,5 @@ def make(identifier: str, core_dbus_proxy):
     return identifier
 
 
-def delete(identifier):
-    assert isinstance(identifier, str)
-    window = WINDOWS.get(identifier)
-
-    if not window:
-        logging.info("Could not find a window of id {}".format(identifier))
-        logging.info("Windows: {}".format(WINDOWS))
-        return False
-    # Do not delete all widgets, they are transient of windows.
-    if window.layout is not None:
-        # https://stackoverflow.com/questions/9374063/remove-widgets-and-layout-as-well
-        while window.layout.count():
-            item = window.layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                logging.info("Deleting widget {}".format(widget))
-                widget.deleteLater()
-
-        del window.layout
-
-    del WINDOWS[identifier]
-    logging.info("Deleted window {}. Remaining windows: {}".format(identifier, WINDOWS))
-    return True
-
-
 def exists(identifier):
     return True
-
-
-def killall():
-    ids = list(WINDOWS.keys())  # list, not dict_keys object.
-    length = len(ids)
-    for id in ids:
-        delete(id)
-    logging.info("{} windows deleted.".format(length))
-
-def list_windows():
-    """
-    Print all windows with their ID.
-    For development.
-    """
-    print("Windows: ")
-    for key, val in WINDOWS.items():
-        print("{}: {}".format(key, val))
-
-def set_title(identifier, title, **kwargs):
-    """
-    Set the title of the window of identifier `identifier` (str).
-    Return the new title if it was changed, a blank string otherwise.
-    """
-    logging.info("Set title: {}, {}".format(identifier, title))
-    assert isinstance(identifier, str)
-    window = WINDOWS.get(identifier)
-    if window:
-        window.widget.setWindowTitle(title)
-        logging.info("Title set for window {} !".format(identifier))
-        return title
-    logging.warning("Unable to set title for window {}, could not find window.".format(identifier))
-    return ""
-
-
-def set_minibuffer_height(identifier, height):
-    assert isinstance(identifier, str)
-    assert isinstance(height, int)
-    window = WINDOWS.get(identifier)
-    if window:
-        window.minibuffer.set_height(height)
-    else:
-        logging.warning("No window for id: {}".format(identifier))
-
-
-def minibuffer_evaluate_javascript(identifier, script):
-    window = WINDOWS.get(identifier)
-    if window:
-        window.minibuffer.evaluate_javascript(script)
-    else:
-        logging.warning("No window for id: {}".format(identifier))

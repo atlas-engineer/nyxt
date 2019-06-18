@@ -1,6 +1,7 @@
 import logging
 
 import utility
+import buffers
 import window
 
 # from dbus.mainloop.glib import DBusGMainLoop
@@ -42,15 +43,17 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_make(self, window_id):
-        return window.make(window_id, self.core_dbus_proxy)
+        return window.make(window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_set_title(self, window_id, title):
-        return window.set_title(window_id, title)
+        _window = window.get_window(window_id)
+        return _window.set_title(title)
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def window_delete(self, window_id):
-        return window.delete(window_id)
+        _window = window.get_window(window_id)
+        return _window.delete(window_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_killall(self):
@@ -70,15 +73,18 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def window_set_active_buffer(self, window_id, buffer_id):
-        return True  # TODO:
+        _window = window.get_window(window_id)
+        _buffer = buffers.get_buffer(buffer_id)
+        return _window.set_active_buffer(_buffer)
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='si')
     def window_set_minibuffer_height(self, window_id, height):
-        window.set_minibuffer_height(window_id, height)
+        _window = window.get_window(window_id)
+        _window.set_minibuffer_height(height)
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def buffer_make(self, buffer_id):
-        pass
+        return buffers.make(buffer_id)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def buffer_delete(self, buffer_id):
@@ -86,15 +92,18 @@ class DBusWindow(dbus.service.Object):
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def buffer_load(self, buffer_id, url):
-        pass
+        _buffer = buffers.get_buffer(buffer_id)
+        _buffer.load(url)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def buffer_evaluate_javascript(self, buffer_id, script):
-        pass
+        _buffer = buffers.get_buffer(buffer_id)
+        return _buffer.evaluate_javascript(script)
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def minibuffer_evaluate_javascript(self, window_id, script):
-        window.minibuffer_evaluate_javascript(window_id, script)
+        _window = window.get_window(window_id)
+        _window.minibuffer_evaluate_javascript(script)
 
     @dbus.service.method(PLATFORM_PORT_NAME)
     def generate_input_event(self):

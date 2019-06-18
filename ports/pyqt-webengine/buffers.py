@@ -1,5 +1,18 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl
+import logging
+
+#: A dictionary of current buffers mapping an identifier (str) to a
+#  buffer (Buffer).
+BUFFERS = {}
+
+
+def get_buffer(identifier):
+    buffer = BUFFERS.get(identifier)
+    if buffer:
+        return buffer
+    else:
+        raise Exception("Buffer ID: {} not found!".format(identifier))
 
 
 class Buffer():
@@ -21,5 +34,21 @@ class Buffer():
         # that computation, and the associated identifier.
         self.view.page().runJavaScript(script)
 
-    def set_url(self, url):
+    def load(self, url):
         self.view.setUrl(QUrl(url))
+        return True
+
+
+def make(identifier: str):
+    """Create a buffer, assign it the given unique identifier (str).
+
+    We must pass a reference to the lisp core's dbus proxy, in order
+    to send asynchronous input events (key, mouse etc).
+
+    return: The Buffer identifier
+    """
+    assert isinstance(identifier, str)
+    buffer = Buffer(identifier=identifier)
+    BUFFERS[buffer.identifier] = buffer
+    logging.info("New buffer created, id {}".format(buffer.identifier))
+    return identifier
