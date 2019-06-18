@@ -62,6 +62,7 @@ class Window():
     def set_active_buffer(self, buffer):
         """
         Set the active buffer of the window to buffer.
+        FIXME: Results in strange behavior
         """
         self.layout.removeWidget(self.buffer.view)
         self.layout.insertWidget(0, buffer.view)

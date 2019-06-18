@@ -1,5 +1,6 @@
 import logging
 from window import WINDOWS, get_window
+from buffers import BUFFERS
 # from PyQt5.QtGui import QKeyEvent
 # from PyQt5.QtCore import QEvent, Qt, QCoreApplication
 
@@ -29,4 +30,14 @@ def list_windows():
     """
     print("Windows: ")
     for key, val in WINDOWS.items():
+        print("{}: {}".format(key, val))
+
+
+def list_buffers():
+    """
+    Print all buffers with their ID.
+    For development.
+    """
+    print("Buffers: ")
+    for key, val in BUFFERS.items():
         print("{}: {}".format(key, val))

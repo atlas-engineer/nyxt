@@ -54,6 +54,10 @@ def main():
         # list windows.
         command = "window_list"
 
+    elif "-b" in sys.argv:
+        # list buffers.
+        command = "buffer_list"
+
     else:
         # Make window.
         # give a pseudo random str as window id, we don't keep count of windows here.

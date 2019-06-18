@@ -82,7 +82,7 @@ class DBusWindow(dbus.service.Object):
     def buffer_make(self, buffer_id):
         return buffers.make(buffer_id)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
     def buffer_delete(self, buffer_id):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.delete()
@@ -92,7 +92,7 @@ class DBusWindow(dbus.service.Object):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.load(url)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
     def buffer_evaluate_javascript(self, buffer_id, script):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.evaluate_javascript(script)
@@ -116,6 +116,11 @@ class DBusWindow(dbus.service.Object):
     @dbus.service.method(PLATFORM_PORT_NAME)
     def window_list(self):
         return utility.list_windows()
+
+    #  DEVELOPER HELP FUNCTION
+    @dbus.service.method(PLATFORM_PORT_NAME)
+    def buffer_list(self):
+        return utility.list_buffers()
 
 
 def main():
