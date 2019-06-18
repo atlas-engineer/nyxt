@@ -129,8 +129,6 @@ class MyQWidget(QWidget):
                 error_handler=self.handle_error,
                 dbus_interface=CORE_INTERFACE)
 
-        self.get_key_sequence()
-
     def get_modifiers_list(self):
         """
         Return the sequence modifiers as a list of strings ("C", "S" etc).
@@ -259,3 +257,18 @@ def active():
             logging.info("Active window id: {}".format(value.identifier))
             return value.identifier
     logging.info("No active window found in {} windows.".format(len(WINDOWS)))
+
+
+def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
+    """The lisp core tells us to generate this key event.
+
+    - window_id: str
+    - key_code: int
+    - modifiers: [str]
+    - x, y: float
+    """
+    logging.info('generating this input event: window id {}, key code {}, modifiers {}'.
+                 format(window_id, key_code, modifiers))
+    logging.info('it just has to be done !')
+    # event = QKeyEvent(QEvent.KeyPress, Qt.Key_A, Qt.NoModifier)  # TODO:
+    # QCoreApplication.postEvent(get_window(window_id).qtwindow, event)

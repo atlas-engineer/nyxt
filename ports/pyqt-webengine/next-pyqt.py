@@ -102,10 +102,9 @@ class DBusWindow(dbus.service.Object):
         _window = window.get_window(window_id)
         return _window.minibuffer_evaluate_javascript(script)
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
-    def generate_input_event(self):
-        pass
-        # utility.generate_input_event()
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='siasidd')
+    def generate_input_event(self, window_id, key_code, modifiers, low_level_data, x, y):
+        window.generate_input_event(window_id, key_code, modifiers, low_level_data, x, y)
 
     #  DEVELOPER HELP FUNCTION
     @dbus.service.method(PLATFORM_PORT_NAME)
