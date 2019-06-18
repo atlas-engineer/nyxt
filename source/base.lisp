@@ -63,10 +63,10 @@ Set to '-' to read standard input instead."))
            (format t "Bye!~&")
            (uiop:quit)))))
 
-(defun ping-platform-port (&optional (bus-type (dbus:session-server-addresses)))
+(defun ping-platform-port (&optional (bus-type (session-server-addresses)))
   (dbus:with-open-bus (bus bus-type)
     (member +platform-port-name+ (dbus:list-names bus)
-            :test #'string=)))
+            :test #'equal)))
 
 (defmethod initialize-port ((interface remote-interface))
   ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
