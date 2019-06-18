@@ -44,10 +44,12 @@ Otherwise, build a search query with the default search engine."
              input-url)
             ((or (string= "file" recognized-scheme)
                  (probe-file input-url))
-             (format nil "file://~a"
-                     (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*)))
+             (if (string= "file" recognized-scheme)
+                 input-url
+                 (format nil "file://~a"
+                         (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*))))
             ((quri:uri-p (ignore-errors
-                           (quri:uri (str:concat "https://" input-url))))
+                          (quri:uri (str:concat "https://" input-url))))
              (str:concat "https://" input-url))
             (t (generate-search-query input-url (rest default))))))))
 
