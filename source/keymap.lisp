@@ -53,7 +53,7 @@ For example, it may add C-M-s or C-x to a stack which will be consumed by
 ;; What about reserving a prefix key for application mode and root mode?
 (defun consume-key-sequence-p (sender)
   (let* ((active-window (or (gethash sender (windows *interface*))
-                            (error "no active window for sender ~a" sender)))
+                            (error "no window of ID '~a'." sender)))
          (active-buffer (or (active-buffer active-window)
                             (error "no active buffer for sender ~a and active-window ~a" sender active-window)))
          (local-map (if (minibuffer-active active-window)
