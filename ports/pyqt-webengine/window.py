@@ -79,7 +79,7 @@ class MyQWidget(QWidget):
         logging.info("async reply received: {}".format(r))
 
     def handle_error(self, e):
-        logging.info("async error: {}".format(e))
+        logging.info("error callback received: {}".format(e))
 
     def keyReleaseEvent(self, event):
         """
@@ -233,6 +233,9 @@ def active():
     Return the active window.
     """
     active_window = QApplication.activeWindow()
+    logging.info("Active window by PyQt is {}.".format(active_window))
     for key, value in WINDOWS.items():
         if value.qtwindow == active_window:
+            logging.info("Active window id: {}".format(value.identifier))
             return value.identifier
+    logging.info("No active window found in {} windows.".format(len(WINDOWS)))

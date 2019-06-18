@@ -31,6 +31,10 @@ def main():
         command = "window_set_title"
         args = [window_id, title]
 
+    elif "-a" in sys.argv:
+        # Active window ?
+        command = "window_active"
+
     elif "-h" in sys.argv:
         # set minibuffer height (int).
         command = "window_set_minibuffer_height"
