@@ -446,7 +446,7 @@ Deal with URL with the following rules:
          (and (equal modifiers '("C"))
               (string= mouse-button "button1")))
      (log:info "Load ~a in new buffer" url)
-     (make-buffers url)
+     (make-buffers (list url))
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
