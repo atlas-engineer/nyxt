@@ -34,7 +34,7 @@ class Buffer():
         # port will make a call to the LISP core with the results of
         # that computation, and the associated identifier.
         self.view.page().runJavaScript(script)
-        "0"  # callback ID
+        "0"  # TODO: callback ID
 
     def load(self, url):
         self.view.setUrl(QUrl(url))

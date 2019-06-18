@@ -76,7 +76,7 @@ class Window():
 
     def minibuffer_evaluate_javascript(self, script):
         self.minibuffer.evaluate_javascript(script)
-        return "0"  # callback ID
+        return "0"  # TODO: callback ID
 
     def delete(self):
         # del self.qtwindow
