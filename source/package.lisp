@@ -12,6 +12,13 @@
   (:use :common-lisp)
   (:nicknames :next/engine/http)
   (:export
+   #:resolved-uri
+   #:requested-uri
+   #:header
+   #:file
+   #:downloaded-bytes
+   #:total-bytes
+   #:progress
    #:cache
    #:resolve))
 

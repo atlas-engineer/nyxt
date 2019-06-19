@@ -78,6 +78,11 @@ MODE-SYMBOL can be for instance \"'root-mode\"."
   (find-if (lambda (m) (eq mode-symbol (class-name (class-of m))))
            (modes buffer)))
 
+(defun find-buffer (mode-symbol &optional (interface *interface*))
+  (find-if (lambda (b)
+             (find-mode b mode-symbol))
+           (alexandria:hash-table-values (buffers interface))))
+
 (defmethod keymap ((mode root-mode))
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."

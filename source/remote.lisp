@@ -133,7 +133,9 @@ commands.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
    (key-chord-stack :accessor key-chord-stack :initform '()
-                    :documentation "A stack that keeps track of the key chords a user has inputted.")))
+                    :documentation "A stack that keeps track of the key chords a user has inputted.")
+   (downloads :accessor downloads :initform '()
+              :documentation "List of downloads.")))
 
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
@@ -462,6 +464,8 @@ Deal with URL with the following rules:
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
+     (let ((download (next/engine:resolve url)))
+       (push download (downloads *interface*)))
      nil)
     (t
      (log:info "Forwarding ~a back to platform port" url)

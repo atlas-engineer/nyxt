@@ -4,7 +4,7 @@
 (defmethod cache ((type (eql :uri)) uri)
   (locally-cache uri))
 
-(defun downloads-directory (&optional args)
+(defun downloads-directory ()
   (ensure-directories-exist (truename #p"~/Downloads/")))
 
 (defun ensure-unique-file (file)
@@ -18,31 +18,42 @@
 
 (defun locally-cache (requested-uri
                       &key
-                        (directory (downloads-directory))
-                        (buffer-size 16)) ;; small for testing
+                        (directory (downloads-directory)))
 
   (multiple-value-bind (stream status response-headers resolved-uri)
       (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil)
-    (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
-           (file (ensure-unique-file
-                  (merge-pathnames directory (extract-filename requested-uri))))
-           (bytes-read 0))
-      (with-open-file (output file
-                              :direction :output
-                              :if-exists :supersede ;;; FIXME: rename to NAME-1.TYPE, NAME-2.TYPE
-                              :element-type '(unsigned-byte 8))
-        (log:info "Downloading~%  ~a~%to~%  '~a'.~%"
-                  resolved-uri file)
-        (loop :for byte-position = (read-sequence buffer stream)
+    (let* ((file (ensure-unique-file
+                  (merge-pathnames directory (extract-filename requested-uri)))))
+      ;; TODO: Touch file now to ensure uniqueness when actually downloading?
+      (make-instance 'download
+                     :requested-uri requested-uri
+                     :resolved-uri resolved-uri
+                     :header response-headers
+                     :file file
+                     :status status
+                     :downstream stream))))
 
-              :when (plusp byte-position)
-                :do (incf bytes-read byte-position)
+;; TODO: Rename DOWNLOAD method to FETCH?
+(defmethod download ((download download)
+                     &key (buffer-size 16)) ; Small for testing.
+  "Return the number of bytes fetched."
+  (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
+         (bytes-read 0))
+    (with-open-file (output (file download)
+                            :direction :output
+                            :if-exists :supersede
+                            :element-type '(unsigned-byte 8))
+      (log:info "Downloading~%  ~a~%to~%  '~a'.~%"
+                (resolved-uri download) (file download))
+      (loop :for byte-position = (read-sequence buffer (downstream download))
 
-              :if (plusp byte-position)
-                :do (write-sequence buffer output :end byte-position)
-              :else :return nil))
-      (values file resolved-uri status response-headers
-              requested-uri))))
+            :when (plusp byte-position)
+              :do (incf bytes-read byte-position)
+
+            :if (plusp byte-position)
+              :do (write-sequence buffer output :end byte-position)
+            :else :return nil))
+    bytes-read))
 
 #|
 (defun extract-filename (u

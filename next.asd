@@ -25,7 +25,8 @@
                :closer-mop
                :ironclad
                :dbus
-               :dexador)
+               :dexador
+               :next/engine/https)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
@@ -57,6 +58,7 @@
                  (:file "blocker-mode")
                  (:file "proxy-mode")
                  (:file "noscript-mode")
+                 (:file "download-mode")
                  ;; Port Compatibility Layers
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base
@@ -65,9 +67,10 @@
   :build-pathname "next"
   :entry-point "next:start-with-port")
 
-(defsystem next/engine
+(asdf:defsystem next/engine
   ;; Can't depend on next!
-  :depends-on (lparallel)
+  :depends-on (lparallel
+               log4cl)
   ;; So we include package definitions for requirees of this system.
   :components ((:module base :pathname "source/"
                 :components ((:file "package")))
@@ -75,14 +78,14 @@
                 :depends-on (base)
                 :components ((:file "engine")))))
 
-(defsystem next/engine/https
+(asdf:defsystem next/engine/https
   :depends-on (next/engine
                dexador
                quri)
   :components ((:module source :pathname "source/"
                 :components ((:file "download")))))
 
-(defsystem next/tests
+(asdf:defsystem next/tests
   :in-order-to ((test-op (test-op next/engine/t))))
 
 ;;; TODO fix upstream ASDF to successfully locate and load
@@ -91,7 +94,7 @@
   (unless (ignore-errors (asdf:find-system :prove-asdf))
     (ql:quickload :prove-asdf)))
 
-(defsystem next/engine/tests
+(asdf:defsystem next/engine/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove
                next/engine/https)
