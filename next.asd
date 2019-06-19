@@ -66,27 +66,23 @@
   :entry-point "next:start-with-port")
 
 (defsystem next/engine
-                                        ; Can't depend on next!
+  ;; Can't depend on next!
   :depends-on (lparallel)
-
-                                        ; So we include package
-                                        ; definitions for requirees of
-                                        ; this system.
+  ;; So we include package definitions for requirees of this system.
   :components ((:module base :pathname "source/"
-                        :components ((:file "package")
-                                     (:file "config")))
+                :components ((:file "package")))
                (:module source :pathname "source/"
-                        :depends-on (base)
-                        :components ((:file "engine")))))
+                :depends-on (base)
+                :components ((:file "engine")))))
 
 (defsystem next/engine/https
   :depends-on (next/engine
                dexador
-               puri)
+               quri)
   :components ((:module source :pathname "source/"
-                        :components ((:file "download")))))
+                :components ((:file "download")))))
 
-(defsystem next/t
+(defsystem next/tests
   :in-order-to ((test-op (test-op next/engine/t))))
 
 ;;; TODO fix upstream ASDF to successfully locate and load
@@ -95,11 +91,11 @@
   (unless (ignore-errors (asdf:find-system :prove-asdf))
     (ql:quickload :prove-asdf)))
 
-(defsystem next/engine/t
+(defsystem next/engine/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove
-                      next/engine/https)
-  :components ((:module source/t :pathname "source/t/"
+               next/engine/https)
+  :components ((:module source/tests :pathname "source/tests/"
                 :components ((:test-file "manager"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))

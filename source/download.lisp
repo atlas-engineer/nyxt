@@ -1,15 +1,17 @@
-;;; skeleton for a download manager
+;;; Download manager backend.
 (in-package :next/engine)
 
 (defmethod cache ((type (eql :uri)) uri)
   (locally-cache uri))
 
+(defun downloads-directory (&optional args)
+  (truename #p"~/Downloads/"))
+
 (defun locally-cache (requested-uri
                       &key
-                        (directory (Downloads/))
-                        (verbose *standard-output*)
+                        (directory (downloads-directory))
                         (buffer-size 16)) ;; small for testing
-  
+
   (multiple-value-bind (stream status response-headers resolved-uri)
       (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil)
     (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
@@ -19,16 +21,16 @@
                               :direction :output
                               :if-exists :supersede ;;; FIXME: rename to NAME-1.TYPE, NAME-2.TYPE
                               :element-type '(unsigned-byte 8))
-        (format verbose "Downloading~%  ~a~%to~%  '~a'.~%"
-                resolved-uri file)
+        (log:info "Downloading~%  ~a~%to~%  '~a'.~%"
+                  resolved-uri file)
         (loop :for byte-position = (read-sequence buffer stream)
 
-           :when (plusp byte-position)
-           :do (incf bytes-read byte-position)
+              :when (plusp byte-position)
+                :do (incf bytes-read byte-position)
 
-           :if (plusp byte-position)
-           :do (write-sequence buffer output :end byte-position)
-           :else :return nil))
+              :if (plusp byte-position)
+                :do (write-sequence buffer output :end byte-position)
+              :else :return nil))
       (values file resolved-uri status response-headers
               requested-uri))))
 
@@ -41,8 +43,8 @@
   (let ((s (typecase u
              (string
               u)
-             (puri:uri 
-              (puri::uri-string u))
+             (quri:uri
+              (quri::uri-string u))
              (pathname
               (namestring u))
              (t
@@ -50,11 +52,11 @@
                       u fallback-uri-string)
               fallback-uri-string))))
     (let ((rightmost-path-separator (position #\/ s :from-end t)))
-      (let ((result 
+      (let ((result
              (when rightmost-path-separator
                (subseq s (1+ rightmost-path-separator)))))
-        (if (or (null result) 
-                (not (plusp (length result)))) 
+        (if (or (null result)
+                (not (plusp (length result))))
             "killroy.cache" ;; FIXME
             result)))))
 |#
@@ -65,27 +67,25 @@
   (let ((s (typecase uri
              (string
               uri)
-             (puri:uri
-              (puri::uri-string uri)))))
+             (quri:uri
+              (quri::uri-string uri)))))
     (let ((rightmost-path (position #\/ s :from-end t)))
-      (let ((result 
+      (let ((result
              (when rightmost-path
                (subseq s (1+ rightmost-path)))))
-        (if (or (null result) 
-                (not (plusp (length result)))) 
+        (if (or (null result)
+                (not (plusp (length result))))
             "unparsed" ;; FIXME
             result)))))
 |#
 
 (defun extract-filename (uri)
-  "Extract a filename to save the contents of a URI under"
+  "Extract a filename to save the contents of a URI under."
     (let ((rightmost-path (position #\/ uri :from-end t)))
-      (let ((result 
+      (let ((result
              (when rightmost-path
                (subseq uri (1+ rightmost-path)))))
-        (if (or (null result) 
-                (not (plusp (length result)))) 
+        (if (or (null result)
+                (not (plusp (length result))))
             "killroy.raw" ;; FIXME
             result))))
-
-

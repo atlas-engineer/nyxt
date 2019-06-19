@@ -1,4 +1,4 @@
-;;; package.lisp --- definition of package used by next
+;;; package.lisp --- Definition of packages used by Next.
 
 (in-package :cl-user)
 
@@ -22,8 +22,3 @@
    #:
    #:locally-cache
    #:Downloads/))
-
-   
-
-
-
