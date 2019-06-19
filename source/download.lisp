@@ -7,6 +7,15 @@
 (defun downloads-directory (&optional args)
   (ensure-directories-exist (truename #p"~/Downloads/")))
 
+(defun ensure-unique-file (file)
+  "Return FILE if unique or suffix it with a number otherwise."
+  (loop with original-name = file
+        with suffix = 1
+        while (probe-file file)
+        do (setf file (format nil  "~a.~a" original-name suffix) )
+        do (incf suffix))
+  file)
+
 (defun locally-cache (requested-uri
                       &key
                         (directory (downloads-directory))
@@ -15,7 +24,8 @@
   (multiple-value-bind (stream status response-headers resolved-uri)
       (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil)
     (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
-           (file (merge-pathnames directory (extract-filename requested-uri)))
+           (file (ensure-unique-file
+                  (merge-pathnames directory (extract-filename requested-uri))))
            (bytes-read 0))
       (with-open-file (output file
                               :direction :output
