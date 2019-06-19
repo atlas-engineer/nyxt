@@ -85,15 +85,6 @@
   :components ((:module source :pathname "source/"
                 :components ((:file "download")))))
 
-(asdf:defsystem next/tests
-  :in-order-to ((test-op (test-op next/engine/t))))
-
-;;; TODO fix upstream ASDF to successfully locate and load
-;;;      DEFSYSTEM-DEPENDS-ON clauses
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (ignore-errors (asdf:find-system :prove-asdf))
-    (ql:quickload :prove-asdf)))
-
 (asdf:defsystem next/engine/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove
