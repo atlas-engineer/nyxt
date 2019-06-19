@@ -5,7 +5,7 @@
   (locally-cache uri))
 
 (defun downloads-directory (&optional args)
-  (truename #p"~/Downloads/"))
+  (ensure-directories-exist (truename #p"~/Downloads/")))
 
 (defun locally-cache (requested-uri
                       &key
