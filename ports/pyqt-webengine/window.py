@@ -15,7 +15,7 @@ from PyQt5.QtGui import QKeyEvent
 WINDOWS = {}
 
 #: Key modifiers.
-modifiers = {
+MODIFIERS = {
     Qt.Key_Shift: "s",
     Qt.Key_Control: "C",
     Qt.Key_CapsLock: "Lock",
@@ -40,7 +40,7 @@ def get_window(identifier):
 
 
 def is_modifier(key):
-    return key in modifiers.keys()
+    return key in MODIFIERS.keys()
 
 
 class MyQWidget(QWidget):
@@ -133,7 +133,8 @@ class MyQWidget(QWidget):
         """
         Return the sequence modifiers as a list of strings ("C", "S" etc).
         """
-        return [modifiers[key] for key in self.modifiers_stack]
+        # dbus always expects an array of strings, not just [].
+        return [MODIFIERS[key] for key in self.modifiers_stack] or [""]
 
     def get_key_sequence(self):
         """Return a string representing the sequence: keycode, keyval,
