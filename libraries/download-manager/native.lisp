@@ -1,5 +1,5 @@
-;;; Download manager backend.
-(in-package :next/engine)
+;;; Native Common Lisp download manager backend.
+(in-package :download-manager)
 
 (defmethod cache ((type (eql :uri)) uri)
   (locally-cache uri))

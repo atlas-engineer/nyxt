@@ -1,5 +1,4 @@
-(in-package :next/engine)
-;; TODO: Move download manager files to a separate directory.
+(in-package :download-manager)
 
 (defgeneric cache (type uri))
 

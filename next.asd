@@ -26,7 +26,7 @@
                :ironclad
                :dbus
                :dexador
-               :next/engine/https)
+               :download-manager)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
@@ -67,29 +67,21 @@
   :build-pathname "next"
   :entry-point "next:start-with-port")
 
-(asdf:defsystem next/engine
-  ;; Can't depend on next!
+(asdf:defsystem download-manager
   :depends-on (lparallel
-               log4cl)
-  ;; So we include package definitions for requirees of this system.
-  :components ((:module base :pathname "source/"
-                :components ((:file "package")))
-               (:module source :pathname "source/"
-                :depends-on (base)
-                :components ((:file "engine")))))
-
-(asdf:defsystem next/engine/https
-  :depends-on (next/engine
+               log4cl
                dexador
                quri)
-  :components ((:module source :pathname "source/"
-                :components ((:file "download")))))
+  :components ((:module source :pathname "libraries/download-manager/"
+                :components ((:file "package")
+                             (:file "engine")
+                             (:file "native")))))
 
-(asdf:defsystem next/engine/tests
+(asdf:defsystem download-manager/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove
-               next/engine/https)
-  :components ((:module source/tests :pathname "source/tests/"
-                :components ((:test-file "manager"))))
+               download-manager)
+  :components ((:module source/tests :pathname "libraries/download-manager/tests/"
+                :components ((:test-file "tests"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))

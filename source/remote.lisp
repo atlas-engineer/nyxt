@@ -464,7 +464,7 @@ Deal with URL with the following rules:
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
-     (let ((download (next/engine:resolve url)))
+     (let ((download (download-manager:resolve url)))
        (push download (downloads *interface*)))
      nil)
     (t

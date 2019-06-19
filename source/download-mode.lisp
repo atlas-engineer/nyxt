@@ -20,10 +20,10 @@
                            collect
                            (cl-markup:markup
                             (:p (format nil "~a (~a bytes, ~a%) as ~a"
-                                        (quri:render-uri (next/engine:resolved-uri d))
-                                        (next/engine:total-bytes d) ; TODO: Print human size.
-                                        (floor (* 100 (next/engine:progress d)))
-                                        (next/engine:file d))))))))
+                                        (quri:render-uri (download-manager:resolved-uri d))
+                                        (download-manager:total-bytes d) ; TODO: Print human size.
+                                        (floor (* 100 (download-manager:progress d)))
+                                        (download-manager:file d))))))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
     (%%buffer-evaluate-javascript *interface* download-buffer insert-content)
