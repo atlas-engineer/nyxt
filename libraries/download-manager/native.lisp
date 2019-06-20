@@ -1,28 +1,18 @@
 ;;; Native Common Lisp download manager backend.
 (in-package :download-manager)
 
-(defmethod cache ((type (eql :uri)) uri)
-  (locally-cache uri))
-
-(defun downloads-directory ()
-  (ensure-directories-exist (truename #p"~/Downloads/")))
-
-(defun ensure-unique-file (file)
-  "Return FILE if unique or suffix it with a number otherwise."
-  (loop with original-name = file
-        with suffix = 1
-        while (probe-file file)
-        do (setf file (format nil  "~a.~a" original-name suffix) )
-        do (incf suffix))
-  file)
+(defmethod cache ((type (eql :uri)) uri &rest args)
+  (log:info uri args)
+  (apply #'locally-cache uri args))
 
 (defun locally-cache (requested-uri
                       &key
-                        (directory (downloads-directory)))
+                        (directory (download-directory)))
 
   (multiple-value-bind (stream status response-headers resolved-uri)
       (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil)
     (let* ((file (ensure-unique-file
+                  ;; TODO: Allow caller to set the target filename?
                   (merge-pathnames directory (extract-filename requested-uri)))))
       ;; TODO: Touch file now to ensure uniqueness when actually downloading?
       (make-instance 'download

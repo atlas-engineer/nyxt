@@ -137,12 +137,15 @@ commands.")
    (downloads :accessor downloads :initform '()
               :documentation "List of downloads.")
    (download-watcher :accessor download-watcher :initform nil
-                     :documentation "List of downloads.")))
+                     :documentation "List of downloads.")
+   (download-directory :accessor download-directory :initform nil
+                     :documentation "Path of directory where downloads will be
+stored.  Nil means use system default.")))
 
 (defun download-watch ()
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
-  (loop while (lparallel:receive-result download-manager:notifications)
+  (loop while (lparallel:receive-result download-manager:*notifications*)
         do (let ((buffer (find-buffer 'download-mode)))
              ;; Only update if buffer exists.  We update even when out of focus
              ;; because if we switch to the buffer after all downloads are
@@ -486,7 +489,9 @@ Deal with URL with the following rules:
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
-     (let ((download (download-manager:resolve url)))
+     (let ((download (download-manager:resolve
+                      url
+                      :directory (download-directory *interface*))))
        (download-add *interface* download))
      nil)
     (t

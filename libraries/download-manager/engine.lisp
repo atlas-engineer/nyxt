@@ -1,14 +1,40 @@
 (in-package :download-manager)
 
-(defgeneric cache (type uri))
+(defvar *default-download-directory* #p"~/Downloads/")
+(defun default-download-directory ()
+  (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")
+                                              :output '(:string :stripped t)))))
+    (when (or (null dir) (string= dir (uiop:getenv "HOME")))
+      (setf dir (uiop:getenv "XDG_DOWNLOAD_DIR")))
+    (unless dir
+      (setf dir *default-download-directory*))
+    dir))
 
-(defvar notifications nil
+(defun download-directory (&optional (directory (default-download-directory)))
+  "Return path to download directory.
+Create it if it does not exist."
+  (unless directory
+    (setf directory (default-download-directory)))
+  (unless (string= "" (file-namestring directory))
+    (setf directory (format nil "~a/" (namestring directory))))
+  (ensure-directories-exist (truename directory)))
+
+(defun ensure-unique-file (file)
+  "Return FILE if unique or suffix it with a number otherwise."
+  (loop with original-name = file
+        with suffix = 1
+        while (probe-file file)
+        do (setf file (format nil  "~a.~a" original-name suffix) )
+        do (incf suffix))
+  file)
+
+(defvar *notifications* nil
   "A channel which can be queried for download notifications.
 The channel return value is a `download'.")
 
 (defun init-kernel ()
   (setf lparallel:*kernel* (lparallel:make-kernel 8 :name "next-kernel"))
-  (setf notifications (lparallel:make-channel)))
+  (setf *notifications* (lparallel:make-channel)))
 
 (defun kill-kernel ()
   (lparallel:end-kernel :wait t))
@@ -39,7 +65,7 @@ download.")
    (update-interval :accessor update-interval :initarg :update-interval
                     :initform 1.0
                     :documentation "Time in floating seconds to wait before
-sending a notification to the `notifications' channel.")
+sending a notification to the `*notifications*' channel.")
    (last-update :accessor last-update :initarg :last-update
                 :initform 0.0
                 :documentation "Internal time when last notification was sent.
@@ -79,7 +105,7 @@ Only send if last update was more than `update-interval' seconds ago."
          (time-diff (- new-time (last-update download))))
     (when (or (< (update-interval download) time-diff)
               (finished-p download))
-      (lparallel:submit-task notifications (constantly download))
+      (lparallel:submit-task *notifications* (constantly download))
       (setf (last-update-speed download)
             (if (= 0 time-diff)
                 0
@@ -88,11 +114,13 @@ Only send if last update was more than `update-interval' seconds ago."
       (setf (bytes-last-update download) (bytes-fetched download))
       (setf (last-update download) new-time))))
 
-(defun resolve (uri)
-  "Resolve and locally cache URI."
+(defun resolve (uri &key (directory (download-directory)))
+  "Resolve and locally cache URI.
+If DIRECTORY is nil, `default-download-directory' will be used."
   (unless lparallel:*kernel*
     (init-kernel))
-  (let ((download (cache :uri uri))
+  (let ((download (cache :uri uri
+                         :directory (download-directory directory)))
         (channel (lparallel:make-channel)))
     (lparallel:submit-task channel #'download download)
     download))

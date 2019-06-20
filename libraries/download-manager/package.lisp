@@ -3,7 +3,8 @@
 (defpackage :download-manager
   (:use :common-lisp)
   (:export
-   #:notifications
+   #:*notifications*
+   #:default-download-directory
    #:download
    #:resolved-uri
    #:requested-uri
