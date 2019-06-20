@@ -25,15 +25,16 @@
                                         :style (if (download-manager:finished-p d)
                                                    "border: 2px solid" "")
                                         nil)
+                             ;; TODO: Print human size?
+                             " ("
+                             (format nil "~,,' :d B/s, " (download-manager:last-update-speed d))
+                             (format nil "~,,' :d bytes, " (download-manager:bytes-fetched d))
                              (if (= 0 (download-manager:bytes-total d))
-                                 (format nil " (~,,' :d bytes out of unknown total) "
-                                         (download-manager:bytes-fetched d))
-                                 (format nil " (~a% of ~,,' :d bytes) "
-                                         (floor (* 100 (download-manager:progress d)))
-                                         ;; TODO: Print human size?
-                                         (download-manager:bytes-total d)))
+                                 "out of unknown total"
+                                 (format nil "~a%"
+                                         (floor (* 100 (download-manager:progress d)))))
                              (:u (quri:render-uri (download-manager:resolved-uri d)))
-                             " as "
+                             ") as "
                              (:b (file-namestring (download-manager:file d)))))))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))

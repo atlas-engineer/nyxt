@@ -37,17 +37,24 @@ download.")
    (header :accessor header :initarg :header
            :initform "")
    (update-interval :accessor update-interval :initarg :update-interval
-                    :initform 1
-                    :documentation "Time in seconds to wait before sending a
-notification to the `notifications' channel.")
+                    :initform 1.0
+                    :documentation "Time in floating seconds to wait before
+sending a notification to the `notifications' channel.")
    (last-update :accessor last-update :initarg :last-update
-                :initform 0
-                :documentation "Universal time when last notification was sent.")
+                :initform 0.0
+                :documentation "Internal time when last notification was sent.
+This is a floating seconds.")
    (finished-p :accessor finished-p
                :initform nil
                :documentation "Non-nil if it has finished downloading.")
    (bytes-fetched :accessor bytes-fetched
-                  :initform 0)))
+                  :initform 0)
+   (bytes-last-update :accessor bytes-last-update
+                      :initform 0
+                      :documentation "Bytes fetched when last `update' was called.")
+   (last-update-speed :accessor last-update-speed
+                      :initform 0
+                      :documentation "Download speed in B/s when last `update' was called.")))
 
 (defmethod bytes-total ((download download))
   (gethash "content-length"
@@ -68,11 +75,18 @@ When progress cannot be computer (because bytes-total is unknown), return
 (defmethod update ((download download))
   "Send DOWNLOAD to the `notifications' channel.
 Only send if last update was more than `update-interval' seconds ago."
-  (when (or (< (update-interval download)
-               (- (get-universal-time) (last-update download)))
-            (finished-p download))
-    (lparallel:submit-task notifications (constantly download))
-    (setf (last-update download) (get-universal-time))))
+  (let* ((new-time (/ (get-internal-real-time) (float internal-time-units-per-second)))
+         (time-diff (- new-time (last-update download))))
+    (when (or (< (update-interval download) time-diff)
+              (finished-p download))
+      (lparallel:submit-task notifications (constantly download))
+      (setf (last-update-speed download)
+            (if (= 0 time-diff)
+                0
+                (/ (float (- (bytes-fetched download) (bytes-last-update download)))
+                   time-diff)))
+      (setf (bytes-last-update download) (bytes-fetched download))
+      (setf (last-update download) new-time))))
 
 (defun resolve (uri)
   "Resolve and locally cache URI."

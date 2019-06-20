@@ -13,5 +13,6 @@
    #:bytes-total
    #:progress
    #:finished-p
+   #:last-update-speed
    #:cache
    #:resolve))
