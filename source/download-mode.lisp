@@ -27,6 +27,7 @@
                                         :style (if (download-manager:finished-p d)
                                                    "border: 2px solid" "")
                                         nil)
+                             ;; TODO: Print proxy in use?
                              ;; TODO: Print human size?
                              " ("
                              (format nil "~,,' :d B/s, " (download-manager:last-update-speed d))

@@ -489,9 +489,17 @@ Deal with URL with the following rules:
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
-     (let ((download (download-manager:resolve
-                      url
-                      :directory (download-directory *interface*))))
+     (let* ((mode (find-mode buffer 'proxy-mode))
+            (proxied-downloads (and mode (proxied-downloads-p mode)))
+            (download nil))
+       (handler-case
+           (setf download (download-manager:resolve
+                           url
+                           :directory (download-directory *interface*)
+                           :proxy (and proxied-downloads
+                                       (server-address mode))))
+         (error (c)
+           (echo "Download error: ~a" c)))
        (download-add *interface* download))
      nil)
     (t

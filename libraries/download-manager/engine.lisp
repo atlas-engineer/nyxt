@@ -114,13 +114,16 @@ Only send if last update was more than `update-interval' seconds ago."
       (setf (bytes-last-update download) (bytes-fetched download))
       (setf (last-update download) new-time))))
 
-(defun resolve (uri &key (directory (download-directory)))
+(defun resolve (uri &key
+                    (directory (download-directory))
+                    proxy)
   "Resolve and locally cache URI.
 If DIRECTORY is nil, `default-download-directory' will be used."
   (unless lparallel:*kernel*
     (init-kernel))
   (let ((download (cache :uri uri
-                         :directory (download-directory directory)))
+                         :directory (download-directory directory)
+                         :proxy proxy))
         (channel (lparallel:make-channel)))
     (lparallel:submit-task channel #'download download)
     download))
