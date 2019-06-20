@@ -19,11 +19,19 @@
                      (loop for d in (downloads interface)
                            collect
                            (cl-markup:markup
-                            (:p (format nil "~a (~a bytes, ~a%) as ~a"
-                                        (quri:render-uri (download-manager:resolved-uri d))
-                                        (download-manager:total-bytes d) ; TODO: Print human size.
-                                        (floor (* 100 (download-manager:progress d)))
-                                        (download-manager:file d))))))))
+                            (:p
+                             (:progress :background "red" :value (format nil "~a" (download-manager:downloaded-bytes d))
+                                        :max (format nil "~a" (download-manager:total-bytes d))
+                                        :style (if (= (download-manager:progress d) 1)
+                                                   "border: 2px solid" "")
+                                        nil)
+                             (format nil " (~a% of ~a bytes) "
+                                     (floor (* 100 (download-manager:progress d)))
+                                     ;; TODO: Print human size?
+                                     (download-manager:total-bytes d))
+                             (:u (quri:render-uri (download-manager:resolved-uri d)))
+                             " as "
+                             (:b (file-namestring (download-manager:file d)))))))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
     (%%buffer-evaluate-javascript *interface* download-buffer insert-content)
