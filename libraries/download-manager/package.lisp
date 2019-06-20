@@ -3,6 +3,8 @@
 (defpackage :download-manager
   (:use :common-lisp)
   (:export
+   #:notifications
+   #:download
    #:resolved-uri
    #:requested-uri
    #:header
@@ -10,5 +12,6 @@
    #:downloaded-bytes
    #:total-bytes
    #:progress
+   #:finished-p
    #:cache
    #:resolve))

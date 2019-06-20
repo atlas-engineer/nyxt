@@ -6,7 +6,7 @@
     "Display list of downloads."
     ())
 
-(define-command download-list (root-mode &optional (interface *interface*))
+(defun download-refresh (&optional (interface *interface*))
   "Display a buffer listing all downloads."
   (let* ((download-buffer (or (find-buffer 'download-mode)
                               (make-buffer
@@ -22,10 +22,10 @@
                             (:p
                              (:progress :background "red" :value (format nil "~a" (download-manager:downloaded-bytes d))
                                         :max (format nil "~a" (download-manager:total-bytes d))
-                                        :style (if (= (download-manager:progress d) 1)
+                                        :style (if (download-manager:finished-p d)
                                                    "border: 2px solid" "")
                                         nil)
-                             (format nil " (~a% of ~a bytes) "
+                             (format nil " (~a% of ~,,' :d bytes) "
                                      (floor (* 100 (download-manager:progress d)))
                                      ;; TODO: Print human size?
                                      (download-manager:total-bytes d))
@@ -34,5 +34,9 @@
                              (:b (file-namestring (download-manager:file d)))))))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
-    (%%buffer-evaluate-javascript *interface* download-buffer insert-content)
-    (set-active-buffer *interface* download-buffer)))
+    (%%buffer-evaluate-javascript interface download-buffer insert-content)
+    download-buffer))
+
+(define-command download-list (root-mode &optional (interface *interface*))
+  "Display a buffer listing all downloads."
+  (set-active-buffer interface (download-refresh)))

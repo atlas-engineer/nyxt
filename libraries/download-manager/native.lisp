@@ -47,12 +47,15 @@
                 (resolved-uri download) (file download))
       (loop :for byte-position = (read-sequence buffer (downstream download))
 
+            :do (update download)
+
             :when (plusp byte-position)
               :do (incf bytes-read byte-position)
 
             :if (plusp byte-position)
               :do (write-sequence buffer output :end byte-position)
             :else :return nil))
+    (update download)
     bytes-read))
 
 #|

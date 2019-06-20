@@ -135,7 +135,27 @@ commands.")
    (key-chord-stack :accessor key-chord-stack :initform '()
                     :documentation "A stack that keeps track of the key chords a user has inputted.")
    (downloads :accessor downloads :initform '()
-              :documentation "List of downloads.")))
+              :documentation "List of downloads.")
+   (download-watcher :accessor download-watcher :initform nil
+                     :documentation "List of downloads.")))
+
+(defun download-watch ()
+  (loop while (lparallel:receive-result download-manager:notifications)
+        do (let ((buffer (find-buffer 'download-mode)))
+             ;; Only update if buffer exists.  We update even when out of focus
+             ;; because if we switch to the buffer after all downloads are
+             ;; completed, we won't receive notifications so the content needs
+             ;; to be updated already.
+             ;; TODO: Disable when out of focus?  Maybe need hook for that.
+             (when buffer
+               (download-refresh)))))
+
+(defmethod download-add ((interface remote-interface) (download download-manager:download))
+  (unless (download-watcher interface)
+    (setf (download-watcher interface) (bt:make-thread #'download-watch)))
+  (unless (find-buffer 'download-mode)
+    (download-list (make-instance 'root-mode)))
+  (push download (downloads interface)))
 
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
@@ -465,7 +485,7 @@ Deal with URL with the following rules:
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
      (let ((download (download-manager:resolve url)))
-       (push download (downloads *interface*)))
+       (download-add *interface* download))
      nil)
     (t
      (log:info "Forwarding ~a back to platform port" url)

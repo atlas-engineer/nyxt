@@ -26,7 +26,8 @@
                :ironclad
                :dbus
                :dexador
-               :download-manager)
+               :download-manager
+               :lparallel)
   :components ((:module "source"
                 :components
                 (;; Core Functionality

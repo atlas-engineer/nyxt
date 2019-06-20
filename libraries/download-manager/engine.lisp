@@ -2,8 +2,13 @@
 
 (defgeneric cache (type uri))
 
+(defvar notifications nil
+  "A channel which can be queried for download notifications.
+The channel return value is a `download'.")
+
 (defun init-kernel ()
-  (setf lparallel:*kernel* (lparallel:make-kernel 8 :name "next-kernel")))
+  (setf lparallel:*kernel* (lparallel:make-kernel 8 :name "next-kernel"))
+  (setf notifications (lparallel:make-channel)))
 
 (defun kill-kernel ()
   (lparallel:end-kernel :wait t))
@@ -30,7 +35,14 @@ download.")
            ;; TODO: String?
            :initform nil)
    (header :accessor header :initarg :header
-           :initform "")))
+           :initform "")
+   (update-interval :accessor update-interval :initarg :update-interval
+                    :initform 1
+                    :documentation "Time in seconds to wait before sending a
+notification to the `notifications' channel.")
+   (last-update :accessor last-update :initarg :last-update
+                :initform 0
+                :documentation "Universal time when last notification was sent.")))
 
 (defmethod downloaded-bytes ((download download))
   ;; TODO: If we need more than file size, switch to Osicat library.
@@ -42,10 +54,25 @@ download.")
            (header download)))
 
 (defmethod progress ((download download))
-  "Return progress ration.
+  "Return progress ratio.
 When download is completed, return 1.0."
+  ;; TODO: Handle 0 total-bytes.
   (/ (float (downloaded-bytes download))
      (float (total-bytes download))))
+
+(defmethod finished-p ((download download))
+  "Return progress ration.
+When download is completed, return 1.0."
+  (= 1 (progress download)))
+
+(defmethod update ((download download))
+  "Send DOWNLOAD to the `notifications' channel.
+Only send if last update was more than `update-interval' seconds ago."
+  (when (or (< (update-interval download)
+               (- (get-universal-time) (last-update download)))
+            (finished-p download))
+    (lparallel:submit-task notifications (constantly download))
+    (setf (last-update download) (get-universal-time))))
 
 (defun resolve (uri)
   "Resolve and locally cache URI."
