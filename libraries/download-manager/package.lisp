@@ -9,8 +9,8 @@
    #:requested-uri
    #:header
    #:file
-   #:downloaded-bytes
-   #:total-bytes
+   #:bytes-fetched
+   #:bytes-total
    #:progress
    #:finished-p
    #:cache

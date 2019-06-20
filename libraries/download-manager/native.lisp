@@ -37,8 +37,7 @@
 (defmethod download ((download download)
                      &key (buffer-size 16)) ; Small for testing.
   "Return the number of bytes fetched."
-  (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
-         (bytes-read 0))
+  (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8))))
     (with-open-file (output (file download)
                             :direction :output
                             :if-exists :supersede
@@ -50,13 +49,15 @@
             :do (update download)
 
             :when (plusp byte-position)
-              :do (incf bytes-read byte-position)
+              :do (incf (bytes-fetched download) byte-position)
 
             :if (plusp byte-position)
               :do (write-sequence buffer output :end byte-position)
             :else :return nil))
+    ;; TODO: Report something if bytes-fetched is not the same as bytes-total.
+    (setf (finished-p download) t)
     (update download)
-    bytes-read))
+    (bytes-fetched download)))
 
 #|
 (defun extract-filename (u

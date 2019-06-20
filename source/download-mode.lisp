@@ -15,20 +15,23 @@
                                                     (get-default 'buffer 'default-modes)))))
          (contents (cl-markup:markup
                     (:h1 "Downloads")
-                    (:span              ; TODO: Do we need this span?
+                    (:span              ; TODO: Do we need this span?  We need something because of the loop.
                      (loop for d in (downloads interface)
                            collect
                            (cl-markup:markup
                             (:p
-                             (:progress :background "red" :value (format nil "~a" (download-manager:downloaded-bytes d))
-                                        :max (format nil "~a" (download-manager:total-bytes d))
+                             (:progress :background "red" :value (format nil "~a" (download-manager:bytes-fetched d))
+                                        :max (format nil "~a" (download-manager:bytes-total d))
                                         :style (if (download-manager:finished-p d)
                                                    "border: 2px solid" "")
                                         nil)
-                             (format nil " (~a% of ~,,' :d bytes) "
-                                     (floor (* 100 (download-manager:progress d)))
-                                     ;; TODO: Print human size?
-                                     (download-manager:total-bytes d))
+                             (if (= 0 (download-manager:bytes-total d))
+                                 (format nil " (~,,' :d bytes out of unknown total) "
+                                         (download-manager:bytes-fetched d))
+                                 (format nil " (~a% of ~,,' :d bytes) "
+                                         (floor (* 100 (download-manager:progress d)))
+                                         ;; TODO: Print human size?
+                                         (download-manager:bytes-total d)))
                              (:u (quri:render-uri (download-manager:resolved-uri d)))
                              " as "
                              (:b (file-namestring (download-manager:file d)))))))))

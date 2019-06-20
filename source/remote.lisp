@@ -140,6 +140,8 @@ commands.")
                      :documentation "List of downloads.")))
 
 (defun download-watch ()
+  ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
+  ;; in too high a frequency of refreshes.
   (loop while (lparallel:receive-result download-manager:notifications)
         do (let ((buffer (find-buffer 'download-mode)))
              ;; Only update if buffer exists.  We update even when out of focus

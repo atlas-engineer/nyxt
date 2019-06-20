@@ -42,28 +42,28 @@ download.")
 notification to the `notifications' channel.")
    (last-update :accessor last-update :initarg :last-update
                 :initform 0
-                :documentation "Universal time when last notification was sent.")))
+                :documentation "Universal time when last notification was sent.")
+   (finished-p :accessor finished-p
+               :initform nil
+               :documentation "Non-nil if it has finished downloading.")
+   (bytes-fetched :accessor bytes-fetched
+                  :initform 0)))
 
-(defmethod downloaded-bytes ((download download))
-  ;; TODO: If we need more than file size, switch to Osicat library.
-  (with-open-file (stream (file download))
-    (file-length stream)))
-
-(defmethod total-bytes ((download download))
+(defmethod bytes-total ((download download))
   (gethash "content-length"
-           (header download)))
+           (header download) 0))
 
 (defmethod progress ((download download))
   "Return progress ratio.
-When download is completed, return 1.0."
-  ;; TODO: Handle 0 total-bytes.
-  (/ (float (downloaded-bytes download))
-     (float (total-bytes download))))
-
-(defmethod finished-p ((download download))
-  "Return progress ration.
-When download is completed, return 1.0."
-  (= 1 (progress download)))
+When download is completed, return 1.0.
+When progress cannot be computer (because bytes-total is unknown), return
+(values 0 'unknown)."
+  (cond
+    ((finished-p download) 1)
+    ((if (> (bytes-total download) 0)
+         (/ (float (bytes-fetched download))
+            (float (bytes-total download)))
+         (values 0 'unknown)))))
 
 (defmethod update ((download download))
   "Send DOWNLOAD to the `notifications' channel.
