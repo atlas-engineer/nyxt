@@ -83,8 +83,8 @@ Only send if last update was more than `update-interval' seconds ago."
       (setf (last-update-speed download)
             (if (= 0 time-diff)
                 0
-                (/ (float (- (bytes-fetched download) (bytes-last-update download)))
-                   time-diff)))
+                (round (/ (float (- (bytes-fetched download) (bytes-last-update download)))
+                          time-diff))))
       (setf (bytes-last-update download) (bytes-fetched download))
       (setf (last-update download) new-time))))
 

@@ -33,8 +33,9 @@
                                  "out of unknown total"
                                  (format nil "~a%"
                                          (floor (* 100 (download-manager:progress d)))))
+                             ") "
                              (:u (quri:render-uri (download-manager:resolved-uri d)))
-                             ") as "
+                             " as "
                              (:b (file-namestring (download-manager:file d)))))))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
