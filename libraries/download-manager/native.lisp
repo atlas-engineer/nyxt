@@ -40,8 +40,7 @@
       (error (c)
         (error c)))))
 
-;; TODO: Rename DOWNLOAD method to FETCH?
-(defmethod download ((download download)
+(defmethod fetch ((download download)
                      &key (buffer-size 16)) ; Small for testing.
   "Return the number of bytes fetched."
   (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8))))

@@ -118,8 +118,10 @@ Only send if last update was more than `update-interval' seconds ago."
                     (directory (download-directory))
                       proxy
                       cookies)
-  "Resolve and locally cache URI.
-If DIRECTORY is nil, `default-download-directory' will be used."
+  "Start downloading URI concurrently and return a corresponding `download' object.
+If DIRECTORY is nil, `default-download-directory' will be used.  COOKIES can
+specify a cookie jar as a string, which is useful for authenticated downloads.
+PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
   (unless lparallel:*kernel*
     (init-kernel))
   (let ((download (cache :uri uri
@@ -127,5 +129,5 @@ If DIRECTORY is nil, `default-download-directory' will be used."
                          :cookies cookies
                          :proxy proxy))
         (channel (lparallel:make-channel)))
-    (lparallel:submit-task channel #'download download)
+    (lparallel:submit-task channel #'fetch download)
     download))
