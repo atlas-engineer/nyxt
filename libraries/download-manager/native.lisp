@@ -28,7 +28,7 @@
                                    :cookie-jar cookies-jar)
           (let* ((file (ensure-unique-file
                         ;; TODO: Allow caller to set the target filename?
-                        (merge-pathnames directory (extract-filename requested-uri)))))
+                        (merge-pathnames directory (extract-filename requested-uri response-headers)))))
             ;; TODO: Touch file now to ensure uniqueness when actually downloading?
             (make-instance 'download
                            :requested-uri requested-uri
@@ -66,58 +66,35 @@
     (update download)
     (bytes-fetched download)))
 
-#|
-(defun extract-filename (u
-                         &key
-                           (verbose *standard-output*)
-                           (fallback-uri-string "file:///var/tmp/killroy.cache"))
-  "Extract a filename to save the contents of a URI under"
-  (let ((s (typecase u
-             (string
-              u)
-             (quri:uri
-              (quri::uri-string u))
-             (pathname
-              (namestring u))
-             (t
-              (format verbose "Failed to extract a filename from ~a.  Defaulting to ~a"
-                      u fallback-uri-string)
-              fallback-uri-string))))
-    (let ((rightmost-path-separator (position #\/ s :from-end t)))
-      (let ((result
-             (when rightmost-path-separator
-               (subseq s (1+ rightmost-path-separator)))))
-        (if (or (null result)
-                (not (plusp (length result))))
-            "killroy.cache" ;; FIXME
-            result)))))
-|#
+(defun parse-http-header (header-entry)
+  "Return the alist of key-value paris in HEADER-ENTRY."
+  (mapcar (lambda (key-value)
+            (cl-ppcre:split "=" key-value))
+          ;; TODO: Don't split at escaped or quoted semicolons?
+          (cl-ppcre:split " *; *" header-entry)))
 
-#|
-(defun extract-filename (uri)
-  "Extract a filename to save the contents of a URI under"
-  (let ((s (typecase uri
-             (string
-              uri)
-             (quri:uri
-              (quri::uri-string uri)))))
-    (let ((rightmost-path (position #\/ s :from-end t)))
-      (let ((result
-             (when rightmost-path
-               (subseq s (1+ rightmost-path)))))
-        (if (or (null result)
-                (not (plusp (length result))))
-            "unparsed" ;; FIXME
-            result)))))
-|#
+(defun normalize-filename (filename)
+  "Remove surrounding quotes and return the basename as a string.
+Return NIL if filename is not a string or a pathname."
+  (when (pathnamep filename)
+    (setf filename (namestring filename)))
+  (when (stringp filename)
+    (file-namestring (string-trim "\"" filename))))
 
-(defun extract-filename (uri)
+(defun extract-filename (uri &optional headers)
   "Extract a filename to save the contents of a URI under."
-    (let ((rightmost-path (position #\/ uri :from-end t)))
-      (let ((result
-             (when rightmost-path
-               (subseq uri (1+ rightmost-path)))))
-        (if (or (null result)
-                (not (plusp (length result))))
-            "killroy.raw" ;; FIXME
-            result))))
+  ;; See https://en.wikipedia.org/wiki/List_of_HTTP_header_fields.
+  (or (normalize-filename
+       (second (assoc "filename"
+                      (parse-http-header
+                       (gethash "content-disposition" headers))
+                      :test #'string=)))
+      ;; TODO: Replace the following code with (file-namestring uri).
+      (let ((rightmost-path (position #\/ uri :from-end t)))
+        (let ((result
+                (when rightmost-path
+                  (subseq uri (1+ rightmost-path)))))
+          (if (or (null result)
+                  (not (plusp (length result))))
+              "untitled.download"
+              result)))))
