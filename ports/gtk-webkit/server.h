@@ -328,8 +328,9 @@ GList *server_unwrap_string_list(GVariantIter *iter) {
 	gchar *str = NULL;
 	GList *result = NULL;
 	while (g_variant_iter_loop(iter, "s", &str)) {
-		result = g_list_append(result, strdup(str));
+		result = g_list_prepend(result, strdup(str));
 	}
+	result = g_list_reverse(result);
 	g_variant_iter_free(iter);
 	return result;
 }
