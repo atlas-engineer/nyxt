@@ -58,13 +58,14 @@ sequence of keys longer than one key-chord can be recorded."
 (defun current-keymaps (window)
   "Return the list of (keymap . mode) for the current buffer, ordered by priority."
   (let ((buffer (active-buffer window)))
-    (cons (cons (override-map buffer)
-                (first (modes buffer)))
-          (delete-if #'null (mapcar (lambda (mode) (when (keymap mode)
-                                                     (cons (keymap mode) mode)))
-                                    (modes (if (minibuffer-active window)
-                                               (minibuffer *interface*)
-                                               (active-buffer window))))))))
+    (when buffer
+      (cons (cons (override-map buffer)
+                  (first (modes buffer)))
+            (delete-if #'null (mapcar (lambda (mode) (when (keymap mode)
+                                                       (cons (keymap mode) mode)))
+                                      (modes (if (minibuffer-active window)
+                                                 (minibuffer *interface*)
+                                                 (active-buffer window)))))))))
 
 (defun look-up-key-chord-stack (window key-chord-stack)
   "Return the function bound to key-chord-stack for current window.

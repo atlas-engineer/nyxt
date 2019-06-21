@@ -140,7 +140,11 @@ If FILE is \"-\", read from the standard input."
     (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"
               swank:*communication-style*))
   (when *interface*
-    (kill-interface *interface*))
+    (kill-interface *interface*)
+    ;; It's important to set it to nil or else if we re-run this function,
+    ;; (make-instance 'remote-interface) will be run while an existing
+    ;; *interface* is still floating around.
+    (setf *interface* nil))
   (setf *interface* (make-instance 'remote-interface))
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.

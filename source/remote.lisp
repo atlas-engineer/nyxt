@@ -189,7 +189,7 @@ stored.  Nil means use system default.")))
   (when (active-connection interface)
     (log:debug "Stopping server")
     ;; TODO: How do we close the connection?
-    (bt:destroy-thread (active-connection interface))))
+    (ignore-errors (bt:destroy-thread (active-connection interface)))))
 
 (defun %rpc-send-self (method-name signature &rest args)
   "Call METHOD over ARGS.
