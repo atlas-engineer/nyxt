@@ -466,6 +466,7 @@ TODO: Only booleans are supported for now."
 
 (defmethod resource-query-default ((buffer buffer)
                                    &key url
+                                     (cookies "")
                                      event-type
                                      (is-new-window nil)
                                      (is-known-type t)
@@ -496,6 +497,7 @@ Deal with URL with the following rules:
            (setf download (download-manager:resolve
                            url
                            :directory (download-directory *interface*)
+                           :cookies cookies
                            :proxy (and proxied-downloads
                                        (server-address mode))))
          (error (c)
@@ -508,7 +510,9 @@ Deal with URL with the following rules:
 
 ;; Return non-nil to tell the platform port to load the URL.
 (dbus:define-dbus-method (core-object request-resource)
-    ((buffer-id :string) (url :string) (event-type :string) (is-new-window :boolean)
+    ((buffer-id :string) (url :string)
+     (cookies :string)
+     (event-type :string) (is-new-window :boolean)
      (is-known-type :boolean) (mouse-button :string) (modifiers (:array :string)))
     (:boolean)
   (:interface +core-interface+)
@@ -529,6 +533,7 @@ Deal with URL with the following rules:
     (funcall (resource-query-function buffer)
              buffer
              :url url
+             :cookies cookies
              :event-type event-type
              :is-new-window is-new-window
              :is-known-type is-known-type

@@ -5,28 +5,40 @@
   (log:info uri args)
   (apply #'locally-cache uri args))
 
+(defun parse-cookie-jar-string (cookie-jar-string host path)
+  "Host is for instance \"example.org\" and path is \"/foo/bar\"."
+  (cl-cookie:make-cookie-jar
+   :cookies (mapcar (lambda (c)
+                      (cl-cookie:parse-set-cookie-header c host path))
+                    (cl-strings:split cookie-jar-string "; "))))
+
 (defun locally-cache (requested-uri
                       &key
-                        (directory (download-directory))
-                        proxy)
-
-  (handler-case
-      (multiple-value-bind (stream status response-headers resolved-uri)
-          (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil
-                                 :proxy proxy)
-        (let* ((file (ensure-unique-file
-                      ;; TODO: Allow caller to set the target filename?
-                      (merge-pathnames directory (extract-filename requested-uri)))))
-          ;; TODO: Touch file now to ensure uniqueness when actually downloading?
-          (make-instance 'download
-                         :requested-uri requested-uri
-                         :resolved-uri resolved-uri
-                         :header response-headers
-                         :file file
-                         :status status
-                         :downstream stream)))
-    (error (c)
-      (error c))))
+                      (directory (download-directory))
+                      cookies
+                      proxy)
+  (let* ((uri (quri:uri requested-uri))
+         (cookies-jar
+           (unless (string= "" cookies)
+             (parse-cookie-jar-string cookies (quri:uri-host uri) (quri:uri-path uri)))))
+    (handler-case
+        (multiple-value-bind (stream status response-headers resolved-uri)
+            (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil
+                                   :proxy proxy
+                                   :cookie-jar cookies-jar)
+          (let* ((file (ensure-unique-file
+                        ;; TODO: Allow caller to set the target filename?
+                        (merge-pathnames directory (extract-filename requested-uri)))))
+            ;; TODO: Touch file now to ensure uniqueness when actually downloading?
+            (make-instance 'download
+                           :requested-uri requested-uri
+                           :resolved-uri resolved-uri
+                           :header response-headers
+                           :file file
+                           :status status
+                           :downstream stream)))
+      (error (c)
+        (error c)))))
 
 ;; TODO: Rename DOWNLOAD method to FETCH?
 (defmethod download ((download download)

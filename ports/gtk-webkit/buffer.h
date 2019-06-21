@@ -129,7 +129,7 @@ void buffer_navigated_callback(GObject *_source, GAsyncResult *res, gpointer dat
 	DecisionInfo *decision_info = data;
 	WebKitPolicyDecision *decision = decision_info->decision;
 	if (load) {
-		// TODO: Should we download or use when it's a RESPONSE?
+		// TODO: If we are told to load but this is a file to download, we should ignore it.
 		g_debug("Load resource '%s'", decision_info->uri);
 		webkit_policy_decision_use(decision);
 	} else {
@@ -137,29 +137,109 @@ void buffer_navigated_callback(GObject *_source, GAsyncResult *res, gpointer dat
 		webkit_policy_decision_ignore(decision);
 	}
 
+	g_object_unref(decision_info->decision);
 	g_free(decision_info);
 	return;
 }
 
-gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
+void buffer_set_uri(GObject *cookie_manager, GAsyncResult *res, gpointer data) {
+	GError *error = NULL;
+	char *cookies_string = NULL;
+	{
+		GList *cookies = webkit_cookie_manager_get_cookies_finish(
+			(WebKitCookieManager *)cookie_manager, res, &error);
+
+		if (error != NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+			return;
+		}
+
+		GSList *scookies = NULL;
+		while (cookies != NULL) {
+			scookies = g_slist_prepend(scookies, cookies->data);
+			cookies = cookies->next;
+		}
+		scookies = g_slist_reverse(scookies);
+		cookies_string = soup_cookies_to_cookie_header(scookies);
+
+		g_slist_free(scookies);
+		g_list_free_full(cookies, (GDestroyNotify)soup_cookie_free);
+	}
+
+	GHashTable *args = data;
+
+	char *buffer_id = g_hash_table_lookup(args, "buffer_id");
+	char *uri = g_hash_table_lookup(args, "uri");
+	WebKitPolicyDecision *decision = g_hash_table_lookup(args, "decision");
+	char *event_type = g_hash_table_lookup(args, "event_type");
+	gboolean *is_new_window = g_hash_table_lookup(args, "is_new_window");
+	gboolean *is_known_type = g_hash_table_lookup(args, "is_known_type");
+	char *mouse_button = g_hash_table_lookup(args, "mouse_button");
+	guint *modifiers = g_hash_table_lookup(args, "modifiers");
+
+	// Modifiers.
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
+	for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
+		if (*modifiers & modifier_names[i].mod) {
+			g_variant_builder_add(&builder, "s", modifier_names[i].name);
+		}
+	}
+
+	const char *method_name = "request_resource";
+	// TODO: Test if it's a redirect?
+	GVariant *arg = g_variant_new("(ssssbbsas)", buffer_id, uri,
+			cookies_string,
+			event_type,
+			*is_new_window,
+			*is_known_type,
+			mouse_button,
+			&builder);
+	g_message("RPC message: %s (buffer id, URI, cookies, event_type, is_new_window, is_known_type, button, modifiers) = %s",
+		method_name, g_variant_print(arg, TRUE));
+
+	if (g_strcmp0(mouse_button, "") != 0) {
+		g_free(mouse_button);
+	}
+	g_free(cookies_string);
+	g_free(is_new_window);
+	g_free(is_known_type);
+	g_free(modifiers);
+
+	DecisionInfo *decision_info = g_new(DecisionInfo, 1);
+	decision_info->decision = decision;
+	decision_info->uri = uri;
+
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+		method_name,
+		arg,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL,
+		(GAsyncReadyCallback)buffer_navigated_callback, decision_info);
+}
+
+gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 	WebKitPolicyDecision *decision, WebKitPolicyDecisionType type, gpointer bufferp) {
 	WebKitNavigationAction *action = NULL;
 
-	gboolean is_new_window = false;
-	gboolean is_known_type = true;
+	gboolean *is_new_window = g_new(gboolean, 1);
+	*is_new_window = false;
+	gboolean *is_known_type = g_new(gboolean, 1);
+	*is_known_type = true;
 	switch (type) {
 	case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION: {
 		action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
 		break;
 	}
 	case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION: {
-		is_new_window = true;
+		*is_new_window = true;
 		action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
 		break;
 	}
 	case WEBKIT_POLICY_DECISION_TYPE_RESPONSE: {
 		if (!webkit_response_policy_decision_is_mime_type_supported(WEBKIT_RESPONSE_POLICY_DECISION(decision))) {
-			is_known_type = false;
+			*is_known_type = false;
 		}
 		break;
 	}
@@ -204,47 +284,34 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *_web_view,
 
 	// No need for webkit_navigation_action_is_user_gesture if mouse_button and
 	// modifiers tell us the same information.
-	GVariantBuilder builder;
-	g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
 	gchar *mouse_button = "";
+	guint *modifiers = g_new(guint, 1);
+	*modifiers = 0;
 	if (action) {
 		guint button = webkit_navigation_action_get_mouse_button(action);
 		mouse_button = g_strdup_printf("button%d", button);
 
-		guint modifiers = webkit_navigation_action_get_modifiers(action);
-		for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
-			if (modifiers & modifier_names[i].mod) {
-				g_variant_builder_add(&builder, "s", modifier_names[i].name);
-			}
-		}
+		*modifiers = webkit_navigation_action_get_modifiers(action);
 	}
 
-	const char *method_name = "request_resource";
+	WebKitCookieManager *cookie_manager =
+		webkit_web_context_get_cookie_manager(webkit_web_view_get_context(web_view));
 
-	// TODO: Test if it's a redirect?
 	Buffer *buffer = bufferp;
-	GVariant *arg = g_variant_new("(sssbbsas)", buffer->identifier, uri,
-			event_type,
-			is_new_window,
-			is_known_type,
-			mouse_button,
-			&builder);
-	g_message("RPC message: %s (buffer id, URI, event_type, is_new_window, is_known_type, button, modifiers) = %s",
-		method_name, g_variant_print(arg, TRUE));
+	GHashTable *args = g_hash_table_new(g_str_hash, g_str_equal);
+	g_hash_table_insert(args, "decision", decision);
+	g_hash_table_insert(args, "buffer_id", buffer->identifier);
+	g_hash_table_insert(args, "uri", (char *)uri);
+	g_hash_table_insert(args, "event_type", event_type);
+	g_hash_table_insert(args, "is_new_window", is_new_window);
+	g_hash_table_insert(args, "is_known_type", is_known_type);
+	g_hash_table_insert(args, "mouse_button", mouse_button);
+	g_hash_table_insert(args, "modifiers", modifiers);
 
-	if (action) {
-		g_free(mouse_button);
-	}
-	DecisionInfo *decision_info = g_new(DecisionInfo, 1);
-	decision_info->decision = decision;
-	decision_info->uri = uri;
-
-	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
-		method_name,
-		arg,
-		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL,
-		(GAsyncReadyCallback)buffer_navigated_callback, decision_info);
+	webkit_cookie_manager_get_cookies(cookie_manager,
+		uri,
+		NULL,
+		(GAsyncReadyCallback)buffer_set_uri, args);
 
 	// Keep a reference on the decision so that in won't be freed before the callback.
 	g_object_ref(decision);
@@ -263,18 +330,10 @@ void buffer_set_cookie_file(Buffer *buffer, const char *path) {
 		WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT);
 }
 
-// TODO: Remove this once all downloads have been transfered to the Lisp core.
 void buffer_web_view_download_started(WebKitWebContext *_context,
 	WebKitDownload *download, Buffer *_buffer) {
 	const char *uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
-	g_warning("Download starting: %s", uri);
-	/*
-	Signal handlers accessible from here:
-	        - decide-destination
-	        - failed
-	        - finished
-	        - received-data
-	*/
+	g_warning("Downloading %s because interception failed", uri);
 }
 
 gboolean buffer_web_view_web_process_crashed(WebKitWebView *_web_view, Buffer *buffer) {
