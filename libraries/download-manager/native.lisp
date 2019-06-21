@@ -89,12 +89,7 @@ Return NIL if filename is not a string or a pathname."
                       (parse-http-header
                        (gethash "content-disposition" headers))
                       :test #'string=)))
-      ;; TODO: Replace the following code with (file-namestring uri).
-      (let ((rightmost-path (position #\/ uri :from-end t)))
-        (let ((result
-                (when rightmost-path
-                  (subseq uri (1+ rightmost-path)))))
-          (if (or (null result)
-                  (not (plusp (length result))))
-              "untitled.download"
-              result)))))
+      (let ((basename (file-namestring uri)))
+        (if (string= "" basename)
+            "index.html"
+            basename))))
