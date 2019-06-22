@@ -25,6 +25,7 @@ next: $(lisp_files)
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--eval '(ql:quickload :trivial-features)' \
+		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(asdf:make :next)' \
 		--eval '(uiop:quit)'
@@ -50,6 +51,7 @@ version:
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--eval '(ql:quickload :trivial-features)' \
+		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))' \
 		--eval '(uiop:quit)'
@@ -101,6 +103,7 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(require "asdf")' \
 		--load $< \
 		--eval '(ql:quickload :trivial-features)' \
+		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)'
