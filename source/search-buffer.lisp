@@ -72,7 +72,8 @@ returns
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
                        :input-prompt "Search for:"))
-    (%add-search-hints :search-string input)))
+    (%add-search-hints :search-string input)
+    (%next-search-hint)))
 
 (define-parenscript %remove-search-hints ()
   (defun qsa (context selector)
