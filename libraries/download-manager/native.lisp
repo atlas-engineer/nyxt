@@ -10,7 +10,7 @@
   (cl-cookie:make-cookie-jar
    :cookies (mapcar (lambda (c)
                       (cl-cookie:parse-set-cookie-header c host path))
-                    (cl-strings:split cookie-jar-string "; "))))
+                    (cl-ppcre:split " *; *" cookie-jar-string))))
 
 (defun locally-cache (requested-uri
                       &key
