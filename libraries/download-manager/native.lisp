@@ -19,7 +19,7 @@
                       proxy)
   (let* ((uri (quri:uri requested-uri))
          (cookies-jar
-           (unless (string= "" cookies)
+           (unless (str:emptyp cookies)
              (parse-cookie-jar-string cookies (quri:uri-host uri) (quri:uri-path uri)))))
     (handler-case
         (multiple-value-bind (stream status response-headers resolved-uri)

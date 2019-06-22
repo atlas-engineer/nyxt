@@ -72,7 +72,9 @@
   :depends-on (lparallel
                log4cl
                dexador
-               quri)
+               quri
+               cl-ppcre
+               str)
   :components ((:module source :pathname "libraries/download-manager/"
                 :components ((:file "package")
                              (:file "engine")
