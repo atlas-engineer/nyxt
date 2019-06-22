@@ -28,13 +28,20 @@
                                                    "border: 2px solid" "")
                                         nil)
                              ;; TODO: Print proxy in use?
-                             ;; TODO: Print human size?
                              " ("
-                             (format nil "~,,' :d B/s, " (download-manager:last-update-speed d))
-                             (format nil "~,,' :d bytes, " (download-manager:bytes-fetched d))
+                             (format nil "~a/s, " (file-size-human-readable
+                                                   (download-manager:last-update-speed d)
+                                                   'iec))
+                             (format nil "~a" (file-size-human-readable
+                                               (download-manager:bytes-fetched d)
+                                               'iec))
                              (if (= 0 (download-manager:bytes-total d))
-                                 "out of unknown total"
-                                 (format nil "~a%"
+                                 ", out of unknown total"
+                                 (format nil "/~a, ~a%"
+                                         (file-size-human-readable
+                                          (download-manager:bytes-total d)
+                                          'iec)
+                                         ;; TODO: No need for percentage?
                                          (floor (* 100 (download-manager:progress d)))))
                              ") "
                              (:u (quri:render-uri (download-manager:resolved-uri d)))
