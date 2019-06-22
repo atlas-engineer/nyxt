@@ -57,3 +57,17 @@
   (unless (download-watcher interface)
     (setf (download-watcher interface) (bt:make-thread #'download-watch)))
   (set-active-buffer interface (download-refresh)))
+
+(define-command download-url (root-mode &optional (interface *interface*))
+  "Download the page or file of the current buffer."
+  (with-result (url (buffer-get-url))
+    (download interface url)
+    (unless (find-buffer 'download-mode)
+      (download-list (make-instance 'root-mode)))))
+
+(define-command download-anchor-url (root-mode &optional (interface *interface*))
+  "Download the file under the URL hinted by the user."
+  (query-anchors "Download link URL:" (selected-link)
+    (download interface selected-link)
+    (unless (find-buffer 'download-mode)
+      (download-list (make-instance 'root-mode)))))
