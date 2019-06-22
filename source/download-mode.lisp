@@ -54,4 +54,6 @@
 
 (define-command download-list (root-mode &optional (interface *interface*))
   "Display a buffer listing all downloads."
+  (unless (download-watcher interface)
+    (setf (download-watcher interface) (bt:make-thread #'download-watch)))
   (set-active-buffer interface (download-refresh)))

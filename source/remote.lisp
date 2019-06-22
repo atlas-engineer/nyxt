@@ -143,6 +143,8 @@ commands.")
 stored.  Nil means use system default.")))
 
 (defun download-watch ()
+  "Update the download-list buffer.
+This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
   (loop while (lparallel:receive-result download-manager:*notifications*)
@@ -155,12 +157,41 @@ stored.  Nil means use system default.")))
              (when buffer
                (download-refresh)))))
 
-(defmethod download-add ((interface remote-interface) (download download-manager:download))
-  (unless (download-watcher interface)
-    (setf (download-watcher interface) (bt:make-thread #'download-watch)))
-  (unless (find-buffer 'download-mode)
-    (download-list (make-instance 'root-mode)))
-  (push download (downloads interface)))
+(defun proxy-address (buffer &key (downloads-only nil))
+  "Return the proxy address, nil if not set.
+If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
+when `proxied-downloads-p' is true."
+  (let* ((mode (and buffer (find-mode buffer 'proxy-mode)))
+         (proxied-downloads (and mode (proxied-downloads-p mode))))
+    (when (or (not downloads-only)
+              proxied-downloads)
+      (server-address mode))))
+
+;; TODO: To download any URL at any moment and not just in resource-query, we
+;; need to query the cookies for URL.  Thus we need to add an RPC endpoint to
+;; query cookies.
+(defmethod download ((interface remote-interface) url &key
+                                                        cookies
+                                                        (proxy-address :auto))
+  "Download URI.
+When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
+current buffer."
+  (when (eq proxy-address :auto)
+    (setf proxy-address (proxy-address (active-buffer interface)
+                                       :downloads-only t)))
+  (let* ((download nil))
+    (handler-case
+        (progn
+          (setf download (download-manager:resolve
+                          url
+                          :directory (download-directory interface)
+                          :cookies cookies
+                          :proxy proxy-address))
+          (push download (downloads interface))
+          download)
+      (error (c)
+        (echo "Download error: ~a" c)
+        nil))))
 
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
@@ -490,19 +521,10 @@ Deal with URL with the following rules:
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
-     (let* ((mode (find-mode buffer 'proxy-mode))
-            (proxied-downloads (and mode (proxied-downloads-p mode)))
-            (download nil))
-       (handler-case
-           (setf download (download-manager:resolve
-                           url
-                           :directory (download-directory *interface*)
-                           :cookies cookies
-                           :proxy (and proxied-downloads
-                                       (server-address mode))))
-         (error (c)
-           (echo "Download error: ~a" c)))
-       (download-add *interface* download))
+     (download *interface* url :proxy-address (proxy-address buffer :downloads-only t)
+               :cookies cookies)
+     (unless (find-buffer 'download-mode)
+       (download-list (make-instance 'root-mode)))
      nil)
     (t
      (log:info "Forwarding ~a back to platform port" url)
