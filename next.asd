@@ -69,22 +69,13 @@
   :entry-point "next:start-with-port")
 
 (asdf:defsystem download-manager
-  :depends-on (lparallel
-               log4cl
-               dexador
-               quri
-               cl-ppcre
-               str)
-  :components ((:module source :pathname "libraries/download-manager/"
-                :components ((:file "package")
-                             (:file "engine")
-                             (:file "native")))))
-
-(asdf:defsystem download-manager/tests
-  :defsystem-depends-on (prove-asdf)
-  :depends-on (prove
-               download-manager)
-  :components ((:module source/tests :pathname "libraries/download-manager/tests/"
-                :components ((:test-file "tests"))))
-  :perform (asdf:test-op (op c) (uiop:symbol-call
-                                 :prove-asdf 'run-test-system c)))
+    :depends-on (lparallel
+                 log4cl
+                 dexador
+                 quri
+                 cl-ppcre
+                 str)
+    :components ((:module source :pathname "libraries/download-manager/"
+                          :components ((:file "package")
+                                       (:file "engine")
+                                       (:file "native")))))
