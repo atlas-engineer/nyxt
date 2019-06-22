@@ -148,6 +148,8 @@
   "Set current window title to 'Next - TITLE - URL."
   (with-result* ((url (buffer-get-url))
                  (title (buffer-get-title)))
+    (setf title (if (str:emptyp title) "<untitled>" title))
+    (setf url (if (str:emptyp url) "<no url>" url))
     (%%window-set-title *interface* (%%window-active *interface*)
                         (concatenate 'string "Next - " title " - " url))))
 
