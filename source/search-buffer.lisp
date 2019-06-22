@@ -55,7 +55,7 @@ returns
     (let ((new-el (ps:chain document (create-element "span")))
           (fragments (split-string-at (ps:@ node text-content)
                                       (ps:lisp search-string))))
-      (when  (< 1 (length fragments))
+      (when (< 1 (length fragments))
         (ps:chain new-el (append-child
                           (ps:chain document (create-text-node (ps:elt fragments 0)))))
         (loop for fragment in (ps:chain fragments (slice 1))
@@ -63,8 +63,9 @@ returns
                  (ps:chain new-el (append-child
                                    (ps:chain document (create-text-node fragment)))))
         (ps:chain node (replace-with new-el)))))
+  (setf index 0)
   (walk-dom (ps:chain document body) insert-hint)
-  nil)
+  index)
 
 (define-command add-search-hints ()
   "Add search boxes for a given search string."
@@ -72,8 +73,13 @@ returns
   (with-result (input (read-from-minibuffer
                        (minibuffer *interface*)
                        :input-prompt "Search for:"))
-    (%add-search-hints :search-string input)
-    (%next-search-hint)))
+    (%remove-search-hints)
+    (%add-search-hints
+     :search-string input
+     :callback (lambda (index)
+                 (if (string= index "0")
+                  (echo "No match.")
+                  (%next-search-hint))))))
 
 (define-parenscript %remove-search-hints ()
   (defun qsa (context selector)
