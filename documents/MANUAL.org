@@ -442,10 +442,10 @@ For instance, you can add this to your =init.lisp=.
 
 #+begin_src lisp
 (add-to-default-list
- (make-instance 'hostlist
-                :hosts '("platform.twitter.com"
-                         "syndication.twitter.com"
-                         "m.media-amazon.com"))
+ (make-hostlist
+  :hosts '("platform.twitter.com"
+           "syndication.twitter.com"
+           "m.media-amazon.com"))
  'blocker-mode 'hostlists)
 #+end_src
 
