@@ -36,11 +36,11 @@ of seconds.")))
 
 (defmethod load-to-memory ((hostlist hostlist))
   "Load hostlist.
-Auto-update file if older than N days."
+Auto-update file if older than UPDATE-INTERVAL seconds."
   (if (and (ignore-errors (probe-file (path hostlist)))
            (< (- (get-universal-time) (uiop:safe-file-write-date (path hostlist)))
               (update-interval hostlist)))
-      (alexandria:read-file-into-string (path hostlist))
+      (uiop:read-file-string (path hostlist))
       (update hostlist)))
 
 (defmethod parse ((hostlist hostlist))
