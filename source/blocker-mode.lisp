@@ -27,7 +27,7 @@ this amount of seconds.")))
 (defmethod update ((hostlist hostlist))
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
-  (unless (url hostlist)
+  (when (url hostlist)
     (echo "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
     (let ((hosts (dex:get (url hostlist))))
       (when (path hostlist)
