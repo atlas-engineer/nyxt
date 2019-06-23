@@ -74,10 +74,9 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE."
-  (if (null host)
-      nil
-      (not (loop for hostlist in (hostlists mode)
-                 never (member-string host (parse hostlist))))))
+  (when host
+    (not (loop for hostlist in (hostlists mode)
+               never (member-string host (parse hostlist))))))
 
 (defmethod resource-query-block ((buffer buffer)
                                  &key url
