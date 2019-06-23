@@ -21,18 +21,17 @@ If nil, the list won't be persisted.")
 of seconds.")))
 
 (defmethod update ((hostlist hostlist))
-  "Auto-update file if older than N days."
-  (if (null (url hostlist))
-      nil
-      (progn
-        (echo "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
-        (let ((hosts (dex:get (url hostlist))))
-          (when (path hostlist)
-            ;; TODO: In general, we should do more error checking when writing to disk.
-            (alexandria:write-string-into-file hosts (path hostlist)
-                                               :if-exists :overwrite
-                                               :if-does-not-exist :create))
-          hosts))))
+  "Fetch HOSTLIST and return it.
+If HOSTLIST has a `path', persist it locally."
+  (unless (url hostlist)
+    (echo "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
+    (let ((hosts (dex:get (url hostlist))))
+      (when (path hostlist)
+        ;; TODO: In general, we should do more error checking when writing to disk.
+        (alexandria:write-string-into-file hosts (path hostlist)
+                                           :if-exists :overwrite
+                                           :if-does-not-exist :create))
+      hosts)))
 
 (defmethod load-to-memory ((hostlist hostlist))
   "Load hostlist.
