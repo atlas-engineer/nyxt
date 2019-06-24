@@ -45,7 +45,10 @@
   ((default-modes :initform '(minibuffer-mode))
    (completion-function :accessor completion-function)
    (callback-function :accessor callback-function)
-   (callback-buffer :accessor callback-buffer)
+   (callback-buffer :accessor callback-buffer
+                    :documentation "The active buffer when the minibuffer was
+brought up.  This can be useful to know which was the original buffer in the
+`callback-function' in case the buffer was changed.")
    (setup-function :accessor setup-function)
    (cleanup-function :accessor cleanup-function)
    (empty-complete-immediate :accessor empty-complete-immediate)
@@ -107,7 +110,6 @@
   "Return with minibuffer selection."
   (hide *interface*)
   (setf (display-mode minibuffer) :nil)
-  (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
       minibuffer
@@ -129,7 +131,6 @@
   "Return with minibuffer input, ignoring the selection."
   (hide *interface*)
   (setf (display-mode minibuffer) :nil)
-  (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function) minibuffer
     (let ((normalized-input (cl-strings:replace-all (input-buffer minibuffer)
                                                     " " " ")))
@@ -139,9 +140,7 @@
 
 (define-command cancel-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Close the minibuffer query without further action."
-  (log:debug (callback-buffer minibuffer))
   (setf (display-mode minibuffer) :nil)
-  (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (cleanup-function) minibuffer
     (when cleanup-function
       (funcall cleanup-function)))
