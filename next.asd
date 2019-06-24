@@ -27,7 +27,8 @@
                :dbus
                :dexador
                :download-manager
-               :lparallel)
+               :lparallel
+               :trivia)
   :components ((:module "source"
                 :components
                 (;; Core Functionality

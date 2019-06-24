@@ -4,6 +4,7 @@
 
 (defpackage next
   (:use :common-lisp)
+  (:import-from :trivia :match)
   (:export
    #:start
    #:start-with-port))
