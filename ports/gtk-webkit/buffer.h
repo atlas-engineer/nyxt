@@ -397,6 +397,7 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	// TODO: Do we have the guarantee that WebKit is not executing the Javascript
 	// of the loaded page here?
 	if (buffer_info->javascript_disabled) {
+		g_debug("Re-disable Javascript");
 		WebKitSettings *settings = webkit_web_view_get_settings(buffer_info->buffer->web_view);
 		g_object_set(G_OBJECT(settings), "enable-javascript", false, NULL);
 	}
@@ -416,8 +417,11 @@ char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 	buffer->callback_count++;
 
 	WebKitSettings *settings = webkit_web_view_get_settings(buffer->web_view);
-	buffer_info->javascript_disabled = webkit_settings_get_enable_javascript(settings);
-	g_object_set(G_OBJECT(settings), "enable-javascript", true, NULL);
+	buffer_info->javascript_disabled = !webkit_settings_get_enable_javascript(settings);
+	if (buffer_info->javascript_disabled) {
+		g_debug("Temporarily enable Javascript");
+		g_object_set(G_OBJECT(settings), "enable-javascript", true, NULL);
+	}
 
 	webkit_web_view_run_javascript(buffer->web_view, javascript,
 		NULL, buffer_javascript_callback, buffer_info);
