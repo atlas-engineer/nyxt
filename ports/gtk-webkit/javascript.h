@@ -1,5 +1,5 @@
 /*
-Copyright © 2018 Atlas Engineer LLC.
+Copyright © 2018-2019 Atlas Engineer LLC.
 Use of this file is governed by the license that can be found in LICENSE.
 */
 #pragma once
@@ -32,7 +32,6 @@ gchar *javascript_result(GObject *object, GAsyncResult *result,
 		return NULL;
 	}
 
-	g_debug("Script result: %s\n", str_value);
 	webkit_javascript_result_unref(js_result);
 	return str_value;
 }
@@ -56,7 +55,7 @@ void javascript_transform_result(GObject *object, GAsyncResult *result,
 		method_name,
 		identifier,
 		callback_string);
-	g_debug("Javascript: %s", transformed_result);
+	g_debug("Javascript %s: %s", callback_string, transformed_result);
 
 	g_free(callback_string);
 	g_free(transformed_result);

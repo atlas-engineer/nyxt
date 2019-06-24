@@ -66,6 +66,5 @@ char *minibuffer_evaluate(Minibuffer *minibuffer, const char *javascript) {
 
 	webkit_web_view_run_javascript(minibuffer->web_view, javascript,
 		NULL, minibuffer_javascript_callback, minibuffer_info);
-	g_debug("minibuffer_evaluate callback count: %i", minibuffer_info->callback_id);
 	return g_strdup_printf("%i", minibuffer_info->callback_id);
 }

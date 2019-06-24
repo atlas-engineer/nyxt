@@ -149,7 +149,7 @@ static GVariant *server_buffer_evaluate(GVariant *parameters) {
 	const char *buffer_id = NULL;
 	const char *javascript = NULL;
 	g_variant_get(parameters, "(&s&s)", &buffer_id, &javascript);
-	g_message("Method parameter(s): buffer id %s", buffer_id);
+	g_message("Method parameter(s): buffer id %s, javascript (...)", buffer_id);
 	g_debug("Javascript: \"%s\"", javascript);
 
 	Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_id);
@@ -186,7 +186,7 @@ static GVariant *server_minibuffer_evaluate(GVariant *parameters) {
 	const char *window_id = NULL;
 	const char *javascript = NULL;
 	g_variant_get(parameters, "(&s&s)", &window_id, &javascript);
-	g_message("Method parameter(s): window id %s", window_id);
+	g_message("Method parameter(s): window id %s, javascript (...)", window_id);
 	g_debug("Javascript: \"%s\"", javascript);
 
 	Window *window = g_hash_table_lookup(state.windows, window_id);

@@ -421,7 +421,6 @@ char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 
 	webkit_web_view_run_javascript(buffer->web_view, javascript,
 		NULL, buffer_javascript_callback, buffer_info);
-	g_debug("buffer_evaluate callback count: %i", buffer_info->callback_id);
 	return g_strdup_printf("%i", buffer_info->callback_id);
 }
 
