@@ -50,8 +50,7 @@ Set to '-' to read standard input instead."))
      (log:config :info)
      (setf (uiop:getenv "G_MESSAGES_DEBUG") nil))))
 
-;; TODO: Rename to `entry-point'.
-(defun start-with-port ()
+(defun entry-point ()
   (multiple-value-bind (options free-args)
       (parse-cli-args)
     (when (getf options :help)

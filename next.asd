@@ -67,7 +67,7 @@
                  (:file "base"))))
   :build-operation "program-op"
   :build-pathname "next"
-  :entry-point "next:start-with-port")
+  :entry-point "next:entry-point")
 
 (asdf:defsystem download-manager
   :depends-on (lparallel

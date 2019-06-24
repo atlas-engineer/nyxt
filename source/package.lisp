@@ -7,4 +7,4 @@
   (:import-from :trivia :match)
   (:export
    #:start
-   #:start-with-port))
+   #:entry-point))

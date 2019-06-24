@@ -207,7 +207,7 @@ Then in a shell execute the following:
    system definition (you can not use relative pathnames).
 4. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image.
-5. Start the platform port and make sure it will be found by Next as described
+5. Make sure the platform port can be bound by Next, as described
    in the previous section.
 6. Execute ~(next:start)~ to open your first Next window.
 

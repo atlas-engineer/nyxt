@@ -118,7 +118,7 @@ features for productive professionals.")
                       (build-program
                        (string-append (assoc-ref outputs "out") "/bin/next")
                        outputs
-                       #:entry-program '((next:start-with-port) 0))))
+                       #:entry-program '((next:entry-point) 0))))
                   (add-before 'build 'install-assets
                     ;; Since the ASDF build system generates a new .asd with a
                     ;; possibly suffixed and thus illegal version number, assets
