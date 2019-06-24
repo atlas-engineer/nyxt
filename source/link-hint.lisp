@@ -90,7 +90,7 @@
         ""))
   (hints-add (links-find window document)))
 
-(define-parenscript remove-link-hints ()
+(define-parenscript %remove-link-hints ()
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -99,6 +99,10 @@
     (ps:dolist (el (qsa document ".next-link-hint"))
       (ps:chain el (remove))))
   (hints-remove-all))
+
+(defun remove-link-hints ()
+  (%remove-link-hints
+   :buffer (callback-buffer (minibuffer *interface*))))
 
 (defmacro query-anchors (prompt (symbol) &body body)
   `(with-result* ((links-json (add-link-hints))
