@@ -252,18 +252,17 @@ For an array of string, that would be \"as\"."
   (%rpc-send interface "listMethods"))
 
 (defmethod get-unique-window-identifier ((interface remote-interface))
-  (incf (total-window-count interface))
-  (format nil "~a" (total-window-count interface)))
+  (format nil "~a" (1+ (total-window-count interface))))
 
 (defmethod get-unique-buffer-identifier ((interface remote-interface))
-  (incf (total-buffer-count interface))
-  (format nil "~a" (total-buffer-count interface)))
+  (format nil "~a" (1+ (total-buffer-count interface))))
 
 (defmethod %%window-make ((interface remote-interface))
   "Create a window and return the window object."
   (let* ((window-id (get-unique-window-identifier interface))
          (window (make-instance 'window :id window-id)))
     (setf (gethash window-id (windows interface)) window)
+    (incf (total-window-count interface))
     (%rpc-send interface "window_make" window-id)
     (unless (last-active-window interface)
       ;; When starting from a REPL, it's possible that the window is spawned in
@@ -330,6 +329,7 @@ For an array of string, that would be \"as\"."
                                 (when default-modes `(:default-modes ,default-modes))))))
     (ensure-parent-exists (cookies-path buffer))
     (setf (gethash buffer-id (buffers interface)) buffer)
+    (incf (total-buffer-count interface))
     (%rpc-send interface "buffer_make" buffer-id
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
     buffer))
