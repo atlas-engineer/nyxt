@@ -32,7 +32,7 @@ ARGS are also key arguments."
                            args)
        ,(when (and args (eq (first args) '_))
           `(declare (ignore _)))
-       (%%buffer-evaluate-javascript %interface %buffer
+       (rpc-buffer-evaluate-javascript %interface %buffer
                                      ,(if args
                                           `(ps:ps ,@script-body)
                                           script-name)
@@ -59,7 +59,7 @@ Example:
 
   (with-result* ((url (buffer-get-url))
                  (title (buffer-get-title)))
-    (%%window-set-title *interface* (%%window-active *interface*)
+    (rpc-window-set-title *interface* (rpc-window-active *interface*)
                         (concatenate 'string \"Next - \" title \" - \" url)))
 "
   (if (null bindings)

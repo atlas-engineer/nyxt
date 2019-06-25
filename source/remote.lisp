@@ -1,6 +1,6 @@
 ;;; remote.lisp --- remote gui interface
 
-;; We prefix all functions communicating over RPC with "%%".
+;; We prefix all functions communicating over RPC with "rpc-".
 
 (in-package :next)
 
@@ -246,7 +246,7 @@ For an array of string, that would be \"as\"."
 ;; TODO: Move to separate packages:
 ;; - next-rpc
 ;; - next-script (?)
-(defmethod %%list-methods ((interface remote-interface))
+(defmethod rpc-list-methods ((interface remote-interface))
   "Return the unsorted list of RPC methods supported by the platform port."
   ;; TODO: Find the right way to do this in dbus.
   (%rpc-send interface "listMethods"))
@@ -257,7 +257,7 @@ For an array of string, that would be \"as\"."
 (defmethod get-unique-buffer-identifier ((interface remote-interface))
   (format nil "~a" (1+ (total-buffer-count interface))))
 
-(defmethod %%window-make ((interface remote-interface))
+(defmethod rpc-window-make ((interface remote-interface))
   "Create a window and return the window object."
   (let* ((window-id (get-unique-window-identifier interface))
          (window (make-instance 'window :id window-id)))
@@ -266,21 +266,21 @@ For an array of string, that would be \"as\"."
     (%rpc-send interface "window_make" window-id)
     (unless (last-active-window interface)
       ;; When starting from a REPL, it's possible that the window is spawned in
-      ;; the background and %%window-active would then return nil.
+      ;; the background and rpc-window-active would then return nil.
       (setf (last-active-window interface) window))
     window))
 
-(defmethod %%window-set-title ((interface remote-interface) (window window) title)
+(defmethod rpc-window-set-title ((interface remote-interface) (window window) title)
   "Set the title for a given window."
   (%rpc-send interface "window_set_title" (id window) title))
 
-(defmethod %%window-delete ((interface remote-interface) (window window))
+(defmethod rpc-window-delete ((interface remote-interface) (window window))
   "Delete a window object and remove it from the hash of windows."
   (%rpc-send interface "window_delete" (id window))
   (with-slots (windows) interface
     (remhash (id window) windows)))
 
-(defmethod %%window-active ((interface remote-interface))
+(defmethod rpc-window-active ((interface remote-interface))
   "Return the window object for the currently active window."
   (with-slots (windows) interface
     (let ((window (gethash (%rpc-send interface "window_active")
@@ -289,11 +289,11 @@ For an array of string, that would be \"as\"."
         (setf (last-active-window interface) window))
       (last-active-window interface))))
 
-(defmethod %%window-exists ((interface remote-interface) (window window))
+(defmethod rpc-window-exists ((interface remote-interface) (window window))
   "Return if a window exists."
   (%rpc-send interface "window_exists" (id window)))
 
-(defmethod %%window-set-active-buffer ((interface remote-interface)
+(defmethod rpc-window-set-active-buffer ((interface remote-interface)
                                       (window window)
                                       (buffer buffer))
   (%rpc-send interface "window_set_active_buffer" (id window) (id buffer))
@@ -308,20 +308,20 @@ For an array of string, that would be \"as\"."
                                                               (eql (active-buffer other-window) buffer)))
                                   (alexandria:hash-table-values (windows *interface*)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (%%buffer-make *interface*))
+        (let ((temp-buffer (rpc-buffer-make *interface*))
               (buffer-swap (active-buffer window)))
           (log:debug "Swapping with buffer from existing window.")
-          (%%window-set-active-buffer interface window-with-same-buffer temp-buffer)
-          (%%window-set-active-buffer interface window buffer)
-          (%%window-set-active-buffer interface window-with-same-buffer buffer-swap)
-          (%%buffer-delete interface temp-buffer))
-        (%%window-set-active-buffer interface window buffer))))
+          (rpc-window-set-active-buffer interface window-with-same-buffer temp-buffer)
+          (rpc-window-set-active-buffer interface window buffer)
+          (rpc-window-set-active-buffer interface window-with-same-buffer buffer-swap)
+          (rpc-buffer-delete interface temp-buffer))
+        (rpc-window-set-active-buffer interface window buffer))))
 
-(defmethod %%window-set-minibuffer-height ((interface remote-interface)
+(defmethod rpc-window-set-minibuffer-height ((interface remote-interface)
                                          window height)
   (%rpc-send interface "window_set_minibuffer_height" (id window) height))
 
-(defmethod %%buffer-make ((interface remote-interface)
+(defmethod rpc-buffer-make ((interface remote-interface)
                           &key name default-modes)
   (let* ((buffer-id (get-unique-buffer-identifier interface))
          (buffer (apply #'make-instance 'buffer :id buffer-id
@@ -341,22 +341,22 @@ For an array of string, that would be \"as\"."
         (buffers (alexandria:hash-table-values (buffers *interface*))))
     (first (set-difference buffers active-buffers))))
 
-(defmethod %%buffer-delete ((interface remote-interface) (buffer buffer))
+(defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
-                                (%%buffer-make interface))))
+                                (rpc-buffer-make interface))))
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))
     (with-slots (buffers) interface
       (remhash (id buffer) buffers))))
 
-(defmethod %%buffer-load ((interface remote-interface) (buffer buffer) uri)
+(defmethod rpc-buffer-load ((interface remote-interface) (buffer buffer) uri)
   (%rpc-send interface "buffer_load" (id buffer) uri))
 
-(defmethod %%buffer-evaluate-javascript ((interface remote-interface)
+(defmethod rpc-buffer-evaluate-javascript ((interface remote-interface)
                                          (buffer buffer) javascript
                                          &optional (callback nil))
   (let ((callback-id
@@ -364,7 +364,7 @@ For an array of string, that would be \"as\"."
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
-(defmethod %%minibuffer-evaluate-javascript ((interface remote-interface)
+(defmethod rpc-minibuffer-evaluate-javascript ((interface remote-interface)
                                              (window window) javascript
                                              &optional (callback nil))
   (let ((callback-id
@@ -372,7 +372,7 @@ For an array of string, that would be \"as\"."
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 
-(defmethod %%generate-input-event ((interface remote-interface)
+(defmethod rpc-generate-input-event ((interface remote-interface)
                                    (window window)
                                    (event key-chord))
   "For now, we only generate keyboard events.
@@ -393,7 +393,7 @@ events."
                  (float (or (first (key-chord-position event)) -1.0))
                  (float (or (second (key-chord-position event)) -1.0))))
 
-(defmethod %%set-proxy ((interface remote-interface) (buffer buffer)
+(defmethod rpc-set-proxy ((interface remote-interface) (buffer buffer)
                       &optional (proxy-uri "") (ignore-hosts (list nil)))
   (%rpc-send interface "set_proxy" (list (id buffer))
                  (if (string= proxy-uri "")
@@ -401,13 +401,13 @@ events."
                      "custom")
                  proxy-uri ignore-hosts))
 
-(defmethod %%get-proxy ((interface remote-interface) (buffer buffer))
+(defmethod rpc-get-proxy ((interface remote-interface) (buffer buffer))
   "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy configuration.
 MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
 ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send interface "get_proxy" (id buffer)))
 
-(defmethod %%buffer-set ((interface remote-interface) (buffer buffer)
+(defmethod rpc-buffer-set ((interface remote-interface) (buffer buffer)
                        (setting string) value)
   "Set SETTING to VALUE for BUFFER.
 The valid SETTINGs are specified by the platform, e.g. for WebKitGTK it is
@@ -488,7 +488,7 @@ TODO: Only booleans are supported for now."
   ;; The new active buffer should be the first created buffer.
   (when urls
     (let ((buffer (make-buffer))
-          (window (%%window-make *interface*)))
+          (window (rpc-window-make *interface*)))
       (set-url-buffer (first urls) buffer)
       (window-set-active-buffer *interface* window buffer))
     (loop for url in (rest urls) do
@@ -567,12 +567,12 @@ Deal with URL with the following rules:
 
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
-  (active-buffer (%%window-active interface)))
+  (active-buffer (rpc-window-active interface)))
 
 ;; TODO: Prevent setting the minibuffer as the active buffer.
 (defmethod set-active-buffer ((interface remote-interface)
                               (buffer buffer))
   "Set the active buffer for the active window."
-  (let ((%%window-active (%%window-active interface)))
-    (window-set-active-buffer interface %%window-active buffer)
-    (setf (active-buffer %%window-active) buffer)))
+  (let ((rpc-window-active (rpc-window-active interface)))
+    (window-set-active-buffer interface rpc-window-active buffer)
+    (setf (active-buffer rpc-window-active) buffer)))

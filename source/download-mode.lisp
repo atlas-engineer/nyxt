@@ -49,7 +49,7 @@
                              (:b (file-namestring (download-manager:file d)))))))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
-    (%%buffer-evaluate-javascript interface download-buffer insert-content)
+    (rpc-buffer-evaluate-javascript interface download-buffer insert-content)
     download-buffer))
 
 (define-command download-list (root-mode &optional (interface *interface*))

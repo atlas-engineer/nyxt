@@ -22,6 +22,6 @@ the proxy.")
      (destructor
       :initform
       (lambda (mode)
-        (%%set-proxy *interface* (buffer mode) "" nil))))
-  (%%set-proxy *interface* (buffer %mode) (server-address %mode) (whitelist %mode))
+        (rpc-set-proxy *interface* (buffer mode) "" nil))))
+  (rpc-set-proxy *interface* (buffer %mode) (server-address %mode) (whitelist %mode))
   (echo "Proxy set to ~a (whitelisting ~a)." (server-address %mode) (whitelist %mode)))

@@ -48,8 +48,8 @@
 
 (define-command vi-button1 (root-mode)
   "Enable to VI insert mode when focus is on an input element on the web page."
-  (%%generate-input-event *interface*
-                          (%%window-active *interface*)
+  (rpc-generate-input-event *interface*
+                          (rpc-window-active *interface*)
                           (first (last-key-chords
                                   (buffer root-mode))))
   (%clicked-in-input?

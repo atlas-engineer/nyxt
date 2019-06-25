@@ -148,13 +148,13 @@ brought up.  This can be useful to know which was the original buffer in the
 
 (defmethod set-input ((minibuffer minibuffer) input)
   (when input
-    (%%minibuffer-evaluate-javascript
-     *interface* (%%window-active *interface*)
+    (rpc-minibuffer-evaluate-javascript
+     *interface* (rpc-window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
 (defmethod erase-document ((minibuffer minibuffer))
-  (%%minibuffer-evaluate-javascript
-   *interface* (%%window-active *interface*)
+  (rpc-minibuffer-evaluate-javascript
+   *interface* (rpc-window-active *interface*)
    (ps:ps
      (ps:chain document (open))
      (ps:chain document (close)))))
@@ -172,16 +172,16 @@ brought up.  This can be useful to know which was the original buffer in the
                      (:div :id "completions" ""))))))
 
 (defmethod show ((interface remote-interface))
-  (let ((active-window (%%window-active interface)))
+  (let ((active-window (rpc-window-active interface)))
     (setf (minibuffer-active active-window) t)
-    (%%window-set-minibuffer-height interface
+    (rpc-window-set-minibuffer-height interface
                                     active-window
                                     (minibuffer-open-height active-window))))
 
 (defmethod hide ((interface remote-interface))
-  (let ((active-window (%%window-active interface)))
+  (let ((active-window (rpc-window-active interface)))
     (setf (minibuffer-active active-window) nil)
-    (%%window-set-minibuffer-height *interface*
+    (rpc-window-set-minibuffer-height *interface*
                                     active-window
                                     (minibuffer-closed-height active-window))))
 
@@ -355,8 +355,8 @@ brought up.  This can be useful to know which was the original buffer in the
         (setf completions nil))
     (let ((input-text (generate-input-html input-buffer input-buffer-cursor))
           (completion-html (generate-completion-html completions completion-cursor)))
-      (%%minibuffer-evaluate-javascript
-       *interface* (%%window-active *interface*)
+      (rpc-minibuffer-evaluate-javascript
+       *interface* (rpc-window-active *interface*)
        (ps:ps
          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                (ps:lisp (input-prompt minibuffer)))
@@ -370,8 +370,8 @@ brought up.  This can be useful to know which was the original buffer in the
   (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
     (incf (completion-cursor minibuffer))
     (update-display minibuffer)
-    (%%minibuffer-evaluate-javascript
-     *interface* (%%window-active *interface*)
+    (rpc-minibuffer-evaluate-javascript
+     *interface* (rpc-window-active *interface*)
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view false))))))
 
@@ -380,8 +380,8 @@ brought up.  This can be useful to know which was the original buffer in the
   (when (> (completion-cursor minibuffer) 0)
     (decf (completion-cursor minibuffer))
     (update-display minibuffer)
-    (%%minibuffer-evaluate-javascript
-     *interface* (%%window-active *interface*)
+    (rpc-minibuffer-evaluate-javascript
+     *interface* (rpc-window-active *interface*)
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view true))))))
 
@@ -395,7 +395,7 @@ Accepted keyword argument:
 The first argument can be a format string and the following arguments will be
 interpreted by `format'. "
   (let ((minibuffer (when *interface* (minibuffer *interface*)))
-        (window (when *interface* (%%window-active *interface*))))
+        (window (when *interface* (rpc-window-active *interface*))))
     (when (evenp (length args))
       (when (getf args :minibuffer)
         (setf minibuffer (getf args :minibuffer)))
@@ -407,7 +407,7 @@ interpreted by `format'. "
         (unless (eql (display-mode minibuffer) :read)
           (setf (display-mode minibuffer) :echo)
           (erase-document minibuffer)
-          (%%window-set-minibuffer-height *interface*
+          (rpc-window-set-minibuffer-height *interface*
                                           window
                                           (minibuffer-echo-height window))
           (let ((style (cl-css:css

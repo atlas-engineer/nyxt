@@ -142,7 +142,7 @@ it can be called without argument."
 
           ((or (and active-buffer (forward-input-events active-buffer))
                (pointer-event-p key-chord))
-           (%%generate-input-event *interface*
+           (rpc-generate-input-event *interface*
                                    active-window
                                    key-chord)
            (setf (key-chord-stack *interface*) nil))

@@ -150,7 +150,7 @@
                  (title (buffer-get-title)))
     (setf title (if (str:emptyp title) "<untitled>" title))
     (setf url (if (str:emptyp url) "<no url>" url))
-    (%%window-set-title *interface* (%%window-active *interface*)
+    (rpc-window-set-title *interface* (rpc-window-active *interface*)
                         (concatenate 'string "Next - " title " - " url))))
 
 (define-command copy-url (document-mode)

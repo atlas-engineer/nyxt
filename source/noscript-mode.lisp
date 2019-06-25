@@ -7,5 +7,5 @@
     ((destructor
       :initform
       (lambda (mode)
-        (%%buffer-set *interface* (buffer mode) "enable-javascript" t))))
-  (%%buffer-set *interface* (buffer %mode) "enable-javascript" nil))
+        (rpc-buffer-set *interface* (buffer mode) "enable-javascript" t))))
+  (rpc-buffer-set *interface* (buffer %mode) "enable-javascript" nil))
