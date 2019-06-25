@@ -15,8 +15,8 @@
                                                     (get-default 'buffer 'default-modes)))))
          (contents (cl-markup:markup
                     (:h1 "Downloads")
-                    (:p (:b "Directory: ") (or (download-directory *interface*)
-                                               (download-manager:default-download-directory)))
+                    (:p (:b "Directory: ") (namestring (or (download-directory *interface*)
+                                                           (download-manager:default-download-directory))))
                     (:span              ; TODO: Do we need this span?  We need something because of the loop.
                      (loop for d in (downloads interface)
                            collect
