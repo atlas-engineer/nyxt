@@ -133,6 +133,7 @@ def main():
     # CORE_OBJECT_PATH = "/engineer/atlas/next/core"
     # core_dbus_proxy = session_bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
     dbuswindow = DBusWindow(session_bus)  # noqa: F841
+    print("listening...")
     app.exec_()
 
 

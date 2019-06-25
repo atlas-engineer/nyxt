@@ -28,6 +28,17 @@ MODIFIERS = {
     Qt.Key_Hyper_R: "H",
 }
 
+#: Special keys, to be understood by the lisp core.
+KEY_TRANSLATIONS = {
+    Qt.Key_Backspace: "BACKSPACE",
+    Qt.Key_Space: "SPACE",
+    Qt.Key_Delete: "DELETE",
+    Qt.Key_Escape: "ESCAPE",
+    Qt.Key_Return: "RETURN",
+    Qt.Key_Tab: "TAB",
+    # Qt.Key_Delete: "HYPHEN", # TODO:
+}
+
 CORE_INTERFACE = "engineer.atlas.next.core"
 CORE_OBJECT_PATH = "/engineer/atlas/next/core"
 
@@ -42,6 +53,45 @@ def get_window(identifier):
 def is_modifier(key):
     return key in MODIFIERS.keys()
 
+def is_special(key):
+    print("--- is special {} ?".format(key))
+    if key == Qt.Key_Backspace:
+        print("--- backspace")
+    return key in KEY_TRANSLATIONS.keys()
+
+def key_to_modifier(inputkey):
+    """
+    Given a modifier name ("M"), return its key code (16777, Qt.Key_Alt).
+    """
+    for key in MODIFIERS.items():
+        if key[1] == inputkey:
+            return key[0]
+
+def key_to_special(inputkey):
+    for key in KEY_TRANSLATIONS.items():
+        if key[1] == inputkey:
+            return key[0]
+
+def build_modifiers_list(names):
+    """
+    Given a list of strings designing modifiers names ("M", "C"), build a
+    list of key sequences (Qt.Key_Shift, etc).
+    If no result, return Qt.NoModifier (i.e, 0) instead of a void list.
+    """
+    res = []
+    for name in names:
+        mod = key_to_modifier(name)
+        if mod:
+            res.append(mod)
+    return res or Qt.NoModifier
+
+def build_special_list(names):
+    res = []
+    for name in names:
+        special = key_to_special(name)
+        if special:
+            res.append(special)
+    return res
 
 class MyQWidget(QWidget):
     """
@@ -114,14 +164,21 @@ class MyQWidget(QWidget):
             # return True  # fails
         else:
             self.current_event = event
-            logging.info("Sending push-key-event with key {} and modifiers {}".format(
-                event.key(), self.get_modifiers_list()))
+            key_code = event.key()
+            key_string = event.text()
+            print("--- event text: {}".format(event.text()))
+            if is_special(key_code):
+                key_string = KEY_TRANSLATIONS[key_code]
+                print("--- {} is special: {}".format(key_code, key_string))
+            logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
+                key_code, key_string, self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
             self.core_dbus_proxy.push_input_event(
-                event.key(),
-                event.text(),
+                key_code,  # int
+                key_string,
                 self.get_modifiers_list(),
-                0.0, 0.0, 0,
+                0.0, 0.0,  # TODO: mouse events
+                key_code, # low-level-data
                 self.parent_identifier,  # sender
                 # Give handlers to make the call asynchronous.
                 # lambdas don't work.
@@ -267,9 +324,11 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     - key_code: int
     - modifiers: [str]
     - x, y: float
+    - low_level_data: key code from Qt (int).
     """
-    logging.info('generating this input event: window id {}, key code {}, modifiers {}'.
-                 format(window_id, key_code, modifiers))
-    logging.info('it just has to be done !')
-    # event = QKeyEvent(QEvent.KeyPress, Qt.Key_A, Qt.NoModifier)  # TODO:
-    # QCoreApplication.postEvent(get_window(window_id).qtwindow, event)
+    mods = build_modifiers_list(modifiers)
+    logging.info('generating this input event: window id {}, key code {}, modifiers names {}, \
+    modifiers list {}'.
+                 format(window_id, key_code, modifiers, mods))
+    event = QKeyEvent(QEvent.KeyPress, key_code, Qt.NoModifier)  # TODO: modifiers
+    QCoreApplication.postEvent(get_window(window_id).qtwindow, event)
