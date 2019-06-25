@@ -17,7 +17,10 @@
     (:name :verbose
            :short #\v
            :long "verbose"
-           :description "Print debugging information to stdout.")
+     :description "Print debugging information to stdout.")
+    (:name :version
+           :long "version"
+           :description "Print version and exit.")
     (:name :init-file
            :short #\i
            :long "init-file"
@@ -55,6 +58,9 @@ Set to '-' to read standard input instead."))
       (parse-cli-args)
     (when (getf options :help)
       (opts:describe :prefix "Next command line usage:")
+      (uiop:quit))
+    (when (getf options :version)
+      (format t "Next ~a~&" +version+)
       (uiop:quit))
     (when (getf options :verbose)
       (set-debug-level :debug)
