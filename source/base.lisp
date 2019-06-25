@@ -192,11 +192,20 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*))))
 
 (define-key :scheme :vi-normal
-  "W" 'make-visible-new-buffer
-  ":" 'execute-command
-  "b" 'switch-buffer
+  "Z Z" 'kill
+  "[" 'switch-buffer-previous
+  "]" 'switch-buffer-next
+  "g b" 'switch-buffer
   "d" 'delete-buffer
+  "D" 'delete-active-buffer
+  "B" 'make-visible-new-buffer
   "o" 'set-url-current-buffer
   "O" 'set-url-new-buffer
-  "a" 'bookmark-url
-  "Z Z" 'kill)
+  "m u" 'bookmark-url
+  "m d" 'bookmark-delete
+  "C-o" 'load-file
+  "C-h v" 'variable-inspect
+  "C-h c" 'command-inspect
+  "C-h s" 'start-swank
+  ":" 'execute-command
+  "W" 'make-window)

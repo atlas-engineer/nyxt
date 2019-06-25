@@ -38,6 +38,10 @@
           "TAB" #'insert-candidate
           :keymap map)
         (list :emacs map
+              ;; TODO: We could have VI bindings for the minibuffer too.
+              ;; But we need to make sure it's optional + to have an indicator
+              ;; for the mode.  This requires either a change of cursor or a
+              ;; echo area separate from the minibuffer.
               :vi-normal map
               :vi-insert map)))))
 

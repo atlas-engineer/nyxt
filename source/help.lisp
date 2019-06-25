@@ -8,9 +8,9 @@
       :initform
       (let ((emacs-map (make-keymap))
             (vi-map (make-keymap)))
-        (define-key "C-p" 'scroll-up
-          "C-n" 'scroll-down
-          :keymap emacs-map)
+        (define-key :keymap emacs-map
+          "C-p" 'scroll-up
+          "C-n" 'scroll-down)
         (define-key :keymap vi-map
           "k" 'scroll-up
           "j" 'scroll-down)

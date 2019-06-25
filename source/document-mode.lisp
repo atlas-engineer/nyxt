@@ -46,7 +46,9 @@
           :keymap emacs-map)
         (define-key :keymap vi-map
           "H" 'history-backwards
+          "h" 'scroll-left
           "L" 'history-forwards
+          "l" 'scroll-right
           "f" 'go-anchor
           "F" 'go-anchor-new-buffer-focus
           "; f" 'go-anchor-new-buffer
@@ -58,12 +60,15 @@
           "z o" 'zoom-out-page
           "z z" 'unzoom-page
           "r" 'reload-current-buffer
+          "m o" 'set-url-from-bookmark
+          "m m" 'bookmark-current-page
+          "m f" 'bookmark-anchor
           "y u" 'copy-url
           "y t" 'copy-title
-          "C-." 'jump-to-heading        ; TODO: VI binding for this?
+          "g h" 'jump-to-heading        ; TODO: VI binding for this?
           "/" 'add-search-hints
           "n" 'next-search-hint
-          "p" 'previous-search-hint
+          "N" 'previous-search-hint
           "?" 'remove-search-hints
           "G" 'scroll-to-bottom
           "g g" 'scroll-to-top
