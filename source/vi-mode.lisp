@@ -61,3 +61,7 @@
                  ((and (not (string= response "INPUT"))
                        (find-mode (buffer root-mode) 'vi-insert-mode))
                   (vi-normal-mode root-mode))))))
+
+(defmethod did-finish-navigation ((mode vi-insert-mode) url)
+  (declare (ignore url))
+  (vi-normal-mode mode))
