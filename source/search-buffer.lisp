@@ -64,6 +64,7 @@ returns
                                    (ps:chain document (create-text-node fragment)))))
         (ps:chain node (replace-with new-el)))))
   (setf index 0)
+  (setf current-search 0)
   (walk-dom (ps:chain document body) insert-hint)
   index)
 
