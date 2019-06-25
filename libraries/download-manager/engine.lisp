@@ -85,6 +85,12 @@ This is a floating seconds.")
                       :initform 0
                       :documentation "Download speed in B/s when last `update' was called.")))
 
+(defmethod temp-file ((download download))
+  "Return a file name suitable for unfinished
+downloads."
+  (ensure-unique-file
+   (format nil "~a.part" (namestring (file download)))))
+
 (defmethod bytes-total ((download download))
   (gethash "content-length"
            (header download) 0))

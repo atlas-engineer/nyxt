@@ -26,9 +26,9 @@
             (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil
                                    :proxy proxy
                                    :cookie-jar cookies-jar)
-          (let* ((file (ensure-unique-file
-                        ;; TODO: Allow caller to set the target filename?
-                        (merge-pathnames directory (extract-filename requested-uri response-headers)))))
+          ;; TODO: Allow caller to set the target filename?
+          (let* ((file (merge-pathnames directory (extract-filename requested-uri
+                                                                    response-headers))))
             ;; TODO: Touch file now to ensure uniqueness when actually downloading?
             (make-instance 'download
                            :requested-uri requested-uri
@@ -43,8 +43,9 @@
 (defmethod fetch ((download download)
                      &key (buffer-size 16)) ; Small for testing.
   "Return the number of bytes fetched."
-  (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8))))
-    (with-open-file (output (file download)
+  (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
+         (temp-file (temp-file download)))
+    (with-open-file (output temp-file
                             :direction :output
                             :if-exists :supersede
                             :element-type '(unsigned-byte 8))
@@ -62,6 +63,8 @@
             :else :return nil))
     ;; TODO: Report something if bytes-fetched is not the same as bytes-total.
     (setf (finished-p download) t)
+    (uiop:rename-file-overwriting-target temp-file
+                                         (ensure-unique-file (file download)))
     (update download)
     (bytes-fetched download)))
 
