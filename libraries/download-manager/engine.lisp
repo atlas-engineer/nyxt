@@ -32,8 +32,11 @@ Create it if it does not exist."
   "A channel which can be queried for download notifications.
 The channel return value is a `download'.")
 
-(defun init-kernel ()
-  (setf lparallel:*kernel* (lparallel:make-kernel 8 :name "next-kernel"))
+(defun init (&optional (worker-count 8))
+  "Initialize the download manager.
+This is called automatically from `resolve', but it can also be called manually
+beforehand in order to specify different initialization argument."
+  (setf lparallel:*kernel* (lparallel:make-kernel worker-count :name "next-kernel"))
   (setf *notifications* (lparallel:make-channel)))
 
 (defun kill-kernel ()
@@ -123,11 +126,14 @@ If DIRECTORY is nil, `default-download-directory' will be used.  COOKIES can
 specify a cookie jar as a string, which is useful for authenticated downloads.
 PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
   (unless lparallel:*kernel*
-    (init-kernel))
+    (init))
   (let ((download (cache :uri uri
                          :directory (download-directory directory)
                          :cookies cookies
                          :proxy proxy))
         (channel (lparallel:make-channel)))
+    ;; TODO: We could just use bt:make-thread, no need for a channel... Unless
+    ;; we use it to watch for unfinished downloads and warn the user before
+    ;; closing.
     (lparallel:submit-task channel #'fetch download)
     download))
