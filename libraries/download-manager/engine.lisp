@@ -17,7 +17,7 @@ Create it if it does not exist."
     (setf directory (default-download-directory)))
   (unless (string= "" (file-namestring directory))
     (setf directory (format nil "~a/" (namestring directory))))
-  (ensure-directories-exist (truename directory)))
+  (truename (ensure-directories-exist directory)))
 
 (defun ensure-unique-file (file)
   "Return FILE if unique or suffix it with a number otherwise."
