@@ -194,7 +194,7 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-o" 'load-file)
 (define-key "C-h s" 'start-swank)
 (define-key "M-x" 'execute-command)
-(define-key "C-x 5 2" 'make-window)
+(define-key "C-x 5 2" 'new-window)
 (define-key "C-x 5 0" 'delete-window)
 (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*))))
 
@@ -215,4 +215,4 @@ If FILE is \"-\", read from the standard input."
   "C-h c" 'command-inspect
   "C-h s" 'start-swank
   ":" 'execute-command
-  "W" 'make-window)
+  "W" 'new-window)
