@@ -27,7 +27,7 @@ as a string.")
       (slot-value port slot)))
 
 (defmethod path ((port port))
-  (port-accessor port 'path (name port)))
+  (truename (port-accessor port 'path (name port))))
 
 (defmethod args ((port port))
   (port-accessor port 'args))
@@ -38,10 +38,16 @@ as a string.")
 (defun derive-path-from-name (name)
   "This is an acceptable value for the PATH slot of the PORT class."
   (or
-   (probe-file (merge-pathnames name))
-   (probe-file (merge-pathnames name
-                                (merge-pathnames (format nil "ports/~a/" (subseq name 5))
-                                                 *default-pathname-defaults*)))
+   (probe-file (truename name))
+   (let* ((port-name (file-namestring name))
+          (port-prefix "next-")
+          (port-name (if (string= (subseq port-name 0 (length port-prefix))
+                                  port-prefix)
+                         (subseq port-name (length port-prefix))
+                         port-name)))
+     (probe-file (merge-pathnames (file-namestring name)
+                                  (merge-pathnames (format nil "ports/~a/" port-name)
+                                                   *default-pathname-defaults*))))
    name))
 
 (defun derive-logfile-from-name (name)
