@@ -69,6 +69,23 @@ on the Quicklisp website.
 - libfixposix
 - gstreamer, gst-plugins-* (for HTML audio/video)
 
+If your distribution does not install libraries in a [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
+have to let know your Lisp compiler where to find them.  To do so, add the
+library directories to ~cffi:*foreign-library-directories*~ list.  For instance,
+if you are running Guix you may want to expose =~/.guix-profile/lib= to the
+compiler by adding the following snippet to =~/.sbclrc=:
+
+#+begin_src lisp
+(require "asdf")
+
+(let ((guix-profile (format nil "~a/.guix-profile/lib/" (uiop:getenv "HOME"))))
+  (when (and (probe-file guix-profile)
+             (ignore-errors (asdf:load-system "cffi")))
+    (push guix-profile
+          (symbol-value (find-symbol (string '*foreign-library-directories*)
+                                     (find-package 'cffi))))))
+#+end_src
+
 Install the WebKitGTK+ package of your distribution that provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKitGTK+).
 
@@ -88,6 +105,13 @@ these fixes.
 #+end_quote
 
 ** Compile
+The Next program consists of 2 dedicated executable files: the Lisp core and
+the platform port. There are 2 ways to build them according to whether you want
+to use [[https://github.com/roswell/roswell][Roswell]].
+
+*** Compile Image with a Lisp Implementation
+
+The following command will build both Lisp core and the platform port.
 
 - GNU/Linux:
 #+BEGIN_SRC sh
@@ -103,6 +127,34 @@ specify. You can specify to use your Lisp's init file, to use your
 global installation of Quicklisp, or to automatically download and
 install a separate Quicklisp installation for Next. Run ~make~ to display some
 documentation. Please see the Makefile for more details.
+
+*** Compile with Roswell
+
+Roswell can be used to build the Lisp core. This method uses the existing
+systems installed on your system.
+
+A Roswell script is provided under the project root. You have to make sure
+that this project can be found by Roswell (Quicklisp). You may create a
+symbolic link of this project in the =~/.roswell/local-projects/= directory to
+achieve it.
+
+In order to compile the Lisp core, simple run:
+
+#+BEGIN_SRC sh
+ros build next.ros
+#+END_SRC
+
+An executable file named `next` will be generated under the project root.
+
+Afterwards, you need to build the platform port:
+
+#+BEGIN_SRC sh
+make install-gtk-webkit
+#+END_SRC
+
+You may simply type =make= to display documentation.
+
+Please refer to the next section to make the 2 parts work together.
 
 ** Run
 

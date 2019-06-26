@@ -5,42 +5,44 @@
 (define-mode minibuffer-mode ()
     "Mode for the minibuffer."
     ((name :accessor name :initform "minibuffer")
-     (keymap
+     (keymap-schemes
       :initform
       (let ((map (make-keymap)))
-        (define-key (key "HYPHEN") #'self-insert
-          (key "SPACE") #'self-insert
-          (key "C-f") #'cursor-forwards
-          (key "M-f") #'cursor-forwards-word
-          (key "C-b") #'cursor-backwards
-          (key "M-b") #'cursor-backwards-word
-          (key "M-d") #'delete-forwards-word
-          (key "M-BACKSPACE") #'delete-backwards-word
-          (key "Right") #'cursor-forwards
-          (key "Left") #'cursor-backwards
-          (key "C-d") #'delete-forwards
-          (key "DELETE") #'delete-forwards
-          (key "BACKSPACE") #'delete-backwards
-          (key "C-a") #'cursor-beginning
-          (key "C-e") #'cursor-end
-          (key "C-k") #'kill-line
-          (key "RETURN") #'return-input
-          (key "C-RETURN") #'return-immediate
-          (key "C-g") #'cancel-input
-          (key "ESCAPE") #'cancel-input
-          (key "C-n") #'select-next
-          (key "C-p") #'select-previous
-          (key "Down") #'select-next
-          (key "Up") #'select-previous
-          (key "C-v") #'paste
-          (key "C-y") #'paste
-          (key "C-w") #'copy-candidate
-          (key "TAB") #'insert-candidate
+        (define-key "HYPHEN" #'self-insert
+          "SPACE" #'self-insert
+          "C-f" #'cursor-forwards
+          "M-f" #'cursor-forwards-word
+          "C-b" #'cursor-backwards
+          "M-b" #'cursor-backwards-word
+          "M-d" #'delete-forwards-word
+          "M-BACKSPACE" #'delete-backwards-word
+          "Right" #'cursor-forwards
+          "Left" #'cursor-backwards
+          "C-d" #'delete-forwards
+          "DELETE" #'delete-forwards
+          "BACKSPACE" #'delete-backwards
+          "C-a" #'cursor-beginning
+          "C-e" #'cursor-end
+          "C-k" #'kill-line
+          "RETURN" #'return-input
+          "C-RETURN" #'return-immediate
+          "C-g" #'cancel-input
+          "ESCAPE" #'cancel-input
+          "C-n" #'select-next
+          "C-p" #'select-previous
+          "Down" #'select-next
+          "Up" #'select-previous
+          "C-v" #'paste
+          "C-y" #'paste
+          "C-w" #'copy-candidate
+          "TAB" #'insert-candidate
           :keymap map)
-        map))))
+        (list :emacs map
+              :vi-normal map
+              :vi-insert map)))))
 
 (defclass minibuffer (buffer)
-  ((mode :accessor mode :initarg :mode :initform 'minibuffer-mode)
+  ((default-modes :initform '(minibuffer-mode))
    (completion-function :accessor completion-function)
    (callback-function :accessor callback-function)
    (callback-buffer :accessor callback-buffer)
@@ -80,11 +82,6 @@
                                              :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
-(defmethod initialize-instance :after ((minibuffer minibuffer)
-                                       &key &allow-other-keys)
-  (when (symbolp (mode minibuffer))
-    (setf (mode minibuffer) (make-instance (mode minibuffer)))))
-
 (defmethod read-from-minibuffer ((minibuffer minibuffer)
                                  &key callback input-prompt completion-function setup-function
                                    cleanup-function empty-complete-immediate)
@@ -122,9 +119,9 @@
               ;; if we can't find a completion
               (when empty-complete-immediate
                 ;; if we accept immediate output in place of completion
-                (return-immediate (mode minibuffer) minibuffer))))
+                (return-immediate (first (modes minibuffer)) minibuffer))))
         ;; if there's no completion function
-        (return-immediate (mode minibuffer) minibuffer))
+        (return-immediate (first (modes minibuffer)) minibuffer))
     (when cleanup-function
       (funcall cleanup-function))))
 
@@ -134,7 +131,9 @@
   (setf (display-mode minibuffer) :nil)
   (set-active-buffer *interface* (callback-buffer minibuffer))
   (with-slots (callback-function cleanup-function) minibuffer
-    (funcall callback-function (input-buffer minibuffer))
+    (let ((normalized-input (cl-strings:replace-all (input-buffer minibuffer)
+                                                    " " " ")))
+      (funcall callback-function normalized-input))
     (when cleanup-function
       (funcall cleanup-function))))
 
@@ -299,7 +298,7 @@
   "Delete characters from cursor position until the end of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (let* ((current-cursor-position input-buffer-cursor)
-           (new-cursor-position (cursor-forwards-word (mode minibuffer) minibuffer))
+           (new-cursor-position (cursor-forwards-word (first (modes minibuffer)) minibuffer))
            (transpose-distance (- new-cursor-position current-cursor-position)))
       (setf input-buffer
             (concatenate 'string
@@ -312,7 +311,7 @@
   "Delete characters from cursor position until the beginning of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (let ((current-cursor-position input-buffer-cursor)
-          (new-cursor-position (cursor-backwards-word (mode minibuffer) minibuffer)))
+          (new-cursor-position (cursor-backwards-word (first (modes minibuffer)) minibuffer)))
       (setf input-buffer
             (concatenate 'string
                          (subseq input-buffer 0 new-cursor-position)
@@ -387,26 +386,44 @@
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view true))))))
 
-(defmethod echo ((minibuffer minibuffer) text)
-  (let ((active-window (%%window-active *interface*)))
-    (unless (eql (display-mode minibuffer) :read)
-      (setf (display-mode minibuffer) :echo)
-      (erase-document minibuffer)
-      (%%window-set-minibuffer-height *interface*
-                                      active-window
-                                      (minibuffer-echo-height active-window))
-      (let ((style (cl-css:css
-                    '((* :font-family "monospace,monospace"
-                         :font-size "14px")
-                      (body :border-top "4px solid dimgray"
-                            :margin "0"
-                            :padding "0 6px")
-                      (p :margin "0")))))
-        (set-input minibuffer
-                   (cl-markup:markup
-                    (:head (:style style))
-                    (:body
-                     (:p text))))))))
+(defun echo (&rest args)
+  "Echo ARGS in the minibuffer.
+Accepted keyword argument:
+
+  :minibuffer
+  :window
+
+The first argument can be a format string and the following arguments will be
+interpreted by `format'. "
+  (let ((minibuffer (when *interface* (minibuffer *interface*)))
+        (window (when *interface* (%%window-active *interface*))))
+    (when (evenp (length args))
+      (when (getf args :minibuffer)
+        (setf minibuffer (getf args :minibuffer)))
+      (when (getf args :window)
+        (setf window (getf args :window)))
+      (dolist (key (remove-if-not #'keywordp args))
+        (remf args key)))
+    (if (and minibuffer window)
+        (unless (eql (display-mode minibuffer) :read)
+          (setf (display-mode minibuffer) :echo)
+          (erase-document minibuffer)
+          (%%window-set-minibuffer-height *interface*
+                                          window
+                                          (minibuffer-echo-height window))
+          (let ((style (cl-css:css
+                        '((* :font-family "monospace,monospace"
+                             :font-size "14px")
+                          (body :border-top "4px solid dimgray"
+                                :margin "0"
+                                :padding "0 6px")
+                          (p :margin "0")))))
+            (set-input minibuffer
+                       (cl-markup:markup
+                        (:head (:style style))
+                        (:body
+                         (:p (apply #'format nil args)))))))
+        (log:warn "Can't echo ~a without minibuffer or interface" args))))
 
 (defmethod echo-dismiss ((minibuffer minibuffer))
   (when (eql (display-mode minibuffer) :echo)
@@ -422,7 +439,7 @@
   (with-slots (completions completion-cursor)
       minibuffer
     (and completions
-         (nth completion-cursor completions))))
+         (format nil "~a" (nth completion-cursor completions)))))
 
 (define-command copy-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
@@ -434,5 +451,5 @@
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
-      (kill-whole-line (mode minibuffer) minibuffer)
+      (kill-whole-line (first (modes minibuffer)) minibuffer)
       (insert candidate minibuffer))))

@@ -9,7 +9,7 @@
     (cond ((and active-window (> window-count 1))
            (%%window-delete *interface* active-window))
           (active-window
-           (echo (minibuffer *interface*) "Can't delete sole window.")))))
+           (echo "Can't delete sole window.")))))
 
 (defun make-window ()
   "Create a new window."

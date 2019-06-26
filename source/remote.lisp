@@ -29,16 +29,42 @@ keyword is not recognized.")))
 (defclass buffer ()
   ((id :accessor id :initarg :id)
    (name :accessor name :initarg :name)
-   (mode :accessor mode :initarg :mode
-         ;; TODO: This is rather clunky.  Use separate slot for the class symbol?
-         :initform 'document-mode
-         :documentation "The :initform and :initarg must be the class symbol.
-The mode is instantiated on buffer initialization.")
+   (modes :accessor modes :initarg :modes :initform '()
+          :documentation "The list of mode instances.")
+   (default-modes :accessor default-modes :initarg :default-modes
+                  :initform '(document-mode root-mode)
+                  :documentation "The list of symbols of class to
+instantiate on buffer creation, unless specified.")
+   (current-keymap-scheme :accessor current-keymap-scheme ; TODO: Name keymap-scheme instead?
+                          :initarg :current-keymap-scheme
+                          :initform :emacs
+                          :documentation "The keymap scheme that will be used
+for all modes in the current buffer.")
+   (override-map :accessor override-map
+                 :initarg :override-map
+                 :initform (let ((map (make-keymap)))
+                             (define-key :keymap map
+                               "M-x" 'execute-command)
+                             map)
+                 :documentation "This keymap is always looked up first, it
+overrides all other bindings.  No libraries should ever touch the override-map,
+this is left for the user to customize to their needs.")
+   (forward-input-events :accessor forward-input-events :initarg :forward-input-events
+                         :initform t
+                         :documentation "When non-nil, keyboard events are
+forwarded to the platform port when no binding is found.  Pointer
+events (e.g. mouse events) are not affected by this, they are always
+forwarded when no binding is found.")
+   (last-key-chords :accessor last-key-chords
+                    :initform '()
+                    ;; TODO: Store multiple key chords?  Maybe when implementing keyboard macros.
+                    :documentation "The last key chords that were received for the current buffer.
+For now we only store the very last key chord.")
    (view :accessor view :initarg :view)
-   (modes :accessor modes :initarg :modes)
-   (resource-query-functions :accessor resource-query-functions
-                             :initarg :resource-query-functions
-                             :initform nil)
+   (resource-query-function :accessor resource-query-function
+                            ;; TODO: What about having multiple functions?  And what about moving this to modes?
+                            :initarg :resource-query-function
+                            :initform #'resource-query-default)
    (callbacks :accessor callbacks
               :initform (make-hash-table :test #'equal))
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
@@ -63,8 +89,14 @@ distance scroll-left or scroll-right will scroll.")
 platform ports might support this.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
-  (when (symbolp (mode buffer))
-    (setf (mode buffer) (make-instance (mode buffer)))))
+  (let ((root-mode (make-instance 'root-mode :buffer buffer)))
+    (dolist (mode-class (reverse (default-modes buffer)))
+      ;; ":activate t" should not be necessary here since (modes buffer) should be
+      ;; empty.
+      ;; For now, root-mode does not have an associated command.
+      (if (eq mode-class 'root-mode)
+          (push root-mode (modes buffer))
+          (funcall mode-class root-mode :buffer buffer :activate t)))))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord
@@ -76,10 +108,12 @@ platform ports might support this.")))
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
-  (did-commit-navigation (mode buffer) url))
+  (dolist (mode (modes buffer))
+    (did-commit-navigation mode url)))
 
 (defmethod did-finish-navigation ((buffer buffer) url)
-  (did-finish-navigation (mode buffer) url))
+  (dolist (mode (modes buffer))
+    (did-finish-navigation mode url)))
 
 (defclass remote-interface ()
   ((port :accessor port :initform (make-instance 'port)
@@ -99,7 +133,65 @@ commands.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
    (key-chord-stack :accessor key-chord-stack :initform '()
-                    :documentation "A stack that keeps track of the key chords a user has inputted.")))
+                    :documentation "A stack that keeps track of the key chords a user has inputted.")
+   (downloads :accessor downloads :initform '()
+              :documentation "List of downloads.")
+   (download-watcher :accessor download-watcher :initform nil
+                     :documentation "List of downloads.")
+   (download-directory :accessor download-directory :initform nil
+                     :documentation "Path of directory where downloads will be
+stored.  Nil means use system default.")))
+
+(defun download-watch ()
+  "Update the download-list buffer.
+This function is meant to be run in the background."
+  ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
+  ;; in too high a frequency of refreshes.
+  (loop while (lparallel:receive-result download-manager:*notifications*)
+        do (let ((buffer (find-buffer 'download-mode)))
+             ;; Only update if buffer exists.  We update even when out of focus
+             ;; because if we switch to the buffer after all downloads are
+             ;; completed, we won't receive notifications so the content needs
+             ;; to be updated already.
+             ;; TODO: Disable when out of focus?  Maybe need hook for that.
+             (when buffer
+               (download-refresh)))))
+
+(defun proxy-address (buffer &key (downloads-only nil))
+  "Return the proxy address, nil if not set.
+If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
+when `proxied-downloads-p' is true."
+  (let* ((mode (and buffer (find-mode buffer 'proxy-mode)))
+         (proxied-downloads (and mode (proxied-downloads-p mode))))
+    (when (or (not downloads-only)
+              proxied-downloads)
+      (server-address mode))))
+
+;; TODO: To download any URL at any moment and not just in resource-query, we
+;; need to query the cookies for URL.  Thus we need to add an RPC endpoint to
+;; query cookies.
+(defmethod download ((interface remote-interface) url &key
+                                                        cookies
+                                                        (proxy-address :auto))
+  "Download URI.
+When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
+current buffer."
+  (when (eq proxy-address :auto)
+    (setf proxy-address (proxy-address (active-buffer interface)
+                                       :downloads-only t)))
+  (let* ((download nil))
+    (handler-case
+        (progn
+          (setf download (download-manager:resolve
+                          url
+                          :directory (download-directory interface)
+                          :cookies cookies
+                          :proxy proxy-address))
+          (push download (downloads interface))
+          download)
+      (error (c)
+        (echo "Download error: ~a" c)
+        nil))))
 
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
@@ -137,7 +229,7 @@ commands.")
   (when (active-connection interface)
     (log:debug "Stopping server")
     ;; TODO: How do we close the connection?
-    (bt:destroy-thread (active-connection interface))))
+    (ignore-errors (bt:destroy-thread (active-connection interface)))))
 
 (defun %rpc-send-self (method-name signature &rest args)
   "Call METHOD over ARGS.
@@ -240,31 +332,15 @@ For an array of string, that would be \"as\"."
   (%rpc-send interface "window_set_minibuffer_height" (id window) height))
 
 (defmethod %%buffer-make ((interface remote-interface)
-                          &key name mode)
+                          &key name default-modes)
   (let* ((buffer-id (get-unique-buffer-identifier interface))
          (buffer (apply #'make-instance 'buffer :id buffer-id
                         (append (when name `(:name ,name))
-                                (when mode `(:mode ,mode))))))
+                                (when default-modes `(:default-modes ,default-modes))))))
     (ensure-parent-exists (cookies-path buffer))
     (setf (gethash buffer-id (buffers interface)) buffer)
     (%rpc-send interface "buffer_make" buffer-id
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
-    buffer))
-
-(defun list-buffers (interface)
-  "Print the buffers of the given interface with their id."
-  (maphash (lambda (key val)
-                 (format t "~a ~a~&" key val))
-               (buffers interface)))
-
-;; TODO: Use keys instead of &optional.
-(defmethod buffer-make ((interface remote-interface)
-                        &optional
-                          (name "default")
-                          mode)
-  (let* ((buffer (%%buffer-make interface :name name :mode mode)))
-    (when (mode buffer)
-      (setup (mode buffer) buffer))
     buffer))
 
 (defmethod %get-inactive-buffer ((interface remote-interface))
@@ -279,7 +355,7 @@ For an array of string, that would be \"as\"."
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
-                                (buffer-make interface))))
+                                (%%buffer-make interface))))
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))
@@ -338,7 +414,19 @@ events."
                  proxy-uri ignore-hosts))
 
 (defmethod %%get-proxy ((interface remote-interface) (buffer buffer))
+  "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy configuration.
+MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
+ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send interface "get_proxy" (id buffer)))
+
+(defmethod %%buffer-set ((interface remote-interface) (buffer buffer)
+                       (setting string) value)
+  "Set SETTING to VALUE for BUFFER.
+The valid SETTINGs are specified by the platform, e.g. for WebKitGTK it is
+https://webkitgtk.org/reference/webkit2gtk/stable/WebKitSettings.html.
+
+TODO: Only booleans are supported for now."
+  (%rpc-send interface "buffer_set" (id buffer) setting value))
 
 
 ;; Expose Lisp Core RPC endpoints.
@@ -413,40 +501,78 @@ events."
   (when urls
     (let ((buffer (make-buffer))
           (window (%%window-make *interface*)))
-      (set-url-buffer (car urls) buffer)
+      (set-url-buffer (first urls) buffer)
       (window-set-active-buffer *interface* window buffer))
-    (loop for url in (cdr urls) do
+    (loop for url in (rest urls) do
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))
 
-;; Return whether URL should be loaded or not.
+(defmethod resource-query-default ((buffer buffer)
+                                   &key url
+                                     (cookies "")
+                                     event-type
+                                     (is-new-window nil)
+                                     (is-known-type t)
+                                     (mouse-button "")
+                                     (modifiers '()))
+  "Return non-nil to let platform port load URL.
+Return nil otherwise.
+
+Deal with URL with the following rules:
+- If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
+- If IS-KNOWN-TYPE is nil, download the file.  (TODO: Implement it!)
+- Otherwise return non-nil to let the platform port load the URL."
+  (declare (ignore event-type))         ; TODO: Do something with the event type?
+  (cond
+    ((or is-new-window
+         ;; TODO: Streamline the customization of this binding.
+         (and (equal modifiers '("C"))
+              (string= mouse-button "button1")))
+     (log:info "Load ~a in new buffer" url)
+     (make-buffers (list url))
+     nil)
+    ((not is-known-type)
+     (log:info "Buffer ~a downloads ~a" buffer url)
+     (download *interface* url :proxy-address (proxy-address buffer :downloads-only t)
+               :cookies cookies)
+     (unless (find-buffer 'download-mode)
+       (download-list (make-instance 'root-mode)))
+     nil)
+    (t
+     (log:info "Forwarding ~a back to platform port" url)
+     t)))
+
+;; Return non-nil to tell the platform port to load the URL.
 (dbus:define-dbus-method (core-object request-resource)
-    ((buffer-id :string) (url :string) (event-type :string) (is-new-window :boolean)
+    ((buffer-id :string) (url :string)
+     (cookies :string)
+     (event-type :string) (is-new-window :boolean)
      (is-known-type :boolean) (mouse-button :string) (modifiers (:array :string)))
     (:boolean)
   (:interface +core-interface+)
   (:name "request_resource")
-  (declare (ignore event-type))
-  (log:debug "Mouse ~a, modifiers ~a" mouse-button modifiers)
+  (unless (member-string event-type '("other"
+                                      "link-click"
+                                      "form-submission"
+                                      "form-resubmission"
+                                      "backward-or-forward"
+                                      "reload"))
+    (setf event-type "other"))
+  (setf event-type (intern event-type "KEYWORD"))
+  ;; TODO: We need to define an EVENT type, e.g. with
+  ;; (deftype event () '(member :other :link-click ...))
+  ;; https://stackoverflow.com/questions/578290/common-lisp-equivalent-to-c-enums#
+  (log:debug "Request resource ~s with mouse ~s, modifiers ~a" url mouse-button modifiers)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
-    (cond
-      (is-new-window
-       (log:info "Load ~a in new window" url)
-       (make-buffers url)
-       nil)
-      ((not is-known-type)
-       (log:info "Buffer ~a downloads ~a" buffer url)
-       nil)
-      (t
-       (log:info "Forwarding ~a back to platform port" url)
-       t))
-    ;; TODO: Move the cond to RESOURCE-QUERY-FUNCTIONS to let the user customize
-    ;; the behaviour.
-    ;; (if (loop for function in (resource-query-functions buffer)
-    ;;           always (funcall function url buffer-id))
-    ;;     1
-    ;;     0)
-    ))
+    (funcall (resource-query-function buffer)
+             buffer
+             :url url
+             :cookies cookies
+             :event-type event-type
+             :is-new-window is-new-window
+             :is-known-type is-known-type
+             :mouse-button mouse-button
+             :modifiers modifiers)))
 
 
 ;; Convenience methods and functions for users of the API.

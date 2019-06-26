@@ -30,9 +30,10 @@ ARGLIST must be a list of optional arguments."
                   (rest body)
                   body)))
     `(progn
-       (defmethod ,name ,(cons `(%mode ,mode) arglist)
+       (defmethod ,name ,(cons `(,mode ,mode) arglist)
          ,documentation
-         (echo-dismiss (minibuffer *interface*))
+         (when *interface*
+           (echo-dismiss (minibuffer *interface*)))
          ,@body))))
 
 (defun package-defined-symbols (&optional (package (find-package :next)))
@@ -44,14 +45,10 @@ ARGLIST must be a list of optional arguments."
     symbols))
 
 (defun package-variables ()
-  (loop for sym in (package-defined-symbols)
-        when (boundp sym)
-        collect sym))
+  (remove-if-not #'boundp (package-defined-symbols)))
 
 (defun package-functions ()
-  (loop for sym in (package-defined-symbols)
-        when (fboundp sym)
-        collect sym))
+  (remove-if-not #'fboundp (package-defined-symbols)))
 
 (defun package-methods ()
   (loop for sym in (package-defined-symbols)
@@ -73,14 +70,17 @@ Otherwise list all commands."
                       (closer-mop:subclassp (find-class mode) first-specializer )))
         collect m))
 
+(defun command-symbol (command)
+  "Return the symbol of a command."
+  (closer-mop:generic-function-name
+   (closer-mop:method-generic-function command)))
+
 (defun command-complete (input)
   (fuzzy-match input
-               (mapcar (lambda (c)
-                         (closer-mop:generic-function-name
-                          (closer-mop:method-generic-function c)))
-                       (list-commands (class-name
-                                       (class-of
-                                        (mode (active-buffer *interface*))))))
+               (mapcar #'command-symbol
+                       (delete-duplicates
+                        (loop for mode in (modes (active-buffer *interface*))
+                              append (list-commands (class-name (class-of mode))))))
                :accessor-function #'symbol-name))
 
 (define-command execute-command ()
@@ -89,4 +89,8 @@ Otherwise list all commands."
                          (minibuffer *interface*)
                          :input-prompt "Execute command:"
                          :completion-function 'command-complete))
-    (funcall command (mode (active-buffer *interface*)))))
+    (let ((mode (find-if (lambda (mode)
+                           (member command (mapcar #'command-symbol
+                                                   (list-commands (class-name (class-of mode))))))
+                         (modes (active-buffer *interface*)))))
+      (funcall command mode))))

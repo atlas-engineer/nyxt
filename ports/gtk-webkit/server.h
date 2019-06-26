@@ -248,12 +248,21 @@ static GVariant *server_generate_input_event(GVariant *parameters) {
 				.direction = hardware_keycode,
 				.x = x,
 				.y = y,
-				.delta_x = -1,
-				.delta_y = -1,
+				.delta_x = 0,
+				.delta_y = 0,
 			};
-			if (keyval == 5 || keyval == 7) {
-				event_scroll.delta_x = 1;
+			if (keyval == 4) {
+				event_scroll.delta_x = 0;
+				event_scroll.delta_y = -1;
+			} else if (keyval == 5) {
+				event_scroll.delta_x = 0;
 				event_scroll.delta_y = 1;
+			} else if (keyval == 6) {
+				event_scroll.delta_x = -1;
+				event_scroll.delta_y = 0;
+			} else if (keyval == 7) {
+				event_scroll.delta_x = 1;
+				event_scroll.delta_y = 0;
 			}
 			event = (GdkEvent)event_scroll;
 			event.type = GDK_SCROLL;
@@ -316,18 +325,17 @@ static GVariant *server_list_methods(SoupXMLRPCParams *_params) {
 
 /* ITER cannot be used after this call.  RESULT must be freed. */
 GList *server_unwrap_string_list(GVariantIter *iter) {
-	GVariant *str_variant;
-	gchar *str;
+	gchar *str = NULL;
 	GList *result = NULL;
-	while (g_variant_iter_loop(iter, "v", &str_variant)) {
-		g_variant_get(str_variant, "s", &str);
-		result = g_list_append(result, str);
+	while (g_variant_iter_loop(iter, "s", &str)) {
+		result = g_list_prepend(result, strdup(str));
 	}
+	result = g_list_reverse(result);
 	g_variant_iter_free(iter);
 	return result;
 }
 
-/* The GList can be freed but not its elements which are share with the result.
+/* The GList can be freed but not its elements which are shared with the result.
 The result must be freed. */
 char **server_string_list_to_array_pointer(GList *list) {
 	guint length = g_list_length(list);
@@ -357,7 +365,7 @@ static GVariant *server_set_proxy(GVariant *parameters) {
 	{
 		GVariantIter *iter;
 		GVariantIter *iter_buffers;
-		g_variant_get(parameters, "(av&s&sav)", &iter_buffers, &mode, &proxy_uri, &iter);
+		g_variant_get(parameters, "(as&s&sas)", &iter_buffers, &mode, &proxy_uri, &iter);
 
 		buffer_ids = server_unwrap_string_list(iter_buffers);
 		GList *ignore_hosts_list = server_unwrap_string_list(iter);
@@ -407,7 +415,7 @@ static GVariant *server_get_proxy(GVariant *parameters) {
 	buffer_get_proxy(g_hash_table_lookup(state.buffers, a_key),
 		&mode, &proxy_uri, &ignore_hosts);
 
-	char *mode_string = "default";
+	char *mode_string = "default"; // System proxy.
 	if (mode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM) {
 		mode_string = "custom";
 	} else if (mode == WEBKIT_NETWORK_PROXY_MODE_NO_PROXY) {
@@ -425,6 +433,18 @@ static GVariant *server_get_proxy(GVariant *parameters) {
 	}
 
 	return g_variant_builder_end(&builder);
+}
+
+// TODO: Some settings take an integer or a string (e.g. the user agent).
+static GVariant *server_buffer_set(GVariant *parameters) {
+	const char *id = NULL;
+	const char *setting = NULL;
+	gboolean value;
+	g_variant_get(parameters, "(&s&sb)", &id, &setting, &value);
+	g_message("Method parameter(s): buffer ID %s, setting %s, value %i", id, setting, value);
+	buffer_set(g_hash_table_lookup(state.buffers, id), setting, value);
+
+	return g_variant_new("(b)", TRUE);
 }
 
 void server_handler(GDBusConnection *_connection,
@@ -500,8 +520,9 @@ void start_server(GDBusConnection *connection,
 	g_hash_table_insert(state.server_callbacks, "buffer_evaluate_javascript", &server_buffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "minibuffer_evaluate_javascript", &server_minibuffer_evaluate);
 	g_hash_table_insert(state.server_callbacks, "generate_input_event", &server_generate_input_event);
-	g_hash_table_insert(state.server_callbacks, "set_proxy", &server_set_proxy);
+	g_hash_table_insert(state.server_callbacks, "set_proxy", &server_set_proxy); // TODO: Rename buffer_set_proxy?
 	g_hash_table_insert(state.server_callbacks, "get_proxy", &server_get_proxy);
+	g_hash_table_insert(state.server_callbacks, "buffer_set", &server_buffer_set);
 }
 
 void stop_server() {

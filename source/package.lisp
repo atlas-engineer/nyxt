@@ -1,9 +1,9 @@
-;;; package.lisp --- definition of package used by next
+;;; package.lisp --- Definition of packages used by Next.
 
 (in-package :cl-user)
 
-(defpackage :next
+(defpackage next
   (:use :common-lisp)
   (:export
-   :start
-   :start-with-port))
+   #:start
+   #:start-with-port))

@@ -4,13 +4,18 @@
 
 (define-mode help-mode ()
     "Mode for displaying documentation."
-    ((keymap
+    ((keymap-schemes
       :initform
-      (let ((map (make-keymap)))
-        (define-key (key "C-p") 'scroll-up
-          (key "C-n") 'scroll-down
-          :keymap map)
-        map))))
+      (let ((emacs-map (make-keymap))
+            (vi-map (make-keymap)))
+        (define-key "C-p" 'scroll-up
+          "C-n" 'scroll-down
+          :keymap emacs-map)
+        (define-key :keymap vi-map
+          "k" 'scroll-up
+          "j" 'scroll-down)
+        (list :emacs emacs-map
+              :vi-normal vi-map)))))
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)
@@ -34,8 +39,9 @@
                        :completion-function 'variable-complete
                        :input-prompt "Inspect variable:"))
     (let* ((help-buffer (make-buffer
-                         (concatenate 'string "HELP-" (symbol-name input))
-                         (help-mode)))
+                         :name (concatenate 'string "HELP-" (symbol-name input))
+                         :default-modes (cons 'help-mode
+                                                (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
                            (:h1 (symbol-name input))
                            (:p (documentation input 'variable))
@@ -57,8 +63,9 @@
                        (closer-mop:method-generic-function input)))
 
            (help-buffer (make-buffer
-                         (concatenate 'string "HELP-" (symbol-name input-sym))
-                         (help-mode)))
+                         :name (concatenate 'string "HELP-" (symbol-name input-sym))
+                         :default-modes (cons 'help-mode
+                                              (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
                            (:h1 (symbol-name input-sym))
                            (:h2 "Documentation")
@@ -83,8 +90,9 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                        (minibuffer *interface*)
                        :input-prompt "Evaluate Lisp:"))
     (let* ((result-buffer (make-buffer
-                           (concatenate 'string "EVALUATION RESULT-" input)
-                           (help-mode)))
+                           :name (concatenate 'string "EVALUATION RESULT-" input)
+                           :default-modes (cons 'help-mode
+                                                (get-default 'buffer 'default-modes))))
            (results (handler-case
                         (mapcar #'write-to-string (evaluate input))
                       (error (c) (format nil "~a" c))))
@@ -104,4 +112,4 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
   "Version number of this version of Next.
 The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
-  (echo (minibuffer *interface*) (format nil "Version ~a" +version+)))
+  (echo "Version ~a" +version+))

@@ -30,7 +30,7 @@ ARGS are also key arguments."
                                     ((:interface %interface) *interface*)
                                     ((:buffer %buffer) (active-buffer %interface)))
                            args)
-       ,(when (and args (eq (car args) '_))
+       ,(when (and args (eq (first args) '_))
           `(declare (ignore _)))
        (%%buffer-evaluate-javascript %interface %buffer
                                      ,(if args

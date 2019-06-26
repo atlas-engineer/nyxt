@@ -36,20 +36,22 @@ Otherwise, build a search query with the default search engine."
         (generate-search-query
          (subseq input-url
                  (length (first (cl-strings:split input-url))))
-         (cdr engine))
-        ;; puri:parse-uri fails on crazy inputs like:
-        ;; - hello world
-        ;; - https://www.google.com/search?q=hello world
-        (let ((url (ignore-errors (puri:parse-uri input-url))))
+         (rest engine))
+        (let ((recognized-scheme (ignore-errors (quri:uri-scheme (quri:uri input-url)))))
           (cond
-            ((and url (puri:uri-scheme url)) input-url)
-            ((probe-file input-url)
-             (format nil "file://~a"
-                     (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*)))
-            ((puri:uri-p (ignore-errors
-                           (puri:parse-uri (str:concat "https://" input-url))))
+            ((and recognized-scheme
+                  (not (string= "file" recognized-scheme)))
+             input-url)
+            ((or (string= "file" recognized-scheme)
+                 (probe-file input-url))
+             (if (string= "file" recognized-scheme)
+                 input-url
+                 (format nil "file://~a"
+                         (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*))))
+            ((quri:uri-p (ignore-errors
+                          (quri:uri (str:concat "https://" input-url))))
              (str:concat "https://" input-url))
-            (t (generate-search-query input-url (cdr default))))))))
+            (t (generate-search-query input-url (rest default))))))))
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
@@ -139,23 +141,83 @@ When non-nil, INIT-FUNCTION is used to create the file, else the file will be em
   "Get default value of slot SLOT-NAME from class CLASS-NAME.
 The second value is the initfunction."
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
-         (slot (find-slot class slot-name)))
-    (closer-mop:slot-definition-initform slot)))
+         (slot (find-slot class slot-name))
+         (value (closer-mop:slot-definition-initform slot)))
+    ;; When querying quoted lists, the return value of slot-definition-initform
+    ;; is quoted.  For lists declared with LIST, the return value is a list starting with symbol LIST.
+    ;; In those cases, we eval it here so that the caller does not have to do it.
+    ;; Besides, when the slot value is updated with SETF, the list is stored
+    ;; unquoted / without LIST.  By evaluating here, we make sure that all calls to GET-DEFAULT
+    ;; have consistent return types.  WARNING: This could be limitating if slot
+    ;; was meant to actually store a quoted list.  Should this happen, we would
+    ;; have to take some provision.
+    (if (and (listp value)
+             (or
+              (eq 'quote (first value))
+              (eq 'list (first value))))
+        (eval value)
+        value)))
 
 (defun (setf get-default) (value class-name slot-name)
-  "Return VALUE."
+  "Set default value of SLOT-NAME from CLASS-NAME.
+Return VALUE."
   ;; Warning: This is quite subtle: the :initform and :initfunction are tightly
   ;; coupled, it seems that both must be changed together.  We need to change
   ;; the class-slots and not the class-direct-slots.  TODO: Explain why.
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
          (slot (find-slot class slot-name)))
-    (setf
-     (closer-mop:slot-definition-initfunction slot) (lambda () value)
-     (closer-mop:slot-definition-initform slot) value)))
+    (setf (closer-mop:slot-definition-initfunction slot) (lambda () value))
+    (setf (closer-mop:slot-definition-initform slot) value)))
 
-(defun make-keymap ()
-  "Return an empty keymap."
-  (make-hash-table :test 'equal))
+(defun add-to-default-list (value class-name slot-name)
+  "Add VALUE to the list SLOT-NAME from CLASS-NAME.
+If VALUE is already present, move it to the head of the list."
+  (setf (get-default class-name slot-name)
+        (remove-duplicates (cons value
+                                 (get-default class-name slot-name))
+                           :from-end t)))
+
+(defun member-string (string list)
+  "Return the tail of LIST beginning whose first element is STRING."
+  (check-type string string)
+  (member string list :test #'string=))
+
+;; This is mostly inspired by Emacs 26.2.
+(defun file-size-human-readable (file-size &optional flavor)
+  "Produce a string showing FILE-SIZE in human-readable form.
+
+Optional second argument FLAVOR controls the units and the display format:
+
+ If FLAVOR is nil or omitted, each kilobyte is 1024 bytes and the produced
+    suffixes are \"k\", \"M\", \"G\", \"T\", etc.
+ If FLAVOR is `si', each kilobyte is 1000 bytes and the produced suffixes
+    are \"k\", \"M\", \"G\", \"T\", etc.
+ If FLAVOR is `iec', each kilobyte is 1024 bytes and the produced suffixes
+    are \"KiB\", \"MiB\", \"GiB\", \"TiB\", etc."
+  (let ((power (if (or (null flavor) (eq flavor 'iec))
+                   1024.0
+                   1000.0))
+        (post-fixes
+          ;; none, kilo, mega, giga, tera, peta, exa, zetta, yotta
+          (list "" "k" "M" "G" "T" "P" "E" "Z" "Y"))
+        (format-string "~d~a~a"))
+    (loop while (and (>= file-size power) (rest post-fixes))
+          do (setf file-size (/ file-size power)
+                   post-fixes (rest post-fixes)))
+    (if (> (abs (- file-size (round file-size))) 0.05)
+        (setf format-string "~,1f~a~a")
+        (setf file-size (round file-size)))
+    (format nil format-string
+            file-size
+            (if (and (eq flavor 'iec) (string= (first post-fixes) "k"))
+                "K"
+                (first post-fixes))
+            (cond
+              ((and (eq flavor 'iec)
+                    (string= (first post-fixes) ""))
+               "B")
+              ((eq flavor 'iec) "iB")
+              (t "")))))
 
 (defmethod %%minibuffer-evaluate-javascript ((interface remote-interface)
                                              (window-id string) javascript

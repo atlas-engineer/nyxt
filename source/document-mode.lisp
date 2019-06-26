@@ -7,59 +7,100 @@
     ((active-history-node :accessor active-history-node :initarg :active-node
                           :initform (make-instance 'node :data "about:blank"))
      (link-hints :accessor link-hints)
-     (keymap
+     (keymap-schemes
       :initform
-      (let ((map (make-keymap)))
-        (define-key (key "M-f") 'history-forwards-query
-          (key "M-b") 'history-backwards
-          (key "C-g") 'go-anchor
-          (key "M-g") 'go-anchor-new-buffer-focus
-          (key "C-u M-g") 'go-anchor-new-buffer
-          (key "C-x C-w") 'copy-anchor-url
-          (key "C-f") 'history-forwards
-          (key "C-b") 'history-backwards
-          (key "button9") 'history-forwards
-          (key "button8") 'history-backwards
-          (key "C-p") 'scroll-up
-          (key "C-n") 'scroll-down
-          (key "C-x C-=") 'zoom-in-page
-          (key "C-x C-HYPHEN") 'zoom-out-page
-          (key "C-x C-0") 'unzoom-page
-          (key "C-r") 'reload-current-buffer
-          (key "C-m o") 'set-url-from-bookmark
-          (key "C-m s") 'bookmark-current-page
-          (key "C-m g") 'bookmark-anchor
-          (key "C-s s") 'add-search-boxes
-          (key "C-s n") 'next-search-hint
-          (key "C-s p") 'previous-search-hint
-          (key "C-s k") 'remove-search-hints
-          (key "C-.") 'jump-to-heading
-          (key "M-s->") 'scroll-to-bottom
-          (key "M-s-<") 'scroll-to-top
-          (key "M->") 'scroll-to-bottom
-          (key "M-<") 'scroll-to-top
-          (key "C-w") 'copy-url
-          (key "M-w") 'copy-title
-          :keymap map)
-        map))))
+      (let ((emacs-map (make-keymap))
+            (vi-map (make-keymap)))
+        (define-key "M-f" 'history-forwards-query
+          "M-b" 'history-backwards
+          "C-g" 'go-anchor
+          "M-g" 'go-anchor-new-buffer-focus
+          "C-u M-g" 'go-anchor-new-buffer
+          "C-x C-w" 'copy-anchor-url
+          "C-f" 'history-forwards
+          "C-b" 'history-backwards
+          "button9" 'history-forwards
+          "button8" 'history-backwards
+          "C-p" 'scroll-up
+          "C-n" 'scroll-down
+          "C-x C-=" 'zoom-in-page
+          "C-x C-HYPHEN" 'zoom-out-page
+          "C-x C-0" 'unzoom-page
+          "C-r" 'reload-current-buffer
+          "C-m o" 'set-url-from-bookmark
+          "C-m s" 'bookmark-current-page
+          "C-m g" 'bookmark-anchor
+          "C-s s" 'add-search-hints
+          "C-s n" 'next-search-hint
+          "C-s p" 'previous-search-hint
+          "C-s k" 'remove-search-hints
+          "C-." 'jump-to-heading
+          "M-s->" 'scroll-to-bottom
+          "M-s-<" 'scroll-to-top
+          "M->" 'scroll-to-bottom
+          "M-<" 'scroll-to-top
+          "C-v" 'scroll-page-down
+          "M-v" 'scroll-page-up
+          "C-w" 'copy-url
+          "M-w" 'copy-title
+          :keymap emacs-map)
+        (define-key :keymap vi-map
+          "H" 'history-backwards
+          "L" 'history-forwards
+          "f" 'go-anchor
+          "F" 'go-anchor-new-buffer-focus
+          "; f" 'go-anchor-new-buffer
+          "button9" 'history-forwards
+          "button8" 'history-backwards
+          "j" 'scroll-down
+          "k" 'scroll-up
+          "z i" 'zoom-in-page
+          "z o" 'zoom-out-page
+          "z z" 'unzoom-page
+          "r" 'reload-current-buffer
+          "y u" 'copy-url
+          "y t" 'copy-title
+          "C-." 'jump-to-heading        ; TODO: VI binding for this?
+          "/" 'add-search-hints
+          "n" 'next-search-hint
+          "p" 'previous-search-hint
+          "?" 'remove-search-hints
+          "G" 'scroll-to-bottom
+          "g g" 'scroll-to-top
+          "C-f" 'scroll-page-down
+          "C-b" 'scroll-page-up
+          "SPACE" 'scroll-page-down
+          "s-SPACE" 'scroll-page-up)
+        (list :emacs emacs-map
+              :vi-normal vi-map))))
+  ;; Init.
+  ;; TODO: Do we need to set the default URL?  Maybe not.
+  ;; (set-url-buffer (default-new-buffer-url (buffer %mode))
+  ;;                 (buffer %mode))
+  )
 
 (define-command history-backwards (document-mode)
   "Move up to parent node to iterate backwards in history tree."
-  (let ((parent (node-parent (active-history-node
-                              (mode (active-buffer *interface*))))))
+  (let ((parent (node-parent (active-history-node document-mode
+                                                  ;; TODO: Test!
+                              ;; (mode (active-buffer *interface*))
+                                                  ))))
     (when parent
       (set-url (node-data parent) t))))
 
 (define-command history-forwards (document-mode)
   "Move forwards in history selecting the first child."
   (let ((children (node-children (active-history-node
-                                  (mode (active-buffer *interface*))))))
+                                  document-mode
+                                  ;; (mode (active-buffer *interface*))
+                                  ))))
     (unless (null children)
       (set-url (node-data (nth 0 children)) t))))
 
 (defun history-forwards-completion-fn ()
   "Provide completion candidates to the `history-forwards-query' function."
-  (let* ((mode (mode (active-buffer *interface*)))
+  ;; TODO: Find right mode.
+  (let* ((mode (first (modes (active-buffer *interface*))))
          (children (node-children (active-history-node mode))))
     (lambda (input)
       (if children
@@ -76,7 +117,7 @@
     (unless (equal input "Cannot navigate forwards.")
       (set-url (node-data input)))))
 
-(defmethod add-or-traverse-history ((mode root-mode) url)
+(defmethod add-or-traverse-history ((mode document-mode) url)
   (let ((active-node (active-history-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
@@ -107,6 +148,8 @@
   "Set current window title to 'Next - TITLE - URL."
   (with-result* ((url (buffer-get-url))
                  (title (buffer-get-title)))
+    (setf title (if (str:emptyp title) "<untitled>" title))
+    (setf url (if (str:emptyp url) "<no url>" url))
     (%%window-set-title *interface* (%%window-active *interface*)
                         (concatenate 'string "Next - " title " - " url))))
 
@@ -123,13 +166,9 @@
 (defmethod did-commit-navigation ((mode document-mode) url)
   (set-default-window-title mode)
   (add-or-traverse-history mode url)
-  (echo (minibuffer *interface*) (concatenate 'string "Loading: " url ".")))
+  (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode document-mode) url)
-  (echo (minibuffer *interface*) (concatenate 'string "Finished loading: " url "."))
+  (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss (minibuffer *interface*)))
-
-(defmethod setup ((mode document-mode) (buffer buffer))
-  (set-url-buffer (default-new-buffer-url buffer) buffer)
-  (call-next-method))

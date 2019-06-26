@@ -215,46 +215,6 @@ void window_generate_input_event(WindowEvent *window_event) {
 	g_free(window_event);
 }
 
-void window_consume_event(SoupSession *_session, SoupMessage *msg, gpointer window_data) {
-	GError *error = NULL;
-	g_debug("Window event RPC response: %s", msg->response_body->data);
-
-	// TODO: Ideally we should receive a boolean.  See on Lisp side.
-	GVariant *consumed = soup_xmlrpc_parse_response(msg->response_body->data,
-			msg->response_body->length, "i", &error);
-
-	if (error) {
-		g_warning("%s: '%s'", error->message,
-			strndup(msg->response_body->data, msg->response_body->length));
-		g_error_free(error);
-		return;
-	}
-
-	WindowEvent *window_event = (WindowEvent *)window_data;
-	if (!g_variant_get_int32(consumed)) {
-		window_generate_input_event(window_event);
-		return;
-	}
-
-	Window *window = window_event->window;
-	const char *method_name = "consume_key_sequence";
-	GVariant *id = g_variant_new("(s)",
-			window->identifier);
-	g_message("RPC message: %s, window id %s", method_name, window->identifier);
-
-	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
-		method_name,
-		id,
-		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
-	// TODO: There is a possible race condition here: if two keys are pressed very
-	// fast before the first CONSUME-KEY-SEQUENCE is received by the Lisp core,
-	// then when the first CONSUME-KEY-SEQUENCE is received, *key-chord-stack*
-	// will contain the two keys.  The second CONSUME-KEY-SEQUENCE will have an
-	// empty *key-chord-stack*.  In practice, those key presses would have to be
-	// programmatically generated at the system level, so it's mostly a non-issue.
-}
-
 gboolean window_send_event(gpointer window_data,
 	gchar *event_string, guint modifiers,
 	guint16 hardware_keycode, guint keyval,
@@ -285,18 +245,7 @@ gboolean window_send_event(gpointer window_data,
 		"(keycode, keystring, modifiers, x, y, low level data, window id)",
 		g_variant_print(key_chord, TRUE));
 
-	// If using the callback strategy to forward input events to GTK, uncomment the following.
-	/*
-	WindowEvent *window_event = g_new(WindowEvent, 1);
-	window_event->window = window;
-	window_event->event = *event; // Copy the event to keep access to it in case it's freed later.
-	window_event->event.string = g_strdup(event->string);
-
-	g_dbus_connection_call(state.connection, ... method_name, key_chord, ... (GAsyncReadyCallback)window_consume_event,
-	        window_event);
-	*/
-
-	// Other strategy: Leave input event generation to the Lisp.
+	// Leave input event generation to the Lisp.
 	g_dbus_connection_call(state.connection,
 		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
 		method_name,
@@ -575,8 +524,9 @@ gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 	}
 
 	// TODO: Changing the size request of an existing object does not seem to work here.
+	// Hard-code it to 200 for now to make sure Next is usable.
 	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, 200);
-	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height);
+	/* gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height); */
 	gtk_widget_show(GTK_WIDGET(window->minibuffer->web_view));
 	window->minibuffer_height = height;
 

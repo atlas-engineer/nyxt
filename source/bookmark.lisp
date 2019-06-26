@@ -41,7 +41,7 @@
       (sqlite:execute-non-query
        db "insert into bookmarks (url) values (?)" url)
       (sqlite:disconnect db)))
-  (echo (minibuffer *interface*) "Current page bookmarked."))
+  (echo "Current page bookmarked."))
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."

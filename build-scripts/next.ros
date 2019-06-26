@@ -1,0 +1,17 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp(ql:quickload '(next) :silent t)
+  )
+
+(defpackage :ros.script.next.3769603967
+  (:use :cl))
+(in-package :ros.script.next.3769603967)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (next:start-with-port))

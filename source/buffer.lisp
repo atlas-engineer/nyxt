@@ -5,19 +5,20 @@
 (defmethod object-string ((buffer buffer))
   (name buffer))
 
-(defun make-buffer (&optional (name "default")
-                                       mode)
+(defun make-buffer (&key (name "default")
+                         default-modes)
   "Create a new buffer.
 MODE is a mode symbol.
 This function is meant to be used on the Lisp side."
-  (buffer-make *interface* name mode))
+  (%%buffer-make *interface* :name name :default-modes default-modes))
 
 (define-command new-buffer (root-mode &optional (name "default")
-                                       mode)
+                                       modes)
+  ;; TODO: Ask for modes interactively?
   "Create a new buffer.
 This command is meant to be used interactively.
 See the `make-buffer' function for Lisp code."
-  (make-buffer name mode))
+  (make-buffer :name name :default-modes modes))
 
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
@@ -125,37 +126,3 @@ item in the list, jump to the first item."
     (if (< (+ active-buffer-index 1) (length buffers))
         (set-active-buffer *interface* (nth (+ active-buffer-index 1) buffers))
         (set-active-buffer *interface* (nth 0 buffers)))))
-
-(defmethod add-mode ((buffer buffer) mode &optional (overwrite nil))
-  (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
-    (when (or (not found-mode) (and found-mode overwrite))
-      (setf (buffer mode) buffer)
-      (setf (gethash (class-name (class-of mode)) (modes buffer)) mode))))
-
-(defmethod switch-mode ((buffer buffer) mode)
-  (let ((found-mode (gethash (class-name (class-of mode)) (modes buffer))))
-    (when found-mode
-      (setf (mode buffer) found-mode))))
-
-(defmethod add-or-switch-to-mode ((buffer buffer) mode)
-  (add-mode buffer mode)
-  (switch-mode buffer mode))
-
-;; TODO: Make proxy variable local?  Better: make a tor-mode.
-(defparameter *proxy-url* "socks://127.0.0.1:9050" )
-(defparameter *proxy-ignore-list* (list "localhost" "localhost:8080"))
-
-(define-command %toggle-proxy ()
-  "Toggle between system proxy and the proxy settings *PROXY-URL* and
-*PROXY-IGNORE-LIST*.
-Warning: This is experimental and will be removed in future versions."
-  (let* ((active-buffer (active-buffer *interface*))
-         (proxy-settings (%%get-proxy *interface* active-buffer)))
-    (if (string= (first proxy-settings) "default")
-        (progn
-          (%%set-proxy *interface* active-buffer *proxy-url* *proxy-ignore-list*)
-          (echo (minibuffer *interface*) (format nil "Proxy set to ~a (ignoring ~a)." *proxy-url* *proxy-ignore-list*)))
-        (progn
-          (%%set-proxy *interface* active-buffer)
-          (echo (minibuffer *interface*) "Proxy unset.")))
-    (log:info (%%get-proxy *interface* active-buffer))))
