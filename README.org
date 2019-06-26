@@ -117,13 +117,7 @@ The symbols represent modifiers:
 
 The following keys exist as special keys:
 
-- ~BACKSPACE~
-- ~DELETE~
-- ~ESCAPE~
-- ~HYPHEN~
-- ~RETURN~
-- ~SPACE~
-- ~TAB~
+~BACKSPACE~, ~DELETE~, ~ESCAPE~ , ~HYPHEN~, ~RETURN~, ~SPACE~, ~TAB~
 
 ** Customize and Extend Next
 Customization is possible through the creation of a
