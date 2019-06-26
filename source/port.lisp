@@ -18,7 +18,8 @@ string.")
              :documentation "Log file for the platform port.
 It can also be a function that takes NAME as argument and returns the log file
 as a string.")
-   (running-process :accessor running-process)))
+   (running-process :accessor running-process
+                    :initform nil)))
 
 (defun port-accessor (port slot &rest args)
   (if (functionp (slot-value port slot))
@@ -50,7 +51,9 @@ as a string.")
     (merge-pathnames (format nil "next/~a.log" name) xdg-data)))
 
 (defmethod run-loop ((port port))
-  (uiop:wait-process (running-process port)))
+  (if (running-process port)
+      (uiop:wait-process (running-process port))
+      (log:error "Platform port was started externally, kill the process and try again.")))
 
 (defmethod run-program ((port port))
   (let ((port-path (path port))

@@ -87,37 +87,46 @@ Set to '-' to read standard input instead."))
     (member-string +platform-port-name+ (dbus:list-names bus))))
 
 (defmethod initialize-port ((interface remote-interface) &optional (urls *free-args*))
+  "Start platform port if necessary and make a first window."
   ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
   ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
-  (let* ((port-running nil)
-         (max-seconds-to-wait 5.0)
-         (max-attemps (/ max-seconds-to-wait (platform-port-poll-interval interface))))
-    (loop while (not port-running)
-          repeat max-attemps do
+  (let ((port-running (ping-platform-port)))
+    (unless (or port-running
+                (and (port interface)
+                     (running-process (port interface))))
       (handler-case
-          (progn
-            (if (ping-platform-port)
-                (setf port-running t)
-                (unless (and (port interface)
-                             (slot-boundp (port *interface*) 'running-process)
-                             (running-process (port interface)))
-                  (run-program (port interface)))))
+          (run-program (port interface))
         (error (c)
-          (log:debug "Could not communicate with port: ~a" c)
-          (log:info "Polling platform port...~%" )
-          (sleep (platform-port-poll-interval interface))
-          (setf port-running nil))))
-    (when port-running
-      ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
-      (let ((buffer (nth-value 1 (make-window))))
-        (set-url-buffer (if urls
-                            (first urls)
-                            (start-page-url interface))
-                        buffer)
-        ;; We can have many URLs as positional arguments.
-        (loop for url in (rest urls) do
-          (let ((buffer (make-buffer)))
-            (set-url-buffer url buffer)))))))
+          (log:error "~a~&~a" c
+                     "Make sure the platform port executable is either in the
+PATH or set in you ~/.config/next/init.lisp, for instance:
+
+(setf (get-default 'port 'path)
+      \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
+          (uiop:quit))))
+    (let ((max-attemps (/ (platform-port-poll-duration interface)
+                          (platform-port-poll-interval interface))))
+      ;; Poll the platform port in case it takes some time to start up.
+      (loop while (not port-running)
+            repeat max-attemps
+            do (unless (setf port-running (ping-platform-port))
+                 (sleep (platform-port-poll-interval interface))))
+      (if port-running
+          ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
+          (let ((buffer (nth-value 1 (make-window))))
+            (set-url-buffer (if urls
+                                (first urls)
+                                (start-page-url interface))
+                            buffer)
+            ;; We can have many URLs as positional arguments.
+            (loop for url in (rest urls) do
+              (let ((buffer (make-buffer)))
+                (set-url-buffer url buffer))))
+          (progn
+            (log:error "Could not connect to platform port: ~a" (path (port interface)))
+            (kill-program (port interface))
+            (kill-interface interface)
+            (uiop:quit))))))
 
 (defun init-file-path (&optional (file "init.lisp"))
   ;; This can't be a regular variable or else the value will be hard-coded at

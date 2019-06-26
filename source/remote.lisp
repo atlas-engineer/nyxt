@@ -118,7 +118,10 @@ platform ports might support this.")))
 (defclass remote-interface ()
   ((port :accessor port :initform (make-instance 'port)
          :documentation "The CLOS object responible for handling the platform port.")
-   (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.015
+   (platform-port-poll-duration :accessor platform-port-poll-duration :initform 1.0
+                                :documentation "The duration in seconds to wait
+for the platform port to start up.")
+   (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.025
                                 :documentation "The speed at which to poll the
 RPC endpoint of a platform-port to see if it is ready to begin accepting RPC
 commands.")
@@ -207,7 +210,14 @@ current buffer."
                    (let ((url-list (or *free-args*
                                        (list (get-default 'buffer 'default-new-buffer-url)))))
                      (log:info  "Next already started, requesting to open URL(s) ~a." url-list)
-                     (%rpc-send-self "make_buffers" "as" url-list)
+                     (handler-case
+                         (%rpc-send-self "make_buffers" "as" url-list)
+                       (error ()
+                         (log:error "Can't communicate with existing Next.
+Make sure to kill existing processes or if you were running Next from a REPL, kill the interface:
+
+(next::kill-interface next::*interface*)
+")))
                      (uiop:quit))))
                (log:info "Bus connection name: ~A" (dbus:bus-name bus))
                (bt:condition-notify condition)
