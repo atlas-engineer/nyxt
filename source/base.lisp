@@ -104,11 +104,11 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
 (setf (get-default 'port 'path)
       \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
           (uiop:quit))))
-    (let ((max-attemps (/ (platform-port-poll-duration interface)
+    (let ((max-attempts (/ (platform-port-poll-duration interface)
                           (platform-port-poll-interval interface))))
       ;; Poll the platform port in case it takes some time to start up.
       (loop while (not port-running)
-            repeat max-attemps
+            repeat max-attempts
             do (unless (setf port-running (ping-platform-port))
                  (sleep (platform-port-poll-interval interface))))
       (if port-running
