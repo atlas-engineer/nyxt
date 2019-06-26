@@ -1,21 +1,20 @@
 #+html: <img src="https://next.atlas.engineer/static/image/next_256x256.png" align="right"/>
 * Next Web Browser
 Next is a keyboard-oriented, extensible web-browser designed for power
-users. The application has familiar key-bindings, is fully
-configurable and extensible in Lisp, and has powerful features for
-productive professionals.
+users. The application has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]], or [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]),
+is fully configurable and extensible in Lisp, and has powerful
+features for productive professionals.
+
+Next includes many features designed to enable you to be productive. A
+few of them are demonstrated below.
 
 *Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
 instabilities or feature wishes.
 
 *Security warning for macOS users:* The Cocoa webkit platform port has been
-dropped and it's currently not possible to build it without exposing Next to a
+dropped. It's currently not possible to build it without exposing Next to a
 remote-execution vulnerability.  We recommend macOS users to wait for the next
 release which will feature a new platform port.
-
-* Features
-Next includes many features designed to enable you to focus on being
-productive. A few of them are demonstrated below.
 
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
@@ -29,24 +28,24 @@ History is represented as a tree that you can traverse. More complex
 than the "forwards-backwards" abstraction found in other browsers,
 the tree makes sure you never lose track of where you've been.
 
-In the example below, the User performs the following actions:
+Consider the following example:
 
-1. Starts page ~True Parrot~
-2. Visits page ~Gray Parrot~
-3. Returns to page ~True Parrot~
-4. Visits page ~Budgerigar~
-5. Returns to page ~True Parrot~
-6. Executes ~forwards~ keybind in history
+1. Start page ~True Parrot~
+2. Visit page ~Gray Parrot~
+3. Return to page ~True Parrot~
+4. Visit page ~Budgerigar~
+5. Return to page ~True Parrot~
+6. Execute ~forwards~ keybind in history
 
-It is at this point that a normal browser would NOT be able to
+It is at this point that a normal browser would *not* be able to
 navigate you forwards to your visit of ~Gray Parrot~. Instead of
 erasing your history, Next offers smart navigation and prompts the
 user. Do you wish to go forwards to ~Gray Parrot~ or to
 ~Budgerigar~?
 
 ** Lightning fast navigation
-Next is lightweight and fast. The interface does not get in your way,
-and everything can be done by keyboard. You are free to fully focus on
+Next is lightweight and fast. The interface does not get in your way-
+everything can be done by keyboard. You are free to fully focus on
 your task unburdened by cumbersome UI.
 
 Link Hints provide you with the ability to instantly jump to any link
@@ -69,22 +68,22 @@ Guix is a package manager that can be installed on any GNU/Linux distribution;
 should Next be missing from your distribution, there is always the possibility
 to install Guix on your system and use it to install Next.
 
-- If Guix is easily available for your distribution (e.g. as a package), then
-  this is definitely the simplest route.
+- If Guix is easily available for your distribution (e.g. as a
+  package), then this is the simplest route.
 
-- If not, or if you want to help developing Next, then building from source is
-  the commended route.
+- If not, or if you want to help developing Next, building from source
+  is the recommended route.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
 *** D-Bus requirement
 
 Since 1.3.0, Next needs a D-Bus session bus to run.
-In most cases, it should already be running for you.
+In most cases, it should already be running.
 
-If Next does not start up however, it is very likely that D-Bus is not running
-for your user.  You can start D-Bus manually manually with the following shell
-command:
+If Next does not start up, it is very likely that D-Bus is not running
+for your user.  You can start D-Bus manually manually with the
+following shell command:
 
 #+begin_src sh
 $ dbus-launch
@@ -143,5 +142,4 @@ For full documentation about Next, how it works, and how to extend it
 please see the [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org][user manual]].
 
 ** History of changes
-
-See [[file:documents/CHANGELOG.org][CHANGELOG.org]].
+Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].
