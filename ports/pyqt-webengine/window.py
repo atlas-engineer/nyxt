@@ -51,6 +51,11 @@ KEY_TRANSLATIONS = {
     Qt.Key_Return: "RETURN",
     Qt.Key_Tab: "TAB",
     # Qt.Key_Delete: "HYPHEN", # TODO:
+
+    Qt.Key_Right: "Right",
+    Qt.Key_Left: "Left",
+    Qt.Key_Up: "Up",
+    Qt.Key_Down: "Down",
 }
 
 CORE_INTERFACE = "engineer.atlas.next.core"
@@ -185,7 +190,11 @@ class KeyCaptureWidget(QWidget):
             else:
                 # In case of C-a, text() is "^A", a non-printable character, not what we want.
                 # XXX: lower() is necessary, but is it harmless ?
-                key_string = chr(key_code).lower()  # ascii -> string.
+                try:
+                    key_string = chr(key_code).lower()  # ascii -> string.
+                except Exception:
+                    # watch out arrow keys.
+                    pass
                 logging.debug("our new key_string: from {} to {}".format(event.text(), key_string))
 
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
