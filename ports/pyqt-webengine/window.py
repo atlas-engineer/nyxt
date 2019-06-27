@@ -54,9 +54,9 @@ def is_modifier(key):
     return key in MODIFIERS.keys()
 
 def is_special(key):
-    print("--- is special {} ?".format(key))
+    logging.info("is special {} ?".format(key))
     if key == Qt.Key_Backspace:
-        print("--- backspace")
+        logging.info("backspace")
     return key in KEY_TRANSLATIONS.keys()
 
 def key_to_modifier(inputkey):
@@ -93,7 +93,7 @@ def build_special_list(names):
             res.append(special)
     return res
 
-class MyQWidget(QWidget):
+class KeyCaptureWidget(QWidget):
     """
     Subclass QWidget to catch key presses.
     """
@@ -104,7 +104,7 @@ class MyQWidget(QWidget):
 
     #: Identifier (string) of the parent window.
     # XXX: this clearly is sub-optimal: Window.identifier,
-    # window.qtwidget being MyQWidget, MyQWidget.parent_identifier being window.identifier
+    # window.qtwidget being KeyCaptureWidget, KeyCaptureWidget.parent_identifier being window.identifier
     parent_identifier = ""
 
     # lisp core dbus proxy.
@@ -166,10 +166,10 @@ class MyQWidget(QWidget):
             self.current_event = event
             key_code = event.key()
             key_string = event.text()
-            print("--- event text: {}".format(event.text()))
+            logging.info("event text: {}".format(event.text()))
             if is_special(key_code):
                 key_string = KEY_TRANSLATIONS[key_code]
-                print("--- {} is special: {}".format(key_code, key_string))
+                logging.info("{} is special: {}".format(key_code, key_string))
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
                 key_code, key_string, self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
@@ -235,7 +235,7 @@ class Window():
     minibuffer_height = 20
 
     def __init__(self, identifier=None):
-        self.qtwindow = MyQWidget(identifier=identifier)
+        self.qtwindow = KeyCaptureWidget(identifier=identifier)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
