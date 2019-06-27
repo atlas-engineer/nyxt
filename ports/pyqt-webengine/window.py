@@ -28,6 +28,20 @@ MODIFIERS = {
     Qt.Key_Hyper_R: "H",
 }
 
+#: Build modifiers back for Qt.
+#: Their enum representation is different from the event's key code.
+# https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtcore/qt-keyboardmodifiers.html
+QT_MODIFIERS = {
+    'C': Qt.KeyboardModifier.ControlModifier,
+    'H': -1,  # TODO:
+    'Lock': -1, # TODO:
+    'M': Qt.KeyboardModifier.AltModifier,
+    'Meta': Qt.KeyboardModifier.MetaModifier,
+    's': Qt.KeyboardModifier.ShiftModifier,
+    'S': -1,  # TODO:
+
+}
+
 #: Special keys, to be understood by the lisp core.
 KEY_TRANSLATIONS = {
     Qt.Key_Backspace: "BACKSPACE",
@@ -54,36 +68,35 @@ def is_modifier(key):
     return key in MODIFIERS.keys()
 
 def is_special(key):
-    logging.info("is special {} ?".format(key))
-    if key == Qt.Key_Backspace:
-        logging.info("backspace")
     return key in KEY_TRANSLATIONS.keys()
-
-def key_to_modifier(inputkey):
-    """
-    Given a modifier name ("M"), return its key code (16777, Qt.Key_Alt).
-    """
-    for key in MODIFIERS.items():
-        if key[1] == inputkey:
-            return key[0]
 
 def key_to_special(inputkey):
     for key in KEY_TRANSLATIONS.items():
         if key[1] == inputkey:
             return key[0]
 
-def build_modifiers_list(names):
+def build_qt_modifiers(names):
     """
-    Given a list of strings designing modifiers names ("M", "C"), build a
-    list of key sequences (Qt.Key_Shift, etc).
-    If no result, return Qt.NoModifier (i.e, 0) instead of a void list.
+    Given a list of strings designing modifiers names ("M", "C"),
+    return a KeyboardModifiers class with the internal Qt representation of modifiers.
+    If no result, return Qt.NoModifier (i.e, 0) instead.
     """
     res = []
+    names = [it for it in names if it != ""]
     for name in names:
-        mod = key_to_modifier(name)
-        if mod:
+        mod = QT_MODIFIERS.get(name)
+        if mod is None:
+            logging.warn("Unrecognized modifier: {}".format(name))
+        elif mod == -1:
+            logging.warn("Unsupported modifier: {}".format(name))
+            return Qt.NoModifier
+        else:
             res.append(mod)
-    return res or Qt.NoModifier
+    if res:
+        qt_modifiers = Qt.KeyboardModifier(*res)
+    else:
+        qt_modifiers = Qt.NoModifier
+    return qt_modifiers
 
 def build_special_list(names):
     res = []
@@ -169,7 +182,6 @@ class KeyCaptureWidget(QWidget):
             logging.info("event text: {}".format(event.text()))
             if is_special(key_code):
                 key_string = KEY_TRANSLATIONS[key_code]
-                logging.info("{} is special: {}".format(key_code, key_string))
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
                 key_code, key_string, self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
@@ -328,9 +340,8 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     - x, y: float
     - low_level_data: key code from Qt (int).
     """
-    mods = build_modifiers_list(modifiers)
+    qt_modifiers = build_qt_modifiers(modifiers)
     logging.info('generating this input event: window id {}, key code {}, modifiers names {}, \
-    modifiers list {}'.
-                 format(window_id, key_code, modifiers, mods))
-    event = QKeyEvent(QEvent.KeyPress, key_code, Qt.NoModifier)  # TODO: modifiers
+    modifiers list {}'. format(window_id, key_code, modifiers, qt_modifiers))
+    event = QKeyEvent(QEvent.KeyPress, key_code, qt_modifiers)
     QCoreApplication.postEvent(get_window(window_id).qtwindow, event)
