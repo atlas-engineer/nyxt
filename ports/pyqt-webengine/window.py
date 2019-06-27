@@ -191,6 +191,8 @@ class KeyCaptureWidget(QWidget):
         Return the sequence modifiers as a list of strings ("C", "S" etc).
         """
         # dbus always expects an array of strings, not just [].
+        # He doesn't know how to encode "None".
+        # The lisp core removes empty strings before proceeding.
         return [MODIFIERS[key] for key in self.modifiers_stack] or [""]
 
     def get_key_sequence(self):

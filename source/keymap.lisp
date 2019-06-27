@@ -47,6 +47,8 @@ sequence of keys longer than one key-chord can be recorded."
     (setf (key-chord-modifiers key-chord)
           (delete "s" (key-chord-modifiers key-chord) :test #'string=))
     (string-upcase (key-chord-key-string key-chord)))
+  (setf (key-chord-modifiers key-chord) (delete-if #'str:emptyp
+                                                   (key-chord-modifiers key-chord)))
   (append (list nil
                 (key-chord-key-string key-chord))
           (key-chord-modifiers key-chord)))
