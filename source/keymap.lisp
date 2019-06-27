@@ -69,7 +69,7 @@ sequence of keys longer than one key-chord can be recorded."
 
 (defun look-up-key-chord-stack (window key-chord-stack)
   "Return the function bound to key-chord-stack for current window.
-The resulting function wraprs around the method and its associated mode so that
+The resulting function wraps around the method and its associated mode so that
 it can be called without argument."
   (let* ((key-sequence (serialize-key-chord-stack key-chord-stack))
          (key-sequence-normal (serialize-key-chord-stack key-chord-stack :normalize t))
@@ -101,6 +101,10 @@ it can be called without argument."
     ()
   (:interface +core-interface+)
   (:name "push_input_event")
+  (%%push-input-event key-code key-string modifiers x y low-level-data sender)
+  (values))
+
+(defun %%push-input-event (key-code key-string modifiers x y low-level-data sender)
   (let ((key-chord (make-key-chord
                     :key-code key-code
                     :key-string key-string
@@ -145,8 +149,7 @@ it can be called without argument."
                                    active-window
                                    key-chord)
            (setf (key-chord-stack *interface*) nil))
-          (t (setf (key-chord-stack *interface*) nil))))))
-  (values))
+          (t (setf (key-chord-stack *interface*) nil)))))))
 
 (defun define-key (&rest key-command-pairs
                    &key mode (scheme :emacs) keymap
