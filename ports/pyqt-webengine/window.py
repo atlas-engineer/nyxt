@@ -179,9 +179,15 @@ class KeyCaptureWidget(QWidget):
             self.current_event = event
             key_code = event.key()
             key_string = event.text()
-            logging.info("event text: {}".format(event.text()))
+
             if is_special(key_code):
                 key_string = KEY_TRANSLATIONS[key_code]
+            else:
+                # In case of C-a, text() is "^A", a non-printable character, not what we want.
+                # XXX: lower() is necessary, but is it harmless ?
+                key_string = chr(key_code).lower()  # ascii -> string.
+                logging.debug("our new key_string: from {} to {}".format(event.text(), key_string))
+
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
                 key_code, key_string, self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
@@ -337,8 +343,8 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     - window_id: str
     - key_code: int
     - modifiers: [str]
-    - x, y: float
     - low_level_data: key code from Qt (int).
+    - x, y: float
     """
     qt_modifiers = build_qt_modifiers(modifiers)
     logging.info('generating this input event: window id {}, key code {}, modifiers names {}, \
