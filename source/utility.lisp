@@ -245,13 +245,12 @@ Optional second argument FLAVOR controls the units and the display format:
   "window-id: string. Dev purposes."
   (%rpc-send interface "window_set_minibuffer_height" window-id height))
 
-(defun make-window-and-active-buffer (interface &key (url "https://ddg.gg"))
+(defun make-window-and-buffer-with-default-url (&key (url "https://ddg.gg"))
   "For development purposes.
 Make a window and an active buffer."
-  (let* ((window (%%window-make interface))
-         (buffer (%%buffer-make interface)))
-    (set-active-buffer interface buffer)
-    (%%buffer-load interface buffer url)
+  (multiple-value-bind (window buffer)
+      (make-window)
+    (%%buffer-load *interface* buffer url)
     (values window buffer)))
 
 (defun list-windows (interface)
@@ -259,6 +258,11 @@ Make a window and an active buffer."
   (maphash (lambda (key val)
              (format t "~a ~a~&" key val))
           (windows interface)))
+
+(defun list-buffers (interface)
+  (maphash (lambda (key val)
+             (format t "~a ~a~&" key val))
+           (buffers interface)))
 
 (defun reset (interface)
   "Clean up our list of windows and buffers.
