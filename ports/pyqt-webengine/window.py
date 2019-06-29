@@ -1,5 +1,6 @@
 import logging
 
+import core_interface
 import buffers
 import minibuffer
 
@@ -98,7 +99,8 @@ def build_qt_modifiers(names):
         else:
             res.append(mod)
     if res:
-        qt_modifiers = Qt.KeyboardModifier(*res)
+        # TODO: doesn't work with a list of modifiers.
+        qt_modifiers = Qt.KeyboardModifiers(*res)
     else:
         qt_modifiers = Qt.NoModifier
     return qt_modifiers
@@ -126,28 +128,10 @@ class KeyCaptureWidget(QWidget):
     parent_identifier = ""
 
     # lisp core dbus proxy.
-    # Used to send events (push_input_event) asynchronously.
-    session_bus = None
-    core_dbus_proxy = None
 
     def __init__(self, identifier="<no id>"):
-        self.core_dbus_proxy = self.get_core_dbus_proxy()
         self.parent_identifier = identifier
         super().__init__()
-
-    def get_core_dbus_proxy(self):
-        """If it doesn't exist, create a dbus proxy to communicate with the
-        lisp core.
-        """
-        logging.info("session bus again")
-        if not self.session_bus:
-            self.session_bus = dbus.SessionBus()
-
-        logging.info("and core bus…")
-        if not self.core_dbus_proxy:
-            self.core_dbus_proxy = self.session_bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
-        logging.info("buses ok")
-        return self.core_dbus_proxy
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -200,7 +184,7 @@ class KeyCaptureWidget(QWidget):
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
                 key_code, key_string, self.get_modifiers_list()))
             # type signature: int, str, array of strings, double, double, int, str
-            self.core_dbus_proxy.push_input_event(
+            core_interface.push_input_event(
                 key_code,  # int
                 key_string,
                 self.get_modifiers_list(),
@@ -210,8 +194,7 @@ class KeyCaptureWidget(QWidget):
                 # Give handlers to make the call asynchronous.
                 # lambdas don't work.
                 reply_handler=self.handle_reply,
-                error_handler=self.handle_error,
-                dbus_interface=CORE_INTERFACE)
+                error_handler=self.handle_error)
 
     def get_modifiers_list(self):
         """

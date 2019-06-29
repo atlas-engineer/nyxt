@@ -21,3 +21,14 @@ or
 * Documentation
 
 https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtwebenginewidgets/qwebengineview.html
+
+* Troubleshooting
+
+#+BEGIN_SRC text
+dbus.exceptions.DBusException:
+org.freedesktop.DBus.Introspectable.Error.MissingHandler:      Missing
+method-call  handler   at  path   /engineer/atlas/next/core  interface
+org.freedesktop.DBus.Introspectable name Introspect
+#+END_SRC
+
+Don't forget =dbus_interface=CORE_INTERFACE= to dbus calls.

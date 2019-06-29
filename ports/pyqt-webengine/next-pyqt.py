@@ -92,7 +92,7 @@ class DBusWindow(dbus.service.Object):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.load(url)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss', out_signature='s')
     def buffer_evaluate_javascript(self, buffer_id, script):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.evaluate_javascript(script)

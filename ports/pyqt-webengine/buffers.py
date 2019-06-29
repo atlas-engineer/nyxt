@@ -1,11 +1,13 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl
+import dbus
 import logging
+
+import core_interface
 
 #: A dictionary of current buffers mapping an identifier (str) to a
 #  buffer (Buffer).
 BUFFERS = {}
-
 
 def get_buffer(identifier):
     buffer = BUFFERS.get(identifier)
@@ -15,26 +17,72 @@ def get_buffer(identifier):
         raise Exception("Buffer ID: {} not found!".format(identifier))
 
 
-class Buffer():
-    """Documentation for Buffer
+class BufferInfo():
+    # use another structure than Buffer for these settings to prevent
+    # race conditions (see buffer.h).
+    buffer = None
+    javascript_disabled = 0  # qt setting is 0/1 too.
+    callback_id = 0
 
+    def __init__(self, buffer, javascript_disabled=0, callback_id=0):
+        """
+        - buffer: buffer object
+        - javascript_disabled: 0 or 1
+        - callback_id: int
+        """
+        self.buffer = buffer
+        if javascript_disabled in [None, False]:
+            javascript_disabled = 0
+        elif javascript_disabled is True:
+            javascript_disabled = 1
+        self.javascript_disabled = javascript_disabled
+        self.callback_id = callback_id
+
+
+class Buffer():
+    """
+    Documentation for Buffer.
     """
     view = None
     scripts = {}
     identifier = "0"
+    callback_count = 0
+    buffer_info = None
 
     def __init__(self, identifier=None):
         super(Buffer, self).__init__()
         self.view = QWebEngineView()
         self.identifier = identifier
+        self.buffer_info = BufferInfo(self)
 
     def evaluate_javascript(self, script):
-        # This method should return an identifier to the LISP
-        # core. Upon completion of the javascript script, the platform
-        # port will make a call to the LISP core with the results of
-        # that computation, and the associated identifier.
-        self.view.page().runJavaScript(script)
-        "0"  # TODO: callback ID
+        """
+        This method returns an identifier (str) to the LISP core. Upon
+        completion of the javascript script, the platform port will
+        make a call to the LISP core with the results of that
+        computation, and the associated identifier.
+
+        Return: a callback_id (str).
+        """
+        self.buffer_info.callback_id = self.callback_count + 1
+        self.buffer_info.javascript_disabled = 0 if self.view.page().settings().JavascriptEnabled else 1
+
+        # doc: "When the script has been executed, resultCallback is called
+        # with the result of the last executed statement".
+        logging.info("evaluate_javascript: {}".format(script))
+        self.view.page().runJavaScript(script, self.javascript_callback)
+        return str(self.buffer_info.callback_id)
+
+    def javascript_callback(self, res):
+        logging.debug("JS result is: {}".format(res))
+        if res is None:
+            return
+
+        logging.info("calling buffer_javascript_call_back with id '{}', callback id '{}'".format(
+            self.identifier, self.buffer_info.callback_id))
+        core_interface.buffer_javascript_call_back(str(self.identifier),
+                                                  res,
+                                                  str(self.buffer_info.callback_id))
 
     def set_height(self, height):
         self.view.setFixedHeight(height)
