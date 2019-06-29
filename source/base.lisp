@@ -63,7 +63,7 @@ Set to '-' to read standard input instead."))
            (format t "Bye!~&")
            (uiop:quit)))))
 
-(defun ping-platform-port (&optional (bus-type (dbus:session-server-addresses)))
+(defun ping-platform-port (&optional (bus-type (session-server-addresses)))
   (dbus:with-open-bus (bus bus-type)
     (member-string +platform-port-name+ (dbus:list-names bus))))
 
