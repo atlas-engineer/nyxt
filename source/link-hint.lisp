@@ -56,20 +56,13 @@
   (defun hints-add (links)
     "Adds hints on links"
     (ps:let* ((links-length (length links))
-              (hints (hints-generate links-length)))
+           (hints (hints-generate links-length)))
       (ps:chain -j-s-o-n
                 (stringify
                  (loop for i from 0 to (- links-length 1)
-                       for is-input? = (string= (ps:@ (elt links i) tag-name) "INPUT")
-                       collect (list
-                                (ps:@ (hint-add (elt links i) (elt hints i)) inner-text)
-                                (if is-input?
-                                    (ps:@ (elt links i) id)
-                                    (ps:@ (elt links i) href))
-                                ;; TODO: Find more reliable way of passing types?
-                                (if is-input?
-                                    "input"
-                                    "a")))))))
+                    collect (list
+                             (ps:@ (hint-add (elt links i) (elt hints i)) inner-text)
+                             (ps:@ (elt links i) href)))))))
   (defun hints-determine-chars-length (length)
     "Finds out how many chars long the hints must be"
     (ps:let ((i 1))
@@ -83,16 +76,11 @@
   (defun links-find (window document)
     "Finds all the links within the viewport"
     (remove-if-not #'is-in-viewport (qsa document "a")))
-  (defun inputs-find (window document)
-    "Finds all the input fields within the viewport"
-    (remove-if-not #'is-in-viewport (qsa document "input")))
   (defun strings-generate (length chars-length)
     "Generates strings of specified length"
     (ps:let ((minimum (1+ (ps:chain -math (pow 26 (- chars-length 1))))))
       (loop for i from minimum to (+ minimum length)
          collect (string-generate i))))
-  ;; TODO: It seems that duplicate hints are generated.
-  ;; For instance, https://github.com/atlas-engineer/next may display 2 "AC" at the top.
   (defun string-generate (n)
     "Generates a string from a number"
     (if (>= n 0)
@@ -100,8 +88,7 @@
            (code-char (+ 65
                          (rem n 26))))
         ""))
-  (hints-add (links-find window document))
-  (hints-add (inputs-find window document)))
+  (hints-add (links-find window document)))
 
 (define-parenscript %remove-link-hints ()
   (defun qsa (context selector)
@@ -112,13 +99,6 @@
     (ps:dolist (el (qsa document ".next-link-hint"))
       (ps:chain el (remove))))
   (hints-remove-all))
-
-;; TODO: It seems to work on duckduckgo.com, but not on a search result page.
-;; Does not work on github, google...
-(define-parenscript focus-hint (input-id)
-  (let ((input ((ps:@ document get-element-by-id) (ps:lisp input-id))))
-    (ps:chain ((ps:@ input focus)))
-    (ps:chain ((ps:@ input select)))))
 
 (defun remove-link-hints ()
   (%remove-link-hints
@@ -131,16 +111,9 @@
                                     :input-prompt ,prompt
                                     :cleanup-function #'remove-link-hints)))
      (let* ((link-hints (cl-json:decode-json-from-string links-json))
-            (,symbol (cadr (assoc selected-anchor link-hints :test #'equalp)))
-            (type (caddr (assoc selected-anchor link-hints :test #'equalp))))
-       (log:debug "Anchor" (assoc selected-anchor link-hints :test #'equalp))
-       (log:debug "Anchor symbol" ,symbol "type" type)
-       (cond
-         ((string= type "input")
-          (log:debug "Focus on input" ,symbol)
-          (focus-hint :input-id ,symbol))
-         (,symbol
-           ,@body)))))
+            (,symbol (cadr (assoc selected-anchor link-hints :test #'equalp))))
+       (when ,symbol
+         ,@body))))
 
 (define-command go-anchor ()
   "Show a set of link hints, and go to the user inputted one in the
