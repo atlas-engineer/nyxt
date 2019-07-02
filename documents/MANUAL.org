@@ -451,3 +451,28 @@ For instance, you can add this to your =init.lisp=.
 
 The =hostlist= class also support fetching the list from a URL.
 The list can be persisted to the file specified in the =path= slot.
+
+** Styles
+
+Some actions will draw elements on the HTML page, for instance ~go-anchor~ will
+draw link hints as boxes with indices.
+
+The style of those boxes is defined in the ~box-style~ slot of the ~buffer~
+class.
+
+Like any other slot, you can set the default value from your ~init.lisp~.  For instance,
+to change the style to using upper case, no gradiant, and square boxes:
+
+#+begin_src lisp
+(setf (get-default 'buffer 'box-style)
+      (cl-css:inline-css
+       '(:background "#C38A22"
+         :color "black"
+         :border "1px #C38A22 solid"
+         :font-weight "bold"
+         :padding "1px 3px 0px 3px"
+         :padding "1px 3px 0px 3px"
+         :position "absolute"
+         :text-align "center"
+         :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)")))
+#+end_src

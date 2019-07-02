@@ -86,7 +86,20 @@ distance scroll-left or scroll-right will scroll.")
                        :documentation "The default zoom ratio.")
    (cookies-path :accessor cookies-path :initform (xdg-data-home "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
-platform ports might support this.")))
+platform ports might support this.")
+   (box-style :accessor box-style
+              :initform (cl-css:inline-css
+                         '(:background "linear-gradient(to bottom, #FFF785, #C38A22)"
+                           :color "black"
+                           :border "1px #C38A22 solid"
+                           :font-weight "bold"
+                           :padding "1px 3px 0px 3px"
+                           :text-transform "lowercase"
+                           :padding "1px 3px 0px 3px"
+                           :text-align "center"
+                           :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)"
+                           :border-radius "3px"))
+              :documentation "The style of the boxes, e.g. link hints.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key)
   (let ((root-mode (make-instance 'root-mode :buffer buffer)))
