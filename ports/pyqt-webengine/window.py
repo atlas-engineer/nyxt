@@ -59,6 +59,8 @@ KEY_TRANSLATIONS = {
     Qt.Key_Down: "Down",
 }
 
+GENERATED_KEYPRESS = False
+
 CORE_INTERFACE = "engineer.atlas.next.core"
 CORE_OBJECT_PATH = "/engineer/atlas/next/core"
 
@@ -100,7 +102,8 @@ def build_qt_modifiers(names):
             res.append(mod)
     if res:
         # TODO: doesn't work with a list of modifiers.
-        qt_modifiers = Qt.KeyboardModifiers(*res)
+        # qt_modifiers = Qt.KeyboardModifiers(*res)
+        qt_modifiers = Qt.KeyboardModifiers(res[0])
     else:
         qt_modifiers = Qt.NoModifier
     return qt_modifiers
@@ -135,35 +138,13 @@ class KeyCaptureWidget(QWidget):
 
     def keyPressEvent(self, event):
         key = event.key()
-        logging.info("Key: {}".format(event.key()))
-        if event.key() == Qt.Key_Control:
-            logging.info("Control key")
-        elif event.key() == Qt.Key_Shift:
-            logging.info("Shift key")
+        logging.info("key press: {}".format(key))
         if is_modifier(key):
+            logging.info("------ got a modifier")
             self.modifiers_stack.append(key)
             # It's ok Qt, we handled it, don't handle it.
             # return True
-        logging.info("Modifiers: {}".format(self.modifiers_stack))
-
-    def handle_reply(self):
-        # push_input_event doesn't receive return values.
-        logging.info("async reply received.")
-
-    def handle_error(self, e):
-        logging.info("error callback received: {}".format(e))
-
-    def keyReleaseEvent(self, event):
-        """
-        Send all input events with a list of modifier keys.
-        """
-        # We want the list of modifiers when C-S-a is typed.  We might
-        # have it with Qt.Keyboardmodifier() or event.modifiers() but
-        # they don't return useful values so far. This works.
-        if is_modifier(event.key()):
-            self.modifiers_stack = []
-            self.current_event = None
-            # return True  # fails
+            logging.info("Modifiers: {}".format(self.modifiers_stack))
         else:
             self.current_event = event
             key_code = event.key()
@@ -171,6 +152,7 @@ class KeyCaptureWidget(QWidget):
 
             if is_special(key_code):
                 key_string = KEY_TRANSLATIONS[key_code]
+                logging.info("this key is special: {} -> {}".format(key_code, key_string))
             else:
                 # In case of C-a, text() is "^A", a non-printable character, not what we want.
                 # XXX: lower() is necessary, but is it harmless ?
@@ -180,6 +162,12 @@ class KeyCaptureWidget(QWidget):
                     # watch out arrow keys.
                     pass
                 logging.debug("our new key_string: from {} to {}".format(event.text(), key_string))
+
+            global GENERATED_KEYPRESS
+            if GENERATED_KEYPRESS:
+                GENERATED_KEYPRESS = False
+                logging.info("----- generated keypress: return")
+                return
 
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
                 key_code, key_string, self.get_modifiers_list()))
@@ -195,6 +183,50 @@ class KeyCaptureWidget(QWidget):
                 # lambdas don't work.
                 reply_handler=self.handle_reply,
                 error_handler=self.handle_error)
+
+    def handle_reply(self):
+        # push_input_event doesn't receive return values.
+        logging.info("async reply received.")
+
+    def handle_error(self, e):
+        logging.info("error callback received: {}".format(e))
+
+    def keyReleaseEvent(self, event):
+        """
+        Send all input events with a list of modifier keys.
+        """
+        # send R modifier to not double ! # TODO:
+        # TODO: Pierre: send the key release event ?
+        # We want the list of modifiers when C-S-a is typed.  We might
+        # have it with Qt.Keyboardmodifier() or event.modifiers() but
+        # they don't return useful values so far. This works.
+        key_code = event.key()
+        logging.info("key release: {}".format(key_code))
+        if is_modifier(key_code):
+            self.modifiers_stack = []
+            self.current_event = None
+            # return True  # fails
+        elif is_special(key_code):
+            key_string = KEY_TRANSLATIONS[key_code]
+            if key_string in ['ESCAPE', 'BACKSPACE']:
+                # Funnily enough, we can't see key *press* events for those keys but
+                # only key *release* events.
+                # This might be OS-specific, and maybe fixed with Qt filters ?
+                logging.info("this special key is seen only on key release: {} -> {}".format(key_code, key_string))
+                logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
+                    key_code, key_string, self.get_modifiers_list()))
+                # type signature: int, str, array of strings, double, double, int, str
+                core_interface.push_input_event(
+                    key_code,  # int
+                    key_string,
+                    self.get_modifiers_list(),
+                    0.0, 0.0,
+                    key_code, # low-level-data
+                    self.parent_identifier,  # sender
+                    # Give handlers to make the call asynchronous.
+                    # lambdas don't work.
+                    reply_handler=self.handle_reply,
+                    error_handler=self.handle_error)
 
     def get_modifiers_list(self):
         """
@@ -341,5 +373,8 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     qt_modifiers = build_qt_modifiers(modifiers)
     logging.info('generating this input event: window id {}, key code {}, modifiers names {}, \
     modifiers list {}'. format(window_id, key_code, modifiers, qt_modifiers))
+    global GENERATED_KEYPRESS
+    GENERATED_KEYPRESS = True
+    # TODO: add a property to event, don't use globals. See window_key_event.
     event = QKeyEvent(QEvent.KeyPress, key_code, qt_modifiers)
     QCoreApplication.postEvent(get_window(window_id).qtwindow, event)
