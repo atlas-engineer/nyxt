@@ -176,7 +176,7 @@ class KeyCaptureWidget(QWidget):
                 key_code,  # int
                 key_string,
                 self.get_modifiers_list(),
-                0.0, 0.0,  # TODO: mouse events
+                -1.0, -1.0,  # TODO: mouse events
                 key_code, # low-level-data
                 self.parent_identifier,  # sender
                 # Give handlers to make the call asynchronous.
@@ -220,7 +220,7 @@ class KeyCaptureWidget(QWidget):
                     key_code,  # int
                     key_string,
                     self.get_modifiers_list(),
-                    0.0, 0.0,
+                    -1.0, 1.0,
                     key_code, # low-level-data
                     self.parent_identifier,  # sender
                     # Give handlers to make the call asynchronous.
