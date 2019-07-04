@@ -46,16 +46,20 @@
           :keymap emacs-map)
         (define-key :keymap vi-map
           "H" 'history-backwards
-          "h" 'scroll-left
           "L" 'history-forwards
-          "l" 'scroll-right
           "f" 'go-anchor
           "F" 'go-anchor-new-buffer-focus
           "; f" 'go-anchor-new-buffer
           "button9" 'history-forwards
           "button8" 'history-backwards
+          "h" 'scroll-left
           "j" 'scroll-down
           "k" 'scroll-up
+          "l" 'scroll-right
+          "Left" 'scroll-left
+          "Down" 'scroll-down
+          "Up" 'scroll-up
+          "Right" 'scroll-right
           "z i" 'zoom-in-page
           "z o" 'zoom-out-page
           "z z" 'unzoom-page
