@@ -24,6 +24,13 @@
   (ps:defun walk-dom (node proc)
     (when (and node (not (ps:chain node first-child)))
       (funcall proc node (ps:lisp search-string)))
+    (when (string= (ps:chain node tag-name) "IFRAME")
+      (setf node (or (ps:chain node content-window)
+                     (ps:chain node content-document)))
+      (when (ps:chain node document)
+        ;; Going down the "document" tag is suggested by
+        ;; https://www.w3schools.com/jsref/prop_frame_contentdocument.asp.
+        (setf node  (ps:chain node document))))
     (setf node (ps:chain node first-child))
     (loop while node
           do (walk-dom node proc)
