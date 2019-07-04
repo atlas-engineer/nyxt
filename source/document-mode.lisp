@@ -11,7 +11,8 @@
       :initform
       (let ((emacs-map (make-keymap))
             (vi-map (make-keymap)))
-        (define-key "M-f" 'history-forwards-query
+        (define-key :keymap emacs-map
+          "M-f" 'history-forwards-query
           "M-b" 'history-backwards
           "C-g" 'go-anchor
           "M-g" 'go-anchor-new-buffer-focus
@@ -43,7 +44,8 @@
           "M-v" 'scroll-page-up
           "C-w" 'copy-url
           "M-w" 'copy-title
-          :keymap emacs-map)
+          "SPACE" 'scroll-page-down
+          "s-SPACE" 'scroll-page-up)
         (define-key :keymap vi-map
           "H" 'history-backwards
           "L" 'history-forwards
