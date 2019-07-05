@@ -143,7 +143,7 @@ void buffer_navigated_callback(GObject *_source, GAsyncResult *res, gpointer dat
 
 void buffer_set_uri(GObject *cookie_manager, GAsyncResult *res, gpointer data) {
 	GError *error = NULL;
-	char *cookies_string = NULL;
+	char *cookies_string = "";
 	{
 		GList *cookies = webkit_cookie_manager_get_cookies_finish(
 			(WebKitCookieManager *)cookie_manager, res, &error);
@@ -160,7 +160,9 @@ void buffer_set_uri(GObject *cookie_manager, GAsyncResult *res, gpointer data) {
 			cookies = cookies->next;
 		}
 		scookies = g_slist_reverse(scookies);
-		cookies_string = soup_cookies_to_cookie_header(scookies);
+		if (scookies != NULL) {
+			cookies_string = soup_cookies_to_cookie_header(scookies);
+		}
 
 		g_slist_free(scookies);
 		g_list_free_full(cookies, (GDestroyNotify)soup_cookie_free);
@@ -201,7 +203,9 @@ void buffer_set_uri(GObject *cookie_manager, GAsyncResult *res, gpointer data) {
 	if (g_strcmp0(mouse_button, "") != 0) {
 		g_free(mouse_button);
 	}
-	g_free(cookies_string);
+	if (g_strcmp0(cookies_string, "") != 0) {
+		g_free(cookies_string);
+	}
 	g_free(is_new_window);
 	g_free(is_known_type);
 	g_free(modifiers);
