@@ -44,7 +44,8 @@
           "M-v" 'scroll-page-up
           "C-w" 'copy-url
           "M-w" 'copy-title
-          "SPACE" 'scroll-page-down
+          ;; Leave SPACE unbound so that the paltform port decides wether to
+          ;; insert of scroll.
           "s-SPACE" 'scroll-page-up)
         (define-key :keymap vi-map
           "H" 'history-backwards
