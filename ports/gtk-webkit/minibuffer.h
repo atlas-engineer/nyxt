@@ -56,7 +56,7 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 char *minibuffer_evaluate(Minibuffer *minibuffer, const char *javascript) {
 	// If another minibuffer_evaluate is run before the callback is called, there
 	// will be a race condition upon accessing callback_count.
-	// Thus we send a copy of callback_count via a BufferInfo to the callback.
+	// Thus we send a copy of callback_count via a MinibufferInfo to the callback.
 	// The MinibufferInfo must be freed in the callback.
 	MinibufferInfo *minibuffer_info = g_new(MinibufferInfo, 1);
 	minibuffer_info->minibuffer = minibuffer;

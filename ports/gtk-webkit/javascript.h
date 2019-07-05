@@ -28,7 +28,7 @@ gchar *javascript_result(GObject *object, GAsyncResult *result,
 	str_value = jsc_value_to_string(value);
 	exception = jsc_context_get_exception(jsc_value_get_context(value));
 	if (exception) {
-		g_warning("Error running javascript: %s", jsc_exception_get_message(exception));
+		g_warning("Exception in javascript: %s", jsc_exception_get_message(exception));
 		return NULL;
 	}
 
