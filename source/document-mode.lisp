@@ -3,87 +3,91 @@
 (in-package :next)
 
 (define-mode document-mode ()
-    "Base mode for interacting with documents."
-    ((active-history-node :accessor active-history-node :initarg :active-node
-                          :initform (make-instance 'node :data "about:blank"))
-     (link-hints :accessor link-hints)
-     (keymap-schemes
-      :initform
-      (let ((emacs-map (make-keymap))
-            (vi-map (make-keymap)))
-        (define-key :keymap emacs-map
-          "M-f" 'history-forwards-query
-          "M-b" 'history-backwards
-          "C-g" 'go-anchor
-          "M-g" 'go-anchor-new-buffer-focus
-          "C-u M-g" 'go-anchor-new-buffer
-          "C-x C-w" 'copy-anchor-url
-          "C-f" 'history-forwards
-          "C-b" 'history-backwards
-          "button9" 'history-forwards
-          "button8" 'history-backwards
-          "C-p" 'scroll-up
-          "C-n" 'scroll-down
-          "C-x C-=" 'zoom-in-page
-          "C-x C-HYPHEN" 'zoom-out-page
-          "C-x C-0" 'unzoom-page
-          "C-r" 'reload-current-buffer
-          "C-m o" 'set-url-from-bookmark
-          "C-m s" 'bookmark-current-page
-          "C-m g" 'bookmark-anchor
-          "C-s s" 'add-search-hints
-          "C-s n" 'next-search-hint
-          "C-s p" 'previous-search-hint
-          "C-s k" 'remove-search-hints
-          "C-." 'jump-to-heading
-          "M-s->" 'scroll-to-bottom
-          "M-s-<" 'scroll-to-top
-          "M->" 'scroll-to-bottom
-          "M-<" 'scroll-to-top
-          "C-v" 'scroll-page-down
-          "M-v" 'scroll-page-up
-          "C-w" 'copy-url
-          "M-w" 'copy-title
-          "SPACE" 'scroll-page-down
-          "s-SPACE" 'scroll-page-up)
-        (define-key :keymap vi-map
-          "H" 'history-backwards
-          "L" 'history-forwards
-          "f" 'go-anchor
-          "F" 'go-anchor-new-buffer-focus
-          "; f" 'go-anchor-new-buffer
-          "button9" 'history-forwards
-          "button8" 'history-backwards
-          "h" 'scroll-left
-          "j" 'scroll-down
-          "k" 'scroll-up
-          "l" 'scroll-right
-          "Left" 'scroll-left
-          "Down" 'scroll-down
-          "Up" 'scroll-up
-          "Right" 'scroll-right
-          "z i" 'zoom-in-page
-          "z o" 'zoom-out-page
-          "z z" 'unzoom-page
-          "r" 'reload-current-buffer
-          "m o" 'set-url-from-bookmark
-          "m m" 'bookmark-current-page
-          "m f" 'bookmark-anchor
-          "y u" 'copy-url
-          "y t" 'copy-title
-          "g h" 'jump-to-heading        ; TODO: VI binding for this?
-          "/" 'add-search-hints
-          "n" 'next-search-hint
-          "N" 'previous-search-hint
-          "?" 'remove-search-hints
-          "G" 'scroll-to-bottom
-          "g g" 'scroll-to-top
-          "C-f" 'scroll-page-down
-          "C-b" 'scroll-page-up
-          "SPACE" 'scroll-page-down
-          "s-SPACE" 'scroll-page-up)
-        (list :emacs emacs-map
-              :vi-normal vi-map))))
+  "Base mode for interacting with documents."
+  ((active-history-node :accessor active-history-node :initarg :active-node
+                        :initform (make-instance 'node :data "about:blank"))
+   (link-hints :accessor link-hints)
+   (keymap-schemes
+    :initform
+    (let ((emacs-map (make-keymap))
+          (vi-map (make-keymap)))
+      (define-key :keymap emacs-map
+        "M-f" 'history-forwards-query
+        "M-b" 'history-backwards
+        "C-g" 'go-anchor
+        "M-g" 'go-anchor-new-buffer-focus
+        "C-u M-g" 'go-anchor-new-buffer
+        "C-x C-w" 'copy-anchor-url
+        "C-f" 'history-forwards
+        "C-b" 'history-backwards
+        "button9" 'history-forwards
+        "button8" 'history-backwards
+        "C-p" 'scroll-up
+        "C-n" 'scroll-down
+        "C-x C-=" 'zoom-in-page
+        "C-x C-HYPHEN" 'zoom-out-page
+        "C-x C-0" 'unzoom-page
+        "C-r" 'reload-current-buffer
+        "C-s s" 'add-search-hints
+        "C-s n" 'next-search-hint
+        "C-s p" 'previous-search-hint
+        "C-s k" 'remove-search-hints
+        "C-." 'jump-to-heading
+        "M-s->" 'scroll-to-bottom
+        "M-s-<" 'scroll-to-top
+        "M->" 'scroll-to-bottom
+        "M-<" 'scroll-to-top
+        "C-v" 'scroll-page-down
+        "M-v" 'scroll-page-up
+        "C-w" 'copy-url
+        "M-w" 'copy-title
+        "SPACE" 'scroll-page-down
+        "s-SPACE" 'scroll-page-up
+        "C-m o" 'bookmark-open-bookmark
+        "C-m m" 'bookmark-current-page
+        "C-m a" 'bookmark-anchor
+        "C-m u" 'bookmark-url
+        "C-m k" 'bookmark-delete)
+      (define-key :keymap vi-map
+        "H" 'history-backwards
+        "L" 'history-forwards
+        "f" 'go-anchor
+        "F" 'go-anchor-new-buffer-focus
+        "; f" 'go-anchor-new-buffer
+        "button9" 'history-forwards
+        "button8" 'history-backwards
+        "h" 'scroll-left
+        "j" 'scroll-down
+        "k" 'scroll-up
+        "l" 'scroll-right
+        "Left" 'scroll-left
+        "Down" 'scroll-down
+        "Up" 'scroll-up
+        "Right" 'scroll-right
+        "z i" 'zoom-in-page
+        "z o" 'zoom-out-page
+        "z z" 'unzoom-page
+        "r" 'reload-current-buffer
+        "y u" 'copy-url
+        "y t" 'copy-title
+        "g h" 'jump-to-heading        ; TODO: VI binding for this?
+        "/" 'add-search-hints
+        "n" 'next-search-hint
+        "N" 'previous-search-hint
+        "?" 'remove-search-hints
+        "G" 'scroll-to-bottom
+        "g g" 'scroll-to-top
+        "C-f" 'scroll-page-down
+        "C-b" 'scroll-page-up
+        "SPACE" 'scroll-page-down
+        "s-SPACE" 'scroll-page-up
+        "m o" 'bookmark-open-bookmark
+        "m m" 'bookmark-current-page
+        "m k" 'bookmark-delete
+        "m u" 'bookmark-url
+        "m a" 'bookmark-anchor)
+      (list :emacs emacs-map
+            :vi-normal vi-map))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
   ;; (set-url-buffer (default-new-buffer-url (buffer %mode))

@@ -193,9 +193,7 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-x k" 'delete-buffer)
 (define-key "C-l" 'set-url-current-buffer)
 (define-key "M-l" 'set-url-new-buffer)
-(define-key "C-m k" 'bookmark-delete)
 (define-key "C-t" 'make-visible-new-buffer)
-(define-key "C-m u" 'bookmark-url)
 (define-key "C-x w" 'delete-active-buffer)
 ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
 (define-key "C-h v" 'variable-inspect)
@@ -215,10 +213,7 @@ If FILE is \"-\", read from the standard input."
   "d" 'delete-buffer
   "D" 'delete-active-buffer
   "B" 'make-visible-new-buffer
-  "o" 'set-url-current-buffer
   "O" 'set-url-new-buffer
-  "m u" 'bookmark-url
-  "m d" 'bookmark-delete
   "C-o" 'load-file
   "C-h v" 'variable-inspect
   "C-h c" 'command-inspect

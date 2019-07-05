@@ -219,16 +219,20 @@ forward command will simply visit the first child of the current node
 in the tree.
 
 ** Bookmarks
-Bookmarks are stored in a database located in
-=~/.local/share/next/bookmark.db= by default. This (SQLite) database contains
-one table with two columns: id, url. In order to navigate and manage your
-bookmarks, a few functions are provided:
+   Next bookmarks are stored in a database file located in =~/.local/share/next/bookmark.db=
+   by default.
 
-1. ~C-m k~: Delete Bookmark
-2. ~C-m o~: Open Bookmark
-3. ~C-m s~: Bookmark Current Page
-4. ~C-m u~: Bookmark URL (input URL via minibuffer)
-5. ~C-m g~: Bookmark Anchor (input URL via link hints)
+   This, SQLite, database contains one table with two columns: id, url.
+
+   In order to navigate and manage your bookmarks, a few commands are provided:
+
+   | Command                                    | Emacs | Vi  |
+   |--------------------------------------------+-------+-----|
+   | Open Bookmark                              | ~C-m o~ | ~m o~ |
+   | Bookmark Current Page                      | ~C-m m~ | ~m m~ |
+   | Delete Bookmark                            | ~C-m k~ | ~m k~ |
+   | Bookmark URL (input URL via minibuffer)    | ~C-m u~ | ~m u~ |
+   | Bookmark Anchor (input URL via link hints) | ~C-m g~ | ~m a~ |
 
 ** Clearing the Echo Area
 In the area at the bottom of the screen where the minibuffer resides,
