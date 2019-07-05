@@ -5,10 +5,10 @@ import buffers
 import minibuffer
 
 import dbus
-from PyQt5.QtCore import QEvent, Qt, QCoreApplication
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from PyQt5.QtCore import QEvent, Qt, QCoreApplication, pyqtSlot
+from PyQt5.QtWidgets import QVBoxLayout, QShortcut, QWidget
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtGui import QKeyEvent, QKeySequence
 
 
 
@@ -130,11 +130,75 @@ class KeyCaptureWidget(QWidget):
     # window.qtwidget being KeyCaptureWidget, KeyCaptureWidget.parent_identifier being window.identifier
     parent_identifier = ""
 
-    # lisp core dbus proxy.
 
     def __init__(self, identifier="<no id>"):
         self.parent_identifier = identifier
         super().__init__()
+
+        # Without shortcuts, we cannot see these events on key press
+        # (but only on key release).
+        # They are (probably) caught by the webview, but overriding
+        # the keyPressEvent method there didn't help.
+        # Setting up a Qt filter didn't help either.
+        QShortcut(QKeySequence("Ctrl+C"), self, activated=self.on_Ctrl_C)
+        QShortcut(QKeySequence("Ctrl+X"), self, activated=self.on_Ctrl_X)
+        QShortcut(QKeySequence("Escape"), self, activated=self.on_Escape)
+        QShortcut(QKeySequence("Backspace"), self, activated=self.on_Backspace)
+
+    @pyqtSlot()
+    def on_Ctrl_C(self):
+        logging.info("Ctrl+C")
+        # XXX: this global ain't pretty.
+        global GENERATED_KEYPRESS
+        if GENERATED_KEYPRESS:
+            GENERATED_KEYPRESS = False
+            logging.info("----- got a generated C-c: give it to the app (TODO)")
+            return
+        self.quick_push_input(67, "c", ["C"])
+
+    @pyqtSlot()
+    def on_Ctrl_X(self):
+        logging.info("Ctrl+X")
+        global GENERATED_KEYPRESS
+        if GENERATED_KEYPRESS:
+            GENERATED_KEYPRESS = False
+            logging.info("----- got a generated C-x: give it to the app (TODO)")
+            return
+        self.quick_push_input(88, "x", ["C"])
+
+    @pyqtSlot()
+    def on_Escape(self):
+        logging.info("Escape")
+        global GENERATED_KEYPRESS
+        if GENERATED_KEYPRESS:
+            GENERATED_KEYPRESS = False
+            logging.info("----- got a generated ESC: give it to the app (TODO)")
+            return
+        self.quick_push_input(16777216, "ESCAPE", [""])
+
+    @pyqtSlot()
+    def on_Backspace(self):
+        logging.info("Backspace")
+        global GENERATED_KEYPRESS
+        if GENERATED_KEYPRESS:
+            GENERATED_KEYPRESS = False
+            logging.info("----- got a generated BACKSPACE: give it to the app (TODO)")
+            return
+        self.quick_push_input(16777219, "BACKSPACE", [""])
+
+    def quick_push_input(self, key_code, key_string, modifiers,
+                         low_level_data=None, x=-1.0, y=-1.0, sender=None):
+        # type signature: int, str, array of strings, double, double, int, str
+        core_interface.push_input_event(
+            key_code, key_string, modifiers,
+            x, y,
+            low_level_data if low_level_data else key_code,
+            sender if sender else self.parent_identifier,
+            # Give handlers to make the call asynchronous.
+            # lambdas don't work.
+            reply_handler=self.handle_reply,
+            error_handler=self.handle_error)
+
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -171,18 +235,7 @@ class KeyCaptureWidget(QWidget):
 
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
                 key_code, key_string, self.get_modifiers_list()))
-            # type signature: int, str, array of strings, double, double, int, str
-            core_interface.push_input_event(
-                key_code,  # int
-                key_string,
-                self.get_modifiers_list(),
-                -1.0, -1.0,  # TODO: mouse events
-                key_code, # low-level-data
-                self.parent_identifier,  # sender
-                # Give handlers to make the call asynchronous.
-                # lambdas don't work.
-                reply_handler=self.handle_reply,
-                error_handler=self.handle_error)
+            self.quick_push_input(key_code, key_string, self.get_modifiers_list())
 
     def handle_reply(self):
         # push_input_event doesn't receive return values.
@@ -195,8 +248,8 @@ class KeyCaptureWidget(QWidget):
         """
         Send all input events with a list of modifier keys.
         """
-        # send R modifier to not double ! # TODO:
-        # TODO: Pierre: send the key release event ?
+        # send R modifier to not double ?
+        # Pierre: send the key release event too ? (not used as for now)
         # We want the list of modifiers when C-S-a is typed.  We might
         # have it with Qt.Keyboardmodifier() or event.modifiers() but
         # they don't return useful values so far. This works.
@@ -206,27 +259,6 @@ class KeyCaptureWidget(QWidget):
             self.modifiers_stack = []
             self.current_event = None
             # return True  # fails
-        elif is_special(key_code):
-            key_string = KEY_TRANSLATIONS[key_code]
-            if key_string in ['ESCAPE', 'BACKSPACE']:
-                # Funnily enough, we can't see key *press* events for those keys but
-                # only key *release* events.
-                # This might be OS-specific, and maybe fixed with Qt filters ?
-                logging.info("this special key is seen only on key release: {} -> {}".format(key_code, key_string))
-                logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
-                    key_code, key_string, self.get_modifiers_list()))
-                # type signature: int, str, array of strings, double, double, int, str
-                core_interface.push_input_event(
-                    key_code,  # int
-                    key_string,
-                    self.get_modifiers_list(),
-                    -1.0, 1.0,
-                    key_code, # low-level-data
-                    self.parent_identifier,  # sender
-                    # Give handlers to make the call asynchronous.
-                    # lambdas don't work.
-                    reply_handler=self.handle_reply,
-                    error_handler=self.handle_error)
 
     def get_modifiers_list(self):
         """
@@ -347,7 +379,6 @@ def make(identifier: str):
     logging.info("New window created, id {}".format(window.identifier))
     return identifier
 
-
 def active():
     """
     Return the active window.
@@ -375,6 +406,6 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     modifiers list {}'. format(window_id, key_code, modifiers, qt_modifiers))
     global GENERATED_KEYPRESS
     GENERATED_KEYPRESS = True
-    # TODO: add a property to event, don't use globals. See window_key_event.
+    # XXX: add a property to event, don't use globals. See window_key_event.
     event = QKeyEvent(QEvent.KeyPress, key_code, qt_modifiers)
     QCoreApplication.postEvent(get_window(window_id).qtwindow, event)
