@@ -463,10 +463,12 @@ TODO: Only booleans are supported for now."
     ()
   (:interface +core-interface+)
   (:name "minibuffer_javascript_call_back")
-  (let* ((window (gethash window-id (windows *interface*)))
-         (callback (gethash callback-id (minibuffer-callbacks window))))
-    (when callback
-      (funcall callback javascript-response)))
+  (let ((window (gethash window-id (windows *interface*))))
+    ;; Window might not exist, e.g. if it has been deleted in the mean time.
+    (when window
+      (let ((callback (gethash callback-id (minibuffer-callbacks window))))
+        (when callback
+          (funcall callback javascript-response)))))
   (values))
 
 (dbus:define-dbus-method (core-object buffer-did-commit-navigation)
