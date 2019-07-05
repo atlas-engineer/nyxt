@@ -494,8 +494,9 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	if (window->buffer != NULL) {
 		previous_buffer_id = window->buffer->identifier;
 	}
-	g_message("Window %s switches from buffer %s to %s",
-		window->identifier, previous_buffer_id, buffer->identifier);
+	g_message("Window %s switches from buffer %s to %s with URI %s",
+		window->identifier, previous_buffer_id, buffer->identifier,
+		webkit_web_view_get_uri(buffer->web_view));
 
 	window->buffer = buffer;
 
