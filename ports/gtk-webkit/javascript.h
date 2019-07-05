@@ -39,7 +39,6 @@ gchar *javascript_result(GObject *object, GAsyncResult *result,
 void javascript_transform_result(GObject *object, GAsyncResult *result,
 	const char *identifier, int callback_id, const char *method_name) {
 	gchar *transformed_result = javascript_result(object, result, NULL);
-	g_debug("Javascript result: %s", transformed_result);
 	if (transformed_result == NULL) {
 		return;
 	}
