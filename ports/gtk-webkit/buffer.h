@@ -347,6 +347,9 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	WebKitWebContext *context = webkit_web_context_new();
+	webkit_web_context_set_process_model(context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+	webkit_web_context_set_cache_model(context, WEBKIT_CACHE_MODEL_WEB_BROWSER);
+
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(context));
 	buffer_set_cookie_file(buffer, cookie_file);
 
