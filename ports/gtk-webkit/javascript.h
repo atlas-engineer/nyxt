@@ -37,14 +37,13 @@ gchar *javascript_result(GObject *object, GAsyncResult *result,
 }
 
 void javascript_transform_result(GObject *object, GAsyncResult *result,
-	const char *identifier, int callback_id) {
+	const char *identifier, int callback_id, const char *method_name) {
 	gchar *transformed_result = javascript_result(object, result, NULL);
 	g_debug("Javascript result: %s", transformed_result);
 	if (transformed_result == NULL) {
 		return;
 	}
 
-	const char *method_name = "buffer_javascript_call_back";
 	char *callback_string = g_strdup_printf("%i", callback_id);
 	GVariant *params = g_variant_new(
 		"(sss)",
@@ -65,18 +64,4 @@ void javascript_transform_result(GObject *object, GAsyncResult *result,
 		method_name,
 		params, // 'params' is floating and the call should consume it.
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
-
-	/*
-	        GDBusMessage *message = g_dbus_message_new_method_call(CORE_NAME,
-	                        CORE_OBJECT_PATH,
-	                        CORE_INTERFACE,
-	                        method_name, );
-
-
-	        g_dbus_connection_send_message(connection, message,
-	                G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, &error);
-	        g_dbus_connection_call_sync
-
-	        g_object_unref(message);
-	*/
 }

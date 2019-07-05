@@ -48,7 +48,8 @@ static void minibuffer_javascript_callback(GObject *object, GAsyncResult *result
 	gpointer user_data) {
 	MinibufferInfo *minibuffer_info = (MinibufferInfo *)user_data;
 	javascript_transform_result(object, result, minibuffer_info->minibuffer->parent_window_identifier,
-		minibuffer_info->callback_id);
+		minibuffer_info->callback_id,
+		"minibuffer_javascript_call_back");
 	g_free(minibuffer_info);
 }
 

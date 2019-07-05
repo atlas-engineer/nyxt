@@ -395,7 +395,8 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
 	BufferInfo *buffer_info = (BufferInfo *)user_data;
 	javascript_transform_result(object, result, buffer_info->buffer->identifier,
-		buffer_info->callback_id);
+		buffer_info->callback_id,
+		"buffer_javascript_call_back");
 	g_free(buffer_info);
 }
 
