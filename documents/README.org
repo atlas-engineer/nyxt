@@ -68,6 +68,7 @@ on the Quicklisp website.
 - gsettings-desktop-schemas (for WebKitGTK+)
 - libfixposix
 - gstreamer, gst-plugins-* (for HTML audio/video)
+- xclip (for clipboard support)
 
 If your distribution does not install libraries in a [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
 have to let know your Lisp compiler where to find them.  To do so, add the
