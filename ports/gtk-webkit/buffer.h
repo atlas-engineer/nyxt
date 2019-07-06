@@ -68,6 +68,9 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		 * load is requested or a navigation within the
 		 * same page is performed */
 		uri = webkit_web_view_get_uri(web_view); // TODO: Only need to set URI at the beginning?
+		// TODO: This duplicates the buffer_did_commit_navigation call with
+		// buffer_notify_uri.  But is it always the same URI?  What about
+		// redirections?
 
 		// TODO: Notify Lisp core on invalid TLS certificate, leave to the Lisp core
 		// the possibility to load the non-HTTPS URL.
@@ -100,6 +103,21 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		arg,
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 	// 'msg' and 'uri' are freed automatically.
+}
+
+static void buffer_notify_uri(WebKitWebView *web_view, GParamSpec *_spec, gpointer data) {
+	Buffer *buffer = (Buffer *)data;
+
+	const char *method_name = "buffer_did_commit_navigation";
+	const gchar *uri = webkit_web_view_get_uri(web_view);
+	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
+	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+		method_name,
+		arg,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 }
 
 typedef struct  {
@@ -396,6 +414,8 @@ Buffer *buffer_init(const char *cookie_file) {
 		G_CALLBACK(buffer_web_view_web_process_crashed), buffer);
 	g_signal_connect(buffer->web_view, "mouse-target-changed",
 		G_CALLBACK(buffer_mouse_target_changed), buffer);
+	g_signal_connect(buffer->web_view, "notify::uri",
+		G_CALLBACK(buffer_notify_uri), buffer);
 
 	g_signal_connect(context, "download-started", G_CALLBACK(buffer_web_view_download_started), buffer);
 
