@@ -377,6 +377,15 @@ Buffer *buffer_init(const char *cookie_file) {
 	webkit_web_context_set_cache_model(context, WEBKIT_CACHE_MODEL_WEB_BROWSER);
 
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(context));
+
+	// WebKitGTK+ 2.24 seems to have a bug when transitionning hardware
+	// acceleration policy (for composition), so we need to force it for buffers.
+	// It seems that there is no need to force it for the minibuffer.
+	// TODO: This could be a problem for systems where hardware acceleration is
+	// not available.
+	WebKitSettings *settings = webkit_web_view_get_settings(buffer->web_view);
+	webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
+
 	buffer_set_cookie_file(buffer, cookie_file);
 
 	g_signal_connect(buffer->web_view, "load-changed",
