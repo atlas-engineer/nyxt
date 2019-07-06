@@ -344,9 +344,31 @@ gboolean buffer_web_view_web_process_crashed(WebKitWebView *_web_view, Buffer *b
 	return FALSE;
 }
 
-// Forward declaration because input events need to know about windows.
+// Forward declarations because input events need to know about windows.
 gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer window_data);
 gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data);
+
+void buffer_mouse_target_changed(WebKitWebView *web_view,
+	WebKitHitTestResult *result, guint _modifiers, gpointer _data) {
+	const char *method_name = "buffer_uri_at_point";
+	const gchar *uri = "";
+
+	if (webkit_hit_test_result_context_is_link(result)) {
+		uri = webkit_hit_test_result_get_link_uri(result);
+	} else if (webkit_hit_test_result_context_is_image(result)) {
+		uri = webkit_hit_test_result_get_image_uri(result);
+	}
+
+	GVariant *arg = g_variant_new("(s)", uri);
+	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+		method_name,
+		arg,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+	// 'uri' is freed automatically.
+}
 
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
@@ -363,6 +385,8 @@ Buffer *buffer_init(const char *cookie_file) {
 		G_CALLBACK(buffer_web_view_decide_policy), buffer);
 	g_signal_connect(buffer->web_view, "web-process-crashed",
 		G_CALLBACK(buffer_web_view_web_process_crashed), buffer);
+	g_signal_connect(buffer->web_view, "mouse-target-changed",
+		G_CALLBACK(buffer_mouse_target_changed), buffer);
 
 	g_signal_connect(context, "download-started", G_CALLBACK(buffer_web_view_download_started), buffer);
 
