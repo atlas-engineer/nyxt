@@ -303,7 +303,7 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
 		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
 		// The control modifier turns the A-Za-z event->string into ASCII control
-		// characters.
+		// characters (e.g. '^A').  We want the regular letter instead.
 		keyval_string = gdk_keyval_name(event->keyval);
 	} else if (keyval_string[0] == '\0') {
 		// Some keys like F1 don't have a printed representation, so we send the
