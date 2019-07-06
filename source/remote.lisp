@@ -489,6 +489,16 @@ TODO: Only booleans are supported for now."
     (did-finish-navigation buffer url))
   (values))
 
+(dbus:define-dbus-method (core-object buffer-uri-at-point)
+    ((url :string))
+    ()
+  (:interface +core-interface+)
+  (:name "buffer_uri_at_point")
+  (if (str:emptyp url)
+      (echo-dismiss (minibuffer *interface*))
+      (echo url))
+  (values))
+
 (dbus:define-dbus-method (core-object window-will-close)
     ((window-id :string))
     ()
