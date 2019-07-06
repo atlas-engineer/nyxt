@@ -109,11 +109,11 @@
     (unless (null children)
       (set-url (node-data (nth 0 children)) t))))
 
-(defun history-forwards-completion-fn ()
+(defun history-forwards-completion-fn (&optional (mode (find-mode
+                                                        (active-buffer *interface*)
+                                                        'document-mode)))
   "Provide completion candidates to the `history-forwards-query' function."
-  ;; TODO: Find right mode.
-  (let* ((mode (first (modes (active-buffer *interface*))))
-         (children (node-children (active-history-node mode))))
+  (let ((children (node-children (active-history-node mode))))
     (lambda (input)
       (if children
           (fuzzy-match input children :accessor-function #'node-data)
