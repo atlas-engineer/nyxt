@@ -421,6 +421,7 @@ void buffer_delete(Buffer *buffer) {
 
 	gtk_widget_destroy(GTK_WIDGET(buffer->web_view));
 	g_free(buffer->identifier);
+	buffer->identifier = NULL; // In case buffer is referenced elsewhere.
 	g_free(buffer);
 }
 
