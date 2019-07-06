@@ -1,6 +1,19 @@
 /*
 Copyright © 2018-2019 Atlas Engineer LLC.
 Use of this file is governed by the license that can be found in LICENSE.
+
+Web views can resize their parent widget, and since we have multiple web views
+in a window, we need to make sure they have separate parent widgets or else the
+resize hints would conflict.
+
+The widget hierarchy:
+
+- GtkWindow
+  - GtkBox
+    - GtkBox
+      - Web view (buffer)
+    - GtkBox
+      - Web view (minibuffer)
 */
 #pragma once
 
@@ -83,8 +96,10 @@ void window_delete(Window *window) {
 	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
 	GtkWidget *mainbox = GTK_WIDGET(children->data);
 	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
-	g_debug("Remove buffer view %p from window", box_children->data);
-	gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
+	GtkWidget *topbox = GTK_WIDGET(box_children->data);
+	GList *topbox_children = gtk_container_get_children(GTK_CONTAINER(topbox));
+	g_debug("Remove buffer view %p from window", topbox_children->data);
+	gtk_container_remove(GTK_CONTAINER(topbox), GTK_WIDGET(topbox_children->data));
 
 	{
 		// Notify the Lisp core.
@@ -446,12 +461,11 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 
 Window *window_init() {
 	Minibuffer *minibuffer = minibuffer_init();
-	// TODO: Initial minibuffer size must be set here or else it will stick to 0.
-	// This seems to be related to the resizing issue below.
-	gtk_widget_set_size_request(GTK_WIDGET(minibuffer->web_view), -1, 200);
 
 	GtkWidget *mainbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(minibuffer->web_view), FALSE, FALSE, 0);
+	GtkWidget *bottombox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_box_pack_end(GTK_BOX(bottombox), GTK_WIDGET(minibuffer->web_view), TRUE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(bottombox), FALSE, FALSE, 0);
 
 	Window *window = calloc(1, sizeof (Window));
 	// Create an 800x600 window that will contain the browser instance
@@ -489,46 +503,52 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 		return;
 	}
 
-	// When window is first set up, there is only a minibuffer.
-	char *previous_buffer_id = NULL;
-	if (window->buffer != NULL) {
-		previous_buffer_id = window->buffer->identifier;
+	{
+		// When window is first set up, there is only a minibuffer.
+		char *previous_buffer_id = NULL;
+		if (window->buffer != NULL) {
+			previous_buffer_id = window->buffer->identifier;
+		}
+		g_message("Window %s switches from buffer %s to %s with URI %s",
+			window->identifier, previous_buffer_id, buffer->identifier,
+			webkit_web_view_get_uri(buffer->web_view));
 	}
-	g_message("Window %s switches from buffer %s to %s with URI %s",
-		window->identifier, previous_buffer_id, buffer->identifier,
-		webkit_web_view_get_uri(buffer->web_view));
 
 	window->buffer = buffer;
 
 	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
 	GtkWidget *mainbox = GTK_WIDGET(children->data);
 	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
+
 	if (g_list_length(box_children) > 1) {
-		g_debug("Remove buffer view %p from window", box_children->data);
-		gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(box_children->data));
+		GtkWidget *topbox = GTK_WIDGET(box_children->data);
+		g_object_ref(topbox); // TODO: Do we need to keep a reference here?
+		g_debug("Remove buffer view %p from window", topbox);
+		GList *topbox_children = gtk_container_get_children(GTK_CONTAINER(topbox));
+		WebKitWebView *web_view = topbox_children->data;
+		gtk_container_remove(GTK_CONTAINER(topbox), GTK_WIDGET(web_view));
+		gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(topbox));
 	}
 
-	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
+	GtkWidget *topbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_box_pack_start(GTK_BOX(topbox), GTK_WIDGET(buffer->web_view), TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(topbox), TRUE, TRUE, 0);
 
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
 
-	// We don't show all widgets, otherwise it would re-show the minibuffer if it
-	// was hidden.
-	gtk_widget_show(GTK_WIDGET(buffer->web_view));
+	gtk_widget_show_all(window->base);
 }
 
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {
 	g_message("Window %s resizes its minibuffer to %li", window->identifier, height);
-	if (height == 0) {
-		gtk_widget_hide(GTK_WIDGET(window->minibuffer->web_view));
-		return 0;
-	}
 
-	// TODO: Changing the size request of an existing object does not seem to work here.
-	// Hard-code it to 200 for now to make sure Next is usable.
-	gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, 200);
-	/* gtk_widget_set_size_request(GTK_WIDGET(window->minibuffer->web_view), -1, height); */
-	gtk_widget_show(GTK_WIDGET(window->minibuffer->web_view));
+	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
+	GtkWidget *mainbox = GTK_WIDGET(children->data);
+	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
+	if (g_list_length(box_children) > 1) {
+		box_children = box_children->next;
+	}
+	gtk_widget_set_size_request(GTK_WIDGET(box_children->data), -1, height);
 	window->minibuffer_height = height;
 
 	gint minimum_height;
