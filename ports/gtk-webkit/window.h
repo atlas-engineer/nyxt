@@ -525,8 +525,10 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 		g_object_ref(topbox); // TODO: Do we need to keep a reference here?
 		g_debug("Remove buffer view %p from window", topbox);
 		GList *topbox_children = gtk_container_get_children(GTK_CONTAINER(topbox));
-		WebKitWebView *web_view = topbox_children->data;
-		gtk_container_remove(GTK_CONTAINER(topbox), GTK_WIDGET(web_view));
+		if (topbox_children) {
+			WebKitWebView *web_view = topbox_children->data;
+			gtk_container_remove(GTK_CONTAINER(topbox), GTK_WIDGET(web_view));
+		}
 		gtk_container_remove(GTK_CONTAINER(mainbox), GTK_WIDGET(topbox));
 	}
 
