@@ -168,12 +168,14 @@
 (define-command copy-url (document-mode)
   "Save current URL to clipboard."
   (with-result (url (buffer-get-url))
-    (trivial-clipboard:text url)))
+    (trivial-clipboard:text url)
+    (echo "~a copied to clipboard." url)))
 
 (define-command copy-title (document-mode)
   "Save current page title to clipboard."
   (with-result (title (buffer-get-title))
-    (trivial-clipboard:text title)))
+    (trivial-clipboard:text title)
+    (echo "~a copied to clipboard." title)))
 
 (defmethod did-commit-navigation ((mode document-mode) url)
   (set-default-window-title mode)
