@@ -112,7 +112,6 @@ brought up.  This can be useful to know which was the original buffer in the
 
 (define-command return-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer selection."
-  (hide *interface*)
   (setf (display-mode minibuffer) :nil)
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
@@ -129,7 +128,9 @@ brought up.  This can be useful to know which was the original buffer in the
         ;; if there's no completion function
         (return-immediate (first (modes minibuffer)) minibuffer))
     (when cleanup-function
-      (funcall cleanup-function))))
+      (funcall cleanup-function)))
+  ;; `hide' could modify the content of the minibuffer, let's call it last.
+  (hide *interface*))
 
 (define-command return-immediate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
