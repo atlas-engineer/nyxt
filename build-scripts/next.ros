@@ -14,4 +14,4 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (next:start-with-port))
+  (next:entry-point))

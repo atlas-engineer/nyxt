@@ -6,8 +6,9 @@
 
 (defclass hostlist ()
   ((url :accessor url :initarg :url
-        :documentation "URL where to download the list from.
-If nil, no attempt will be made at updating it.")
+        :initform nil
+        :documentation "URL where to download the list from.  If nil, no attempt
+will be made at updating it.")
    (path :accessor path :initarg :path
          :initform nil
          :documentation "Where to find the list locally.
@@ -17,30 +18,32 @@ If nil, the list won't be persisted.")
           :documentation "The list of domain name.")
    (update-interval :accessor update-interval :initarg :update-interval
                     :initform (* 60 60 24)
-                    :documentation "If URL is provided, update the list after this amount
-of seconds.")))
+                    :documentation "If URL is provided, update the list after
+this amount of seconds.")))
+
+(defun make-hostlist (&rest args)
+  (apply #'make-instance 'hostlist args))
 
 (defmethod update ((hostlist hostlist))
-  "Auto-update file if older than N days."
-  (if (null (url hostlist))
-      nil
-      (progn
-        (echo "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
-        (let ((hosts (dex:get (url hostlist))))
-          (when (path hostlist)
-            ;; TODO: In general, we should do more error checking when writing to disk.
-            (alexandria:write-string-into-file hosts (path hostlist)
-                                               :if-exists :overwrite
-                                               :if-does-not-exist :create))
-          hosts))))
+  "Fetch HOSTLIST and return it.
+If HOSTLIST has a `path', persist it locally."
+  (when (url hostlist)
+    (echo "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
+    (let ((hosts (dex:get (url hostlist))))
+      (when (path hostlist)
+        ;; TODO: In general, we should do more error checking when writing to disk.
+        (alexandria:write-string-into-file hosts (path hostlist)
+                                           :if-exists :overwrite
+                                           :if-does-not-exist :create))
+      hosts)))
 
 (defmethod load-to-memory ((hostlist hostlist))
   "Load hostlist.
-Auto-update file if older than N days."
+Auto-update file if older than UPDATE-INTERVAL seconds."
   (if (and (ignore-errors (probe-file (path hostlist)))
            (< (- (get-universal-time) (uiop:safe-file-write-date (path hostlist)))
               (update-interval hostlist)))
-      (alexandria:read-file-into-string (path hostlist))
+      (uiop:read-file-string (path hostlist))
       (update hostlist)))
 
 (defmethod parse ((hostlist hostlist))
@@ -71,10 +74,9 @@ Auto-update file if older than N days."
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE."
-  (if (null host)
-      nil
-      (not (loop for hostlist in (hostlists mode)
-                 never (member-string host (parse hostlist))))))
+  (when host
+    (not (loop for hostlist in (hostlists mode)
+               never (member-string host (parse hostlist))))))
 
 (defmethod resource-query-block ((buffer buffer)
                                  &key url

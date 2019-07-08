@@ -123,7 +123,8 @@ it can be called without argument."
              (active-buffer (active-buffer active-window))
              (bound-function (look-up-key-chord-stack active-window
                                                       (key-chord-stack *interface*))))
-        (setf (last-key-chords active-buffer) (list key-chord))
+        (when active-buffer
+          (setf (last-key-chords active-buffer) (list key-chord)))
         (cond
           ((eq bound-function #'prefix)
            (log:debug "Prefix binding"))
@@ -145,9 +146,9 @@ it can be called without argument."
                  (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
            (setf (key-chord-stack *interface*) nil))
 
-          ((or (forward-input-events active-buffer)
+          ((or (and active-buffer (forward-input-events active-buffer))
                (pointer-event-p key-chord))
-           (%%generate-input-event *interface*
+           (rpc-generate-input-event *interface*
                                    active-window
                                    key-chord)
            (setf (key-chord-stack *interface*) nil))

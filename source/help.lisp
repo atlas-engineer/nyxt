@@ -8,9 +8,9 @@
       :initform
       (let ((emacs-map (make-keymap))
             (vi-map (make-keymap)))
-        (define-key "C-p" 'scroll-up
-          "C-n" 'scroll-down
-          :keymap emacs-map)
+        (define-key :keymap emacs-map
+          "C-p" 'scroll-up
+          "C-n" 'scroll-down)
         (define-key :keymap vi-map
           "k" 'scroll-up
           "j" 'scroll-down)
@@ -49,7 +49,7 @@
                            (:p (write-to-string (symbol-value input)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (%%buffer-evaluate-javascript *interface* help-buffer insert-help)
+      (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
 ;; TODO: Have both "function-inspect" and "command-inspect"?
@@ -73,7 +73,7 @@
                                 (documentation input t)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (%%buffer-evaluate-javascript *interface* help-buffer insert-help)
+      (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
       (set-active-buffer *interface* help-buffer))))
 
 (defun evaluate (string)
@@ -105,7 +105,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                                          collect (cl-markup:markup (:p result)))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp result-contents)))))
-      (%%buffer-evaluate-javascript *interface* result-buffer insert-results)
+      (rpc-buffer-evaluate-javascript *interface* result-buffer insert-results)
       (set-active-buffer *interface* result-buffer))))
 
 (define-command next-version ()

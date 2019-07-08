@@ -14,10 +14,7 @@
     (setf index (+ 1 index))
     (ps:let* ((el (ps:chain document (create-element "span"))))
       (setf (ps:@ el class-name) "next-search-hint")
-      (setf (ps:@ el style background) "rgba(255, 255, 255, 0.75)")
-      (setf (ps:@ el style border) "1px solid red")
-      (setf (ps:@ el style font-weight) "bold")
-      (setf (ps:@ el style text-align) "center")
+      (setf (ps:@ el style) (ps:lisp (box-style (active-buffer *interface*))))
       (setf (ps:@ el text-content) index)
       ;; TODO: Ensure uniqueness of match IDs.
       (setf (ps:@ el id) index)
@@ -27,6 +24,13 @@
   (ps:defun walk-dom (node proc)
     (when (and node (not (ps:chain node first-child)))
       (funcall proc node (ps:lisp search-string)))
+    (when (string= (ps:chain node tag-name) "IFRAME")
+      (setf node (or (ps:chain node content-window)
+                     (ps:chain node content-document)))
+      (when (ps:chain node document)
+        ;; Going down the "document" tag is suggested by
+        ;; https://www.w3schools.com/jsref/prop_frame_contentdocument.asp.
+        (setf node  (ps:chain node document))))
     (setf node (ps:chain node first-child))
     (loop while node
           do (walk-dom node proc)
@@ -64,6 +68,7 @@ returns
                                    (ps:chain document (create-text-node fragment)))))
         (ps:chain node (replace-with new-el)))))
   (setf index 0)
+  (setf current-search 0)
   (walk-dom (ps:chain document body) insert-hint)
   index)
 

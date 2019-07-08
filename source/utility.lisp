@@ -27,7 +27,7 @@ If the input starts with an uri scheme, open it as is.
 If the input is actually a file path, open it.
 Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
 Otherwise, build a search query with the default search engine."
-  (let* ((window (%%window-active *interface*))
+  (let* ((window (rpc-window-active *interface*))
          (engine (assoc (first (cl-strings:split input-url))
                         (search-engines window) :test #'string=))
          (default (assoc "default"
@@ -48,8 +48,17 @@ Otherwise, build a search query with the default search engine."
                  input-url
                  (format nil "file://~a"
                          (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*))))
-            ((quri:uri-p (ignore-errors
-                          (quri:uri (str:concat "https://" input-url))))
+            ((let ((uri (ignore-errors
+                         (quri:uri (str:concat "https://" input-url)))))
+               (and uri
+                    (quri:uri-p uri)
+                    ;; E.g. "http://foo" has an empty domain, so it's probably
+                    ;; not a URI query.
+                    (quri:uri-domain uri)
+                    ;; E.g. "http://algo" have the same tld and domain, which is
+                    ;; probably not a URI query.
+                    (not (string= (quri:uri-domain uri)
+                                  (quri:uri-tld uri)))))
              (str:concat "https://" input-url))
             (t (generate-search-query input-url (rest default))))))))
 

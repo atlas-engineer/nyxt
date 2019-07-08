@@ -39,11 +39,8 @@
       (when (< (ps:@ position top) 0)
         (setf (ps:@ position top) (+ (ps:@ position top) 20)))
       (setf (ps:@ el class-name) "next-link-hint")
-      (setf (ps:@ el style background) "rgba(255, 255, 255, 0.75)")
-      (setf (ps:@ el style border) "1px solid red")
-      (setf (ps:@ el style font-weight) "bold")
+      (setf (ps:@ el style) (ps:lisp (box-style (active-buffer *interface*))))
       (setf (ps:@ el style position) "absolute")
-      (setf (ps:@ el style text-align) "center")
       (setf (ps:@ el style left) (+ (ps:@ position left) "px"))
       (setf (ps:@ el style top) (+ (ps:@ position top) "px"))
       (setf (ps:@ el text-content) hint)
@@ -90,7 +87,7 @@
         ""))
   (hints-add (links-find window document)))
 
-(define-parenscript remove-link-hints ()
+(define-parenscript %remove-link-hints ()
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -99,6 +96,10 @@
     (ps:dolist (el (qsa document ".next-link-hint"))
       (ps:chain el (remove))))
   (hints-remove-all))
+
+(defun remove-link-hints ()
+  (%remove-link-hints
+   :buffer (callback-buffer (minibuffer *interface*))))
 
 (defmacro query-anchors (prompt (symbol) &body body)
   `(with-result* ((links-json (add-link-hints))

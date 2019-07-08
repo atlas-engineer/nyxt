@@ -10,7 +10,7 @@
   "Create a new buffer.
 MODE is a mode symbol.
 This function is meant to be used on the Lisp side."
-  (%%buffer-make *interface* :name name :default-modes default-modes))
+  (rpc-buffer-make *interface* :name name :default-modes default-modes))
 
 (define-command new-buffer (root-mode &optional (name "default")
                                        modes)
@@ -45,13 +45,13 @@ See the `make-buffer' function for Lisp code."
                         (minibuffer *interface*)
                         :input-prompt "Kill buffer:"
                         :completion-function (buffer-completion-fn)))
-    (%%buffer-delete *interface* buffer)))
+    (rpc-buffer-delete *interface* buffer)))
 
 (define-command delete-active-buffer ()
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
-  (%%buffer-delete *interface* (active-buffer *interface*)))
+  (rpc-buffer-delete *interface* (active-buffer *interface*)))
 
 (define-parenscript buffer-get-url ()
   (ps:chain window location href))
@@ -69,7 +69,7 @@ buffer to the start page."
     (unless disable-history
       (history-typed-add input-url))
     (if (cl-strings:starts-with url "file://")
-        (%%buffer-load *interface* buffer url)
+        (rpc-buffer-load *interface* buffer url)
         ;; We need to specify the buffer here since this we may reach this point
         ;; on initialization before ACTIVE-BUFFER can be used.
         (buffer-set-url :url url :buffer buffer))))

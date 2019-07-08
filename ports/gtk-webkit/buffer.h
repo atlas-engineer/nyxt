@@ -43,7 +43,6 @@ typedef struct {
 
 typedef struct {
 	Buffer *buffer;
-	gboolean javascript_disabled;
 	int callback_id;
 } BufferInfo;
 
@@ -69,6 +68,9 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		 * load is requested or a navigation within the
 		 * same page is performed */
 		uri = webkit_web_view_get_uri(web_view); // TODO: Only need to set URI at the beginning?
+		// TODO: This duplicates the buffer_did_commit_navigation call with
+		// buffer_notify_uri.  But is it always the same URI?  What about
+		// redirections?
 
 		// TODO: Notify Lisp core on invalid TLS certificate, leave to the Lisp core
 		// the possibility to load the non-HTTPS URL.
@@ -101,6 +103,21 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		arg,
 		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 	// 'msg' and 'uri' are freed automatically.
+}
+
+static void buffer_notify_uri(WebKitWebView *web_view, GParamSpec *_spec, gpointer data) {
+	Buffer *buffer = (Buffer *)data;
+
+	const char *method_name = "buffer_did_commit_navigation";
+	const gchar *uri = webkit_web_view_get_uri(web_view);
+	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
+	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+		method_name,
+		arg,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 }
 
 typedef struct  {
@@ -144,7 +161,7 @@ void buffer_navigated_callback(GObject *_source, GAsyncResult *res, gpointer dat
 
 void buffer_set_uri(GObject *cookie_manager, GAsyncResult *res, gpointer data) {
 	GError *error = NULL;
-	char *cookies_string = NULL;
+	char *cookies_string = "";
 	{
 		GList *cookies = webkit_cookie_manager_get_cookies_finish(
 			(WebKitCookieManager *)cookie_manager, res, &error);
@@ -161,7 +178,9 @@ void buffer_set_uri(GObject *cookie_manager, GAsyncResult *res, gpointer data) {
 			cookies = cookies->next;
 		}
 		scookies = g_slist_reverse(scookies);
-		cookies_string = soup_cookies_to_cookie_header(scookies);
+		if (scookies != NULL) {
+			cookies_string = soup_cookies_to_cookie_header(scookies);
+		}
 
 		g_slist_free(scookies);
 		g_list_free_full(cookies, (GDestroyNotify)soup_cookie_free);
@@ -202,7 +221,9 @@ void buffer_set_uri(GObject *cookie_manager, GAsyncResult *res, gpointer data) {
 	if (g_strcmp0(mouse_button, "") != 0) {
 		g_free(mouse_button);
 	}
-	g_free(cookies_string);
+	if (g_strcmp0(cookies_string, "") != 0) {
+		g_free(cookies_string);
+	}
 	g_free(is_new_window);
 	g_free(is_known_type);
 	g_free(modifiers);
@@ -341,14 +362,59 @@ gboolean buffer_web_view_web_process_crashed(WebKitWebView *_web_view, Buffer *b
 	return FALSE;
 }
 
-// Forward declaration because input events need to know about windows.
+// Forward declarations because input events need to know about windows.
 gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer window_data);
 gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data);
+
+static gint64 mouse_target_last_changed = 0;
+void buffer_mouse_target_changed(WebKitWebView *web_view,
+	WebKitHitTestResult *result, guint _modifiers, gpointer _data) {
+	const char *method_name = "buffer_uri_at_point";
+	const gchar *uri = "";
+
+	if (webkit_hit_test_result_context_is_link(result)) {
+		uri = webkit_hit_test_result_get_link_uri(result);
+	} else if (webkit_hit_test_result_context_is_image(result)) {
+		uri = webkit_hit_test_result_get_image_uri(result);
+	}
+
+	GVariant *arg = g_variant_new("(s)", uri);
+	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+
+	// When hovering fast over lots of links, we don't want to spam the Lisp core.
+	// So we only send if the next event happend more than N milliseconds after the last.
+	// TODO: The right way to do this is with a queue that gets processed every X
+	// cycle: we discard messages in the queue that are too close, but we always
+	// send the last one.
+	gint64 current_time = g_get_monotonic_time();
+	if ((current_time - mouse_target_last_changed) > (50*1000)) {
+		mouse_target_last_changed = current_time;
+
+		g_dbus_connection_call(state.connection,
+			CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+			method_name,
+			arg,
+			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+	}
+	// 'uri' is freed automatically.
+}
 
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	WebKitWebContext *context = webkit_web_context_new();
+	webkit_web_context_set_process_model(context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+	webkit_web_context_set_cache_model(context, WEBKIT_CACHE_MODEL_WEB_BROWSER);
+
 	buffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(context));
+
+	// WebKitGTK+ 2.24 seems to have a bug when transitionning hardware
+	// acceleration policy (for composition), so we need to force it for buffers.
+	// It seems that there is no need to force it for the minibuffer.
+	// TODO: This could be a problem for systems where hardware acceleration is
+	// not available.
+	WebKitSettings *settings = webkit_web_view_get_settings(buffer->web_view);
+	webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
+
 	buffer_set_cookie_file(buffer, cookie_file);
 
 	g_signal_connect(buffer->web_view, "load-changed",
@@ -357,6 +423,10 @@ Buffer *buffer_init(const char *cookie_file) {
 		G_CALLBACK(buffer_web_view_decide_policy), buffer);
 	g_signal_connect(buffer->web_view, "web-process-crashed",
 		G_CALLBACK(buffer_web_view_web_process_crashed), buffer);
+	g_signal_connect(buffer->web_view, "mouse-target-changed",
+		G_CALLBACK(buffer_mouse_target_changed), buffer);
+	g_signal_connect(buffer->web_view, "notify::uri",
+		G_CALLBACK(buffer_notify_uri), buffer);
 
 	g_signal_connect(context, "download-started", G_CALLBACK(buffer_web_view_download_started), buffer);
 
@@ -382,6 +452,7 @@ void buffer_delete(Buffer *buffer) {
 
 	gtk_widget_destroy(GTK_WIDGET(buffer->web_view));
 	g_free(buffer->identifier);
+	buffer->identifier = NULL; // In case buffer is referenced elsewhere.
 	g_free(buffer);
 }
 
@@ -393,13 +464,8 @@ static void buffer_javascript_callback(GObject *object, GAsyncResult *result,
 	gpointer user_data) {
 	BufferInfo *buffer_info = (BufferInfo *)user_data;
 	javascript_transform_result(object, result, buffer_info->buffer->identifier,
-		buffer_info->callback_id);
-	// TODO: Do we have the guarantee that WebKit is not executing the Javascript
-	// of the loaded page here?
-	if (buffer_info->javascript_disabled) {
-		WebKitSettings *settings = webkit_web_view_get_settings(buffer_info->buffer->web_view);
-		g_object_set(G_OBJECT(settings), "enable-javascript", false, NULL);
-	}
+		buffer_info->callback_id,
+		"buffer_javascript_call_back");
 	g_free(buffer_info);
 }
 
@@ -415,13 +481,8 @@ char *buffer_evaluate(Buffer *buffer, const char *javascript) {
 
 	buffer->callback_count++;
 
-	WebKitSettings *settings = webkit_web_view_get_settings(buffer->web_view);
-	buffer_info->javascript_disabled = webkit_settings_get_enable_javascript(settings);
-	g_object_set(G_OBJECT(settings), "enable-javascript", true, NULL);
-
 	webkit_web_view_run_javascript(buffer->web_view, javascript,
 		NULL, buffer_javascript_callback, buffer_info);
-	g_debug("buffer_evaluate callback count: %i", buffer_info->callback_id);
 	return g_strdup_printf("%i", buffer_info->callback_id);
 }
 

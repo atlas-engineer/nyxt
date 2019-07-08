@@ -124,6 +124,20 @@ static GVariant *server_buffer_delete(GVariant *parameters) {
 	const char *a_key = NULL;
 	g_variant_get(parameters, "(&s)", &a_key);
 	g_message("Method parameter(s): %s", a_key);
+	Buffer *buffer = g_hash_table_lookup(state.buffers, a_key);
+
+	// In case the 'buffer' field of some window points to it, set it to NULL to
+	// prevent illegal memory access.
+	GHashTableIter iter;
+	gpointer key, value;
+	g_hash_table_iter_init(&iter, state.windows);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		Window *window = (Window *)value;
+		if (window->buffer == buffer) {
+			window->buffer = NULL;
+			break;
+		}
+	}
 
 	g_hash_table_remove(state.buffers, a_key);
 	return g_variant_new("(b)", TRUE);
@@ -149,7 +163,7 @@ static GVariant *server_buffer_evaluate(GVariant *parameters) {
 	const char *buffer_id = NULL;
 	const char *javascript = NULL;
 	g_variant_get(parameters, "(&s&s)", &buffer_id, &javascript);
-	g_message("Method parameter(s): buffer id %s", buffer_id);
+	g_message("Method parameter(s): buffer id %s, javascript (...)", buffer_id);
 	g_debug("Javascript: \"%s\"", javascript);
 
 	Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_id);
@@ -186,7 +200,7 @@ static GVariant *server_minibuffer_evaluate(GVariant *parameters) {
 	const char *window_id = NULL;
 	const char *javascript = NULL;
 	g_variant_get(parameters, "(&s&s)", &window_id, &javascript);
-	g_message("Method parameter(s): window id %s", window_id);
+	g_message("Method parameter(s): window id %s, javascript (...)", window_id);
 	g_debug("Javascript: \"%s\"", javascript);
 
 	Window *window = g_hash_table_lookup(state.windows, window_id);

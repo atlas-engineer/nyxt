@@ -8,17 +8,17 @@
     (setf ratio (min ratio (zoom-ratio-max buffer)))
     (setf (current-zoom-ratio buffer) ratio)))
 
-(define-parenscript %zoom-in-page (_)
+(define-parenscript %zoom-in-page ()
   (ps:lisp (ensure-zoom-ratio-range #'+))
   (ps:let ((style (ps:chain document body style)))
     (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio %buffer)))))
 
-(define-parenscript %zoom-out-page (_)
+(define-parenscript %zoom-out-page ()
   (ps:lisp (ensure-zoom-ratio-range #'-))
   (ps:let ((style (ps:chain document body style)))
     (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio %buffer)))))
 
-(define-parenscript %unzoom-page (_)
+(define-parenscript %unzoom-page ()
   (ps:lisp (setf (current-zoom-ratio %buffer) (zoom-ratio-default %buffer)))
   (setf (ps:chain document body style zoom) (ps:lisp (zoom-ratio-default %buffer))))
 

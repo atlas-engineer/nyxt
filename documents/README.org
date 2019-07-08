@@ -12,7 +12,7 @@
   - [[#irc-channel][IRC Channel]]
 
 * Developer Installation with Guix
-Install [[http://guix.info][Guix or GuixSD]] and follow the instructions in ../guix.scm.
+Install [[https://guix.gnu.org][Guix]] and follow the instructions in ../build-scripts/guix.scm.
 
 * Generic Developer Installation
 Next is written in Common Lisp. It can be built with any standard
@@ -68,6 +68,7 @@ on the Quicklisp website.
 - gsettings-desktop-schemas (for WebKitGTK+)
 - libfixposix
 - gstreamer, gst-plugins-* (for HTML audio/video)
+- xclip (for clipboard support)
 
 If your distribution does not install libraries in a [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
 have to let know your Lisp compiler where to find them.  To do so, add the
@@ -207,7 +208,7 @@ Then in a shell execute the following:
    system definition (you can not use relative pathnames).
 4. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image.
-5. Start the platform port and make sure it will be found by Next as described
+5. Make sure the platform port can be bound by Next, as described
    in the previous section.
 6. Execute ~(next:start)~ to open your first Next window.
 

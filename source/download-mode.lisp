@@ -15,8 +15,8 @@
                                                     (get-default 'buffer 'default-modes)))))
          (contents (cl-markup:markup
                     (:h1 "Downloads")
-                    (:p (:b "Directory: ") (or (download-directory *interface*)
-                                               (download-manager:default-download-directory)))
+                    (:p (:b "Directory: ") (namestring (or (download-directory *interface*)
+                                                           (download-manager:default-download-directory))))
                     (:span              ; TODO: Do we need this span?  We need something because of the loop.
                      (loop for d in (downloads interface)
                            collect
@@ -49,7 +49,7 @@
                              (:b (file-namestring (download-manager:file d)))))))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
-    (%%buffer-evaluate-javascript interface download-buffer insert-content)
+    (rpc-buffer-evaluate-javascript interface download-buffer insert-content)
     download-buffer))
 
 (define-command download-list (root-mode &optional (interface *interface*))

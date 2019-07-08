@@ -17,7 +17,10 @@
     (:name :verbose
            :short #\v
            :long "verbose"
-           :description "Print debugging information to stdout.")
+     :description "Print debugging information to stdout.")
+    (:name :version
+           :long "version"
+           :description "Print version and exit.")
     (:name :init-file
            :short #\i
            :long "init-file"
@@ -38,60 +41,92 @@ Set to '-' to read standard input instead."))
   (kill-interface *interface*)
   (kill-program (port *interface*)))
 
-(defun start-with-port ()
+(defun set-debug-level (level)
+  "Supported values for LEVEL are
+- `:debug': Debug logging.
+- `t': Normal logging."
+  (match level
+    (:debug
+      (log:config :debug)
+      (setf (uiop:getenv "G_MESSAGES_DEBUG") "all"))
+    (_
+     (log:config :info)
+     (setf (uiop:getenv "G_MESSAGES_DEBUG") nil))))
+
+(defun entry-point ()
   (multiple-value-bind (options free-args)
       (parse-cli-args)
     (when (getf options :help)
       (opts:describe :prefix "Next command line usage:")
       (uiop:quit))
+    (when (getf options :version)
+      (format t "Next ~a~&" +version+)
+      (uiop:quit))
     (when (getf options :verbose)
-      (log:config :debug)
-      (setf (uiop:getenv "G_MESSAGES_DEBUG") "all")
+      (set-debug-level :debug)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
     (setf *options* options
-          *free-args* free-args))
-  (handler-case (start :with-platform-port-p t)
+          *free-args* free-args)
+    (apply #'start free-args))
+  (handler-case (progn (run-loop (port *interface*))
+                       (kill-interface *interface*))
     ;; Catch a C-c, don't print a full stacktrace.
     (#+sbcl sb-sys:interactive-interrupt
-      #+ccl  ccl:interrupt-signal-condition
-      #+clisp system::simple-interrupt-condition
-      #+ecl ext:interactive-interrupt
-      #+allegro excl:interrupt-signal
-      () (progn
-           (kill-interface *interface*)
-           (kill-program (port *interface*))
-           (format t "Bye!~&")
-           (uiop:quit)))))
+     #+ccl  ccl:interrupt-signal-condition
+     #+clisp system::simple-interrupt-condition
+     #+ecl ext:interactive-interrupt
+     #+allegro excl:interrupt-signal
+     () (progn
+          (kill-interface *interface*)
+          (kill-program (port *interface*))
+          (format t "Bye!~&")
+          (uiop:quit)))))
 
 (defun ping-platform-port (&optional (bus-type (session-server-addresses)))
   (dbus:with-open-bus (bus bus-type)
     (member-string +platform-port-name+ (dbus:list-names bus))))
 
-(defmethod initialize-port ((interface remote-interface))
+(defmethod initialize-port ((interface remote-interface) &optional (urls *free-args*))
+  "Start platform port if necessary and make a first window."
   ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
   ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
-  (let* ((port-running nil)
-         (max-seconds-to-wait 5.0)
-         (max-attemps (/ max-seconds-to-wait (platform-port-poll-interval interface))))
-    (loop while (not port-running)
-          repeat max-attemps do
+  (let ((port-running (ping-platform-port)))
+    (unless (or port-running
+                (and (port interface)
+                     (running-process (port interface))))
       (handler-case
-          (progn
-            (when (ping-platform-port)
-              (setf port-running t)))
+          (run-program (port interface))
         (error (c)
-          (log:debug "Could not communicate with port: ~a" c)
-          (log:info "Polling platform port...~%" )
-          (sleep (platform-port-poll-interval interface))
-          (setf port-running nil))))
-    (when port-running
-      ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
-      (let ((buffer (nth-value 1 (make-window))))
-        (set-url-buffer (if *free-args* (first *free-args*) (start-page-url interface)) buffer)
-        ;; We can have many URLs as positional arguments.
-        (loop for url in (rest *free-args*) do
-          (let ((buffer (make-buffer)))
-            (set-url-buffer url buffer)))))))
+          (log:error "~a~&~a" c
+                     "Make sure the platform port executable is either in the
+PATH or set in you ~/.config/next/init.lisp, for instance:
+
+(setf (get-default 'port 'path)
+      \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
+          (uiop:quit))))
+    (let ((max-attempts (/ (platform-port-poll-duration interface)
+                          (platform-port-poll-interval interface))))
+      ;; Poll the platform port in case it takes some time to start up.
+      (loop while (not port-running)
+            repeat max-attempts
+            do (unless (setf port-running (ping-platform-port))
+                 (sleep (platform-port-poll-interval interface))))
+      (if port-running
+          ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
+          (let ((buffer (nth-value 1 (make-window))))
+            (set-url-buffer (if urls
+                                (first urls)
+                                (start-page-url interface))
+                            buffer)
+            ;; We can have many URLs as positional arguments.
+            (loop for url in (rest urls) do
+              (let ((buffer (make-buffer)))
+                (set-url-buffer url buffer))))
+          (progn
+            (log:error "Could not connect to platform port: ~a" (path (port interface)))
+            (kill-program (port interface))
+            (kill-interface interface)
+            (uiop:quit))))))
 
 (defun init-file-path (&optional (file "init.lisp"))
   ;; This can't be a regular variable or else the value will be hard-coded at
@@ -130,7 +165,8 @@ If FILE is \"-\", read from the standard input."
   "Load or reload the init file."
   (load-lisp-file init-file))
 
-(defun start (&key (with-platform-port-p nil))
+(defun start (&rest urls)
+  (log:info +version+)
   ;; Randomness should be seeded as early as possible to avoid generating
   ;; deterministic tokens.
   (setf *random-state* (make-random-state t))
@@ -148,14 +184,7 @@ If FILE is \"-\", read from the standard input."
   (setf *interface* (make-instance 'remote-interface))
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.
-  (when with-platform-port-p
-    (run-program (port *interface*)))
-  (initialize-port *interface*)
-  (when with-platform-port-p
-    (run-loop (port *interface*))
-    (kill-interface *interface*)
-    (setf *interface* nil))
-  t)
+  (initialize-port *interface* (or urls *free-args*)))
 
 (define-key "C-x C-c" 'kill)
 (define-key "C-[" 'switch-buffer-previous)
@@ -174,16 +203,25 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-o" 'load-file)
 (define-key "C-h s" 'start-swank)
 (define-key "M-x" 'execute-command)
-(define-key "C-x 5 2" 'make-window)
+(define-key "C-x 5 2" 'new-window)
 (define-key "C-x 5 0" 'delete-window)
 (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*))))
 
 (define-key :scheme :vi-normal
-  "W" 'make-visible-new-buffer
-  ":" 'execute-command
-  "b" 'switch-buffer
+  "Z Z" 'kill
+  "[" 'switch-buffer-previous
+  "]" 'switch-buffer-next
+  "g b" 'switch-buffer
   "d" 'delete-buffer
+  "D" 'delete-active-buffer
+  "B" 'make-visible-new-buffer
   "o" 'set-url-current-buffer
   "O" 'set-url-new-buffer
-  "a" 'bookmark-url
-  "Z Z" 'kill)
+  "m u" 'bookmark-url
+  "m d" 'bookmark-delete
+  "C-o" 'load-file
+  "C-h v" 'variable-inspect
+  "C-h c" 'command-inspect
+  "C-h s" 'start-swank
+  ":" 'execute-command
+  "W" 'new-window)

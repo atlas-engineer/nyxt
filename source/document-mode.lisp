@@ -11,7 +11,8 @@
       :initform
       (let ((emacs-map (make-keymap))
             (vi-map (make-keymap)))
-        (define-key "M-f" 'history-forwards-query
+        (define-key :keymap emacs-map
+          "M-f" 'history-forwards-query
           "M-b" 'history-backwards
           "C-g" 'go-anchor
           "M-g" 'go-anchor-new-buffer-focus
@@ -43,7 +44,9 @@
           "M-v" 'scroll-page-up
           "C-w" 'copy-url
           "M-w" 'copy-title
-          :keymap emacs-map)
+          ;; Leave SPACE unbound so that the paltform port decides wether to
+          ;; insert of scroll.
+          "s-SPACE" 'scroll-page-up)
         (define-key :keymap vi-map
           "H" 'history-backwards
           "L" 'history-forwards
@@ -52,18 +55,27 @@
           "; f" 'go-anchor-new-buffer
           "button9" 'history-forwards
           "button8" 'history-backwards
+          "h" 'scroll-left
           "j" 'scroll-down
           "k" 'scroll-up
+          "l" 'scroll-right
+          "Left" 'scroll-left
+          "Down" 'scroll-down
+          "Up" 'scroll-up
+          "Right" 'scroll-right
           "z i" 'zoom-in-page
           "z o" 'zoom-out-page
           "z z" 'unzoom-page
           "r" 'reload-current-buffer
+          "m o" 'set-url-from-bookmark
+          "m m" 'bookmark-current-page
+          "m f" 'bookmark-anchor
           "y u" 'copy-url
           "y t" 'copy-title
-          "C-." 'jump-to-heading        ; TODO: VI binding for this?
+          "g h" 'jump-to-heading        ; TODO: VI binding for this?
           "/" 'add-search-hints
           "n" 'next-search-hint
-          "p" 'previous-search-hint
+          "N" 'previous-search-hint
           "?" 'remove-search-hints
           "G" 'scroll-to-bottom
           "g g" 'scroll-to-top
@@ -97,11 +109,11 @@
     (unless (null children)
       (set-url (node-data (nth 0 children)) t))))
 
-(defun history-forwards-completion-fn ()
+(defun history-forwards-completion-fn (&optional (mode (find-mode
+                                                        (active-buffer *interface*)
+                                                        'document-mode)))
   "Provide completion candidates to the `history-forwards-query' function."
-  ;; TODO: Find right mode.
-  (let* ((mode (first (modes (active-buffer *interface*))))
-         (children (node-children (active-history-node mode))))
+  (let ((children (node-children (active-history-node mode))))
     (lambda (input)
       (if children
           (fuzzy-match input children :accessor-function #'node-data)
@@ -150,18 +162,20 @@
                  (title (buffer-get-title)))
     (setf title (if (str:emptyp title) "<untitled>" title))
     (setf url (if (str:emptyp url) "<no url>" url))
-    (%%window-set-title *interface* (%%window-active *interface*)
+    (rpc-window-set-title *interface* (rpc-window-active *interface*)
                         (concatenate 'string "Next - " title " - " url))))
 
 (define-command copy-url (document-mode)
   "Save current URL to clipboard."
   (with-result (url (buffer-get-url))
-    (trivial-clipboard:text url)))
+    (trivial-clipboard:text url)
+    (echo "~a copied to clipboard." url)))
 
 (define-command copy-title (document-mode)
   "Save current page title to clipboard."
   (with-result (title (buffer-get-title))
-    (trivial-clipboard:text title)))
+    (trivial-clipboard:text title)
+    (echo "~a copied to clipboard." title)))
 
 (defmethod did-commit-navigation ((mode document-mode) url)
   (set-default-window-title mode)
