@@ -10,7 +10,11 @@
    (minibuffer-active :accessor minibuffer-active :initform nil)
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))
-   (minibuffer-closed-height :accessor minibuffer-closed-height :initform 0
+   (minibuffer-closed-height :accessor minibuffer-closed-height :initform 25
+                             ;; TODO: Until we have a mode-line, it's best to
+                             ;; keep the closed-height equal to the echo-height
+                             ;; to avoid the stuttering, especially when
+                             ;; hovering over links.
                              :documentation "The height of the minibuffer when closed.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
                            :documentation "The height of the minibuffer when open.")
@@ -341,7 +345,7 @@ For an array of string, that would be \"as\"."
         (rpc-window-set-active-buffer interface window buffer))))
 
 (defmethod rpc-window-set-minibuffer-height ((interface remote-interface)
-                                         window height)
+                                             window height)
   (%rpc-send interface "window_set_minibuffer_height" (id window) height))
 
 (defmethod rpc-buffer-make ((interface remote-interface)
@@ -496,7 +500,7 @@ TODO: Only booleans are supported for now."
   (:name "buffer_uri_at_point")
   (if (str:emptyp url)
       (echo-dismiss (minibuffer *interface*))
-      (echo url))
+      (echo "→ ~a" url))
   (values))
 
 (dbus:define-dbus-method (core-object window-will-close)

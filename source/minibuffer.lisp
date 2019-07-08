@@ -186,9 +186,13 @@ brought up.  This can be useful to know which was the original buffer in the
 (defmethod hide ((interface remote-interface))
   (let ((active-window (rpc-window-active interface)))
     (setf (minibuffer-active active-window) nil)
-    (rpc-window-set-minibuffer-height *interface*
-                                    active-window
-                                    (minibuffer-closed-height active-window))))
+    ;; TODO: We need a mode-line before we can afford to really hide the
+    ;; minibuffer.  Until then, we make it blank with erase-document.
+    (with-result (url (buffer-get-url))
+      (echo "~a" url))
+    (rpc-window-set-minibuffer-height interface
+                                      active-window
+                                      (minibuffer-closed-height active-window))))
 
 (defun insert (characters &optional (minibuffer (minibuffer *interface*)))
     (setf (input-buffer minibuffer)
@@ -432,7 +436,11 @@ interpreted by `format'. "
 (defmethod echo-dismiss ((minibuffer minibuffer))
   (when (eql (display-mode minibuffer) :echo)
     (hide *interface*)
-    (erase-document minibuffer)))
+    ;; TODO: If we erase the document here, it will show a blank widget instead
+    ;; of the minibuffer when we don't fully hide it.  We can only erase the
+    ;; document when we have a mode-line we can fully hide the minibuffer.
+    ;; (erase-document minibuffer)
+    ))
 
 (define-command paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
