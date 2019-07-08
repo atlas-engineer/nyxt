@@ -21,21 +21,14 @@ class BufferInfo():
     # use another structure than Buffer for these settings to prevent
     # race conditions (see buffer.h).
     buffer = None
-    javascript_disabled = 0  # qt setting is 0/1 too.
     callback_id = 0
 
-    def __init__(self, buffer, javascript_disabled=0, callback_id=0):
+    def __init__(self, buffer, callback_id=0):
         """
         - buffer: buffer object
-        - javascript_disabled: 0 or 1
         - callback_id: int
         """
         self.buffer = buffer
-        if javascript_disabled in [None, False]:
-            javascript_disabled = 0
-        elif javascript_disabled is True:
-            javascript_disabled = 1
-        self.javascript_disabled = javascript_disabled
         self.callback_id = callback_id
 
 
@@ -65,7 +58,6 @@ class Buffer():
         Return: a callback_id (str).
         """
         self.buffer_info.callback_id = self.callback_count + 1
-        self.buffer_info.javascript_disabled = 0 if self.view.page().settings().JavascriptEnabled else 1
 
         # doc: "When the script has been executed, resultCallback is called
         # with the result of the last executed statement".
