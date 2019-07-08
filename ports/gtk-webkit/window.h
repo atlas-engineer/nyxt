@@ -542,8 +542,6 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 }
 
 gint64 window_set_minibuffer_height(Window *window, gint64 height) {
-	g_message("Window %s resizes its minibuffer to %li", window->identifier, height);
-
 	GList *children = gtk_container_get_children(GTK_CONTAINER(window->base));
 	GtkWidget *mainbox = GTK_WIDGET(children->data);
 	GList *box_children = gtk_container_get_children(GTK_CONTAINER(mainbox));
