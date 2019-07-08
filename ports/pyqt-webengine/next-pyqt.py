@@ -4,10 +4,12 @@ import utility
 import buffers
 import window
 
-# from dbus.mainloop.glib import DBusGMainLoop
 import dbus
 import dbus.service
-from dbus.mainloop.pyqt5 import DBusQtMainLoop
+try:
+    from dbus.mainloop.pyqt5 import DBusQtMainLoop as MainLoop
+except ImportError:
+    from dbus.mainloop.glib import DBusGMainLoop as MainLoop
 from PyQt5.QtWidgets import QApplication
 
 logging.basicConfig(level=logging.INFO)
@@ -124,8 +126,7 @@ class DBusWindow(dbus.service.Object):
 
 def main():
     app = QApplication([])
-    DBusQtMainLoop(set_as_default=True)
-    # DBusGMainLoop(set_as_default=True)
+    MainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
     # name/dbuswindow MUST be defined even if not used.
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
