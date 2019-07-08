@@ -47,7 +47,7 @@
 
 (defclass minibuffer (buffer)
   ((default-modes :initform '(minibuffer-mode))
-   (completion-function :accessor completion-function)
+   (completion-function :accessor completion-function :initform nil)
    (callback-function :accessor callback-function)
    (callback-buffer :accessor callback-buffer
                     :documentation "The active buffer when the minibuffer was
@@ -180,8 +180,8 @@ brought up.  This can be useful to know which was the original buffer in the
   (let ((active-window (rpc-window-active interface)))
     (setf (minibuffer-active active-window) t)
     (rpc-window-set-minibuffer-height interface
-                                    active-window
-                                    (minibuffer-open-height active-window))))
+                                      active-window
+                                      (minibuffer-open-height active-window))))
 
 (defmethod hide ((interface remote-interface))
   (let ((active-window (rpc-window-active interface)))
@@ -413,8 +413,8 @@ interpreted by `format'. "
           (setf (display-mode minibuffer) :echo)
           (erase-document minibuffer)
           (rpc-window-set-minibuffer-height *interface*
-                                          window
-                                          (minibuffer-echo-height window))
+                                            window
+                                            (minibuffer-echo-height window))
           (let ((style (cl-css:css
                         '((* :font-family "monospace,monospace"
                              :font-size "14px")
