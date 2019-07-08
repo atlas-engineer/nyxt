@@ -366,6 +366,7 @@ gboolean buffer_web_view_web_process_crashed(WebKitWebView *_web_view, Buffer *b
 gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer window_data);
 gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data);
 
+static gint64 mouse_target_last_changed = 0;
 void buffer_mouse_target_changed(WebKitWebView *web_view,
 	WebKitHitTestResult *result, guint _modifiers, gpointer _data) {
 	const char *method_name = "buffer_uri_at_point";
@@ -380,11 +381,21 @@ void buffer_mouse_target_changed(WebKitWebView *web_view,
 	GVariant *arg = g_variant_new("(s)", uri);
 	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
-	g_dbus_connection_call(state.connection,
-		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
-		method_name,
-		arg,
-		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+	// When hovering fast over lots of links, we don't want to spam the Lisp core.
+	// So we only send if the next event happend more than N milliseconds after the last.
+	// TODO: The right way to do this is with a queue that gets processed every X
+	// cycle: we discard messages in the queue that are too close, but we always
+	// send the last one.
+	gint64 current_time = g_get_monotonic_time();
+	if ((current_time - mouse_target_last_changed) > (50*1000)) {
+		mouse_target_last_changed = current_time;
+
+		g_dbus_connection_call(state.connection,
+			CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+			method_name,
+			arg,
+			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+	}
 	// 'uri' is freed automatically.
 }
 
