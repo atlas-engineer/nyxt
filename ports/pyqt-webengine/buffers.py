@@ -55,7 +55,7 @@ class Buffer():
         if res is None:
             return
 
-        logging.info("calling buffer_javascript_call_back with id '{}', callback id '{}'".format(
+        logging.info("calling buffer_javascript_call_back with buffer id '{}', callback id '{}'".format(
             self.identifier, callback_id))
         core_interface.buffer_javascript_call_back(str(self.identifier), res, callback_id)
 
