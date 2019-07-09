@@ -259,7 +259,7 @@ Optional second argument FLAVOR controls the units and the display format:
 Make a window and an active buffer."
   (multiple-value-bind (window buffer)
       (make-window)
-    (%%buffer-load *interface* buffer url)
+    (rpc-buffer-load *interface* buffer url)
     (values window buffer)))
 
 (defun list-windows (interface)
