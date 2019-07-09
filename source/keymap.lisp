@@ -126,15 +126,16 @@ it can be called without argument."
         (when active-buffer
           (setf (last-key-chords active-buffer) (list key-chord)))
         (cond
+          ;; prefix binding
           ((eq bound-function #'prefix)
            (log:debug "Prefix binding"))
-
+          ;; function bound
           ((functionp bound-function)
            (log:debug "Key sequence ~a bound to:"
                       (serialize-key-chord-stack (key-chord-stack *interface*)))
            (funcall bound-function)
            (setf (key-chord-stack *interface*) nil))
-
+          ;; minibuffer is active
           ((minibuffer-active active-window)
            (if (member-string "R" (key-chord-modifiers (first (key-chord-stack *interface*))))
                (progn
@@ -145,12 +146,12 @@ it can be called without argument."
                                                        (first (key-chord-stack *interface*))))
                  (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
            (setf (key-chord-stack *interface*) nil))
-
+          ;; forward back to the platform port
           ((or (and active-buffer (forward-input-events active-buffer))
                (pointer-event-p key-chord))
            (rpc-generate-input-event *interface*
-                                   active-window
-                                   key-chord)
+                                     active-window
+                                     key-chord)
            (setf (key-chord-stack *interface*) nil))
           (t (setf (key-chord-stack *interface*) nil)))))))
 
