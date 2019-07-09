@@ -172,9 +172,6 @@ If FILE is \"-\", read from the standard input."
   (setf *random-state* (make-random-state t))
   (load-lisp-file (init-file-path))
   ;; create the interface object
-  (unless (eq swank:*communication-style* :fd-handler)
-    (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"
-              swank:*communication-style*))
   (when *interface*
     (kill-interface *interface*)
     ;; It's important to set it to nil or else if we re-run this function,
