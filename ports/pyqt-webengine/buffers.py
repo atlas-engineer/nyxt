@@ -41,10 +41,6 @@ class Buffer():
         Return: a callback_id (str).
         """
         self.callback_count += 1
-
-        # doc: "When the script has been executed, resultCallback is called
-        # with the result of the last executed statement".
-        logging.info("evaluate_javascript: {}".format(script))
         self.view.page().runJavaScript(
             script,
             lambda x: self.javascript_callback(x, str(self.callback_count)))
