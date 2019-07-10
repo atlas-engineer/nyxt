@@ -38,8 +38,7 @@ def handle_error(e):
     pass
 
 
-def push_input_event(key_code, key_string, modifiers_list, x, y, low_level_data, parent_identifier,
-                     reply_handler=None, error_handler=None):
+def push_input_event(key_code, key_string, modifiers_list, x, y, low_level_data, parent_identifier):
     """This function push as input event to the Lisp core.
 
     :param key_code: integer describing the hardware key code
@@ -49,8 +48,6 @@ def push_input_event(key_code, key_string, modifiers_list, x, y, low_level_data,
     :param y: mouse y coordinate
     :param low_level_data: any Qt specific event data
     :param parent_identifier: the sender of the event
-    :param reply_handler:
-    :param error_handler:
     :returns: none
     :rtype: none
     """
