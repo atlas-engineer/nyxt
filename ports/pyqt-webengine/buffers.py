@@ -1,8 +1,9 @@
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QUrl
 import logging
 
 import core_interface
+
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 #: A dictionary of current buffers mapping an identifier (str) to a
 #  buffer (Buffer).
@@ -50,9 +51,6 @@ class Buffer():
         logging.debug("JS result is: {}".format(res))
         if res is None:
             return
-
-        logging.info("calling buffer_javascript_call_back with buffer id '{}', callback id '{}'".format(
-            self.identifier, callback_id))
         core_interface.buffer_javascript_call_back(str(self.identifier), res, callback_id)
 
     def set_height(self, height):
