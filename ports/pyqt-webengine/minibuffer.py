@@ -24,7 +24,9 @@ class Minibuffer():
         make a call to the LISP core with the results of that
         computation, and the associated identifier.
 
-        Return: a callback_id (str).
+        :param script: the JavaScript script to execute
+        :returns: a callback_id
+        :rtype: string
         """
         self.callback_count += 1
         self.view.page().runJavaScript(
