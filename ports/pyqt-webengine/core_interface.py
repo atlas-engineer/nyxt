@@ -1,3 +1,5 @@
+import logging
+
 import dbus
 
 """
@@ -28,6 +30,14 @@ def get_core_dbus_proxy():
     return CORE_DBUS_PROXY
 
 
+def handle_reply():
+    pass
+
+
+def handle_error(e):
+    pass
+
+
 def push_input_event(key_code, key_string, modifiers_list, x, y, low_level_data, parent_identifier,
                      reply_handler=None, error_handler=None):
     """This function push as input event to the Lisp core.
@@ -53,15 +63,18 @@ def push_input_event(key_code, key_string, modifiers_list, x, y, low_level_data,
         low_level_data,
         parent_identifier,
         # Use handlers to make the call asynchronous.
-        reply_handler=reply_handler,
-        error_handler=error_handler,
+        reply_handler=handle_reply,
+        error_handler=handle_error,
         dbus_interface=CORE_INTERFACE)
 
 
 def buffer_javascript_call_back(identifier, res, callback_id):
     proxy = get_core_dbus_proxy()
     proxy.buffer_javascript_call_back(identifier, res, callback_id,
-                                      dbus_interface=CORE_INTERFACE)
+                                      dbus_interface=CORE_INTERFACE,
+                                      # Use handlers to make the call asynchronous.
+                                      reply_handler=handle_reply,
+                                      error_handler=handle_error)
 
 
 def minibuffer_javascript_call_back(window_identifier, response, callback_id):

@@ -192,11 +192,7 @@ class KeyCaptureWidget(QWidget):
             key_code, key_string, modifiers,
             x, y,
             low_level_data if low_level_data else key_code,
-            sender if sender else self.parent_identifier,
-            # Give handlers to make the call asynchronous.
-            # lambdas don't work.
-            reply_handler=self.handle_reply,
-            error_handler=self.handle_error)
+            sender if sender else self.parent_identifier)
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -235,12 +231,7 @@ class KeyCaptureWidget(QWidget):
                 key_code, key_string, self.get_modifiers_list()))
             self.quick_push_input(key_code, key_string, self.get_modifiers_list())
 
-    def handle_reply(self):
-        # push_input_event doesn't receive return values.
-        logging.info("async reply received.")
 
-    def handle_error(self, e):
-        logging.info("error callback received: {}".format(e))
 
     def keyReleaseEvent(self, event):
         """
