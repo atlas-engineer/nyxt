@@ -130,11 +130,8 @@ def main():
     session_bus = dbus.SessionBus()
     # name/dbuswindow MUST be defined even if not used.
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
-    # CORE_INTERFACE = "engineer.atlas.next.core"
-    # CORE_OBJECT_PATH = "/engineer/atlas/next/core"
-    # core_dbus_proxy = session_bus.get_object(CORE_INTERFACE, CORE_OBJECT_PATH)
     dbuswindow = DBusWindow(session_bus)  # noqa: F841
-    print("listening...")
+    print("Listening...")
     app.exec_()
 
 
