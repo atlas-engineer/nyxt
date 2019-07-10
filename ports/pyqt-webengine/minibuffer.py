@@ -34,7 +34,7 @@ class Minibuffer():
     def javascript_callback(self, res, callback_id):
         if res is None:
             return
-        core_interface.minibuffer_javascript_call_back(str(self.identifier), res, callback_id)
+        core_interface.minibuffer_javascript_call_back(str(self.window_identifier), res, callback_id)
 
     def set_height(self, height):
         self.view.setFixedHeight(height)
