@@ -1,15 +1,12 @@
 import logging
 
-import core_interface
 import buffers
+import core_interface
 import minibuffer
 
-import dbus
-from PyQt5.QtCore import QEvent, Qt, QCoreApplication, pyqtSlot
-from PyQt5.QtWidgets import QVBoxLayout, QShortcut, QWidget
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QCoreApplication, QEvent, Qt, pyqtSlot
 from PyQt5.QtGui import QKeyEvent, QKeySequence
-
+from PyQt5.QtWidgets import QApplication, QShortcut, QVBoxLayout, QWidget
 
 
 #: A dictionary of current windows mapping an identifier (str) to a window (Window).
@@ -30,17 +27,14 @@ MODIFIERS = {
 }
 
 #: Build modifiers back for Qt.
-#: Their enum representation is different from the event's key code.
-# https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtcore/qt-keyboardmodifiers.html
 QT_MODIFIERS = {
     'C': Qt.KeyboardModifier.ControlModifier,
     'H': -1,  # TODO:
-    'Lock': -1, # TODO:
+    'Lock': -1,  # TODO:
     'M': Qt.KeyboardModifier.AltModifier,
     'Meta': Qt.KeyboardModifier.MetaModifier,
     's': Qt.KeyboardModifier.ShiftModifier,
     'S': -1,  # TODO:
-
 }
 
 #: Special keys, to be understood by the lisp core.
@@ -64,6 +58,7 @@ GENERATED_KEYPRESS = False
 CORE_INTERFACE = "engineer.atlas.next.core"
 CORE_OBJECT_PATH = "/engineer/atlas/next/core"
 
+
 def get_window(identifier):
     window = WINDOWS.get(identifier)
     if window:
@@ -75,13 +70,16 @@ def get_window(identifier):
 def is_modifier(key):
     return key in MODIFIERS.keys()
 
+
 def is_special(key):
     return key in KEY_TRANSLATIONS.keys()
+
 
 def key_to_special(inputkey):
     for key in KEY_TRANSLATIONS.items():
         if key[1] == inputkey:
             return key[0]
+
 
 def build_qt_modifiers(names):
     """
@@ -108,6 +106,7 @@ def build_qt_modifiers(names):
         qt_modifiers = Qt.NoModifier
     return qt_modifiers
 
+
 def build_special_list(names):
     res = []
     for name in names:
@@ -115,6 +114,7 @@ def build_special_list(names):
         if special:
             res.append(special)
     return res
+
 
 class KeyCaptureWidget(QWidget):
     """
@@ -129,7 +129,6 @@ class KeyCaptureWidget(QWidget):
     # XXX: this clearly is sub-optimal: Window.identifier,
     # window.qtwidget being KeyCaptureWidget, KeyCaptureWidget.parent_identifier being window.identifier
     parent_identifier = ""
-
 
     def __init__(self, identifier="<no id>"):
         self.parent_identifier = identifier
@@ -198,7 +197,6 @@ class KeyCaptureWidget(QWidget):
             # lambdas don't work.
             reply_handler=self.handle_reply,
             error_handler=self.handle_error)
-
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -378,6 +376,7 @@ def make(identifier: str):
     WINDOWS[window.identifier] = window
     logging.info("New window created, id {}".format(window.identifier))
     return identifier
+
 
 def active():
     """
