@@ -319,7 +319,7 @@ class Window():
 
         self.buffer = buffers.Buffer()
         self.buffer.set_height(self.buffer_height)
-        self.minibuffer = minibuffer.MiniBuffer()
+        self.minibuffer = minibuffer.Minibuffer(identifier)
         self.minibuffer.set_height(self.minibuffer_height)
 
         self.layout.addWidget(self.buffer.view)

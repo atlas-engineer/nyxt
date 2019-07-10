@@ -1,21 +1,21 @@
-import logging
-
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 import core_interface
 
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 
-
-class MiniBuffer():
-    """Documentation for MiniBuffer
+class Minibuffer():
+    """Documentation for Minibuffer
 
     """
     view = None
     scripts = {}
     callback_count = 0
+    window_identifier = 0
 
-    def __init__(self):
-        super(MiniBuffer, self).__init__()
+    def __init__(self, window_identifier):
+        super(Minibuffer, self).__init__()
         self.view = QWebEngineView()
+        self.window_identifier = window_identifier
+        self.view.setHtml("")  # breaks without this line
 
     def evaluate_javascript(self, script):
         """
@@ -32,13 +32,9 @@ class MiniBuffer():
             lambda x: self.javascript_callback(x, str(self.callback_count)))
 
     def javascript_callback(self, res, callback_id):
-        logging.debug("JS result is: {}".format(res))
         if res is None:
             return
-        core_interface.buffer_javascript_call_back(str(self.identifier), res, callback_id)
+        core_interface.minibuffer_javascript_call_back(str(self.identifier), res, callback_id)
 
     def set_height(self, height):
         self.view.setFixedHeight(height)
-
-    def set_html(self, html):
-        self.view.setHtml(html)
