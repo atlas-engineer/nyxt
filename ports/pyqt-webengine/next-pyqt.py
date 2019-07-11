@@ -131,6 +131,7 @@ def main():
     # name/dbuswindow MUST be defined even if not used.
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
     dbuswindow = DBusWindow(session_bus)  # noqa: F841
+    event_filter = utility.EventFilter()  # noqa: F841
     print("Listening...")
     app.exec_()
 
