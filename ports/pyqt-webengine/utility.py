@@ -1,7 +1,11 @@
-from PyQt5.QtWidgets import QWidget, qApp
-from PyQt5.QtCore import QEvent, Qt
-from sys import platform
 import logging
+from sys import platform
+
+from core_interface import push_input_event
+
+from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtWidgets import QWidget, qApp
+from PyQt5.QtGui import QKeySequence
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
@@ -12,6 +16,18 @@ MODIFIER_KEYS = {
     Qt.Key_Meta: "Meta",
     Qt.Key_Super_L: "S",
     Qt.Key_Super_R: "S"
+}
+
+# Special keys for Next
+SPECIAL_KEYS = {
+    Qt.Key_Backspace: "BACKSPACE",
+    Qt.Key_Delete: "DELETE",
+    Qt.Key_Escape: "ESCAPE",
+    Qt.Key_hyphen: "HYPHEN",
+    Qt.Key_Return: "RETURN",
+    Qt.Key_Enter: "RETURN",
+    Qt.Key_Space: "SPACE",
+    Qt.Key_Tab: "TAB"
 }
 
 # Used for bitmasking to determine modifiers
@@ -42,7 +58,21 @@ def create_modifiers_list(event_modifiers):
     for key, value in MODIFIERS.items():
         if (event_modifiers & key):
             modifiers.append(value)
-    return modifiers
+    return modifiers or [""]
+
+
+def create_key_string(event):
+    text = ""
+    if event.key() in SPECIAL_KEYS:
+        text = SPECIAL_KEYS.get(event.key())
+        logging.info("special")
+    elif event.text():
+        text = event.text()
+        logging.info("text")
+    else:
+        text = QKeySequence(event.key()).toString().lower()
+        logging.info("normal")
+    return text
 
 
 def is_modifier(key):
@@ -57,7 +87,14 @@ class EventFilter(QWidget):
     def eventFilter(self, obj, event):
         if (event.type() == QEvent.KeyPress and not is_modifier(event.key())):
             modifiers = create_modifiers_list(event.modifiers())
-            logging.info(event.key())
-            logging.info(modifiers)
+            key_string = create_key_string(event)
+            key_code = event.key()
+            logging.info("code: {} string: {} modifiers {}".format(
+                key_code, key_string, modifiers))
+            push_input_event(key_code,
+                             key_string,
+                             modifiers,
+                             -1.0, -1.0, key_code,
+                             "1")
             return True
         return False
