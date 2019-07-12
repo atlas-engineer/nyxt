@@ -97,7 +97,7 @@ def build_qt_modifiers(names):
             logging.warn("Unsupported modifier: {}".format(name))
             return Qt.NoModifier
         else:
-            bitmask = bitmask | modifier  # KeyboardModifiers type
+            bitmask = bitmask | modifier
     if bitmask:
         qt_modifiers = Qt.KeyboardModifiers(bitmask)
     else:

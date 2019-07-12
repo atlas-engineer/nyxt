@@ -3,7 +3,7 @@ import logging
 import core_interface
 
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineView
 
 #: A dictionary of current buffers mapping an identifier (str) to a
 #  buffer (Buffer).
@@ -31,6 +31,9 @@ class Buffer():
         super(Buffer, self).__init__()
         self.view = QWebEngineView()
         self.identifier = identifier
+        page = self.view.page()
+        profile = page.profile()
+        profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
 
     def evaluate_javascript(self, script):
         """
