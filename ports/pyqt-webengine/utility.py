@@ -4,8 +4,8 @@ from sys import platform
 import window
 from core_interface import push_input_event
 
-from PyQt5.QtCore import QEvent, Qt
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtCore import QEvent, Qt, QCoreApplication
+from PyQt5.QtGui import QKeyEvent, QKeySequence
 from PyQt5.QtWidgets import QWidget, qApp
 
 # Used to detect if a keypress was just a modifier
@@ -33,6 +33,8 @@ SPECIAL_KEYS = {
 
 # Used for bitmasking to determine modifiers
 MODIFIERS = {}
+# Used for constructing a bitmasked modifier
+REVERSE_MODIFIERS = {}
 
 if platform == "linux" or platform == "linux2":
     tmp = {Qt.ShiftModifier: "s",
@@ -40,18 +42,33 @@ if platform == "linux" or platform == "linux2":
            Qt.AltModifier: "S",
            Qt.MetaModifier: "M"}
     MODIFIERS.update(tmp)
+    tmp = {"s": Qt.ShiftModifier,
+           "C": Qt.ControlModifier,
+           "S": Qt.AltModifier,
+           "M": Qt.MetaModifier}
+    REVERSE_MODIFIERS.update(tmp)
 elif platform == "darwin":
     tmp = {Qt.ShiftModifier: "s",
            Qt.ControlModifier: "S",
            Qt.AltModifier: "M",
            Qt.MetaModifier: "C"}
     MODIFIERS.update(tmp)
+    tmp = {"s": Qt.ShiftModifier,
+           "S": Qt.ControlModifier,
+           "M": Qt.AltModifier,
+           "C": Qt.MetaModifier}
+    REVERSE_MODIFIERS.update(tmp)
 elif platform == "win32" or platform == "win64":
     tmp = {Qt.ShiftModifier: "s",
            Qt.ControlModifier: "C",
            Qt.AltModifier: "S",
            Qt.MetaModifier: "M"}
     MODIFIERS.update(tmp)
+    tmp = {"s": Qt.ShiftModifier,
+           "C": Qt.ControlModifier,
+           "S": Qt.AltModifier,
+           "M": Qt.MetaModifier}
+    REVERSE_MODIFIERS.update(tmp)
 
 
 def create_modifiers_list(event_modifiers):
@@ -73,8 +90,33 @@ def create_key_string(event):
     return text
 
 
+def create_modifiers_flag(modifiers):
+    flag = Qt.NoModifier
+    for modifier in modifiers:
+        flag = flag | REVERSE_MODIFIERS.get(modifier, Qt.NoModifier)
+    return flag
+
+
 def is_modifier(key):
     return key in MODIFIER_KEYS.keys()
+
+
+def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
+    """
+    The Lisp core tells us to generate this key event.
+
+    - window_id: str
+    - key_code: int
+    - modifiers: [str]
+    - low_level_data: key code from Qt (int).
+    - x, y: float
+    """
+    logging.info("generate input, window: {} code: {}, modifiers {}".format(
+        window_id, key_code, modifiers))
+    modifiers = create_modifiers_flag(modifiers)
+    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers)
+    event.artificial = True
+    QCoreApplication.postEvent(window.get_window("1").qtwindow, event)
 
 
 class EventFilter(QWidget):
@@ -83,7 +125,13 @@ class EventFilter(QWidget):
         qApp.installEventFilter(self)
 
     def eventFilter(self, obj, event):
-        if (event.type() == QEvent.KeyPress and not is_modifier(event.key())):
+        if (event.type() == QEvent.KeyPress and
+            hasattr(event, 'artificial')):
+            logging.info("artificial event")
+            return False
+        elif (event.type() == QEvent.KeyPress and not
+              is_modifier(event.key()) and not
+              hasattr(event, 'artificial')):
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
             key_code = event.key()
