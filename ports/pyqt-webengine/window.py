@@ -87,21 +87,19 @@ def build_qt_modifiers(names):
     return a KeyboardModifiers class with the internal Qt representation of modifiers.
     If no result, return Qt.NoModifier (i.e, 0) instead.
     """
-    res = []
     names = [it for it in names if it != ""]
+    bitmask = Qt.KeyboardModifiers() if names else None
     for name in names:
-        mod = QT_MODIFIERS.get(name)
-        if mod is None:
+        modifier = QT_MODIFIERS.get(name)
+        if modifier is None:
             logging.warn("Unrecognized modifier: {}".format(name))
-        elif mod == -1:
+        elif modifier == -1:
             logging.warn("Unsupported modifier: {}".format(name))
             return Qt.NoModifier
         else:
-            res.append(mod)
-    if res:
-        # TODO: doesn't work with a list of modifiers.
-        # qt_modifiers = Qt.KeyboardModifiers(*res)
-        qt_modifiers = Qt.KeyboardModifiers(res[0])
+            bitmask = bitmask | modifier  # KeyboardModifiers type
+    if bitmask:
+        qt_modifiers = Qt.KeyboardModifiers(bitmask)
     else:
         qt_modifiers = Qt.NoModifier
     return qt_modifiers
