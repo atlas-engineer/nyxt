@@ -196,13 +196,10 @@ class KeyCaptureWidget(QWidget):
 
     def keyPressEvent(self, event):
         key = event.key()
-        logging.info("key press: {}".format(key))
         if is_modifier(key):
-            logging.info("------ got a modifier")
             self.modifiers_stack.append(key)
             # It's ok Qt, we handled it, don't handle it.
             # return True
-            logging.info("Modifiers: {}".format(self.modifiers_stack))
         else:
             self.current_event = event
             key_code = event.key()
@@ -210,7 +207,6 @@ class KeyCaptureWidget(QWidget):
 
             if is_special(key_code):
                 key_string = KEY_TRANSLATIONS[key_code]
-                logging.info("this key is special: {} -> {}".format(key_code, key_string))
             else:
                 # In case of C-a, text() is "^A", a non-printable character, not what we want.
                 # XXX: lower() is necessary, but is it harmless ?
@@ -219,7 +215,6 @@ class KeyCaptureWidget(QWidget):
                 except Exception:
                     # watch out arrow keys.
                     pass
-                logging.debug("our new key_string: from {} to {}".format(event.text(), key_string))
 
             global GENERATED_KEYPRESS
             if GENERATED_KEYPRESS:
@@ -232,7 +227,6 @@ class KeyCaptureWidget(QWidget):
             self.quick_push_input(key_code, key_string, self.get_modifiers_list())
 
 
-
     def keyReleaseEvent(self, event):
         """
         Send all input events with a list of modifier keys.
@@ -243,7 +237,6 @@ class KeyCaptureWidget(QWidget):
         # have it with Qt.Keyboardmodifier() or event.modifiers() but
         # they don't return useful values so far. This works.
         key_code = event.key()
-        logging.info("key release: {}".format(key_code))
         if is_modifier(key_code):
             self.modifiers_stack = []
             self.current_event = None
@@ -270,7 +263,6 @@ class KeyCaptureWidget(QWidget):
                 "low level data",
                 "window id",
             )
-            logging.info("Key sequence: {}".format(out))
 
     def mouseDoubleClickEvent(self, event):
         logging.info("Double click")
@@ -320,7 +312,6 @@ class Window():
         """
         Set the title of the window.
         """
-        logging.info("Set title: {}, {}".format(self.identifier, title))
         self.qtwindow.setWindowTitle(title)
         logging.info("Title set for window {} !".format(self.identifier))
         return title
@@ -374,12 +365,10 @@ def active():
     Return the active window.
     """
     active_window = QApplication.activeWindow()
-    logging.info("Active window by PyQt is {}.".format(active_window))
     for key, value in WINDOWS.items():
         if value.qtwindow == active_window:
-            logging.info("Active window id: {}".format(value.identifier))
             return value.identifier
-    logging.info("No active window found in {} windows.".format(len(WINDOWS)))
+    logging.warning("No active window found in {} windows.".format(len(WINDOWS)))
 
 
 def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):

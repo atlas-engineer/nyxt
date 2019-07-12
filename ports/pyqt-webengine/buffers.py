@@ -48,7 +48,6 @@ class Buffer():
         return str(self.callback_count)
 
     def javascript_callback(self, res, callback_id):
-        logging.debug("JS result is: {}".format(res))
         if res is None:
             return
         core_interface.buffer_javascript_call_back(str(self.identifier), res, callback_id)
