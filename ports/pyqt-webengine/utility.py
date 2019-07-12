@@ -91,7 +91,7 @@ def create_key_string(event):
 
 
 def create_modifiers_flag(modifiers):
-    flag = Qt.NoModifier
+    flag = Qt.KeyboardModifiers()
     for modifier in modifiers:
         flag = flag | REVERSE_MODIFIERS.get(modifier, Qt.NoModifier)
     return flag
@@ -116,7 +116,7 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     modifiers = create_modifiers_flag(modifiers)
     event = QKeyEvent(QEvent.KeyPress, key_code, modifiers)
     event.artificial = True
-    QCoreApplication.postEvent(window.get_window("1").qtwindow, event)
+    QCoreApplication.sendEvent(window.get_window(window_id).qtwindow, event)
 
 
 class EventFilter(QWidget):
@@ -125,17 +125,14 @@ class EventFilter(QWidget):
         qApp.installEventFilter(self)
 
     def eventFilter(self, obj, event):
-        if (event.type() == QEvent.KeyPress and
-            hasattr(event, 'artificial')):
+        if (event.type() == QEvent.KeyPress and hasattr(event, 'artificial')):
             logging.info("artificial event")
             return False
-        elif (event.type() == QEvent.KeyPress and not
-              is_modifier(event.key()) and not
-              hasattr(event, 'artificial')):
+        elif (event.type() == QEvent.KeyPress and not is_modifier(event.key())):
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
             key_code = event.key()
-            logging.info("code: {} string: {} modifiers {}".format(
+            logging.info("send code: {} string: {} modifiers {}".format(
                 key_code, key_string, modifiers))
             push_input_event(key_code,
                              key_string,
