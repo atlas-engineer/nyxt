@@ -93,7 +93,8 @@ def create_key_string(event):
 def create_modifiers_flag(modifiers):
     flag = Qt.KeyboardModifiers()
     for modifier in modifiers:
-        flag = flag | REVERSE_MODIFIERS.get(modifier, Qt.NoModifier)
+        if(REVERSE_MODIFIERS.get(modifier)):
+            flag = flag | REVERSE_MODIFIERS.get(modifier)
     return flag
 
 
@@ -111,12 +112,13 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     - low_level_data: key code from Qt (int).
     - x, y: float
     """
+    modifiers_flag = create_modifiers_flag(modifiers)
     logging.info("generate input, window: {} code: {}, modifiers {}".format(
-        window_id, key_code, modifiers))
-    modifiers = create_modifiers_flag(modifiers)
-    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers)
+        window_id, key_code, modifiers_flag))
+    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag)
     event.artificial = True
-    QCoreApplication.sendEvent(window.get_window(window_id).qtwindow, event)
+    event_window = window.get_window(window_id)
+    QCoreApplication.sendEvent(event_window.qtwindow, event)
 
 
 class EventFilter(QWidget):
