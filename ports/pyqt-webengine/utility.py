@@ -1,11 +1,12 @@
 import logging
 from sys import platform
 
+import window
 from core_interface import push_input_event
 
 from PyQt5.QtCore import QEvent, Qt
-from PyQt5.QtWidgets import QWidget, qApp
 from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QWidget, qApp
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
@@ -65,13 +66,10 @@ def create_key_string(event):
     text = ""
     if event.key() in SPECIAL_KEYS:
         text = SPECIAL_KEYS.get(event.key())
-        logging.info("special")
     elif event.text():
         text = event.text()
-        logging.info("text")
     else:
         text = QKeySequence(event.key()).toString().lower()
-        logging.info("normal")
     return text
 
 
@@ -95,6 +93,6 @@ class EventFilter(QWidget):
                              key_string,
                              modifiers,
                              -1.0, -1.0, key_code,
-                             "1")
+                             window.active())
             return True
         return False
