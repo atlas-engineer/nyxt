@@ -153,7 +153,7 @@ class KeyCaptureWidget(QWidget):
             GENERATED_KEYPRESS = False
             logging.info("----- got a generated C-c: give it to the app (TODO)")
             return
-        self.quick_push_input(67, "c", ["C"])
+        self.quick_push_input(Qt.Key_Control, "c", ["C"])
 
     @pyqtSlot()
     def on_Ctrl_X(self):
@@ -173,7 +173,7 @@ class KeyCaptureWidget(QWidget):
             GENERATED_KEYPRESS = False
             logging.info("----- got a generated ESC: give it to the app (TODO)")
             return
-        self.quick_push_input(16777216, "ESCAPE", [""])
+        self.quick_push_input(Qt.Key_Escape, "ESCAPE", [""])
 
     @pyqtSlot()
     def on_Backspace(self):
@@ -183,11 +183,11 @@ class KeyCaptureWidget(QWidget):
             GENERATED_KEYPRESS = False
             logging.info("----- got a generated BACKSPACE: give it to the app (TODO)")
             return
-        self.quick_push_input(16777219, "BACKSPACE", [""])
+        self.quick_push_input(Qt.Key_Backspace, "BACKSPACE", [""])
 
     def quick_push_input(self, key_code, key_string, modifiers,
                          low_level_data=None, x=-1.0, y=-1.0, sender=None):
-        # type signature: int, str, array of strings, double, double, int, str
+        """type signature: int, str, array of strings, double, double, int, str"""
         core_interface.push_input_event(
             key_code, key_string, modifiers,
             x, y,

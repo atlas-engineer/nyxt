@@ -3,10 +3,14 @@ import logging
 import dbus
 
 """
-Call dbus methods on the lisp core side.
-
-We share buses between files (Window, Buffer, etc).
+Call dbus methods asynchronously on the lisp core side.
 """
+
+#
+# All dbus calls take:
+# - dbus_interface=CORE_INTERFACE
+# - a reply_handler and error_handler for the call to be async.
+#
 
 CORE_INTERFACE = "engineer.atlas.next.core"
 CORE_OBJECT_PATH = "/engineer/atlas/next/core"
