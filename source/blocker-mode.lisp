@@ -80,6 +80,7 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
 
 (defmethod resource-query-block ((buffer buffer)
                                  &key url
+				   cookies
                                    event-type
                                    (is-new-window nil)
                                    (is-known-type t)
@@ -95,6 +96,7 @@ Fall back on `resource-query-default'."
         nil)
       (resource-query-default buffer
                               :url url
+			      :cookies cookies
                               :event-type event-type
                               :is-new-window is-new-window
                               :is-known-type is-known-type
