@@ -66,7 +66,7 @@ def main():
         # Make window.
         # give a pseudo random str as window id, we don't keep count of windows here.
         uid = str(random.randrange(10))
-        print("-- window make id {}:".format(uid))
+        print("window make id {}:".format(uid))
         command = "window_make"
         args = [uid, ]
 

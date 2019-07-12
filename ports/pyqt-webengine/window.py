@@ -151,7 +151,7 @@ class KeyCaptureWidget(QWidget):
         global GENERATED_KEYPRESS
         if GENERATED_KEYPRESS:
             GENERATED_KEYPRESS = False
-            logging.info("----- got a generated C-c: give it to the app (TODO)")
+            logging.info("got a generated C-c: give it to the app (TODO)")
             return
         self.quick_push_input(Qt.Key_Control, "c", ["C"])
 
@@ -161,7 +161,7 @@ class KeyCaptureWidget(QWidget):
         global GENERATED_KEYPRESS
         if GENERATED_KEYPRESS:
             GENERATED_KEYPRESS = False
-            logging.info("----- got a generated C-x: give it to the app (TODO)")
+            logging.info("got a generated C-x: give it to the app (TODO)")
             return
         self.quick_push_input(88, "x", ["C"])
 
@@ -171,7 +171,7 @@ class KeyCaptureWidget(QWidget):
         global GENERATED_KEYPRESS
         if GENERATED_KEYPRESS:
             GENERATED_KEYPRESS = False
-            logging.info("----- got a generated ESC: give it to the app (TODO)")
+            logging.info("got a generated ESC: give it to the app (TODO)")
             return
         self.quick_push_input(Qt.Key_Escape, "ESCAPE", [""])
 
@@ -181,7 +181,7 @@ class KeyCaptureWidget(QWidget):
         global GENERATED_KEYPRESS
         if GENERATED_KEYPRESS:
             GENERATED_KEYPRESS = False
-            logging.info("----- got a generated BACKSPACE: give it to the app (TODO)")
+            logging.info("got a generated BACKSPACE: give it to the app (TODO)")
             return
         self.quick_push_input(Qt.Key_Backspace, "BACKSPACE", [""])
 
@@ -195,11 +195,17 @@ class KeyCaptureWidget(QWidget):
             sender if sender else self.parent_identifier)
 
     def keyPressEvent(self, event):
+        """Catch key presses and send them to the lisp core asynchronously.
+
+        If the lisp core has answered and asked to generate a given
+        event (see `generate_input_event`), the event object has a
+        `is_generated` attribute.
+        """
         key = event.key()
         if is_modifier(key):
             self.modifiers_stack.append(key)
             # It's ok Qt, we handled it, don't handle it.
-            # return True
+            # return True  # crashes
         else:
             self.current_event = event
             key_code = event.key()
@@ -216,10 +222,8 @@ class KeyCaptureWidget(QWidget):
                     # watch out arrow keys.
                     pass
 
-            global GENERATED_KEYPRESS
-            if GENERATED_KEYPRESS:
-                GENERATED_KEYPRESS = False
-                logging.info("----- generated keypress: return")
+            if hasattr(event, "is_generated") and event.is_generated:
+                logging.info("generated keypress: do nothing.")
                 return
 
             logging.info("Sending push-input-event with key_code {}, key_string {} and modifiers {}".format(
@@ -383,8 +387,9 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     qt_modifiers = build_qt_modifiers(modifiers)
     logging.info('generating this input event: window id {}, key code {}, modifiers names {}, \
     modifiers list {}'. format(window_id, key_code, modifiers, qt_modifiers))
+    # This global is ugly, we still need it for now for on_Escape and the like.
     global GENERATED_KEYPRESS
     GENERATED_KEYPRESS = True
-    # XXX: add a property to event, don't use globals. See window_key_event.
     event = QKeyEvent(QEvent.KeyPress, key_code, qt_modifiers)
+    event.is_generated = True
     QCoreApplication.postEvent(get_window(window_id).qtwindow, event)
