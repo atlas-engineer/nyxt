@@ -49,6 +49,7 @@ class Window():
         self.layout.addWidget(self.buffer.view)
         self.layout.addWidget(self.minibuffer.view)
         self.qtwindow.setLayout(self.layout)
+        self.qtwindow.resize(1024, 768)
         self.qtwindow.show()
 
     def set_title(self, title):
