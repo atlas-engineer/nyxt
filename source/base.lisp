@@ -191,6 +191,8 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-]" 'switch-buffer-next)
 (define-key "C-x b" 'switch-buffer)
 (define-key "C-x k" 'delete-buffer)
+(define-key "C-x Left" 'switch-buffer-previous)
+(define-key "C-x Right" 'switch-buffer-next)
 (define-key "C-l" 'set-url-current-buffer)
 (define-key "M-l" 'set-url-new-buffer)
 (define-key "C-m k" 'bookmark-delete)

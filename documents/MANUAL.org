@@ -152,10 +152,12 @@ etc.  Regular web pages use the ~document-mode~ by default.
 The standard keybindings for buffer management are:
 
 1. ~C-x b~: Switch buffer
-2. ~C-x k~: Kill buffer
-3. ~M-l~: Open URL in new buffer
-4. ~C-l~: Change URL of current buffer
-5. ~C-t~: Make new empty buffer
+2. ~C-x Left~: Switch to previous buffer
+3. ~C-x Right~: Switch to next buffer
+4. ~C-x k~: Kill buffer
+5. ~M-l~: Open URL in new buffer
+6. ~C-l~: Change URL of current buffer
+7. ~C-t~: Make new empty buffer
 
 *** Switching Tabs by Order
 In addition to switching tabs by selecting the current tab, you can
