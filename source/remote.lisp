@@ -559,7 +559,8 @@ TODO: Only booleans are supported for now."
                                      (is-new-window nil)
                                      (is-known-type t)
                                      (mouse-button "")
-                                     (modifiers '()))
+                                     (modifiers '())
+                                   &allow-other-keys)
   "Return non-nil to let platform port load URL.
 Return nil otherwise.
 
