@@ -363,7 +363,8 @@ For an array of string, that would be \"as\"."
           (rpc-window-set-active-buffer interface window-with-same-buffer buffer-swap)
           (rpc-buffer-delete interface temp-buffer))
         (rpc-window-set-active-buffer interface window buffer))
-    (set-window-title interface window buffer)))
+    (set-window-title interface window buffer)
+    (setf (active-buffer window) buffer)))
 
 (defmethod rpc-window-set-minibuffer-height ((interface remote-interface)
                                              window height)
@@ -644,5 +645,4 @@ Deal with URL with the following rules:
                               (buffer buffer))
   "Set the active buffer for the active window."
   (let ((rpc-window-active (rpc-window-active interface)))
-    (window-set-active-buffer interface rpc-window-active buffer)
-    (setf (active-buffer rpc-window-active) buffer)))
+    (window-set-active-buffer interface rpc-window-active buffer)))
