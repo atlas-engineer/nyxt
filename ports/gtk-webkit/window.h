@@ -388,6 +388,7 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 	gchar *event_string = g_strdup_printf("button%d", event->button);
 	return window_send_event(window,
 		       event_string, event->state,
+	               // We pass no hardware keycode for now (0), maybe some day.
 		       0, event->button,
 		       event->x, event->y,
 		       event->type == GDK_BUTTON_RELEASE);
@@ -454,6 +455,9 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 	gchar *event_string = g_strdup_printf("button%d", button);
 	return window_send_event(window,
 		       event_string, event->state,
+	               // We pass the direction as low-level data so that we can
+	               // reconstruct the event when forwarded back to the platform
+	               // port.
 		       event->direction, button,
 		       event->x, event->y,
 		       false);

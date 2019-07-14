@@ -102,6 +102,11 @@ static GVariant *server_window_set_active_buffer(GVariant *parameters) {
 	return g_variant_new("(b)", TRUE);
 }
 
+// Buffers support 2 types of options: initialization options and runtime
+// options.  Initialization options can only be set on buffer creation,
+// i.e. here.  We pass them as a dictionary of strings so that we can extend the
+// support of options in the future without changing the signature, and without
+// breaking other ports.
 static GVariant *server_buffer_make(GVariant *parameters) {
 	const char *a_key = NULL;
 	GVariant *options;
@@ -109,6 +114,7 @@ static GVariant *server_buffer_make(GVariant *parameters) {
 	g_message("Method parameter(s): buffer ID %s, options %s", a_key,
 		g_variant_print(options, TRUE));
 
+	// Initialization options:
 	char *cookies_path = NULL;
 	g_variant_lookup(options, "cookies-path", "s", &cookies_path);
 
