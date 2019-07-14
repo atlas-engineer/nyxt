@@ -156,15 +156,6 @@
       (setf (active-history-node mode) new-node)
       (return-from add-or-traverse-history t))))
 
-(define-command set-default-window-title (document-mode)
-  "Set current window title to 'Next - TITLE - URL."
-  (with-result* ((url (buffer-get-url))
-                 (title (buffer-get-title)))
-    (setf title (if (str:emptyp title) "<untitled>" title))
-    (setf url (if (str:emptyp url) "<no url>" url))
-    (rpc-window-set-title *interface* (rpc-window-active *interface*)
-                        (concatenate 'string "Next - " title " - " url))))
-
 (define-command copy-url (document-mode)
   "Save current URL to clipboard."
   (with-result (url (buffer-get-url))
@@ -178,7 +169,9 @@
     (echo "~a copied to clipboard." title)))
 
 (defmethod did-commit-navigation ((mode document-mode) url)
-  (set-default-window-title mode)
+  (set-window-title *interface*
+                    (rpc-window-active *interface*)
+                    (active-buffer *interface*))
   (add-or-traverse-history mode url)
   (echo "Loading: ~a." url))
 

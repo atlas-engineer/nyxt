@@ -70,7 +70,7 @@ buffer to the start page."
       (history-typed-add input-url))
     (if (cl-strings:starts-with url "file://")
         (rpc-buffer-load *interface* buffer url)
-        ;; We need to specify the buffer here since this we may reach this point
+        ;; We need to specify the buffer here since we may reach this point
         ;; on initialization before ACTIVE-BUFFER can be used.
         (buffer-set-url :url url :buffer buffer))))
 
