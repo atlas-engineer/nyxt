@@ -149,6 +149,9 @@ it can be called without argument."
           ;; forward back to the platform port
           ((or (and active-buffer (forward-input-events active-buffer))
                (pointer-event-p key-chord))
+           ;; forward-input-events is NIL in VI normal mode so that we don't
+           ;; forward unbound keys, unless it's a pointer (mouse) event.
+           ;; TODO: Remove this special case and bind button1 to "self-insert" instead?
            (rpc-generate-input-event *interface*
                                      active-window
                                      key-chord)
