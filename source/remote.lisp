@@ -421,12 +421,20 @@ events."
                  (float (or (second (key-chord-position event)) -1.0))))
 
 (defmethod rpc-set-proxy ((interface remote-interface) (buffer buffer)
-                      &optional (proxy-uri "") (ignore-hosts (list nil)))
+                          &optional (proxy-uri "") (ignore-hosts (list nil)))
+  "Redirect network connections of BUFFER to proxy server PROXY-URI.
+Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
+For the user-level interface, see `proxy-mode'.
+
+Note: WebKit supports three proxy \"modes\": default (the system proxy),
+custom (the specified proxy) and none.
+TODO: We don't use \"none\" here, but it could be useful to expose it to the
+user."
   (%rpc-send interface "set_proxy" (list (id buffer))
-                 (if (string= proxy-uri "")
-                     "default"
-                     "custom")
-                 proxy-uri ignore-hosts))
+             (if (string= proxy-uri "")
+                 "default"
+                 "custom")
+             proxy-uri ignore-hosts))
 
 (defmethod rpc-get-proxy ((interface remote-interface) (buffer buffer))
   "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy configuration.
