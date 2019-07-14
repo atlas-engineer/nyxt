@@ -80,12 +80,13 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
 
 (defmethod resource-query-block ((buffer buffer)
                                  &key url
-				   cookies
+                                   cookies
                                    event-type
                                    (is-new-window nil)
                                    (is-known-type t)
                                    (mouse-button "")
-                                   (modifiers '()))
+                                   (modifiers '())
+                                 &allow-other-keys)
   "Block resource queries from blacklisted hosts.
 Fall back on `resource-query-default'."
   ;; TODO: Use quri:uri-domain?
@@ -96,7 +97,7 @@ Fall back on `resource-query-default'."
         nil)
       (resource-query-default buffer
                               :url url
-			      :cookies cookies
+                              :cookies cookies
                               :event-type event-type
                               :is-new-window is-new-window
                               :is-known-type is-known-type
