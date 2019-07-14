@@ -2,15 +2,16 @@
 
 Next is made of two programs:
 
-- The Lisp core which offers the user full control over the browsing.  It's 100%
-  Common Lisp.
+- The Lisp core which offers the user full control over the browsing experience.
+  It's fully written in Common Lisp.
 
-- The "platform port", which only purpose is to display a window with two
+- The "platform port", which only purpose is to display a window with the basic
   components: the minibuffer and the web view.
 
 The two parts communicate via [[http://www.freedesktop.org/wiki/Software/dbus][D-Bus]], an [[https://en.wikipedia.org/wiki/Remote_procedure_call][RPC]] system.  The Lisp core sends a D-Bus
 request to the platform port (for example, "open this URL"); the platform port
-acts upon it and sends a D-Bus response back to the Lisp core.
+acts upon it and sends a D-Bus response back to the Lisp core (for example "OK"
+or "I failed to do this").
 
 The communication API is fully specified in =source/remote.lisp= and
 =ports/gtk-webkit/server-state.h=.
@@ -21,20 +22,21 @@ various platforms.
 ** Input event forwarding
 
 A tricky part in this architecture evolves around input event handling (key
-presses, etc.).
+presses, mouse buttons, etc.).
 
-Input events are first captured by the platform port (e.g. GDK).
-But we want to intercept it and send it to the Lisp core so that the Lisp has
-full control over what to do with the input event.
+Input events are first captured by the platform port (e.g. GDK).  But we want to
+intercept it before it does anything with the widgets or with the web view, and
+we send it to the Lisp core so that the Lisp has full control over what to do
+with the input event.
 
-In case the Lisp core has no use of the input event, we let know that platform
+In case the Lisp core has no use of the input event, we let know the platform
 port that it can process it.  This is necessary for instance to write in HTML
 text fields.
 
-As of commit 2218c96e67e006a44a770a81fe1b0b65ba7eb490, all RPC requests from
-the Lisp core are /synchronous/.  This means that the platform port cannot send
-the input event /synchronously/ too, or else we could have a dead-lock: both
-processes would be waiting for each other's RPC response.
+Any RPC requests from the Lisp core may be /synchronous/.  This means that the
+platform port /cannot/ send the input event /synchronously/ too, or else we
+could have a dead-lock: both processes would be waiting for each other's RPC
+response.
 
 Since the platform port must be /asynchronous/, two strategies prevail:
 
@@ -53,23 +55,25 @@ Since the platform port must be /asynchronous/, two strategies prevail:
 
 In both bases, to avoid an infinite loop, we must forward the input event with a
 "marker" (something unique in the event structure for instance) so that the
-platform port does not send it to the Lisp core again.
+platform port can differentiate it from a non-generated event and decide not to
+send it to the Lisp core again.
 
 To sum up in terms of RPC calls:
 
 1. Callback strategy:
-   - Platform port: send =PUSH-KEY-EVENT= with the corresponding input event as
+   - Platform port: send =PUSH-INPUT-EVENT= with the corresponding input event as
      argument, and specify a callback.
-   - Lisp core: The ~push-key-event~ procedure checks whether the associated
+   - Lisp core: The ~push-input-event~ end point checks whether the associated
      binding is found in a keymap.  It returns a boolean value.
    - Platform port: From the callback, we check the boolean that was returned.
      If it indicates that the event was consumed, we do nothing.  Otherwise we
-     regenerate the binding with a special marker.
+     regenerate the binding with a special marker and let the widget or web view
+     consume it.
 
 2. Lisp core event generation strategy:
-   - Platform port: send =PUSH-KEY-EVENT= with the corresponding input event as
+   - Platform port: send =PUSH-INPUT-EVENT= with the corresponding input event as
      argument.
-   - Lisp core: The ~push-key-event~ procedure checks whether the associated
+   - Lisp core: The ~push-input-event~ procedure checks whether the associated
      binding is found in a keymap.  If it is found, call the corresponding
      command.  If not, send the =GENERATE-INPUT-EVENT= RPC message with the
      Lisp input event as argument.
@@ -77,7 +81,8 @@ To sum up in terms of RPC calls:
      regenerates the input event with a special marker from the message
      argument.
 
-While similar, the Lisp core event generation strategy has some benefits:
+While both strategies are similar, the Lisp core event generation strategy has
+some benefits:
 
 - It's easier to understand in terms of process communication.
 - It allows the Lisp core to generate input events at any moment.
