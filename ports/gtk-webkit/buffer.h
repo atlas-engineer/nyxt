@@ -366,20 +366,12 @@ gboolean buffer_web_view_web_process_crashed(WebKitWebView *_web_view, Buffer *b
 gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer window_data);
 gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer buffer_data);
 
+static gboolean mouse_target_last_was_empty = true;
 static gint64 mouse_target_last_changed = 0;
 void buffer_mouse_target_changed(WebKitWebView *web_view,
 	WebKitHitTestResult *result, guint _modifiers, gpointer _data) {
 	const char *method_name = "buffer_uri_at_point";
 	const gchar *uri = "";
-
-	if (webkit_hit_test_result_context_is_link(result)) {
-		uri = webkit_hit_test_result_get_link_uri(result);
-	} else if (webkit_hit_test_result_context_is_image(result)) {
-		uri = webkit_hit_test_result_get_image_uri(result);
-	}
-
-	GVariant *arg = g_variant_new("(s)", uri);
-	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
 
 	// When hovering fast over lots of links, we don't want to spam the Lisp core.
 	// So we only send if the next event happend more than N milliseconds after the last.
@@ -387,15 +379,38 @@ void buffer_mouse_target_changed(WebKitWebView *web_view,
 	// cycle: we discard messages in the queue that are too close, but we always
 	// send the last one.
 	gint64 current_time = g_get_monotonic_time();
-	if ((current_time - mouse_target_last_changed) > (50*1000)) {
-		mouse_target_last_changed = current_time;
-
-		g_dbus_connection_call(state.connection,
-			CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
-			method_name,
-			arg,
-			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+	if ((current_time - mouse_target_last_changed) < (50*1000)) {
+		return;
 	}
+	mouse_target_last_changed = current_time;
+
+	if (webkit_hit_test_result_context_is_link(result)) {
+		uri = webkit_hit_test_result_get_link_uri(result);
+	} else if (webkit_hit_test_result_context_is_image(result)) {
+		uri = webkit_hit_test_result_get_image_uri(result);
+	}
+
+	if (g_strcmp0(uri, "") == 0) {
+		// We only send one empty URL (i.e. current URL) in a row to avoid
+		// flickering when hovering over an input field or the scroll bar.
+		if (mouse_target_last_was_empty == false) {
+			mouse_target_last_was_empty = true;
+		} else {
+			mouse_target_last_was_empty = true;
+			return;
+		}
+	} else {
+		mouse_target_last_was_empty = false;
+	}
+
+	GVariant *arg = g_variant_new("(s)", uri);
+	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
+
+	g_dbus_connection_call(state.connection,
+		CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+		method_name,
+		arg,
+		NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 	// 'uri' is freed automatically.
 }
 
