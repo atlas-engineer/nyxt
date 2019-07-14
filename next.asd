@@ -61,6 +61,8 @@
                  (:file "proxy-mode")
                  (:file "noscript-mode")
                  (:file "download-mode")
+                 ;; About
+                 (:file "about")
                  ;; Port Compatibility Layers
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base
