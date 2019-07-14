@@ -27,7 +27,7 @@ as a string.")
       (slot-value port slot)))
 
 (defmethod path ((port port))
-  (truename (port-accessor port 'path (name port))))
+  (port-accessor port 'path (name port)))
 
 (defmethod args ((port port))
   (port-accessor port 'args))
@@ -36,9 +36,14 @@ as a string.")
   (port-accessor port 'log-file (name port)))
 
 (defun derive-path-from-name (name)
-  "This is an acceptable value for the PATH slot of the PORT class."
+  "Find platform port binary with base path NAME.
+First NAME is looked up relative to current directory.
+If not found, then it is looked in the ports/ subfolder corresponding the NAME (e.g. \"gtk-webkit\").
+If still not found, NAME is used as is and will be looked for in PATH.
+
+This is an acceptable value for the PATH slot of the PORT class."
   (or
-   (probe-file (truename name))
+   (when (probe-file name) (truename name))
    (let* ((port-name (file-namestring name))
           (port-prefix "next-")
           (port-name (if (string= (subseq port-name 0 (length port-prefix))
