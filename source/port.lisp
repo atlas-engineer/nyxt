@@ -27,7 +27,10 @@ as a string.")
       (slot-value port slot)))
 
 (defmethod path ((port port))
-  (port-accessor port 'path (name port)))
+  (let ((p (port-accessor port 'path (name port))))
+    (if (probe-file p)
+        (truename p)
+        p)))
 
 (defmethod args ((port port))
   (port-accessor port 'args))
