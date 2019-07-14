@@ -17,12 +17,12 @@
       (lambda (mode)
         (setf (current-keymap-scheme (buffer mode))
               (get-default 'buffer 'current-keymap-scheme))
-        (setf (forward-input-events (buffer mode))
+        (setf (forward-input-events-p (buffer mode))
               (get-default 'buffer 'current-keymap-scheme)))))
   (let ((active-buffer (buffer %mode)))
     (vi-insert-mode %mode :activate nil :buffer active-buffer)
     (setf (current-keymap-scheme active-buffer) :vi-normal)
-    (setf (forward-input-events active-buffer) nil)))
+    (setf (forward-input-events-p active-buffer) nil)))
 
 ;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode ()
