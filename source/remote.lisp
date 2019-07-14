@@ -326,6 +326,17 @@ For an array of string, that would be \"as\"."
   (%rpc-send interface "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer))
 
+(defmethod set-window-title ((interface remote-interface)
+                             (window window)
+                             (buffer buffer))
+  "Set current window title to 'Next - TITLE - URL."
+  (let ((url (name buffer)))
+    (with-result* ((title (buffer-get-title)))
+      (setf title (if (str:emptyp title) "<untitled>" title))
+      (setf url (if (str:emptyp url) "<no url/name>" url))
+      (rpc-window-set-title interface window
+                            (concatenate 'string "Next - " title " - " url)))))
+
 (defmethod window-set-active-buffer ((interface remote-interface)
                                      (window window)
                                      (buffer buffer))
@@ -342,7 +353,8 @@ For an array of string, that would be \"as\"."
           (rpc-window-set-active-buffer interface window buffer)
           (rpc-window-set-active-buffer interface window-with-same-buffer buffer-swap)
           (rpc-buffer-delete interface temp-buffer))
-        (rpc-window-set-active-buffer interface window buffer))))
+        (rpc-window-set-active-buffer interface window buffer))
+    (set-window-title interface window buffer)))
 
 (defmethod rpc-window-set-minibuffer-height ((interface remote-interface)
                                              window height)
