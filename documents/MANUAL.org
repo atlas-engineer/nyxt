@@ -498,3 +498,25 @@ to change the style to using upper case, no gradiant, and square boxes:
          :text-align "center"
          :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)")))
 #+end_src
+
+** Proxy
+
+To use a network proxy for the current buffer, you can enable ~proxy-mode~.
+The mode has some configurable slots:
+- ~server-address~: The address of the proxy server,
+  e.g. ~"socks5://127.0.0.1:9050"~ for your local Tor daemon.
+- ~whitelist~: A list of hosts for which proxy won't be used.
+
+If you want to change the default in your user initialization file, you can do
+something like:
+
+#+begin_src lisp
+(setf (get-default 'proxy-mode 'server-address) "http://10.0.1.254")
+#+end_src
+
+To enable the proxy for all buffers by default, add the mode to the list of
+default modes:
+
+#+begin_src lisp
+(add-to-default-list 'proxy-mode 'buffer 'default-modes)
+#+end_src
