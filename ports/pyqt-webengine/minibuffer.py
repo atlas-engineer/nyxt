@@ -2,20 +2,18 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 import core_interface
 
 
-class Minibuffer():
+class Minibuffer(QWebEngineView):
     """Documentation for Minibuffer
 
     """
-    view = None
     scripts = {}
     callback_count = 0
     window_identifier = 0
 
-    def __init__(self, window_identifier):
-        super(Minibuffer, self).__init__()
-        self.view = QWebEngineView()
+    def __init__(self, window_identifier, parent=None):
+        super(Minibuffer, self).__init__(parent)
         self.window_identifier = window_identifier
-        self.view.setHtml("")  # breaks without this line
+        self.setHtml("")  # breaks without this line
 
     def evaluate_javascript(self, script):
         """
@@ -29,7 +27,7 @@ class Minibuffer():
         :rtype: string
         """
         self.callback_count += 1
-        self.view.page().runJavaScript(
+        self.page().runJavaScript(
             script,
             lambda x: self.javascript_callback(x, str(self.callback_count)))
         return str(self.callback_count)
@@ -40,4 +38,4 @@ class Minibuffer():
         core_interface.minibuffer_javascript_call_back(str(self.window_identifier), res, callback_id)
 
     def set_height(self, height):
-        self.view.setFixedHeight(height)
+        self.setFixedHeight(height)

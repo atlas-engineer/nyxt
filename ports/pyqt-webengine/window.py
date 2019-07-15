@@ -47,7 +47,7 @@ class Window(QWidget):
         self.event_filter = utility.EventFilter(self, self.identifier)
 
         self.layout.addWidget(self.buffer)
-        self.layout.addWidget(self.minibuffer.view)
+        self.layout.addWidget(self.minibuffer)
         self.setLayout(self.layout)
         self.resize(1024, 768)
         self.show()
