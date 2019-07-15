@@ -13,7 +13,6 @@ class Minibuffer(QWebEngineView):
     def __init__(self, window_identifier, parent=None):
         super(Minibuffer, self).__init__(parent)
         self.window_identifier = window_identifier
-        self.setHtml("")  # breaks without this line
 
     def evaluate_javascript(self, script):
         """
