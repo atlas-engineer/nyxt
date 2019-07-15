@@ -6,7 +6,7 @@ from core_interface import push_input_event
 
 from PyQt5.QtCore import QEvent, Qt, QCoreApplication
 from PyQt5.QtGui import QKeyEvent, QKeySequence
-from PyQt5.QtWidgets import QWidget, qApp
+from PyQt5.QtWidgets import QWidget
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
@@ -115,8 +115,7 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     modifiers_flag = create_modifiers_flag(modifiers)
     logging.info("generate input, window: {} code: {}, modifiers {}".format(
         window_id, key_code, modifiers_flag))
-    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag)
-    event.artificial = True
+    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag, text="-1")
     receiver = window.get_window(window_id).buffer.view.focusProxy()
     QCoreApplication.sendEvent(receiver, event)
 
@@ -130,7 +129,8 @@ class EventFilter(QWidget):
 
     def eventFilter(self, obj, event):
         if (event.type() == QEvent.KeyPress and not
-            is_modifier(event.key())):
+            is_modifier(event.key()) and not
+            event.text() == "-1"):
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
             key_code = event.key()
@@ -141,5 +141,12 @@ class EventFilter(QWidget):
                              modifiers,
                              -1.0, -1.0, key_code,
                              self.identifier)
+            return True
+        elif (event.type() == QEvent.KeyPress and
+              event.text() == "-1"):
+            # If we made it to here, an event was sent to the webview
+            # but was not consumed, and bubbled up to self.sender (the
+            # Qt window), to avoid infinite propagation, don't keep
+            # sending the event, say that we handled it
             return True
         return False
