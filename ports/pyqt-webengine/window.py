@@ -21,8 +21,6 @@ def get_window(identifier):
 
 #: A window contains a window widget, a layout, an id (int), a minibuffer.
 class Window(QWidget):
-    #: the actual QWidget.
-    qtwindow = None
     #: layout, that holds the buffer and the minibuffer.
     layout = None
     #: window identifier (str)
