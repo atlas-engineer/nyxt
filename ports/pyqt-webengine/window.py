@@ -46,7 +46,7 @@ class Window(QWidget):
         self.minibuffer.set_height(self.minibuffer_height)
         self.event_filter = utility.EventFilter(self, self.identifier)
 
-        self.layout.addWidget(self.buffer.view)
+        self.layout.addWidget(self.buffer)
         self.layout.addWidget(self.minibuffer.view)
         self.setLayout(self.layout)
         self.resize(1024, 768)
@@ -65,8 +65,8 @@ class Window(QWidget):
         Set the active buffer of the window to buffer.
         """
         # Remove the current buffer from the layout (hide it).
-        self.buffer.view.setParent(None)
-        self.layout.insertWidget(0, buffer.view)
+        self.buffer.setParent(None)
+        self.layout.insertWidget(0, buffer)
         self.buffer = buffer
         return True
 

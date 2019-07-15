@@ -18,20 +18,18 @@ def get_buffer(identifier):
         raise Exception("Buffer ID: {} not found!".format(identifier))
 
 
-class Buffer():
+class Buffer(QWebEngineView):
     """
     Documentation for Buffer.
     """
-    view = None
     scripts = {}
     identifier = "0"
     callback_count = 0
 
-    def __init__(self, identifier=None):
-        super(Buffer, self).__init__()
-        self.view = QWebEngineView()
+    def __init__(self, identifier=None, parent=None):
+        super(Buffer, self).__init__(parent)
         self.identifier = identifier
-        page = self.view.page()
+        page = self.page()
         profile = page.profile()
         profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
 
@@ -45,7 +43,7 @@ class Buffer():
         Return: a callback_id (str).
         """
         self.callback_count += 1
-        self.view.page().runJavaScript(
+        self.page().runJavaScript(
             script,
             lambda x: self.javascript_callback(x, str(self.callback_count)))
         return str(self.callback_count)
@@ -56,14 +54,14 @@ class Buffer():
         core_interface.buffer_javascript_call_back(str(self.identifier), res, callback_id)
 
     def set_height(self, height):
-        self.view.setFixedHeight(height)
+        self.setFixedHeight(height)
 
     def load(self, url):
-        self.view.setUrl(QUrl(url))
+        self.setUrl(QUrl(url))
         return True
 
     def delete(self):
-        self.view.hide()
+        self.hide()
         return True
 
 
