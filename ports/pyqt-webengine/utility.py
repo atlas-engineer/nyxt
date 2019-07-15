@@ -114,7 +114,7 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     """
     modifiers_flag = create_modifiers_flag(modifiers)
     logging.info("generate input, window: {} code: {}, modifiers {}".format(
-        window_id, key_code, modifiers_flag))
+        window_id, key_code, modifiers))
     event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag, text="-1")
     receiver = window.get_window(window_id).buffer.view.focusProxy()
     QCoreApplication.sendEvent(receiver, event)
