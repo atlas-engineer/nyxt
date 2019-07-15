@@ -39,12 +39,12 @@ REVERSE_MODIFIERS = {}
 if platform == "linux" or platform == "linux2":
     tmp = {Qt.ShiftModifier: "s",
            Qt.ControlModifier: "C",
-           Qt.AltModifier: "S",
+           Qt.AltModifier: "M",
            Qt.MetaModifier: "M"}
     MODIFIERS.update(tmp)
     tmp = {"s": Qt.ShiftModifier,
            "C": Qt.ControlModifier,
-           "S": Qt.AltModifier,
+           "M": Qt.AltModifier,
            "M": Qt.MetaModifier}
     REVERSE_MODIFIERS.update(tmp)
 elif platform == "darwin":
@@ -61,12 +61,12 @@ elif platform == "darwin":
 elif platform == "win32" or platform == "win64":
     tmp = {Qt.ShiftModifier: "s",
            Qt.ControlModifier: "C",
-           Qt.AltModifier: "S",
+           Qt.AltModifier: "M",
            Qt.MetaModifier: "M"}
     MODIFIERS.update(tmp)
     tmp = {"s": Qt.ShiftModifier,
            "C": Qt.ControlModifier,
-           "S": Qt.AltModifier,
+           "M": Qt.AltModifier,
            "M": Qt.MetaModifier}
     REVERSE_MODIFIERS.update(tmp)
 
