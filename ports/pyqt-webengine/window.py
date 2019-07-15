@@ -38,10 +38,10 @@ class Window(QWidget):
         super(Window, self).__init__(parent)
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
         self.identifier = identifier
 
         self.buffer = buffers.Buffer()
-        self.buffer.set_height(self.buffer_height)
         self.minibuffer = minibuffer.Minibuffer(identifier)
         self.minibuffer.set_height(self.minibuffer_height)
         self.event_filter = utility.EventFilter(self, self.identifier)
