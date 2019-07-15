@@ -20,7 +20,7 @@ def get_window(identifier):
 
 
 #: A window contains a window widget, a layout, an id (int), a minibuffer.
-class Window():
+class Window(QWidget):
     #: the actual QWidget.
     qtwindow = None
     #: layout, that holds the buffer and the minibuffer.
@@ -36,8 +36,8 @@ class Window():
     #: minibuffer height (px)
     minibuffer_height = 20
 
-    def __init__(self, identifier=None):
-        self.qtwindow = QWidget()
+    def __init__(self, identifier=None, parent=None):
+        super(Window, self).__init__(parent)
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.identifier = identifier
@@ -46,19 +46,19 @@ class Window():
         self.buffer.set_height(self.buffer_height)
         self.minibuffer = minibuffer.Minibuffer(identifier)
         self.minibuffer.set_height(self.minibuffer_height)
-        self.event_filter = utility.EventFilter(self.qtwindow, self.identifier)
+        self.event_filter = utility.EventFilter(self, self.identifier)
 
         self.layout.addWidget(self.buffer.view)
         self.layout.addWidget(self.minibuffer.view)
-        self.qtwindow.setLayout(self.layout)
-        self.qtwindow.resize(1024, 768)
-        self.qtwindow.show()
+        self.setLayout(self.layout)
+        self.resize(1024, 768)
+        self.show()
 
     def set_title(self, title):
         """
         Set the title of the window.
         """
-        self.qtwindow.setWindowTitle(title)
+        self.setWindowTitle(title)
         logging.info("Title set for window {} !".format(self.identifier))
         return title
 
@@ -78,16 +78,15 @@ class Window():
         return True
 
     def minibuffer_evaluate_javascript(self, script):
-        self.minibuffer.evaluate_javascript(script)
-        return "0"  # TODO: callback ID
+        return self.minibuffer.evaluate_javascript(script)
 
     def delete(self):
-        # del self.qtwindow
-        self.qtwindow.hide()
+        # del self
+        self.hide()
         return True
 
     def exists(self):
-        if self.qtwindow.isVisible():
+        if self.isVisible():
             return True
 
 
@@ -100,18 +99,15 @@ def make(identifier: str):
     return: The Window identifier
     """
     assert isinstance(identifier, str)
-    window = Window(identifier=identifier)
+    window = Window(identifier=str(identifier))
     WINDOWS[window.identifier] = window
     logging.info("New window created, id {}".format(window.identifier))
     return identifier
 
 
 def active():
-    """
-    Return the active window.
+    """Return the active window.
+
     """
     active_window = QApplication.activeWindow()
-    for key, value in WINDOWS.items():
-        if value.qtwindow == active_window:
-            return value.identifier
-    logging.info("No active window found in {} windows.".format(len(WINDOWS)))
+    return active_window.identifier

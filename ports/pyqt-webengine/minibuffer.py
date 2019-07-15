@@ -32,6 +32,7 @@ class Minibuffer():
         self.view.page().runJavaScript(
             script,
             lambda x: self.javascript_callback(x, str(self.callback_count)))
+        return str(self.callback_count)
 
     def javascript_callback(self, res, callback_id):
         if res is None:
