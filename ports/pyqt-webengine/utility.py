@@ -117,20 +117,20 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
         window_id, key_code, modifiers_flag))
     event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag)
     event.artificial = True
-    event_window = window.get_window(window_id)
-    QCoreApplication.sendEvent(event_window.qtwindow, event)
+    receiver = window.get_window(window_id).buffer.view.focusProxy()
+    QCoreApplication.sendEvent(receiver, event)
 
 
 class EventFilter(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, sender, identifier, parent=None):
         super(EventFilter, self).__init__(parent)
-        qApp.installEventFilter(self)
+        self.sender = sender
+        self.sender.installEventFilter(self)
+        self.identifier = identifier
 
     def eventFilter(self, obj, event):
-        if (event.type() == QEvent.KeyPress and hasattr(event, 'artificial')):
-            logging.info("artificial event")
-            return False
-        elif (event.type() == QEvent.KeyPress and not is_modifier(event.key())):
+        if (event.type() == QEvent.KeyPress and not
+            is_modifier(event.key())):
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
             key_code = event.key()
@@ -140,6 +140,6 @@ class EventFilter(QWidget):
                              key_string,
                              modifiers,
                              -1.0, -1.0, key_code,
-                             window.active())
+                             self.identifier)
             return True
         return False

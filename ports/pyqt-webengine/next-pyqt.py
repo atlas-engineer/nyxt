@@ -1,5 +1,5 @@
 import logging
-
+import sys
 import utility
 import buffers
 import window
@@ -125,15 +125,14 @@ class DBusWindow(dbus.service.Object):
 
 
 def main():
-    app = QApplication([])
+    app = QApplication(sys.argv)
     MainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
     # name/dbuswindow MUST be defined even if not used.
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
     dbuswindow = DBusWindow(session_bus)  # noqa: F841
-    event_filter = utility.EventFilter()  # noqa: F841
     print("Listening...")
-    app.exec_()
+    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
