@@ -10,6 +10,7 @@ try:
     from dbus.mainloop.pyqt5 import DBusQtMainLoop as MainLoop
 except ImportError:
     from dbus.mainloop.glib import DBusGMainLoop as MainLoop
+from PyQt5.QtNetwork import QNetworkProxy, QNetworkProxyFactory
 from PyQt5.QtWidgets import QApplication
 
 logging.basicConfig(level=logging.INFO)
@@ -103,6 +104,30 @@ class DBusWindow(dbus.service.Object):
     def minibuffer_evaluate_javascript(self, window_id, script):
         _window = window.get_window(window_id)
         return _window.minibuffer_evaluate_javascript(script)
+
+    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='asssas', out_signature='b')
+    def set_proxy(self, buffer_ids, mode, address, whitelist):
+        """
+        Set the proxy for the current application.
+
+        TODO: set it for the given buffers.
+        TODO: handle whitelist.
+
+        https://doc.qt.io/qt-5.9/qtwebengine-overview.html#proxy-support
+        """
+        # proxy = QNetworkProxy()
+        # proxy.setType(QNetworkProxy.Socks5Proxy)
+        # proxy.setHostName(address)
+        # XXX: address is 'socks5://127.0.0.1:9050'. The port should be separate.
+        # QNetworkProxy.setApplicationProxy(proxy)
+        # logging.info("proxy set to address '{}'.".format(address))
+
+        QNetworkProxyFactory.usesSystemConfiguration()
+        logging.info("The proxy uses the system's configuration now.")
+
+    @dbus.service.method(PLATFORM_PORT_NAME, out_signature='s')
+    def get_proxy(self):
+        QNetworkProxy.hostName(QNetworkProxy.applicationProxy())
 
     @dbus.service.method(PLATFORM_PORT_NAME, in_signature='siasidd')
     def generate_input_event(self, window_id, key_code, modifiers, low_level_data, x, y):

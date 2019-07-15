@@ -22,6 +22,11 @@ or
 
 https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtwebenginewidgets/qwebengineview.html
 
+** Proxy
+
+The command =proxy-mode= enables the system-wide proxy configuration.
+
+
 * Troubleshooting
 
 #+BEGIN_SRC text
