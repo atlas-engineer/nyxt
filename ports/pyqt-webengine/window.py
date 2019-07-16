@@ -2,7 +2,6 @@ import logging
 
 import buffers
 import minibuffer
-import utility
 
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
 
@@ -44,7 +43,6 @@ class Window(QWidget):
         self.buffer = buffers.Buffer()
         self.minibuffer = minibuffer.Minibuffer(identifier)
         self.minibuffer.set_height(self.minibuffer_height)
-        self.event_filter = utility.EventFilter(self, self.identifier)
 
         self.layout.addWidget(self.buffer)
         self.layout.addWidget(self.minibuffer)

@@ -113,40 +113,46 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     - x, y: float
     """
     modifiers_flag = create_modifiers_flag(modifiers)
-    logging.info("generate input, window: {} code: {}, modifiers {}".format(
-        window_id, key_code, modifiers))
-    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag, text="-1")
+    logging.info("generate input, window: {} code: {}, modifiers {}, low_level_data {}".format(
+        window_id, key_code, modifiers, low_level_data))
+    #  Scan Code set to very high value not in system to distinguish
+    #  it as an artifical key press, this avoids infinite propagation
+    #  of key presses when it is caught by the event filter
+    text = None
+    if (low_level_data not in SPECIAL_KEYS):
+        text = chr(low_level_data)
+    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag,
+                      10000, 10000, 10000, text=text)
     receiver = window.get_window(window_id).buffer.focusProxy()
     QCoreApplication.sendEvent(receiver, event)
 
 
 class EventFilter(QWidget):
-    def __init__(self, sender, identifier, parent=None):
+    def __init__(self, sender, parent=None):
         super(EventFilter, self).__init__(parent)
         self.sender = sender
         self.sender.installEventFilter(self)
-        self.identifier = identifier
 
     def eventFilter(self, obj, event):
         if (event.type() == QEvent.KeyPress and not
-            is_modifier(event.key()) and not
-            event.text() == "-1"):
+            is_modifier(event.key()) and
+                event.nativeScanCode() != 10000):
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
             key_code = event.key()
-            logging.info("send code: {} string: {} modifiers {}".format(
-                key_code, key_string, modifiers))
+            low_level_data = 0
+            try:
+                low_level_data = ord(key_string)
+            except TypeError:
+                low_level_data = key_code
+            except ValueError:
+                low_level_data = key_code
+            logging.info("send code: {} string: {} modifiers: {} low_level_data: {}".format(
+                key_code, key_string, modifiers, low_level_data))
             push_input_event(key_code,
                              key_string,
                              modifiers,
-                             -1.0, -1.0, key_code,
-                             self.identifier)
-            return True
-        elif (event.type() == QEvent.KeyPress and
-              event.text() == "-1"):
-            # If we made it to here, an event was sent to the webview
-            # but was not consumed, and bubbled up to self.sender (the
-            # Qt window), to avoid infinite propagation, don't keep
-            # sending the event, say that we handled it
+                             -1.0, -1.0, low_level_data,
+                             window.active())
             return True
         return False
