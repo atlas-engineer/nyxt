@@ -132,7 +132,7 @@ def main():
     name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
     dbuswindow = DBusWindow(session_bus)  # noqa: F841
     event_filter = utility.EventFilter(app)  # noqa: F841
-    print("Listening...")
+    logging.info("Listening...")
     sys.exit(app.exec_())
 
 
