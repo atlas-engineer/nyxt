@@ -135,5 +135,9 @@ request with your new extension appended to EXTENSION.org.
 For full documentation about Next, how it works, and how to extend it
 please see the [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org][user manual]].
 
+If you want to help with development or build Next from scratch, read
+the developer's documentation at [[https://github.com/atlas-engineer/next/blob/master/documents/README.org][documents/README.org]].
+
+
 ** History of changes
 Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].
