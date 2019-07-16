@@ -314,7 +314,7 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 
 	// event->string is deprecated but it's very much what we want.
 	gchar *keyval_string = event->string;
-	if (event->state & GDK_CONTROL_MASK &&
+	if ((event->state & GDK_CONTROL_MASK) &&
 		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
 		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
 		// The control modifier turns the A-Za-z event->string into ASCII control
@@ -472,6 +472,11 @@ Window *window_init() {
 	gtk_box_pack_end(GTK_BOX(mainbox), GTK_WIDGET(bottombox), FALSE, FALSE, 0);
 
 	Window *window = calloc(1, sizeof (Window));
+	if (window == NULL) {
+		g_error("Failed to allocate window");
+		exit(1);
+	}
+
 	// Create an 800x600 window that will contain the browser instance
 	window->base = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window->base), 800, 600);
