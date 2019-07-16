@@ -29,7 +29,11 @@ SPECIAL_KEYS = {
     Qt.Key_Return: "RETURN",
     Qt.Key_Enter: "RETURN",
     Qt.Key_Space: "SPACE",
-    Qt.Key_Tab: "TAB"
+    Qt.Key_Tab: "TAB",
+    Qt.Key_Left: "Left",
+    Qt.Key_Right: "Right",
+    Qt.Key_Up: "Up",
+    Qt.Key_Down: "Down"
 }
 
 # Used for bitmasking to determine modifiers
