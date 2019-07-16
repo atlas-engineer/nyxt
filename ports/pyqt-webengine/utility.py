@@ -84,9 +84,12 @@ def create_key_string(event):
     if event.key() in SPECIAL_KEYS:
         text = SPECIAL_KEYS.get(event.key())
     elif event.text():
-        text = event.text()
-    else:
-        text = QKeySequence(event.key()).toString().lower()
+        try:
+            # In case of C-a, text() is "^A", a non-printable character, not what we want.
+            text = chr(key_code).lower()  # ascii -> string.
+        except Exception:
+            # Watch out arrow keys.
+            text = QKeySequence(event.key()).toString().lower()
     return text
 
 
