@@ -22,7 +22,12 @@ static void on_name_lost(GDBusConnection *_connection,
 }
 
 int main(int argc, char *argv[]) {
+	// It's safer to initialize GTK before the server is started.  In particular,
+	// without it the program would crash if hardware acceleration is disabled
+	// (e.g. with the WEBKIT_DISABLE_COMPOSITING_MODE=1 environment variable).
+	gtk_init(NULL, NULL);
 	// TODO: Use GtkApplication?
+
 	guint owner_id = g_bus_own_name(G_BUS_TYPE_SESSION,
 			PLATFORM_PORT_NAME,
 			G_BUS_NAME_OWNER_FLAGS_NONE,
