@@ -1,5 +1,6 @@
 import logging
 from sys import platform
+import re
 
 import window
 from core_interface import push_input_event
@@ -83,14 +84,15 @@ def create_key_string(event):
     text = ""
     if event.key() in SPECIAL_KEYS:
         text = SPECIAL_KEYS.get(event.key())
-    elif event.text():
-        try:
-            # In case of C-a, text() is "^A", a non-printable character, not what we want.
-            text = chr(key_code).lower()  # ascii -> string.
-        except Exception:
-            # Watch out arrow keys.
-            text = QKeySequence(event.key()).toString().lower()
+    elif event.text() and not is_control_sequence(event.text()):
+        text = event.text()
+    else:
+        text = QKeySequence(event.key()).toString().lower()
     return text
+
+
+def is_control_sequence(s):
+    return re.match("/(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]/", s)
 
 
 def create_modifiers_flag(modifiers):
