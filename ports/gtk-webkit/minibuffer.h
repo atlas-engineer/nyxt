@@ -29,6 +29,10 @@ gboolean minibuffer_web_view_web_process_crashed(WebKitWebView *_web_view,
 
 Minibuffer *minibuffer_init() {
 	Minibuffer *minibuffer = calloc(1, sizeof (Minibuffer));
+	if (minibuffer == NULL) {
+		g_error("Failed to allocate minibuffer");
+		exit(1);
+	}
 	minibuffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 	minibuffer->callback_count = 0;
 
