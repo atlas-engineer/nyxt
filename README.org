@@ -117,7 +117,8 @@ The symbols represent modifiers:
 
 The following keys exist as special keys:
 
-~BACKSPACE~, ~DELETE~, ~ESCAPE~ , ~HYPHEN~, ~RETURN~, ~SPACE~, ~TAB~
+~BACKSPACE~, ~DELETE~, ~ESCAPE~ , ~HYPHEN~, ~RETURN~, ~SPACE~, ~TAB~,
+~Left~, ~Right~, ~Up~, ~Down~
 
 ** Customize and Extend Next
 Customization is possible through the creation of a
@@ -137,7 +138,6 @@ please see the [[https://github.com/atlas-engineer/next/blob/master/documents/MA
 
 If you want to help with development or build Next from scratch, read
 the developer's documentation at [[https://github.com/atlas-engineer/next/blob/master/documents/README.org][documents/README.org]].
-
 
 ** History of changes
 Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].
