@@ -55,7 +55,7 @@ class Window(QWidget):
         Set the title of the window.
         """
         self.setWindowTitle(title)
-        logging.info("Title set for window {} !".format(self.identifier))
+        logging.info("title set for window {}".format(self.identifier))
         return title
 
     def set_active_buffer(self, buffer):
