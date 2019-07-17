@@ -332,10 +332,12 @@ For an array of string, that would be \"as\"."
   "Set current window title to 'Next - TITLE - URL."
   (let ((url (name buffer)))
     (with-result* ((title (buffer-get-title)))
-      (setf title (if (str:emptyp title) "<untitled>" title))
+      (setf title (if (str:emptyp title) "" title))
       (setf url (if (str:emptyp url) "<no url/name>" url))
       (rpc-window-set-title interface window
-                            (concatenate 'string "Next - " title " - " url)))))
+                            (concatenate 'string "Next - "
+                                         title (unless (str:emptyp title) " - ")
+                                         url)))))
 
 (defmethod window-set-active-buffer ((interface remote-interface)
                                      (window window)
