@@ -28,10 +28,18 @@ class Buffer(QWebEngineView):
 
     def __init__(self, identifier=None, parent=None):
         super(Buffer, self).__init__(parent)
-        self.identifier = identifier
+        self.identifier = str(identifier)
         page = self.page()
         profile = page.profile()
+        # listen for page loading
+        self.loadStarted.connect(self.did_commit_navigation)
         profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
+
+    def did_commit_navigation(self):
+        core_interface.buffer_did_commit_navigation(self.identifier, str(self.url))
+
+    def did_finish_navigation(self):
+        logging.info("Finish Navigation")
 
     def evaluate_javascript(self, script):
         """
@@ -51,7 +59,7 @@ class Buffer(QWebEngineView):
     def javascript_callback(self, res, callback_id):
         if res is None:
             return
-        core_interface.buffer_javascript_call_back(str(self.identifier), res, callback_id)
+        core_interface.buffer_javascript_call_back(self.identifier, res, callback_id)
 
     def set_height(self, height):
         self.setFixedHeight(height)
