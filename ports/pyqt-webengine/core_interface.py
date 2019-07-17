@@ -95,4 +95,9 @@ def buffer_did_finish_navigation(identifier, url):
 
 
 def minibuffer_javascript_call_back(window_identifier, response, callback_id):
-    pass
+    proxy = get_core_dbus_proxy()
+    proxy.minibuffer_javascript_call_back(window_identifier, response, callback_id,
+                                          dbus_interface=CORE_INTERFACE,
+                                          # Use handlers to make the call asynchronous.
+                                          reply_handler=handle_reply,
+                                          error_handler=handle_error)
