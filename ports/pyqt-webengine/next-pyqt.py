@@ -4,7 +4,8 @@ from urllib.parse import urlparse
 
 import dbus
 import dbus.service
-from PyQt5.QtNetwork import QNetworkProxy, QNetworkProxyFactory
+from PyQt5.QtNetwork import QNetworkProxy
+# from PyQt5.QtNetwork import QNetworkProxyFactory
 from PyQt5.QtWidgets import QApplication
 
 import buffers
