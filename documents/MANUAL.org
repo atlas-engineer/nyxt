@@ -11,7 +11,7 @@ end-user allowing for infinite customization.
   - [[#searching-via-search-engine][Searching via search engine]]
   - [[#jumping-to-headings][Jumping to Headings]]
   - [[#input-minibuffer][Input (Minibuffer)]]
-  - [[#tabs-buffers][Tabs (Buffers)]]
+  - [[#buffers-tabs][Buffers ("tabs")]]
   - [[#searching][Searching]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
@@ -20,12 +20,15 @@ end-user allowing for infinite customization.
 - [[#advanced-topics][Advanced Topics]]
   - [[#execute-extended-command][Execute Extended Command]]
   - [[#help][Help]]
-  - [[#slime-with-a-compiled-version-of-next][Slime with a compiled version of Next]]
+  - [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
   - [[#loading-files][Loading Files]]
   - [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
   - [[#getting-input-from-the-user][Getting input from the user]]
+  - [[#network-resource-dispatch-including-ad-blocking][Network resource dispatch (including ad-blocking)]]
+  - [[#styles][Styles]]
+  - [[#proxy][Proxy]]
 
 * Basics
 ** Navigation

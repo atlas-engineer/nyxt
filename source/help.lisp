@@ -108,6 +108,43 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
       (rpc-buffer-evaluate-javascript *interface* result-buffer insert-results)
       (set-active-buffer *interface* result-buffer))))
 
+(define-command help ()
+  "Print some help."
+  (let* ((help-buffer (make-buffer
+                       :name "HELP"
+                       :default-modes (cons 'help-mode
+                                            (get-default 'buffer 'default-modes))))
+         (help-contents
+" <h2 id=\"quickstart-keys\">Quickstart Keys</h2>
+<ul>
+<li><code>C-l</code>: Load URL in tab</li>
+<li><code>M-l</code>: Load URL in a new tab</li>
+<li><code>C-x b, C-x left/right</code>: Switch tab</li>
+<li><code>C-b</code>: Backwards history</li>
+<li><code>C-f</code>: Forwards history</li>
+<li><code>C-g</code>: Follow link in the current buffer. <code>M-g</code>: follow in a new buffer.</li>
+<li><code>C-x C-c</code>: Quit</li>
+<li><code>M-x</code>: Run a command by name</li>
+</ul>
+<p>The following keys exist as special keys:</p>
+<ul>
+<li><code>C</code>: Control Key</li>
+<li><code>S</code>: Super (Windows key, Command Key)</li>
+<li><code>M</code>: Meta (Alt key, Option Key)</li>
+</ul>
+<h2 id=\"customize-and-extend-next\">Customize and Extend Next</h2>
+<p>Customization is possible through the creation of a <code>~/.config/next/init.lisp</code> file. From here you can override and redefine any of the functions by defining your init file as part of the <code>:next</code> package. For more information please see:</p>
+<a href=\"https://next.atlas.engineer/documentation#customization\">customizing Next</a>.
+
+<h2 id=\"documentation\">Documentation</h2>
+<p>For full documentation about Next, how it works, and how to extend it please see the</p>
+<a href=\"https://next.atlas.engineer/documentation\">user manual</a>.
+")
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+      (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
+      (set-active-buffer *interface* help-buffer)))
+
 (define-command next-version ()
   "Version number of this version of Next.
 The version number is stored in the clipboard."
