@@ -88,15 +88,11 @@ def create_key_string(event):
         text = SPECIAL_KEYS.get(event.key())
     else:
         if is_control_sequence(event.text()):
-            # mac only.
             text = QKeySequence(event.key()).toString().lower()
         else:
-            # this in turn doesn't work on mac.
             try:
-                # In case of C-a, text() is "^A", a non-printable character, not what we want.
-                text = chr(key_code).lower()  # ascii -> string.
+                text = chr(event.key()).lower()
             except Exception:
-                # Watch out arrow keys.
                 text = QKeySequence(event.key()).toString().lower()
 
     return text
