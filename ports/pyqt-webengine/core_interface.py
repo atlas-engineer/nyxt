@@ -1,7 +1,7 @@
 import dbus
 
 """
-Call dbus methods asynchronously on the lisp core side.
+Call dbus methods asynchronously on the Lisp core side.
 """
 
 #
@@ -110,3 +110,9 @@ def window_will_close(window_identifier):
                             # Use handlers to make the call asynchronous.
                             reply_handler=handle_reply,
                             error_handler=handle_error)
+
+
+def request_resource(buffer_identifier, url,
+                     cookies, event_type, is_new_window,
+                     is_known_type, mouse_button, modifiers):
+    pass
