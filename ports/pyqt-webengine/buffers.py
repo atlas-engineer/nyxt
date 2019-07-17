@@ -33,13 +33,21 @@ class Buffer(QWebEngineView):
         profile = page.profile()
         # listen for page loading
         self.loadStarted.connect(self.did_commit_navigation)
+        self.loadFinished.connect(self.did_finish_navigation)
         profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
 
     def did_commit_navigation(self):
+        """Invoked whenever the webview starts navigation.
+        """
         core_interface.buffer_did_commit_navigation(self.identifier, str(self.url))
 
-    def did_finish_navigation(self):
-        logging.info("Finish Navigation")
+    def did_finish_navigation(self, status):
+        """Invoked whenever the webview finishes navigation.
+
+        :param status: From documentation: Will indicate whether the
+        load was successful or an error occurred.
+        """
+        core_interface.buffer_did_finish_navigation(self.identifier, str(self.url))
 
     def evaluate_javascript(self, script):
         """
