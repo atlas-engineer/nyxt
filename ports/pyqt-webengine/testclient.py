@@ -1,8 +1,9 @@
 import random
-import dbus
 import sys
-
 from traceback import print_exc
+
+import dbus
+
 
 """
 Simple code to send dbus signals to the running server.

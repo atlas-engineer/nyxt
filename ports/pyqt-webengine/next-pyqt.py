@@ -1,18 +1,20 @@
 import logging
 import sys
-import utility
-import buffers
-import window
+from urllib.parse import urlparse
 
 import dbus
 import dbus.service
+from PyQt5.QtNetwork import QNetworkProxy, QNetworkProxyFactory
+from PyQt5.QtWidgets import QApplication
+
+import buffers
+import utility
+import window
+
 try:
     from dbus.mainloop.pyqt5 import DBusQtMainLoop as MainLoop
 except ImportError:
     from dbus.mainloop.glib import DBusGMainLoop as MainLoop
-from PyQt5.QtNetwork import QNetworkProxy, QNetworkProxyFactory
-from PyQt5.QtWidgets import QApplication
-from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,10 +1,9 @@
 import logging
 
-import buffers
-import minibuffer
-
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
 
+import buffers
+import minibuffer
 
 #: A dictionary of current windows mapping an identifier (str) to a window (Window).
 WINDOWS = {}

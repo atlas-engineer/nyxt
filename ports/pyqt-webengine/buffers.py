@@ -1,9 +1,9 @@
 import logging
 
-import core_interface
-
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineView
+
+import core_interface
 
 #: A dictionary of current buffers mapping an identifier (str) to a
 #  buffer (Buffer).

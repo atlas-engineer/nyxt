@@ -1,4 +1,5 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+
 import core_interface
 
 

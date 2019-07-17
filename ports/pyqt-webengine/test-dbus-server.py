@@ -1,10 +1,9 @@
 # https://wiki.qt.io/Qt_for_Python_DBusIntegration
 
-from PyQt5.QtWidgets import QApplication
-from dbus.mainloop.pyqt5 import DBusQtMainLoop
-
 import dbus
 import dbus.service
+from dbus.mainloop.pyqt5 import DBusQtMainLoop
+from PyQt5.QtWidgets import QApplication
 
 
 class TestObject(dbus.service.Object):

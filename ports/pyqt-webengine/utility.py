@@ -1,13 +1,13 @@
 import logging
-from sys import platform
 import re
+from sys import platform
+
+from PyQt5.QtCore import QCoreApplication, QEvent, Qt
+from PyQt5.QtGui import QKeyEvent, QKeySequence
+from PyQt5.QtWidgets import QWidget
 
 import window
 from core_interface import push_input_event
-
-from PyQt5.QtCore import QEvent, Qt, QCoreApplication
-from PyQt5.QtGui import QKeyEvent, QKeySequence
-from PyQt5.QtWidgets import QWidget
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
