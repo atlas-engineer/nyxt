@@ -5,6 +5,8 @@
 (define-mode proxy-mode ()
     "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."
+    ;TODO: for the PyQt side, we now want the protocol, the IP and the
+    ;port on different slots.
     ((server-address :accessor server-address :initarg :server-address
                      :initform "socks5://127.0.0.1:9050"
                      :documentation "The address of the proxy server.

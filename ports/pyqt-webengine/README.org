@@ -24,7 +24,8 @@ https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtwebenginewidgets/qweb
 
 ** Proxy
 
-The command =proxy-mode= enables the system-wide proxy configuration.
+The  command =proxy-mode=  currently sets  the proxy  for all  buffers
+(whereas the Gtk platform port works buffer-wise).
 
 
 * Troubleshooting

@@ -31,10 +31,11 @@ class Buffer(QWebEngineView):
         self.identifier = str(identifier)
         page = self.page()
         profile = page.profile()
+        profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
+
         # listen for page loading
         self.loadStarted.connect(self.did_commit_navigation)
         self.loadFinished.connect(self.did_finish_navigation)
-        profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
 
     def did_commit_navigation(self):
         """Invoked whenever the webview starts navigation.
