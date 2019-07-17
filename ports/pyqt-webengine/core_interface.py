@@ -101,3 +101,12 @@ def minibuffer_javascript_call_back(window_identifier, response, callback_id):
                                           # Use handlers to make the call asynchronous.
                                           reply_handler=handle_reply,
                                           error_handler=handle_error)
+
+
+def window_will_close(window_identifier):
+    proxy = get_core_dbus_proxy()
+    proxy.window_will_close(window_identifier,
+                            dbus_interface=CORE_INTERFACE,
+                            # Use handlers to make the call asynchronous.
+                            reply_handler=handle_reply,
+                            error_handler=handle_error)

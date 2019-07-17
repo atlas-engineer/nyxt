@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
 
 import buffers
 import minibuffer
+import core_interface
 
 #: A dictionary of current windows mapping an identifier (str) to a window (Window).
 WINDOWS = {}
@@ -48,6 +49,10 @@ class Window(QWidget):
         self.setLayout(self.layout)
         self.resize(1024, 768)
         self.show()
+
+    def closeEvent(self, event):
+        core_interface.window_will_close(self.identifier)
+        event.accept()
 
     def set_title(self, title):
         """
