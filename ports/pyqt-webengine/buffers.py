@@ -44,7 +44,8 @@ class Buffer(QWebEngineView):
     def did_commit_navigation(self):
         """Invoked whenever the webview starts navigation.
         """
-        core_interface.buffer_did_commit_navigation(self.identifier, str(self.url))
+        url = self.url().url()
+        core_interface.buffer_did_commit_navigation(self.identifier, str(url))
 
     def did_finish_navigation(self, status):
         """Invoked whenever the webview finishes navigation.
@@ -52,7 +53,8 @@ class Buffer(QWebEngineView):
         :param status: From documentation: Will indicate whether the
         load was successful or an error occurred.
         """
-        core_interface.buffer_did_finish_navigation(self.identifier, str(self.url))
+        url = self.url().url()
+        core_interface.buffer_did_finish_navigation(self.identifier, str(url))
 
     def evaluate_javascript(self, script):
         """
