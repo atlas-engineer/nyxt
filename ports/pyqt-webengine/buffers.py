@@ -1,4 +1,5 @@
 import logging
+import utility
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineView
@@ -31,6 +32,9 @@ class Buffer(QWebEngineView):
         self.identifier = str(identifier)
         page = self.page()
         profile = page.profile()
+        # assign interceptor to avoid garbage collection
+        self.interceptor = utility.WebEngineUrlRequestInterceptor()
+        profile.setRequestInterceptor(self.interceptor)
         profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
 
         # listen for page loading

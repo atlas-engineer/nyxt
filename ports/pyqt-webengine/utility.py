@@ -2,6 +2,7 @@ import logging
 import re
 from sys import platform
 
+from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineUrlRequestInfo
 from PyQt5.QtCore import QCoreApplication, QEvent, Qt
 from PyQt5.QtGui import QKeyEvent, QKeySequence
 from PyQt5.QtWidgets import QWidget
@@ -169,3 +170,9 @@ class EventFilter(QWidget):
                              window.active())
             return True
         return False
+
+
+class WebEngineUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
+    def interceptRequest(self, info):
+        url = info.requestUrl().url()
+        logging.info("Request {}".format(url))
