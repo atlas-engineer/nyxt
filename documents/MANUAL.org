@@ -29,6 +29,7 @@ end-user allowing for infinite customization.
   - [[#getting-input-from-the-user][Getting input from the user]]
   - [[#network-resource-dispatch-including-ad-blocking][Network resource dispatch (including ad-blocking)]]
   - [[#styles][Styles]]
+  - [[#proxy][Proxy]]
 
 * Basics
 ** Navigation
