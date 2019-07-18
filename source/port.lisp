@@ -84,8 +84,10 @@ This is an acceptable value for the PATH slot of the PORT class."
                                :error-output :output))))
 
 (defmethod kill-program ((port port))
-  (uiop:run-program
-   (list "kill" "-15"
-         (write-to-string
-          (uiop/launch-program:process-info-pid
-           (running-process port))))))
+  (if (uiop:process-alive-p (running-process port))
+      (uiop:run-program
+       (list "kill" "-15"
+             (write-to-string
+              (uiop/launch-program:process-info-pid
+               (running-process port)))))
+      (format *error-output* "process ~a is not running.~&" (running-process port))))
