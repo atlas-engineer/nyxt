@@ -5,8 +5,9 @@ for the Next browser.
 
 * Requirements
 
-+ Python 3.4+
++ Python 3.6+
 + PyQt5
++ PyQt5 Web Engine
 
 * Developer Installation
 
