@@ -396,7 +396,7 @@ The default keybindings for ~vi-normal-mode~ are:
 "]": switch-buffer-next
 "g b": switch-buffer
 "d": delete-buffer
-"D": delete-active-buffer
+"D": delete-current-buffer
 "B": make-visible-new-buffer
 "o": set-url-current-buffer
 "O": set-url-new-buffer
