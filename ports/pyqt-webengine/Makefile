@@ -1,14 +1,15 @@
+PYTHON ?= python
+PIP ?= pip
+
 
 install:
-	pip3 install -r requirements.txt
+	$(PIP) install -r requirements.txt
 
 run:
-	python3 next-pyqt.py
+	$(PYTHON) next-pyqt.py
 
 isort:
-	# sort imports, one per line.
 	isort -y --atomic
-
 
 qa:
 	flake8 *.py
