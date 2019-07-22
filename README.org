@@ -11,11 +11,6 @@ few of them are demonstrated below.
 *Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
 instabilities or feature wishes.
 
-*Security warning for macOS users:* The Cocoa webkit platform port has been
-dropped. It's currently not possible to build it without exposing Next to a
-remote-execution vulnerability.  We recommend macOS users to wait for the next
-release which will feature a new platform port.
-
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
