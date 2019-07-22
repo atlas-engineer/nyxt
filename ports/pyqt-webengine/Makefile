@@ -13,3 +13,7 @@ isort:
 
 qa:
 	flake8 *.py
+
+clean:
+	rm -rf build
+	rm -rf dist
