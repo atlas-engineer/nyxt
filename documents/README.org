@@ -34,12 +34,6 @@ configuration set in your =.swank.lisp=.
 You can obtain SBCL either from your package manager or by downloading
 it directly from the SBCL repository.
 
-To install SBCL via Macports:
-- =port install sbcl=
-
-To install SBCL via Homebrew:
-- =brew install sbcl=
-
 To install SBCL from source, Download SBCL:
 [[http://www.sbcl.org/platform-table.html]], full installation
 instructions can be found here: [[http://www.sbcl.org/getting.html]].
