@@ -112,7 +112,17 @@ def window_will_close(window_identifier):
                             error_handler=handle_error)
 
 
+def handle_request_resource(handle_p):
+    return handle_p
+
 def request_resource(buffer_identifier, url,
                      cookies, event_type, is_new_window,
                      is_known_type, mouse_button, modifiers):
-    pass
+    proxy = get_core_dbus_proxy()
+    proxy.request_resource(buffer_identifier, url,
+                           cookies, event_type, is_new_window,
+                           is_known_type, mouse_button, modifiers,
+                           # Use handlers to make the call asynchronous.
+                           dbus_interface=CORE_INTERFACE,
+                           reply_handler=handle_request_resource,
+                           error_handler=handle_error)

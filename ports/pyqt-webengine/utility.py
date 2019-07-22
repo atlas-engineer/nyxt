@@ -8,7 +8,7 @@ from PyQt5.QtGui import QKeyEvent, QKeySequence
 from PyQt5.QtWidgets import QWidget
 
 import window
-from core_interface import push_input_event
+from core_interface import push_input_event, request_resource
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
@@ -173,6 +173,27 @@ class EventFilter(QWidget):
 
 
 class WebEngineUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
+
+    # Buffer identifier (string).
+    identifier = "-1"
+
+    def __init__(self, identifier, *args, **kwargs):
+        super(WebEngineUrlRequestInterceptor, self).__init__()
+        self.identifier = identifier
+
     def interceptRequest(self, info):
         url = info.requestUrl().url()
+        cookies = ""
+        event_type = ""
+        is_new_window = False
+        is_known_type = True  # if False, download the file.
+        mouse_button = ""
+        modifiers = [""]
         logging.info("Request {}".format(url))
+        request_resource(self.identifier, url,
+                         cookies,
+                         event_type,
+                         is_new_window,
+                         is_known_type,
+                         mouse_button,
+                         modifiers)

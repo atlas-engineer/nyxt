@@ -33,7 +33,7 @@ class Buffer(QWebEngineView):
         page = self.page()
         profile = page.profile()
         # assign interceptor to avoid garbage collection
-        self.interceptor = utility.WebEngineUrlRequestInterceptor()
+        self.interceptor = utility.WebEngineUrlRequestInterceptor(self.identifier)
         profile.setRequestInterceptor(self.interceptor)
         profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
 

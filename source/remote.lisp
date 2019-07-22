@@ -625,15 +625,19 @@ Deal with URL with the following rules:
   ;; https://stackoverflow.com/questions/578290/common-lisp-equivalent-to-c-enums#
   (log:debug "Request resource ~s with mouse ~s, modifiers ~a" url mouse-button modifiers)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
-    (funcall (resource-query-function buffer)
-             buffer
-             :url url
-             :cookies cookies
-             :event-type event-type
-             :is-new-window is-new-window
-             :is-known-type is-known-type
-             :mouse-button mouse-button
-             :modifiers modifiers)))
+    (if buffer
+        (funcall (resource-query-function buffer)
+                 buffer
+                 :url url
+                 :cookies cookies
+                 :event-type event-type
+                 :is-new-window is-new-window
+                 :is-known-type is-known-type
+                 :mouse-button mouse-button
+                 :modifiers modifiers)
+        (progn
+          (log:debug "no buffer of id '~a'~&" buffer-id)
+          t))))
 
 
 ;; Convenience methods and functions for users of the API.
