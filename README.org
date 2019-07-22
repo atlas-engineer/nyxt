@@ -72,29 +72,13 @@ to install Guix on your system and use it to install Next.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
-*** D-Bus requirement
+*** D-Bus Requirement
 
 Since 1.3.0, Next needs a D-Bus session bus to run.
 In most cases, it should already be running.
 
 If Next does not start up, it is very likely that D-Bus is not running
-for your user.  You can start D-Bus manually manually with the
-following shell command:
-
-#+begin_src sh
-$ dbus-launch
-#+end_src
-
-To enable D-Bus on login, you need to wrap your window manager executable with
-~dbus-launch~ in your X initialization file (e.g. =~/.xinitrc=).  For instance,
-to start Stumpwm:
-
-#+begin_src sh
-# <Your user settings here>
-#
-# Nothing will be executed after `exec'.
-exec dbus-launch --exit-with-session stumpwm &
-#+end_src
+for your user.
 
 ** Quickstart Keys
 - ~C-l~:     Load URL in tab
