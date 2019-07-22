@@ -1,5 +1,2 @@
-# version 5.12 doesn't ship the web engine by default.
-# 5.10 did.
-pyqt5==5.12.2  # 61MB = without a web engine!
-PyQtWebEngine  # the missing web engine. 61MB.
-dbus-python
+pyqt5==5.12.2
+PyQtWebEngine
