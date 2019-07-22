@@ -431,7 +431,7 @@ interpreted by `format'. "
                         (:head (:style style))
                         (:body
                          (:p (apply #'format nil args)))))))
-        (log:warn "Can't echo ~a without minibuffer or interface" args))))
+        (log:warn "Can't echo '~a' without minibuffer or interface" (apply #'format nil args)))))
 
 (defmethod echo-dismiss ((minibuffer minibuffer))
   (when (eql (display-mode minibuffer) :echo)
