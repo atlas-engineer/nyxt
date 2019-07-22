@@ -110,4 +110,4 @@ def active():
 
     """
     active_window = QApplication.activeWindow()
-    return active_window.identifier
+    return active_window.identifier if active_window else "-1"
