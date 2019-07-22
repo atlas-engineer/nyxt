@@ -1,40 +1,35 @@
-PyQt port for Next.
+* Next PyQtWebEngine Port
 
-* Dev installation
+This folder contains the source code for the PyQtWebEngine front-end
+for the Next browser.
 
-Create a Python3 virtual environment and activate it:
-: virtualenv --python=/usr/bin/python3  ~/.venvs/pyqtdbus
+* Requirements
+
++ Python 3.4+
++ PyQt5
+
+* Developer Installation
+
+Create a Python virtual environment and activate it:
+: virtualenv --python=/usr/bin/python  ~/.venvs/pyqtdbus
 : source ~/.venvs/pyqtdbus/bin/activate
 
 Install Python dependencies:
 
 : make install
 or
-: pip3 install -r requirements.txt
+: pip install -r requirements.txt
 
 Run:
 
 : make run
 or
-: python3 next-pyqt.py
-
+: python next-pyqt.py
 * Documentation
 
 https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtwebenginewidgets/qwebengineview.html
 
-** Proxy
+** Proxy Limitations
 
 The  command =proxy-mode=  currently sets  the proxy  for all  buffers
 (whereas the Gtk platform port works buffer-wise).
-
-
-* Troubleshooting
-
-#+BEGIN_SRC text
-dbus.exceptions.DBusException:
-org.freedesktop.DBus.Introspectable.Error.MissingHandler:      Missing
-method-call  handler   at  path   /engineer/atlas/next/core  interface
-org.freedesktop.DBus.Introspectable name Introspect
-#+END_SRC
-
-Don't forget =dbus_interface=CORE_INTERFACE= to dbus calls.
