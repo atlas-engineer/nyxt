@@ -43,6 +43,8 @@ provided.
 5. ~M->~: Jump to bottom of page
 6. ~M-<~: Jump to top of page
 
+_Note_:  Next also ships [[VI-style bindings][VI-style keybindings]].
+
 ** Zooming page
 Use the zoom keybindings to make everything on a web page larger or smaller.
 These keybindings mimic the Emacs counterpart:
@@ -157,10 +159,11 @@ The standard keybindings for buffer management are:
 1. ~C-x b~: Switch buffer
 2. ~C-x Left~: Switch to previous buffer
 3. ~C-x Right~: Switch to next buffer
-4. ~C-x k~: Kill buffer
-5. ~M-l~: Open URL in new buffer
-6. ~C-l~: Change URL of current buffer
-7. ~C-t~: Make new empty buffer
+4. ~C-x k~: Delete a buffer
+5. ~C-x w~: Delete the current buffer
+6. ~M-l~: Open URL in new buffer
+7. ~C-l~: Change URL of current buffer
+8. ~C-t~: Make new empty buffer
 
 *** Switching Tabs by Order
 In addition to switching tabs by selecting the current tab, you can
@@ -384,6 +387,28 @@ scrolls up.
 
 To go from /normal mode/ to /insert mode/, press =i=.
 To go from /insert mode/ to /normal mode/, press =ESCAPE=.
+
+The default keybindings for ~vi-normal-mode~ are:
+
+#+BEGIN_SRC conf
+"Z Z": kill
+"[": switch-buffer-previous
+"]": switch-buffer-next
+"g b": switch-buffer
+"d": delete-buffer
+"D": delete-active-buffer
+"B": make-visible-new-buffer
+"o": set-url-current-buffer
+"O": set-url-new-buffer
+"m u": bookmark-url
+"m d": bookmark-delete
+"C-o": load-file
+"C-h v": variable-inspect
+"C-h c": command-inspect
+"C-h s": start-swank
+":": execute-command
+"W": new-window
+#+END_SRC
 
 ** Loading Files
 To load a file again, or reload an init file use the function
