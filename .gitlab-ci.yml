@@ -1,0 +1,19 @@
+image: daewok/lisp-devel
+# We don't need a working quicklisp anymore,
+# Next's Makefile handles it, so we could use another image.
+
+# We can try to build this image locally with gitlab-runner
+# https://docs.gitlab.com/runner/install/linux-manually.html
+# Command:
+# gitlab-runner exec docker build
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - make next
+  artifacts:
+    paths:
+      - next

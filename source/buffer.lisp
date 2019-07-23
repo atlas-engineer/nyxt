@@ -47,7 +47,7 @@ See the `make-buffer' function for Lisp code."
                         :completion-function (buffer-completion-fn)))
     (rpc-buffer-delete *interface* buffer)))
 
-(define-command delete-active-buffer ()
+(define-command delete-current-buffer ()
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
