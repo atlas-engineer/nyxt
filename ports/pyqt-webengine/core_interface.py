@@ -45,11 +45,11 @@ def push_input_event(key_code, key_string, modifiers_list, x, y, low_level_data,
 
     :param key_code: integer describing the hardware key code
     :param key_string:
-    :param modifiers_list: list of modifier keys
-    :param x: mouse x coordinate
+    :param modifiers_list: list of modifier keys (list of strings)
+    :param x: mouse x coordinate (float)
     :param y: mouse y coordinate
-    :param low_level_data: any Qt specific event data
-    :param parent_identifier: the sender of the event
+    :param low_level_data: any Qt specific event data (str)
+    :param parent_identifier: the sender of the event (str)
     :returns: none
     :rtype: none
     """

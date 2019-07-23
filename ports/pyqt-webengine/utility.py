@@ -5,6 +5,9 @@ from sys import platform
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineUrlRequestInfo
 from PyQt5.QtCore import QCoreApplication, QEvent, Qt
 from PyQt5.QtGui import QKeyEvent, QKeySequence
+import window
+from core_interface import push_input_event
+
 from PyQt5.QtWidgets import QWidget
 
 import window
@@ -133,12 +136,20 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     #  it as an artifical key press, this avoids infinite propagation
     #  of key presses when it is caught by the event filter
     text = None
-    if (low_level_data not in SPECIAL_KEYS):
-        text = chr(low_level_data)
-    event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag,
-                      10000, 10000, 10000, text=text)
-    receiver = window.get_window(window_id).buffer.focusProxy()
-    QCoreApplication.sendEvent(receiver, event)
+
+    if x == -1:
+        # Key event.
+        if (low_level_data not in SPECIAL_KEYS):
+            text = chr(low_level_data)
+        event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag,
+                        10000, 10000, 10000, text=text)
+        receiver = window.get_window(window_id).buffer.focusProxy()
+        QCoreApplication.sendEvent(receiver, event)
+
+    else:
+        # TODO: Mouse event.
+        # mouse_event = QMouseEvent()
+        pass
 
 
 class EventFilter(QWidget):
@@ -169,6 +180,23 @@ class EventFilter(QWidget):
                              -1.0, -1.0, low_level_data,
                              window.active())
             return True
+
+        elif event.type() == QEvent.MouseButtonPress:
+            modifiers = create_modifiers_list(event.modifiers())
+            low_level_data = 0
+            button = "button" + str(event.button())
+            logging.info("send button press: {}".format(button))
+            push_input_event(0,
+                             button,
+                             modifiers,
+                             # relative to the widget that receives the event.
+                             # see also globalPos().
+                             float(event.x()),
+                             float(event.y()),
+                             low_level_data,
+                             window.active())
+            return True
+
         return False
 
 
