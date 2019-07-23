@@ -3,8 +3,8 @@ import re
 from sys import platform
 
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineUrlRequestInfo
-from PyQt5.QtCore import QCoreApplication, QEvent, Qt
-from PyQt5.QtGui import QKeyEvent, QKeySequence
+from PyQt5.QtCore import QCoreApplication, QEvent, Qt, QPoint
+from PyQt5.QtGui import QKeyEvent, QKeySequence, QMouseEvent
 import window
 from core_interface import push_input_event
 
@@ -149,7 +149,13 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
     else:
         # TODO: Mouse event.
         # mouse_event = QMouseEvent()
-        pass
+        point = QPoint(x, y)
+        button = Qt.LeftButton
+        event = QMouseEvent(QEvent.MouseButtonPress, point, button, button, modifiers_flag)
+        event.is_generated = True
+        receiver = window.get_window(window_id).buffer.focusProxy()
+        logging.info("generate button event: button{}, modifiers {}".format(button, modifiers))
+        QCoreApplication.sendEvent(receiver, event)
 
 
 class EventFilter(QWidget):
@@ -181,7 +187,8 @@ class EventFilter(QWidget):
                              window.active())
             return True
 
-        elif event.type() == QEvent.MouseButtonPress:
+        elif event.type() == QEvent.MouseButtonPress and \
+             (hasattr(event, "is_generated") and not event.is_generated):
             modifiers = create_modifiers_list(event.modifiers())
             low_level_data = 0
             button = "button" + str(event.button())
