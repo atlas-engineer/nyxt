@@ -10,10 +10,23 @@ image: daewok/lisp-devel
 stages:
   - build
 
-build:
+build-core:
   stage: build
   script:
     - make next
   artifacts:
     paths:
       - next
+
+build-gtk-webkit:
+  stage: build
+  script:
+    - apt update
+    - apt install -qy libwebkit2gtk-4.0-dev
+    - make gtk-webkit
+  artifacts:
+    # binary for Debian Jessie. The user still needs to install libwebkit2gtk-4.0-dev.
+    # see shinmera/deploy.
+    paths:
+      - next
+      - ports/gtk-webkit/next-gtk-webkit
