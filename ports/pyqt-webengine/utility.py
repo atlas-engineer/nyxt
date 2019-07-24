@@ -222,6 +222,8 @@ class WebEngineUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
         event_type = ""
         is_new_window = False
         is_known_type = True  # if False, download the file.
+        if url.endswith("pdf"):
+            is_known_type = False
         mouse_button = ""
         modifiers = [""]
         logging.info("Request {}".format(url))
