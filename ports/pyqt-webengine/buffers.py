@@ -29,6 +29,7 @@ class Buffer(QWebEngineView):
 
     def __init__(self, identifier=None, parent=None):
         super(Buffer, self).__init__(parent)
+        self.page().setHtml("")  # necessary for runJavaScript to work on new buffers.
         self.identifier = str(identifier)
         page = self.page()
         profile = page.profile()
