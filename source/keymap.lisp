@@ -126,15 +126,16 @@ it can be called without argument."
         (when active-buffer
           (setf (last-key-chords active-buffer) (list key-chord)))
         (cond
+          ;; prefix binding
           ((eq bound-function #'prefix)
            (log:debug "Prefix binding"))
-
+          ;; function bound
           ((functionp bound-function)
            (log:debug "Key sequence ~a bound to:"
                       (serialize-key-chord-stack (key-chord-stack *interface*)))
            (funcall bound-function)
            (setf (key-chord-stack *interface*) nil))
-
+          ;; minibuffer is active
           ((minibuffer-active active-window)
            (if (member-string "R" (key-chord-modifiers (first (key-chord-stack *interface*))))
                (progn
@@ -145,15 +146,15 @@ it can be called without argument."
                                                        (first (key-chord-stack *interface*))))
                  (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
            (setf (key-chord-stack *interface*) nil))
-
+          ;; forward back to the platform port
           ((or (and active-buffer (forward-input-events-p active-buffer))
                (pointer-event-p key-chord))
            ;; forward-input-events-p is NIL in VI normal mode so that we don't
            ;; forward unbound keys, unless it's a pointer (mouse) event.
            ;; TODO: Remove this special case and bind button1 to "self-insert" instead?
            (rpc-generate-input-event *interface*
-                                   active-window
-                                   key-chord)
+                                     active-window
+                                     key-chord)
            (setf (key-chord-stack *interface*) nil))
           (t (setf (key-chord-stack *interface*) nil)))))))
 

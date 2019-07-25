@@ -17,6 +17,7 @@ end-user allowing for infinite customization.
   - [[#bookmarks][Bookmarks]]
   - [[#clearing-the-echo-area][Clearing the Echo Area]]
   - [[#exiting][Exiting]]
+  - [[#proxy-and-tor-support][Proxy and Tor support]]
 - [[#advanced-topics][Advanced Topics]]
   - [[#execute-extended-command][Execute Extended Command]]
   - [[#help][Help]]
@@ -248,6 +249,23 @@ To exit Next enter the key-combination ~C-x C-c~ and the program will
 quit. All of your open tabs and form data will not be persisted. The
 only information saved will be your filled in passwords, cookies,
 and other information within your cache.
+
+** Proxy and Tor support
+
+ You  can  surf  the  web  behind   a  proxy  by  issuing  the  command
+ =proxy-mode=. Its default server address is "socks5://127.0.0.1:9050",
+ meaning it works out of the box for Tor.
+
+ You can change it with:
+
+ #+begin_src lisp
+ (setf (get-default 'proxy-mode 'server-address) "socks5://your.i.p:port")
+ #+end_src
+
+ At the time of writing, there  are differences between the Gtk and the
+ Qt port: the Gtk one sets  proxies per-buffer, whereas it is currently
+ global for the Qt one.
+
 
 * Advanced Topics
 ** Execute Extended Command

@@ -221,7 +221,7 @@ current buffer."
     (setf (active-connection interface)
           (bt:make-thread
            (lambda ()
-             (dbus:with-open-bus (bus (dbus:session-server-addresses))
+             (dbus:with-open-bus (bus (session-server-addresses))
                (let ((status (dbus:request-name bus +core-name+ :do-not-queue)))
                  (when (eq status :exists)
                    (let ((url-list (or *free-args*
@@ -242,6 +242,15 @@ Make sure to kill existing processes or if you were running Next from a REPL, ki
     (bt:acquire-lock lock)
     (bt:condition-wait condition lock)))
 
+(defun session-server-addresses ()
+  (let ((server-addresses (dbus:session-server-addresses)))
+    (if server-addresses
+        server-addresses
+        ;; Check for MacOS dbus session address.
+        (dbus:parse-server-addresses-string
+         (format nil "unix:path=~a"
+                 (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))))))
+
 (defmethod kill-interface ((interface remote-interface))
   "Stop the RPC server."
   (when (active-connection interface)
@@ -253,7 +262,7 @@ Make sure to kill existing processes or if you were running Next from a REPL, ki
   "Call METHOD over ARGS.
 SIGNATURE must be the D-Bus encoded type string of ARGS.
 For an array of string, that would be \"as\"."
-  (dbus:with-open-bus (bus (dbus:session-server-addresses))
+  (dbus:with-open-bus (bus (session-server-addresses))
     (dbus:invoke-method (dbus:bus-connection bus) method-name
                         :path +core-object-path+
                         :destination +core-name+
@@ -264,9 +273,8 @@ For an array of string, that would be \"as\"."
 (defmethod %rpc-send ((interface remote-interface) (method string) &rest args)
   ;; TODO: Make %rpc-send asynchronous?
   ;; If the platform port ever hangs, the next %rpc-send will hang the Lisp core too.
-  ;; Always ensure we send the auth token as the first argument
   ;; TODO: Catch connection errors and execution errors.
-  (dbus:with-open-bus (bus (dbus:session-server-addresses))
+  (dbus:with-open-bus (bus (session-server-addresses))
     (dbus:with-introspected-object (platform-port bus +platform-port-object-path+ +platform-port-name+)
       (apply #'platform-port +platform-port-interface+ method args))))
 
@@ -408,9 +416,10 @@ For an array of string, that would be \"as\"."
 
 (defmethod rpc-minibuffer-evaluate-javascript ((interface remote-interface)
                                              (window window) javascript
-                                             &optional (callback nil))
+                                             &optional callback)
+  ;; JS example: document.body.innerHTML = 'hello'
   (let ((callback-id
-          (%rpc-send interface "minibuffer_evaluate_javascript" (id window) javascript)))
+         (%rpc-send interface "minibuffer_evaluate_javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 
@@ -615,15 +624,19 @@ Deal with URL with the following rules:
   ;; https://stackoverflow.com/questions/578290/common-lisp-equivalent-to-c-enums#
   (log:debug "Request resource ~s with mouse ~s, modifiers ~a" url mouse-button modifiers)
   (let ((buffer (gethash buffer-id (buffers *interface*))))
-    (funcall (resource-query-function buffer)
-             buffer
-             :url url
-             :cookies cookies
-             :event-type event-type
-             :is-new-window is-new-window
-             :is-known-type is-known-type
-             :mouse-button mouse-button
-             :modifiers modifiers)))
+    (if buffer
+        (funcall (resource-query-function buffer)
+                 buffer
+                 :url url
+                 :cookies cookies
+                 :event-type event-type
+                 :is-new-window is-new-window
+                 :is-known-type is-known-type
+                 :mouse-button mouse-button
+                 :modifiers modifiers)
+        (progn
+          (log:debug "no buffer of id '~a'~&" buffer-id)
+          t))))
 
 
 ;; Convenience methods and functions for users of the API.

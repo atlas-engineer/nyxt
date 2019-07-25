@@ -11,11 +11,6 @@ few of them are demonstrated below.
 *Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
 instabilities or feature wishes.
 
-*Security warning for macOS users:* The Cocoa webkit platform port has been
-dropped. It's currently not possible to build it without exposing Next to a
-remote-execution vulnerability.  We recommend macOS users to wait for the next
-release which will feature a new platform port.
-
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
@@ -61,6 +56,7 @@ open up new links, or switch tabs with the power of fuzzy completion.
 See the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating systems
 provide packages for Next:
 
+- [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
 - [[https://guix.gnu.org][Guix]]: Install with =guix package --install sbcl-next=.
 
@@ -76,29 +72,13 @@ to install Guix on your system and use it to install Next.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
-*** D-Bus requirement
+*** D-Bus Requirement
 
 Since 1.3.0, Next needs a D-Bus session bus to run.
 In most cases, it should already be running.
 
 If Next does not start up, it is very likely that D-Bus is not running
-for your user.  You can start D-Bus manually manually with the
-following shell command:
-
-#+begin_src sh
-$ dbus-launch
-#+end_src
-
-To enable D-Bus on login, you need to wrap your window manager executable with
-~dbus-launch~ in your X initialization file (e.g. =~/.xinitrc=).  For instance,
-to start Stumpwm:
-
-#+begin_src sh
-# <Your user settings here>
-#
-# Nothing will be executed after `exec'.
-exec dbus-launch --exit-with-session stumpwm &
-#+end_src
+for your user.
 
 ** Quickstart Keys
 - ~C-l~:     Load URL in tab

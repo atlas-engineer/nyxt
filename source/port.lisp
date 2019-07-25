@@ -39,24 +39,31 @@ as a string.")
   (port-accessor port 'log-file (name port)))
 
 (defun derive-path-from-name (name)
-  "Find platform port binary with base path NAME.
-First NAME is looked up relative to current directory.
+  "Find a platform port binary.
+Find one of next-gtk-webkit and next-pyqt-webengine in the current directory.
 If not found, then it is looked in the ports/ subfolder corresponding the NAME (e.g. \"gtk-webkit\").
 If still not found, NAME is used as is and will be looked for in PATH.
 
 This is an acceptable value for the PATH slot of the PORT class."
-  (or
-   (when (probe-file name) (truename name))
-   (let* ((port-name (file-namestring name))
-          (port-prefix "next-")
-          (port-name (if (string= (subseq port-name 0 (length port-prefix))
-                                  port-prefix)
-                         (subseq port-name (length port-prefix))
-                         port-name)))
-     (probe-file (merge-pathnames (file-namestring name)
-                                  (merge-pathnames (format nil "ports/~a/" port-name)
-                                                   *default-pathname-defaults*))))
-   name))
+  (let ((names (list "next-gtk-webkit" "next-pyqt-webengine")))
+    (or
+     ;; look at the current directory.
+     (loop for name in names
+        when (probe-file name)
+        return name)
+
+     ;; look in the ports/ subdir.
+     (loop for name in names
+        for dir-name = (str:replace-all "next-" "" name)
+        for file-in-subdir = (merge-pathnames
+                              (file-namestring name)
+                              (merge-pathnames (format nil "ports/~a/" dir-name)
+                                               *default-pathname-defaults*))
+        when (probe-file file-in-subdir)
+        return file-in-subdir)
+
+     ;; as a last resort, return "name".
+     name)))
 
 (defun derive-logfile-from-name (name)
   "This is an acceptable value for the LOG-FILE slot of the PORT class."
@@ -84,8 +91,10 @@ This is an acceptable value for the PATH slot of the PORT class."
                                :error-output :output))))
 
 (defmethod kill-program ((port port))
-  (uiop:run-program
-   (list "kill" "-15"
-         (write-to-string
-          (uiop/launch-program:process-info-pid
-           (running-process port))))))
+  (if (uiop:process-alive-p (running-process port))
+      (uiop:run-program
+       (list "kill" "-15"
+             (write-to-string
+              (uiop/launch-program:process-info-pid
+               (running-process port)))))
+      (format *error-output* "process ~a is not running.~&" (running-process port))))

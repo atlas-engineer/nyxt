@@ -82,7 +82,7 @@ Set to '-' to read standard input instead."))
           (format t "Bye!~&")
           (uiop:quit)))))
 
-(defun ping-platform-port (&optional (bus-type (dbus:session-server-addresses)))
+(defun ping-platform-port (&optional (bus-type (session-server-addresses)))
   (dbus:with-open-bus (bus bus-type)
     (member-string +platform-port-name+ (dbus:list-names bus))))
 
@@ -101,8 +101,8 @@ Set to '-' to read standard input instead."))
                      "Make sure the platform port executable is either in the
 PATH or set in you ~/.config/next/init.lisp, for instance:
 
-(setf (get-default 'port 'path)
-      \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
+     (setf (get-default 'port 'path)
+         \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
           (uiop:quit))))
     (let ((max-attempts (/ (platform-port-poll-duration interface)
                           (platform-port-poll-interval interface))))
@@ -124,8 +124,11 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
                 (set-url-buffer url buffer))))
           (progn
             (log:error "Could not connect to platform port: ~a" (path (port interface)))
-            (kill-program (port interface))
-            (kill-interface interface)
+            (handler-case
+                (progn
+                  (kill-program (port interface))
+                  (kill-interface interface))
+              (error (c) (format *error-output* "~a" c)))
             (uiop:quit))))))
 
 (defun init-file-path (&optional (file "init.lisp"))
@@ -172,9 +175,6 @@ If FILE is \"-\", read from the standard input."
   (setf *random-state* (make-random-state t))
   (load-lisp-file (init-file-path))
   ;; create the interface object
-  (unless (eq swank:*communication-style* :fd-handler)
-    (log:warn "swank:*communication-style* is set to ~s, recommended value is :fd-handler"
-              swank:*communication-style*))
   (when *interface*
     (kill-interface *interface*)
     ;; It's important to set it to nil or else if we re-run this function,
