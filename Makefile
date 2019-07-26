@@ -34,8 +34,11 @@ app-bundle: next
 	mkdir -p ./Next.app/Contents/MacOS
 	mkdir -p ./Next.app/Resources
 	mv ./next ./Next.app/Contents/MacOS
+	cp -r ./ports/pyqt-webengine/ ./Next.app/Contents/MacOS
+	mv ./Next.app/Contents/MacOS/next-pyqt-webengine.py ./Next.app/Contents/MacOS/next-pyqt-webengine
+	chmod +x ./Next.app/Contents/MacOS/next-pyqt-webengine
 	cp ./assets/Info.plist ./Next.app/Contents
-	cp ./assets/next.icns ./Next.app/Resources
+	cp ./assets/next.icns ./Next.app/Resource
 
 .PHONY: gtk-webkit
 gtk-webkit:
