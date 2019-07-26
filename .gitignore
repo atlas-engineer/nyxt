@@ -3,6 +3,7 @@ build/
 version
 ports/gtk-webkit/next-gtk-webkit
 next
+Next.app
 
 # Automatically fetched dependencies
 quicklisp/
