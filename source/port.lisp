@@ -6,7 +6,7 @@
 ;; we have no way to access the old value.
 
 (defclass port ()
-  ((name :initarg :name :accessor name
+  ((name :initarg :name :initform "next-platform-port" :accessor name
          :documentation "Basename of the executable.")
    (path :initarg :path :initform #'derive-path-from-name
          :documentation "Full path to the executable.

@@ -64,6 +64,7 @@
                  ;; About
                  (:file "about")
                  ;; Port Compatibility Layers
+                 (:file "ports/pyqt-webengine" :if-feature :darwin)
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
                  ;; Base
                  (:file "base"))))
