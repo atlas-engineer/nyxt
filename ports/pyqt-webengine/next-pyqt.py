@@ -178,6 +178,7 @@ class DBusWindow(dbus.service.Object):
 
 def main():
     app = QApplication(sys.argv)
+    app.setApplicationName("Next")
     MainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
     # name/dbuswindow MUST be defined even if not used.
