@@ -1,10 +1,9 @@
-## We use some Bourne shell syntax.
+## Use Bourne shell syntax.
 SHELL = /bin/sh
+UNAME := $(shell uname)
 
 LISP ?= sbcl
 LISP_FLAGS ?= --no-userinit
-## If you want to enable SBCL's user init file:
-# LISP_FLAGS =
 
 NEXT_INTERNAL_QUICKLISP = true
 
@@ -29,6 +28,14 @@ next: $(lisp_files)
 		--load next.asd \
 		--eval '(asdf:make :next)' \
 		--eval '(uiop:quit)'
+
+.PHONEY: app-bundle
+app-bundle: next
+	mkdir -p ./Next.app/Contents/MacOS
+	mkdir -p ./Next.app/Resources
+	mv ./next ./Next.app/Contents/MacOS
+	cp ./assets/Info.plist ./Next.app/Contents
+	cp ./assets/next.icns ./Next.app/Resources
 
 .PHONY: gtk-webkit
 gtk-webkit:
