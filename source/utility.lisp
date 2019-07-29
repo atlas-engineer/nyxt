@@ -2,6 +2,8 @@
 
 (in-package :next)
 
+(export '(fuzzy-match))
+
 (defmethod object-string ((object t))
   (princ-to-string object))
 
@@ -68,7 +70,64 @@ Otherwise, build a search query with the default search engine."
          (url (format nil search-url encoded-search-string)))
     url))
 
-(defun fuzzy-match (input candidates &key (accessor-function nil)
+(defun all-permutations (list)
+  "From a list of words, return a list of lists containing all the permutations.
+(foo bar) => ((foo bar) (bar foo))"
+  ;; thanks https://stackoverflow.com/questions/2087693/how-can-i-get-all-possible-permutations-of-a-list-with-common-lisp
+  (cond ((null list) nil)
+        ((null (cdr list)) (list list))
+        (t (loop for element in list
+              append (mapcar (lambda (l) (cons element l))
+                             (all-permutations (remove element list)))))))
+
+(defun join-permutations-to-re (permutations)
+  "`permutations': list of lists.
+((foo bar) (bar foo)) => (foo.*bar)|(bar.*foo)"
+  (check-type permutations list)
+  (str:join "|"
+            (loop for couple in permutations collect
+                 (format nil "(~a)" (str:join ".*" couple)))))
+
+(defun build-input-re-permutations (input)
+  "Build a regexp of all words permutations from `input'.
+'foo bar' => '(foo.*bar)|(bar.*foo)'"
+  (let* ((input-permutations (all-permutations (str:words input)))
+         (input-re (join-permutations-to-re input-permutations)))
+    input-re))
+
+(defun candidate-match-p (input-re candidate)
+  (ppcre:scan input-re candidate))
+
+(defun match-permutation-candidates (input candidates)
+  "Return the list of candidates that contain all the words of the input."
+  (when (and input candidates)
+    (let (results)
+      (mapcar (lambda (candidate)
+                (when (candidate-match-p (build-input-re-permutations input) candidate)
+                  (push candidate results)))
+              candidates)
+      results)))
+
+(defun search-or-loose (word x)
+  "Search for substring `word' in x, or return a big number (and not nil). Used for sorting."
+  (let ((index (search word x)))
+    (if index index 1000)))
+
+(defun sort-beginning-with (word candidates)
+  "Return (a new sequence) with candidates that start with `word' first."
+  (if candidates
+      (sort (copy-seq candidates) (lambda (x y)
+                                    (< (search-or-loose word x)
+                                       (search-or-loose word y))))
+      candidates))
+
+(defun sort-levenshtein (input candidates)
+  (sort (copy-seq candidates) (lambda (x y)
+                           (< (mk-string-metrics:levenshtein input x)
+                              (mk-string-metrics:levenshtein input y)))))
+
+#|
+(defun fuzzy-match-all-characters-in-a-row (input candidates &key (accessor-function nil)
                                           (case-sensitive nil))
   "fuzzy-match works by taking a string input from the user. The
 string is then populated with '*' between each character to create a
@@ -104,6 +163,26 @@ will have to consider malformed ones."
                    (string-downcase (candidate-representation candidate))))
           (push candidate completions))))
     completions))
+|#
+
+(defun fuzzy-match (input candidates &key accessor-function case-sensitive)
+  "From the user input and a list of candidates, return a filtered list of candidates that have all the input words in them, and sort this list to have the 'most relevant' first."
+  ;; Difference with the previous fuzzy-match: now space is important,
+  ;; whereas it tried to match all letters, by inserting a ".*" between
+  ;; each letters of the input.
+  (if (not (str:empty? input))
+      (let* ((input (str:replace-all " " " " input))
+             (names (if accessor-function
+                        (mapcar (lambda (name) (funcall accessor-function name)) candidates)
+                        candidates))
+             (names (if case-sensitive
+                        names
+                        (mapcar (lambda (name) (string-downcase name)) names)))
+             (names (match-permutation-candidates input names))
+             (names (sort-levenhstein input names))
+             (names (sort-beginning-with (first (str:words input)) names)))
+        names)
+      candidates))
 
 (defun xdg-data-home (&optional (file-name ""))
   "Return XDG_DATA_HOME as per XDG directory specification.
