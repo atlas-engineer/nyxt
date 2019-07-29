@@ -143,7 +143,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
       (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
-      (set-active-buffer *interface* help-buffer)))
+    (set-active-buffer *interface* help-buffer)
+    help-buffer))
 
 (define-command next-version ()
   "Version number of this version of Next.

@@ -105,23 +105,27 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
          \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
           (uiop:quit))))
     (let ((max-attempts (/ (platform-port-poll-duration interface)
-                          (platform-port-poll-interval interface))))
+                           (platform-port-poll-interval interface))))
       ;; Poll the platform port in case it takes some time to start up.
       (loop while (not port-running)
             repeat max-attempts
             do (unless (setf port-running (ping-platform-port))
                  (sleep (platform-port-poll-interval interface))))
+      ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
       (if port-running
-          ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
-          (let ((buffer (nth-value 1 (make-window))))
-            (set-url-buffer (if urls
-                                (first urls)
-                                (start-page-url interface))
-                            buffer)
-            ;; We can have many URLs as positional arguments.
-            (loop for url in (rest urls) do
-              (let ((buffer (make-buffer)))
-                (set-url-buffer url buffer))))
+          (if urls
+              (let ((buffer (nth-value 1 (make-window))))
+                (set-url-buffer (first urls) buffer)
+                ;; We can have many URLs as positional arguments.
+                (loop for url in (rest urls) do
+                  (let ((buffer (make-buffer)))
+                    (set-url-buffer url buffer))))
+              ;; TODO: Make startup function customizable.
+              ;; TODO: Test if network is available.  If not, display help,
+              ;; otherwise display start-page-url.
+              (let ((window (rpc-window-make *interface*))
+                    (buffer (help (make-instance 'root-mode))))
+                (window-set-active-buffer *interface* window buffer)))
           (progn
             (log:error "Could not connect to platform port: ~a" (path (port interface)))
             (handler-case

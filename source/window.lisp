@@ -11,10 +11,10 @@
           (active-window
            (echo "Can't delete sole window.")))))
 
-(defun make-window ()
+(defun make-window (&optional buffer)
   "Create a new window."
   (let ((window (rpc-window-make *interface*))
-        (buffer (make-buffer)))
+        (buffer (or buffer (make-buffer))))
     (window-set-active-buffer *interface* window buffer)
     (values window buffer)))
 
