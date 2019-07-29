@@ -197,14 +197,15 @@ Then in a shell execute the following:
 
 1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
    supported Common Lisp compiler).
-2. Execute ~(require :asdf)~ if ASDF is not already loaded.
-3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
+2. Execute ~(ql:quickload "trivial-features")~.
+3. Execute ~(require :asdf)~ if ASDF is not already loaded.
+4. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
    system definition (you can not use relative pathnames).
-4. Execute ~(ql:quickload :next)~ to load the Next system into your
+5. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image.
-5. Make sure the platform port can be bound by Next, as described
+6. Make sure the platform port can be bound by Next, as described
    in the previous section.
-6. Execute ~(next:start)~ to open your first Next window.
+7. Execute ~(next:start)~ to open your first Next window.
 
 * Help & Community
 There are several ways to ask for help from the community. The first
