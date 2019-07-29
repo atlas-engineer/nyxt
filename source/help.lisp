@@ -111,7 +111,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 (define-command help ()
   "Print some help."
   (let* ((help-buffer (make-buffer
-                       :name "HELP"
+                       :name "*Help*"
                        :default-modes (cons 'help-mode
                                             (get-default 'buffer 'default-modes))))
          (help-contents
