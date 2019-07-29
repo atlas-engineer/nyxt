@@ -206,7 +206,7 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-m k" 'bookmark-delete)
 (define-key "C-t" 'make-visible-new-buffer)
 (define-key "C-m u" 'bookmark-url)
-(define-key "C-x w" 'delete-current-buffer)
+(define-key "C-x C-k" 'delete-current-buffer)
 ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
 (define-key "C-h v" 'variable-inspect)
 (define-key "C-h c" 'command-inspect)
