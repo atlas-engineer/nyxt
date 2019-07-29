@@ -334,7 +334,7 @@ gboolean buffer_web_view_decide_policy(WebKitWebView *web_view,
 		NULL,
 		(GAsyncReadyCallback)buffer_set_uri, args);
 
-	// Keep a reference on the decision so that in won't be freed before the callback.
+	// Keep a reference on the decision so that it won't be freed before the callback.
 	g_object_ref(decision);
 	return TRUE;
 }
