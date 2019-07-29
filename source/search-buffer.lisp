@@ -72,7 +72,7 @@ returns
   (walk-dom (ps:chain document body) insert-hint)
   index)
 
-(define-command add-search-hints ()
+(define-command search-buffer ()
   "Add search boxes for a given search string."
   (initialize-search-buffer)
   (with-result (input (read-from-minibuffer
@@ -85,6 +85,10 @@ returns
                  (if (string= index "0")
                   (echo "No match.")
                   (%next-search-hint))))))
+
+(define-deprecated-command add-search-hints ()
+  "Deprecated by `search-buffer'."
+  (search-buffer (make-instance 'root-mode)))
 
 (define-parenscript %remove-search-hints ()
   (defun qsa (context selector)

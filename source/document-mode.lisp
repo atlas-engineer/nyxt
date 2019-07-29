@@ -31,7 +31,7 @@
           "C-m o" 'set-url-from-bookmark
           "C-m s" 'bookmark-current-page
           "C-m g" 'bookmark-anchor
-          "C-s s" 'add-search-hints
+          "C-s s" 'search-buffer
           "C-s n" 'next-search-hint
           "C-s p" 'previous-search-hint
           "C-s k" 'remove-search-hints
@@ -73,7 +73,7 @@
           "y u" 'copy-url
           "y t" 'copy-title
           "g h" 'jump-to-heading        ; TODO: VI binding for this?
-          "/" 'add-search-hints
+          "/" 'search-buffer
           "n" 'next-search-hint
           "N" 'previous-search-hint
           "?" 'remove-search-hints
