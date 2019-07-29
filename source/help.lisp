@@ -132,6 +132,17 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
              (:li (:code "M-g") ": Follow link in new buffer")
              (:li (:code "C-x C-c")  ": Quit")
              (:li (:code "M-x")  ": Run a command by name"))
+            (:p "With VI bindings:")
+            (:ul
+             (:li (:code "o") ": Load URL in tab")
+             (:li (:code "O") ": Load URL in new tab")
+             (:li (:code "g b") ", " (:code "[") ", " (:code "]") ": Switch tab")
+             (:li (:code "H")  ": Backwards history")
+             (:li (:code "L")  ": Forwards history")
+             (:li (:code "f")  ": Follow link in current buffer")
+             (:li (:code "F") ": Follow link in new buffer")
+             (:li (:code "C-x C-c")  ": Quit")
+             (:li (:code ":")  ": Run a command by name"))
             (:p "The following keys exist as special keys:")
             (:ul
              (:li (:code "C") ": Control key")
