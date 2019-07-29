@@ -2,7 +2,6 @@
 
 (in-package :next)
 
-(export '(fuzzy-match))
 
 (defmethod object-string ((object t))
   (princ-to-string object))
@@ -70,6 +69,18 @@ Otherwise, build a search query with the default search engine."
          (url (format nil search-url encoded-search-string)))
     url))
 
+(defun interleave-chars-with-regexp (input)
+  "Insert '.*' between all characters of `input'."
+  (check-type input string)
+  (with-output-to-string (stream)
+    (loop for char across input do
+         (princ #\. stream)
+         (princ #\* stream)
+         (princ char stream))
+    ;; match any chars after final char in cleaned-input
+    (princ #\. stream)
+    (princ #\* stream)))
+
 (defun all-permutations (list)
   "From a list of words, return a list of lists containing all the permutations.
 (foo bar) => ((foo bar) (bar foo))"
@@ -80,19 +91,23 @@ Otherwise, build a search query with the default search engine."
               append (mapcar (lambda (l) (cons element l))
                              (all-permutations (remove element list)))))))
 
-(defun join-permutations-to-re (permutations)
-  "`permutations': list of lists.
-((foo bar) (bar foo)) => (foo.*bar)|(bar.*foo)"
+(defun join-permutations-to-regexp (permutations)
+  "Join the `permutations' (list of lists of strings) into a 'OR' regexp.
+  For example: ((foo bar) (bar foo)) => (foo.*bar)|(bar.*foo)"
   (check-type permutations list)
   (str:join "|"
-            (loop for couple in permutations collect
-                 (format nil "(~a)" (str:join ".*" couple)))))
+            (loop for innerlist in permutations
+               for innerlist-with-regexp = (mapcar (lambda (word)
+                                                    (interleave-chars-with-regexp word))
+                                                  innerlist)
+               collect
+                 (str:join "" innerlist-with-regexp))))
 
-(defun build-input-re-permutations (input)
+(defun build-input-regexp-permutations (input)
   "Build a regexp of all words permutations from `input'.
 'foo bar' => '(foo.*bar)|(bar.*foo)'"
   (let* ((input-permutations (all-permutations (str:words input)))
-         (input-re (join-permutations-to-re input-permutations)))
+         (input-re (join-permutations-to-regexp input-permutations)))
     input-re))
 
 (defun candidate-match-p (input-re candidate)
@@ -101,75 +116,32 @@ Otherwise, build a search query with the default search engine."
 (defun match-permutation-candidates (input candidates)
   "Return the list of candidates that contain all the words of the input."
   (when (and input candidates)
-    (let (results)
-      (mapcar (lambda (candidate)
-                (when (candidate-match-p (build-input-re-permutations input) candidate)
-                  (push candidate results)))
-              candidates)
-      results)))
+    (loop for candidate in candidates
+       when (candidate-match-p (build-input-regexp-permutations input) candidate)
+         collect candidate)))
 
-(defun search-or-loose (word x)
-  "Search for substring `word' in x, or return a big number (and not nil). Used for sorting."
-  (let ((index (search word x)))
+(defun search-or-lose (substring string)
+  "Search for `substring' in `string' but always return a number.
+If there is no match, return a \"big\"number instead of nil (necessary to
+use this as a `sort' function, here in the context of sorting
+autocompletion candidates)."
+  (let ((index (search substring string)))
     (if index index 1000)))
 
 (defun sort-beginning-with (word candidates)
   "Return (a new sequence) with candidates that start with `word' first."
-  (if candidates
-      (sort (copy-seq candidates) (lambda (x y)
-                                    (< (search-or-loose word x)
-                                       (search-or-loose word y))))
-      candidates))
+  (sort (copy-seq candidates) (lambda (x y)
+                                (< (search-or-lose word x)
+                                   (search-or-lose word y)))) )
 
 (defun sort-levenshtein (input candidates)
   (sort (copy-seq candidates) (lambda (x y)
                            (< (mk-string-metrics:levenshtein input x)
                               (mk-string-metrics:levenshtein input y)))))
 
-#|
-(defun fuzzy-match-all-characters-in-a-row (input candidates &key (accessor-function nil)
-                                          (case-sensitive nil))
-  "fuzzy-match works by taking a string input from the user. The
-string is then populated with '*' between each character to create a
-regex. As an example, 'nt' will become 'n.*t.*'. This will enable
-matching of 'next' or 'note', etc. This function currently limits the
-type of input that it accepts, only matching against alphabetical input. An
-advanced version of this command may allow for complete regular expressions, but
-will have to consider malformed ones."
-  (let* ((cleaned-input (cl-string-match:replace-re
-                         "[^a-zA-Z]" "" input :all t))
-         (cleaned-input (if case-sensitive
-                            cleaned-input
-                            (string-downcase cleaned-input)))
-         (regex
-           (with-output-to-string (stream)
-             (loop for char across cleaned-input do
-               (princ #\. stream)
-               (princ #\* stream)
-               (princ char stream))
-             ;; match any chars after final char in cleaned-input
-             (princ #\. stream)
-             (princ #\* stream)))
-         (completions nil))
-    ;; use constructed regex to see which options match
-    (flet ((candidate-representation (candidate)
-             (if accessor-function
-                 (funcall accessor-function candidate) candidate)))
-      (loop for candidate in candidates do
-        (when (cl-string-match:match-re
-               regex
-               (if case-sensitive
-                   (candidate-representation candidate)
-                   (string-downcase (candidate-representation candidate))))
-          (push candidate completions))))
-    completions))
-|#
-
+(export '(fuzzy-match))
 (defun fuzzy-match (input candidates &key accessor-function case-sensitive)
   "From the user input and a list of candidates, return a filtered list of candidates that have all the input words in them, and sort this list to have the 'most relevant' first."
-  ;; Difference with the previous fuzzy-match: now space is important,
-  ;; whereas it tried to match all letters, by inserting a ".*" between
-  ;; each letters of the input.
   (if (not (str:empty? input))
       (let* ((input (str:replace-all " " " " input))
              (names (if accessor-function

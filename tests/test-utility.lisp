@@ -7,8 +7,6 @@
 
 (plan nil)
 
-(setf next::*interface* (make-instance 'next::remote-interface))
-
 (defparameter *candidates* '("link-hints" "active-history-node" "history-backwards"
                              "did-finish-navigation" "history-forwards"
                              "history-forwards-query" "copy-title" "did-commit-navigation"
@@ -61,4 +59,12 @@
   (is "delete-foo" (first (fuzzy-match "de"
                                        '("some-mode" "delete-foo")))
       "candidates beginning with the first word appear first")
-  )
+
+  (is "foo-bar" (first (fuzzy-match "foobar"
+                                    '("foo-dash-bar" "foo-bar")))
+      "search witout a space. All characters count (small list).")
+  (is "switch-buffer" (first (fuzzy-match "sbf"
+                                    *candidates*))
+      "search witout a space. All characters count, real list."))
+
+(finalize)
