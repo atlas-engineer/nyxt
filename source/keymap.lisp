@@ -173,7 +173,7 @@ with MODE, it does not have any effect on KEYMAP.
 
 Examples:
 
-  (define-key \"C-x C-c\" 'kill)
+  (define-key \"C-x C-c\" 'quit)
   (define-key \"C-n\" 'scroll-down
               :mode 'document-mode)
   ;; Only affect the first mode of the current buffer:

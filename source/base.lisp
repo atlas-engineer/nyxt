@@ -36,10 +36,14 @@ Set to '-' to read standard input instead."))
 ;; TODO: Find a way to list/introspect available platform port methods from a
 ;; running Next.
 
-(define-command kill ()
+(define-command quit ()
   "Quit Next."
   (kill-interface *interface*)
   (kill-program (port *interface*)))
+
+(define-deprecated-command kill ()
+  "Deprecated by `quit'."
+  (quit (make-instance 'root-mode)))
 
 (defun set-debug-level (level)
   "Supported values for LEVEL are
@@ -190,7 +194,7 @@ If FILE is \"-\", read from the standard input."
   ;; an instance is already running.
   (initialize-port *interface* (or urls *free-args*)))
 
-(define-key "C-x C-c" 'kill)
+(define-key "C-x C-c" 'quit)
 (define-key "C-[" 'switch-buffer-previous)
 (define-key "C-]" 'switch-buffer-next)
 (define-key "C-x b" 'switch-buffer)
@@ -214,7 +218,7 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*))))
 
 (define-key :scheme :vi-normal
-  "Z Z" 'kill
+  "Z Z" 'quit
   "[" 'switch-buffer-previous
   "]" 'switch-buffer-next
   "g b" 'switch-buffer
