@@ -54,7 +54,9 @@
 brought up.  This can be useful to know which was the original buffer in the
 `callback-function' in case the buffer was changed.")
    (setup-function :accessor setup-function)
-   (cleanup-function :accessor cleanup-function)
+   (cleanup-function :accessor cleanup-function
+                     :documentation "Function run after a completion has been selected.
+This should not rely on the minibuffer's content.")
    (empty-complete-immediate :accessor empty-complete-immediate)
    (display-mode :accessor display-mode :initform :nil)
    (input-prompt :accessor input-prompt :initform "Input:")
@@ -112,6 +114,10 @@ brought up.  This can be useful to know which was the original buffer in the
 
 (define-command return-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer selection."
+  ;; Warning: `hide' modifies the content of the minibuffer, the
+  ;; callback-function and the cleanup-function cannot rely on the minibuffer
+  ;; content safely.
+  (hide *interface*)
   (setf (display-mode minibuffer) :nil)
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
@@ -128,9 +134,7 @@ brought up.  This can be useful to know which was the original buffer in the
         ;; if there's no completion function
         (return-immediate (first (modes minibuffer)) minibuffer))
     (when cleanup-function
-      (funcall cleanup-function)))
-  ;; `hide' could modify the content of the minibuffer, let's call it last.
-  (hide *interface*))
+      (funcall cleanup-function))))
 
 (define-command return-immediate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
@@ -187,7 +191,7 @@ brought up.  This can be useful to know which was the original buffer in the
   (let ((active-window (rpc-window-active interface)))
     (setf (minibuffer-active active-window) nil)
     ;; TODO: We need a mode-line before we can afford to really hide the
-    ;; minibuffer.  Until then, we make it blank with erase-document.
+    ;; minibuffer.  Until then, we use "blank" it.
     (with-result (url (buffer-get-url))
       (echo "~a" url))
     (rpc-window-set-minibuffer-height interface
