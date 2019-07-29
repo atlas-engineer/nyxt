@@ -36,6 +36,27 @@ ARGLIST must be a list of optional arguments."
            (echo-dismiss (minibuffer *interface*)))
          ,@body))))
 
+(defmacro define-deprecated-command (name (&optional (mode 'root-mode) &rest arglist) &body body)
+  "Define NAME, a deprecated command.
+This is just like a command.  It's recommended to explain why the function is
+deprecated and by what in the docstring."
+  (let ((documentation (if (stringp (first body))
+                           (first body)
+                           (warn (make-condition
+                                  'command-documentation-style-warning
+                                  :name name))))
+        (body (if (stringp (first body))
+                  (rest body)
+                  body)))
+    `(progn
+       (define-command ,name (,mode ,@arglist)
+         ,documentation
+         (progn
+           ;; TODO: Implement `warn'.
+           (echo "Warning: ~a is deprecated." ',name)
+           (log:warn "Deprecated command ~a" ',name)
+           ,@body)))))
+
 (defun package-defined-symbols (&optional (package (find-package :next)))
   "Return the list of all symbols interned in this package."
   (let ((symbols))
