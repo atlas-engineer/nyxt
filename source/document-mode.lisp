@@ -46,7 +46,9 @@
           "M-w" 'copy-title
           ;; Leave SPACE unbound so that the paltform port decides wether to
           ;; insert of scroll.
-          "s-SPACE" 'scroll-page-up)
+          "s-SPACE" 'scroll-page-up
+          "Page_Up" 'scroll-page-up
+          "Page_Down" 'scroll-page-down)
         (define-key :keymap vi-map
           "H" 'history-backwards
           "L" 'history-forwards
@@ -82,7 +84,9 @@
           "C-f" 'scroll-page-down
           "C-b" 'scroll-page-up
           "SPACE" 'scroll-page-down
-          "s-SPACE" 'scroll-page-up)
+          "s-SPACE" 'scroll-page-up
+          "Page_Up" 'scroll-page-up
+          "Page_Down" 'scroll-page-down)
         (list :emacs emacs-map
               :vi-normal vi-map))))
   ;; Init.

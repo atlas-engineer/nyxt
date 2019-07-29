@@ -201,6 +201,8 @@ If FILE is \"-\", read from the standard input."
 (define-key "C-x k" 'delete-buffer)
 (define-key "C-x Left" 'switch-buffer-previous)
 (define-key "C-x Right" 'switch-buffer-next)
+(define-key "C-Page_Up" 'switch-buffer-previous)
+(define-key "C-Page_Down" 'switch-buffer-next)
 (define-key "C-l" 'set-url-current-buffer)
 (define-key "M-l" 'set-url-new-buffer)
 (define-key "C-m k" 'bookmark-delete)
@@ -221,6 +223,8 @@ If FILE is \"-\", read from the standard input."
   "Z Z" 'quit
   "[" 'switch-buffer-previous
   "]" 'switch-buffer-next
+  "C-Page_Up" 'switch-buffer-previous
+  "C-Page_Down" 'switch-buffer-next
   "g b" 'switch-buffer
   "d" 'delete-buffer
   "D" 'delete-current-buffer
