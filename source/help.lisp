@@ -115,31 +115,43 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                        :default-modes (cons 'help-mode
                                             (get-default 'buffer 'default-modes))))
          (help-contents
-" <h2 id=\"quickstart-keys\">Quickstart Keys</h2>
-<ul>
-<li><code>C-l</code>: Load URL in tab</li>
-<li><code>M-l</code>: Load URL in a new tab</li>
-<li><code>C-x b, C-x left/right</code>: Switch tab</li>
-<li><code>C-b</code>: Backwards history</li>
-<li><code>C-f</code>: Forwards history</li>
-<li><code>C-g</code>: Follow link in the current buffer. <code>M-g</code>: follow in a new buffer.</li>
-<li><code>C-x C-c</code>: Quit</li>
-<li><code>M-x</code>: Run a command by name</li>
-</ul>
-<p>The following keys exist as special keys:</p>
-<ul>
-<li><code>C</code>: Control Key</li>
-<li><code>S</code>: Super (Windows key, Command Key)</li>
-<li><code>M</code>: Meta (Alt key, Option Key)</li>
-</ul>
-<h2 id=\"customize-and-extend-next\">Customize and Extend Next</h2>
-<p>Customization is possible through the creation of a <code>~/.config/next/init.lisp</code> file. From here you can override and redefine any of the functions by defining your init file as part of the <code>:next</code> package. For more information please see:</p>
-<a href=\"https://next.atlas.engineer/documentation#customization\">customizing Next</a>.
+           (cl-markup:markup
+            (:h1 "Getting started")
+            (:p (:b "Warning: ") "Next is under active development. Feel free to "
+                (:a :href "https://github.com/atlas-engineer/next/issues"
+                    "report")
+                " bugs, instabilities or feature wishes.")
+            (:h2 "Quckstart keys")
+            (:ul
+             (:li (:code "C-l") ": Load URL in tab")
+             (:li (:code "M-l") ": Load URL in new tab")
+             (:li (:code "C-x b") ", " (:code "C-x left/right") ": Switch tab")
+             (:li (:code "C-b")  ": Backwards history")
+             (:li (:code "C-f")  ": Forwards history")
+             (:li (:code "C-g")  ": Follow link in current buffer")
+             (:li (:code "M-g") ": Follow link in new buffer")
+             (:li (:code "C-x C-c")  ": Quit")
+             (:li (:code "M-x")  ": Run a command by name"))
+            (:p "The following keys exist as special keys:")
+            (:ul
+             (:li (:code "C") ": Control key")
+             (:li (:code "S") ": Super (Windows key, Command key)")
+             (:li (:code "M") ": Meta (Alt key, Option key)"))
+            (:h2 "Customize and extend Next")
+            (:p "Customization is possible through the creation of a "
+                (:code "~/.config/next/init.lisp")
+                " file. From here you can override and redefine any of the functions by defining your init file as part of the "
+                (:code ":next")
+                " package. For more information please see: "
+                (:a :href "https://next.atlas.engineer/documentation#customization"
+                    "customizing Next" )
+                ".")
+            (:h2 "Documentation")
+            (:p "For full documentation about Next, how it works, and how to extend it please see the "
+                (:a :href " <a href=\"https://next.atlas.engineer/documentation\">"
+                    "user manual")
+                ".")))
 
-<h2 id=\"documentation\">Documentation</h2>
-<p>For full documentation about Next, how it works, and how to extend it please see the</p>
-<a href=\"https://next.atlas.engineer/documentation\">user manual</a>.
-")
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
       (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
