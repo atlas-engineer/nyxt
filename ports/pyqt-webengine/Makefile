@@ -6,7 +6,7 @@ install:
 	$(PIP) install -r requirements.txt
 
 run:
-	$(PYTHON) next-pyqt.py
+	$(PYTHON) next-pyqt-webengine.py
 
 isort:
 	isort -y --atomic
