@@ -11,6 +11,7 @@
                :cl-strings
                :str
                :cl-string-match
+               :mk-string-metrics
                :quri
                :sqlite
                :parenscript
