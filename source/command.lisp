@@ -17,6 +17,18 @@
     (documentation-style-warning)
   ((subject-type :initform 'command)))
 
+;; TODO: Find a better way to uniquely identidy commands from mode methods.
+;; What about symbol properties?  We could use:
+;;
+;; (setf (get name 'commandp) t)
+;;
+;; But that doesn't seem to work properly, some commands need to be evaluated
+;; twice before they appear in the list.  We could use a class (we used to have
+;; a COMMAND class) or intern the symbol into a special package (see `intern'
+;; documentation).
+(defvar %%command-list ()
+  "The list of known commands, for internal use only.")
+
 (defmacro define-command (name (&optional (mode 'root-mode) &rest arglist) &body body)
   "Define new command NAME.
 MODE most be a subclass of root-mode.
@@ -30,6 +42,7 @@ ARGLIST must be a list of optional arguments."
                   (rest body)
                   body)))
     `(progn
+       (push ',name %%command-list)
        (defmethod ,name ,(cons `(,mode ,mode) arglist)
          ,documentation
          (when *interface*
@@ -76,20 +89,19 @@ deprecated and by what in the docstring."
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
-;; TODO: Find a reliable way to identify commands.  We could use a class (we
-;; used to have a COMMAND class) or some sort of symbol properties, or intern
-;; the symbol into a special package (see `intern' documentation).
-;; TODO: See cl:get or make a command class.
 (defun list-commands (&optional mode)
   "List commands.
+A command is a mode method that has a non-nil COMMANDP symbol property.
 When MODE is a mode symbol, list only the commands that apply in this mode.
 Otherwise list all commands."
   (loop for m in (package-methods)
         for first-specializer = (first (closer-mop:method-specializers m))
-        when (and (closer-mop:subclassp first-specializer (find-class 'root-mode))
+        when (and (member (closer-mop:generic-function-name (closer-mop:method-generic-function m))
+                          %%command-list)
+                  (closer-mop:subclassp first-specializer (find-class 'root-mode))
                   (or (not mode)
-                      (closer-mop:subclassp (find-class mode) first-specializer )))
-        collect m))
+                      (closer-mop:subclassp (find-class mode) first-specializer)))
+          collect m))
 
 (defun command-symbol (command)
   "Return the symbol of a command."
@@ -105,7 +117,7 @@ Otherwise list all commands."
                :accessor-function #'symbol-name))
 
 (define-command execute-command ()
-  "Execute a command by name"
+  "Execute a command by name."
   (with-result (command (read-from-minibuffer
                          (minibuffer *interface*)
                          :input-prompt "Execute command:"
