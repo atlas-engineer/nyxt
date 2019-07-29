@@ -101,39 +101,55 @@
   (%remove-link-hints
    :buffer (callback-buffer (minibuffer *interface*))))
 
-(defmacro query-anchors (prompt (symbol) &body body)
+(defmacro query-hints (prompt (symbol) &body body)
   `(with-result* ((links-json (add-link-hints))
-                  (selected-anchor (read-from-minibuffer
+                  (selected-hint (read-from-minibuffer
                                     (minibuffer *interface*)
                                     :input-prompt ,prompt
                                     :cleanup-function #'remove-link-hints)))
      (let* ((link-hints (cl-json:decode-json-from-string links-json))
-            (,symbol (cadr (assoc selected-anchor link-hints :test #'equalp))))
+            (,symbol (cadr (assoc selected-hint link-hints :test #'equalp))))
        (when ,symbol
          ,@body))))
 
-(define-command go-anchor ()
+(define-command follow-hint ()
   "Show a set of link hints, and go to the user inputted one in the
 currently active buffer."
-  (query-anchors "Go to link:" (selected-link)
+  (query-hints "Go to link:" (selected-link)
     (buffer-set-url :url selected-link :buffer (active-buffer *interface*))))
 
-(define-command go-anchor-new-buffer ()
+(define-deprecated-command go-anchor ()
+  "Deprecated by `follow-hint'."
+  (follow-hint (make-instance 'root-mode)))
+
+(define-command follow-hint-new-buffer ()
   "Show a set of link hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
-  (query-anchors "Open link in new buffer:" (selected-link)
+  (query-hints "Open link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
       (buffer-set-url :url selected-link :buffer new-buffer))))
 
-(define-command go-anchor-new-buffer-focus ()
+(define-deprecated-command go-anchor-new-buffer ()
+  "Deprecated by `follow-hint-new-buffer'."
+  (follow-hint-new-buffer (make-instance 'root-mode)))
+
+(define-command follow-hint-new-buffer-focus ()
   "Show a set of link hints, and open the user inputted one in a new
 visible active buffer."
-  (query-anchors "Go to link in new buffer:" (selected-link)
+  (query-hints "Go to link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
       (buffer-set-url :url selected-link :buffer new-buffer)
       (set-active-buffer *interface* new-buffer))))
 
-(define-command copy-anchor-url ()
+(define-deprecated-command go-anchor-new-buffer-focus ()
+  "Deprecated by `follow-hint-new-buffer-focus'."
+  (follow-hint-new-buffer-focus (make-instance 'root-mode)))
+
+(define-command copy-hint-url ()
   "Show a set of link hints, and copy the URL of the user inputted one."
-  (query-anchors "Copy link URL:" (selected-link)
+  (query-hints "Copy link URL:" (selected-link)
     (trivial-clipboard:text selected-link)))
+
+(define-deprecated-command copy-anchor-url ()
+  "Deprecated by `copy-hint-url'."
+  (copy-hint-url (make-instance 'root-mode)))

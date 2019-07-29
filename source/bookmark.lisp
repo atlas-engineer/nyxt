@@ -62,17 +62,21 @@
        db "delete from bookmarks where url = ?" bookmark)
       (sqlite:disconnect db))))
 
-(define-command bookmark-anchor ()
+(define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
   (with-result* ((links-json (add-link-hints))
-                 (selected-anchor (read-from-minibuffer
+                 (selected-hint (read-from-minibuffer
                                    (minibuffer *interface*)
-                                   :input-prompt "Bookmark anchor:"
+                                   :input-prompt "Bookmark hint:"
                                    :cleanup-function #'remove-link-hints)))
     (let* ((link-hints (cl-json:decode-json-from-string links-json))
-           (selected-link (cadr (assoc selected-anchor link-hints :test #'equalp))))
+           (selected-link (cadr (assoc selected-hint link-hints :test #'equalp))))
       (when selected-link
         (%bookmark-url selected-link)))))
+
+(define-deprecated-command bookmark-anchor ()
+  "Deprecated by `bookmark-hint'."
+  (bookmark-hint (make-instance 'root-mode)))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark."

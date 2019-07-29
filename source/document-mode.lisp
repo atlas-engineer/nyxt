@@ -14,10 +14,10 @@
         (define-key :keymap emacs-map
           "M-f" 'history-forwards-query
           "M-b" 'history-backwards
-          "C-g" 'go-anchor
-          "M-g" 'go-anchor-new-buffer-focus
-          "C-u M-g" 'go-anchor-new-buffer
-          "C-x C-w" 'copy-anchor-url
+          "C-g" 'follow-hint
+          "M-g" 'follow-hint-new-buffer-focus
+          "C-u M-g" 'follow-hint-new-buffer
+          "C-x C-w" 'copy-hint-url
           "C-f" 'history-forwards
           "C-b" 'history-backwards
           "button9" 'history-forwards
@@ -30,7 +30,7 @@
           "C-r" 'reload-current-buffer
           "C-m o" 'set-url-from-bookmark
           "C-m s" 'bookmark-current-page
-          "C-m g" 'bookmark-anchor
+          "C-m g" 'bookmark-hint
           "C-s s" 'search-buffer
           "C-s n" 'next-search-hint
           "C-s p" 'previous-search-hint
@@ -50,9 +50,9 @@
         (define-key :keymap vi-map
           "H" 'history-backwards
           "L" 'history-forwards
-          "f" 'go-anchor
-          "F" 'go-anchor-new-buffer-focus
-          "; f" 'go-anchor-new-buffer
+          "f" 'follow-hint
+          "F" 'follow-hint-new-buffer-focus
+          "; f" 'follow-hint-new-buffer
           "button9" 'history-forwards
           "button8" 'history-backwards
           "h" 'scroll-left
@@ -69,7 +69,7 @@
           "r" 'reload-current-buffer
           "m o" 'set-url-from-bookmark
           "m m" 'bookmark-current-page
-          "m f" 'bookmark-anchor
+          "m f" 'bookmark-hint
           "y u" 'copy-url
           "y t" 'copy-title
           "g h" 'jump-to-heading        ; TODO: VI binding for this?

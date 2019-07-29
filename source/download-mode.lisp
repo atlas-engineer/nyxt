@@ -65,9 +65,9 @@
     (unless (find-buffer 'download-mode)
       (download-list (make-instance 'root-mode)))))
 
-(define-command download-anchor-url (root-mode &optional (interface *interface*))
+(define-command download-hint-url (root-mode &optional (interface *interface*))
   "Download the file under the URL hinted by the user."
-  (query-anchors "Download link URL:" (selected-link)
+  (query-hints "Download link URL:" (selected-link)
     (download interface selected-link)
     (unless (find-buffer 'download-mode)
       (download-list (make-instance 'root-mode)))))
