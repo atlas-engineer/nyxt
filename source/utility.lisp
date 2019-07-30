@@ -149,7 +149,7 @@ autocompletion candidates)."
                         candidates))
              (names (if case-sensitive
                         names
-                        (mapcar (lambda (name) (string-downcase name)) names)))
+                        (mapcar #'string-downcase names)))
              (names (match-permutation-candidates input names))
              (names (sort-levenshtein input names))
              (names (sort-beginning-with (first (str:words input)) names)))
