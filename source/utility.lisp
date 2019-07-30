@@ -151,7 +151,7 @@ autocompletion candidates)."
                         names
                         (mapcar (lambda (name) (string-downcase name)) names)))
              (names (match-permutation-candidates input names))
-             (names (sort-levenhstein input names))
+             (names (sort-levenshtein input names))
              (names (sort-beginning-with (first (str:words input)) names)))
         names)
       candidates))
