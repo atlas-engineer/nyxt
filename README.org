@@ -53,12 +53,41 @@ open up new links, or switch tabs with the power of fuzzy completion.
 
 * Getting Started
 ** Install Next
-See the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating systems
-provide packages for Next:
+
+Next is made of two components: a  _lisp core_ and a so called _platform
+port_. In addition, the platform port comes in two flavours:
+
+- Gtk/[[https://en.wikipedia.org/wiki/WebKit][Webkit]], the browser  engine of the Gnome platform,  also used in
+  Apple's Safari
+- Qt/[[https://en.wikipedia.org/wiki/Blink_(browser_engine)][Webengine/Blink]], the browser engine of Google Chrome.
+
+We  support *GNU/Linux*,  *MacOS*  and *GuixSD*.   Windows support  is
+possible but untested.
+
+The recommended way  is to download a *self-contained  Guix archive*. It
+contains the  lisp core,  the Gtk  platform port  and /all  the system
+dependencies/. You only have to download and run it !
+
+See the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries.
+
+In addition, some operating systems provide packages for Next:
 
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
-- [[https://guix.gnu.org][Guix]]: Install with =guix package --install sbcl-next=.
+- [[https://guix.gnu.org][Guix]]: Install  with =guix package --install  sbcl-next=
+
+If you want to use the Qt Webengine/Blink platform port, you currently
+have to download it separately.
+
+_Warning_: the Qt platform port is still beta software
+
+- download a  Qt Webengine archive  [[https://next.atlas.engineer/static/release/next-pyqt-webengine.tar.gz][here]]. Once you have  extracted it,
+  run  the  =next-pyqt-webengine= binary.
+- download a GNU/Linux Debian binary of the lisp core [[https://gitlab.com/atlas-engineer/next/pipelines?scope=all&page=1][on our CI system
+  here]] (you  have to download  the build  artifacts), and run  it with
+  =./next=. You should see a Next window.
+
+*** About Guix
 
 Guix is a package manager that can be installed on any GNU/Linux distribution;
 should Next be missing from your distribution, there is always the possibility
