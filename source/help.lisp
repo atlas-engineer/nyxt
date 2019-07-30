@@ -121,7 +121,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                 (:a :href "https://github.com/atlas-engineer/next/issues"
                     "report")
                 " bugs, instabilities or feature wishes.")
-            (:h2 "Quckstart keys")
+            (:h2 "Quickstart keys")
             (:ul
              (:li (:code "C-l") ": Load URL in tab")
              (:li (:code "M-l") ": Load URL in new tab")
