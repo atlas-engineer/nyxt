@@ -113,12 +113,12 @@ Otherwise, build a search query with the default search engine."
 (defun candidate-match-p (input-re candidate)
   (ppcre:scan input-re candidate))
 
-(defun match-permutation-candidates (input candidates)
+(defun match-permutation-candidates (input candidate-pairs)
   "Return the list of candidates that contain all the words of the input."
-  (when (and input candidates)
-    (loop for candidate in candidates
+  (when (and input candidate-pairs)
+    (loop for (candidate real-value) in candidate-pairs
        when (candidate-match-p (build-input-regexp-permutations input) candidate)
-         collect candidate)))
+         collect (list candidate real-value))))
 
 (defun search-or-lose (substring string)
   "Search for `substring' in `string' but always return a number.
@@ -128,31 +128,37 @@ autocompletion candidates)."
   (let ((index (search substring string)))
     (if index index 1000)))
 
-(defun sort-beginning-with (word candidates)
+(defun sort-beginning-with (word candidate-pairs)
   "Return (a new sequence) with candidates that start with `word' first."
-  (sort (copy-seq candidates) (lambda (x y)
-                                (< (search-or-lose word x)
-                                   (search-or-lose word y)))) )
+  (sort (copy-seq candidate-pairs) (lambda (x y)
+                                     (< (search-or-lose word (first x))
+                                        (search-or-lose word (first y))))))
 
-(defun sort-levenshtein (input candidates)
-  (sort (copy-seq candidates) (lambda (x y)
-                           (< (mk-string-metrics:levenshtein input x)
-                              (mk-string-metrics:levenshtein input y)))))
+(defun sort-levenshtein (input candidate-pairs)
+  (sort (copy-seq candidate-pairs) (lambda (x y)
+                                     (< (mk-string-metrics:levenshtein input (first x))
+                                        (mk-string-metrics:levenshtein input (first y))))))
 
+;; TODO: Implement smart-case: if input contains upcase characters, be
+;; case-sensitive, otherwise don't.
 (defun fuzzy-match (input candidates &key accessor-function case-sensitive)
-  "From the user input and a list of candidates, return a filtered list of candidates that have all the input words in them, and sort this list to have the 'most relevant' first."
+  "From the user input and a list of candidates, return a filtered list of
+candidates that have all the input words in them, and sort this list to have the
+'most relevant' first."
   (if (not (str:empty? input))
       (let* ((input (str:replace-all " " " " input))
-             (names (if accessor-function
-                        (mapcar (lambda (name) (funcall accessor-function name)) candidates)
-                        candidates))
-             (names (if case-sensitive
-                        names
-                        (mapcar #'string-downcase names)))
-             (names (match-permutation-candidates input names))
-             (names (sort-levenshtein input names))
-             (names (sort-beginning-with (first (str:words input)) names)))
-        names)
+             ;; To sort by the display value, we store all the candidates in a
+             ;; (display-value real-value) list or pairs.
+             (pairs (if accessor-function
+                        (mapcar (lambda (c) (list (funcall accessor-function c) c)) candidates)
+                        (mapcar (lambda (c) (list c c)) candidates)))
+             (pairs (if case-sensitive
+                        pairs
+                        (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)))
+             (pairs (match-permutation-candidates input pairs))
+             (pairs (sort-levenshtein input pairs))
+             (pairs (sort-beginning-with (first (str:words input)) pairs)))
+        (mapcar #'second pairs))
       candidates))
 
 (defun xdg-data-home (&optional (file-name ""))
