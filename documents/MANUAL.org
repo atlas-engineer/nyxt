@@ -161,7 +161,7 @@ The standard keybindings for buffer management are:
 2. ~C-x Left~: Switch to previous buffer
 3. ~C-x Right~: Switch to next buffer
 4. ~C-x k~: Delete a buffer
-5. ~C-x w~: Delete the current buffer
+5. ~C-x C-k~: Delete the current buffer
 6. ~M-l~: Open URL in new buffer
 7. ~C-l~: Change URL of current buffer
 8. ~C-t~: Make new empty buffer
