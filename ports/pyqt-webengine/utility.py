@@ -217,20 +217,25 @@ class WebEngineUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
         self.identifier = identifier
 
     def interceptRequest(self, info):
-        url = info.requestUrl().url()
-        cookies = ""
-        event_type = ""
-        is_new_window = False
-        is_known_type = True  # if False, download the file.
-        if url.endswith("pdf"):
-            is_known_type = False
-        mouse_button = ""
-        modifiers = [""]
-        logging.info("Request {}".format(url))
-        request_resource(self.identifier, url,
-                         cookies,
-                         event_type,
-                         is_new_window,
-                         is_known_type,
-                         mouse_button,
-                         modifiers)
+        if platform == "linux" or platform == "linux2":
+            url = info.requestUrl().url()
+            cookies = ""
+            event_type = ""
+            is_new_window = False
+            is_known_type = True  # if False, download the file.
+            if url.endswith("pdf"):
+                is_known_type = False
+            mouse_button = ""
+            modifiers = [""]
+            logging.info("Request {}".format(url))
+            request_resource(self.identifier, url,
+                             cookies,
+                             event_type,
+                             is_new_window,
+                             is_known_type,
+                             mouse_button,
+                             modifiers)
+        elif platform == "darwin":
+            # Currently Unimplemented on Darwin. The above, Linux
+            # specific code causes an instantaneous crash on Darwin
+            pass
