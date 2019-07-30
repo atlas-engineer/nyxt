@@ -11,6 +11,7 @@ PREFIX = /usr/local
 prefix = $(PREFIX)
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
+APPLICATIONSDIR = /Applications
 
 .PHONY: help
 help:
@@ -39,6 +40,10 @@ app-bundle: next
 	chmod +x ./Next.app/Contents/MacOS/next-pyqt-webengine
 	cp ./assets/Info.plist ./Next.app/Contents
 	cp ./assets/next.icns ./Next.app/Resource
+
+.PHONEY: install-app-bundle
+install-app-bundle:
+	mv Next.app $(APPLICATIONSDIR)
 
 .PHONY: gtk-webkit
 gtk-webkit:
