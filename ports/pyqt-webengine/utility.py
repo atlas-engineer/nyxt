@@ -142,7 +142,7 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
         if (low_level_data not in SPECIAL_KEYS):
             text = chr(low_level_data)
         event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag,
-                        10000, 10000, 10000, text=text)
+                          10000, 10000, 10000, text=text)
         receiver = window.get_window(window_id).buffer.focusProxy()
         QCoreApplication.sendEvent(receiver, event)
 
