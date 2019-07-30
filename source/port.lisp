@@ -97,4 +97,4 @@ This is an acceptable value for the PATH slot of the PORT class."
              (write-to-string
               (uiop/launch-program:process-info-pid
                (running-process port)))))
-      (format *error-output* "process ~a is not running.~&" (running-process port))))
+      (log:error "process ~a is not running.~&" (running-process port))))
