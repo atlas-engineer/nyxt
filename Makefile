@@ -43,14 +43,20 @@ app-bundle: next
 
 .PHONEY: install-app-bundle
 install-app-bundle:
-	mv Next.app $(APPLICATIONSDIR)
+	mv Next.app $(DESTDIR)/Applications
 
 .PHONY: gtk-webkit
 gtk-webkit:
 	$(MAKE) -C ports/gtk-webkit
 
 .PHONY: all
+all:
+ifeq ($(UNAME), Linux)
 all: next gtk-webkit
+endif
+ifeq ($(UNAME), Darwin)
+all: app-bundle
+endif
 
 .PHONY: install-gtk-webkit
 install-gtk-webkit: gtk-webkit
@@ -89,7 +95,14 @@ install-next: next
 	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
 
 .PHONY: install
+install:
+install:
+ifeq ($(UNAME), Linux)
 install: install-next install-gtk-webkit install-assets
+endif
+ifeq ($(UNAME), Darwin)
+install: install-app-bundle
+endif
 
 .PHONY: clean
 clean:
