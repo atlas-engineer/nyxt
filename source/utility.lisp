@@ -139,7 +139,6 @@ autocompletion candidates)."
                            (< (mk-string-metrics:levenshtein input x)
                               (mk-string-metrics:levenshtein input y)))))
 
-(export '(fuzzy-match))
 (defun fuzzy-match (input candidates &key accessor-function case-sensitive)
   "From the user input and a list of candidates, return a filtered list of candidates that have all the input words in them, and sort this list to have the 'most relevant' first."
   (if (not (str:empty? input))

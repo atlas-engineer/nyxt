@@ -7,4 +7,5 @@
   (:use :trivia)
   (:export
    #:start
-   #:entry-point))
+   #:entry-point
+   #:fuzzy-match))
