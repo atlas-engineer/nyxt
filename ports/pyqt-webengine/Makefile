@@ -8,6 +8,9 @@ install:
 run:
 	$(PYTHON) next-pyqt-webengine.py
 
+build-webengine:
+	pyinstaller next-pyqt-webengine.py
+
 isort:
 	isort -y --atomic
 
