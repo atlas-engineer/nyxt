@@ -91,12 +91,12 @@ deprecated and by what in the docstring."
 
 (defun list-commands (&optional mode)
   "List commands.
-A command is a mode method that has a non-nil COMMANDP symbol property.
+A command is a mode method that is in the %%command-list.
 When MODE is a mode symbol, list only the commands that apply in this mode.
 Otherwise list all commands."
   (loop for m in (package-methods)
         for first-specializer = (first (closer-mop:method-specializers m))
-        when (and (member (closer-mop:generic-function-name (closer-mop:method-generic-function m))
+        when (and (member (command-symbol m)
                           %%command-list)
                   (closer-mop:subclassp first-specializer (find-class 'root-mode))
                   (or (not mode)
