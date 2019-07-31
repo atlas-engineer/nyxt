@@ -146,12 +146,11 @@ more details."
                                      (< (mk-string-metrics:levenshtein input (first x))
                                         (mk-string-metrics:levenshtein input (first y))))))
 
-;; TODO: Implement smart-case: if input contains upcase characters, be
-;; case-sensitive, otherwise don't.
-(defun fuzzy-match (input candidates &key accessor-function case-sensitive)
+(defun fuzzy-match (input candidates &key accessor-function)
   "From the user input and a list of candidates, return a filtered list of
 candidates that have all the input words in them, and sort this list to have the
-'most relevant' first."
+'most relevant' first.
+The match is case-sensitive if INPUT contains at least one uppercase character."
   (if (not (str:empty? input))
       (let* ((input (str:replace-all " " " " input))
              ;; To sort by the display value, we store all the candidates in a
@@ -159,9 +158,9 @@ candidates that have all the input words in them, and sort this list to have the
              (pairs (if accessor-function
                         (mapcar (lambda (c) (list (funcall accessor-function c) c)) candidates)
                         (mapcar (lambda (c) (list c c)) candidates)))
-             (pairs (if case-sensitive
-                        pairs
-                        (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)))
+             (pairs (if (str:downcasep input)
+                        (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)
+                        pairs))
              (pairs (match-permutation-candidates input pairs))
              (pairs (sort-levenshtein input pairs))
              (pairs (sort-beginning-with (first (str:words input)) pairs)))
