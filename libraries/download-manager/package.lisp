@@ -12,6 +12,7 @@
    #:requested-uri
    #:header
    #:file
+   #:filename
    #:bytes-fetched
    #:bytes-total
    #:progress

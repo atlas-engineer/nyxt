@@ -46,7 +46,8 @@
                              ") "
                              (:u (quri:render-uri (download-manager:resolved-uri d)))
                              " as "
-                             (:b (file-namestring (download-manager:file d)))))))))
+                             (:b (file-namestring (download-manager:file d)))))))
+                    (:p (:em "Open a file with M-x download-open-file."))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
     (rpc-buffer-evaluate-javascript interface download-buffer insert-content)
@@ -71,3 +72,22 @@
     (download interface selected-link)
     (unless (find-buffer 'download-mode)
       (download-list (make-instance 'root-mode)))))
+
+(defun get-downloaded-filenames (interface)
+  "Return the list of downloaded filenames of the current session, as strings."
+  (mapcar #'download-manager:filename (downloads interface)))
+
+(defun downloaded-files-completion-fn (interface)
+  (let ((filenames (get-downloaded-filenames interface)))
+    (lambda (input)
+      (fuzzy-match input filenames))))
+
+(define-command download-open-file (root-mode &optional (interface *interface*))
+  "Open a downloaded file.
+Open the file with the system's default (xdg-open)."
+  ;; xxx: have a customizable association list of extensions -> program.
+  (with-result (filename (read-from-minibuffer
+                          (minibuffer *interface*)
+                          :input-prompt "Open file:"
+                          :completion-function (downloaded-files-completion-fn interface)))
+    (uiop:launch-program (list "xdg-open" filename))))

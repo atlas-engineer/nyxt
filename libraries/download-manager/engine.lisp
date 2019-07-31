@@ -85,6 +85,10 @@ This is a floating seconds.")
                       :initform 0
                       :documentation "Download speed in B/s when last `update' was called.")))
 
+(defmethod filename ((download download))
+  "Return the full name of this downloaded file, as a string."
+  (format nil "~a" (file download)))
+
 (defmethod temp-file ((download download))
   "Return a file name suitable for unfinished
 downloads."
