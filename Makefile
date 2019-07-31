@@ -4,6 +4,9 @@ UNAME := $(shell uname)
 
 LISP ?= sbcl
 LISP_FLAGS ?= --no-userinit
+ifeq ($(LISP), sbcl)
+LISP_FLAGS += --non-interactive
+endif
 
 NEXT_INTERNAL_QUICKLISP = true
 
