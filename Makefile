@@ -139,6 +139,15 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)'
 
+.PHONY: quicklisp-update
+quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
+	$(LISP) $(LISP_FLAGS) \
+		--load $(QUICKLISP_DIR)/setup.lisp \
+		--eval '(require "asdf")' \
+		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
+		--eval '(uiop:quit)'
+
+
 .PHONY: clean-deps
 clean-deps:
 	rm -rf quicklisp.lisp

@@ -2,11 +2,13 @@
 - [[#developer-installation-with-guix][Developer Installation with Guix]]
 - [[#generic-developer-installation][Generic Developer Installation]]
   - [[#installing-sbcl][Installing SBCL]]
-  - [[#manually-installing-quicklisp-optional][Manually Installing Quicklisp (optional)]]
-  - [[#gnulinux-dependencies][GNU/Linux dependencies]]
+  - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
+  - [[#gnulinux-specific-dependencies][GNU/Linux specific dependencies]]
+  - [[#macos-specific-dependencies][macOS specific dependencies]]
   - [[#compile][Compile]]
   - [[#run][Run]]
   - [[#run-from-source][Run from Source]]
+  - [[#update-local-lisp-libraries][Update local lisp libraries]]
 - [[#help--community][Help & Community]]
   - [[#contribution][Contribution]]
   - [[#irc-channel][IRC Channel]]
@@ -23,7 +25,7 @@ available in both WebKit and WebEngine flavors. Support for graphics
 and OS integration is provided via:
 
 + macOS: Qt
-+ GNU/Linux Qt or GTK
++ GNU/Linux: Qt or GTK
 
 ** Installing SBCL
 You can obtain SBCL from your package manager or by downloading it
@@ -207,6 +209,13 @@ Then in a shell execute the following:
 6. Make sure the platform port can be bound by Next, as described
    in the previous section.
 7. Execute ~(next:start)~ to open your first Next window.
+
+** Update local lisp libraries
+
+When you need to update the  local quicklisp libraries, located in the
+~quicklisp/~  directory  of  the  ~next~ project,  run  the  following:
+
+: make quicklisp-update
 
 * Help & Community
 There are several ways to ask for help from the community. The first
