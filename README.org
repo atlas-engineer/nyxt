@@ -1,5 +1,5 @@
 #+html: <img src="https://next.atlas.engineer/static/image/next_256x256.png" align="right"/>
-* Next Web Browser
+* Next web browser
 Next is a keyboard-oriented, extensible web-browser designed for power
 users. The application has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]], or [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]),
 is fully configurable and extensible in Lisp, and has powerful
@@ -51,7 +51,7 @@ open up new links, or switch tabs with the power of fuzzy completion.
 
 #+html: <img src="https://next.atlas.engineer/static/image/fast_navigation.gif" align="center"/>
 
-* Getting Started
+* Getting started
 ** Install Next
 See the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating systems
 provide packages for Next:
@@ -72,7 +72,7 @@ to install Guix on your system and use it to install Next.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
-*** D-Bus Requirement
+*** D-Bus requirement
 
 Since 1.3.0, Next needs a D-Bus session bus to run.
 In most cases, it should already be running.
@@ -80,7 +80,7 @@ In most cases, it should already be running.
 If Next does not start up, it is very likely that D-Bus is not running
 for your user.
 
-** Quickstart Keys
+** Quickstart keys
 - ~C-l~:     Load URL in tab
 - ~M-l~:     Load URL in a new tab
 - ~C-x b~:   Switch tab
@@ -101,7 +101,7 @@ The following keys exist as special keys:
 ~Left~, ~Right~, ~Up~, ~Down~
 
 ** Configuration
-*** Customize and Extend Next
+*** Customize and extend Next
  Customization is possible through the creation of a
  =~/.config/next/init.lisp= file. From here you
  can override and redefine any of the functions by defining your init
@@ -115,20 +115,17 @@ The following keys exist as special keys:
 
 *** Run Next in a security sandbox
 
-    For improved security  while you browse the internet,  you can run
-    Next with [[https://firejail.wordpress.com/][Firejail]].
+    For improved security while you browse the internet, you can run
+    Next with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
 
     #+begin_quote
-    Firejail  is a  SUID program  that  reduces the  risk of  security
-    breaches  by  restricting  the running  environment  of  untrusted
-    applications using  Linux namespaces and seccomp-bpf.  It allows a
-    process and all its descendants to  have their own private view of
-    the globally shared  kernel resources, such as  the network stack,
+    Firejail is a SUID program that reduces the risk of security
+    breaches by restricting the running environment of untrusted
+    applications using Linux namespaces and seccomp-bpf. It allows a
+    process and all its descendants to have their own private view of
+    the globally shared kernel resources, such as the network stack,
     process table, mount table.
     #+end_quote
-
-    Firejail is  available in  all GNU/Linux distributions  (e.g. =apt
-    install firejail= on Debian-based distributions).
 
     Run it like this:
 
