@@ -43,7 +43,7 @@ app-bundle: next
 
 .PHONEY: install-app-bundle
 install-app-bundle:
-	mv Next.app $(DESTDIR)/Applications
+	cp -r Next.app $(DESTDIR)/Applications
 
 .PHONY: gtk-webkit
 gtk-webkit:
