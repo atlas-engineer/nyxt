@@ -33,7 +33,7 @@ next: $(lisp_files)
 		--eval '(asdf:make :next)' \
 		--eval '(uiop:quit)'
 
-.PHONEY: app-bundle
+.PHONY: app-bundle
 app-bundle: next
 	mkdir -p ./Next.app/Contents/MacOS
 	mkdir -p ./Next.app/Resources
@@ -44,7 +44,7 @@ app-bundle: next
 	cp ./assets/Info.plist ./Next.app/Contents
 	cp ./assets/next.icns ./Next.app/Resource
 
-.PHONEY: install-app-bundle
+.PHONY: install-app-bundle
 install-app-bundle:
 	cp -r Next.app $(DESTDIR)/Applications
 
