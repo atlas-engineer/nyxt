@@ -54,11 +54,9 @@ have to build it from source.
 
 *** D-Bus requirement
 
-Since 1.3.0, Next needs a D-Bus session bus to run.
-In most cases, it should already be running.
-
-If Next does not start up, it is very likely that D-Bus is not running
-for your user.
+Next needs a D-Bus session bus to run. In most cases, it should
+already be running. If Next does not start up, it is very likely that
+D-Bus is not running for your user.
 
 ** Quickstart keys
 
