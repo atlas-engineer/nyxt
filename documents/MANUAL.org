@@ -476,7 +476,7 @@ downloads, new window requests,
 
 This function can also serve as an entry point to URL-based resource blocking.
 
-*** Resource blodking (Ad-blocking)
+*** Resource blocking (Ad-blocking)
 
 Next provides the =blocker-mode=.  It filters networks requests (including
 ads)by the host name.  A default filter list is automatically updated from
