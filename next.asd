@@ -9,6 +9,8 @@
   :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria
                :cl-strings
+               :cl-ppcre
+               :cl-ppcre-unicode
                :str
                :cl-string-match
                :mk-string-metrics
