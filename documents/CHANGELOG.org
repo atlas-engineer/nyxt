@@ -18,13 +18,44 @@ some features such as proxy support, per-buffer cookie file, network resource
 interception.  To address these limitations, the PyQt platform port could become
 the default for macOS.
 ** TASK 1.3.0
-*** TASK VI Emulation Layer
-+ Add a VI Emulation layer to support VIM like keybindings and
-  functionality
-*** TASK Ad Blocking Support
-+ Add support for content blocking using the WebKit API
-*** TASK Fix search/occur implementation
-*** TASK Add download support
+*** DONE PyQt/Webengine platform port
+QtWebengine is based off Blink (the renderer of Chrome).
+*** DONE VI bindings
+*** DONE Ad-blocking support
+Only host-based for now and uses Easylist by default.
+*** DONE Fix search implementation
+It now displays search hints properly and search within iframes too.
+*** DONE Add initial download support
+*** DONE Support multiple modes per buffer
+*** DONE Add proxy-mode
+This makes it possible to use Next over Tor among others.
+*** DONE Add noscript-mode to disable Javascript
+*** DONE Use D-Bus for inter-process communication
+This increases security and should also improve performance, notably on *BSD systems.
+*** DONE Remove ~define-parenstatic~ macro
+~define-parenscript~ supersedes it.
+*** DONE Smarter start up logic
+Next will try harder to "do the right thing" when starting.
+A simple ~(next:start)~ from the REPL should be enough in most cases.
+*** DONE Improve minibuffer fuzzy-matching to support permutations and typos
+*** DONE Extended bindings
+- C-w copies any candidate
+- TAB inserts the candidate in the minibuffer.
+- C-v and M-v scroll pages up and down.
+- C-x C-k deletes the current buffer.
+- C-left, C-right, C-Page_Up and C-Page_Down go to previous/next buffer.
+*** DONE Fix init file location guessing
+It used to be hard-coded, now it's found in ~/.config/next/init.lisp.
+*** DONE Display a help buffer on startup
+This does not require an Internet connection.
+*** DONE Add Roswell build script (thanks to Danny YUE)
+*** DONE Fix the "blank buffer" issue with the gtk-webkit platform port
+*** DONE Fix the minibuffer size with the gtk-webkit platform port
+*** DONE Display current URL or URL at point in the echo area
+*** DONE Add the ~about~ command to display list of campaign backers
+*** DONE Rename ~add-search-hints~ to ~search-buffer~
+*** DONE Rename ~kill~ to ~quit~
+*** DONE Rename ~*anchor*~ commands to ~*hint*~
 ** DONE 1.2.2
 *** Use authenticated RPC to mitigate remote-execution vulnerability
 *** Cocoa-webkit support has been dropped
