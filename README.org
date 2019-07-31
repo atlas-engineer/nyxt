@@ -1,12 +1,10 @@
 #+html: <img src="https://next.atlas.engineer/static/image/next_256x256.png" align="right"/>
 * Next web browser
-Next is a keyboard-oriented, extensible web-browser designed for power
-users. The application has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]], or [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]),
-is fully configurable and extensible in Lisp, and has powerful
-features for productive professionals.
 
-Next includes many features designed to enable you to be productive. A
-few of them are demonstrated below.
+Next is a keyboard-oriented, extensible web-browser designed for power
+users. The application has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]]), is fully
+configurable and extensible in Lisp, and has powerful features for
+productive professionals.
 
 *Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
 instabilities or feature wishes.
@@ -14,91 +12,45 @@ instabilities or feature wishes.
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
-~epl~, and any other valid series of letters.
+~epl~, or any other matching series of letters.
 
 #+html: <img src="https://next.atlas.engineer/static/image/tab_switch.gif" align="center"/>
 
 ** History as a tree
-History is represented as a tree that you can traverse. More complex
-than the "forwards-backwards" abstraction found in other browsers,
-the tree makes sure you never lose track of where you've been.
-
-Consider the following example:
-
-1. Start page ~True Parrot~
-2. Visit page ~Gray Parrot~
-3. Return to page ~True Parrot~
-4. Visit page ~Budgerigar~
-5. Return to page ~True Parrot~
-6. Execute ~forwards~ keybind in history
-
-It is at this point that a normal browser would *not* be able to
-navigate you forwards to your visit of ~Gray Parrot~. Instead of
-erasing your history, Next offers smart navigation and prompts the
-user. Do you wish to go forwards to ~Gray Parrot~ or to
-~Budgerigar~?
+History is represented as a tree that you can traverse. smarter than
+the "forwards-backwards" abstraction found in other browsers, the tree
+makes sure you never lose track of where you've been.
 
 ** Lightning fast navigation
 Next is lightweight and fast. The interface does not get in your way-
 everything can be done by keyboard. You are free to fully focus on
-your task unburdened by cumbersome UI.
-
-Link Hints provide you with the ability to instantly jump to any link
-on the page, or even open it in a new tab.
-
-Fuzzy completion means intelligent completion. Find your bookmarks,
-open up new links, or switch tabs with the power of fuzzy completion.
+your task.
 
 #+html: <img src="https://next.atlas.engineer/static/image/fast_navigation.gif" align="center"/>
 
 * Getting started
 ** Install Next
 
-Next is made of two components: a  _Lisp core_ and a so called _platform
-port_. In addition, the platform port comes in two flavours:
+Next supports GNU/Linux, macOS, and Guix with engine support for
+WebKit and WebEngine/Blink.
 
-- GTK/[[https://en.wikipedia.org/wiki/WebKit][WebKit]]
-- Qt/[[https://en.wikipedia.org/wiki/Blink_(browser_engine)][Webengine/Blink]]
-
-We  support *GNU/Linux*,  *macOs*  and *Guix*.   Windows support  is
-possible but untested.
-
-The recommended way  is to download a *self-contained  Guix archive*. It
-contains the  Lisp core,  the GTK  platform port  and /all  the system
-dependencies/. You only have to download and run it!
-
-See the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries.
-
-In addition, some operating systems provide packages for Next:
+Please see the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating
+systems provide packages for Next:
 
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
-- [[https://guix.gnu.org][Guix]]: Install  with =guix package --install  sbcl-next=
-
-If you want to use the Qt Webengine/Blink platform port, you currently
-have to download it separately.
-
-_Warning_: the Qt platform port is still beta software
-
-- Download a  Qt Webengine archive  [[https://next.atlas.engineer/static/release/next-pyqt-webengine.tar.gz][here]]. Once you have  extracted it,
-  run  the  =next-pyqt-webengine= binary.
-- Download a GNU/Linux Debian binary of the Lisp core [[https://gitlab.com/atlas-engineer/next/pipelines?scope=all&page=1][on our CI system
-  here]] (you  have to download  the build  artifacts), and run  it with
-  =./next=. You should see a Next window.
-
-*** About Guix
-
-Guix is a package manager that can be installed on any GNU/Linux distribution;
-should Next be missing from your distribution, there is always the possibility
-to install Guix on your system and use it to install Next.
-
-- If Guix is easily available for your distribution (e.g. as a
-  package), then this is the simplest route.
-
-- If not, or if you want to help developing Next, building from source
-  is the recommended route.
+- [[https://guix.gnu.org][Guix]]: Install with =guix package --install  sbcl-next=
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
+
+If you want to use the Qt Webengine/Blink platform port, you currently
+have to build it from source.
+
+- Download a Qt Webengine archive [[https://next.atlas.engineer/static/release/next-pyqt-webengine.tar.gz][here]]. Once you have extracted it,
+  run the =next-pyqt-webengine= binary.
+- Download a GNU/Linux Debian binary of the Lisp core [[https://gitlab.com/atlas-engineer/next/pipelines?scope=all&page=1][on our CI system
+  here]] (you have to download the build artifacts), and run it with
+  =./next=.
 
 *** D-Bus requirement
 
@@ -109,6 +61,7 @@ If Next does not start up, it is very likely that D-Bus is not running
 for your user.
 
 ** Quickstart keys
+
 - ~C-l~:     Load URL in tab
 - ~M-l~:     Load URL in a new tab
 - ~C-x b~:   Switch tab
@@ -130,38 +83,38 @@ The following keys exist as special keys:
 
 ** Configuration
 *** Customize and extend Next
- Customization is possible through the creation of a
- =~/.config/next/init.lisp= file. From here you
- can override and redefine any of the functions by defining your init
- file as part of the ~:next~ package. For more information please see:
- [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org#customization][customizing Next]].
 
- Additionally, a document provided in the documents directory named
- [[https://github.com/atlas-engineer/next/blob/master/documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
- customizations. To share your own extension, please make a pull
- request with your new extension appended to EXTENSION.org.
+Complete customization is possible through the creation of a
+=~/.config/next/init.lisp= file. For more information please see:
+"Customizing Next" within the [[file:documents/MANUAL.org][MANUAL.org]].
+
+Additionally, a document provided in the documents directory named
+[[file:documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
+customizations. To share your own extension, please make a pull
+request with your new extension appended to EXTENSION.org.
 
 *** Run Next in a security sandbox
 
-    For improved security while you browse the internet, you can run
-    Next with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
+For improved security while you browse the internet, you can run Next
+with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
 
-    #+begin_quote
-    Firejail is a SUID program that reduces the risk of security
-    breaches by restricting the running environment of untrusted
-    applications using Linux namespaces and seccomp-bpf. It allows a
-    process and all its descendants to have their own private view of
-    the globally shared kernel resources, such as the network stack,
-    process table, mount table.
-    #+end_quote
+#+begin_quote
+Firejail is a SUID program that reduces the risk of security breaches
+by restricting the running environment of untrusted applications using
+Linux namespaces and seccomp-bpf. It allows a process and all its
+descendants to have their own private view of the globally shared
+kernel resources, such as the network stack, process table, mount
+table.
+#+end_quote
 
-    Run it like this:
+Run it like this:
 
 : firejail --ignore=nodbus next-gtk-webkit
 
 ** Documentation
+
 For full documentation about Next, how it works, and how to extend it
-please see the [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org][user manual]].
+please see the [[file:documents/MANUAL.org][MANUAL.org]].
 
 If you want to help with development or build Next from scratch, read
 the developer's documentation at [[https://github.com/atlas-engineer/next/blob/master/documents/README.org][documents/README.org]].
