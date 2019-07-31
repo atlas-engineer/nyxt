@@ -18,43 +18,34 @@ Install [[https://guix.gnu.org][Guix]] and follow the instructions in ../build-s
 Next is written in Common Lisp. It can be built with any standard
 Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] support is tested.
 
-It is designed to be cross-platform compatible. Support for graphics is
-provided via QT for MacOS and GTK for GNU/Linux.
+It is designed to be cross-platform, cross-engine compatible. Next is
+available in both WebKit and WebEngine flavors. Support for graphics
+and OS integration is provided via:
 
-When using Next with Emacs/Slime, make sure to have the following
-configuration set in your =.swank.lisp=.
-
-#+NAME: config
-#+BEGIN_SRC language
-(setf swank:*globally-redirect-io* t)
-(setf swank:*communication-style* :fd-handler)
-#+END_SRC
++ macOS: Qt
++ GNU/Linux Qt or GTK
 
 ** Installing SBCL
-You can obtain SBCL either from your package manager or by downloading
-it directly from the SBCL repository.
+You can obtain SBCL from your package manager or by downloading it
+directly from the SBCL repository.
 
 To install SBCL from source, Download SBCL:
 [[http://www.sbcl.org/platform-table.html]], full installation
 instructions can be found here: [[http://www.sbcl.org/getting.html]].
 
-** Manually Installing Quicklisp (optional)
-The official Quicklisp website can provide updated links
-to downloads, and instructions:
-
-https://www.quicklisp.org
+** Installing Quicklisp (optional)
+Quicklisp is downloaded and installed automatically by the
+Makefile. If you wish to install it manually, system-wide, the
+official Quicklisp website can provide updated links to downloads, and
+instructions: https://www.quicklisp.org
 
 To install Quicklisp:
-
 - Download https://beta.quicklisp.org/quicklisp.lisp.
-- Execute ~sbcl --load quicklisp.lisp~ to load Quicklisp.
+- Execute ~lisp --load quicklisp.lisp~ to load Quicklisp.
 - Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install.
 - Evaluate in the REPL ~(ql:add-to-init-file)~ to add Quicklisp to your Lisp init file.
 
-More detailed instructions and other resources are readily available
-on the Quicklisp website.
-
-** GNU/Linux dependencies
+** GNU/Linux specific dependencies
 - WebKitGTK+ also known as webkit2gtk (make sure to use the most
   recent version for security reasons -- /Debian Stable won't do/)
 - SQLite
@@ -99,28 +90,38 @@ distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
+** macOS specific dependencies
++ Qt
++ D-Bus
++ [[https://github.com/sionescu/libfixposix][libfixposix]]
++ PyQt
++ SQLite (available by default)
+
 ** Compile
-The Next program consists of 2 dedicated executable files: the Lisp core and
-the platform port. There are 2 ways to build them according to whether you want
-to use [[https://github.com/roswell/roswell][Roswell]].
+Next consists of two standalone executables: the Lisp core and the
+platform port. There are two ways to build Next depending on if
+you want to use [[https://github.com/roswell/roswell][Roswell]].
 
 *** Compile Image with a Lisp Implementation
 
-The following command will build both Lisp core and the platform port.
+The following command will build both Lisp core and the platform
+port. On macOS this will produce an application bundle which you can
+copy into your =/Applications= folder.
 
 - GNU/Linux:
 #+BEGIN_SRC sh
 make all
 #+END_SRC
 
-- MacOS:
+- macOS:
+#+BEGIN_SRC sh
+make all
+#+END_SRC
 
-Pending the QT Port Completion
-
-If you look within the Makefile you'll find many options you can
-specify. You can specify to use your Lisp's init file, to use your
-global installation of Quicklisp, or to automatically download and
-install a separate Quicklisp installation for Next. Run ~make~ to display some
+Inside the Makefile you'll find many options you can specify. You can
+specify to use your Lisp's init file, to use your global installation
+of Quicklisp, or to automatically download and install a separate
+Quicklisp installation for Next. Run ~make~ to display some
 documentation. Please see the Makefile for more details.
 
 *** Compile with Roswell
@@ -131,9 +132,9 @@ systems installed on your system.
 A Roswell script is provided under the =./build-scripts/=. You have to make sure
 that this project can be found by Roswell (Quicklisp). You may create a
 symbolic link of this project in the =~/.roswell/local-projects/= directory to
-achieve it.
+do so.
 
-In order to compile the Lisp core, simple run:
+In order to compile the Lisp core, simply run:
 
 #+BEGIN_SRC sh
 ros build build-scripts/next.ros
@@ -149,7 +150,7 @@ make install-gtk-webkit
 
 You may simply type =make= to display documentation.
 
-Please refer to the next section to make the 2 parts work together.
+Please refer to the next section to make the two parts work together.
 
 ** Run
 
@@ -171,7 +172,7 @@ For =next= to work, it must find the platform port.  There are a few options:
 ;; ...
   #+END_SRC
 
-- Or add the appropriate platform-port folder (e.g. the GTK or QT
+- Or add the appropriate platform-port folder (e.g. the GTK or Qt
   platform-port application) to your =$PATH=. For instance you can add
   #+BEGIN_SRC sh
   export PATH=$PATH:/path/to/next/ports/gtk-webkit
@@ -185,7 +186,7 @@ Now go ahead and start =path/to/next/next=!
 
 ** Run from Source
 
-If you are developing Next, you might prefer to directly run Next from the
+If you are developing Next, you might prefer to run Next directly from
 source so that you can skip the compilation step and iterate faster.
 
 First, make sure the platform port is properly installed as explained in the
