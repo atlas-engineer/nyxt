@@ -100,17 +100,39 @@ The following keys exist as special keys:
 ~BACKSPACE~, ~DELETE~, ~ESCAPE~ , ~HYPHEN~, ~RETURN~, ~SPACE~, ~TAB~,
 ~Left~, ~Right~, ~Up~, ~Down~
 
-** Customize and Extend Next
-Customization is possible through the creation of a
-=~/.config/next/init.lisp= file. From here you
-can override and redefine any of the functions by defining your init
-file as part of the ~:next~ package. For more information please see:
-[[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org#customization][customizing Next]].
+** Configuration
+*** Customize and Extend Next
+ Customization is possible through the creation of a
+ =~/.config/next/init.lisp= file. From here you
+ can override and redefine any of the functions by defining your init
+ file as part of the ~:next~ package. For more information please see:
+ [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org#customization][customizing Next]].
 
-Additionally, a document provided in the documents directory named
-[[https://github.com/atlas-engineer/next/blob/master/documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
-customizations. To share your own extension, please make a pull
-request with your new extension appended to EXTENSION.org.
+ Additionally, a document provided in the documents directory named
+ [[https://github.com/atlas-engineer/next/blob/master/documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
+ customizations. To share your own extension, please make a pull
+ request with your new extension appended to EXTENSION.org.
+
+*** Run Next in a security sandbox
+
+    For improved security  while you browse the internet,  you can run
+    Next with [[https://firejail.wordpress.com/][Firejail]].
+
+    #+begin_quote
+    Firejail  is a  SUID program  that  reduces the  risk of  security
+    breaches  by  restricting  the running  environment  of  untrusted
+    applications using  Linux namespaces and seccomp-bpf.  It allows a
+    process and all its descendants to  have their own private view of
+    the globally shared  kernel resources, such as  the network stack,
+    process table, mount table.
+    #+end_quote
+
+    Firejail is  available in  all GNU/Linux distributions  (e.g. =apt
+    install firejail= on Debian-based distributions).
+
+    Run it like this:
+
+: firejail --ignore=nodbus next-gtk-webkit
 
 ** Documentation
 For full documentation about Next, how it works, and how to extend it
