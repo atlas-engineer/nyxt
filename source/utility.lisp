@@ -114,7 +114,9 @@ Otherwise, build a search query with the default search engine."
   (ppcre:scan input-re candidate))
 
 (defun match-permutation-candidates (input candidate-pairs)
-  "Return the list of candidates that contain all the words of the input."
+  "Return the list of candidates that contain all the words of the input.
+CANDIDATE-PAIRS is a list of (display-value real-value).  See `fuzzy-match' for
+more details."
   (when (and input candidate-pairs)
     (loop for (candidate real-value) in candidate-pairs
        when (candidate-match-p (build-input-regexp-permutations input) candidate)
@@ -129,12 +131,17 @@ autocompletion candidates)."
     (if index index 1000)))
 
 (defun sort-beginning-with (word candidate-pairs)
-  "Return (a new sequence) with candidates that start with `word' first."
+  "Return (a new sequence) with candidates that start with `word' first.
+CANDIDATE-PAIRS is a list of (display-value real-value).  The display-value is
+used for comparison.  See `fuzzy-match' for more details."
   (sort (copy-seq candidate-pairs) (lambda (x y)
                                      (< (search-or-lose word (first x))
                                         (search-or-lose word (first y))))))
 
 (defun sort-levenshtein (input candidate-pairs)
+  "Sort CANDIDATE-PAIRS, the pair closest to INPUT in the levenshtein distance comes first.
+CANDIDATE-PAIRS is a list of (display-value real-value).  See `fuzzy-match' for
+more details."
   (sort (copy-seq candidate-pairs) (lambda (x y)
                                      (< (mk-string-metrics:levenshtein input (first x))
                                         (mk-string-metrics:levenshtein input (first y))))))
