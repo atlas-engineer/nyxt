@@ -24,9 +24,13 @@
           "button8" 'history-backwards
           "C-p" 'scroll-up
           "C-n" 'scroll-down
-          "C-x C-=" 'zoom-in-page
+          "C-x C-=" 'zoom-in-page ;
+          "C-x C-+" 'zoom-in-page
+          "C-x +" 'zoom-in-page
           "C-x C-HYPHEN" 'zoom-out-page
+          "C-x HYPHEN" 'zoom-out-page
           "C-x C-0" 'unzoom-page
+          "C-x 0" 'unzoom-page
           "C-r" 'reload-current-buffer
           "C-m o" 'set-url-from-bookmark
           "C-m s" 'bookmark-current-page

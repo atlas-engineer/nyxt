@@ -50,11 +50,10 @@ _Note_:  Next also ships [[VI-style bindings][VI-style keybindings]].
 
 ** Zooming page
 Use the zoom keybindings to make everything on a web page larger or smaller.
-These keybindings mimic the Emacs counterpart:
 
-1. ~C-x C-=~: Increase size
-2. ~C-x C--~: Decrease size
-3. ~C-x C-0~: Restore defaults
+1. ~C-x +~, ~C-x C-+~ and ~C-x C-=~: Increase size
+2. ~C-x C--~, ~C-x -~: Decrease size
+3. ~C-x 0~, ~C-x C-0~: Restore defaults
 
 ** Jumping to links (link-hints)
 In order to visit a link, one never has to remove their fingers from
