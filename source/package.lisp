@@ -8,4 +8,5 @@
   (:export
    #:start
    #:entry-point
-   #:fuzzy-match))
+   #:fuzzy-match
+   #:open-file))

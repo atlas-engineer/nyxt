@@ -82,12 +82,24 @@
     (lambda (input)
       (fuzzy-match input filenames))))
 
+(defun open-file-default (filename)
+  "Open this file with `xdg-open'."
+  (handler-case (uiop:run-program (list "xdg-open" filename))
+    ;; We can probably signal something and display a notification.
+    (error (c) (format *error-output* "Error opening ~a: ~a~&" filename c))))
+
+(defun open-file (filename)
+  "Open this file. `filename' is the full path of the file, as a string.
+By default, try to open it with the system's default external program, using `xdg-open'.
+The user can override this function to decide what to do with the file."
+  (open-file-default filename))
+
 (define-command download-open-file (root-mode &optional (interface *interface*))
   "Open a downloaded file.
-Open the file with the system's default (xdg-open)."
-  ;; xxx: have a customizable association list of extensions -> program.
+Ask the user to choose one of the downloaded files of the current session.
+See also `open-downloaded-file'."
   (with-result (filename (read-from-minibuffer
                           (minibuffer *interface*)
                           :input-prompt "Open file:"
                           :completion-function (downloaded-files-completion-fn interface)))
-    (uiop:launch-program (list "xdg-open" filename))))
+    (open-file filename)))

@@ -15,6 +15,7 @@ end-user allowing for infinite customization.
   - [[#searching][Searching]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
+  - [[#download-manager][Download manager]]
   - [[#clearing-the-echo-area][Clearing the Echo Area]]
   - [[#exiting][Exiting]]
   - [[#proxy-and-tor-support][Proxy and Tor support]]
@@ -24,6 +25,7 @@ end-user allowing for infinite customization.
   - [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
+  - [[#decide-how-to-open-files][Decide how to open files]]
   - [[#loading-files][Loading Files]]
   - [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
   - [[#getting-input-from-the-user][Getting input from the user]]
@@ -233,11 +235,21 @@ Bookmarks are stored in a database located in
 one table with two columns: id, url. In order to navigate and manage your
 bookmarks, a few functions are provided:
 
-1. ~C-m k~: Delete Bookmark
-2. ~C-m o~: Open Bookmark
-3. ~C-m s~: Bookmark Current Page
-4. ~C-m u~: Bookmark URL (input URL via minibuffer)
-5. ~C-m g~: Bookmark Anchor (input URL via link hints)
+1. ~C-m s~: Bookmark Current Page
+2. ~C-m u~: Bookmark URL (input URL via minibuffer)
+3. ~C-m o~: Open Bookmark
+4. ~C-m g~: Bookmark Anchor (input URL via link hints)
+5. ~C-m k~: Delete Bookmark
+
+** Download manager
+
+When you  download a file,  you are  taken to a  =*Downloads*= buffer,
+which  shows the  ongoing  download  progress and  the  list of  files
+downloaded during the current session.   You can switch to this buffer
+as usual, and also with =M-x download-list=.
+
+To open  a file, use  =M-x download-open-file=. See  the customization
+section to control how files are open.
 
 ** Clearing the Echo Area
 In the area at the bottom of the screen where the minibuffer resides,
@@ -427,6 +439,26 @@ The default keybindings for ~vi-normal-mode~ are:
 ":": execute-command
 "W": new-window
 #+END_SRC
+
+** Decide how to open files
+
+The command =M-x download-open-file=, which is  used to open a file we
+downloaded  in  the  current  session,  calls  in  turn  the  function
+=open-file <filename>=. Its default behaviour is to open the file with
+the  system's  default,  using   =xdg-open=.  You  can  override  this
+behaviour by re-defining this function.
+
+For example:
+
+#+begin_src lisp
+(defun open-file (filename)
+  "Open PDFs with Emacs."
+  (handler-case (let ((extension (pathname-type filename)))
+                  (str:string-case extension
+                                   ("pdf" (uiop:run-program (list "emacs" filename)))
+                                   (otherwise (next::open-file-default filename))))
+    (error (c) (format *error-output* "Error opening pdf ~a: ~a" filename c))))
+#+end_src
 
 ** Loading Files
 To load a file again, or reload an init file use the function
