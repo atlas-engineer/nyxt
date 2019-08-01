@@ -199,13 +199,13 @@ This should not rely on the minibuffer's content.")
                                       (minibuffer-closed-height active-window))))
 
 (defun insert (characters &optional (minibuffer (minibuffer *interface*)))
-    (setf (input-buffer minibuffer)
-          (cl-strings:insert characters
-                             (input-buffer minibuffer)
-                             :position (input-buffer-cursor minibuffer)))
-    (incf (input-buffer-cursor minibuffer) (length characters))
-    (setf (completion-cursor minibuffer) 0)
-    (update-display minibuffer))
+  (setf (input-buffer minibuffer)
+        (cl-strings:insert characters
+                           (input-buffer minibuffer)
+                           :position (input-buffer-cursor minibuffer)))
+  (incf (input-buffer-cursor minibuffer) (length characters))
+  (setf (completion-cursor minibuffer) 0)
+  (update-display minibuffer))
 
 (define-command self-insert (minibuffer-mode)
   "Insert key-chord-stack in MINIBUFFER."
@@ -368,11 +368,16 @@ This should not rely on the minibuffer's content.")
 
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-buffer-cursor completion-function
-               completions completion-cursor)
+               completions completion-cursor empty-complete-immediate)
       minibuffer
     (if completion-function
         (setf completions (funcall completion-function input-buffer))
         (setf completions nil))
+    (when (and empty-complete-immediate
+               (not (str:emptyp input-buffer)))
+      ;; Don't add input-buffer to completions that don't accept arbitrary
+      ;; inputs (i.e. empty-complete-immediate is nil).
+      (push input-buffer completions))
     (let ((input-text (generate-input-html input-buffer input-buffer-cursor))
           (completion-html (generate-completion-html completions completion-cursor)))
       (rpc-minibuffer-evaluate-javascript
