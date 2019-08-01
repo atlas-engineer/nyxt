@@ -357,13 +357,6 @@ This should not rely on the minibuffer's content.")
                                (cl-markup:markup
                                 (:li :class (when (equal i cursor-index) "selected")
                                      :id (when (equal i cursor-index) "selected")
-                                     ;; TODO: Instead of object string, we
-                                     ;; should use the display value, as with
-                                     ;; the `accessor-function' in
-                                     ;; `fuzzy-match'.  Or should we do the
-                                     ;; other way around, replace
-                                     ;; `accessor-function' with `object-string'
-                                     ;; in `fuzzy-match'?
                                      (object-string completion)))))))
 
 (defmethod update-display ((minibuffer minibuffer))

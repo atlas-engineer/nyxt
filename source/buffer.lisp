@@ -23,7 +23,7 @@ See the `make-buffer' function for Lisp code."
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
     (lambda (input)
-      (fuzzy-match input buffers :accessor-function #'name))))
+      (fuzzy-match input buffers))))
 
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."

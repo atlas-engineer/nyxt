@@ -113,8 +113,7 @@ Otherwise list all commands."
                (mapcar #'command-symbol
                        (delete-duplicates
                         (loop for mode in (modes (active-buffer *interface*))
-                              append (list-commands (class-name (class-of mode))))))
-               :accessor-function #'symbol-name))
+                              append (list-commands (class-name (class-of mode))))))))
 
 (define-command execute-command ()
   "Execute a command by name."

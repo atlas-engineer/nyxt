@@ -22,13 +22,10 @@
              (push s l))))
 
 (defun variable-complete (input)
-  (fuzzy-match input (package-variables) :accessor-function #'symbol-name))
+  (fuzzy-match input (package-variables)))
 
 (defun function-complete (input)
-  (fuzzy-match input (list-commands)
-               :accessor-function #'(lambda (c)
-                                      (closer-mop:generic-function-name
-                                       (closer-mop:method-generic-function c)))))
+  (fuzzy-match input (mapcar #'command-symbol (list-commands))))
 
 ;; TODO: This is barely useful as is since we don't have any global.  We need to
 ;; augment the latter function so that we can inspect *INTERFACE* and classes.

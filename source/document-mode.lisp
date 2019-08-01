@@ -120,7 +120,7 @@
   (let ((children (node-children (active-history-node mode))))
     (lambda (input)
       (if children
-          (fuzzy-match input children :accessor-function #'node-data)
+          (fuzzy-match input children)
           ;; TODO: Echo error instead of listing it in candidates.
           (list "Cannot navigate forwards.")))))
 

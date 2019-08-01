@@ -146,7 +146,7 @@ more details."
                                      (< (mk-string-metrics:levenshtein input (first x))
                                         (mk-string-metrics:levenshtein input (first y))))))
 
-(defun fuzzy-match (input candidates &key accessor-function)
+(defun fuzzy-match (input candidates)
   "From the user input and a list of candidates, return a filtered list of
 candidates that have all the input words in them, and sort this list to have the
 'most relevant' first.
@@ -155,9 +155,7 @@ The match is case-sensitive if INPUT contains at least one uppercase character."
       (let* ((input (str:replace-all " " " " input))
              ;; To sort by the display value, we store all the candidates in a
              ;; (display-value real-value) list or pairs.
-             (pairs (if accessor-function
-                        (mapcar (lambda (c) (list (funcall accessor-function c) c)) candidates)
-                        (mapcar (lambda (c) (list c c)) candidates)))
+             (pairs (mapcar (lambda (c) (list (object-string c) c)) candidates))
              (pairs (if (str:downcasep input)
                         (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)
                         pairs))
