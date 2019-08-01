@@ -147,6 +147,17 @@ quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
 		--eval '(uiop:quit)'
 
+# Testing that next loads is a first test.
+test: $(lisp_files)
+	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--eval '(ql:quickload :trivial-features)' \
+		--eval '(ql:quickload :prove-asdf)' \
+		--load next.asd \
+		--eval '(ql:quickload :next)' \
+		--eval '(uiop:quit)'
 
 .PHONY: clean-deps
 clean-deps:
