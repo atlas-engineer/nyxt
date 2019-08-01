@@ -21,7 +21,12 @@ See the `make-buffer' function for Lisp code."
   (make-buffer :name name :default-modes modes))
 
 (defun buffer-completion-fn ()
-  (let ((buffers (alexandria:hash-table-values (buffers *interface*))))
+  (let ((buffers (alexandria:hash-table-values (buffers *interface*)))
+        (active-buffer (active-buffer *interface*)))
+    ;; For commodity, the current buffer shouldn't be the first one on the list.
+    (when (equal (first buffers)
+                 active-buffer)
+      (setf buffers (alexandria:rotate buffers -1)))
     (lambda (input)
       (fuzzy-match input buffers))))
 
