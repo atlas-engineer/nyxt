@@ -3,6 +3,9 @@
 
 (in-package :next)
 
+(defvar *last-used-commands* nil
+  "A list of last used commands by the user. Most recent first.")
+
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
    (subject-type :initarg :subject-type :reader subject-type))
@@ -108,12 +111,22 @@ Otherwise list all commands."
   (closer-mop:generic-function-name
    (closer-mop:method-generic-function command)))
 
+(defun %all-available-commands (interface)
+  "List the commands of all modes of this interface."
+  (mapcar #'command-symbol
+                       (delete-duplicates
+                        (loop for mode in (modes (active-buffer interface))
+                              append (list-commands (class-name (class-of mode)))))))
+
+(defun all-available-commands (interface)
+  "List the Next commands for that interface. Re-order them a bit more user-friendly than a mere listing.
+Currently, we list the last used commands first."
+  (let ((commands (%all-available-commands interface)))
+    (remove-duplicates (append *last-used-commands* commands) :from-end t)))
+
 (defun command-complete (input)
   (fuzzy-match input
-               (mapcar #'command-symbol
-                       (delete-duplicates
-                        (loop for mode in (modes (active-buffer *interface*))
-                              append (list-commands (class-name (class-of mode))))))))
+               (all-available-commands *interface*)))
 
 (define-command execute-command ()
   "Execute a command by name."
@@ -125,4 +138,5 @@ Otherwise list all commands."
                            (member command (mapcar #'command-symbol
                                                    (list-commands (class-name (class-of mode))))))
                          (modes (active-buffer *interface*)))))
+      (push command *last-used-commands*)
       (funcall command mode))))
