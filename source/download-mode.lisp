@@ -97,7 +97,7 @@ The user can override this function to decide what to do with the file."
 (define-command download-open-file (root-mode &optional (interface *interface*))
   "Open a downloaded file.
 Ask the user to choose one of the downloaded files of the current session.
-See also `open-downloaded-file'."
+See also `open-file'."
   (with-result (filename (read-from-minibuffer
                           (minibuffer *interface*)
                           :input-prompt "Open file:"
