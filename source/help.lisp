@@ -27,8 +27,8 @@
 (defun function-complete (input)
   (fuzzy-match input (mapcar #'command-symbol (list-commands))))
 
-;; TODO: This is barely useful as is since we don't have any global.  We need to
-;; augment the latter function so that we can inspect *INTERFACE* and classes.
+;; TODO: This is barely useful as is since we don't have many globals.  We need to
+;; augment the latter function so that we can inspect classes like remote-interface.
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
@@ -56,18 +56,19 @@
                        (minibuffer *interface*)
                        :input-prompt "Inspect command:"
                        :completion-function 'function-complete))
-    (let* ((input-sym (closer-mop:generic-function-name
-                       (closer-mop:method-generic-function input)))
-
-           (help-buffer (make-buffer
-                         :name (concatenate 'string "HELP-" (symbol-name input-sym))
+    (let* ((help-buffer (make-buffer
+                         :name (str:concat "*Help-" (symbol-name input) "*")
                          :default-modes (cons 'help-mode
                                               (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
-                           (:h1 (symbol-name input-sym))
+                           (:h1 (symbol-name input))
                            (:h2 "Documentation")
                            (:p (write-to-string
-                                (documentation input t)))))
+                                ;; TODO: This only display the first method, i.e. the first command of one of the modes.
+                                ;; Ask for modes instead?
+                                (documentation (first (closer-mop:generic-function-methods
+                                                       (symbol-function input)))
+                                               t)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
