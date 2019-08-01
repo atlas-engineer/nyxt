@@ -47,7 +47,7 @@
                              (:u (quri:render-uri (download-manager:resolved-uri d)))
                              " as "
                              (:b (file-namestring (download-manager:file d)))))))
-                    (:p (:em "Open a file with M-x download-open-file."))))
+                    (:p (:em "Open a file with " (:code "M-x download-open-file") "."))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
     (rpc-buffer-evaluate-javascript interface download-buffer insert-content)
