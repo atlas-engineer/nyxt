@@ -3,10 +3,8 @@ SHELL = /bin/sh
 UNAME := $(shell uname)
 
 LISP ?= sbcl
-LISP_FLAGS ?= --no-userinit
-ifeq ($(LISP), sbcl)
-LISP_FLAGS += --non-interactive
-endif
+## We use --non-interactive with SBCL so that errors don't interrupt the CI.
+LISP_FLAGS ?= --no-userinit --non-interactive
 
 NEXT_INTERNAL_QUICKLISP = true
 
@@ -139,6 +137,7 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)'
 
+## TODO: Always call quicklisp-update?  Then update documentation accordingly.
 .PHONY: quicklisp-update
 quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 	$(LISP) $(LISP_FLAGS) \
