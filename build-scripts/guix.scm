@@ -54,7 +54,7 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
-(define-public next-gtk-webkit
+(define next-gtk-webkit
   (package
     (name "next-gtk-webkit")
     (version "0.0.0")                   ; Because this can be checkout.
