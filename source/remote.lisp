@@ -39,7 +39,7 @@ keyword is not recognized.")))
                   :initform '(document-mode root-mode)
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
-   (current-keymap-scheme :accessor current-keymap-scheme ; TODO: Name keymap-scheme instead?
+   (current-keymap-scheme ; TODO: Name keymap-scheme instead?
                           :initarg :current-keymap-scheme
                           :initform :emacs
                           :documentation "The keymap scheme that will be used

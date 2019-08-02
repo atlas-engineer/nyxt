@@ -128,6 +128,17 @@ This is used to memoize the results of `command-key-binding'.")
             (setf (gethash command-symbol %%command-key-bindings) stringified-key)
             stringified-key)))))
 
+(defmethod current-keymap-scheme ((buffer buffer))
+  "Return BUFFER's current-keymap-scheme."
+  (slot-value buffer 'current-keymap-scheme))
+
+(defmethod (setf current-keymap-scheme) (value (buffer buffer))
+  "Set the current-keymap-scheme of BUFFER to VALUE.
+This also resets `%%command-key-bindings' so that bindings are properly updated
+when displayed in the minibuffer."
+  (setf (slot-value buffer 'current-keymap-scheme) value)
+  (clrhash %%command-key-bindings))
+
 (defmethod object-string ((command command))
   (let ((binding (command-key-binding (sym command))))
     (if binding

@@ -219,7 +219,10 @@ Examples:
                      (setf (getf map-scheme scheme) map)
                      map-scheme)))
            (when (keymapp keymap)
-             (set-key keymap key-sequence-string command))))
+             (set-key keymap key-sequence-string command)))
+  ;; Reset map so that bindings are properly updated when displayed in the
+  ;; minibuffer.
+  (clrhash %%command-key-bindings))
 
 (defun key (key-sequence-string)
   "Turn KEY-SEQUENCE-STRING into a sequence of serialized key-chords.
