@@ -7,6 +7,8 @@ please feel free to open a PR with your customization.
 - [[#setting-the-start-page][Setting the start page]]
 - [[#creating-your-own-parenscript][Creating your own Parenscript]]
 - [[#running-shell-commands-within-next][Running shell commands within Next]]
+- [[#reloading-the-page][Reloading the page]]
+- [[#scroll-the-page-up-and-down-by-a-screen][Scroll the page up and down by a screen]]
 
 * Setting the start page
 Setting the start page can easily be achieved in the following manner:
@@ -43,46 +45,88 @@ the command output.
 
 #+NAME: shell-mode
 #+BEGIN_SRC lisp
-(define-mode shell-mode ()
-    "A basic shell prompt."
-    ((keymap
-      :initform
-      (let ((map (make-keymap)))
-        (define-key (key "M-f") 'history-forwards-query
-          (key "c") #'run-shell-command
-          (key "k") #'run-shell-command
-          :keymap map)
-        map))))
+(defvar *shell-mode-map* (make-hash-table :test 'equalp))
 
 (define-parenscript clear-shell-output ()
     (setf (ps:chain document body inner-h-t-m-l) ""))
-
-(define-command clear-shell (shell-mode)
-  (rpc-buffer-evaluate-javascript
-   *interface* (active-buffer *interface*)
-   (clear-shell-output)))
 
 (define-parenscript append-output (output)
   (setf (ps:chain document body inner-h-t-m-l)
         (ps:chain document body inner-h-t-m-l
                   (concat (ps:lisp
-                           (format nil "<pre><code>~a</code></pre><br/>" output))))))
+                           (concatenate 'string output "<br />"))))))
 
-(define-command run-shell-command (shell-mode)
-  (with-result
-      (input (read-from-minibuffer
-              (minibuffer *interface*)
-              :input-prompt "Run in shell:"))
+(define-command run-shell-command ()
+  "Run a shell command and append the output into the buffer."
+  (with-result (command (read-from-minibuffer
+                         (minibuffer *interface*)
+                         :input-prompt "Command:"))
     (rpc-buffer-evaluate-javascript
-     *interface* (active-buffer *interface*)
+     *interface*
+     (active-buffer *interface*)
      (append-output
-      :output
-      (uiop:run-program input :force-shell t :output :string)))))
+      (uiop:run-program command :force-shell t :output :string)))))
 
-(define-command shell ()
-  "Start a simple shell session."
-  (set-active-buffer *interface* (make-buffer "*shell*" 'shell-mode)))
+(defun open-new-shell ()
+  (let ((buffer (make-buffer :name "*shell*" :default-modes  'shell-mode)))
+    (set-active-buffer *interface* buffer)))
 
-(define-key "C-x s" #'shell)
+
+(define-mode shell-mode (mode) ()
+  "Shell mode is used as a pseudo shell.")
+
+(define-mode shell-mode ()
+  "Shell mode is used as a pseudo shell."
+          ())
+
+(define-key "C-c" 'run-shell-command :mode 'shell-mode)
+(define-key "C-k" 'clear-shell-output :mode 'shell-mode)
+
+(defun shell-mode ()
+  (make-instance 'shell-mode
+		 :name "shell-mode"
+		 :keymap *shell-mode-map*))
+
+(define-key  "C-x s" #'open-new-shell)
 #+END_SRC
 
+* Reloading the page
+The following function provides a way to reload the current page.
+
+#+NAME: reload-page
+#+BEGIN_SRC lisp
+;; Reload page with C-r
+(define-parenscript %reload-page ()
+  (ps:chain location (reload)))
+
+(define-command reload-page ()
+  "Reload page."
+  (%reload-page))
+
+(define-key (key "C-r") #'reload-page)
+#+END_SRC
+
+* Scroll the page up and down by a screen
+You can use the following functions to scroll the page up or down by
+one screen.
+
+#+NAME: scroll-page-up-and-down
+#+BEGIN_SRC lisp
+(define-parenscript %scroll-page-down ()
+  (ps:chain window (scroll-by 0 (ps:@ window inner-height))))
+
+(define-parenscript %scroll-page-up ()
+  (ps:chain window (scroll-by 0 (- (ps:@ window inner-height)))))
+
+(define-command scroll-page-down ()
+  "Scroll down by one page height."
+  (%scroll-page-down))
+
+(define-command scroll-page-up ()
+  "Scroll up by one page height."
+  (%scroll-page-up))
+
+;; bind the new functions
+(define-key (key "C-v") #'scroll-page-down)
+(define-key (key "M-v") #'scroll-page-up)
+#+END_SRC
