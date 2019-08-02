@@ -24,6 +24,7 @@ MAJOR.MINOR.PATCH, we increment the:
 + Rewrite the Qt port from Python to C++ to improve performance,
   additionally enabling a host of features not offered by the Python
   port
++ Fix some issues with strange keys emitted on macOS from the keyboard
 *** Improve macOS distribution
 + Create a standalone application bundle that macOS users can simply
   double click and run
