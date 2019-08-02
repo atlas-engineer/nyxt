@@ -186,6 +186,12 @@ This should not rely on the minibuffer's content.")
      *interface* (rpc-window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
+(defmethod erase-input ((minibuffer minibuffer))
+  "Clean-up the minibuffer input."
+  (setf (input-buffer minibuffer) "")
+  (setf (input-buffer-cursor minibuffer) 0)
+  (set-input minibuffer ""))
+
 (defmethod erase-document ((minibuffer minibuffer))
   (rpc-minibuffer-evaluate-javascript
    *interface* (rpc-window-active *interface*)

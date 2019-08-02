@@ -16,6 +16,7 @@ end-user allowing for infinite customization.
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
   - [[#download-manager][Download manager]]
+  - [[#opening-files][Opening files]]
   - [[#clearing-the-echo-area][Clearing the Echo Area]]
   - [[#exiting][Exiting]]
   - [[#proxy-and-tor-support][Proxy and Tor support]]
@@ -266,6 +267,19 @@ as usual, and also with =M-x download-list=.
 To open  a file, use  =M-x download-open-file=. See  the customization
 section to control how files are open.
 
+** Opening files
+
+With =M-x open-file= (bound to =C-x  C-f=), you are prompted a list of
+files, and you can select one with the usual fuzzy completion. You can
+go one directory  up with =M-Left= or =C-l=, and  enter the directory
+at point with =M-Right= or =C-j=.
+
+Next  will open  the  file  with the  system's  default program  using
+=xdg-open=.  See  the  command  help  for  further  details,  and  the
+customization section to override the default behavior.
+
+__Note__: this feature is alpha and is meant to grow in Next 1.4 and onwards.
+
 ** Clearing the Echo Area
 In the area at the bottom of the screen where the minibuffer resides,
 Next will occasionally display messages. These can be dismissed by
@@ -457,22 +471,26 @@ The default keybindings for ~vi-normal-mode~ are:
 
 ** Decide how to open files
 
-The command =M-x download-open-file=, which is  used to open a file we
-downloaded  in  the  current  session,  calls  in  turn  the  function
-=open-file <filename>=. Its default behaviour is to open the file with
-the  system's  default,  using   =xdg-open=.  You  can  override  this
-behaviour by re-defining this function.
+The commands  =open-file= and  =download-open-file= call  the function
+=open-file-fn <filename>=. Its  default behaviour is to  open the file
+with the  system's default, using  =xdg-open=.  You can  override this
+behaviour   by    binding   another    function   to    the   variable
+=next:*open-file-fn*=.
 
 For example:
 
 #+begin_src lisp
-(defun open-file (filename)
-  "Open PDFs with Emacs."
+(defun my-open-videos (filename)
+  "Open videos with `mpv'."
   (handler-case (let ((extension (pathname-type filename)))
-                  (str:string-case extension
-                                   ("pdf" (uiop:run-program (list "emacs" filename)))
-                                   (otherwise (next::open-file-default filename))))
-    (error (c) (format *error-output* "Error opening pdf ~a: ~a" filename c))))
+                  (cond
+                    ((member extension '("flv" "mkv" "mp4") :test #'string=)
+                     (uiop:run-program (list "mpv" filename)))
+                    (t
+                     (next::open-file-fn-default filename))))
+    (error (c) (log:error "Error opening pdf ~a: ~a" filename c))))
+
+(setf next:*open-file-fn* #'my-open-videos)
 #+end_src
 
 ** Loading Files
