@@ -115,11 +115,12 @@ features for productive professionals.")
 (define-public next
   (package
     (inherit next-gtk-webkit)
-    (name "sbcl-next")
+    (name "next")
     (build-system asdf-build-system/sbcl)
     (outputs '("out" "lib"))
     (arguments
      `(#:tests? #f                      ; no tests
+       #:asd-system-name "next"
        #:phases (modify-phases %standard-phases
                   (add-after 'unpack 'patch-platform-port-path
                     (lambda* (#:key inputs #:allow-other-keys)
