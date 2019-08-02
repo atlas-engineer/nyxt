@@ -77,11 +77,11 @@
   :entry-point "next:entry-point")
 
 (asdf:defsystem download-manager
-  :depends-on (lparallel
-               log4cl
+  :depends-on (cl-ppcre
                dexador
+               log4cl
+               lparallel
                quri
-               cl-ppcre
                str)
   :components ((:module source :pathname "libraries/download-manager/"
                 :components ((:file "package")
