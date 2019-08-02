@@ -97,6 +97,7 @@ these fixes.
 + D-Bus
 + [[https://github.com/sionescu/libfixposix][libfixposix]]
 + PyQt
++ Python 3.6
 + SQLite (available by default)
 
 ** Compile
@@ -108,7 +109,9 @@ you want to use [[https://github.com/roswell/roswell][Roswell]].
 
 The following command will build both Lisp core and the platform
 port. On macOS this will produce an application bundle which you can
-copy into your =/Applications= folder.
+copy into your =/Applications= folder. Before you can run Next on
+macOS, you'll have to add a =#!/path/to/your/python/installation= at
+the top of =Next.app/Contents/MacOS/next-pyqt-webengine=.
 
 - GNU/Linux:
 #+BEGIN_SRC sh
