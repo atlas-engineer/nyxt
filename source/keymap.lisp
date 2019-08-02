@@ -22,7 +22,7 @@ mode map, which are
   \"C-x\" \"C-s\"         - set to \"prefix\"
   \"C-x\"                 - set to \"prefix\"
 
-When a key is set to \"prefix\" it will not consume the stack, so that a
+When a key is set to #'prefix it will not consume the stack, so that a
 sequence of keys longer than one key-chord can be recorded."
   (let ((key-sequence (key key-sequence-string)))
     (setf (gethash key-sequence (table map)) command)
@@ -56,6 +56,21 @@ sequence of keys longer than one key-chord can be recorded."
 (defun serialize-key-chord-stack (key-chord-stack &key normalize)
   (mapcar (lambda (k) (serialize-key-chord k :normalize normalize))
           key-chord-stack))
+
+;; TODO: Ideally, we wouldn't need the serialized intermediary representation
+;; and we could remove this function altogether.
+(defun stringify (serialized-key-stack)
+  "Return string representation of a serialized key-chord stack.
+E.g. print ((nil - C) (nil x C)) as \"C-x C--\".
+This is effectively the inverse of `serialize-key-chord-stack'."
+  (format nil "~{~a~^ ~}"
+          (mapcar (lambda (serialized-key-chord)
+                    (format nil "~{~a~^-~}"
+                            (reverse
+                             ;; We work over rest to ignore keycode, since it's always
+                             ;; nil in this implementation.
+                             (rest serialized-key-chord))))
+                  (reverse serialized-key-stack))))
 
 (defun current-keymaps (window)
   "Return the list of (keymap . mode) for the current buffer, ordered by priority."

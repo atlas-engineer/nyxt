@@ -3,6 +3,9 @@
 
 (in-package :next)
 
+(defclass command ()
+  ((sym :accessor sym :initarg :sym)))
+
 (defvar *last-used-commands* nil
   "A list of last used commands by the user. Most recent first.")
 
@@ -99,6 +102,38 @@ Otherwise list all commands."
   (closer-mop:generic-function-name
    (closer-mop:method-generic-function command)))
 
+(defvar %%command-key-bindings (make-hash-table :test #'equal)
+  "Internal mapping of (key-binding command).
+This is used to memoize the results of `command-key-binding'.")
+
+;; TODO: Define memoized function to get rid of %%command-key-bindings.
+;; We need a way to force-reinitialize the memoization when bindings are updated.
+;; See http://quickdocs.org/fare-memoization/.
+(defun command-key-binding (command-symbol)
+  "Return the stringified key bound to COMMAND-symbol."
+  (multiple-value-bind (value present-p)
+      (gethash command-symbol %%command-key-bindings)
+    (if present-p
+        value
+        (let (key)
+          (find-if (lambda (mode)
+                     (let ((keymap (getf
+                                    (keymap-schemes mode)
+                                    (current-keymap-scheme (buffer mode)))))
+                       (setf key (first (find-if (lambda (key-command-pairs)
+                                                   (eq (rest key-command-pairs) command-symbol))
+                                                 (alexandria:hash-table-alist (table keymap)))))))
+                   (modes (active-buffer *interface*)))
+          (let ((stringified-key (if key (stringify key) nil)))
+            (setf (gethash command-symbol %%command-key-bindings) stringified-key)
+            stringified-key)))))
+
+(defmethod object-string ((command command))
+  (let ((binding (command-key-binding (sym command))))
+    (if binding
+        (format nil "~a (~a)" (sym command) binding)
+        (format nil "~a" (sym command)))))
+
 (defun %all-available-commands (interface)
   "List the commands of all modes of this interface."
   (mapcar #'command-symbol
@@ -106,11 +141,14 @@ Otherwise list all commands."
                         (loop for mode in (modes (active-buffer interface))
                               append (list-commands (class-name (class-of mode)))))))
 
+;; TODO: Implement a more general "most-recent-access" sorting by using a sort
+;; function in fuzzy-match and by adding a "access-time" slot to commands.
 (defun all-available-commands (interface)
   "List the Next commands for that interface. Re-order them a bit more user-friendly than a mere listing.
 Currently, we list the last used commands first."
   (let ((commands (%all-available-commands interface)))
-    (remove-duplicates (append *last-used-commands* commands) :from-end t)))
+    (mapcar (lambda (c) (make-instance 'command :sym c))
+            (remove-duplicates (append *last-used-commands* commands) :from-end t))))
 
 (defun command-complete (input)
   (fuzzy-match input
@@ -123,8 +161,8 @@ Currently, we list the last used commands first."
                          :input-prompt "Execute command:"
                          :completion-function 'command-complete))
     (let ((mode (find-if (lambda (mode)
-                           (member command (mapcar #'command-symbol
-                                                   (list-commands (class-name (class-of mode))))))
+                           (member (sym command) (mapcar #'command-symbol
+                                                         (list-commands (class-name (class-of mode))))))
                          (modes (active-buffer *interface*)))))
-      (push command *last-used-commands*)
-      (funcall command mode))))
+      (push (sym command) *last-used-commands*)
+      (funcall (sym command) mode))))
