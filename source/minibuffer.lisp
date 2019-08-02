@@ -192,8 +192,9 @@ This should not rely on the minibuffer's content.")
     (setf (minibuffer-active active-window) nil)
     ;; TODO: We need a mode-line before we can afford to really hide the
     ;; minibuffer.  Until then, we use "blank" it.
-    (with-result (url (buffer-get-url))
-      (echo "~a" url))
+    (with-result* ((url (buffer-get-url))
+                   (title (buffer-get-title)))
+      (echo "~a — ~a" url title))
     (rpc-window-set-minibuffer-height interface
                                       active-window
                                       (minibuffer-closed-height active-window))))
