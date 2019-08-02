@@ -112,7 +112,7 @@ features for productive professionals.")
      `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Infinitely extensible web-browser (download manager)")))
 
-(define-public sbcl-next
+(define-public next
   (package
     (inherit next-gtk-webkit)
     (name "sbcl-next")
@@ -193,4 +193,7 @@ features for productive professionals.")
      `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Infinitely extensible web-browser (with Lisp development files)")))
 
-sbcl-next
+(define-public sbcl-next
+  (deprecated-package "sbcl-next" next))
+
+next
