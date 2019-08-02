@@ -152,7 +152,7 @@
         (return-from add-or-traverse-history t)))
     ;; if we made it this far, we must create a new node
     (when url
-      (history-add url)) ; add to history database
+      (history-typed-add url)) ; add to history database
     (let ((new-node (make-instance 'node
                                    :parent active-node
                                    :data url)))

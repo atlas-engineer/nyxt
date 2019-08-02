@@ -9,11 +9,7 @@
   (let ((db (sqlite:connect
              (truename (probe-file path)))))
     (sqlite:execute-non-query
-     db "create table history (id integer primary key, url text not null)")
-    (sqlite:execute-non-query
      db "create table typed (id integer primary key, url text not null, visits integer default 1, unique (url) on conflict replace)")
-    (sqlite:execute-non-query
-     db "insert into history (url) values (?)" "about:blank")
     (sqlite:execute-non-query
      db "insert into typed (url) values (?)" "about:blank")
     (sqlite:disconnect db)))
@@ -31,12 +27,6 @@
     (if (probe-file path)
         path
         (ensure-file-exists path #'%initialize-history-db))))
-
-(defun history-add (url)
-  (let ((db (sqlite:connect (ensure-history-db))))
-    (sqlite:execute-non-query
-     db "insert into history (url) values (?)" url)
-    (sqlite:disconnect db)))
 
 (defun history-typed-add (url)
   "Add this url to the history, increment its number of visits."
