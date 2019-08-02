@@ -3,6 +3,18 @@
 
 (in-package :next)
 
+;; TODO: Find a better way to uniquely identidy commands from mode methods.
+;; What about symbol properties?  We could use:
+;;
+;; (setf (get name 'commandp) t)
+;;
+;; But that doesn't seem to work properly, some commands need to be evaluated
+;; twice before they appear in the list.  We could use a class (we used to have
+;; a COMMAND class) or intern the symbol into a special package (see `intern'
+;; documentation).
+(defparameter %%command-list '()
+  "The list of known commands, for internal use only.")
+
 (defmacro define-mode (name direct-superclasses docstring direct-slots &body body)
   "Define mode NAME.
 When DIRECT-SUPERCLASSES is T, then the mode has no parents.
@@ -30,6 +42,7 @@ If :ACTIVATE is omitted, the mode is toggled."
      ;; call the destructor when toggling off.
      ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
      ;; Should probably always have root-mode.
+     (push ',name %%command-list)
      ,(unless (eq name 'root-mode)
         ;; REVIEW: Here we define the command manually instead of using
         ;; define-command, because this last macro depends on modes and thus
@@ -38,9 +51,9 @@ If :ACTIVATE is omitted, the mode is toggled."
                            &allow-other-keys)
            ,docstring
            (let ((existing-instance
-                  (find-if (lambda (m)
-                             (eq (class-name (class-of m)) ',name))
-                           (modes buffer))))
+                   (find-if (lambda (m)
+                              (eq (class-name (class-of m)) ',name))
+                            (modes buffer))))
              (unless explicit?
                (setf activate (not existing-instance)))
              (if activate

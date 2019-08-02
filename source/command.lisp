@@ -20,18 +20,6 @@
     (documentation-style-warning)
   ((subject-type :initform 'command)))
 
-;; TODO: Find a better way to uniquely identidy commands from mode methods.
-;; What about symbol properties?  We could use:
-;;
-;; (setf (get name 'commandp) t)
-;;
-;; But that doesn't seem to work properly, some commands need to be evaluated
-;; twice before they appear in the list.  We could use a class (we used to have
-;; a COMMAND class) or intern the symbol into a special package (see `intern'
-;; documentation).
-(defvar %%command-list ()
-  "The list of known commands, for internal use only.")
-
 (defmacro define-command (name (&optional (mode 'root-mode) &rest arglist) &body body)
   "Define new command NAME.
 MODE most be a subclass of root-mode.
