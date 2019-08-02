@@ -8,8 +8,40 @@ MAJOR.MINOR.PATCH, we increment the:
 - MINOR version when we add functionality in a backwards-compatible manner, and
 - PATCH version when we make backwards-compatible bug fixes.
 
-** Future
-*** PyQt platform port (with QtWebEngine)
+** TASK 1.4.0 (Upcoming)
+*** Smart searching across all tabs
++ You should be able to search all tabs simultaneously and see a list
+  of completion candidates in the minibuffer
+*** Jump to heading across all tabs
++ Add a jump to heading command that works across all open tabs
+*** Package manager
++ There should be a package manager/repository where creators of
+  packages can publish, and users can download
++ This technology will probably be built ontop of Quicklisp
+*** Per tab isolation
++ Add support for per-tab Proxy and Tor support
+*** Improve macOS performance
++ Rewrite the Qt port from Python to C++ to improve performance,
+  additionally enabling a host of features not offered by the Python
+  port
+*** Improve macOS distribution
++ Create a standalone application bundle that macOS users can simply
+  double click and run
+*** ECL, CCL, and EQL compatibility
++ Broaden support for different Lisp implementations by removing SBCL
+  specific code when possible
+*** Password manager
++ Add an integrated password manager
+*** Add built-in editor
++ Add simple built-in editor capabilities so that you can easily
+  script Next without opening up an external editor
++ Also use the editor for text-field input on the internet
+*** Add support for external editor
++ Allow Next to call out to an external editor to fill in the contents
+  of a particular text field
+** TASK 1.3.0
+*** DONE PyQt/Webengine platform port
+QtWebengine is based off Blink (the renderer of Chrome).
 A PyQt platform port would have the benefits of being cross-platform while
 offering an alternative web renderer.
 
@@ -17,9 +49,6 @@ Because of WKWebKit library limitations, the cocoa-webkit platform port misses
 some features such as proxy support, per-buffer cookie file, network resource
 interception.  To address these limitations, the PyQt platform port could become
 the default for macOS.
-** TASK 1.3.0
-*** DONE PyQt/Webengine platform port
-QtWebengine is based off Blink (the renderer of Chrome).
 *** DONE VI bindings
 *** DONE Ad-blocking support
 Only host-based for now and uses Easylist by default.
@@ -29,7 +58,7 @@ It now displays search hints properly and search within iframes too.
 *** DONE Support multiple modes per buffer
 *** DONE Add proxy-mode
 This makes it possible to use Next over Tor among others.
-*** DONE Add noscript-mode to disable Javascript
+*** DONE Add noscript-mode to disable JavaScript
 *** DONE Use D-Bus for inter-process communication
 This increases security and should also improve performance, notably on *BSD systems.
 *** DONE Remove ~define-parenstatic~ macro
