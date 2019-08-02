@@ -8,30 +8,31 @@
   :serial t
   :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria
-               :cl-strings
+               :bordeaux-threads
+               :cl-css
+               :cl-json
+               :cl-markup
                :cl-ppcre
                :cl-ppcre-unicode
-               :str
                :cl-string-match
-               :mk-string-metrics
-               :quri
-               :sqlite
-               :parenscript
-               :cl-json
-               :swank
-               :cl-markup
-               :cl-css
-               :bordeaux-threads
-               :unix-opts
-               :trivial-clipboard
-               :log4cl
+               :cl-strings
                :closer-mop
-               :ironclad
                :dbus
                :dexador
-               :download-manager
+               :ironclad
+               :log4cl
                :lparallel
-               :trivia)
+               :mk-string-metrics
+               :parenscript
+               :quri
+               :sqlite
+               :str
+               :swank
+               :trivia
+               :trivial-clipboard
+               :unix-opts
+               ;; Local systems:
+               :download-manager)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
