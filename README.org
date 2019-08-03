@@ -39,7 +39,8 @@ systems provide packages for Next:
 
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
-- [[https://guix.gnu.org][Guix]]: Install with =guix package --install  sbcl-next=
+- [[https://guix.gnu.org][Guix]]: Add the [[https://gitlab.com/atlas-engineer/next-guix-channel][Next Guix channel]], then update your package list with =guix
+  pull= and install with =guix install next=.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
