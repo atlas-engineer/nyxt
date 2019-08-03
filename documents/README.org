@@ -14,7 +14,7 @@
   - [[#irc-channel][IRC Channel]]
 
 * Developer Installation with Guix
-Install [[https://guix.gnu.org][Guix]] and follow the instructions in ../build-scripts/guix.scm.
+Install [[https://guix.gnu.org][Guix]] and follow the instructions in [[../build-scripts/guix.scm]].
 
 * Generic Developer Installation
 Next is written in Common Lisp. It can be built with any standard
