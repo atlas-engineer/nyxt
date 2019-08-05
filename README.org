@@ -70,6 +70,7 @@ D-Bus is not running for your user.
 - ~C-b~:     Backwards history
 - ~C-f~:     Forwards history
 - ~C-x C-c~: Quit
+- ~TAB~: Complete candidate (in minibuffer)
 
 The symbols represent modifiers:
 
