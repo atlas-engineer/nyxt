@@ -39,8 +39,6 @@ ARGLIST must be a list of optional arguments."
        (push ',name %%command-list)
        (defmethod ,name ,(cons `(,mode ,mode) arglist)
          ,documentation
-         (when *interface*
-           (echo-dismiss (minibuffer *interface*)))
          ,@body))))
 
 (defmacro define-deprecated-command (name (&optional (mode 'root-mode) &rest arglist) &body body)

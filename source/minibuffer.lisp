@@ -2,6 +2,10 @@
 
 (in-package :next)
 
+;; TODO: Currently there is a unique minibuffer instance which is stateful.  It
+;; makes it hard to next minibuffer calls, and it's also hard to keep track of
+;; the state (open, hidden, etc.).
+
 (define-mode minibuffer-mode ()
     "Mode for the minibuffer."
     ((name :accessor name :initform "minibuffer")
@@ -117,8 +121,8 @@ This should not rely on the minibuffer's content.")
   ;; Warning: `hide' modifies the content of the minibuffer, the
   ;; callback-function and the cleanup-function cannot rely on the minibuffer
   ;; content safely.
-  (hide *interface*)
   (setf (display-mode minibuffer) :nil)
+  (hide *interface*)
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
       minibuffer
@@ -138,8 +142,8 @@ This should not rely on the minibuffer's content.")
 
 (define-command return-immediate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
-  (hide *interface*)
   (setf (display-mode minibuffer) :nil)
+  (hide *interface*)
   (with-slots (callback-function cleanup-function) minibuffer
     (let ((normalized-input (cl-strings:replace-all (input-buffer minibuffer)
                                                     " " " ")))
@@ -191,10 +195,8 @@ This should not rely on the minibuffer's content.")
   (let ((active-window (rpc-window-active interface)))
     (setf (minibuffer-active active-window) nil)
     ;; TODO: We need a mode-line before we can afford to really hide the
-    ;; minibuffer.  Until then, we use "blank" it.
-    (with-result* ((url (buffer-get-url))
-                   (title (buffer-get-title)))
-      (echo "~a — ~a" url title))
+    ;; minibuffer.  Until then, we "blank" it.
+    (echo "")
     (rpc-window-set-minibuffer-height interface
                                       active-window
                                       (minibuffer-closed-height active-window))))
@@ -450,7 +452,10 @@ interpreted by `format'. "
     ;; of the minibuffer when we don't fully hide it.  We can only erase the
     ;; document when we have a mode-line we can fully hide the minibuffer.
     ;; (erase-document minibuffer)
-    ))
+    ;; TODO: We should only display this default text until we have a mode-line.
+    (with-result* ((url (buffer-get-url))
+                   (title (buffer-get-title)))
+      (echo "~a — ~a" url title))))
 
 (define-command paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
