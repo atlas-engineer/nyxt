@@ -2,7 +2,7 @@
 ;;; next.asd
 
 (asdf:defsystem :next
-  :version "1.2.2"
+  :version "1.3.0"
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
   :serial t

@@ -40,7 +40,7 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Add support for external editor
 + Allow Next to call out to an external editor to fill in the contents
   of a particular text field
-** TASK 1.3.0
+** DONE 1.3.0
 *** DONE PyQt/Webengine platform port
 QtWebengine is based off Blink (the renderer of Chrome).
 A PyQt platform port would have the benefits of being cross-platform while
