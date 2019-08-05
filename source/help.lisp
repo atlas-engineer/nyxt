@@ -157,7 +157,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                 ".")
             (:h2 "Documentation")
             (:p "For full documentation about Next, how it works, and how to extend it please see the "
-                (:a :href " <a href=\"https://next.atlas.engineer/documentation\">"
+                (:a :href "https://next.atlas.engineer/documentation"
                     "user manual")
                 ".")))
 
