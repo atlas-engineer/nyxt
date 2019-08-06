@@ -66,6 +66,7 @@ This should not rely on the minibuffer's content.")
    (input-prompt :accessor input-prompt :initform "Input:")
    (input-buffer :accessor input-buffer :initform "")
    (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
+   (invisible-input-p :accessor invisible-input-p :initform nil)
    (completions :accessor completions)
    (completion-cursor :accessor completion-cursor :initform 0)
    (minibuffer-style :accessor minibuffer-style
@@ -96,7 +97,7 @@ This should not rely on the minibuffer's content.")
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
 (defmethod read-from-minibuffer ((minibuffer minibuffer)
-                                 &key callback input-prompt completion-function setup-function
+                                 &key callback input-prompt completion-function invisible-input-p setup-function
                                    cleanup-function empty-complete-immediate)
   (if input-prompt
       (setf (input-prompt minibuffer) input-prompt)
@@ -108,6 +109,7 @@ This should not rely on the minibuffer's content.")
   (setf (completion-cursor minibuffer) 0)
   (setf (setup-function minibuffer) setup-function)
   (setf (cleanup-function minibuffer) cleanup-function)
+  (setf (invisible-input-p minibuffer) invisible-input-p)
   (setf (empty-complete-immediate minibuffer) empty-complete-immediate)
   (setf (callback-buffer minibuffer) (active-buffer *interface*))
   (if setup-function
@@ -138,7 +140,8 @@ This should not rely on the minibuffer's content.")
         ;; if there's no completion function
         (return-immediate (first (modes minibuffer)) minibuffer))
     (when cleanup-function
-      (funcall cleanup-function))))
+      (funcall cleanup-function))
+    (setf (invisible-input-p minibuffer) nil)))
 
 (define-command return-immediate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
@@ -149,14 +152,16 @@ This should not rely on the minibuffer's content.")
                                                     " " " ")))
       (funcall callback-function normalized-input))
     (when cleanup-function
-      (funcall cleanup-function))))
+      (funcall cleanup-function))
+    (setf (invisible-input-p minibuffer) nil)))
 
 (define-command cancel-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Close the minibuffer query without further action."
   (setf (display-mode minibuffer) :nil)
   (with-slots (cleanup-function) minibuffer
     (when cleanup-function
-      (funcall cleanup-function)))
+      (funcall cleanup-function))
+    (setf (invisible-input-p minibuffer) nil))
   (hide *interface*))
 
 (defmethod set-input ((minibuffer minibuffer) input)
@@ -354,6 +359,16 @@ This should not rely on the minibuffer's content.")
                              (:span :id "cursor" (subseq input-buffer cursor-index (+ 1 cursor-index)))
                              (:span (subseq input-buffer (+ 1  cursor-index)))))))
 
+(defun generate-input-html-invisible (input-buffer cursor-index)
+  (let ((input-buffer-password (make-string (length input-buffer) :initial-element #\*)))
+    (cond ((equal "" input-buffer-password) (cl-markup:markup (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
+          ((eql cursor-index (length input-buffer-password))
+           (cl-markup:markup (:span input-buffer-password)
+                             (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
+          (t (cl-markup:markup (:span (subseq input-buffer-password 0 cursor-index))
+                               (:span :id "cursor" (subseq input-buffer-password cursor-index (+ 1 cursor-index)))
+                               (:span (subseq input-buffer-password (+ 1  cursor-index))))))))
+
 (defun generate-completion-html (completions cursor-index)
   (cl-markup:markup (:ul (loop for i from 0 for completion in completions
                                collect
@@ -374,7 +389,9 @@ This should not rely on the minibuffer's content.")
       ;; Don't add input-buffer to completions that don't accept arbitrary
       ;; inputs (i.e. empty-complete-immediate is nil).
       (push input-buffer completions))
-    (let ((input-text (generate-input-html input-buffer input-buffer-cursor))
+    (let ((input-text (if (invisible-input-p minibuffer)
+                           (generate-input-html-invisible input-buffer input-buffer-cursor)
+                           (generate-input-html input-buffer input-buffer-cursor)))
           (completion-html (generate-completion-html completions completion-cursor)))
       (rpc-minibuffer-evaluate-javascript
        *interface* (rpc-window-active *interface*)
