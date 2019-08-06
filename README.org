@@ -10,7 +10,7 @@ productive professionals.
 instabilities or feature wishes.
 
 If you like Next and if you want to help future development, support us on
-[[https://www.patreon.com/next_browser][Patreon]]!
+[[https://www.patreon.com/next_browser][Patreon]] and don't miss our [[https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/][crowdfunding campaign for v1.4]]!
 
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
