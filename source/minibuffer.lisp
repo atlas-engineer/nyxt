@@ -295,7 +295,7 @@ This should not rely on the minibuffer's content.")
 ;; TODO: Re-use cursor-forwards-word
 (define-command cursor-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Move cursor to the beginning of the word at point."
-  (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
+  (let ((stop-characters '(#\: #\/ #\- #\. #\Space #\ )))
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (if (intersection stop-characters (list (char-at-cursor minibuffer)))
           (loop while (and
