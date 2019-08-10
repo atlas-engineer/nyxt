@@ -389,7 +389,7 @@ For an array of string, that would be \"as\"."
           (mapcar #'active-buffer
                       (alexandria:hash-table-values (windows *interface*))))
         (buffers (alexandria:hash-table-values (buffers *interface*))))
-    (first (set-difference buffers active-buffers))))
+    (alexandria:last-elt (set-difference buffers active-buffers))))
 
 (defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
   (let ((parent-window (find-if

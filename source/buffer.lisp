@@ -26,7 +26,7 @@ See the `make-buffer' function for Lisp code."
     ;; For commodity, the current buffer shouldn't be the first one on the list.
     (when (equal (first buffers)
                  active-buffer)
-      (setf buffers (alexandria:rotate buffers -1)))
+      (setf buffers (alexandria:rotate (copy-seq buffers) -1)))
     (lambda (input)
       (fuzzy-match input buffers))))
 
