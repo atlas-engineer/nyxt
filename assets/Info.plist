@@ -13,7 +13,7 @@
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleExecutable</key>
-    <string>Next</string>
+    <string>next</string>
     <key>CFBundleIdentifier</key>
     <string>engineer.Atlas.Next</string>
     <key>NSAppTransportSecurity</key>
