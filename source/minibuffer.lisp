@@ -308,16 +308,25 @@ This should not rely on the minibuffer's content.")
 
 (defun backwards-word-position (input position)
   "Return the cursor position to move one word backwards."
-  (if (word-separation-character-p (char-at-position input position))
-      (progn
-        (loop while (and (word-separation-character-p (char input position))
-                         (> position 0))
-           do (decf position))
-        position)
-      (progn
-        (loop while (and (not (word-separation-character-p (char-at-position input position)))
-                         (> position 0))
-           do (decf position))
+  (flet ((on-delimiter-p (input position)
+           (word-separation-character-p (char-at-position input position)))
+         (ahead-delimiter-p (input position)
+           ;; In the minibuffer, the cursor is actually one position *after* the last char.
+           (word-separation-character-p (char-at-position input
+                                                          (max 0 (1- position))))))
+
+    ;; Move past all delimiters at the end of input.
+    (loop while (and (ahead-delimiter-p input position)
+                     (plusp position))
+       do (decf position))
+
+    ;; Move past one word.
+    (loop while (and (not (ahead-delimiter-p input position))
+                     (plusp position))
+       do (decf position))
+    ;; Don't erase the last delimiter.
+    (if (on-delimiter-p input position)
+        (incf position)
         position)))
 
 ;; TODO: Re-use cursor-forwards-word
