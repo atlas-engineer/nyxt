@@ -6,6 +6,13 @@
 ;; makes it hard to next minibuffer calls, and it's also hard to keep track of
 ;; the state (open, hidden, etc.).
 
+(defparameter *word-separation-characters* '(#\: #\/ #\- #\. #\Space #\ )
+  "Characters delimiting words (space, colon, slash, dot, etc).")
+
+(defun word-separation-character-p (char)
+  (intersection *word-separation-characters* (list char)))
+
+
 (define-mode minibuffer-mode ()
     "Mode for the minibuffer."
     ((name :accessor name :initform "minibuffer")
@@ -65,34 +72,35 @@ This should not rely on the minibuffer's content.")
    (display-mode :accessor display-mode :initform :nil)
    (input-prompt :accessor input-prompt :initform "Input:")
    (input-buffer :accessor input-buffer :initform "")
+   ;; cursor position ?
    (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
    (completions :accessor completions)
    (completion-cursor :accessor completion-cursor :initform 0)
    (minibuffer-style :accessor minibuffer-style
                      :initform (cl-css:css
                                 '((* :font-family "monospace,monospace"
-                                     :font-size "14px")
+                                   :font-size "14px")
                                   (body :border-top "4px solid dimgray"
-                                        :margin "0"
-                                        :padding "0 6px")
+                                   :margin "0"
+                                   :padding "0 6px")
                                   ("#container" :display "flex"
-                                                :flex-flow "column"
-                                                :height "100%")
+                                   :flex-flow "column"
+                                   :height "100%")
                                   ("#input" :padding "6px 0"
-                                            :border-bottom "solid 1px lightgray")
+                                   :border-bottom "solid 1px lightgray")
                                   ("#completions" :flex-grow "1"
-                                                  :overflow-y "auto"
-                                                  :overflow-x "auto")
+                                   :overflow-y "auto"
+                                   :overflow-x "auto")
                                   ("#cursor" :background-color "gray"
-                                             :color "white")
+                                   :color "white")
                                   ("#prompt" :padding-right "4px"
-                                             :color "dimgray")
+                                   :color "dimgray")
                                   (ul :list-style "none"
-                                      :padding "0"
-                                      :margin "0")
+                                   :padding "0"
+                                   :margin "0")
                                   (li :padding "2px")
                                   (.selected :background-color "gray"
-                                             :color "white")))
+                                   :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
 (defmethod read-from-minibuffer ((minibuffer minibuffer)
@@ -272,9 +280,15 @@ This should not rely on the minibuffer's content.")
   (update-display minibuffer))
 
 (defun char-at-cursor (&optional (minibuffer (minibuffer *interface*)))
+  "Return the character the cursor it at in the minibuffer."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (if (< input-buffer-cursor (length input-buffer))
         (char (input-buffer minibuffer) (input-buffer-cursor minibuffer)))))
+
+(defun char-at-position (input position)
+  "Return the character at `position' in `input', or nil."
+  (if (< position (length input))
+      (char input position)))
 
 (define-command cursor-forwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Move cursor to the end of the word at point."
@@ -292,20 +306,26 @@ This should not rely on the minibuffer's content.")
   (update-display minibuffer)
   (input-buffer-cursor minibuffer))
 
+(defun backwards-word-position (input position)
+  "Return the cursor position to move one word backwards."
+  (if (word-separation-character-p (char-at-position input position))
+      (progn
+        (loop while (and (word-separation-character-p (char input position))
+                         (> position 0))
+           do (decf position))
+        position)
+      (progn
+        (loop while (and (not (word-separation-character-p (char-at-position input position)))
+                         (> position 0))
+           do (decf position))
+        position)))
+
 ;; TODO: Re-use cursor-forwards-word
 (define-command cursor-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Move cursor to the beginning of the word at point."
-  (let ((stop-characters '(#\: #\/ #\- #\. #\Space #\ )))
-    (with-slots (input-buffer input-buffer-cursor) minibuffer
-      (if (intersection stop-characters (list (char-at-cursor minibuffer)))
-          (loop while (and
-                       (intersection stop-characters (list (char input-buffer input-buffer-cursor)))
-                       (> input-buffer-cursor 0))
-                do (decf input-buffer-cursor))
-          (loop while (and
-                       (not (intersection stop-characters (list (char-at-cursor minibuffer))))
-                       (> input-buffer-cursor 0))
-                do (decf input-buffer-cursor)))))
+  (with-slots (input-buffer input-buffer-cursor) minibuffer
+    (setf input-buffer-cursor (backwards-word-position input-buffer input-buffer-cursor)))
+
   (update-display minibuffer)
   (input-buffer-cursor minibuffer))
 
@@ -321,6 +341,8 @@ This should not rely on the minibuffer's content.")
                          (subseq input-buffer new-cursor-position (length input-buffer))))
       (setf input-buffer-cursor (- input-buffer-cursor transpose-distance))))
   (update-display minibuffer))
+
+;; (defun %delete-backwards-word (input-buffer cursor-position) "Delete one word backwards, respecting word delimiters.")
 
 (define-command delete-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Delete characters from cursor position until the beginning of the word at point."
