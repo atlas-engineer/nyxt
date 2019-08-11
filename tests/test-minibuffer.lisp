@@ -33,4 +33,8 @@
   (is 4
       (next::backwards-word-position "a:b hello" 7)))
 
+(subtest "Delete backwards word"
+  (is "foo/" (next::%delete-backwards-word "foo/bar" 7))
+  (is "foo/" (next::%delete-backwards-word "foo/bar//" 9)))
+
 (finalize)

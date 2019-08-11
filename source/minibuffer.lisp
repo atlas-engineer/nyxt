@@ -351,17 +351,21 @@ This should not rely on the minibuffer's content.")
       (setf input-buffer-cursor (- input-buffer-cursor transpose-distance))))
   (update-display minibuffer))
 
-;; (defun %delete-backwards-word (input-buffer cursor-position) "Delete one word backwards, respecting word delimiters.")
+(defun %delete-backwards-word (input position)
+  "Delete one word backwards, starting from `position' in `input'.
+  Return two values: the new string and the new cursor position."
+  (let ((new-position (backwards-word-position input position)))
+    (values (concatenate 'string
+                         (str:substring 0 new-position input)
+                         (str:substring position nil input))
+            new-position)))
 
 (define-command delete-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Delete characters from cursor position until the beginning of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (let ((current-cursor-position input-buffer-cursor)
-          (new-cursor-position (cursor-backwards-word (first (modes minibuffer)) minibuffer)))
-      (setf input-buffer
-            (concatenate 'string
-                         (subseq input-buffer 0 new-cursor-position)
-                         (subseq input-buffer current-cursor-position (length input-buffer))))))
+    (multiple-value-bind (new-string new-position) (%delete-backwards-word input-buffer input-buffer-cursor)
+      (setf input-buffer new-string
+            input-buffer-cursor new-position)))
   (update-display minibuffer))
 
 (define-command kill-line (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
