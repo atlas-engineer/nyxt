@@ -86,6 +86,10 @@
   (is "https://duckduckgo.com/?q=foo" (next::parse-url "foo")
       "empty domain")
   (is "https://duckduckgo.com/?q=algo" (next::parse-url "algo")
-      "same domain and TLD"))
+      "same domain and TLD")
+  (is "http://[1:0:0:2::3:0.]/" (first (fuzzy-match "[" '("test1"
+                                                          "http://[1:0:0:2::3:0.]/"
+                                                          "test2")))
+      "match regex meta-characters"))
 
 (finalize)
