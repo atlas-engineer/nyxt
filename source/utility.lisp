@@ -76,7 +76,7 @@ Otherwise, build a search query with the default search engine."
     (loop for char across input do
          (princ #\. stream)
          (princ #\* stream)
-         (princ char stream))
+         (princ (ppcre:quote-meta-chars (string char)) stream))
     ;; match any chars after final char in cleaned-input
     (princ #\. stream)
     (princ #\* stream)))

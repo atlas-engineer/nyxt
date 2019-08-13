@@ -70,5 +70,9 @@
                                     '("foo-dash-bar" "FOO-BAR")))
       "input is uppercase (small list).")
   )
+  (is "http://[1:0:0:2::3:0.]/" (first (fuzzy-match "[" '("test1"
+                                                          "http://[1:0:0:2::3:0.]/"
+                                                          "test2")))
+      "match regex meta-characters")
 
 (finalize)
