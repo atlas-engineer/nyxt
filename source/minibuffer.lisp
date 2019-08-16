@@ -118,7 +118,10 @@ This should not rely on the minibuffer's content.")
   (setf (setup-function minibuffer) setup-function)
   (setf (cleanup-function minibuffer) cleanup-function)
   (setf (invisible-input-p minibuffer) invisible-input-p)
-  (setf (empty-complete-immediate minibuffer) empty-complete-immediate)
+  ;; We don't want to show the input in the candidate list when invisible.
+  (setf (empty-complete-immediate minibuffer) (if (invisible-input-p minibuffer)
+                                                  nil
+                                                  empty-complete-immediate))
   (setf (callback-buffer minibuffer) (active-buffer *interface*))
   (if setup-function
       (funcall setup-function)
@@ -425,8 +428,8 @@ This should not rely on the minibuffer's content.")
       ;; inputs (i.e. empty-complete-immediate is nil).
       (push input-buffer completions))
     (let ((input-text (if (invisible-input-p minibuffer)
-                           (generate-input-html-invisible input-buffer input-buffer-cursor)
-                           (generate-input-html input-buffer input-buffer-cursor)))
+                          (generate-input-html-invisible input-buffer input-buffer-cursor)
+                          (generate-input-html input-buffer input-buffer-cursor)))
           (completion-html (generate-completion-html completions completion-cursor)))
       (rpc-minibuffer-evaluate-javascript
        *interface* (rpc-window-active *interface*)
