@@ -30,7 +30,10 @@ ARGLIST must be a list of optional arguments."
                   (rest body)
                   body)))
     `(progn
-       (push (make-instance 'command :sym ',name :mode ',mode) %%command-list)
+       (unless (find-if (lambda (c) (and (eq (sym c) ',name)
+                                         (eq (mode c) ',mode)))
+                        %%command-list)
+         (push (make-instance 'command :sym ',name :mode ',mode) %%command-list))
        (defmethod ,name ,(cons `(,mode ,mode) arglist)
          ,documentation
          ,@body))))

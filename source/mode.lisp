@@ -56,7 +56,10 @@ If :ACTIVATE is omitted, the mode is toggled."
      ;; call the destructor when toggling off.
      ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
      ;; Should probably always have root-mode.
-     (push (make-instance 'command :sym ',name :mode ',name) %%command-list)
+     (unless (find-if (lambda (c) (and (eq (sym c) ',name)
+                                       (eq (mode c) 'root-mode)))
+                      %%command-list)
+       (push (make-instance 'command :sym ',name :mode 'root-mode) %%command-list))
      ,(unless (eq name 'root-mode)
         ;; REVIEW: Here we define the command manually instead of using
         ;; define-command, because this last macro depends on modes and thus
