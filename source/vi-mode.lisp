@@ -10,7 +10,7 @@
         (define-key
           "i" 'vi-insert-mode
           "button1" 'vi-button1
-          :keymap map :scheme :vi-normal)
+          :keymap map)
         (list :vi-normal map)))
      (destructor
       :initform

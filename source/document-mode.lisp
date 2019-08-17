@@ -11,7 +11,7 @@
       :initform
       (let ((emacs-map (make-keymap))
             (vi-map (make-keymap)))
-        (define-key :keymap emacs-map :scheme :emacs
+        (define-key :keymap emacs-map
           "M-f" 'history-forwards-query
           "M-b" 'history-backwards
           "C-g" 'follow-hint
@@ -53,7 +53,7 @@
           "s-SPACE" 'scroll-page-up
           "Page_Up" 'scroll-page-up
           "Page_Down" 'scroll-page-down)
-        (define-key :keymap vi-map :scheme :vi-normal
+        (define-key :keymap vi-map
           "H" 'history-backwards
           "L" 'history-forwards
           "f" 'follow-hint
