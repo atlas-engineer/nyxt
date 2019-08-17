@@ -183,22 +183,26 @@ registered into the mode class and all future mode instances will use the
 binding.
 If MODE and KEYMAP are nil, the binding is registered into root-mode.
 
-If SCHEME is unspecified, it defaults to :EMACS.  SCHEME is only useful together
-with MODE, it does not have any effect on KEYMAP.
+If SCHEME is unspecified, it defaults to :EMACS.
+
+SCHEME is also useful together with KEYMAP, where it serves as an indicator to
+display the binding for the right SCHEME in `execute-command'.
 
 Examples:
 
   (define-key \"C-x C-c\" 'quit)
-  (define-key \"C-n\" 'scroll-down
+  (define-key \"C-n\" 'history-forwards
               :mode 'document-mode)
   ;; Only affect the first mode of the current buffer:
   (define-key \"C-c C-c\" 'reload
-              :keymap (keymap (mode (active-buffer *interface*))))"
+              :keymap (getf (keymap-schemes (first (modes (active-buffer *interface*)))) :emacs))"
   (dolist (key (remove-if-not #'keywordp key-command-pairs))
     (remf key-command-pairs key))
   (when (and (null mode) (not (keymapp keymap)))
     (setf mode 'root-mode))
   (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
+        for command-obj = (find-if (lambda (c) (eq (sym c) command))
+                                   %%command-list)
         do (when mode
              (setf (get-default mode 'keymap-schemes)
                    (let* ((map-scheme (closer-mop:slot-definition-initform
@@ -217,12 +221,13 @@ Examples:
                                    (make-keymap))))
                      (set-key map key-sequence-string command)
                      (setf (getf map-scheme scheme) map)
+                     (when command-obj
+                       (push key-sequence-string (getf (bindings command-obj) scheme)))
                      map-scheme)))
            (when (keymapp keymap)
-             (set-key keymap key-sequence-string command)))
-  ;; Reset map so that bindings are properly updated when displayed in the
-  ;; minibuffer.
-  (clrhash %%command-key-bindings))
+             (when command-obj
+               (push key-sequence-string (getf (bindings command-obj) scheme)))
+             (set-key keymap key-sequence-string command))))
 
 (defun key (key-sequence-string)
   "Turn KEY-SEQUENCE-STRING into a sequence of serialized key-chords.
