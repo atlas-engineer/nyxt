@@ -24,7 +24,7 @@
 ;;   called.  The only way to do this is to persist the command instances.
 (defclass command ()
   ((sym :accessor sym :initarg :sym)
-   (mode :accessor mode :initarg :mode)
+   (mode :accessor mode :initarg :mode) ; TODO: Isn't it better to derive mode dynamically with closer-mop?
    (access-time :accessor access-time :initform 0
                 :documentation "Last time this command was called from minibuffer.
 This can be used to order the commands.")))

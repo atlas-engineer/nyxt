@@ -96,16 +96,17 @@ commands."
 (defmethod object-string ((command command))
   ;; Use `last-active-window' for speed, or else the minibuffer will stutter
   ;; because of the RPC calls.
-  (let* ((scheme (current-keymap-scheme (active-buffer (last-active-window *interface*))))
-         (mode (find-mode (active-buffer (last-active-window *interface*))
-                          (mode command)))
+  (let* ((buffer (active-buffer (last-active-window *interface*)))
+         (scheme (current-keymap-scheme buffer))
          (bindings '()))
-    (when mode
-      (let ((table (table (getf (keymap-schemes mode) scheme))))
-        (maphash (lambda (binding c)
-                   (when (eq c (sym command))
-                     (push (stringify binding) bindings)))
-                 table)))
+    (loop for mode in (modes buffer)
+          do (let ((table (table (getf (keymap-schemes mode) scheme))))
+               (maphash (lambda (binding c)
+                          (when (eq c (sym command))
+                            (push (stringify binding) bindings)))
+                        table))
+          when (not (null bindings))
+            return bindings)
     (if bindings
         (format nil "~a (~{~a~^, ~})" (sym command) bindings)
         (format nil "~a" (sym command)))))
