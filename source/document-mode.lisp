@@ -24,7 +24,7 @@
           "button8" 'history-backwards
           "C-p" 'scroll-up
           "C-n" 'scroll-down
-          "C-x C-=" 'zoom-in-page ;
+          "C-x C-=" 'zoom-in-page
           "C-x C-+" 'zoom-in-page
           "C-x +" 'zoom-in-page
           "C-x C-HYPHEN" 'zoom-out-page

@@ -2,6 +2,7 @@
 
 (in-package :next)
 
+;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
   (name buffer))
 
@@ -79,6 +80,7 @@ buffer to the start page."
         ;; on initialization before ACTIVE-BUFFER can be used.
         (buffer-set-url :url url :buffer buffer))))
 
+;; TODO: Merge `set-url-buffer' and `set-url'?
 (defun set-url (input-url &optional disable-history)
   (let ((url (parse-url input-url)))
     (set-url-buffer url (active-buffer *interface*) disable-history)))

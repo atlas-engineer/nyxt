@@ -25,7 +25,7 @@
   (fuzzy-match input (package-variables)))
 
 (defun function-complete (input)
-  (fuzzy-match input (mapcar #'command-symbol (list-commands))))
+  (fuzzy-match input (mapcar #'sym (list-commands))))
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to
 ;; augment the latter function so that we can inspect classes like remote-interface.

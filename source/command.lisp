@@ -3,12 +3,6 @@
 
 (in-package :next)
 
-(defclass command ()
-  ((sym :accessor sym :initarg :sym)))
-
-(defvar *last-used-commands* nil
-  "A list of last used commands by the user. Most recent first.")
-
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
    (subject-type :initarg :subject-type :reader subject-type))
@@ -36,7 +30,10 @@ ARGLIST must be a list of optional arguments."
                   (rest body)
                   body)))
     `(progn
-       (push ',name %%command-list)
+       (unless (find-if (lambda (c) (and (eq (sym c) ',name)
+                                         (eq (mode c) ',mode)))
+                        %%command-list)
+         (push (make-instance 'command :sym ',name :mode ',mode) %%command-list))
        (defmethod ,name ,(cons `(,mode ,mode) arglist)
          ,documentation
          ,@body))))
@@ -71,97 +68,54 @@ deprecated and by what in the docstring."
     symbols))
 
 (defun package-variables ()
-  (remove-if-not #'boundp (package-defined-symbols)))
+  (remove-if (complement #'boundp) (package-defined-symbols)))
 
-(defun package-functions ()
-  (remove-if-not #'fboundp (package-defined-symbols)))
+(defun package-functions ()             ; TODO: Unused.  Remove?
+  (remove-if (complement #'fboundp) (package-defined-symbols)))
 
-(defun package-methods ()
+(defun package-methods ()               ; TODO: Unused.  Remove?
   (loop for sym in (package-defined-symbols)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
-(defun list-commands (&optional mode)
+(defun list-commands (&rest modes)
   "List commands.
-A command is a mode method that is in the %%command-list.
-When MODE is a mode symbol, list only the commands that apply in this mode.
-Otherwise list all commands."
-  (loop for m in (package-methods)
-        for first-specializer = (first (closer-mop:method-specializers m))
-        when (and (member (command-symbol m)
-                          %%command-list)
-                  (closer-mop:subclassp first-specializer (find-class 'root-mode))
-                  (or (not mode)
-                      (closer-mop:subclassp (find-class mode) first-specializer)))
-          collect m))
-
-(defun command-symbol (command)
-  "Return the symbol of a command."
-  (closer-mop:generic-function-name
-   (closer-mop:method-generic-function command)))
-
-(defvar %%command-key-bindings (make-hash-table :test #'equal)
-  "Internal mapping of (key-binding command).
-This is used to memoize the results of `command-key-binding'.")
-
-;; TODO: Define memoized function to get rid of %%command-key-bindings.
-;; We need a way to force-reinitialize the memoization when bindings are updated.
-;; See http://quickdocs.org/fare-memoization/.
-(defun command-key-binding (command-symbol)
-  "Return the stringified key bound to COMMAND-symbol."
-  (multiple-value-bind (value present-p)
-      (gethash command-symbol %%command-key-bindings)
-    (if present-p
-        value
-        (let (key)
-          (find-if (lambda (mode)
-                     (let ((keymap (getf
-                                    (keymap-schemes mode)
-                                    (current-keymap-scheme (buffer mode)))))
-                       (setf key (first (find-if (lambda (key-command-pairs)
-                                                   (eq (rest key-command-pairs) command-symbol))
-                                                 (alexandria:hash-table-alist (table keymap)))))))
-                   (modes (active-buffer *interface*)))
-          (let ((stringified-key (if key (stringify key) nil)))
-            (setf (gethash command-symbol %%command-key-bindings) stringified-key)
-            stringified-key)))))
-
-(defmethod current-keymap-scheme ((buffer buffer))
-  "Return BUFFER's current-keymap-scheme."
-  (slot-value buffer 'current-keymap-scheme))
-
-(defmethod (setf current-keymap-scheme) (value (buffer buffer))
-  "Set the current-keymap-scheme of BUFFER to VALUE.
-This also resets `%%command-key-bindings' so that bindings are properly updated
-when displayed in the minibuffer."
-  (setf (slot-value buffer 'current-keymap-scheme) value)
-  (clrhash %%command-key-bindings))
+Commands are instance of the `command' class.  When MODES are provided (as mode
+symbols), list only the commands that apply to this mode.  Otherwise list all
+commands."
+  (if modes
+      (remove-if (lambda (c)
+                       (notany (lambda (m)
+                                 (closer-mop:subclassp (find-class (mode c))
+                                                       (find-class m)))
+                               modes))
+                     %%command-list)
+      %%command-list))
 
 (defmethod object-string ((command command))
-  (let ((binding (command-key-binding (sym command))))
-    (if binding
-        (format nil "~a (~a)" (sym command) binding)
+  ;; Use `last-active-window' for speed, or else the minibuffer will stutter
+  ;; because of the RPC calls.
+  (let* ((buffer (active-buffer (last-active-window *interface*)))
+         (scheme (current-keymap-scheme buffer))
+         (bindings '()))
+    (loop for mode in (modes buffer)
+          do (let ((table (table (getf (keymap-schemes mode) scheme))))
+               (maphash (lambda (binding c)
+                          (when (eq c (sym command))
+                            (push (stringify binding) bindings)))
+                        table))
+          when (not (null bindings))
+            return bindings)
+    (if bindings
+        (format nil "~a (~{~a~^, ~})" (sym command) bindings)
         (format nil "~a" (sym command)))))
-
-(defun %all-available-commands (interface)
-  "List the commands of all modes of this interface."
-  (mapcar #'command-symbol
-                       (delete-duplicates
-                        (loop for mode in (modes (active-buffer interface))
-                              append (list-commands (class-name (class-of mode)))))))
-
-;; TODO: Implement a more general "most-recent-access" sorting by using a sort
-;; function in fuzzy-match and by adding a "access-time" slot to commands.
-(defun all-available-commands (interface)
-  "List the Next commands for that interface. Re-order them a bit more user-friendly than a mere listing.
-Currently, we list the last used commands first."
-  (let ((commands (%all-available-commands interface)))
-    (mapcar (lambda (c) (make-instance 'command :sym c))
-            (remove-duplicates (append *last-used-commands* commands) :from-end t))))
 
 (defun command-complete (input)
   (fuzzy-match input
-               (all-available-commands *interface*)))
+               (sort (apply #'list-commands (mapcar (alexandria:compose #'class-name #'class-of)
+                                                    (modes (active-buffer *interface*))))
+                     (lambda (c1 c2)
+                       (> (access-time c1) (access-time c2))))))
 
 (define-command execute-command ()
   "Execute a command by name."
@@ -169,9 +123,5 @@ Currently, we list the last used commands first."
                          (minibuffer *interface*)
                          :input-prompt "Execute command:"
                          :completion-function 'command-complete))
-    (let ((mode (find-if (lambda (mode)
-                           (member (sym command) (mapcar #'command-symbol
-                                                         (list-commands (class-name (class-of mode))))))
-                         (modes (active-buffer *interface*)))))
-      (push (sym command) *last-used-commands*)
-      (funcall (sym command) mode))))
+    (setf (access-time command) (get-internal-real-time))
+    (funcall (sym command) (find-mode (active-buffer *interface*) (mode command)))))

@@ -15,6 +15,20 @@
 (defparameter %%command-list '()
   "The list of known commands, for internal use only.")
 
+;; We need a `command' class for multiple reasons:
+;; - Identify commands uniquely (although being a member of `%%command-list' is enough).
+;;
+;; - Customize minibuffer display value with `object-string'.
+;;
+;; - Access-time: This is useful to sort command by the time they were last
+;;   called.  The only way to do this is to persist the command instances.
+(defclass command ()
+  ((sym :accessor sym :initarg :sym)
+   (mode :accessor mode :initarg :mode) ; TODO: Isn't it better to derive mode dynamically with closer-mop?
+   (access-time :accessor access-time :initform 0
+                :documentation "Last time this command was called from minibuffer.
+This can be used to order the commands.")))
+
 (defmacro define-mode (name direct-superclasses docstring direct-slots &body body)
   "Define mode NAME.
 When DIRECT-SUPERCLASSES is T, then the mode has no parents.
@@ -42,7 +56,10 @@ If :ACTIVATE is omitted, the mode is toggled."
      ;; call the destructor when toggling off.
      ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
      ;; Should probably always have root-mode.
-     (push ',name %%command-list)
+     (unless (find-if (lambda (c) (and (eq (sym c) ',name)
+                                       (eq (mode c) 'root-mode)))
+                      %%command-list)
+       (push (make-instance 'command :sym ',name :mode 'root-mode) %%command-list))
      ,(unless (eq name 'root-mode)
         ;; REVIEW: Here we define the command manually instead of using
         ;; define-command, because this last macro depends on modes and thus

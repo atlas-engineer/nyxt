@@ -40,6 +40,7 @@ keyword is not recognized.")))
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
    (current-keymap-scheme ; TODO: Name keymap-scheme instead?
+                          :accessor current-keymap-scheme
                           :initarg :current-keymap-scheme
                           :initform :emacs
                           :documentation "The keymap scheme that will be used
