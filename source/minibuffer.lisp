@@ -143,8 +143,10 @@ This should not rely on the minibuffer's content.")
                empty-complete-immediate completions completion-cursor)
       minibuffer
     (if completions
-        (let ((completion
-                (cl-strings:replace-all (nth completion-cursor completions) " " " ")))
+        (let* ((completion (nth completion-cursor completions))
+               (completion (if (stringp completion)
+                               (cl-strings:replace-all completion " " " ")
+                               completion)))
           (if completion
               ;; if we're able to find a completion
               (funcall callback-function completion)
