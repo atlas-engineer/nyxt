@@ -134,13 +134,17 @@ This should not rely on the minibuffer's content.")
   ;; Warning: `hide' modifies the content of the minibuffer, the
   ;; callback-function and the cleanup-function cannot rely on the minibuffer
   ;; content safely.
+  ;; TODO: We should factor the shared code between `return-input',
+  ;; `return-immediate' and `cancel-input', e.g. `hide', the normalization of
+  ;; the input-buffer, etc.
   (setf (display-mode minibuffer) :nil)
   (hide *interface*)
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
       minibuffer
     (if completions
-        (let ((completion (nth completion-cursor completions)))
+        (let ((completion
+                (cl-strings:replace-all (nth completion-cursor completions) " " " ")))
           (if completion
               ;; if we're able to find a completion
               (funcall callback-function completion)
