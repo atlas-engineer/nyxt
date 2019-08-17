@@ -68,7 +68,24 @@
       "search witout a space. All characters count, real list.")
   (is "FOO-BAR" (first (fuzzy-match "FOO"
                                     '("foo-dash-bar" "FOO-BAR")))
-      "input is uppercase (small list).")
-  )
+      "input is uppercase (small list)."))
+
+(subtest "Parse URL"
+  (is "https://next.atlas.engineer" (next::parse-url "https://next.atlas.engineer")
+      "full URL")
+  (is "https://next.atlas.engineer" (next::parse-url "next.atlas.engineer")
+      "URL without protocol")
+  (is "https://en.wikipedia.org/w/index.php?search=+wikipedia" (next::parse-url "wiki wikipedia")
+      "search engine")
+  (is "https://duckduckgo.com/?q=next+browser" (next::parse-url "next browser")
+      "default search engine")
+  (is "https://en.wikipedia.org/w/index.php?search=+wikipedia" (next::parse-url "wiki wikipedia")
+      "wiki search engine")
+  (is "file:///readme.org" (next::parse-url "file:///readme.org")
+      "local file")
+  (is "https://duckduckgo.com/?q=foo" (next::parse-url "foo")
+      "empty domain")
+  (is "https://duckduckgo.com/?q=algo" (next::parse-url "algo")
+      "same domain and TLD"))
 
 (finalize)
