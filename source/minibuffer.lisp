@@ -157,8 +157,7 @@ This should not rely on the minibuffer's content.")
         ;; if there's no completion function
         (return-immediate (first (modes minibuffer)) minibuffer))
     (when cleanup-function
-      (funcall cleanup-function))
-    (setf (invisible-input-p minibuffer) nil)))
+      (funcall cleanup-function))))
 
 (define-command return-immediate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
@@ -169,16 +168,14 @@ This should not rely on the minibuffer's content.")
                                                     " " " ")))
       (funcall callback-function normalized-input))
     (when cleanup-function
-      (funcall cleanup-function))
-    (setf (invisible-input-p minibuffer) nil)))
+      (funcall cleanup-function))))
 
 (define-command cancel-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Close the minibuffer query without further action."
   (setf (display-mode minibuffer) :nil)
   (with-slots (cleanup-function) minibuffer
     (when cleanup-function
-      (funcall cleanup-function))
-    (setf (invisible-input-p minibuffer) nil))
+      (funcall cleanup-function)))
   (hide *interface*))
 
 (defmethod set-input ((minibuffer minibuffer) input)
