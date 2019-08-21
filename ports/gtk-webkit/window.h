@@ -546,6 +546,10 @@ void window_set_active_buffer(Window *window, Buffer *buffer) {
 	gtk_box_pack_start(GTK_BOX(mainbox), GTK_WIDGET(topbox), TRUE, TRUE, 0);
 
 	gtk_widget_grab_focus(GTK_WIDGET(buffer->web_view));
+	// In case a link is opened externally in a new buffer (but not a new window),
+	// we need to present Next to the user to make it obvious that the link was
+	// opened.
+	gtk_window_present(GTK_WINDOW(window->base));
 
 	gtk_widget_show_all(window->base);
 }
