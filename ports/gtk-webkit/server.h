@@ -413,7 +413,10 @@ static GVariant *server_set_proxy(GVariant *parameters) {
 
 	while (buffer_ids != NULL) {
 		Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_ids->data);
-		buffer_set_proxy(buffer, mode_enum, proxy_uri, (const char *const *)ignore_hosts);
+		if (buffer != NULL) {
+			// Protect against spurious buffer IDs.
+			buffer_set_proxy(buffer, mode_enum, proxy_uri, (const char *const *)ignore_hosts);
+		}
 		buffer_ids = buffer_ids->next;
 	}
 
