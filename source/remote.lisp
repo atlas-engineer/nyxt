@@ -155,6 +155,10 @@ commands.")
    (total-buffer-count :accessor total-buffer-count :initform 0)
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
+   (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p :initform nil
+                                       :documentation "When open links from an external program, or
+when C-cliking on a URL, decide whether to open in a new
+window or not.")
    (key-chord-stack :accessor key-chord-stack :initform '()
                     :documentation "A stack that keeps track of the key chords a user has inputted.")
    (downloads :accessor downloads :initform '()
@@ -564,10 +568,11 @@ TODO: Only booleans are supported for now."
   "Create new buffers from URLs."
   ;; The new active buffer should be the first created buffer.
   (when urls
-    (let ((buffer (make-buffer))
-          (window (rpc-window-make *interface*)))
+    (let ((buffer (make-buffer)))
       (set-url-buffer (first urls) buffer)
-      (window-set-active-buffer *interface* window buffer))
+      (if (open-external-link-in-new-window-p *interface*)
+          (window-set-active-buffer *interface* (rpc-window-make *interface*) buffer)
+          (set-active-buffer *interface* buffer)))
     (loop for url in (rest urls) do
       (let ((buffer (make-buffer)))
         (set-url-buffer url buffer)))))

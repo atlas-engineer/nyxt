@@ -184,6 +184,22 @@ Each buffer has its own list of modes.  The first mode in the list has highest
 priority: this is important, for instance, to determine which key binding takes
 precedence in case of conflict.  See [[Keybinding]] for more details.
 
+*** Windows vs. buffers
+
+When opening a link from an external program, or when clicking on a link while
+=C= is pressed, Next can load the URL either
+
+- in a new window if =(open-external-link-in-new-window-p *interface)= is
+  non-nil;
+- in a new buffer otherwise.
+
+You can change the default behaviour by adding the following to your
+configuration file:
+
+#+begin_src lisp
+(setf (get-default 'remote-interface 'open-external-link-in-new-window-p) t)
+#+end_src
+
 ** Searching
 There are a number of keybindings provided to enable searching within
 a buffer.
