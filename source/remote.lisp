@@ -105,7 +105,10 @@ platform ports might support this.")
                            :border-radius "3px"))
               :documentation "The style of the boxes, e.g. link hints.")))
 
-(defmethod initialize-instance :after ((buffer buffer) &key)
+(defmethod initialize-modes ((buffer buffer))
+  "Initialize BUFFER modes.
+This must be called after BUFFER has been created on the platform port.
+See `rpc-buffer-make'."
   (let ((root-mode (make-instance 'root-mode :buffer buffer)))
     (dolist (mode-class (reverse (default-modes buffer)))
       ;; ":activate t" should not be necessary here since (modes buffer) should be
@@ -382,6 +385,9 @@ For an array of string, that would be \"as\"."
     (incf (total-buffer-count interface))
     (%rpc-send interface "buffer_make" buffer-id
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
+    ;; Modes might require that buffer exists, so we need to initialize them
+    ;; after it has been created on the platform port.
+    (initialize-modes buffer)
     buffer))
 
 (defmethod %get-inactive-buffer ((interface remote-interface))

@@ -104,6 +104,9 @@ This should not rely on the minibuffer's content.")
                                    :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
+(defmethod initialize-instance :after ((minibuffer minibuffer) &key)
+  (initialize-modes minibuffer))
+
 (defmethod read-from-minibuffer ((minibuffer minibuffer)
                                  &key callback input-prompt completion-function invisible-input-p setup-function
                                    cleanup-function empty-complete-immediate)
