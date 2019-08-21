@@ -68,10 +68,10 @@ deprecated and by what in the docstring."
     symbols))
 
 (defun package-variables ()
-  (remove-if-not #'boundp (package-defined-symbols)))
+  (remove-if (complement #'boundp) (package-defined-symbols)))
 
 (defun package-functions ()             ; TODO: Unused.  Remove?
-  (remove-if-not #'fboundp (package-defined-symbols)))
+  (remove-if (complement #'fboundp) (package-defined-symbols)))
 
 (defun package-methods ()               ; TODO: Unused.  Remove?
   (loop for sym in (package-defined-symbols)
@@ -84,13 +84,12 @@ Commands are instance of the `command' class.  When MODES are provided (as mode
 symbols), list only the commands that apply to this mode.  Otherwise list all
 commands."
   (if modes
-      (delete-duplicates (loop for command in %%command-list
-                               when (some
-                                     (lambda (m)
-                                       (closer-mop:subclassp (find-class (mode command))
-                                                             (find-class m)))
-                                     modes)
-                                 collect command))
+      (remove-if (lambda (c)
+                       (notany (lambda (m)
+                                 (closer-mop:subclassp (find-class (mode c))
+                                                       (find-class m)))
+                               modes))
+                     %%command-list)
       %%command-list))
 
 (defmethod object-string ((command command))

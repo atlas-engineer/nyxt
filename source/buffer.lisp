@@ -2,6 +2,7 @@
 
 (in-package :next)
 
+;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
   (name buffer))
 

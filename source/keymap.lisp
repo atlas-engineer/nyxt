@@ -195,7 +195,7 @@ Examples:
   ;; Only affect the first mode of the current buffer:
   (define-key \"C-c C-c\" 'reload
               :keymap (getf (keymap-schemes (first (modes (active-buffer *interface*)))) :emacs))"
-  (dolist (key (remove-if-not #'keywordp key-command-pairs))
+  (dolist (key (remove-if (complement #'keywordp) key-command-pairs))
     (remf key-command-pairs key))
   (when (and (null mode) (not (keymapp keymap)))
     (setf mode 'root-mode))
