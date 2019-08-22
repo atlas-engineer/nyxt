@@ -46,7 +46,7 @@ MAJOR.MINOR.PATCH, we increment the:
 + Bookmarks and search engines can be merged.
 + Proposed format:
   #+begin_src
-  (:url "https://en.wikipedia.org/wiki/Main_Page" :title "Wikipedia, the free encyclopedia" :shortcut "wiki" :search "http://en.wikipedia.org/wiki/Special:Search?search=%s" :time "Sat Jul 14 09:41:56 2018")
+  (:url "https://en.wikipedia.org/wiki/Main_Page" :title "Wikipedia, the free encyclopedia" :shortcut "wiki" :search "http://en.wikipedia.org/wiki/Special:Search?search=%s" :time "Sat Jul 14 09:41:56 2018" :tags '("encyclopedia" "knowledge" "wiki"))
   #+end_src
   Minibuffer usage:
   - =wiki=: Open the main page.
