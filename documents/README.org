@@ -217,10 +217,25 @@ Then in a shell execute the following:
 
 ** Update local Lisp libraries
 
-When you need to update the  local quicklisp libraries, located in the
-~quicklisp/~  directory  of  the  ~next~ project,  run  the  following:
+If you use Quicklisp for Common Lisp library management outside the context of
+Next, you may want to reuse your local distribution to build Next.
 
-: make quicklisp-update
+To do so, invoke =make= with the following option:
+
+#+begin_src sh
+make NEXT_INTERNAL_QUICKLISP=false ...
+#+end_src
+
+In this case, you'll have to make sure the Quicklisp distribution is up-to-date
+or else future versions of Next might fail to build.  In a REPL:
+
+#+begin_src lisp
+(ql:update-dist "quicklisp")
+#+end_src
+
+If you use the internal Quicklisp distribution (i.e. with the default
+=NEXT_INTERNAL_QUICKLISP=true=), the distribution is updated automatically for
+you.
 
 * Help & Community
 There are several ways to ask for help from the community. The first

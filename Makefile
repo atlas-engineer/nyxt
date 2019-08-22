@@ -20,7 +20,7 @@ help:
 
 lisp_files := next.asd source/*.lisp source/ports/*.lisp
 
-next: $(lisp_files)
+next: $(lisp_files) quicklisp-update
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -137,14 +137,14 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)'
 
-## TODO: Always call quicklisp-update?  Then update documentation accordingly.
+## This rule only update the internal distribution.
 .PHONY: quicklisp-update
 quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
-	$(LISP) $(LISP_FLAGS) \
+	$(NEXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
 		--load $(QUICKLISP_DIR)/setup.lisp \
 		--eval '(require "asdf")' \
 		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
-		--eval '(uiop:quit)'
+		--eval '(uiop:quit)' || true
 
 # Testing that next loads is a first test.
 test: $(lisp_files)
