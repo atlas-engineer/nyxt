@@ -4,7 +4,7 @@
 
 ;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
-  (name buffer))
+  (format nil "~a  ~a" (name buffer) (title buffer)))
 
 (defun make-buffer (&key (name "default")
                          default-modes)

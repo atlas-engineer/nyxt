@@ -33,6 +33,7 @@ keyword is not recognized.")))
 (defclass buffer ()
   ((id :accessor id :initarg :id)
    (name :accessor name :initarg :name)
+   (title :accessor title :initarg :title)
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
@@ -129,6 +130,8 @@ See `rpc-buffer-make'."
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
+  (with-result (title (buffer-get-title))
+    (setf (title buffer) title))
   (dolist (mode (modes buffer))
     (did-commit-navigation mode url)))
 
