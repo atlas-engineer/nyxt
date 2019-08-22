@@ -40,6 +40,20 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Add support for external editor
 + Allow Next to call out to an external editor to fill in the contents
   of a particular text field
+*** Extend bookmark support
++ Switch from SQLite to an s-exp based text file.
++ Bookmarks can have tags, a shortcut string, a timestamp.
++ Bookmarks and search engines can be merged.
++ Proposed format:
+  #+begin_src
+  (:url "https://en.wikipedia.org/wiki/Main_Page" :title "Wikipedia, the free encyclopedia" :shortcut "wiki" :search "http://en.wikipedia.org/wiki/Special:Search?search=%s" :time "Sat Jul 14 09:41:56 2018")
+  #+end_src
+  Minibuffer usage:
+  - =wiki=: Open the main page.
+  - =wiki elephant=: search Wikipedia for "elephant".
++ Support user-defined filters to avoid duplicating bookmarks.
+  For instance detect duplicates =http://foo= and =https://foo=.
+
 ** DONE 1.3.0
 *** DONE PyQt/Webengine platform port
 QtWebengine is based off Blink (the renderer of Chrome).
