@@ -155,6 +155,9 @@ commands.")
 by Next when the user session dbus instance is not available.")
    (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
                :documentation "The minibuffer object.")
+   (clipboard-ring :accessor clipboard-ring :initform (make-instance
+                                                       'ring :items
+                                                       (make-array 60 :initial-element nil)))
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
