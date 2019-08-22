@@ -99,7 +99,9 @@ commands."
          (scheme (current-keymap-scheme buffer))
          (bindings '()))
     (loop for mode in (modes buffer)
-          do (let ((table (table (getf (keymap-schemes mode) scheme))))
+          for scheme-keymap = (getf (keymap-schemes mode) scheme)
+          when scheme-keymap
+            do (let ((table (table scheme-keymap)))
                (maphash (lambda (binding c)
                           (when (eq c (sym command))
                             (push (stringify binding) bindings)))
