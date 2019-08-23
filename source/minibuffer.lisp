@@ -43,8 +43,8 @@
           "C-p" #'select-previous
           "Down" #'select-next
           "Up" #'select-previous
-          "C-v" #'paste
-          "C-y" #'paste
+          "C-v" #'minibuffer-paste
+          "C-y" #'minibuffer-paste
           "C-w" #'copy-candidate
           "TAB" #'insert-candidate
           :keymap map)
@@ -518,7 +518,7 @@ interpreted by `format'. "
                    (title (buffer-get-title)))
       (echo "~a — ~a" url title))))
 
-(define-command paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command minibuffer-paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (insert (ring-clipboard (clipboard-ring *interface*)) minibuffer))
 
