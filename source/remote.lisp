@@ -620,7 +620,8 @@ Deal with URL with the following rules:
     ((or is-new-window
          ;; TODO: Streamline the customization of this binding.
          (and (equal modifiers '("C"))
-              (string= mouse-button "button1")))
+              (string= mouse-button "button1"))
+         (string= mouse-button "button2"))
      (log:info "Load ~a in new buffer" url)
      (make-buffers (list url))
      nil)
