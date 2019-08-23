@@ -53,6 +53,9 @@ MAJOR.MINOR.PATCH, we increment the:
   - =wiki elephant=: search Wikipedia for "elephant".
 + Support user-defined filters to avoid duplicating bookmarks.
   For instance detect duplicates =http://foo= and =https://foo=.
++ Support user-define read/write hooks so that bookmarks can be automatically
+  imported, say, from Firefox, or exported to a SQLite database or a custom text
+  format.
 
 ** DONE 1.3.0
 *** DONE PyQt/Webengine platform port

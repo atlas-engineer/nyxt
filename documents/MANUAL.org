@@ -189,7 +189,7 @@ precedence in case of conflict.  See [[Keybinding]] for more details.
 When opening a link from an external program, or when clicking on a link while
 =C= is pressed, Next can load the URL either
 
-- in a new window if =(open-external-link-in-new-window-p *interface)= is
+- in a new window if =(open-external-link-in-new-window-p *interface*)= is
   non-nil;
 - in a new buffer otherwise.
 

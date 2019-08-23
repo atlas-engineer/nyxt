@@ -1,7 +1,12 @@
 ;;; Commentary:
 ;;
-;; GNU Guix development package.  To build and install, clone this
-;; repository, cd into it and run:
+;; GNU Guix development package.  To build and install, first add
+;; the Next Guix Channel to your Guix configuration as described
+;; here:
+;;
+;; https://gitlab.com/atlas-engineer/next-guix-channel
+;;
+;; Then, clone this repository, switch directory to it and run:
 ;;
 ;;   guix package -f guix.scm
 ;;

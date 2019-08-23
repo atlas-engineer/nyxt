@@ -147,6 +147,9 @@ for the platform port to start up.")
 RPC endpoint of a platform-port to see if it is ready to begin accepting RPC
 commands.")
    (active-connection :accessor active-connection :initform nil)
+   (dbus-pid :accessor dbus-pid :initform nil :type :number
+             :documentation "The process identifier of the dbus instance started
+by Next when the user session dbus instance is not available.")
    (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
                :documentation "The minibuffer object.")
    (clipboard-ring :accessor clipboard-ring :initform (make-instance
@@ -224,9 +227,25 @@ current buffer."
         (echo "Download error: ~a" c)
         nil))))
 
+(defun ensure-dbus-session (interface)
+  (handler-case
+      (dbus:with-open-bus (bus (session-server-addresses))
+        ;; Dummy call to make sure dbus session is accessible.
+        (log:info "Bus connection name: ~A" (dbus:bus-name bus)))
+    (error ()
+      (match (mapcar (lambda (s) (str:split "=" s :limit 2))
+                     (str:split "
+"
+                                (uiop:run-program '("dbus-launch")
+                                                  :output '(:string :stripped t))))
+        ((list (list _ address) (list _ pid))
+         (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
+         (setf (dbus-pid interface) (parse-integer pid)))))))
+
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
   "Start the RPC server."
+  (ensure-dbus-session interface)
   (let ((lock (bt:make-lock))
         (condition (bt:make-condition-variable)))
     (setf (active-connection interface)
@@ -267,7 +286,9 @@ Make sure to kill existing processes or if you were running Next from a REPL, ki
   (when (active-connection interface)
     (log:debug "Stopping server")
     ;; TODO: How do we close the connection properly?
-    (ignore-errors (bt:destroy-thread (active-connection interface)))))
+    (ignore-errors (bt:destroy-thread (active-connection interface)))
+    (when (dbus-pid interface)
+      (kill-program (dbus-pid interface)))))
 
 (defun %rpc-send-self (method-name signature &rest args)
   "Call METHOD over ARGS.
@@ -602,7 +623,8 @@ Deal with URL with the following rules:
     ((or is-new-window
          ;; TODO: Streamline the customization of this binding.
          (and (equal modifiers '("C"))
-              (string= mouse-button "button1")))
+              (string= mouse-button "button1"))
+         (string= mouse-button "button2"))
      (log:info "Load ~a in new buffer" url)
      (make-buffers (list url))
      nil)
