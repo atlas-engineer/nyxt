@@ -46,6 +46,7 @@
                  (:file "window")
                  (:file "minibuffer")
                  (:file "keymap")
+                 (:file "ring")
                  ;; Core Packages
                  (:file "bookmark")
                  (:file "zoom")
