@@ -39,7 +39,7 @@ Set to '-' to read standard input instead."))
 (define-command quit ()
   "Quit Next."
   (kill-interface *interface*)
-  (kill-program (port *interface*)))
+  (kill-port (port *interface*)))
 
 (define-deprecated-command kill ()
   "Deprecated by `quit'."
@@ -82,7 +82,7 @@ Set to '-' to read standard input instead."))
      #+allegro excl:interrupt-signal
      () (progn
           (kill-interface *interface*)
-          (kill-program (port *interface*))
+          (kill-port (port *interface*))
           (format t "Bye!~&")
           (uiop:quit)))))
 
@@ -134,7 +134,7 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
             (log:error "Could not connect to platform port: ~a" (path (port interface)))
             (handler-case
                 (progn
-                  (kill-program (port interface))
+                  (kill-port (port interface))
                   (kill-interface interface))
               (error (c) (format *error-output* "~a" c)))
             (uiop:quit))))))
