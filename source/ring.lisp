@@ -44,3 +44,16 @@ Return most recent entry in RING."
     (unless (string= clipboard-content (ring-ref ring 0))
       (ring-insert ring clipboard-content)))
   (ring-ref ring 0))
+
+(defun ring-completion-fn (ring)
+  (let ((ring-items (ring-recent-list ring)))
+    (lambda (input)
+      (fuzzy-match input ring-items))))
+
+(define-command paste-from-ring ()
+  "Show RING and paste selected entry."
+  (with-result (ring-item (read-from-minibuffer
+                           (minibuffer *interface*)
+                           :completion-function (ring-completion-fn
+                                                 (clipboard-ring *interface*))))
+    (%paste :input-text ring-item)))
