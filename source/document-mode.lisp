@@ -20,6 +20,7 @@
           "C-x C-w" 'copy-hint-url
           "C-f" 'history-forwards
           "C-b" 'history-backwards
+          "C-v" 'paste
           "button9" 'history-forwards
           "button8" 'history-backwards
           "C-p" 'scroll-up
@@ -44,7 +45,7 @@
           "M-s-<" 'scroll-to-top
           "M->" 'scroll-to-bottom
           "M-<" 'scroll-to-top
-          "C-v" 'scroll-page-down
+          ;; "C-v" 'scroll-page-down
           "M-v" 'scroll-page-up
           "C-w" 'copy-url
           "M-w" 'copy-title
@@ -217,3 +218,17 @@
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss (minibuffer *interface*)))
+
+(define-parenscript %paste ((input-text (ring-clipboard (clipboard-ring *interface*))))
+  (let* ((active-element (ps:chain document active-element))
+         (start-position (ps:chain active-element selection-start))
+         (end-position (ps:chain active-element selection-end)))
+    (setf (ps:chain active-element value)
+          (+ (ps:chain active-element value (substring 0 start-position))
+             (ps:lisp input-text)
+             (ps:chain active-element value
+                       (substring end-position
+                                  (ps:chain active-element value length)))))))
+
+(define-command paste ()
+  (%paste))
