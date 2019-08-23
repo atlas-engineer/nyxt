@@ -32,12 +32,6 @@
         path
         (ensure-file-exists path #'%initialize-history-db))))
 
-(defun history-add (url)
-  (let ((db (sqlite:connect (ensure-history-db))))
-    (sqlite:execute-non-query
-     db "insert into history (url) values (?)" url)
-    (sqlite:disconnect db)))
-
 (defun history-typed-add (url)
   "Add this url to the history, increment its number of visits."
   (let* ((db (sqlite:connect (ensure-history-db)))
