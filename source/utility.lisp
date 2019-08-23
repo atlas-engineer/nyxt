@@ -287,3 +287,11 @@ Optional second argument FLAVOR controls the units and the display format:
                "B")
               ((eq flavor 'iec) "iB")
               (t "")))))
+
+(declaim (ftype (function (fixnum &optional fixnum)) kill-program))
+(defun kill-program (pid &optional (signal 15))
+  (handler-case (uiop:run-program
+                 (list "kill" (format nil "-~a" signal)
+                       (write-to-string pid)))
+    (error ()
+      (log:error "Process with PID ~a is not running" pid))))
