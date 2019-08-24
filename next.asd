@@ -14,8 +14,6 @@
                :cl-markup
                :cl-ppcre
                :cl-ppcre-unicode
-               :cl-string-match
-               :cl-strings
                :closer-mop
                :dbus
                :dexador

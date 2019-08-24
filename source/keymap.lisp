@@ -237,8 +237,8 @@ This can serve as the key in the keymap."
   (serialize-key-chord-stack
    (nreverse
     ;; Iterate through all key chords (space delimited)
-    (loop for key-chord-string in (cl-strings:split key-sequence-string " ")
-          for keys = (cl-strings:split key-chord-string "-")
+    (loop for key-chord-string in (str:split " " key-sequence-string)
+          for keys = (str:split "-" key-chord-string)
           collect (make-key-chord
                    :key-code nil
                    :key-string (first (last keys))

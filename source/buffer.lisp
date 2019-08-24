@@ -74,7 +74,7 @@ buffer to the start page."
     (setf (name buffer) url)
     (unless disable-history
       (history-typed-add input-url))
-    (if (cl-strings:starts-with url "file://")
+    (if (str:starts-with-p "file://" url)
         (rpc-buffer-load *interface* buffer url)
         ;; We need to specify the buffer here since we may reach this point
         ;; on initialization before ACTIVE-BUFFER can be used.

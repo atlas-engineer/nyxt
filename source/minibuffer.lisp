@@ -148,7 +148,7 @@ This should not rely on the minibuffer's content.")
     (if completions
         (let* ((completion (nth completion-cursor completions))
                (completion (if (stringp completion)
-                               (cl-strings:replace-all completion " " " ")
+                               (str:replace-all " " " " completion)
                                completion)))
           (if completion
               ;; if we're able to find a completion
@@ -167,8 +167,7 @@ This should not rely on the minibuffer's content.")
   (setf (display-mode minibuffer) :nil)
   (hide *interface*)
   (with-slots (callback-function cleanup-function) minibuffer
-    (let ((normalized-input (cl-strings:replace-all (input-buffer minibuffer)
-                                                    " " " ")))
+    (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
       (funcall callback-function normalized-input))
     (when cleanup-function
       (funcall cleanup-function))))
@@ -225,9 +224,9 @@ This should not rely on the minibuffer's content.")
 
 (defun insert (characters &optional (minibuffer (minibuffer *interface*)))
   (setf (input-buffer minibuffer)
-        (cl-strings:insert characters
-                           (input-buffer minibuffer)
-                           :position (input-buffer-cursor minibuffer)))
+        (str:insert characters
+                    (input-buffer-cursor minibuffer)
+                    (input-buffer minibuffer)))
   (incf (input-buffer-cursor minibuffer) (length characters))
   (setf (completion-cursor minibuffer) 0)
   (update-display minibuffer))
