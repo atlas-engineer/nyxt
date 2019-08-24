@@ -32,7 +32,7 @@
                :trivial-clipboard
                :unix-opts
                ;; Local systems:
-               :download-manager)
+               :next/download-manager)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
@@ -76,7 +76,7 @@
   :build-pathname "next"
   :entry-point "next:entry-point")
 
-(asdf:defsystem download-manager
+(asdf:defsystem next/download-manager
   :depends-on (cl-ppcre
                dexador
                log4cl
@@ -88,7 +88,7 @@
                              (:file "engine")
                              (:file "native")))))
 
-(asdf:defsystem download-manager/tests
+(asdf:defsystem next/download-manager/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove
                download-manager)
