@@ -51,8 +51,23 @@
           ;; Leave SPACE unbound so that the paltform port decides wether to
           ;; insert of scroll.
           "s-SPACE" 'scroll-page-up
+
+          ;; keypad:
           "Page_Up" 'scroll-page-up
-          "Page_Down" 'scroll-page-down)
+          "Page_Down" 'scroll-page-down
+          "Page_End" 'scroll-to-bottom
+          "Page_Home" 'scroll-to-top
+          ;; keypad, gtk:
+          "KP_Left" 'scroll-left
+          "KP_Down" 'scroll-down
+          "KP_Up" 'scroll-up
+          "KP_Right" 'scroll-right
+          "KB_End" 'scroll-to-bottom
+          "KP_Home" 'scroll-to-top
+          "KP_Next" 'scroll-page-down
+          "KP_Page_Up" 'scroll-page-up
+          "KP_Prior" 'scroll-page-up)
+
         (define-key :keymap vi-map
           "H" 'history-backwards
           "L" 'history-forwards
@@ -61,6 +76,7 @@
           "; f" 'follow-hint-new-buffer
           "button9" 'history-forwards
           "button8" 'history-backwards
+
           "h" 'scroll-left
           "j" 'scroll-down
           "k" 'scroll-up
@@ -69,6 +85,20 @@
           "Down" 'scroll-down
           "Up" 'scroll-up
           "Right" 'scroll-right
+          ;; keypad:
+          "Page_End" 'scroll-to-bottom
+          "Page_Home" 'scroll-to-top
+          ;; keypad, gtk:
+          "KP_Left" 'scroll-left
+          "KP_Down" 'scroll-down
+          "KP_Up" 'scroll-up
+          "KP_Right" 'scroll-right
+          "KB_End" 'scroll-to-bottom
+          "KP_Home" 'scroll-to-top
+          "KP_Next" 'scroll-page-down
+          "KP_Page_Up" 'scroll-page-up
+          "KP_Prior" 'scroll-page-up
+
           "z i" 'zoom-in-page
           "z o" 'zoom-out-page
           "z z" 'unzoom-page
