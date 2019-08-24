@@ -58,8 +58,22 @@ MAJOR.MINOR.PATCH, we increment the:
   format.
 
 ** TASK 1.3.1 (Upcoming)
+
+*** Buffer management improvements
+When killing  the last  created buffer,  we were  brought back  to the
+first one, so usually  the help buffer. This is now  fixed, we stay at
+the previous last created buffer, as expected.
+
+*** Minibuffer improvements
+- in  the minibuffer,  using  =M-backspace= to  delete  a word  didn't
+  respect whitespaces. It is fixed.
+- its behaviour was  also too different than other  common tools, like
+  Firefox.  Now:
+  - it deletes the trailing word delimiter
+  - it removes all trailing delimiters PLUS one word.
 *** Add more keys
-- Key pad keys were added
+- Key pad keys were added.
+  The PyQt port requires an update.
 ** DONE 1.3.0
 *** DONE PyQt/Webengine platform port
 QtWebengine is based off Blink (the renderer of Chrome).
