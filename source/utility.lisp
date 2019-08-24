@@ -146,6 +146,7 @@ more details."
                                      (< (mk-string-metrics:levenshtein input (first x))
                                         (mk-string-metrics:levenshtein input (first y))))))
 
+(export 'fuzzy-match) ; TODO: Why do we need to export this?  If just for testing, unexport.
 (defun fuzzy-match (input candidates)
   "From the user input and a list of candidates, return a filtered list of
 candidates that have all the input words in them, and sort this list to have the

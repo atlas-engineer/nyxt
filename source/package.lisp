@@ -2,11 +2,7 @@
 
 (in-package :cl-user)
 
-(defpackage next
-  (:use :common-lisp)
-  (:use :trivia)
-  (:export
-   #:start
-   #:entry-point
-   #:fuzzy-match
-   #:open-file))
+;; Some compilers (e.g. SBCL) fail to reload the system with `defpackage' when
+;; exports are spread around.  `uiop:define-package' does not have this problem.
+(uiop:define-package next
+    (:use :common-lisp :trivia))

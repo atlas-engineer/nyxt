@@ -57,6 +57,7 @@ Set to '-' to read standard input instead."))
      (log:config :info)
      (setf (uiop:getenv "G_MESSAGES_DEBUG") nil))))
 
+(export 'entry-point)
 (defun entry-point ()
   (multiple-value-bind (options free-args)
       (parse-cli-args)
@@ -176,6 +177,7 @@ If FILE is \"-\", read from the standard input."
   "Load or reload the init file."
   (load-lisp-file init-file))
 
+(export 'start)
 (defun start (&rest urls)
   (log:info +version+)
   ;; Randomness should be seeded as early as possible to avoid generating
