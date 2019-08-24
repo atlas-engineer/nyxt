@@ -43,7 +43,7 @@ See the `make-buffer' function for Lisp code."
   "Make a new empty buffer with the default-new-buffer-url loaded."
   (let ((buffer (make-buffer)))
     (set-active-buffer *interface* buffer)
-    (set-url (default-new-buffer-url buffer) buffer)))
+    (set-url (default-new-buffer-url buffer) :buffer buffer)))
 
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
@@ -103,7 +103,7 @@ buffer"
                      :completion-function 'history-typed-complete
                      :empty-complete-immediate t))
     (let ((buffer (make-buffer)))
-      (set-url url buffer)
+      (set-url url :buffer buffer)
       (set-active-buffer *interface* buffer))))
 
 (defmethod get-active-buffer-index ((active-buffer buffer) buffers)

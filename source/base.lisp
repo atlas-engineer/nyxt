@@ -119,11 +119,11 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
       (if port-running
           (if urls
               (let ((buffer (nth-value 1 (make-window))))
-                (set-url (first urls) buffer)
+                (set-url (first urls) :buffer buffer)
                 ;; We can have many URLs as positional arguments.
                 (loop for url in (rest urls) do
                   (let ((buffer (make-buffer)))
-                    (set-url url buffer))))
+                    (set-url url :buffer buffer))))
               ;; TODO: Make startup function customizable.
               ;; TODO: Test if network is available.  If not, display help,
               ;; otherwise display start-page-url.
