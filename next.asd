@@ -74,6 +74,10 @@
   :build-pathname "next"
   :entry-point "next:entry-point")
 
+#+sb-core-compression
+(defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
+  (uiop:dump-image (asdf:output-file o c) :executable t :compression t))
+
 (asdf:defsystem next/download-manager
   :depends-on (cl-ppcre
                dexador
