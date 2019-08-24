@@ -95,7 +95,7 @@
               :vi-normal vi-map))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
-  ;; (set-url-buffer (default-new-buffer-url (buffer %mode))
+  ;; (set-url (default-new-buffer-url (buffer %mode))
   ;;                 (buffer %mode))
   )
 
@@ -106,7 +106,7 @@
                               ;; (mode (active-buffer *interface*))
                                                   ))))
     (when parent
-      (set-url (node-data parent) t))))
+      (set-url (node-data parent) :disable-history t))))
 
 (define-command history-forwards (document-mode)
   "Move forwards in history selecting the first child."
@@ -115,7 +115,7 @@
                                   ;; (mode (active-buffer *interface*))
                                   ))))
     (unless (null children)
-      (set-url (node-data (nth 0 children)) t))))
+      (set-url (node-data (nth 0 children)) :disable-history t))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
                                                         (active-buffer *interface*)

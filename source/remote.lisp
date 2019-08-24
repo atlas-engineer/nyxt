@@ -594,13 +594,13 @@ TODO: Only booleans are supported for now."
   ;; The new active buffer should be the first created buffer.
   (when urls
     (let ((buffer (make-buffer)))
-      (set-url-buffer (first urls) buffer)
+      (set-url (first urls) buffer)
       (if (open-external-link-in-new-window-p *interface*)
           (window-set-active-buffer *interface* (rpc-window-make *interface*) buffer)
           (set-active-buffer *interface* buffer)))
     (loop for url in (rest urls) do
       (let ((buffer (make-buffer)))
-        (set-url-buffer url buffer)))))
+        (set-url url buffer)))))
 
 (defmethod resource-query-default ((buffer buffer)
                                    &key url
