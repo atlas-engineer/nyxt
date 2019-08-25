@@ -29,14 +29,14 @@ If the input is actually a file path, open it.
 Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
 Otherwise, build a search query with the default search engine."
   (let* ((window (rpc-window-active *interface*))
-         (engine (assoc (first (cl-strings:split input-url))
+         (engine (assoc (first (str:split " " input-url))
                         (search-engines window) :test #'string=))
          (default (assoc "default"
                          (search-engines window) :test #'string=)))
     (if engine
         (generate-search-query
          (subseq input-url
-                 (length (first (cl-strings:split input-url))))
+                 (length (first (str:split " " input-url))))
          (rest engine))
         (let ((recognized-scheme (ignore-errors (quri:uri-scheme (quri:uri input-url)))))
           (cond
@@ -65,7 +65,7 @@ Otherwise, build a search query with the default search engine."
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
-           (cl-string-match:replace-re "  *" "+" search-string :all t))
+           (cl-ppcre:regex-replace-all " +" search-string "+"))
          (url (format nil search-url encoded-search-string)))
     url))
 
@@ -146,6 +146,7 @@ more details."
                                      (< (mk-string-metrics:levenshtein input (first x))
                                         (mk-string-metrics:levenshtein input (first y))))))
 
+(export 'fuzzy-match) ; TODO: Why do we need to export this?  If just for testing, unexport.
 (defun fuzzy-match (input candidates)
   "From the user input and a list of candidates, return a filtered list of
 candidates that have all the input words in them, and sort this list to have the

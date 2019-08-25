@@ -37,7 +37,11 @@ SPECIAL_KEYS = {
     Qt.Key_Left: "Left",
     Qt.Key_Right: "Right",
     Qt.Key_Up: "Up",
-    Qt.Key_Down: "Down"
+    Qt.Key_Down: "Down",
+    Qt.Key_PageUp: "Page_Up",
+    Qt.Key_PageDown: "Page_Down",
+    Qt.Key_End: "Page_End",
+    Qt.Key_Home: "Page_Home",
 }
 
 # Used for bitmasking to determine modifiers

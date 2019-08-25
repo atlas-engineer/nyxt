@@ -4,7 +4,7 @@
 
 ;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
-  (name buffer))
+  (format nil "~a  ~a" (name buffer) (title buffer)))
 
 (defun make-buffer (&key (name "default")
                          default-modes)
@@ -43,7 +43,7 @@ See the `make-buffer' function for Lisp code."
   "Make a new empty buffer with the default-new-buffer-url loaded."
   (let ((buffer (make-buffer)))
     (set-active-buffer *interface* buffer)
-    (set-url-buffer (default-new-buffer-url buffer) buffer)))
+    (set-url (default-new-buffer-url buffer) :buffer buffer)))
 
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
@@ -69,21 +69,16 @@ buffer to the start page."
 (define-parenscript buffer-set-url (url)
   ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
 
-(defmethod set-url-buffer (input-url (buffer buffer) &optional disable-history)
+(defun set-url (input-url &key (buffer (active-buffer *interface*)) disable-history)
   (let ((url (parse-url input-url)))
     (setf (name buffer) url)
     (unless disable-history
       (history-typed-add input-url))
-    (if (cl-strings:starts-with url "file://")
+    (if (str:starts-with-p "file://" url)
         (rpc-buffer-load *interface* buffer url)
         ;; We need to specify the buffer here since we may reach this point
         ;; on initialization before ACTIVE-BUFFER can be used.
         (buffer-set-url :url url :buffer buffer))))
-
-;; TODO: Merge `set-url-buffer' and `set-url'?
-(defun set-url (input-url &optional disable-history)
-  (let ((url (parse-url input-url)))
-    (set-url-buffer url (active-buffer *interface*) disable-history)))
 
 (define-command set-url-current-buffer ()
   "Set the URL for the current buffer, completing with history."
@@ -97,7 +92,7 @@ buffer to the start page."
 (define-command reload-current-buffer ()
   "Reload current buffer."
   (with-result (url (buffer-get-url))
-    (set-url url 'disable-history)))
+    (set-url url :disable-history t)))
 
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new active / visible
@@ -108,7 +103,7 @@ buffer"
                      :completion-function 'history-typed-complete
                      :empty-complete-immediate t))
     (let ((buffer (make-buffer)))
-      (set-url-buffer url buffer)
+      (set-url url :buffer buffer)
       (set-active-buffer *interface* buffer))))
 
 (defmethod get-active-buffer-index ((active-buffer buffer) buffers)

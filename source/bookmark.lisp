@@ -20,7 +20,7 @@
          (candidates
            (sqlite:execute-to-list
             db "select url from bookmarks where url like ?"
-            (format nil "%~a%" (cl-strings:replace-all input " " "%")))))
+            (format nil "%~a%" (str:replace-all " " "%" input)))))
     (sqlite:disconnect db)
     (reduce #'append candidates :from-end t)))
 

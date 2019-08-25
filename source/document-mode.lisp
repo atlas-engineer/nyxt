@@ -53,8 +53,23 @@
           ;; Leave SPACE unbound so that the paltform port decides wether to
           ;; insert of scroll.
           "s-SPACE" 'scroll-page-up
+
+          ;; keypad:
           "Page_Up" 'scroll-page-up
-          "Page_Down" 'scroll-page-down)
+          "Page_Down" 'scroll-page-down
+          "Page_End" 'scroll-to-bottom
+          "Page_Home" 'scroll-to-top
+          ;; keypad, gtk:
+          "KP_Left" 'scroll-left
+          "KP_Down" 'scroll-down
+          "KP_Up" 'scroll-up
+          "KP_Right" 'scroll-right
+          "KP_End" 'scroll-to-bottom
+          "KP_Home" 'scroll-to-top
+          "KP_Next" 'scroll-page-down
+          "KP_Page_Up" 'scroll-page-up
+          "KP_Prior" 'scroll-page-up)
+
         (define-key :keymap vi-map
           "H" 'history-backwards
           "L" 'history-forwards
@@ -63,6 +78,7 @@
           "; f" 'follow-hint-new-buffer
           "button9" 'history-forwards
           "button8" 'history-backwards
+
           "h" 'scroll-left
           "j" 'scroll-down
           "k" 'scroll-up
@@ -71,6 +87,20 @@
           "Down" 'scroll-down
           "Up" 'scroll-up
           "Right" 'scroll-right
+          ;; keypad:
+          "Page_End" 'scroll-to-bottom
+          "Page_Home" 'scroll-to-top
+          ;; keypad, gtk:
+          "KP_Left" 'scroll-left
+          "KP_Down" 'scroll-down
+          "KP_Up" 'scroll-up
+          "KP_Right" 'scroll-right
+          "KP_End" 'scroll-to-bottom
+          "KP_Home" 'scroll-to-top
+          "KP_Next" 'scroll-page-down
+          "KP_Page_Up" 'scroll-page-up
+          "KP_Prior" 'scroll-page-up
+
           "z i" 'zoom-in-page
           "z o" 'zoom-out-page
           "z z" 'unzoom-page
@@ -97,7 +127,7 @@
               :vi-normal vi-map))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
-  ;; (set-url-buffer (default-new-buffer-url (buffer %mode))
+  ;; (set-url (default-new-buffer-url (buffer %mode))
   ;;                 (buffer %mode))
   )
 
@@ -108,7 +138,7 @@
                               ;; (mode (active-buffer *interface*))
                                                   ))))
     (when parent
-      (set-url (node-data parent) t))))
+      (set-url (node-data parent) :disable-history t))))
 
 (define-command history-forwards (document-mode)
   "Move forwards in history selecting the first child."
@@ -117,7 +147,7 @@
                                   ;; (mode (active-buffer *interface*))
                                   ))))
     (unless (null children)
-      (set-url (node-data (nth 0 children)) t))))
+      (set-url (node-data (nth 0 children)) :disable-history t))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
                                                         (active-buffer *interface*)
