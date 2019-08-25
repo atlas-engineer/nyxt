@@ -62,7 +62,7 @@
           "KP_Down" 'scroll-down
           "KP_Up" 'scroll-up
           "KP_Right" 'scroll-right
-          "KB_End" 'scroll-to-bottom
+          "KP_End" 'scroll-to-bottom
           "KP_Home" 'scroll-to-top
           "KP_Next" 'scroll-page-down
           "KP_Page_Up" 'scroll-page-up
@@ -93,7 +93,7 @@
           "KP_Down" 'scroll-down
           "KP_Up" 'scroll-up
           "KP_Right" 'scroll-right
-          "KB_End" 'scroll-to-bottom
+          "KP_End" 'scroll-to-bottom
           "KP_Home" 'scroll-to-top
           "KP_Next" 'scroll-page-down
           "KP_Page_Up" 'scroll-page-up
