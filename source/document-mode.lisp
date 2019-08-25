@@ -232,11 +232,13 @@
                                   (ps:chain active-element value length)))))))
 
 (define-command paste ()
+  "Paste text."
   (%paste))
 
 (define-parenscript %copy ()
   (ps:chain window (get-selection) (to-string)))
 
 (define-command copy ()
+  "Copy text."
   (with-result (input (%copy))
     (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input))))
