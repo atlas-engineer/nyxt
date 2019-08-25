@@ -21,6 +21,7 @@
           "C-f" 'history-forwards
           "C-b" 'history-backwards
           "C-v" 'paste
+          "C-c" 'copy
           "button9" 'history-forwards
           "button8" 'history-backwards
           "C-p" 'scroll-up
@@ -232,3 +233,10 @@
 
 (define-command paste ()
   (%paste))
+
+(define-parenscript %copy ()
+  (ps:chain window (get-selection) (to-string)))
+
+(define-command copy ()
+  (with-result (input (%copy))
+    (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input))))
