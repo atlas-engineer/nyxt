@@ -115,27 +115,27 @@ DOWNLOAD_AGENT_FLAGS = --output
 QUICKLISP_DIR = quicklisp
 
 quicklisp.lisp:
-	$(DOWNLOAD_AGENT) $(DOWNLOAD_AGENT_FLAGS) $@ $(QUICKLISP_URL)
+	$(NEXT_INTERNAL_QUICKLISP) && $(DOWNLOAD_AGENT) $(DOWNLOAD_AGENT_FLAGS) $@ $(QUICKLISP_URL) || true
 
 $(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
-	rm -rf $(QUICKLISP_DIR)
+	$(NEXT_INTERNAL_QUICKLISP) && rm -rf $(QUICKLISP_DIR) || true
 	mkdir -p $(QUICKLISP_DIR)
-	$(LISP) $(LISP_FLAGS) \
+	$(NEXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load $< \
 		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")' \
-		--eval '(uiop:quit)'
+		--eval '(uiop:quit)' || true
 
 .PHONY: deps
 deps: $(QUICKLISP_DIR)/setup.lisp
-	$(LISP) $(LISP_FLAGS) \
+	$(NEXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load $< \
 		--eval '(ql:quickload :trivial-features)' \
 		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(ql:quickload :next)' \
-		--eval '(uiop:quit)'
+		--eval '(uiop:quit)' || true
 
 ## This rule only update the internal distribution.
 .PHONY: quicklisp-update
