@@ -37,8 +37,8 @@ If RING is full, delete oldest item."
         if (not (null item)) collect item))
 
 (defmethod ring-insert-clipboard ((ring ring))
-  "Check if CLIPBOARD-CONTENT is most recent entry in RING.
-If not, insert CLIPBOARD-CONTENT into RING.
+  "Check if clipboard-content is most recent entry in RING.
+If not, insert clipboard-content into RING.
 Return most recent entry in RING."
   (let ((clipboard-content (trivial-clipboard:text)))
     (unless (string= clipboard-content (ring-ref ring 0))
