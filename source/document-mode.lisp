@@ -232,13 +232,14 @@
                                   (ps:chain active-element value length)))))))
 
 (define-command paste ()
-  "Paste text."
+  "Paste from clipboard into active-element."
   (%paste))
 
 (define-parenscript %copy ()
+  "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
 
 (define-command copy ()
-  "Copy text."
+  "Copy selected text to clipboard."
   (with-result (input (%copy))
     (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input))))
