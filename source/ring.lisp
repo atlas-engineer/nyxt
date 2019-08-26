@@ -3,12 +3,10 @@
 (defclass ring ()
   ((items :accessor items
           :initarg :items
+          :initform (make-array 1000 :initial-element nil)
           :type array)
    (item-count :accessor item-count
-               :initform 0)
-   (head-index :accessor head-index
-               :initform 0
-               :documentation "Index of oldest item.")))
+               :initform 0)))
 
 (defmethod ring-size ((ring ring))
   "Return the maximum number of elements it can contain."
@@ -16,13 +14,13 @@
 
 (defmethod ring-index ((ring ring) index)
   "Convert to internal ring index, where items are ordered from newest to oldest."
-  (mod (1- (+ (head-index ring) (- (item-count ring) index))) (ring-size ring)))
+  (mod (1- (- (item-count ring) index)) (ring-size ring)))
 
 (defmethod ring-insert ((ring ring) new-item)
   "Insert item into RING.
 If RING is full, delete oldest item."
   (setf (aref (items ring)
-              (mod (+ (head-index ring) (item-count ring))
+              (mod (item-count ring)
                    (ring-size ring))) new-item)
   (setf (item-count ring) (1+ (item-count ring))))
 
