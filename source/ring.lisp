@@ -32,7 +32,7 @@ If RING is full, delete oldest item."
 
 (defmethod ring-recent-list ((ring ring))
   "Return list of items ordered by most recent."
-  (loop for index from 0 to (1- (ring-size ring))
+  (loop for index from 0 below (ring-size ring)
         for item = (ring-ref ring index)
         if (not (null item)) collect item))
 
