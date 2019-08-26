@@ -14,18 +14,20 @@
 
 (defmethod ring-index ((ring ring) index)
   "Convert to internal ring index, where items are ordered from newest to oldest."
-  (mod (1- (- (item-count ring) index)) (ring-size ring)))
+  (mod (1- (- (item-count ring) index))
+       (ring-size ring)))
 
 (defmethod ring-insert ((ring ring) new-item)
   "Insert item into RING.
-If RING is full, delete oldest item."
+If RING is full, replace the oldest item."
   (setf (aref (items ring)
               (mod (item-count ring)
-                   (ring-size ring))) new-item)
-  (setf (item-count ring) (1+ (item-count ring))))
+                   (ring-size ring)))
+        new-item)
+  (incf (item-count ring)))
 
 (defmethod ring-ref ((ring ring) index)
-  "Return from RING using conversion to internal index."
+  "Return value from items by INDEX where 0 INDEX is most recent."
   (aref (items ring) (ring-index ring index)))
 
 (defmethod ring-recent-list ((ring ring))
@@ -49,7 +51,7 @@ Return most recent entry in RING."
       (fuzzy-match input ring-items))))
 
 (define-command paste-from-ring ()
-  "Show RING and paste selected entry."
+  "Show `interface' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
                            (minibuffer *interface*)
                            :completion-function (ring-completion-fn
