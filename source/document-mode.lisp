@@ -220,7 +220,7 @@
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss (minibuffer *interface*)))
 
-(define-parenscript %paste ((input-text (ring-clipboard (clipboard-ring *interface*))))
+(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
          (end-position (ps:chain active-element selection-end)))

@@ -519,7 +519,7 @@ interpreted by `format'. "
 
 (define-command minibuffer-paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
-  (insert (ring-clipboard (clipboard-ring *interface*)) minibuffer))
+  (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
 
 (defmethod get-candidate ((minibuffer minibuffer))
   "Return the string for the current candidate in the minibuffer."

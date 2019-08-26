@@ -36,7 +36,7 @@ If RING is full, delete oldest item."
         for item = (ring-ref ring index)
         if (not (null item)) collect item))
 
-(defmethod ring-clipboard ((ring ring))
+(defmethod ring-insert-clipboard ((ring ring))
   "Check if CLIPBOARD-CONTENT is most recent entry in RING.
 If not, insert CLIPBOARD-CONTENT into RING.
 Return most recent entry in RING."
