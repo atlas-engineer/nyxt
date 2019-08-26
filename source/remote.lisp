@@ -33,7 +33,7 @@ keyword is not recognized.")))
 (defclass buffer ()
   ((id :accessor id :initarg :id)
    (name :accessor name :initarg :name)
-   (title :accessor title :initarg :title)
+   (title :accessor title :initarg :title :initform nil)
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
