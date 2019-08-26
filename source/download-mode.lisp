@@ -92,7 +92,7 @@
 ;; "open-file-function" into a download-mode slot, which is then called from
 ;; `download-open-file' with `(funcall (open-file-function download-mode)
 ;; filename).
-(export 'open-file) ; TODO: Why do we need to export this?  If just for testing, unexport.
+(export 'open-file)  ;; the user is encouraged to override this in her init file.
 (defun open-file (filename)
   "Open this file. `filename' is the full path of the file, as a string.
 By default, try to open it with the system's default external program, using `xdg-open'.
