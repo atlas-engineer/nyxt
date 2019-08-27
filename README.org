@@ -1,4 +1,5 @@
 #+html: <img src="https://next.atlas.engineer/static/image/next_256x256.png" align="right"/>
+
 * Next web browser
 
 Next is a keyboard-oriented, extensible web-browser designed for power
@@ -9,8 +10,21 @@ productive professionals.
 *Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
 instabilities or feature wishes.
 
+-----
+
+# sorry for the one-line, github doesn't read #+begin_export html !
+
+#+html: <p align="center"> <a href="http://next.atlas.engineer/"><b>Homepage</b></a> | <a href="https://next.atlas.engineer/download"><b>Downloads</b></a> | <a href="https://next.atlas.engineer/documentation"><b>User Manual</b></a> | <a href="https://next.atlas.engineer/articles"><b>Articles</b></a> </p>
+
+-----
+
 If you like Next and if you want to help future development, support us on
-[[https://www.patreon.com/next_browser][Patreon]] and don't miss our [[https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/][crowdfunding campaign for v1.4]]!
+[[https://www.patreon.com/next_browser][Patreon]] and help make our [[https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/][crowdfunding campaign for v1.4]] a success!
+
+
+#+html: <div align="center"> <a href="https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/"> <img title="Support our campaign" alt="Support our crowdfunding campaign" style="height: 50px; width: auto;" src="indiegogo-logo-small.png"></a> &nbsp;&nbsp; <a href="https://www.patreon.com/next_browser"> <img title="Donate monthly using Patreon" alt="Donate monthly using Patreon" style="height: 50px; width: auto;" src="patreon-25x.png"></a> &nbsp;&nbsp; </div>
+
+-----
 
 ** Fast tab switching
 Switch easily between your open tabs by fuzzy search. If you are
