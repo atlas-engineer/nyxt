@@ -36,38 +36,38 @@
   "existing next commands.")
 
 (subtest "Fuzzy match"
-  (is "help" (first (fuzzy-match "hel"
-                                 '("help-mode" "help" "foo-help" "help-foo-bar"))))
-  (is "HELP" (first (fuzzy-match "hel"
-                                 *candidates*))
+  (is "help" (first (next::fuzzy-match "hel"
+                                       '("help-mode" "help" "foo-help" "help-foo-bar"))))
+  (is "HELP" (first (next::fuzzy-match "hel"
+                                       *candidates*))
       "match 'help' with real candidates list")
-  (is "switch-buffer" (first (fuzzy-match "swit buf"
-                                          '("about" "switch-buffer-next" "switch-buffer"
-                                            "delete-buffer")))
+  (is "switch-buffer" (first (next::fuzzy-match "swit buf"
+                                                '("about" "switch-buffer-next" "switch-buffer"
+                                                  "delete-buffer")))
       "match 'swit buf' (small list)")
-  (is "SWITCH-BUFFER" (first (fuzzy-match "swit buf"
-                                          *candidates*))
+  (is "SWITCH-BUFFER" (first (next::fuzzy-match "swit buf"
+                                                *candidates*))
       "match 'swit buf' with real candidates list")
-  (is "switch-buffer" (first (fuzzy-match "buf swit"
-                                          '("about" "switch-buffer-next" "switch-buffer"
-                                            "delete-buffer")))
+  (is "switch-buffer" (first (next::fuzzy-match "buf swit"
+                                                '("about" "switch-buffer-next" "switch-buffer"
+                                                  "delete-buffer")))
       "reverse match 'buf swit' (small list)")
-  (is "SWITCH-BUFFER" (first (fuzzy-match "buf swit"
-                                          *candidates*))
+  (is "SWITCH-BUFFER" (first (next::fuzzy-match "buf swit"
+                                                *candidates*))
       "reverse match 'buf swit' with real candidates list")
 
-  (is "delete-foo" (first (fuzzy-match "de"
-                                       '("some-mode" "delete-foo")))
+  (is "delete-foo" (first (next::fuzzy-match "de"
+                                             '("some-mode" "delete-foo")))
       "candidates beginning with the first word appear first")
 
-  (is "foo-bar" (first (fuzzy-match "foobar"
-                                    '("foo-dash-bar" "foo-bar")))
+  (is "foo-bar" (first (next::fuzzy-match "foobar"
+                                          '("foo-dash-bar" "foo-bar")))
       "search witout a space. All characters count (small list).")
-  (is "SWITCH-BUFFER" (first (fuzzy-match "sbf"
-                                          *candidates*))
+  (is "SWITCH-BUFFER" (first (next::fuzzy-match "sbf"
+                                                *candidates*))
       "search witout a space. All characters count, real list.")
-  (is "FOO-BAR" (first (fuzzy-match "FOO"
-                                    '("foo-dash-bar" "FOO-BAR")))
+  (is "FOO-BAR" (first (next::fuzzy-match "FOO"
+                                          '("foo-dash-bar" "FOO-BAR")))
       "input is uppercase (small list)."))
 
 (subtest "Parse URL"
@@ -87,9 +87,9 @@
       "empty domain")
   (is "https://duckduckgo.com/?q=algo" (next::parse-url "algo")
       "same domain and TLD")
-  (is "http://[1:0:0:2::3:0.]/" (first (fuzzy-match "[" '("test1"
-                                                          "http://[1:0:0:2::3:0.]/"
-                                                          "test2")))
+  (is "http://[1:0:0:2::3:0.]/" (first (next::fuzzy-match "[" '("test1"
+                                                                "http://[1:0:0:2::3:0.]/"
+                                                                "test2")))
       "match regex meta-characters"))
 
 (finalize)
