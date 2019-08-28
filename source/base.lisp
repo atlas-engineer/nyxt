@@ -39,7 +39,7 @@ Set to '-' to read standard input instead."))
 (define-command quit ()
   "Quit Next."
   (kill-interface *interface*)
-  (kill-program (port *interface*)))
+  (kill-port (port *interface*)))
 
 (define-deprecated-command kill ()
   "Deprecated by `quit'."
@@ -57,6 +57,7 @@ Set to '-' to read standard input instead."))
      (log:config :info)
      (setf (uiop:getenv "G_MESSAGES_DEBUG") nil))))
 
+(export 'entry-point)
 (defun entry-point ()
   (multiple-value-bind (options free-args)
       (parse-cli-args)
@@ -82,7 +83,7 @@ Set to '-' to read standard input instead."))
      #+allegro excl:interrupt-signal
      () (progn
           (kill-interface *interface*)
-          (kill-program (port *interface*))
+          (kill-port (port *interface*))
           (format t "Bye!~&")
           (uiop:quit)))))
 
@@ -119,11 +120,11 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
       (if port-running
           (if urls
               (let ((buffer (nth-value 1 (make-window))))
-                (set-url-buffer (first urls) buffer)
+                (set-url (first urls) :buffer buffer)
                 ;; We can have many URLs as positional arguments.
                 (loop for url in (rest urls) do
                   (let ((buffer (make-buffer)))
-                    (set-url-buffer url buffer))))
+                    (set-url url :buffer buffer))))
               ;; TODO: Make startup function customizable.
               ;; TODO: Test if network is available.  If not, display help,
               ;; otherwise display start-page-url.
@@ -134,7 +135,7 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
             (log:error "Could not connect to platform port: ~a" (path (port interface)))
             (handler-case
                 (progn
-                  (kill-program (port interface))
+                  (kill-port (port interface))
                   (kill-interface interface))
               (error (c) (format *error-output* "~a" c)))
             (uiop:quit))))))
@@ -176,6 +177,7 @@ If FILE is \"-\", read from the standard input."
   "Load or reload the init file."
   (load-lisp-file init-file))
 
+(export 'start)
 (defun start (&rest urls)
   (log:info +version+)
   ;; Randomness should be seeded as early as possible to avoid generating

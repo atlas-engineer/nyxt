@@ -14,8 +14,6 @@
                :cl-markup
                :cl-ppcre
                :cl-ppcre-unicode
-               :cl-string-match
-               :cl-strings
                :closer-mop
                :dbus
                :dexador
@@ -32,7 +30,7 @@
                :trivial-clipboard
                :unix-opts
                ;; Local systems:
-               :download-manager)
+               :next/download-manager)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
@@ -77,7 +75,11 @@
   :build-pathname "next"
   :entry-point "next:entry-point")
 
-(asdf:defsystem download-manager
+#+sb-core-compression
+(defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
+  (uiop:dump-image (asdf:output-file o c) :executable t :compression t))
+
+(asdf:defsystem next/download-manager
   :depends-on (cl-ppcre
                dexador
                log4cl
@@ -89,7 +91,7 @@
                              (:file "engine")
                              (:file "native")))))
 
-(asdf:defsystem download-manager/tests
+(asdf:defsystem next/download-manager/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove
                download-manager)

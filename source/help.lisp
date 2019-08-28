@@ -132,7 +132,16 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                  (:li "Spread the word on social media and "
                       (:a :href "https://github.com/atlas-engineer/next"
                           "star the project on GitHub")
-                      ".")))
+                      "."))
+
+                (:div
+                      (:a :href "https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/"
+                       (:img :title "Help make our campaign a success"
+                             :src "https://raw.githubusercontent.com/atlas-engineer/next/master/indiegogo-logo-small.png"))
+                      (:a :href "https://www.patreon.com/next_browser"
+                       (:img :title "Support us on Patreon"
+                             :src "https://raw.githubusercontent.com/atlas-engineer/next/master/patreon-25x.png"))))
+
             (:h2 "Quickstart keys")
             (:ul
              (:li (:code "C-l") ": Load URL in tab")

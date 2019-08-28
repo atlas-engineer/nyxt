@@ -33,6 +33,7 @@ keyword is not recognized.")))
 (defclass buffer ()
   ((id :accessor id :initarg :id)
    (name :accessor name :initarg :name)
+   (title :accessor title :initarg :title :initform nil)
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
@@ -129,6 +130,8 @@ See `rpc-buffer-make'."
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
+  (with-result (title (buffer-get-title))
+    (setf (title buffer) title))
   (dolist (mode (modes buffer))
     (did-commit-navigation mode url)))
 
@@ -147,11 +150,18 @@ for the platform port to start up.")
 RPC endpoint of a platform-port to see if it is ready to begin accepting RPC
 commands.")
    (active-connection :accessor active-connection :initform nil)
+   (dbus-pid :accessor dbus-pid :initform nil :type :number
+             :documentation "The process identifier of the dbus instance started
+by Next when the user session dbus instance is not available.")
    (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
                :documentation "The minibuffer object.")
+<<<<<<< HEAD
    (clipboard-ring :accessor clipboard-ring :initform (make-instance
                                                        'ring :items
                                                        (make-array 1000 :initial-element nil)))
+=======
+   (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
+>>>>>>> 204b6e0503498813b3c45f464ab01fe00164c636
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
@@ -224,9 +234,25 @@ current buffer."
         (echo "Download error: ~a" c)
         nil))))
 
+(defun ensure-dbus-session (interface)
+  (handler-case
+      (dbus:with-open-bus (bus (session-server-addresses))
+        ;; Dummy call to make sure dbus session is accessible.
+        (log:info "Bus connection name: ~A" (dbus:bus-name bus)))
+    (error ()
+      (match (mapcar (lambda (s) (str:split "=" s :limit 2))
+                     (str:split "
+"
+                                (uiop:run-program '("dbus-launch")
+                                                  :output '(:string :stripped t))))
+        ((list (list _ address) (list _ pid))
+         (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
+         (setf (dbus-pid interface) (parse-integer pid)))))))
+
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
   "Start the RPC server."
+  (ensure-dbus-session interface)
   (let ((lock (bt:make-lock))
         (condition (bt:make-condition-variable)))
     (setf (active-connection interface)
@@ -267,7 +293,9 @@ Make sure to kill existing processes or if you were running Next from a REPL, ki
   (when (active-connection interface)
     (log:debug "Stopping server")
     ;; TODO: How do we close the connection properly?
-    (ignore-errors (bt:destroy-thread (active-connection interface)))))
+    (ignore-errors (bt:destroy-thread (active-connection interface)))
+    (when (dbus-pid interface)
+      (kill-program (dbus-pid interface)))))
 
 (defun %rpc-send-self (method-name signature &rest args)
   "Call METHOD over ARGS.
@@ -573,13 +601,13 @@ TODO: Only booleans are supported for now."
   ;; The new active buffer should be the first created buffer.
   (when urls
     (let ((buffer (make-buffer)))
-      (set-url-buffer (first urls) buffer)
+      (set-url (first urls) :buffer buffer)
       (if (open-external-link-in-new-window-p *interface*)
           (window-set-active-buffer *interface* (rpc-window-make *interface*) buffer)
           (set-active-buffer *interface* buffer)))
     (loop for url in (rest urls) do
       (let ((buffer (make-buffer)))
-        (set-url-buffer url buffer)))))
+        (set-url url :buffer buffer)))))
 
 (defmethod resource-query-default ((buffer buffer)
                                    &key url
@@ -602,7 +630,8 @@ Deal with URL with the following rules:
     ((or is-new-window
          ;; TODO: Streamline the customization of this binding.
          (and (equal modifiers '("C"))
-              (string= mouse-button "button1")))
+              (string= mouse-button "button1"))
+         (string= mouse-button "button2"))
      (log:info "Load ~a in new buffer" url)
      (make-buffers (list url))
      nil)
