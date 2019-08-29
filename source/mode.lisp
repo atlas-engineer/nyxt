@@ -28,22 +28,11 @@ If :ACTIVATE is omitted, the mode is toggled."
      ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
      ;; Should probably always have root-mode.
      ,(unless (eq name 'root-mode)
-        ;; TODO: Here we define the command manually instead of using
-        ;; define-command, because this last macro depends on modes and thus
-        ;; define-mode itself.
-        `(progn
-           (unless (find-if (lambda (c) (and (eq (sym c) ',name)
-                                             (eq (pkg c) *package*)))
-                            %%command-list)
-             (push (make-instance 'command :sym ',name :pkg *package*) %%command-list))
-           @export
-           (defun ,name (&rest args &key (buffer (active-buffer *interface*)) (activate t explicit?)
-                         &allow-other-keys)
-             ,docstring
-             (let ((existing-instance
-                     (find-if (lambda (m)
-                                (eq (class-name (class-of m)) ',name))
-                              (modes buffer))))
+        `(define-command ,name (&rest args &key (buffer (active-buffer *interface*))
+                                      (activate t explicit?)
+                                      &allow-other-keys)
+           ,docstring
+           (let ((existing-instance (find-mode buffer ',name)))
                (unless explicit?
                  (setf activate (not existing-instance)))
                (if activate
@@ -62,7 +51,7 @@ If :ACTIVATE is omitted, the mode is toggled."
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
                                                   (modes buffer)))
-                     (echo "~a disabled." ',name)))))))))
+                     (echo "~a disabled." ',name))))))))
 
 (define-mode root-mode (t)
   "The root of all modes."
