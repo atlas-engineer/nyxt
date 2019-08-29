@@ -1,6 +1,7 @@
 ;;; minibuffer.lisp --- major mode for input
 
 (in-package :next)
+(annot:enable-annot-syntax)
 
 ;; TODO: Currently there is a unique minibuffer instance which is stateful.  It
 ;; makes it hard to next minibuffer calls, and it's also hard to keep track of
@@ -107,6 +108,7 @@ This should not rely on the minibuffer's content.")
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
   (initialize-modes minibuffer))
 
+@export
 (defmethod read-from-minibuffer ((minibuffer minibuffer)
                                  &key callback input-prompt completion-function invisible-input-p setup-function
                                    cleanup-function empty-complete-immediate)
@@ -132,7 +134,8 @@ This should not rely on the minibuffer's content.")
   (update-display minibuffer)
   (show *interface*))
 
-(define-command return-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+;; TODO: Move minibuffer-mode to a separate package?
+(define-command return-input (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer selection."
   ;; Warning: `hide' modifies the content of the minibuffer, the
   ;; callback-function and the cleanup-function cannot rely on the minibuffer
@@ -156,13 +159,13 @@ This should not rely on the minibuffer's content.")
               ;; if we can't find a completion
               (when empty-complete-immediate
                 ;; if we accept immediate output in place of completion
-                (return-immediate (first (modes minibuffer)) minibuffer))))
+                (return-immediate minibuffer))))
         ;; if there's no completion function
-        (return-immediate (first (modes minibuffer)) minibuffer))
+        (return-immediate minibuffer))
     (when cleanup-function
       (funcall cleanup-function))))
 
-(define-command return-immediate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command return-immediate (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
   (setf (display-mode minibuffer) :nil)
   (hide *interface*)
@@ -172,7 +175,7 @@ This should not rely on the minibuffer's content.")
     (when cleanup-function
       (funcall cleanup-function))))
 
-(define-command cancel-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command cancel-input (&optional (minibuffer (minibuffer *interface*)))
   "Close the minibuffer query without further action."
   (setf (display-mode minibuffer) :nil)
   (with-slots (cleanup-function) minibuffer
@@ -237,7 +240,7 @@ This should not rely on the minibuffer's content.")
   (setf (completion-cursor minibuffer) 0)
   (update-display minibuffer))
 
-(define-command self-insert (minibuffer-mode)
+(define-command self-insert ()
   "Insert key-chord-stack in MINIBUFFER."
   (let ((key-string (key-chord-key-string (first (key-chord-stack *interface*))))
         (translation-table '(("HYPHEN" "-")
@@ -249,7 +252,7 @@ This should not rely on the minibuffer's content.")
                          key-string))
     (insert key-string)))
 
-(define-command delete-forwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command delete-forwards (&optional (minibuffer (minibuffer *interface*)))
   "Delete character after cursor."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (unless (= input-buffer-cursor (length input-buffer))
@@ -261,7 +264,7 @@ This should not rely on the minibuffer's content.")
                                  (length input-buffer))))))
   (update-display minibuffer))
 
-(define-command delete-backwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command delete-backwards (&optional (minibuffer (minibuffer *interface*)))
   "Delete character before cursor."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (unless (= input-buffer-cursor 0)
@@ -272,27 +275,27 @@ This should not rely on the minibuffer's content.")
       (decf input-buffer-cursor)))
   (update-display minibuffer))
 
-(define-command cursor-forwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-forwards (&optional (minibuffer (minibuffer *interface*)))
   "Move cursor forward by one."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (when (< input-buffer-cursor (length input-buffer))
       (incf input-buffer-cursor)))
   (update-display minibuffer))
 
-(define-command cursor-backwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-backwards (&optional (minibuffer (minibuffer *interface*)))
   "Move cursor backwards by one."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (when (> input-buffer-cursor 0)
       (decf input-buffer-cursor)))
   (update-display minibuffer))
 
-(define-command cursor-beginning (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-beginning (&optional (minibuffer (minibuffer *interface*)))
   "Move cursor to the beginning of the input area."
   (with-slots (input-buffer-cursor) minibuffer
     (setf input-buffer-cursor 0))
   (update-display minibuffer))
 
-(define-command cursor-end (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-end (&optional (minibuffer (minibuffer *interface*)))
   "Move cursor to the end of the input area."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (setf input-buffer-cursor (length input-buffer)))
@@ -309,7 +312,7 @@ This should not rely on the minibuffer's content.")
   (if (< position (length input))
       (char input position)))
 
-(define-command cursor-forwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-forwards-word (&optional (minibuffer (minibuffer *interface*)))
   "Move cursor to the end of the word at point."
   (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
     (with-slots (input-buffer input-buffer-cursor) minibuffer
@@ -349,7 +352,7 @@ This should not rely on the minibuffer's content.")
         position)))
 
 ;; TODO: Re-use cursor-forwards-word
-(define-command cursor-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-backwards-word (&optional (minibuffer (minibuffer *interface*)))
   "Move cursor to the beginning of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (setf input-buffer-cursor (backwards-word-position input-buffer input-buffer-cursor)))
@@ -357,11 +360,11 @@ This should not rely on the minibuffer's content.")
   (update-display minibuffer)
   (input-buffer-cursor minibuffer))
 
-(define-command delete-forwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command delete-forwards-word (&optional (minibuffer (minibuffer *interface*)))
   "Delete characters from cursor position until the end of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (let* ((current-cursor-position input-buffer-cursor)
-           (new-cursor-position (cursor-forwards-word (first (modes minibuffer)) minibuffer))
+           (new-cursor-position (cursor-forwards-word minibuffer))
            (transpose-distance (- new-cursor-position current-cursor-position)))
       (setf input-buffer
             (concatenate 'string
@@ -379,7 +382,7 @@ This should not rely on the minibuffer's content.")
                          (str:substring position nil input))
             new-position)))
 
-(define-command delete-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command delete-backwards-word (&optional (minibuffer (minibuffer *interface*)))
   "Delete characters from cursor position until the beginning of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (multiple-value-bind (new-string new-position) (%delete-backwards-word input-buffer input-buffer-cursor)
@@ -387,13 +390,13 @@ This should not rely on the minibuffer's content.")
             input-buffer-cursor new-position)))
   (update-display minibuffer))
 
-(define-command kill-line (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command kill-line (&optional (minibuffer (minibuffer *interface*)))
   "Delete all characters from cursor position until the end of the line."
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (setf input-buffer (subseq input-buffer 0 input-buffer-cursor)))
     (update-display minibuffer))
 
-(define-command kill-whole-line (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command kill-whole-line (&optional (minibuffer (minibuffer *interface*)))
   "Delete all characters in the input."
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (setf input-buffer ""
@@ -452,7 +455,7 @@ This should not rely on the minibuffer's content.")
          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
                (ps:lisp completion-html)))))))
 
-(define-command select-next (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command select-next (&optional (minibuffer (minibuffer *interface*)))
   "Select next entry in minibuffer."
   (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
     (incf (completion-cursor minibuffer))
@@ -462,7 +465,7 @@ This should not rely on the minibuffer's content.")
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view false))))))
 
-(define-command select-previous (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command select-previous (&optional (minibuffer (minibuffer *interface*)))
   "Select previous entry in minibuffer."
   (when (> (completion-cursor minibuffer) 0)
     (decf (completion-cursor minibuffer))
@@ -472,6 +475,7 @@ This should not rely on the minibuffer's content.")
      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                       (scroll-into-view true))))))
 
+@export
 (defun echo (&rest args)
   "Echo ARGS in the minibuffer.
 Accepted keyword argument:
@@ -511,6 +515,7 @@ interpreted by `format'. "
                          (:p (apply #'format nil args)))))))
         (log:warn "Can't echo '~a' without minibuffer or interface" (apply #'format nil args)))))
 
+@export
 (defmethod echo-dismiss ((minibuffer minibuffer))
   (when (eql (display-mode minibuffer) :echo)
     (hide *interface*)
@@ -523,7 +528,7 @@ interpreted by `format'. "
                    (title (buffer-get-title)))
       (echo "~a — ~a" url title))))
 
-(define-command minibuffer-paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command minibuffer-paste (&optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
 
@@ -534,15 +539,15 @@ interpreted by `format'. "
     (and completions
          (object-string (nth completion-cursor completions)))))
 
-(define-command copy-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command copy-candidate (&optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
       (trivial-clipboard:text candidate))))
 
-(define-command insert-candidate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command insert-candidate (&optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
-      (kill-whole-line (first (modes minibuffer)) minibuffer)
+      (kill-whole-line minibuffer)
       (insert candidate minibuffer))))

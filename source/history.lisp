@@ -1,6 +1,7 @@
 ;;; history.lisp --- manage and create bookmarks
 
 (in-package :next)
+(annot:enable-annot-syntax)
 
 (defun %initialize-history-db (path)
   "Create a database file if necessary and make a table for bookmarks."
@@ -32,6 +33,7 @@
         path
         (ensure-file-exists path #'%initialize-history-db))))
 
+@export
 (defun history-typed-add (url)
   "Add this url to the history, increment its number of visits."
   (let* ((db (sqlite:connect (ensure-history-db)))

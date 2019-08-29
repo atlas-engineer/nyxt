@@ -2,6 +2,21 @@
 ;;; This file is licensed under license documents/external/LICENSE1.
 
 (in-package :next)
+(annot:enable-annot-syntax)
+
+;; We need a `command' class for multiple reasons:
+;; - Identify commands uniquely (although being a member of `%%command-list' is enough).
+;;
+;; - Customize minibuffer display value with `object-string'.
+;;
+;; - Access-time: This is useful to sort command by the time they were last
+;;   called.  The only way to do this is to persist the command instances.
+(defclass command ()
+  ((sym :accessor sym :initarg :sym :type :symbol :initform nil) ; TODO: Make constructor?
+   (pkg :accessor pkg :initarg :pkg :type :package :initform nil)
+   (access-time :accessor access-time :type :integer :initform 0
+                :documentation "Last time this command was called from minibuffer.
+This can be used to order the commands.")))
 
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
@@ -17,9 +32,9 @@
     (documentation-style-warning)
   ((subject-type :initform 'command)))
 
-(defmacro define-command (name (&optional (mode 'root-mode) &rest arglist) &body body)
+@export
+(defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
-MODE most be a subclass of root-mode.
 ARGLIST must be a list of optional arguments."
   (let ((documentation (if (stringp (first body))
                            (first body)
@@ -31,14 +46,19 @@ ARGLIST must be a list of optional arguments."
                   body)))
     `(progn
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
-                                         (eq (mode c) ',mode)))
+                                         (eq (pkg c) *package*)))
                         %%command-list)
-         (push (make-instance 'command :sym ',name :mode ',mode) %%command-list))
-       (defmethod ,name ,(cons `(,mode ,mode) arglist)
+         (push (make-instance 'command :sym ',name :pkg *package*) %%command-list))
+       @export
+       (defun ,name ,arglist
          ,documentation
+         (log:debug "Calling command ~a." ',name)
+         ;; TODO: How can we print the arglist as well?
+         ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
          ,@body))))
 
-(defmacro define-deprecated-command (name (&optional (mode 'root-mode) &rest arglist) &body body)
+;; TODO: Update define-deprecated-command
+(defmacro define-deprecated-command (name (&rest arglist) &body body)
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
@@ -51,7 +71,7 @@ deprecated and by what in the docstring."
                   (rest body)
                   body)))
     `(progn
-       (define-command ,name (,mode ,@arglist)
+       (define-command ,name ,arglist
          ,documentation
          (progn
            ;; TODO: Implement `warn'.
@@ -78,18 +98,33 @@ deprecated and by what in the docstring."
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
-(defun list-commands (&rest modes)
+(defmethod mode-toggler-p ((command command))
+  "Return non-nil if COMMAND is a mode toggler.
+A mode toggler is a command of the same name as its associated mode."
+  (ignore-errors
+   (closer-mop:subclassp (find-class (sym command) nil)
+                         (find-class 'root-mode))))
+
+(defun list-commands (&rest mode-symbols)
   "List commands.
-Commands are instance of the `command' class.  When MODES are provided (as mode
-symbols), list only the commands that apply to this mode.  Otherwise list all
-commands."
-  (if modes
-      (remove-if (lambda (c)
-                       (notany (lambda (m)
-                                 (closer-mop:subclassp (find-class (mode c))
-                                                       (find-class m)))
-                               modes))
-                     %%command-list)
+
+Commands are instances of the `command' class.  When MODE-SYMBOLS are
+provided, list only the commands that belong to this mode.
+If 'ROOT-MODE is in MODE-SYMBOLS, mode togglers are included.
+
+Otherwise list all commands."
+  (if mode-symbols
+      (let ((list-togglers-p (member 'root-mode mode-symbols)))
+        (remove-if (lambda (c)
+                     (and (notany (lambda (m)
+                                    (match m
+                                      ('root-mode (eq (pkg c) (find-package :next)))
+                                      (_ (eq (pkg c)
+                                             (pkg (mode-command m))))))
+                                  mode-symbols)
+                          (or (not list-togglers-p)
+                              (not (mode-toggler-p c)))))
+                   %%command-list))
       %%command-list))
 
 (defmethod object-string ((command command))
@@ -103,7 +138,7 @@ commands."
           when scheme-keymap
             do (let ((table (table scheme-keymap)))
                (maphash (lambda (binding c)
-                          (when (eq c (sym command))
+                          (when (eq c (command-function command))
                             (push (stringify binding) bindings)))
                         table))
           when (not (null bindings))
@@ -119,6 +154,17 @@ commands."
                      (lambda (c1 c2)
                        (> (access-time c1) (access-time c2))))))
 
+(defmethod command-function ((command command))
+  "Run COMMAND over ARGS."
+  (symbol-function (find-symbol
+                    (string (sym command))
+                    (pkg command))))
+
+(defmethod run ((command command) &rest args)
+  "Run COMMAND over ARGS."
+  (apply (command-function command)
+         args))
+
 (define-command execute-command ()
   "Execute a command by name."
   (with-result (command (read-from-minibuffer
@@ -126,4 +172,4 @@ commands."
                          :input-prompt "Execute command:"
                          :completion-function 'command-complete))
     (setf (access-time command) (get-internal-real-time))
-    (funcall (sym command) (find-mode (active-buffer *interface*) (mode command)))))
+    (run command)))

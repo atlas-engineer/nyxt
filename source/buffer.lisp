@@ -1,6 +1,7 @@
 ;;; buffer.lisp --- lisp subroutines for creating / managing buffers
 
 (in-package :next)
+(annot:enable-annot-syntax)
 
 ;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
@@ -13,8 +14,8 @@ MODE is a mode symbol.
 This function is meant to be used on the Lisp side."
   (rpc-buffer-make *interface* :name name :default-modes default-modes))
 
-(define-command new-buffer (root-mode &optional (name "default")
-                                       modes)
+(define-command new-buffer (&optional (name "default")
+                                      modes)
   ;; TODO: Ask for modes interactively?
   "Create a new buffer.
 This command is meant to be used interactively.
@@ -59,9 +60,11 @@ visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
   (rpc-buffer-delete *interface* (active-buffer *interface*)))
 
+@export
 (define-parenscript buffer-get-url ()
   (ps:chain window location href))
 
+@export
 (define-parenscript buffer-get-title ()
   (ps:chain document title))
 
@@ -69,6 +72,7 @@ buffer to the start page."
 (define-parenscript buffer-set-url (url)
   ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
 
+@export
 (defun set-url (input-url &key (buffer (active-buffer *interface*)) disable-history)
   (let ((url (parse-url input-url)))
     (setf (name buffer) url)
