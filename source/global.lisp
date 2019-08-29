@@ -1,12 +1,14 @@
 ;;; global.lisp --- global variable and parameter declarations
 
 (in-package :next)
+(annot:enable-annot-syntax)
 
 (defvar *options* ()
   "The list of command line options.")
 (defvar *free-args* ()
   "The list of positional command line arguments.")
 
+@export
 (defvar *interface* nil
   "The entry-point object to a complete instance of Next.
 It can be initialized with
@@ -28,6 +30,7 @@ is 4005, default set to 4006 in Next to avoid collisions).")
 (defparameter +core-object-path+ "/engineer/atlas/next/core")
 (defparameter +core-interface+ +core-name+)
 
+;; @export
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
         (directory (asdf:system-source-directory :next)))

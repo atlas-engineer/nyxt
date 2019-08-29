@@ -2,6 +2,7 @@
 
 (in-package :next)
 
+;; TODO: Move to a separate package like other modes?
 (define-mode help-mode ()
     "Mode for displaying documentation."
     ((keymap-schemes
@@ -9,11 +10,11 @@
       (let ((emacs-map (make-keymap))
             (vi-map (make-keymap)))
         (define-key :keymap emacs-map
-          "C-p" 'scroll-up
-          "C-n" 'scroll-down)
+          "C-p" #'scroll-up
+          "C-n" #'scroll-down)
         (define-key :keymap vi-map
-          "k" 'scroll-up
-          "j" 'scroll-down)
+          "k" #'scroll-up
+          "j" #'scroll-down)
         (list :emacs emacs-map
               :vi-normal vi-map)))))
 
@@ -24,7 +25,7 @@
 (defun variable-complete (input)
   (fuzzy-match input (package-variables)))
 
-(defun function-complete (input)
+(defun function-complete (input)        ; TODO: Rename to `command-complete-fn' and show packages.
   (fuzzy-match input (mapcar #'sym (list-commands))))
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to

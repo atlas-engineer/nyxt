@@ -1,6 +1,7 @@
-;; Block resource queries blacklisted hosts
-
-(in-package :next)
+(uiop:define-package :next/blocker-mode
+    (:use :common-lisp :trivia :next)
+  (:documentation "Block resource queries blacklisted hosts."))
+(in-package :next/blocker-mode)
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
@@ -68,9 +69,12 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
       :initform
       (lambda (mode)
         (setf (resource-query-function (buffer mode))
-              (get-default 'buffer 'resource-query-function)))))
-  (let ((active-buffer (buffer %mode)))
-    (setf (resource-query-function active-buffer) #'resource-query-block)))
+              (get-default 'buffer 'resource-query-function))))
+     (constructor
+      :initform
+      (lambda (mode)
+        (let ((active-buffer (buffer mode)))
+          (setf (resource-query-function active-buffer) #'resource-query-block))))))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE."

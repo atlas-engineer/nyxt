@@ -76,7 +76,7 @@
 
 (define-deprecated-command bookmark-anchor ()
   "Deprecated by `bookmark-hint'."
-  (bookmark-hint (make-instance 'root-mode)))
+  (bookmark-hint))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark."

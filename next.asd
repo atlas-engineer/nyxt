@@ -9,6 +9,7 @@
   :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria
                :bordeaux-threads
+               :cl-annot
                :cl-css
                :cl-json
                :cl-markup
@@ -39,8 +40,8 @@
                  (:file "global")
                  (:file "port")
                  (:file "remote")
-                 (:file "mode")
                  (:file "command")
+                 (:file "mode")
                  (:file "utility")
                  (:file "buffer")
                  (:file "window")
