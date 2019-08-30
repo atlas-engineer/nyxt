@@ -194,7 +194,8 @@ If FILE is \"-\", read from the standard input."
   (setf *interface* (make-instance 'remote-interface))
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.
-  (initialize-port *interface* (or urls *free-args*)))
+  (initialize-port *interface* (or urls *free-args*))
+  (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook)))
 
 (define-key "C-x C-c" #'quit)
 (define-key "C-[" #'switch-buffer-previous)

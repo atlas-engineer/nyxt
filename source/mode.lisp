@@ -44,9 +44,11 @@ If :ACTIVATE is omitted, the mode is toggled."
                                             args)))
                        (when (constructor new-mode)
                          (funcall (constructor new-mode) new-mode))
-                       (push new-mode (modes buffer)))
+                       (push new-mode (modes buffer))
+                       (hooks:run-hook (hooks:object-hook new-mode 'enable-hook) new-mode))
                      (echo "~a enabled." ',name))
                    (when existing-instance
+                     (hooks:run-hook (hooks:object-hook existing-instance 'disable-hook) existing-instance)
                      (when (destructor existing-instance)
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
@@ -67,7 +69,15 @@ It takes the mode as argument.")
                "A lambda function which tears down the mode upon deactivation.
 It takes the mode as argument.")
    (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes :type :list
-                   :initform (list :emacs (make-keymap)))))
+                   :initform (list :emacs (make-keymap)))
+   (enable-hook :accessor enable-hook :initarg :enable-hook :type :list
+                :initform '()
+                :documentation "This hook is run when enabling the mode.
+It takes the mode as argument.")
+   (disable-hook :accessor disable-hook :initarg :disable-hook :type :list
+                 :initform '()
+                 :documentation "This hook is run when disabling the mode.
+It takes the mode as argument.")))
 
 @export
 (defmethod find-mode ((buffer buffer) mode-symbol)

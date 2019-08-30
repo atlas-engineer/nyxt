@@ -35,7 +35,9 @@ This can be used to order the commands.")))
 @export
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
-ARGLIST must be a list of optional arguments."
+ARGLIST must be a list of optional arguments.
+This macro also define two hooks, NAME-before-hook and NAME-after-hook.
+Regardless of the hook, the command returns the last expression of BODY."
   (let ((documentation (if (stringp (first body))
                            (first body)
                            (warn (make-condition
@@ -43,8 +45,14 @@ ARGLIST must be a list of optional arguments."
                                   :name name))))
         (body (if (stringp (first body))
                   (rest body)
-                  body)))
+                  body))
+        (before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")))
+        (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
     `(progn
+       @export
+       (defparameter ,before-hook '())
+       @export
+       (defparameter ,after-hook '())
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
                                          (eq (pkg c) *package*)))
                         %%command-list)
@@ -52,10 +60,14 @@ ARGLIST must be a list of optional arguments."
        @export
        (defun ,name ,arglist
          ,documentation
+         (hooks:run-hook ',before-hook)
          (log:debug "Calling command ~a." ',name)
          ;; TODO: How can we print the arglist as well?
          ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-         ,@body))))
+         (prog1
+             (progn
+               ,@body)
+           (hooks:run-hook ',after-hook))))))
 
 ;; TODO: Update define-deprecated-command
 (defmacro define-deprecated-command (name (&rest arglist) &body body)

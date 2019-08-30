@@ -11,6 +11,7 @@
                :bordeaux-threads
                :cl-annot
                :cl-css
+               :cl-hooks
                :cl-json
                :cl-markup
                :cl-ppcre

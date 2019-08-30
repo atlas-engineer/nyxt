@@ -31,7 +31,13 @@
                                                         ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
                    :documentation "An association list of all the search engines you can use in the minibuffer.
 The 'default' engine is used when the query is not a valid URL, or the first
-keyword is not recognized.")))
+keyword is not recognized.")
+   (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
+                       :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
+The handlers take the window and the buffer as argument.")
+   (window-delete-hook :accessor window-delete-hook :initform '() :type list
+                       :documentation "Hook run before `rpc-window-delete' takes effect.
+The handlers take the window as argument.")))
 
 @export
 @export-accessors
@@ -83,8 +89,8 @@ for all modes in the current buffer.")
 overrides all other bindings.  No libraries should ever touch the override-map,
 this is left for the user to customize to their needs.")
    (forward-input-events-p :accessor forward-input-events-p :initarg :forward-input-events-p
-                         :initform t
-                         :documentation "When non-nil, keyboard events are
+                           :initform t
+                           :documentation "When non-nil, keyboard events are
 forwarded to the platform port when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
@@ -134,7 +140,13 @@ platform ports might support this.")
                            :border-radius "3px"))
               :documentation "The style of the boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
-          :documentation "Proxy for buffer.")))
+          :documentation "Proxy for buffer.")
+   ;; TODO: Rename `load-hook' to `set-url-hook'?
+   (load-hook :accessor load-hook :initform '() :type list
+              :documentation "Hook run in `set-url' after `parse-url' was processed.")
+   (buffer-delete-hook :accessor buffer-delete-hook :initform '() :type list
+                       :documentation "Hook run before `rpc-buffer-delete' takes effect.
+The handlers take the buffer as argument.")))
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
@@ -241,7 +253,16 @@ window or not.")
                      :documentation "List of downloads.")
    (download-directory :accessor download-directory :initform nil
                      :documentation "Path of directory where downloads will be
-stored.  Nil means use system default.")))
+stored.  Nil means use system default.")
+   (after-init-hook :accessor after-init-hook :initform '() :type list
+                     :documentation "Hook run after both `*interface*' and the
+platform port have started.  Then handlers take no argument.")
+   (window-make-hook :accessor window-make-hook :initform '() :type list
+                     :documentation "Hook run after `rpc-window-make'.
+The handlers take the window as argument.")
+   (buffer-make-hook :accessor buffer-make-hook :initform '() :type list
+                     :documentation "Hook run after `rpc-buffer-make'.
+The handlers take the buffer as argument.")))
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -403,6 +424,7 @@ For an array of string, that would be \"as\"."
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and rpc-window-active would then return nil.
       (setf (last-active-window interface) window))
+    (hooks:run-hook (hooks:object-hook interface 'window-make-hook) window)
     window))
 
 @export
@@ -413,6 +435,7 @@ For an array of string, that would be \"as\"."
 @export
 (defmethod rpc-window-delete ((interface remote-interface) (window window))
   "Delete a window object and remove it from the hash of windows."
+  (hooks:run-hook (hooks:object-hook window 'window-make-hook) window)
   (%rpc-send interface "window_delete" (id window))
   (with-slots (windows) interface
     (remhash (id window) windows)))
@@ -436,6 +459,7 @@ For an array of string, that would be \"as\"."
 (defmethod rpc-window-set-active-buffer ((interface remote-interface)
                                       (window window)
                                       (buffer buffer))
+  (hooks:run-hook (hooks:object-hook window 'window-set-active-buffer-hook) window buffer)
   (%rpc-send interface "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer))
 
@@ -494,6 +518,7 @@ For an array of string, that would be \"as\"."
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
+    (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
     buffer))
 
 (defmethod %get-inactive-buffer ((interface remote-interface))
@@ -505,6 +530,7 @@ For an array of string, that would be \"as\"."
 
 @export
 (defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
+  (hooks:run-hook (hooks:object-hook buffer 'buffer-delete-hook) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
