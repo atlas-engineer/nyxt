@@ -1,10 +1,13 @@
 (uiop:define-package :next/blocker-mode
-    (:use :common-lisp :trivia :next)
+    (:use :common-lisp :trivia :next :annot.class)
   (:documentation "Block resource queries blacklisted hosts."))
 (in-package :next/blocker-mode)
+(annot:enable-annot-syntax)
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
+@export
+@export-accessors
 (defclass hostlist ()
   ((url :accessor url :initarg :url
         :initform nil
@@ -22,6 +25,7 @@ If nil, the list won't be persisted.")
                     :documentation "If URL is provided, update the list after
 this amount of seconds.")))
 
+@export
 (defun make-hostlist (&rest args)
   (apply #'make-instance 'hostlist args))
 
