@@ -313,3 +313,14 @@ Optional second argument FLAVOR controls the units and the display format:
     (error ()
       (log:error "~s not found." program)
       (uiop:quit))))
+
+;; TODO: Backport upstream?  See https://github.com/scymtym/architecture.hooks/issues/2.
+;; TODO: For now the user has no way to choose between `hooks:run-hook' and
+;; `next:run-composed-hook'.
+(defun run-composed-hook (hook &rest args)
+  "Compose all handlers in HOOK and call the resulting function over ARGS."
+  (if hook
+      (apply (apply #'alexandria:compose hook) args)
+      ;; We return values so that this is equivalent to #'identity when there is
+      ;; no hook.
+      (apply #'values args)))
