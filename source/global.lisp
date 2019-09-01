@@ -33,7 +33,7 @@ is 4005, default set to 4006 in Next to avoid collisions).")
 
 (defparameter +dbus-launch-command+ "dbus-launch")
 
-;; @export
+@export
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
         (directory (asdf:system-source-directory :next)))
