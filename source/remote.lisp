@@ -236,7 +236,7 @@ current buffer."
       (match (mapcar (lambda (s) (str:split "=" s :limit 2))
                      (str:split "
 "
-                                (uiop:run-program '("dbus-launch")
+                                (uiop:run-program (list +dbus-launch-command+)
                                                   :output '(:string :stripped t))))
         ((list (list _ address) (list _ pid))
          (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)

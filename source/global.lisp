@@ -1,4 +1,5 @@
 ;;; global.lisp --- global variable and parameter declarations
+;; Packagers are welcome to customize the `defparameter's to suit the host system.
 
 (in-package :next)
 
@@ -27,6 +28,8 @@ is 4005, default set to 4006 in Next to avoid collisions).")
 (defparameter +core-name+ "engineer.atlas.next.core")
 (defparameter +core-object-path+ "/engineer/atlas/next/core")
 (defparameter +core-interface+ +core-name+)
+
+(defparameter +dbus-launch-command+ "dbus-launch")
 
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
