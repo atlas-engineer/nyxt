@@ -67,9 +67,7 @@ This is an acceptable value for the PATH slot of the PORT class."
 
 (defun derive-logfile-from-name (name)
   "This is an acceptable value for the LOG-FILE slot of the PORT class."
-  (let ((xdg-data (or (uiop:getenv "XDG_DATA_HOME")
-                      (merge-pathnames ".local/share/" (format nil "~a/" (uiop:getenv "HOME"))))))
-    (merge-pathnames (format nil "next/~a.log" name) xdg-data)))
+  (xdg-data-home (str:concat (file-namestring name) ".log")))
 
 (defmethod run-loop ((port port))
   (if (running-process port)
