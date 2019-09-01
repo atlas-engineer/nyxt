@@ -218,14 +218,17 @@
     (trivial-clipboard:text title)
     (echo "~a copied to clipboard." title)))
 
-(defmethod did-commit-navigation ((mode document-mode) url)
+;; Warning: To specialize `did-commit-navigation' we must be in the right package.
+(in-package :next)
+(defmethod did-commit-navigation ((mode next/document-mode::document-mode) url)
   (set-window-title *interface*
                     (rpc-window-active *interface*)
                     (active-buffer *interface*))
-  (add-or-traverse-history mode url)
+  (next/document-mode::add-or-traverse-history mode url)
   (echo "Loading: ~a." url))
 
-(defmethod did-finish-navigation ((mode document-mode) url)
+(defmethod did-finish-navigation ((mode next/document-mode::document-mode) url)
+  (log:debug mode url)
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss (minibuffer *interface*)))
