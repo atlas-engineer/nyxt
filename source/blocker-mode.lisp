@@ -69,15 +69,19 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                 :initform (list (make-instance 'hostlist
                                                :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
                                                :path (xdg-data-home "hostlist-stevenblack"))))
+     (previous-blocker :initform nil
+                       :documentation "Save the previous blocker to be restored
+when disabling the mode.")
      (destructor
       :initform
       (lambda (mode)
         (setf (resource-query-function (buffer mode))
-              (get-default 'buffer 'resource-query-function))))
+              (slot-value mode 'previous-blocker))))
      (constructor
       :initform
       (lambda (mode)
         (let ((active-buffer (buffer mode)))
+          (setf (slot-value mode 'previous-blocker) (resource-query-function active-buffer))
           (setf (resource-query-function active-buffer) #'resource-query-block))))))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
