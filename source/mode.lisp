@@ -82,10 +82,15 @@ It takes the mode as argument.")))
 @export
 (defmethod find-mode ((buffer buffer) mode-symbol)
   "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
-Return nil if mode is not found.
-MODE-SYMBOL can be for instance \"'root-mode\"."
-  (find-if (lambda (m) (eq mode-symbol (class-name (class-of m))))
-           (modes buffer)))
+Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
+can be 'document-mode as well as 'next/document-mode:document-mode."
+  (let ((mode-full-symbol (if (find-class mode-symbol nil)
+                              mode-symbol
+                              (match (mode-command mode-symbol)
+                                ((guard c (not (null c))) (sym c))))))
+    (when mode-full-symbol
+      (find-if (lambda (m) (eq mode-full-symbol (class-name (class-of m))))
+               (modes buffer)))))
 
 @export
 (defun find-buffer (mode-symbol &optional (interface *interface*))

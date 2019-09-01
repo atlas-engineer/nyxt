@@ -30,7 +30,7 @@ is 4005, default set to 4006 in Next to avoid collisions).")
 (defparameter +core-object-path+ "/engineer/atlas/next/core")
 (defparameter +core-interface+ +core-name+)
 
-;; @export
+@export
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
         (directory (asdf:system-source-directory :next)))

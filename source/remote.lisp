@@ -161,7 +161,7 @@ The handlers take the buffer as argument.")))
                      ""
                      nil)))
 
-;; TODO: Find a better way to uniquely identidy commands from mode methods.
+;; TODO: Find a better way to uniquely identify commands from mode methods.
 ;; What about symbol properties?  We could use:
 ;;
 ;; (setf (get name 'commandp) t)
@@ -790,6 +790,9 @@ Deal with URL with the following rules:
 
 ;; Convenience methods and functions for users of the API.
 
+;; TODO: `(active-buffer *interface*)' is too verbose considering how frequently
+;; we use it.  Remove `window's `active-buffer' accessor and make this a defun
+;; with optional argument.
 @export
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
