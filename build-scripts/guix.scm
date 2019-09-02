@@ -31,9 +31,7 @@
              (gnu packages gtk)
              (gnu packages pkg-config)
              (gnu packages gcc)
-             (gnu packages webkit)
-             ;; TODO: Get rid of the non-free dependencies.
-             (next packages lisp))
+             (gnu packages webkit))
 
 (define %source-dir (dirname (dirname (current-filename))))
 
@@ -97,7 +95,7 @@ features for productive professionals.")
     (arguments
      `(#:tests? #f                      ; Need online access.
        #:asd-file "next.asd"
-       #:asd-system-name "download-manager"))
+       #:asd-system-name "next/download-manager"))
     (inputs
      `(;; ASD libraries:
        ("trivial-features" ,sbcl-trivial-features)
