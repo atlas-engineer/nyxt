@@ -22,7 +22,7 @@ If you like Next and if you want to help future development, support us on
 [[https://www.patreon.com/next_browser][Patreon]] and help make our [[https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/][crowdfunding campaign for v1.4]] a success!
 
 
-#+html: <div align="center"> <a href="https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/"> <img title="Support our campaign" alt="Support our crowdfunding campaign" style="height: 50px; width: auto;" src="indiegogo-logo-small.png"></a> &nbsp;&nbsp; <a href="https://www.patreon.com/next_browser"> <img title="Donate monthly using Patreon" alt="Donate monthly using Patreon" style="height: 50px; width: auto;" src="patreon-25x.png"></a> &nbsp;&nbsp; </div>
+#+html: <div align="center"> <a href="https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/"> <img title="Support our campaign" alt="Support our crowdfunding campaign" style="height: 50px; width: auto;" src="assets/indiegogo-logo-small.png"></a> &nbsp;&nbsp; <a href="https://www.patreon.com/next_browser"> <img title="Donate monthly using Patreon" alt="Donate monthly using Patreon" style="height: 50px; width: auto;" src="assets/patreon-25x.png"></a> &nbsp;&nbsp; </div>
 
 -----
 
