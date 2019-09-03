@@ -52,19 +52,11 @@ If RING is full, replace the oldest item."
   "Return list of items ordered by most recent."
   (loop for index from 0 below (ring-size ring)
         for item = (ring-ref ring index)
-<<<<<<< HEAD
-        if (not (null item)) collect item))
-
-(defmethod ring-clipboard ((ring ring))
-  "Check if CLIPBOARD-CONTENT is most recent entry in RING.
-If not, insert CLIPBOARD-CONTENT into RING.
-=======
-        unless (null item) collect item))
+        when item collect item))
 
 (defmethod ring-insert-clipboard ((ring ring))
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
->>>>>>> 204b6e0503498813b3c45f464ab01fe00164c636
 Return most recent entry in RING."
   (let ((clipboard-content (trivial-clipboard:text)))
     (unless (string= clipboard-content (ring-ref ring 0))
@@ -77,11 +69,7 @@ Return most recent entry in RING."
       (fuzzy-match input ring-items))))
 
 (define-command paste-from-ring ()
-<<<<<<< HEAD
-  "Show RING and paste selected entry."
-=======
   "Show `interface' clipboard ring and paste selected entry."
->>>>>>> 204b6e0503498813b3c45f464ab01fe00164c636
   (with-result (ring-item (read-from-minibuffer
                            (minibuffer *interface*)
                            :completion-function (ring-completion-fn

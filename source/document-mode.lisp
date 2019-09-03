@@ -21,10 +21,7 @@
           "C-f" 'history-forwards
           "C-b" 'history-backwards
           "C-v" 'paste
-<<<<<<< HEAD
-=======
           "C-c" 'copy
->>>>>>> 204b6e0503498813b3c45f464ab01fe00164c636
           "button9" 'history-forwards
           "button8" 'history-backwards
           "C-p" 'scroll-up
@@ -223,11 +220,7 @@
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss (minibuffer *interface*)))
 
-<<<<<<< HEAD
-(define-parenscript %paste ((input-text (ring-clipboard (clipboard-ring *interface*))))
-=======
 (define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
->>>>>>> 204b6e0503498813b3c45f464ab01fe00164c636
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
          (end-position (ps:chain active-element selection-end)))
@@ -239,9 +232,6 @@
                                   (ps:chain active-element value length)))))))
 
 (define-command paste ()
-<<<<<<< HEAD
-  (%paste))
-=======
   "Paste from clipboard into active-element."
   (%paste))
 
@@ -253,4 +243,3 @@
   "Copy selected text to clipboard."
   (with-result (input (%copy))
     (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input))))
->>>>>>> 204b6e0503498813b3c45f464ab01fe00164c636
