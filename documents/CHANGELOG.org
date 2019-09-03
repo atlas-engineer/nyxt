@@ -77,7 +77,7 @@ the previous last created buffer, as expected.
   - it deletes the trailing word delimiter;
   - it removes all trailing delimiters /plus/ one word.
 *** Add more key bindings
-- Key pad keys were added.
+- Keypad keys were added.
   The PyQt port requires an update.
 *** Next is back to the Guix official channel
 The Next Guix channel can be safely removed from your
@@ -88,11 +88,31 @@ The Next Guix channel can be safely removed from your
 It is now properly set to =~/.local/share/next/next-gtk-webkit.log= by default.
 *** Fix ignored search engine prefix in minibuffer input
 *** Fix browsed URLs not being added to history
+Yes, this is better for a daily usage :)
+
 *** Fix crash when proxy-mode was added to the list of default modes
+You can now write this to open pages in proxy-mode by default:
+
+#+begin_src lisp
+(setf (get-default 'proxy-mode 'server-address) "socks5://localhost:1080")
+(add-to-default-list 'proxy-mode 'buffer 'default-modes)
+#+end_src
+
+Thanks to @MasterCsquare.
+
+*** More bug fixes (special thanks to Solomon Bloch, @goose121, Sean Farley, @glacambre)
 *** Developer changes
+
 **** The Makefile automatically updates the Quicklisp distribution
+
+Next uses its own installation path for the Quicklisp dependencies, it
+doesn't mesh with your  existing =~/quicklisp/local-projects=. Now you
+can  follow git  master without  the suprise  of a  library missing  a
+function.
+
 **** Remove cl-string-match and cl-strings dependencies
-Now we mostly rely on =str= and =cl-ppcre=.
+Now we mostly rely on [[https://github.com/vindarel/cl-str/issues][str]] and [[https://edicl.github.io/cl-ppcre/][cl-ppcre]].
+
 ** DONE 1.3.0
 *** DONE PyQt/Webengine platform port
 QtWebengine is based off Blink (the renderer of Chrome).
