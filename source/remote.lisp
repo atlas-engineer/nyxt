@@ -234,19 +234,24 @@ current buffer."
         (declare (ignore bus))
         t)
     (error ()
-      (match (mapcar (lambda (s) (str:split "=" s :limit 2))
-                     (str:split "
+      (handler-case
+          (match (mapcar (lambda (s) (str:split "=" s :limit 2))
+                         (str:split "
 "
-                                ;; TODO: Catch error when +dbus-launch-command+ is not found.
-                                (uiop:run-program (list +dbus-launch-command+)
-                                                  :output '(:string :stripped t))))
-        ((list (list _ address) (list _ pid))
-         (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
-                   (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))
-                   address)
-         (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
-         (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
-         (setf (dbus-pid interface) (parse-integer pid)))))))
+                                    (uiop:run-program (list +dbus-launch-command+)
+                                                      :output '(:string :stripped t))))
+            ((list (list _ address) (list _ pid))
+             (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
+                       (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")
+                             (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))
+                       address)
+             (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
+             (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
+             (setf (dbus-pid interface) (parse-integer pid))))
+        (error ()
+          (log:error "D-Bus launcher ~s not found.  Please install D-Bus."
+                     +dbus-launch-command+)
+          (uiop:quit))))))
 
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
