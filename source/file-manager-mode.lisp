@@ -37,28 +37,18 @@
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
 
-;; TODO: Remove `open-file-fn` (it's just a one-liner) and instead store the
-;; "open-file-function" into a download-mode slot, which is then called from
-;; `download-open-file' with `(funcall (open-file-function download-mode)
-;; filename).
-;; (defun open-file-fn (filename)
-;;   "Open `filename'.
-;; `filename' is the full path of the file (or directory), as a string.
-;; By default, try to open it with the system's default external program, using `xdg-open'.
-;; The user can override this function to decide what to do with the file."
-;;   (open-file-fn-default filename))
+(defun open-file-fn (filename)
+  "Open `filename'.
+`filename' is the full path of the file (or directory), as a string.
+By default, try to open it with the system's default external program, using `xdg-open'.
+The user can override this function to decide what to do with the file."
+  (open-file-fn-default filename))
 
 ;; note: put under the function definition.
-;; (export '*open-file-fn*)
+(export '*open-file-fn*)
 ;; the user is encouraged to override this in her init file.
-;; (defparameter *open-file-fn* #'open-file-fn
-;;   "Function triggered to open files.")
-
-(defun open-file-from-directory-completion-fn (input &optional (directory *current-directory*))
-  "Fuzzy-match files and directories from `*current-directory*'."
-  (let ((filenames (uiop:directory-files directory))
-        (dirnames (uiop:subdirectories directory)))
-    (fuzzy-match input (append filenames dirnames))))
+(defparameter *open-file-fn* #'open-file-fn
+  "Function triggered to open files.")
 
 (define-mode open-file-mode (minibuffer-mode)
     "Mode to open any file from the filesystem with fuzzy completion
@@ -81,11 +71,17 @@ command `open-file'."
         (list :emacs emacs-map
               :vi-normal vi-map)))))
 
-(defclass open-file-instance ()
-  ((default-modes :initform '(open-file-mode))
-   (open-file-function :accessor open-file-function
-                       :initform #'open-file-fn-default))
-  (:documentation "Open a file interactively."))
+(defun open-file-from-directory-completion-fn (input &optional (directory *current-directory*))
+  "Fuzzy-match files and directories from `*current-directory*'."
+  (let ((filenames (uiop:directory-files directory))
+        (dirnames (uiop:subdirectories directory)))
+    (fuzzy-match input (append filenames dirnames))))
+
+;; (defclass open-file-instance ()
+;;   ((default-modes :initform '(open-file-mode))
+;;    (open-file-function :accessor open-file-function
+;;                        :initform #'open-file-fn-default))
+;;   (:documentation "Open a file interactively."))
 
 (define-command display-parent-directory (open-file-mode &optional (minibuffer (minibuffer *interface*)))
   "Get the parent directory and update the minibuffer.
@@ -138,8 +134,7 @@ Note: this feature is alpha, get in touch for more !"
                             :input-prompt (file-namestring directory)
                             :completion-function #'open-file-from-directory-completion-fn))
 
-      ;; (funcall (open-file-function open-file-mode) (namestring filename))
-      (funcall #'open-file-fn-default (namestring filename))
+      (funcall *open-file-fn* (namestring filename))
       ;TODO: remove open-file-mode
       )))
 
