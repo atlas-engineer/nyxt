@@ -60,11 +60,26 @@
         (dirnames (uiop:subdirectories directory)))
     (fuzzy-match input (append filenames dirnames))))
 
-;TODO: define a new mode and specialize keybinings on it !
-
 (define-mode open-file-mode (minibuffer-mode)
-    "doc"
-    ())
+    "Mode to open any file from the filesystem with fuzzy completion
+on the minibuffer. Specialize keybindings on this mode. See the
+command `open-file'."
+    ((keymap-schemes
+      :initform
+      (let ((emacs-map (make-keymap))
+            (vi-map (make-keymap)))
+
+        (define-key :keymap emacs-map
+          "M-Left" 'display-parent-directory
+          "C-l" 'display-parent-directory
+          "C-j" 'enter-directory
+          "M-Right" 'enter-directory)
+
+        (define-key :keymap vi-map
+          "M-Left" 'display-parent-directory)
+
+        (list :emacs emacs-map
+              :vi-normal vi-map)))))
 
 (defclass open-file-instance ()
   ((default-modes :initform '(open-file-mode))
@@ -116,6 +131,7 @@ Note: this feature is alpha, get in touch for more !"
     (setf mode (make-instance  'open-file-mode))
     ;; populate needed slots...
     (setf (buffer mode) (minibuffer *interface*))
+    ;; Allow the current minibuffer to recognize our keybindings.
     (push mode (modes (minibuffer *interface*)))
     (with-result (filename (read-from-minibuffer
                             (minibuffer *interface*)
@@ -129,11 +145,6 @@ Note: this feature is alpha, get in touch for more !"
 
 
 (define-key  "C-x C-f" #'open-file)
-;; (define-key :mode 'vi-normal-mode  "e" #'open-file) ;TODO:
 
-(define-key :mode 'open-file-mode  "C-l" #'display-parent-directory)
-(define-key :mode 'open-file-mode  "M-Left" #'display-parent-directory)
-(define-key :mode 'open-file-mode  "M-Left" #'display-parent-directory)
-
-(define-key :mode 'open-file-mode  "C-j" #'enter-directory)
-(define-key :mode 'open-file-mode  "M-Right" #'enter-directory)
+;; This currently dosen't work, we must use the keymap at the mode definition:
+;; (define-key :mode 'open-file-mode  "M-Left" #'display-parent-directory)
