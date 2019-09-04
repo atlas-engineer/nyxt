@@ -41,17 +41,18 @@
 ;; "open-file-function" into a download-mode slot, which is then called from
 ;; `download-open-file' with `(funcall (open-file-function download-mode)
 ;; filename).
-(defun open-file-fn (filename)
-  "Open `filename'.
-`filename' is the full path of the file (or directory), as a string.
-By default, try to open it with the system's default external program, using `xdg-open'.
-The user can override this function to decide what to do with the file."
-  (open-file-fn-default filename))
+;; (defun open-file-fn (filename)
+;;   "Open `filename'.
+;; `filename' is the full path of the file (or directory), as a string.
+;; By default, try to open it with the system's default external program, using `xdg-open'.
+;; The user can override this function to decide what to do with the file."
+;;   (open-file-fn-default filename))
 
 ;; note: put under the function definition.
-(export '*open-file-fn*)   ;; the user is encouraged to override this in her init file.
-(defparameter *open-file-fn* #'open-file-fn
-  "Function triggered to open files.")
+;; (export '*open-file-fn*)
+;; the user is encouraged to override this in her init file.
+;; (defparameter *open-file-fn* #'open-file-fn
+;;   "Function triggered to open files.")
 
 (defun open-file-from-directory-completion-fn (input &optional (directory *current-directory*))
   "Fuzzy-match files and directories from `*current-directory*'."
@@ -59,7 +60,19 @@ The user can override this function to decide what to do with the file."
         (dirnames (uiop:subdirectories directory)))
     (fuzzy-match input (append filenames dirnames))))
 
-(define-command display-parent-directory (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+;TODO: define a new mode and specialize keybinings on it !
+
+(define-mode open-file-mode (minibuffer-mode)
+    "doc"
+    ())
+
+(defclass open-file-instance ()
+  ((default-modes :initform '(open-file-mode))
+   (open-file-function :accessor open-file-function
+                       :initform #'open-file-fn-default))
+  (:documentation "Open a file interactively."))
+
+(define-command display-parent-directory (open-file-mode &optional (minibuffer (minibuffer *interface*)))
   "Get the parent directory and update the minibuffer.
 
 Default keybindings: `M-Left' and `C-l'."
@@ -67,7 +80,7 @@ Default keybindings: `M-Left' and `C-l'."
   (erase-input minibuffer)
   (update-display minibuffer))
 
-(define-command enter-directory (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command enter-directory (open-file-mode &optional (minibuffer (minibuffer *interface*)))
   "If the candidate at point is a directory, refresh the minibuffer candidates with its list of files.
 
 Default keybindings: `M-Right' and `C-j'. "
@@ -78,7 +91,7 @@ Default keybindings: `M-Right' and `C-j'. "
       (erase-input minibuffer)
       (update-display minibuffer))))
 
-(define-command open-file (root-mode &optional (interface *interface*))
+(define-command open-file ()
   "Open a file from the filesystem.
 
 The user is prompted with the minibuffer, files are browsable with the
@@ -97,20 +110,30 @@ name) as parameter.
 The default keybinding is `C-x C-f'.
 
 Note: this feature is alpha, get in touch for more !"
-  (let ((directory *current-directory*))
+  (let ((directory *current-directory*)
+        mode)
+    ;; "Activate" open-file-mode
+    (setf mode (make-instance  'open-file-mode))
+    ;; populate needed slots...
+    (setf (buffer mode) (minibuffer *interface*))
+    (push mode (modes (minibuffer *interface*)))
     (with-result (filename (read-from-minibuffer
-                            (minibuffer interface)
+                            (minibuffer *interface*)
                             :input-prompt (file-namestring directory)
                             :completion-function #'open-file-from-directory-completion-fn))
 
-      (open-file-fn (namestring filename)))))
+      ;; (funcall (open-file-function open-file-mode) (namestring filename))
+      (funcall #'open-file-fn-default (namestring filename))
+      ;TODO: remove open-file-mode
+      )))
 
 
 (define-key  "C-x C-f" #'open-file)
 ;; (define-key :mode 'vi-normal-mode  "e" #'open-file) ;TODO:
 
-(define-key :mode 'minibuffer-mode  "C-l" #'display-parent-directory)
-(define-key :mode 'minibuffer-mode  "M-Left" #'display-parent-directory)
+(define-key :mode 'open-file-mode  "C-l" #'display-parent-directory)
+(define-key :mode 'open-file-mode  "M-Left" #'display-parent-directory)
+(define-key :mode 'open-file-mode  "M-Left" #'display-parent-directory)
 
-(define-key :mode 'minibuffer-mode  "C-j" #'enter-directory)
-(define-key :mode 'minibuffer-mode  "M-Right" #'enter-directory)
+(define-key :mode 'open-file-mode  "C-j" #'enter-directory)
+(define-key :mode 'open-file-mode  "M-Right" #'enter-directory)
