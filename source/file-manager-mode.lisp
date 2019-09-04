@@ -102,6 +102,11 @@ Default keybindings: `M-Right' and `C-j'. "
       (erase-input minibuffer)
       (update-display minibuffer))))
 
+(defun clean-up-open-file-mode ()
+  "Remove open-file-mode from the minibuffer modes, so that we don't clutter the usual minibuffers with our keybindings."
+  (setf (modes (minibuffer *interface*))
+        (last (modes (minibuffer *interface*)))))
+
 (define-command open-file ()
   "Open a file from the filesystem.
 
@@ -132,11 +137,10 @@ Note: this feature is alpha, get in touch for more !"
     (with-result (filename (read-from-minibuffer
                             (minibuffer *interface*)
                             :input-prompt (file-namestring directory)
-                            :completion-function #'open-file-from-directory-completion-fn))
+                            :completion-function #'open-file-from-directory-completion-fn
+                            :cleanup-function #'clean-up-open-file-mode))
 
-      (funcall *open-file-fn* (namestring filename))
-      ;TODO: remove open-file-mode
-      )))
+      (funcall *open-file-fn* (namestring filename)))))
 
 
 (define-key  "C-x C-f" #'open-file)
