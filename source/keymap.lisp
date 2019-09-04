@@ -84,9 +84,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
                                                           (active-buffer window)))))))))
 
 (defun look-up-key-chord-stack (window key-chord-stack)
-  "Return the function bound to key-chord-stack for current window.
-The resulting function wraps around the method and its associated mode so that
-it can be called without argument."
+  "Return the function bound to KEY-CHORD-STACK for WINDOW."
   (let* ((key-sequence (serialize-key-chord-stack key-chord-stack))
          (key-sequence-normal (serialize-key-chord-stack key-chord-stack :normalize t)))
     (loop for keymap in (current-keymaps window)

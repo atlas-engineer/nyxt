@@ -414,7 +414,8 @@ For an array of string, that would be \"as\"."
 
 @export
 (defmethod rpc-window-make ((interface remote-interface))
-  "Create a window and return the window object."
+  "Create a window and return the window object.
+Run INTERFACE's `window-make-hook' over the created window."
   (let* ((window-id (get-unique-window-identifier interface))
          (window (make-instance 'window :id window-id)))
     (setf (gethash window-id (windows interface)) window)
@@ -434,8 +435,9 @@ For an array of string, that would be \"as\"."
 
 @export
 (defmethod rpc-window-delete ((interface remote-interface) (window window))
-  "Delete a window object and remove it from the hash of windows."
-  (hooks:run-hook (hooks:object-hook window 'window-make-hook) window)
+  "Delete a window object and remove it from the hash of windows.
+Run INTERFACE's `window-delete-hook' over WINDOW before deleting it."
+  (hooks:run-hook (hooks:object-hook window 'window-delete-hook) window)
   (%rpc-send interface "window_delete" (id window))
   (with-slots (windows) interface
     (remhash (id window) windows)))
@@ -457,8 +459,11 @@ For an array of string, that would be \"as\"."
 
 @export
 (defmethod rpc-window-set-active-buffer ((interface remote-interface)
-                                      (window window)
-                                      (buffer buffer))
+                                         (window window)
+                                         (buffer buffer))
+  "Set INTERFACE's WINDOW buffer to BUFFER.
+Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
+proceeding."
   (hooks:run-hook (hooks:object-hook window 'window-set-active-buffer-hook) window buffer)
   (%rpc-send interface "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer))
@@ -505,7 +510,9 @@ For an array of string, that would be \"as\"."
 
 @export
 (defmethod rpc-buffer-make ((interface remote-interface)
-                          &key name default-modes)
+                            &key name default-modes)
+  "Make buffer with name NAME and modes DEFAULT-MODES.
+Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
   (let* ((buffer-id (get-unique-buffer-identifier interface))
          (buffer (apply #'make-instance 'buffer :id buffer-id
                         (append (when name `(:name ,name))
@@ -530,6 +537,8 @@ For an array of string, that would be \"as\"."
 
 @export
 (defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
+  "Delete BUFFER from INTERFACE.
+Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
   (hooks:run-hook (hooks:object-hook buffer 'buffer-delete-hook) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))

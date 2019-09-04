@@ -74,6 +74,9 @@ buffer to the start page."
 
 @export
 (defun set-url (input-url &key (buffer (active-buffer *interface*)) disable-history)
+  "Load INPUT-URL in BUFFER.
+URL is first transformed by `parse-url', then by BUFFER's `load-hook'.
+If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
   (let ((url (parse-url input-url)))
     (setf (name buffer) url)
     (unless disable-history
