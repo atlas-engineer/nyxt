@@ -231,15 +231,21 @@ current buffer."
   (handler-case
       (dbus:with-open-bus (bus (session-server-addresses))
         ;; Dummy call to make sure dbus session is accessible.
-        (log:info "Bus connection name: ~A" (dbus:bus-name bus)))
+        (declare (ignore bus))
+        t)
     (error ()
       (match (mapcar (lambda (s) (str:split "=" s :limit 2))
                      (str:split "
 "
+                                ;; TODO: Catch error when +dbus-launch-command+ is not found.
                                 (uiop:run-program (list +dbus-launch-command+)
                                                   :output '(:string :stripped t))))
         ((list (list _ address) (list _ pid))
+         (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
+                   (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))
+                   address)
          (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
+         (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
          (setf (dbus-pid interface) (parse-integer pid)))))))
 
 (defmethod initialize-instance :after ((interface remote-interface)
@@ -251,6 +257,9 @@ current buffer."
     (setf (active-connection interface)
           (bt:make-thread
            (lambda ()
+             (log:info "D-Bus addresses: ~a"
+                       (mapcar #'dbus/transport-unix::server-address-socket-address
+                               (session-server-addresses)))
              (dbus:with-open-bus (bus (session-server-addresses))
                (let ((status (dbus:request-name bus +core-name+ :do-not-queue)))
                  (when (eq status :exists)
@@ -273,13 +282,12 @@ Make sure to kill existing processes or if you were running Next from a REPL, ki
     (bt:condition-wait condition lock)))
 
 (defun session-server-addresses ()
-  (let ((server-addresses (dbus:session-server-addresses)))
-    (if server-addresses
-        server-addresses
-        ;; Check for MacOS dbus session address.
-        (dbus:parse-server-addresses-string
-         (format nil "unix:path=~a"
-                 (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))))))
+  (or
+   (dbus:session-server-addresses)
+   ;; Check for MacOS dbus session address.
+   (dbus:parse-server-addresses-string
+    (format nil "unix:path=~a"
+            (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET")))))
 
 (defmethod kill-interface ((interface remote-interface))
   "Stop the RPC server."
