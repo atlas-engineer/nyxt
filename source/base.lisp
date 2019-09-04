@@ -179,6 +179,10 @@ If FILE is \"-\", read from the standard input."
 
 (export 'start)
 (defun start (&rest urls)
+  "Start Next and load URLS if any.
+A new `*interface*' is instantiated.
+The platform port is automatically started if needed.
+Finally, the `after-init-hook' of the `*interface*' is run."
   (log:info +version+)
   ;; Randomness should be seeded as early as possible to avoid generating
   ;; deterministic tokens.
