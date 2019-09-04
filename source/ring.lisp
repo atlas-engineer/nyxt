@@ -16,43 +16,21 @@
   (length (items ring)))
 
 (defmethod ring-index ((ring ring) index)
-  "Convert to internal ring index, where items are ordered from newest to oldest."
-  (mod (1- (+ (head-index ring)
-              (- (item-count ring) index)))
-       (ring-size ring)))
-
-(defmethod +1-ring-index ((ring ring) index)
-  "Add one to index, with wraparound."
-  (let ((new-index (1+ index)))
-    (if (= new-index (length (items ring)))
-        0 new-index)))
-
-(defmethod -1-ring-index ((ring ring) index)
-  "Minus one from index, with wraparound."
-  (let ((new-index (1- index)))
-    (if (= new-index -1)
-        (1- (length (items ring))) new-index)))
-
-(defmethod ring-index ((ring ring) index)
-  "Convert to internal ring index, where items are ordered from newest to oldest."
+  "Return index converted to internal ring index, where items are ordered from newest to oldest."
   (mod (1- (+ (head-index ring)
               (- (item-count ring) index)))
        (ring-size ring)))
 
 (defmethod ring-insert ((ring ring) new-item)
   "Insert item into RING.
-If RING is full, replace the oldest item."
-  (setf (aref (items ring)
-              (mod (item-count ring)
-                   (ring-size ring)))
-        new-item)
-  (incf (item-count ring))
+If RING is full, replace the oldest item.
+Return NEW-ITEM."
   (prog1 (setf (aref (items ring)
                      (mod (+ (head-index ring) (item-count ring))
                           (ring-size ring)))
                new-item)
     (if (= (item-count ring) (length (items ring)))
-        (setf (head-index ring) (+1-ring-index ring (head-index ring)))
+        (setf (head-index ring) (mod (1+ (head-index ring)) (ring-size ring)))
         (incf (item-count ring)))))
 
 (defmethod ring-ref ((ring ring) index)
@@ -80,7 +58,7 @@ Return most recent entry in RING."
       (fuzzy-match input ring-items))))
 
 (define-command paste-from-ring ()
-  "Show `interface' clipboard ring and paste selected entry."
+  "Show *interface* clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
                            (minibuffer *interface*)
                            :completion-function (ring-completion-fn
