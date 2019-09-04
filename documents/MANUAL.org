@@ -617,3 +617,40 @@ default modes:
 #+begin_src lisp
 (add-to-default-list 'proxy-mode 'buffer 'default-modes)
 #+end_src
+
+** Hooks
+
+A hook is a variable that holds a list of functions.
+We say a hook is executed when all its functions are run one after the other,
+over its arguments (which are decided at the call site).
+
+Many hooks are executed at different points in Next.
+
+Hooks are exposed to the users so that they can customize the behaviour of
+specific actions in arbitrary ways.
+
+Hooks are added at different sites, among others:
+
+- Global hooks, such as ~load-hook~ hook and ~after-init-hook~.
+- Window / buffer related hooks.
+- Commands "before" and "after" hooks.
+- Modes "enable" and "disable" hooks.
+
+For instance, if you want to force =old.reddit.com= over =www.reddit.com=, you
+can set a hook like the following in you =~/.config/next/init.lisp=:
+
+#+begin_src lisp
+(defun old-reddit-hook (url)
+  (let* ((uri (quri:uri url)))
+    (if (search "www.reddit" (quri:uri-host uri))
+        (progn
+          (setf (quri:uri-host uri) "old.reddit.com")
+          (let ((new-url (quri:render-uri uri)))
+            (log:info "Switching to old Reddit: ~a" new-url)
+            new-url))
+        url)))
+(add-to-default-list #'old-reddit-hook 'buffer 'load-hook)
+#+end_src
+
+Some hooks like the above example expect a return value, so it's important to
+make sure we return ~url~ here.
