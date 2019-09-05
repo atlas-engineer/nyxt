@@ -28,6 +28,9 @@
 
 (in-package :next)
 
+;; TODO: a global isn't satisfactory. Two separate instances of open-file will interfere with this global variable.
+;; - store it as a class slot ?
+;; see also: uiop:with-current-directory, uiop:getcwd
 (defvar *current-directory* download-manager::*default-download-directory*
   "Default directory to open files from. Defaults to the downloads directory.")
 
@@ -66,6 +69,7 @@ command `open-file'."
           "M-Right" 'enter-directory)
 
         (define-key :keymap vi-map
+          "M-Right" 'enter-directory
           "M-Left" 'display-parent-directory)
 
         (list :emacs emacs-map
@@ -76,12 +80,6 @@ command `open-file'."
   (let ((filenames (uiop:directory-files directory))
         (dirnames (uiop:subdirectories directory)))
     (fuzzy-match input (append filenames dirnames))))
-
-;; (defclass open-file-instance ()
-;;   ((default-modes :initform '(open-file-mode))
-;;    (open-file-function :accessor open-file-function
-;;                        :initform #'open-file-fn-default))
-;;   (:documentation "Open a file interactively."))
 
 (define-command display-parent-directory (open-file-mode &optional (minibuffer (minibuffer *interface*)))
   "Get the parent directory and update the minibuffer.
@@ -103,18 +101,20 @@ Default keybindings: `M-Right' and `C-j'. "
       (update-display minibuffer))))
 
 (defun clean-up-open-file-mode ()
-  "Remove open-file-mode from the minibuffer modes, so that we don't clutter the usual minibuffers with our keybindings."
+  "Remove `open-file-mode' from the minibuffer modes.
+So that we don't clutter the usual minibuffers with our keybindings."
   (setf (modes (minibuffer *interface*))
+        ;TODO: be more general. Use delete-if.
         (last (modes (minibuffer *interface*)))))
 
 (define-command open-file ()
   "Open a file from the filesystem.
 
-The user is prompted with the minibuffer, files are browsable with the
+The user is prompted with the minibuffer, files are browsable with
 fuzzy completion.
 
 The default directory is the one computed by
-`download-manager:default-download-directory' (certainly `~/Downloads').
+`download-manager:default-download-directory' (usually `~/Downloads').
 
 Press `Enter' to visit a file, `M-Left' or `C-l' to go one directory
 up, `M-Right' or `C-j' to browse the directory at point.
@@ -128,11 +128,9 @@ The default keybinding is `C-x C-f'.
 Note: this feature is alpha, get in touch for more !"
   (let ((directory *current-directory*)
         mode)
-    ;; "Activate" open-file-mode
-    (setf mode (make-instance  'open-file-mode))
-    ;; populate needed slots...
-    (setf (buffer mode) (minibuffer *interface*))
     ;; Allow the current minibuffer to recognize our keybindings.
+    (setf mode (make-instance  'open-file-mode
+                               :buffer (minibuffer *interface*)))
     (push mode (modes (minibuffer *interface*)))
     (with-result (filename (read-from-minibuffer
                             (minibuffer *interface*)
