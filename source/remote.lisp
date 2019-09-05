@@ -232,7 +232,10 @@ current buffer."
   (handler-case
       (dbus:with-open-bus (bus (session-server-addresses))
         ;; Dummy call to make sure dbus session is accessible.
-        (declare (ignore bus))
+        ;; We make sure we are authorized to request a name on the bus.  This is
+        ;; important to, among others, detect if dbus-broker is running instead
+        ;; of dbus, which is not compatible with cl-dbus as of 2019-09-05.
+        (dbus:request-name bus +core-name+ :do-not-queue)
         t)
     (error ()
       (match (mapcar (lambda (s) (str:split "=" s :limit 2))
