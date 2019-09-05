@@ -82,23 +82,6 @@
     (lambda (input)
       (fuzzy-match input filenames))))
 
-(defun open-file-default (filename)
-  "Open this file with `xdg-open'."
-  (handler-case (uiop:run-program (list "xdg-open" filename))
-    ;; We can probably signal something and display a notification.
-    (error (c) (format *error-output* "Error opening ~a: ~a~&" filename c))))
-
-;; TODO: Remove `open-file` (it's just a one-liner) and instead store the
-;; "open-file-function" into a download-mode slot, which is then called from
-;; `download-open-file' with `(funcall (open-file-function download-mode)
-;; filename).
-(export 'open-file)  ;; the user is encouraged to override this in her init file.
-(defun open-file (filename)
-  "Open this file. `filename' is the full path of the file, as a string.
-By default, try to open it with the system's default external program, using `xdg-open'.
-The user can override this function to decide what to do with the file."
-  (open-file-default filename))
-
 (define-command download-open-file (root-mode &optional (interface *interface*))
   "Open a downloaded file.
 Ask the user to choose one of the downloaded files of the current session.
@@ -107,4 +90,4 @@ See also `open-file'."
                           (minibuffer *interface*)
                           :input-prompt "Open file:"
                           :completion-function (downloaded-files-completion-fn interface)))
-    (open-file filename)))
+    (open-file-function filename)))

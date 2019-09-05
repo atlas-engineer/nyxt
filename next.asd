@@ -63,6 +63,7 @@
                  (:file "proxy-mode")
                  (:file "noscript-mode")
                  (:file "download-mode")
+                 (:file "file-manager-mode")
                  ;; About
                  (:file "about")
                  ;; Port Compatibility Layers

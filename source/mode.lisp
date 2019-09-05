@@ -47,7 +47,7 @@ To arguments have a special meanings beside the slot value of the mode:
 If :ACTIVATE is omitted, the mode is toggled."
   `(progn
      (defclass ,name ,(unless (eq (first direct-superclasses) t)
-                        (cons 'root-mode direct-superclasses))
+                        (append direct-superclasses '(root-mode)))
        ,direct-slots
        (:documentation ,docstring))
      (defmethod initialize-instance :after ((%mode ,name) &key) ; TODO: Change %mode to ,name?
