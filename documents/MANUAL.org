@@ -481,14 +481,14 @@ For example:
 
 #+begin_src lisp
 (defun my-open-videos (filename)
-  "Open videos with `mpv'."
+  "Open videos with mpv."
   (handler-case (let ((extension (pathname-type filename)))
-                  (cond
-                    ((member extension '("flv" "mkv" "mp4") :test #'string=)
-                     (uiop:run-program (list "mpv" filename)))
-                    (t
+                  (match extension
+                    ((or "flv" "mkv" "mp4")
+                     (uiop:launch-program (list "mpv" filename)))
+                    (_
                      (next::open-file-function-default filename))))
-    (error (c) (log:error "Error opening ~a: ~a" filename c))))
+    (error (c) (log:error "Error opening pdf ~a: ~a" filename c))))
 
 (setf next:*open-file-function* #'my-open-videos)
 #+end_src
