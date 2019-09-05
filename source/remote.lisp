@@ -156,6 +156,11 @@ by Next when the user session dbus instance is not available.")
    (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
                :documentation "The minibuffer object.")
    (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
+   (buffer-history-length :accessor buffer-history-length :initform 50
+                          :documentation "The maximum length of the buffer-history-ring.")
+   ;; (buffer-history-ring :accessor buffer-history-ring :initform (make-instance 'ring :items (make-array buffer-history-length :initial-element nil))
+   (buffer-history-ring :accessor buffer-history-ring :initform (make-instance 'ring :items (make-array 50 :initial-element nil))
+                        :documentation "A ring that keeps track of killed buffers.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
@@ -176,6 +181,15 @@ window or not.")
    (download-directory :accessor download-directory :initform nil
                      :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.")))
+
+(defmethod add-url-to-history-ring ((interface remote-interface) url)
+  "Add the url of a given buffer to the history ring."
+  ;; TODO Should this only insert if the url is different from the first url in the history?
+  ;; In chrome at least, duplicate entries are allowed.
+  (let ((history-ring (buffer-history-ring interface)))
+  (ring-insert history-ring url)
+  (ring-ref history-ring 0))
+)
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -444,6 +458,7 @@ For an array of string, that would be \"as\"."
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
                                 (rpc-buffer-make interface))))
+    (add-url-to-history-ring interface (name buffer))
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))
