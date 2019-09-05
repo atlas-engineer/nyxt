@@ -158,8 +158,9 @@ by Next when the user session dbus instance is not available.")
    (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
    (buffer-history-length :accessor buffer-history-length :initform 50
                           :documentation "The maximum length of the buffer-history-ring.")
-   ;; (buffer-history-ring :accessor buffer-history-ring :initform (make-instance 'ring :items (make-array buffer-history-length :initial-element nil))
-   (buffer-history-ring :accessor buffer-history-ring :initform (make-instance 'ring :items (make-array 50 :initial-element nil))
+   ;; (buffer-history-ring :accessor buffer-history-ring :initform (make-instance 'ring :items (make-array 50 :initial-element nil))
+   ;;                      :documentation "A ring that keeps track of killed buffers.")
+   (buffer-history-ring :accessor buffer-history-ring
                         :documentation "A ring that keeps track of killed buffers.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
@@ -181,6 +182,16 @@ window or not.")
    (download-directory :accessor download-directory :initform nil
                      :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.")))
+
+
+(defmethod initialize-instance :after
+  "Creates a buffer-history-ring with the length set in buffer-history-length."
+  ;; My impression is that I can't set this in the class definition: https://stackoverflow.com/questions/3620249/initializing-slots-based-on-other-slot-values-in-common-lisp-object-system-class
+          ((interface remote-interface) &rest args)
+  (setf (buffer-history-ring interface)
+        (make-instance 'ring :items (make-array (buffer-history-length interface)
+                                                :initial-element nil))))
+
 
 (defmethod add-url-to-history-ring ((interface remote-interface) url)
   "Add the url of a given buffer to the history ring."
