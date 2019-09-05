@@ -295,3 +295,21 @@ Optional second argument FLAVOR controls the units and the display format:
                        (write-to-string pid)))
     (error ()
       (log:error "Process with PID ~a is not running" pid))))
+
+(declaim (ftype (function (string &rest string)) run-program-to-string))
+(defun run-program-to-string (program &rest args)
+  "Run PROGRAM over ARGS and return the its standard output."
+  (handler-case
+      (multiple-value-bind (output error code)
+          (uiop:run-program (cons program args)
+                            :output '(:string :stripped t)
+                            :error-output '(:string :stripped t)
+                            :ignore-error-status t)
+        (if (not (= 0 code))
+            (progn
+              (log:error "~a error: ~a" program error)
+              (uiop:quit))
+            output))
+    (error ()
+      (log:error "~s not found." program)
+      (uiop:quit))))

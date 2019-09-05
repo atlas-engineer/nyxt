@@ -228,30 +228,25 @@ current buffer."
         nil))))
 
 (defun ensure-dbus-session (interface)
+  "Start a dbus session if necessary."
   (handler-case
       (dbus:with-open-bus (bus (session-server-addresses))
         ;; Dummy call to make sure dbus session is accessible.
         (declare (ignore bus))
         t)
     (error ()
-      (handler-case
-          (match (mapcar (lambda (s) (str:split "=" s :limit 2))
-                         (str:split "
+      (match (mapcar (lambda (s) (str:split "=" s :limit 2))
+                     (str:split "
 "
-                                    (uiop:run-program (list +dbus-launch-command+)
-                                                      :output '(:string :stripped t))))
-            ((list (list _ address) (list _ pid))
-             (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
-                       (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")
-                             (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))
-                       address)
-             (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
-             (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
-             (setf (dbus-pid interface) (parse-integer pid))))
-        (error ()
-          (log:error "D-Bus launcher ~s not found.  Please install D-Bus."
-                     +dbus-launch-command+)
-          (uiop:quit))))))
+                                (run-program-to-string +dbus-launch-command+)))
+        ((list (list _ address) (list _ pid))
+         (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
+                   (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")
+                         (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))
+                   address)
+         (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
+         (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
+         (setf (dbus-pid interface) (parse-integer pid)))))))
 
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key &allow-other-keys)
@@ -270,7 +265,7 @@ current buffer."
                  (when (eq status :exists)
                    (let ((url-list (or *free-args*
                                        (list (get-default 'buffer 'default-new-buffer-url)))))
-                     (log:info  "Next already started, requesting to open URL(s) ~a." url-list)
+                     (log:info "Next already started, requesting to open URL(s) ~a." url-list)
                      (handler-case
                          (%rpc-send-self "make_buffers" "as" url-list)
                        (error ()
