@@ -472,10 +472,10 @@ The default keybindings for ~vi-normal-mode~ are:
 ** Decide how to open files
 
 The commands  =open-file= and  =download-open-file= call  the function
-=open-file-fn <filename>=. Its  default behaviour is to  open the file
+=open-file-function <filename>=. Its  default behaviour is to  open the file
 with the  system's default, using  =xdg-open=.  You can  override this
 behaviour   by    binding   another    function   to    the   variable
-=next:*open-file-fn*=.
+=next:*open-file-function*=.
 
 For example:
 
@@ -487,10 +487,10 @@ For example:
                     ((member extension '("flv" "mkv" "mp4") :test #'string=)
                      (uiop:run-program (list "mpv" filename)))
                     (t
-                     (next::open-file-fn-default filename))))
-    (error (c) (log:error "Error opening pdf ~a: ~a" filename c))))
+                     (next::open-file-function-default filename))))
+    (error (c) (log:error "Error opening ~a: ~a" filename c))))
 
-(setf next:*open-file-fn* #'my-open-videos)
+(setf next:*open-file-function* #'my-open-videos)
 #+end_src
 
 ** Loading Files

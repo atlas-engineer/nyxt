@@ -90,4 +90,4 @@ See also `open-file'."
                           (minibuffer *interface*)
                           :input-prompt "Open file:"
                           :completion-function (downloaded-files-completion-fn interface)))
-    (open-file-fn filename)))
+    (open-file-function filename)))

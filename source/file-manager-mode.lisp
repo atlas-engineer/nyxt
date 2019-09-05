@@ -4,11 +4,11 @@
 ;;;
 ;;; `M-x open-file (C-x C-f)'
 ;;;
-;;; "file manager" is a big excessive for now. Currently, we can:
+;;; "file manager" is a bit excessive for now. Currently, we can:
 ;;; - browse files, with fuzzy-completion
 ;;; - go one directory up (C-l)
 ;;; - enter a directory (C-j)
-;;; - open files. By default, with xdg-open. See `open-file-fn'.
+;;; - open files. By default, with xdg-open. See `open-file-function'.
 ;;;
 ;;; ***********************************************************************
 ;;; *Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
@@ -24,7 +24,6 @@
 ;;; - a UI to list files
 ;;; - lazy loading for large directories
 ;;; - many things...
-;;;
 
 (in-package :next)
 
@@ -34,23 +33,23 @@
 (defvar *current-directory* download-manager::*default-download-directory*
   "Default directory to open files from. Defaults to the downloads directory.")
 
-(defun open-file-fn-default (filename)
+(defun open-file-function-default (filename)
   "Open this file with `xdg-open'."
   (handler-case (uiop:run-program (list "xdg-open" (namestring filename)))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
 
-(defun open-file-fn (filename)
+(defun open-file-function (filename)
   "Open `filename'.
 `filename' is the full path of the file (or directory), as a string.
 By default, try to open it with the system's default external program, using `xdg-open'.
 The user can override this function to decide what to do with the file."
-  (open-file-fn-default filename))
+  (open-file-function-default filename))
 
 ;; note: put under the function definition.
-(export '*open-file-fn*)
+(export '*open-file-function*)
 ;; the user is encouraged to override this in her init file.
-(defparameter *open-file-fn* #'open-file-fn
+(defparameter *open-file-function* #'open-file-function
   "Function triggered to open files.")
 
 (define-mode open-file-mode (minibuffer-mode)
@@ -120,7 +119,7 @@ Press `Enter' to visit a file, `M-Left' or `C-l' to go one directory
 up, `M-Right' or `C-j' to browse the directory at point.
 
 By default, it uses the `xdg-open' command. The user can override the
-`next:open-file-fn' function, which takes the filename (or directory
+`next:open-file-function' function, which takes the filename (or directory
 name) as parameter.
 
 The default keybinding is `C-x C-f'.
@@ -138,7 +137,7 @@ Note: this feature is alpha, get in touch for more !"
                             :completion-function #'open-file-from-directory-completion-fn
                             :cleanup-function #'clean-up-open-file-mode))
 
-      (funcall *open-file-fn* (namestring filename)))))
+      (funcall *open-file-function* (namestring filename)))))
 
 
 (define-key  "C-x C-f" #'open-file)
