@@ -35,7 +35,7 @@
 
 (defun open-file-function-default (filename)
   "Open this file with `xdg-open'."
-  (handler-case (uiop:run-program (list "xdg-open" (namestring filename)))
+  (handler-case (uiop:launch-program (list "xdg-open" (namestring filename)))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
 
