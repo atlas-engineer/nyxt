@@ -58,7 +58,7 @@ Return most recent entry in RING."
       (fuzzy-match input ring-items))))
 
 (define-command paste-from-ring ()
-  "Show *interface* clipboard ring and paste selected entry."
+  "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
                            (minibuffer *interface*)
                            :completion-function (ring-completion-fn
