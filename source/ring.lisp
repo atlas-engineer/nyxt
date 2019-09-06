@@ -1,5 +1,8 @@
 (in-package :next)
+(annot:enable-annot-syntax)
 
+@export
+@export-accessors
 (defclass ring ()
   ((items :accessor items
           :initarg :items
@@ -21,6 +24,7 @@
               (- (item-count ring) index)))
        (ring-size ring)))
 
+@export
 (defmethod ring-insert ((ring ring) new-item)
   "Insert item into RING.
 If RING is full, replace the oldest item.
@@ -43,6 +47,7 @@ Return NEW-ITEM."
         for item = (ring-ref ring index)
         when item collect item))
 
+@export
 (defmethod ring-insert-clipboard ((ring ring))
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
@@ -52,15 +57,8 @@ Return most recent entry in RING."
       (ring-insert ring clipboard-content)))
   (ring-ref ring 0))
 
+@export
 (defun ring-completion-fn (ring)
   (let ((ring-items (ring-recent-list ring)))
     (lambda (input)
       (fuzzy-match input ring-items))))
-
-(define-command paste-from-ring ()
-  "Show `*interface*' clipboard ring and paste selected entry."
-  (with-result (ring-item (read-from-minibuffer
-                           (minibuffer *interface*)
-                           :completion-function (ring-completion-fn
-                                                 (clipboard-ring *interface*))))
-    (%paste :input-text ring-item)))

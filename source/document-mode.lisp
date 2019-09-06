@@ -220,21 +220,6 @@
     (trivial-clipboard:text title)
     (echo "~a copied to clipboard." title)))
 
-;; Warning: To specialize `did-commit-navigation' we must be in the right package.
-(in-package :next)
-(defmethod did-commit-navigation ((mode next/document-mode::document-mode) url)
-  (set-window-title *interface*
-                    (rpc-window-active *interface*)
-                    (active-buffer *interface*))
-  (next/document-mode::add-or-traverse-history mode url)
-  (echo "Loading: ~a." url))
-
-(defmethod did-finish-navigation ((mode next/document-mode::document-mode) url)
-  (log:debug mode url)
-  (echo "Finished loading: ~a." url)
-  ;; TODO: Wait some time before dismissing the minibuffer.
-  (echo-dismiss (minibuffer *interface*)))
-
 (define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
@@ -250,6 +235,14 @@
   "Paste from clipboard into active-element."
   (%paste))
 
+(define-command paste-from-ring ()
+  "Show `*interface*' clipboard ring and paste selected entry."
+  (with-result (ring-item (read-from-minibuffer
+                           (minibuffer *interface*)
+                           :completion-function (ring-completion-fn
+                                                 (clipboard-ring *interface*))))
+    (%paste :input-text ring-item)))
+
 (define-parenscript %copy ()
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
@@ -258,3 +251,19 @@
   "Copy selected text to clipboard."
   (with-result (input (%copy))
     (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Warning: To specialize `did-commit-navigation' we must be in the right package.
+(in-package :next)
+(defmethod did-commit-navigation ((mode next/document-mode::document-mode) url)
+  (set-window-title *interface*
+                    (rpc-window-active *interface*)
+                    (active-buffer *interface*))
+  (next/document-mode::add-or-traverse-history mode url)
+  (echo "Loading: ~a." url))
+
+(defmethod did-finish-navigation ((mode next/document-mode::document-mode) url)
+  (log:debug mode url)
+  (echo "Finished loading: ~a." url)
+  ;; TODO: Wait some time before dismissing the minibuffer.
+  (echo-dismiss (minibuffer *interface*)))

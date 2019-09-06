@@ -80,7 +80,7 @@ command `open-file'."
         (dirnames (uiop:subdirectories directory)))
     (fuzzy-match input (append filenames dirnames))))
 
-(define-command display-parent-directory (open-file-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command display-parent-directory (&optional (minibuffer (minibuffer *interface*)))
   "Get the parent directory and update the minibuffer.
 
 Default keybindings: `M-Left' and `C-l'."
@@ -88,7 +88,7 @@ Default keybindings: `M-Left' and `C-l'."
   (erase-input minibuffer)
   (update-display minibuffer))
 
-(define-command enter-directory (open-file-mode &optional (minibuffer (minibuffer *interface*)))
+(define-command enter-directory (&optional (minibuffer (minibuffer *interface*)))
   "If the candidate at point is a directory, refresh the minibuffer candidates with its list of files.
 
 Default keybindings: `M-Right' and `C-j'. "
