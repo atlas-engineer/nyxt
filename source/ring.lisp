@@ -1,6 +1,8 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+;; TODO: Move to the libraries/ folder?
+
 @export
 @export-accessors
 (defclass ring ()

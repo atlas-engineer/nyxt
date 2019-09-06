@@ -266,14 +266,23 @@ platform port get terminated.  The handlers take no argument.")
 The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook :initform '() :type list
                      :documentation "Hook run after `rpc-buffer-make'.
-The handlers take the buffer as argument.")))
+The handlers take the buffer as argument.")
+   (before-download-hook :accessor buffer-download-hook :initform '() :type list
+                         :documentation "Hook run before a downloading a URL.
+The handlers take the URL as argument.")
+   (after-download-hook :accessor after-download-hook :initform '() :type list
+                        :documentation "Hook run after a download has completed.
+The handlers take the `download-manager:download' class instance as argument.")))
 
 (defun download-watch ()
   "Update the download-list buffer.
 This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
-  (loop while (lparallel:receive-result download-manager:*notifications*)
+  (loop for d = (lparallel:receive-result download-manager:*notifications*)
+        while d
+        when (download-manager:finished-p d)
+          do (hooks:run-hook (hooks:object-hook *interface* 'after-download-hook))
         do (let ((buffer (find-buffer 'download-mode)))
              ;; Only update if buffer exists.  We update even when out of focus
              ;; because if we switch to the buffer after all downloads are
@@ -302,6 +311,7 @@ when `proxied-downloads-p' is true."
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
+  (hooks:run-hook (hooks:object-hook *interface* 'before-download-hook) url)
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (active-buffer interface)
                                        :downloads-only t)))
