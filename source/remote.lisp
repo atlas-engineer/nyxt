@@ -257,7 +257,10 @@ window or not.")
 stored.  Nil means use system default.")
    (after-init-hook :accessor after-init-hook :initform '() :type list
                      :documentation "Hook run after both `*interface*' and the
-platform port have started.  Then handlers take no argument.")
+platform port have started.  The handlers take no argument.")
+   (before-exit-hook :accessor before-exit-hook :initform '() :type list
+                     :documentation "Hook run before both `*interface*' and the
+platform port get terminated.  The handlers take no argument.")
    (window-make-hook :accessor window-make-hook :initform '() :type list
                      :documentation "Hook run after `rpc-window-make'.
 The handlers take the window as argument.")

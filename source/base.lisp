@@ -1,6 +1,10 @@
 ;;; base.lisp --- main entry point into Next
 
+;; TODO: Rename to start.lisp.  This should probably be the last file before the
+;; modes in the .asd.
+
 (in-package :next)
+(annot:enable-annot-syntax)
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
@@ -38,6 +42,7 @@ Set to '-' to read standard input instead."))
 
 (define-command quit ()
   "Quit Next."
+  (hooks:run-hook (hooks:object-hook *interface* 'before-exit-hook))
   (kill-interface *interface*)
   (kill-port (port *interface*)))
 
@@ -57,7 +62,7 @@ Set to '-' to read standard input instead."))
      (log:config :info)
      (setf (uiop:getenv "G_MESSAGES_DEBUG") nil))))
 
-(export 'entry-point)
+@export
 (defun entry-point ()
   (multiple-value-bind (options free-args)
       (parse-cli-args)
@@ -177,7 +182,7 @@ If FILE is \"-\", read from the standard input."
   "Load or reload the init file."
   (load-lisp-file init-file))
 
-(export 'start)
+@export
 (defun start (&rest urls)
   "Start Next and load URLS if any.
 A new `*interface*' is instantiated.
