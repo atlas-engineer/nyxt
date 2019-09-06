@@ -65,8 +65,8 @@
                  (:file "blocker-mode")
                  (:file "proxy-mode")
                  (:file "noscript-mode")
-                 (:file "download-mode")
                  (:file "file-manager-mode")
+                 (:file "download-mode")
                  ;; About
                  (:file "about")
                  ;; Port Compatibility Layers

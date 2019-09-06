@@ -189,6 +189,7 @@ This should not rely on the minibuffer's content.")
      *interface* (rpc-window-active *interface*)
      (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
+@export
 (defmethod erase-input ((minibuffer minibuffer))
   "Clean-up the minibuffer input."
   (setf (input-buffer minibuffer) "")
@@ -429,6 +430,7 @@ This should not rely on the minibuffer's content.")
                                      :id (when (equal i cursor-index) "selected")
                                      (object-string completion)))))))
 
+@export
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-buffer-cursor completion-function
                completions completion-cursor empty-complete-immediate)
@@ -532,6 +534,7 @@ interpreted by `format'. "
   "Paste clipboard text to input."
   (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
 
+@export
 (defmethod get-candidate ((minibuffer minibuffer))
   "Return the string for the current candidate in the minibuffer."
   (with-slots (completions completion-cursor)

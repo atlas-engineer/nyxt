@@ -1,15 +1,20 @@
-;;; file-manager-mode.lisp -- Manage files.
-;;;
-;;; Open any file from within Next, with the usual fuzzy completion.
-;;;
-;;; `M-x open-file (C-x C-f)'
-;;;
-;;; "file manager" is a bit excessive for now. Currently, we can:
-;;; - browse files, with fuzzy-completion
-;;; - go one directory up (C-l)
-;;; - enter a directory (C-j)
-;;; - open files. By default, with xdg-open. See `open-file-function'.
-;;;
+(uiop:define-package :next/file-manager-mode
+    (:use :common-lisp :trivia :next)
+  (:documentation "Manage files.
+
+Open any file from within Next, with the usual fuzzy completion.
+
+`M-x open-file (C-x C-f)'
+
+\"file manager\" is a bit excessive for now. Currently, we can:
+- browse files, with fuzzy-completion
+- go one directory up (C-l)
+- enter a directory (C-j)
+- open files. By default, with xdg-open. See `open-file-function'.
+"))
+(in-package :next/file-manager-mode)
+(annot:enable-annot-syntax)
+
 ;;; ***********************************************************************
 ;;; *Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
 ;;; ***********************************************************************
@@ -25,8 +30,6 @@
 ;;; - lazy loading for large directories
 ;;; - many things...
 
-(in-package :next)
-
 ;; TODO: a global isn't satisfactory. Two separate instances of open-file will interfere with this global variable.
 ;; - store it as a class slot ?
 ;; see also: uiop:with-current-directory, uiop:getcwd
@@ -39,6 +42,7 @@
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
 
+@export
 (defun open-file-function (filename)
   "Open `filename'.
 `filename' is the full path of the file (or directory), as a string.
@@ -47,8 +51,8 @@ The user can override this function to decide what to do with the file."
   (open-file-function-default filename))
 
 ;; note: put under the function definition.
-(export '*open-file-function*)
 ;; the user is encouraged to override this in her init file.
+@export
 (defparameter *open-file-function* #'open-file-function
   "Function triggered to open files.")
 
@@ -62,18 +66,19 @@ command `open-file'."
             (vi-map (make-keymap)))
 
         (define-key :keymap emacs-map
-          "M-Left" 'display-parent-directory
-          "C-l" 'display-parent-directory
-          "C-j" 'enter-directory
-          "M-Right" 'enter-directory)
+          "M-Left" #'display-parent-directory
+          "C-l" #'display-parent-directory
+          "C-j" #'enter-directory
+          "M-Right" #'enter-directory)
 
         (define-key :keymap vi-map
-          "M-Right" 'enter-directory
-          "M-Left" 'display-parent-directory)
+          "M-Right" #'enter-directory
+          "M-Left" #'display-parent-directory)
 
         (list :emacs emacs-map
               :vi-normal vi-map)))))
 
+@export
 (defun open-file-from-directory-completion-fn (input &optional (directory *current-directory*))
   "Fuzzy-match files and directories from `*current-directory*'."
   (let ((filenames (uiop:directory-files directory))
@@ -99,6 +104,7 @@ Default keybindings: `M-Right' and `C-j'. "
       (erase-input minibuffer)
       (update-display minibuffer))))
 
+@export
 (defun clean-up-open-file-mode ()
   "Remove `open-file-mode' from the minibuffer modes.
 So that we don't clutter the usual minibuffers with our keybindings."
@@ -106,6 +112,8 @@ So that we don't clutter the usual minibuffers with our keybindings."
         ;TODO: be more general. Use delete-if.
         (last (modes (minibuffer *interface*)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(in-package :next)
 (define-command open-file ()
   "Open a file from the filesystem.
 
@@ -124,23 +132,27 @@ name) as parameter.
 
 The default keybinding is `C-x C-f'.
 
-Note: this feature is alpha, get in touch for more !"
-  (let ((directory *current-directory*)
+Note: this feature is alpha, get in touch for more!"
+  (let ((directory next/file-manager-mode::*current-directory*)
         mode)
     ;; Allow the current minibuffer to recognize our keybindings.
-    (setf mode (make-instance  'open-file-mode
-                               :buffer (minibuffer *interface*)))
+    (setf mode (make-instance 'next/file-manager-mode::open-file-mode
+                              :buffer (minibuffer *interface*)))
+    ;; TODO: The cleanup-function is called when the does `M-x open-file RET`,
+    ;; effectively removing the mode from the minibuffer.  We need to create a
+    ;; new minibuffer instance.
     (push mode (modes (minibuffer *interface*)))
     (with-result (filename (read-from-minibuffer
                             (minibuffer *interface*)
                             :input-prompt (file-namestring directory)
-                            :completion-function #'open-file-from-directory-completion-fn
-                            :cleanup-function #'clean-up-open-file-mode))
+                            :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn
+                            :cleanup-function #'next/file-manager-mode::clean-up-open-file-mode))
 
-      (funcall *open-file-function* (namestring filename)))))
+      (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
 
 
-(define-key  "C-x C-f" #'open-file)
+(define-key "C-x C-f" #'open-file)
+(define-key :scheme :vi-normal "C-x C-f" #'open-file)
 
 ;; This currently dosen't work, we must use the keymap at the mode definition:
 ;; (define-key :mode 'open-file-mode  "M-Left" #'display-parent-directory)
