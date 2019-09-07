@@ -58,23 +58,35 @@
 
 (defclass minibuffer (buffer)
   ((default-modes :initform '(minibuffer-mode))
-   (completion-function :accessor completion-function :initform nil)
-   (callback-function :accessor callback-function)
-   (callback-buffer :accessor callback-buffer
+   (completion-function :initarg :completion-function :accessor completion-function :initform nil
+                        :documentation "Function that takes the user input
+string and returns a list of candidate strings")
+   (callback :initarg :callback :accessor callback :initform nil
+                      :documentation "Function to call over the selected candidate.")
+   (callback-buffer :initarg :callback-buffer :accessor callback-buffer :initform (when *interface* (active-buffer *interface*))
                     :documentation "The active buffer when the minibuffer was
 brought up.  This can be useful to know which was the original buffer in the
 `callback-function' in case the buffer was changed.")
-   (setup-function :accessor setup-function)
-   (cleanup-function :accessor cleanup-function
+   (setup-function :initarg :setup-function :accessor setup-function :initform #'setup-default
+                   :documentation "Function of no argument that fills the
+`content' on when the minibuffer is created.  Called only once.")
+   (cleanup-function :initarg :cleanup-function :accessor cleanup-function :initform nil
                      :documentation "Function run after a completion has been selected.
 This should not rely on the minibuffer's content.")
-   (empty-complete-immediate :accessor empty-complete-immediate)
-   (input-prompt :accessor input-prompt :initform "Input:")
+   (empty-complete-immediate :initarg :empty-complete-immediate :accessor empty-complete-immediate ; TODO: Rename?
+                             :initform nil
+                             :documentation "If non-nil, allow input matching no
+candidates.")
+   ;; TODO: Move input-* slots to a separate text class?
+   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input:")
    (input-buffer :accessor input-buffer :initform "")
    ;; cursor position ?
    (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
-   (invisible-input-p :accessor invisible-input-p :initform nil)
-   (completions :accessor completions)
+   (invisible-input-p :initarg :invisible-input-p :accessor invisible-input-p
+                      :initform nil
+                      :documentation "If non-nil, input is replaced by
+placeholder character.  This is useful to conceal passwords.")
+   (completions :accessor completions :initform nil)
    (completion-cursor :accessor completion-cursor :initform 0)
    (content :accessor content :initform ""
             :documentation "The HTML content of the minibuffer.")
@@ -106,36 +118,35 @@ This should not rely on the minibuffer's content.")
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
+  ;; We don't want to show the input in the candidate list when invisible.
+  (setf (empty-complete-immediate minibuffer)
+        (if (invisible-input-p minibuffer)
+            nil
+            (empty-complete-immediate minibuffer)))
   (initialize-modes minibuffer))
 
+;; (declaim (ftype (function (minibuffer &key function)) read-from-minibuffer)) ; TODO: How do we type keyword args?
 @export
-(defun read-from-minibuffer (&key callback input-prompt completion-function invisible-input-p setup-function
-                               ;; TODO: Use &allow-other-keys to use minibuffer's initargs?
-                               ;; Better: Pass minibuffer as argument, so a typical call is (read-from-minibuffer (make-minibuffer :input-prompt "..")).
-                                  cleanup-function empty-complete-immediate)
-  (let ((minibuffer (make-instance 'minibuffer)))
-    ;; TODO: Replace those `setf's by a the initargs of the `make-instance'.
-    (if input-prompt
-        (setf (input-prompt minibuffer) input-prompt)
-        (setf (input-prompt minibuffer) "Input:"))
-    (setf (callback-function minibuffer) callback)
-    (setf (completion-function minibuffer) completion-function)
-    (setf (completions minibuffer) nil) ; TODO: Use default value.
-    (setf (completion-cursor minibuffer) 0) ; TODO: Use default value.
-    (setf (setup-function minibuffer) setup-function)
-    (setf (cleanup-function minibuffer) cleanup-function)
-    (setf (invisible-input-p minibuffer) invisible-input-p)
-    ;; We don't want to show the input in the candidate list when invisible.
-    (setf (empty-complete-immediate minibuffer) (if (invisible-input-p minibuffer)
-                                                    nil
-                                                    empty-complete-immediate))
-    (setf (callback-buffer minibuffer) (active-buffer *interface*))
-    (if setup-function                  ; TODO: Replace the `if' by setting the default value of `setup-function'.
-        (funcall setup-function)
-        (setup-default minibuffer))
-    (update-display minibuffer)
-    (push minibuffer (active-minibuffers (last-active-window *interface*)))
-    (show *interface*)))
+(defun read-from-minibuffer (minibuffer &key callback)
+  "Open the minibuffer, ready for user input.
+Example use:
+
+  (read-from-minibuffer
+   (make-instance 'minibuffer
+                  :completion-function #'my-completion-function))
+
+See the documentation of `minibuffer' to know more about the minibuffer options."
+  (when callback
+    ;; We need a :callback key argument so that `read-from-minibuffer' can be
+    ;; called in `with-result'.
+    (setf (callback minibuffer) callback))
+  ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
+  (setf (callback-buffer minibuffer) (active-buffer *interface*))
+  (match (setup-function minibuffer)
+    ((guard f f) (funcall f minibuffer)))
+  (update-display minibuffer)
+  (push minibuffer (active-minibuffers (last-active-window *interface*)))
+  (show *interface*))
 
 (define-command return-input (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer selection."

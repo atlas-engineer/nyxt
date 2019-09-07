@@ -838,7 +838,8 @@ Deal with URL with the following rules:
 @export
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
-  (active-buffer (rpc-window-active interface)))
+  (match (rpc-window-active interface)
+    ((guard w w) (active-buffer w))))
 
 ;; TODO: Prevent setting the minibuffer as the active buffer.
 @export

@@ -176,7 +176,8 @@ If FILE is \"-\", read from the standard input."
 Interactively, prompt for FILE.
 If FILE is \"-\", read from the standard input."
   (with-result (file-name-input (read-from-minibuffer
-                                 :input-prompt "Load file:"))
+                                 (make-instance 'minibuffer
+                                                :input-prompt "Load file:")))
     (load-lisp-file file-name-input :interactive nil)))
 
 (define-command load-init-file (&optional (init-file (init-file-path)))
