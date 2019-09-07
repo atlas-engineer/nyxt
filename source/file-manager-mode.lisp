@@ -143,7 +143,6 @@ Note: this feature is alpha, get in touch for more!"
     ;; new minibuffer instance.
     (push mode (modes (minibuffer *interface*)))
     (with-result (filename (read-from-minibuffer
-                            (minibuffer *interface*)
                             :input-prompt (file-namestring directory)
                             :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn
                             :cleanup-function #'next/file-manager-mode::clean-up-open-file-mode))

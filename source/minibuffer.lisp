@@ -3,9 +3,8 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
-;; TODO: Currently there is a unique minibuffer instance which is stateful.  It
-;; makes it hard to next minibuffer calls, and it's also hard to keep track of
-;; the state (open, hidden, etc.).
+;; TODO: We need to separate the minibuffer from the echo area.  The
+;; `show'/`hide' functions are not dealing well with `echo'/`echo-dismiss'.
 
 (defparameter *word-separation-characters* '(#\: #\/ #\- #\. #\Space #\ )
   "Characters delimiting words (space, colon, slash, dot, etc).")
@@ -13,49 +12,49 @@
 (defun word-separation-character-p (char)
   (intersection *word-separation-characters* (list char)))
 
-
+;; TODO: Move minibuffer-mode to a separate package?
 (define-mode minibuffer-mode ()
-    "Mode for the minibuffer."
-    ((name :accessor name :initform "minibuffer")
-     (keymap-schemes
-      :initform
-      (let ((map (make-keymap)))
-        (define-key "HYPHEN" #'self-insert
-          "SPACE" #'self-insert
-          "C-f" #'cursor-forwards
-          "M-f" #'cursor-forwards-word
-          "C-b" #'cursor-backwards
-          "M-b" #'cursor-backwards-word
-          "M-d" #'delete-forwards-word
-          "M-BACKSPACE" #'delete-backwards-word
-          "Right" #'cursor-forwards
-          "Left" #'cursor-backwards
-          "C-d" #'delete-forwards
-          "DELETE" #'delete-forwards
-          "BACKSPACE" #'delete-backwards
-          "C-a" #'cursor-beginning
-          "C-e" #'cursor-end
-          "C-k" #'kill-line
-          "RETURN" #'return-input
-          "C-RETURN" #'return-immediate
-          "C-g" #'cancel-input
-          "ESCAPE" #'cancel-input
-          "C-n" #'select-next
-          "C-p" #'select-previous
-          "Down" #'select-next
-          "Up" #'select-previous
-          "C-v" #'minibuffer-paste
-          "C-y" #'minibuffer-paste
-          "C-w" #'copy-candidate
-          "TAB" #'insert-candidate
-          :keymap map)
-        (list :emacs map
-              ;; TODO: We could have VI bindings for the minibuffer too.
-              ;; But we need to make sure it's optional + to have an indicator
-              ;; for the mode.  This requires either a change of cursor or a
-              ;; echo area separate from the minibuffer.
-              :vi-normal map
-              :vi-insert map)))))
+  "Mode for the minibuffer."
+  ((name :accessor name :initform "minibuffer")
+   (keymap-schemes
+    :initform
+    (let ((map (make-keymap)))
+      (define-key "HYPHEN" #'self-insert
+        "SPACE" #'self-insert
+        "C-f" #'cursor-forwards
+        "M-f" #'cursor-forwards-word
+        "C-b" #'cursor-backwards
+        "M-b" #'cursor-backwards-word
+        "M-d" #'delete-forwards-word
+        "M-BACKSPACE" #'delete-backwards-word
+        "Right" #'cursor-forwards
+        "Left" #'cursor-backwards
+        "C-d" #'delete-forwards
+        "DELETE" #'delete-forwards
+        "BACKSPACE" #'delete-backwards
+        "C-a" #'cursor-beginning
+        "C-e" #'cursor-end
+        "C-k" #'kill-line
+        "RETURN" #'return-input
+        "C-RETURN" #'return-immediate
+        "C-g" #'cancel-input
+        "ESCAPE" #'cancel-input
+        "C-n" #'select-next
+        "C-p" #'select-previous
+        "Down" #'select-next
+        "Up" #'select-previous
+        "C-v" #'minibuffer-paste
+        "C-y" #'minibuffer-paste
+        "C-w" #'copy-candidate
+        "TAB" #'insert-candidate
+        :keymap map)
+      (list :emacs map
+            ;; TODO: We could have VI bindings for the minibuffer too.
+            ;; But we need to make sure it's optional + to have an indicator
+            ;; for the mode.  This requires either a change of cursor or a
+            ;; echo area separate from the minibuffer.
+            :vi-normal map
+            :vi-insert map)))))
 
 (defclass minibuffer (buffer)
   ((default-modes :initform '(minibuffer-mode))
@@ -70,7 +69,6 @@ brought up.  This can be useful to know which was the original buffer in the
                      :documentation "Function run after a completion has been selected.
 This should not rely on the minibuffer's content.")
    (empty-complete-immediate :accessor empty-complete-immediate)
-   (display-mode :accessor display-mode :initform :nil)
    (input-prompt :accessor input-prompt :initform "Input:")
    (input-buffer :accessor input-buffer :initform "")
    ;; cursor position ?
@@ -78,6 +76,8 @@ This should not rely on the minibuffer's content.")
    (invisible-input-p :accessor invisible-input-p :initform nil)
    (completions :accessor completions)
    (completion-cursor :accessor completion-cursor :initform 0)
+   (content :accessor content :initform ""
+            :documentation "The HTML content of the minibuffer.")
    (minibuffer-style :accessor minibuffer-style
                      :initform (cl-css:css
                                 '((* :font-family "monospace,monospace"
@@ -109,32 +109,34 @@ This should not rely on the minibuffer's content.")
   (initialize-modes minibuffer))
 
 @export
-(defmethod read-from-minibuffer ((minibuffer minibuffer)
-                                 &key callback input-prompt completion-function invisible-input-p setup-function
-                                   cleanup-function empty-complete-immediate)
-  (if input-prompt
-      (setf (input-prompt minibuffer) input-prompt)
-      (setf (input-prompt minibuffer) "Input:"))
-  (setf (display-mode minibuffer) :read)
-  (setf (callback-function minibuffer) callback)
-  (setf (completion-function minibuffer) completion-function)
-  (setf (completions minibuffer) nil)
-  (setf (completion-cursor minibuffer) 0)
-  (setf (setup-function minibuffer) setup-function)
-  (setf (cleanup-function minibuffer) cleanup-function)
-  (setf (invisible-input-p minibuffer) invisible-input-p)
-  ;; We don't want to show the input in the candidate list when invisible.
-  (setf (empty-complete-immediate minibuffer) (if (invisible-input-p minibuffer)
-                                                  nil
-                                                  empty-complete-immediate))
-  (setf (callback-buffer minibuffer) (active-buffer *interface*))
-  (if setup-function
-      (funcall setup-function)
-      (setup-default minibuffer))
-  (update-display minibuffer)
-  (show *interface*))
+(defun read-from-minibuffer (&key callback input-prompt completion-function invisible-input-p setup-function
+                               ;; TODO: Use &allow-other-keys to use minibuffer's initargs?
+                               ;; Better: Pass minibuffer as argument, so a typical call is (read-from-minibuffer (make-minibuffer :input-prompt "..")).
+                                  cleanup-function empty-complete-immediate)
+  (let ((minibuffer (make-instance 'minibuffer)))
+    ;; TODO: Replace those `setf's by a the initargs of the `make-instance'.
+    (if input-prompt
+        (setf (input-prompt minibuffer) input-prompt)
+        (setf (input-prompt minibuffer) "Input:"))
+    (setf (callback-function minibuffer) callback)
+    (setf (completion-function minibuffer) completion-function)
+    (setf (completions minibuffer) nil) ; TODO: Use default value.
+    (setf (completion-cursor minibuffer) 0) ; TODO: Use default value.
+    (setf (setup-function minibuffer) setup-function)
+    (setf (cleanup-function minibuffer) cleanup-function)
+    (setf (invisible-input-p minibuffer) invisible-input-p)
+    ;; We don't want to show the input in the candidate list when invisible.
+    (setf (empty-complete-immediate minibuffer) (if (invisible-input-p minibuffer)
+                                                    nil
+                                                    empty-complete-immediate))
+    (setf (callback-buffer minibuffer) (active-buffer *interface*))
+    (if setup-function                  ; TODO: Replace the `if' by setting the default value of `setup-function'.
+        (funcall setup-function)
+        (setup-default minibuffer))
+    (update-display minibuffer)
+    (push minibuffer (active-minibuffers (last-active-window *interface*)))
+    (show *interface*)))
 
-;; TODO: Move minibuffer-mode to a separate package?
 (define-command return-input (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer selection."
   ;; Warning: `hide' modifies the content of the minibuffer, the
@@ -143,7 +145,6 @@ This should not rely on the minibuffer's content.")
   ;; TODO: We should factor the shared code between `return-input',
   ;; `return-immediate' and `cancel-input', e.g. `hide', the normalization of
   ;; the input-buffer, etc.
-  (setf (display-mode minibuffer) :nil)
   (hide *interface*)
   (with-slots (callback-function cleanup-function
                empty-complete-immediate completions completion-cursor)
@@ -167,7 +168,6 @@ This should not rely on the minibuffer's content.")
 
 (define-command return-immediate (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
-  (setf (display-mode minibuffer) :nil)
   (hide *interface*)
   (with-slots (callback-function cleanup-function) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
@@ -177,60 +177,85 @@ This should not rely on the minibuffer's content.")
 
 (define-command cancel-input (&optional (minibuffer (minibuffer *interface*)))
   "Close the minibuffer query without further action."
-  (setf (display-mode minibuffer) :nil)
   (with-slots (cleanup-function) minibuffer
     (when cleanup-function
       (funcall cleanup-function)))
   (hide *interface*))
-
-(defmethod set-input ((minibuffer minibuffer) input)
-  (when input
-    (rpc-minibuffer-evaluate-javascript
-     *interface* (rpc-window-active *interface*)
-     (ps:ps (ps:chain document (write (ps:lisp input)))))))
 
 @export
 (defmethod erase-input ((minibuffer minibuffer))
   "Clean-up the minibuffer input."
   (setf (input-buffer minibuffer) "")
   (setf (input-buffer-cursor minibuffer) 0)
-  (set-input minibuffer ""))
+  (setf (content minibuffer) ""))
 
+;; TODO: Move `erase-document' into the `show' function.
 (defmethod erase-document ((minibuffer minibuffer))
-  (rpc-minibuffer-evaluate-javascript
-   *interface* (rpc-window-active *interface*)
-   (ps:ps
-     (ps:chain document (open))
-     (ps:chain document (close)))))
+  (evaluate-script minibuffer
+                   (ps:ps
+                     (ps:chain document (open))
+                     (ps:chain document (close)))))
 
 (defmethod setup-default ((minibuffer minibuffer))
   (erase-document minibuffer)
   (setf (input-buffer minibuffer) "")
   (setf (input-buffer-cursor minibuffer) 0)
-  (set-input minibuffer
-             (cl-markup:markup
-              (:head (:style (minibuffer-style minibuffer)))
-              (:body
-               (:div :id "container"
-                     (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
-                     (:div :id "completions" ""))))))
+  (setf (content minibuffer)
+        (cl-markup:markup
+         (:head (:style (minibuffer-style minibuffer)))
+         (:body
+          (:div :id "container"
+                (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
+                (:div :id "completions" ""))))))
 
-(defmethod show ((interface remote-interface))
-  (let ((active-window (rpc-window-active interface)))
-    (setf (minibuffer-active active-window) t)
-    (rpc-window-set-minibuffer-height interface
-                                      active-window
-                                      (minibuffer-open-height active-window))))
+(defmethod evaluate-script ((minibuffer minibuffer) script) ; TODO: Rename function?  `set-content'?  Or `defmethod (setf content)' instead?  If we do, then `show' does not need to call anything like `evaluate-script' or `show'.  Question: Do we need to "stack" content parts before updating it?  We can do both: Have evaluate-script that takes a parenscript, and (setf content) that takes an HTML string.
+  "Evaluate SCRIPT into MINIBUFFER's webview.
+The new webview HTML document it set as the MINIBUFFER's `content'."
+  (let ((active-window (rpc-window-active *interface*)))
+    (when minibuffer
+      (with-result (new-content (rpc-minibuffer-evaluate-javascript
+                                 *interface* active-window
+                                 (str:concat
+                                  ;; Sync `content' now so that SCRIPT does not run on an out-of-sync content.
+                                  ;; TODO: If we'd put this in (defmethod (setf
+                                  ;; content) (html (minibuffer minibuffer))),
+                                  ;; there'd be no need for this measure, at the
+                                  ;; cost of more Javascript evaluations.
+                                  (ps:ps (ps:chain document
+                                                   (write (ps:lisp (content minibuffer)))))
+                                  script
+                                  ;; Return the new HTML body.
+                                  (ps:ps (ps:chain document body |outerHTML|)))))
+        (setf (content minibuffer) new-content)))))
+
+(defmethod show ((interface remote-interface) &key
+                                                (minibuffer (first (active-minibuffers
+                                                                    (last-active-window interface))))
+                                                height)
+  "Show the last active minibuffer, if any."
+  (let ((active-window (last-active-window interface)))
+    (when minibuffer
+      (evaluate-script minibuffer
+                       (ps:ps (ps:chain document
+                                        (write (ps:lisp (content minibuffer))))))
+      (rpc-window-set-minibuffer-height interface
+                                        active-window
+                                        (or height
+                                            (minibuffer-open-height active-window))))))
 
 (defmethod hide ((interface remote-interface))
+  "Hide last active minibuffer and display next one, if any."
   (let ((active-window (rpc-window-active interface)))
-    (setf (minibuffer-active active-window) nil)
-    ;; TODO: We need a mode-line before we can afford to really hide the
-    ;; minibuffer.  Until then, we "blank" it.
-    (echo "")
-    (rpc-window-set-minibuffer-height interface
-                                      active-window
-                                      (minibuffer-closed-height active-window))))
+    (pop (active-minibuffers active-window))
+    (if (active-minibuffers active-window)
+        (show interface)
+        (progn
+          ;; TODO: We need a mode-line before we can afford to really hide the
+          ;; minibuffer.  Until then, we "blank" it.
+          (echo "")                     ; Or echo-dismiss?
+          (rpc-window-set-minibuffer-height interface
+                                            active-window
+                                            (minibuffer-closed-height active-window))))))
 
 (defun insert (characters &optional (minibuffer (minibuffer *interface*)))
   (setf (input-buffer minibuffer)
@@ -447,36 +472,34 @@ This should not rely on the minibuffer's content.")
                           (generate-input-html-invisible input-buffer input-buffer-cursor)
                           (generate-input-html input-buffer input-buffer-cursor)))
           (completion-html (generate-completion-html completions completion-cursor)))
-      (rpc-minibuffer-evaluate-javascript
-       *interface* (rpc-window-active *interface*)
-       (ps:ps
-         (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
-               (ps:lisp (input-prompt minibuffer)))
-         (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
-               (ps:lisp input-text))
-         (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
-               (ps:lisp completion-html)))))))
+      (evaluate-script minibuffer
+                       (ps:ps
+                         (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+                               (ps:lisp (input-prompt minibuffer)))
+                         (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
+                               (ps:lisp input-text))
+                         (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
+                               (ps:lisp completion-html)))))))
 
 (define-command select-next (&optional (minibuffer (minibuffer *interface*)))
   "Select next entry in minibuffer."
   (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
     (incf (completion-cursor minibuffer))
     (update-display minibuffer)
-    (rpc-minibuffer-evaluate-javascript
-     *interface* (rpc-window-active *interface*)
-     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
-                      (scroll-into-view false))))))
+    (evaluate-script minibuffer
+                     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
+                                      (scroll-into-view false))))))
 
 (define-command select-previous (&optional (minibuffer (minibuffer *interface*)))
   "Select previous entry in minibuffer."
   (when (> (completion-cursor minibuffer) 0)
     (decf (completion-cursor minibuffer))
     (update-display minibuffer)
-    (rpc-minibuffer-evaluate-javascript
-     *interface* (rpc-window-active *interface*)
-     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
-                      (scroll-into-view true))))))
+    (evaluate-script minibuffer
+                     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
+                                      (scroll-into-view true))))))
 
+;; TODO: Does the `:minibuffer' keyword still make sense?  Remove?
 @export
 (defun echo (&rest args)
   "Echo ARGS in the minibuffer.
@@ -487,22 +510,18 @@ Accepted keyword argument:
 
 The first argument can be a format string and the following arguments will be
 interpreted by `format'. "
-  (let ((minibuffer (when *interface* (minibuffer *interface*)))
-        (window (when *interface* (rpc-window-active *interface*))))
+  (let* ((window (when *interface* (rpc-window-active *interface*)))
+         (status-buffer (when window (status-buffer window))))
     (when (evenp (length args))
       (when (getf args :minibuffer)
-        (setf minibuffer (getf args :minibuffer)))
+        (setf status-buffer (getf args :minibuffer)))
       (when (getf args :window)
         (setf window (getf args :window)))
       (dolist (key (remove-if-not #'keywordp args))
         (remf args key)))
-    (if (and minibuffer window)
-        (unless (eql (display-mode minibuffer) :read)
-          (setf (display-mode minibuffer) :echo)
-          (erase-document minibuffer)
-          (rpc-window-set-minibuffer-height *interface*
-                                            window
-                                            (minibuffer-echo-height window))
+    (if (and status-buffer window)
+        (unless (active-minibuffers window)
+          (erase-document status-buffer)
           (let ((style (cl-css:css
                         '((* :font-family "monospace,monospace"
                              :font-size "14px")
@@ -510,25 +529,26 @@ interpreted by `format'. "
                                 :margin "0"
                                 :padding "0 6px")
                           (p :margin "0")))))
-            (set-input minibuffer
-                       (cl-markup:markup
-                        (:head (:style style))
-                        (:body
-                         (:p (apply #'format nil args)))))))
-        (log:warn "Can't echo '~a' without minibuffer or interface" (apply #'format nil args)))))
+            (setf (content status-buffer)
+                  (cl-markup:markup
+                   (:head (:style style))
+                   (:body
+                    (:p (apply #'format nil args))))))
+          (show *interface*
+                :minibuffer status-buffer
+                :height (status-buffer-height window)))
+        (log:warn "Can't echo '~a' without status buffer or interface" (apply #'format nil args)))))
 
 @export
-(defmethod echo-dismiss ((minibuffer minibuffer))
-  (when (eql (display-mode minibuffer) :echo)
-    (hide *interface*)
-    ;; TODO: If we erase the document here, it will show a blank widget instead
-    ;; of the minibuffer when we don't fully hide it.  We can only erase the
-    ;; document when we have a mode-line we can fully hide the minibuffer.
-    ;; (erase-document minibuffer)
-    ;; TODO: We should only display this default text until we have a mode-line.
-    (with-result* ((url (buffer-get-url))
-                   (title (buffer-get-title)))
-      (echo "~a — ~a" url title))))
+(defmethod echo-dismiss ()
+  ;; TODO: If we erase the document here, it will show a blank widget instead
+  ;; of the minibuffer when we don't fully hide it.  We can only erase the
+  ;; document when we have a mode-line we can fully hide the minibuffer.
+  ;; (erase-document minibuffer)
+  ;; TODO: We should only display this default text until we have a mode-line.
+  (with-result* ((url (buffer-get-url))
+                 (title (buffer-get-title)))
+    (echo "~a — ~a" url title)))
 
 (define-command minibuffer-paste (&optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."

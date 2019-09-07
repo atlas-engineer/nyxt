@@ -104,7 +104,6 @@
 (defmacro query-hints (prompt (symbol) &body body)
   `(with-result* ((links-json (add-link-hints))
                   (selected-hint (read-from-minibuffer
-                                    (minibuffer *interface*)
                                     :input-prompt ,prompt
                                     :cleanup-function #'remove-link-hints)))
      (let* ((link-hints (cl-json:decode-json-from-string links-json))
