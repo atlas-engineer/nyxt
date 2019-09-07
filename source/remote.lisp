@@ -343,7 +343,7 @@ current buffer."
       (match (mapcar (lambda (s) (str:split "=" s :limit 2))
                      (str:split "
 "
-                                (run-program-to-string +dbus-launch-command+)))
+                                (apply #'run-program-to-string +dbus-launch-command+)))
         ((list (list _ address) (list _ pid))
          (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
                    (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")

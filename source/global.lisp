@@ -31,7 +31,9 @@ is 4005, default set to 4006 in Next to avoid collisions).")
 (defparameter +core-object-path+ "/engineer/atlas/next/core")
 (defparameter +core-interface+ +core-name+)
 
-(defparameter +dbus-launch-command+ "dbus-launch")
+(defparameter +dbus-launch-command+ '("dbus-launch")
+  "The command to start dbus, if necessary.
+The first string is the command, the other strings are the arguments.")
 
 @export
 (defparameter +version+
