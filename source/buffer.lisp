@@ -35,8 +35,9 @@ See the `make-buffer' function for Lisp code."
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
   (with-result (buffer (read-from-minibuffer
-                        :input-prompt "Switch to buffer:"
-                        :completion-function (buffer-completion-fn)))
+                        (make-instance 'minibuffer
+                                       :input-prompt "Switch to buffer:"
+                                       :completion-function (buffer-completion-fn))))
     (set-active-buffer *interface* buffer)))
 
 (define-command make-visible-new-buffer ()
@@ -48,8 +49,9 @@ See the `make-buffer' function for Lisp code."
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
   (with-result (buffer (read-from-minibuffer
-                        :input-prompt "Kill buffer:"
-                        :completion-function (buffer-completion-fn)))
+                        (make-instance 'minibuffer
+                                       :input-prompt "Kill buffer:"
+                                       :completion-function (buffer-completion-fn))))
     (rpc-buffer-delete *interface* buffer)))
 
 (define-command delete-current-buffer ()
@@ -89,9 +91,10 @@ If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
 (define-command set-url-current-buffer ()
   "Set the URL for the current buffer, completing with history."
   (with-result (url (read-from-minibuffer
-                     :input-prompt "Open URL in buffer:"
-                     :completion-function 'history-typed-complete
-                     :empty-complete-immediate t))
+                     (make-instance 'minibuffer
+                                    :input-prompt "Open URL in buffer:"
+                                    :completion-function 'history-typed-complete
+                                    :empty-complete-immediate t)))
     (set-url url)))
 
 (define-command reload-current-buffer ()
@@ -103,9 +106,10 @@ If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
   "Prompt the user for a URL and set it in a new active / visible
 buffer"
   (with-result (url (read-from-minibuffer
-                     :input-prompt "Open URL in new buffer:"
-                     :completion-function 'history-typed-complete
-                     :empty-complete-immediate t))
+                     (make-instance 'minibuffer
+                                    :input-prompt "Open URL in new buffer:"
+                                    :completion-function 'history-typed-complete
+                                    :empty-complete-immediate t)))
     (let ((buffer (make-buffer)))
       (set-url url :buffer buffer)
       (set-active-buffer *interface* buffer))))

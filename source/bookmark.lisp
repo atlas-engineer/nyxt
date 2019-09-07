@@ -45,14 +45,16 @@
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer :input-prompt "Bookmark URL:"))
+  (with-result (url (read-from-minibuffer (make-instance 'minibuffer
+                                                         :input-prompt "Bookmark URL:")))
     (%bookmark-url url)))
 
 (define-command bookmark-delete ()
   "Delete a bookmark from the bookmark database."
   (with-result (bookmark (read-from-minibuffer
-                          :input-prompt "Delete bookmark:"
-                          :completion-function 'bookmark-complete))
+                          (make-instance 'minibuffer
+                                         :input-prompt "Delete bookmark:"
+                                         :completion-function 'bookmark-complete)))
     (let ((db (sqlite:connect
                (ensure-file-exists (bookmark-db-path (rpc-window-active *interface*))
                                    #'%initialize-bookmark-db))))
@@ -64,8 +66,9 @@
   "Show link hints on screen, and allow the user to bookmark one"
   (with-result* ((links-json (add-link-hints))
                  (selected-hint (read-from-minibuffer
-                                   :input-prompt "Bookmark hint:"
-                                   :cleanup-function #'remove-link-hints)))
+                                 (make-instance 'minibuffer
+                                                :input-prompt "Bookmark hint:"
+                                                :cleanup-function #'remove-link-hints))))
     (let* ((link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-hint link-hints :test #'equalp))))
       (when selected-link
@@ -78,6 +81,7 @@
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark."
   (with-result (url (read-from-minibuffer
-                     :input-prompt "Open bookmark:"
-                     :completion-function 'bookmark-complete))
+                     (make-instance 'minibuffer
+                                    :input-prompt "Open bookmark:"
+                                    :completion-function 'bookmark-complete)))
     (buffer-set-url :url url :buffer (active-buffer *interface*))))

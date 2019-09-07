@@ -87,6 +87,7 @@
 Ask the user to choose one of the downloaded files of the current session.
 See also `open-file'."
   (with-result (filename (read-from-minibuffer
-                          :input-prompt "Open file:"
-                          :completion-function (downloaded-files-completion-fn interface)))
+                          (make-instance 'minibuffer
+                                         :input-prompt "Open file:"
+                                         :completion-function (downloaded-files-completion-fn interface))))
     (next/file-manager-mode:open-file-function filename)))

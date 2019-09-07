@@ -175,8 +175,9 @@
 (define-command history-forwards-query ()
   "Move forwards in history querying if more than one child present."
   (with-result (input (read-from-minibuffer
-                       :input-prompt "Navigate forwards to:"
-                       :completion-function (history-forwards-completion-fn)))
+                       (make-instance 'minibuffer
+                                      :input-prompt "Navigate forwards to:"
+                                      :completion-function (history-forwards-completion-fn))))
     (unless (equal input "Cannot navigate forwards.")
       (set-url (node-data input)))))
 
@@ -237,8 +238,9 @@
 (define-command paste-from-ring ()
   "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
-                           :completion-function (ring-completion-fn
-                                                 (clipboard-ring *interface*))))
+                           (make-instance 'minibuffer
+                                          :completion-function (ring-completion-fn
+                                                                (clipboard-ring *interface*)))))
     (%paste :input-text ring-item)))
 
 (define-parenscript %copy ()
