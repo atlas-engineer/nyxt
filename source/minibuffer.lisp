@@ -66,7 +66,7 @@ string and returns a list of candidate strings")
    (callback-buffer :initarg :callback-buffer :accessor callback-buffer :initform (when *interface* (active-buffer *interface*))
                     :documentation "The active buffer when the minibuffer was
 brought up.  This can be useful to know which was the original buffer in the
-`callback-function' in case the buffer was changed.")
+`callback' in case the buffer was changed.")
    (setup-function :initarg :setup-function :accessor setup-function :initform #'setup-default
                    :documentation "Function of no argument that fills the
 `content' on when the minibuffer is created.  Called only once.")
@@ -157,7 +157,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   ;; `return-immediate' and `cancel-input', e.g. `hide', the normalization of
   ;; the input-buffer, etc.
   (hide *interface*)
-  (with-slots (callback-function cleanup-function
+  (with-slots (callback cleanup-function
                empty-complete-immediate completions completion-cursor)
       minibuffer
     (if completions
@@ -167,9 +167,10 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
                                completion)))
           (if completion
               ;; if we're able to find a completion
-              (funcall callback-function completion)
+              (funcall callback completion)
               ;; if we can't find a completion
               (when empty-complete-immediate
+                ;; TODO: Test if we ever reach here since we have the "raw input" as candiate now.
                 ;; if we accept immediate output in place of completion
                 (return-immediate minibuffer))))
         ;; if there's no completion function
@@ -180,9 +181,9 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
 (define-command return-immediate (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
   (hide *interface*)
-  (with-slots (callback-function cleanup-function) minibuffer
+  (with-slots (callback cleanup-function) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (funcall callback-function normalized-input))
+      (funcall callback normalized-input))
     (when cleanup-function
       (funcall cleanup-function))))
 
