@@ -150,48 +150,32 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
 
 (define-command return-input (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer selection."
-  ;; Warning: `hide' modifies the content of the minibuffer, the
-  ;; callback-function and the cleanup-function cannot rely on the minibuffer
-  ;; content safely.
-  ;; TODO: We should factor the shared code between `return-input',
-  ;; `return-immediate' and `cancel-input', e.g. `hide', the normalization of
-  ;; the input-buffer, etc.
-  (hide *interface*)
-  (with-slots (callback cleanup-function
-               empty-complete-immediate completions completion-cursor)
+  (with-slots (callback empty-complete-immediate completions completion-cursor)
       minibuffer
-    (if completions
-        (let* ((completion (nth completion-cursor completions))
-               (completion (if (stringp completion)
-                               (str:replace-all " " " " completion)
-                               completion)))
-          (if completion
-              ;; if we're able to find a completion
-              (funcall callback completion)
-              ;; if we can't find a completion
-              (when empty-complete-immediate
-                ;; TODO: Test if we ever reach here since we have the "raw input" as candiate now.
-                ;; if we accept immediate output in place of completion
-                (return-immediate minibuffer))))
-        ;; if there's no completion function
-        (return-immediate minibuffer))
-    (when cleanup-function
-      (funcall cleanup-function))))
+    (match (and completions
+                (nth completion-cursor completions))
+      ((guard completion completion)
+       (setf completion (if (stringp completion)
+                            (str:replace-all " " " " completion)
+                            completion))
+       (funcall callback completion))
+      (_ (when empty-complete-immediate
+           ;; TODO: Test if we ever reach here since we have the "immediate
+           ;; input" as candiate now.
+           (return-immediate minibuffer)))))
+  (cancel-input minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
-  (hide *interface*)
-  (with-slots (callback cleanup-function) minibuffer
+  (with-slots (callback) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (funcall callback normalized-input))
-    (when cleanup-function
-      (funcall cleanup-function))))
+      (funcall callback normalized-input)))
+  (cancel-input minibuffer))
 
 (define-command cancel-input (&optional (minibuffer (minibuffer *interface*)))
   "Close the minibuffer query without further action."
-  (with-slots (cleanup-function) minibuffer
-    (when cleanup-function
-      (funcall cleanup-function)))
+  (match (cleanup-function minibuffer)
+    ((guard f f) (funcall f)))
   (hide *interface*))
 
 @export
