@@ -175,7 +175,6 @@
 (define-command history-forwards-query ()
   "Move forwards in history querying if more than one child present."
   (with-result (input (read-from-minibuffer
-                       (minibuffer *interface*)
                        :input-prompt "Navigate forwards to:"
                        :completion-function (history-forwards-completion-fn)))
     (unless (equal input "Cannot navigate forwards.")
@@ -238,7 +237,6 @@
 (define-command paste-from-ring ()
   "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
-                           (minibuffer *interface*)
                            :completion-function (ring-completion-fn
                                                  (clipboard-ring *interface*))))
     (%paste :input-text ring-item)))
@@ -270,4 +268,4 @@
   (log:debug mode url)
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
-  (echo-dismiss (minibuffer *interface*)))
+  (echo-dismiss))

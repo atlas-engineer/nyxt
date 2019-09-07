@@ -79,7 +79,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
   (let ((buffer (active-buffer window)))
     (when buffer
       (cons (override-map buffer)
-            (delete-if #'null (mapcar #'keymap (modes (if (minibuffer-active window)
+            (delete-if #'null (mapcar #'keymap (modes (if (active-minibuffers window)
                                                           (minibuffer *interface*)
                                                           (active-buffer window)))))))))
 
@@ -142,7 +142,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
            (funcall bound-function)
            (setf (key-chord-stack *interface*) nil))
           ;; minibuffer is active
-          ((minibuffer-active active-window)
+          ((active-minibuffers active-window)
            (if (member-string "R" (key-chord-modifiers (first (key-chord-stack *interface*))))
                (progn
                  ;; (log:debug "Key released") ; TODO: This makes the debug trace too verbose.  Middle ground?

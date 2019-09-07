@@ -10,7 +10,14 @@
 (defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)
-   (minibuffer-active :accessor minibuffer-active :initform nil)
+   (active-minibuffers :accessor active-minibuffers :initform nil
+                       :documentation "The stack of currently active minibuffers.")
+   (status-buffer :accessor status-buffer ;; TODO: Use a separate class for status bars once the platform port has a separate display.
+                  :initform (make-instance 'minibuffer)
+                  :documentation "Buffer for displaying information such as
+current URL or event messages.")
+   (status-buffer-height :accessor status-buffer-height :initform 25
+                         :documentation "The height of the status buffer.")
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))
    (minibuffer-closed-height :accessor minibuffer-closed-height :initform 25
@@ -21,8 +28,6 @@
                              :documentation "The height of the minibuffer when closed.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
                            :documentation "The height of the minibuffer when open.")
-   (minibuffer-echo-height :accessor minibuffer-echo-height :initform 25
-                           :documentation "The height of the minibuffer when echoing.")
    (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
                     :documentation "The path where the system will create/save the history database.")
    (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
@@ -33,7 +38,7 @@
 The 'default' engine is used when the query is not a valid URL, or the first
 keyword is not recognized.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
-                       :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
+                                  :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
    (window-delete-hook :accessor window-delete-hook :initform '() :type list
                        :documentation "Hook run before `rpc-window-delete' takes effect.
@@ -232,8 +237,6 @@ commands.")
    (dbus-pid :accessor dbus-pid :initform nil :type :number
              :documentation "The process identifier of the dbus instance started
 by Next when the user session dbus instance is not available.")
-   (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
-               :documentation "The minibuffer object.")
    (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
@@ -273,6 +276,11 @@ The handlers take the URL as argument.")
    (after-download-hook :accessor after-download-hook :initform '() :type list
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
+
+@export
+(defmethod minibuffer ((interface remote-interface))
+  "Currently active minibuffer"
+  (first (active-minibuffers (last-active-window interface))))
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -582,8 +590,8 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
 
 @export
 (defmethod rpc-buffer-evaluate-javascript ((interface remote-interface)
-                                         (buffer buffer) javascript
-                                         &optional (callback nil))
+                                           (buffer buffer) javascript
+                                           &key callback)
   (let ((callback-id
           (%rpc-send interface "buffer_evaluate_javascript" (id buffer) javascript)))
     (setf (gethash callback-id (callbacks buffer)) callback)
@@ -591,11 +599,11 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
 
 @export
 (defmethod rpc-minibuffer-evaluate-javascript ((interface remote-interface)
-                                             (window window) javascript
-                                             &optional callback)
+                                               (window window) javascript
+                                               &key callback)
   ;; JS example: document.body.innerHTML = 'hello'
   (let ((callback-id
-         (%rpc-send interface "minibuffer_evaluate_javascript" (id window) javascript)))
+          (%rpc-send interface "minibuffer_evaluate_javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 
@@ -711,7 +719,7 @@ TODO: Only booleans are supported for now."
   (:interface +core-interface+)
   (:name "buffer_uri_at_point")
   (if (str:emptyp url)
-      (echo-dismiss (minibuffer *interface*))
+      (echo-dismiss)
       (echo "→ ~a" url))
   (values))
 

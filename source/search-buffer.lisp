@@ -76,7 +76,6 @@ returns
   "Add search boxes for a given search string."
   (initialize-search-buffer)
   (with-result (input (read-from-minibuffer
-                       (minibuffer *interface*)
                        :input-prompt "Search for:"))
     (%remove-search-hints)
     (%add-search-hints
