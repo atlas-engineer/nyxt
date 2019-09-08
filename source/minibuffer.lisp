@@ -87,6 +87,7 @@ candidates.")
                       :documentation "If non-nil, input is replaced by
 placeholder character.  This is useful to conceal passwords.")
    (completions :accessor completions :initform nil)
+   (completion-head :accessor completion-head :initform 0)
    (completion-cursor :accessor completion-cursor :initform 0)
    (content :accessor content :initform ""
             :documentation "The HTML content of the minibuffer.")
@@ -202,7 +203,12 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
          (:body
           (:div :id "container"
                 (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
-                (:div :id "completions" ""))))))
+                (:div :id "completions" "")))))
+  ;; TODO: See TODO in `evaluate-script'.
+  (rpc-minibuffer-evaluate-javascript
+   *interface* (last-active-window *interface*)
+   (ps:ps (ps:chain document
+                    (write (ps:lisp (content minibuffer)))))))
 
 (defmethod evaluate-script ((minibuffer minibuffer) script) ; TODO: Rename function?  `set-content'?  Or `defmethod (setf content)' instead?  If we do, then `show' does not need to call anything like `evaluate-script' or `show'.  Question: Do we need to "stack" content parts before updating it?  We can do both: Have evaluate-script that takes a parenscript, and (setf content) that takes an HTML string.
   "Evaluate SCRIPT into MINIBUFFER's webview.
@@ -217,8 +223,8 @@ The new webview HTML document it set as the MINIBUFFER's `content'."
                                   ;; content) (html (minibuffer minibuffer))),
                                   ;; there'd be no need for this measure, at the
                                   ;; cost of more Javascript evaluations.
-                                  (ps:ps (ps:chain document
-                                                   (write (ps:lisp (content minibuffer)))))
+                                  ;; (ps:ps (ps:chain document
+                                  ;;                  (write (ps:lisp (content minibuffer)))))
                                   script
                                   ;; Return the new HTML body.
                                   (ps:ps (ps:chain document body |outerHTML|)))))
@@ -443,18 +449,35 @@ The new webview HTML document it set as the MINIBUFFER's `content'."
                                (:span :id "cursor" (subseq input-buffer-password cursor-index (+ 1 cursor-index)))
                                (:span (subseq input-buffer-password (+ 1  cursor-index))))))))
 
-(defun generate-completion-html (completions cursor-index)
-  (cl-markup:markup (:ul (loop for i from 0 for completion in completions
-                               collect
-                               (cl-markup:markup
-                                (:li :class (when (equal i cursor-index) "selected")
-                                     :id (when (equal i cursor-index) "selected")
-                                     (object-string completion)))))))
+(defun generate-completion-html (completions cursor-index minibuffer)
+  (let ((lines 8))                      ; TODO: Compute lines dynamically.
+    (when (>= (- cursor-index (completion-head minibuffer)) lines)
+      (setf (completion-head minibuffer)
+            (min
+             (+ (completion-head minibuffer) lines)
+             (length completions))))
+    (when (< (- cursor-index (completion-head minibuffer)) 0)
+      (setf (completion-head minibuffer)
+            (max
+             (- (completion-head minibuffer) lines)
+             0)))
+    (log:info (loop repeat lines
+                    for i from (completion-head minibuffer)
+                    for completion in (nthcdr i  completions)
+                    collect (object-string completion)))
+    (cl-markup:markup (:ul (loop repeat lines
+                                 for i from (completion-head minibuffer)
+                                 for completion in (nthcdr i completions)
+                                 collect
+                                 (cl-markup:markup
+                                  (:li :class (when (equal i cursor-index) "selected")
+                                       :id (when (equal i cursor-index) "selected")
+                                       (object-string completion))))))))
 
 @export
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-buffer-cursor completion-function
-               completions completion-cursor empty-complete-immediate)
+               completions completion-cursor completion-head empty-complete-immediate)
       minibuffer
     (if completion-function
         (setf completions (funcall completion-function input-buffer))
@@ -467,7 +490,7 @@ The new webview HTML document it set as the MINIBUFFER's `content'."
     (let ((input-text (if (invisible-input-p minibuffer)
                           (generate-input-html-invisible input-buffer input-buffer-cursor)
                           (generate-input-html input-buffer input-buffer-cursor)))
-          (completion-html (generate-completion-html completions completion-cursor)))
+          (completion-html (generate-completion-html completions completion-cursor minibuffer)))
       (evaluate-script minibuffer
                        (ps:ps
                          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
