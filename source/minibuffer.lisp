@@ -454,24 +454,24 @@ The new webview HTML document it set as the MINIBUFFER's `content'."
     (when (>= (- cursor-index (completion-head minibuffer)) lines)
       (setf (completion-head minibuffer)
             (min
-             (+ (completion-head minibuffer) lines)
+             (+ (completion-head minibuffer) 1)
              (length completions))))
     (when (< (- cursor-index (completion-head minibuffer)) 0)
       (setf (completion-head minibuffer)
             (max
-             (- (completion-head minibuffer) lines)
+             (- (completion-head minibuffer) 1)
              0)))
-    (log:info (loop repeat lines
-                    for i from (completion-head minibuffer)
-                    for completion in (nthcdr i  completions)
-                    collect (object-string completion)))
     (cl-markup:markup (:ul (loop repeat lines
                                  for i from (completion-head minibuffer)
                                  for completion in (nthcdr i completions)
                                  collect
                                  (cl-markup:markup
-                                  (:li :class (when (equal i cursor-index) "selected")
-                                       :id (when (equal i cursor-index) "selected")
+                                  (:li :class (cond
+                                                ((= i cursor-index) "selected")
+                                                ((= i (completion-head minibuffer)) "head"))
+                                       :id (cond
+                                             ((= i cursor-index) "selected")
+                                             ((= i (completion-head minibuffer)) "head"))
                                        (object-string completion))))))))
 
 @export
@@ -515,8 +515,8 @@ The new webview HTML document it set as the MINIBUFFER's `content'."
     (decf (completion-cursor minibuffer))
     (update-display minibuffer)
     (evaluate-script minibuffer
-                     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
-                                      (scroll-into-view true))))))
+                     (ps:ps (ps:chain (ps:chain document (get-element-by-id "head"))
+                                      (scroll-into-view false))))))
 
 ;; TODO: Does the `:minibuffer' keyword still make sense?  Remove?
 @export
