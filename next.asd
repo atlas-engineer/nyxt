@@ -63,6 +63,9 @@
                  (:file "keymap")
                  (:file "recent-buffers")
                  ;; Core Packages
+                 (:file "password")
+                 (:file "password-keepassxc")
+                 (:file "password-pass")
                  (:file "bookmark")
                  (:file "zoom")
                  (:file "scroll")
