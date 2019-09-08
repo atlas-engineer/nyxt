@@ -211,13 +211,13 @@
 (define-command copy-url ()
   "Save current URL to clipboard."
   (with-result (url (buffer-get-url))
-    (trivial-clipboard:text url)
+    (copy-to-clipboard url)
     (echo "~a copied to clipboard." url)))
 
 (define-command copy-title ()
   "Save current page title to clipboard."
   (with-result (title (buffer-get-title))
-    (trivial-clipboard:text title)
+    (copy-to-clipboard title)
     (echo "~a copied to clipboard." title)))
 
 (define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
@@ -247,10 +247,14 @@
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
 
+(defun copy-to-clipboard (input)
+  "Save INPUT text to clipboard, and ring."
+  (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input)))
+
 (define-command copy ()
   "Copy selected text to clipboard."
   (with-result (input (%copy))
-    (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input))))
+    (copy-to-clipboard input)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Warning: To specialize `did-commit-navigation' we must be in the right package.
