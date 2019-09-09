@@ -88,8 +88,8 @@ candidates.")
 placeholder character.  This is useful to conceal passwords.")
    (completions :accessor completions :initform nil)
    (completion-head :accessor completion-head :initform 0)
-   (completion-cursor :accessor completion-cursor :initform 0)
-   (content :accessor content :initform ""
+   (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
+   (content :initform ""
             :documentation "The HTML content of the minibuffer.")
    (minibuffer-style :accessor minibuffer-style
                      :initform (cl-css:css
@@ -117,6 +117,18 @@ placeholder character.  This is useful to conceal passwords.")
                                   (.selected :background-color "gray"
                                    :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
+
+(defmethod content ((minibuffer minibuffer))
+  (slot-value minibuffer 'content))
+
+(defmethod (setf content) (html-content minibuffer)
+  "Set the `content' of the MINIBUFFER to HTML-CONTENT.
+This runs a call"
+  (setf (slot-value minibuffer 'content) html-content)
+  (rpc-minibuffer-evaluate-javascript
+   *interface* (last-active-window *interface*)
+   (ps:ps (ps:chain document
+                    (write (ps:lisp (content minibuffer)))))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
   ;; We don't want to show the input in the candidate list when invisible.
@@ -186,7 +198,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   (setf (input-buffer-cursor minibuffer) 0)
   (setf (content minibuffer) ""))
 
-;; TODO: Move `erase-document' into the `show' function.
+;; TODO: Move `erase-document' into the `show' function?
 (defmethod erase-document ((minibuffer minibuffer))
   (evaluate-script minibuffer
                    (ps:ps
@@ -203,32 +215,22 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
          (:body
           (:div :id "container"
                 (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
-                (:div :id "completions" "")))))
-  ;; TODO: See TODO in `evaluate-script'.
-  (rpc-minibuffer-evaluate-javascript
-   *interface* (last-active-window *interface*)
-   (ps:ps (ps:chain document
-                    (write (ps:lisp (content minibuffer)))))))
+                (:div :id "completions" ""))))))
 
-(defmethod evaluate-script ((minibuffer minibuffer) script) ; TODO: Rename function?  `set-content'?  Or `defmethod (setf content)' instead?  If we do, then `show' does not need to call anything like `evaluate-script' or `show'.  Question: Do we need to "stack" content parts before updating it?  We can do both: Have evaluate-script that takes a parenscript, and (setf content) that takes an HTML string.
+(defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
-The new webview HTML document it set as the MINIBUFFER's `content'."
+The new webview HTML content it set as the MINIBUFFER's `content'."
   (let ((active-window (rpc-window-active *interface*)))
     (when minibuffer
       (with-result (new-content (rpc-minibuffer-evaluate-javascript
                                  *interface* active-window
                                  (str:concat
-                                  ;; Sync `content' now so that SCRIPT does not run on an out-of-sync content.
-                                  ;; TODO: If we'd put this in (defmethod (setf
-                                  ;; content) (html (minibuffer minibuffer))),
-                                  ;; there'd be no need for this measure, at the
-                                  ;; cost of more Javascript evaluations.
-                                  ;; (ps:ps (ps:chain document
-                                  ;;                  (write (ps:lisp (content minibuffer)))))
                                   script
                                   ;; Return the new HTML body.
                                   (ps:ps (ps:chain document body |outerHTML|)))))
-        (setf (content minibuffer) new-content)))))
+        ;; Since the script may have changed the content on the platform port,
+        ;; we need to update the slot's value.
+        (setf (slot-value minibuffer 'content) new-content)))))
 
 (defmethod show ((interface remote-interface) &key
                                                 (minibuffer (first (active-minibuffers
@@ -237,9 +239,6 @@ The new webview HTML document it set as the MINIBUFFER's `content'."
   "Show the last active minibuffer, if any."
   (let ((active-window (last-active-window interface)))
     (when minibuffer
-      (evaluate-script minibuffer
-                       (ps:ps (ps:chain document
-                                        (write (ps:lisp (content minibuffer))))))
       (rpc-window-set-minibuffer-height interface
                                         active-window
                                         (or height
