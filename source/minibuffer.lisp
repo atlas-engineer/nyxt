@@ -57,7 +57,7 @@
             :vi-insert map)))))
 
 (defclass minibuffer (buffer)
-  ((default-modes :initform '(minibuffer-mode))
+  ((default-modes :initarg :default-modes :initform '(minibuffer-mode))
    (completion-function :initarg :completion-function :accessor completion-function :initform nil
                         :documentation "Function that takes the user input
 string and returns a list of candidate strings")
@@ -186,7 +186,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   "Close the minibuffer query without further action."
   (match (cleanup-function minibuffer)
     ((guard f f) (funcall f)))
-  (hide *interface*))
+  (hide *interface* minibuffer))
 
 @export
 (defmethod erase-input ((minibuffer minibuffer))
@@ -241,10 +241,11 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                         (or height
                                             (minibuffer-open-height active-window))))))
 
-(defmethod hide ((interface remote-interface))
+(defmethod hide ((interface remote-interface) minibuffer)
   "Hide last active minibuffer and display next one, if any."
   (let ((active-window (rpc-window-active interface)))
-    (pop (active-minibuffers active-window))
+    (when (eq minibuffer (first (active-minibuffers active-window)))
+      (pop (active-minibuffers active-window)))
     (if (active-minibuffers active-window)
         (show interface)
         (progn
