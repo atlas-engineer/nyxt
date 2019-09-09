@@ -132,6 +132,10 @@ This runs a call"
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
   ;; We don't want to show the input in the candidate list when invisible.
+  (unless (completion-function minibuffer)
+    ;; If we have no completion function, then we have no candidates beside
+    ;; immediate input, so we must allow them as valid completion.
+    (setf (empty-complete-immediate minibuffer) t))
   (setf (empty-complete-immediate minibuffer)
         (if (invisible-input-p minibuffer)
             nil
@@ -153,17 +157,16 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
     ;; We need a :callback key argument so that `read-from-minibuffer' can be
     ;; called in `with-result'.
     (setf (callback minibuffer) callback))
-  (unless (completion-function minibuffer)
-    ;; If we have no completion function, then we have no candidates beside
-    ;; immediate input, so we must allow them as valid completion.
-    (setf (empty-complete-immediate minibuffer) t))
   ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
   (setf (callback-buffer minibuffer) (active-buffer *interface*))
   (match (setup-function minibuffer)
     ((guard f f) (funcall f minibuffer)))
   (update-display minibuffer)
   (push minibuffer (active-minibuffers (last-active-window *interface*)))
-  (show *interface*))
+  (apply #'show *interface*
+         (unless (completion-function minibuffer)
+           ;; We don't need so much height since there is no candidate to display.
+           (list :height (minibuffer-closed-height (last-active-window *interface*))))))
 
 (define-command return-input (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer selection."
@@ -258,6 +261,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
           (echo "")                     ; Or echo-dismiss?
           (rpc-window-set-minibuffer-height interface
                                             active-window
+                                            ;; TODO: Shouldn't it be status-buffer height?
                                             (minibuffer-closed-height active-window))))))
 
 (defun insert (characters &optional (minibuffer (minibuffer *interface*)))
