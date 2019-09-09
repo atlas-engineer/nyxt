@@ -1,24 +1,49 @@
 # https://wiki.qt.io/Qt_for_Python_DBusIntegration
 
-import dbus
-import dbus.service
-from dbus.mainloop.pyqt5 import DBusQtMainLoop
+from PyQt5 import QtDBus
+from PyQt5.QtCore import pyqtSlot, Q_CLASSINFO, QObject
 from PyQt5.QtWidgets import QApplication
 
 
-class TestObject(dbus.service.Object):
-    def __init__(self, conn, object_path='/com/example/TestService/object'):
-        dbus.service.Object.__init__(self, conn, object_path)
+class TestObjectAdaptor(QtDBus.QDBusAbstractAdaptor):
+    Q_CLASSINFO("D-Bus Interface", "com.example.TestInterface")
+    Q_CLASSINFO("D-Bus Introspection",
+                """
+                <interface name="com.example.TestInterface">
+                    <method name="ping">
+                        <arg type="s" name="response" direction="out"/> 
+                    </method>
+                </interface>
+                """)
 
-    @dbus.service.method('com.example.TestInterface')
+    def __init__(self, parent):
+        super(TestObjectAdaptor, self).__init__(parent)
+        self.setAutoRelaySignals(True)
+
+    @pyqtSlot(result=str)
     def ping(self):
+        print("In adaptor ping!")
+        return self.parent().ping()
+
+
+class TestObject(QObject):
+    def __init__(self):
+        super().__init__()
+        return
+
+    def ping(self):
+        print("In object ping!")
         return 'pong'
 
 
 if __name__ == '__main__':
     app = QApplication([])
-    DBusQtMainLoop(set_as_default=True)
-    session_bus = dbus.SessionBus()
-    name = dbus.service.BusName('com.example.TestService', session_bus)
-    object = TestObject(session_bus)
+
+    test_obj = TestObject()
+    adapt = TestObjectAdaptor(test_obj)
+
+    session_bus = QtDBus.QDBusConnection.sessionBus()
+    session_bus.registerObject("/TestObject", test_obj)
+    session_bus.registerService("com.example.TestService")
+
     app.exec_()
