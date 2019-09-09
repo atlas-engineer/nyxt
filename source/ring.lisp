@@ -64,3 +64,14 @@ Return most recent entry in RING."
   (let ((ring-items (ring-recent-list ring)))
     (lambda (input)
       (fuzzy-match input ring-items))))
+
+@export
+(declaim (ftype (function (ring) ring) ring-copy))
+(defun ring-copy (ring)
+  "Return a copy of RING."
+  (let ((copy (make-instance 'ring :items nil)))
+    (setf
+     (head-index copy) (head-index ring)
+     (item-count copy) (item-count ring)
+     (items copy) (copy-seq (items ring)))
+    copy))
