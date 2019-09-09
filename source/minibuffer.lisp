@@ -47,6 +47,7 @@
         "C-y" #'minibuffer-paste
         "C-w" #'copy-candidate
         "TAB" #'insert-candidate
+        "M-p" #'minibuffer-history
         :keymap map)
       (list :emacs map
             ;; TODO: We could have VI bindings for the minibuffer too.
@@ -86,6 +87,11 @@ candidates.")
                       :initform nil
                       :documentation "If non-nil, input is replaced by
 placeholder character.  This is useful to conceal passwords.")
+   (history :initarg :history :accessor history
+            :initform (minibuffer-generic-history *interface*)
+            :type ring
+            :documentation "History of inputs for the minibuffer.
+If nil, no history is used.")
    (completions :accessor completions :initform nil)
    (completion-head :accessor completion-head :initform 0)
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
@@ -180,13 +186,20 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
                             (str:replace-all " " " " completion)
                             completion))
        (funcall callback completion))))
-  (cancel-input minibuffer))
+  (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (minibuffer *interface*)))
   "Return with minibuffer input, ignoring the selection."
   (with-slots (callback) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
       (funcall callback normalized-input)))
+  (quit-minibuffer minibuffer))
+
+(defun quit-minibuffer (&optional (minibuffer (minibuffer *interface*)))
+  (unless (or (null (history minibuffer))
+              (str:empty? (input-buffer minibuffer)))
+    (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
+      (ring-insert (history minibuffer) normalized-input)))
   (cancel-input minibuffer))
 
 (define-command cancel-input (&optional (minibuffer (minibuffer *interface*)))
@@ -254,7 +267,10 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
     (when (eq minibuffer (first (active-minibuffers active-window)))
       (pop (active-minibuffers active-window)))
     (if (active-minibuffers active-window)
-        (show interface)
+        (progn
+          (show interface)
+          ;; We need to refresh so that the nested minibuffers don't have to do it.
+          (update-display (first (active-minibuffers active-window))))
         (progn
           ;; TODO: We need a mode-line before we can afford to really hide the
           ;; minibuffer.  Until then, we "blank" it.
@@ -598,3 +614,25 @@ interpreted by `format'. "
     (when candidate
       (kill-whole-line minibuffer)
       (insert candidate minibuffer))))
+
+(declaim (ftype (function (ring)) minibuffer-history-completion-fn))
+(defun minibuffer-history-completion-fn (history)
+  (when history
+    (lambda (input)
+      (fuzzy-match input (delete-duplicates (ring-recent-list history)
+                                            :test #'equal)))))
+
+(define-command minibuffer-history (&optional (minibuffer (minibuffer *interface*)))
+  "Paste clipboard text to input."
+  (when (history minibuffer)
+    (with-result (input (read-from-minibuffer
+                         (make-instance 'minibuffer
+                                        :input-prompt "Input history:"
+                                        :history nil
+                                        :completion-function (minibuffer-history-completion-fn (history minibuffer)))))
+      (unless (str:empty? input)
+        (log:info input minibuffer)
+        (setf (input-buffer minibuffer) "")
+        (setf (input-buffer-cursor minibuffer) 0)
+        (insert input minibuffer)))))
+
