@@ -168,14 +168,11 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
     (match (and completions
                 (nth completion-cursor completions))
       ((guard completion completion)
+       ;; Note that "immediate input" is also in completions, so it's caught here.
        (setf completion (if (stringp completion)
                             (str:replace-all " " " " completion)
                             completion))
-       (funcall callback completion))
-      (_ (when empty-complete-immediate
-           ;; TODO: Test if we ever reach here since we have the "immediate
-           ;; input" as candiate now.
-           (return-immediate minibuffer)))))
+       (funcall callback completion))))
   (cancel-input minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (minibuffer *interface*)))
