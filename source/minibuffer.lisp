@@ -153,6 +153,10 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
     ;; We need a :callback key argument so that `read-from-minibuffer' can be
     ;; called in `with-result'.
     (setf (callback minibuffer) callback))
+  (unless (completion-function minibuffer)
+    ;; If we have no completion function, then we have no candidates beside
+    ;; immediate input, so we must allow them as valid completion.
+    (setf (empty-complete-immediate minibuffer) t))
   ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
   (setf (callback-buffer minibuffer) (active-buffer *interface*))
   (match (setup-function minibuffer)
