@@ -106,6 +106,7 @@
                   (selected-hint (read-from-minibuffer
                                   (make-instance 'minibuffer
                                                  :input-prompt ,prompt
+                                                 :history nil
                                                  :cleanup-function #'remove-link-hints))))
      (let* ((link-hints (cl-json:decode-json-from-string links-json))
             (,symbol (cadr (assoc selected-hint link-hints :test #'equalp))))

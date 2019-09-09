@@ -238,6 +238,8 @@ commands.")
              :documentation "The process identifier of the dbus instance started
 by Next when the user session dbus instance is not available.")
    (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
+   (minibuffer-generic-history :accessor minibuffer-generic-history :initform (make-instance 'ring))
+   (minibuffer-search-history :accessor minibuffer-search-history :initform (make-instance 'ring))
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
