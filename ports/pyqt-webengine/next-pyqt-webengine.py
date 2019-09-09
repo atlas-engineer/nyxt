@@ -4,20 +4,15 @@ import logging
 import sys
 from urllib.parse import urlparse
 
-import dbus
-import dbus.service
+from PyQt5 import QtDBus
 from PyQt5.QtNetwork import QNetworkProxy
 # from PyQt5.QtNetwork import QNetworkProxyFactory
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import pyqtSlot, Q_CLASSINFO, QObject
 
 import buffers
 import utility
 import window
-
-try:
-    from dbus.mainloop.pyqt5 import DBusQtMainLoop as MainLoop
-except ImportError:
-    from dbus.mainloop.glib import DBusGMainLoop as MainLoop
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,37 +33,190 @@ this creates an `*interface*` object.
 Now you can use any built-in methods such as (window-make *interface*).
 """
 
+
 PLATFORM_PORT_OBJECT_PATH = "/engineer/atlas/next/platform"
 PLATFORM_PORT_NAME = "engineer.atlas.next.platform"
 
 
-class DBusWindow(dbus.service.Object):
-    # Lisp core dbus proxy.
-    core_dbus_proxy = None
+class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
+    Q_CLASSINFO("D-Bus Interface", PLATFORM_PORT_NAME)
+    Q_CLASSINFO("D-Bus Introspection",
+                """
+<interface name="engineer.atlas.next.platform">
+    <method name="window_make">
+      <arg direction="in"  type="s" name="window_id" />
+    </method>
+    <method name="window_set_title">
+      <arg direction="in"  type="s" name="window_id" />
+      <arg direction="in"  type="s" name="title" />
+    </method>
+    <method name="window_delete">
+      <arg direction="in"  type="s" name="window_id" />
+    </method>
+    <method name="window_active">
+    </method>
+    <method name="window_exists">
+      <arg direction="in"  type="s" name="window_id" />
+    </method>
+    <method name="window_set_active_buffer">
+      <arg direction="in"  type="s" name="window_id" />
+      <arg direction="in"  type="s" name="buffer_id" />
+    </method>
+    <method name="window_set_minibuffer_height">
+      <arg direction="in"  type="s" name="window_id" />
+      <arg direction="in"  type="i" name="height" />
+    </method>
+    <method name="buffer_make">
+      <arg direction="in"  type="s" name="buffer_id" />
+    </method>
+    <method name="buffer_delete">
+      <arg direction="in"  type="s" name="buffer_id" />
+    </method>
+    <method name="buffer_load">
+      <arg direction="in"  type="s" name="buffer_id" />
+      <arg direction="in"  type="s" name="url" />
+    </method>
+    <method name="buffer_evaluate_javascript">
+      <arg direction="in"  type="s" name="buffer_id" />
+      <arg direction="in"  type="s" name="script" />
+      <arg direction="out" type="s" />
+    </method>
+    <method name="minibuffer_evaluate_javascript">
+      <arg direction="in"  type="s" name="window_id" />
+      <arg direction="in"  type="s" name="script" />
+    </method>
+    <method name="set_proxy">
+      <arg direction="in"  type="as" name="buffer_ids" />
+      <arg direction="in"  type="s" name="mode" />
+      <arg direction="in"  type="s" name="address" />
+      <arg direction="in"  type="as" name="whitelist" />
+      <arg direction="out" type="b" />
+    </method>
+    <method name="get_proxy">
+      <arg direction="out" type="s" />
+    </method>
+    <method name="generate_input_event">
+      <arg direction="in"  type="s" name="window_id" />
+      <arg direction="in"  type="i" name="key_code" />
+      <arg direction="in"  type="as" name="modifiers" />
+      <arg direction="in"  type="i" name="low_level_data" />
+      <arg direction="in"  type="d" name="x" />
+      <arg direction="in"  type="d" name="y" />
+    </method>
+    <method name="window_killall">
+    </method>
+    <method name="window_list">
+    </method>
+    <method name="buffer_list">
+    </method>
+  </interface>
+                """)
 
-    def __init__(self, conn, object_path=PLATFORM_PORT_OBJECT_PATH, core_dbus_proxy=None):
-        dbus.service.Object.__init__(self, conn, object_path)
-        self.core_dbus_proxy = core_dbus_proxy
+    def __init__(self, parent):
+        super(DBusWindowAdaptor, self).__init__(parent)
+        self.setAutoRelaySignals(True)
+        return
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
+    @pyqtSlot(str)
+    def window_make(self, window_id):
+        return self.parent().window_make(window_id)
+
+    @pyqtSlot(str, str)
+    def window_set_title(self, window_id, title):
+        return self.parent().window_set_title(window_id, title)
+
+    @pyqtSlot(str)
+    def window_delete(self, window_id):
+        return self.parent().window_delete(window_id)
+
+    @pyqtSlot()
+    def window_active(self):
+        return self.parent().window_active()
+
+    @pyqtSlot(str)
+    def window_exists(self, window_id):
+        return self.parent().window_exists(window_id)
+
+    @pyqtSlot(str, str)
+    def window_set_active_buffer(self, window_id, buffer_id):
+        return self.parent().window_set_active_buffer(window_id, buffer_id)
+
+    @pyqtSlot(str, int)
+    def window_set_minibuffer_height(self, window_id, height):
+        return self.parent().window_set_minibuffer_height(window_id, height)
+
+    @pyqtSlot(str)
+    def buffer_make(self, buffer_id):
+        return self.parent().buffer_make(buffer_id)
+
+    @pyqtSlot(str)
+    def buffer_delete(self, buffer_id):
+        return self.parent().buffer_delete(buffer_id)
+
+    @pyqtSlot(str, str)
+    def buffer_load(self, buffer_id, url):
+        return self.parent().buffer_load(buffer_id, url)
+
+    @pyqtSlot(str, str, result=str)
+    def buffer_evaluate_javascript(self, buffer_id, script):
+        return self.parent().buffer_evaluate_javascript(buffer_id, script)
+
+    @pyqtSlot(str, str)
+    def minibuffer_evaluate_javascript(self, window_id, script):
+        return self.parent().minibuffer_evaluate_javascript(window_id, script)
+
+    @pyqtSlot('QStringList', str, str, 'QStringList', result=bool)
+    def set_proxy(self, buffer_ids, mode, address, whitelist):
+        return self.parent().set_proxy(buffer_ids, mode, address, whitelist)
+
+    @pyqtSlot(result=str)
+    def get_proxy(self):
+        return self.parent().get_proxy()
+
+    @pyqtSlot(str, int, 'QStringList', int, float, float)
+    def generate_input_event(self, window_id, key_code, modifiers,
+                             low_level_data, x, y):
+        return self.parent().generate_input_event(window_id, key_code,
+                                                  modifiers, low_level_data,
+                                                  x, y)
+
+    @pyqtSlot()
+    def window_killall(self):
+        return self.parent().window_killall()
+
+    @pyqtSlot()
+    def window_list(self):
+        return self.parent().window_list()
+
+    @pyqtSlot()
+    def buffer_list(self):
+        return self.parent().buffer_list()
+
+
+class DBusWindow(QObject):
+    def __init__(self):
+        super().__init__()
+        return
+
+
     def window_make(self, window_id):
         return window.make(window_id)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
+
     def window_set_title(self, window_id, title):
         _window = window.get_window(window_id)
         return _window.set_title(title)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
+    
     def window_delete(self, window_id):
         _window = window.get_window(window_id)
         return _window.delete()
 
-    @dbus.service.method(PLATFORM_PORT_NAME)
+
     def window_active(self):
         return window.active()
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
+    
     def window_exists(self, window_id):
         try:
             _window = window.get_window(window_id)
@@ -76,42 +224,42 @@ class DBusWindow(dbus.service.Object):
         except Exception:
             return False
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
+
     def window_set_active_buffer(self, window_id, buffer_id):
         _window = window.get_window(window_id)
         _buffer = buffers.get_buffer(buffer_id)
         return _window.set_active_buffer(_buffer)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='si')
+    
     def window_set_minibuffer_height(self, window_id, height):
         _window = window.get_window(window_id)
         return _window.set_minibuffer_height(height)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
+    
     def buffer_make(self, buffer_id):
         return buffers.make(buffer_id)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='s')
+    
     def buffer_delete(self, buffer_id):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.delete()
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
+    
     def buffer_load(self, buffer_id, url):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.load(url)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss', out_signature='s')
+    
     def buffer_evaluate_javascript(self, buffer_id, script):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.evaluate_javascript(script)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='ss')
+    
     def minibuffer_evaluate_javascript(self, window_id, script):
         _window = window.get_window(window_id)
         return _window.minibuffer_evaluate_javascript(script)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='asssas', out_signature='b')
+    
     def set_proxy(self, buffer_ids, mode, address, whitelist):
         """
         Set the proxy for the current application.
@@ -154,26 +302,25 @@ class DBusWindow(dbus.service.Object):
         # Trying to use system's defaults:
         # QNetworkProxyFactory.setUseSystemConfiguration(True)
 
-    @dbus.service.method(PLATFORM_PORT_NAME, out_signature='s')
+    
     def get_proxy(self):
         QNetworkProxy.hostName(QNetworkProxy.applicationProxy())
 
-    @dbus.service.method(PLATFORM_PORT_NAME, in_signature='siasidd')
-    def generate_input_event(self, window_id, key_code, modifiers, low_level_data, x, y):
-        utility.generate_input_event(window_id, key_code, modifiers, low_level_data, x, y)
+    
+    def generate_input_event(self, window_id, key_code, modifiers,
+                             low_level_data, x, y):
+        utility.generate_input_event(window_id, key_code, modifiers,
+                                     low_level_data, x, y)
 
     #  DEVELOPER HELP FUNCTION
-    @dbus.service.method(PLATFORM_PORT_NAME)
     def window_killall(self):
         return utility.killall()
 
     #  DEVELOPER HELP FUNCTION
-    @dbus.service.method(PLATFORM_PORT_NAME)
     def window_list(self):
         return utility.list_windows()
 
     #  DEVELOPER HELP FUNCTION
-    @dbus.service.method(PLATFORM_PORT_NAME)
     def buffer_list(self):
         return utility.list_buffers()
 
@@ -181,14 +328,20 @@ class DBusWindow(dbus.service.Object):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("Next")
-    MainLoop(set_as_default=True)
-    session_bus = dbus.SessionBus()
-    # name/dbuswindow MUST be defined even if not used.
-    name = dbus.service.BusName('engineer.atlas.next.platform', session_bus)  # noqa: F841
-    dbuswindow = DBusWindow(session_bus)  # noqa: F841
+
+    dbus_window = DBusWindow()
+    dbus_window_adaptor = DBusWindowAdaptor(dbus_window)
+
+    session_bus = QtDBus.QDBusConnection.sessionBus()
+    session_bus.registerObject(PLATFORM_PORT_OBJECT_PATH, dbus_window)
+    session_bus.registerService(PLATFORM_PORT_NAME)
+
     event_filter = utility.EventFilter(app)  # noqa: F841
     logging.info("Listening...")
+
     sys.exit(app.exec_())
+
+    return
 
 
 if __name__ == '__main__':

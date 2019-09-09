@@ -2,15 +2,13 @@ import logging
 import re
 from sys import platform
 
-from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineUrlRequestInfo
+from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtCore import QCoreApplication, QEvent, Qt, QPoint
 from PyQt5.QtGui import QKeyEvent, QKeySequence, QMouseEvent
 import window
-from core_interface import push_input_event
 
 from PyQt5.QtWidgets import QWidget
 
-import window
 from core_interface import push_input_event, request_resource
 
 # Used to detect if a keypress was just a modifier
@@ -169,9 +167,10 @@ class EventFilter(QWidget):
         self.sender.installEventFilter(self)
 
     def eventFilter(self, obj, event):
-        if (event.type() == QEvent.KeyPress and not
-            is_modifier(event.key()) and
-                event.nativeScanCode() != 10000):
+        if (event.type() == QEvent.KeyPress and
+            not is_modifier(event.key()) and
+            event.nativeScanCode() != 10000):
+
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
             key_code = event.key()
@@ -191,8 +190,8 @@ class EventFilter(QWidget):
                              window.active())
             return True
 
-        elif event.type() == QEvent.MouseButtonPress and \
-             (hasattr(event, "is_generated") and not event.is_generated):
+        elif (event.type() == QEvent.MouseButtonPress and
+              (hasattr(event, "is_generated") and not event.is_generated)):
             modifiers = create_modifiers_list(event.modifiers())
             low_level_data = 0
             button = "button" + str(event.button())
