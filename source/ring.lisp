@@ -50,6 +50,7 @@ TODO What if the ring is empty?"
   "Return value from items by INDEX where 0 INDEX is most recent."
   (aref (items ring) (ring-index ring index)))
 
+@export
 (defmethod ring-recent-list ((ring ring))
   "Return list of items ordered by most recent."
   (loop for index from 0 below (ring-size ring)
