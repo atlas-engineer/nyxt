@@ -6,7 +6,6 @@ from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtCore import QCoreApplication, QEvent, Qt, QPoint
 from PyQt5.QtGui import QKeyEvent, QKeySequence, QMouseEvent
 import window
-
 from PyQt5.QtWidgets import QWidget
 
 from core_interface import push_input_event, request_resource
@@ -152,14 +151,12 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
 
     if x == -1:
         # Key event.
-        if key_code not in SPECIAL_KEYS:
-            text = chr(key_code)
+        # if key_code not in SPECIAL_KEYS or key_code == Qt.Key_Space:
+        #     text = chr(key_code)
+        text = chr(key_code)
 
-        print("text = ", text)
         event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag,
                           10000, 10000, 10000, text=text)
-        print("Event modifiers:")
-        print(event.modifiers())
         receiver = window.get_window(window_id).buffer.focusProxy()
         QCoreApplication.sendEvent(receiver, event)
 
@@ -186,13 +183,6 @@ class EventFilter(QWidget):
             not is_modifier(event.key()) and
             event.nativeScanCode() != 10000):
 
-            print("in branch 1 of eventFilter")
-            print(event.modifiers() == Qt.ShiftModifier,
-                  event.modifiers() == Qt.ControlModifier)
-            print(event.key())
-            print(event.nativeVirtualKey())
-            print(event.text())
- 
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
             # key_code = event.key()
