@@ -5,6 +5,7 @@
   - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
   - [[#gnulinux-specific-dependencies][GNU/Linux specific dependencies]]
   - [[#macos-specific-dependencies][macOS specific dependencies]]
+  - [[#fetch-the-source-code][Fetch the source code]]
   - [[#compile][Compile]]
   - [[#run][Run]]
   - [[#run-from-source][Run from Source]]
@@ -101,6 +102,14 @@ these fixes.
 + PyQt
 + Python 3.6
 + SQLite (available by default)
+
+** Fetch the source code
+Clone the Next repository into =~/common-lisp= or any directory listed in
+~asdf:*central-registry*~:
+
+#+begin_src sh
+git clone https://github.com/atlas-engineer/next ~/common-lisp/next
+#+end_src
 
 ** Compile
 Next consists of two standalone executables: the Lisp core and the
