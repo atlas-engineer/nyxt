@@ -623,7 +623,6 @@ TODO: Only booleans are supported for now."
 
 (define-command undo-buffer-deletion ()
   "Go to the first url in the list of killed buffers."
-  ;; do something if there's nothing in the list
   (if (> (item-count (buffer-history-ring *interface*)) 0)
       (make-buffers (list (ring-pop-most-recent (buffer-history-ring *interface*))))))
 

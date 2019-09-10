@@ -35,10 +35,7 @@ Return NEW-ITEM."
 
 (defmethod ring-pop-most-recent((ring ring))
   "Return the most-recently-added item in RING, and remove it from the RING.
-TODO What if the ring is empty? (Also, what should ring-insert-clipboard do in that case?)"
-  ;; What happens:
-  ;; decrease the item count by one
-  ;; return the element at the tail index
+TODO What if the ring is empty?"
     (let ((most-recent-item (ring-ref ring 0)))
       (decf (item-count ring))
       most-recent-item))
