@@ -495,7 +495,7 @@ For example:
                      (uiop:launch-program (list "mpv" filename)))
                     (_
                      (next/file-manager-mode:open-file-function filename))))
-    (error (c) (log:error "Error opening pdf ~a: ~a" filename c))))
+    (error (c) (log:error "Error opening ~a: ~a" filename c))))
 
 (setf next/file-manager-mode:*open-file-function* #'my-open-videos)
 #+end_src
