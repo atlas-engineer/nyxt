@@ -88,7 +88,7 @@ returns
 
 (define-deprecated-command add-search-hints ()
   "Deprecated by `search-buffer'."
-  (search-buffer (make-instance 'root-mode)))
+  (search-buffer))
 
 (define-parenscript %remove-search-hints ()
   (defun qsa (context selector)

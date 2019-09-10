@@ -3,7 +3,10 @@
 ;; We prefix all functions communicating over RPC with "rpc-".
 
 (in-package :next)
+(annot:enable-annot-syntax)
 
+@export
+@export-accessors
 (defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)
@@ -28,8 +31,38 @@
                                                         ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
                    :documentation "An association list of all the search engines you can use in the minibuffer.
 The 'default' engine is used when the query is not a valid URL, or the first
-keyword is not recognized.")))
+keyword is not recognized.")
+   (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
+                       :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
+The handlers take the window and the buffer as argument.")
+   (window-delete-hook :accessor window-delete-hook :initform '() :type list
+                       :documentation "Hook run before `rpc-window-delete' takes effect.
+The handlers take the window as argument.")))
 
+@export
+@export-accessors
+(defclass proxy ()
+  ;; TODO: for the PyQt side, we now want the protocol, the IP and the
+  ;; port on different slots.
+  ((server-address :accessor server-address :initarg :server-address
+                   :initform "socks5://127.0.0.1:9050"
+                   :documentation "The address of the proxy server.
+It's made of three components: protocol, host and port.
+Example:
+  http://192.168.1.254:8080")
+   (whitelist :accessor whitelist :initarg :whitelist
+              :initform '("localhost" "localhost:8080")
+              :documentation "A list of URI not to forward to the proxy.
+It must be a list of strings.")
+   (proxied-downloads-p :accessor proxied-downloads-p :initarg :proxied-downloads-p
+                        :initform t
+                        :documentation "Non-nil if downloads should also use
+the proxy."))
+  (:documentation "Enable forwarding of all network requests to a specific host.
+This can apply to specific buffer."))
+
+@export
+@export-accessors
 (defclass buffer ()
   ((id :accessor id :initarg :id)
    (name :accessor name :initarg :name)
@@ -50,14 +83,14 @@ for all modes in the current buffer.")
                  :initarg :override-map
                  :initform (let ((map (make-keymap)))
                              (define-key :keymap map
-                               "M-x" 'execute-command)
+                               "M-x" #'execute-command)
                              map)
                  :documentation "This keymap is always looked up first, it
 overrides all other bindings.  No libraries should ever touch the override-map,
 this is left for the user to customize to their needs.")
    (forward-input-events-p :accessor forward-input-events-p :initarg :forward-input-events-p
-                         :initform t
-                         :documentation "When non-nil, keyboard events are
+                           :initform t
+                           :documentation "When non-nil, keyboard events are
 forwarded to the platform port when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
@@ -105,7 +138,49 @@ platform ports might support this.")
                            :text-align "center"
                            :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)"
                            :border-radius "3px"))
-              :documentation "The style of the boxes, e.g. link hints.")))
+              :documentation "The style of the boxes, e.g. link hints.")
+   (proxy :initform nil :type :proxy
+          :documentation "Proxy for buffer.")
+   ;; TODO: Rename `load-hook' to `set-url-hook'?
+   (load-hook :accessor load-hook :initform '() :type list
+              :documentation "Hook run in `set-url' after `parse-url' was processed.")
+   (buffer-delete-hook :accessor buffer-delete-hook :initform '() :type list
+                       :documentation "Hook run before `rpc-buffer-delete' takes effect.
+The handlers take the buffer as argument.")))
+
+(defmethod proxy ((buffer buffer))
+  (slot-value buffer 'proxy))
+
+(defmethod (setf proxy) (proxy (buffer buffer))
+  (setf (slot-value buffer 'proxy) proxy)
+  (if proxy
+      (rpc-set-proxy *interface* buffer
+                     (server-address proxy)
+                     (whitelist proxy))
+      (rpc-set-proxy *interface* buffer
+                     ""
+                     nil)))
+
+;; TODO: Find a better way to uniquely identify commands from mode methods.
+;; What about symbol properties?  We could use:
+;;
+;; (setf (get name 'commandp) t)
+;;
+;; But that doesn't seem to work properly, some commands need to be evaluated
+;; twice before they appear in the list.  We could use a class (we used to have
+;; a COMMAND class) or intern the symbol into a special package (see `intern'
+;; documentation).
+(defparameter %%command-list '()
+  "The list of known commands, for internal use only.")
+
+(defun mode-command (mode-symbol)
+  "Return the mode toggle command.
+We loop over `%%command-list' to find mode command since a mode may be
+defined in any package and is unique."
+  (find-if (lambda (c)
+             (eq (find-symbol (string mode-symbol) (pkg c))
+                 (sym c)))
+           %%command-list))
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
@@ -118,7 +193,9 @@ See `rpc-buffer-make'."
       ;; For now, root-mode does not have an associated command.
       (if (eq mode-class 'root-mode)
           (push root-mode (modes buffer))
-          (funcall mode-class root-mode :buffer buffer :activate t)))))
+          (progn
+            (log:debug mode-class buffer (mode-command mode-class))
+            (funcall (sym (mode-command mode-class)) :buffer buffer :activate t))))))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord
@@ -139,6 +216,8 @@ See `rpc-buffer-make'."
   (dolist (mode (modes buffer))
     (did-finish-navigation mode url)))
 
+@export
+@export-accessors
 (defclass remote-interface ()
   ((port :accessor port :initform (make-instance 'port)
          :documentation "The CLOS object responible for handling the platform port.")
@@ -179,7 +258,25 @@ window or not.")
                      :documentation "List of downloads.")
    (download-directory :accessor download-directory :initform nil
                      :documentation "Path of directory where downloads will be
-stored.  Nil means use system default.")))
+stored.  Nil means use system default.")
+   (after-init-hook :accessor after-init-hook :initform '() :type list
+                     :documentation "Hook run after both `*interface*' and the
+platform port have started.  The handlers take no argument.")
+   (before-exit-hook :accessor before-exit-hook :initform '() :type list
+                     :documentation "Hook run before both `*interface*' and the
+platform port get terminated.  The handlers take no argument.")
+   (window-make-hook :accessor window-make-hook :initform '() :type list
+                     :documentation "Hook run after `rpc-window-make'.
+The handlers take the window as argument.")
+   (buffer-make-hook :accessor buffer-make-hook :initform '() :type list
+                     :documentation "Hook run after `rpc-buffer-make'.
+The handlers take the buffer as argument.")
+   (before-download-hook :accessor buffer-download-hook :initform '() :type list
+                         :documentation "Hook run before a downloading a URL.
+The handlers take the URL as argument.")
+   (after-download-hook :accessor after-download-hook :initform '() :type list
+                        :documentation "Hook run after a download has completed.
+The handlers take the `download-manager:download' class instance as argument.")))
 
 
 (defmethod initialize-instance :after
@@ -201,7 +298,10 @@ stored.  Nil means use system default.")))
 This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
-  (loop while (lparallel:receive-result download-manager:*notifications*)
+  (loop for d = (lparallel:receive-result download-manager:*notifications*)
+        while d
+        when (download-manager:finished-p d)
+          do (hooks:run-hook (hooks:object-hook *interface* 'after-download-hook))
         do (let ((buffer (find-buffer 'download-mode)))
              ;; Only update if buffer exists.  We update even when out of focus
              ;; because if we switch to the buffer after all downloads are
@@ -215,11 +315,11 @@ This function is meant to be run in the background."
   "Return the proxy address, nil if not set.
 If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
 when `proxied-downloads-p' is true."
-  (let* ((mode (and buffer (find-mode buffer 'proxy-mode)))
-         (proxied-downloads (and mode (proxied-downloads-p mode))))
+  (let* ((proxy (and buffer (proxy buffer)))
+         (proxied-downloads (and proxy (proxied-downloads-p proxy))))
     (when (or (not downloads-only)
               proxied-downloads)
-      (server-address mode))))
+      (server-address proxy))))
 
 ;; TODO: To download any URL at any moment and not just in resource-query, we
 ;; need to query the cookies for URL.  Thus we need to add an RPC endpoint to
@@ -230,6 +330,7 @@ when `proxied-downloads-p' is true."
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
+  (hooks:run-hook (hooks:object-hook *interface* 'before-download-hook) url)
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (active-buffer interface)
                                        :downloads-only t)))
@@ -261,7 +362,7 @@ current buffer."
       (match (mapcar (lambda (s) (str:split "=" s :limit 2))
                      (str:split "
 "
-                                (run-program-to-string +dbus-launch-command+)))
+                                (apply #'run-program-to-string +dbus-launch-command+)))
         ((list (list _ address) (list _ pid))
          (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
                    (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")
@@ -355,8 +456,10 @@ For an array of string, that would be \"as\"."
 (defmethod get-unique-buffer-identifier ((interface remote-interface))
   (format nil "~a" (1+ (total-buffer-count interface))))
 
+@export
 (defmethod rpc-window-make ((interface remote-interface))
-  "Create a window and return the window object."
+  "Create a window and return the window object.
+Run INTERFACE's `window-make-hook' over the created window."
   (let* ((window-id (get-unique-window-identifier interface))
          (window (make-instance 'window :id window-id)))
     (setf (gethash window-id (windows interface)) window)
@@ -366,18 +469,24 @@ For an array of string, that would be \"as\"."
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and rpc-window-active would then return nil.
       (setf (last-active-window interface) window))
+    (hooks:run-hook (hooks:object-hook interface 'window-make-hook) window)
     window))
 
+@export
 (defmethod rpc-window-set-title ((interface remote-interface) (window window) title)
   "Set the title for a given window."
   (%rpc-send interface "window_set_title" (id window) title))
 
+@export
 (defmethod rpc-window-delete ((interface remote-interface) (window window))
-  "Delete a window object and remove it from the hash of windows."
+  "Delete a window object and remove it from the hash of windows.
+Run INTERFACE's `window-delete-hook' over WINDOW before deleting it."
+  (hooks:run-hook (hooks:object-hook window 'window-delete-hook) window)
   (%rpc-send interface "window_delete" (id window))
   (with-slots (windows) interface
     (remhash (id window) windows)))
 
+@export
 (defmethod rpc-window-active ((interface remote-interface))
   "Return the window object for the currently active window."
   (with-slots (windows) interface
@@ -387,16 +496,23 @@ For an array of string, that would be \"as\"."
         (setf (last-active-window interface) window))
       (last-active-window interface))))
 
+@export
 (defmethod rpc-window-exists ((interface remote-interface) (window window))
   "Return if a window exists."
   (%rpc-send interface "window_exists" (id window)))
 
+@export
 (defmethod rpc-window-set-active-buffer ((interface remote-interface)
-                                      (window window)
-                                      (buffer buffer))
+                                         (window window)
+                                         (buffer buffer))
+  "Set INTERFACE's WINDOW buffer to BUFFER.
+Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
+proceeding."
+  (hooks:run-hook (hooks:object-hook window 'window-set-active-buffer-hook) window buffer)
   (%rpc-send interface "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer))
 
+@export
 (defmethod set-window-title ((interface remote-interface)
                              (window window)
                              (buffer buffer))
@@ -410,6 +526,7 @@ For an array of string, that would be \"as\"."
                                          title (unless (str:emptyp title) " - ")
                                          url)))))
 
+@export
 (defmethod window-set-active-buffer ((interface remote-interface)
                                      (window window)
                                      (buffer buffer))
@@ -430,12 +547,16 @@ For an array of string, that would be \"as\"."
     (set-window-title interface window buffer)
     (setf (active-buffer window) buffer)))
 
+@export
 (defmethod rpc-window-set-minibuffer-height ((interface remote-interface)
                                              window height)
   (%rpc-send interface "window_set_minibuffer_height" (id window) height))
 
+@export
 (defmethod rpc-buffer-make ((interface remote-interface)
-                          &key name default-modes)
+                            &key name default-modes)
+  "Make buffer with name NAME and modes DEFAULT-MODES.
+Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
   (let* ((buffer-id (get-unique-buffer-identifier interface))
          (buffer (apply #'make-instance 'buffer :id buffer-id
                         (append (when name `(:name ,name))
@@ -448,6 +569,7 @@ For an array of string, that would be \"as\"."
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
+    (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
     buffer))
 
 (defmethod %get-inactive-buffer ((interface remote-interface))
@@ -457,7 +579,11 @@ For an array of string, that would be \"as\"."
         (buffers (alexandria:hash-table-values (buffers *interface*))))
     (alexandria:last-elt (set-difference buffers active-buffers))))
 
+@export
 (defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
+  "Delete BUFFER from INTERFACE.
+Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
+  (hooks:run-hook (hooks:object-hook buffer 'buffer-delete-hook) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
@@ -470,9 +596,11 @@ For an array of string, that would be \"as\"."
     (with-slots (buffers) interface
       (remhash (id buffer) buffers))))
 
+@export
 (defmethod rpc-buffer-load ((interface remote-interface) (buffer buffer) uri)
   (%rpc-send interface "buffer_load" (id buffer) uri))
 
+@export
 (defmethod rpc-buffer-evaluate-javascript ((interface remote-interface)
                                          (buffer buffer) javascript
                                          &optional (callback nil))
@@ -481,6 +609,7 @@ For an array of string, that would be \"as\"."
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
+@export
 (defmethod rpc-minibuffer-evaluate-javascript ((interface remote-interface)
                                              (window window) javascript
                                              &optional callback)
@@ -490,6 +619,7 @@ For an array of string, that would be \"as\"."
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 
+@export
 (defmethod rpc-generate-input-event ((interface remote-interface)
                                    (window window)
                                    (event key-chord))
@@ -511,6 +641,7 @@ events."
                  (float (or (first (key-chord-position event)) -1.0))
                  (float (or (second (key-chord-position event)) -1.0))))
 
+@export
 (defmethod rpc-set-proxy ((interface remote-interface) (buffer buffer)
                           &optional (proxy-uri "") (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
@@ -527,12 +658,14 @@ user."
                  "custom")
              proxy-uri ignore-hosts))
 
+@export
 (defmethod rpc-get-proxy ((interface remote-interface) (buffer buffer))
   "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy configuration.
 MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
 ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send interface "get_proxy" (id buffer)))
 
+@export
 (defmethod rpc-buffer-set ((interface remote-interface) (buffer buffer)
                        (setting string) value)
   "Set SETTING to VALUE for BUFFER.
@@ -639,6 +772,7 @@ TODO: Only booleans are supported for now."
       (let ((buffer (make-buffer)))
         (set-url url :buffer buffer)))))
 
+@export
 (defmethod resource-query-default ((buffer buffer)
                                    &key url
                                      (cookies "")
@@ -670,7 +804,7 @@ Deal with URL with the following rules:
      (download *interface* url :proxy-address (proxy-address buffer :downloads-only t)
                :cookies cookies)
      (unless (find-buffer 'download-mode)
-       (download-list (make-instance 'root-mode)))
+       (download-list))
      nil)
     (t
      (log:info "Forwarding ~a back to platform port" url)
@@ -715,11 +849,16 @@ Deal with URL with the following rules:
 
 ;; Convenience methods and functions for users of the API.
 
+;; TODO: `(active-buffer *interface*)' is too verbose considering how frequently
+;; we use it.  Remove `window's `active-buffer' accessor and make this a defun
+;; with optional argument.
+@export
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
   (active-buffer (rpc-window-active interface)))
 
 ;; TODO: Prevent setting the minibuffer as the active buffer.
+@export
 (defmethod set-active-buffer ((interface remote-interface)
                               (buffer buffer))
   "Set the active buffer for the active window."

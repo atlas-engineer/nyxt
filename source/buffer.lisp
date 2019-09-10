@@ -1,6 +1,7 @@
 ;;; buffer.lisp --- lisp subroutines for creating / managing buffers
 
 (in-package :next)
+(annot:enable-annot-syntax)
 
 ;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
@@ -13,8 +14,8 @@ MODE is a mode symbol.
 This function is meant to be used on the Lisp side."
   (rpc-buffer-make *interface* :name name :default-modes default-modes))
 
-(define-command new-buffer (root-mode &optional (name "default")
-                                       modes)
+(define-command new-buffer (&optional (name "default")
+                                      modes)
   ;; TODO: Ask for modes interactively?
   "Create a new buffer.
 This command is meant to be used interactively.
@@ -59,9 +60,11 @@ visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
   (rpc-buffer-delete *interface* (active-buffer *interface*)))
 
+@export
 (define-parenscript buffer-get-url ()
   (ps:chain window location href))
 
+@export
 (define-parenscript buffer-get-title ()
   (ps:chain document title))
 
@@ -69,11 +72,16 @@ buffer to the start page."
 (define-parenscript buffer-set-url (url)
   ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
 
+@export
 (defun set-url (input-url &key (buffer (active-buffer *interface*)) disable-history)
+  "Load INPUT-URL in BUFFER.
+URL is first transformed by `parse-url', then by BUFFER's `load-hook'.
+If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
   (let ((url (parse-url input-url)))
     (setf (name buffer) url)
     (unless disable-history
       (history-typed-add input-url))
+    (setf url (run-composed-hook (load-hook buffer) url))
     (if (str:starts-with-p "file://" url)
         (rpc-buffer-load *interface* buffer url)
         ;; We need to specify the buffer here since we may reach this point

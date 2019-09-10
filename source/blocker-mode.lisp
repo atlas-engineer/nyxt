@@ -1,9 +1,13 @@
-;; Block resource queries blacklisted hosts
-
-(in-package :next)
+(uiop:define-package :next/blocker-mode
+    (:use :common-lisp :trivia :next :annot.class)
+  (:documentation "Block resource queries blacklisted hosts."))
+(in-package :next/blocker-mode)
+(annot:enable-annot-syntax)
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
+@export
+@export-accessors
 (defclass hostlist ()
   ((url :accessor url :initarg :url
         :initform nil
@@ -21,6 +25,7 @@ If nil, the list won't be persisted.")
                     :documentation "If URL is provided, update the list after
 this amount of seconds.")))
 
+@export
 (defun make-hostlist (&rest args)
   (apply #'make-instance 'hostlist args))
 
@@ -64,13 +69,20 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                 :initform (list (make-instance 'hostlist
                                                :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
                                                :path (xdg-data-home "hostlist-stevenblack"))))
+     (previous-blocker :initform nil
+                       :documentation "Save the previous blocker to be restored
+when disabling the mode.")
      (destructor
       :initform
       (lambda (mode)
         (setf (resource-query-function (buffer mode))
-              (get-default 'buffer 'resource-query-function)))))
-  (let ((active-buffer (buffer %mode)))
-    (setf (resource-query-function active-buffer) #'resource-query-block)))
+              (slot-value mode 'previous-blocker))))
+     (constructor
+      :initform
+      (lambda (mode)
+        (let ((active-buffer (buffer mode)))
+          (setf (slot-value mode 'previous-blocker) (resource-query-function active-buffer))
+          (setf (resource-query-function active-buffer) #'resource-query-block))))))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE."

@@ -1,6 +1,10 @@
 ;;; base.lisp --- main entry point into Next
 
+;; TODO: Rename to start.lisp.  This should probably be the last file before the
+;; modes in the .asd.
+
 (in-package :next)
+(annot:enable-annot-syntax)
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
@@ -38,12 +42,13 @@ Set to '-' to read standard input instead."))
 
 (define-command quit ()
   "Quit Next."
+  (hooks:run-hook (hooks:object-hook *interface* 'before-exit-hook))
   (kill-interface *interface*)
   (kill-port (port *interface*)))
 
 (define-deprecated-command kill ()
   "Deprecated by `quit'."
-  (quit (make-instance 'root-mode)))
+  (quit))
 
 (defun set-debug-level (level)
   "Supported values for LEVEL are
@@ -57,7 +62,7 @@ Set to '-' to read standard input instead."))
      (log:config :info)
      (setf (uiop:getenv "G_MESSAGES_DEBUG") nil))))
 
-(export 'entry-point)
+@export
 (defun entry-point ()
   (multiple-value-bind (options free-args)
       (parse-cli-args)
@@ -129,7 +134,7 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
               ;; TODO: Test if network is available.  If not, display help,
               ;; otherwise display start-page-url.
               (let ((window (rpc-window-make *interface*))
-                    (buffer (help (make-instance 'root-mode))))
+                    (buffer (help)))
                 (window-set-active-buffer *interface* window buffer)))
           (progn
             (log:error "Could not connect to platform port: ~a" (path (port interface)))
@@ -146,7 +151,7 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
   "The path where the system will look to load an init file from."
   (xdg-config-home (or (getf *options* :init-file) file)))
 
-(defun load-lisp-file (file)
+(defun load-lisp-file (file &key (interactive t))
   "Load the provided lisp file.
 Interactively, prompt for FILE.
 If FILE is \"-\", read from the standard input."
@@ -162,6 +167,8 @@ If FILE is \"-\", read from the standard input."
     (error (c)
       ;; TODO: Handle warning from `echo'.
       (log:warn "Error: we could not load the Lisp file ~a: ~a" file c)
+      (when interactive
+        (error "Could not load the lisp init file ~a: ~&~a" file c))
       (echo "Error: we could not load the Lisp file ~a: ~a" file c))))
 
 (define-command load-file ()
@@ -171,14 +178,18 @@ If FILE is \"-\", read from the standard input."
   (with-result (file-name-input (read-from-minibuffer
                                  (minibuffer *interface*)
                                  :input-prompt "Load file:"))
-    (load-lisp-file file-name-input)))
+    (load-lisp-file file-name-input :interactive nil)))
 
-(define-command load-init-file (root-mode &optional (init-file (init-file-path)))
+(define-command load-init-file (&optional (init-file (init-file-path)))
   "Load or reload the init file."
   (load-lisp-file init-file))
 
-(export 'start)
+@export
 (defun start (&rest urls)
+  "Start Next and load URLS if any.
+A new `*interface*' is instantiated.
+The platform port is automatically started if needed.
+Finally, the `after-init-hook' of the `*interface*' is run."
   (log:info +version+)
   ;; Randomness should be seeded as early as possible to avoid generating
   ;; deterministic tokens.
@@ -194,50 +205,51 @@ If FILE is \"-\", read from the standard input."
   (setf *interface* (make-instance 'remote-interface))
   ;; Start the port after the interface so that we don't overwrite the log when
   ;; an instance is already running.
-  (initialize-port *interface* (or urls *free-args*)))
+  (initialize-port *interface* (or urls *free-args*))
+  (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook)))
 
-(define-key "C-x C-c" 'quit)
-(define-key "C-[" 'switch-buffer-previous)
-(define-key "C-]" 'switch-buffer-next)
-(define-key "C-x b" 'switch-buffer)
-(define-key "C-x k" 'delete-buffer)
-(define-key "C-x Left" 'switch-buffer-previous)
-(define-key "C-x Right" 'switch-buffer-next)
-(define-key "C-Page_Up" 'switch-buffer-previous)
-(define-key "C-Page_Down" 'switch-buffer-next)
-(define-key "C-l" 'set-url-current-buffer)
-(define-key "M-l" 'set-url-new-buffer)
-(define-key "C-m k" 'bookmark-delete)
-(define-key "C-t" 'make-visible-new-buffer)
-(define-key "C-m u" 'bookmark-url)
-(define-key "C-x C-k" 'delete-current-buffer)
+(define-key "C-x C-c" #'quit)
+(define-key "C-[" #'switch-buffer-previous)
+(define-key "C-]" #'switch-buffer-next)
+(define-key "C-x b" #'switch-buffer)
+(define-key "C-x k" #'delete-buffer)
+(define-key "C-x Left" #'switch-buffer-previous)
+(define-key "C-x Right" #'switch-buffer-next)
+(define-key "C-Page_Up" #'switch-buffer-previous)
+(define-key "C-Page_Down" #'switch-buffer-next)
+(define-key "C-l" #'set-url-current-buffer)
+(define-key "M-l" #'set-url-new-buffer)
+(define-key "C-m k" #'bookmark-delete)
+(define-key "C-t" #'make-visible-new-buffer)
+(define-key "C-m u" #'bookmark-url)
+(define-key "C-x C-k" #'delete-current-buffer)
 ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
-(define-key "C-h v" 'variable-inspect)
-(define-key "C-h c" 'command-inspect)
-(define-key "C-o" 'load-file)
-(define-key "C-h s" 'start-swank)
-(define-key "M-x" 'execute-command)
-(define-key "C-x 5 2" 'new-window)
-(define-key "C-x 5 0" 'delete-window)
-(define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*))))
+(define-key "C-h v" #'variable-inspect)
+(define-key "C-h c" #'command-inspect)
+(define-key "C-o" #'load-file)
+(define-key "C-h s" #'start-swank)
+(define-key "M-x" #'execute-command)
+(define-key "C-x 5 2" #'new-window)
+(define-key "C-x 5 0" #'delete-window)
+;; (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*)))) ; TODO: Seems obsolete?
 
 (define-key :scheme :vi-normal
-  "Z Z" 'quit
-  "[" 'switch-buffer-previous
-  "]" 'switch-buffer-next
-  "C-Page_Up" 'switch-buffer-previous
-  "C-Page_Down" 'switch-buffer-next
-  "g b" 'switch-buffer
-  "d" 'delete-buffer
-  "D" 'delete-current-buffer
-  "B" 'make-visible-new-buffer
-  "o" 'set-url-current-buffer
-  "O" 'set-url-new-buffer
-  "m u" 'bookmark-url
-  "m d" 'bookmark-delete
-  "C-o" 'load-file
-  "C-h v" 'variable-inspect
-  "C-h c" 'command-inspect
-  "C-h s" 'start-swank
-  ":" 'execute-command
-  "W" 'new-window)
+  "Z Z" #'quit
+  "[" #'switch-buffer-previous
+  "]" #'switch-buffer-next
+  "C-Page_Up" #'switch-buffer-previous
+  "C-Page_Down" #'switch-buffer-next
+  "g b" #'switch-buffer
+  "d" #'delete-buffer
+  "D" #'delete-current-buffer
+  "B" #'make-visible-new-buffer
+  "o" #'set-url-current-buffer
+  "O" #'set-url-new-buffer
+  "m u" #'bookmark-url
+  "m d" #'bookmark-delete
+  "C-o" #'load-file
+  "C-h v" #'variable-inspect
+  "C-h c" #'command-inspect
+  "C-h s" #'start-swank
+  ":" #'execute-command
+  "W" #'new-window)

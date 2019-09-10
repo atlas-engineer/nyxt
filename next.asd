@@ -9,7 +9,9 @@
   :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria
                :bordeaux-threads
+               :cl-annot
                :cl-css
+               :cl-hooks
                :cl-json
                :cl-markup
                :cl-ppcre
@@ -39,8 +41,8 @@
                  (:file "global")
                  (:file "port")
                  (:file "remote")
-                 (:file "mode")
                  (:file "command")
+                 (:file "mode")
                  (:file "utility")
                  (:file "buffer")
                  (:file "window")
@@ -63,8 +65,8 @@
                  (:file "blocker-mode")
                  (:file "proxy-mode")
                  (:file "noscript-mode")
-                 (:file "download-mode")
                  (:file "file-manager-mode")
+                 (:file "download-mode")
                  ;; About
                  (:file "about")
                  ;; Port Compatibility Layers

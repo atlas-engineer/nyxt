@@ -3,8 +3,8 @@
 (in-package :next)
 
 (define-mode download-mode ()
-    "Display list of downloads."
-    ())
+  "Display list of downloads."
+  ())
 
 (defun download-refresh (&optional (interface *interface*))
   "Display a buffer listing all downloads."
@@ -53,25 +53,25 @@
     (rpc-buffer-evaluate-javascript interface download-buffer insert-content)
     download-buffer))
 
-(define-command download-list (root-mode &optional (interface *interface*))
+(define-command download-list (&optional (interface *interface*))
   "Display a buffer listing all downloads."
   (unless (download-watcher interface)
     (setf (download-watcher interface) (bt:make-thread #'download-watch)))
   (set-active-buffer interface (download-refresh)))
 
-(define-command download-url (root-mode &optional (interface *interface*))
+(define-command download-url (&optional (interface *interface*))
   "Download the page or file of the current buffer."
   (with-result (url (buffer-get-url))
     (download interface url)
     (unless (find-buffer 'download-mode)
-      (download-list (make-instance 'root-mode)))))
+      (download-list))))
 
-(define-command download-hint-url (root-mode &optional (interface *interface*))
+(define-command download-hint-url (&optional (interface *interface*))
   "Download the file under the URL hinted by the user."
   (query-hints "Download link URL:" (selected-link)
     (download interface selected-link)
     (unless (find-buffer 'download-mode)
-      (download-list (make-instance 'root-mode)))))
+      (download-list))))
 
 (defun get-downloaded-filenames (interface)
   "Return the list of downloaded filenames of the current session, as strings."
@@ -82,7 +82,7 @@
     (lambda (input)
       (fuzzy-match input filenames))))
 
-(define-command download-open-file (root-mode &optional (interface *interface*))
+(define-command download-open-file (&optional (interface *interface*))
   "Open a downloaded file.
 Ask the user to choose one of the downloaded files of the current session.
 See also `open-file'."
@@ -90,4 +90,4 @@ See also `open-file'."
                           (minibuffer *interface*)
                           :input-prompt "Open file:"
                           :completion-function (downloaded-files-completion-fn interface)))
-    (open-file-function filename)))
+    (next/file-manager-mode:open-file-function filename)))

@@ -120,7 +120,7 @@ currently active buffer."
 
 (define-deprecated-command go-anchor ()
   "Deprecated by `follow-hint'."
-  (follow-hint (make-instance 'root-mode)))
+  (follow-hint))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of link hints, and open the user inputted one in a new
@@ -131,7 +131,7 @@ buffer (not set to visible active buffer)."
 
 (define-deprecated-command go-anchor-new-buffer ()
   "Deprecated by `follow-hint-new-buffer'."
-  (follow-hint-new-buffer (make-instance 'root-mode)))
+  (follow-hint-new-buffer))
 
 (define-command follow-hint-new-buffer-focus ()
   "Show a set of link hints, and open the user inputted one in a new
@@ -143,7 +143,7 @@ visible active buffer."
 
 (define-deprecated-command go-anchor-new-buffer-focus ()
   "Deprecated by `follow-hint-new-buffer-focus'."
-  (follow-hint-new-buffer-focus (make-instance 'root-mode)))
+  (follow-hint-new-buffer-focus))
 
 (define-command copy-hint-url ()
   "Show a set of link hints, and copy the URL of the user inputted one."
@@ -152,4 +152,4 @@ visible active buffer."
 
 (define-deprecated-command copy-anchor-url ()
   "Deprecated by `copy-hint-url'."
-  (copy-hint-url (make-instance 'root-mode)))
+  (copy-hint-url))
