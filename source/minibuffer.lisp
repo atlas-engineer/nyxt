@@ -41,6 +41,8 @@
         "ESCAPE" #'cancel-input
         "C-n" #'select-next
         "C-p" #'select-previous
+        "button4" #'select-previous
+        "button5" #'select-next
         "Down" #'select-next
         "Up" #'select-previous
         "C-v" #'minibuffer-paste
@@ -635,4 +637,3 @@ interpreted by `format'. "
         (setf (input-buffer minibuffer) "")
         (setf (input-buffer-cursor minibuffer) 0)
         (insert input minibuffer)))))
-
