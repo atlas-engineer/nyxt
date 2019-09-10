@@ -442,11 +442,11 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 		button = 7;
 		break;
 	case GDK_SCROLL_SMOOTH: {
-		if (event->delta_y < 0) {
+		if (event->delta_y <= 0) {
 			button = 4;
 		} else if (event->delta_y > 0) {
 			button = 5;
-		} else if (event->delta_x < 0) {
+		} else if (event->delta_x <= 0) {
 			button = 6;
 		} else if (event->delta_x > 0) {
 			button = 7;
