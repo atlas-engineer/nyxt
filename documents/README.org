@@ -224,6 +224,16 @@ Then in a shell execute the following:
    in the previous section.
 7. Execute ~(next:start)~ to open your first Next window.
 
+The above process is a bit cumbersome and you'll probably want a more
+comfortable workflow from within your favourite editor.  For instance, with
+Emacs and SLIME the process boils down to:
+
+1. =M-x slime RET=
+2. =,load-system RET next RET=
+3. =(next:start) RET=
+
+See the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of options for various editors.
+
 ** Update local Lisp libraries
 
 If you use Quicklisp for Common Lisp library management outside the context of
