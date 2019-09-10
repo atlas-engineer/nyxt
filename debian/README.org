@@ -1,0 +1,12 @@
+Debian package files.
+
+Build with
+
+: debuild -us -uc
+
+_status_: currently failing:
+
+> dpkg-genbuildinfo: error: binary build with no binary artifacts found; .buildinfo is meaningless
+
+https://www.debian.org/doc/manuals/maint-guide/
+https://www.debian.org/doc/manuals/maint-guide/dreq.en.html

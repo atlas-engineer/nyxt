@@ -1,0 +1,25 @@
+Source: next
+Maintainer: Next developers <hello@atlas.engineer>
+Section: Web Software
+Priority: extra
+Standards-Version: 1.3.1
+Build-Depends: debhelper (>= 8.0.0)
+
+Package: next
+Architecture: any
+Priority: extra
+Homepage: http://next.atlas.engineer/
+Depends: sbcl (>= 1.3),
+         ${shlibs:Depends},
+	 libwebkit2gtk-4.0-dev (>= 2.24),
+         default-dbus-session-bus | dbus-session-bus,
+         glib-networking,
+         sqlite,
+         gsettings-desktop-schemas,
+         libfixposix,
+         gstreamer,
+         gst-plugins-base-1.0,
+         xclip,
+         ${misc:Depends}
+Description: Next, the infinitely extensible web browser.
+  Next is the programmable web browser. All the browser logic is accessible and modifiable live with the Lisp language. This package provides the Webkit webview. See the downloads page for a Webengine/Blink platform port.
