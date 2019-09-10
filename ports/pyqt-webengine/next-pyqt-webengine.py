@@ -167,7 +167,7 @@ class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
     def minibuffer_evaluate_javascript(self, window_id, script):
         return self.parent().minibuffer_evaluate_javascript(window_id, script)
 
-    @pyqtSlot(list, str, str, list, result=bool)
+    @pyqtSlot('QStringList', str, str, 'QStringList', result=bool)
     def set_proxy(self, buffer_ids, mode, address, whitelist):
         return self.parent().set_proxy(buffer_ids, mode, address, whitelist)
 
@@ -175,7 +175,7 @@ class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
     def get_proxy(self):
         return self.parent().get_proxy()
 
-    @pyqtSlot(str, int, list, int, float, float)
+    @pyqtSlot(str, int, 'QStringList', int, float, float)
     def generate_input_event(self, window_id, key_code, modifiers,
                              low_level_data, x, y):
         return self.parent().generate_input_event(window_id, key_code,
