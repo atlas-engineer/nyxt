@@ -237,7 +237,7 @@ commands.")
    (dbus-pid :accessor dbus-pid :initform nil :type :number
              :documentation "The process identifier of the dbus instance started
 by Next when the user session dbus instance is not available.")
-   (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
+   (clipboard-ring :accessor clipboard-ring :initform (ring:make-ring))
    (minibuffer-generic-history :accessor minibuffer-generic-history :initform (make-instance 'ring))
    (minibuffer-search-history :accessor minibuffer-search-history :initform (make-instance 'ring))
    (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (make-instance 'ring))
