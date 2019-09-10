@@ -176,8 +176,6 @@ class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
     @pyqtSlot(str, int, 'QStringList', int, float, float)
     def generate_input_event(self, window_id, key_code, modifiers,
                              low_level_data, x, y):
-        print("In adapters generate_input_event:")
-        print(modifiers)
         return self.parent().generate_input_event(window_id, key_code,
                                                   modifiers, low_level_data,
                                                   x, y)
@@ -200,26 +198,20 @@ class DBusWindow(QObject):
         super().__init__()
         return
 
-
     def window_make(self, window_id):
-        print("window_make!")
         return window.make(window_id)
-
 
     def window_set_title(self, window_id, title):
         _window = window.get_window(window_id)
         return _window.set_title(title)
 
-    
     def window_delete(self, window_id):
         _window = window.get_window(window_id)
         return _window.delete()
 
-
     def window_active(self):
         return window.active()
 
-    
     def window_exists(self, window_id):
         try:
             _window = window.get_window(window_id)
@@ -227,42 +219,34 @@ class DBusWindow(QObject):
         except Exception:
             return False
 
-
     def window_set_active_buffer(self, window_id, buffer_id):
         _window = window.get_window(window_id)
         _buffer = buffers.get_buffer(buffer_id)
         return _window.set_active_buffer(_buffer)
 
-    
     def window_set_minibuffer_height(self, window_id, height):
         _window = window.get_window(window_id)
         return _window.set_minibuffer_height(height)
 
-    
     def buffer_make(self, buffer_id):
         return buffers.make(buffer_id)
 
-    
     def buffer_delete(self, buffer_id):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.delete()
 
-    
     def buffer_load(self, buffer_id, url):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.load(url)
 
-    
     def buffer_evaluate_javascript(self, buffer_id, script):
         _buffer = buffers.get_buffer(buffer_id)
         return _buffer.evaluate_javascript(script)
 
-    
     def minibuffer_evaluate_javascript(self, window_id, script):
         _window = window.get_window(window_id)
         return _window.minibuffer_evaluate_javascript(script)
 
-    
     def set_proxy(self, buffer_ids, mode, address, whitelist):
         """
         Set the proxy for the current application.
@@ -305,11 +289,9 @@ class DBusWindow(QObject):
         # Trying to use system's defaults:
         # QNetworkProxyFactory.setUseSystemConfiguration(True)
 
-    
     def get_proxy(self):
         QNetworkProxy.hostName(QNetworkProxy.applicationProxy())
 
-    
     def generate_input_event(self, window_id, key_code, modifiers,
                              low_level_data, x, y):
         utility.generate_input_event(window_id, key_code, modifiers,
