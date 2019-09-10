@@ -88,6 +88,11 @@ If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
         ;; on initialization before ACTIVE-BUFFER can be used.
         (buffer-set-url :url url :buffer buffer))))
 
+(define-command undo-buffer-deletion ()
+  "Go to the first url in the list of killed buffers."
+  (if (> (item-count (recent-buffers *interface*)) 0)
+      (make-buffers (list (ring-pop-most-recent (recent-buffers *interface*))))))
+
 (define-command set-url-current-buffer ()
   "Set the URL for the current buffer, completing with history."
   (with-result (url (read-from-minibuffer

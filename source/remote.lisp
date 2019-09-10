@@ -235,10 +235,10 @@ by Next when the user session dbus instance is not available.")
    (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
                :documentation "The minibuffer object.")
    (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
-   (buffer-history-length :accessor buffer-history-length :initform 50
-                          :documentation "The maximum length of the buffer-history-ring.")
-   (buffer-history-ring :accessor buffer-history-ring
-                        :documentation "A ring that keeps track of killed buffers.")
+   (recent-buffers-length :accessor recent-buffers-length :initform 50
+                          :documentation "The maximum length of the recent-buffers.")
+   (recent-buffers :accessor recent-buffers
+                        :documentation "A ring that keeps track of deleted buffers.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
@@ -278,20 +278,18 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
-
 (defmethod initialize-instance :after
-  "Creates a buffer-history-ring with the length set in buffer-history-length."
+  "Creates a recent-buffers ring with the length set in recent-buffers-length."
   ((interface remote-interface) &rest args)
-  (setf (buffer-history-ring interface)
-        (make-instance 'ring :items (make-array (buffer-history-length interface)
+  (setf (recent-buffers interface)
+        (make-instance 'ring :items (make-array (recent-buffers-length interface)
                                                 :initial-element nil))))
 
 (defmethod add-url-to-recent-buffers-ring ((interface remote-interface) url)
   "Add the url of a given buffer to the buffers ring."
   ;; TODO Should this only insert if the url is different from the first url in the history?
   ;; In chrome at least, duplicate entries are allowed.
-  (ring-insert (buffer-history-ring interface) url))
-
+  (ring-insert (recent-buffers interface) url))
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -753,11 +751,6 @@ TODO: Only booleans are supported for now."
   (:name "make_buffers")
   (make-buffers urls)
   (values))
-
-(define-command undo-buffer-deletion ()
-  "Go to the first url in the list of killed buffers."
-  (if (> (item-count (buffer-history-ring *interface*)) 0)
-      (make-buffers (list (ring-pop-most-recent (buffer-history-ring *interface*))))))
 
 (defun make-buffers (urls)
   "Create new buffers from URLs."
