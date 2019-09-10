@@ -1,10 +1,5 @@
-(in-package :next)
-(annot:enable-annot-syntax)
+(in-package :ring)
 
-;; TODO: Move to the libraries/ folder?
-
-@export
-@export-accessors
 (defclass ring ()
   ((items :accessor items
           :initarg :items
@@ -26,7 +21,6 @@
               (- (item-count ring) index)))
        (ring-size ring)))
 
-@export
 (defmethod ring-insert ((ring ring) new-item)
   "Insert item into RING.
 If RING is full, replace the oldest item.
@@ -50,16 +44,6 @@ Return NEW-ITEM."
         when item collect item))
 
 @export
-(defmethod ring-insert-clipboard ((ring ring))
-  "Check if clipboard-content is most recent entry in RING.
-If not, insert clipboard-content into RING.
-Return most recent entry in RING."
-  (let ((clipboard-content (trivial-clipboard:text)))
-    (unless (string= clipboard-content (ring-ref ring 0))
-      (ring-insert ring clipboard-content)))
-  (ring-ref ring 0))
-
-@export
 (defun ring-completion-fn (ring)
   (let ((ring-items (ring-recent-list ring)))
     (lambda (input)
@@ -75,3 +59,6 @@ Return most recent entry in RING."
      (item-count copy) (item-count ring)
      (items copy) (copy-seq (items ring)))
     copy))
+
+(defun make-ring ()
+  (make-instance 'ring))
