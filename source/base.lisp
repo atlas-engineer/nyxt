@@ -151,7 +151,7 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
   "The path where the system will look to load an init file from."
   (xdg-config-home (or (getf *options* :init-file) file)))
 
-(defun load-lisp-file (file)
+(defun load-lisp-file (file &key (interactive t))
   "Load the provided lisp file.
 Interactively, prompt for FILE.
 If FILE is \"-\", read from the standard input."
@@ -167,6 +167,8 @@ If FILE is \"-\", read from the standard input."
     (error (c)
       ;; TODO: Handle warning from `echo'.
       (log:warn "Error: we could not load the Lisp file ~a: ~a" file c)
+      (when interactive
+        (error "Could not load the lisp init file ~a: ~&~a" file c))
       (echo "Error: we could not load the Lisp file ~a: ~a" file c))))
 
 (define-command load-file ()
@@ -176,7 +178,7 @@ If FILE is \"-\", read from the standard input."
   (with-result (file-name-input (read-from-minibuffer
                                  (minibuffer *interface*)
                                  :input-prompt "Load file:"))
-    (load-lisp-file file-name-input)))
+    (load-lisp-file file-name-input :interactive nil)))
 
 (define-command load-init-file (&optional (init-file (init-file-path)))
   "Load or reload the init file."
