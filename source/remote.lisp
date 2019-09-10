@@ -158,8 +158,6 @@ by Next when the user session dbus instance is not available.")
    (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
    (buffer-history-length :accessor buffer-history-length :initform 50
                           :documentation "The maximum length of the buffer-history-ring.")
-   ;; (buffer-history-ring :accessor buffer-history-ring :initform (make-instance 'ring :items (make-array 50 :initial-element nil))
-   ;;                      :documentation "A ring that keeps track of killed buffers.")
    (buffer-history-ring :accessor buffer-history-ring
                         :documentation "A ring that keeps track of killed buffers.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
@@ -186,21 +184,17 @@ stored.  Nil means use system default.")))
 
 (defmethod initialize-instance :after
   "Creates a buffer-history-ring with the length set in buffer-history-length."
-  ;; My impression is that I can't set this in the class definition: https://stackoverflow.com/questions/3620249/initializing-slots-based-on-other-slot-values-in-common-lisp-object-system-class
-          ((interface remote-interface) &rest args)
+  ((interface remote-interface) &rest args)
   (setf (buffer-history-ring interface)
         (make-instance 'ring :items (make-array (buffer-history-length interface)
                                                 :initial-element nil))))
 
-
-(defmethod add-url-to-history-ring ((interface remote-interface) url)
-  "Add the url of a given buffer to the history ring."
+(defmethod add-url-to-recent-buffers-ring ((interface remote-interface) url)
+  "Add the url of a given buffer to the buffers ring."
   ;; TODO Should this only insert if the url is different from the first url in the history?
   ;; In chrome at least, duplicate entries are allowed.
-  (let ((history-ring (buffer-history-ring interface)))
-  (ring-insert history-ring url)
-  (ring-ref history-ring 0))
-)
+  (ring-insert (buffer-history-ring interface) url))
+
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -469,7 +463,7 @@ For an array of string, that would be \"as\"."
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
                                 (rpc-buffer-make interface))))
-    (add-url-to-history-ring interface (name buffer))
+    (add-url-to-recent-buffers-ring interface (name buffer))
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))
@@ -626,6 +620,12 @@ TODO: Only booleans are supported for now."
   (:name "make_buffers")
   (make-buffers urls)
   (values))
+
+(define-command undo-buffer-deletion ()
+  "Go to the first url in the list of killed buffers."
+  ;; do something if there's nothing in the list
+  (if (> (item-count (buffer-history-ring *interface*)) 0)
+      (make-buffers (list (ring-pop-most-recent (buffer-history-ring *interface*))))))
 
 (defun make-buffers (urls)
   "Create new buffers from URLs."

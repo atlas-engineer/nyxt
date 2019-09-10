@@ -33,6 +33,16 @@ Return NEW-ITEM."
         (setf (head-index ring) (mod (1+ (head-index ring)) (ring-size ring)))
         (incf (item-count ring)))))
 
+(defmethod ring-pop-most-recent((ring ring))
+  "Return the most-recently-added item in RING, and remove it from the RING.
+TODO What if the ring is empty? (Also, what should ring-insert-clipboard do in that case?)"
+  ;; What happens:
+  ;; decrease the item count by one
+  ;; return the element at the tail index
+    (let ((most-recent-item (ring-ref ring 0)))
+      (decf (item-count ring))
+      most-recent-item))
+
 (defmethod ring-ref ((ring ring) index)
   "Return value from items by INDEX where 0 INDEX is most recent."
   (aref (items ring) (ring-index ring index)))
@@ -42,15 +52,6 @@ Return NEW-ITEM."
   (loop for index from 0 below (ring-size ring)
         for item = (ring-ref ring index)
         when item collect item))
-
-(defmethod ring-insert-clipboard ((ring ring))
-  "Check if clipboard-content is most recent entry in RING.
-If not, insert clipboard-content into RING.
-Return most recent entry in RING."
-  (let ((clipboard-content (trivial-clipboard:text)))
-    (unless (string= clipboard-content (ring-ref ring 0))
-      (ring-insert ring clipboard-content)))
-  (ring-ref ring 0))
 
 (defun ring-completion-fn (ring)
   (let ((ring-items (ring-recent-list ring)))

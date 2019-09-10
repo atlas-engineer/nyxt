@@ -523,6 +523,15 @@ interpreted by `format'. "
                    (title (buffer-get-title)))
       (echo "~a — ~a" url title))))
 
+(defmethod ring-insert-clipboard ((ring ring))
+  "Check if clipboard-content is most recent entry in RING.
+If not, insert clipboard-content into RING.
+Return most recent entry in RING."
+  (let ((clipboard-content (trivial-clipboard:text)))
+    (unless (string= clipboard-content (ring-ref ring 0))
+      (ring-insert ring clipboard-content)))
+  (ring-ref ring 0))
+
 (define-command minibuffer-paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
