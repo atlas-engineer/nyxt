@@ -74,18 +74,6 @@ def push_input_event(key_code, key_string, modifiers_list, x, y,
                     low_level_data,
                     parent_identifier)
 
-    # proxy.push_input_event(
-    #     key_code,
-    #     key_string,
-    #     modifiers_list,
-    #     x, y,
-    #     low_level_data,
-    #     parent_identifier,
-    #     # Use handlers to make the call asynchronous.
-    #     reply_handler=handle_reply,
-    #     error_handler=handle_error,
-    #     dbus_interface=CORE_INTERFACE)
-
 
 def buffer_javascript_call_back(identifier, res, callback_id):
     iface = get_core_dbus_iface()

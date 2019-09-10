@@ -80,6 +80,17 @@ elif platform == "win32" or platform == "win64":
     REVERSE_MODIFIERS.update(tmp)
 
 
+def create_key_code(event):
+    """
+    QtKeyEvent.key() doesn't distinguish between upper and lower, so this is a
+    dirty hack to encode the case too (since it looks like gtk does?).
+    """
+    if(len(event.text()) == 1 and not event.key() in SPECIAL_KEYS):
+        return ord(event.text())
+
+    return event.key()
+
+
 def create_modifiers_list(event_modifiers):
     modifiers = []
     for key, value in MODIFIERS.items():
@@ -141,10 +152,14 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
 
     if x == -1:
         # Key event.
-        if (low_level_data not in SPECIAL_KEYS):
-            text = chr(low_level_data)
+        if key_code not in SPECIAL_KEYS:
+            text = chr(key_code)
+
+        print("text = ", text)
         event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag,
                           10000, 10000, 10000, text=text)
+        print("Event modifiers:")
+        print(event.modifiers())
         receiver = window.get_window(window_id).buffer.focusProxy()
         QCoreApplication.sendEvent(receiver, event)
 
@@ -171,9 +186,17 @@ class EventFilter(QWidget):
             not is_modifier(event.key()) and
             event.nativeScanCode() != 10000):
 
+            print("in branch 1 of eventFilter")
+            print(event.modifiers() == Qt.ShiftModifier,
+                  event.modifiers() == Qt.ControlModifier)
+            print(event.key())
+            print(event.nativeVirtualKey())
+            print(event.text())
+ 
             modifiers = create_modifiers_list(event.modifiers())
             key_string = create_key_string(event)
-            key_code = event.key()
+            # key_code = event.key()
+            key_code = create_key_code(event)
             low_level_data = 0
             try:
                 low_level_data = ord(key_string)
