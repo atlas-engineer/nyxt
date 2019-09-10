@@ -66,10 +66,6 @@ def push_input_event(key_code, key_string, modifiers_list, x, y,
     :rtype: none
     """
     iface = get_core_dbus_iface()
-    print("Input event!")
-    print("modifiers_list = ", modifiers_list)
-    print("arrayed version: ", pack_to_strarray(modifiers_list))
-
     iface.asyncCall("push_input_event",
                     key_code,
                     key_string,
