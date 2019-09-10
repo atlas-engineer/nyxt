@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# import pdb
-
 import logging
 import sys
 from urllib.parse import urlparse
@@ -42,7 +40,7 @@ PLATFORM_PORT_NAME = "engineer.atlas.next.platform"
 
 class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
     Q_CLASSINFO("D-Bus Interface", PLATFORM_PORT_NAME)
-    Q_CLASSINFO("",
+    Q_CLASSINFO("D-Bus Introspection",
                 """
 <interface name="engineer.atlas.next.platform">
     <method name="window_make">
@@ -178,6 +176,8 @@ class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
     @pyqtSlot(str, int, 'QStringList', int, float, float)
     def generate_input_event(self, window_id, key_code, modifiers,
                              low_level_data, x, y):
+        print("In adapters generate_input_event:")
+        print(modifiers)
         return self.parent().generate_input_event(window_id, key_code,
                                                   modifiers, low_level_data,
                                                   x, y)
