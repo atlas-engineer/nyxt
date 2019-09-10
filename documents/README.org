@@ -33,8 +33,8 @@ and OS integration is provided via:
 You can obtain SBCL from your package manager or by downloading it
 directly from the SBCL repository.
 
-To install SBCL from source, Download SBCL:
-[[http://www.sbcl.org/platform-table.html]], full installation
+To install SBCL from source, download SBCL:
+[[http://www.sbcl.org/platform-table.html]]. Full installation
 instructions can be found here: [[http://www.sbcl.org/getting.html]].
 
 ** Installing Quicklisp (optional)
@@ -60,7 +60,7 @@ To install Quicklisp:
 - gstreamer, gst-plugins-* (for HTML audio/video)
 - xclip (for clipboard support)
 
-If your distribution does not install libraries in a [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
+If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
 have to let know your Lisp compiler where to find them.  To do so, add the
 library directories to ~cffi:*foreign-library-directories*~ list.  For instance,
 if you are running Guix you may want to expose =~/.guix-profile/lib= to the
@@ -90,7 +90,7 @@ A note of caution about installing WebKit via your package
 manager: Your distribution supplied version of WebKit may not provide
 up-to-date versions of WebKit including the latest security
 patches. WebKitGTK+ tries to do the best job possible with maintaining
-security patches upstream, but it is also additionally up to the the
+security patches upstream, but it is also up to the the
 distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
