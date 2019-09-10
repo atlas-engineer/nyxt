@@ -36,19 +36,15 @@ Open any file from within Next, with the usual fuzzy completion.
 (defvar *current-directory* download-manager::*default-download-directory*
   "Default directory to open files from. Defaults to the downloads directory.")
 
-(defun open-file-function-default (filename)
-  "Open this file with `xdg-open'."
+@export
+(defun open-file-function (filename)
+  "Open FILENAME.
+FILENAME is the full path of the file (or directory), as a string.
+By default, try to open it with the system's default external program, using `xdg-open'.
+The user can override this function to decide what to do with the file."
   (handler-case (uiop:launch-program (list "xdg-open" (namestring filename)))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
-
-@export
-(defun open-file-function (filename)
-  "Open `filename'.
-`filename' is the full path of the file (or directory), as a string.
-By default, try to open it with the system's default external program, using `xdg-open'.
-The user can override this function to decide what to do with the file."
-  (open-file-function-default filename))
 
 ;; note: put under the function definition.
 ;; the user is encouraged to override this in her init file.

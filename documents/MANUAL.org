@@ -33,6 +33,7 @@ end-user allowing for infinite customization.
   - [[#network-resource-dispatch-including-ad-blocking][Network resource dispatch (including ad-blocking)]]
   - [[#styles][Styles]]
   - [[#proxy][Proxy]]
+  - [[#hooks][Hooks]]
 
 * Basics
 ** Navigation
@@ -493,10 +494,10 @@ For example:
                     ((or "flv" "mkv" "mp4")
                      (uiop:launch-program (list "mpv" filename)))
                     (_
-                     (next::open-file-function-default filename))))
+                     (next/file-manager-mode:open-file-function filename))))
     (error (c) (log:error "Error opening pdf ~a: ~a" filename c))))
 
-(setf next:*open-file-function* #'my-open-videos)
+(setf next/file-manager-mode:*open-file-function* #'my-open-videos)
 #+end_src
 
 ** Loading Files
