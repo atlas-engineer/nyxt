@@ -175,8 +175,7 @@ For =next= to work, it must find the platform port.  There are a few options:
 
 ;; Use development platform port.
 (setf (get-default 'port 'path)
-      (format nil "~a/common-lisp/next/ports/gtk-webkit/next-gtk-webkit"
-              (uiop:getenv "HOME")))
+      "~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit")
 ;; ...
   #+END_SRC
 
