@@ -111,6 +111,9 @@ def create_key_string(event):
             except Exception:
                 text = QKeySequence(event.key()).toString().lower()
 
+        if event.modifiers() == Qt.ShiftModifier:
+            text = text.upper()
+
     return text
 
 
@@ -151,7 +154,7 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
 
     if x == -1:
         # Key event.
-        if key_code not in SPECIAL_KEYS or key_code == Qt.Key_Space:
+        if (key_code not in SPECIAL_KEYS or key_code == Qt.Key_Space):
             text = chr(key_code)
 
         # TODO: Forwarding ALL key-codes in this way will occassionally break
