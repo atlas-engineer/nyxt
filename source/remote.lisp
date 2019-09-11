@@ -259,10 +259,16 @@ window or not.")
    (download-watcher :accessor download-watcher :initform nil
                      :documentation "List of downloads.")
    (download-directory :accessor download-directory :initform nil
-                     :documentation "Path of directory where downloads will be
+                       :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.")
+   (startup-timestamp :initarg :startup-timestamp :accessor startup-timestamp
+                      :type local-time:timestamp
+                      :initform nil
+                      :documentation "`local-time:timestamp' of when Next was started.")
+   (init-time :initform 0.0 :type number
+              :documentation "Init time in seconds.")
    (after-init-hook :accessor after-init-hook :initform '() :type list
-                     :documentation "Hook run after both `*interface*' and the
+                    :documentation "Hook run after both `*interface*' and the
 platform port have started.  The handlers take no argument.")
    (before-exit-hook :accessor before-exit-hook :initform '() :type list
                      :documentation "Hook run before both `*interface*' and the

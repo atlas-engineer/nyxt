@@ -190,23 +190,30 @@ If FILE is \"-\", read from the standard input."
 A new `*interface*' is instantiated.
 The platform port is automatically started if needed.
 Finally, the `after-init-hook' of the `*interface*' is run."
-  (log:info +version+)
-  ;; Randomness should be seeded as early as possible to avoid generating
-  ;; deterministic tokens.
-  (setf *random-state* (make-random-state t))
-  (load-lisp-file (init-file-path))
-  ;; create the interface object
-  (when *interface*
-    (kill-interface *interface*)
-    ;; It's important to set it to nil or else if we re-run this function,
-    ;; (make-instance 'remote-interface) will be run while an existing
-    ;; *interface* is still floating around.
-    (setf *interface* nil))
-  (setf *interface* (make-instance 'remote-interface))
-  ;; Start the port after the interface so that we don't overwrite the log when
-  ;; an instance is already running.
-  (initialize-port *interface* (or urls *free-args*))
-  (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook)))
+  (let ((startup-timestamp (local-time:now)))
+    (log:info +version+)
+    ;; Randomness should be seeded as early as possible to avoid generating
+    ;; deterministic tokens.
+    (setf *random-state* (make-random-state t))
+    (load-lisp-file (init-file-path))
+    ;; create the interface object
+    (when *interface*
+      (kill-interface *interface*)
+      ;; It's important to set it to nil or else if we re-run this function,
+      ;; (make-instance 'remote-interface) will be run while an existing
+      ;; *interface* is still floating around.
+      (setf *interface* nil))
+    (setf *interface* (make-instance 'remote-interface :startup-timestamp startup-timestamp))
+    ;; Start the port after the interface so that we don't overwrite the log when
+    ;; an instance is already running.
+    (initialize-port *interface* (or urls *free-args*))
+    (setf (slot-value *interface* 'init-time)
+          (local-time:timestamp-difference (local-time:now) startup-timestamp))
+    (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook))))
+
+(define-command next-init-time ()
+  "Return the duration of Next initialization."
+  (echo "~,2f seconds" (slot-value *interface* 'init-time)))
 
 (define-key "C-x C-c" #'quit)
 (define-key "C-[" #'switch-buffer-previous)

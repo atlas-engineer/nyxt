@@ -20,6 +20,7 @@
                :dbus
                :dexador
                :ironclad
+               :local-time
                :log4cl
                :lparallel
                :mk-string-metrics
