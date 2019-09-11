@@ -55,3 +55,10 @@ Return NEW-ITEM."
 
 (defun make (&key (size 1000))
   (make-instance 'ring :items (make-array size :initial-element nil)))
+
+(defmethod pop-most-recent((ring ring))
+  "Return the most-recently-added item in RING, and remove it from the RING.
+TODO What if the ring is empty?"
+  (let ((most-recent-item (ref ring 0)))
+    (decf (item-count ring))
+    most-recent-item))

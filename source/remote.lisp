@@ -239,20 +239,14 @@ commands.")
    (dbus-pid :accessor dbus-pid :initform nil :type :number
              :documentation "The process identifier of the dbus instance started
 by Next when the user session dbus instance is not available.")
-<<<<<<< HEAD
-   (minibuffer :accessor minibuffer :initform (make-instance 'minibuffer)
-               :documentation "The minibuffer object.")
-   (clipboard-ring :accessor clipboard-ring :initform (make-instance 'ring))
-   (recent-buffers-length :accessor recent-buffers-length :initform 50
-                          :documentation "The maximum length of the recent-buffers.")
-   (recent-buffers :accessor recent-buffers
-                        :documentation "A ring that keeps track of deleted buffers.")
-=======
    (clipboard-ring :accessor clipboard-ring :initform (ring:make))
    (minibuffer-generic-history :accessor minibuffer-generic-history :initform (ring:make))
    (minibuffer-search-history :accessor minibuffer-search-history :initform (ring:make))
    (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (ring:make))
->>>>>>> b66995023c6e217c0343812b3201b27fa2ccc2a5
+   (recent-buffers-length :accessor recent-buffers-length :initform 50
+                          :documentation "The maximum length of the recent-buffers.")
+   (recent-buffers :accessor recent-buffers
+                   :documentation "A ring that keeps track of deleted buffers.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
@@ -302,14 +296,15 @@ The handlers take the `download-manager:download' class instance as argument."))
   "Creates a recent-buffers ring with the length set in recent-buffers-length."
   ((interface remote-interface) &rest args)
   (setf (recent-buffers interface)
-        (make-instance 'ring :items (make-array (recent-buffers-length interface)
-                                                :initial-element nil))))
+        (ring:make :size (recent-buffers-length interface))))
+        ;; (make-instance 'ring :items (make-array (recent-buffers-length interface)
+                                                ;; :initial-element nil))))
 
 (defmethod add-buffer-to-recent-buffers-ring ((interface remote-interface) (buffer buffer))
   "Add the url of a given buffer to the buffers ring."
   ;; TODO Should this only insert if the url is different from the first url in the history?
   ;; In chrome at least, duplicate entries are allowed.
-  (ring-insert (recent-buffers interface) (make-recent-buffer (name buffer) (title buffer))))
+  (ring:insert (recent-buffers interface) (make-recent-buffer (name buffer) (title buffer))))
 
 @export
 (defmethod minibuffer ((interface remote-interface))
