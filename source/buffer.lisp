@@ -93,7 +93,7 @@ If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
   (with-result (url (buffer-get-url))
     (let ((history (minibuffer-set-url-history *interface*)))
       (when history
-        (ring-insert history url))
+        (ring:insert history url))
       (with-result (url (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Open URL in buffer:"
@@ -114,7 +114,7 @@ buffer"
   (with-result (url (buffer-get-url))
     (let ((history (minibuffer-set-url-history *interface*)))
       (when history
-        (ring-insert history url))
+        (ring:insert history url))
       (with-result (url (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Open URL in new buffer:"

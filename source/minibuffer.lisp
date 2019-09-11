@@ -592,9 +592,20 @@ interpreted by `format'. "
                  (title (buffer-get-title)))
     (echo "~a — ~a" url title)))
 
+(declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
+@export
+(defun ring-insert-clipboard (ring)
+  "Check if clipboard-content is most recent entry in RING.
+If not, insert clipboard-content into RING.
+Return most recent entry in RING."
+  (let ((clipboard-content (trivial-clipboard:text)))
+    (unless (string= clipboard-content (ring:ref ring 0))
+      (ring:insert ring clipboard-content)))
+  (string (ring:ref ring 0)))
+
 (define-command minibuffer-paste (&optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
-  (insert (ring:insert-clipboard (clipboard-ring *interface*)) minibuffer))
+  (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
 
 @export
 (defmethod get-candidate ((minibuffer minibuffer))
@@ -617,7 +628,7 @@ interpreted by `format'. "
       (kill-whole-line minibuffer)
       (insert candidate minibuffer))))
 
-(declaim (ftype (function (ring)) minibuffer-history-completion-fn))
+(declaim (ftype (function (ring:ring)) minibuffer-history-completion-fn))
 (defun minibuffer-history-completion-fn (history)
   (when history
     (lambda (input)

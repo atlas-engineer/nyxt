@@ -220,7 +220,7 @@
     (copy-to-clipboard title)
     (echo "~a copied to clipboard." title)))
 
-(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
+(define-parenscript %paste ((input-text (next:ring-insert-clipboard (clipboard-ring *interface*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
          (end-position (ps:chain active-element selection-end)))
@@ -260,16 +260,6 @@
   "Copy selected text to clipboard."
   (with-result (input (%copy))
     (copy-to-clipboard input)))
-
-(declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
-(defun ring-insert-clipboard (ring)
-  "Check if clipboard-content is most recent entry in RING.
-If not, insert clipboard-content into RING.
-Return most recent entry in RING."
-  (let ((clipboard-content (trivial-clipboard:text)))
-    (unless (string= clipboard-content (ring:ref ring 0))
-      (ring:insert ring clipboard-content)))
-  (ring:ref ring 0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Warning: To specialize `did-commit-navigation' we must be in the right package.

@@ -6,7 +6,6 @@
    #:ring
    #:insert
    #:recent-list
-   #:insert-clipboard
    #:ref
    #:copy
    #:make))
