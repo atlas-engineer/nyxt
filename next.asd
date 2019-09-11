@@ -20,6 +20,7 @@
                :dbus
                :dexador
                :ironclad
+               :local-time
                :log4cl
                :lparallel
                :mk-string-metrics
@@ -32,7 +33,8 @@
                :trivial-clipboard
                :unix-opts
                ;; Local systems:
-               :next/download-manager)
+               :next/download-manager
+               :next/ring)
   :components ((:module "source"
                 :components
                 (;; Core Functionality
@@ -49,7 +51,6 @@
                  (:file "minibuffer")
                  (:file "keymap")
                  (:file "recent-buffer")
-                 (:file "ring")
                  ;; Core Packages
                  (:file "bookmark")
                  (:file "zoom")
@@ -98,8 +99,24 @@
 (asdf:defsystem next/download-manager/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove
-               download-manager)
+               next/download-manager)
   :components ((:module source/tests :pathname "libraries/download-manager/tests/"
+                :components ((:test-file "tests"))))
+  :perform (asdf:test-op (op c) (uiop:symbol-call
+                                 :prove-asdf 'run-test-system c)))
+
+(asdf:defsystem next/ring
+  :depends-on (trivial-clipboard
+               cl-annot)
+  :components ((:module source :pathname "libraries/ring/"
+                :components ((:file "package")
+                             (:file "ring")))))
+
+(asdf:defsystem next/ring/tests
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (prove
+               next/ring)
+  :components ((:module source/tests :pathname "libraries/ring/tests/"
                 :components ((:test-file "tests"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))

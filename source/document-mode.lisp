@@ -175,9 +175,9 @@
 (define-command history-forwards-query ()
   "Move forwards in history querying if more than one child present."
   (with-result (input (read-from-minibuffer
-                       (minibuffer *interface*)
-                       :input-prompt "Navigate forwards to:"
-                       :completion-function (history-forwards-completion-fn)))
+                       (make-instance 'minibuffer
+                                      :input-prompt "Navigate forwards to:"
+                                      :completion-function (history-forwards-completion-fn))))
     (unless (equal input "Cannot navigate forwards.")
       (set-url (node-data input)))))
 
@@ -220,7 +220,7 @@
     (copy-to-clipboard title)
     (echo "~a copied to clipboard." title)))
 
-(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
+(define-parenscript %paste ((input-text (next:ring-insert-clipboard (clipboard-ring *interface*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
          (end-position (ps:chain active-element selection-end)))
@@ -235,12 +235,17 @@
   "Paste from clipboard into active-element."
   (%paste))
 
+(defun ring-completion-fn (ring)
+  (let ((ring-items (ring:recent-list ring)))
+    (lambda (input)
+      (fuzzy-match input ring-items))))
+
 (define-command paste-from-ring ()
   "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
-                           (minibuffer *interface*)
-                           :completion-function (ring-completion-fn
-                                                 (clipboard-ring *interface*))))
+                           (make-instance 'minibuffer
+                                          :completion-function (ring-completion-fn
+                                                                (clipboard-ring *interface*)))))
     (%paste :input-text ring-item)))
 
 (define-parenscript %copy ()
@@ -249,7 +254,7 @@
 
 (defun copy-to-clipboard (input)
   "Save INPUT text to clipboard, and ring."
-  (ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input)))
+  (ring:insert (clipboard-ring *interface*) (trivial-clipboard:text input)))
 
 (define-command copy ()
   "Copy selected text to clipboard."
@@ -270,4 +275,4 @@
   (log:debug mode url)
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
-  (echo-dismiss (minibuffer *interface*)))
+  (echo-dismiss))

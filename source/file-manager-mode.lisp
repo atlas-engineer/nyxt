@@ -100,14 +100,6 @@ Default keybindings: `M-Right' and `C-j'. "
       (erase-input minibuffer)
       (update-display minibuffer))))
 
-@export
-(defun clean-up-file-manager-mode ()
-  "Remove `file-manager-mode' from the minibuffer modes.
-So that we don't clutter the usual minibuffers with our keybindings."
-  (setf (modes (minibuffer *interface*))
-        ;TODO: be more general. Use delete-if.
-        (last (modes (minibuffer *interface*)))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :next)
 (define-command open-file ()
@@ -129,20 +121,13 @@ name) as parameter.
 The default keybinding is `C-x C-f'.
 
 Note: this feature is alpha, get in touch for more!"
-  (let ((directory next/file-manager-mode::*current-directory*)
-        mode)
+  (let ((directory next/file-manager-mode::*current-directory*))
     ;; Allow the current minibuffer to recognize our keybindings.
-    (setf mode (make-instance 'next/file-manager-mode::file-manager-mode
-                              :buffer (minibuffer *interface*)))
-    ;; TODO: The cleanup-function is called when the does `M-x open-file RET`,
-    ;; effectively removing the mode from the minibuffer.  We need to create a
-    ;; new minibuffer instance.
-    (push mode (modes (minibuffer *interface*)))
     (with-result (filename (read-from-minibuffer
-                            (minibuffer *interface*)
-                            :input-prompt (file-namestring directory)
-                            :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn
-                            :cleanup-function #'next/file-manager-mode::clean-up-file-manager-mode))
+                            (make-instance 'minibuffer
+                                           :default-modes '(next/file-manager-mode::file-manager-mode minibuffer-mode)
+                                           :input-prompt (file-namestring directory)
+                                           :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn)))
 
       (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
 

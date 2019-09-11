@@ -27,7 +27,7 @@ ARGS must be key arguments."
                            args)
        (rpc-buffer-evaluate-javascript %interface %buffer
                                        (ps:ps ,@script-body)
-                                       %callback))))
+                                       :callback %callback))))
 
 @export
 (defmacro with-result ((symbol async-form) &body body)
@@ -37,8 +37,9 @@ ASYNC-FORM is a function that has at least a :CALLBACK key argument.
 
 Example:
 
-  (with-result (url (read-from-minibuffer (minibuffer *interface*)
-                                          :input-prompt \"Bookmark URL:\"))
+  (with-result (url (read-from-minibuffer
+                     (make-instance 'minibuffer
+                                    :input-prompt \"Bookmark URL:\"))
     (%bookmark-url url))"
   `(,(first async-form)
     ,@(rest async-form)
