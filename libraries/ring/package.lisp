@@ -9,4 +9,4 @@
    #:insert-clipboard
    #:ref
    #:copy
-   #:make-ring))
+   #:make))

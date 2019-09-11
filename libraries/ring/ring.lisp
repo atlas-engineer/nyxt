@@ -53,5 +53,5 @@ Return NEW-ITEM."
      (items copy) (copy-seq (items ring)))
     copy))
 
-(defun make-ring ()
-  (make-instance 'ring))
+(defun make (&key (size 1000))
+  (make-instance 'ring :items (make-array size :initial-element nil)))
