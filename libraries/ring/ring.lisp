@@ -11,47 +11,45 @@
                :initform 0
                :documentation "Index of oldest item.")))
 
-(defmethod ring-size ((ring ring))
+(defmethod size ((ring ring))
   "Return the maximum number of elements it can contain."
   (length (items ring)))
 
-(defmethod ring-index ((ring ring) index)
+(defmethod index ((ring ring) index)
   "Return index converted to internal ring index, where items are ordered from newest to oldest."
   (mod (1- (+ (head-index ring)
               (- (item-count ring) index)))
-       (ring-size ring)))
+       (size ring)))
 
-(defmethod ring-insert ((ring ring) new-item)
+(defmethod insert ((ring ring) new-item)
   "Insert item into RING.
 If RING is full, replace the oldest item.
 Return NEW-ITEM."
   (prog1 (setf (aref (items ring)
                      (mod (+ (head-index ring) (item-count ring))
-                          (ring-size ring)))
+                          (size ring)))
                new-item)
     (if (= (item-count ring) (length (items ring)))
-        (setf (head-index ring) (mod (1+ (head-index ring)) (ring-size ring)))
+        (setf (head-index ring) (mod (1+ (head-index ring)) (size ring)))
         (incf (item-count ring)))))
 
-(defmethod ring-ref ((ring ring) index)
+(defmethod ref ((ring ring) index)
   "Return value from items by INDEX where 0 INDEX is most recent."
-  (aref (items ring) (ring-index ring index)))
+  (aref (items ring) (index ring index)))
 
-(defmethod ring-recent-list ((ring ring))
+(defmethod recent-list ((ring ring))
   "Return list of items ordered by most recent."
-  (loop for index from 0 below (ring-size ring)
-        for item = (ring-ref ring index)
+  (loop for index from 0 below (size ring)
+        for item = (ref ring index)
         when item collect item))
 
-@export
 (defun ring-completion-fn (ring)
-  (let ((ring-items (ring-recent-list ring)))
+  (let ((ring-items (recent-list ring)))
     (lambda (input)
       (fuzzy-match input ring-items))))
 
-@export
 (declaim (ftype (function (ring) ring) ring-copy))
-(defun ring-copy (ring)
+(defun copy (ring)
   "Return a copy of RING."
   (let ((copy (make-instance 'ring :items nil)))
     (setf
