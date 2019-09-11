@@ -2,8 +2,8 @@
 
 (prove:plan nil)
 
-(defvar test-ring1 (ring:make-ring))
-(setf test-ring1 (ring:make-ring))
+(defvar test-ring1 nil)
+(setf test-ring1 (ring:make))
 
 (loop for i from 1 to 1000
       do (ring::insert test-ring1 (make-string i :initial-element #/a)))
