@@ -200,7 +200,9 @@ See `rpc-buffer-make'."
           (push root-mode (modes buffer))
           (progn
             (log:debug mode-class buffer (mode-command mode-class))
-            (funcall (sym (mode-command mode-class)) :buffer buffer :activate t))))))
+            (match (mode-command mode-class)
+              ((guard c c) (funcall (sym c) :buffer buffer :activate t))
+              (_ (log:warn "Mode command ~a not found." mode-class))))))))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord

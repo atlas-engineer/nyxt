@@ -125,7 +125,7 @@ Note: this feature is alpha, get in touch for more!"
     ;; Allow the current minibuffer to recognize our keybindings.
     (with-result (filename (read-from-minibuffer
                             (make-instance 'minibuffer
-                                           :default-modes '(next/file-manager-mode::open-file-mode minibuffer-mode)
+                                           :default-modes '(next/file-manager-mode::file-manager-mode minibuffer-mode)
                                            :input-prompt (file-namestring directory)
                                            :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn)))
 
