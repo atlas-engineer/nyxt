@@ -236,7 +236,7 @@
   (%paste))
 
 (defun ring-completion-fn (ring)
-  (let ((ring-items (ring:ring-recent-list ring)))
+  (let ((ring-items (ring:recent-list ring)))
     (lambda (input)
       (fuzzy-match input ring-items))))
 
@@ -254,21 +254,22 @@
 
 (defun copy-to-clipboard (input)
   "Save INPUT text to clipboard, and ring."
-  (ring:ring-insert (clipboard-ring *interface*) (trivial-clipboard:text input)))
+  (ring:insert (clipboard-ring *interface*) (trivial-clipboard:text input)))
 
 (define-command copy ()
   "Copy selected text to clipboard."
   (with-result (input (%copy))
     (copy-to-clipboard input)))
 
+(declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
 (defun ring-insert-clipboard (ring)
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
 Return most recent entry in RING."
   (let ((clipboard-content (trivial-clipboard:text)))
-    (unless (string= clipboard-content (ring:ring-ref ring 0))
-      (ring:ring-insert ring clipboard-content)))
-  (ring:ring-ref ring 0))
+    (unless (string= clipboard-content (ring:ref ring 0))
+      (ring:insert ring clipboard-content)))
+  (ring:ref ring 0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Warning: To specialize `did-commit-navigation' we must be in the right package.

@@ -91,7 +91,7 @@ candidates.")
 placeholder character.  This is useful to conceal passwords.")
    (history :initarg :history :accessor history
             :initform (minibuffer-generic-history *interface*)
-            :type ring
+            :type ring:ring
             :documentation "History of inputs for the minibuffer.
 If nil, no history is used.")
    (completions :accessor completions :initform nil)

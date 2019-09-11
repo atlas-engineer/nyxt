@@ -3,8 +3,10 @@
 (defpackage :ring
   (:use :common-lisp)
   (:export
-   #:ring-insert
-   #:ring-recent-list
-   #:ring-insert-clipboard
-   #:ring-ref
+   #:ring
+   #:insert
+   #:recent-list
+   #:insert-clipboard
+   #:ref
+   #:copy
    #:make-ring))
