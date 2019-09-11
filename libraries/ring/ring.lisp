@@ -43,11 +43,6 @@ Return NEW-ITEM."
         for item = (ref ring index)
         when item collect item))
 
-(defun ring-completion-fn (ring)
-  (let ((ring-items (recent-list ring)))
-    (lambda (input)
-      (fuzzy-match input ring-items))))
-
 (declaim (ftype (function (ring) ring) ring-copy))
 (defun copy (ring)
   "Return a copy of RING."

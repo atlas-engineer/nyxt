@@ -201,7 +201,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   (unless (or (null (history minibuffer))
               (str:empty? (input-buffer minibuffer)))
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (ring-insert (history minibuffer) normalized-input)))
+      (ring:insert (history minibuffer) normalized-input)))
   (cancel-input minibuffer))
 
 (define-command cancel-input (&optional (minibuffer (minibuffer *interface*)))
@@ -594,7 +594,7 @@ interpreted by `format'. "
 
 (define-command minibuffer-paste (&optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
-  (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
+  (insert (ring:insert-clipboard (clipboard-ring *interface*)) minibuffer))
 
 @export
 (defmethod get-candidate ((minibuffer minibuffer))
@@ -621,7 +621,7 @@ interpreted by `format'. "
 (defun minibuffer-history-completion-fn (history)
   (when history
     (lambda (input)
-      (fuzzy-match input (delete-duplicates (ring-recent-list history)
+      (fuzzy-match input (delete-duplicates (ring:recent-list history)
                                             :test #'equal)))))
 
 (define-command minibuffer-history (&optional (minibuffer (minibuffer *interface*)))
