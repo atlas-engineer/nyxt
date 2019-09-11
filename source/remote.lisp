@@ -285,11 +285,11 @@ The handlers take the `download-manager:download' class instance as argument."))
         (make-instance 'ring :items (make-array (recent-buffers-length interface)
                                                 :initial-element nil))))
 
-(defmethod add-url-to-recent-buffers-ring ((interface remote-interface) url)
+(defmethod add-buffer-to-recent-buffers-ring ((interface remote-interface) (buffer buffer))
   "Add the url of a given buffer to the buffers ring."
   ;; TODO Should this only insert if the url is different from the first url in the history?
   ;; In chrome at least, duplicate entries are allowed.
-  (ring-insert (recent-buffers interface) url))
+  (ring-insert (recent-buffers interface) (make-recent-buffer (name buffer) (title buffer))))
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -587,7 +587,7 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
                                 (rpc-buffer-make interface))))
-    (add-url-to-recent-buffers-ring interface (name buffer))
+    (add-buffer-to-recent-buffers-ring interface buffer)
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))

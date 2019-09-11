@@ -48,6 +48,7 @@
                  (:file "window")
                  (:file "minibuffer")
                  (:file "keymap")
+                 (:file "recent-buffer")
                  (:file "ring")
                  ;; Core Packages
                  (:file "bookmark")

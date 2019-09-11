@@ -32,11 +32,6 @@ See the `make-buffer' function for Lisp code."
     (lambda (input)
       (fuzzy-match input buffers))))
 
-(defun recent-buffer-completion-fn ()
-  (let ((buffers (ring-recent-list (recent-buffers *interface*))))
-    (lambda (input)
-      (fuzzy-match input buffers))))
-
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
   (with-result (buffer (read-from-minibuffer
@@ -64,19 +59,6 @@ See the `make-buffer' function for Lisp code."
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
   (rpc-buffer-delete *interface* (active-buffer *interface*)))
-
-(define-command reopen-buffer ()
-  "Delete the buffer via minibuffer input."
-  (with-result (buffer (read-from-minibuffer
-                        (minibuffer *interface*)
-                        :input-prompt "Reopen buffer:"
-                        :completion-function (recent-buffer-completion-fn)))
-    (make-buffers (list buffer))))
-
-(define-command undo-buffer-deletion ()
-  "Go to the first url in the list of killed buffers."
-  (if (> (item-count (recent-buffers *interface*)) 0)
-      (make-buffers (list (ring-pop-most-recent (recent-buffers *interface*))))))
 
 @export
 (define-parenscript buffer-get-url ()
