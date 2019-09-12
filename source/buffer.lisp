@@ -68,25 +68,22 @@ buffer to the start page."
 (define-parenscript buffer-get-title ()
   (ps:chain document title))
 
-;; This needs to be a funtion call in Javascript.
-(define-parenscript buffer-set-url (url)
-  ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
-
 @export
-(defun set-url (input-url &key (buffer (active-buffer *interface*)) disable-history)
+(defun set-url (input-url &key (buffer (active-buffer *interface*))
+                            disable-history
+                            raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'.
 If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
-  (let ((url (parse-url input-url)))
+  (let ((url (if raw-url-p
+                 (parse-url input-url)
+                 input-url)))
     (setf (name buffer) url)
     (unless disable-history
+      ;; TODO: Do we need this if we already save history in `did-commit-navigation'?
       (history-typed-add input-url))
     (setf url (run-composed-hook (load-hook buffer) url))
-    (if (str:starts-with-p "file://" url)
-        (rpc-buffer-load *interface* buffer url)
-        ;; We need to specify the buffer here since we may reach this point
-        ;; on initialization before ACTIVE-BUFFER can be used.
-        (buffer-set-url :url url :buffer buffer))))
+    (rpc-buffer-load *interface* buffer url)))
 
 (define-command set-url-current-buffer ()
   "Set the URL for the current buffer, completing with history."
