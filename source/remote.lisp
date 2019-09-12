@@ -81,7 +81,7 @@ Currently we store the list of current URLs of all buffers."
              (s-serialization:deserialize-sexp
               file)))))
     (when url-list
-      (make-buffers
+      (open-urls
        ;; TODO: Find a better way to clean up special buffers.  Or should we
        ;; restore them?
        (delete-if (alexandria:curry #'str:starts-with? "*")
@@ -799,21 +799,21 @@ TODO: Only booleans are supported for now."
     ()
   (:interface +core-interface+)
   (:name "make_buffers")
-  (make-buffers urls)
+  (open-urls urls)
   (values))
 
-(defun make-buffers (urls)
-  "Create new buffers from URLs."
-  ;; The new active buffer should be the first created buffer.
-  (when urls
-    (let ((buffer (make-buffer)))
-      (set-url (first urls) :buffer buffer)
-      (if (open-external-link-in-new-window-p *interface*)
-          (window-set-active-buffer *interface* (rpc-window-make *interface*) buffer)
-          (set-active-buffer *interface* buffer)))
-    (loop for url in (rest urls) do
-      (let ((buffer (make-buffer)))
-        (set-url url :buffer buffer)))))
+(defun open-urls (urls)
+  "Create new buffers from URLs.
+First URL is focused."
+  (let ((first-buffer (first (mapcar
+                              (lambda (url)
+                                (let ((buffer (make-buffer)))
+                                  (set-url url :buffer buffer)
+                                  buffer))
+                              urls))))
+    (if (open-external-link-in-new-window-p *interface*)
+        (window-set-active-buffer *interface* (rpc-window-make *interface*) first-buffer)
+        (set-active-buffer *interface* first-buffer))))
 
 @export
 (defmethod resource-query-default ((buffer buffer)
@@ -840,7 +840,7 @@ Deal with URL with the following rules:
               (string= mouse-button "button1"))
          (string= mouse-button "button2"))
      (log:info "Load ~a in new buffer" url)
-     (make-buffers (list url))
+     (open-urls (list url))
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
