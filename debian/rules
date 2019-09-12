@@ -4,38 +4,22 @@ DH_VERBOSE = 1
 %:
 	dh $@
 
-NAME=next
-VERSION=1.3.1
-DESTDIR=$(CURDIR)/debian/$(NAME)/
-
-
 build:
 	dh_testdir
 	dh_testroot
 	dh_prep
 	make all
 
-# override_dh_auto_build:
-	# dh_auto_build -- all
+override_dh_auto_build:
+	all
 
-binary:
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs
-	dh_prep
-	echo $(DESTDIR)
-	make install DESTDIR=$(DESTDIR)
+# XXX: avoid "desktop is not a directory" error.
+override_dh_usrlocal:
+	echo
 
-	dh_installdeb
-	# dh_gencontrol
-	# dh_md5sums
-	# dh_builddeb  # only binary packages ?
-
-# override_dh_auto_binary:
-	# make install
-
-clean:
-	dh_testdir
-	dh_testroot
+# XXX: clean binaries.
+# clean:
+	# dh_testdir
+	# dh_testroot
 	# make clean DESTDIR=$(DESTDIR)
 	# dh_clean

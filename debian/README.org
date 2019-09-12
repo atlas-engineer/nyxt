@@ -1,12 +1,14 @@
-Debian package files.
+Files to create a Debian package.
 
 Build with
 
 : debuild -us -uc
 
-_status_: currently failing:
+Files are created one directory up.
 
-> dpkg-genbuildinfo: error: binary build with no binary artifacts found; .buildinfo is meaningless
+_status_:  the .deb  builds, =next-gtk-webkit=  only prints  "starting
+platform port".
+
 
 https://www.debian.org/doc/manuals/maint-guide/
 https://www.debian.org/doc/manuals/maint-guide/dreq.en.html
