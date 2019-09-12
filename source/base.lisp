@@ -232,7 +232,7 @@ Finally, the `after-init-hook' of the `*interface*' is run."
 (define-key "C-l" #'set-url-current-buffer)
 (define-key "M-l" #'set-url-new-buffer)
 (define-key "C-m k" #'bookmark-delete)
-(define-key "C-t" #'make-visible-new-buffer)
+(define-key "C-t" #'make-buffer-focus)
 (define-key "C-m u" #'bookmark-url)
 (define-key "C-x C-k" #'delete-current-buffer)
 ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
@@ -241,7 +241,7 @@ Finally, the `after-init-hook' of the `*interface*' is run."
 (define-key "C-o" #'load-file)
 (define-key "C-h s" #'start-swank)
 (define-key "M-x" #'execute-command)
-(define-key "C-x 5 2" #'new-window)
+(define-key "C-x 5 2" #'make-window)
 (define-key "C-x 5 0" #'delete-window)
 ;; (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*)))) ; TODO: Seems obsolete?
 
@@ -254,7 +254,7 @@ Finally, the `after-init-hook' of the `*interface*' is run."
   "g b" #'switch-buffer
   "d" #'delete-buffer
   "D" #'delete-current-buffer
-  "B" #'make-visible-new-buffer
+  "B" #'make-buffer-focus
   "o" #'set-url-current-buffer
   "O" #'set-url-new-buffer
   "m u" #'bookmark-url
@@ -264,4 +264,4 @@ Finally, the `after-init-hook' of the `*interface*' is run."
   "C-h c" #'command-inspect
   "C-h s" #'start-swank
   ":" #'execute-command
-  "W" #'new-window)
+  "W" #'make-window)
