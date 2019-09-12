@@ -152,10 +152,11 @@ If FILE is \"-\", read from the standard input."
                       (load file :if-does-not-exist nil)))
     (error (c)
       ;; TODO: Handle warning from `echo'.
-      (log:warn "Error: we could not load the Lisp file ~a: ~a" file c)
-      (when interactive
-        (error "Could not load the lisp init file ~a: ~&~a" file c))
-      (echo "Error: we could not load the Lisp file ~a: ~a" file c))))
+      (let ((message "Error: we could not load the Lisp file ~a: ~a" ))
+        (log:warn message file c)
+        (when interactive
+          (error message file c))
+        (echo message file c)))))
 
 (define-command load-file ()
   "Load the provided lisp file.
