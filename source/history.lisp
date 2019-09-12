@@ -29,7 +29,7 @@
                    (some (lambda (window)
                            (history-db-path window))
                          (alexandria:hash-table-values (windows *interface*))))))
-    (if (probe-file path)
+    (if (uiop:file-exists-p path)
         path
         (ensure-file-exists path #'%initialize-history-db))))
 

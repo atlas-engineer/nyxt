@@ -90,6 +90,8 @@
   (is "http://[1:0:0:2::3:0.]/" (first (next::fuzzy-match "[" '("test1"
                                                                 "http://[1:0:0:2::3:0.]/"
                                                                 "test2")))
-      "match regex meta-characters"))
+      "match regex meta-characters")
+  (is "https://duckduckgo.com/?q=*spurious*" (next::parse-url "*spurious*")
+      "ignore wildcards"))
 
 (finalize)

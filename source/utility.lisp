@@ -37,7 +37,7 @@ Otherwise, build a search query with the default search engine."
                   (not (string= "file" recognized-scheme)))
              input-url)
             ((or (string= "file" recognized-scheme)
-                 (probe-file input-url))
+                 (uiop:file-exists-p input-url))
              (if (string= "file" recognized-scheme)
                  input-url
                  (format nil "file://~a"
@@ -187,7 +187,7 @@ FILE-NAME is appended to the result."
 (defun ensure-file-exists (path &optional (init-function))
   "Create file pointed by PATH if it does not exists.  Return PATH's truename.
 When non-nil, INIT-FUNCTION is used to create the file, else the file will be empty."
-  (unless (probe-file path)
+  (unless (uiop:file-exists-p path)
     (if init-function
         (funcall init-function path)
         (close (open (ensure-parent-exists path) :direction :probe :if-does-not-exist :create))))
