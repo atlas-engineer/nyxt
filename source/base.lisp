@@ -185,7 +185,8 @@ This function is suitable as a `remote-interface' `startup-function'."
       ;; otherwise display start-page-url.
       (let ((window (rpc-window-make *interface*))
             (buffer (help)))
-        (window-set-active-buffer *interface* window buffer))))
+        (window-set-active-buffer *interface* window buffer)))
+  (funcall (session-restore-function (last-active-window *interface*))))
 
 @export
 (defun start (&rest urls)
