@@ -70,18 +70,13 @@ buffer to the start page."
 
 @export
 (defun set-url (input-url &key (buffer (active-buffer *interface*))
-                            disable-history
                             raw-url-p)
   "Load INPUT-URL in BUFFER.
-URL is first transformed by `parse-url', then by BUFFER's `load-hook'.
-If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
+URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   (let ((url (if raw-url-p
                  (parse-url input-url)
                  input-url)))
     (setf (name buffer) url)
-    (unless disable-history
-      ;; TODO: Do we need this if we already save history in `did-commit-navigation'?
-      (history-typed-add input-url))
     (setf url (run-composed-hook (load-hook buffer) url))
     (rpc-buffer-load *interface* buffer url)))
 
@@ -102,7 +97,7 @@ If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
 (define-command reload-current-buffer ()
   "Reload current buffer."
   (with-result (url (buffer-get-url))
-    (set-url url :disable-history t)))
+    (set-url url)))
 
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new active / visible
