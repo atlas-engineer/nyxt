@@ -46,11 +46,6 @@ into `session-path'.")
                              :initform #'restore-sexp-session
                              :documentation "The function which restores the session
 into `session-path'.")
-   (search-engines :accessor search-engines :initform '(("default" . "https://duckduckgo.com/?q=~a")
-                                                        ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
-                   :documentation "An association list of all the search engines you can use in the minibuffer.
-The 'default' engine is used when the query is not a valid URL, or the first
-keyword is not recognized.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
@@ -305,6 +300,12 @@ is run after the platform port has been initialized and after the
                                        :documentation "When open links from an external program, or
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
+   (search-engines :accessor search-engines
+                   :initform '(("default" . "https://duckduckgo.com/?q=~a")
+                               ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
+                   :documentation "An association list of all the search engines
+you can use in the minibuffer.  The 'default' engine is used when the query is
+not a valid URL, or the first keyword is not recognized.")
    (key-chord-stack :accessor key-chord-stack :initform '()
                     :documentation "A stack that keeps track of the key chords a user has inputted.")
    (downloads :accessor downloads :initform '()
