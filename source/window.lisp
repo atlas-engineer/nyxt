@@ -18,7 +18,7 @@
     (window-set-active-buffer *interface* window buffer)
     (values window buffer)))
 
-(define-command new-window ()
+(define-command new-window ()           ; TODO: This function is not needed anymore, turn `make-window' to a command instead.
   "Create a new window.
 This command is meant to be used interactively.
 For Lisp code, see `make-window'."

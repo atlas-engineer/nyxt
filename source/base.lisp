@@ -96,8 +96,9 @@ Set to '-' to read standard input instead."))
   (dbus:with-open-bus (bus bus-type)
     (member-string +platform-port-name+ (dbus:list-names bus))))
 
-(defmethod initialize-port ((interface remote-interface) &optional (urls *free-args*))
-  "Start platform port if necessary and make a first window."
+(defmethod initialize-port ((interface remote-interface))
+  "Start platform port if necessary.
+If not platform port can be started or found, error out and quit."
   ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
   ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
   (let ((port-running (ping-platform-port)))
@@ -121,29 +122,14 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
             repeat max-attempts
             do (unless (setf port-running (ping-platform-port))
                  (sleep (platform-port-poll-interval interface))))
-      ;; TODO: MAKE-WINDOW should probably take INTERFACE as argument.
-      (if port-running
-          (if urls
-              (let ((buffer (nth-value 1 (make-window))))
-                (set-url (first urls) :buffer buffer)
-                ;; We can have many URLs as positional arguments.
-                (loop for url in (rest urls) do
-                  (let ((buffer (make-buffer)))
-                    (set-url url :buffer buffer))))
-              ;; TODO: Make startup function customizable.
-              ;; TODO: Test if network is available.  If not, display help,
-              ;; otherwise display start-page-url.
-              (let ((window (rpc-window-make *interface*))
-                    (buffer (help)))
-                (window-set-active-buffer *interface* window buffer)))
-          (progn
-            (log:error "Could not connect to platform port: ~a" (path (port interface)))
-            (handler-case
-                (progn
-                  (kill-port (port interface))
-                  (kill-interface interface))
-              (error (c) (format *error-output* "~a" c)))
-            (uiop:quit))))))
+      (unless port-running
+        (log:error "Could not connect to platform port: ~a" (path (port interface)))
+        (handler-case
+            (progn
+              (kill-port (port interface))
+              (kill-interface interface))
+          (error (c) (format *error-output* "~a" c)))
+        (uiop:quit)))))
 
 (defun init-file-path (&optional (file "init.lisp"))
   ;; This can't be a regular variable or else the value will be hard-coded at
@@ -184,6 +170,23 @@ If FILE is \"-\", read from the standard input."
   "Load or reload the init file."
   (load-lisp-file init-file))
 
+(defun default-startup (&optional urls)
+  "Make a window and load one buffer per URL in URLS.
+This function is suitable as a `remote-interface' `startup-function'."
+  ;; TODO: Why not making all buffers first, then create a window with the first
+  ;; buffer as argument?
+  (if urls
+      (let ((buffer (nth-value 1 (make-window))))
+        (set-url (first urls) :buffer buffer)
+        (loop for url in (rest urls) do
+          (let ((buffer (make-buffer)))
+            (set-url url :buffer buffer))))
+      ;; TODO: Test if network is available.  If not, display help,
+      ;; otherwise display start-page-url.
+      (let ((window (rpc-window-make *interface*))
+            (buffer (help)))
+        (window-set-active-buffer *interface* window buffer))))
+
 @export
 (defun start (&rest urls)
   "Start Next and load URLS if any.
@@ -206,10 +209,11 @@ Finally, the `after-init-hook' of the `*interface*' is run."
     (setf *interface* (make-instance 'remote-interface :startup-timestamp startup-timestamp))
     ;; Start the port after the interface so that we don't overwrite the log when
     ;; an instance is already running.
-    (initialize-port *interface* (or urls *free-args*))
+    (initialize-port *interface*)
     (setf (slot-value *interface* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
-    (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook))))
+    (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook))
+    (funcall (startup-function *interface*) (or urls *free-args*))))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."
