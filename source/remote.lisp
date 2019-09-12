@@ -815,7 +815,8 @@ First URL is focused."
                                   buffer))
                               urls))))
     (if (open-external-link-in-new-window-p *interface*)
-        (window-set-active-buffer *interface* (rpc-window-make *interface*) first-buffer)
+        (let ((window (rpc-window-make *interface*)))
+          (window-set-active-buffer *interface* window first-buffer))
         (set-active-buffer *interface* first-buffer))))
 
 @export
@@ -910,4 +911,7 @@ Deal with URL with the following rules:
                               (buffer buffer))
   "Set the active buffer for the active window."
   (let ((rpc-window-active (rpc-window-active interface)))
-    (window-set-active-buffer interface rpc-window-active buffer)))
+    (if rpc-window-active
+        (window-set-active-buffer interface rpc-window-active buffer)
+        (make-window buffer))
+    buffer))
