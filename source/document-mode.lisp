@@ -265,16 +265,15 @@
 ;; Warning: To specialize `did-commit-navigation' we must be in the right package.
 (in-package :next)
 (defmethod did-commit-navigation ((mode next/document-mode::document-mode) url)
+  (echo "Loading: ~a." url))
+
+(defmethod did-finish-navigation ((mode next/document-mode::document-mode) url)
   (let ((active-window (rpc-window-active *interface*)))
     (set-window-title *interface*
                       active-window
                       (active-buffer active-window))
     (next/document-mode::add-or-traverse-history mode url)
     (funcall (session-store-function active-window)))
-  (echo "Loading: ~a." url))
-
-(defmethod did-finish-navigation ((mode next/document-mode::document-mode) url)
-  (log:debug mode url)
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss))
