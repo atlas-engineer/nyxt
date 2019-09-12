@@ -16,4 +16,6 @@ assignees: ''
 - Kernel name+version:
 - Desktop environment / Window manager name+version:
 - Next version (from =M-x next-version= or =next --version=):
-- How did you install Next? (Guix pack, package manager, build from source)
+- How you installed Next (Guix pack, package manager, build from source):
+- SBCL version (if built from source):
+- WebKitGTK+ / PyQt-Webengine version:
