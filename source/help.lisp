@@ -38,8 +38,8 @@
                                       :input-prompt "Inspect variable:")))
     (let* ((help-buffer (make-buffer
                          :name (concatenate 'string "HELP-" (symbol-name input))
-                         :default-modes (cons 'help-mode
-                                                (get-default 'buffer 'default-modes))))
+                         :modes (cons 'help-mode
+                                      (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
                            (:h1 (symbol-name input))
                            (:p (documentation input 'variable))
@@ -59,8 +59,8 @@
                                       :completion-function 'function-complete)))
     (let* ((help-buffer (make-buffer
                          :name (str:concat "*Help-" (symbol-name input) "*")
-                         :default-modes (cons 'help-mode
-                                              (get-default 'buffer 'default-modes))))
+                         :modes (cons 'help-mode
+                                      (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
                            (:h1 (symbol-name input))
                            (:h2 "Documentation")
@@ -90,8 +90,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                                       :input-prompt "Evaluate Lisp:")))
     (let* ((result-buffer (make-buffer
                            :name (concatenate 'string "EVALUATION RESULT-" input)
-                           :default-modes (cons 'help-mode
-                                                (get-default 'buffer 'default-modes))))
+                           :modes (cons 'help-mode
+                                        (get-default 'buffer 'default-modes))))
            (results (handler-case
                         (mapcar #'write-to-string (evaluate input))
                       (error (c) (format nil "~a" c))))
@@ -111,8 +111,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
   "Print some help."
   (let* ((help-buffer (make-buffer
                        :name "*Help*"
-                       :default-modes (cons 'help-mode
-                                            (get-default 'buffer 'default-modes))))
+                       :modes (cons 'help-mode
+                                    (get-default 'buffer 'default-modes))))
          (help-contents
            (cl-markup:markup
             (:h1 "Getting started")

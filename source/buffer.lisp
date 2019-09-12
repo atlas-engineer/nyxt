@@ -7,20 +7,11 @@
 (defmethod object-string ((buffer buffer))
   (format nil "~a  ~a" (name buffer) (title buffer)))
 
-(defun make-buffer (&key (name "default")
-                         default-modes)
+(define-command make-buffer (&key (name "default")
+                                  modes)
   "Create a new buffer.
-MODE is a mode symbol.
-This function is meant to be used on the Lisp side."
-  (rpc-buffer-make *interface* :name name :default-modes default-modes))
-
-(define-command new-buffer (&optional (name "default")
-                                      modes)
-  ;; TODO: Ask for modes interactively?
-  "Create a new buffer.
-This command is meant to be used interactively.
-See the `make-buffer' function for Lisp code."
-  (make-buffer :name name :default-modes modes))
+MODES is a list of mode symbols."
+  (rpc-buffer-make *interface* :name name :default-modes modes))
 
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*)))
@@ -40,8 +31,8 @@ See the `make-buffer' function for Lisp code."
                                        :completion-function (buffer-completion-fn))))
     (set-active-buffer *interface* buffer)))
 
-(define-command make-visible-new-buffer ()
-  "Make a new empty buffer with the default-new-buffer-url loaded."
+(define-command make-buffer-focus ()
+  "Switch to a new buffer showing default-new-buffer-url."
   (let ((buffer (make-buffer)))
     (set-active-buffer *interface* buffer)
     (set-url (default-new-buffer-url buffer) :buffer buffer)))

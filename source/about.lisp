@@ -4,8 +4,8 @@
   "Show the list of contributors."
   (let* ((buffer (make-buffer
                   :name "*About*"
-                  :default-modes (cons 'help-mode
-                                       (get-default 'buffer 'default-modes))))
+                  :modes (cons 'help-mode
+                               (get-default 'buffer 'default-modes))))
          (contents (cl-markup:markup
                     (:h1 "Crowdfunding backers")
                     (:p "Thank you to all who have supported and made Next possible!")
