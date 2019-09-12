@@ -149,7 +149,7 @@
                                                    ;; (mode (active-buffer *interface*))
                                                    ))))
     (when parent
-      (set-url (node-data parent) :disable-history t))))
+      (set-url (node-data parent)))))
 
 (define-command history-forwards (&optional (buffer (active-buffer *interface*)))
   "Move forwards in history selecting the first child."
@@ -159,7 +159,7 @@
                                    ;; (mode (active-buffer *interface*))
                                    ))))
     (unless (null children)
-      (set-url (node-data (nth 0 children)) :disable-history t))))
+      (set-url (node-data (nth 0 children))))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
                                                         (active-buffer *interface*)
