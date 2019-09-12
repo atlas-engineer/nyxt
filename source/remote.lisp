@@ -253,7 +253,7 @@ See `rpc-buffer-make'."
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
-  (with-result (title (buffer-get-title))
+  (with-result (title (buffer-get-title :buffer buffer))
     (setf (title buffer) title))
   (dolist (mode (modes buffer))
     (did-commit-navigation mode url)))
@@ -570,7 +570,7 @@ proceeding."
                              (buffer buffer))
   "Set current window title to 'Next - TITLE - URL."
   (let ((url (name buffer)))
-    (with-result* ((title (buffer-get-title)))
+    (with-result* ((title (buffer-get-title :buffer buffer)))
       (setf title (if (str:emptyp title) "" title))
       (setf url (if (str:emptyp url) "<no url/name>" url))
       (rpc-window-set-title interface window
@@ -903,7 +903,8 @@ Deal with URL with the following rules:
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
   (match (rpc-window-active interface)
-    ((guard w w) (active-buffer w))))
+    ((guard w w) (active-buffer w))
+    (_ (log:warn "No active window."))))
 
 ;; TODO: Prevent setting the minibuffer as the active buffer.
 @export
