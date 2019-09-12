@@ -177,14 +177,8 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
 (defun default-startup (&optional urls)
   "Make a window and load one buffer per URL in URLS.
 This function is suitable as a `remote-interface' `startup-function'."
-  ;; TODO: Why not making all buffers first, then create a window with the first
-  ;; buffer as argument?
   (if urls
-      (let ((buffer (nth-value 1 (make-window))))
-        (set-url (first urls) :buffer buffer)
-        (loop for url in (rest urls) do
-          (let ((buffer (make-buffer)))
-            (set-url url :buffer buffer))))
+      (open-urls urls)
       ;; TODO: Test if network is available.  If not, display help,
       ;; otherwise display start-page-url.
       (let ((window (rpc-window-make *interface*))
