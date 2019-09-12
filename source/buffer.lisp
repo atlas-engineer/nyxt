@@ -71,7 +71,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
     (setf url (run-composed-hook (load-hook buffer) url))
     (rpc-buffer-load *interface* buffer url)))
 
-(define-command set-url-current-buffer ()
+(define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."
   (with-result (url (buffer-get-url))
     (let ((history (minibuffer-set-url-history *interface*)))
@@ -83,30 +83,20 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
                                         :completion-function 'history-typed-complete
                                         :history history
                                         :empty-complete-immediate t)))
-        (set-url url)))))
+        (if new-buffer-p
+            (let ((buffer (make-buffer)))
+              (set-url url :buffer buffer)
+              (set-active-buffer *interface* buffer))
+            (set-url url))))))
+
+(define-command set-url-new-buffer ()
+  "Prompt the user for a URL and set it in a new focused buffer."
+  (set-url-current-buffer :new-buffer-p t))
 
 (define-command reload-current-buffer ()
   "Reload current buffer."
   (with-result (url (buffer-get-url))
     (set-url url)))
-
-(define-command set-url-new-buffer ()
-  "Prompt the user for a URL and set it in a new active / visible
-buffer"
-  ;; TODO: This is redundant with `set-url-current-buffer'.
-  (with-result (url (buffer-get-url))
-    (let ((history (minibuffer-set-url-history *interface*)))
-      (when history
-        (ring:insert history url))
-      (with-result (url (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Open URL in new buffer:"
-                                        :completion-function 'history-typed-complete
-                                        :history history
-                                        :empty-complete-immediate t)))
-        (let ((buffer (make-buffer)))
-          (set-url url :buffer buffer)
-          (set-active-buffer *interface* buffer))))))
 
 (defmethod get-active-buffer-index ((active-buffer buffer) buffers)
   (position active-buffer buffers :test #'equal))
