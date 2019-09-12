@@ -32,6 +32,20 @@ current URL or event messages.")
                     :documentation "The path where the system will create/save the history database.")
    (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
                      :documentation "The path where the system will create/save the bookmark database.")
+   (session-path :accessor session-path
+                 :type string
+                 :initform (xdg-data-home "session.lisp")
+                 :documentation "The path where the session is persisted.")
+   (session-store-function :accessor session-store-function
+                           :type function
+                           :initform #'store-sexp-session
+                           :documentation "The function which stores the session
+into `session-path'.")
+   (session-restore-function :accessor session-restore-function
+                           :type function
+                           :initform #'restore-sexp-session
+                           :documentation "The function which restores the session
+into `session-path'.")
    (search-engines :accessor search-engines :initform '(("default" . "https://duckduckgo.com/?q=~a")
                                                         ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
                    :documentation "An association list of all the search engines you can use in the minibuffer.
@@ -43,6 +57,32 @@ The handlers take the window and the buffer as argument.")
    (window-delete-hook :accessor window-delete-hook :initform '() :type list
                        :documentation "Hook run before `rpc-window-delete' takes effect.
 The handlers take the window as argument.")))
+
+;; TODO: Move session to `remote-interface'?
+(defun store-sexp-session ()
+  "Store the current Next session to the last window's `session-path'.
+Currently we store the list of current URLs of all buffers."
+  (with-open-file (file (session-path (last-active-window *interface*))
+                        :direction :output
+                        :if-exists :overwrite)
+    (s-serialization:serialize-sexp
+     (mapcar #'name (alexandria:hash-table-values (buffers *interface*)))
+     file)))
+
+(defun restore-sexp-session ()
+  "Store the current Next session to the last window's `session-path'.
+Currently we store the list of current URLs of all buffers."
+  (let ((url-list
+         (with-open-file (file (session-path (last-active-window *interface*))
+                               :direction :input
+                               :if-does-not-exist nil)
+           (when file
+             (s-serialization:deserialize-sexp
+              file)))))
+    (when url-list
+      (make-buffers
+       ;; (delete-if (alexandria:curry #'string= "*Help*") url-list)
+       url-list))))
 
 @export
 @export-accessors
