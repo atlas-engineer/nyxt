@@ -5,6 +5,7 @@
   - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
   - [[#gnulinux-specific-dependencies][GNU/Linux specific dependencies]]
   - [[#macos-specific-dependencies][macOS specific dependencies]]
+  - [[#fetch-the-source-code][Fetch the source code]]
   - [[#compile][Compile]]
   - [[#run][Run]]
   - [[#run-from-source][Run from Source]]
@@ -32,8 +33,8 @@ and OS integration is provided via:
 You can obtain SBCL from your package manager or by downloading it
 directly from the SBCL repository.
 
-To install SBCL from source, Download SBCL:
-[[http://www.sbcl.org/platform-table.html]], full installation
+To install SBCL from source, download SBCL:
+[[http://www.sbcl.org/platform-table.html]]. Full installation
 instructions can be found here: [[http://www.sbcl.org/getting.html]].
 
 ** Installing Quicklisp (optional)
@@ -59,7 +60,7 @@ To install Quicklisp:
 - gstreamer, gst-plugins-* (for HTML audio/video)
 - xclip (for clipboard support)
 
-If your distribution does not install libraries in a [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
+If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
 have to let know your Lisp compiler where to find them.  To do so, add the
 library directories to ~cffi:*foreign-library-directories*~ list.  For instance,
 if you are running Guix you may want to expose =~/.guix-profile/lib= to the
@@ -89,7 +90,7 @@ A note of caution about installing WebKit via your package
 manager: Your distribution supplied version of WebKit may not provide
 up-to-date versions of WebKit including the latest security
 patches. WebKitGTK+ tries to do the best job possible with maintaining
-security patches upstream, but it is also additionally up to the the
+security patches upstream, but it is also up to the the
 distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
@@ -101,6 +102,14 @@ these fixes.
 + PyQt
 + Python 3.6
 + SQLite (available by default)
+
+** Fetch the source code
+Clone the Next repository into =~/common-lisp= or any directory listed in
+~asdf:*central-registry*~:
+
+#+begin_src sh
+git clone https://github.com/atlas-engineer/next ~/common-lisp/next
+#+end_src
 
 ** Compile
 Next consists of two standalone executables: the Lisp core and the
@@ -175,8 +184,7 @@ For =next= to work, it must find the platform port.  There are a few options:
 
 ;; Use development platform port.
 (setf (get-default 'port 'path)
-      (format nil "~a/common-lisp/next/ports/gtk-webkit/next-gtk-webkit"
-              (uiop:getenv "HOME")))
+      "~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit")
 ;; ...
   #+END_SRC
 
@@ -215,6 +223,16 @@ Then in a shell execute the following:
 6. Make sure the platform port can be found by Next, as described
    in the previous section.
 7. Execute ~(next:start)~ to open your first Next window.
+
+The above process is a bit cumbersome and you'll probably want a more
+comfortable workflow from within your favourite editor.  For instance, with
+Emacs and SLIME the process boils down to:
+
+1. =M-x slime RET=
+2. =,load-system RET next RET=
+3. =(next:start) RET=
+
+See the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of options for various editors.
 
 ** Update local Lisp libraries
 
