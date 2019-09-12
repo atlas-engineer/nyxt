@@ -21,11 +21,10 @@ If the input starts with an uri scheme, open it as is.
 If the input is actually a file path, open it.
 Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
 Otherwise, build a search query with the default search engine."
-  (let* ((window (rpc-window-active *interface*))
-         (engine (assoc (first (str:split " " input-url))
-                        (search-engines window) :test #'string=))
+  (let* ((engine (assoc (first (str:split " " input-url))
+                        (search-engines *interface*) :test #'string=))
          (default (assoc "default"
-                         (search-engines window) :test #'string=)))
+                         (search-engines *interface*) :test #'string=)))
     (if engine
         (generate-search-query
          (subseq input-url
