@@ -64,6 +64,7 @@ The handlers take the window as argument.")))
 Currently we store the list of current URLs of all buffers."
   (with-open-file (file (session-path (last-active-window *interface*))
                         :direction :output
+                        :if-does-not-exist :create
                         :if-exists :overwrite)
     (s-serialization:serialize-sexp
      (mapcar #'name (alexandria:hash-table-values (buffers *interface*)))
