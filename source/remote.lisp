@@ -104,7 +104,6 @@ forwarded when no binding is found.")
                     ;; TODO: Store multiple key chords?  Maybe when implementing keyboard macros.
                     :documentation "The last key chords that were received for the current buffer.
 For now we only store the very last key chord.")
-   (view :accessor view :initarg :view)
    (resource-query-function :accessor resource-query-function
                             ;; TODO: What about having multiple functions?  And what about moving this to modes?
                             :initarg :resource-query-function
