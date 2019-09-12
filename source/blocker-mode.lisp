@@ -45,7 +45,7 @@ If HOSTLIST has a `path', persist it locally."
 (defmethod load-to-memory ((hostlist hostlist))
   "Load hostlist.
 Auto-update file if older than UPDATE-INTERVAL seconds."
-  (if (and (ignore-errors (probe-file (path hostlist)))
+  (if (and (uiop:file-exists-p (path hostlist))
            (< (- (get-universal-time) (uiop:safe-file-write-date (path hostlist)))
               (update-interval hostlist)))
       (uiop:read-file-string (path hostlist))
