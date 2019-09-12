@@ -42,9 +42,9 @@ current URL or event messages.")
                            :documentation "The function which stores the session
 into `session-path'.")
    (session-restore-function :accessor session-restore-function
-                           :type function
-                           :initform #'restore-sexp-session
-                           :documentation "The function which restores the session
+                             :type function
+                             :initform #'restore-sexp-session
+                             :documentation "The function which restores the session
 into `session-path'.")
    (search-engines :accessor search-engines :initform '(("default" . "https://duckduckgo.com/?q=~a")
                                                         ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
@@ -70,7 +70,7 @@ Currently we store the list of current URLs of all buffers."
      file)))
 
 (defun restore-sexp-session ()
-  "Store the current Next session to the last window's `session-path'.
+  "Store the current Next session to the last window `session-path'.
 Currently we store the list of current URLs of all buffers."
   (let ((url-list
          (with-open-file (file (session-path (last-active-window *interface*))
@@ -83,7 +83,7 @@ Currently we store the list of current URLs of all buffers."
       (make-buffers
        ;; TODO: Find a better way to clean up special buffers.  Or should we
        ;; restore them?
-       (delete-if (complement (alexandria:curry #'str:starts-with? "*"))
+       (delete-if (alexandria:curry #'str:starts-with? "*")
                   url-list)))))
 
 @export
