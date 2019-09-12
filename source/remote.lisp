@@ -81,8 +81,10 @@ Currently we store the list of current URLs of all buffers."
               file)))))
     (when url-list
       (make-buffers
-       ;; (delete-if (alexandria:curry #'string= "*Help*") url-list)
-       url-list))))
+       ;; TODO: Find a better way to clean up special buffers.  Or should we
+       ;; restore them?
+       (delete-if (complement (alexandria:curry #'str:starts-with? "*"))
+                  url-list)))))
 
 @export
 @export-accessors
@@ -289,6 +291,13 @@ by Next when the user session dbus instance is not available.")
    (last-active-window :accessor last-active-window :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
    (total-buffer-count :accessor total-buffer-count :initform 0)
+   (startup-function :accessor startup-function
+                     :type function
+                     :initform #'default-startup
+                     :documentation "The function run on startup.  It takes a
+list of URLs (strings) as argument (the command line positional arguments).  It
+is run after the platform port has been initialized and after the
+`after-init-hook' has run.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p :initform nil
