@@ -36,6 +36,11 @@ Minibuffer *minibuffer_init() {
 	minibuffer->web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 	minibuffer->callback_count = 0;
 
+	// Mouse events are captured by the web view first, so we must intercept them here.
+	g_signal_connect(minibuffer->web_view, "button-press-event", G_CALLBACK(window_button_event), minibuffer);
+	g_signal_connect(minibuffer->web_view, "button-release-event", G_CALLBACK(window_button_event), minibuffer);
+	g_signal_connect(minibuffer->web_view, "scroll-event", G_CALLBACK(window_scroll_event), minibuffer);
+
 	g_signal_connect(minibuffer->web_view, "web-process-crashed",
 		G_CALLBACK(minibuffer_web_view_web_process_crashed), minibuffer);
 

@@ -36,19 +36,15 @@ Open any file from within Next, with the usual fuzzy completion.
 (defvar *current-directory* download-manager::*default-download-directory*
   "Default directory to open files from. Defaults to the downloads directory.")
 
-(defun open-file-function-default (filename)
-  "Open this file with `xdg-open'."
+@export
+(defun open-file-function (filename)
+  "Open FILENAME.
+FILENAME is the full path of the file (or directory), as a string.
+By default, try to open it with the system's default external program, using `xdg-open'.
+The user can override this function to decide what to do with the file."
   (handler-case (uiop:launch-program (list "xdg-open" (namestring filename)))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
-
-@export
-(defun open-file-function (filename)
-  "Open `filename'.
-`filename' is the full path of the file (or directory), as a string.
-By default, try to open it with the system's default external program, using `xdg-open'.
-The user can override this function to decide what to do with the file."
-  (open-file-function-default filename))
 
 ;; note: put under the function definition.
 ;; the user is encouraged to override this in her init file.
@@ -56,7 +52,7 @@ The user can override this function to decide what to do with the file."
 (defparameter *open-file-function* #'open-file-function
   "Function triggered to open files.")
 
-(define-mode open-file-mode (minibuffer-mode)
+(define-mode file-manager-mode (minibuffer-mode)
     "Mode to open any file from the filesystem with fuzzy completion
 on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
@@ -104,14 +100,6 @@ Default keybindings: `M-Right' and `C-j'. "
       (erase-input minibuffer)
       (update-display minibuffer))))
 
-@export
-(defun clean-up-open-file-mode ()
-  "Remove `open-file-mode' from the minibuffer modes.
-So that we don't clutter the usual minibuffers with our keybindings."
-  (setf (modes (minibuffer *interface*))
-        ;TODO: be more general. Use delete-if.
-        (last (modes (minibuffer *interface*)))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :next)
 (define-command open-file ()
@@ -133,20 +121,13 @@ name) as parameter.
 The default keybinding is `C-x C-f'.
 
 Note: this feature is alpha, get in touch for more!"
-  (let ((directory next/file-manager-mode::*current-directory*)
-        mode)
+  (let ((directory next/file-manager-mode::*current-directory*))
     ;; Allow the current minibuffer to recognize our keybindings.
-    (setf mode (make-instance 'next/file-manager-mode::open-file-mode
-                              :buffer (minibuffer *interface*)))
-    ;; TODO: The cleanup-function is called when the does `M-x open-file RET`,
-    ;; effectively removing the mode from the minibuffer.  We need to create a
-    ;; new minibuffer instance.
-    (push mode (modes (minibuffer *interface*)))
     (with-result (filename (read-from-minibuffer
-                            (minibuffer *interface*)
-                            :input-prompt (file-namestring directory)
-                            :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn
-                            :cleanup-function #'next/file-manager-mode::clean-up-open-file-mode))
+                            (make-instance 'minibuffer
+                                           :default-modes '(next/file-manager-mode::file-manager-mode minibuffer-mode)
+                                           :input-prompt (file-namestring directory)
+                                           :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn)))
 
       (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
 
@@ -155,4 +136,4 @@ Note: this feature is alpha, get in touch for more!"
 (define-key :scheme :vi-normal "C-x C-f" #'open-file)
 
 ;; This currently dosen't work, we must use the keymap at the mode definition:
-;; (define-key :mode 'open-file-mode  "M-Left" #'display-parent-directory)
+;; (define-key :mode 'file-manager-mode  "M-Left" #'display-parent-directory)

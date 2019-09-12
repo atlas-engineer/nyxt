@@ -235,6 +235,11 @@ gboolean window_send_event(gpointer window_data,
 	guint16 hardware_keycode, guint keyval,
 	gdouble x, gdouble y,
 	gboolean released) {
+	if (window_data == NULL) {
+		g_error("window_send_event called with null window");
+		return FALSE;
+	}
+
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE("as"));
 	for (int i = 0; i < (sizeof modifier_names)/(sizeof modifier_names[0]); i++) {
@@ -372,14 +377,13 @@ gboolean window_button_event(GtkWidget *_widget, GdkEventButton *event, gpointer
 		return FALSE;
 	}
 
-	Buffer *buffer = buffer_data;
 	Window *window = NULL;
 	GHashTableIter iter;
 	gpointer key, value;
 	g_hash_table_iter_init(&iter, state.windows);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		Window *w = (Window *)value;
-		if (w->buffer == buffer) {
+		if (w->buffer == buffer_data || w->minibuffer == buffer_data) {
 			window = w;
 			break;
 		}
@@ -411,14 +415,13 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 		return FALSE;
 	}
 
-	Buffer *buffer = buffer_data;
 	Window *window = NULL;
 	GHashTableIter iter;
 	gpointer key, value;
 	g_hash_table_iter_init(&iter, state.windows);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		Window *w = (Window *)value;
-		if (w->buffer == buffer) {
+		if (w->buffer == buffer_data || w->minibuffer == buffer_data) {
 			window = w;
 			break;
 		}
@@ -439,11 +442,11 @@ gboolean window_scroll_event(GtkWidget *_widget, GdkEventScroll *event, gpointer
 		button = 7;
 		break;
 	case GDK_SCROLL_SMOOTH: {
-		if (event->delta_y < 0) {
+		if (event->delta_y <= 0) {
 			button = 4;
 		} else if (event->delta_y > 0) {
 			button = 5;
-		} else if (event->delta_x < 0) {
+		} else if (event->delta_x <= 0) {
 			button = 6;
 		} else if (event->delta_x > 0) {
 			button = 7;

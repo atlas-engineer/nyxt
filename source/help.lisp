@@ -33,9 +33,9 @@
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
-                       (minibuffer *interface*)
-                       :completion-function 'variable-complete
-                       :input-prompt "Inspect variable:"))
+                       (make-instance 'minibuffer
+                                      :completion-function 'variable-complete
+                                      :input-prompt "Inspect variable:")))
     (let* ((help-buffer (make-buffer
                          :name (concatenate 'string "HELP-" (symbol-name input))
                          :default-modes (cons 'help-mode
@@ -54,9 +54,9 @@
 (define-command command-inspect ()
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
-                       (minibuffer *interface*)
-                       :input-prompt "Inspect command:"
-                       :completion-function 'function-complete))
+                       (make-instance 'minibuffer
+                                      :input-prompt "Inspect command:"
+                                      :completion-function 'function-complete)))
     (let* ((help-buffer (make-buffer
                          :name (str:concat "*Help-" (symbol-name input) "*")
                          :default-modes (cons 'help-mode
@@ -86,8 +86,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 (define-command command-evaluate ()
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
-                       (minibuffer *interface*)
-                       :input-prompt "Evaluate Lisp:"))
+                       (make-instance 'minibuffer
+                                      :input-prompt "Evaluate Lisp:")))
     (let* ((result-buffer (make-buffer
                            :name (concatenate 'string "EVALUATION RESULT-" input)
                            :default-modes (cons 'help-mode
