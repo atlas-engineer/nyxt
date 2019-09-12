@@ -16,6 +16,7 @@
                :cl-markup
                :cl-ppcre
                :cl-ppcre-unicode
+               :cl-prevalence
                :closer-mop
                :dbus
                :dexador
