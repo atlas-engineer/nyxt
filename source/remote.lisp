@@ -651,11 +651,14 @@ Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
   buffer)
 
 (defmethod %get-inactive-buffer ((interface remote-interface))
+  "Return inactive buffer or NIL if none."
   (let ((active-buffers
           (mapcar #'active-buffer
-                      (alexandria:hash-table-values (windows *interface*))))
+                  (alexandria:hash-table-values (windows *interface*))))
         (buffers (alexandria:hash-table-values (buffers *interface*))))
-    (alexandria:last-elt (set-difference buffers active-buffers))))
+    (match (set-difference buffers active-buffers)
+      ((guard diff diff)
+       (alexandria:last-elt diff)))))
 
 @export
 (defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
