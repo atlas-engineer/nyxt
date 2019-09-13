@@ -4,9 +4,9 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
-(defvar *options* ()
+(defvar *options* '()
   "The list of command line options.")
-(defvar *free-args* ()
+(defvar *free-args* '()
   "The list of positional command line arguments.")
 
 @export

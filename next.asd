@@ -40,6 +40,7 @@
                 :components
                 (;; Core Functionality
                  (:file "package")
+                 (:file "serialization")
                  (:file "macro")
                  (:file "global")
                  (:file "port")
