@@ -82,7 +82,7 @@ Set to '-' to read standard input instead."))
                        (kill-interface *interface*))
     ;; Catch a C-c, don't print a full stacktrace.
     (#+sbcl sb-sys:interactive-interrupt
-     #+ccl  ccl:interrupt-signal-condition
+     #+ccl ccl:interrupt-signal-condition
      #+clisp system::simple-interrupt-condition
      #+ecl ext:interactive-interrupt
      #+allegro excl:interrupt-signal
@@ -175,7 +175,7 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
   (load-lisp-file init-file :interactive interactive))
 
 (defun default-startup (&optional urls)
-  "Make a window and load one buffer per URL in URLS.
+  "Make a window and load URLS in new buffers.
 This function is suitable as a `remote-interface' `startup-function'."
   (if urls
       (open-urls urls)

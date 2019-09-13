@@ -118,3 +118,11 @@ Fall back on `resource-query-default'."
                               :is-known-type is-known-type
                               :mouse-button mouse-button
                               :modifiers modifiers)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(in-package :s-serialization)
+
+(defmethod serializable-slots ((object next/blocker-mode::blocker-mode))
+  "Discard hostlists which can get pretty big."
+  (delete 'next/blocker-mode::hostlists
+          (mapcar #'sb-mop:slot-definition-name (sb-mop:class-slots (class-of object)))))

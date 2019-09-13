@@ -62,25 +62,37 @@ Currently we store the list of current URLs of all buffers."
                         :if-does-not-exist :create
                         :if-exists :overwrite)
     (s-serialization:serialize-sexp
-     (mapcar #'name (alexandria:hash-table-values (buffers *interface*)))
+     (buffers *interface*)
+     ;; (mapcar #'name (alexandria:hash-table-values (buffers *interface*)))
      file)))
 
 (defun restore-sexp-session ()
   "Store the current Next session to the last window `session-path'.
 Currently we store the list of current URLs of all buffers."
-  (let ((url-list
+  (let ((buffers
          (with-open-file (file (session-path (last-active-window *interface*))
                                :direction :input
                                :if-does-not-exist nil)
            (when file
              (s-serialization:deserialize-sexp
               file)))))
-    (when url-list
-      (open-urls
-       ;; TODO: Find a better way to clean up special buffers.  Or should we
-       ;; restore them?
-       (delete-if (alexandria:curry #'str:starts-with? "*")
-                  url-list)))))
+    (when (and (hash-table-p buffers)
+               (plusp (hash-table-count buffers)))
+      (log:info "Restoring ~a" (mapcar #'name (alexandria:hash-table-values buffers)))
+      ;; Delete the old buffers.
+      (maphash (lambda (id buffer)
+                 (declare (ignore id))
+                 (rpc-buffer-delete *interface* buffer))
+               buffers)
+      (setf (buffers *interface*) buffers)
+      ;; Make the new ones.
+      (maphash (lambda (id buffer)
+                 (declare (ignore id))
+                 (rpc-load-buffer *interface* buffer)
+                 (rpc-buffer-load *interface* buffer (name buffer)))
+               buffers)
+      ;; TODO: Switch to the last active buffer.  We probably need to serialize *interface*.
+      )))
 
 @export
 @export-accessors
@@ -623,6 +635,20 @@ Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
     (initialize-modes buffer)
     (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
     buffer))
+
+;; TODO: We already have buffer-load.  Rename this "init-dead-buffer".
+@export
+(defmethod rpc-load-buffer ((interface remote-interface) (buffer buffer))
+  "Create a webview for dead BUFFER.
+Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
+  (ensure-parent-exists (cookies-path buffer))
+  (%rpc-send interface "buffer_make" (id buffer)
+             `(("cookies-path" ,(namestring (cookies-path buffer)))))
+  ;; Modes might require that buffer exists, so we need to initialize them
+  ;; after it has been created on the platform port.
+  (initialize-modes buffer)
+  (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
+  buffer)
 
 (defmethod %get-inactive-buffer ((interface remote-interface))
   (let ((active-buffers
