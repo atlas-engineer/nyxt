@@ -4,14 +4,8 @@ DH_VERBOSE = 1
 %:
 	dh $@
 
-build:
-	dh_testdir
-	dh_testroot
-	dh_prep
-	make all
-
 override_dh_auto_build:
-	all
+	$(MAKE)	all
 
 # XXX: avoid "desktop is not a directory" error.
 override_dh_usrlocal:
