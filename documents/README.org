@@ -20,7 +20,7 @@ Install [[https://guix.gnu.org][Guix]] and follow the instructions in [[../build
 
 * Generic Developer Installation
 Next is written in Common Lisp. It can be built with any standard
-Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] support is tested.
+Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] (≥ 1.4.2) support is tested.
 
 It is designed to be cross-platform, cross-engine compatible. Next is
 available in both WebKit and WebEngine flavors. Support for graphics
@@ -30,6 +30,9 @@ and OS integration is provided via:
 + GNU/Linux: Qt or GTK
 
 ** Installing SBCL
+
+You'll need SBCL ≥ 1.4.2 to compile Next.  (Previous versions require an ASDF update.)
+
 You can obtain SBCL from your package manager or by downloading it
 directly from the SBCL repository.
 
