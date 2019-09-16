@@ -1,8 +1,5 @@
 (in-package :s-serialization)
 
-(defun ignoring (&rest args)
-  (declare (ignore args)))
-
 ;; TODO: Test named functions + lambdas.
 ;; TODO: Report upstream if good enough.
 (defmethod serialize-sexp-internal ((object function) stream serialization-state)
@@ -12,8 +9,8 @@ Note: Function serialization is not part of the original cl-prevalence."
   (declare (ignore serialization-state))
   (let ((function-symbol (nth-value 2 (function-lambda-expression object))))
     (unless (symbolp function-symbol)
-      ;; TODO: Error out if we get a lambda?
-      (setf function-symbol 's-serialization::ignoring))
+      ;; (error "Cannot serialize anonymous functions (lambdas)")
+      (setf function-symbol nil))
     (write-string "(:FUNCTION . " stream)
     (print-symbol function-symbol stream)
     (write-string ")" stream)))
