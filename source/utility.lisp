@@ -57,7 +57,9 @@ Otherwise, build a search query with the default search engine."
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
-           (cl-ppcre:regex-replace-all " +" search-string "+"))
+           ;; We need to encode the search string to escape special characters.
+           ;; Besides, we separate search patterns by a "+".
+           (cl-ppcre:regex-replace-all "(%20)+" (quri:url-encode search-string) "+"))
          (url (format nil search-url encoded-search-string)))
     url))
 
