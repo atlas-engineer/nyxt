@@ -17,7 +17,6 @@ instance of Next."
         (delete-if #'null (mapcar #'buffer-history
                                   (alexandria:hash-table-values (buffers *interface*))))))
 
-;; TODO: Make sure URLs are persisted when set from C-l.
 (defun store-sexp-session ()
   "Store the current Next session to the last window's `session-path'.
 Currently we store the list of current URLs of all buffers."
