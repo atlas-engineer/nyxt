@@ -1,7 +1,8 @@
 (uiop:define-package :next/document-mode
-    (:use :common-lisp :trivia :next)
+    (:use :common-lisp :trivia :next :annot.class)
   (:documentation "Mode for web pages"))
 (in-package :next/document-mode)
+(annot:enable-annot-syntax)
 ;; TODO: Rename "web-mode"?
 
 ;; TODO: Remove document-mode from special buffers (e.g. help).
@@ -10,6 +11,8 @@
 ;; changes in special buffers should open a new one.
 ;; Or else we require that all special-buffer-generting commands open a new buffer.
 
+@export
+@export-accessors
 (defclass node ()
   ((parent :accessor node-parent :initarg :parent :initform nil)
    (children :accessor node-children :initform nil)

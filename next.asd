@@ -71,12 +71,12 @@
                  (:file "noscript-mode")
                  (:file "file-manager-mode")
                  (:file "download-mode")
-                 ;; About
-                 (:file "about")
                  ;; Port Compatibility Layers
                  (:file "ports/pyqt-webengine" :if-feature :darwin)
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
-                 ;; Base
+                 ;; Depends on everything else:
+                 (:file "about")
+                 (:file "session")
                  (:file "base"))))
   :build-operation "program-op"
   :build-pathname "next"

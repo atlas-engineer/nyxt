@@ -1,5 +1,14 @@
 (in-package :s-serialization)
 
+;; TODO: Report upstream.
+(defmethod serialize-sexp-internal ((object pathname) stream serialization-state)
+  "Serialize pathname OBJECT to it's printed representation starting with #P.
+Note: Function serialization is not part of the original cl-prevalence."
+  (declare (ignore serialization-state))
+  (prin1 object stream))
+
+;; TODO: Remove the fixes below:
+
 ;; TODO: Test named functions + lambdas.
 ;; TODO: Report upstream if good enough.
 (defmethod serialize-sexp-internal ((object function) stream serialization-state)
@@ -14,13 +23,6 @@ Note: Function serialization is not part of the original cl-prevalence."
     (write-string "(:FUNCTION . " stream)
     (print-symbol function-symbol stream)
     (write-string ")" stream)))
-
-;; TODO: Report upstream.
-(defmethod serialize-sexp-internal ((object pathname) stream serialization-state)
-  "Serialize pathname OBJECT to it's printed representation starting with #P.
-Note: Function serialization is not part of the original cl-prevalence."
-  (declare (ignore serialization-state))
-  (prin1 object stream))
 
 ;; The following adds function support to deserialization:
 (defun deserialize-sexp-internal (sexp deserialized-objects)
