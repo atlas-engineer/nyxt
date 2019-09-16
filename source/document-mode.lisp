@@ -23,7 +23,6 @@
     "Base mode for interacting with documents."
     ((active-history-node :accessor active-history-node :initarg :active-node
                           :initform (make-instance 'node :data "about:blank"))
-     (link-hints :accessor link-hints)
      (keymap-schemes
       :initform
       (let ((emacs-map (make-keymap))
