@@ -595,11 +595,12 @@ Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
     (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
     buffer))
 
-;; TODO: We already have buffer-load.  Rename this "init-dead-buffer".
 @export
-(defmethod rpc-load-buffer ((interface remote-interface) (buffer buffer))
+(defmethod rpc-init-dead-buffer ((interface remote-interface) (buffer buffer))
   "Create a webview for dead BUFFER.
-Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
+A \"dead buffer\" is a buffer that does not have an associated web view on the
+platform port.  Run INTERFACE's `buffer-make-hook' over the created buffer
+before returning it."
   (ensure-parent-exists (cookies-path buffer))
   (%rpc-send interface "buffer_make" (id buffer)
              `(("cookies-path" ,(namestring (cookies-path buffer)))))
