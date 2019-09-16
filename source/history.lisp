@@ -21,14 +21,7 @@
 
 (defun ensure-history-db ()
   "Return the pathname of the history database."
-  (let* ((path (if (rpc-window-active *interface*)
-                   (history-db-path (rpc-window-active *interface*))
-                   ;; This additional window fallback should not be necessary
-                   ;; anymore now that `rpc-window-make' sets `last-active-window'
-                   ;; so that `rpc-window-active' always returns a result.
-                   (some (lambda (window)
-                           (history-db-path window))
-                         (alexandria:hash-table-values (windows *interface*))))))
+  (let* ((path (history-db-path *interface*)))
     (if (uiop:file-exists-p path)
         path
         (ensure-file-exists path #'%initialize-history-db))))

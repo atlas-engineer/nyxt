@@ -28,10 +28,6 @@ current URL or event messages.")
                              :documentation "The height of the minibuffer when closed.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
                            :documentation "The height of the minibuffer when open.")
-   (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
-                    :documentation "The path where the system will create/save the history database.")
-   (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
-                     :documentation "The path where the system will create/save the bookmark database.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
@@ -278,6 +274,10 @@ stored.  Nil means use system default.")
                       :documentation "`local-time:timestamp' of when Next was started.")
    (init-time :initform 0.0 :type number
               :documentation "Init time in seconds.")
+   (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
+                    :documentation "The path where the system will create/save the history database.")
+   (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
+                     :documentation "The path where the system will create/save the bookmark database.")
    (session-path :accessor session-path
                  :type string
                  :initform (xdg-data-home "session.lisp")
