@@ -96,7 +96,7 @@ For instance, to search "parrot" on Wikipedia:
 
 From a Lisp REPL, you can query the list of search engines with
 #+begin_src lisp
-(get-default 'window 'search-engines)
+(get-default 'remote-interface 'search-engines)
 #+end_src
 
 It will return something like
@@ -111,7 +111,7 @@ The =~a= in the search engine URI is a place holder for the search pattern.
 To set the list of search engines, do:
 
 #+begin_src lisp
-(setf (get-default 'window 'search-engines)
+(setf (get-default 'remote-interface 'search-engines)
       '(("default" . "https://duckduckgo.com/?q=~a")
         ("yt" . "https://www.youtube.com/results?search_query=~a")
         ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a")))
@@ -120,7 +120,7 @@ To set the list of search engines, do:
 and to append a search engine do the list, you can do
 
 #+begin_src lisp
-(nconc (get-default 'window 'search-engines))
+(nconc (get-default 'remote-interface 'search-engines))
        '(("q" . "http://quickdocs.org/search?q=~a")
          ("yt" . "https://www.youtube.com/results?search_query=~a")))
 #+end_src
