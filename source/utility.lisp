@@ -228,7 +228,10 @@ The second value is the initfunction."
 @export
 (defun (setf get-default) (value class-name slot-name)
   "Set default value of SLOT-NAME from CLASS-NAME.
-Return VALUE."
+Return VALUE.
+
+This only changes the default value for future instances.  Existing instances
+won't be affected."
   ;; Warning: This is quite subtle: the :initform and :initfunction are tightly
   ;; coupled, it seems that both must be changed together.  We need to change
   ;; the class-slots and not the class-direct-slots.  TODO: Explain why.
@@ -239,7 +242,10 @@ Return VALUE."
 
 (defun add-to-default-list (value class-name slot-name)
   "Add VALUE to the list SLOT-NAME from CLASS-NAME.
-If VALUE is already present, move it to the head of the list."
+If VALUE is already present, move it to the head of the list.
+
+This only changes the default value for future instances.  Existing instances
+won't be affected."
   (setf (get-default class-name slot-name)
         (remove-duplicates (cons value
                                  (get-default class-name slot-name))
