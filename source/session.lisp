@@ -17,7 +17,6 @@ instance of Next."
         (delete-if #'null (mapcar #'buffer-history
                                   (alexandria:hash-table-values (buffers *interface*))))))
 
-;; TODO: Pretty-print the session.
 ;; TODO: Make sure URLs are persisted when set from C-l.
 (defun store-sexp-session ()
   "Store the current Next session to the last window's `session-path'.
@@ -29,9 +28,12 @@ Currently we store the list of current URLs of all buffers."
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :overwrite)
-    (s-serialization:serialize-sexp
-     (session-data)
-     file)))
+    ;; We READ the output of serialize-sexp to make it more human-readable.
+    (format file
+            "~s"
+            (with-input-from-string (in (with-output-to-string (out)
+                                          (s-serialization:serialize-sexp (session-data) out)))
+              (read in)))))
 
 (defun restore-sexp-session ()
   "Store the current Next session to the last window `session-path'.
