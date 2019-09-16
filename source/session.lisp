@@ -12,7 +12,6 @@ instance of Next."
   (delete-if #'null (mapcar #'buffer-history
                             (alexandria:hash-table-values (buffers *interface*)))))
 
-;; TODO: Move session to `remote-interface'?
 ;; TODO: How can we identify dead buffers?  Maybe with a nil ID?  Or maybe a
 ;; dead-buffer is just a buffer history.
 ;; TODO: Use dead buffers for undo.
@@ -25,7 +24,7 @@ Currently we store the list of current URLs of all buffers."
   ;; TODO: Should we persist keymaps, constructors, etc.?  For instance, should
   ;; we restore the proxy value?  It may be wiser to let the user configure
   ;; whitelitss / blacklists instead.  It's also easier
-  (with-open-file (file (session-path (last-active-window *interface*))
+  (with-open-file (file (session-path *interface*)
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :overwrite)

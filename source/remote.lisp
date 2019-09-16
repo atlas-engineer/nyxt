@@ -32,20 +32,6 @@ current URL or event messages.")
                     :documentation "The path where the system will create/save the history database.")
    (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
                      :documentation "The path where the system will create/save the bookmark database.")
-   (session-path :accessor session-path
-                 :type string
-                 :initform (xdg-data-home "session.lisp")
-                 :documentation "The path where the session is persisted.")
-   (session-store-function :accessor session-store-function
-                           :type function
-                           :initform #'store-sexp-session
-                           :documentation "The function which stores the session
-into `session-path'.")
-   (session-restore-function :accessor session-restore-function
-                             :type function
-                             :initform #'restore-sexp-session
-                             :documentation "The function which restores the session
-into `session-path'.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
@@ -292,6 +278,21 @@ stored.  Nil means use system default.")
                       :documentation "`local-time:timestamp' of when Next was started.")
    (init-time :initform 0.0 :type number
               :documentation "Init time in seconds.")
+   (session-path :accessor session-path
+                 :type string
+                 :initform (xdg-data-home "session.lisp")
+                 :documentation "The path where the session is persisted.")
+   (session-store-function :accessor session-store-function
+                           :type function
+                           :initform #'store-sexp-session
+                           :documentation "The function which stores the session
+into `session-path'.")
+   (session-restore-function :accessor session-restore-function
+                             :type function
+                             :initform #'restore-sexp-session
+                             :documentation "The function which restores the session
+into `session-path'.")
+   ;; Hooks follow:
    (after-init-hook :accessor after-init-hook :initform '() :type list
                     :documentation "Hook run after both `*interface*' and the
 platform port have started.  The handlers take no argument.")
