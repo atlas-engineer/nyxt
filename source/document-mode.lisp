@@ -282,7 +282,7 @@
                       active-window
                       (active-buffer active-window))
     (next/document-mode::add-or-traverse-history mode url)
-    (funcall (session-store-function active-window)))
+    (funcall (session-store-function *interface*)))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss))
