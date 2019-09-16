@@ -596,6 +596,9 @@ Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
     (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
     buffer))
 
+;; TODO: How can we identify dead buffers?  Maybe with a nil ID?  Or maybe a
+;; dead-buffer is just a buffer history.
+;; TODO: Use dead buffers for undo.
 @export
 (defmethod rpc-init-dead-buffer ((interface remote-interface) (buffer buffer))
   "Create a webview for dead BUFFER.
