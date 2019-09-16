@@ -34,6 +34,7 @@ end-user allowing for infinite customization.
   - [[#styles][Styles]]
   - [[#proxy][Proxy]]
   - [[#hooks][Hooks]]
+  - [[#startup-behaviour][Startup behaviour]]
 
 * Basics
 ** Navigation
@@ -655,3 +656,18 @@ can set a hook like the following in you =~/.config/next/init.lisp=:
 
 Some hooks like the above example expect a return value, so it's important to
 make sure we return ~url~ here.
+
+** Startup behaviour
+
+Once the platform port has been started, the default action of Next is to run
+
+#+begin_src lisp
+(funcall (startup-function *interface*) (or urls *free-args*))
+#+end_src
+
+~startup-function~ defaults to ~default-startup~ and takes URLs that are passed
+to Next as command line arguments.
+
+You can assign you own function to ~startup-function~ to change the behaviour of
+Next on startup, such as which URL it should display, if it should restore the
+previous session or not, etc.
