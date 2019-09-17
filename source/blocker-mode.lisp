@@ -1,5 +1,8 @@
 (uiop:define-package :next/blocker-mode
     (:use :common-lisp :trivia :next :annot.class)
+  (:export
+   :hostlist
+   :make-hostlist)
   (:documentation "Block resource queries blacklisted hosts."))
 (in-package :next/blocker-mode)
 (annot:enable-annot-syntax)
