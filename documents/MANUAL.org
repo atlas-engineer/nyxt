@@ -654,4 +654,5 @@ can set a hook like the following in you =~/.config/next/init.lisp=:
 #+end_src
 
 Some hooks like the above example expect a return value, so it's important to
-make sure we return ~url~ here.
+make sure we return ~url~ here.  See the documentation of the respective hooks
+for more details.

@@ -148,7 +148,9 @@ platform ports might support this.")
           :documentation "Proxy for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook :initform '() :type list
-              :documentation "Hook run in `set-url' after `parse-url' was processed.")
+              :documentation "Hook run in `set-url' after `parse-url' was
+processed.  The handlers take the URL going to be loaded as argument and must
+return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook :initform '() :type list
                        :documentation "Hook run before `rpc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
