@@ -60,7 +60,7 @@ MAJOR.MINOR.PATCH, we increment the:
 ** TASK 1.3.2 (Upcoming)
 - Hooks for commands, modes and various UI / networking events.
 
-  Hooks are lists which the use can fill with /handlers/ to perform arbitrary
+  Hooks are lists which the user can fill with /handlers/ to perform arbitrary
   actions on specific events, such as after the creation of a buffer, on
   start/exit, when a download has finished, before/after the execution of any
   command, or when enabling/disabling a mode.
