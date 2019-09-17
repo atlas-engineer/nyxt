@@ -284,7 +284,7 @@ The handlers take the window as argument.")
                      :documentation "Hook run after `rpc-buffer-make'.
 The handlers take the buffer as argument.")
    (before-download-hook :accessor buffer-download-hook :initform '() :type list
-                         :documentation "Hook run before a downloading a URL.
+                         :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
    (after-download-hook :accessor after-download-hook :initform '() :type list
                         :documentation "Hook run after a download has completed.
