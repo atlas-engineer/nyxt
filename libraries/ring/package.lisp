@@ -6,7 +6,7 @@
    #:ring
    #:insert
    #:delete-index
-   #:index-if
+   #:delete-match
    #:recent-list
    #:ref
    #:copy

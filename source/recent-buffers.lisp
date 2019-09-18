@@ -1,4 +1,4 @@
-;;; recent-buffers.lisp --- Manage list of recent buffers
+;;; recent-buffers.lisp --- Manage list of recent buffers.
 
 (in-package :next)
 (annot:enable-annot-syntax)
@@ -14,9 +14,12 @@
 (defmethod object-string ((recent-buffer recent-buffer))
   (format nil "~a  ~a" (name recent-buffer) (title recent-buffer)))
 
-;; (defmethod EQUALS ((rb1 recent-buffer) (rb2 recent-buffer))
-;;   (and (string= (name rb1) (name rb2))
-;;        (string= (title rb1) (title rb2))))
+@export
+(defmethod buffer-match-predicate ((buffer recent-buffer))
+  (lambda (other-buffer)
+    (when other-buffer
+      (and (string= (name buffer) (name other-buffer))
+           (string= (title buffer) (title other-buffer))))))
 
 (defun recent-buffer-completion-fn ()
   (let ((buffers (ring:recent-list (recent-buffers *interface*))))
@@ -29,17 +32,14 @@
                         (make-instance 'minibuffer
                                        :input-prompt "Reopen buffer:"
                                        :completion-function (recent-buffer-completion-fn))))
-    (let ((buffer-index (ring:index-if (recent-buffers *interface*) (lambda (other-buffer)
-                                                                     (when other-buffer
-                                                                       (and (string= (name buffer) (name other-buffer))
-                                                                            (string= (title buffer) (title other-buffer))))))))
-    (ring:delete-index (recent-buffers *interface*) buffer-index))
+    (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
     (make-buffers (list (name buffer)))))
 
 (define-command undo-buffer-deletion ()
-  "Open a new buffer and go to the URL of the most recently deleted buffer."
-  (when (plusp (ring:item-count (recent-buffers *interface*)))
-      (make-buffers (list (name (ring:pop-most-recent (recent-buffers *interface*)))))))
+  "Open a new buffer with the URL of the most recently deleted buffer."
+  (if (plusp (ring:item-count (recent-buffers *interface*)))
+      (make-buffers (list (name (ring:pop-most-recent (recent-buffers *interface*)))))
+      (echo "There are no recently-deleted buffers.")))
 
 @export
 (defun make-recent-buffer (name title)

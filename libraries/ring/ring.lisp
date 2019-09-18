@@ -58,12 +58,8 @@ Return NEW-ITEM."
   (make-instance 'ring :items (make-array size :initial-element nil)))
 
 (defmethod pop-most-recent((ring ring))
-  "Return the most-recently-added item in RING, and remove it from the RING.
-TODO What if the ring is empty?"
+  "Return the most-recently-added item in RING, and remove it from the RING."
     (delete-index ring (index ring 0)))
-
-(defmethod index-if ((ring ring) test)
-  (position-if test (items ring)))
 
 (defmethod shift-left ((ring ring) start end)
   (loop for index from start below end
@@ -94,3 +90,6 @@ TODO What if the ring is empty?"
     (decf (item-count ring))
     deleted-item))
 
+(defmethod delete-match ((ring ring) match-test)
+  (let ((match-index (position-if match-test (items ring))))
+    (when match-index (delete-index ring match-index))))
