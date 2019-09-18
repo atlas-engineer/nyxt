@@ -292,13 +292,14 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
-(defmethod add-to-recent-buffers ((interface remote-interface) (buffer buffer))
+(defmethod add-to-recent-buffers (recent-buffers (buffer buffer))
   "Add a recent-buffer to recent-buffers and delete all matching buffers."
-  (let ((dup-index (ring:index-if (lambda (other-buffer)
-                                    (and (string= (name buffer) (name other-buffer))
-                                         (string= (title buffer) (title other-buffer)))))))
-    (when dup-index (ring:delete-index (recent-buffers interface) dup-index)))
-    (ring:insert (recent-buffers interface) (make-recent-buffer (name buffer) (title buffer))))
+  (let ((dup-index (ring:index-if recent-buffers (lambda (other-buffer)
+                                                   (when other-buffer
+                                                     (and (string= (name buffer) (name other-buffer))
+                                                          (string= (title buffer) (title other-buffer))))))))
+    (when dup-index (ring:delete-index recent-buffers dup-index)))
+    (ring:insert (recent-buffers *interface*) (make-recent-buffer (name buffer) (title buffer))))
 
 @export
 (defmethod minibuffer ((interface remote-interface))
@@ -601,7 +602,7 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
                                 (rpc-buffer-make interface))))
-    (add-to-recent-buffers interface buffer)
+    (add-to-recent-buffers (recent-buffers interface) buffer)
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))

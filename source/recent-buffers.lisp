@@ -5,7 +5,7 @@
 
 @export
 @export-accessors
-(defclass recent-buffer()
+(defclass recent-buffer ()
   ((name :accessor name :initarg :name
         :initform nil :type string)
    (title :accessor title :initarg :title
@@ -30,8 +30,9 @@
                                        :input-prompt "Reopen buffer:"
                                        :completion-function (recent-buffer-completion-fn))))
     (let ((buffer-index (ring:index-if (recent-buffers *interface*) (lambda (other-buffer)
-                                      (and (string= (name buffer) (name other-buffer))
-                                           (string= (title buffer) (title other-buffer)))))))
+                                                                     (when other-buffer
+                                                                       (and (string= (name buffer) (name other-buffer))
+                                                                            (string= (title buffer) (title other-buffer))))))))
     (ring:delete-index (recent-buffers *interface*) buffer-index))
     (make-buffers (list (name buffer)))))
 
