@@ -243,9 +243,7 @@ by Next when the user session dbus instance is not available.")
    (minibuffer-generic-history :accessor minibuffer-generic-history :initform (ring:make))
    (minibuffer-search-history :accessor minibuffer-search-history :initform (ring:make))
    (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (ring:make))
-   (recent-buffers-length :accessor recent-buffers-length :initform 50
-                          :documentation "The maximum length of the recent-buffers.")
-   (recent-buffers :accessor recent-buffers
+   (recent-buffers :accessor recent-buffers :initform (ring:make :size 50)
                    :documentation "A ring that keeps track of deleted buffers.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
@@ -292,19 +290,13 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
-(defmethod initialize-instance :after
-  "Creates a recent-buffers ring with the length set in recent-buffers-length."
-  ((interface remote-interface) &rest args)
-  (setf (recent-buffers interface)
-        (ring:make :size (recent-buffers-length interface))))
-        ;; (make-instance 'ring :items (make-array (recent-buffers-length interface)
-                                                ;; :initial-element nil))))
-
-(defmethod add-buffer-to-recent-buffers-ring ((interface remote-interface) (buffer buffer))
-  "Add the url of a given buffer to the buffers ring."
-  ;; TODO Should this only insert if the url is different from the first url in the history?
-  ;; In chrome at least, duplicate entries are allowed.
-  (ring:insert (recent-buffers interface) (make-recent-buffer (name buffer) (title buffer))))
+(defmethod add-to-recent-buffers ((interface remote-interface) (buffer buffer))
+  "Add a recent-buffer to recent-buffers and delete all matching buffers."
+  (let ((dup-index (ring:index-if (lambda (other-buffer)
+                                    (and (string= (name buffer) (name other-buffer))
+                                         (string= (title buffer) (title other-buffer)))))))
+    (when dup-index (ring:delete-index (recent-buffers interface) dup-index)))
+    (ring:insert (recent-buffers interface) (make-recent-buffer (name buffer) (title buffer))))
 
 @export
 (defmethod minibuffer ((interface remote-interface))
@@ -607,7 +599,7 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer interface)
                                 (rpc-buffer-make interface))))
-    (add-buffer-to-recent-buffers-ring interface buffer)
+    (add-to-recent-buffers interface buffer)
     (%rpc-send interface "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer interface parent-window replacement-buffer))

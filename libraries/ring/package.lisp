@@ -5,10 +5,11 @@
   (:export
    #:ring
    #:insert
+   #:delete-index
+   #:index-if
    #:recent-list
    #:ref
    #:copy
    #:make
    #:pop-most-recent
    #:item-count))
-

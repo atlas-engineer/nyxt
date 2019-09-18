@@ -603,7 +603,6 @@ Return most recent entry in RING."
       (ring:insert ring clipboard-content)))
   (string (ring:ref ring 0)))
 
-
 (define-command minibuffer-paste (&optional (minibuffer (minibuffer *interface*)))
   "Paste clipboard text to input."
   (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
