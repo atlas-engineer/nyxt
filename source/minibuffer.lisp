@@ -264,10 +264,12 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                             (minibuffer-open-height active-window))))))
 
 (defmethod hide ((interface remote-interface) minibuffer)
-  "Hide last active minibuffer and display next one, if any."
+  "Hide MINIBUFFER and display next active one, if any."
   (let ((active-window (rpc-window-active interface)))
-    (when (eq minibuffer (first (active-minibuffers active-window)))
-      (pop (active-minibuffers active-window)))
+    ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
+    ;; minibuffer was invoked before the old one reaches here.
+    (setf (active-minibuffers active-window)
+          (delete minibuffer (active-minibuffers active-window)))
     (if (active-minibuffers active-window)
         (progn
           (show interface)
@@ -644,7 +646,7 @@ Return most recent entry in RING."
                                         :history nil
                                         :completion-function (minibuffer-history-completion-fn (history minibuffer)))))
       (unless (str:empty? input)
-        (log:info input minibuffer)
+        (log:debug input minibuffer)
         (setf (input-buffer minibuffer) "")
         (setf (input-buffer-cursor minibuffer) 0)
         (insert input minibuffer)))))

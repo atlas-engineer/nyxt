@@ -58,25 +58,52 @@ MAJOR.MINOR.PATCH, we increment the:
   format.
 
 ** TASK 1.3.2 (Upcoming)
-*** New open-file command (C-x C-f)
+- Hooks for commands, modes and various UI / networking events.
 
-This new command allows to open a file from the filesystem.
+  Hooks are lists which the user can fill with /handlers/ to perform arbitrary
+  actions on specific events, such as after the creation of a buffer, on
+  start/exit, when a download has finished, before/after the execution of any
+  command, or when enabling/disabling a mode.
 
-The user is prompted with the minibuffer, files are browsable with the fuzzy completion.
+- New open-file command (C-x C-f).
 
-The default directory is the one from the download manager.
+  This new command allows to open a file from the file system.
 
-Press =Enter= to  visit a file, =M-Left= or =C-l=  to go one directory
-up, =M-Right= or =C-j= to browse the directory at point.
+  The user is prompted with the minibuffer, files are browsable with the fuzzy completion.
 
-By default, it uses the =xdg-open=  command. The user can override the
-=next:*open-file-function*= variable  with a new function,  which takes the
-filename  (or directory  name) as  parameter.  See the  manual for  an
-example.
+  The default directory is the one from the download manager.
 
-The default keybinding is =C-x C-f=.
+  Press =Enter= to  visit a file, =M-Left= or =C-l=  to go one directory
+  up, =M-Right= or =C-j= to browse the directory at point.
 
-__Note__: this feature is alpha and is meant to grow in Next 1.4 and beyond!
+  By default, it uses the =xdg-open=  command. The user can override the
+  =next:*open-file-function*= variable  with a new function,  which takes the
+  filename  (or directory  name) as  parameter.  See the  manual for  an
+  example.
+
+  The default keybinding is =C-x C-f=.
+
+  __Note__: this feature is alpha and is meant to grow in Next 1.4 and beyond!
+
+- New ~paste-from-ring~ command. (Thanks to Solomon Block.)
+
+  All copied text snippets are saved in a clipboard "ring".  Any snippet can be
+  fuzzy-searched and pasted later.
+
+- New ~minibuffer-history~ command (M-p).
+
+  This allows to fuzzy-search the history of minibuffer input.  Some minibuffers
+  may use their own history, otherwise they use the default.  For instance, the
+  ~set-url-*~ history includes the current URL, so that pressing =C-l M-p RET=
+  brings up the current URL in the input, ready for editing.
+
+- Improve minibuffer performance when loading many candidates.
+
+- Fix minibuffer scrolling to feel more natural.
+
+- Reduce minibuffer height when there is no completion function (e.g. link hints).
+
+- Add ~next-init-time~ command.
 
 ** DONE 1.3.1 (Upcoming)
 *** Print page title in buffer list

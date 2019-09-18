@@ -106,8 +106,6 @@
                                  :prove-asdf 'run-test-system c)))
 
 (asdf:defsystem next/ring
-  :depends-on (trivial-clipboard
-               cl-annot)
   :components ((:module source :pathname "libraries/ring/"
                 :components ((:file "package")
                              (:file "ring")))))
