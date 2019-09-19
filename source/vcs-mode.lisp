@@ -70,35 +70,56 @@ Create BASE if it doesn't exist."
          (joined (str:concat base-truename-string dir-string)))
     joined))
 
+(defun projects-roots-completion-function (input)
+  "Fuzzy-match local project roots."
+  (fuzzy-match input *vcs-projects-roots*))
+
+(defun clone (project-name root-name target-dir clone-uri)
+  "Do the (Git) clone.
+PROJECT-NAME: string
+ROOT-NAME: string
+TARGET-DIR: full path directory name (string)
+CLONE-URI: quri:uri object."
+  (log:debug "Cloning ~a into ~a" project-name target-dir)
+  (echo "Cloning ~a into ~a" project-name target-dir)
+  (setf (quri:uri-path clone-uri)
+        (str:concat "/" root-name "/" project-name))
+  (handler-case (progn
+                  (uiop:launch-program
+                   (list "git" "clone"
+                         (quri:render-uri clone-uri)
+                         (next/vcs::concat-filenames target-dir project-name))))
+    (error (c)
+      (log:warn "Error cloning ~a: ~a" project-name c)
+      (echo "There was an error cloning ~a." project-name))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :next)
 
 (define-command vcs-clone ()
-  "Clone the repository of the current url to disk (if any). Git only at the moment."
+  "Clone the repository of the current url to disk (if any). Git only at the moment.
+Ask for which directory to clone to, expect if there is one single choice."
   (with-result (url (buffer-get-url))
     (let* ((uri (quri:uri url))
-           ;TODO: cleanup
            (root-name (first (str:split "/" (quri:uri-path uri) :omit-nulls t)))
            (project-name (second (str:split "/" (quri:uri-path uri) :omit-nulls t)))
            (clone-uri (quri:copy-uri uri))
-           (existing-repo (next/vcs::find-project-directory project-name)))
+           (existing-repo (next/vcs::find-project-directory project-name))
+           target-dir)
       (if project-name
           (if existing-repo
               (echo "This repository exists in ~a" existing-repo)
               (progn
-                                        ;TODO: ask for destination.
-                (echo "Cloning ~a into ~a" project-name (first next/vcs::*git-projects-roots*))
-                (setf (quri:uri-path clone-uri)
-                      (str:concat "/" root-name "/" project-name))
-                (handler-case (progn
-                                (uiop:launch-program
-                                 (list "git" "clone"
-                                       (quri:render-uri clone-uri)
-                                       (next/vcs::concat-filenames (first next/vcs::*git-projects-roots*) project-name))))
-                  (error (c)
-                    (log:warn "Error cloning ~a: ~a" project-name c)
-                    (echo "There was an error cloning ~a." project-name)))))
-          (echo "Could not find the VCS project name.")))))
+                (if (= 1 (length next/vcs:*vcs-projects-roots*))
+                    (progn
+                      (setf target-dir (first next/vcs:*vcs-projects-roots*))
+                      (next/vcs::clone project-name root-name target-dir clone-uri))
+                    (with-result (target-dir (read-from-minibuffer
+                                              (make-instance 'minibuffer
+                                                             :input-prompt "Target directory:"
+                                                             :completion-function #'next/vcs::projects-roots-completion-function)))
+                      (next/vcs::clone project-name root-name target-dir clone-uri)))))
+          (echo "Could not find the project name.")))))
 
 (define-command git-clone ()
   "Alias of `vcs-clone'."
