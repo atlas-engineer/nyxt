@@ -1,4 +1,6 @@
-(in-package :next)
+(in-package :password)
+
+(annot:enable-annot-syntax)
 
 (defmethod list-passwords ((password-interface password-store-interface))
   (let ((raw-list (directory (format nil "~a/**/*.gpg"
