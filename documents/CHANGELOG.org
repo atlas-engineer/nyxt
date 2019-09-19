@@ -57,15 +57,17 @@ MAJOR.MINOR.PATCH, we increment the:
   imported, say, from Firefox, or exported to a SQLite database or a custom text
   format.
 
-** TASK 1.3.2 (Upcoming)
-- Hooks for commands, modes and various UI / networking events.
+** DONE 1.3.2
+- Hooks for commands, modes and various UI or networking events.
 
   Hooks are lists which the user can fill with /handlers/ to perform arbitrary
   actions on specific events, such as after the creation of a buffer, on
   start/exit, when a download has finished, before/after the execution of any
   command, or when enabling/disabling a mode.
 
-- New open-file command (C-x C-f).
+  *Note:* Hooks are still experimental and their API is likely to change in the future.
+
+- New ~open-file~ command (=C-x C-f=).
 
   This new command allows to open a file from the file system.
 
@@ -83,16 +85,17 @@ MAJOR.MINOR.PATCH, we increment the:
 
   The default keybinding is =C-x C-f=.
 
-  __Note__: this feature is alpha and is meant to grow in Next 1.4 and beyond!
+  *Note:* This feature is experimental and is meant to grow in future versions
+  of Next!
 
 - New ~paste-from-ring~ command. (Thanks to Solomon Block.)
 
-  All copied text snippets are saved in a clipboard "ring".  Any snippet can be
+  All copied text snippets are saved in a clipboard "ring."  Any snippet can be
   fuzzy-searched and pasted later.
 
-- New ~minibuffer-history~ command (M-p).
+- New ~minibuffer-history~ command (=M-p=).
 
-  This allows to fuzzy-search the history of minibuffer input.  Some minibuffers
+  This allows to fuzzy-search the history of minibuffer inputs.  Some minibuffers
   may use their own history, otherwise they use the default.  For instance, the
   ~set-url-*~ history includes the current URL, so that pressing =C-l M-p RET=
   brings up the current URL in the input, ready for editing.
@@ -105,7 +108,7 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - Add ~next-init-time~ command.
 
-** DONE 1.3.1 (Upcoming)
+** DONE 1.3.1
 *** Print page title in buffer list
 And the title is matched when fuzzy-searching a buffer!
 *** Improved minibuffer performance: it now shows up instantly
