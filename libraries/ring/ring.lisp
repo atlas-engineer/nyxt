@@ -21,11 +21,6 @@
               (- (item-count ring) index)))
        (size ring)))
 
-(defmethod external-index ((ring ring) internal-index)
-  (1- (+ (- (head-index ring)
-             internal-index)
-         (item-count ring))))
-
 (defmethod insert ((ring ring) new-item)
   "Insert item into RING.
 If RING is full, replace the oldest item.
@@ -97,6 +92,5 @@ Return NEW-ITEM."
     deleted-item))
 
 (defmethod delete-match ((ring ring) match-test)
-  (let ((match-index (position-if match-test (items ring))))
-    (when match-index (delete-index ring (external-index ring match-index)))))
-
+  (let ((match-index (position-if match-test (recent-list ring))))
+    (when match-index (delete-index ring match-index))))
