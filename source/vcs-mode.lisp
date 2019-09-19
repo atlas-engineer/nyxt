@@ -42,19 +42,27 @@ changes, browse files in a text editor, use hooks...
   "Scan `*vcs-projects-roots*'."
   (mapcan #'search-git-directories *vcs-projects-roots*))
 
-(defun find-project-directory (name &key exit)
-  "Return the directory pathname of the project named NAME.
-If EXIT is non-nil and the project was not found, don't parse the project roots again."
+(defun find-project-directory (name &key exit-recursive-scan)
+  "Return the directory pathname of the project named NAME by searching the local projects.
+If EXIT-RECURSIVE-SCAN is non-nil, avoid recursive scan of local projects. By default, it will re-scan the local projects to avoid false negatives and false positives."
   (unless *git-projects*
     (setf *git-projects* (parse-projects)))
   (let ((result (find name *git-projects*
                       :key (lambda (dir)
                               (alexandria:last-elt (str:split "/" (namestring dir) :omit-nulls t)))
                       :test #'string=)))
+    ;; If null, re-parse the local projects.
+    ;; It could have been cloned manually.
     (unless (or result
-                exit)
+                exit-recursive-scan)
       (setf *git-projects* (parse-projects))
-      (setf result (find-project-directory name :exit t)))
+      (setf result (find-project-directory name :exit-recursive-scan t)))
+    ;; Avoid false positives: check the directory exists.
+    ;; It could have been deleted.
+    (unless (or exit-recursive-scan
+                (and result (probe-file result)))
+      (setf *git-projects* (parse-projects))
+      (setf result (find-project-directory name :exit-recursive-scan t)))
     result))
 
 ;XXX: add ftype declaration.
