@@ -75,11 +75,7 @@ Create BASE if it doesn't exist."
   ;; truename expands the tilde, but fails if the directory doesn't actually exist.
   ;; The tilde must be expanded for the following git clone command, that otherwise creates
   ;; ./~/my/foo instead of /home/user/my/foo.
-  (let* ((base-truename-path (truename base))
-         (base-truename-string (namestring base-truename-path))
-         (dir-string (string-trim (list #\/) (namestring dir)))
-         (joined (str:concat base-truename-string dir-string)))
-    joined))
+  (namestring (merge-pathnames (truename base) dir)))
 
 (defun projects-roots-completion-function (input)
   "Fuzzy-match local project roots."
