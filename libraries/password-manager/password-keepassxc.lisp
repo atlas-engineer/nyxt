@@ -1,4 +1,6 @@
-(in-package :next)
+(in-package :password)
+
+(annot:enable-annot-syntax)
 
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (let* ((st (make-string-input-stream (master-password password-interface)))

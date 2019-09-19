@@ -37,7 +37,8 @@
                ;; Local systems:
                :next/download-manager
                :next/ring
-               :next/history-tree)
+               :next/history-tree
+               :next/password-manager)
   :components ((:module "source"
                 :components
                 ((:file "patch-annot")
@@ -64,8 +65,6 @@
                  (:file "recent-buffers")
                  ;; Core Packages
                  (:file "password")
-                 (:file "password-keepassxc")
-                 (:file "password-pass")
                  (:file "bookmark")
                  (:file "zoom")
                  (:file "scroll")
@@ -148,3 +147,15 @@
                 :components ((:test-file "tests"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))
+
+(asdf:defsystem next/password-manager
+  :depends-on (uiop
+               cl-ppcre
+               next/ring
+               bordeaux-threads
+               cl-annot)
+:components ((:module source :pathname "libraries/password-manager/"
+                :components ((:file "package")
+                             (:file "password")
+                             (:file "password-pass")
+                             (:file "password-keepassxc")))))

@@ -241,11 +241,7 @@ RPC endpoint of a platform-port to see if it is ready to begin accepting RPC
 commands.")
    (active-connection :accessor active-connection :initform nil)
    (password-interface :accessor password-interface
-                       :initform (cond ((executable-find "pass")
-                                        (make-instance 'password-store-interface))
-                                       ((executable-find "keepassxc-cli")
-                                        (make-instance 'keepassxc-interface))
-                                       (t nil)))
+                       :initform (password:make))
    (dbus-pid :accessor dbus-pid :initform nil :type :number
              :documentation "The process identifier of the dbus instance started
 by Next when the user session dbus instance is not available.")
