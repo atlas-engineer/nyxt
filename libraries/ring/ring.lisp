@@ -17,10 +17,14 @@
 
 (defmethod index ((ring ring) index)
   "Return index converted to internal ring index, where items are ordered from newest to oldest."
-  ;; TODO: shouldn't that read "oldest to newest", since index 0 is the oldest?
   (mod (1- (+ (head-index ring)
               (- (item-count ring) index)))
        (size ring)))
+
+(defmethod external-index ((ring ring) internal-index)
+  (1- (+ (- (head-index ring)
+             internal-index)
+         (item-count ring))))
 
 (defmethod insert ((ring ring) new-item)
   "Insert item into RING.
@@ -59,7 +63,7 @@ Return NEW-ITEM."
 
 (defmethod pop-most-recent((ring ring))
   "Return the most-recently-added item in RING, and remove it from the RING."
-    (delete-index ring (index ring 0)))
+    (delete-index ring 0))
 
 (defmethod shift-left ((ring ring) start end)
   (loop for index from start below end
@@ -78,18 +82,21 @@ Return NEW-ITEM."
   (setf (aref (items ring) (mod end (size ring))) nil))
 
 (defmethod delete-index ((ring ring) index)
-  "Delete the item at (internal oldest-first) index and move items to fill the space."
-  (let* ((deleted-item (aref (items ring) (mod index (size ring))))
+  "Delete the item at external index and move items to fill the space."
+  (let* ((internal-index (index ring index))
+         (deleted-item (aref (items ring) (mod internal-index (size ring))))
          (head (head-index ring))
          (midpoint (mod (floor (+ head (item-count ring)) 2)
                         (size ring))))
-    (if (< midpoint index)
-        (shift-left ring index (+ head (item-count ring)))
-        (progn (shift-right ring index head)
-         (incf (head-index ring))))
+    (if (< midpoint internal-index)
+        (shift-left ring internal-index (+ head (item-count ring)))
+        (progn
+          (shift-right ring internal-index head)
+          (setf (head-index ring) (mod (1+ (head-index ring)) (size ring)))))
     (decf (item-count ring))
     deleted-item))
 
 (defmethod delete-match ((ring ring) match-test)
   (let ((match-index (position-if match-test (items ring))))
-    (when match-index (delete-index ring match-index))))
+    (when match-index (delete-index ring (external-index ring match-index)))))
+
