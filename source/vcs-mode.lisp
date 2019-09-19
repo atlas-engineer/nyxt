@@ -103,3 +103,8 @@ Create BASE if it doesn't exist."
 (define-command git-clone ()
   "Alias of `vcs-clone'."
   (vcs-clone))
+
+(define-command vcs-update-local-projects ()
+  "Scan the project roots and update the list of existing repositories."
+  (setf next/vcs::*git-projects* (next/vcs::parse-projects))
+  (echo "VCS projects updated."))
