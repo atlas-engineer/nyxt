@@ -117,7 +117,8 @@
   "Show a set of link hints, and go to the user inputted one in the
 currently active buffer."
   (query-hints "Go to link:" (selected-link)
-    (buffer-set-url :url selected-link :buffer (active-buffer *interface*))))
+    (set-url selected-link :buffer (active-buffer *interface*)
+             :raw-url-p t)))
 
 (define-deprecated-command go-anchor ()
   "Deprecated by `follow-hint'."
@@ -128,7 +129,8 @@ currently active buffer."
 buffer (not set to visible active buffer)."
   (query-hints "Open link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
-      (buffer-set-url :url selected-link :buffer new-buffer))))
+      (set-url selected-link :buffer new-buffer
+               :raw-url-p t))))
 
 (define-deprecated-command go-anchor-new-buffer ()
   "Deprecated by `follow-hint-new-buffer'."
@@ -139,7 +141,7 @@ buffer (not set to visible active buffer)."
 visible active buffer."
   (query-hints "Go to link in new buffer:" (selected-link)
     (let ((new-buffer (make-buffer)))
-      (buffer-set-url :url selected-link :buffer new-buffer)
+      (set-url selected-link :buffer new-buffer :raw-url-p t)
       (set-active-buffer *interface* new-buffer))))
 
 (define-deprecated-command go-anchor-new-buffer-focus ()

@@ -97,18 +97,30 @@ features for productive professionals.")
        #:asd-file "next.asd"
        #:asd-system-name "next/download-manager"))
     (inputs
-     `(;; ASD libraries:
-       ("trivial-features" ,sbcl-trivial-features)
-       ;; Lisp libraries:
-       ("cl-ppcre" ,sbcl-cl-ppcre)
+     `(("cl-ppcre" ,sbcl-cl-ppcre)
        ("dexador" ,sbcl-dexador)
        ("log4cl" ,sbcl-log4cl)
        ("lparallel" ,sbcl-lparallel)
        ("quri" ,sbcl-quri)
        ("str" ,sbcl-cl-str)))
     (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
+     `(("trivial-features" ,sbcl-trivial-features)
+       ("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Infinitely extensible web-browser (download manager)")))
+
+(define sbcl-next-ring
+  (package
+    (inherit next-gtk-webkit)
+    (name "sbcl-next-ring")
+    (build-system asdf-build-system/sbcl)
+    (arguments
+     `(#:tests? #t
+       #:asd-file "next.asd"
+       #:asd-system-name "next/ring"))
+    (native-inputs
+     `(("trivial-features" ,sbcl-trivial-features)
+       ("prove-asdf" ,sbcl-prove-asdf)))
+    (synopsis "Infinitely extensible web-browser (ring)")))
 
 (define-public next
   (let ((version (package-version next-gtk-webkit)))
@@ -171,14 +183,11 @@ features for productive professionals.")
                                 (string-append "PREFIX="
                                                (assoc-ref outputs "out"))))))))
       (inputs
-       `(("next-gtk-webkit" ,next-gtk-webkit)
-         ;; ASD libraries:
-         ("trivial-features" ,sbcl-trivial-features)
-         ("trivial-garbage" ,sbcl-trivial-garbage)
-         ;; Lisp libraries:
-         ("alexandria" ,sbcl-alexandria)
+       `(("alexandria" ,sbcl-alexandria)
          ("bordeaux-threads" ,sbcl-bordeaux-threads)
+         ("cl-annot" ,sbcl-cl-annot)
          ("cl-css" ,sbcl-cl-css)
+         ("cl-hooks" ,sbcl-cl-hooks)
          ("cl-json" ,sbcl-cl-json)
          ("cl-markup" ,sbcl-cl-markup)
          ("cl-ppcre" ,sbcl-cl-ppcre)
@@ -187,6 +196,7 @@ features for productive professionals.")
          ("dbus" ,cl-dbus)
          ("dexador" ,sbcl-dexador)
          ("ironclad" ,sbcl-ironclad)
+         ("local-time" ,sbcl-local-time)
          ("log4cl" ,sbcl-log4cl)
          ("lparallel" ,sbcl-lparallel)
          ("mk-string-metrics" ,sbcl-mk-string-metrics)
@@ -199,9 +209,12 @@ features for productive professionals.")
          ("trivial-clipboard" ,sbcl-trivial-clipboard)
          ("unix-opts" ,sbcl-unix-opts)
          ;; Local deps
-         ("next-download-manager" ,sbcl-next-download-manager)))
+         ("next-gtk-webkit" ,next-gtk-webkit)
+         ("next-download-manager" ,sbcl-next-download-manager)
+         ("next-ring" ,sbcl-next-ring)))
       (native-inputs
-       `(("prove-asdf" ,sbcl-prove-asdf)))
+       `(("trivial-features" ,sbcl-trivial-features)
+         ("prove-asdf" ,sbcl-prove-asdf)))
       (synopsis "Infinitely extensible web-browser (with Lisp development files)"))))
 
 (define-public sbcl-next

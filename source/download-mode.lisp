@@ -11,8 +11,8 @@
   (let* ((download-buffer (or (find-buffer 'download-mode)
                               (make-buffer
                                :name "*Downloads*"
-                               :default-modes (cons 'download-mode
-                                                    (get-default 'buffer 'default-modes)))))
+                               :modes (cons 'download-mode
+                                            (get-default 'buffer 'default-modes)))))
          (contents (cl-markup:markup
                     (:h1 "Downloads")
                     (:p (:b "Directory: ") (namestring (or (download-directory *interface*)

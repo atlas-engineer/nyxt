@@ -11,18 +11,13 @@
           (active-window
            (echo "Can't delete sole window.")))))
 
-(defun make-window (&optional buffer)
+(define-command make-window (&optional buffer)
   "Create a new window."
   (let ((window (rpc-window-make *interface*))
         (buffer (or buffer (make-buffer))))
     (window-set-active-buffer *interface* window buffer)
     (values window buffer)))
 
-(define-command new-window ()
-  "Create a new window.
-This command is meant to be used interactively.
-For Lisp code, see `make-window'."
-  (let ((window (rpc-window-make *interface*))
-        (buffer (make-buffer)))
-    (window-set-active-buffer *interface* window buffer)
-    (values window buffer)))
+(define-deprecated-command new-window ()
+  "Deprecated by `make-window'."
+  (make-window))

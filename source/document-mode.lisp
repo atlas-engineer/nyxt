@@ -1,8 +1,18 @@
 (uiop:define-package :next/document-mode
-    (:use :common-lisp :trivia :next)
+    (:use :common-lisp :trivia :next :annot.class)
   (:documentation "Mode for web pages"))
 (in-package :next/document-mode)
+(annot:enable-annot-syntax)
+;; TODO: Rename "web-mode"?
 
+;; TODO: Remove document-mode from special buffers (e.g. help).
+;; This is required because special buffers cannot be part of a history (and it breaks it).
+;; Bind C-l to set-url-new-buffer?  Wait: What if we click on a link?  url
+;; changes in special buffers should open a new one.
+;; Or else we require that all special-buffer-generting commands open a new buffer.
+
+@export
+@export-accessors
 (defclass node ()
   ((parent :accessor node-parent :initarg :parent :initform nil)
    (children :accessor node-children :initform nil)
@@ -16,7 +26,6 @@
     "Base mode for interacting with documents."
     ((active-history-node :accessor active-history-node :initarg :active-node
                           :initform (make-instance 'node :data "about:blank"))
-     (link-hints :accessor link-hints)
      (keymap-schemes
       :initform
       (let ((emacs-map (make-keymap))
@@ -149,7 +158,7 @@
                                                    ;; (mode (active-buffer *interface*))
                                                    ))))
     (when parent
-      (set-url (node-data parent) :disable-history t))))
+      (set-url (node-data parent)))))
 
 (define-command history-forwards (&optional (buffer (active-buffer *interface*)))
   "Move forwards in history selecting the first child."
@@ -159,7 +168,7 @@
                                    ;; (mode (active-buffer *interface*))
                                    ))))
     (unless (null children)
-      (set-url (node-data (nth 0 children)) :disable-history t))))
+      (set-url (node-data (nth 0 children))))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
                                                         (active-buffer *interface*)
@@ -220,7 +229,7 @@
     (copy-to-clipboard title)
     (echo "~a copied to clipboard." title)))
 
-(define-parenscript %paste ((input-text (next:ring-insert-clipboard (clipboard-ring *interface*))))
+(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
          (end-position (ps:chain active-element selection-end)))
@@ -265,14 +274,15 @@
 ;; Warning: To specialize `did-commit-navigation' we must be in the right package.
 (in-package :next)
 (defmethod did-commit-navigation ((mode next/document-mode::document-mode) url)
-  (set-window-title *interface*
-                    (rpc-window-active *interface*)
-                    (active-buffer *interface*))
-  (next/document-mode::add-or-traverse-history mode url)
   (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode next/document-mode::document-mode) url)
-  (log:debug mode url)
+  (let ((active-window (rpc-window-active *interface*)))
+    (set-window-title *interface*
+                      active-window
+                      (active-buffer active-window))
+    (next/document-mode::add-or-traverse-history mode url)
+    (funcall (session-store-function *interface*)))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss))

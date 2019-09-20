@@ -1,5 +1,9 @@
 (uiop:define-package :next/file-manager-mode
     (:use :common-lisp :trivia :next)
+  (:export
+   :open-file-function
+   :*open-file-function*
+   :open-file-from-directory-completion-fn)
   (:documentation "Manage files.
 
 Open any file from within Next, with the usual fuzzy completion.
