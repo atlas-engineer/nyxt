@@ -120,3 +120,17 @@
                 :components ((:test-file "tests"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))
+
+(asdf:defsystem next/history-tree
+  :components ((:module source :pathname "libraries/history-tree/"
+                :components ((:file "package")
+                             (:file "history-tree")))))
+
+(asdf:defsystem next/history-tree/tests
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (prove
+               next/history-tree)
+  :components ((:module source/tests :pathname "libraries/history-tree/tests/"
+                :components ((:test-file "tests"))))
+  :perform (asdf:test-op (op c) (uiop:symbol-call
+                                 :prove-asdf 'run-test-system c)))
