@@ -2,8 +2,8 @@
 
 (defun buffer-history (buffer)
   "Return the buffer history of BUFFER."
-  (match (find-mode buffer 'document-mode)
-    ((guard m m) (next/document-mode:active-history-node m))))
+  (match (find-mode buffer 'web-mode)
+    ((guard m m) (next/web-mode:active-history-node m))))
 
 (defun session-data ()
   "Return the data that needs to be serialized.
@@ -49,19 +49,19 @@ Currently we store the list of current URLs of all buffers."
            (unless (string= version +version+)
              (log:warn "Session version ~s differs from current version ~s" version +version+))
            (when buffer-histories
-             (log:info "Restoring ~a" (mapcar #'next/document-mode:node-data buffer-histories))
+             (log:info "Restoring ~a" (mapcar #'next/web-mode:node-data buffer-histories))
              ;; Delete the old buffers?
              ;; (maphash (lambda (id buffer)
              ;;            (declare (ignore id))
              ;;            (rpc-buffer-delete *interface* buffer))
              ;;          buffers)
              ;; Make the new ones.
-             ;; TODO: Replace the loop with a function `make-buffer-from-history' in document-mode?
+             ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
              (loop for history in buffer-histories
                    for buffer = (make-buffer)
-                   for mode = (find-mode buffer 'document-mode)
-                   do (set-url (next/document-mode:node-data history) :buffer buffer)
-                   do (setf (next/document-mode:active-history-node mode) history))
+                   for mode = (find-mode buffer 'web-mode)
+                   do (set-url (next/web-mode:node-data history) :buffer buffer)
+                   do (setf (next/web-mode:active-history-node mode) history))
              ;; TODO: Switch to the last active buffer.  We probably need to serialize *interface*.
              ;; Or else we could include `access-time' in the buffer class.
              )))

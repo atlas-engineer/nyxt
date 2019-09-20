@@ -64,7 +64,7 @@
                  (:file "help")
                  ;; Core Modes
                  (:file "application-mode")
-                 (:file "document-mode")
+                 (:file "web-mode")
                  (:file "vi-mode")
                  (:file "blocker-mode")
                  (:file "proxy-mode")

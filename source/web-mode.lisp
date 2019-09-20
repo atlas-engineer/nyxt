@@ -1,11 +1,11 @@
-(uiop:define-package :next/document-mode
+(uiop:define-package :next/web-mode
     (:use :common-lisp :trivia :next :annot.class)
   (:documentation "Mode for web pages"))
-(in-package :next/document-mode)
+(in-package :next/web-mode)
 (annot:enable-annot-syntax)
 ;; TODO: Rename "web-mode"?
 
-;; TODO: Remove document-mode from special buffers (e.g. help).
+;; TODO: Remove web-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
 ;; Bind C-l to set-url-new-buffer?  Wait: What if we click on a link?  url
 ;; changes in special buffers should open a new one.
@@ -22,7 +22,7 @@
 (defmethod object-string ((node node))
   (node-data node))
 
-(define-mode document-mode ()
+(define-mode web-mode ()
     "Base mode for interacting with documents."
     ((active-history-node :accessor active-history-node :initarg :active-node
                           :initform (make-instance 'node :data "about:blank"))
@@ -152,8 +152,8 @@
 
 (define-command history-backwards (&optional (buffer (active-buffer *interface*)))
   "Move up to parent node to iterate backwards in history tree."
-  (let* ((document-mode (find-mode buffer 'document-mode))
-         (parent (node-parent (active-history-node document-mode
+  (let* ((web-mode (find-mode buffer 'web-mode))
+         (parent (node-parent (active-history-node web-mode
                                                    ;; TODO: Test!
                                                    ;; (mode (active-buffer *interface*))
                                                    ))))
@@ -162,9 +162,9 @@
 
 (define-command history-forwards (&optional (buffer (active-buffer *interface*)))
   "Move forwards in history selecting the first child."
-  (let* ((document-mode (find-mode buffer 'document-mode))
+  (let* ((web-mode (find-mode buffer 'web-mode))
          (children (node-children (active-history-node
-                                   document-mode
+                                   web-mode
                                    ;; (mode (active-buffer *interface*))
                                    ))))
     (unless (null children)
@@ -172,7 +172,7 @@
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
                                                         (active-buffer *interface*)
-                                                        'document-mode)))
+                                                        'web-mode)))
   "Provide completion candidates to the `history-forwards-query' function."
   (let ((children (node-children (active-history-node mode))))
     (lambda (input)
@@ -190,7 +190,7 @@
     (unless (equal input "Cannot navigate forwards.")
       (set-url (node-data input)))))
 
-(defmethod add-or-traverse-history ((mode document-mode) url)
+(defmethod add-or-traverse-history ((mode web-mode) url)
   (let ((active-node (active-history-node mode)))
     ;; only add element to the history if it is different than the current
     (when (equalp url (node-data active-node))
@@ -273,15 +273,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Warning: To specialize `did-commit-navigation' we must be in the right package.
 (in-package :next)
-(defmethod did-commit-navigation ((mode next/document-mode::document-mode) url)
+(defmethod did-commit-navigation ((mode next/web-mode::web-mode) url)
   (echo "Loading: ~a." url))
 
-(defmethod did-finish-navigation ((mode next/document-mode::document-mode) url)
+(defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
   (let ((active-window (rpc-window-active *interface*)))
     (set-window-title *interface*
                       active-window
                       (active-buffer active-window))
-    (next/document-mode::add-or-traverse-history mode url)
+    (next/web-mode::add-or-traverse-history mode url)
     (funcall (session-store-function *interface*)))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.

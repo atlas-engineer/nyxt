@@ -182,7 +182,7 @@ Examples:
 
   (define-key \"C-x C-c\" 'quit)
   (define-key \"C-n\" 'history-forwards
-              :mode 'document-mode)
+              :mode 'web-mode)
   ;; Only affect the first mode of the current buffer:
   (define-key \"C-c C-c\" 'reload
               :keymap (getf (keymap-schemes (first (modes (active-buffer *interface*)))) :emacs))"

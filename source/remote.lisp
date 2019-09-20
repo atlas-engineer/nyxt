@@ -66,7 +66,7 @@ This can apply to specific buffer."))
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
-                  :initform '(document-mode root-mode)
+                  :initform '(web-mode root-mode)
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
    (current-keymap-scheme ; TODO: Name keymap-scheme instead?

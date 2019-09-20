@@ -83,7 +83,7 @@ It takes the mode as argument.")))
 (defmethod find-mode ((buffer buffer) mode-symbol)
   "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
 Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
-can be 'document-mode as well as 'next/document-mode:document-mode."
+can be 'web-mode as well as 'next/web-mode:web-mode."
   (let ((mode-full-symbol (if (find-class mode-symbol nil)
                               mode-symbol
                               (match (mode-command mode-symbol)
