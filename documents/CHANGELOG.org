@@ -57,28 +57,64 @@ MAJOR.MINOR.PATCH, we increment the:
   imported, say, from Firefox, or exported to a SQLite database or a custom text
   format.
 
-** TASK 1.3.2 (Upcoming)
-*** New open-file command (C-x C-f)
+** TASK 1.3.3
+- Move the ~search-engines~ slot from the ~window~ class to the
+  ~remote-interface~ class.
+- Rename ~new-buffer~, ~new-window~ and ~make-visible-new-buffer~ to
+  ~make-buffer~, ~make-window~ and ~make-buffer-focus~.
 
-This new command allows to open a file from the filesystem.
+** DONE 1.3.2
+- Hooks for commands, modes and various UI or networking events.
 
-The user is prompted with the minibuffer, files are browsable with the fuzzy completion.
+  Hooks are lists which the user can fill with /handlers/ to perform arbitrary
+  actions on specific events, such as after the creation of a buffer, on
+  start/exit, when a download has finished, before/after the execution of any
+  command, or when enabling/disabling a mode.
 
-The default directory is the one from the download manager.
+  *Note:* Hooks are still experimental and their API is likely to change in the future.
 
-Press =Enter= to  visit a file, =M-Left= or =C-l=  to go one directory
-up, =M-Right= or =C-j= to browse the directory at point.
+- New ~open-file~ command (=C-x C-f=).
 
-By default, it uses the =xdg-open=  command. The user can override the
-=next:*open-file-function*= variable  with a new function,  which takes the
-filename  (or directory  name) as  parameter.  See the  manual for  an
-example.
+  This new command allows to open a file from the file system.
 
-The default keybinding is =C-x C-f=.
+  The user is prompted with the minibuffer, files are browsable with the fuzzy completion.
 
-__Note__: this feature is alpha and is meant to grow in Next 1.4 and beyond!
+  The default directory is the one from the download manager.
 
-** DONE 1.3.1 (Upcoming)
+  Press =Enter= to  visit a file, =M-Left= or =C-l=  to go one directory
+  up, =M-Right= or =C-j= to browse the directory at point.
+
+  By default, it uses the =xdg-open=  command. The user can override the
+  =next:*open-file-function*= variable  with a new function,  which takes the
+  filename  (or directory  name) as  parameter.  See the  manual for  an
+  example.
+
+  The default keybinding is =C-x C-f=.
+
+  *Note:* This feature is experimental and is meant to grow in future versions
+  of Next!
+
+- New ~paste-from-ring~ command. (Thanks to Solomon Block.)
+
+  All copied text snippets are saved in a clipboard "ring."  Any snippet can be
+  fuzzy-searched and pasted later.
+
+- New ~minibuffer-history~ command (=M-p=).
+
+  This allows to fuzzy-search the history of minibuffer inputs.  Some minibuffers
+  may use their own history, otherwise they use the default.  For instance, the
+  ~set-url-*~ history includes the current URL, so that pressing =C-l M-p RET=
+  brings up the current URL in the input, ready for editing.
+
+- Improve minibuffer performance when loading many candidates.
+
+- Fix minibuffer scrolling to feel more natural.
+
+- Reduce minibuffer height when there is no completion function (e.g. link hints).
+
+- Add ~next-init-time~ command.
+
+** DONE 1.3.1
 *** Print page title in buffer list
 And the title is matched when fuzzy-searching a buffer!
 *** Improved minibuffer performance: it now shows up instantly

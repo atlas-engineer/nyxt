@@ -2,7 +2,7 @@
 ;;; next.asd
 
 (asdf:defsystem :next
-  :version "1.3.1"
+  :version "1.3.2"
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
   :serial t
@@ -16,6 +16,7 @@
                :cl-markup
                :cl-ppcre
                :cl-ppcre-unicode
+               :cl-prevalence
                :closer-mop
                :dbus
                :dexador
@@ -37,8 +38,10 @@
                :next/ring)
   :components ((:module "source"
                 :components
-                (;; Core Functionality
+                ((:file "patch-annot")
+                 ;; Core Functionality
                  (:file "package")
+                 (:file "serialization")
                  (:file "macro")
                  (:file "global")
                  (:file "port")
@@ -68,12 +71,12 @@
                  (:file "noscript-mode")
                  (:file "file-manager-mode")
                  (:file "download-mode")
-                 ;; About
-                 (:file "about")
                  ;; Port Compatibility Layers
                  (:file "ports/pyqt-webengine" :if-feature :darwin)
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
-                 ;; Base
+                 ;; Depends on everything else:
+                 (:file "about")
+                 (:file "session")
                  (:file "base"))))
   :build-operation "program-op"
   :build-pathname "next"
@@ -105,8 +108,6 @@
                                  :prove-asdf 'run-test-system c)))
 
 (asdf:defsystem next/ring
-  :depends-on (trivial-clipboard
-               cl-annot)
   :components ((:module source :pathname "libraries/ring/"
                 :components ((:file "package")
                              (:file "ring")))))

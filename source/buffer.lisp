@@ -7,20 +7,15 @@
 (defmethod object-string ((buffer buffer))
   (format nil "~a  ~a" (name buffer) (title buffer)))
 
-(defun make-buffer (&key (name "default")
-                         default-modes)
+(define-command make-buffer (&key (name "default")
+                                  modes)
   "Create a new buffer.
-MODE is a mode symbol.
-This function is meant to be used on the Lisp side."
-  (rpc-buffer-make *interface* :name name :default-modes default-modes))
+MODES is a list of mode symbols."
+  (rpc-buffer-make *interface* :name name :default-modes modes))
 
-(define-command new-buffer (&optional (name "default")
-                                      modes)
-  ;; TODO: Ask for modes interactively?
-  "Create a new buffer.
-This command is meant to be used interactively.
-See the `make-buffer' function for Lisp code."
-  (make-buffer :name name :default-modes modes))
+(define-deprecated-command new-buffer ()
+  "Deprecated by `make-buffer'."
+  (make-buffer))
 
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*)))
@@ -40,11 +35,15 @@ See the `make-buffer' function for Lisp code."
                                        :completion-function (buffer-completion-fn))))
     (set-active-buffer *interface* buffer)))
 
-(define-command make-visible-new-buffer ()
-  "Make a new empty buffer with the default-new-buffer-url loaded."
+(define-command make-buffer-focus ()
+  "Switch to a new buffer showing default-new-buffer-url."
   (let ((buffer (make-buffer)))
     (set-active-buffer *interface* buffer)
     (set-url (default-new-buffer-url buffer) :buffer buffer)))
+
+(define-deprecated-command make-visible-new-buffer ()
+  "Deprecated by `make-buffer-focus'."
+  (make-buffer-focus))
 
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
@@ -68,27 +67,19 @@ buffer to the start page."
 (define-parenscript buffer-get-title ()
   (ps:chain document title))
 
-;; This needs to be a funtion call in Javascript.
-(define-parenscript buffer-set-url (url)
-  ((lambda () (setf (ps:chain this document location href) (ps:lisp url)))))
-
 @export
-(defun set-url (input-url &key (buffer (active-buffer *interface*)) disable-history)
+(defun set-url (input-url &key (buffer (active-buffer *interface*))
+                            raw-url-p)
   "Load INPUT-URL in BUFFER.
-URL is first transformed by `parse-url', then by BUFFER's `load-hook'.
-If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
-  (let ((url (parse-url input-url)))
+URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
+  (let ((url (if raw-url-p
+                 input-url
+                 (parse-url input-url))))
     (setf (name buffer) url)
-    (unless disable-history
-      (history-typed-add input-url))
     (setf url (run-composed-hook (load-hook buffer) url))
-    (if (str:starts-with-p "file://" url)
-        (rpc-buffer-load *interface* buffer url)
-        ;; We need to specify the buffer here since we may reach this point
-        ;; on initialization before ACTIVE-BUFFER can be used.
-        (buffer-set-url :url url :buffer buffer))))
+    (rpc-buffer-load *interface* buffer url)))
 
-(define-command set-url-current-buffer ()
+(define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."
   (with-result (url (buffer-get-url))
     (let ((history (minibuffer-set-url-history *interface*)))
@@ -100,30 +91,20 @@ If DISABLE-HISTORY is non-nil, don't add the resulting URL to history."
                                         :completion-function 'history-typed-complete
                                         :history history
                                         :empty-complete-immediate t)))
-        (set-url url)))))
+        (if new-buffer-p
+            (let ((buffer (make-buffer)))
+              (set-url url :buffer buffer)
+              (set-active-buffer *interface* buffer))
+            (set-url url))))))
+
+(define-command set-url-new-buffer ()
+  "Prompt the user for a URL and set it in a new focused buffer."
+  (set-url-current-buffer :new-buffer-p t))
 
 (define-command reload-current-buffer ()
   "Reload current buffer."
   (with-result (url (buffer-get-url))
-    (set-url url :disable-history t)))
-
-(define-command set-url-new-buffer ()
-  "Prompt the user for a URL and set it in a new active / visible
-buffer"
-  ;; TODO: This is redundant with `set-url-current-buffer'.
-  (with-result (url (buffer-get-url))
-    (let ((history (minibuffer-set-url-history *interface*)))
-      (when history
-        (ring:insert history url))
-      (with-result (url (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Open URL in new buffer:"
-                                        :completion-function 'history-typed-complete
-                                        :history history
-                                        :empty-complete-immediate t)))
-        (let ((buffer (make-buffer)))
-          (set-url url :buffer buffer)
-          (set-active-buffer *interface* buffer))))))
+    (set-url url)))
 
 (defmethod get-active-buffer-index ((active-buffer buffer) buffers)
   (position active-buffer buffers :test #'equal))

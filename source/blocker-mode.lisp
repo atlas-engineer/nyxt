@@ -1,5 +1,8 @@
 (uiop:define-package :next/blocker-mode
     (:use :common-lisp :trivia :next :annot.class)
+  (:export
+   :hostlist
+   :make-hostlist)
   (:documentation "Block resource queries blacklisted hosts."))
 (in-package :next/blocker-mode)
 (annot:enable-annot-syntax)
@@ -45,7 +48,7 @@ If HOSTLIST has a `path', persist it locally."
 (defmethod load-to-memory ((hostlist hostlist))
   "Load hostlist.
 Auto-update file if older than UPDATE-INTERVAL seconds."
-  (if (and (ignore-errors (probe-file (path hostlist)))
+  (if (and (uiop:file-exists-p (path hostlist))
            (< (- (get-universal-time) (uiop:safe-file-write-date (path hostlist)))
               (update-interval hostlist)))
       (uiop:read-file-string (path hostlist))
@@ -115,3 +118,11 @@ Fall back on `resource-query-default'."
                               :is-known-type is-known-type
                               :mouse-button mouse-button
                               :modifiers modifiers)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(in-package :s-serialization)
+
+(defmethod serializable-slots ((object next/blocker-mode::blocker-mode))
+  "Discard hostlists which can get pretty big."
+  (delete 'next/blocker-mode::hostlists
+          (mapcar #'sb-mop:slot-definition-name (sb-mop:class-slots (class-of object)))))

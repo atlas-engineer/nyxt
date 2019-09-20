@@ -28,15 +28,6 @@ current URL or event messages.")
                              :documentation "The height of the minibuffer when closed.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
                            :documentation "The height of the minibuffer when open.")
-   (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
-                    :documentation "The path where the system will create/save the history database.")
-   (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
-                     :documentation "The path where the system will create/save the bookmark database.")
-   (search-engines :accessor search-engines :initform '(("default" . "https://duckduckgo.com/?q=~a")
-                                                        ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
-                   :documentation "An association list of all the search engines you can use in the minibuffer.
-The 'default' engine is used when the query is not a valid URL, or the first
-keyword is not recognized.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
@@ -104,7 +95,6 @@ forwarded when no binding is found.")
                     ;; TODO: Store multiple key chords?  Maybe when implementing keyboard macros.
                     :documentation "The last key chords that were received for the current buffer.
 For now we only store the very last key chord.")
-   (view :accessor view :initarg :view)
    (resource-query-function :accessor resource-query-function
                             ;; TODO: What about having multiple functions?  And what about moving this to modes?
                             :initarg :resource-query-function
@@ -148,7 +138,9 @@ platform ports might support this.")
           :documentation "Proxy for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook :initform '() :type list
-              :documentation "Hook run in `set-url' after `parse-url' was processed.")
+              :documentation "Hook run in `set-url' after `parse-url' was
+processed.  The handlers take the URL going to be loaded as argument and must
+return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook :initform '() :type list
                        :documentation "Hook run before `rpc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
@@ -214,7 +206,7 @@ See `rpc-buffer-make'."
 
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (name buffer) url)
-  (with-result (title (buffer-get-title))
+  (with-result (title (buffer-get-title :buffer buffer))
     (setf (title buffer) title))
   (dolist (mode (modes buffer))
     (did-commit-navigation mode url)))
@@ -248,12 +240,25 @@ by Next when the user session dbus instance is not available.")
    (last-active-window :accessor last-active-window :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
    (total-buffer-count :accessor total-buffer-count :initform 0)
+   (startup-function :accessor startup-function
+                     :type function
+                     :initform #'default-startup
+                     :documentation "The function run on startup.  It takes a
+list of URLs (strings) as argument (the command line positional arguments).  It
+is run after the platform port has been initialized and after the
+`after-init-hook' has run.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p :initform nil
                                        :documentation "When open links from an external program, or
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
+   (search-engines :accessor search-engines
+                   :initform '(("default" . "https://duckduckgo.com/?q=~a")
+                               ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
+                   :documentation "An association list of all the search engines
+you can use in the minibuffer.  The 'default' engine is used when the query is
+not a valid URL, or the first keyword is not recognized.")
    (key-chord-stack :accessor key-chord-stack :initform '()
                     :documentation "A stack that keeps track of the key chords a user has inputted.")
    (downloads :accessor downloads :initform '()
@@ -269,6 +274,25 @@ stored.  Nil means use system default.")
                       :documentation "`local-time:timestamp' of when Next was started.")
    (init-time :initform 0.0 :type number
               :documentation "Init time in seconds.")
+   (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
+                    :documentation "The path where the system will create/save the history database.")
+   (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
+                     :documentation "The path where the system will create/save the bookmark database.")
+   (session-path :accessor session-path
+                 :type string
+                 :initform (xdg-data-home "session.lisp")
+                 :documentation "The path where the session is persisted.")
+   (session-store-function :accessor session-store-function
+                           :type function
+                           :initform #'store-sexp-session
+                           :documentation "The function which stores the session
+into `session-path'.")
+   (session-restore-function :accessor session-restore-function
+                             :type function
+                             :initform #'restore-sexp-session
+                             :documentation "The function which restores the session
+into `session-path'.")
+   ;; Hooks follow:
    (after-init-hook :accessor after-init-hook :initform '() :type list
                     :documentation "Hook run after both `*interface*' and the
 platform port have started.  The handlers take no argument.")
@@ -282,7 +306,7 @@ The handlers take the window as argument.")
                      :documentation "Hook run after `rpc-buffer-make'.
 The handlers take the buffer as argument.")
    (before-download-hook :accessor buffer-download-hook :initform '() :type list
-                         :documentation "Hook run before a downloading a URL.
+                         :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
    (after-download-hook :accessor after-download-hook :initform '() :type list
                         :documentation "Hook run after a download has completed.
@@ -518,7 +542,7 @@ proceeding."
                              (buffer buffer))
   "Set current window title to 'Next - TITLE - URL."
   (let ((url (name buffer)))
-    (with-result* ((title (buffer-get-title)))
+    (with-result* ((title (buffer-get-title :buffer buffer)))
       (setf title (if (str:emptyp title) "" title))
       (setf url (if (str:emptyp url) "<no url/name>" url))
       (rpc-window-set-title interface window
@@ -572,12 +596,33 @@ Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
     (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
     buffer))
 
+;; TODO: How can we identify dead buffers?  Maybe with a nil ID?  Or maybe a
+;; dead-buffer is just a buffer history.
+;; TODO: Use dead buffers for undo.
+@export
+(defmethod rpc-init-dead-buffer ((interface remote-interface) (buffer buffer))
+  "Create a webview for dead BUFFER.
+A \"dead buffer\" is a buffer that does not have an associated web view on the
+platform port.  Run INTERFACE's `buffer-make-hook' over the created buffer
+before returning it."
+  (ensure-parent-exists (cookies-path buffer))
+  (%rpc-send interface "buffer_make" (id buffer)
+             `(("cookies-path" ,(namestring (cookies-path buffer)))))
+  ;; Modes might require that buffer exists, so we need to initialize them
+  ;; after it has been created on the platform port.
+  (initialize-modes buffer)
+  (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
+  buffer)
+
 (defmethod %get-inactive-buffer ((interface remote-interface))
+  "Return inactive buffer or NIL if none."
   (let ((active-buffers
           (mapcar #'active-buffer
-                      (alexandria:hash-table-values (windows *interface*))))
+                  (alexandria:hash-table-values (windows *interface*))))
         (buffers (alexandria:hash-table-values (buffers *interface*))))
-    (alexandria:last-elt (set-difference buffers active-buffers))))
+    (match (set-difference buffers active-buffers)
+      ((guard diff diff)
+       (alexandria:last-elt diff)))))
 
 @export
 (defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
@@ -750,21 +795,22 @@ TODO: Only booleans are supported for now."
     ()
   (:interface +core-interface+)
   (:name "make_buffers")
-  (make-buffers urls)
+  (open-urls urls)
   (values))
 
-(defun make-buffers (urls)
-  "Create new buffers from URLs."
-  ;; The new active buffer should be the first created buffer.
-  (when urls
-    (let ((buffer (make-buffer)))
-      (set-url (first urls) :buffer buffer)
-      (if (open-external-link-in-new-window-p *interface*)
-          (window-set-active-buffer *interface* (rpc-window-make *interface*) buffer)
-          (set-active-buffer *interface* buffer)))
-    (loop for url in (rest urls) do
-      (let ((buffer (make-buffer)))
-        (set-url url :buffer buffer)))))
+(defun open-urls (urls)
+  "Create new buffers from URLs.
+First URL is focused."
+  (let ((first-buffer (first (mapcar
+                              (lambda (url)
+                                (let ((buffer (make-buffer)))
+                                  (set-url url :buffer buffer)
+                                  buffer))
+                              urls))))
+    (if (open-external-link-in-new-window-p *interface*)
+        (let ((window (rpc-window-make *interface*)))
+          (window-set-active-buffer *interface* window first-buffer))
+        (set-active-buffer *interface* first-buffer))))
 
 @export
 (defmethod resource-query-default ((buffer buffer)
@@ -791,7 +837,7 @@ Deal with URL with the following rules:
               (string= mouse-button "button1"))
          (string= mouse-button "button2"))
      (log:info "Load ~a in new buffer" url)
-     (make-buffers (list url))
+     (open-urls (list url))
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
@@ -850,7 +896,8 @@ Deal with URL with the following rules:
 (defmethod active-buffer ((interface remote-interface))
   "Get the active buffer for the active window."
   (match (rpc-window-active interface)
-    ((guard w w) (active-buffer w))))
+    ((guard w w) (active-buffer w))
+    (_ (log:warn "No active window."))))
 
 ;; TODO: Prevent setting the minibuffer as the active buffer.
 @export
@@ -858,4 +905,7 @@ Deal with URL with the following rules:
                               (buffer buffer))
   "Set the active buffer for the active window."
   (let ((rpc-window-active (rpc-window-active interface)))
-    (window-set-active-buffer interface rpc-window-active buffer)))
+    (if rpc-window-active
+        (window-set-active-buffer interface rpc-window-active buffer)
+        (make-window buffer))
+    buffer))

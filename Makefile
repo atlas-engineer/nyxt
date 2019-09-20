@@ -146,7 +146,8 @@ quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
 		--eval '(uiop:quit)' || true
 
-# Testing that next loads is a first test.
+## Testing that next loads is a first test.
+## TODO: Test that Next starts even with broken init file.
 test: $(lisp_files)
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \

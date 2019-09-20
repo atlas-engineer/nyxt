@@ -21,11 +21,10 @@ If the input starts with an uri scheme, open it as is.
 If the input is actually a file path, open it.
 Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
 Otherwise, build a search query with the default search engine."
-  (let* ((window (rpc-window-active *interface*))
-         (engine (assoc (first (str:split " " input-url))
-                        (search-engines window) :test #'string=))
+  (let* ((engine (assoc (first (str:split " " input-url))
+                        (search-engines *interface*) :test #'string=))
          (default (assoc "default"
-                         (search-engines window) :test #'string=)))
+                         (search-engines *interface*) :test #'string=)))
     (if engine
         (generate-search-query
          (subseq input-url
@@ -37,7 +36,7 @@ Otherwise, build a search query with the default search engine."
                   (not (string= "file" recognized-scheme)))
              input-url)
             ((or (string= "file" recognized-scheme)
-                 (probe-file input-url))
+                 (uiop:file-exists-p input-url))
              (if (string= "file" recognized-scheme)
                  input-url
                  (format nil "file://~a"
@@ -58,7 +57,9 @@ Otherwise, build a search query with the default search engine."
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
-           (cl-ppcre:regex-replace-all " +" search-string "+"))
+           ;; We need to encode the search string to escape special characters.
+           ;; Besides, we separate search patterns by a "+".
+           (cl-ppcre:regex-replace-all "(%20)+" (quri:url-encode search-string) "+"))
          (url (format nil search-url encoded-search-string)))
     url))
 
@@ -187,7 +188,7 @@ FILE-NAME is appended to the result."
 (defun ensure-file-exists (path &optional (init-function))
   "Create file pointed by PATH if it does not exists.  Return PATH's truename.
 When non-nil, INIT-FUNCTION is used to create the file, else the file will be empty."
-  (unless (probe-file path)
+  (unless (uiop:file-exists-p path)
     (if init-function
         (funcall init-function path)
         (close (open (ensure-parent-exists path) :direction :probe :if-does-not-exist :create))))
@@ -227,7 +228,10 @@ The second value is the initfunction."
 @export
 (defun (setf get-default) (value class-name slot-name)
   "Set default value of SLOT-NAME from CLASS-NAME.
-Return VALUE."
+Return VALUE.
+
+This only changes the default value for future instances.  Existing instances
+won't be affected."
   ;; Warning: This is quite subtle: the :initform and :initfunction are tightly
   ;; coupled, it seems that both must be changed together.  We need to change
   ;; the class-slots and not the class-direct-slots.  TODO: Explain why.
@@ -238,7 +242,10 @@ Return VALUE."
 
 (defun add-to-default-list (value class-name slot-name)
   "Add VALUE to the list SLOT-NAME from CLASS-NAME.
-If VALUE is already present, move it to the head of the list."
+If VALUE is already present, move it to the head of the list.
+
+This only changes the default value for future instances.  Existing instances
+won't be affected."
   (setf (get-default class-name slot-name)
         (remove-duplicates (cons value
                                  (get-default class-name slot-name))

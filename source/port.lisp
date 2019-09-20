@@ -28,7 +28,7 @@ as a string.")
 
 (defmethod path ((port port))
   (let ((p (port-accessor port 'path (name port))))
-    (if (probe-file p)
+    (if (uiop:file-exists-p p)
         (truename p)
         p)))
 
@@ -49,7 +49,7 @@ This is an acceptable value for the PATH slot of the PORT class."
     (or
      ;; look at the current directory.
      (loop for name in names
-        when (probe-file name)
+        when (uiop:file-exists-p name)
         return name)
 
      ;; look in the ports/ subdir.
@@ -59,7 +59,7 @@ This is an acceptable value for the PATH slot of the PORT class."
                               (file-namestring name)
                               (merge-pathnames (format nil "ports/~a/" dir-name)
                                                *default-pathname-defaults*))
-        when (probe-file file-in-subdir)
+        when (uiop:file-exists-p file-in-subdir)
         return file-in-subdir)
 
      ;; as a last resort, return "name".
