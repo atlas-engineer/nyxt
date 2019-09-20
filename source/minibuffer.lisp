@@ -66,7 +66,7 @@
 string and returns a list of candidate strings")
    (callback :initarg :callback :accessor callback :initform nil
                       :documentation "Function to call over the selected candidate.")
-   (callback-buffer :initarg :callback-buffer :accessor callback-buffer :initform (when *interface* (active-buffer *interface*))
+   (callback-buffer :initarg :callback-buffer :accessor callback-buffer :initform (when *interface* (current-buffer))
                     :documentation "The active buffer when the minibuffer was
 brought up.  This can be useful to know which was the original buffer in the
 `callback' in case the buffer was changed.")
@@ -134,7 +134,7 @@ If nil, no history is used.")
 This runs a call"
   (setf (slot-value minibuffer 'content) html-content)
   (rpc-minibuffer-evaluate-javascript
-   *interface* (last-active-window *interface*)
+   (last-active-window *interface*)
    (ps:ps (ps:chain document
                     (write (ps:lisp (content minibuffer)))))))
 
@@ -150,7 +150,7 @@ This runs a call"
             (empty-complete-immediate minibuffer)))
   (initialize-modes minibuffer))
 
-;; (declaim (ftype (function (minibuffer &key function)) read-from-minibuffer)) ; TODO: How do we type keyword args?
+(declaim (ftype (function (minibuffer &key (:callback function))) read-from-minibuffer))
 @export
 (defun read-from-minibuffer (minibuffer &key callback)
   "Open the minibuffer, ready for user input.
@@ -166,17 +166,17 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
     ;; called in `with-result'.
     (setf (callback minibuffer) callback))
   ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
-  (setf (callback-buffer minibuffer) (active-buffer *interface*))
+  (setf (callback-buffer minibuffer) (current-buffer))
   (match (setup-function minibuffer)
     ((guard f f) (funcall f minibuffer)))
   (update-display minibuffer)
   (push minibuffer (active-minibuffers (last-active-window *interface*)))
-  (apply #'show *interface*
+  (apply #'show
          (unless (completion-function minibuffer)
            ;; We don't need so much height since there is no candidate to display.
            (list :height (minibuffer-closed-height (last-active-window *interface*))))))
 
-(define-command return-input (&optional (minibuffer (minibuffer *interface*)))
+(define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
   (with-slots (callback empty-complete-immediate completions completion-cursor)
       minibuffer
@@ -190,25 +190,25 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
        (funcall callback completion))))
   (quit-minibuffer minibuffer))
 
-(define-command return-immediate (&optional (minibuffer (minibuffer *interface*)))
+(define-command return-immediate (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
   (with-slots (callback) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
       (funcall callback normalized-input)))
   (quit-minibuffer minibuffer))
 
-(defun quit-minibuffer (&optional (minibuffer (minibuffer *interface*)))
+(defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
   (unless (or (null (history minibuffer))
               (str:empty? (input-buffer minibuffer)))
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
       (ring:insert (history minibuffer) normalized-input)))
   (cancel-input minibuffer))
 
-(define-command cancel-input (&optional (minibuffer (minibuffer *interface*)))
+(define-command cancel-input (&optional (minibuffer (current-minibuffer)))
   "Close the minibuffer query without further action."
   (match (cleanup-function minibuffer)
     ((guard f f) (funcall f)))
-  (hide *interface* minibuffer))
+  (hide minibuffer))
 
 @export
 (defmethod erase-input ((minibuffer minibuffer))
@@ -239,10 +239,10 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
 (defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
-  (let ((active-window (rpc-window-active *interface*)))
+  (let ((active-window (rpc-window-active)))
     (when minibuffer
       (with-result (new-content (rpc-minibuffer-evaluate-javascript
-                                 *interface* active-window
+                                 active-window
                                  (str:concat
                                   script
                                   ;; Return the new HTML body.
@@ -251,40 +251,40 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         ;; we need to update the slot's value.
         (setf (slot-value minibuffer 'content) new-content)))))
 
-(defmethod show ((interface remote-interface) &key
-                                                (minibuffer (first (active-minibuffers
-                                                                    (last-active-window interface))))
-                                                height)
+(defun show (&key
+             (minibuffer (first (active-minibuffers
+                                 (last-active-window *interface*))))
+             height)
   "Show the last active minibuffer, if any."
-  (let ((active-window (last-active-window interface)))
+  (let ((active-window (last-active-window *interface*)))
     (when minibuffer
-      (rpc-window-set-minibuffer-height interface
+      (rpc-window-set-minibuffer-height
                                         active-window
                                         (or height
                                             (minibuffer-open-height active-window))))))
 
-(defmethod hide ((interface remote-interface) minibuffer)
+(defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
-  (let ((active-window (rpc-window-active interface)))
+  (let ((active-window (rpc-window-active)))
     ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
     ;; minibuffer was invoked before the old one reaches here.
     (setf (active-minibuffers active-window)
           (delete minibuffer (active-minibuffers active-window)))
     (if (active-minibuffers active-window)
         (progn
-          (show interface)
+          (show)
           ;; We need to refresh so that the nested minibuffers don't have to do it.
           (update-display (first (active-minibuffers active-window))))
         (progn
           ;; TODO: We need a mode-line before we can afford to really hide the
           ;; minibuffer.  Until then, we "blank" it.
           (echo "")                     ; Or echo-dismiss?
-          (rpc-window-set-minibuffer-height interface
+          (rpc-window-set-minibuffer-height
                                             active-window
                                             ;; TODO: Shouldn't it be status-buffer height?
                                             (minibuffer-closed-height active-window))))))
 
-(defun insert (characters &optional (minibuffer (minibuffer *interface*)))
+(defun insert (characters &optional (minibuffer (current-minibuffer)))
   (setf (input-buffer minibuffer)
         (str:insert characters
                     (input-buffer-cursor minibuffer)
@@ -305,7 +305,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          key-string))
     (insert key-string)))
 
-(define-command delete-forwards (&optional (minibuffer (minibuffer *interface*)))
+(define-command delete-forwards (&optional (minibuffer (current-minibuffer)))
   "Delete character after cursor."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (unless (= input-buffer-cursor (length input-buffer))
@@ -317,7 +317,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                  (length input-buffer))))))
   (update-display minibuffer))
 
-(define-command delete-backwards (&optional (minibuffer (minibuffer *interface*)))
+(define-command delete-backwards (&optional (minibuffer (current-minibuffer)))
   "Delete character before cursor."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (unless (= input-buffer-cursor 0)
@@ -328,33 +328,33 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
       (decf input-buffer-cursor)))
   (update-display minibuffer))
 
-(define-command cursor-forwards (&optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-forwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor forward by one."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (when (< input-buffer-cursor (length input-buffer))
       (incf input-buffer-cursor)))
   (update-display minibuffer))
 
-(define-command cursor-backwards (&optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-backwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor backwards by one."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (when (> input-buffer-cursor 0)
       (decf input-buffer-cursor)))
   (update-display minibuffer))
 
-(define-command cursor-beginning (&optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-beginning (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the input area."
   (with-slots (input-buffer-cursor) minibuffer
     (setf input-buffer-cursor 0))
   (update-display minibuffer))
 
-(define-command cursor-end (&optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-end (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the input area."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (setf input-buffer-cursor (length input-buffer)))
   (update-display minibuffer))
 
-(defun char-at-cursor (&optional (minibuffer (minibuffer *interface*)))
+(defun char-at-cursor (&optional (minibuffer (current-minibuffer)))
   "Return the character the cursor it at in the minibuffer."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (if (< input-buffer-cursor (length input-buffer))
@@ -365,7 +365,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (if (< position (length input))
       (char input position)))
 
-(define-command cursor-forwards-word (&optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the word at point."
   (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
     (with-slots (input-buffer input-buffer-cursor) minibuffer
@@ -405,7 +405,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         position)))
 
 ;; TODO: Re-use cursor-forwards-word
-(define-command cursor-backwards-word (&optional (minibuffer (minibuffer *interface*)))
+(define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (setf input-buffer-cursor (backwards-word-position input-buffer input-buffer-cursor)))
@@ -413,7 +413,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (update-display minibuffer)
   (input-buffer-cursor minibuffer))
 
-(define-command delete-forwards-word (&optional (minibuffer (minibuffer *interface*)))
+(define-command delete-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the end of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (let* ((current-cursor-position input-buffer-cursor)
@@ -435,7 +435,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          (str:substring position nil input))
             new-position)))
 
-(define-command delete-backwards-word (&optional (minibuffer (minibuffer *interface*)))
+(define-command delete-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the beginning of the word at point."
   (with-slots (input-buffer input-buffer-cursor) minibuffer
     (multiple-value-bind (new-string new-position) (%delete-backwards-word input-buffer input-buffer-cursor)
@@ -443,13 +443,13 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
             input-buffer-cursor new-position)))
   (update-display minibuffer))
 
-(define-command kill-line (&optional (minibuffer (minibuffer *interface*)))
+(define-command kill-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters from cursor position until the end of the line."
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (setf input-buffer (subseq input-buffer 0 input-buffer-cursor)))
     (update-display minibuffer))
 
-(define-command kill-whole-line (&optional (minibuffer (minibuffer *interface*)))
+(define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters in the input."
     (with-slots (input-buffer input-buffer-cursor) minibuffer
       (setf input-buffer ""
@@ -525,7 +525,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
                                (ps:lisp completion-html)))))))
 
-(define-command select-next (&optional (minibuffer (minibuffer *interface*)))
+(define-command select-next (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer."
   (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
     (incf (completion-cursor minibuffer))
@@ -534,7 +534,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                                       (scroll-into-view false))))))
 
-(define-command select-previous (&optional (minibuffer (minibuffer *interface*)))
+(define-command select-previous (&optional (minibuffer (current-minibuffer)))
   "Select previous entry in minibuffer."
   (when (> (completion-cursor minibuffer) 0)
     (decf (completion-cursor minibuffer))
@@ -554,7 +554,7 @@ Accepted keyword argument:
 
 The first argument can be a format string and the following arguments will be
 interpreted by `format'. "
-  (let* ((window (when *interface* (rpc-window-active *interface*)))
+  (let* ((window (when *interface* (rpc-window-active)))
          (status-buffer (when window (status-buffer window))))
     (when (evenp (length args))
       (when (getf args :minibuffer)
@@ -578,8 +578,7 @@ interpreted by `format'. "
                    (:head (:style style))
                    (:body
                     (:p (apply #'format nil args))))))
-          (show *interface*
-                :minibuffer status-buffer
+          (show :minibuffer status-buffer
                 :height (status-buffer-height window)))
         (log:warn "Can't echo '~a' without status buffer or interface" (apply #'format nil args)))))
 
@@ -605,7 +604,7 @@ Return most recent entry in RING."
       (ring:insert ring clipboard-content)))
   (string (ring:ref ring 0)))
 
-(define-command minibuffer-paste (&optional (minibuffer (minibuffer *interface*)))
+(define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
   (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
 
@@ -617,13 +616,13 @@ Return most recent entry in RING."
     (and completions
          (object-string (nth completion-cursor completions)))))
 
-(define-command copy-candidate (&optional (minibuffer (minibuffer *interface*)))
+(define-command copy-candidate (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
       (trivial-clipboard:text candidate))))
 
-(define-command insert-candidate (&optional (minibuffer (minibuffer *interface*)))
+(define-command insert-candidate (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
@@ -637,7 +636,7 @@ Return most recent entry in RING."
       (fuzzy-match input (delete-duplicates (ring:recent-list history)
                                             :test #'equal)))))
 
-(define-command minibuffer-history (&optional (minibuffer (minibuffer *interface*)))
+(define-command minibuffer-history (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
   (when (history minibuffer)
     (with-result (input (read-from-minibuffer

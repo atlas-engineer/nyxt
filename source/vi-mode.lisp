@@ -52,11 +52,11 @@
 (define-parenscript %clicked-in-input? ()
   (ps:chain document active-element tag-name))
 
-(define-command vi-button1 (&optional (buffer (active-buffer *interface*)))
+(define-command vi-button1 (&optional (buffer (current-buffer)))
   "Enable VI insert mode when focus is on an input element on the web page."
   (let ((root-mode (find-mode buffer 'root-mode)))
-    (rpc-generate-input-event *interface*
-                              (rpc-window-active *interface*)
+    (rpc-generate-input-event
+                              (rpc-window-active)
                               (first (last-key-chords
                                       (buffer root-mode))))
     (%clicked-in-input?

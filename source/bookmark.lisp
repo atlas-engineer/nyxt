@@ -84,4 +84,4 @@
                      (make-instance 'minibuffer
                                     :input-prompt "Open bookmark:"
                                     :completion-function 'bookmark-complete)))
-    (set-url url :buffer (active-buffer *interface*) :raw-url-p t)))
+    (set-url url :buffer (current-buffer) :raw-url-p t)))

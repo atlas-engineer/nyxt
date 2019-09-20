@@ -151,10 +151,10 @@ The handlers take the buffer as argument.")))
 (defmethod (setf proxy) (proxy (buffer buffer))
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
-      (rpc-set-proxy *interface* buffer
+      (rpc-set-proxy buffer
                      (server-address proxy)
                      (whitelist proxy))
-      (rpc-set-proxy *interface* buffer
+      (rpc-set-proxy buffer
                      ""
                      nil)))
 
@@ -312,11 +312,6 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
-@export
-(defmethod minibuffer ((interface remote-interface))
-  "Currently active minibuffer"
-  (first (active-minibuffers (last-active-window interface))))
-
 (defun download-watch ()
   "Update the download-list buffer.
 This function is meant to be run in the background."
@@ -348,30 +343,31 @@ when `proxied-downloads-p' is true."
 ;; TODO: To download any URL at any moment and not just in resource-query, we
 ;; need to query the cookies for URL.  Thus we need to add an RPC endpoint to
 ;; query cookies.
-(defmethod download ((interface remote-interface) url &key
-                                                        cookies
-                                                        (proxy-address :auto))
+(defun download (url &key
+                     cookies
+                     (proxy-address :auto))
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
   (hooks:run-hook (hooks:object-hook *interface* 'before-download-hook) url)
   (when (eq proxy-address :auto)
-    (setf proxy-address (proxy-address (active-buffer interface)
+    (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
   (let* ((download nil))
     (handler-case
         (progn
           (setf download (download-manager:resolve
                           url
-                          :directory (download-directory interface)
+                          :directory (download-directory *interface*)
                           :cookies cookies
                           :proxy proxy-address))
-          (push download (downloads interface))
+          (push download (downloads *interface*))
           download)
       (error (c)
         (echo "Download error: ~a" c)
         nil))))
 
+(declaim (ftype (function (remote-interface)) ensure-dbus-session))
 (defun ensure-dbus-session (interface)
   "Start a dbus session if necessary."
   (handler-case
@@ -458,7 +454,8 @@ For an array of string, that would be \"as\"."
                         :signature signature
                         :arguments args)))
 
-(defmethod %rpc-send ((interface remote-interface) (method string) &rest args)
+(declaim (ftype (function (string &rest t)) %rpc-send))
+(defun %rpc-send (method &rest args)
   ;; TODO: Make %rpc-send asynchronous?
   ;; If the platform port ever hangs, the next %rpc-send will hang the Lisp core too.
   ;; TODO: Catch connection errors and execution errors.
@@ -469,152 +466,151 @@ For an array of string, that would be \"as\"."
 ;; TODO: Move to separate packages:
 ;; - next-rpc
 ;; - next-script (?)
-(defmethod rpc-list-methods ((interface remote-interface))
+(defun rpc-list-methods ()
   "Return the unsorted list of RPC methods supported by the platform port."
   ;; TODO: Find the right way to do this in dbus.
-  (%rpc-send interface "listMethods"))
+  (%rpc-send "listMethods"))
 
-(defmethod get-unique-window-identifier ((interface remote-interface))
-  (format nil "~a" (1+ (total-window-count interface))))
+(defun get-unique-window-identifier ()
+  (format nil "~a" (1+ (total-window-count *interface*))))
 
-(defmethod get-unique-buffer-identifier ((interface remote-interface))
-  (format nil "~a" (1+ (total-buffer-count interface))))
+(defmethod get-unique-buffer-identifier ()
+  (format nil "~a" (1+ (total-buffer-count *interface*))))
 
 @export
-(defmethod rpc-window-make ((interface remote-interface))
+(defun rpc-window-make ()
   "Create a window and return the window object.
 Run INTERFACE's `window-make-hook' over the created window."
-  (let* ((window-id (get-unique-window-identifier interface))
+  (let* ((window-id (get-unique-window-identifier))
          (window (make-instance 'window :id window-id)))
-    (setf (gethash window-id (windows interface)) window)
-    (incf (total-window-count interface))
-    (%rpc-send interface "window_make" window-id)
-    (unless (last-active-window interface)
+    (setf (gethash window-id (windows *interface*)) window)
+    (incf (total-window-count *interface*))
+    (%rpc-send "window_make" window-id)
+    (unless (last-active-window *interface*)
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and rpc-window-active would then return nil.
-      (setf (last-active-window interface) window))
-    (hooks:run-hook (hooks:object-hook interface 'window-make-hook) window)
+      (setf (last-active-window *interface*) window))
+    (hooks:run-hook (hooks:object-hook *interface* 'window-make-hook) window)
     window))
 
+(declaim (ftype (function (window string)) rpc-window-set-title))
 @export
-(defmethod rpc-window-set-title ((interface remote-interface) (window window) title)
+(defun rpc-window-set-title (window title)
   "Set the title for a given window."
-  (%rpc-send interface "window_set_title" (id window) title))
+  (%rpc-send "window_set_title" (id window) title))
 
+(declaim (ftype (function (window)) rpc-window-delete))
 @export
-(defmethod rpc-window-delete ((interface remote-interface) (window window))
+(defun rpc-window-delete (window)
   "Delete a window object and remove it from the hash of windows.
 Run INTERFACE's `window-delete-hook' over WINDOW before deleting it."
   (hooks:run-hook (hooks:object-hook window 'window-delete-hook) window)
-  (%rpc-send interface "window_delete" (id window))
-  (with-slots (windows) interface
-    (remhash (id window) windows)))
+  (%rpc-send "window_delete" (id window))
+  (remhash (id window) (windows *interface*)))
 
 @export
-(defmethod rpc-window-active ((interface remote-interface))
+(defun rpc-window-active ()
   "Return the window object for the currently active window."
-  (with-slots (windows) interface
-    (let ((window (gethash (%rpc-send interface "window_active")
-                           windows)))
-      (when window
-        (setf (last-active-window interface) window))
-      (last-active-window interface))))
+  (let ((window (gethash (%rpc-send "window_active")
+                         (windows *interface*))))
+    (when window
+      (setf (last-active-window *interface*) window))
+    (last-active-window *interface*)))
 
+(declaim (ftype (function (window)) rpc-window-exists))
 @export
-(defmethod rpc-window-exists ((interface remote-interface) (window window))
+(defun rpc-window-exists (window)
   "Return if a window exists."
-  (%rpc-send interface "window_exists" (id window)))
+  (%rpc-send "window_exists" (id window)))
 
+(declaim (ftype (function (window buffer)) rpc-window-set-active-buffer))
 @export
-(defmethod rpc-window-set-active-buffer ((interface remote-interface)
-                                         (window window)
-                                         (buffer buffer))
+(defun rpc-window-set-active-buffer (window buffer)
   "Set INTERFACE's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
   (hooks:run-hook (hooks:object-hook window 'window-set-active-buffer-hook) window buffer)
-  (%rpc-send interface "window_set_active_buffer" (id window) (id buffer))
+  (%rpc-send "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer))
 
+(declaim (ftype (function (window buffer)) set-window-title))
 @export
-(defmethod set-window-title ((interface remote-interface)
-                             (window window)
-                             (buffer buffer))
+(defun set-window-title (window buffer)
   "Set current window title to 'Next - TITLE - URL."
   (let ((url (name buffer)))
     (with-result* ((title (buffer-get-title :buffer buffer)))
       (setf title (if (str:emptyp title) "" title))
       (setf url (if (str:emptyp url) "<no url/name>" url))
-      (rpc-window-set-title interface window
+      (rpc-window-set-title window
                             (concatenate 'string "Next - "
                                          title (unless (str:emptyp title) " - ")
                                          url)))))
 
+(declaim (ftype (function (window buffer)) window-set-active-buffer))
 @export
-(defmethod window-set-active-buffer ((interface remote-interface)
-                                     (window window)
-                                     (buffer buffer))
+(defun window-set-active-buffer (window buffer)
   ;; TODO: Replace this swapping business with a simple swap + a "refresh rendering" RPC call?
   (let ((window-with-same-buffer (find-if
                                   (lambda (other-window) (and (not (eq other-window window))
                                                               (eql (active-buffer other-window) buffer)))
                                   (alexandria:hash-table-values (windows *interface*)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (rpc-buffer-make *interface*))
+        (let ((temp-buffer (rpc-buffer-make))
               (buffer-swap (active-buffer window)))
           (log:debug "Swapping with buffer from existing window.")
-          (rpc-window-set-active-buffer interface window-with-same-buffer temp-buffer)
-          (rpc-window-set-active-buffer interface window buffer)
-          (rpc-window-set-active-buffer interface window-with-same-buffer buffer-swap)
-          (rpc-buffer-delete interface temp-buffer))
-        (rpc-window-set-active-buffer interface window buffer))
-    (set-window-title interface window buffer)
+          (rpc-window-set-active-buffer window-with-same-buffer temp-buffer)
+          (rpc-window-set-active-buffer window buffer)
+          (rpc-window-set-active-buffer window-with-same-buffer buffer-swap)
+          (rpc-buffer-delete temp-buffer))
+        (rpc-window-set-active-buffer window buffer))
+    (set-window-title window buffer)
     (setf (active-buffer window) buffer)))
 
+(declaim (ftype (function (window integer)) rpc-window-set-minibuffer-height))
 @export
-(defmethod rpc-window-set-minibuffer-height ((interface remote-interface)
-                                             window height)
-  (%rpc-send interface "window_set_minibuffer_height" (id window) height))
+(defun rpc-window-set-minibuffer-height (window height)
+  (%rpc-send "window_set_minibuffer_height" (id window) height))
 
+(declaim (ftype (function (&key (:name string) (:default-modes list))) rpc-buffer-make))
 @export
-(defmethod rpc-buffer-make ((interface remote-interface)
-                            &key name default-modes)
+(defun rpc-buffer-make (&key name default-modes)
   "Make buffer with name NAME and modes DEFAULT-MODES.
-Run INTERFACE's `buffer-make-hook' over the created buffer before returning it."
-  (let* ((buffer-id (get-unique-buffer-identifier interface))
+Run `*interface*'s `buffer-make-hook' over the created buffer before returning it."
+  (let* ((buffer-id (get-unique-buffer-identifier))
          (buffer (apply #'make-instance 'buffer :id buffer-id
                         (append (when name `(:name ,name))
                                 (when default-modes `(:default-modes ,default-modes))))))
     (ensure-parent-exists (cookies-path buffer))
-    (setf (gethash buffer-id (buffers interface)) buffer)
-    (incf (total-buffer-count interface))
-    (%rpc-send interface "buffer_make" buffer-id
+    (setf (gethash buffer-id (buffers *interface*)) buffer)
+    (incf (total-buffer-count *interface*))
+    (%rpc-send "buffer_make" buffer-id
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
-    (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
+    (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
     buffer))
 
 ;; TODO: How can we identify dead buffers?  Maybe with a nil ID?  Or maybe a
 ;; dead-buffer is just a buffer history.
 ;; TODO: Use dead buffers for undo.
+(declaim (ftype (function (buffer)) rpc-init-dead-buffer))
 @export
-(defmethod rpc-init-dead-buffer ((interface remote-interface) (buffer buffer))
+(defun rpc-init-dead-buffer (buffer)
   "Create a webview for dead BUFFER.
 A \"dead buffer\" is a buffer that does not have an associated web view on the
 platform port.  Run INTERFACE's `buffer-make-hook' over the created buffer
 before returning it."
   (ensure-parent-exists (cookies-path buffer))
-  (%rpc-send interface "buffer_make" (id buffer)
+  (%rpc-send "buffer_make" (id buffer)
              `(("cookies-path" ,(namestring (cookies-path buffer)))))
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after it has been created on the platform port.
   (initialize-modes buffer)
-  (hooks:run-hook (hooks:object-hook interface 'buffer-make-hook) buffer)
+  (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
   buffer)
 
-(defmethod %get-inactive-buffer ((interface remote-interface))
+(defun %get-inactive-buffer ()
   "Return inactive buffer or NIL if none."
   (let ((active-buffers
           (mapcar #'active-buffer
@@ -624,49 +620,47 @@ before returning it."
       ((guard diff diff)
        (alexandria:last-elt diff)))))
 
+(declaim (ftype (function (buffer)) rpc-buffer-delete))
 @export
-(defmethod rpc-buffer-delete ((interface remote-interface) (buffer buffer))
-  "Delete BUFFER from INTERFACE.
+(defun rpc-buffer-delete (buffer)
+  "Delete BUFFER from `*interface*'.
 Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
   (hooks:run-hook (hooks:object-hook buffer 'buffer-delete-hook) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
-        (replacement-buffer (or (%get-inactive-buffer interface)
-                                (rpc-buffer-make interface))))
-    (%rpc-send interface "buffer_delete" (id buffer))
+        (replacement-buffer (or (%get-inactive-buffer)
+                                (rpc-buffer-make))))
+    (%rpc-send "buffer_delete" (id buffer))
     (when parent-window
-      (window-set-active-buffer interface parent-window replacement-buffer))
-    (with-slots (buffers) interface
-      (remhash (id buffer) buffers))))
+      (window-set-active-buffer parent-window replacement-buffer))
+    (remhash (id buffer) (buffers *interface*))))
 
+(declaim (ftype (function (buffer string)) rpc-buffer-load))
 @export
-(defmethod rpc-buffer-load ((interface remote-interface) (buffer buffer) uri)
-  (%rpc-send interface "buffer_load" (id buffer) uri))
+(defun rpc-buffer-load (buffer uri)
+  (%rpc-send "buffer_load" (id buffer) uri))
 
+(declaim (ftype (function (buffer string &key (:callback function))) rpc-buffer-evaluate-javascript))
 @export
-(defmethod rpc-buffer-evaluate-javascript ((interface remote-interface)
-                                           (buffer buffer) javascript
-                                           &key callback)
+(defun rpc-buffer-evaluate-javascript (buffer javascript &key callback)
   (let ((callback-id
-          (%rpc-send interface "buffer_evaluate_javascript" (id buffer) javascript)))
+          (%rpc-send "buffer_evaluate_javascript" (id buffer) javascript)))
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
+(declaim (ftype (function (window string &key (:callback function))) rpc-minibuffer-evaluate-javascript))
 @export
-(defmethod rpc-minibuffer-evaluate-javascript ((interface remote-interface)
-                                               (window window) javascript
-                                               &key callback)
+(defun rpc-minibuffer-evaluate-javascript (window javascript &key callback)
   ;; JS example: document.body.innerHTML = 'hello'
   (let ((callback-id
-          (%rpc-send interface "minibuffer_evaluate_javascript" (id window) javascript)))
+          (%rpc-send "minibuffer_evaluate_javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 
+(declaim (ftype (function (window key-chord)) rpc-generate-input-event))
 @export
-(defmethod rpc-generate-input-event ((interface remote-interface)
-                                     (window window)
-                                     (event key-chord))
+(defun rpc-generate-input-event (window event)
   "For now, we only generate keyboard events.
 In the future, we could also support other input device events such as mouse
 events."
@@ -677,7 +671,7 @@ events."
               (key-chord-low-level-data event)
               (key-chord-position event))
              (id window))
-  (%rpc-send interface "generate_input_event"
+  (%rpc-send "generate_input_event"
              (id window)
              (key-chord-key-code event)
              (or (key-chord-modifiers event) (list ""))
@@ -685,9 +679,9 @@ events."
              (float (or (first (key-chord-position event)) -1.0))
              (float (or (second (key-chord-position event)) -1.0))))
 
+(declaim (ftype (function (buffer &optional string list)) rpc-set-proxy))
 @export
-(defmethod rpc-set-proxy ((interface remote-interface) (buffer buffer)
-                          &optional (proxy-uri "") (ignore-hosts (list nil)))
+(defun rpc-set-proxy (buffer &optional (proxy-uri "") (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
 Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
 For the user-level interface, see `proxy-mode'.
@@ -696,28 +690,29 @@ Note: WebKit supports three proxy \"modes\": default (the system proxy),
 custom (the specified proxy) and none.
 TODO: We don't use \"none\" here, but it could be useful to expose it to the
 user."
-  (%rpc-send interface "set_proxy" (list (id buffer))
+  (%rpc-send "set_proxy" (list (id buffer))
              (if (string= proxy-uri "")
                  "default"
                  "custom")
              proxy-uri ignore-hosts))
 
+(declaim (ftype (function (buffer)) rpc-get-proxy))
 @export
-(defmethod rpc-get-proxy ((interface remote-interface) (buffer buffer))
+(defun rpc-get-proxy (buffer)
   "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy configuration.
 MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
 ADDRESS is in the form PROTOCOL://HOST:PORT."
-  (%rpc-send interface "get_proxy" (id buffer)))
+  (%rpc-send "get_proxy" (id buffer)))
 
+(declaim (ftype (function (buffer string boolean)) rpc-buffer-set))
 @export
-(defmethod rpc-buffer-set ((interface remote-interface) (buffer buffer)
-                       (setting string) value)
+(defun rpc-buffer-set (buffer setting value)
   "Set SETTING to VALUE for BUFFER.
 The valid SETTINGs are specified by the platform, e.g. for WebKitGTK it is
 https://webkitgtk.org/reference/webkit2gtk/stable/WebKitSettings.html.
 
 TODO: Only booleans are supported for now."
-  (%rpc-send interface "buffer_set" (id buffer) setting value))
+  (%rpc-send "buffer_set" (id buffer) setting value))
 
 
 ;; Expose Lisp Core RPC endpoints.
@@ -809,9 +804,9 @@ First URL is focused if NO-FOCUS is nil."
                               urls))))
     (unless no-focus
       (if (open-external-link-in-new-window-p *interface*)
-          (let ((window (rpc-window-make *interface*)))
-            (window-set-active-buffer *interface* window first-buffer))
-          (set-active-buffer *interface* first-buffer)))))
+          (let ((window (rpc-window-make)))
+            (window-set-active-buffer window first-buffer))
+     (set-current-buffer first-buffer)))))
 
 @export
 (defmethod resource-query-default ((buffer buffer)
@@ -845,7 +840,7 @@ Deal with URL with the following rules:
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
-     (download *interface* url :proxy-address (proxy-address buffer :downloads-only t)
+     (download url :proxy-address (proxy-address buffer :downloads-only t)
                :cookies cookies)
      (unless (find-buffer 'download-mode)
        (download-list))
@@ -893,23 +888,25 @@ Deal with URL with the following rules:
 
 ;; Convenience methods and functions for users of the API.
 
-;; TODO: `(active-buffer *interface*)' is too verbose considering how frequently
-;; we use it.  Remove `window's `active-buffer' accessor and make this a defun
-;; with optional argument.
 @export
-(defmethod active-buffer ((interface remote-interface))
+(defun current-buffer ()
   "Get the active buffer for the active window."
-  (match (rpc-window-active interface)
+  (match (rpc-window-active)
     ((guard w w) (active-buffer w))
     (_ (log:warn "No active window."))))
 
-;; TODO: Prevent setting the minibuffer as the active buffer.
+(declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer))
 @export
-(defmethod set-active-buffer ((interface remote-interface)
-                              (buffer buffer))
+(defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
-  (let ((rpc-window-active (rpc-window-active interface)))
-    (if rpc-window-active
-        (window-set-active-buffer interface rpc-window-active buffer)
-        (make-window buffer))
-    buffer))
+  (unless (eq 'minibuffer (class-name (class-of buffer)))
+    (let ((rpc-window-active (rpc-window-active)))
+      (if rpc-window-active
+          (window-set-active-buffer rpc-window-active buffer)
+          (make-window buffer))
+      buffer)))
+
+@export
+(defun current-minibuffer ()
+  "Return the currently active minibuffer."
+  (first (active-minibuffers (last-active-window *interface*))))

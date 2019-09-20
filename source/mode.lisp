@@ -28,7 +28,7 @@ If :ACTIVATE is omitted, the mode is toggled."
      ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
      ;; Should probably always have root-mode.
      ,(unless (eq name 'root-mode)
-        `(define-command ,name (&rest args &key (buffer (active-buffer *interface*))
+        `(define-command ,name (&rest args &key (buffer (current-buffer))
                                       (activate t explicit?)
                                       &allow-other-keys)
            ,docstring
@@ -93,11 +93,11 @@ can be 'web-mode as well as 'next/web-mode:web-mode."
                (modes buffer)))))
 
 @export
-(defun find-buffer (mode-symbol &optional (interface *interface*))
+(defun find-buffer (mode-symbol)
   "Return first buffer matching MODE-SYMBOL."
   (find-if (lambda (b)
              (find-mode b mode-symbol))
-           (alexandria:hash-table-values (buffers interface))))
+           (alexandria:hash-table-values (buffers *interface*))))
 
 (defmethod keymap ((mode root-mode))
   "Return the keymap of MODE according to its buffer keymap scheme.

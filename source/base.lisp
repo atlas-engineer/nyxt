@@ -96,17 +96,17 @@ Set to '-' to read standard input instead."))
   (dbus:with-open-bus (bus bus-type)
     (member-string +platform-port-name+ (dbus:list-names bus))))
 
-(defmethod initialize-port ((interface remote-interface))
+(defun initialize-port ()
   "Start platform port if necessary.
 If not platform port can be started or found, error out and quit."
   ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
   ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
   (let ((port-running (ping-platform-port)))
     (unless (or port-running
-                (and (port interface)
-                     (running-process (port interface))))
+                (and (port *interface*)
+                     (running-process (port *interface*))))
       (handler-case
-          (run-program (port interface))
+          (run-program (port *interface*))
         (error (c)
           (log:error "~a~&~a" c
                      "Make sure the platform port executable is either in the
@@ -115,20 +115,20 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
      (setf (get-default 'port 'path)
          \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
           (uiop:quit))))
-    (let ((max-attempts (/ (platform-port-poll-duration interface)
-                           (platform-port-poll-interval interface))))
+    (let ((max-attempts (/ (platform-port-poll-duration *interface*)
+                           (platform-port-poll-interval *interface*))))
       ;; Poll the platform port in case it takes some time to start up.
       (loop while (not port-running)
             repeat max-attempts
             do (unless (setf port-running (ping-platform-port))
-                 (sleep (platform-port-poll-interval interface))))
+                 (sleep (platform-port-poll-interval *interface*))))
       (unless port-running
-        (log:error "Could not connect to platform port: ~a" (path (port interface)))
+        (log:error "Could not connect to platform port: ~a" (path (port *interface*)))
         (handler-case
             (progn
-              (kill-port (port interface))
-              (kill-interface interface))
-          (error (c) (format *error-output* "~a" c)))
+              (kill-port (port *interface*))
+              (kill-interface *interface*))
+          (error (c) (log:error "~a" c)))
         (uiop:quit)))))
 
 (defun init-file-path (&optional (filename "init.lisp"))
@@ -181,9 +181,9 @@ This function is suitable as a `remote-interface' `startup-function'."
       (open-urls urls)
       ;; TODO: Test if network is available.  If not, display help,
       ;; otherwise display start-page-url.
-      (let ((window (rpc-window-make *interface*))
+      (let ((window (rpc-window-make))
             (buffer (help)))
-        (window-set-active-buffer *interface* window buffer)))
+        (window-set-active-buffer window buffer)))
   (funcall (session-restore-function *interface*)))
 
 @export
@@ -210,7 +210,7 @@ Finally, the `after-init-hook' of the `*interface*' is run."
     (setf *interface* (make-instance 'remote-interface :startup-timestamp startup-timestamp))
     ;; Start the port after the interface so that we don't overwrite the log when
     ;; an instance is already running.
-    (initialize-port *interface*)
+    (initialize-port)
     (setf (slot-value *interface* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
     (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook))
@@ -243,7 +243,7 @@ Finally, the `after-init-hook' of the `*interface*' is run."
 (define-key "M-x" #'execute-command)
 (define-key "C-x 5 2" #'make-window)
 (define-key "C-x 5 0" #'delete-window)
-;; (define-key "C-x q" (lambda () (echo-dismiss (minibuffer *interface*)))) ; TODO: Seems obsolete?
+;; (define-key "C-x q" (lambda () (echo-dismiss (current-minibuffer)))) ; TODO: Seems obsolete?
 
 (define-key :scheme :vi-normal
   "Z Z" #'quit

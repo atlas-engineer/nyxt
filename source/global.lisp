@@ -16,8 +16,8 @@ It can be initialized with
 
   (setf *interface* (make-instance 'remote-interface))
 
-Much of Next code assumes a valid *interface*.  This could change in the future
-when multiple interfaces are supported.")
+It's possible to run multiple interfaces of Next at the same time.  You can
+let-bind *interface* to temporarily switch interface.")
 
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port

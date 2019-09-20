@@ -47,8 +47,8 @@
                            (:p (write-to-string (symbol-value input)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
-      (set-active-buffer *interface* help-buffer))))
+      (rpc-buffer-evaluate-javascript help-buffer insert-help)
+   (set-current-buffer help-buffer))))
 
 ;; TODO: Have both "function-inspect" and "command-inspect"?
 (define-command command-inspect ()
@@ -72,8 +72,8 @@
                                                t)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
-      (set-active-buffer *interface* help-buffer))))
+      (rpc-buffer-evaluate-javascript help-buffer insert-help)
+   (set-current-buffer help-buffer))))
 
 (defun evaluate (string)
   "Evaluate all expressions in string and return a list of values.
@@ -104,8 +104,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                                          collect (cl-markup:markup (:p result)))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp result-contents)))))
-      (rpc-buffer-evaluate-javascript *interface* result-buffer insert-results)
-      (set-active-buffer *interface* result-buffer))))
+      (rpc-buffer-evaluate-javascript result-buffer insert-results)
+   (set-current-buffer result-buffer))))
 
 (define-command help ()
   "Print some help."
@@ -187,8 +187,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-      (rpc-buffer-evaluate-javascript *interface* help-buffer insert-help)
-    (set-active-buffer *interface* help-buffer)
+      (rpc-buffer-evaluate-javascript help-buffer insert-help)
+  (set-current-buffer help-buffer)
     help-buffer))
 
 (define-command next-version ()

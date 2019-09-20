@@ -6,7 +6,7 @@
   "Display list of downloads."
   ())
 
-(defun download-refresh (&optional (interface *interface*))
+(defun download-refresh ()
   "Display a buffer listing all downloads."
   (let* ((download-buffer (or (find-buffer 'download-mode)
                               (make-buffer
@@ -18,7 +18,7 @@
                     (:p (:b "Directory: ") (namestring (or (download-directory *interface*)
                                                            (download-manager:default-download-directory))))
                     (:span              ; TODO: Do we need this span?  We need something because of the loop.
-                     (loop for d in (downloads interface)
+                     (loop for d in (downloads *interface*)
                            collect
                            (cl-markup:markup
                             (:p
@@ -50,44 +50,44 @@
                     (:p (:em "Open a file with " (:code "M-x download-open-file") "."))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
-    (rpc-buffer-evaluate-javascript interface download-buffer insert-content)
+    (rpc-buffer-evaluate-javascript download-buffer insert-content)
     download-buffer))
 
-(define-command download-list (&optional (interface *interface*))
+(define-command download-list ()
   "Display a buffer listing all downloads."
-  (unless (download-watcher interface)
-    (setf (download-watcher interface) (bt:make-thread #'download-watch)))
-  (set-active-buffer interface (download-refresh)))
+  (unless (download-watcher *interface*)
+    (setf (download-watcher *interface*) (bt:make-thread #'download-watch)))
+ (set-current-buffer (download-refresh)))
 
-(define-command download-url (&optional (interface *interface*))
+(define-command download-url ()
   "Download the page or file of the current buffer."
   (with-result (url (buffer-get-url))
-    (download interface url)
+    (download url)
     (unless (find-buffer 'download-mode)
       (download-list))))
 
-(define-command download-hint-url (&optional (interface *interface*))
+(define-command download-hint-url ()
   "Download the file under the URL hinted by the user."
   (query-hints "Download link URL:" (selected-link)
-    (download interface selected-link)
+    (download selected-link)
     (unless (find-buffer 'download-mode)
       (download-list))))
 
-(defun get-downloaded-filenames (interface)
+(defun get-downloaded-filenames ()
   "Return the list of downloaded filenames of the current session, as strings."
-  (mapcar #'download-manager:filename (downloads interface)))
+  (mapcar #'download-manager:filename (downloads *interface*)))
 
-(defun downloaded-files-completion-fn (interface)
-  (let ((filenames (get-downloaded-filenames interface)))
+(defun downloaded-files-completion-fn ()
+  (let ((filenames (get-downloaded-filenames)))
     (lambda (input)
       (fuzzy-match input filenames))))
 
-(define-command download-open-file (&optional (interface *interface*))
+(define-command download-open-file ()
   "Open a downloaded file.
 Ask the user to choose one of the downloaded files of the current session.
 See also `open-file'."
   (with-result (filename (read-from-minibuffer
                           (make-instance 'minibuffer
                                          :input-prompt "Open file:"
-                                         :completion-function (downloaded-files-completion-fn interface))))
+                                         :completion-function (downloaded-files-completion-fn))))
     (next/file-manager-mode:open-file-function filename)))

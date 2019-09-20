@@ -150,28 +150,28 @@
   ;;                 (buffer %mode))
   )
 
-(define-command history-backwards (&optional (buffer (active-buffer *interface*)))
+(define-command history-backwards (&optional (buffer (current-buffer)))
   "Move up to parent node to iterate backwards in history tree."
   (let* ((web-mode (find-mode buffer 'web-mode))
          (parent (node-parent (active-history-node web-mode
                                                    ;; TODO: Test!
-                                                   ;; (mode (active-buffer *interface*))
+                                                   ;; (mode (current-buffer))
                                                    ))))
     (when parent
       (set-url (node-data parent)))))
 
-(define-command history-forwards (&optional (buffer (active-buffer *interface*)))
+(define-command history-forwards (&optional (buffer (current-buffer)))
   "Move forwards in history selecting the first child."
   (let* ((web-mode (find-mode buffer 'web-mode))
          (children (node-children (active-history-node
                                    web-mode
-                                   ;; (mode (active-buffer *interface*))
+                                   ;; (mode (current-buffer))
                                    ))))
     (unless (null children)
       (set-url (node-data (nth 0 children))))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
-                                                        (active-buffer *interface*)
+                                                        (current-buffer)
                                                         'web-mode)))
   "Provide completion candidates to the `history-forwards-query' function."
   (let ((children (node-children (active-history-node mode))))
@@ -277,9 +277,8 @@
   (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
-  (let ((active-window (rpc-window-active *interface*)))
-    (set-window-title *interface*
-                      active-window
+  (let ((active-window (rpc-window-active)))
+    (set-window-title active-window
                       (active-buffer active-window))
     (next/web-mode::add-or-traverse-history mode url)
     (funcall (session-store-function *interface*)))

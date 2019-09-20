@@ -79,7 +79,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
     (when buffer
       (cons (override-map buffer)
             (delete-if #'null (mapcar #'keymap (modes (if (active-minibuffers window)
-                                                          (minibuffer *interface*)
+                                                          (current-minibuffer)
                                                           (active-buffer window)))))))))
 
 (defun look-up-key-chord-stack (window key-chord-stack)
@@ -157,7 +157,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
            ;; forward-input-events-p is NIL in VI normal mode so that we don't
            ;; forward unbound keys, unless it's a pointer (mouse) event.
            ;; TODO: Remove this special case and bind button1 to "self-insert" instead?
-           (rpc-generate-input-event *interface*
+           (rpc-generate-input-event
                                      active-window
                                      key-chord)
            (setf (key-chord-stack *interface*) nil))
@@ -185,7 +185,7 @@ Examples:
               :mode 'web-mode)
   ;; Only affect the first mode of the current buffer:
   (define-key \"C-c C-c\" 'reload
-              :keymap (getf (keymap-schemes (first (modes (active-buffer *interface*)))) :emacs))"
+              :keymap (getf (keymap-schemes (first (modes (current-buffer)))) :emacs))"
   (dolist (key (remove-if (complement #'keywordp) key-command-pairs))
     (remf key-command-pairs key))
   (when (and (null mode) (not (keymapp keymap)))

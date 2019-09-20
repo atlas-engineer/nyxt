@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defun ensure-zoom-ratio-range (zoom &optional (buffer (active-buffer *interface*)))
+(defun ensure-zoom-ratio-range (zoom &optional (buffer (current-buffer)))
   (let* ((ratio (funcall zoom (current-zoom-ratio buffer) (zoom-ratio-step buffer))))
     (setf ratio (max ratio (zoom-ratio-min buffer)))
     (setf ratio (min ratio (zoom-ratio-max buffer)))

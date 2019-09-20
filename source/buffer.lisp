@@ -11,7 +11,7 @@
                                   modes)
   "Create a new buffer.
 MODES is a list of mode symbols."
-  (rpc-buffer-make *interface* :name name :default-modes modes))
+  (rpc-buffer-make :name name :default-modes modes))
 
 (define-deprecated-command new-buffer ()
   "Deprecated by `make-buffer'."
@@ -19,7 +19,7 @@ MODES is a list of mode symbols."
 
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*)))
-        (active-buffer (active-buffer *interface*)))
+        (active-buffer (current-buffer)))
     ;; For commodity, the current buffer shouldn't be the first one on the list.
     (when (equal (first buffers)
                  active-buffer)
@@ -33,12 +33,12 @@ MODES is a list of mode symbols."
                         (make-instance 'minibuffer
                                        :input-prompt "Switch to buffer:"
                                        :completion-function (buffer-completion-fn))))
-    (set-active-buffer *interface* buffer)))
+    (set-current-buffer buffer)))
 
 (define-command make-buffer-focus ()
   "Switch to a new buffer showing default-new-buffer-url."
   (let ((buffer (make-buffer)))
-    (set-active-buffer *interface* buffer)
+  (set-current-buffer buffer)
     (set-url (default-new-buffer-url buffer) :buffer buffer)))
 
 (define-deprecated-command make-visible-new-buffer ()
@@ -51,13 +51,13 @@ MODES is a list of mode symbols."
                         (make-instance 'minibuffer
                                        :input-prompt "Kill buffer:"
                                        :completion-function (buffer-completion-fn))))
-    (rpc-buffer-delete *interface* buffer)))
+    (rpc-buffer-delete buffer)))
 
 (define-command delete-current-buffer ()
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
-  (rpc-buffer-delete *interface* (active-buffer *interface*)))
+  (rpc-buffer-delete (current-buffer)))
 
 @export
 (define-parenscript buffer-get-url ()
@@ -68,7 +68,7 @@ buffer to the start page."
   (ps:chain document title))
 
 @export
-(defun set-url (input-url &key (buffer (active-buffer *interface*))
+(defun set-url (input-url &key (buffer (current-buffer))
                             raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
@@ -77,7 +77,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
                  (parse-url input-url))))
     (setf (name buffer) url)
     (setf url (run-composed-hook (load-hook buffer) url))
-    (rpc-buffer-load *interface* buffer url)))
+    (rpc-buffer-load buffer url)))
 
 (define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."
@@ -94,7 +94,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
         (if new-buffer-p
             (let ((buffer (make-buffer)))
               (set-url url :buffer buffer)
-              (set-active-buffer *interface* buffer))
+       (set-current-buffer buffer))
             (set-url url))))))
 
 (define-command set-url-new-buffer ()
@@ -113,18 +113,18 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   "Switch to the previous buffer in the list of buffers, if the
 first item in the list, jump to the last item."
   (let* ((buffers (alexandria:hash-table-values (buffers *interface*)))
-         (active-buffer (active-buffer *interface*))
+         (active-buffer (current-buffer))
          (active-buffer-index (get-active-buffer-index active-buffer buffers)))
     (if (equalp 0 active-buffer-index)
-        (set-active-buffer *interface* (nth (- (length buffers) 1) buffers))
-        (set-active-buffer *interface* (nth (- active-buffer-index 1) buffers)))))
+    (set-current-buffer (nth (- (length buffers) 1) buffers))
+    (set-current-buffer (nth (- active-buffer-index 1) buffers)))))
 
 (define-command switch-buffer-next ()
   "Switch to the next buffer in the list of buffers, if the last
 item in the list, jump to the first item."
   (let* ((buffers (alexandria:hash-table-values (buffers *interface*)))
-         (active-buffer (active-buffer *interface*))
+         (active-buffer (current-buffer))
          (active-buffer-index (get-active-buffer-index active-buffer buffers)))
     (if (< (+ active-buffer-index 1) (length buffers))
-        (set-active-buffer *interface* (nth (+ active-buffer-index 1) buffers))
-        (set-active-buffer *interface* (nth 0 buffers)))))
+    (set-current-buffer (nth (+ active-buffer-index 1) buffers))
+    (set-current-buffer (nth 0 buffers)))))
