@@ -44,16 +44,15 @@ sequence of keys longer than one key-chord can be recorded."
   ;; TODO: Make use of keycode?
   ;; TODO: Case opposite to Caps-Lock status?
   "When NORMALIZE is non-nil, remove the shift modifier and upcase the keys."
-  (when (and normalize
-             (member-string "s" (key-chord-modifiers key-chord)))
-    (setf (key-chord-modifiers key-chord)
-          (delete "s" (key-chord-modifiers key-chord) :test #'string=))
-    (string-upcase (key-chord-key-string key-chord)))
-  (setf (key-chord-modifiers key-chord) (delete-if #'str:emptyp
-                                                   (key-chord-modifiers key-chord)))
-  (append (list nil
-                (key-chord-key-string key-chord))
-          (key-chord-modifiers key-chord)))
+  (let ((modifiers (copy-list (key-chord-modifiers key-chord))))
+    (when (and normalize
+               (member-string "s" modifiers))
+      (setf modifiers (delete "s" modifiers :test #'string=))
+      (string-upcase (key-chord-key-string key-chord)))
+    (setf modifiers (delete-if #'str:emptyp modifiers))
+    (append (list nil
+                  (key-chord-key-string key-chord))
+            modifiers)))
 
 (defun serialize-key-chord-stack (key-chord-stack &key normalize)
   (mapcar (lambda (k) (serialize-key-chord k :normalize normalize))
