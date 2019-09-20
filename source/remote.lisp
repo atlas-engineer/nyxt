@@ -665,8 +665,8 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
 
 @export
 (defmethod rpc-generate-input-event ((interface remote-interface)
-                                   (window window)
-                                   (event key-chord))
+                                     (window window)
+                                     (event key-chord))
   "For now, we only generate keyboard events.
 In the future, we could also support other input device events such as mouse
 events."
@@ -678,12 +678,12 @@ events."
               (key-chord-position event))
              (id window))
   (%rpc-send interface "generate_input_event"
-                 (id window)
-                 (key-chord-key-code event)
-                 (or (key-chord-modifiers event) (list ""))
-                 (key-chord-low-level-data event)
-                 (float (or (first (key-chord-position event)) -1.0))
-                 (float (or (second (key-chord-position event)) -1.0))))
+             (id window)
+             (key-chord-key-code event)
+             (or (key-chord-modifiers event) (list ""))
+             (key-chord-low-level-data event)
+             (float (or (first (key-chord-position event)) -1.0))
+             (float (or (second (key-chord-position event)) -1.0))))
 
 @export
 (defmethod rpc-set-proxy ((interface remote-interface) (buffer buffer)
@@ -798,19 +798,20 @@ TODO: Only booleans are supported for now."
   (open-urls urls)
   (values))
 
-(defun open-urls (urls)
+(defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
-First URL is focused."
+First URL is focused if NO-FOCUS is nil."
   (let ((first-buffer (first (mapcar
                               (lambda (url)
                                 (let ((buffer (make-buffer)))
                                   (set-url url :buffer buffer)
                                   buffer))
                               urls))))
-    (if (open-external-link-in-new-window-p *interface*)
-        (let ((window (rpc-window-make *interface*)))
-          (window-set-active-buffer *interface* window first-buffer))
-        (set-active-buffer *interface* first-buffer))))
+    (unless no-focus
+      (if (open-external-link-in-new-window-p *interface*)
+          (let ((window (rpc-window-make *interface*)))
+            (window-set-active-buffer *interface* window first-buffer))
+          (set-active-buffer *interface* first-buffer)))))
 
 @export
 (defmethod resource-query-default ((buffer buffer)
@@ -833,11 +834,14 @@ Deal with URL with the following rules:
   (cond
     ((or is-new-window
          ;; TODO: Streamline the customization of this binding.
-         (and (equal modifiers '("C"))
+         (and (or (equal modifiers '("C"))
+                  (equal modifiers '("s")))
               (string= mouse-button "button1"))
          (string= mouse-button "button2"))
      (log:info "Load ~a in new buffer" url)
-     (open-urls (list url))
+     (open-urls
+      (list url)
+      :no-focus (equal modifiers '("s")))
      nil)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
