@@ -151,10 +151,10 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
   "The path where the system will look to load an init file from."
   (xdg-config-home (or (getf *options* :init-file) file)))
 
-(defun load-lisp-file (file &key (interactive t))
+(defun load-lisp-file (file &key interactive)
   "Load the provided lisp file.
-Interactively, prompt for FILE.
-If FILE is \"-\", read from the standard input."
+If FILE is \"-\", read from the standard input.
+If INTERACTIVE is non-nil, allow the debugger on errors."
   (handler-case (if (string= (pathname-name file) "-")
                     (progn
                       (log:info "Loading configuration from standard input...")
@@ -166,23 +166,25 @@ If FILE is \"-\", read from the standard input."
                       (load file :if-does-not-exist nil)))
     (error (c)
       ;; TODO: Handle warning from `echo'.
-      (log:warn "Error: we could not load the Lisp file ~a: ~a" file c)
-      (when interactive
-        (error "Could not load the lisp init file ~a: ~&~a" file c))
-      (echo "Error: we could not load the Lisp file ~a: ~a" file c))))
+      (let ((message "Could not load the lisp init file ~a: ~&~a"))
+        (log:warn message file c)
+        (when interactive
+          (error message file c))
+        (echo message file c)))))
 
-(define-command load-file ()
-  "Load the provided lisp file.
-Interactively, prompt for FILE.
-If FILE is \"-\", read from the standard input."
+(define-command load-file (&key interactive)
+  "Load the prompted Lisp file.
+If INTERACTIVE is non-nil, allow the debugger on errors."
   (with-result (file-name-input (read-from-minibuffer
                                  (make-instance 'minibuffer
                                                 :input-prompt "Load file:")))
-    (load-lisp-file file-name-input :interactive nil)))
+    (load-lisp-file file-name-input :interactive interactive)))
 
-(define-command load-init-file (&optional (init-file (init-file-path)))
-  "Load or reload the init file."
-  (load-lisp-file init-file))
+(define-command load-init-file (&key (init-file (init-file-path))
+                                     interactive)
+  "Load or reload the init file.
+If INTERACTIVE is non-nil, allow the debugger on errors."
+  (load-lisp-file init-file :interactive interactive))
 
 @export
 (defun start (&rest urls)
