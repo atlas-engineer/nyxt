@@ -57,6 +57,12 @@ MAJOR.MINOR.PATCH, we increment the:
   imported, say, from Firefox, or exported to a SQLite database or a custom text
   format.
 
+** TASK 1.3.3
+- Move the ~search-engines~ slot from the ~window~ class to the
+  ~remote-interface~ class.
+- Rename ~new-buffer~, ~new-window~ and ~make-visible-new-buffer~ to
+  ~make-buffer~, ~make-window~ and ~make-buffer-focus~.
+
 ** DONE 1.3.2
 - Hooks for commands, modes and various UI or networking events.
 

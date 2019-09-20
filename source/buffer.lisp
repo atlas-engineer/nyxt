@@ -13,6 +13,10 @@
 MODES is a list of mode symbols."
   (rpc-buffer-make *interface* :name name :default-modes modes))
 
+(define-deprecated-command new-buffer ()
+  "Deprecated by `make-buffer'."
+  (make-buffer))
+
 (defun buffer-completion-fn ()
   (let ((buffers (alexandria:hash-table-values (buffers *interface*)))
         (active-buffer (active-buffer *interface*)))
@@ -36,6 +40,10 @@ MODES is a list of mode symbols."
   (let ((buffer (make-buffer)))
     (set-active-buffer *interface* buffer)
     (set-url (default-new-buffer-url buffer) :buffer buffer)))
+
+(define-deprecated-command make-visible-new-buffer ()
+  "Deprecated by `make-buffer-focus'."
+  (make-buffer-focus))
 
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."

@@ -17,3 +17,7 @@
         (buffer (or buffer (make-buffer))))
     (window-set-active-buffer *interface* window buffer)
     (values window buffer)))
+
+(define-deprecated-command new-window ()
+  "Deprecated by `make-window'."
+  (make-window))
