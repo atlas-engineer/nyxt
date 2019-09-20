@@ -145,32 +145,34 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
               (error (c) (format *error-output* "~a" c)))
             (uiop:quit))))))
 
-(defun init-file-path (&optional (file "init.lisp"))
+(defun init-file-path (&optional (filename "init.lisp"))
   ;; This can't be a regular variable or else the value will be hard-coded at
   ;; compile time.  It seems to be hard-coded with (eval-when (:execute) ...) as well.
   "The path where the system will look to load an init file from."
-  (xdg-config-home (or (getf *options* :init-file) file)))
+  (or (getf *options* :init-file)
+      (xdg-config-home filename)))
 
 (defun load-lisp-file (file &key interactive)
   "Load the provided lisp file.
 If FILE is \"-\", read from the standard input.
 If INTERACTIVE is non-nil, allow the debugger on errors."
-  (handler-case (if (string= (pathname-name file) "-")
-                    (progn
-                      (log:info "Loading configuration from standard input...")
-                      (loop for object = (read *standard-input* nil :eof)
-                            until (eq object :eof)
-                            do (eval object)))
-                    (progn
-                      (log:info "Loading configuration from ~a..." file)
-                      (load file :if-does-not-exist nil)))
-    (error (c)
-      ;; TODO: Handle warning from `echo'.
-      (let ((message "Could not load the lisp init file ~a: ~&~a"))
-        (log:warn message file c)
-        (when interactive
-          (error message file c))
-        (echo message file c)))))
+  (unless (str:emptyp (namestring file))
+    (handler-case (if (string= (pathname-name file) "-")
+                      (progn
+                        (log:info "Loading configuration from standard input...")
+                        (loop for object = (read *standard-input* nil :eof)
+                              until (eq object :eof)
+                              do (eval object)))
+                      (progn
+                        (log:info "Loading configuration from ~s..." file)
+                        (load file :if-does-not-exist nil)))
+      (error (c)
+        ;; TODO: Handle warning from `echo'.
+        (let ((message (format nil "Could not load the lisp init file ~a: ~&~a" file c)))
+          (log:warn "~a" message)
+          (when interactive
+            (error message))
+          (echo message))))))
 
 (define-command load-file (&key interactive)
   "Load the prompted Lisp file.
@@ -187,17 +189,19 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
   (load-lisp-file init-file :interactive interactive))
 
 @export
-(defun start (&rest urls)
+(defun start (&rest urls &key (init-file (init-file-path)))
   "Start Next and load URLS if any.
 A new `*interface*' is instantiated.
 The platform port is automatically started if needed.
 Finally, the `after-init-hook' of the `*interface*' is run."
+  (dolist (key (remove-if (complement #'keywordp) urls))
+    (remf urls key))
   (let ((startup-timestamp (local-time:now)))
     (log:info +version+)
     ;; Randomness should be seeded as early as possible to avoid generating
     ;; deterministic tokens.
     (setf *random-state* (make-random-state t))
-    (load-lisp-file (init-file-path))
+    (load-lisp-file init-file)
     ;; create the interface object
     (when *interface*
       (kill-interface *interface*)
