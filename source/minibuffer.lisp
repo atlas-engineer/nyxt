@@ -578,6 +578,10 @@ interpreted by `format'. "
                    (:head (:style style))
                    (:body
                     (:p (apply #'format nil args))))))
+          (push `(:p (:b ,(local-time:now))
+                     " "
+                     ,(apply #'format nil args))
+                (messages-content *interface*))
           (show :minibuffer status-buffer
                 :height (status-buffer-height window)))
         (log:warn "Can't echo '~a' without status buffer or interface" (apply #'format nil args)))))

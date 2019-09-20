@@ -59,6 +59,7 @@ visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
   (rpc-buffer-delete (current-buffer)))
 
+;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.
 @export
 (define-parenscript %%buffer-get-title () ; TODO: `did-commit-navigation' should
                                           ; pass the title so that we don't have

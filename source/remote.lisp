@@ -231,6 +231,9 @@ commands.")
    (dbus-pid :accessor dbus-pid :initform nil :type :number
              :documentation "The process identifier of the dbus instance started
 by Next when the user session dbus instance is not available.")
+   (messages-content :accessor messages-content :initform nil :type :list
+                     :documentation "A cl-markup plist of all echoed messages.
+Most recent messages are first.")
    (clipboard-ring :accessor clipboard-ring :initform (ring:make))
    (minibuffer-generic-history :accessor minibuffer-generic-history :initform (ring:make))
    (minibuffer-search-history :accessor minibuffer-search-history :initform (ring:make))

@@ -196,3 +196,28 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
+
+(define-command messages ()
+  "Show the *Messages* buffer."
+  (let ((buffer (find-if (lambda (b)
+                           (string= "*Messages*" (title b)))
+                         (alexandria:hash-table-values (buffers *interface*)))))
+    (unless buffer
+      (setf buffer (make-buffer
+                    :title "*Messages*"
+                    :modes (cons 'help-mode
+                                 (get-default 'buffer 'default-modes))))
+      (let* ((content
+               (apply #'cl-markup:markup*
+                      '(:h1 "Messages")
+                      (reverse (messages-content *interface*))))
+             (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                          (ps:lisp content)))))
+        (rpc-buffer-evaluate-javascript buffer insert-content)))
+    (set-current-buffer buffer)
+    buffer))
+
+(define-command clear-messages ()
+  "Clear the *Messages* buffer."
+  (setf (messages-content *interface*) '())
+  (echo "Messages cleared."))
