@@ -37,7 +37,8 @@
                :next/ring)
   :components ((:module "source"
                 :components
-                (;; Core Functionality
+                ((:file "patch-annot")
+                 ;; Core Functionality
                  (:file "package")
                  (:file "macro")
                  (:file "global")
