@@ -60,9 +60,9 @@ This can apply to specific buffer."))
 @export
 @export-accessors
 (defclass buffer ()
-  ((id :accessor id :initarg :id)
-   (name :accessor name :initarg :name)
-   (title :accessor title :initarg :title :initform nil)
+  ((id :accessor id :initarg :id :initform nil)
+   (url :accessor url :initarg :url :type string :initform "")
+   (title :accessor title :initarg :title :type string :initform "")
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
@@ -205,8 +205,8 @@ See `rpc-buffer-make'."
   low-level-data)
 
 (defmethod did-commit-navigation ((buffer buffer) url)
-  (setf (name buffer) url)
-  (with-result (title (buffer-get-title :buffer buffer))
+  (setf (url buffer) url)
+  (with-result (title (%%buffer-get-title :buffer buffer))
     (setf (title buffer) title))
   (dolist (mode (modes buffer))
     (did-commit-navigation mode url)))
@@ -537,14 +537,14 @@ proceeding."
 @export
 (defun set-window-title (window buffer)
   "Set current window title to 'Next - TITLE - URL."
-  (let ((url (name buffer)))
-    (with-result* ((title (buffer-get-title :buffer buffer)))
-      (setf title (if (str:emptyp title) "" title))
-      (setf url (if (str:emptyp url) "<no url/name>" url))
-      (rpc-window-set-title window
-                            (concatenate 'string "Next - "
-                                         title (unless (str:emptyp title) " - ")
-                                         url)))))
+  (let ((url (url buffer))
+        (title (title buffer)))
+    (setf title (if (str:emptyp title) "" title))
+    (setf url (if (str:emptyp url) "<no url/name>" url))
+    (rpc-window-set-title window
+                          (concatenate 'string "Next - "
+                                       title (unless (str:emptyp title) " - ")
+                                       url))))
 
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 @export
@@ -571,14 +571,14 @@ proceeding."
 (defun rpc-window-set-minibuffer-height (window height)
   (%rpc-send "window_set_minibuffer_height" (id window) height))
 
-(declaim (ftype (function (&key (:name string) (:default-modes list))) rpc-buffer-make))
+(declaim (ftype (function (&key (:title string) (:default-modes list))) rpc-buffer-make))
 @export
-(defun rpc-buffer-make (&key name default-modes)
-  "Make buffer with name NAME and modes DEFAULT-MODES.
+(defun rpc-buffer-make (&key title default-modes)
+  "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*interface*'s `buffer-make-hook' over the created buffer before returning it."
   (let* ((buffer-id (get-unique-buffer-identifier))
          (buffer (apply #'make-instance 'buffer :id buffer-id
-                        (append (when name `(:name ,name))
+                        (append (when title `(:title ,title))
                                 (when default-modes `(:default-modes ,default-modes))))))
     (ensure-parent-exists (cookies-path buffer))
     (setf (gethash buffer-id (buffers *interface*)) buffer)

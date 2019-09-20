@@ -10,7 +10,7 @@
   "Display a buffer listing all downloads."
   (let* ((download-buffer (or (find-buffer 'download-mode)
                               (make-buffer
-                               :name "*Downloads*"
+                               :title "*Downloads*"
                                :modes (cons 'download-mode
                                             (get-default 'buffer 'default-modes)))))
          (contents (cl-markup:markup
@@ -61,10 +61,9 @@
 
 (define-command download-url ()
   "Download the page or file of the current buffer."
-  (with-result (url (buffer-get-url))
-    (download url)
-    (unless (find-buffer 'download-mode)
-      (download-list))))
+  (download (url (current-buffer)))
+  (unless (find-buffer 'download-mode)
+    (download-list)))
 
 (define-command download-hint-url ()
   "Download the file under the URL hinted by the user."

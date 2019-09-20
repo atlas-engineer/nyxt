@@ -49,11 +49,12 @@ Example:
 
 Example:
 
-  (with-result* ((url (buffer-get-url))
-                 (title (buffer-get-title)))
-    (rpc-window-set-title (rpc-window-active *interface*)
-                        (concatenate 'string \"Next - \" title \" - \" url)))
-"
+  (with-result* ((links-json (add-link-hints))
+                 (selected-hint (read-from-minibuffer
+                                 (make-instance 'minibuffer
+                                                :input-prompt \"Bookmark hint:\"
+                                                :cleanup-function #'remove-link-hints))))
+    ...)"
   (if (null bindings)
     `(progn ,@body)
     `(with-result ,(first bindings)

@@ -5,13 +5,13 @@
 
 ;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
-  (format nil "~a  ~a" (name buffer) (title buffer)))
+  (format nil "~a  ~a" (url buffer) (title buffer)))
 
-(define-command make-buffer (&key (name "default")
+(define-command make-buffer (&key (title "default")
                                   modes)
   "Create a new buffer.
 MODES is a list of mode symbols."
-  (rpc-buffer-make :name name :default-modes modes))
+  (rpc-buffer-make :title title :default-modes modes))
 
 (define-deprecated-command new-buffer ()
   "Deprecated by `make-buffer'."
@@ -60,11 +60,9 @@ buffer to the start page."
   (rpc-buffer-delete (current-buffer)))
 
 @export
-(define-parenscript buffer-get-url ()
-  (ps:chain window location href))
-
-@export
-(define-parenscript buffer-get-title ()
+(define-parenscript %%buffer-get-title () ; TODO: `did-commit-navigation' should
+                                          ; pass the title so that we don't have
+                                          ; to call this.
   (ps:chain document title))
 
 @export
@@ -75,27 +73,26 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   (let ((url (if raw-url-p
                  input-url
                  (parse-url input-url))))
-    (setf (name buffer) url)
     (setf url (run-composed-hook (load-hook buffer) url))
+    (setf (url buffer) url)
     (rpc-buffer-load buffer url)))
 
 (define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."
-  (with-result (url (buffer-get-url))
-    (let ((history (minibuffer-set-url-history *interface*)))
-      (when history
-        (ring:insert history url))
-      (with-result (url (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Open URL in buffer:"
-                                        :completion-function 'history-typed-complete
-                                        :history history
-                                        :empty-complete-immediate t)))
-        (if new-buffer-p
-            (let ((buffer (make-buffer)))
-              (set-url url :buffer buffer)
-       (set-current-buffer buffer))
-            (set-url url))))))
+  (let ((history (minibuffer-set-url-history *interface*)))
+    (when history
+      (ring:insert history (url (current-buffer))))
+    (with-result (url (read-from-minibuffer
+                       (make-instance 'minibuffer
+                                      :input-prompt "Open URL in buffer:"
+                                      :completion-function 'history-typed-complete
+                                      :history history
+                                      :empty-complete-immediate t)))
+      (if new-buffer-p
+          (let ((buffer (make-buffer)))
+            (set-url url :buffer buffer)
+            (set-current-buffer buffer))
+          (set-url url)))))
 
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new focused buffer."
@@ -103,8 +100,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
 
 (define-command reload-current-buffer ()
   "Reload current buffer."
-  (with-result (url (buffer-get-url))
-    (set-url url)))
+  (set-url (url (current-buffer))))
 
 (defmethod get-active-buffer-index ((active-buffer buffer) buffers)
   (position active-buffer buffers :test #'equal))

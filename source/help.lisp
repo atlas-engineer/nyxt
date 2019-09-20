@@ -37,7 +37,7 @@
                                       :completion-function 'variable-complete
                                       :input-prompt "Inspect variable:")))
     (let* ((help-buffer (make-buffer
-                         :name (concatenate 'string "HELP-" (symbol-name input))
+                         :title (str:concat "*Help-" (symbol-name input) "*")
                          :modes (cons 'help-mode
                                       (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
@@ -58,7 +58,7 @@
                                       :input-prompt "Inspect command:"
                                       :completion-function 'function-complete)))
     (let* ((help-buffer (make-buffer
-                         :name (str:concat "*Help-" (symbol-name input) "*")
+                         :title (str:concat "*Help-" (symbol-name input) "*")
                          :modes (cons 'help-mode
                                       (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
@@ -89,7 +89,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                        (make-instance 'minibuffer
                                       :input-prompt "Evaluate Lisp:")))
     (let* ((result-buffer (make-buffer
-                           :name (concatenate 'string "EVALUATION RESULT-" input)
+                           :title "*List Evaluation*" ; TODO: Reuse buffer / create REPL mode.
                            :modes (cons 'help-mode
                                         (get-default 'buffer 'default-modes))))
            (results (handler-case
@@ -110,7 +110,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 (define-command help ()
   "Print some help."
   (let* ((help-buffer (make-buffer
-                       :name "*Help*"
+                       :title "*Help*"
                        :modes (cons 'help-mode
                                     (get-default 'buffer 'default-modes))))
          (help-contents

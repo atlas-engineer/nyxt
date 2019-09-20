@@ -34,13 +34,12 @@
 
 (define-command bookmark-current-page ()
   "Bookmark the currently opened page in the active buffer."
-  (with-result (url (buffer-get-url))
-    (let ((db (sqlite:connect
-               (ensure-file-exists (bookmark-db-path *interface*)
-                                   #'%initialize-bookmark-db))))
-      (sqlite:execute-non-query
-       db "insert into bookmarks (url) values (?)" url)
-      (sqlite:disconnect db)))
+  (let ((db (sqlite:connect
+             (ensure-file-exists (bookmark-db-path *interface*)
+                                 #'%initialize-bookmark-db))))
+    (sqlite:execute-non-query
+     db "insert into bookmarks (url) values (?)" (url (current-buffer)))
+    (sqlite:disconnect db))
   (echo "Current page bookmarked."))
 
 (define-command bookmark-url ()

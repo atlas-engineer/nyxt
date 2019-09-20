@@ -219,15 +219,13 @@
 
 (define-command copy-url ()
   "Save current URL to clipboard."
-  (with-result (url (buffer-get-url))
-    (copy-to-clipboard url)
-    (echo "~a copied to clipboard." url)))
+  (copy-to-clipboard (url (current-buffer)))
+  (echo "~a copied to clipboard." (url (current-buffer))))
 
 (define-command copy-title ()
   "Save current page title to clipboard."
-  (with-result (title (buffer-get-title))
-    (copy-to-clipboard title)
-    (echo "~a copied to clipboard." title)))
+  (copy-to-clipboard (title (current-buffer)))
+  (echo "~a copied to clipboard." (title (current-buffer))))
 
 (define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
   (let* ((active-element (ps:chain document active-element))

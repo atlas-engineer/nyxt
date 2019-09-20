@@ -589,9 +589,7 @@ interpreted by `format'. "
   ;; document when we have a mode-line we can fully hide the minibuffer.
   ;; (erase-document minibuffer)
   ;; TODO: We should only display this default text until we have a mode-line.
-  (with-result* ((url (buffer-get-url))
-                 (title (buffer-get-title)))
-    (echo "~a — ~a" url title)))
+  (echo "~a — ~a" (url (current-buffer)) (title (current-buffer))))
 
 (declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
 @export
