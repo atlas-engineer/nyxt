@@ -53,6 +53,7 @@
                  (:file "window")
                  (:file "minibuffer")
                  (:file "keymap")
+                 (:file "recent-buffers")
                  ;; Core Packages
                  (:file "bookmark")
                  (:file "zoom")

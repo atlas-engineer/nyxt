@@ -238,6 +238,8 @@ Most recent messages are first.")
    (minibuffer-generic-history :accessor minibuffer-generic-history :initform (ring:make))
    (minibuffer-search-history :accessor minibuffer-search-history :initform (ring:make))
    (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (ring:make))
+   (recent-buffers :accessor recent-buffers :initform (ring:make :size 50)
+                   :documentation "A ring that keeps track of deleted buffers.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
@@ -314,6 +316,12 @@ The handlers take the URL as argument.")
    (after-download-hook :accessor after-download-hook :initform '() :type list
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
+
+(defmethod add-to-recent-buffers ((buffer buffer))
+  "Create a recent-buffer from given buffer and add it to `recent-buffers'"
+  (let ((deleted-buffer (make-recent-buffer (name buffer) (title buffer))))
+    (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate deleted-buffer))
+    (ring:insert (recent-buffers *interface*) deleted-buffer)))
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -637,6 +645,7 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer)
                                 (rpc-buffer-make))))
+    (add-to-recent-buffers buffer)
     (%rpc-send "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))
