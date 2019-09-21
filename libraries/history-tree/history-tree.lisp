@@ -127,23 +127,25 @@ Test is done with the TEST argument."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'add-child))
-(defmethod add-child (data (history history-tree))
-  "If not already among the children of the current node, create a node for DATA
-and add it first to the list.
+(defmethod add-child (data (history history-tree) &key (test #'equal))
+  "Create a node for DATA and add it first to the list.
+No node is created if data is in current node are already among the children.
 If there is no current element, this creates the first element of the tree.
-Child is moved first in the list if it does not exist.
-Current node is updated to the child."
-  (if (current history)
-      (let ((node (delete-child data history)))
+Child is moved first in the list if it already exists.
+Current node is then updated to the first child if it holds DATA."
+  (cond
+    ((null (current history))
+     (let ((new-node (make-node :data data)))
+        (setf (root history) new-node)
+        (setf (current history) (root history))
+       new-node))
+    ((not (funcall test data (data (current history))))
+     (let ((node (delete-child data history :test test)))
         (push (or node
                   (make-node :data data :parent (current history)))
               (children (current history)))
         (forward history)
-        (current history))
-      (let ((new-node (make-node :data data)))
-        (setf (root history) new-node)
-        (setf (current history) (root history))
-        new-node)))
+        (current history)))))
 
 
 

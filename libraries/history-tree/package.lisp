@@ -43,4 +43,6 @@ This way, by follow the first children recursively, we can go back to B2, then
 C2.
 
 The direct children of a given node are systematically deduplicated: when adding
-a child that already exists, it is moved to the front."))
+a child that already exists, it is moved to the front.
+
+The creation of a child whose data is the same as a current node is a no-op."))
