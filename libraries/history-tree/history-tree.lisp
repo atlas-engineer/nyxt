@@ -161,12 +161,6 @@ Current node is then updated to the first child if it holds DATA."
   (all-children (root history)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'all-nodes-data))
-(defmethod all-nodes-data ((history history-tree))
-  "Return a list of all nodes data, in depth-first order."
-  (mapcar #'data (all-nodes history)))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'parent-nodes))
 (defmethod parent-nodes ((history history-tree))
   "Return a list of all parents of the current node.
@@ -194,6 +188,34 @@ First child comes first in the resulting list."
   "Return a list of all the children of the current node.
 The nodes come in depth-first order."
   (all-children (current history)))
+
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'all-nodes-data))
+(defmethod all-nodes-data ((history history-tree))
+  "Return a list of all nodes data, in depth-first order."
+  (mapcar #'data (all-nodes history)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'parent-nodes-data))
+(defmethod parent-nodes-data ((history history-tree))
+  "Return a list of all nodes data.
+First parent comes first."
+  (mapcar #'data (parent-nodes history)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'forward-children-nodes-data))
+(defmethod forward-children-nodes-data ((history history-tree))
+  "Return a list of all forward children nodes data.
+First child comes first."
+  (mapcar #'data (forward-children-nodes history)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'children-nodes-data))
+(defmethod children-nodes-data ((history history-tree))
+  "Return a list of all children nodes data, in depth-first order."
+  (mapcar #'data (children-nodes history)))
 
 
 
