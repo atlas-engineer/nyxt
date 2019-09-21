@@ -640,7 +640,8 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
     (%rpc-send "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))
-    (remhash (id buffer) (buffers *interface*))))
+    (remhash (id buffer) (buffers *interface*))
+    (funcall (session-store-function *interface*))))
 
 (declaim (ftype (function (buffer string)) rpc-buffer-load))
 @export
