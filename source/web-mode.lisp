@@ -164,9 +164,7 @@
   "Move forwards in history selecting the first child."
   (let* ((web-mode (find-mode buffer 'web-mode))
          (children (node-children (active-history-node
-                                   web-mode
-                                   ;; (mode (current-buffer))
-                                   ))))
+                                   web-mode))))
     (unless (null children)
       (set-url (node-data (nth 0 children))))))
 
