@@ -367,7 +367,7 @@ current buffer."
           (push download (downloads *interface*))
           download)
       (error (c)
-        (echo "Download error: ~a" c)
+        (echo-warning "Download error: ~a" c)
         nil))))
 
 (declaim (ftype (function (remote-interface)) ensure-dbus-session))

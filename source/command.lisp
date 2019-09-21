@@ -87,8 +87,7 @@ deprecated and by what in the docstring."
          ,documentation
          (progn
            ;; TODO: Implement `warn'.
-           (echo "Warning: ~a is deprecated." ',name)
-           (log:warn "Deprecated command ~a" ',name)
+           (echo-warning "~a is deprecated." ',name)
            ,@body)))))
 
 (defun package-defined-symbols (&optional (package (find-package :next)))

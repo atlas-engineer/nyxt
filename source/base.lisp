@@ -155,10 +155,9 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
       (error (c)
         ;; TODO: Handle warning from `echo'.
         (let ((message (format nil "Could not load the lisp init file ~a: ~&~a" file c)))
-          (log:warn "~a" message)
+          (echo-warning message)
           (when interactive
-            (error message))
-          (echo message))))))
+            (error message)))))))
 
 (define-command load-file (&key interactive)
   "Load the prompted Lisp file.

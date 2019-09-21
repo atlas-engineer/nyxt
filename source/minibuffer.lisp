@@ -543,27 +543,24 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "head"))
                                       (scroll-into-view false))))))
 
-;; TODO: Does the `:minibuffer' keyword still make sense?  Remove?
-@export
-(defun echo (&rest args)
-  "Echo ARGS in the minibuffer.
-Accepted keyword argument:
-
-  :minibuffer
-  :window
-
-The first argument can be a format string and the following arguments will be
-interpreted by `format'. "
-  (let* ((window (when *interface* (rpc-window-active)))
-         (status-buffer (when window (status-buffer window))))
-    (when (evenp (length args))
-      (when (getf args :minibuffer)
-        (setf status-buffer (getf args :minibuffer)))
-      (when (getf args :window)
-        (setf window (getf args :window)))
-      (dolist (key (remove-if-not #'keywordp args))
-        (remf args key)))
-    (if (and status-buffer window)
+(defun %echo-status (text &key (message (list text))
+                            (window (when *interface* (rpc-window-active)))
+                            (status-buffer (when window (status-buffer window))))
+  "Echo TEXT in the status buffer.
+MESSAGE is a cl-markup list."
+  (if (and status-buffer window)
+      (progn
+        (unless (or (null message)
+                    (equal message '("")))
+          (push `(:p (:i "["
+                         ,(local-time:format-timestring
+                           nil
+                           (local-time:now)
+                           :format local-time:+asctime-format+)
+                         "]")
+                     " "
+                     ,@message)
+                (messages-content *interface*)))
         (unless (active-minibuffers window)
           (erase-document status-buffer)
           (let ((style (cl-css:css
@@ -577,14 +574,25 @@ interpreted by `format'. "
                   (cl-markup:markup
                    (:head (:style style))
                    (:body
-                    (:p (apply #'format nil args))))))
-          (push `(:p (:b ,(local-time:now))
-                     " "
-                     ,(apply #'format nil args))
-                (messages-content *interface*))
+                    (:p text)))))
           (show :minibuffer status-buffer
-                :height (status-buffer-height window)))
-        (log:warn "Can't echo '~a' without status buffer or interface" (apply #'format nil args)))))
+                :height (status-buffer-height window))))
+      (log:warn "Can't echo '~a' without status buffer or interface" text)))
+
+@export
+(defun echo (&rest args)
+  "Echo ARGS in the status buffer.
+The first argument can be a format string and the following arguments will be
+interpreted by `format'."
+  (%echo-status (apply #'format nil args)))
+
+@export
+(defun echo-warning (&rest args)
+  "Like `echo' but prefix with \"Warning\" and output to the standard error."
+  (let ((text (apply #'format nil args)))
+    (%echo-status text
+                  :message `((:b "Warning:") " " ,text))
+    (log:warn "~a" text)))
 
 @export
 (defmethod echo-dismiss ()
