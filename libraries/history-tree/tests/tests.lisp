@@ -77,4 +77,32 @@
               "http://example.root/A"
               "http://example.root/B")))
 
+(prove:subtest
+    "Traverse all history."
+  (prove:is (htree:all-nodes-data
+             (htree:back (make-tree1)))
+            '("http://example.root"
+              "http://example.root/B"
+              "http://example.root/B2" "http://example.root/B1"
+              "http://example.root/A"
+              "http://example.root/A2" "http://example.root/A1")))
+
+(prove:subtest
+    "Traverse parents."
+  (prove:is (htree:parent-nodes-data
+             (htree:back (make-tree1)))
+            '("http://example.root")))
+
+(prove:subtest
+    "Traverse forward children."
+  (prove:is (htree:forward-children-nodes-data
+             (htree:back (make-tree1)))
+            '("http://example.root/B2")))
+
+(prove:subtest
+    "Traverse all children."
+  (prove:is (htree:children-nodes-data
+             (htree:back (make-tree1)))
+            '("http://example.root/B2" "http://example.root/B1")))
+
 (prove:finalize)

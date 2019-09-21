@@ -150,15 +150,17 @@ Current node is then updated to the first child if it holds DATA."
 
 
 (defmethod all-children ((node node))
-  (when node
-    (cons node
-          (apply #'append (mapcar #'all-children (children node))))))
+  (labels ((traverse (node)
+             (when node
+               (cons node
+                     (apply #'append (mapcar #'traverse (children node)))))))
+    (apply #'append (mapcar #'traverse (children node)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'all-nodes))
 (defmethod all-nodes ((history history-tree))
   "Return a list of all nodes, in depth-first order."
-  (all-children (root history)))
+  (cons (root history) (all-children (root history))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'parent-nodes))
@@ -177,10 +179,11 @@ First parent comes first in the resulting list."
 (defmethod forward-children-nodes ((history history-tree))
   "Return a list of the first children, recursively.
 First child comes first in the resulting list."
-  (labels ((traverse (node) (when node
-                              (cons node
-                                    (append (traverse (first (children node))))))))
-    (traverse (root history))))
+  (labels ((traverse (node)
+             (when node
+               (cons node
+                     (traverse (first (children node)))))))
+    (traverse (first (children (current history))))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'children-nodes))
