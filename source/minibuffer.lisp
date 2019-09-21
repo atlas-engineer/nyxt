@@ -169,7 +169,11 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   (setf (callback-buffer minibuffer) (current-buffer))
   (match (setup-function minibuffer)
     ((guard f f) (funcall f minibuffer)))
-  (update-display minibuffer)
+  (handler-case
+      (update-display minibuffer)
+    (error (c)
+      (echo "~a" c)
+      (return-from read-from-minibuffer)))
   (push minibuffer (active-minibuffers (last-active-window *interface*)))
   (apply #'show
          (unless (completion-function minibuffer)

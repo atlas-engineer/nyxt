@@ -170,8 +170,7 @@
     (lambda (input)
       (if parents
           (fuzzy-match input parents)
-          ;; TODO: Echo error instead of listing it in candidates.
-          (list "Cannot navigate backwards.")))))
+          (error "Cannot navigate backwards.")))))
 
 (define-command history-backwards-query ()
   "Query parent URL to navigate back to."
@@ -179,7 +178,7 @@
                        (make-instance 'next::minibuffer
                                       :input-prompt "Navigate backwards to:"
                                       :completion-function (history-backwards-completion-fn))))
-    (unless (equal input "Cannot navigate backwards.")
+    (when input
       (set-url-from-history input))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
@@ -190,8 +189,7 @@
     (lambda (input)
       (if children
           (fuzzy-match input children)
-          ;; TODO: Echo error instead of listing it in candidates.
-          (list "Cannot navigate forwards.")))))
+          (error "Cannot navigate forwards.")))))
 
 (define-command history-forwards-query ()
   "Query forward-URL to navigate to."
@@ -199,7 +197,7 @@
                        (make-instance 'next::minibuffer
                                       :input-prompt "Navigate forwards to:"
                                       :completion-function (history-forwards-completion-fn))))
-    (unless (equal input "Cannot navigate forwards.")
+    (when input
       (set-url-from-history input))))
 
 (defun history-forwards-all-completion-fn (&optional (mode (find-mode
@@ -210,8 +208,7 @@
     (lambda (input)
       (if children
           (fuzzy-match input children)
-          ;; TODO: Echo error instead of listing it in candidates.
-          (list "Cannot navigate forwards.")))))
+          (error "Cannot navigate forwards.")))))
 
 (define-command history-forwards-all-query ()
   "Query URL to forward to, from all child branches."
@@ -219,7 +216,7 @@
                        (make-instance 'next::minibuffer
                                       :input-prompt "Navigate forwards to (all branches):"
                                       :completion-function (history-forwards-all-completion-fn))))
-    (unless (equal input "Cannot navigate forwards.")
+    (when input
       (set-url-from-history input))))
 
 (defun history-all-completion-fn (&optional (mode (find-mode
@@ -230,8 +227,7 @@
     (lambda (input)
       (if urls
           (fuzzy-match input urls)
-          ;; TODO: Echo error instead of listing it in candidates.
-          (list "No history.")))))
+          (error "No history.")))))
 
 (define-command history-all-query ()
   "Query URL to go to, from the whole history."
@@ -239,7 +235,7 @@
                        (make-instance 'next::minibuffer
                                       :input-prompt "Navigate to:"
                                       :completion-function (history-all-completion-fn))))
-    (unless (equal input "No history.")
+    (when input
       (set-url-from-history input))))
 
 (define-command copy-url ()
