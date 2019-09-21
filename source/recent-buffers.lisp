@@ -6,19 +6,19 @@
 @export
 @export-accessors
 (defclass recent-buffer ()
-  ((name :accessor name :initarg :name
-        :initform nil :type string)
+  ((url :accessor url :initarg :url
+         :initform nil :type string)
    (title :accessor title :initarg :title
           :initform nil :type string)))
 
 (defmethod object-string ((recent-buffer recent-buffer))
-  (format nil "~a  ~a" (name recent-buffer) (title recent-buffer)))
+  (format nil "~a  ~a" (url recent-buffer) (title recent-buffer)))
 
 @export
 (defmethod buffer-match-predicate ((buffer recent-buffer))
   (lambda (other-buffer)
     (when other-buffer
-      (and (string= (name buffer) (name other-buffer))
+      (and (string= (url buffer) (url other-buffer))
            (string= (title buffer) (title other-buffer))))))
 
 (defun recent-buffer-completion-fn ()
@@ -33,14 +33,14 @@
                                        :input-prompt "Reopen buffer:"
                                        :completion-function (recent-buffer-completion-fn))))
     (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
-    (make-buffers (list (name buffer)))))
+    (open-urls (list (url buffer)))))
 
 (define-command undo-buffer-deletion ()
   "Open a new buffer with the URL of the most recently deleted buffer."
   (if (plusp (ring:item-count (recent-buffers *interface*)))
-      (make-buffers (list (name (ring:pop-most-recent (recent-buffers *interface*)))))
+      (open-urls (list (url (ring:pop-most-recent (recent-buffers *interface*)))))
       (echo "There are no recently-deleted buffers.")))
 
 @export
-(defun make-recent-buffer (name title)
-  (make-instance 'recent-buffer :name name :title title))
+(defun make-recent-buffer (url title)
+  (make-instance 'recent-buffer :url url :title title))

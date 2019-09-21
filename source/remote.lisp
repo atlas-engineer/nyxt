@@ -317,9 +317,10 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
-(defmethod add-to-recent-buffers ((buffer buffer))
-  "Create a recent-buffer from given buffer and add it to `recent-buffers'"
-  (let ((deleted-buffer (make-recent-buffer (name buffer) (title buffer))))
+(declaim (ftype (function (buffer)) add-to-recent-buffers))
+(defun add-to-recent-buffers (buffer)
+  "Create a recent-buffer from given buffer and add it to `recent-buffers'."
+  (let ((deleted-buffer (make-recent-buffer (url buffer) (title buffer))))
     (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate deleted-buffer))
     (ring:insert (recent-buffers *interface*) deleted-buffer)))
 
