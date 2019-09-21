@@ -3,7 +3,7 @@
 (defun buffer-history (buffer)
   "Return the buffer history of BUFFER."
   (match (find-mode buffer 'web-mode)
-    ((guard m m) (next/web-mode:active-history-node m))))
+    ((guard m m) (next/web-mode:history m))))
 
 (defun web-buffers ()
   "Return list of web buffers.
@@ -54,7 +54,9 @@ Currently we store the list of current URLs of all buffers."
            (unless (string= version +version+)
              (log:warn "Session version ~s differs from current version ~s" version +version+))
            (when buffer-histories
-             (log:info "Restoring ~a" (mapcar #'next/web-mode:node-data buffer-histories))
+             (log:info "Restoring ~a"
+                       (mapcar (alexandria:compose #'htree:data #'htree:current)
+                               buffer-histories))
              ;; Delete the old buffers?
              ;; (maphash (lambda (id buffer)
              ;;            (declare (ignore id))
@@ -65,8 +67,8 @@ Currently we store the list of current URLs of all buffers."
              (loop for history in buffer-histories
                    for buffer = (make-buffer)
                    for mode = (find-mode buffer 'web-mode)
-                   do (set-url (next/web-mode:node-data history) :buffer buffer)
-                   do (setf (next/web-mode:active-history-node mode) history))
+                   do (set-url (htree:data (htree:current history)) :buffer buffer)
+                   do (setf (next/web-mode:history mode) history))
              ;; TODO: Switch to the last active buffer.  We probably need to serialize *interface*.
              ;; Or else we could include `access-time' in the buffer class.
              )))

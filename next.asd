@@ -35,7 +35,8 @@
                :unix-opts
                ;; Local systems:
                :next/download-manager
-               :next/ring)
+               :next/ring
+               :next/history-tree)
   :components ((:module "source"
                 :components
                 ((:file "patch-annot")

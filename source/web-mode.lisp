@@ -3,7 +3,6 @@
   (:documentation "Mode for web pages"))
 (in-package :next/web-mode)
 (annot:enable-annot-syntax)
-;; TODO: Rename "web-mode"?
 
 ;; TODO: Remove web-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
@@ -11,139 +10,130 @@
 ;; changes in special buffers should open a new one.
 ;; Or else we require that all special-buffer-generting commands open a new buffer.
 
-@export
-@export-accessors
-(defclass node ()
-  ((parent :accessor node-parent :initarg :parent :initform nil)
-   (children :accessor node-children :initform nil)
-   (data :accessor node-data :initarg :data :initform nil))
-  (:documentation "Data node used to represent tree history."))
-
-(defmethod object-string ((node node))
-  (node-data node))
-
 (define-mode web-mode ()
-    "Base mode for interacting with documents."
-    ((active-history-node :accessor active-history-node :initarg :active-node
-                          :initform (make-instance 'node :data "about:blank"))
-     (keymap-schemes
-      :initform
-      (let ((emacs-map (make-keymap))
-            (vi-map (make-keymap)))
-        (define-key :keymap emacs-map
-          "M-f" #'history-forwards-query
-          "M-b" #'history-backwards
-          "C-g" #'follow-hint
-          "M-g" #'follow-hint-new-buffer-focus
-          "C-u M-g" #'follow-hint-new-buffer
-          "C-x C-w" #'copy-hint-url
-          "C-f" #'history-forwards
-          "C-b" #'history-backwards
-          "C-v" #'paste
-          "C-c" #'copy
-          "button9" #'history-forwards
-          "button8" #'history-backwards
-          "C-p" #'scroll-up
-          "C-n" #'scroll-down
-          "C-x C-=" #'zoom-in-page
-          "C-x C-+" #'zoom-in-page
-          "C-x +" #'zoom-in-page
-          "C-x C-HYPHEN" #'zoom-out-page
-          "C-x HYPHEN" #'zoom-out-page
-          "C-x C-0" #'unzoom-page
-          "C-x 0" #'unzoom-page
-          "C-r" #'reload-current-buffer
-          "C-m o" #'set-url-from-bookmark
-          "C-m s" #'bookmark-current-page
-          "C-m g" #'bookmark-hint
-          "C-s s" #'search-buffer
-          "C-s n" #'next-search-hint
-          "C-s p" #'previous-search-hint
-          "C-s k" #'remove-search-hints
-          "C-." #'jump-to-heading
-          "M-s->" #'scroll-to-bottom
-          "M-s-<" #'scroll-to-top
-          "M->" #'scroll-to-bottom
-          "M-<" #'scroll-to-top
-          ;; "C-v" #'scroll-page-down
-          "M-v" #'scroll-page-up
-          "C-w" #'copy-url
-          "M-w" #'copy-title
-          ;; Leave SPACE unbound so that the paltform port decides wether to
-          ;; insert of scroll.
-          "s-SPACE" #'scroll-page-up
+  "Base mode for interacting with documents."
+  ((history :accessor history
+            :type htree:history-tree
+            :initarg :history
+            :initform (htree:make))
+   (keymap-schemes
+    :initform
+    (let ((emacs-map (make-keymap))
+          (vi-map (make-keymap)))
+      (define-key :keymap emacs-map
+        "M-f" #'history-forwards-query
+        "M-b" #'history-backwards
+        "C-g" #'follow-hint
+        "M-g" #'follow-hint-new-buffer-focus
+        "C-u M-g" #'follow-hint-new-buffer
+        "C-x C-w" #'copy-hint-url
+        "C-f" #'history-forwards
+        "C-b" #'history-backwards
+        "C-v" #'paste
+        "C-c" #'copy
+        "button9" #'history-forwards
+        "button8" #'history-backwards
+        "C-p" #'scroll-up
+        "C-n" #'scroll-down
+        "C-x C-=" #'zoom-in-page
+        "C-x C-+" #'zoom-in-page
+        "C-x +" #'zoom-in-page
+        "C-x C-HYPHEN" #'zoom-out-page
+        "C-x HYPHEN" #'zoom-out-page
+        "C-x C-0" #'unzoom-page
+        "C-x 0" #'unzoom-page
+        "C-r" #'reload-current-buffer
+        "C-m o" #'set-url-from-bookmark
+        "C-m s" #'bookmark-current-page
+        "C-m g" #'bookmark-hint
+        "C-s s" #'search-buffer
+        "C-s n" #'next-search-hint
+        "C-s p" #'previous-search-hint
+        "C-s k" #'remove-search-hints
+        "C-." #'jump-to-heading
+        "M-s->" #'scroll-to-bottom
+        "M-s-<" #'scroll-to-top
+        "M->" #'scroll-to-bottom
+        "M-<" #'scroll-to-top
+        ;; "C-v" #'scroll-page-down
+        "M-v" #'scroll-page-up
+        "C-w" #'copy-url
+        "M-w" #'copy-title
+        ;; Leave SPACE unbound so that the paltform port decides wether to
+        ;; insert of scroll.
+        "s-SPACE" #'scroll-page-up
 
-          ;; keypad:
-          "Page_Up" #'scroll-page-up
-          "Page_Down" #'scroll-page-down
-          "Page_End" #'scroll-to-bottom
-          "Page_Home" #'scroll-to-top
-          ;; keypad, gtk:
-          "KP_Left" #'scroll-left
-          "KP_Down" #'scroll-down
-          "KP_Up" #'scroll-up
-          "KP_Right" #'scroll-right
-          "KP_End" #'scroll-to-bottom
-          "KP_Home" #'scroll-to-top
-          "KP_Next" #'scroll-page-down
-          "KP_Page_Up" #'scroll-page-up
-          "KP_Prior" #'scroll-page-up)
+        ;; keypad:
+        "Page_Up" #'scroll-page-up
+        "Page_Down" #'scroll-page-down
+        "Page_End" #'scroll-to-bottom
+        "Page_Home" #'scroll-to-top
+        ;; keypad, gtk:
+        "KP_Left" #'scroll-left
+        "KP_Down" #'scroll-down
+        "KP_Up" #'scroll-up
+        "KP_Right" #'scroll-right
+        "KP_End" #'scroll-to-bottom
+        "KP_Home" #'scroll-to-top
+        "KP_Next" #'scroll-page-down
+        "KP_Page_Up" #'scroll-page-up
+        "KP_Prior" #'scroll-page-up)
 
-        (define-key :keymap vi-map
-          "H" #'history-backwards
-          "L" #'history-forwards
-          "f" #'follow-hint
-          "F" #'follow-hint-new-buffer-focus
-          "; f" #'follow-hint-new-buffer
-          "button9" #'history-forwards
-          "button8" #'history-backwards
+      (define-key :keymap vi-map
+        "H" #'history-backwards
+        "L" #'history-forwards
+        "f" #'follow-hint
+        "F" #'follow-hint-new-buffer-focus
+        "; f" #'follow-hint-new-buffer
+        "button9" #'history-forwards
+        "button8" #'history-backwards
 
-          "h" #'scroll-left
-          "j" #'scroll-down
-          "k" #'scroll-up
-          "l" #'scroll-right
-          "Left" #'scroll-left
-          "Down" #'scroll-down
-          "Up" #'scroll-up
-          "Right" #'scroll-right
-          ;; keypad:
-          "Page_End" #'scroll-to-bottom
-          "Page_Home" #'scroll-to-top
-          ;; keypad, gtk:
-          "KP_Left" #'scroll-left
-          "KP_Down" #'scroll-down
-          "KP_Up" #'scroll-up
-          "KP_Right" #'scroll-right
-          "KP_End" #'scroll-to-bottom
-          "KP_Home" #'scroll-to-top
-          "KP_Next" #'scroll-page-down
-          "KP_Page_Up" #'scroll-page-up
-          "KP_Prior" #'scroll-page-up
+        "h" #'scroll-left
+        "j" #'scroll-down
+        "k" #'scroll-up
+        "l" #'scroll-right
+        "Left" #'scroll-left
+        "Down" #'scroll-down
+        "Up" #'scroll-up
+        "Right" #'scroll-right
+        ;; keypad:
+        "Page_End" #'scroll-to-bottom
+        "Page_Home" #'scroll-to-top
+        ;; keypad, gtk:
+        "KP_Left" #'scroll-left
+        "KP_Down" #'scroll-down
+        "KP_Up" #'scroll-up
+        "KP_Right" #'scroll-right
+        "KP_End" #'scroll-to-bottom
+        "KP_Home" #'scroll-to-top
+        "KP_Next" #'scroll-page-down
+        "KP_Page_Up" #'scroll-page-up
+        "KP_Prior" #'scroll-page-up
 
-          "z i" #'zoom-in-page
-          "z o" #'zoom-out-page
-          "z z" #'unzoom-page
-          "r" #'reload-current-buffer
-          "m o" #'set-url-from-bookmark
-          "m m" #'bookmark-current-page
-          "m f" #'bookmark-hint
-          "y u" #'copy-url
-          "y t" #'copy-title
-          "g h" #'jump-to-heading        ; TODO: VI binding for this?
-          "/" #'search-buffer
-          "n" #'next-search-hint
-          "N" #'previous-search-hint
-          "?" #'remove-search-hints
-          "G" #'scroll-to-bottom
-          "g g" #'scroll-to-top
-          "C-f" #'scroll-page-down
-          "C-b" #'scroll-page-up
-          "SPACE" #'scroll-page-down
-          "s-SPACE" #'scroll-page-up
-          "Page_Up" #'scroll-page-up
-          "Page_Down" #'scroll-page-down)
-        (list :emacs emacs-map
-              :vi-normal vi-map))))
+        "z i" #'zoom-in-page
+        "z o" #'zoom-out-page
+        "z z" #'unzoom-page
+        "r" #'reload-current-buffer
+        "m o" #'set-url-from-bookmark
+        "m m" #'bookmark-current-page
+        "m f" #'bookmark-hint
+        "y u" #'copy-url
+        "y t" #'copy-title
+        "g h" #'jump-to-heading         ; TODO: VI binding for this?
+        "/" #'search-buffer
+        "n" #'next-search-hint
+        "N" #'previous-search-hint
+        "?" #'remove-search-hints
+        "G" #'scroll-to-bottom
+        "g g" #'scroll-to-top
+        "C-f" #'scroll-page-down
+        "C-b" #'scroll-page-up
+        "SPACE" #'scroll-page-down
+        "s-SPACE" #'scroll-page-up
+        "Page_Up" #'scroll-page-up
+        "Page_Down" #'scroll-page-down)
+      (list :emacs emacs-map
+            :vi-normal vi-map))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
   ;; (set-url (default-new-buffer-url (buffer %mode))
@@ -151,28 +141,44 @@
   )
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
-  "Move up to parent node to iterate backwards in history tree."
-  (let* ((web-mode (find-mode buffer 'web-mode))
-         (parent (node-parent (active-history-node web-mode
-                                                   ;; TODO: Test!
-                                                   ;; (mode (current-buffer))
-                                                   ))))
-    (when parent
-      (set-url (node-data parent)))))
+  "Go to parent URL in history."
+  (let* ((mode (find-mode buffer 'web-mode)))
+    (htree:back (history mode))
+    (match (htree:current (history mode))
+      ((guard n n) (set-url (htree:data n))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
-  "Move forwards in history selecting the first child."
-  (let* ((web-mode (find-mode buffer 'web-mode))
-         (children (node-children (active-history-node
-                                   web-mode))))
-    (unless (null children)
-      (set-url (node-data (nth 0 children))))))
+  "Go to forward URL in history."
+  (let* ((mode (find-mode buffer 'web-mode)))
+    (htree:forward (history mode))
+    (match (htree:current (history mode))
+      ((guard n n) (set-url (htree:data n))))))
+
+(defun history-backwards-completion-fn (&optional (mode (find-mode
+                                                        (current-buffer)
+                                                        'web-mode)))
+  "Completion function over all parent URLs."
+  (let ((parents (htree:parent-nodes-data (history mode))))
+    (lambda (input)
+      (if parents
+          (fuzzy-match input parents)
+          ;; TODO: Echo error instead of listing it in candidates.
+          (list "Cannot navigate backwards.")))))
+
+(define-command history-backwards-query ()
+  "Query parent URL to navigate back to."
+  (with-result (input (read-from-minibuffer
+                       (make-instance 'next::minibuffer
+                                      :input-prompt "Navigate backwards to:"
+                                      :completion-function (history-backwards-completion-fn))))
+    (unless (equal input "Cannot navigate backwards.")
+      (set-url input))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
                                                         (current-buffer)
                                                         'web-mode)))
-  "Provide completion candidates to the `history-forwards-query' function."
-  (let ((children (node-children (active-history-node mode))))
+  "Completion function over forward-children URL."
+  (let ((children (htree:forward-children-nodes-data (history mode))))
     (lambda (input)
       (if children
           (fuzzy-match input children)
@@ -180,40 +186,53 @@
           (list "Cannot navigate forwards.")))))
 
 (define-command history-forwards-query ()
-  "Move forwards in history querying if more than one child present."
+  "Query forward-URL to navigate to."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
+                       (make-instance 'next::minibuffer
                                       :input-prompt "Navigate forwards to:"
                                       :completion-function (history-forwards-completion-fn))))
     (unless (equal input "Cannot navigate forwards.")
-      (set-url (node-data input)))))
+      (set-url input))))
 
-(defmethod add-or-traverse-history ((mode web-mode) url)
-  (let ((active-node (active-history-node mode)))
-    ;; only add element to the history if it is different than the current
-    (when (equalp url (node-data active-node))
-      (return-from add-or-traverse-history t))
-    ;; check if parent exists
-    (when (node-parent active-node)
-      ;; check if parent node's url is equal
-      (when (equalp url (node-data (node-parent active-node)))
-        ;; set active-node to parent
-        (setf (active-history-node mode) (node-parent active-node))
-        (return-from add-or-traverse-history t)))
-    ;; loop through children to make sure node does not exist in children
-    (loop for child in (node-children active-node) do
-      (when (equalp (node-data child) url)
-        (setf (active-history-node mode) child)
-        (return-from add-or-traverse-history t)))
-    ;; if we made it this far, we must create a new node
-    (when url
-      (history-typed-add url)) ; add to history database
-    (let ((new-node (make-instance 'node
-                                   :parent active-node
-                                   :data url)))
-      (push new-node (node-children active-node))
-      (setf (active-history-node mode) new-node)
-      (return-from add-or-traverse-history t))))
+(defun history-forwards-all-completion-fn (&optional (mode (find-mode
+                                                        (current-buffer)
+                                                        'web-mode)))
+  "Completion function over children URL from all branches."
+  (let ((children (htree:forward-children-nodes-data (history mode))))
+    (lambda (input)
+      (if children
+          (fuzzy-match input children)
+          ;; TODO: Echo error instead of listing it in candidates.
+          (list "Cannot navigate forwards.")))))
+
+(define-command history-forwards-all-query ()
+  "Query URL to forward to, from all child branches."
+  (with-result (input (read-from-minibuffer
+                       (make-instance 'next::minibuffer
+                                      :input-prompt "Navigate forwards to (all branches):"
+                                      :completion-function (history-forwards-completion-fn))))
+    (unless (equal input "Cannot navigate forwards.")
+      (set-url input))))
+
+(defun history-all-completion-fn (&optional (mode (find-mode
+                                                   (current-buffer)
+                                                   'web-mode)))
+  "Completion function over all history URLs."
+  (let ((urls (htree:all-nodes-data (history mode))))
+    (lambda (input)
+      (if urls
+          (fuzzy-match input urls)
+          ;; TODO: Echo error instead of listing it in candidates.
+          (list "No history.")))))
+
+(define-command history-all-query ()
+  "Query URL to go to, from the whole history."
+  (with-result (input (read-from-minibuffer
+                       (make-instance 'next::minibuffer
+                                      :input-prompt "Navigate to:"
+                                      :completion-function (history-all-completion-fn))))
+    (unless (equal input "No history.")
+      (set-url input))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -276,7 +295,10 @@
   (let ((active-window (rpc-window-active)))
     (set-window-title active-window
                       (active-buffer active-window))
-    (next/web-mode::add-or-traverse-history mode url)
+    ;; TODO: Include title in buffer history.
+    (htree:add-child url (next/web-mode::history mode))
+    (when url
+      (history-typed-add url))
     (funcall (session-store-function *interface*)))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
