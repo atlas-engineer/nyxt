@@ -5,6 +5,12 @@
   (match (find-mode buffer 'web-mode)
     ((guard m m) (next/web-mode:active-history-node m))))
 
+(defun web-buffers ()
+  "Return list of web buffers.
+I.e. non-special buffers, those with a non-empty URL slot."
+  (delete-if (alexandria:compose #'str:emptyp #'url)
+             (alexandria:hash-table-values (buffers *interface*))))
+
 (defun session-data ()
   "Return the data that needs to be serialized.
 This data can be used to restore the session later, e.g. when starting a new
@@ -14,8 +20,7 @@ instance of Next."
   ;; Maybe not future-proof, but it's unclear that session structure will ever
   ;; change much.
   (list +version+
-        (delete-if #'null (mapcar #'buffer-history
-                                  (alexandria:hash-table-values (buffers *interface*))))))
+        (delete-if #'null (mapcar #'buffer-history (web-buffers)))))
 
 (defun store-sexp-session ()
   "Store the current Next session to the last window's `session-path'.
