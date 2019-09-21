@@ -31,7 +31,7 @@ Currently we store the list of current URLs of all buffers."
   (with-open-file (file (session-path *interface*)
                         :direction :output
                         :if-does-not-exist :create
-                        :if-exists :overwrite)
+                        :if-exists :supersede)
     ;; We READ the output of serialize-sexp to make it more human-readable.
     (format file
             "~s"
