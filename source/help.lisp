@@ -206,14 +206,14 @@ The version number is stored in the clipboard."
       (setf buffer (make-buffer
                     :title "*Messages*"
                     :modes (cons 'help-mode
-                                 (get-default 'buffer 'default-modes))))
-      (let* ((content
-               (apply #'cl-markup:markup*
-                      '(:h1 "Messages")
-                      (reverse (messages-content *interface*))))
-             (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                          (ps:lisp content)))))
-        (rpc-buffer-evaluate-javascript buffer insert-content)))
+                                 (get-default 'buffer 'default-modes)))))
+    (let* ((content
+             (apply #'cl-markup:markup*
+                    '(:h1 "Messages")
+                    (reverse (messages-content *interface*))))
+           (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                        (ps:lisp content)))))
+      (rpc-buffer-evaluate-javascript buffer insert-content))
     (set-current-buffer buffer)
     buffer))
 
