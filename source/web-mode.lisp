@@ -21,14 +21,14 @@
     (let ((emacs-map (make-keymap))
           (vi-map (make-keymap)))
       (define-key :keymap emacs-map
-        "M-f" #'history-forwards-query
-        "M-b" #'history-backwards
+        "M-f" #'history-forwards-all-query
+        "M-b" #'history-all-query
         "C-g" #'follow-hint
         "M-g" #'follow-hint-new-buffer-focus
         "C-u M-g" #'follow-hint-new-buffer
         "C-x C-w" #'copy-hint-url
-        "C-f" #'history-forwards
-        "C-b" #'history-backwards
+        "C-f" #'history-forwards-query
+        "C-b" #'history-backwards-query
         "C-v" #'paste
         "C-c" #'copy
         "button9" #'history-forwards
@@ -80,8 +80,10 @@
         "KP_Prior" #'scroll-page-up)
 
       (define-key :keymap vi-map
-        "H" #'history-backwards
-        "L" #'history-forwards
+        "H" #'history-backwards-query
+        "L" #'history-forwards-query
+        "M-h" #'history-all-query
+        "M-l" #'history-forwards-all-query
         "f" #'follow-hint
         "F" #'follow-hint-new-buffer-focus
         "; f" #'follow-hint-new-buffer
