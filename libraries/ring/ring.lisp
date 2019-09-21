@@ -29,7 +29,7 @@ Return NEW-ITEM."
                      (mod (+ (head-index ring) (item-count ring))
                           (size ring)))
                new-item)
-    (if (= (item-count ring) (length (items ring)))
+    (if (= (item-count ring) (size ring))
         (setf (head-index ring) (mod (1+ (head-index ring)) (size ring)))
         (incf (item-count ring)))))
 
@@ -55,3 +55,42 @@ Return NEW-ITEM."
 
 (defun make (&key (size 1000))
   (make-instance 'ring :items (make-array size :initial-element nil)))
+
+(defmethod pop-most-recent((ring ring))
+  "Return the most-recently-added item in RING, and remove it from the RING."
+    (delete-index ring 0))
+
+(defmethod shift-left ((ring ring) start end)
+  (loop for index from start below end
+        do (setf (aref (items ring)
+                       (mod index (size ring)))
+                 (aref (items ring)
+                       (mod (1+ index) (size ring)))))
+  (setf (aref (items ring) (mod end (size ring))) nil))
+
+(defmethod shift-right ((ring ring) start end)
+  (loop for index from start above end
+        do (setf (aref (items ring)
+                       (mod index (size ring)))
+                 (aref (items ring)
+                       (mod (1- index) (size ring)))))
+  (setf (aref (items ring) (mod end (size ring))) nil))
+
+(defmethod delete-index ((ring ring) index)
+  "Delete the item at external index and move items to fill the space."
+  (let* ((internal-index (index ring index))
+         (deleted-item (aref (items ring) (mod internal-index (size ring))))
+         (head (head-index ring))
+         (midpoint (mod (floor (+ head (item-count ring)) 2)
+                        (size ring))))
+    (if (< midpoint internal-index)
+        (shift-left ring internal-index (+ head (item-count ring)))
+        (progn
+          (shift-right ring internal-index head)
+          (setf (head-index ring) (mod (1+ (head-index ring)) (size ring)))))
+    (decf (item-count ring))
+    deleted-item))
+
+(defmethod delete-match ((ring ring) match-test)
+  (let ((match-index (position-if match-test (recent-list ring))))
+    (when match-index (delete-index ring match-index))))
