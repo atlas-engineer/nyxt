@@ -142,6 +142,12 @@
   ;;                 (buffer %mode))
   )
 
+(declaim (ftype (function (htree:node &optional buffer)) set-url-from-history))
+(defun set-url-from-history (history-node &optional (buffer (current-buffer)))
+  "Go to HISTORY-NODE's URL."
+  (setf (htree:current (history (find-mode buffer 'web-mode))) history-node)
+  (set-url (htree:data history-node)))
+
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (let* ((mode (find-mode buffer 'web-mode)))
@@ -160,7 +166,7 @@
                                                         (current-buffer)
                                                         'web-mode)))
   "Completion function over all parent URLs."
-  (let ((parents (htree:parent-nodes-data (history mode))))
+  (let ((parents (htree:parent-nodes (history mode))))
     (lambda (input)
       (if parents
           (fuzzy-match input parents)
@@ -174,13 +180,13 @@
                                       :input-prompt "Navigate backwards to:"
                                       :completion-function (history-backwards-completion-fn))))
     (unless (equal input "Cannot navigate backwards.")
-      (set-url input))))
+      (set-url-from-history input))))
 
 (defun history-forwards-completion-fn (&optional (mode (find-mode
                                                         (current-buffer)
                                                         'web-mode)))
   "Completion function over forward-children URL."
-  (let ((children (htree:forward-children-nodes-data (history mode))))
+  (let ((children (htree:forward-children-nodes (history mode))))
     (lambda (input)
       (if children
           (fuzzy-match input children)
@@ -194,13 +200,13 @@
                                       :input-prompt "Navigate forwards to:"
                                       :completion-function (history-forwards-completion-fn))))
     (unless (equal input "Cannot navigate forwards.")
-      (set-url input))))
+      (set-url-from-history input))))
 
 (defun history-forwards-all-completion-fn (&optional (mode (find-mode
                                                         (current-buffer)
                                                         'web-mode)))
   "Completion function over children URL from all branches."
-  (let ((children (htree:forward-children-nodes-data (history mode))))
+  (let ((children (htree:children-nodes (history mode))))
     (lambda (input)
       (if children
           (fuzzy-match input children)
@@ -212,15 +218,15 @@
   (with-result (input (read-from-minibuffer
                        (make-instance 'next::minibuffer
                                       :input-prompt "Navigate forwards to (all branches):"
-                                      :completion-function (history-forwards-completion-fn))))
+                                      :completion-function (history-forwards-all-completion-fn))))
     (unless (equal input "Cannot navigate forwards.")
-      (set-url input))))
+      (set-url-from-history input))))
 
 (defun history-all-completion-fn (&optional (mode (find-mode
                                                    (current-buffer)
                                                    'web-mode)))
   "Completion function over all history URLs."
-  (let ((urls (htree:all-nodes-data (history mode))))
+  (let ((urls (htree:all-nodes (history mode))))
     (lambda (input)
       (if urls
           (fuzzy-match input urls)
@@ -234,7 +240,7 @@
                                       :input-prompt "Navigate to:"
                                       :completion-function (history-all-completion-fn))))
     (unless (equal input "No history.")
-      (set-url input))))
+      (set-url-from-history input))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -305,3 +311,6 @@
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss))
+
+(defmethod object-string ((node htree:node))
+  (format nil "~a" (htree:data node)))
