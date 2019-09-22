@@ -41,6 +41,10 @@
       (open-urls (list (url (ring:pop-most-recent (recent-buffers *interface*)))))
       (echo "There are no recently-deleted buffers.")))
 
+(define-key "C-/" #'reopen-buffer)
+(define-key :scheme :vi-normal
+  "u" #'reopen-buffer)
+
 @export
 (defun make-recent-buffer (url title)
   (make-instance 'recent-buffer :url url :title title))
