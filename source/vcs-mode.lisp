@@ -65,16 +65,13 @@ If EXIT-RECURSIVE-SCAN is non-nil, avoid recursive scan of local projects. By de
       (setf result (find-project-directory name :exit-recursive-scan t)))
     result))
 
-;XXX: add ftype declaration.
+(declaim (ftype (function (string)) ensure-directory))
 (defun ensure-directory (base)
   "Create this directory if it doesn't exist.
-Needed to call `truename' to exand a tilde after it.
-BASE: directory name (string)."
+Needed to call `truename' to exand a tilde after it."
   ;; ensure a trailing slash.
-  (setf base
-        (str:concat (string-right-trim (list #\/) base)
-                    "/"))
-  (ensure-directories-exist base))
+  (ensure-directories-exist (str:concat (string-right-trim (list #\/) base)
+                                        "/")))
 
 (defun concat-filenames (base dir)
   "Concat filenames. Expand a tilde in BASE.

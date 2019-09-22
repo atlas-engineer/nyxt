@@ -74,8 +74,6 @@
                  (:file "file-manager-mode")
                  (:file "download-mode")
                  (:file "vcs-mode")
-                 ;; About
-                 (:file "about")
                  ;; Port Compatibility Layers
                  (:file "ports/pyqt-webengine" :if-feature :darwin)
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
