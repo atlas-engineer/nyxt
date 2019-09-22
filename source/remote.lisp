@@ -850,7 +850,7 @@ Deal with URL with the following rules:
                   (equal modifiers '("s")))
               (string= mouse-button "button1"))
          (string= mouse-button "button2"))
-     (log:info "Load ~a in new buffer" url)
+     (log:debug "Load in new buffer: ~a" url)
      (open-urls
       (list url)
       :no-focus (equal modifiers '("s")))
@@ -863,7 +863,7 @@ Deal with URL with the following rules:
        (download-list))
      nil)
     (t
-     (log:info "Forwarding ~a back to platform port" url)
+     (log:debug "Forwarding back to platform port: ~a" url)
      t)))
 
 ;; Return non-nil to tell the platform port to load the URL.
