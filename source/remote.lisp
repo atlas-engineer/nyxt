@@ -60,7 +60,10 @@ This can apply to specific buffer."))
 @export
 @export-accessors
 (defclass buffer ()
-  ((id :accessor id :initarg :id :initform nil)
+  ((id :accessor id :initarg :id :initform ""
+       :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
+not associated with a web view) have an empty ID.")
+   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (url :accessor url :initarg :url :type string :initform "")
    (title :accessor title :initarg :title :type string :initform "")
    (modes :accessor modes :initarg :modes :initform '()
@@ -586,44 +589,28 @@ proceeding."
 (defun rpc-window-set-minibuffer-height (window height)
   (%rpc-send "window_set_minibuffer_height" (id window) height))
 
-(declaim (ftype (function (&key (:title string) (:default-modes list))) rpc-buffer-make))
+(declaim (ftype (function (&key (:title string) (:default-modes list) (:dead-buffer buffer))) rpc-buffer-make))
 @export
-(defun rpc-buffer-make (&key title default-modes)
+(defun rpc-buffer-make (&key title default-modes dead-buffer)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
-Run `*interface*'s `buffer-make-hook' over the created buffer before returning it."
-  (let* ((buffer-id (get-unique-buffer-identifier))
-         (buffer (apply #'make-instance 'buffer :id buffer-id
-                        (append (when title `(:title ,title))
-                                (when default-modes `(:default-modes ,default-modes))))))
+Run `*interface*'s `buffer-make-hook' over the created buffer before returning it.
+If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
+  (let* ((buffer (if dead-buffer
+                     (progn (setf (id dead-buffer) (get-unique-buffer-identifier))
+                            dead-buffer)
+                     (apply #'make-instance 'buffer :id (get-unique-buffer-identifier)
+                            (append (when title `(:title ,title))
+                                    (when default-modes `(:default-modes ,default-modes)))))))
     (ensure-parent-exists (cookies-path buffer))
-    (setf (gethash buffer-id (buffers *interface*)) buffer)
+    (setf (gethash (id buffer) (buffers *interface*)) buffer)
     (incf (total-buffer-count *interface*))
-    (%rpc-send "buffer_make" buffer-id
+    (%rpc-send "buffer_make" (id buffer)
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
     (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
     buffer))
-
-;; TODO: How can we identify dead buffers?  Maybe with a nil ID?  Or maybe a
-;; dead-buffer is just a buffer history.
-;; TODO: Use dead buffers for undo.
-(declaim (ftype (function (buffer)) rpc-init-dead-buffer))
-@export
-(defun rpc-init-dead-buffer (buffer)
-  "Create a webview for dead BUFFER.
-A \"dead buffer\" is a buffer that does not have an associated web view on the
-platform port.  Run INTERFACE's `buffer-make-hook' over the created buffer
-before returning it."
-  (ensure-parent-exists (cookies-path buffer))
-  (%rpc-send "buffer_make" (id buffer)
-             `(("cookies-path" ,(namestring (cookies-path buffer)))))
-  ;; Modes might require that buffer exists, so we need to initialize them
-  ;; after it has been created on the platform port.
-  (initialize-modes buffer)
-  (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
-  buffer)
 
 (defun %get-inactive-buffer ()
   "Return inactive buffer or NIL if none."
@@ -646,11 +633,12 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer)
                                 (rpc-buffer-make))))
-    (add-to-recent-buffers buffer)
     (%rpc-send "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))
     (remhash (id buffer) (buffers *interface*))
+    (setf (id buffer) "")
+    (add-to-recent-buffers buffer)
     (funcall (session-store-function *interface*))))
 
 (declaim (ftype (function (buffer string)) rpc-buffer-load))
