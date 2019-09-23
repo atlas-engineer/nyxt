@@ -2,7 +2,6 @@
     (:use :common-lisp :trivia :next :annot.class)
   (:documentation "Mode for web pages"))
 (in-package :next/web-mode)
-(annot:enable-annot-syntax)
 
 ;; TODO: Remove web-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
@@ -238,6 +237,35 @@
     (when input
       (set-url-from-history input))))
 
+(define-command buffer-history-tree (&optional (buffer (current-buffer)))
+  "Open a new buffer displaying the whole history tree."
+  (labels ((traverse (node current)
+             (when node
+               `(:ul (:li (:a :href ,(url (htree:data node))
+                              ,(if (eq node current)
+                                   `(:b ,(title (htree:data node)))
+                                   (title (htree:data node)))))
+                     ,@(match (mapcar (lambda (n) (traverse n current))
+                                      (htree:children node))
+                        ((guard l l) l))))))
+    (let* ((buffer-name (format nil "*History-~a*" (id buffer)))
+           (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
+                                       (alexandria:hash-table-values (buffers *interface*)))
+                              (make-buffer
+                               :title buffer-name
+                               :modes (cons 'help-mode
+                                            (get-default 'buffer 'default-modes)))))
+           (history (history (find-mode buffer 'web-mode)))
+           (tree (traverse (htree:root history)
+                           (htree:current history)))
+           (content (cl-markup:markup*
+                     '(:h1 "History")
+                     tree))
+           (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                        (ps:lisp content)))))
+      (rpc-buffer-evaluate-javascript output-buffer insert-content)
+      (set-current-buffer output-buffer))))
+
 (define-command copy-url ()
   "Save current URL to clipboard."
   (copy-to-clipboard (url (current-buffer)))
@@ -299,7 +327,6 @@
   (let* ((active-window (rpc-window-active))
          (buffer (active-buffer active-window)))
     (set-window-title active-window buffer)
-    ;; TODO: Include title in buffer history.
     (htree:add-child (make-instance 'buffer-description
                                     :url url
                                     :title (title buffer))
