@@ -146,21 +146,21 @@
 (defun set-url-from-history (history-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
   (setf (htree:current (history (find-mode buffer 'web-mode))) history-node)
-  (set-url (htree:data history-node)))
+  (set-url (url (htree:data history-node))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (let* ((mode (find-mode buffer 'web-mode)))
     (htree:back (history mode))
     (match (htree:current (history mode))
-      ((guard n n) (set-url (htree:data n))))))
+      ((guard n n) (set-url (url (htree:data n)))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (let* ((mode (find-mode buffer 'web-mode)))
     (htree:forward (history mode))
     (match (htree:current (history mode))
-      ((guard n n) (set-url (htree:data n))))))
+      ((guard n n) (set-url (url (htree:data n)))))))
 
 (defun history-backwards-completion-fn (&optional (mode (find-mode
                                                         (current-buffer)
@@ -296,11 +296,15 @@
   (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
-  (let ((active-window (rpc-window-active)))
-    (set-window-title active-window
-                      (active-buffer active-window))
+  (let* ((active-window (rpc-window-active))
+         (buffer (active-buffer active-window)))
+    (set-window-title active-window buffer)
     ;; TODO: Include title in buffer history.
-    (htree:add-child url (next/web-mode::history mode))
+    (htree:add-child (make-instance 'buffer-description
+                                    :url url
+                                    :title (title buffer))
+                     (next/web-mode::history mode)
+                     :test #'equals)
     (when url
       (history-typed-add url))
     (funcall (session-store-function *interface*)))
@@ -309,4 +313,4 @@
   (echo-dismiss))
 
 (defmethod object-string ((node htree:node))
-  (format nil "~a" (htree:data node)))
+  (format nil "~a" (object-string (htree:data node))))

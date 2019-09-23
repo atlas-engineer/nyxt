@@ -3,6 +3,21 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+@export
+@export-accessors
+(defclass buffer-description ()
+  ((url :accessor url :initarg :url
+        :initform "" :type string)
+   (title :accessor title :initarg :title
+          :initform "" :type string)))
+
+(defmethod object-string ((buffer-description buffer-description))
+  (format nil "~a  ~a" (url buffer-description) (title buffer-description)))
+
+(defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
+  (and (string= (url bd1) (url bd2))
+       (string= (title bd1) (title bd2))))
+
 ;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
   (format nil "~a  ~a" (url buffer) (title buffer)))
