@@ -14,7 +14,7 @@ instabilities or feature wishes.
 
 # sorry for the one-line, github doesn't read #+begin_export html !
 
-#+html: <p align="center"> <a href="http://next.atlas.engineer/"><b>Homepage</b></a> | <a href="https://next.atlas.engineer/download"><b>Downloads</b></a> | <a href="https://next.atlas.engineer/documentation"><b>User Manual</b></a> | <a href="https://next.atlas.engineer/articles"><b>Articles</b></a> | Freenode IRC: #next-browser </p> 
+#+html: <p align="center"> <a href="http://next.atlas.engineer/"><b>Homepage</b></a> | <a href="https://next.atlas.engineer/download"><b>Downloads</b></a> | <a href="https://next.atlas.engineer/documentation"><b>User Manual</b></a> | <a href="https://next.atlas.engineer/articles"><b>Articles</b></a> | Freenode IRC: #next-browser </p>
 
 -----
 
@@ -56,6 +56,7 @@ systems provide packages for Next:
 
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
+- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.
 - [[https://guix.gnu.org][Guix]]: Install with =guix install next=.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
