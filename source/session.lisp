@@ -67,7 +67,7 @@ Currently we store the list of current URLs of all buffers."
              (loop for history in buffer-histories
                    for buffer = (make-buffer)
                    for mode = (find-mode buffer 'web-mode)
-                   do (set-url (htree:data (htree:current history)) :buffer buffer)
+                   do (set-url (url (htree:data (htree:current history))) :buffer buffer)
                    do (setf (next/web-mode:history mode) history))
              ;; TODO: Switch to the last active buffer.  We probably need to serialize *interface*.
              ;; Or else we could include `access-time' in the buffer class.
