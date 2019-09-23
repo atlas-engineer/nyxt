@@ -16,16 +16,10 @@
                   :initform (make-instance 'minibuffer)
                   :documentation "Buffer for displaying information such as
 current URL or event messages.")
-   (status-buffer-height :accessor status-buffer-height :initform 25
-                         :documentation "The height of the status buffer.")
+   (status-buffer-height :accessor status-buffer-height :initform 36
+                         :documentation "The height of the status buffer in pixels.")
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))
-   (minibuffer-closed-height :accessor minibuffer-closed-height :initform 25
-                             ;; TODO: Until we have a mode-line, it's best to
-                             ;; keep the closed-height equal to the echo-height
-                             ;; to avoid the stuttering, especially when
-                             ;; hovering over links.
-                             :documentation "The height of the minibuffer when closed.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
                            :documentation "The height of the minibuffer when open.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list

@@ -65,7 +65,7 @@
                         :documentation "Function that takes the user input
 string and returns a list of candidate strings")
    (callback :initarg :callback :accessor callback :initform nil
-                      :documentation "Function to call over the selected candidate.")
+             :documentation "Function to call over the selected candidate.")
    (callback-buffer :initarg :callback-buffer :accessor callback-buffer :initform (when *interface* (current-buffer))
                     :documentation "The active buffer when the minibuffer was
 brought up.  This can be useful to know which was the original buffer in the
@@ -99,10 +99,23 @@ If nil, no history is used.")
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
    (content :initform ""
             :documentation "The HTML content of the minibuffer.")
+   (minibuffer-font-size :initarg :minibuffer-font-size
+                         :accessor minibuffer-font-size
+                         :type string
+                         :initform "1em"
+                         :documentation "CSS Font size for the minibuffer.
+Value is a string, e.g. '1em'.
+You might want to configure the value on HiDPI screen.")
+   (minibuffer-line-height :initarg :minibuffer-line-height
+                           :accessor minibuffer-line-height
+                           :type string
+                           :initform ""
+                           :documentation "CSS Line height for the minibuffer.
+Value is a string, e.g. '1em'.
+You might want to configure the value on HiDPI screen.")
    (minibuffer-style :accessor minibuffer-style
                      :initform (cl-css:css
-                                '((* :font-family "monospace,monospace"
-                                   :font-size "14px")
+                                '((* :font-family "monospace,monospace")
                                   (body :border-top "4px solid dimgray"
                                    :margin "0"
                                    :padding "0 6px")
@@ -128,6 +141,11 @@ If nil, no history is used.")
 
 (defmethod content ((minibuffer minibuffer))
   (slot-value minibuffer 'content))
+
+(defmethod minibuffer-line-style ((minibuffer minibuffer))
+  (cl-css:css
+   `((* :font-size ,(minibuffer-font-size minibuffer)
+        :line-height ,(minibuffer-line-height minibuffer)))))
 
 (defmethod (setf content) (html-content minibuffer)
   "Set the `content' of the MINIBUFFER to HTML-CONTENT.
@@ -178,7 +196,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   (apply #'show
          (unless (completion-function minibuffer)
            ;; We don't need so much height since there is no candidate to display.
-           (list :height (minibuffer-closed-height (last-active-window *interface*))))))
+           (list :height (status-buffer-height (last-active-window *interface*))))))
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
@@ -234,7 +252,8 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   (setf (input-buffer-cursor minibuffer) 0)
   (setf (content minibuffer)
         (cl-markup:markup
-         (:head (:style (minibuffer-style minibuffer)))
+         (:head (:style (minibuffer-style minibuffer))
+                (:style (minibuffer-line-style minibuffer)))
          (:body
           (:div :id "container"
                 (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
@@ -284,9 +303,11 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
           ;; minibuffer.  Until then, we "blank" it.
           (echo "")                     ; Or echo-dismiss?
           (rpc-window-set-minibuffer-height
-                                            active-window
-                                            ;; TODO: Shouldn't it be status-buffer height?
-                                            (minibuffer-closed-height active-window))))))
+           active-window
+           ;; TODO: Until we have a mode-line, it's best to keep the
+           ;; closed-height equal to the echo-height to avoid the stuttering,
+           ;; especially when hovering over links.
+           (status-buffer-height active-window))))))
 
 (defun insert (characters &optional (minibuffer (current-minibuffer)))
   (setf (input-buffer minibuffer)
@@ -568,15 +589,14 @@ MESSAGE is a cl-markup list."
         (unless (active-minibuffers window)
           (erase-document status-buffer)
           (let ((style (cl-css:css
-                        '((* :font-family "monospace,monospace"
-                             :font-size "14px")
-                          (body :border-top "4px solid dimgray"
+                        `((body :border-top "4px solid dimgray"
                                 :margin "0"
                                 :padding "0 6px")
                           (p :margin "0")))))
             (setf (content status-buffer)
                   (cl-markup:markup
-                   (:head (:style style))
+                   (:head (:style style)
+                          (:style (minibuffer-line-style status-buffer)))
                    (:body
                     (:p text)))))
           (show :minibuffer status-buffer
