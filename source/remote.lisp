@@ -311,7 +311,7 @@ platform port get terminated.  The handlers take no argument.")
                      :documentation "Hook run after `rpc-window-make'.
 The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook :initform '() :type list
-                     :documentation "Hook run after `rpc-buffer-make'.
+                     :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
 The handlers take the buffer as argument.")
    (before-download-hook :accessor buffer-download-hook :initform '() :type list
                          :documentation "Hook run before downloading a URL.
