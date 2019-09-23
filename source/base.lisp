@@ -77,7 +77,7 @@ Set to '-' to read standard input instead."))
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
     (setf *options* options
           *free-args* free-args)
-    (apply #'start free-args))
+    (start :urls free-args))
   (handler-case (progn (run-loop (port *interface*))
                        (kill-interface *interface*))
     ;; Catch a C-c, don't print a full stacktrace.
@@ -186,13 +186,12 @@ This function is suitable as a `remote-interface' `startup-function'."
   (funcall (session-restore-function *interface*)))
 
 @export
-(defun start (&rest urls &key (init-file (init-file-path)))
+(defun start (&key urls
+                (init-file (init-file-path)))
   "Start Next and load URLS if any.
 A new `*interface*' is instantiated.
 The platform port is automatically started if needed.
 Finally, the `after-init-hook' of the `*interface*' is run."
-  (dolist (key (remove-if (complement #'keywordp) urls))
-    (remf urls key))
   (let ((startup-timestamp (local-time:now)))
     (log:info +version+)
     ;; Randomness should be seeded as early as possible to avoid generating
