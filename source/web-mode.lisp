@@ -299,7 +299,7 @@
 (define-command paste-from-ring ()
   "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
-                           (make-instance 'minibuffer
+                           (make-instance 'next::minibuffer
                                           :completion-function (ring-completion-fn
                                                                 (clipboard-ring *interface*)))))
     (%paste :input-text ring-item)))
