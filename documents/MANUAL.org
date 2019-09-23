@@ -318,11 +318,12 @@ and other information within your cache.
 
 ** Cloning Git repositories
 
-Use the  =git-clone= command to  clone a  Git repository to  disk. The
-clone command is run asynchronously.
+Use  the  =vcs-clone=  (alias  =git-clone=) command  to  clone  a  Git
+repository to  disk.  It asks  you for  the destination and  then runs
+asynchronously.
 
-By default, the git-clone command looks into the following directories
-for existing projects:
+By  default, the  command  looks into  the  following directories  for
+existing projects:
 
 : "~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects"
 
@@ -331,6 +332,8 @@ You can change the list like this:
 #+begin_src lisp
 (setf next/vcs:*vcs-projects-roots* '("~/my/directory"))
 #+end_src
+
+When there is one single choice, it doesn't ask for confirmation.
 
 
 * Advanced Topics

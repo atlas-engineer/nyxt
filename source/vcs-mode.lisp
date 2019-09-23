@@ -111,26 +111,25 @@ CLONE-URI: quri:uri object."
 (define-command vcs-clone ()
   "Clone the repository of the current url to disk (if any). Git only at the moment.
 Ask for which directory to clone to, expect if there is one single choice."
-  (with-result (url (buffer-get-url))
-    (let* ((uri (quri:uri url))
-           (root-name (first (str:split "/" (quri:uri-path uri) :omit-nulls t)))
-           (project-name (second (str:split "/" (quri:uri-path uri) :omit-nulls t)))
-           (clone-uri (quri:copy-uri uri))
-           (existing-repo (next/vcs::find-project-directory project-name))
-           target-dir)
-      (cond
-        ((not project-name)
-         (echo "Could not find the project name."))
-        (existing-repo
-         (echo "This repository exists in ~a" existing-repo))
-        ((= 1 (length next/vcs:*vcs-projects-roots*))
-         (setf target-dir (first next/vcs:*vcs-projects-roots*))
-         (next/vcs::clone project-name root-name target-dir clone-uri))
-        (t (with-result (target-dir (read-from-minibuffer
-                                     (make-instance 'minibuffer
-                                                    :input-prompt "Target directory:"
-                                                    :completion-function #'next/vcs::projects-roots-completion-function)))
-             (next/vcs::clone project-name root-name target-dir clone-uri)))))))
+  (let* ((uri (quri:uri (url (current-buffer))))
+         (root-name (first (str:split "/" (quri:uri-path uri) :omit-nulls t)))
+         (project-name (second (str:split "/" (quri:uri-path uri) :omit-nulls t)))
+         (clone-uri (quri:copy-uri uri))
+         (existing-repo (next/vcs::find-project-directory project-name))
+         target-dir)
+    (cond
+      ((not project-name)
+       (echo "Could not find the project name."))
+      (existing-repo
+       (echo "This repository exists in ~a" existing-repo))
+      ((= 1 (length next/vcs:*vcs-projects-roots*))
+       (setf target-dir (first next/vcs:*vcs-projects-roots*))
+       (next/vcs::clone project-name root-name target-dir clone-uri))
+      (t (with-result (target-dir (read-from-minibuffer
+                                   (make-instance 'minibuffer
+                                                  :input-prompt "Target directory:"
+                                                  :completion-function #'next/vcs::projects-roots-completion-function)))
+           (next/vcs::clone project-name root-name target-dir clone-uri))))))
 
 (define-command git-clone ()
   "Alias of `vcs-clone'."
