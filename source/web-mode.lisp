@@ -174,7 +174,7 @@
 (define-command history-backwards-query ()
   "Query parent URL to navigate back to."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'next::minibuffer
+                       (make-instance 'minibuffer
                                       :input-prompt "Navigate backwards to:"
                                       :completion-function (history-backwards-completion-fn))))
     (when input
@@ -193,7 +193,7 @@
 (define-command history-forwards-query ()
   "Query forward-URL to navigate to."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'next::minibuffer
+                       (make-instance 'minibuffer
                                       :input-prompt "Navigate forwards to:"
                                       :completion-function (history-forwards-completion-fn))))
     (when input
@@ -212,7 +212,7 @@
 (define-command history-forwards-all-query ()
   "Query URL to forward to, from all child branches."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'next::minibuffer
+                       (make-instance 'minibuffer
                                       :input-prompt "Navigate forwards to (all branches):"
                                       :completion-function (history-forwards-all-completion-fn))))
     (when input
@@ -231,7 +231,7 @@
 (define-command history-all-query ()
   "Query URL to go to, from the whole history."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'next::minibuffer
+                       (make-instance 'minibuffer
                                       :input-prompt "Navigate to:"
                                       :completion-function (history-all-completion-fn))))
     (when input
@@ -299,7 +299,7 @@
 (define-command paste-from-ring ()
   "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
-                           (make-instance 'next::minibuffer
+                           (make-instance 'minibuffer
                                           :completion-function (ring-completion-fn
                                                                 (clipboard-ring *interface*)))))
     (%paste :input-text ring-item)))

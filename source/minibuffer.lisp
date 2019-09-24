@@ -59,6 +59,8 @@
             :vi-normal map
             :vi-insert map)))))
 
+@export
+@export-accessors
 (defclass minibuffer (buffer)
   ((default-modes :initarg :default-modes :initform '(minibuffer-mode))
    (completion-function :initarg :completion-function :accessor completion-function :initform nil
