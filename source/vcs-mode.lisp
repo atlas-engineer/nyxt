@@ -4,8 +4,7 @@
   (:documentation "Interact with Git repositories.
 
 New command: vcs-clone (alias git-clone), to clone a VCS repository on
-disk (Git only at the moment). rst rst rts rst rst rst rst rt rst rt
-rtr tr strs t rst rs t
+disk (Git only at the moment).
 
 Change the `*vcs-projects-roots*' list to define where to look for
 existing repositories on disk.
@@ -102,8 +101,7 @@ CLONE-URI: quri:uri object."
                          (quri:render-uri clone-uri)
                          (next/vcs::concat-filenames target-dir project-name))))
     (error (c)
-      (log:warn "Error cloning ~a: ~a" project-name c)
-      (echo "There was an error cloning ~a." project-name))))
+      (echo-warning "Error cloning ~a: ~a" project-name c))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :next)
