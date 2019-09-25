@@ -1,6 +1,8 @@
 (uiop:define-package :next/vcs
     (:use :common-lisp :trivia :next)
-  (:export :*vcs-projects-roots*)
+  (:export :*vcs-projects-roots*
+           :*vcs-usernames-alist*
+           :*vcs-username*)
   (:documentation "Interact with Git repositories.
 
 New command: vcs-clone (alias git-clone), to clone a VCS repository on
@@ -10,6 +12,13 @@ Change the `*vcs-projects-roots*' list to define where to look for
 existing repositories on disk.
 
 The clone command is run asynchronously.
+
+One can set his username for Github and other forges.  It helps the
+clone command in doing the right thing©, such as using a git remote
+url instead of https.
+
+See `next/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
+
 
 ***********************************************************************
 *Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
@@ -26,11 +35,24 @@ changes, browse files in a text editor, use hooks...
 ;; Possible improvement: specify the depth to look for projects alongside the directory.
 ;; See magit-list-repositories.
 
-(defvar *github-username* ""
-  "Your Github username. Helps some commands to do things right.")
+(defvar *vcs-usernames-alist* '(("github.com" . "")
+                                ("gitlab.com" . "")
+                                ("bitbucket.org" . ""))
+  "Your VCS usernames on different forges. Helps some commands to do things right, such as cloning with a git remote url instead of https.
+The forge name should be a domain, such as github.com.")
+
+(defvar *vcs-username* ""
+  "Default username to use for forges if none is found in `*vcs-usernames-alist*'.")
 
 (defparameter *git-projects* '()
-  "Currently registered Git projects.")
+  "Currently registered Git projects (internal variable).")
+
+(defun vcs-username (forge)
+  "Find the username for this forge name. Look up into `*vcs-usernames-alist*' and fallback to `*vcs-username*'."
+  (let* ((username (alexandria:assoc-value *vcs-usernames-alist* forge :test #'string-equal)))
+    (if (str:blankp username)
+        *vcs-username*
+        username)))
 
 (defun search-git-directories (dir)
   "Search all directories that contain a .git/ subdirectory, one level deep inside DIR."
@@ -89,8 +111,8 @@ Create BASE if it doesn't exist."
   (fuzzy-match input *vcs-projects-roots*))
 
 (defun choose-clone-url (root-name project-name clone-uri)
-  "If we are cloning one repository of ours (ROOT-NAME equals `*github-username*'), then use a git remote url instead of https."
-  (if (and *github-username*
+  "If we are cloning one repository of ours (ROOT-NAME equals ` vcs-username'), then use a git remote url instead of https."
+  (if (and (next/vcs::vcs-username (quri:uri-domain clone-uri))
            (string= root-name *github-username*))
       (progn
         (log:debug "Let's clone ~a with a git remote url." project-name)

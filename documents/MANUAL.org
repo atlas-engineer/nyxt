@@ -335,6 +335,26 @@ You can change the list like this:
 
 When there is one single choice, it doesn't ask for confirmation.
 
+You can  set your username for  Github and other forges.  It helps the
+clone command  in doing the right  thing©, such as using  a git remote
+url instead of https.
+
+Set =next/vcs:*vcs-username*= as a default username.
+
+Change also the =*vcs-username-alist*=:
+
+#+begin_src lisp
+   (setf next/vcs:*vcs-usernames-alist* '(("github.com" . "")
+                                          ("gitlab.com" . "")
+                                          ("bitbucket.org" . "")))
+
+  ;; or
+  (push '("myforge.com" . "me") next/vcs::*vcs-usernames-alist*)
+
+#+end_src
+
+Note that the forge name should be a domain, such as github.com.
+
 
 * Advanced Topics
 ** Execute Extended Command
