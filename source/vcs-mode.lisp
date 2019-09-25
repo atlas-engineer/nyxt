@@ -26,6 +26,9 @@ changes, browse files in a text editor, use hooks...
 ;; Possible improvement: specify the depth to look for projects alongside the directory.
 ;; See magit-list-repositories.
 
+(defvar *github-username* ""
+  "Your Github username. Helps some commands to do things right.")
+
 (defparameter *git-projects* '()
   "Currently registered Git projects.")
 
@@ -85,6 +88,21 @@ Create BASE if it doesn't exist."
   "Fuzzy-match local project roots."
   (fuzzy-match input *vcs-projects-roots*))
 
+(defun choose-clone-url (root-name project-name clone-uri)
+  "If we are cloning one repository of ours (ROOT-NAME equals `*github-username*'), then use a git remote url instead of https."
+  (if (and *github-username*
+           (string= root-name *github-username*))
+      (progn
+        (log:debug "Let's clone ~a with a git remote url." project-name)
+        (format nil "git@~a:~a/~a.git"
+                (quri:uri-domain clone-uri)
+                root-name
+                project-name))
+      (progn
+        (setf (quri:uri-path clone-uri)
+              (str:concat "/" root-name "/" project-name))
+        (quri:render-uri clone-uri))))
+
 (defun clone (project-name root-name target-dir clone-uri)
   "Do the (Git) clone.
 PROJECT-NAME: string
@@ -93,12 +111,10 @@ TARGET-DIR: full path directory name (string)
 CLONE-URI: quri:uri object."
   (log:debug "Cloning ~a into ~a" project-name target-dir)
   (echo "Cloning ~a into ~a" project-name target-dir)
-  (setf (quri:uri-path clone-uri)
-        (str:concat "/" root-name "/" project-name))
   (handler-case (progn
                   (uiop:launch-program
                    (list "git" "clone"
-                         (quri:render-uri clone-uri)
+                         (choose-clone-url root-name project-name clone-uri)
                          (next/vcs::concat-filenames target-dir project-name))))
     (error (c)
       (echo-warning "Error cloning ~a: ~a" project-name c))))
