@@ -13,9 +13,9 @@ existing repositories on disk.
 
 The clone command is run asynchronously.
 
-One can set his username for Github and other forges.  It helps the
-clone command in doing the right thing©, such as using a git remote
-url instead of https.
+One can set their username for GitHub and other forges.  It helps the
+clone command in doing The Right Thing©, such as using a Git remote
+URL instead of HTTPS.
 
 See `next/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
 
@@ -24,7 +24,7 @@ See `next/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
 *Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
 ***********************************************************************
 
-We could clone on Github/Gitlab, be notified if we have unpushed
+We could clone on GitHub/GitLab, be notified if we have unpushed
 changes, browse files in a text editor, use hooks...
 "))
 
