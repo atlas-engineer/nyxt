@@ -15,6 +15,11 @@
     (lambda (input)
       (fuzzy-match input buffers))))
 
+(defmethod recreate-buffer (recent-buffer)
+  (let ((reopened-buffer (rpc-buffer-make :dead-buffer recent-buffer)))
+    (reload-buffer reopened-buffer)
+    (when (focus-on-reopened-buffer-p *interface*) (set-current-buffer reopened-buffer))))
+
 (define-command reopen-buffer ()
   "Reopen a deleted buffer via minibuffer input."
   (with-result (buffer (read-from-minibuffer
@@ -22,13 +27,12 @@
                                        :input-prompt "Reopen buffer:"
                                        :completion-function (recent-buffer-completion-fn))))
     (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
-    (reload-buffer (rpc-buffer-make :dead-buffer buffer))))
+    (recreate-buffer buffer)))
 
 (define-command undo-buffer-deletion ()
   "Open a new buffer with the URL of the most recently deleted buffer."
   (if (plusp (ring:item-count (recent-buffers *interface*)))
-      (reload-buffer (rpc-buffer-make
-                      :dead-buffer (ring:pop-most-recent (recent-buffers *interface*))))
+      (recreate-buffer (ring:pop-most-recent (recent-buffers *interface*)))
       (echo "There are no recently-deleted buffers.")))
 
 (define-key "C-/" #'reopen-buffer)
