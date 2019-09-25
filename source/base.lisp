@@ -222,7 +222,8 @@ Finally, the `after-init-hook' of the `*interface*' is run."
 (define-key "C-[" #'switch-buffer-previous)
 (define-key "C-]" #'switch-buffer-next)
 (define-key "C-x b" #'switch-buffer)
-(define-key "C-x k" #'delete-buffer)
+(define-key "C-x k" #'delete-current-buffer)
+(define-key "C-x C-k" #'delete-buffer)
 (define-key "C-x Left" #'switch-buffer-previous)
 (define-key "C-x Right" #'switch-buffer-next)
 (define-key "C-Page_Up" #'switch-buffer-previous)
@@ -232,7 +233,6 @@ Finally, the `after-init-hook' of the `*interface*' is run."
 (define-key "C-m k" #'bookmark-delete)
 (define-key "C-t" #'make-buffer-focus)
 (define-key "C-m u" #'bookmark-url)
-(define-key "C-x C-k" #'delete-current-buffer)
 ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
 (define-key "C-h v" #'variable-inspect)
 (define-key "C-h c" #'command-inspect)
