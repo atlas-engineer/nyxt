@@ -335,7 +335,7 @@ You can change the list like this:
 
 When there is one single choice, it doesn't ask for confirmation.
 
-You can  set your username for  Github and other forges.  It helps the
+You can  set your username for  GitHub and other forges.  It helps the
 clone command  in doing the right  thing©, such as using  a git remote
 url instead of https.
 
