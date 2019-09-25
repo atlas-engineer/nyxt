@@ -11,6 +11,9 @@ override_dh_auto_build:
 override_dh_usrlocal:
 	echo
 
+override_dh_strip:
+	echo "don't strip! It breaks the CL image."
+
 # XXX: clean binaries.
 # clean:
 	# dh_testdir
