@@ -74,6 +74,7 @@ static guint key_blacklist[] = {
 
 typedef struct {
 	GtkWidget *base;
+	GtkEntry *key_string_buffer;
 	Buffer *buffer;
 	char *identifier;
 	Minibuffer *minibuffer;
@@ -295,6 +296,21 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 		return FALSE;
 	}
 
+	Window *window = window_data;
+
+	// Generate the result of the current keypress into the dummy
+	// key_string_buffer (a GtkEntry that's never shown on screen) so that we can
+	// collect the printed representation of composed keypress, such as dead keys.
+	// This must come right after the unconsumed event test.
+	// TODO: Add support for "C-s-u" unicode input.
+	gtk_entry_im_context_filter_keypress(window->key_string_buffer, event);
+
+	// Don't forward dead keys.
+	if (g_str_has_prefix(gdk_keyval_name(event->keyval), "dead")) {
+		g_message("Skipping dead key"); // TODO: Turn to debug.
+		return TRUE;
+	}
+
 	// Don't pass modifiers alone, otherwise the core could see them as self-inserting
 	// character, which would print "Control_L" and the like in the minibuffer.
 	if (event->is_modifier) {
@@ -319,7 +335,11 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 
 	// event->string is deprecated but it's very much what we want.
 	gchar *keyval_string = event->string;
-	if ((event->state & GDK_CONTROL_MASK) &&
+
+	if (gtk_entry_get_text_length(window->key_string_buffer) >= 1) {
+		keyval_string = strdup(gtk_entry_get_text(window->key_string_buffer));
+		gtk_entry_set_text(window->key_string_buffer, "");
+	} else if ((event->state & GDK_CONTROL_MASK) &&
 		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
 		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
 		// The control modifier turns the A-Za-z event->string into ASCII control
@@ -483,6 +503,9 @@ Window *window_init() {
 	// Create an 800x600 window that will contain the browser instance
 	window->base = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window->base), 800, 600);
+
+	// Key string buffer is used to store the key event characters.
+	window->key_string_buffer = GTK_ENTRY(gtk_entry_new());
 
 	// Deprecated, but we want it to be "Next", not "Next-gtk-webkit".
 	gtk_window_set_wmclass(GTK_WINDOW(window->base), g_string_ascii_down(g_string_new(APPNAME))->str, APPNAME);
