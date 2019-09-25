@@ -7,6 +7,12 @@
                   :modes (cons 'help-mode
                                (get-default 'buffer 'default-modes))))
          (contents (cl-markup:markup
+                    (:h1 "Contributors")
+                    (:p "Let us know if you've contributed to the development of
+                    Next and would like to be included on this list.")
+                    (:ul
+                     (:li "Adom Hartell (@4t0m)")
+                     (:li "Solomon Bloch (@noogie13)"))
                     (:h1 "Crowdfunding backers")
                     (:p "Thank you to all who have supported and made Next possible!")
                     (:h2 "2018-11 campaign: *NIX Support")
