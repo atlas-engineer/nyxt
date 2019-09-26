@@ -130,7 +130,8 @@ platform ports might support this.")
                            :padding "1px 3px 0px 3px"
                            :text-align "center"
                            :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)"
-                           :border-radius "3px"))
+                           :border-radius "3px"
+                           :z-index (1- (expt 2 31))))
               :documentation "The style of the boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
