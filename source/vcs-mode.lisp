@@ -122,7 +122,7 @@ Create BASE if it doesn't exist."
   "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."
   (let ((username (next/vcs::vcs-username (quri:uri-domain clone-uri))))
     (if (and username
-               (string= root-name username))
+             (string= root-name username))
         (progn
           (log:info "Let's clone ~a with a git remote url." project-name)
           (format nil "git@~a:~a/~a.git"
