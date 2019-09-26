@@ -329,6 +329,11 @@
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
   (let* ((active-window (rpc-window-active))
          (buffer (active-buffer active-window)))
+    ;; TODO: Setting the default zoom level works with pure Javascript, but it
+    ;; can only be done after the URL has been loaded which is a bit of a
+    ;; kludge.  Instead we could add an RPC endpoint,
+    ;; e.g. webkit_web_view_set_zoom_level.
+    (unzoom-page :buffer buffer)
     (set-window-title active-window buffer)
     (htree:add-child (make-instance 'buffer-description
                                     :url url
