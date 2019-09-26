@@ -47,12 +47,20 @@ The forge name should be a domain, such as github.com.")
 (defparameter *git-projects* '()
   "Currently registered Git projects (internal variable).")
 
+(declaim (ftype (function (string)) vcs-username))
 (defun vcs-username (forge)
   "Find the username for this forge name. Look up into `*vcs-usernames-alist*' and fallback to `*vcs-username*'."
-  (let* ((username (alexandria:assoc-value *vcs-usernames-alist* forge :test #'string-equal)))
-    (if (str:blankp username)
-        *vcs-username*
-        username)))
+  (let* ((forge/username (assoc forge *vcs-usernames-alist* :test #'string-equal)))
+    (cond
+      ((null forge/username)
+       (log:info "VCS clone: no configuration found for ~a." forge)
+       nil)
+      ((not (str:blankp (cdr forge/username)))
+       (cdr forge/username))
+      ((not (str:blankp *vcs-username*))
+       *vcs-username*)
+      (t
+       nil))))
 
 (defun search-git-directories (dir)
   "Search all directories that contain a .git/ subdirectory, one level deep inside DIR."
@@ -111,19 +119,20 @@ Create BASE if it doesn't exist."
   (fuzzy-match input *vcs-projects-roots*))
 
 (defun choose-clone-url (root-name project-name clone-uri)
-  "If we are cloning one repository of ours (ROOT-NAME equals ` vcs-username'), then use a git remote url instead of https."
-  (if (and (next/vcs::vcs-username (quri:uri-domain clone-uri))
-           (string= root-name *vcs-username*))
-      (progn
-        (log:debug "Let's clone ~a with a git remote url." project-name)
-        (format nil "git@~a:~a/~a.git"
-                (quri:uri-domain clone-uri)
-                root-name
-                project-name))
-      (progn
-        (setf (quri:uri-path clone-uri)
-              (str:concat "/" root-name "/" project-name))
-        (quri:render-uri clone-uri))))
+  "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."
+  (let ((username (next/vcs::vcs-username (quri:uri-domain clone-uri))))
+    (if (and username
+               (string= root-name username))
+        (progn
+          (log:info "Let's clone ~a with a git remote url." project-name)
+          (format nil "git@~a:~a/~a.git"
+                  (quri:uri-domain clone-uri)
+                  root-name
+                  project-name))
+        (progn
+          (setf (quri:uri-path clone-uri)
+                (str:concat "/" root-name "/" project-name))
+          (quri:render-uri clone-uri)))))
 
 (defun clone (project-name root-name target-dir clone-uri)
   "Do the (Git) clone.
