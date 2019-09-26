@@ -66,12 +66,16 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                     collect (second (str:split " " line))))))
   (hosts hostlist))
 
+@export
+(defparameter *default-host-list*
+  (make-instance 'hostlist
+                 :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+                 :path (xdg-data-home "hostlist-stevenblack")))
+
 (define-mode blocker-mode ()
     "Enable blocking of blacklisted hosts."
     ((hostlists :accessor hostlists :initarg :hostlists
-                :initform (list (make-instance 'hostlist
-                                               :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-                                               :path (xdg-data-home "hostlist-stevenblack"))))
+                :initform (list *default-host-list*))
      (previous-blocker :initform nil
                        :documentation "Save the previous blocker to be restored
 when disabling the mode.")
