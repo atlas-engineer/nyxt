@@ -168,6 +168,13 @@ The handlers take the buffer as argument.")))
 (defparameter %%command-list '()
   "The list of known commands, for internal use only.")
 
+(defun mode-list ()
+  "Return the list of all namespaced mode symbols."
+  (delete-if (complement (lambda (m)
+                           (str:suffixp (list (symbol-name m) "-MODE")
+                                        "-MODE")))
+             (mapcar #'sym %%command-list)))
+
 (defun mode-command (mode-symbol)
   "Return the mode toggle command.
 We loop over `%%command-list' to find mode command since a mode may be
