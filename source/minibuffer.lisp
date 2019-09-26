@@ -15,8 +15,7 @@
 ;; TODO: Move minibuffer-mode to a separate package?
 (define-mode minibuffer-mode ()
   "Mode for the minibuffer."
-  ((name :accessor name :initform "minibuffer")
-   (keymap-schemes
+  ((keymap-schemes
     :initform
     (let ((map (make-keymap)))
       (define-key "HYPHEN" #'self-insert
