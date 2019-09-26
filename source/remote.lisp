@@ -256,7 +256,7 @@ Most recent messages are first.")
                      :documentation "The function run on startup.  It takes a
 list of URLs (strings) as argument (the command line positional arguments).  It
 is run after the platform port has been initialized and after the
-`after-init-hook' has run.")
+`*after-init-hook*' has run.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p :initform nil
@@ -303,9 +303,6 @@ into `session-path'.")
                              :documentation "The function which restores the session
 into `session-path'.")
    ;; Hooks follow:
-   (after-init-hook :accessor after-init-hook :initform '() :type list
-                    :documentation "Hook run after both `*interface*' and the
-platform port have started.  The handlers take no argument.")
    (before-exit-hook :accessor before-exit-hook :initform '() :type list
                      :documentation "Hook run before both `*interface*' and the
 platform port get terminated.  The handlers take no argument.")

@@ -181,7 +181,7 @@ This function is suitable as a `remote-interface' `startup-function'."
   "Start Next and load URLS if any.
 A new `*interface*' is instantiated.
 The platform port is automatically started if needed.
-Finally, the `after-init-hook' of the `*interface*' is run."
+Finally, run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now)))
     (log:info +version+)
     ;; Randomness should be seeded as early as possible to avoid generating
@@ -205,7 +205,7 @@ Finally, the `after-init-hook' of the `*interface*' is run."
           (initialize-port)
           (setf (slot-value *interface* 'init-time)
                 (local-time:timestamp-difference (local-time:now) startup-timestamp))
-          (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook))
+          (hooks:run-hook '*after-init-hook*)
           (funcall (startup-function *interface*) (or urls *free-args*)))
       (error (c)
         (log:error "~a~&~a" c
