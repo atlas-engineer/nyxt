@@ -54,6 +54,7 @@ WebKit and WebEngine/Blink.
 Please see the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating
 systems provide packages for Next:
 
+- Debian
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.
