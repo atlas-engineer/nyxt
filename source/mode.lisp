@@ -39,7 +39,6 @@ If :ACTIVATE is omitted, the mode is toggled."
                    (unless existing-instance
                      ;; TODO: Should we move mode to the front when it already exists?
                      (let ((new-mode (apply #'make-instance ',name
-                                            :name (format nil "~a" ',name)
                                             :buffer buffer
                                             args)))
                        (when (constructor new-mode)
@@ -57,8 +56,7 @@ If :ACTIVATE is omitted, the mode is toggled."
 
 (define-mode root-mode (t)
   "The root of all modes."
-  ((name :accessor name :initarg :name) ;; TODO: What's the use of mode's NAME slot?
-   (buffer :accessor buffer :initarg :buffer)
+  ((buffer :accessor buffer :initarg :buffer)
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
    (constructor :accessor constructor :initarg :constructor :type :function :initform nil
                 :documentation
@@ -134,6 +132,9 @@ It takes the mode as argument.")
 
                      (list :emacs emacs-map
                            :vi-normal vi-map)))))
+
+(defmethod object-string ((mode root-mode))
+  (symbol-name (class-name (class-of mode))))
 
 @export
 (defmethod find-mode ((buffer buffer) mode-symbol)
