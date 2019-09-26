@@ -52,7 +52,8 @@
 (define-parenscript %clicked-in-input? ()
   (ps:chain document active-element tag-name))
 
-(defmethod is-input-tag ((tag string))
+(declaim (ftype (function (string)) input-tag-p))
+(defun input-tag-p (tag)
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
 
@@ -66,10 +67,10 @@
     (%clicked-in-input?
      :callback (lambda (response)
                  (cond
-                   ((and (is-input-tag response)
+                   ((and (input-tag-p response)
                          (find-mode (buffer root-mode) 'vi-normal-mode))
                     (vi-insert-mode))
-                   ((and (not (is-input-tag response))
+                   ((and (not (input-tag-p response))
                          (find-mode (buffer root-mode) 'vi-insert-mode))
                     (vi-normal-mode)))))))
 
