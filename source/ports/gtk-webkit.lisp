@@ -1,3 +1,3 @@
 (in-package :next)
 
-(setf (get-default 'port 'name) "next-gtk-webkit")
+(setf +platform-port-command+ "next-gtk-webkit")

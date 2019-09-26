@@ -11,9 +11,6 @@
   "Return an empty keymap."
   (make-instance 'keymap :table (make-hash-table :test 'equal)))
 
-(defun keymapp (arg)
-  (typep arg 'keymap))
-
 (defmethod set-key ((map keymap) key-sequence-string command)
   "Bind KEY-SEQUENCE-STRING to COMMAND in MAP.
 
@@ -163,55 +160,26 @@ This is effectively the inverse of `serialize-key-chord-stack'."
            (setf (key-chord-stack *interface*) nil))
           (t (setf (key-chord-stack *interface*) nil)))))))
 
+(declaim (ftype (function (&rest t &key (:keymap keymap) &allow-other-keys)) define-key))
 @export
 (defun define-key (&rest key-command-pairs
-                   &key mode (scheme :emacs) keymap
+                   &key keymap
                    &allow-other-keys)
+  ;; TODO: Add option to define-key over the keymaps of all instantiated modes.
   "Bind KEY to COMMAND.
 The KEY command transforms key chord strings to valid key sequences.
-When MODE is provided (as a symbol referring to a class name), the binding is
-registered into the mode class and all future mode instances will use the
-binding.
-If MODE and KEYMAP are nil, the binding is registered into root-mode.
-
-If SCHEME is unspecified, it defaults to :EMACS.  If SCHEME is unspecified, it
-defaults to :EMACS.  SCHEME is only useful together with MODE, it does not have
-any effect on KEYMAP.
 
 Examples:
 
-  (define-key \"C-x C-c\" 'quit)
-  (define-key \"C-n\" 'history-forwards
-              :mode 'web-mode)
   ;; Only affect the first mode of the current buffer:
   (define-key \"C-c C-c\" 'reload
               :keymap (getf (keymap-schemes (first (modes (current-buffer)))) :emacs))"
-  (dolist (key (remove-if (complement #'keywordp) key-command-pairs))
-    (remf key-command-pairs key))
-  (when (and (null mode) (not (keymapp keymap)))
-    (setf mode 'root-mode))
-  (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
-        do (when mode
-             (setf (get-default mode 'keymap-schemes)
-                   (let* ((map-scheme (closer-mop:slot-definition-initform
-                                       (find-slot mode 'keymap-schemes)))
-                          ;; REVIEW: The return value of
-                          ;; slot-definition-initform should be evaluated, but
-                          ;; this only works if it is not a list.  Since we
-                          ;; use a property list for the map-scheme, we need
-                          ;; to check manually if it has been initialized.  We
-                          ;; could make this cleaner by using a dedicated
-                          ;; structure for map-scheme
-                          (map-scheme (if (ignore-errors (getf map-scheme :emacs))
-                                          map-scheme
-                                          (eval map-scheme)))
-                          (map (or (getf map-scheme scheme)
-                                   (make-keymap))))
-                     (set-key map key-sequence-string command)
-                     (setf (getf map-scheme scheme) map)
-                     map-scheme)))
-           (when (keymapp keymap)
-             (set-key keymap key-sequence-string command))))
+  ;; SBCL complains if we modify KEY-COMMAND-PAIRS directly, so we work on a copy.
+  (let ((key-command-pairs-copy (copy-list key-command-pairs)))
+    (dolist (key (remove-if (complement #'keywordp) key-command-pairs-copy))
+      (remf key-command-pairs-copy key))
+    (loop for (key-sequence-string command . rest) on key-command-pairs-copy by #'cddr
+          do (set-key keymap key-sequence-string command))))
 
 (defun key (key-sequence-string)
   "Turn KEY-SEQUENCE-STRING into a sequence of serialized key-chords.

@@ -32,7 +32,3 @@
                                               (ring:pop-most-recent (recent-buffers *interface*)))
                      :focus (focus-on-reopened-buffer-p *interface*))
       (echo "There are no recently-deleted buffers.")))
-
-(define-key "C-/" #'reopen-buffer)
-(define-key :scheme :vi-normal
-  "u" #'reopen-buffer)

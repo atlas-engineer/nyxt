@@ -1,6 +1,6 @@
 (in-package :next)
 
-(setf (get-default 'port 'name) "next-pyqt-webengine")
+(setf +platform-port-command+ "next-pyqt-webengine")
 
 (defmethod path ((port port))
   "Calculate the path of the port relative to the application bundle."
