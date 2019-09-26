@@ -114,9 +114,10 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   "Prompt the user for a URL and set it in a new focused buffer."
   (set-url-current-buffer :new-buffer-p t))
 
-(define-command reload-buffer (&optional (buffer (current-buffer)))
+(define-command reload-buffer (&key (buffer (current-buffer)) focus)
   "Reload of BUFFER or current buffer if unspecified."
-  (set-url (url buffer) :buffer buffer))
+  (set-url (url buffer) :buffer buffer)
+  (when focus (set-current-buffer buffer)))
 
 (define-deprecated-command reload-current-buffer ()
   "Deprecated by `reload-buffer'."
