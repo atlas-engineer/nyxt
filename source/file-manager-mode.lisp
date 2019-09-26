@@ -135,9 +135,6 @@ Note: this feature is alpha, get in touch for more!"
 
       (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
 
-
-(define-key "C-x C-f" #'open-file)
-(define-key :scheme :vi-normal "C-x C-f" #'open-file)
-
-;; This currently dosen't work, we must use the keymap at the mode definition:
-;; (define-key :mode 'file-manager-mode  "M-Left" #'display-parent-directory)
+;; TODO: Define those bindings globally.
+;; (define-key "C-x C-f" #'open-file)
+;; (define-key :scheme :vi-normal "C-x C-f" #'open-file)

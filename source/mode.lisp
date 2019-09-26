@@ -68,8 +68,6 @@ It takes the mode as argument.")
                :documentation
                "A lambda function which tears down the mode upon deactivation.
 It takes the mode as argument.")
-   (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes :type :list
-                   :initform (list :emacs (make-keymap)))
    (enable-hook :accessor enable-hook :initarg :enable-hook :type :list
                 :initform '()
                 :documentation "This hook is run when enabling the mode.
@@ -77,7 +75,63 @@ It takes the mode as argument.")
    (disable-hook :accessor disable-hook :initarg :disable-hook :type :list
                  :initform '()
                  :documentation "This hook is run when disabling the mode.
-It takes the mode as argument.")))
+It takes the mode as argument.")
+   (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes :type :list
+                   :initform
+                   (let ((vi-map (make-keymap))
+                         (emacs-map (make-keymap)))
+                     (define-key :keymap emacs-map
+                       "C-x C-c" #'quit
+                       "C-[" #'switch-buffer-previous
+                       "C-]" #'switch-buffer-next
+                       "C-x b" #'switch-buffer
+                       "C-x k" #'delete-current-buffer
+                       "C-x C-k" #'delete-buffer
+                       "C-x Left" #'switch-buffer-previous
+                       "C-x Right" #'switch-buffer-next
+                       "C-Page_Up" #'switch-buffer-previous
+                       "C-Page_Down" #'switch-buffer-next
+                       "C-l" #'set-url-current-buffer
+                       "M-l" #'set-url-new-buffer
+                       "C-m k" #'bookmark-delete
+                       "C-t" #'make-buffer-focus
+                       "C-m u" #'bookmark-url
+                       ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
+                       "C-h v" #'variable-inspect
+                       "C-h c" #'command-inspect
+                       "C-o" #'load-file
+                       "C-h s" #'start-swank
+                       "M-x" #'execute-command
+                       "M-:" #'command-evaluate
+                       "C-x 5 2" #'make-window
+                       "C-x 5 0" #'delete-window
+                       "C-/" #'reopen-buffer)
+
+                     (define-key :keymap vi-map
+                       "Z Z" #'quit
+                       "[" #'switch-buffer-previous
+                       "]" #'switch-buffer-next
+                       "C-Page_Up" #'switch-buffer-previous
+                       "C-Page_Down" #'switch-buffer-next
+                       "g b" #'switch-buffer
+                       "d" #'delete-buffer
+                       "D" #'delete-current-buffer
+                       "B" #'make-buffer-focus
+                       "o" #'set-url-current-buffer
+                       "O" #'set-url-new-buffer
+                       "m u" #'bookmark-url
+                       "m d" #'bookmark-delete
+                       "C-o" #'load-file
+                       "C-h v" #'variable-inspect
+                       "C-h c" #'command-inspect
+                       "C-h s" #'start-swank
+                       ":" #'execute-command
+                       "M-:" #'command-evaluate
+                       "W" #'make-window
+                       "u" #'reopen-buffer)
+
+                     (list :emacs emacs-map
+                           :vi-normal vi-map)))))
 
 @export
 (defmethod find-mode ((buffer buffer) mode-symbol)

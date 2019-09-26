@@ -112,7 +112,7 @@ If not platform port can be started or found, error out and quit."
                      "Make sure the platform port executable is either in the
 PATH or set in you ~/.config/next/init.lisp, for instance:
 
-     (setf (get-default 'port 'path)
+     (setf +platform-port-command+
          \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
           (uiop:quit))))
     (let ((max-attempts (/ (platform-port-poll-duration *interface*)
@@ -217,51 +217,3 @@ Finally, run the `*after-init-hook*'."
 (define-command next-init-time ()
   "Return the duration of Next initialization."
   (echo "~,2f seconds" (slot-value *interface* 'init-time)))
-
-(define-key "C-x C-c" #'quit)
-(define-key "C-[" #'switch-buffer-previous)
-(define-key "C-]" #'switch-buffer-next)
-(define-key "C-x b" #'switch-buffer)
-(define-key "C-x k" #'delete-current-buffer)
-(define-key "C-x C-k" #'delete-buffer)
-(define-key "C-x Left" #'switch-buffer-previous)
-(define-key "C-x Right" #'switch-buffer-next)
-(define-key "C-Page_Up" #'switch-buffer-previous)
-(define-key "C-Page_Down" #'switch-buffer-next)
-(define-key "C-l" #'set-url-current-buffer)
-(define-key "M-l" #'set-url-new-buffer)
-(define-key "C-m k" #'bookmark-delete)
-(define-key "C-t" #'make-buffer-focus)
-(define-key "C-m u" #'bookmark-url)
-;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
-(define-key "C-h v" #'variable-inspect)
-(define-key "C-h c" #'command-inspect)
-(define-key "C-o" #'load-file)
-(define-key "C-h s" #'start-swank)
-(define-key "M-x" #'execute-command)
-(define-key "M-:" #'command-evaluate)
-(define-key "C-x 5 2" #'make-window)
-(define-key "C-x 5 0" #'delete-window)
-;; (define-key "C-x q" (lambda () (echo-dismiss (current-minibuffer)))) ; TODO: Seems obsolete?
-
-(define-key :scheme :vi-normal
-  "Z Z" #'quit
-  "[" #'switch-buffer-previous
-  "]" #'switch-buffer-next
-  "C-Page_Up" #'switch-buffer-previous
-  "C-Page_Down" #'switch-buffer-next
-  "g b" #'switch-buffer
-  "d" #'delete-buffer
-  "D" #'delete-current-buffer
-  "B" #'make-buffer-focus
-  "o" #'set-url-current-buffer
-  "O" #'set-url-new-buffer
-  "m u" #'bookmark-url
-  "m d" #'bookmark-delete
-  "C-o" #'load-file
-  "C-h v" #'variable-inspect
-  "C-h c" #'command-inspect
-  "C-h s" #'start-swank
-  ":" #'execute-command
-  "M-:" #'command-evaluate
-  "W" #'make-window)

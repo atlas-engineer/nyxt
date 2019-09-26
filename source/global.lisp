@@ -48,6 +48,9 @@ is 4005, default set to 4006 in Next to avoid collisions).")
   "The command to start dbus, if necessary.
 The first string is the command, the other strings are the arguments.")
 
+(defparameter +platform-port-command+ "next-platform-port"
+  "The command to start the platform port.")
+
 @export
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))

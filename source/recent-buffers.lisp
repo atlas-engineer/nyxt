@@ -30,7 +30,3 @@
       (reload-buffer (rpc-buffer-make
                       :dead-buffer (ring:pop-most-recent (recent-buffers *interface*))))
       (echo "There are no recently-deleted buffers.")))
-
-(define-key "C-/" #'reopen-buffer)
-(define-key :scheme :vi-normal
-  "u" #'reopen-buffer)
