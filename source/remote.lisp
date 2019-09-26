@@ -304,6 +304,8 @@ platform port get terminated.  The handlers take no argument.")
 The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook :initform '() :type list
                      :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
+It is run before `initialize-modes' so that the default mode list can still be
+altered from the hooks.
 The handlers take the buffer as argument.")
    (minibuffer-make-hook :accessor minibuffer-make-hook :initform '() :type list
                          :documentation "Hook run after the `minibuffer' class
@@ -603,10 +605,12 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (incf (total-buffer-count *interface*))
     (%rpc-send "buffer_make" (id buffer)
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
+    ;; Run hooks before `initialize-modes' to allow for last-minute modification
+    ;; of the default modes.
+    (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
-    (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
     buffer))
 
 (defun %get-inactive-buffer ()
