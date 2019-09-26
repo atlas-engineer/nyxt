@@ -144,3 +144,36 @@ item in the list, jump to the first item."
     (if (< (+ active-buffer-index 1) (length buffers))
     (set-current-buffer (nth (+ active-buffer-index 1) buffers))
     (set-current-buffer (nth 0 buffers)))))
+
+(defun active-mode-completion-fn (buffer)
+  (let ((modes (modes buffer)))
+    (lambda (input)
+      (fuzzy-match input modes))))
+
+(defun inactive-mode-completion-fn (buffer)
+  (let ((all-non-minibuffer-modes (delete-if (lambda (m)
+                                (closer-mop:subclassp (find-class m)
+                                                      (find-class 'minibuffer-mode)))
+                              (mode-list)))
+        (modes (mapcar (lambda (m) (class-name (class-of m)))
+                       (modes buffer))))
+    (lambda (input)
+      (fuzzy-match input (set-difference all-non-minibuffer-modes modes)))))
+
+(define-command disable-mode-for-buffer (&key (buffer (current-buffer)))
+  "Choose a mode to disable."
+  (with-result (mode (read-from-minibuffer
+                      (make-instance 'minibuffer
+                                     :input-prompt "Disable mode:"
+                                     :completion-function (active-mode-completion-fn buffer))))
+    (funcall (sym (mode-command (class-name (class-of mode))))
+             :buffer buffer :activate nil)))
+
+(define-command enable-mode-for-buffer (&key (buffer (current-buffer)))
+  "Choose a mode to enable from a list of non-minibuffer modes."
+  (with-result (mode (read-from-minibuffer
+                      (make-instance 'minibuffer
+                                     :input-prompt "Enable mode:"
+                                     :completion-function (inactive-mode-completion-fn buffer))))
+    (funcall (sym (mode-command (class-name (class-of mode))))
+             :buffer buffer :activate t)))
