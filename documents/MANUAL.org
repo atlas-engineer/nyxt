@@ -50,7 +50,7 @@ provided.
 5. ~M->~: Jump to bottom of page
 6. ~M-<~: Jump to top of page
 
-_Note_:  Next also ships [[VI-style bindings][VI-style keybindings]].
+_Note_:  Next also ships [[#vi-style-bindings][VI-style keybindings]].
 
 ** Zooming page
 Use the zoom keybindings to make everything on a web page larger or smaller.
