@@ -19,6 +19,19 @@ It can be initialized with
 It's possible to run multiple interfaces of Next at the same time.  You can
 let-bind *interface* to temporarily switch interface.")
 
+(defvar *after-init-hook* nil
+  "The entry-point object to configure everything in Next.
+The hook takes no argument.
+
+This hook is run after the `*interface*' is instantiated and before the
+`startup-function' is run.
+
+Add a handler can be added with
+
+  (hooks:add-hook '*after-init-hook* #'my-foo-function)
+
+(Mind the quote.)")
+
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Next to avoid collisions).")
