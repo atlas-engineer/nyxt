@@ -15,8 +15,10 @@
   (format nil "~a  ~a" (url buffer-description) (title buffer-description)))
 
 (defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
-  (and (string= (url bd1) (url bd2))
-       (string= (title bd1) (title bd2))))
+  "Comparison function for buffer history entries.
+An entry is uniquely identified from its URL.  Not that we should not take the
+title into accound as it may vary from one load to the next."
+  (string= (url bd1) (url bd2)))
 
 ;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
