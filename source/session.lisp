@@ -48,6 +48,8 @@ Currently we store the list of current URLs of all buffers."
                                      :direction :input
                                      :if-does-not-exist nil)
                  (when file
+                   ;; TODO: This only works if current package is 'next'.  This
+                   ;; might not be the case when running from a REPL.
                    (s-serialization:deserialize-sexp
                     file)))
           ((list version buffer-histories)

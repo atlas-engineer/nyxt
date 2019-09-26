@@ -21,6 +21,7 @@ current URL or event messages.")
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
+                           :type integer
                            :documentation "The height of the minibuffer when open.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
@@ -307,6 +308,10 @@ The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook :initform '() :type list
                      :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
 The handlers take the buffer as argument.")
+   (minibuffer-make-hook :accessor minibuffer-make-hook :initform '() :type list
+                         :documentation "Hook run after the `minibuffer' class
+is instantiated and before initializing the minibuffer modes.
+The handlers take the minibuffer as argument.")
    (before-download-hook :accessor buffer-download-hook :initform '() :type list
                          :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")

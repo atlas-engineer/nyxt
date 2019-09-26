@@ -105,14 +105,14 @@ If nil, no history is used.")
                          :accessor minibuffer-font-size
                          :type string
                          :initform "1em"
-                         :documentation "CSS Font size for the minibuffer.
+                         :documentation "CSS font size for the minibuffer.
 Value is a string, e.g. '1em'.
 You might want to configure the value on HiDPI screen.")
    (minibuffer-line-height :initarg :minibuffer-line-height
                            :accessor minibuffer-line-height
                            :type string
                            :initform ""
-                           :documentation "CSS Line height for the minibuffer.
+                           :documentation "CSS line height for the minibuffer.
 Value is a string, e.g. '1em'.
 You might want to configure the value on HiDPI screen.")
    (minibuffer-style :accessor minibuffer-style
@@ -159,6 +159,7 @@ This runs a call"
                     (write (ps:lisp (content minibuffer)))))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
+  (hooks:run-hook (hooks:object-hook *interface* 'minibuffer-make-hook) minibuffer)
   ;; We don't want to show the input in the candidate list when invisible.
   (unless (completion-function minibuffer)
     ;; If we have no completion function, then we have no candidates beside
@@ -284,9 +285,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (let ((active-window (last-active-window *interface*)))
     (when minibuffer
       (rpc-window-set-minibuffer-height
-                                        active-window
-                                        (or height
-                                            (minibuffer-open-height active-window))))))
+       active-window
+       (or height
+           (minibuffer-open-height active-window))))))
 
 (defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
