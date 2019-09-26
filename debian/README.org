@@ -1,0 +1,20 @@
+Files to create a Debian package.
+
+Build with
+
+: debuild -us -uc
+
+Files are created one directory up.
+
+_status_: the .deb builds and works  (yay!), but we have one issue and
+one best practice to fix left.
+
+We have one error at the end:
+
+#+begin_quote
+dpkg-genbuildinfo: error: badly formed line in files list file, line 2
+#+end_quote
+
+
+https://www.debian.org/doc/manuals/maint-guide/
+https://www.debian.org/doc/manuals/maint-guide/dreq.en.html
