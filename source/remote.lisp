@@ -136,7 +136,7 @@ platform ports might support this.")
                            ;; TODO: The highest integer value is non-standard,
                            ;; so the following might depend on the web renderer.
                            ;; https://developer.mozilla.org/en-US/docs/Web/CSS/integer#Syntax
-                           :z-index (1- (expt 2 31))))
+                           :z-index #.(1- (expt 2 31))))
               :documentation "The style of the boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
