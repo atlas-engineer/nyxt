@@ -9,7 +9,6 @@ Homepage: http://next.atlas.engineer/
 Package: next
 Architecture: any
 Depends: sbcl (>= 1.4.2),
-         ${shlibs:Depends},
 	 libwebkit2gtk-4.0-dev (>= 2.24),
          default-dbus-session-bus | dbus-session-bus,
          glib-networking,
