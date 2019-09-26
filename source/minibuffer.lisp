@@ -101,6 +101,13 @@ If nil, no history is used.")
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
    (content :initform ""
             :documentation "The HTML content of the minibuffer.")
+   (max-lines :initarg :max-lines
+              :accessor max-lines
+              :type integer
+              :initform 8
+              :documentation "Max number of candidate lines to show.
+You will want edit this to match the changes done to `minibuffer-font-size',
+`minibuffer-line-height' and `minibuffer-open-height'.")
    (minibuffer-font-size :initarg :minibuffer-font-size
                          :accessor minibuffer-font-size
                          :type string
@@ -503,7 +510,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                (:span (subseq input-buffer-password (+ 1  cursor-index))))))))
 
 (defun generate-completion-html (completions cursor-index minibuffer)
-  (let ((lines 8))                      ; TODO: Compute lines dynamically.
+  (let ((lines (max-lines minibuffer))) ; TODO: Compute lines dynamically.
     (when (>= (- cursor-index (completion-head minibuffer)) lines)
       (setf (completion-head minibuffer)
             (min
