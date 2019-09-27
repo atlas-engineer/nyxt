@@ -41,7 +41,8 @@
         "C-x HYPHEN" #'zoom-out-page
         "C-x C-0" #'unzoom-page
         "C-x 0" #'unzoom-page
-        "C-r" #'reload-current-buffer
+        "C-R" #'reload-current-buffer
+        "C-r" #'reload-buffer
         "C-m o" #'set-url-from-bookmark
         "C-m s" #'bookmark-current-page
         "C-m g" #'bookmark-hint
@@ -114,7 +115,8 @@
         "z i" #'zoom-in-page
         "z o" #'zoom-out-page
         "z z" #'unzoom-page
-        "r" #'reload-current-buffer
+        "R" #'reload-current-buffer
+        "r" #'reload-buffer
         "m o" #'set-url-from-bookmark
         "m m" #'bookmark-current-page
         "m f" #'bookmark-hint
