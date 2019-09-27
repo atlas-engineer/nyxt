@@ -49,6 +49,9 @@
         "C-w" #'copy-candidate
         "TAB" #'insert-candidate
         "M-p" #'minibuffer-history
+        "C-SPACE" #'minibuffer-toggle-mark
+        "M-a" #'minibuffer-mark-all
+        "M-u" #'minibuffer-unmark-all
         :keymap map)
       (list :emacs map
             ;; TODO: We could have VI bindings for the minibuffer too.
@@ -61,20 +64,27 @@
 @export
 @export-accessors
 (defclass minibuffer (buffer)
-  ((default-modes :initarg :default-modes :initform '(minibuffer-mode))
-   (completion-function :initarg :completion-function :accessor completion-function :initform nil
+  ((default-modes :initarg :default-modes
+                  :initform '(minibuffer-mode))
+   (completion-function :initarg :completion-function :accessor completion-function
+                        :initform nil
                         :documentation "Function that takes the user input
 string and returns a list of candidate strings")
-   (callback :initarg :callback :accessor callback :initform nil
+   (callback :initarg :callback :accessor callback
+             :initform nil
              :documentation "Function to call over the selected candidate.")
-   (callback-buffer :initarg :callback-buffer :accessor callback-buffer :initform (when *interface* (current-buffer))
+   (callback-buffer :initarg :callback-buffer
+                    :accessor callback-buffer
+                    :initform (when *interface* (current-buffer))
                     :documentation "The active buffer when the minibuffer was
 brought up.  This can be useful to know which was the original buffer in the
 `callback' in case the buffer was changed.")
-   (setup-function :initarg :setup-function :accessor setup-function :initform #'setup-default
+   (setup-function :initarg :setup-function :accessor setup-function
+                   :initform #'setup-default
                    :documentation "Function of no argument that fills the
 `content' on when the minibuffer is created.  Called only once.")
-   (cleanup-function :initarg :cleanup-function :accessor cleanup-function :initform nil
+   (cleanup-function :initarg :cleanup-function :accessor cleanup-function
+                     :initform nil
                      :documentation "Function run after a completion has been selected.
 This should not rely on the minibuffer's content.")
    (empty-complete-immediate :initarg :empty-complete-immediate :accessor empty-complete-immediate ; TODO: Rename?
@@ -95,7 +105,13 @@ placeholder character.  This is useful to conceal passwords.")
             :type ring:ring
             :documentation "History of inputs for the minibuffer.
 If nil, no history is used.")
+   (multi-selection-p :initarg :multi-selection-p :accessor multi-selection-p
+                      :initform nil
+                      :type boolean
+                      :documentation "If non-nil, allow for selecting multiple
+candidates.")
    (completions :accessor completions :initform nil)
+   (marked-completions :accessor marked-completions :initform nil)
    (completion-head :accessor completion-head :initform 0)
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
    (content :initform ""
@@ -144,7 +160,13 @@ You might want to configure the value on HiDPI screen.")
                                    :margin "0")
                                   (li :padding "2px")
                                   (.selected :background-color "gray"
-                                   :color "white")))
+                                             :color "white")
+                                  ;; Make sure .selected and .marked can stack
+                                  ;; since the candidate can be both marked on
+                                  ;; selected.
+                                  (.marked :background-color "darkgray"
+                                           :font-weight "bold"
+                                           :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
 (defmethod content ((minibuffer minibuffer))
@@ -209,16 +231,22 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
-  (with-slots (callback empty-complete-immediate completions completion-cursor)
+  (with-slots (callback empty-complete-immediate completions completion-cursor
+               multi-selection-p marked-completions)
       minibuffer
-    (match (and completions
-                (nth completion-cursor completions))
-      ((guard completion completion)
+    (match (or marked-completions
+               (and completions
+                    (list (nth completion-cursor completions))))
+      ((guard completions completions)
        ;; Note that "immediate input" is also in completions, so it's caught here.
-       (setf completion (if (stringp completion)
-                            (str:replace-all " " " " completion)
-                            completion))
-       (funcall callback completion))))
+       (setf completions
+             (mapcar (lambda (completion) (if (stringp completion)
+                                              (str:replace-all " " " " completion)
+                                              completion))
+                     completions))
+       (funcall callback (if multi-selection-p
+                             completions
+                             (first completions))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
@@ -527,9 +555,11 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                  (cl-markup:markup
                                   (:li :class (cond
                                                 ((= i cursor-index) "selected")
+                                                ((member completion (marked-completions minibuffer)) "marked")
                                                 ((= i (completion-head minibuffer)) "head"))
                                        :id (cond
                                              ((= i cursor-index) "selected")
+                                             ((member completion (marked-completions minibuffer)) "marked")
                                              ((= i (completion-head minibuffer)) "head"))
                                        (object-string completion))))))))
 
@@ -660,7 +690,7 @@ Return most recent entry in RING."
          (object-string (nth completion-cursor completions)))))
 
 (define-command copy-candidate (&optional (minibuffer (current-minibuffer)))
-  "Paste clipboard text to input."
+  "Copy candidate to clipboard."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
       (trivial-clipboard:text candidate))))
@@ -680,7 +710,7 @@ Return most recent entry in RING."
                                             :test #'equal)))))
 
 (define-command minibuffer-history (&optional (minibuffer (current-minibuffer)))
-  "Paste clipboard text to input."
+  "Choose a minibuffer input history entry to insert as input."
   (when (history minibuffer)
     (with-result (input (read-from-minibuffer
                          (make-instance 'minibuffer
@@ -692,3 +722,30 @@ Return most recent entry in RING."
         (setf (input-buffer minibuffer) "")
         (setf (input-buffer-cursor minibuffer) 0)
         (insert input minibuffer)))))
+
+(define-command minibuffer-toggle-mark (&optional (minibuffer (current-minibuffer)))
+  "Toggle candidate.
+Only available if minibuffer `multi-selection-p' is non-nil."
+  (when (multi-selection-p minibuffer)
+    (with-slots (completions completion-cursor marked-completions) minibuffer
+      (let ((candidate (nth completion-cursor completions)))
+        (match (member candidate marked-completions)
+          ((guard n n) (setf marked-completions (delete candidate marked-completions)))
+          (_ (push candidate marked-completions)))))
+    (select-next minibuffer)))
+
+(define-command minibuffer-mark-all (&optional (minibuffer (current-minibuffer)))
+  "Mark all visible candidates.
+Only available if minibuffer `multi-selection-p' is non-nil."
+  (when (multi-selection-p minibuffer)
+    (with-slots (completions marked-completions) minibuffer
+      (setf marked-completions (union completions marked-completions)))
+    (update-display minibuffer)))
+
+(define-command minibuffer-unmark-all (&optional (minibuffer (current-minibuffer)))
+  "Mark all visible candidates.
+Only available if minibuffer `multi-selection-p' is non-nil."
+  (when (multi-selection-p minibuffer)
+    (with-slots (completions marked-completions) minibuffer
+      (setf marked-completions (set-difference marked-completions completions)))
+    (update-display minibuffer)))
