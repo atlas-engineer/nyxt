@@ -46,14 +46,14 @@ If :ACTIVATE is omitted, the mode is toggled."
                          (funcall (constructor new-mode) new-mode))
                        (push new-mode (modes buffer))
                        (hooks:run-hook (hooks:object-hook new-mode 'enable-hook) new-mode))
-                     (echo "~a enabled." ',name))
+                     (log:debug "~a enabled." ',name))
                    (when existing-instance
                      (hooks:run-hook (hooks:object-hook existing-instance 'disable-hook) existing-instance)
                      (when (destructor existing-instance)
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
                                                   (modes buffer)))
-                     (echo "~a disabled." ',name))))))))
+                     (log:debug "~a disabled." ',name))))))))
 
 (define-mode root-mode (t)
   "The root of all modes."
