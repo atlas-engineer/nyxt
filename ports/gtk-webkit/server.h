@@ -45,7 +45,17 @@ static GVariant *server_window_delete(GVariant *parameters) {
 	g_variant_get(parameters, "(&s)", &a_key);
 	g_message("Method parameter(s): %s", a_key);
 
-	g_hash_table_remove(state.windows, a_key);
+
+	Window *window = g_hash_table_lookup(state.windows, a_key);
+	// At this point the Lisp core is still waiting synchronously for an answer,
+	// so window_delete cannot notify synchronously either.
+	window->notify_synchronously = false;
+
+	if (window->base != NULL && !gtk_widget_in_destruction(window->base)) {
+		// Destroying the window will trigger the window_destroy_callback.
+		gtk_widget_destroy(window->base);
+	}
+
 	return g_variant_new("(b)", TRUE);
 }
 
