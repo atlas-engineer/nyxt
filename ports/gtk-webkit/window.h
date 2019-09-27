@@ -34,6 +34,7 @@ typedef struct {
 static KeyTranslation key_translations[] = {
 	{.old = "", .new = "BACKSPACE"},
 	{.old = " ", .new = "SPACE"},
+	{.old = "space", .new = "SPACE"},
 	{.old = "", .new = "DELETE"},
 	{.old = "-", .new = "HYPHEN"},
 	{.old = "", .new = "ESCAPE"},
