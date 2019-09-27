@@ -12,9 +12,7 @@ instabilities or feature wishes.
 
 -----
 
-# sorry for the one-liner, github doesn't read #+begin_export html !
-
-#+html: <p align="center"> <a href="http://next.atlas.engineer/"><b>Homepage</b></a> | <a href="https://next.atlas.engineer/download"><b>Downloads</b></a> | <a href="https://next.atlas.engineer/documentation"><b>User Manual</b></a> | <a href="https://next.atlas.engineer/articles"><b>Articles</b></a> | <a href="https://www.reddit.com/r/next_browser/"><b>Reddit</b></a> | Freenode IRC: #next-browser </p>
+#+html: <div align="center"> <a href="http://next.atlas.engineer/"><b>Homepage</b></a> | <a href="https://next.atlas.engineer/download"><b>Downloads</b></a> | <a href="https://next.atlas.engineer/documentation"><b>User Manual</b></a> | <a href="https://next.atlas.engineer/articles"><b>Articles</b></a> | <a href="https://www.reddit.com/r/next_browser/"><b>Reddit</b></a> | Freenode IRC: <a href="https://webchat.freenode.net/#next-browser">#next-browser</a> </div>
 
 -----
 
