@@ -59,16 +59,19 @@
 
 (define-command bookmark-delete ()
   "Delete a bookmark from the bookmark database."
-  (with-result (bookmark (read-from-minibuffer
+  (with-result (bookmarks (read-from-minibuffer
                           (make-instance 'minibuffer
-                                         :input-prompt "Delete bookmark:"
+                                         :input-prompt "Delete bookmark(s):"
+                                         :multi-selection-p t
                                          :completion-function 'bookmark-complete)))
-    (let ((db (sqlite:connect
-               (ensure-file-exists (bookmark-db-path *interface*)
-                                   #'%initialize-bookmark-db))))
-      (sqlite:execute-non-query
-       db "delete from bookmarks where url = ?" bookmark)
-      (sqlite:disconnect db))))
+    (dolist (bookmark bookmarks)
+      (let ((db (sqlite:connect
+                 (ensure-file-exists (bookmark-db-path *interface*)
+                                     #'%initialize-bookmark-db))))
+        ;; TODO: We should execute only one DB query.
+        (sqlite:execute-non-query
+         db "delete from bookmarks where url = ?" bookmark)
+        (sqlite:disconnect db)))))
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
