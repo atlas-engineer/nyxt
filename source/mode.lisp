@@ -102,7 +102,8 @@ It takes the mode as argument.")
                        "M-x" #'execute-command
                        "M-:" #'command-evaluate
                        "C-x 5 2" #'make-window
-                       "C-x 5 0" #'delete-window
+                       "C-x 5 0" #'delete-current-window
+                       "C-x 5 1" #'delete-window
                        "C-/" #'reopen-buffer
                        "C-x C-f" #'open-file)
 
@@ -127,6 +128,9 @@ It takes the mode as argument.")
                        ":" #'execute-command
                        "M-:" #'command-evaluate
                        "W" #'make-window
+                       "C-w C-w" #'make-window
+                       "C-w q" #'delete-current-window
+                       "C-w C-q" #'delete-window
                        "u" #'reopen-buffer
                        "C-x C-f" #'open-file)
 
