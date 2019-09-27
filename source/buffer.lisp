@@ -32,12 +32,13 @@ MODES is a list of mode symbols."
   "Deprecated by `make-buffer'."
   (make-buffer))
 
-(defun buffer-completion-fn ()
+(defun buffer-completion-fn (&key current-is-last-p)
   (let ((buffers (alexandria:hash-table-values (buffers *interface*)))
         (active-buffer (current-buffer)))
-    ;; For commodity, the current buffer shouldn't be the first one on the list.
-    (when (equal (first buffers)
-                 active-buffer)
+    (when (and current-is-last-p
+               (equal (first buffers)
+                      active-buffer))
+      ;; TODO: No need for copy-seq since buffers is already a copy, isn't it?
       (setf buffers (alexandria:rotate (copy-seq buffers) -1)))
     (lambda (input)
       (fuzzy-match input buffers))))
@@ -47,7 +48,8 @@ MODES is a list of mode symbols."
   (with-result (buffer (read-from-minibuffer
                         (make-instance 'minibuffer
                                        :input-prompt "Switch to buffer:"
-                                       :completion-function (buffer-completion-fn))))
+                                       ;; For commodity, the current buffer shouldn't be the first one on the list.
+                                       :completion-function (buffer-completion-fn :current-is-last-p t))))
     (set-current-buffer buffer)))
 
 (define-command make-buffer-focus ()
