@@ -17,12 +17,14 @@
 
 (define-command reopen-buffer ()
   "Reopen a deleted buffer via minibuffer input."
-  (with-result (buffer (read-from-minibuffer
-                        (make-instance 'minibuffer
-                                       :input-prompt "Reopen buffer:"
-                                       :completion-function (recent-buffer-completion-fn))))
-    (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
-    (reload-current-buffer (rpc-buffer-make :dead-buffer buffer))))
+  (with-result (buffers (read-from-minibuffer
+                         (make-instance 'minibuffer
+                                        :input-prompt "Reopen buffer:"
+                                        :multi-selection-p t
+                                        :completion-function (recent-buffer-completion-fn))))
+    (dolist (buffer buffers)
+      (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
+      (reload-current-buffer (rpc-buffer-make :dead-buffer buffer)))))
 
 (define-command undo-buffer-deletion ()
   "Open a new buffer with the URL of the most recently deleted buffer."
