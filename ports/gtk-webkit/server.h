@@ -220,6 +220,11 @@ static GVariant *server_minibuffer_evaluate(GVariant *parameters) {
 	g_debug("Javascript: \"%s\"", javascript);
 
 	Window *window = g_hash_table_lookup(state.windows, window_id);
+	if (!window) {
+		g_warning("Non-existent window %s", window_id);
+		return g_variant_new("(s)", "");
+	}
+
 	Minibuffer *minibuffer = window->minibuffer;
 	char *callback_id = minibuffer_evaluate(minibuffer, javascript);
 	g_message("Method result(s): callback id %s", callback_id);
