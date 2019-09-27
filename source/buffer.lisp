@@ -62,17 +62,18 @@ MODES is a list of mode symbols."
 
 (define-command delete-buffer ()
   "Delete the buffer via minibuffer input."
-  (with-result (buffer (read-from-minibuffer
-                        (make-instance 'minibuffer
-                                       :input-prompt "Kill buffer:"
-                                       :completion-function (buffer-completion-fn))))
-    (rpc-buffer-delete buffer)))
+  (with-result (buffers (read-from-minibuffer
+                         (make-instance 'minibuffer
+                                        :input-prompt "Delete buffer(s):"
+                                        :multi-selection-p t
+                                        :completion-function (buffer-completion-fn))))
+    (mapcar #'rpc-buffer-delete buffers)))
 
-(define-command delete-current-buffer ()
+(define-command delete-current-buffer (&optional (buffer (current-buffer)))
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
-  (rpc-buffer-delete (current-buffer)))
+  (rpc-buffer-delete buffer))
 
 ;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.
 @export
