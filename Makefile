@@ -43,6 +43,12 @@ next: $(lisp_files) clean-fasls quicklisp-update
 		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure the 'xclip' binary and the 'sqlite' and 'libfixposix' development files are available on your system." && exit 1)
 
 
+.PHONY: debian
+# Install Debian 10 dependencies.
+debian:
+	apt install -y sbcl libwebkit2gtk-4.0-dev default-dbus-session-bus glib-networking sqlite gsettings-desktop-schemas libfixposix-dev libgstreamer1.0-0 gir1.2-gst-plugins-base-1.0 xclip
+
+
 .PHONY: app-bundle
 app-bundle: next
 	mkdir -p ./Next.app/Contents/MacOS
@@ -149,7 +155,7 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)' || true
 
-## This rule only update the internal distribution.
+## This rule only updates the internal distribution.
 .PHONY: quicklisp-update
 quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 	$(NEXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
