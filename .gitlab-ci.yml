@@ -9,7 +9,8 @@ stages:
 
 before_script:
   - apt-get update -qy
-  - apt-get install -y sbcl
+  - apt-get install -y make curl g++
+  - make debian
 
 build-next:
   stage: build
