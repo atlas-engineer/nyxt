@@ -1,7 +1,4 @@
-image: daewok/lisp-devel
-# We don't need a working quicklisp anymore,
-# Next's Makefile handles it, so we could use another image.
-
+image: debian:buster
 # We can try to build this image locally with gitlab-runner
 # https://docs.gitlab.com/runner/install/linux-manually.html
 # Command:
@@ -9,6 +6,10 @@ image: daewok/lisp-devel
 
 stages:
   - build
+
+before_script:
+  - apt-get update -qy
+  - apt-get install -y sbcl
 
 build-next:
   stage: build
