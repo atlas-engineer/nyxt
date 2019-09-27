@@ -45,6 +45,7 @@
         "C-r" #'reload-buffer
         "C-m o" #'set-url-from-bookmark
         "C-m s" #'bookmark-current-page
+        "C-m C-s" #'bookmark-page
         "C-m g" #'bookmark-hint
         "C-s s" #'search-buffer
         "C-s n" #'next-search-hint
@@ -118,7 +119,8 @@
         "R" #'reload-current-buffer
         "r" #'reload-buffer
         "m o" #'set-url-from-bookmark
-        "m m" #'bookmark-current-page
+        "m m" #'bookmark-page
+        "m M" #'bookmark-current-page
         "m f" #'bookmark-hint
         "y u" #'copy-url
         "y t" #'copy-title

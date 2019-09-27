@@ -32,15 +32,24 @@
      db "insert into bookmarks (url) values (?)" url)
     (sqlite:disconnect db)))
 
-(define-command bookmark-current-page ()
+(define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the currently opened page in the active buffer."
   (let ((db (sqlite:connect
              (ensure-file-exists (bookmark-db-path *interface*)
                                  #'%initialize-bookmark-db))))
     (sqlite:execute-non-query
-     db "insert into bookmarks (url) values (?)" (url (current-buffer)))
+     db "insert into bookmarks (url) values (?)" (url buffer))
     (sqlite:disconnect db))
   (echo "Current page bookmarked."))
+
+(define-command bookmark-page ()
+  "Bookmark the currently opened page in the active buffer."
+  (with-result (buffers (read-from-minibuffer
+                         (make-instance 'minibuffer
+                                        :input-prompt "Bookmark URL from buffer(s):"
+                                        :multi-selection-p t
+                                        :completion-function (buffer-completion-fn))))
+    (mapcar #'bookmark-current-page buffers)))
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
