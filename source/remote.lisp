@@ -27,7 +27,7 @@ current URL or event messages.")
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
    (window-delete-hook :accessor window-delete-hook :initform '() :type list
-                       :documentation "Hook run before `rpc-window-delete' takes effect.
+                       :documentation "Hook run after `rpc-window-delete' takes effect.
 The handlers take the window as argument.")))
 
 @export
@@ -541,10 +541,9 @@ Run INTERFACE's `window-make-hook' over the created window."
 @export
 (defun rpc-window-delete (window)
   "Delete a window object and remove it from the hash of windows.
-Run INTERFACE's `window-delete-hook' over WINDOW before deleting it."
-  (hooks:run-hook (hooks:object-hook window 'window-delete-hook) window)
-  (%rpc-send "window_delete" (id window))
-  (remhash (id window) (windows *interface*)))
+Once deleted, the `window-will-close' RPC endpoint will be called, running
+INTERFACE's `window-delete-hook' over WINDOW."
+  (%rpc-send "window_delete" (id window)))
 
 @export
 (defun rpc-window-active ()
@@ -806,9 +805,12 @@ TODO: Only booleans are supported for now."
     ()
   (:interface +core-interface+)
   (:name "window_will_close")
-  (let ((windows (windows *interface*)))
+  (let* ((windows (windows *interface*))
+         (window (gethash window-id windows)))
     (log:debug "Closing window ID ~a (new total: ~a)" window-id
-               (1- (length (alexandria:hash-table-values windows))))
+               (1- (hash-table-count windows)))
+    (hooks:run-hook (hooks:object-hook window 'window-delete-hook)
+                    window)
     (remhash window-id windows))
   (values))
 
