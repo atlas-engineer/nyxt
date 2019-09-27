@@ -80,6 +80,7 @@ typedef struct {
 	char *identifier;
 	Minibuffer *minibuffer;
 	int minibuffer_height;
+	gboolean notify_synchronously;
 } Window;
 
 typedef struct {
@@ -110,13 +111,25 @@ void window_delete(Window *window) {
 		GVariant *window_id = g_variant_new("(s)", window->identifier);
 		g_message("RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
 
-		// Send synchronously so that if this is the last window, we don't quit
-		// GTK before actually sending the message.
-		g_dbus_connection_call_sync(state.connection,
-			CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
-			method_name,
-			window_id,
-			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+		if (window->notify_synchronously) {
+			// Send synchronously so that if this is the last window, we don't quit
+			// GTK before actually sending the message.
+			g_dbus_connection_call_sync(state.connection,
+				CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+				method_name,
+				window_id,
+				NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+		} else {
+			// If Lisp core instructed to close the window, then it is still
+			// synchronously waiting on the RPC return at this point, so we can't send
+			// synchronously lest we enter a dead lock.  But that's OK, because the
+			// Lisp core should never delete the last window.
+			g_dbus_connection_call(state.connection,
+				CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+				method_name,
+				window_id,
+				NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+		}
 
 		if (error != NULL) {
 			g_warning("Error in RPC call: %s", error->message);
@@ -124,12 +137,6 @@ void window_delete(Window *window) {
 			// If the RPC request fails, we should still close the window on the GTK
 			// side.
 		}
-	}
-
-	if (window->base != NULL && !gtk_widget_in_destruction(window->base)) {
-		// If window was destroyed externally, then this is already done.
-		g_debug("Destroy window widget %s", window->identifier);
-		gtk_widget_destroy(window->base);
 	}
 
 	minibuffer_delete(window->minibuffer);
@@ -500,6 +507,8 @@ Window *window_init() {
 		g_error("Failed to allocate window");
 		exit(1);
 	}
+
+	window->notify_synchronously = true;
 
 	// Create an 800x600 window that will contain the browser instance
 	window->base = gtk_window_new(GTK_WINDOW_TOPLEVEL);
