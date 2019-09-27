@@ -2,13 +2,32 @@
 
 (in-package :next)
 
+(defmethod object-string ((window window))
+  (match (active-buffer window)
+    ((guard b b)
+     (object-string b))
+    (_ (format nil "<#WINDOW ~a>" (id window)))))
+
+(defun window-completion-fn ()
+  (let ((windows (alexandria:hash-table-values (windows *interface*))))
+    (lambda (input)
+      (fuzzy-match input windows))))
+
 (define-command delete-window ()
-  "Delete the currently active window."
-  (let ((active-window (rpc-window-active))
-        (window-count (hash-table-count (windows *interface*))))
-    (cond ((and active-window (> window-count 1))
-           (rpc-window-delete active-window))
-          (active-window
+  "Delete the selected window(s)."
+  (with-result (windows (read-from-minibuffer
+                         (make-instance 'minibuffer
+                                        :input-prompt "Delete window(s):"
+                                        :multi-selection-p t
+                                        :completion-function (window-completion-fn))))
+    (mapcar #'delete-current-window windows)))
+
+(define-command delete-current-window (&optional (window (rpc-window-active)))
+  "Delete WINDOW, or the currently active window if unspecified."
+  (let ((window-count (hash-table-count (windows *interface*))))
+    (cond ((and window (> window-count 1))
+           (rpc-window-delete window))
+          (window
            (echo "Can't delete sole window.")))))
 
 (define-command make-window (&optional buffer)
