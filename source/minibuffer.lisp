@@ -743,7 +743,7 @@ Only available if minibuffer `multi-selection-p' is non-nil."
     (update-display minibuffer)))
 
 (define-command minibuffer-unmark-all (&optional (minibuffer (current-minibuffer)))
-  "Mark all visible candidates.
+  "Unmark all visible candidates.
 Only available if minibuffer `multi-selection-p' is non-nil."
   (when (multi-selection-p minibuffer)
     (with-slots (completions marked-completions) minibuffer
