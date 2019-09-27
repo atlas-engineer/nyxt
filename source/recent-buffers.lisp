@@ -22,11 +22,11 @@
                                        :input-prompt "Reopen buffer:"
                                        :completion-function (recent-buffer-completion-fn))))
     (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
-    (reload-buffer (rpc-buffer-make :dead-buffer buffer))))
+    (reload-current-buffer (rpc-buffer-make :dead-buffer buffer))))
 
 (define-command undo-buffer-deletion ()
   "Open a new buffer with the URL of the most recently deleted buffer."
   (if (plusp (ring:item-count (recent-buffers *interface*)))
-      (reload-buffer (rpc-buffer-make
+      (reload-current-buffer (rpc-buffer-make
                       :dead-buffer (ring:pop-most-recent (recent-buffers *interface*))))
       (echo "There are no recently-deleted buffers.")))
