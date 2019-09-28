@@ -134,7 +134,3 @@ Note: this feature is alpha, get in touch for more!"
                                            :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn)))
 
       (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
-
-;; TODO: Define those bindings globally.
-;; (define-key "C-x C-f" #'open-file)
-;; (define-key :scheme :vi-normal "C-x C-f" #'open-file)

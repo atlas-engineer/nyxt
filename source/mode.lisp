@@ -105,7 +105,8 @@ It takes the mode as argument.")
                        "M-:" #'command-evaluate
                        "C-x 5 2" #'make-window
                        "C-x 5 0" #'delete-window
-                       "C-/" #'reopen-buffer)
+                       "C-/" #'reopen-buffer
+                       "C-x C-f" #'open-file)
 
                      (define-key :keymap vi-map
                        "Z Z" #'quit
@@ -128,7 +129,8 @@ It takes the mode as argument.")
                        ":" #'execute-command
                        "M-:" #'command-evaluate
                        "W" #'make-window
-                       "u" #'reopen-buffer)
+                       "u" #'reopen-buffer
+                       "C-x C-f" #'open-file)
 
                      (list :emacs emacs-map
                            :vi-normal vi-map)))))
