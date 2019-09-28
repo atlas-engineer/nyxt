@@ -667,7 +667,16 @@ interpreted by `format'."
   ;; document when we have a mode-line we can fully hide the minibuffer.
   ;; (erase-document minibuffer)
   ;; TODO: We should only display this default text until we have a mode-line.
-  (echo "~a — ~a" (url (current-buffer)) (title (current-buffer))))
+  (let ((buffer (current-buffer)))
+    (%echo-status (format nil "[~{~a~^ ~}] ~a — ~a"
+                          (mapcar (lambda (m) (str:replace-all "-mode" ""
+                                                               (str:downcase
+                                                                (class-name (class-of m)))))
+                                  (modes buffer))
+                          (url buffer)
+                          (title buffer))
+                  ;; Don't add to the *Messages* buffer:
+                  :message nil)))
 
 (declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
 @export
