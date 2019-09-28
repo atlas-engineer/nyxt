@@ -572,7 +572,10 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                       (scroll-into-view false))))))
 
 (defun %echo-status (text &key (message (list text))
-                            (window (when *interface* (rpc-window-active)))
+                          ;; Need to ignore RPC errors in case platform port is
+                          ;; not available and we use this function before
+                          ;; checking for it.
+                            (window (ignore-errors (when *interface* (rpc-window-active))))
                             (status-buffer (when window (status-buffer window))))
   "Echo TEXT in the status buffer.
 MESSAGE is a cl-markup list."

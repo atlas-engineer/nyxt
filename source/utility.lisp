@@ -313,13 +313,10 @@ Optional second argument FLAVOR controls the units and the display format:
                             :error-output '(:string :stripped t)
                             :ignore-error-status t)
         (if (not (= 0 code))
-            (progn
-              (log:error "~a error: ~a" program error)
-              (uiop:quit))
+            (error "~a error: ~a" program error)
             output))
     (error ()
-      (log:error "~s not found." program)
-      (uiop:quit))))
+      (error "~a not found" program))))
 
 ;; TODO: Backport upstream?  See https://github.com/scymtym/architecture.hooks/issues/2.
 ;; TODO: For now the user has no way to choose between `hooks:run-hook' and

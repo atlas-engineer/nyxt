@@ -389,8 +389,8 @@ current buffer."
         (echo-warning "Download error: ~a" c)
         nil))))
 
-(declaim (ftype (function (remote-interface)) ensure-dbus-session))
-(defun ensure-dbus-session (interface)
+(declaim (ftype (function (remote-interface &key (:non-interactive boolean))) ensure-dbus-session))
+(defun ensure-dbus-session (interface &key non-interactive)
   "Start a dbus session if necessary."
   (handler-case
       (dbus:with-open-bus (bus (session-server-addresses))
@@ -404,7 +404,12 @@ current buffer."
       (match (mapcar (lambda (s) (str:split "=" s :limit 2))
                      (str:split "
 "
-                                (apply #'run-program-to-string +dbus-launch-command+)))
+                                (handler-case
+                                    (apply #'run-program-to-string +dbus-launch-command+)
+                                  (error (c)
+                                    (log:error "Failed to run ~a: ~a" +dbus-launch-command+ c)
+                                    (when non-interactive
+                                      (uiop:quit))))))
         ((list (list _ address) (list _ pid))
          (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
                    (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")
@@ -415,9 +420,11 @@ current buffer."
          (setf (dbus-pid interface) (parse-integer pid)))))))
 
 (defmethod initialize-instance :after ((interface remote-interface)
-                                       &key &allow-other-keys)
+                                       &key non-interactive
+                                       &allow-other-keys)
   "Start the RPC server."
-  (ensure-dbus-session interface)
+  (ensure-dbus-session interface
+                       :non-interactive non-interactive)
   (let ((lock (bt:make-lock))
         (condition (bt:make-condition-variable)))
     (setf (active-connection interface)
@@ -440,7 +447,8 @@ Make sure to kill existing processes or if you were running Next from a REPL, ki
 
 (next::kill-interface next::*interface*)
 ")))
-                     (uiop:quit))))
+                     (when non-interactive
+                       (uiop:quit)))))
                (log:info "Bus connection name: ~A" (dbus:bus-name bus))
                (bt:condition-notify condition)
                (dbus:publish-objects bus)))))

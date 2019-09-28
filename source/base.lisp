@@ -77,7 +77,8 @@ Set to '-' to read standard input instead."))
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
     (setf *options* options
           *free-args* free-args)
-    (start :urls free-args))
+    (start :urls free-args
+           :non-interactive t))
   (handler-case (progn (run-loop (port *interface*))
                        (kill-interface *interface*))
     ;; Catch a C-c, don't print a full stacktrace.
@@ -98,23 +99,14 @@ Set to '-' to read standard input instead."))
 
 (defun initialize-port ()
   "Start platform port if necessary.
-If not platform port can be started or found, error out and quit."
+Error out if no platform port can be started."
   ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
   ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
   (let ((port-running (ping-platform-port)))
     (unless (or port-running
                 (and (port *interface*)
                      (running-process (port *interface*))))
-      (handler-case
-          (run-program (port *interface*))
-        (error (c)
-          (log:error "~a~&~a" c
-                     "Make sure the platform port executable is either in the
-PATH or set in you ~/.config/next/init.lisp, for instance:
-
-     (setf (get-default 'port 'path)
-         \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
-          (uiop:quit))))
+      (run-program (port *interface*)))
     (let ((max-attempts (/ (platform-port-poll-duration *interface*)
                            (platform-port-poll-interval *interface*))))
       ;; Poll the platform port in case it takes some time to start up.
@@ -123,13 +115,10 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
             do (unless (setf port-running (ping-platform-port))
                  (sleep (platform-port-poll-interval *interface*))))
       (unless port-running
-        (log:error "Could not connect to platform port: ~a" (path (port *interface*)))
-        (handler-case
-            (progn
-              (kill-port (port *interface*))
-              (kill-interface *interface*))
-          (error (c) (log:error "~a" c)))
-        (uiop:quit)))))
+        (progn
+          (kill-port (port *interface*))
+          (kill-interface *interface*))
+        (error "Could not connect to platform port: ~a" (path (port *interface*)))))))
 
 (defun init-file-path (&optional (filename "init.lisp"))
   ;; This can't be a regular variable or else the value will be hard-coded at
@@ -187,7 +176,8 @@ This function is suitable as a `remote-interface' `startup-function'."
 
 @export
 (defun start (&key urls
-                (init-file (init-file-path)))
+                (init-file (init-file-path))
+                non-interactive)
   "Start Next and load URLS if any.
 A new `*interface*' is instantiated.
 The platform port is automatically started if needed.
@@ -205,14 +195,27 @@ Finally, the `after-init-hook' of the `*interface*' is run."
       ;; (make-instance 'remote-interface) will be run while an existing
       ;; *interface* is still floating around.
       (setf *interface* nil))
-    (setf *interface* (make-instance 'remote-interface :startup-timestamp startup-timestamp))
+    (setf *interface* (make-instance 'remote-interface
+                                     :non-interactive non-interactive
+                                     :startup-timestamp startup-timestamp))
     ;; Start the port after the interface so that we don't overwrite the log when
     ;; an instance is already running.
-    (initialize-port)
-    (setf (slot-value *interface* 'init-time)
-          (local-time:timestamp-difference (local-time:now) startup-timestamp))
-    (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook))
-    (funcall (startup-function *interface*) (or urls *free-args*))))
+    (handler-case
+        (progn
+          (initialize-port)
+          (setf (slot-value *interface* 'init-time)
+                (local-time:timestamp-difference (local-time:now) startup-timestamp))
+          (hooks:run-hook (hooks:object-hook *interface* 'after-init-hook))
+          (funcall (startup-function *interface*) (or urls *free-args*)))
+      (error (c)
+        (log:error "~a~&~a" c
+                   "Make sure the platform port executable is either in the
+PATH or set in you ~/.config/next/init.lisp, for instance:
+
+     (setf (get-default 'port 'path)
+         \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
+        (when non-interactive
+          (uiop:quit))))))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."
