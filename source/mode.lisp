@@ -32,6 +32,8 @@ If :ACTIVATE is omitted, the mode is toggled."
                                       (activate t explicit?)
                                       &allow-other-keys)
            ,docstring
+           (unless (typep buffer 'buffer)
+             (error ,(format nil "Mode command ~a called on empty buffer" name)))
            (let ((existing-instance (find-mode buffer ',name)))
                (unless explicit?
                  (setf activate (not existing-instance)))
