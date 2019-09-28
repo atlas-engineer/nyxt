@@ -142,7 +142,7 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
                         (loop for object = (read *standard-input* nil :eof)
                               until (eq object :eof)
                               do (eval object)))
-                      (when (probe-file file)
+                      (when (uiop:file-exists-p file)
                         (format t "~&Loading configuration from ~s...~&" file)
                         (load file)))
       (error (c)
