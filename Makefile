@@ -29,7 +29,8 @@ next: $(lisp_files) quicklisp-update
 		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(asdf:make :next)' \
-		--eval '(uiop:quit)' || printf "\n%s\n%s\n" "Compilation failed." "Make sure the 'xclip' binary and the 'sqlite' and 'libfixposix' development files are available on your system."
+		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure the 'xclip' binary and the 'sqlite' and 'libfixposix' development files are available on your system." && exit 1)
+
 
 .PHONY: app-bundle
 app-bundle: next
@@ -48,7 +49,7 @@ install-app-bundle:
 
 .PHONY: gtk-webkit
 gtk-webkit:
-	$(MAKE) -C ports/gtk-webkit || printf "\n%s\n%s\n" "Compilation failed." "Make sure 'webkitgtk >=2.22' development files are available on your system."
+	$(MAKE) -C ports/gtk-webkit || (printf "\n%s\n%s\n" "Compilation failed." "Make sure 'webkitgtk >=2.22' development files are available on your system." && exit 1)
 
 .PHONY: all
 all:
