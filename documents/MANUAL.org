@@ -33,7 +33,6 @@ end-user allowing for infinite customization.
   - [[#getting-input-from-the-user][Getting input from the user]]
   - [[#network-resource-dispatch-including-ad-blocking][Network resource dispatch (including ad-blocking)]]
   - [[#styles][Styles]]
-  - [[#proxy][Proxy]]
   - [[#hooks][Hooks]]
   - [[#startup-behaviour][Startup behaviour]]
 
@@ -113,18 +112,26 @@ The =~a= in the search engine URI is a place holder for the search pattern.
 To set the list of search engines, do:
 
 #+begin_src lisp
-(setf (get-default 'remote-interface 'search-engines)
-      '(("default" . "https://duckduckgo.com/?q=~a")
-        ("yt" . "https://www.youtube.com/results?search_query=~a")
-        ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a")))
+(defun my-interface-defaults ()
+  (setf (search-engines *interface*)
+        '(("default" . "https://duckduckgo.com/?q=~a")
+          ("yt" . "https://www.youtube.com/results?search_query=~a")
+          ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 and to append a search engine do the list, you can do
 
 #+begin_src lisp
-(nconc (get-default 'remote-interface 'search-engines))
-       '(("q" . "http://quickdocs.org/search?q=~a")
-         ("yt" . "https://www.youtube.com/results?search_query=~a")))
+(defun my-interface-defaults ()
+  (setf (search-engines *interface*)
+        (append
+         '(("yt" . "https://www.youtube.com/results?search_query=~a")
+           ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
+         (search-engines *interface*))))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 ** Jumping to Headings
@@ -194,6 +201,21 @@ same instance of a mode (by default at least).
 Modes are typically defined in their separate Common Lisp package.  This allows
 for defining mode-specific functions and variables in a separate namespace.
 
+
+To enable a mode for all buffers by default, add the mode to the list of
+default modes:
+
+#+begin_src lisp
+(defun my-buffer-defaults (buffer)
+  (pushnew 'vi-normal-mode (default-modes buffer)))
+
+(defun my-interface-defaults ()
+  (hooks:add-to-hook (hooks:object-hook *interface* 'buffer-make-hook)
+                     #'my-buffer-defaults))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
+#+end_src
+
 *** Windows vs. buffers
 
 When opening a link from an external program, or when clicking on a link while
@@ -207,7 +229,10 @@ You can change the default behaviour by adding the following to your
 configuration file:
 
 #+begin_src lisp
-(setf (get-default 'remote-interface 'open-external-link-in-new-window-p) t)
+(defun my-interface-defaults ()
+  (setf (open-external-link-in-new-window-p *interface*) t))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 ** Searching
@@ -302,19 +327,23 @@ and other information within your cache.
 
 ** Proxy and Tor support
 
- You  can  surf  the  web  behind   a  proxy  by  issuing  the  command
- =proxy-mode=. Its default server address is "socks5://127.0.0.1:9050",
- meaning it works out of the box for Tor.
+You  can  surf  the  web  behind   a  proxy  by  issuing  the  command
+=proxy-mode=. Its default server address is =socks5://127.0.0.1:9050=,
+meaning it works out of the box for Tor.
 
- You can change it with:
+You can change the default proxy with
 
- #+begin_src lisp
- (setf (get-default 'proxy-mode 'server-address) "socks5://your.i.p:port")
- #+end_src
+#+begin_src lisp
+(setf next/proxy-mode:*default-proxy*
+ (make-instance 'proxy :server-address  "socks5://your.i.p:port"))
+#+end_src
 
- At the time of writing, there  are differences between the Gtk and the
- Qt port: the Gtk one sets  proxies per-buffer, whereas it is currently
- global for the Qt one.
+At the time of writing, there  are differences between the Gtk and the
+Qt port: the Gtk one sets  proxies per-buffer, whereas it is currently
+global for the Qt one.
+
+To enable proxy for all buffers by default, add the proxy mode to the default
+modes.  See [[Modes]] for details.
 
 ** Cloning Git repositories
 
@@ -350,7 +379,6 @@ Change also the =*vcs-username-alist*=:
 
   ;; or
   (push '("myforge.com" . "me") next/vcs::*vcs-usernames-alist*)
-
 #+end_src
 
 Note that the forge name should be a domain, such as github.com.
@@ -416,36 +444,26 @@ Following the package declaration, you can write or override any
 functions and variables.
 
 ** Keybinding
-Keys are defined with the ~define-key~ command.  The command takes multiple forms:
+Keys are defined with the ~define-key~ command.
 
 #+NAME: define key
 #+BEGIN_SRC lisp
-;; Bind multiple keys in root-mode using the default scheme.
-(define-key
-  "C-x o" 'example
-  "SPACE" 'scroll-page-down)
-
-;; Bind in root-mode using the vi-normal scheme.
-(define-key :scheme :vi-normal
-  "C-x o" 'example
-  "SPACE" 'scroll-page-down)
-
-;; Bind in document-mode using the vi-normal scheme.
-(define-key :mode document-mode :scheme :vi-normal
-  "C-x C-c s" 'save-history)
+(define-key :keymap *my-keymap*
+  "C-x o" #'example
+  "SPACE" #'scroll-page-down)
 
 ;; Bind in current buffer's first mode.  This won't affect other buffers.
 (define-key :keymap (getf (keymap-scheme
-                           (first (modes (active-buffer *interface*))))
+                           (find-mode (current-buffer) 'my-mode))
                           :emacs)
-  "C-x C-c h" 'hello-local-world)
+  "C-x C-c h" #'hello-local-world)
 #+END_SRC
 
-Read on for an explanation of the meanings of =:keymap= and =:scheme=.
+Read on for an explanation of the meanings of =:keymap=.
 
 In the previous example, the key sequence =C-x o= would invoke the ~example~
 command.
-If later on another command is bound to =C-x=, all other bindings starting with
+If later another command is bound to =C-x=, all other bindings starting with
 =C-x= will be overridden.
 
 The following keys exist as special keys:
@@ -467,12 +485,7 @@ buffer slot.  When a key is hit, Next looks up the keymaps of the corresponding
 scheme for all active modes in the current buffer.
 
 You can change the default binding scheme for any buffer by setting
-~current-key-scheme~ to the appropriate value.  For instance to set VI bindings
-by default:
-
-#+begin_src lisp
-(add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
-#+end_src
+~current-key-scheme~ to the appropriate value.
 
 *** Override map
 
@@ -602,12 +615,22 @@ To add a list, add an instance of the ~hostlist~ class to the ~hostlists~ slot.
 For instance, you can add this to your =init.lisp=.
 
 #+begin_src lisp
-(add-to-default-list
- (make-hostlist
-  :hosts '("platform.twitter.com"
-           "syndication.twitter.com"
-           "m.media-amazon.com"))
- 'blocker-mode 'hostlists)
+(defvar *my-blocked-hosts*
+  (next/blocker-mode:make-hostlist
+   :hosts '("platform.twitter.com"
+            "syndication.twitter.com"
+            "m.media-amazon.com")))
+
+(defun my-buffer-defaults (buffer)
+  (next/blocker-mode:blocker-mode
+   :hostlists (list *my-blocked-hosts* next/blocker-mode:*default-host-list*)
+   :buffer buffer))
+
+(defun my-interface-defaults ()
+  (hooks:add-to-hook (hooks:object-hook *interface* 'buffer-make-hook)
+                     #'my-buffer-defaults))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 The =hostlist= class also support fetching the list from a URL.
@@ -625,39 +648,24 @@ Like any other slot, you can set the default value from your ~init.lisp~.  For i
 to change the style to using upper case, no gradiant, and square boxes:
 
 #+begin_src lisp
-(setf (get-default 'buffer 'box-style)
-      (cl-css:inline-css
-       '(:background "#C38A22"
-         :color "black"
-         :border "1px #C38A22 solid"
-         :font-weight "bold"
-         :padding "1px 3px 0px 3px"
-         :padding "1px 3px 0px 3px"
-         :position "absolute"
-         :text-align "center"
-         :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)")))
-#+end_src
+(defun my-buffer-defaults (buffer)
+  (setf (box-style buffer)
+        (cl-css:inline-css
+         '(:background "#C38A22"
+           :color "black"
+           :border "1px #C38A22 solid"
+           :font-weight "bold"
+           :padding "1px 3px 0px 3px"
+           :padding "1px 3px 0px 3px"
+           :position "absolute"
+           :text-align "center"
+           :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)"))))
 
-** Proxy
+(defun my-interface-defaults ()
+  (hooks:add-to-hook (hooks:object-hook *interface* 'buffer-make-hook)
+                     #'my-buffer-defaults))
 
-To use a network proxy for the current buffer, you can enable ~proxy-mode~.
-The mode has some configurable slots:
-- ~server-address~: The address of the proxy server,
-  e.g. ~"socks5://127.0.0.1:9050"~ for your local Tor daemon.
-- ~whitelist~: A list of hosts for which proxy won't be used.
-
-If you want to change the default in your user initialization file, you can do
-something like:
-
-#+begin_src lisp
-(setf (get-default 'proxy-mode 'server-address) "http://10.0.1.254")
-#+end_src
-
-To enable the proxy for all buffers by default, add the mode to the list of
-default modes:
-
-#+begin_src lisp
-(add-to-default-list 'proxy-mode 'buffer 'default-modes)
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 ** Hooks
@@ -671,7 +679,7 @@ specific actions in arbitrary ways.
 
 Many hooks are executed at different points in Next, among others:
 
-- Global hooks, such as ~load-hook~ hook and ~after-init-hook~.
+- Global hooks, such as ~*after-init-hook*~.
 - Window / buffer related hooks.
 - Commands "before" and "after" hooks.
 - Modes "enable" and "disable" hooks.
@@ -689,7 +697,16 @@ can set a hook like the following in you =~/.config/next/init.lisp=:
             (log:info "Switching to old Reddit: ~a" new-url)
             new-url))
         url)))
-(add-to-default-list #'old-reddit-hook 'buffer 'load-hook)
+
+(defun my-buffer-defaults (buffer)
+  (hooks:add-to-hook (hooks:object-hook buffer 'load-hook)
+                     #'old-reddit-hook))
+
+(defun my-interface-defaults ()
+  (hooks:add-to-hook (hooks:object-hook *interface* 'buffer-make-hook)
+                     #'my-buffer-defaults))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 Some hooks like the above example expect a return value, so it's important to
