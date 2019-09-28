@@ -251,7 +251,7 @@ Most recent messages are first.")
    (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (ring:make))
    (recent-buffers :accessor recent-buffers :initform (ring:make :size 50)
                    :documentation "A ring that keeps track of deleted buffers.")
-   (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p :initform t)
+   (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p :initform t) ; TODO: Replace this with minibuffer Helm-style actions.
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)

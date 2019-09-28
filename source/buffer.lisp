@@ -121,8 +121,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."
-  (set-url (url buffer) :buffer buffer)
-  (when focus (set-current-buffer buffer)))
+  (set-url (url buffer) :buffer buffer))
 
 (define-command reload-buffer ()
   "Reload of BUFFER or current buffer if unspecified."
