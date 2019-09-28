@@ -148,8 +148,9 @@
 (declaim (ftype (function (htree:node &optional buffer)) set-url-from-history))
 (defun set-url-from-history (history-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
-  (setf (htree:current (history (find-mode buffer 'web-mode))) history-node)
-  (set-url (url (htree:data history-node))))
+  (when history-node
+    (setf (htree:current (history (find-mode buffer 'web-mode))) history-node)
+    (set-url (url (htree:data history-node)))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
@@ -352,4 +353,4 @@
   (echo-dismiss))
 
 (defmethod object-string ((node htree:node))
-  (format nil "~a" (object-string (htree:data node))))
+  (format nil "~a" (object-string (when node (htree:data node)))))
