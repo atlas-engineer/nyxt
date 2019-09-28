@@ -190,7 +190,7 @@ Finally, run the `*after-init-hook*'."
     ;; Randomness should be seeded as early as possible to avoid generating
     ;; deterministic tokens.
     (setf *random-state* (make-random-state t))
-    (load-lisp-file init-file)
+    (load-lisp-file init-file :interactive (not non-interactive))
     ;; create the interface object
     (when *interface*
       (kill-interface *interface*)
