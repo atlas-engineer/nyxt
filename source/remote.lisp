@@ -929,7 +929,11 @@ Deal with URL with the following rules:
     ((guard w w) (active-buffer w))
     (_ (log:warn "No active window."))))
 
-(declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer))
+(declaim (ftype (function (buffer)) set-current-buffer))
+;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.
+;; But we can't use "minibuffer" here since it's not declared yet.  It will
+;; crash Next if we call set-current-buffer before instantiating the first
+;; minibuffer.
 @export
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
