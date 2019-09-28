@@ -478,15 +478,14 @@ For an array of string, that would be \"as\"."
 
 (declaim (ftype (function (string &rest t)) %rpc-send))
 (defun %rpc-send (method &rest args)
-  ;; TODO: Make %rpc-send asynchronous?
-  ;; If the platform port ever hangs, the next %rpc-send will hang the Lisp core too.
-  ;; TODO: Catch connection errors and execution errors.
-  (handler-case
-      (dbus:with-open-bus (bus (session-server-addresses))
-        (dbus:with-introspected-object (platform-port bus +platform-port-object-path+ +platform-port-name+)
-          (apply #'platform-port +platform-port-interface+ method args)))
-    (error (c)
-      (log:error "RPC connection failed: ~a" c))))
+  "Call RPC method METHOD over ARGS."
+  ;; D-Bus calls should raise an error so that we can detect errors when telling
+  ;; another instance to open URLs.
+  (dbus:with-open-bus (bus (session-server-addresses))
+    ;; TODO: Make %rpc-send asynchronous?
+    ;; If the platform port ever hangs, the next %rpc-send will hang the Lisp core too.
+    (dbus:with-introspected-object (platform-port bus +platform-port-object-path+ +platform-port-name+)
+      (apply #'platform-port +platform-port-interface+ method args))))
 
 ;; TODO: Move to separate packages:
 ;; - next-rpc
@@ -808,17 +807,22 @@ TODO: Only booleans are supported for now."
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
-  (let ((first-buffer (first (mapcar
-                              (lambda (url)
-                                (let ((buffer (make-buffer)))
-                                  (set-url url :buffer buffer)
-                                  buffer))
-                              urls))))
-    (unless no-focus
-      (if (open-external-link-in-new-window-p *interface*)
-          (let ((window (rpc-window-make)))
-            (window-set-active-buffer window first-buffer))
-     (set-current-buffer first-buffer)))))
+  (handler-case
+      (let ((first-buffer (first (mapcar
+                                  (lambda (url)
+                                    (let ((buffer (make-buffer)))
+                                      (set-url url :buffer buffer)
+                                      buffer))
+                                  urls))))
+        (unless no-focus
+          (if (open-external-link-in-new-window-p *interface*)
+              (let ((window (rpc-window-make)))
+                (window-set-active-buffer window first-buffer))
+              (set-current-buffer first-buffer))))
+    (error (c)
+      ;; Forward error or else external caller of "next foo.url" won't know
+      ;; there was an error.
+      (error "Could not make buffer to open ~a: ~a~%Is the platform port running?" urls c))))
 
 @export
 (defmethod resource-query-default ((buffer buffer)
