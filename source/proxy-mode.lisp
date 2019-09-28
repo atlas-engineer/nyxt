@@ -2,15 +2,22 @@
     (:use :common-lisp :trivia :next)
   (:documentation "Proxy mode (e.g. Tor et al.)"))
 (in-package :next/proxy-mode)
+(annot:enable-annot-syntax)
+
+@export
+(defparameter *default-proxy*
+  (make-instance 'proxy
+                 :server-address "socks5://127.0.0.1:9050"
+                 :whitelist '("localhost" "localhost:8080")
+                 :proxied-downloads-p t))
 
 (define-mode proxy-mode ()
   "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."
-  ((proxy :accessor proxy :type proxy
-          :initform (make-instance 'proxy
-                                   :server-address "socks5://127.0.0.1:9050"
-                                   :whitelist '("localhost" "localhost:8080")
-                                   :proxied-downloads-p t))
+  ((proxy :initarg :proxy
+          :accessor proxy
+          :type proxy
+          :initform *default-proxy*)
    (destructor
     :initform
     (lambda (mode)
