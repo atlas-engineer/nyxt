@@ -71,7 +71,9 @@ Set to '-' to read standard input instead.")
   (multiple-value-bind (options free-args)
       (parse-cli-args)
     (when (getf options :help)
-      (opts:describe :prefix "Next command line usage:")
+      (opts:describe :prefix "Next command line usage:
+
+next [options] [urls]")
       (uiop:quit))
     (when (getf options :version)
       (format t "Next ~a~&" +version+)
