@@ -255,6 +255,7 @@ Most recent messages are first.")
    (windows :accessor windows :initform (make-hash-table :test #'equal))
    (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
+   (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
    (total-buffer-count :accessor total-buffer-count :initform 0)
    (startup-function :accessor startup-function
@@ -266,7 +267,8 @@ is run after the platform port has been initialized and after the
 `*after-init-hook*' has run.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
-   (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p :initform nil
+   (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
+                                       :initform nil
                                        :documentation "When open links from an external program, or
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
@@ -568,7 +570,10 @@ Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
   (hooks:run-hook (hooks:object-hook window 'window-set-active-buffer-hook) window buffer)
   (%rpc-send "window_set_active_buffer" (id window) (id buffer))
-  (setf (active-buffer window) buffer))
+  (setf (active-buffer window) buffer)
+  (when (and window buffer)
+    (setf (last-active-buffer *interface*) buffer))
+  buffer)
 
 (declaim (ftype (function (window buffer)) set-window-title))
 @export
@@ -625,6 +630,10 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (incf (total-buffer-count *interface*))
     (%rpc-send "buffer_make" (id buffer)
                `(("cookies-path" ,(namestring (cookies-path buffer)))))
+    (unless (last-active-buffer *interface*)
+      ;; When starting from a REPL, it's possible that the window is spawned in
+      ;; the background and current-buffer would then return nil.
+      (setf (last-active-buffer *interface*) buffer))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
     (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
@@ -927,7 +936,8 @@ Deal with URL with the following rules:
   "Get the active buffer for the active window."
   (match (rpc-window-active)
     ((guard w w) (active-buffer w))
-    (_ (log:warn "No active window."))))
+    (_ (log:warn "No active window, picking last active buffer.")
+       (last-active-buffer *interface*))))
 
 (declaim (ftype (function (buffer)) set-current-buffer))
 ;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.
