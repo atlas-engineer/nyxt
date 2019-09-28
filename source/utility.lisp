@@ -182,3 +182,20 @@ Optional second argument FLAVOR controls the units and the display format:
       ;; We return values so that this is equivalent to #'identity when there is
       ;; no hook.
       (apply #'values args)))
+
+@export
+(defun notify (msg)
+  "Echo this message and display it with notify-send."
+  (echo msg)
+  (uiop:launch-program (list "notify-send" msg)))
+
+@export
+(defun launch-and-notify (command &key (success-msg "Command succeded.") (error-msg "Command failed."))
+  "Run this program asynchronously and notify when it is finished."
+  (bt:make-thread
+   (lambda ()
+     (let ((exit-code (uiop:wait-process
+                       (uiop:launch-program command))))
+       (if (zerop exit-code)
+           (notify success-msg)
+           (notify error-msg))))))
