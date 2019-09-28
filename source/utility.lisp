@@ -226,6 +226,33 @@ The second value is the initfunction."
         value)))
 
 @export
+(defun (setf get-default) (value class-name slot-name)
+  "Set default value of SLOT-NAME from CLASS-NAME.
+Return VALUE.
+
+This only changes the default value for future instances.  Existing instances
+won't be affected."
+  ;; Warning: This is quite subtle: the :initform and :initfunction are tightly
+  ;; coupled, it seems that both must be changed together.  We need to change
+  ;; the class-slots and not the class-direct-slots.  TODO: Explain why.
+  (log:warn "The (setf (get-default ...)) and (add-to-default-list ...) forms are deprecated.") ; TODO: Remove after 1.3.3.
+  (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
+         (slot (find-slot class slot-name)))
+    (setf (closer-mop:slot-definition-initfunction slot) (lambda () value))
+    (setf (closer-mop:slot-definition-initform slot) value)))
+
+(defun add-to-default-list (value class-name slot-name)
+  "Add VALUE to the list SLOT-NAME from CLASS-NAME.
+If VALUE is already present, move it to the head of the list.
+
+This only changes the default value for future instances.  Existing instances
+won't be affected."
+  (setf (get-default class-name slot-name)
+        (remove-duplicates (cons value
+                                 (get-default class-name slot-name))
+                           :from-end t)))
+
+@export
 (defun member-string (string list)
   "Return the tail of LIST beginning whose first element is STRING."
   (check-type string string)
