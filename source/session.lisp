@@ -33,11 +33,15 @@ Currently we store the list of current URLs of all buffers."
                         :if-does-not-exist :create
                         :if-exists :supersede)
     ;; We READ the output of serialize-sexp to make it more human-readable.
-    (format file
-            "~s"
-            (with-input-from-string (in (with-output-to-string (out)
-                                          (s-serialization:serialize-sexp (session-data) out)))
-              (read in)))))
+    (let ((*package* *package*))
+      ;; We need to make sure current package is :next so that
+      ;; symbols a printed with consistent namespaces.
+      (in-package :next)
+      (format file
+              "~s"
+              (with-input-from-string (in (with-output-to-string (out)
+                                            (s-serialization:serialize-sexp (session-data) out)))
+                (read in))))))
 
 (defun restore-sexp-session ()
   "Store the current Next session to the last window `session-path'.
@@ -48,10 +52,12 @@ Currently we store the list of current URLs of all buffers."
                                      :direction :input
                                      :if-does-not-exist nil)
                  (when file
-                   ;; TODO: This only works if current package is 'next'.  This
-                   ;; might not be the case when running from a REPL.
-                   (s-serialization:deserialize-sexp
-                    file)))
+                   ;; We need to make sure current package is :next so that
+                   ;; symbols a printed with consistent namespaces.
+                   (let ((*package* *package*))
+                     (in-package :next)
+                     (s-serialization:deserialize-sexp
+                      file))))
           ((list version buffer-histories)
            (unless (string= version +version+)
              (log:warn "Session version ~s differs from current version ~s" version +version+))
