@@ -10,6 +10,7 @@
   :depends-on (:alexandria
                :bordeaux-threads
                :cl-annot
+               :cl-ansi-text
                :cl-css
                :cl-hooks
                :cl-json

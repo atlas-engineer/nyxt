@@ -139,16 +139,16 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
                               until (eq object :eof)
                               do (eval object)))
                       (when (probe-file file)
-                            (format t "Loading configuration from ~s...~&" file)
-                            (load file)))
+                        (format t "~&Loading configuration from ~s...~&" file)
+                        (load file)))
       (error (c)
         ;; TODO: Handle warning from `echo'.
-        (let ((message (format nil "~&Could not load the lisp init file ~a: ~&~a" file c)))
+        (let ((message "Error: could not load the init file"))
           ;; (echo-warning message)
           (if interactive
-              (error message)
+              (error (format nil "~a:~&~a" message c))
               (progn
-                (format *error-output* "~a~&" message)
+                (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
                 (uiop:quit 1))))))))
 
 (define-command load-file (&key interactive)
