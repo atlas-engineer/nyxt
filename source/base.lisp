@@ -134,19 +134,22 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
   (unless (str:emptyp (namestring file))
     (handler-case (if (string= (pathname-name file) "-")
                       (progn
-                        (log:info "Loading configuration from standard input...")
+                        (format t "Loading configuration from standard input...")
                         (loop for object = (read *standard-input* nil :eof)
                               until (eq object :eof)
                               do (eval object)))
-                      (progn
-                        (log:info "Loading configuration from ~s..." file)
-                        (load file :if-does-not-exist nil)))
+                      (when (probe-file file)
+                            (format t "Loading configuration from ~s...~&" file)
+                            (load file)))
       (error (c)
         ;; TODO: Handle warning from `echo'.
-        (let ((message (format nil "Could not load the lisp init file ~a: ~&~a" file c)))
-          (echo-warning message)
-          (when interactive
-            (error message)))))))
+        (let ((message (format nil "~&Could not load the lisp init file ~a: ~&~a" file c)))
+          ;; (echo-warning message)
+          (if interactive
+              (error message)
+              (progn
+                (format *error-output* "~a~&" message)
+                (uiop:quit 1))))))))
 
 (define-command load-file (&key interactive)
   "Load the prompted Lisp file.
@@ -183,7 +186,7 @@ A new `*interface*' is instantiated.
 The platform port is automatically started if needed.
 Finally, run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now)))
-    (log:info +version+)
+    (format t "Next version ~a~&" +version+)
     ;; Randomness should be seeded as early as possible to avoid generating
     ;; deterministic tokens.
     (setf *random-state* (make-random-state t))
