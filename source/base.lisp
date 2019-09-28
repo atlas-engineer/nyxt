@@ -30,7 +30,11 @@
            :long "init-file"
            :arg-parser #'identity
            :description "Set path to initialization file.
-Set to '-' to read standard input instead."))
+Set to '-' to read standard input instead.")
+    (:name :no-init
+           :short #\Q
+           :long "no-init"
+           :description "Do not load the user init file."))
 
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
@@ -190,7 +194,8 @@ Finally, run the `*after-init-hook*'."
     ;; Randomness should be seeded as early as possible to avoid generating
     ;; deterministic tokens.
     (setf *random-state* (make-random-state t))
-    (load-lisp-file init-file :interactive (not non-interactive))
+    (unless (getf *options* :no-init)
+      (load-lisp-file init-file :interactive (not non-interactive)))
     ;; create the interface object
     (when *interface*
       (kill-interface *interface*)
