@@ -29,7 +29,7 @@
                  (focus-on-reopened-buffer-p *interface*))
         (set-current-buffer buffer)))))
 
-(define-command undo-buffer-deletion ()
+(define-command reopen-last-buffer ()
   "Open a new buffer with the URL of the most recently deleted buffer."
   (if (plusp (ring:item-count (recent-buffers *interface*)))
       (let ((buffer (rpc-buffer-make
@@ -38,3 +38,7 @@
         (when (focus-on-reopened-buffer-p *interface*)
           (set-current-buffer buffer)))
       (echo "There are no recently-deleted buffers.")))
+
+(define-deprecated-command undo-buffer-deletion ()
+  "Deprecated by `reopen-last-buffer'."
+  (reopen-last-buffer))
