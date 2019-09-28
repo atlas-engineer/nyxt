@@ -20,7 +20,18 @@ help:
 
 lisp_files := next.asd source/*.lisp source/ports/*.lisp
 
-next: $(lisp_files) quicklisp-update
+.PHONY: clean-fasls
+clean-fasls:
+	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--eval '(ql:quickload :swank)' \
+		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
+		--eval '(swank:delete-system-fasls "next")' \
+		--eval '(uiop:quit)' || true
+
+next: $(lisp_files) clean-fasls quicklisp-update
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -106,8 +117,8 @@ ifeq ($(UNAME), Darwin)
 install: install-app-bundle
 endif
 
-.PHONY: clean
-clean:
+.PHONY: clean-port
+clean-port:
 	rm -rf build
 
 QUICKLISP_URL = https://beta.quicklisp.org/quicklisp.lisp
@@ -165,5 +176,5 @@ clean-deps:
 	rm -rf quicklisp.lisp
 	rm -rf $(QUICKLISP_DIR)
 
-.PHONY: clean-all
-clean-all: clean clean-deps
+.PHONY: clean
+clean: clean-fasls clean-port clean-deps
