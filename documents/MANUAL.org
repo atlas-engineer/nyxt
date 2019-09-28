@@ -112,6 +112,8 @@ The =~a= in the search engine URI is a place holder for the search pattern.
 To set the list of search engines, do:
 
 #+begin_src lisp
+(in-package :next)
+
 (defun my-interface-defaults ()
   (setf (search-engines *interface*)
         '(("default" . "https://duckduckgo.com/?q=~a")
@@ -124,6 +126,8 @@ To set the list of search engines, do:
 and to append a search engine do the list, you can do
 
 #+begin_src lisp
+(in-package :next)
+
 (defun my-interface-defaults ()
   (setf (search-engines *interface*)
         (append
@@ -206,6 +210,8 @@ To enable a mode for all buffers by default, add the mode to the list of
 default modes:
 
 #+begin_src lisp
+(in-package :next)
+
 (defun my-buffer-defaults (buffer)
   (pushnew 'vi-normal-mode (default-modes buffer)))
 
@@ -229,6 +235,8 @@ You can change the default behaviour by adding the following to your
 configuration file:
 
 #+begin_src lisp
+(in-package :next)
+
 (defun my-interface-defaults ()
   (setf (open-external-link-in-new-window-p *interface*) t))
 
@@ -334,6 +342,8 @@ meaning it works out of the box for Tor.
 You can change the default proxy with
 
 #+begin_src lisp
+(in-package :next)
+
 (setf next/proxy-mode:*default-proxy*
  (make-instance 'proxy :server-address  "socks5://your.i.p:port"))
 #+end_src
@@ -359,6 +369,7 @@ existing projects:
 You can change the list like this:
 
 #+begin_src lisp
+(in-package :next)
 (setf next/vcs:*vcs-projects-roots* '("~/my/directory"))
 #+end_src
 
@@ -373,12 +384,14 @@ Set =next/vcs:*vcs-username*= as a default username.
 Change also the =*vcs-username-alist*=:
 
 #+begin_src lisp
-   (setf next/vcs:*vcs-usernames-alist* '(("github.com" . "")
-                                          ("gitlab.com" . "")
-                                          ("bitbucket.org" . "")))
+(in-package :next)
 
-  ;; or
-  (push '("myforge.com" . "me") next/vcs::*vcs-usernames-alist*)
+(setf next/vcs:*vcs-usernames-alist* '(("github.com" . "")
+                                       ("gitlab.com" . "")
+                                       ("bitbucket.org" . "")))
+
+;; or
+(push '("myforge.com" . "me") next/vcs::*vcs-usernames-alist*)
 #+end_src
 
 Note that the forge name should be a domain, such as github.com.
