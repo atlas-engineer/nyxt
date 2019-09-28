@@ -58,7 +58,8 @@ This is an acceptable value for the PATH slot of the PORT class."
         for file-in-subdir = (merge-pathnames
                               (file-namestring name)
                               (merge-pathnames (format nil "ports/~a/" dir-name)
-                                               (uiop:argv0)))
+                                               (or (uiop:argv0)
+                                                   *default-pathname-defaults*)))
         when (uiop:file-exists-p file-in-subdir)
         return file-in-subdir)
 
