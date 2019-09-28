@@ -212,7 +212,7 @@ Finally, run the `*after-init-hook*'."
                    "Make sure the platform port executable is either in the
 PATH or set in you ~/.config/next/init.lisp, for instance:
 
-     (setf (get-default 'port 'path)
+     (setf +platform-port-command+
          \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
         (when non-interactive
           (uiop:quit))))))
