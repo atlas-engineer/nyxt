@@ -478,17 +478,15 @@ For an array of string, that would be \"as\"."
 
 (declaim (ftype (function (string &rest t)) %rpc-send))
 (defun %rpc-send (method &rest args)
-  "Call RPC method METHOD over ARGS.
-Return nil on error."
   ;; TODO: Make %rpc-send asynchronous?
   ;; If the platform port ever hangs, the next %rpc-send will hang the Lisp core too.
+  ;; TODO: Catch connection errors and execution errors.
   (handler-case
       (dbus:with-open-bus (bus (session-server-addresses))
         (dbus:with-introspected-object (platform-port bus +platform-port-object-path+ +platform-port-name+)
           (apply #'platform-port +platform-port-interface+ method args)))
     (error (c)
-      (log:error "RPC connection failed: ~a" c)
-      nil)))
+      (log:error "RPC connection failed: ~a" c))))
 
 ;; TODO: Move to separate packages:
 ;; - next-rpc
@@ -603,8 +601,7 @@ proceeding."
 (defun rpc-buffer-make (&key title default-modes dead-buffer)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*interface*'s `buffer-make-hook' over the created buffer before returning it.
-If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID.
-Return nil on error."
+If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let* ((buffer (if dead-buffer
                      (progn (setf (id dead-buffer) (get-unique-buffer-identifier))
                             dead-buffer)
@@ -612,15 +609,15 @@ Return nil on error."
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
     (ensure-parent-exists (cookies-path buffer))
-    (when (%rpc-send "buffer_make" (id buffer)
-                     `(("cookies-path" ,(namestring (cookies-path buffer)))))
-      ;; Modes might require that buffer exists, so we need to initialize them
-      ;; after it has been created on the platform port.
-      (setf (gethash (id buffer) (buffers *interface*)) buffer)
-      (incf (total-buffer-count *interface*))
-      (initialize-modes buffer)
-      (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
-      buffer)))
+    (setf (gethash (id buffer) (buffers *interface*)) buffer)
+    (incf (total-buffer-count *interface*))
+    (%rpc-send "buffer_make" (id buffer)
+               `(("cookies-path" ,(namestring (cookies-path buffer)))))
+    ;; Modes might require that buffer exists, so we need to initialize them
+    ;; after it has been created on the platform port.
+    (initialize-modes buffer)
+    (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
+    buffer))
 
 (defun %get-inactive-buffer ()
   "Return inactive buffer or NIL if none."
@@ -811,17 +808,13 @@ TODO: Only booleans are supported for now."
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
-  (let ((first-buffer
-         (first (mapcar
-                 (lambda (url)
-                   (let ((buffer (make-buffer)))
-                     (if buffer
-                         (progn
-                           (set-url url :buffer buffer)
-                           buffer)
-                         (log:error "Could not create buffer, is the platform port running?"))))
-                 urls))))
-    (unless (or (null first-buffer)) no-focus
+  (let ((first-buffer (first (mapcar
+                              (lambda (url)
+                                (let ((buffer (make-buffer)))
+                                  (set-url url :buffer buffer)
+                                  buffer))
+                              urls))))
+    (unless no-focus
       (if (open-external-link-in-new-window-p *interface*)
           (let ((window (rpc-window-make)))
             (window-set-active-buffer window first-buffer))
