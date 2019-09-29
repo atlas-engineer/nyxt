@@ -52,6 +52,7 @@
                  (:file "mode")
                  (:file "utility")
                  (:file "urls")
+                 (:file "fuzzy")
                  (:file "buffer")
                  (:file "window")
                  (:file "minibuffer")
