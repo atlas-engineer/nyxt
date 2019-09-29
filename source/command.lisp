@@ -155,8 +155,8 @@ Otherwise list all commands."
           when (not (null bindings))
             return bindings)
     (if bindings
-        (format nil "~a (~{~a~^, ~})" (sym command) bindings)
-        (format nil "~a" (sym command)))))
+        (format nil "~a (~{~a~^, ~})" (str:downcase (sym command)) bindings)
+        (format nil "~a" (str:downcase (sym command))))))
 
 (defun command-complete (input)
   (fuzzy-match input
