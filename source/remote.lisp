@@ -293,8 +293,28 @@ stored.  Nil means use system default.")
                       :documentation "`local-time:timestamp' of when Next was started.")
    (init-time :initform 0.0 :type number
               :documentation "Init time in seconds.")
-   (history-db-path :accessor history-db-path :initform (xdg-data-home "history.db")
-                    :documentation "The path where the system will create/save the history database.")
+   (history-data :accessor history-data
+                 :initform nil
+                 :documentation "
+The history data kept in memory.")
+   (history-path :initarg :history-path
+                 :accessor history-path
+                 :type pathname
+                 :initform (xdg-data-home "history.lisp")
+                 :documentation "
+The path where the system will create/save the global history.")
+   (history-store-function :initarg :history-store-function
+                           :accessor history-store-function
+                           :type function
+                           :initform #'store-sexp-history
+                           :documentation "
+The function which stores the global history into `history-path'.")
+   (history-restore-function :initarg :history-restore-function
+                             :accessor history-restore-function
+                             :type function
+                             :initform #'restore-sexp-history
+                             :documentation "
+The function which restores the global history from `history-path'.")
    (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
                      :documentation "The path where the system will create/save the bookmark database.")
    (session-path :accessor session-path
@@ -333,6 +353,20 @@ The handlers take the URL as argument.")
    (after-download-hook :accessor after-download-hook :initform '() :type list
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
+
+(defmethod history-data ((interface remote-interface))
+  "Return the `history-data' slot from INTERFACE.
+If empty, the history data is initialized with `history-restore-function'."
+  (unless (slot-value interface 'history-data)
+    (funcall (history-restore-function interface)))
+  (slot-value interface 'history-data))
+
+(defmethod (setf history-data) (value (interface remote-interface))
+  "Set `history-data' to VALUE.
+Persist the `history-data' slot from INTERFACE to `history-path' with
+`history-store-function'."
+  (setf (slot-value interface 'history-data) value)
+  (funcall (history-store-function interface)))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)

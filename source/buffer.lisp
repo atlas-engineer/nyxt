@@ -104,11 +104,15 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
     (when history
       (ring:insert history (url (current-buffer))))
     (with-result (url (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Open URL in buffer:"
-                                      :completion-function 'history-typed-complete
-                                      :history history
-                                      :empty-complete-immediate t)))
+                         (make-instance 'minibuffer
+                                        :input-prompt "Open URL in buffer:"
+                                        :completion-function #'history-completion-fn
+                                        :history history
+                                        :empty-complete-immediate t)))
+      (when (typep url 'history-entry)
+        ;; In case read-from-minibuffer returned a string upon
+        ;; empty-complete-immediate.
+        (setf url (url url)))
       (if new-buffer-p
           (let ((buffer (make-buffer)))
             (set-url url :buffer buffer)

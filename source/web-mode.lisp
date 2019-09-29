@@ -346,7 +346,7 @@
                      (next/web-mode::history mode)
                      :test #'equals)
     (when url
-      (history-typed-add url))
+      (history-add url :title (title buffer)))
     (funcall (session-store-function *interface*)))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
