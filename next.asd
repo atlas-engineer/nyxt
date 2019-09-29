@@ -51,6 +51,7 @@
                  (:file "command")
                  (:file "mode")
                  (:file "utility")
+                 (:file "urls")
                  (:file "buffer")
                  (:file "window")
                  (:file "minibuffer")
