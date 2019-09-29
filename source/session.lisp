@@ -23,7 +23,7 @@ instance of Next."
         (delete-if #'null (mapcar #'buffer-history (web-buffers)))))
 
 (defun store-sexp-session ()
-  "Store the current Next session to the last window's `session-path'.
+  "Store the current Next session to the interface `session-path'.
 Currently we store the list of current URLs of all buffers."
   ;; TODO: Should we persist keymaps, constructors, etc.?  For instance, should
   ;; we restore the proxy value?  It may be wiser to let the user configure
@@ -44,8 +44,7 @@ Currently we store the list of current URLs of all buffers."
                 (read in))))))
 
 (defun restore-sexp-session ()
-  "Store the current Next session to the last window `session-path'.
-Currently we store the list of current URLs of all buffers."
+  "Restore the current Next session from the interface `session-path'."
   (let ((session-path (session-path *interface*)))
     (handler-case
         (match (with-open-file (file session-path

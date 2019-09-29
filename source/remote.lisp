@@ -310,7 +310,7 @@ into `session-path'.")
                              :type function
                              :initform #'restore-sexp-session
                              :documentation "The function which restores the session
-into `session-path'.")
+from `session-path'.")
    ;; Hooks follow:
    (before-exit-hook :accessor before-exit-hook :initform '() :type list
                      :documentation "Hook run before both `*interface*' and the
