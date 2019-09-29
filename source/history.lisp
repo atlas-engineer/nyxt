@@ -68,6 +68,17 @@ The history is sorted by last access."
     ;; Use accessor to ensure store function is called.
     (push entry (history-data *interface*))))
 
+(define-command delete-history-entry ()
+  "Delete chosen history entries."
+  (with-result (entries (read-from-minibuffer
+                         (make-instance 'minibuffer
+                                        :input-prompt "Delete entries:"
+                                        :completion-function #'history-completion-fn
+                                        :history (minibuffer-set-url-history *interface*)
+                                        :multi-selection-p t)))
+    (setf (history-data *interface*)
+          (set-difference (history-data *interface*) entries :test #'equals))))
+
 (defun history-completion-fn (input)
   (fuzzy-match
    input
