@@ -169,6 +169,14 @@ You might want to configure the value on HiDPI screen.")
                                            :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
+(defmethod (setf input-buffer) (value (minibuffer minibuffer))
+  "Reset the minibuffer state on every input change.
+This is necessary or else completion cursor / head could be beyond the updated
+list length."
+  (setf (slot-value minibuffer 'input-buffer) value)
+  (setf (completion-cursor minibuffer) 0)
+  (setf (completion-head minibuffer) 0))
+
 (defmethod content ((minibuffer minibuffer))
   (slot-value minibuffer 'content))
 
@@ -352,7 +360,6 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                     (input-buffer-cursor minibuffer)
                     (input-buffer minibuffer)))
   (incf (input-buffer-cursor minibuffer) (length characters))
-  (setf (completion-cursor minibuffer) 0)
   (update-display minibuffer))
 
 (define-command self-insert ()
@@ -369,25 +376,25 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (define-command delete-forwards (&optional (minibuffer (current-minibuffer)))
   "Delete character after cursor."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (unless (= input-buffer-cursor (length input-buffer))
-      (setf input-buffer
+  (with-accessors ((buffer input-buffer) (cursor input-buffer-cursor)) minibuffer
+    (unless (= cursor (length buffer))
+      (setf buffer
             (concatenate 'string
-                         (subseq input-buffer 0 input-buffer-cursor)
-                         (subseq input-buffer
-                                 (+ 1 input-buffer-cursor)
-                                 (length input-buffer))))))
+                         (subseq buffer 0 cursor)
+                         (subseq buffer
+                                 (+ 1 cursor)
+                                 (length buffer))))))
   (update-display minibuffer))
 
 (define-command delete-backwards (&optional (minibuffer (current-minibuffer)))
   "Delete character before cursor."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (unless (= input-buffer-cursor 0)
-      (setf input-buffer
+  (with-accessors ((buffer input-buffer) (cursor input-buffer-cursor)) minibuffer
+    (unless (= cursor 0)
+      (setf buffer
             (concatenate 'string
-                         (subseq input-buffer 0 (- input-buffer-cursor 1))
-                         (subseq input-buffer input-buffer-cursor (length input-buffer))))
-      (decf input-buffer-cursor)))
+                         (subseq buffer 0 (- cursor 1))
+                         (subseq buffer cursor (length buffer))))
+      (decf cursor)))
   (update-display minibuffer))
 
 (define-command cursor-forwards (&optional (minibuffer (current-minibuffer)))
@@ -399,7 +406,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (define-command cursor-backwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor backwards by one."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
+  (with-slots (input-buffer-cursor) minibuffer
     (when (> input-buffer-cursor 0)
       (decf input-buffer-cursor)))
   (update-display minibuffer))
@@ -477,15 +484,15 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (define-command delete-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the end of the word at point."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (let* ((current-cursor-position input-buffer-cursor)
+  (with-accessors ((buffer input-buffer) (cursor input-buffer-cursor)) minibuffer
+    (let* ((current-cursor-position cursor)
            (new-cursor-position (cursor-forwards-word minibuffer))
            (transpose-distance (- new-cursor-position current-cursor-position)))
-      (setf input-buffer
+      (setf buffer
             (concatenate 'string
-                         (subseq input-buffer 0 current-cursor-position)
-                         (subseq input-buffer new-cursor-position (length input-buffer))))
-      (setf input-buffer-cursor (- input-buffer-cursor transpose-distance))))
+                         (subseq buffer 0 current-cursor-position)
+                         (subseq buffer new-cursor-position (length buffer))))
+      (setf cursor (- cursor transpose-distance))))
   (update-display minibuffer))
 
 (defun %delete-backwards-word (input position)
@@ -499,23 +506,23 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (define-command delete-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the beginning of the word at point."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (multiple-value-bind (new-string new-position) (%delete-backwards-word input-buffer input-buffer-cursor)
-      (setf input-buffer new-string
-            input-buffer-cursor new-position)))
+  (with-accessors ((buffer input-buffer) (cursor input-buffer-cursor)) minibuffer
+    (multiple-value-bind (new-string new-position) (%delete-backwards-word buffer cursor)
+      (setf buffer new-string
+            cursor new-position)))
   (update-display minibuffer))
 
 (define-command kill-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters from cursor position until the end of the line."
-    (with-slots (input-buffer input-buffer-cursor) minibuffer
-      (setf input-buffer (subseq input-buffer 0 input-buffer-cursor)))
-    (update-display minibuffer))
+  (with-accessors ((buffer input-buffer) (cursor input-buffer-cursor)) minibuffer
+    (setf buffer (subseq buffer 0 cursor)))
+  (update-display minibuffer))
 
 (define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters in the input."
-    (with-slots (input-buffer input-buffer-cursor) minibuffer
-      (setf input-buffer ""
-            input-buffer-cursor 0))
+  (with-accessors ((buffer input-buffer) (cursor input-buffer-cursor)) minibuffer
+    (setf buffer ""
+          cursor 0))
   (update-display minibuffer))
 
 (defun generate-input-html (input-buffer cursor-index)
@@ -566,7 +573,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 @export
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-buffer-cursor completion-function
-               completions completion-cursor completion-head empty-complete-immediate)
+               completions completion-cursor empty-complete-immediate)
       minibuffer
     (if completion-function
         (setf completions (funcall completion-function input-buffer))
