@@ -34,7 +34,7 @@ MODES is a list of mode symbols."
   "Deprecated by `make-buffer'."
   (make-buffer))
 
-(defun buffer-completion-fn (&key current-is-last-p)
+(defun buffer-completion-filter (&key current-is-last-p)
   (let ((buffers (alexandria:hash-table-values (buffers *interface*)))
         (active-buffer (current-buffer)))
     (when (and current-is-last-p
@@ -51,7 +51,7 @@ MODES is a list of mode symbols."
                         (make-instance 'minibuffer
                                        :input-prompt "Switch to buffer:"
                                        ;; For commodity, the current buffer shouldn't be the first one on the list.
-                                       :completion-function (buffer-completion-fn :current-is-last-p t))))
+                                       :completion-function (buffer-completion-filter :current-is-last-p t))))
     (set-current-buffer buffer)))
 
 (define-command make-buffer-focus ()
@@ -70,7 +70,7 @@ MODES is a list of mode symbols."
                          (make-instance 'minibuffer
                                         :input-prompt "Delete buffer(s):"
                                         :multi-selection-p t
-                                        :completion-function (buffer-completion-fn))))
+                                        :completion-function (buffer-completion-filter))))
     (mapcar #'rpc-buffer-delete buffers)))
 
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
@@ -106,7 +106,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
     (with-result (url (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Open URL in buffer:"
-                                        :completion-function #'history-completion-fn
+                                        :completion-function #'history-completion-filter
                                         :history history
                                         :empty-complete-immediate t)))
       (when (typep url 'history-entry)
@@ -133,7 +133,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
                          (make-instance 'minibuffer
                                         :input-prompt "Reload buffer(s):"
                                         :multi-selection-p t
-                                        :completion-function (buffer-completion-fn))))
+                                        :completion-function (buffer-completion-filter))))
     (mapcar #'reload-current-buffer buffers)))
 
 (defmethod get-active-buffer-index ((active-buffer buffer) buffers)
@@ -159,7 +159,7 @@ item in the list, jump to the first item."
     (set-current-buffer (nth (+ active-buffer-index 1) buffers))
     (set-current-buffer (nth 0 buffers)))))
 
-(defun active-mode-completion-fn (buffers)
+(defun active-mode-completion-filter (buffers)
   "Return the union of the active modes in BUFFERS."
   (let ((modes (delete-duplicates (mapcar (lambda (m)
                                             (class-name (class-of m)))
@@ -167,7 +167,7 @@ item in the list, jump to the first item."
     (lambda (input)
       (fuzzy-match input modes))))
 
-(defun inactive-mode-completion-fn (buffers)
+(defun inactive-mode-completion-filter (buffers)
   "Return the list of all modes minus those present in all BUFFERS."
   (let ((all-non-minibuffer-modes
          (delete-if (lambda (m)
@@ -188,7 +188,7 @@ item in the list, jump to the first item."
                       (make-instance 'minibuffer
                                      :input-prompt "Disable mode(s):"
                                      :multi-selection-p t
-                                     :completion-function (active-mode-completion-fn buffers))))
+                                     :completion-function (active-mode-completion-filter buffers))))
     (dolist (buffer buffers)
       (dolist (mode modes)
         (funcall (sym (mode-command mode))
@@ -200,7 +200,7 @@ item in the list, jump to the first item."
                          (make-instance 'minibuffer
                                         :input-prompt "Disable mode for buffer(s):"
                                         :multi-selection-p t
-                                        :completion-function (buffer-completion-fn))))
+                                        :completion-function (buffer-completion-filter))))
     (disable-mode-for-current-buffer :buffers buffers)))
 
 (define-command enable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
@@ -209,7 +209,7 @@ item in the list, jump to the first item."
                          (make-instance 'minibuffer
                                         :input-prompt "Enable mode(s):"
                                         :multi-selection-p t
-                                        :completion-function (inactive-mode-completion-fn buffers))))
+                                        :completion-function (inactive-mode-completion-filter buffers))))
     (dolist (buffer buffers)
       (dolist (mode modes)
         (funcall (sym (mode-command mode))
@@ -221,5 +221,5 @@ item in the list, jump to the first item."
                          (make-instance 'minibuffer
                                         :input-prompt "Enable mode for buffer(s):"
                                         :multi-selection-p t
-                                        :completion-function (buffer-completion-fn))))
+                                        :completion-function (buffer-completion-filter))))
     (enable-mode-for-current-buffer :buffers buffers)))

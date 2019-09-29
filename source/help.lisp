@@ -22,10 +22,10 @@
   (let (l) (do-symbols (s p l)
              (push s l))))
 
-(defun variable-complete (input)
+(defun variable-completion-filter (input)
   (fuzzy-match input (package-variables)))
 
-(defun function-complete (input)        ; TODO: Rename to `command-complete-fn' and show packages.
+(defun function-completion-filter (input)        ; TODO: Use `command-completion-filter'? And show packages?
   (fuzzy-match input (mapcar #'sym (list-commands))))
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to
@@ -34,7 +34,7 @@
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-instance 'minibuffer
-                                      :completion-function 'variable-complete
+                                      :completion-function #'variable-completion-filter
                                       :input-prompt "Inspect variable:")))
     (let* ((help-buffer (make-buffer
                          :title (str:concat "*Help-" (symbol-name input) "*")
@@ -56,7 +56,7 @@
   (with-result (input (read-from-minibuffer
                        (make-instance 'minibuffer
                                       :input-prompt "Inspect command:"
-                                      :completion-function 'function-complete)))
+                                      :completion-function #'function-completion-filter)))
     (let* ((help-buffer (make-buffer
                          :title (str:concat "*Help-" (symbol-name input) "*")
                          :modes (cons 'help-mode

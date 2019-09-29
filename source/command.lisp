@@ -158,7 +158,7 @@ Otherwise list all commands."
         (format nil "~a (~{~a~^, ~})" (str:downcase (sym command)) bindings)
         (format nil "~a" (str:downcase (sym command))))))
 
-(defun command-complete (input)
+(defun command-completion-filter (input)
   (fuzzy-match input
                (sort (apply #'list-commands (mapcar (alexandria:compose #'class-name #'class-of)
                                                     (modes (current-buffer))))
@@ -182,6 +182,6 @@ This function can be `funcall'ed."
   (with-result (command (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Execute command:"
-                                        :completion-function 'command-complete)))
+                                        :completion-function 'command-completion-filter)))
     (setf (access-time command) (get-internal-real-time))
     (run command)))

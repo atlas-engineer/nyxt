@@ -114,7 +114,7 @@ Create BASE if it doesn't exist."
   ;; ./~/my/foo instead of /home/user/my/foo.
   (namestring (merge-pathnames (truename base) dir)))
 
-(defun projects-roots-completion-function (input)
+(defun projects-roots-completion-filter (input)
   "Fuzzy-match local project roots."
   (fuzzy-match input *vcs-projects-roots*))
 
@@ -173,7 +173,7 @@ Ask for which directory to clone to, expect if there is one single choice."
       (t (with-result (target-dir (read-from-minibuffer
                                    (make-instance 'minibuffer
                                                   :input-prompt "Target directory:"
-                                                  :completion-function #'next/vcs::projects-roots-completion-function)))
+                                                  :completion-function #'next/vcs::projects-roots-completion-filter)))
            (next/vcs::clone project-name root-name target-dir clone-uri))))))
 
 (define-command git-clone ()

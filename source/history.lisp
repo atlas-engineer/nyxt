@@ -73,13 +73,13 @@ The history is sorted by last access."
   (with-result (entries (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Delete entries:"
-                                        :completion-function #'history-completion-fn
+                                        :completion-function #'history-completion-filter
                                         :history (minibuffer-set-url-history *interface*)
                                         :multi-selection-p t)))
     (setf (history-data *interface*)
           (set-difference (history-data *interface*) entries :test #'equals))))
 
-(defun history-completion-fn (input)
+(defun history-completion-filter (input)
   (fuzzy-match
    input
    ;; TODO: Sort by highest visit?  How do we weight between last access and highest visit?

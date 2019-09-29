@@ -8,7 +8,7 @@
      (object-string b))
     (_ (format nil "<#WINDOW ~a>" (id window)))))
 
-(defun window-completion-fn ()
+(defun window-completion-filter ()
   (let ((windows (alexandria:hash-table-values (windows *interface*))))
     (lambda (input)
       (fuzzy-match input windows))))
@@ -19,7 +19,7 @@
                          (make-instance 'minibuffer
                                         :input-prompt "Delete window(s):"
                                         :multi-selection-p t
-                                        :completion-function (window-completion-fn))))
+                                        :completion-function (window-completion-filter))))
     (mapcar #'delete-current-window windows)))
 
 (define-command delete-current-window (&optional (window (rpc-window-active)))

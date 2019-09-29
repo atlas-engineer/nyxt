@@ -215,7 +215,7 @@ Example use:
 
   (read-from-minibuffer
    (make-instance 'minibuffer
-                  :completion-function #'my-completion-function))
+                  :completion-function #'my-completion-filter))
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
   (when callback
@@ -727,8 +727,8 @@ Return most recent entry in RING."
       (kill-whole-line minibuffer)
       (insert candidate minibuffer))))
 
-(declaim (ftype (function (ring:ring)) minibuffer-history-completion-fn))
-(defun minibuffer-history-completion-fn (history)
+(declaim (ftype (function (ring:ring)) minibuffer-history-completion-filter))
+(defun minibuffer-history-completion-filter (history)
   (when history
     (lambda (input)
       (fuzzy-match input (delete-duplicates (ring:recent-list history)
@@ -741,7 +741,7 @@ Return most recent entry in RING."
                          (make-instance 'minibuffer
                                         :input-prompt "Input history:"
                                         :history nil
-                                        :completion-function (minibuffer-history-completion-fn (history minibuffer)))))
+                                        :completion-function (minibuffer-history-completion-filter (history minibuffer)))))
       (unless (str:empty? input)
         (log:debug input minibuffer)
         (setf (input-buffer minibuffer) "")

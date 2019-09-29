@@ -13,7 +13,7 @@
      db "insert into bookmarks (url) values (?)" "about:blank")
     (sqlite:disconnect db)))
 
-(defun bookmark-complete (input)
+(defun bookmark-completion-filter (input)
   (let* ((db (sqlite:connect
               (ensure-file-exists (bookmark-db-path *interface*)
                                   #'%initialize-bookmark-db)))
@@ -48,7 +48,7 @@
                          (make-instance 'minibuffer
                                         :input-prompt "Bookmark URL from buffer(s):"
                                         :multi-selection-p t
-                                        :completion-function (buffer-completion-fn))))
+                                        :completion-function (buffer-completion-filter))))
     (mapcar #'bookmark-current-page buffers)))
 
 (define-command bookmark-url ()
@@ -63,7 +63,7 @@
                           (make-instance 'minibuffer
                                          :input-prompt "Delete bookmark(s):"
                                          :multi-selection-p t
-                                         :completion-function 'bookmark-complete)))
+                                         :completion-function #'bookmark-completion-filter)))
     (dolist (bookmark bookmarks)
       (let ((db (sqlite:connect
                  (ensure-file-exists (bookmark-db-path *interface*)
@@ -94,5 +94,5 @@
   (with-result (url (read-from-minibuffer
                      (make-instance 'minibuffer
                                     :input-prompt "Open bookmark:"
-                                    :completion-function 'bookmark-complete)))
+                                    :completion-function #'bookmark-completion-filter)))
     (set-url url :buffer (current-buffer) :raw-url-p t)))

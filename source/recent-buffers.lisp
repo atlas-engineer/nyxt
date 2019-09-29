@@ -10,7 +10,7 @@
       (and (string= (url buffer) (url other-buffer))
            (string= (title buffer) (title other-buffer))))))
 
-(defun recent-buffer-completion-fn ()
+(defun recent-buffer-completion-filter ()
   (let ((buffers (ring:recent-list (recent-buffers *interface*))))
     (lambda (input)
       (fuzzy-match input buffers))))
@@ -21,7 +21,7 @@
                          (make-instance 'minibuffer
                                         :input-prompt "Reopen buffer:"
                                         :multi-selection-p t
-                                        :completion-function (recent-buffer-completion-fn))))
+                                        :completion-function (recent-buffer-completion-filter))))
     (dolist (buffer buffers)
       (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
       (reload-current-buffer (rpc-buffer-make :dead-buffer buffer))

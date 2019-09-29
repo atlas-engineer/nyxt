@@ -3,7 +3,7 @@
   (:export
    :open-file-function
    :*open-file-function*
-   :open-file-from-directory-completion-fn)
+   :open-file-from-directory-completion-filter)
   (:documentation "Manage files.
 
 Open any file from within Next, with the usual fuzzy completion.
@@ -79,7 +79,7 @@ command `open-file'."
               :vi-normal vi-map)))))
 
 @export
-(defun open-file-from-directory-completion-fn (input &optional (directory *current-directory*))
+(defun open-file-from-directory-completion-filter (input &optional (directory *current-directory*))
   "Fuzzy-match files and directories from `*current-directory*'."
   (let ((filenames (uiop:directory-files directory))
         (dirnames (uiop:subdirectories directory)))
@@ -131,6 +131,6 @@ Note: this feature is alpha, get in touch for more!"
                             (make-instance 'minibuffer
                                            :default-modes '(next/file-manager-mode::file-manager-mode minibuffer-mode)
                                            :input-prompt (file-namestring directory)
-                                           :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn)))
+                                           :completion-function #'next/file-manager-mode::open-file-from-directory-completion-filter)))
 
       (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))

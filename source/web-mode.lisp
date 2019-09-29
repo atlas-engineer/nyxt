@@ -166,7 +166,7 @@
     (match (htree:current (history mode))
       ((guard n n) (set-url (url (htree:data n)))))))
 
-(defun history-backwards-completion-fn (&optional (mode (find-mode
+(defun history-backwards-completion-filter (&optional (mode (find-mode
                                                         (current-buffer)
                                                         'web-mode)))
   "Completion function over all parent URLs."
@@ -181,11 +181,11 @@
   (with-result (input (read-from-minibuffer
                        (make-instance 'minibuffer
                                       :input-prompt "Navigate backwards to:"
-                                      :completion-function (history-backwards-completion-fn))))
+                                      :completion-function (history-backwards-completion-filter))))
     (when input
       (set-url-from-history input))))
 
-(defun history-forwards-completion-fn (&optional (mode (find-mode
+(defun history-forwards-completion-filter (&optional (mode (find-mode
                                                         (current-buffer)
                                                         'web-mode)))
   "Completion function over forward-children URL."
@@ -200,11 +200,11 @@
   (with-result (input (read-from-minibuffer
                        (make-instance 'minibuffer
                                       :input-prompt "Navigate forwards to:"
-                                      :completion-function (history-forwards-completion-fn))))
+                                      :completion-function (history-forwards-completion-filter))))
     (when input
       (set-url-from-history input))))
 
-(defun history-forwards-all-completion-fn (&optional (mode (find-mode
+(defun history-forwards-all-completion-filter (&optional (mode (find-mode
                                                         (current-buffer)
                                                         'web-mode)))
   "Completion function over children URL from all branches."
@@ -219,11 +219,11 @@
   (with-result (input (read-from-minibuffer
                        (make-instance 'minibuffer
                                       :input-prompt "Navigate forwards to (all branches):"
-                                      :completion-function (history-forwards-all-completion-fn))))
+                                      :completion-function (history-forwards-all-completion-filter))))
     (when input
       (set-url-from-history input))))
 
-(defun history-all-completion-fn (&optional (mode (find-mode
+(defun history-all-completion-filter (&optional (mode (find-mode
                                                    (current-buffer)
                                                    'web-mode)))
   "Completion function over all history URLs."
@@ -238,7 +238,7 @@
   (with-result (input (read-from-minibuffer
                        (make-instance 'minibuffer
                                       :input-prompt "Navigate to:"
-                                      :completion-function (history-all-completion-fn))))
+                                      :completion-function (history-all-completion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -299,7 +299,7 @@
   "Paste from clipboard into active-element."
   (%paste))
 
-(defun ring-completion-fn (ring)
+(defun ring-completion-filter (ring)
   (let ((ring-items (ring:recent-list ring)))
     (lambda (input)
       (fuzzy-match input ring-items))))
@@ -308,7 +308,7 @@
   "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
                            (make-instance 'minibuffer
-                                          :completion-function (ring-completion-fn
+                                          :completion-function (ring-completion-filter
                                                                 (clipboard-ring *interface*)))))
     (%paste :input-text ring-item)))
 
