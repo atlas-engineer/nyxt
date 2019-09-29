@@ -62,8 +62,8 @@ Currently we store the list of current URLs of all buffers."
              (log:warn "Session version ~s differs from current version ~s" version +version+))
            (when buffer-histories
              (log:info "Restoring ~a"
-                       (mapcar (alexandria:compose #'htree:data #'htree:current)
-                               buffer-histories))
+                       (mapcar #'object-string (mapcar (alexandria:compose #'htree:data #'htree:current)
+                                                       buffer-histories)))
              ;; Delete the old buffers?
              ;; (maphash (lambda (id buffer)
              ;;            (declare (ignore id))
