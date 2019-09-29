@@ -436,17 +436,16 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (define-command cursor-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the word at point."
-  (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
-    (with-slots (input-buffer input-buffer-cursor) minibuffer
-      (if (intersection stop-characters (list (char-at-cursor minibuffer)))
-          (loop while (and
-                       (intersection stop-characters (list (char-at-cursor minibuffer)))
-                       (< input-buffer-cursor (length input-buffer)))
-                do (incf input-buffer-cursor))
-          (loop while (and
-                       (not (intersection stop-characters (list (char-at-cursor minibuffer))))
-                       (< input-buffer-cursor (length input-buffer)))
-                do (incf input-buffer-cursor)))))
+  (with-slots (input-buffer input-buffer-cursor) minibuffer
+    (if (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
+        (loop while (and
+                     (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
+                     (< input-buffer-cursor (length input-buffer)))
+              do (incf input-buffer-cursor))
+        (loop while (and
+                     (not (intersection *word-separation-characters* (list (char-at-cursor minibuffer))))
+                     (< input-buffer-cursor (length input-buffer)))
+              do (incf input-buffer-cursor))))
   (update-display minibuffer)
   (input-buffer-cursor minibuffer))
 
