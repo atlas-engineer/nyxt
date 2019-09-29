@@ -701,10 +701,17 @@ Return most recent entry in RING."
     (and completions
          (object-string (nth completion-cursor completions)))))
 
+(defmethod get-marked-candidates ((minibuffer minibuffer))
+  "Return the list of strings for the marked candidate in the minibuffer."
+  (mapcar #'object-string (marked-completions minibuffer)))
+
 (define-command copy-candidate (&optional (minibuffer (current-minibuffer)))
   "Copy candidate to clipboard."
-  (let ((candidate (get-candidate minibuffer)))
-    (when candidate
+  (let ((candidate (if (and (multi-selection-p minibuffer)
+                            (not (null (marked-completions minibuffer))))
+                       (str:join (string #\newline) (get-marked-candidates minibuffer))
+                       (get-candidate minibuffer))))
+    (unless (str:emptyp candidate)
       (trivial-clipboard:text candidate))))
 
 (define-command insert-candidate (&optional (minibuffer (current-minibuffer)))
