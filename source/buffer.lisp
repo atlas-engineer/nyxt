@@ -106,7 +106,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
     (with-result (url (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Open URL in buffer:"
-                                        :completion-function #'history-completion-filter
+                                        :completion-function (history-completion-filter)
                                         :history history
                                         :empty-complete-immediate t)))
       (when (typep url 'history-entry)
