@@ -21,6 +21,7 @@ end-user allowing for infinite customization.
   - [[#exiting][Exiting]]
   - [[#proxy-and-tor-support][Proxy and Tor support]]
   - [[#cloning-git-repositories][Cloning Git repositories]]
+  - [[#downloading-videos][Downloading videos]]
 - [[#advanced-topics][Advanced Topics]]
   - [[#execute-extended-command][Execute Extended Command]]
   - [[#help][Help]]
@@ -410,6 +411,28 @@ Change also the =*vcs-username-alist*=:
 #+end_src
 
 Note that the forge name should be a domain, such as github.com.
+
+
+** Downloading videos
+
+The command =M-x download-video= will try to download the video at the
+current url. For example, it works with any Youtube video.
+
+It will  ask for  a target  repository and will  notify on  success or
+failure.
+
+It  uses by  default  the  program [[http://ytdl-org.github.io/youtube-dl/][youtube-dl]],  that  you must  have
+installed first.
+
+/Disclaimer: this feature is meant to grow with Next 1.4 and onwards!/
+
+To customize  it, you can  write a new function  that takes an  url as
+parameter, and bind it  to =next/video:*download-function*=.  In doing
+so,  you can  rely on  the =next/video:download=  function, that  does
+error handling and process management.
+
+See also  the variable  =*preferred-download-directories*= (a  list of
+directories).
 
 
 * Advanced Topics
