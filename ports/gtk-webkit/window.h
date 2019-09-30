@@ -292,7 +292,6 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 	// key_string_buffer (a GtkEntry that's never shown on screen) so that we can
 	// collect the printed representation of composed keypress, such as dead keys.
 	// This must come right after the unconsumed event test.
-	// TODO: Add support for "C-s-u" unicode input.
 	gtk_entry_im_context_filter_keypress(window->key_string_buffer, event);
 
 	// Translate ISO_Left_Tab to shift-TAB.
