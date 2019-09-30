@@ -74,17 +74,36 @@ The history is sorted by last access."
   (with-result (entries (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Delete entries:"
-                                        :completion-function #'history-completion-filter
+                                        :completion-function (history-completion-filter)
                                         :history (minibuffer-set-url-history *interface*)
                                         :multi-selection-p t)))
     (setf (history-data *interface*)
           (set-difference (history-data *interface*) entries :test #'equals))))
 
-(defun history-completion-filter (input)
-  (fuzzy-match
-   input
-   ;; TODO: Sort by highest visit?  How do we weight between last access and highest visit?
-   (history-data *interface*)))
+
+
+(defun score-history-entry (entry)
+  "Return history ENTRY score.
+The score gets higher for more recent entries and if they've been visited a
+lot."
+  (+ (* 0.1
+        ;; Total number of visits.
+        (+ (implicit-visits entry)
+           (explicit-visits entry)))
+     (* 1.0
+        ;; Inverse number of hours since the last access.
+        (/ 1
+           (1+ (/ (local-time:timestamp-difference (local-time:now)
+                                                   (last-access entry))
+                  (* 60 60)))))))
+
+(defun history-completion-filter ()
+  (let ((history (sort (history-data *interface*)
+                       (lambda (x y)
+                         (> (score-history-entry x)
+                            (score-history-entry y))))))
+    (lambda (input)
+      (fuzzy-match input history))))
 
 (defun store-sexp-history ()            ; TODO: Factor with `store-sexp-session'.
   "Store the global history to the last interface `history-path'."

@@ -63,7 +63,7 @@ more details."
              (score-candidate input (first y))))))
 
 @export
-(defun fuzzy-match (input candidates)
+(defun fuzzy-match (input candidates)   ; TODO: Make score functions customizable, e.g. for global history.
   "From the user input and a list of candidates, return a filtered list of
 candidates that have all the input words in them, and sort this list to have the
 'most relevant' first.
