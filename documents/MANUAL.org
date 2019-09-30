@@ -162,6 +162,8 @@ returns:
    :empty-complete is a truthy value, the function will accept the
    EXACT text inputted into the minibuffer.
 
+*** Multi-selection
+
 When that makes sense (e.g. for the =delete-buffer= command), multiple entries
 can be marked.  The default bindings are:
 
