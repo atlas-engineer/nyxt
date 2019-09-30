@@ -108,13 +108,15 @@ The history is sorted by last access."
   (let ((path (history-path *interface*)))
     (if (not (uiop:file-exists-p path))
         ;; TODO: Stop importing the SQLite history after 1.3.3?
-        (dolist (url (import-sqlite-history))
-          (let ((entry (make-instance 'history-entry
-                                      :url url)))
-            ;; Calling (history-data *interface*) call the restore function if
-            ;; empty, so we need to use SLOT-VALUE here.
-            (pushnew entry (slot-value *interface* 'history-data) :test #'equals) ; TODO: Does this persist the data on each call?
-            )))
+        (dolist (url-visit (import-sqlite-history))
+          (unless (str:emptyp (first url-visit))
+            (let ((entry (make-instance 'history-entry
+                                        :url (first url-visit)
+                                        :implicit-visits (second url-visit))))
+              ;; Calling (history-data *interface*) call the restore function if
+              ;; empty, so we need to use SLOT-VALUE here.
+              (pushnew entry (slot-value *interface* 'history-data) :test #'equals) ; TODO: Does this persist the data on each call?
+              ))))
     (handler-case
         (let ((data (with-open-file (file path
                                           :direction :input
@@ -147,11 +149,6 @@ The history is sorted by last access."
       (let* ((db (sqlite:connect database-path))
              (urls
                (sqlite:execute-to-list
-                db "select url from typed where url like ? order by visits desc"
-                "%%"))
-             ;; TODO: Can we import the visits as well?
-             ;; (visits (or (sqlite:execute-single db "select visits from typed where url like ? limit 1;" url)
-             ;;             0))
-             )
+                db "select url, visits from typed")))
         (sqlite:disconnect db)
-        (apply #'append urls)))))
+        urls))))
