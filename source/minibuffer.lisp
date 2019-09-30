@@ -173,9 +173,20 @@ You might want to configure the value on HiDPI screen.")
   "Reset the minibuffer state on every input change.
 This is necessary or else completion cursor / head could be beyond the updated
 list length."
-  (setf (slot-value minibuffer 'input-buffer) value)
-  (setf (completion-cursor minibuffer) 0)
-  (setf (completion-head minibuffer) 0))
+  (with-slots (completion-function completions input-buffer
+               empty-complete-immediate completion-cursor completion-head)
+      minibuffer
+    (setf input-buffer value)
+    (if completion-function
+        (setf completions (funcall completion-function input-buffer))
+        (setf completions nil))
+    (when (and empty-complete-immediate
+               (not (str:emptyp input-buffer)))
+      ;; Don't add input-buffer to completions that don't accept arbitrary
+      ;; inputs (i.e. empty-complete-immediate is nil).
+      (push input-buffer completions))
+    (setf completion-cursor 0)
+    (setf completion-head 0)))
 
 (defmethod content ((minibuffer minibuffer))
   (slot-value minibuffer 'content))
@@ -571,17 +582,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 @export
 (defmethod update-display ((minibuffer minibuffer))
-  (with-slots (input-buffer input-buffer-cursor completion-function
-               completions completion-cursor empty-complete-immediate)
+  (with-slots (input-buffer input-buffer-cursor
+               completions completion-cursor)
       minibuffer
-    (if completion-function
-        (setf completions (funcall completion-function input-buffer))
-        (setf completions nil))
-    (when (and empty-complete-immediate
-               (not (str:emptyp input-buffer)))
-      ;; Don't add input-buffer to completions that don't accept arbitrary
-      ;; inputs (i.e. empty-complete-immediate is nil).
-      (push input-buffer completions))
     (let ((input-text (if (invisible-input-p minibuffer)
                           (generate-input-html-invisible input-buffer input-buffer-cursor)
                           (generate-input-html input-buffer input-buffer-cursor)))
