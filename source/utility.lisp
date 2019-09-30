@@ -186,8 +186,12 @@ Optional second argument FLAVOR controls the units and the display format:
 @export
 (defun notify (msg)
   "Echo this message and display it with notify-send."
-  (echo msg)
-  (uiop:launch-program (list "notify-send" msg)))
+  (echo-safe msg)
+  (ignore-errors
+    #+linux
+    (uiop:launch-program (list "notify-send" msg))
+    #+darwin
+    (uiop:launch-program (list "terminal-notifier" "-title" "Next" "-message" msg))))
 
 @export
 (defun launch-and-notify (command &key (success-msg "Command succeded.") (error-msg "Command failed."))
