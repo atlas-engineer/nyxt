@@ -162,6 +162,19 @@ returns:
    :empty-complete is a truthy value, the function will accept the
    EXACT text inputted into the minibuffer.
 
+When that makes sense (e.g. for the =delete-buffer= command), multiple entries
+can be marked.  The default bindings are:
+
+- =C-SPACE= to toggle the mark of an entry.
+- =M-a= to mark all visible entries.
+- =M-u= to unmark all visible entries.
+
+When the input is change and the candidates are re-filtered, the selection is
+not alterered even if the marked elements don't show.
+
+Once at least one candidate is marked, only the marked candidates are processed
+upon return.  The candidate under the cursor is not processed if not marked.
+
 ** Buffers ("tabs")
 Many browsers implement the concept of multiple views with "tabs".  Tabs are
 inherently flawed as they don't scale: it's hard to manage more than a few dozen
