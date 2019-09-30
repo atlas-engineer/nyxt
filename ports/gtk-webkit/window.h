@@ -315,7 +315,7 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 
 	// Don't forward dead keys.
 	if (g_str_has_prefix(gdk_keyval_name(event->keyval), "dead")) {
-		g_message("Skipping dead key"); // TODO: Turn to debug.
+		g_debug("Skipping dead key");
 		return TRUE;
 	}
 
