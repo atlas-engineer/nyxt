@@ -71,8 +71,7 @@ By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
         (log:info "Starting download of ~a to ~a" url target-dir)
         ;TODO: notify progress.
         (next:launch-and-notify (download-command url target-dir)
-                                ;XXX: we can't echo a directory name with a tilde or with two slashes.
-                                :success-msg (format nil "Video downloaded.")
+                                :success-msg (format nil "Video downloaded to ~a." target-dir)
                                 :error-msg (format nil "Failed to download video.~&")))
     (error (c)
       (log:warn "Error downloading ~a to ~a: ~a" url target-dir c))))
