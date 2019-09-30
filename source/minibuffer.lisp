@@ -658,8 +658,23 @@ MESSAGE is a cl-markup list."
 (defun echo (&rest args)
   "Echo ARGS in the status buffer.
 The first argument can be a format string and the following arguments will be
-interpreted by `format'."
-  (%echo-status (apply #'format nil args)))
+interpreted by `format'.
+Untrusted content should be given as argument with a format string."
+  (handler-case
+      (%echo-status (apply #'format nil args))
+    (error ()
+      (log:warn "Failed to echo these args: ~s~&Possible improvements:
+- pass multiple arguments and use format strings for untrusted content. Don't pre-construct a single string that could contain tildes.
+  example: do (echo \"directory is\ ~~a \"~~/Downloads/\")
+           instead of (echo \"directory is ~~/Downloads/\")
+- use echo-safe or use the ~~s directive directly." args))))
+
+@export
+(defun echo-safe (arg)
+  "Echo one untrusted string that could contain format directives (that is, a tilde).
+It uses the ~s directive.
+Unlike echo, this only accepts one argument."
+  (%echo-status (format nil "~s" arg)))
 
 @export
 (defun echo-warning (&rest args)
