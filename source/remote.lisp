@@ -315,8 +315,27 @@ The function which stores the global history into `history-path'.")
                              :initform #'restore-sexp-history
                              :documentation "
 The function which restores the global history from `history-path'.")
-   (bookmark-db-path :accessor bookmark-db-path :initform (xdg-data-home "bookmark.db")
-                     :documentation "The path where the system will create/save the bookmark database.")
+   (bookmarks-data :accessor bookmarks-data
+                   :initform nil
+                   :documentation "
+The bookmarks kept in memory.")
+   (bookmarks-path :initarg :bookmarks-path
+                   :accessor bookmarks-path
+                   :initform (xdg-data-home "bookmarks.lisp")
+                   :documentation "
+The path where the system will create/save the bookmarks.")
+   (bookmarks-store-function :initarg :bookmarks-store-function
+                             :accessor bookmarks-store-function
+                             :type function
+                             :initform #'store-sexp-bookmarks
+                             :documentation "
+The function which stores the bookmarks into `bookmarks-path'.")
+   (bookmarks-restore-function :initarg :bookmarks-restore-function
+                               :accessor bookmarks-restore-function
+                               :type function
+                               :initform #'restore-sexp-bookmarks
+                               :documentation "
+The function which restores the bookmarks from `bookmarks-path'.")
    (session-path :accessor session-path
                  :type string
                  :initform (xdg-data-home "session.lisp")
@@ -367,6 +386,20 @@ Persist the `history-data' slot from INTERFACE to `history-path' with
 `history-store-function'."
   (setf (slot-value interface 'history-data) value)
   (funcall (history-store-function interface)))
+
+(defmethod bookmarks-data ((interface remote-interface))
+  "Return the `bookmarks-data' slot from INTERFACE.
+If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
+  (unless (slot-value interface 'bookmarks-data)
+    (funcall (bookmarks-restore-function interface)))
+  (slot-value interface 'bookmarks-data))
+
+(defmethod (setf bookmarks-data) (value (interface remote-interface))
+  "Set `bookmarks-data' to VALUE.
+Persist the `bookmarks-data' slot from INTERFACE to `bookmarks-path' with
+`bookmarks-store-function'."
+  (setf (slot-value interface 'bookmarks-data) value)
+  (funcall (bookmarks-store-function interface)))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
