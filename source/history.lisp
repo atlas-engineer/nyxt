@@ -106,7 +106,7 @@ lot."
       (fuzzy-match input history))))
 
 (defun store-sexp-history ()            ; TODO: Factor with `store-sexp-session'.
-  "Store the global history to the last interface `history-path'."
+  "Store the global history to the interface `history-path'."
   (with-open-file (file (history-path *interface*)
                         :direction :output
                         :if-does-not-exist :create
@@ -123,7 +123,7 @@ lot."
                 (read in))))))
 
 (defun restore-sexp-history ()
-  "Restore the global history session from the interface `history-path'."
+  "Restore the global history from the interface `history-path'."
   (let ((path (history-path *interface*)))
     (if (not (uiop:file-exists-p path))
         ;; TODO: Stop importing the SQLite history after 1.3.3?
@@ -132,7 +132,7 @@ lot."
             (let ((entry (make-instance 'history-entry
                                         :url (first url-visit)
                                         :implicit-visits (second url-visit))))
-              ;; Calling (history-data *interface*) call the restore function if
+              ;; Calling (history-data *interface*) calls the restore function if
               ;; empty, so we need to use SLOT-VALUE here.
               (pushnew entry (slot-value *interface* 'history-data) :test #'equals) ; TODO: Does this persist the data on each call?
               ))))
@@ -145,15 +145,13 @@ lot."
                         ;; symbols a printed with consistent namespaces.
                         (let ((*package* *package*))
                           (in-package :next)
-                          (s-serialization:deserialize-sexp
-                           file))))))
-
+                          (s-serialization:deserialize-sexp file))))))
           (when data
-            (log:info "Restoring global history of ~a URLs."
-                      (length data))
+            (echo "Loading global history of ~a URLs."
+                  (length data))
             (setf (slot-value *interface* 'history-data) data)))
       (error (c)
-        (log:warn "Failed to restore history from ~a: ~a" path c)))))
+        (echo-warning "Failed to restore history from ~a: ~a" path c)))))
 
 
 
