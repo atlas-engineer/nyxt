@@ -32,14 +32,14 @@ typedef struct {
 } KeyTranslation;
 
 static KeyTranslation key_translations[] = {
-	{.old = "", .new = "BACKSPACE"},
+	{.old = "BackSpace", .new = "BACKSPACE"},
 	{.old = " ", .new = "SPACE"},
 	{.old = "space", .new = "SPACE"},
-	{.old = "", .new = "DELETE"},
-	{.old = "-", .new = "HYPHEN"},
-	{.old = "", .new = "ESCAPE"},
-	{.old = "\r", .new = "RETURN"},
-	{.old = "\t", .new = "TAB"},
+	{.old = "Delete", .new = "DELETE"},
+	{.old = "minus", .new = "HYPHEN"},
+	{.old = "Escape", .new = "ESCAPE"},
+	{.old = "Return", .new = "RETURN"},
+	{.old = "Tab", .new = "TAB"},
 };
 
 guint window_string_to_modifier(gchar *s) {
@@ -50,28 +50,6 @@ guint window_string_to_modifier(gchar *s) {
 	}
 	return 0;
 }
-
-
-static guint key_blacklist[] = {
-	GDK_ISO_Level2_Latch,
-	GDK_ISO_Level3_Shift,
-	GDK_ISO_Level3_Latch,
-	GDK_ISO_Level3_Lock,
-	GDK_ISO_Level5_Shift,
-	GDK_ISO_Level5_Latch,
-	GDK_ISO_Level5_Lock,
-	GDK_ISO_Group_Shift,
-	GDK_ISO_Group_Latch,
-	GDK_ISO_Group_Lock,
-	GDK_ISO_Next_Group,
-	GDK_ISO_Next_Group_Lock,
-	GDK_ISO_Prev_Group,
-	GDK_ISO_Prev_Group_Lock,
-	GDK_ISO_First_Group,
-	GDK_ISO_First_Group_Lock,
-	GDK_ISO_Last_Group,
-	GDK_ISO_Last_Group_Lock,
-};
 
 typedef struct {
 	GtkWidget *base;
@@ -283,6 +261,10 @@ gboolean window_send_event(gpointer window_data,
 	return TRUE;
 }
 
+#define INPUT_IS_NOT_POINTER -1
+#define INPUT_IS_NOT_PRINTABLE -1
+#define INPUT_IS_PRINTABLE -2
+
 gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer window_data) {
 	{
 		gchar *type = "pressed";
@@ -313,50 +295,19 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 	// TODO: Add support for "C-s-u" unicode input.
 	gtk_entry_im_context_filter_keypress(window->key_string_buffer, event);
 
-	// Don't forward dead keys.
-	if (g_str_has_prefix(gdk_keyval_name(event->keyval), "dead")) {
-		g_debug("Skipping dead key");
-		return TRUE;
-	}
-
-	// Don't pass modifiers alone, otherwise the core could see them as self-inserting
-	// character, which would print "Control_L" and the like in the minibuffer.
-	if (event->is_modifier) {
-		g_debug("Forward modifier-only to GTK");
-		return FALSE;
-	}
-
-	// Don't pass GDK_ISO_Level3_Shift and the like, those (non-modifier) keys
-	// alter the keymap upstream, we only want the result.
-	for (int i = 0; i < (sizeof key_blacklist)/(sizeof key_blacklist[0]); i++) {
-		if (event->keyval == key_blacklist[i]) {
-			g_debug("Forward unsupported special keys to GTK");
-			return FALSE;
-		}
-	}
-
 	// Translate ISO_Left_Tab to shift-TAB.
 	if (event->keyval == GDK_ISO_Left_Tab) {
 		event->keyval = GDK_Tab;
 		event->state |= GDK_SHIFT_MASK;
 	}
 
-	// event->string is deprecated but it's very much what we want.
-	gchar *keyval_string = event->string;
+	gchar *keyval_string = gdk_keyval_name(event->keyval);
+	gdouble type = INPUT_IS_NOT_PRINTABLE;
 
 	if (gtk_entry_get_text_length(window->key_string_buffer) >= 1) {
+		type = INPUT_IS_PRINTABLE;
 		keyval_string = strdup(gtk_entry_get_text(window->key_string_buffer));
 		gtk_entry_set_text(window->key_string_buffer, "");
-	} else if ((event->state & GDK_CONTROL_MASK) &&
-		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
-		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
-		// The control modifier turns the A-Za-z event->string into ASCII control
-		// characters (e.g. '^A').  We want the regular letter instead.
-		keyval_string = gdk_keyval_name(event->keyval);
-	} else if (keyval_string[0] == '\0') {
-		// Some keys like F1 don't have a printed representation, so we send the
-		// associated GDK symbol then.
-		keyval_string = gdk_keyval_name(event->keyval);
 	}
 
 	// If at this point the keyval_string is not standard, we use the key
@@ -378,7 +329,7 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 	return window_send_event(window_data,
 		       keyval_string, event->state,
 		       event->hardware_keycode, event->keyval,
-		       -1, -1,
+		       INPUT_IS_NOT_POINTER, type, // 'type' is used to pass extra information such as "is printable?".
 		       event->type == GDK_KEY_RELEASE);
 }
 
