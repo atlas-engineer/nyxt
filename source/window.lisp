@@ -14,7 +14,7 @@
       (fuzzy-match input windows))))
 
 (define-command delete-window ()
-  "Delete the selected window(s)."
+  "Delete the queried window(s)."
   (with-result (windows (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Delete window(s):"

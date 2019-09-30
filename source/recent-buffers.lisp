@@ -16,10 +16,10 @@
       (fuzzy-match input buffers))))
 
 (define-command reopen-buffer ()
-  "Reopen a deleted buffer via minibuffer input."
+  "Reopen queried deleted buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-instance 'minibuffer
-                                        :input-prompt "Reopen buffer:"
+                                        :input-prompt "Reopen buffer(s):"
                                         :multi-selection-p t
                                         :completion-function (recent-buffer-completion-filter))))
     (dolist (buffer buffers)

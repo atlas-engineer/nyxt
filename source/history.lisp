@@ -70,7 +70,7 @@ The history is sorted by last access."
       (push entry (history-data *interface*)))))
 
 (define-command delete-history-entry ()
-  "Delete chosen history entries."
+  "Delete queried history entries."
   (with-result (entries (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Delete entries:"

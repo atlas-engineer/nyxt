@@ -43,7 +43,7 @@
   (echo "Current page bookmarked."))
 
 (define-command bookmark-page ()
-  "Bookmark the currently opened page in the active buffer."
+  "Bookmark the currently opened page(s) in the active buffer."
   (with-result (buffers (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Bookmark URL from buffer(s):"
@@ -58,7 +58,7 @@
     (%bookmark-url url)))
 
 (define-command bookmark-delete ()
-  "Delete a bookmark from the bookmark database."
+  "Delete bookmark(s)."
   (with-result (bookmarks (read-from-minibuffer
                           (make-instance 'minibuffer
                                          :input-prompt "Delete bookmark(s):"

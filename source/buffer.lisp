@@ -65,7 +65,7 @@ MODES is a list of mode symbols."
   (make-buffer-focus))
 
 (define-command delete-buffer ()
-  "Delete the buffer via minibuffer input."
+  "Delete the buffer(s) via minibuffer input."
   (with-result (buffers (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Delete buffer(s):"
@@ -128,7 +128,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   (set-url (url buffer) :buffer buffer))
 
 (define-command reload-buffer ()
-  "Reload of BUFFER or current buffer if unspecified."
+  "Reload queried buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Reload buffer(s):"
@@ -183,28 +183,28 @@ item in the list, jump to the first item."
       (fuzzy-match input (set-difference all-non-minibuffer-modes common-modes)))))
 
 (define-command disable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
-  "Choose a mode to disable."
+  "Disable queried mode(s)."
   (with-result (modes (read-from-minibuffer
-                      (make-instance 'minibuffer
-                                     :input-prompt "Disable mode(s):"
-                                     :multi-selection-p t
-                                     :completion-function (active-mode-completion-filter buffers))))
+                       (make-instance 'minibuffer
+                                      :input-prompt "Disable mode(s):"
+                                      :multi-selection-p t
+                                      :completion-function (active-mode-completion-filter buffers))))
     (dolist (buffer buffers)
       (dolist (mode modes)
         (funcall (sym (mode-command mode))
                  :buffer buffer :activate nil)))))
 
 (define-command disable-mode-for-buffer ()
-  "Choose a mode to disable for select buffers."
+  "Disable queried mode(s) for select buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-instance 'minibuffer
-                                        :input-prompt "Disable mode for buffer(s):"
+                                        :input-prompt "Disable mode(s) for buffer(s):"
                                         :multi-selection-p t
                                         :completion-function (buffer-completion-filter))))
     (disable-mode-for-current-buffer :buffers buffers)))
 
 (define-command enable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
-  "Choose a mode to enable from a list of non-minibuffer modes."
+  "Enable queried mode(s)."
   (with-result (modes (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Enable mode(s):"
@@ -216,10 +216,10 @@ item in the list, jump to the first item."
                  :buffer buffer :activate t)))))
 
 (define-command enable-mode-for-buffer ()
-  "Choose a mode to enable for select buffers.."
+  "Enable queried mode(s) for select buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-instance 'minibuffer
-                                        :input-prompt "Enable mode for buffer(s):"
+                                        :input-prompt "Enable mode(s) for buffer(s):"
                                         :multi-selection-p t
                                         :completion-function (buffer-completion-filter))))
     (enable-mode-for-current-buffer :buffers buffers)))
