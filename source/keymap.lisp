@@ -90,10 +90,18 @@ This is effectively the inverse of `serialize-key-chord-stack'."
           when fun
             return fun)))
 
+(declaim (ftype (function (key-chord) boolean) pointer-event-p))
 (defun pointer-event-p (key-chord)
   "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."
-  (check-type key-chord key-chord)
+  ;; See INPUT_IS_NOT_POINTER in platform port.
   (not (= -1 (first (key-chord-position key-chord)))))
+
+(declaim (ftype (function (key-chord) boolean) printable-p))
+(defun printable-p (key-chord)
+  "Return non-nil if key-chord is printable.
+Letters are printable, while function keys or backspace are not."
+  ;; See INPUT_IS_PRINTABLE in platform port.
+  (= -2 (second (key-chord-position key-chord))))
 
 ;; "Add a new key chord to the interface key-chord-stack.
 ;; For example, it may add C-M-s or C-x to a stack which will be consumed by
@@ -118,6 +126,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
                     :low-level-data low-level-data)))
     ;; Don't stack the release key-chords or else pressing "C-x" then "C-+""
     ;; will be understood as "C-x C-R-x C-+ C-R-+".
+    (log:debug key-chord)
     (when (or (null (key-chord-stack *interface*))
               (not (member-string "R" (key-chord-modifiers key-chord))))
       (push key-chord (key-chord-stack *interface*))
@@ -143,7 +152,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
                (progn
                  ;; (log:debug "Key released") ; TODO: This makes the debug trace too verbose.  Middle ground?
                  nil)
-               (progn
+               (when (printable-p (first (key-chord-stack *interface*)))
                  (log:debug "Insert ~s in minibuffer" (key-chord-key-string
                                                        (first (key-chord-stack *interface*))))
                  (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
