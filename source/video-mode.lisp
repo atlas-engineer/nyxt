@@ -9,21 +9,20 @@ It tries by default to use the program `youtube-dl', that you must
 have in your path.
 
 You can also write a new function that takes an url as parameter, and
-bind it to `next/video:*download-function*'.  In doing so, you rely
+bind it to `next/video:*download-function*'.  In doing so, you can
 rely on the `next/video:download' function, that does error handling
 and process management.
-
-;TODO: show progress
-;TODO: make it appear in the recent downloaded files
-;TODO: ask any destination
 
 ***********************************************************************
 *Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
 ***********************************************************************
 
+;XXX: show progress
+;XXX: make it appear in the recent downloaded files
+;XXX: ask any destination
+
 What can be done: automatically install the required program, better
 notifications, choose videos, etc, etc.
-
 "))
 
 (in-package :next/video)
@@ -69,7 +68,7 @@ By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
           (setf target-dir (resolve-download-directory target-dir)))
         (echo "Starting download of ~a to ~a" url target-dir)
         (log:info "Starting download of ~a to ~a" url target-dir)
-        ;TODO: notify progress.
+        ;XXX notify progress.
         (next:launch-and-notify (download-command url target-dir)
                                 :success-msg (format nil "Video downloaded to ~a." target-dir)
                                 :error-msg (format nil "Failed to download video.~&")))
@@ -88,7 +87,7 @@ By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
          (uri (quri:uri (url (current-buffer)))))
     (cond
       ((null next/video::*preferred-download-directories*)
-       ;TODO: ask!
+       ;XXX: ask destination.
        (next/video:download url))
       ((= 1 (length next/video::*preferred-download-directories*))
        (next/video:download url (first next/video::*preferred-download-directories*)))
