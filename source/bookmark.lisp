@@ -2,6 +2,8 @@
 
 (in-package :next)
 
+;; Warning: We don't set most slots' initforms so that they are not serialized
+;; if unset.
 (defclass bookmark-entry ()
   ((url :initarg :url
         :accessor url
@@ -9,25 +11,24 @@
         :initform "")
    (title :initarg :title
           :accessor title
-          :type string
-          :initform "")
+          :type string)
    (annotation :initarg :annotation
                :accessor annotation
-               :type string
-               :initform "")
+               :type string)
    (date :initarg :date
          :accessor date
-         :type local-time:timestamp
-         :initform (local-time:now))
+         :type string
+         :initform (local-time:format-timestring nil (local-time:now))
+         ;; We don't store the local-time:timestamp because it's too verbose
+         ;; when serialized.
+         :documentation "The date must be parsable by `local-time:parse-timestring'.")
    (tags :initarg :tags
          :accessor tags
          :type list
-         :initform nil
          :documentation "A list of strings.")
-   (shortcut :initarg :shotcut
+   (shortcut :initarg :shortcut ; TODO: Add support for short-cuts in `parse-url'.
              :accessor shortcut
              :type string
-             :initform ""
              :documentation "
 This allows the following URL queries from the minibuffer:
 
@@ -35,8 +36,7 @@ This allows the following URL queries from the minibuffer:
 - SHORTCUT TERM: Use SEARCH-URL to search TERM.  If SEARCH-URL is empty, fallback on other search engines.")
    (search-url :initarg :search-url
                :accessor search-url
-               :type string
-               :initform "")))
+               :type string)))
 
 (defmethod object-string ((entry bookmark-entry))
   (format nil "~a~a  ~a~a"
@@ -137,17 +137,14 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                         :if-does-not-exist :create
                         :if-exists :supersede)
     ;; TODO: Sort by customizable function, ignore protocol by default.
-    ;; TODO: Print 1 bookmark per line.
-    ;; We READ the output of serialize-sexp to make it more human-readable.
-    (let ((*package* *package*))
+    (let ((*package* *package*)
+          ;; (*print-case* :downcase) ; TODO: Wait until prevalence fully supports it.  https://github.com/40ants/cl-prevalence/issues/4
+          (s-serialization::*local-package* (find-package 'next))
+          (s-serialization::*one-element-per-line* t))
       ;; We need to make sure current package is :next so that
       ;; symbols a printed with consistent namespaces.
       (in-package :next)
-      (format file
-              "~s"
-              (with-input-from-string (in (with-output-to-string (out)
-                                            (s-serialization:serialize-sexp (bookmarks-data *interface*) out)))
-                (read in))))))
+      (s-serialization:serialize-sexp (bookmarks-data *interface*) file))))
 
 (defun restore-sexp-bookmarks ()
   "Restore the bookmarks from the interface `bookmarks-path'."
@@ -168,7 +165,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       (when file
                         ;; We need to make sure current package is :next so that
                         ;; symbols a printed with consistent namespaces.
-                        (let ((*package* *package*))
+                        (let (;; (*print-case* :downcase) ; TODO: Wait until prevalence fully supports it.
+                              (*package* *package*))
                           (in-package :next)
                           (s-serialization:deserialize-sexp file))))))
           (when data
