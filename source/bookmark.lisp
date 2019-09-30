@@ -2,6 +2,8 @@
 
 (in-package :next)
 
+;; TODO: Output tags on the same line.
+
 ;; Warning: We don't set most slots' initforms so that they are not serialized
 ;; if unset.
 (defclass bookmark-entry ()
@@ -49,33 +51,64 @@ This allows the following URL queries from the minibuffer:
               (format nil " (~{~a~^, ~})" (tags entry))
               "")))
 
-(defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
+(defun equal-url (url1 url2)
   "Entries are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
-  (let ((uri1 (quri:uri (url e1)))
-        (uri2 (quri:uri (url e2))))
+  (let ((uri1 (quri:uri url1))
+        (uri2 (quri:uri url2)))
     (and (string= (quri:uri-host uri1) (quri:uri-host uri2))
          (string= (quri:uri-path uri1) (quri:uri-path uri2)))))
 
-(defun %bookmark-url (url &key title)
-  (let ((entry (make-instance 'bookmark-entry
-                             :url url
-                             :title title)))
-    ;; TODO: Query tags.
-    ;; TODO: Check for dups.
-    ;; TODO: Check title if empty.
-    ;; TODO: Discard empty URLs and "about:blank".
-    (push entry (bookmarks-data *interface*))))
+(defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
+  "Entries are equal if the hosts and the paths are equal.
+In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
+  (equal-url (quri:uri (url e1)) (quri:uri (url e2))))
+
+(defun bookmark-add (url &key title tags)
+  (unless (or (str:emptyp url)
+              (string= "about:blank" url))
+    (let ((entry nil))
+      (setf (bookmarks-data *interface*)
+            (delete-if (lambda (b)
+                         (when (equal-url (url b) url)
+                           (setf entry b)))
+                       (bookmarks-data *interface*)))
+      (unless entry
+        (make-instance 'bookmark-entry
+               :url url))
+      (unless (str:emptyp title)
+        (setf (title entry) title))
+      (when (slot-boundp entry 'tags)
+        (setf tags (delete-duplicates (append (tags entry) tags)
+                                      :test #'string=)))
+      (setf (tags entry) (sort tags #'string<))
+      (push entry (bookmarks-data *interface*)))))
 
 (defun bookmark-completion-filter (input)
   ;; TODO: Filter by tags.
   (fuzzy-match input (bookmarks-data *interface*)))
 
+(defun tag-completion-filter ()
+  (let ((tags (delete-if #'null
+                         (apply #'append
+                                (mapcar (lambda (b) (when (slot-boundp b 'tags) (tags b)))
+                                        (bookmarks-data *interface*))))))
+    (lambda (input)
+      (fuzzy-match input tags))))
+
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
   (if (url buffer)
-      (progn
-        (%bookmark-url (url buffer) :title (title buffer))
+      (with-result (tags (read-from-minibuffer
+                          (make-instance 'minibuffer
+                                         :input-prompt "Tag(s):"
+                                         :multi-selection-p t
+                                         :completion-function (tag-completion-filter)
+                                         ;; TODO: Can we query both new and existings tags?
+                                         :empty-complete-immediate t)))
+        (bookmark-add (url buffer)
+                       :title (title buffer)
+                       :tags tags)
         (echo "Bookmarked ~a." (url buffer)))
       (echo "Buffer has no URL.")))
 
@@ -93,7 +126,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (with-result (url (read-from-minibuffer
                      (make-instance 'minibuffer
                                     :input-prompt "Bookmark URL:")))
-    (%bookmark-url url)))
+    (bookmark-add url)))
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
@@ -115,7 +148,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (let* ((link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-hint link-hints :test #'equalp))))
       (when selected-link
-        (%bookmark-url selected-link)))))
+        (bookmark-add selected-link)))))
 
 (define-deprecated-command bookmark-anchor ()
   "Deprecated by `bookmark-hint'."

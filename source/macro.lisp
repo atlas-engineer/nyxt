@@ -38,7 +38,7 @@ Example:
   (with-result (url (read-from-minibuffer
                      (make-instance 'minibuffer
                                     :input-prompt \"Bookmark URL:\"))
-    (%bookmark-url url))"
+    (bookmark-add url))"
   `(,(first async-form)
     ,@(rest async-form)
     :callback (lambda (,symbol) ,@body)))
