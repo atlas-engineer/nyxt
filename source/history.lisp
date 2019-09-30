@@ -49,24 +49,25 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
-  (let ((entry nil)
-        (global-history (history-data *interface*)))
-    (setf global-history
-          (delete-if (lambda (e)
-                       (when (string= url (url e))
-                         (setf entry e)))
-                     global-history))
-    (unless entry
-      (setf entry (make-instance 'history-entry
-                                 :url url)))
-    (if explicit
-        (incf (explicit-visits entry))
-        (incf (implicit-visits entry)))
-    (setf (last-access entry) (local-time:now))
-    (unless (str:emptyp title)
-      (setf (title entry) title))
-    ;; Use accessor to ensure store function is called.
-    (push entry (history-data *interface*))))
+  (unless (str:emptyp url)
+    (let ((entry nil)
+          (global-history (history-data *interface*)))
+      (setf global-history
+            (delete-if (lambda (e)
+                         (when (string= url (url e))
+                           (setf entry e)))
+                       global-history))
+      (unless entry
+        (setf entry (make-instance 'history-entry
+                                   :url url)))
+      (if explicit
+          (incf (explicit-visits entry))
+          (incf (implicit-visits entry)))
+      (setf (last-access entry) (local-time:now))
+      (unless (str:emptyp title)
+        (setf (title entry) title))
+      ;; Use accessor to ensure store function is called.
+      (push entry (history-data *interface*)))))
 
 (define-command delete-history-entry ()
   "Delete chosen history entries."
