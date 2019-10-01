@@ -44,6 +44,7 @@
                  ;; Independent utilities
                  (:file "package")
                  (:file "tags")
+                 (:file "time")
                  ;; Core Functionality
                  (:file "serialization")
                  (:file "macro")
