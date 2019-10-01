@@ -46,6 +46,11 @@ MODIFIERS = {}
 # Used for constructing a bitmasked modifier
 REVERSE_MODIFIERS = {}
 
+# TODO: OK to leave as global vars (sans container)?
+INPUT_IS_NOT_POINTER = -1.0
+INPUT_IS_NOT_PRINTABLE = -1.0
+INPUT_IS_PRINTABLE = -2.0
+
 if platform == "linux" or platform == "linux2":
     tmp = {Qt.ShiftModifier: "s",
            Qt.ControlModifier: "C",
@@ -199,12 +204,17 @@ class EventFilter(QWidget):
                 low_level_data = key_code
             except ValueError:
                 low_level_data = key_code
+
+            txt_type = INPUT_IS_NOT_PRINTABLE
+            if len(event.text()) >= 1:
+               txt_type = INPUT_IS_PRINTABLE
+
             logging.info("send code: {} string: {} modifiers: {} low_level_data: {}".format(
                 key_code, key_string, modifiers, low_level_data))
             push_input_event(key_code,
                              key_string,
                              modifiers,
-                             -1.0, -1.0, low_level_data,
+                             INPUT_IS_NOT_POINTER, txt_type, low_level_data,
                              window.active())
             return True
 
