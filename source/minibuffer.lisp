@@ -627,7 +627,6 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                             (status-buffer (when window (status-buffer window))))
   "Echo TEXT in the status buffer.
 MESSAGE is a cl-markup list."
-  (log:info "~s" text)
   (if (and status-buffer window)
       (progn
         (unless (or (null message)
@@ -665,7 +664,9 @@ The first argument can be a format string and the following arguments will be
 interpreted by `format'.
 Untrusted content should be given as argument with a format string."
   (handler-case
-      (%echo-status (apply #'format nil args))
+      (let ((text (apply #'format nil args)))
+        (%echo-status text)
+        (log:info "~s" text))
     (error ()
       (log:warn "Failed to echo these args: ~s~&Possible improvements:
 - pass multiple arguments and use format strings for untrusted content. Don't pre-construct a single string that could contain tildes.
@@ -676,7 +677,9 @@ Untrusted content should be given as argument with a format string."
 @export
 (defun echo-safe (&rest args)
   "Echo strings without expanding format directives unlike other `echo' commands."
-  (%echo-status (str:join " " args)))
+  (let ((text (str:join " " args)))
+    (%echo-status text)
+    (log:info "~s" text)))
 
 @export
 (defun echo-warning (&rest args)
