@@ -29,6 +29,10 @@ and OS integration is provided via:
 + macOS: Qt
 + GNU/Linux: Qt or GTK
 
+Note that we provide a Debian package,  for Debian >= 10 (Sid) and its
+derivatives  (Ubuntu,  Linux  Mint…).  See  our  [[https://next.atlas.engineer/download][Downloads  page]].  The
+following instructions assume you want to install Next from source.
+
 ** Installing SBCL
 
 You'll need SBCL ≥ 1.4.2 to compile Next.  (Previous versions require an ASDF update.)
@@ -54,6 +58,7 @@ To install Quicklisp:
 - Evaluate in the REPL ~(ql:add-to-init-file)~ to add Quicklisp to your Lisp init file.
 
 ** GNU/Linux specific dependencies
+
 - WebKitGTK+ also known as webkit2gtk (make sure to use the most
   recent version for security reasons -- /Debian Stable won't do/)
 - SQLite
@@ -62,6 +67,13 @@ To install Quicklisp:
 - libfixposix
 - gstreamer, gst-plugins-* (for HTML audio/video)
 - xclip (for clipboard support)
+- notify-osd (optional)
+
+The full list of dependencies can be installed with this one-liner:
+
+#+begin_src sh
+apt install sbcl libwebkit2gtk-4.0-dev default-dbus-session-bus glib-networking sqlite gsettings-desktop-schemas libfixposix-dev libgstreamer1.0-0 gir1.2-gst-plugins-base-1.0 xclip notify-osd
+#+end_src
 
 If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
 have to let know your Lisp compiler where to find them.  To do so, add the
