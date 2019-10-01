@@ -675,11 +675,9 @@ Untrusted content should be given as argument with a format string."
 - use echo-safe or use the ~~s directive directly." args))))
 
 @export
-(defun echo-safe (arg)
-  "Echo one untrusted string that could contain format directives (that is, a tilde).
-It uses the ~s directive.
-Unlike echo, this only accepts one argument."
-  (%echo-status (format nil "~s" arg)))
+(defun echo-safe (&rest args)
+  "Echo strings without expanding format directives unlike other `echo' commands."
+  (%echo-status (str:join " " args)))
 
 @export
 (defun echo-warning (&rest args)
