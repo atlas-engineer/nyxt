@@ -1,6 +1,11 @@
 (uiop:define-package :next/video
     (:use :common-lisp :next)
-  (:export :download)
+  (:export :download
+           :download-arguments
+           :*download-program*
+           :*download-args*
+           :*download-function*
+           :*preferred-download-directories*)
   (:documentation "Download videos on the Web.
 
 Command defined in this package: `download-video'.
@@ -34,7 +39,7 @@ notifications, choose videos, etc.
   "Default arguments for the download command. See also `download-arguments' which adds more.")
 
 (defparameter *preferred-download-directories* (list download-manager::*default-download-directory*)
-  "List of favorite directories to save videos to.")
+  "List of favorite directories to save videos to. If it contains more than one entry, we are asked for the destination.")
 
 
 (defun download-arguments (url target-dir)
@@ -50,6 +55,7 @@ Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube
       download-manager::*default-download-directory*))
 
 (defun download-command (url &optional target-dir)
+  "Return a list of strings composing the full download command, ready to feed to uiop:launch-program."
   (let ((target-dir (resolve-download-directory target-dir)))
     (setf target-dir (string-right-trim (list #\/) (namestring target-dir)))
     (append (list *download-program*
@@ -57,7 +63,7 @@ Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube
             (download-arguments url target-dir))))
 
 (defun download (url &optional target-dir)
-  "Download asynchronously."
+  "Download asynchronously and notify on success or failure."
   (handler-case
       (progn
         (unless target-dir
@@ -79,14 +85,13 @@ Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube
 
 (define-command download-video ()
   "Download the video of the current URL with an external program."
-  (let* ((url (url (current-buffer)))
-         (uri (quri:uri (url (current-buffer)))))
+  (let* ((url (url (current-buffer))))
     (cond
       ((null next/video::*preferred-download-directories*)
        ;XXX: ask destination.
-       (next/video:download url))
+       (funcall next/video:*download-function* url))
       ((= 1 (length next/video::*preferred-download-directories*))
-       (next/video:download url (first next/video::*preferred-download-directories*)))
+       (funcall next/video:*download-function* url (first next/video::*preferred-download-directories*)))
       (t
        (with-result (target-dir (read-from-minibuffer
                                  (make-instance 'minibuffer
@@ -94,4 +99,4 @@ Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube
                                                 :completion-function
                                                 (lambda (input)
                                                   (file-completion-function input next/video::*preferred-download-directories*)))))
-         (next/video::download uri target-dir))))))
+         (funcall next/video:*download-function* url target-dir))))))
