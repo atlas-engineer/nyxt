@@ -389,7 +389,8 @@ The handlers take the `download-manager:download' class instance as argument."))
 (defmethod history-data ((interface remote-interface))
   "Return the `history-data' slot from INTERFACE.
 If empty, the history data is initialized with `history-restore-function'."
-  (unless (slot-value interface 'history-data)
+  (when (and (null (slot-value interface 'history-data))
+             (history-restore-function interface))
     (funcall (history-restore-function interface)))
   (slot-value interface 'history-data))
 
@@ -398,12 +399,14 @@ If empty, the history data is initialized with `history-restore-function'."
 Persist the `history-data' slot from INTERFACE to `history-path' with
 `history-store-function'."
   (setf (slot-value interface 'history-data) value)
-  (funcall (history-store-function interface)))
+  (match (history-store-function interface)
+    ((guard f f) (funcall f))))
 
 (defmethod bookmarks-data ((interface remote-interface))
   "Return the `bookmarks-data' slot from INTERFACE.
 If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
-  (unless (slot-value interface 'bookmarks-data)
+  (when (and (null (slot-value interface 'bookmarks-data))
+             (bookmarks-restore-function interface))
     (funcall (bookmarks-restore-function interface)))
   (slot-value interface 'bookmarks-data))
 
@@ -412,7 +415,8 @@ If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
 Persist the `bookmarks-data' slot from INTERFACE to `bookmarks-path' with
 `bookmarks-store-function'."
   (setf (slot-value interface 'bookmarks-data) value)
-  (funcall (bookmarks-store-function interface)))
+  (match (bookmarks-store-function interface)
+    ((guard f f) (funcall f))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
@@ -751,7 +755,8 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
     (remhash (id buffer) (buffers *interface*))
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
-    (funcall (session-store-function *interface*))))
+    (match (session-store-function *interface*)
+      ((guard f f) (funcall f)))))
 
 (declaim (ftype (function (buffer string)) rpc-buffer-load))
 @export

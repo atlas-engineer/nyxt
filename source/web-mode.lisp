@@ -360,7 +360,8 @@ Otherwise go forward to the only child."
                      :test #'equals)
     (when url
       (history-add url :title (title buffer)))
-    (funcall (session-store-function *interface*)))
+    (match (session-store-function *interface*)
+      ((guard f f) (funcall f))))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.
   (echo-dismiss))

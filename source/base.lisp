@@ -181,7 +181,9 @@ This function is suitable as a `remote-interface' `startup-function'."
       (let ((window (rpc-window-make))
             (buffer (help)))
         (window-set-active-buffer window buffer)))
-  (funcall (session-restore-function *interface*)))
+  (match (session-restore-function *interface*)
+    ((guard f f)
+     (funcall f))))
 
 @export
 (defun start (&key urls
