@@ -666,8 +666,10 @@ interpreted by `format'.
 Untrusted content should be given as argument with a format string."
   (handler-case
       (let ((text (apply #'format nil args)))
+        ;; We might still want to echo the empty string to clear the echo area.
         (%echo-status text)
-        (log:info "~s" text))
+        (unless (str:emptyp text)
+          (log:info "~s" text)))
     (error ()
       (log:warn "Failed to echo these args: ~s~&Possible improvements:
 - pass multiple arguments and use format strings for untrusted content. Don't pre-construct a single string that could contain tildes.
@@ -680,7 +682,8 @@ Untrusted content should be given as argument with a format string."
   "Echo strings without expanding format directives unlike other `echo' commands."
   (let ((text (str:join " " args)))
     (%echo-status text)
-    (log:info "~s" text)))
+    (unless (str:emptyp text)
+      (log:info "~s" text))))
 
 @export
 (defun echo-warning (&rest args)
@@ -688,7 +691,8 @@ Untrusted content should be given as argument with a format string."
   (let ((text (apply #'format nil args)))
     (%echo-status text
                   :message `((:b "Warning:") " " ,text))
-    (log:warn "~a" text)))
+    (unless (str:emptyp text)
+      (log:warn "~a" text))))
 
 @export
 (defmethod echo-dismiss ()
