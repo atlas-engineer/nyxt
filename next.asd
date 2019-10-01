@@ -41,8 +41,10 @@
   :components ((:module "source"
                 :components
                 ((:file "patch-annot")
-                 ;; Core Functionality
+                 ;; Independent utilities
                  (:file "package")
+                 (:file "tags")
+                 ;; Core Functionality
                  (:file "serialization")
                  (:file "macro")
                  (:file "global")
