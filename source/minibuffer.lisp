@@ -234,10 +234,11 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
     (setf (callback minibuffer) callback))
   ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
   (setf (callback-buffer minibuffer) (current-buffer))
-  (match (setup-function minibuffer)
-    ((guard f f) (funcall f minibuffer)))
   (handler-case
-      (update-display minibuffer)
+      (progn
+        (match (setup-function minibuffer)
+          ((guard f f) (funcall f minibuffer)))
+        (update-display minibuffer))
     (error (c)
       (echo "~a" c)
       (return-from read-from-minibuffer)))
