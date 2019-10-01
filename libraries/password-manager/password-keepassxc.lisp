@@ -1,17 +1,17 @@
 (in-package :password)
 
-(annot:enable-annot-syntax)
+(defvar *keepassxc-cli-program* (executable-find "keepassxc-cli"))
 
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (let* ((st (make-string-input-stream (master-password password-interface)))
-         (output (uiop:run-program `("keepassxc-cli"
+         (output (uiop:run-program `(*keepassxc-cli-program*
                                      "ls" ,(password-file password-interface))
                                    :input st :output '(:string :stripped t))))
     (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal)))
 
 (defmethod clip-password ((password-interface keepassxc-interface) password-name)
   (let* ((st (make-string-input-stream (master-password password-interface)))
-         (output (uiop:run-program `("keepassxc-cli"
+         (output (uiop:run-program `(*keepassxc-cli-program*
                                      "show" ,(password-file password-interface)
                                      ,password-name)
                                    :input st :output '(:string :stripped t))))
@@ -23,7 +23,7 @@
                                (format nil "~a~C~a"
                                        (master-password password-interface)
                                        #\newline password)))
-    (uiop:run-program `("keepassxc-cli"
+    (uiop:run-program `(*keepassxc-cli-program*
                         "add" "-p" ,(password-file password-interface) ,password-name)
                       :input st)))
 
@@ -31,7 +31,7 @@
   (when (master-password password-interface)
     (handler-case
         (let* ((st (make-string-input-stream (master-password password-interface)))
-               (output (uiop:run-program `("keepassxc-cli"
+               (output (uiop:run-program `(*keepassxc-cli-program*
                                            "ls" ,(password-file password-interface))
                                          :input st :output '(:string :stripped t))))
           (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal))

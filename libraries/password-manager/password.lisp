@@ -2,6 +2,8 @@
 
 (annot:enable-annot-syntax)
 
+(defvar *sleep-timer* 15)
+
 (defclass password-interface ()
   ())
 
@@ -41,7 +43,7 @@
     (trivial-clipboard:text pass)
     (bt:make-thread
      (lambda ()
-       (sleep 5)
+       (sleep *sleep-timer*)
        (when (string= (trivial-clipboard:text) pass)
          (trivial-clipboard:text original-clipboard))))))
 
@@ -64,5 +66,3 @@ Return nil if COMMAND is not found anywhere."
         ((executable-find "keepassxc-cli")
          (make-instance 'keepassxc-interface))
         (t nil)))
-
-
