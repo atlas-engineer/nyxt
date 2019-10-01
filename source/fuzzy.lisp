@@ -62,6 +62,26 @@ more details."
           (> (score-candidate input (first x))
              (score-candidate input (first y))))))
 
+(defun keep-exact-matches-in-candidates (input candidate-pairs)
+  "Destructively filter out non-exact matches from candidates.
+If any input substring matches exactly (but not necessarily a whole word),
+then all candidates that are not exactly matched by at least one substring are removed."
+  (let* ((input-strings (str:split " " input :omit-nulls t))
+         (exactly-matching-substrings (delete-duplicates
+                                       (loop for candidate-pair in candidate-pairs
+                                             append (remove-if
+                                                     (lambda (i)
+                                                       (not (search i (first candidate-pair))))
+                                                     input-strings))
+                                       :test #'string=)))
+    (if exactly-matching-substrings
+        (setf candidate-pairs
+              (delete-if (lambda (candidate-pair)
+                           (not (loop for i in exactly-matching-substrings
+                                      always (search i (first candidate-pair)))))
+                         candidate-pairs))
+        candidate-pairs)))
+
 @export
 (defun fuzzy-match (input candidates)   ; TODO: Make score functions customizable, e.g. for global history.
   "From the user input and a list of candidates, return a filtered list of
@@ -76,6 +96,7 @@ The match is case-sensitive if INPUT contains at least one uppercase character."
              (pairs (if (str:downcasep input)
                         (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)
                         pairs))
+             (pairs (keep-exact-matches-in-candidates input pairs))
              (pairs (sort-candidates input pairs)))
         (log:debug "~a" (mapcar (lambda (c) (list (first c)
                                                   (score-candidate (to-unicode input) (first c))))
