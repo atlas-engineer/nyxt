@@ -116,7 +116,8 @@ distance scroll-left or scroll-right will scroll.")
                    :documentation "The maximum zoom ratio relative to the default.")
    (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0
                        :documentation "The default zoom ratio.")
-   (cookies-path :accessor cookies-path :initform (xdg-data-home "cookies.txt")
+   (cookies-path :accessor cookies-path
+                 :initform (xdg-data-home "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
 platform ports might support this.")
    (box-style :accessor box-style
@@ -367,6 +368,12 @@ The handlers take the window as argument.")
                      :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
+The handlers take the buffer as argument.")
+   (buffer-before-make-hook :accessor buffer-make-hook :initform '() :type list
+                     :documentation "Hook run before `rpc-buffer-make'.
+This hook is mostly useful to set the `cookies-path'.
+The buffer web view is not allocated, so it's not possible to run any
+parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
    (minibuffer-make-hook :accessor minibuffer-make-hook :initform '() :type list
                          :documentation "Hook run after the `minibuffer' class
@@ -698,7 +705,9 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                      (apply #'make-instance 'buffer :id (get-unique-buffer-identifier)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
-    (ensure-parent-exists (cookies-path buffer))
+    (hooks:run-hook (hooks:object-hook *interface* 'buffer-before-make-hook) buffer)
+    (unless (str:emptyp (namestring (cookies-path buffer)))
+      (ensure-parent-exists (cookies-path buffer)))
     (setf (gethash (id buffer) (buffers *interface*)) buffer)
     (incf (total-buffer-count *interface*))
     (%rpc-send "buffer_make" (id buffer)
