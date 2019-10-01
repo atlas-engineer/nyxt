@@ -1,6 +1,6 @@
 (in-package :password)
 
-(annot:enable-annot-syntax)
+(defvar *password-store-program* (executable-find "pass"))
 
 (defmethod list-passwords ((password-interface password-store-interface))
   (let ((raw-list (directory (format nil "~a/**/*.gpg"
@@ -12,12 +12,12 @@
             raw-list)))
 
 (defmethod clip-password ((password-interface password-store-interface) password-name)
-  (clip-password-string (uiop:run-program `("pass" "show" ,password-name)
+  (clip-password-string (uiop:run-program `(*password-store-program* "show" ,password-name)
                                           :output '(:string :stripped t))))
 
 (defmethod save-password ((password-interface password-store-interface) password-name password)
   (with-open-stream (st (make-string-input-stream password))
-    (uiop:run-program `("pass" "insert" "--echo" ,password-name) :input st)))
+    (uiop:run-program `(*password-store-program* "insert" "--echo" ,password-name) :input st)))
 
 (defmethod password-correct-p ((password-interface password-store-interface))
   t)
