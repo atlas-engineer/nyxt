@@ -50,6 +50,15 @@ Set to '-' to read standard input instead.")
   (kill-interface *interface*)
   (kill-port (port *interface*)))
 
+(define-command quit-after-clearing-session ()
+  "Clear session then quit Next."
+  (setf
+   (session-store-function *interface*) nil
+   (session-restore-function *interface*) nil)
+  (uiop:delete-file-if-exists (session-path *interface*))
+  (kill-interface *interface*)
+  (kill-port (port *interface*)))
+
 (define-deprecated-command kill ()
   "Deprecated by `quit'."
   (quit))
