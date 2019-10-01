@@ -41,12 +41,12 @@
   :components ((:module "source"
                 :components
                 ((:file "patch-annot")
+                 (:file "patch-serialization")
                  ;; Independent utilities
                  (:file "package")
                  (:file "tags")
                  (:file "time")
                  ;; Core Functionality
-                 (:file "serialization")
                  (:file "macro")
                  (:file "global")
                  (:file "port")
