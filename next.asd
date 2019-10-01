@@ -46,6 +46,7 @@
                  (:file "package")
                  (:file "tags")
                  (:file "time")
+                 (:file "file-human-size")
                  ;; Core Functionality
                  (:file "macro")
                  (:file "global")
