@@ -115,10 +115,12 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (defun tag-completion-filter (&key with-empty-tag)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
 This can be useful to let the user select no tag when returning directly."
-  (let ((tags (delete-if #'null
-                                  (apply #'append
-                                         (mapcar (lambda (b) (tags b))
-                                                 (bookmarks-data *interface*))))))
+  (let ((tags (sort (delete-duplicates
+                     (apply #'append
+                            (mapcar (lambda (b) (tags b))
+                                    (bookmarks-data *interface*)))
+                     :test #'string-equal)
+                    #'string-lessp)))
     (when with-empty-tag
       (push "" tags))
     (lambda (input)
