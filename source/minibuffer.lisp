@@ -627,7 +627,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                             (status-buffer (when window (status-buffer window))))
   "Echo TEXT in the status buffer.
 MESSAGE is a cl-markup list."
-  (log:info text)
+  (log:info "~s" text)
   (if (and status-buffer window)
       (progn
         (unless (or (null message)
