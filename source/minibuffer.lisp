@@ -251,11 +251,13 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
   (with-slots (callback empty-complete-immediate completions completion-cursor
-               multi-selection-p marked-completions)
+               multi-selection-p marked-completions input-buffer)
       minibuffer
     (match (or marked-completions
                (and completions
-                    (list (nth completion-cursor completions))))
+                    (list (nth completion-cursor completions)))
+               (and empty-complete-immediate
+                    (list input-buffer)))
       ((guard completions completions)
        ;; Note that "immediate input" is also in completions, so it's caught here.
        (setf completions
