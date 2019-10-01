@@ -11,6 +11,18 @@
          (url (format nil search-url encoded-search-string)))
     url))
 
+(defun bookmark-search-engines (&optional (bookmarks (bookmarks-data *interface*)))
+  (mapcar (lambda (b)
+            (list
+             (shortcut b)
+             (if (quri:uri-scheme (quri:uri (search-url b)))
+                 (search-url b)
+                 (str:concat (url b) (search-url b)))
+             (url b)))
+          (remove-if (lambda (b) (or (str:emptyp (search-url b))
+                                     (str:emptyp (shortcut b))))
+                     bookmarks)))
+
 (defun parse-url (input-url)
   "From user input, return the full url to visit.
 
@@ -19,22 +31,29 @@ If the input starts with an uri scheme, open it as is.
 If the input is actually a file path, open it.
 Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
 Otherwise, build a search query with the default search engine."
-  (let* ((engine (assoc (first (str:split " " input-url))
-                        (search-engines *interface*) :test #'string=))
+  (let* ((search-engines (append (search-engines *interface*)
+                                 (bookmark-search-engines)))
+         (engine (assoc (first (str:split " " input-url))
+                        search-engines :test #'string=))
          (default (assoc "default"
-                         (search-engines *interface*) :test #'string=)))
+                         search-engines :test #'string=)))
     (if engine
-        (generate-search-query
-         (subseq input-url
-                 (length (first (str:split " " input-url))))
-         (rest engine))
+        (let ((new-input (subseq input-url
+                                 (length (first (str:split " " input-url))))))
+          (if (and (listp (rest engine))
+                   (str:emptyp new-input))
+              (third engine)
+              (generate-search-query new-input
+                                     (if (atom (rest engine))
+                                         (rest engine)
+                                         (second engine)))))
         (let ((recognized-scheme (ignore-errors (quri:uri-scheme (quri:uri input-url)))))
           (cond
             ((str:starts-with? "magnet:" input-url)
              (log:debug "Open magnet link with external application.")
              (ignore-errors
-               (uiop:launch-program (list "xdg-open" input-url))
-               (cancel-input)))
+              (uiop:launch-program (list "xdg-open" input-url))
+              (cancel-input)))
             ((and recognized-scheme
                   (not (string= "file" recognized-scheme)))
              input-url)
@@ -45,7 +64,7 @@ Otherwise, build a search query with the default search engine."
                  (format nil "file://~a"
                          (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*))))
             ((let ((uri (ignore-errors
-                          (quri:uri (str:concat "https://" input-url)))))
+                         (quri:uri (str:concat "https://" input-url)))))
                (and uri
                     (quri:uri-p uri)
                     ;; E.g. "http://foo" has an empty domain, so it's probably
@@ -56,4 +75,7 @@ Otherwise, build a search query with the default search engine."
                     (not (string= (quri:uri-domain uri)
                                   (quri:uri-tld uri)))))
              (str:concat "https://" input-url))
-            (t (generate-search-query input-url (rest default))))))))
+            (t (generate-search-query input-url
+                                      (if (atom (rest default))
+                                          (rest default)
+                                          (second default)))))))))

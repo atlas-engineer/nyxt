@@ -273,11 +273,17 @@ is run after the platform port has been initialized and after the
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
    (search-engines :accessor search-engines
-                   :initform '(("default" . "https://duckduckgo.com/?q=~a")
-                               ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
-                   :documentation "An association list of all the search engines
-you can use in the minibuffer.  The 'default' engine is used when the query is
-not a valid URL, or the first keyword is not recognized.")
+                   :initform '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
+                               ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
+                   :documentation "An association list of the search engines.
+
+The elements are in the form (SHORTCUT SEARCH-URL FALLBACK-URL).  You can inoke
+them from the minibuffer by prefixing your query with SHORTCUT.  If the query is
+empty, FALLBACK-URL is load instead.  If FALLBACK-URL is empty, SEARCH-URL is
+used on en empty search.
+
+The 'default' engine is used when the query is not a valid URL, or the first
+keyword is not recognized.")
    (key-chord-stack :accessor key-chord-stack :initform '()
                     :documentation "A stack that keeps track of the key chords a user has inputted.")
    (downloads :accessor downloads :initform '()

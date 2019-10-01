@@ -36,7 +36,7 @@
          :type list
          :initform nil
          :documentation "A list of strings.")
-   (shortcut :initarg :shortcut ; TODO: Add support for shortcuts in `parse-url'.
+   (shortcut :initarg :shortcut
              :accessor shortcut
              :type string
              :initform ""
