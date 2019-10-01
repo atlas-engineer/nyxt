@@ -64,7 +64,7 @@ Set to '-' to read standard input instead.")
       (setf (uiop:getenv "G_MESSAGES_DEBUG") "all"))
     (_
      (log:config :info)
-     (setf (uiop:getenv "G_MESSAGES_DEBUG") nil))))
+     (setf (uiop:getenv "G_MESSAGES_DEBUG") ""))))
 
 @export
 (defun entry-point ()
