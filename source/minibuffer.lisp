@@ -580,7 +580,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                              ((= i cursor-index) "selected")
                                              ((member completion (marked-completions minibuffer)) "marked")
                                              ((= i (completion-head minibuffer)) "head"))
-                                       (object-string completion))))))))
+                                       (match (object-string completion)
+                                         ((guard s (not (str:emptyp s))) s)
+                                         (_ " ")))))))))
 
 @export
 (defmethod update-display ((minibuffer minibuffer))
