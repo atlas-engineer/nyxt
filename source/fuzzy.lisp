@@ -82,3 +82,8 @@ The match is case-sensitive if INPUT contains at least one uppercase character."
                                 pairs))
         (mapcar #'second pairs))
       candidates))
+
+@export
+(defun file-completion-function (input files)
+  "Fuzzy-match this list of files."
+  (fuzzy-match input files))
