@@ -19,6 +19,7 @@ Depends: sbcl (>= 1.4.2),
          gir1.2-gst-plugins-base-1.0,
          xclip,
          ${misc:Depends}
+Suggests: notify-osd
 Description:the infinitely extensible web browser.
   Next is the programmable web browser. All the browser logic is accessible
   and modifiable live with the Lisp language.
