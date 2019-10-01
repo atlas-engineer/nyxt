@@ -26,7 +26,7 @@
   (fuzzy-match input (package-variables)))
 
 (defun function-completion-filter (input)        ; TODO: Use `command-completion-filter'? And show packages?
-  (fuzzy-match input (mapcar #'sym (list-commands))))
+  (fuzzy-match input (list-commands)))
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to
 ;; augment the latter function so that we can inspect classes like remote-interface.
@@ -58,17 +58,16 @@
                                       :input-prompt "Inspect command:"
                                       :completion-function #'function-completion-filter)))
     (let* ((help-buffer (make-buffer
-                         :title (str:concat "*Help-" (symbol-name input) "*")
+                         :title (str:concat "*Help-" (symbol-name (sym input)) "*")
                          :modes (cons 'help-mode
                                       (get-default 'buffer 'default-modes))))
            (help-contents (cl-markup:markup
-                           (:h1 (symbol-name input))
+                           (:h1 (symbol-name (sym input)))
                            (:h2 "Documentation")
                            (:p (write-to-string
                                 ;; TODO: This only display the first method, i.e. the first command of one of the modes.
                                 ;; Ask for modes instead?
-                                (documentation (first (closer-mop:generic-function-methods
-                                                       (symbol-function input)))
+                                (documentation (command-function input)
                                                t)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
