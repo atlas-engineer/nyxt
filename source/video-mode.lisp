@@ -3,12 +3,12 @@
   (:export :download)
   (:documentation "Download videos on the Web.
 
-A new command is introduced: M-x download-video.
+Command defined in this package: `download-video'.
 
 It tries by default to use the program `youtube-dl', that you must
 have in your path.
 
-You can also write a new function that takes an url as parameter, and
+You can also write a new function that takes a URL as parameter, and
 bind it to `next/video:*download-function*'.  In doing so, you can
 rely on the `next/video:download' function, that does error handling
 and process management.
@@ -22,7 +22,7 @@ and process management.
 ;XXX: ask any destination
 
 What can be done: automatically install the required program, better
-notifications, choose videos, etc, etc.
+notifications, choose videos, etc.
 "))
 
 (in-package :next/video)
@@ -31,20 +31,16 @@ notifications, choose videos, etc, etc.
   "The external program to download videos with. Defaults to youtube-dl.")
 
 (defparameter *download-args* nil
-  "Default arguments for the download command.")
+  "Default arguments for the download command. See also `download-arguments' which adds more.")
 
 (defparameter *preferred-download-directories* (list download-manager::*default-download-directory*)
-  "List of favorite directories to save videos to. Defaults to the download directory.
-If nil, always ask for a destination.")
+  "List of favorite directories to save videos to.")
 
-(defun target-directory-completion-function (input)
-  "Fuzzy-match directories to download the video to."
-  (fuzzy-match input *preferred-download-directories*))
 
 (defun download-arguments (url target-dir)
   "Return a list of arguments for the download command.
 
-By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
+Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube-dl)."
   (declare (ignorable url))
   (append *download-args* (list "-o" (format nil "~a/%(title)s.%(ext)s" target-dir))))
 
@@ -56,8 +52,8 @@ By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
 (defun download-command (url &optional target-dir)
   (let ((target-dir (resolve-download-directory target-dir)))
     (setf target-dir (string-right-trim (list #\/) (namestring target-dir)))
-    (append (list *download-program*)
-            (list url)
+    (append (list *download-program*
+                  url)
             (download-arguments url target-dir))))
 
 (defun download (url &optional target-dir)
@@ -66,10 +62,10 @@ By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
       (progn
         (unless target-dir
           (setf target-dir (resolve-download-directory target-dir)))
-        (echo "Starting download of ~a to ~a" url target-dir)
-        (log:info "Starting download of ~a to ~a" url target-dir)
+        (echo "Starting download of ~a to ~a." url target-dir)
+        (log:info "Starting download of ~a to ~a." url target-dir)
         ;XXX notify progress.
-        (next:launch-and-notify (download-command url target-dir)
+        (launch-and-notify (download-command url target-dir)
                                 :success-msg (format nil "Video downloaded to ~a." target-dir)
                                 :error-msg (format nil "Failed to download video.~&")))
     (error (c)
@@ -82,7 +78,7 @@ By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
 (in-package :next)
 
 (define-command download-video ()
-  "Download the video of the current url with an external program."
+  "Download the video of the current URL with an external program."
   (let* ((url (url (current-buffer)))
          (uri (quri:uri (url (current-buffer)))))
     (cond
@@ -92,7 +88,6 @@ By default, return -o /target/directory/%(title)s.%(ext)s for youtube-dl."
       ((= 1 (length next/video::*preferred-download-directories*))
        (next/video:download url (first next/video::*preferred-download-directories*)))
       (t
-       (log:info :prout)
        (with-result (target-dir (read-from-minibuffer
                                  (make-instance 'minibuffer
                                                 :input-prompt "Target directory:"

@@ -185,13 +185,14 @@ Optional second argument FLAVOR controls the units and the display format:
 
 @export
 (defun notify (msg)
-  "Echo this message and display it with notify-send."
+  "Echo this message and display it with a desktop notification system (notify-send on linux, terminal-notifier on macOs)."
   (echo-safe msg)
   (ignore-errors
-    #+linux
-    (uiop:launch-program (list "notify-send" msg))
-    #+darwin
-    (uiop:launch-program (list "terminal-notifier" "-title" "Next" "-message" msg))))
+    (uiop:launch-program
+     #+linux
+     (list "notify-send" msg)
+     #+darwin
+     (list "terminal-notifier" "-title" "Next" "-message" msg))))
 
 @export
 (defun launch-and-notify (command &key (success-msg "Command succeded.") (error-msg "Command failed."))
@@ -200,6 +201,4 @@ Optional second argument FLAVOR controls the units and the display format:
    (lambda ()
      (let ((exit-code (uiop:wait-process
                        (uiop:launch-program command))))
-       (if (zerop exit-code)
-           (notify success-msg)
-           (notify error-msg))))))
+       (notify (if (zerop exit-code) success-msg error-msg))))))
