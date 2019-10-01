@@ -8,5 +8,5 @@
 (plan nil)
 
 (subtest "parse-url"
-  (is "https://duckduckgo.com/?q=*spurious*" (next::parse-url "*spurious*")
+  (is "https://duckduckgo.com/?q=%2Aspurious%2A" (next::parse-url "*spurious*")
       "ignore wildcards"))
