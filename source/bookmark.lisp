@@ -104,11 +104,15 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   ;; TODO: Filter by tags.
   (fuzzy-match input (bookmarks-data *interface*)))
 
-(defun tag-completion-filter ()
+(defun tag-completion-filter (&key with-empty-tag)
+  "When with-empty-tag is non-nil, insert the empty string as the first tag.
+This can be useful to let the user select no tag when returning directly."
   (let ((tags (delete-if #'null
-                         (apply #'append
-                                (mapcar (lambda (b) (tags b))
-                                        (bookmarks-data *interface*))))))
+                                  (apply #'append
+                                         (mapcar (lambda (b) (tags b))
+                                                 (bookmarks-data *interface*))))))
+    (when with-empty-tag
+      (push "" tags))
     (lambda (input)
       (fuzzy-match input tags))))
 
@@ -119,8 +123,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                           (make-instance 'minibuffer
                                          :input-prompt "Space-separated tag(s):"
                                          :multi-selection-p t
-                                         :completion-function (tag-completion-filter)
-                                         ;; TODO: Can we query both new and existings tags?
+                                         :completion-function (tag-completion-filter :with-empty-tag t)
                                          :empty-complete-immediate t)))
         (when tags
           ;; Turn tags with spaces into multiple tags.
