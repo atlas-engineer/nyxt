@@ -100,9 +100,17 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (setf (tags entry) (sort tags #'string<))
       (push entry (bookmarks-data *interface*)))))
 
-(defun bookmark-completion-filter (input)
-  ;; TODO: Filter by tags.
-  (fuzzy-match input (bookmarks-data *interface*)))
+(defun bookmark-completion-filter ()
+  (lambda (input)
+    (let ((validator (tag-specification-validator (parse-tag-specification
+                                                   (str:replace-all " " " " input))))
+          (bookmarks (bookmarks-data *interface*)))
+      (when validator
+        (setf bookmarks (remove-if (lambda (bookmark)
+                                     (not (funcall validator
+                                                   (tags bookmark))))
+                                   bookmarks)))
+      (fuzzy-match input bookmarks))))
 
 (defun tag-completion-filter (&key with-empty-tag)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
@@ -159,7 +167,7 @@ This can be useful to let the user select no tag when returning directly."
                          (make-instance 'minibuffer
                                         :input-prompt "Delete bookmark(s):"
                                         :multi-selection-p t
-                                        :completion-function #'bookmark-completion-filter)))
+                                        :completion-function (bookmark-completion-filter))))
     (setf (bookmarks-data *interface*)
           (set-difference (bookmarks-data *interface*) entries :test #'equals))))
 
@@ -184,7 +192,7 @@ This can be useful to let the user select no tag when returning directly."
   (with-result (entry (read-from-minibuffer
                        (make-instance 'minibuffer
                                       :input-prompt "Open bookmark:"
-                                      :completion-function #'bookmark-completion-filter)))
+                                      :completion-function (bookmark-completion-filter))))
     ;; TODO: Add support for multiple bookmarks?
     (set-url (url entry) :buffer (current-buffer) :raw-url-p t)))
 
