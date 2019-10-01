@@ -208,6 +208,15 @@
     (when input
       (set-url-from-history input))))
 
+(define-command history-forwards-maybe-query (&optional (mode (find-mode
+                                                               (current-buffer)
+                                                               'web-mode)))
+  "If current node has multiple chidren, query forward-URL to navigate to.
+Otherwise go forward to the only child."
+  (if (<= 2 (length (htree:children-nodes (history mode))))
+      (history-forwards-all-query)
+      (history-forwards)))
+
 (defun history-forwards-all-completion-filter (&optional (mode (find-mode
                                                         (current-buffer)
                                                         'web-mode)))
