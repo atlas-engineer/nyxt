@@ -68,18 +68,20 @@ appended to the URL.")))
               (format nil " (~{~a~^, ~})" (tags entry))
               "")))
 
+(defun url-sans-protocol (url)
+  (let ((uri (quri:uri url)))
+    (str:concat (quri:uri-host uri)
+                (quri:uri-path uri))))
+
 (defun equal-url (url1 url2)
   "URLs are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
-  (let ((uri1 (quri:uri url1))
-        (uri2 (quri:uri url2)))
-    (and (string= (quri:uri-host uri1) (quri:uri-host uri2))
-         (string= (quri:uri-path uri1) (quri:uri-path uri2)))))
+  (string= (url-sans-protocol url1) (url-sans-protocol url2)))
 
 (defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
   "Entries are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
-  (equal-url (quri:uri (url e1)) (quri:uri (url e2))))
+  (equal-url (url e1) (url e2)))
 
 (defun bookmark-add (url &key title tags)
   (unless (or (str:emptyp url)
@@ -247,13 +249,23 @@ This can be useful to let the user select no tag when returning directly."
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
-    ;; TODO: Sort by customizable function, ignore protocol by default.
+    ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
+    ;; already a customizable function.
+    (setf (slot-value *interface* 'bookmarks-data)
+          (sort (slot-value *interface* 'bookmarks-data)
+                (lambda (e1 e2)
+                  (string< (url-sans-protocol (url e1))
+                           (url-sans-protocol (url e2))))))
     (write-string "(" file)
-    (dolist (entry (bookmarks-data *interface*))
+    (dolist (entry (slot-value *interface* 'bookmarks-data))
       (write-char #\newline file)
       (serialize-object entry file))
     (write-char #\newline file)
-    (write-string ")" file)))
+    (write-string ")" file)
+    (echo "Saved ~a bookmarks to ~a."
+          (length (slot-value *interface* 'bookmarks-data))
+          (bookmarks-path *interface*)))
+  t)
 
 (defun restore-sexp-bookmarks ()
   "Restore the bookmarks from the interface `bookmarks-path'."
@@ -274,7 +286,9 @@ This can be useful to let the user select no tag when returning directly."
                       (when file
                         (deserialize-bookmarks file)))))
           (when data
-            (echo "Loading ~a bookmarks." (length data))
+            (echo "Loading ~a bookmarks from ~a."
+                  (length data)
+                  (bookmarks-path *interface*))
             (setf (slot-value *interface* 'bookmarks-data) data)))
       (error (c)
         (echo-warning "Failed to load bookmarks from ~a: ~a" path c)))))
