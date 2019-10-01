@@ -102,8 +102,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (defun bookmark-completion-filter ()
   (lambda (input)
-    (let ((validator (tag-specification-validator (parse-tag-specification
-                                                   (str:replace-all " " " " input))))
+    (let ((validator (ignore-errors (tag-specification-validator (parse-tag-specification
+                                                                  (str:replace-all " " " " input)))))
           (bookmarks (bookmarks-data *interface*)))
       (when validator
         (setf bookmarks (remove-if (lambda (bookmark)
