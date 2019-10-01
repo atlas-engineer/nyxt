@@ -85,7 +85,7 @@ It takes the mode as argument.")
                        "C-[" #'switch-buffer-previous
                        "C-]" #'switch-buffer-next
                        "C-x b" #'switch-buffer
-                       "C-x k" #'delete-current-buffer
+                       "C-x k" #'delete-current-buffer ; Emacs' default behaviour is to query.
                        "C-x C-k" #'delete-buffer
                        "C-x Left" #'switch-buffer-previous
                        "C-x Right" #'switch-buffer-next
