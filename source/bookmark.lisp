@@ -2,10 +2,18 @@
 
 (in-package :next)
 
-;; TODO: Output tags on the same line.
+;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:
+;; - It's too verbose, e.g. a list is
+;; (:SEQUENCE 3 :CLASS CL:LIST :SIZE 2 :ELEMENTS ( "bar" "baz" ) )
+;;
+;; - We lack control on the linebreaks.
+;;
+;; - It needs IDs for every object, which makes it hard for the user to
+;;   hand-edit the file without breaking it.
+;;
+;; - Un-explicitly-set class slots are exported if they have an initform;
+;;   removing the initform forces us to put lots of (slot-boundp ...).
 
-;; Warning: We don't set most slots' initforms so that they are not serialized
-;; if unset.
 (defclass bookmark-entry ()
   ((url :initarg :url
         :accessor url
@@ -13,24 +21,25 @@
         :initform "")
    (title :initarg :title
           :accessor title
-          :type string)
+          :type string
+          :initform "")
    (annotation :initarg :annotation
                :accessor annotation
-               :type string)
+               :type string
+               :initform "")
    (date :initarg :date
          :accessor date
-         :type string
-         :initform (local-time:format-timestring nil (local-time:now))
-         ;; We don't store the local-time:timestamp because it's too verbose
-         ;; when serialized.
-         :documentation "The date must be parsable by `local-time:parse-timestring'.")
+         :type local-time:timestamp
+         :initform (local-time:now))
    (tags :initarg :tags
          :accessor tags
          :type list
+         :initform nil
          :documentation "A list of strings.")
-   (shortcut :initarg :shortcut ; TODO: Add support for short-cuts in `parse-url'.
+   (shortcut :initarg :shortcut ; TODO: Add support for shortcuts in `parse-url'.
              :accessor shortcut
              :type string
+             :initform ""
              :documentation "
 This allows the following URL queries from the minibuffer:
 
@@ -38,7 +47,13 @@ This allows the following URL queries from the minibuffer:
 - SHORTCUT TERM: Use SEARCH-URL to search TERM.  If SEARCH-URL is empty, fallback on other search engines.")
    (search-url :initarg :search-url
                :accessor search-url
-               :type string)))
+               :type string
+               :initform ""
+               :documentation "
+The URL to use when SHORTCUT is the first word in the input.
+The search term is placed at '~a' in the SEARCH-URL if any, or at the end otherwise.
+SEARCH-URL maybe either be a full URL or a path.  If the latter, the path is
+appended to the URL.")))
 
 (defmethod object-string ((entry bookmark-entry))
   (format nil "~a~a  ~a~a"
@@ -46,13 +61,15 @@ This allows the following URL queries from the minibuffer:
               ""
               (str:concat "[" (shortcut entry) "] "))
           (url entry)
-          (title entry)
+          (if (str:emptyp (title entry))
+              ""
+              (title entry))
           (if (tags entry)
               (format nil " (~{~a~^, ~})" (tags entry))
               "")))
 
 (defun equal-url (url1 url2)
-  "Entries are equal if the hosts and the paths are equal.
+  "URLs are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (let ((uri1 (quri:uri url1))
         (uri2 (quri:uri url2)))
@@ -74,13 +91,12 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            (setf entry b)))
                        (bookmarks-data *interface*)))
       (unless entry
-        (make-instance 'bookmark-entry
-               :url url))
+        (setf entry (make-instance 'bookmark-entry
+                                   :url url)))
       (unless (str:emptyp title)
         (setf (title entry) title))
-      (when (slot-boundp entry 'tags)
-        (setf tags (delete-duplicates (append (tags entry) tags)
-                                      :test #'string=)))
+      (setf tags (delete-duplicates (append (tags entry) tags)
+                                    :test #'string=))
       (setf (tags entry) (sort tags #'string<))
       (push entry (bookmarks-data *interface*)))))
 
@@ -91,7 +107,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (defun tag-completion-filter ()
   (let ((tags (delete-if #'null
                          (apply #'append
-                                (mapcar (lambda (b) (when (slot-boundp b 'tags) (tags b)))
+                                (mapcar (lambda (b) (tags b))
                                         (bookmarks-data *interface*))))))
     (lambda (input)
       (fuzzy-match input tags))))
@@ -101,11 +117,17 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (if (url buffer)
       (with-result (tags (read-from-minibuffer
                           (make-instance 'minibuffer
-                                         :input-prompt "Tag(s):"
+                                         :input-prompt "Space-separated tag(s):"
                                          :multi-selection-p t
                                          :completion-function (tag-completion-filter)
                                          ;; TODO: Can we query both new and existings tags?
                                          :empty-complete-immediate t)))
+        (when tags
+          ;; Turn tags with spaces into multiple tags.
+          (setf tags (alexandria:flatten
+                      (mapcar (lambda (tag)
+                                (str:split " " tag :omit-nulls t))
+                              tags))))
         (bookmark-add (url buffer)
                        :title (title buffer)
                        :tags tags)
@@ -163,21 +185,62 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     ;; TODO: Add support for multiple bookmarks?
     (set-url (url entry) :buffer (current-buffer) :raw-url-p t)))
 
-(defun store-sexp-bookmarks ()         ; TODO: Factor with `store-sexp-session'.
+
+
+(defmethod serialize-object ((entry bookmark-entry) stream)
+  (unless (str:emptyp (url entry))
+    (flet ((write-slot (slot)
+             (unless (str:emptyp (funcall slot entry))
+               (format t " :~a ~s"
+                       (str:downcase slot)
+                       (funcall slot entry)))))
+      (let ((*standard-output* stream))
+        (write-string "(:url ")
+        (format t "~s" (url entry))
+        (write-slot 'title)
+        (write-slot 'annotation)
+        (when (date entry)
+          (write-string " :date ")
+          (format t "~s" (local-time:format-timestring nil (date entry))))
+        (when (tags entry)
+          (write-string " :tags (")
+          (format t "~s" (first (tags entry)))
+          (dolist (tag (rest (tags entry)))
+            (write-string " ")
+            (write tag))
+          (write-string ")"))
+        (write-slot 'shortcut)
+        (write-slot 'search-url)
+        (write-string ")")))))
+
+(defmethod deserialize-bookmarks (stream)
+  (handler-case
+      (let ((*standard-input* stream))
+        (let ((entries (read stream)))
+          (mapcar (lambda (entry)
+                    (when (getf entry :date)
+                      (setf (getf entry :date)
+                            (local-time:parse-timestring (getf entry :date))))
+                    (apply #'make-instance 'bookmark-entry
+                           entry))
+                  entries)))
+    (error (c)
+      (log:error "Error during bookmark deserialization: ~a" c)
+      nil)))
+
+(defun store-sexp-bookmarks ()
   "Store the bookmarks to the interface `bookmarks-path'."
   (with-open-file (file (bookmarks-path *interface*)
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
     ;; TODO: Sort by customizable function, ignore protocol by default.
-    (let ((*package* *package*)
-          ;; (*print-case* :downcase) ; TODO: Wait until prevalence fully supports it.  https://github.com/40ants/cl-prevalence/issues/4
-          (s-serialization::*local-package* (find-package 'next))
-          (s-serialization::*one-element-per-line* t))
-      ;; We need to make sure current package is :next so that
-      ;; symbols a printed with consistent namespaces.
-      (in-package :next)
-      (s-serialization:serialize-sexp (bookmarks-data *interface*) file))))
+    (write-string "(" file)
+    (dolist (entry (bookmarks-data *interface*))
+      (write-char #\newline file)
+      (serialize-object entry file))
+    (write-char #\newline file)
+    (write-string ")" file)))
 
 (defun restore-sexp-bookmarks ()
   "Restore the bookmarks from the interface `bookmarks-path'."
@@ -196,12 +259,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                           :direction :input
                                           :if-does-not-exist nil)
                       (when file
-                        ;; We need to make sure current package is :next so that
-                        ;; symbols a printed with consistent namespaces.
-                        (let (;; (*print-case* :downcase) ; TODO: Wait until prevalence fully supports it.
-                              (*package* *package*))
-                          (in-package :next)
-                          (s-serialization:deserialize-sexp file))))))
+                        (deserialize-bookmarks file)))))
           (when data
             (echo "Loading ~a bookmarks." (length data))
             (setf (slot-value *interface* 'bookmarks-data) data)))
