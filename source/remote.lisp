@@ -277,10 +277,10 @@ window or not.")
                                ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
                    :documentation "An association list of the search engines.
 
-The elements are in the form (SHORTCUT SEARCH-URL FALLBACK-URL).  You can inoke
+The elements are in the form (SHORTCUT SEARCH-URL FALLBACK-URL).  You can invoke
 them from the minibuffer by prefixing your query with SHORTCUT.  If the query is
-empty, FALLBACK-URL is load instead.  If FALLBACK-URL is empty, SEARCH-URL is
-used on en empty search.
+empty, FALLBACK-URL is loaded instead.  If FALLBACK-URL is empty, SEARCH-URL is
+used on an empty search.
 
 The 'default' engine is used when the query is not a valid URL, or the first
 keyword is not recognized.")
