@@ -169,10 +169,11 @@ Letters are printable, while function keys or backspace are not."
            (setf (key-chord-stack *interface*) nil))
           (t (setf (key-chord-stack *interface*) nil)))))))
 
-(declaim (ftype (function (&rest t &key (:keymap keymap) &allow-other-keys)) define-key))
+(declaim (ftype (function (&rest t &key (:scheme list) (:keymap keymap) &allow-other-keys)) define-key))
 @export
 (defun define-key (&rest key-command-pairs
                    &key keymap
+                     (scheme :emacs) ; TODO: Deprecated, remove after some version.
                    &allow-other-keys)
   ;; TODO: Add option to define-key over the keymaps of all instantiated modes.
   "Bind KEY to COMMAND.
@@ -187,8 +188,30 @@ Examples:
   (let ((key-command-pairs-copy (copy-list key-command-pairs)))
     (dolist (key (remove-if (complement #'keywordp) key-command-pairs-copy))
       (remf key-command-pairs-copy key))
-    (loop for (key-sequence-string command . rest) on key-command-pairs-copy by #'cddr
-          do (set-key keymap key-sequence-string command))))
+    (if keymap
+        (loop for (key-sequence-string command . rest) on key-command-pairs-copy by #'cddr
+              do (set-key keymap key-sequence-string command))
+        (progn
+          (log:warn "Calling define-key without specifying a keymap is deprecated.~&Consider moving the definition to the mode definition site or to a hook.")
+          (loop for (key-sequence-string command . rest) on key-command-pairs-copy by #'cddr
+                do (setf (get-default 'root-mode 'keymap-schemes)
+                         (let* ((map-scheme (closer-mop:slot-definition-initform
+                                             (find-slot 'root-mode 'keymap-schemes)))
+                                ;; REVIEW: The return value of
+                                ;; slot-definition-initform should be evaluated, but
+                                ;; this only works if it is not a list.  Since we
+                                ;; use a property list for the map-scheme, we need
+                                ;; to check manually if it has been initialized.  We
+                                ;; could make this cleaner by using a dedicated
+                                ;; structure for map-scheme
+                                (map-scheme (if (ignore-errors (getf map-scheme :emacs))
+                                                map-scheme
+                                                (eval map-scheme)))
+                                (map (or (getf map-scheme scheme)
+                                         (make-keymap))))
+                           (set-key map key-sequence-string command)
+                           (setf (getf map-scheme scheme) map)
+                           map-scheme)))))))
 
 (defun key (key-sequence-string)
   "Turn KEY-SEQUENCE-STRING into a sequence of serialized key-chords.
