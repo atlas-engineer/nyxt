@@ -42,7 +42,7 @@ MAJOR.MINOR.PATCH, we increment the:
   of a particular text field
 *** Add online suggestions from search engines
 ** DONE 1.3.3
-- Select multiple candidates minibuffer
+- Select multiple candidates in minibuffer
   The default bindings are:
 
   - =C-SPACE= to toggle the mark of an entry,
