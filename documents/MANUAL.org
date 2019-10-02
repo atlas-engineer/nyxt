@@ -304,16 +304,31 @@ forward command will simply visit the first child of the current node
 in the tree.
 
 ** Bookmarks
-Bookmarks are stored in a database located in
-=~/.local/share/next/bookmark.db= by default. This (SQLite) database contains
-one table with two columns: id, url. In order to navigate and manage your
-bookmarks, a few functions are provided:
+
+In order to navigate and manage your bookmarks, a few functions are
+provided:
 
 1. ~C-m s~: Bookmark Current Page
 2. ~C-m u~: Bookmark URL (input URL via minibuffer)
 3. ~C-m o~: Open Bookmark
 4. ~C-m g~: Bookmark Anchor (input URL via link hints)
 5. ~C-m k~: Delete Bookmark
+
+Bookmarks can have tags, a shortcut string, a search-url and a
+timestamp.
+
+You can filter them with selectors: use =+=, =-= or write a compound
+query inside parenthesis in which you can use =and=, =or= and =not=.
+
+For example:
+
+: +lisp -blog
+: +blog (or lisp emacs)
+: +foo -bar (or (and john doe) (not (and tic tac)))
+
+Bookmarks are stored in a plain text format, so than you can read and
+manipulate them easily with any other program.
+
 
 ** Download manager
 

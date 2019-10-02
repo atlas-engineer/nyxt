@@ -53,7 +53,7 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - Extend bookmark support.
 
-  + Bookmarks can have tags, a shortcut string, a search-url, tags, a timestamp.
+  + Bookmarks can have tags, a shortcut string, a search-url and a timestamp.
 
   + Minibuffer usage:
 
