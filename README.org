@@ -41,7 +41,7 @@ makes sure  you never lose  track of where  you've been.
 Commands can accept multiple input, allowing you to quickly perform an
 operation against multiple tabs.
 
-#+html: <img src="/assets/next-multiple-selection.png" align="center"/>
+#+html: <img src="https://next.atlas.engineer/image/next-multiple-selection.png" align="center"/>
 
 ** Powerful Bookmarks
 Bookmark a page with tags. Search bookmarks with compound
