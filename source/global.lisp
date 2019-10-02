@@ -19,6 +19,7 @@ It can be initialized with
 It's possible to run multiple interfaces of Next at the same time.  You can
 let-bind *interface* to temporarily switch interface.")
 
+@export
 (defvar *after-init-hook* nil
   "The entry-point object to configure everything in Next.
 The hook takes no argument.
@@ -32,6 +33,7 @@ Add a handler can be added with
 
 (Mind the quote.)")
 
+@export
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Next to avoid collisions).")
@@ -44,10 +46,12 @@ is 4005, default set to 4006 in Next to avoid collisions).")
 (defparameter +core-object-path+ "/engineer/atlas/next/core")
 (defparameter +core-interface+ +core-name+)
 
+@export
 (defparameter +dbus-launch-command+ '("dbus-launch")
   "The command to start dbus, if necessary.
 The first string is the command, the other strings are the arguments.")
 
+@export
 (defparameter +platform-port-command+ "next-platform-port"
   "The command to start the platform port.")
 
