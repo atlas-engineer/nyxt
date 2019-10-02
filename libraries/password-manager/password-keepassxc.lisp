@@ -23,8 +23,10 @@
                                       (master-password password-interface)
                                       #\newline password))
     (uiop:run-program (list *keepassxc-cli-program*
-                            "add" "-p" (password-file password-interface)
-                            password-name)
+                            "add" "--password-prompt" (password-file password-interface)
+                            (if (str:emptyp password-name)
+                                "--generate"
+                                password-name))
                       :input st)))
 
 (defmethod password-correct-p ((password-interface keepassxc-interface))

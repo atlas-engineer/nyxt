@@ -149,10 +149,11 @@
                                  :prove-asdf 'run-test-system c)))
 
 (asdf:defsystem next/password-manager
-  :depends-on (uiop
+  :depends-on (bordeaux-threads
                cl-ppcre
-               bordeaux-threads
-               cl-annot)
+               cl-annot
+               str
+               uiop)
   :components ((:module source :pathname "libraries/password-manager/"
                 :components ((:file "package")
                              (:file "password")

@@ -18,9 +18,11 @@
 
 (defmethod save-password ((password-interface password-store-interface)
                           password-name password)
-  (with-open-stream (st (make-string-input-stream password))
-    (uiop:run-program (list *password-store-program* "insert" "--echo" password-name)
-                      :input st)))
+  (if (str:emptyp password)
+      (uiop:run-program (list *password-store-program* "generate" password-name))
+      (with-open-stream (st (make-string-input-stream password))
+        (uiop:run-program (list *password-store-program* "insert" "--echo" password-name)
+                          :input st))))
 
 (defmethod password-correct-p ((password-interface password-store-interface))
   t)

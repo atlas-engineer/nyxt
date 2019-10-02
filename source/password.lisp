@@ -13,7 +13,7 @@
                  (new-password (read-from-minibuffer
                                 (make-instance 'minibuffer
                                                :invisible-input-p t
-                                               :input-prompt "New password:"))))
+                                               :input-prompt "New password (leave empty to generate):"))))
     (password:save-password (password-interface *interface*)
                             password-name
                             new-password)))
