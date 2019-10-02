@@ -11,6 +11,7 @@ end-user allowing for infinite customization.
   - [[#searching-via-search-engine][Searching via search engine]]
   - [[#jumping-to-headings][Jumping to Headings]]
   - [[#input-minibuffer][Input (Minibuffer)]]
+  - [[#multi-selection][Multi-selection]]
   - [[#buffers-tabs][Buffers ("tabs")]]
   - [[#searching][Searching]]
   - [[#history][History]]
@@ -163,7 +164,7 @@ returns:
    :empty-complete is a truthy value, the function will accept the
    EXACT text inputted into the minibuffer.
 
-*** Multi-selection
+** Multi-selection
 
 When that makes sense (e.g. for the =delete-buffer= command), multiple entries
 can be marked.  The default bindings are:
