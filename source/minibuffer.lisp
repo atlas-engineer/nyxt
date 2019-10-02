@@ -251,6 +251,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
   (with-slots (callback empty-complete-immediate completions completion-cursor
+               invisible-input-p
                multi-selection-p marked-completions input-buffer)
       minibuffer
     (match (or marked-completions
@@ -267,7 +268,9 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
                      completions))
        (funcall callback (if multi-selection-p
                              completions
-                             (first completions))))))
+                             (first completions))))
+      (nil (when invisible-input-p
+             (funcall callback (str:replace-all " " " " input-buffer))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
