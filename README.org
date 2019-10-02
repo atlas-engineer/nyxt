@@ -35,7 +35,19 @@ looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 ** History as a tree
 History is represented as a tree that you can traverse. smarter than
 the "forwards-backwards" abstraction found in other browsers, the tree
-makes sure you never lose track of where you've been.
+makes sure  you never lose  track of where  you've been.
+
+** Multiple selection
+
+Commands  can accept  the selection  of multiple  items. You  can also
+reduce the selection with a text  input and select all candidates that
+match.
+
+#+html: <img src="/assets/next-multiple-selection.png" align="center"/>
+
+** Bookmarks on steroids
+
+Bookmark a page with tags. Search bookmarks with compound queries.
 
 ** Lightning fast navigation
 Next is lightweight and fast. The interface does not get in your way-
