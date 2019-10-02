@@ -38,16 +38,15 @@ the "forwards-backwards" abstraction found in other browsers, the tree
 makes sure  you never lose  track of where  you've been.
 
 ** Multiple selection
-
-Commands  can accept  the selection  of multiple  items. You  can also
-reduce the selection with a text  input and select all candidates that
-match.
+Commands can accept multiple input, allowing you to quickly perform an
+operation against multiple tabs.
 
 #+html: <img src="/assets/next-multiple-selection.png" align="center"/>
 
-** Bookmarks on steroids
-
-Bookmark a page with tags. Search bookmarks with compound queries.
+** Powerful Bookmarks
+Bookmark a page with tags. Search bookmarks with compound
+queries. Capture more data about your bookmarks, and group and wrangle
+them in any way you like.
 
 ** Lightning fast navigation
 Next is lightweight and fast. The interface does not get in your way-
