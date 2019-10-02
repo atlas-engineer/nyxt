@@ -7,16 +7,18 @@
 
 (define-command save-new-password ()
   "Save password to password interface."
-  (with-result* ((password-name (read-from-minibuffer
-                                 (make-instance 'minibuffer
-                                                :input-prompt "Name for new password:")))
-                 (new-password (read-from-minibuffer
-                                (make-instance 'minibuffer
-                                               :invisible-input-p t
-                                               :input-prompt "New password (leave empty to generate):"))))
-    (password:save-password (password-interface *interface*)
-                            password-name
-                            new-password)))
+  (if (password-interface *interface*)
+      (with-result* ((password-name (read-from-minibuffer
+                                     (make-instance 'minibuffer
+                                                    :input-prompt "Name for new password:")))
+                     (new-password (read-from-minibuffer
+                                    (make-instance 'minibuffer
+                                                   :invisible-input-p t
+                                                   :input-prompt "New password (leave empty to generate):"))))
+        (password:save-password (password-interface *interface*)
+                                password-name
+                                new-password))
+      (echo-warning "No password manager found.")))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
@@ -24,11 +26,13 @@
 
 (define-command copy-password ()
   "Copy chosen password from minibuffer."
-  (with-password (password-interface *interface*)
-    (with-result (password-name
-                  (read-from-minibuffer
-                   (make-instance 'minibuffer
-                                  :completion-function
-                                  (copy-password-completion-filter
-                                   (password-interface *interface*)))))
-      (password:clip-password (password-interface *interface*) password-name))))
+  (if (password-interface *interface*)
+      (with-password (password-interface *interface*)
+        (with-result (password-name
+                      (read-from-minibuffer
+                       (make-instance 'minibuffer
+                                      :completion-function
+                                      (copy-password-completion-filter
+                                       (password-interface *interface*)))))
+          (password:clip-password (password-interface *interface*) password-name)))
+      (echo-warning "No password manager found.")))
