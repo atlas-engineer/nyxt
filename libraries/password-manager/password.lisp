@@ -31,7 +31,8 @@
 
 @export
 (defgeneric save-password (password-interface password-name password)
-  (:documentation "Save password to database."))
+  (:documentation "Save password to database.
+If PASSWORD-NAME is empty, then generate a new password."))
 
 @export
 (defgeneric password-correct-p (password-interface)
