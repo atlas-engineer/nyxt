@@ -153,6 +153,7 @@
                cl-ppcre
                cl-annot
                str
+               trivial-clipboard
                uiop)
   :components ((:module source :pathname "libraries/password-manager/"
                 :components ((:file "package")
