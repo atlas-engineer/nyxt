@@ -98,7 +98,7 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - New ~vcs-clone~ command to clone Git repositories to a prefered or queried location.
 
-- New =reopen-buffer= and =reopen-last-buffers= commands.
+- New =reopen-buffer= and =reopen-last-buffers= commands.  (Thanks to @4t0m.)
 
 - Faster and improved minibuffer fuzzy completion.
 
