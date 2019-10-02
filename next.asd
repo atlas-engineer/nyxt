@@ -151,10 +151,9 @@
 (asdf:defsystem next/password-manager
   :depends-on (uiop
                cl-ppcre
-               next/ring
                bordeaux-threads
                cl-annot)
-:components ((:module source :pathname "libraries/password-manager/"
+  :components ((:module source :pathname "libraries/password-manager/"
                 :components ((:file "package")
                              (:file "password")
                              (:file "password-pass")

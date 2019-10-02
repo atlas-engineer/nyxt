@@ -12,12 +12,15 @@
             raw-list)))
 
 (defmethod clip-password ((password-interface password-store-interface) password-name)
-  (clip-password-string (uiop:run-program `(*password-store-program* "show" ,password-name)
+  (clip-password-string (uiop:run-program (list *password-store-program* "show"
+                                                password-name)
                                           :output '(:string :stripped t))))
 
-(defmethod save-password ((password-interface password-store-interface) password-name password)
+(defmethod save-password ((password-interface password-store-interface)
+                          password-name password)
   (with-open-stream (st (make-string-input-stream password))
-    (uiop:run-program `(*password-store-program* "insert" "--echo" ,password-name) :input st)))
+    (uiop:run-program (list *password-store-program* "insert" "--echo" password-name)
+                      :input st)))
 
 (defmethod password-correct-p ((password-interface password-store-interface))
   t)

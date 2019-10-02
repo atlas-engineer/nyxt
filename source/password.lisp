@@ -7,14 +7,16 @@
 
 (define-command save-new-password ()
   "Save password to password interface."
-  (with-result* ((pessword-name (read-from-minibuffer
+  (with-result* ((password-name (read-from-minibuffer
                                  (make-instance 'minibuffer
                                                 :input-prompt "Name for new password:")))
                  (new-password (read-from-minibuffer
-                                   (make-instance 'minibuffer
-                                                  :invisible-input-p t
-                                                  :input-prompt "New password:"))))
-    (password:save-password (password-interface *interface*) password-name new-password)))
+                                (make-instance 'minibuffer
+                                               :invisible-input-p t
+                                               :input-prompt "New password:"))))
+    (password:save-password (password-interface *interface*)
+                            password-name
+                            new-password)))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
