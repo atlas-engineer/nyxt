@@ -136,6 +136,26 @@ features for productive professionals.")
        ("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Infinitely extensible web-browser (history-tree)")))
 
+(define sbcl-next-password-manager
+  (package
+    (inherit next-gtk-webkit)
+    (name "sbcl-next-password-manager")
+    (build-system asdf-build-system/sbcl)
+    (arguments
+     `(#:tests? #t
+       #:asd-file "next.asd"
+       #:asd-system-name "next/password-manager"))
+    (inputs
+     `(("bordeaux-threads" ,sbcl-bordeaux-threads)
+       ("cl-annot" ,sbcl-cl-annot)
+       ("cl-ppcre" ,sbcl-cl-ppcre)
+       ("str" ,sbcl-cl-str)
+       ("trivial-clipboard" ,sbcl-trivial-clipboard)))
+    (native-inputs
+     `(("trivial-features" ,sbcl-trivial-features)
+       ("prove-asdf" ,sbcl-prove-asdf)))
+    (synopsis "Infinitely extensible web-browser (password manager)")))
+
 (define-public next
   (let ((version (package-version next-gtk-webkit)))
     (package
@@ -228,7 +248,8 @@ features for productive professionals.")
          ("next-gtk-webkit" ,next-gtk-webkit)
          ("next-download-manager" ,sbcl-next-download-manager)
          ("next-ring" ,sbcl-next-ring)
-         ("next-history-tree" ,sbcl-next-history-tree)))
+         ("next-history-tree" ,sbcl-next-history-tree)
+         ("next-password-manager" ,sbcl-next-password-manager)))
       (native-inputs
        `(("trivial-features" ,sbcl-trivial-features)
          ("prove-asdf" ,sbcl-prove-asdf)))
