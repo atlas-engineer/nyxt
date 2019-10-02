@@ -3,7 +3,7 @@ Section: Web Software
 Priority: extra
 Maintainer: Next developers <hello@atlas.engineer>
 Build-Depends: debhelper (>= 8.0.0)
-Standards-Version: 1.3.2
+Standards-Version: 1.3.3
 Homepage: http://next.atlas.engineer/
 
 Package: next
@@ -20,7 +20,7 @@ Depends: sbcl (>= 1.4.2),
          xclip,
          ${misc:Depends}
 Suggests: notify-osd
-Description:the infinitely extensible web browser.
+Description:The infinitely extensible web browser.
   Next is the programmable web browser. All the browser logic is accessible
   and modifiable live with the Lisp language.
   .
