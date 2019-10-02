@@ -382,8 +382,10 @@ The handlers take the window as argument.")
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
-   (buffer-before-make-hook :accessor buffer-make-hook :initform '() :type list
-                     :documentation "Hook run before `rpc-buffer-make'.
+   (buffer-before-make-hook :accessor buffer-before-make-hook
+                            :type list
+                            :initform '()
+                            :documentation "Hook run before `rpc-buffer-make'.
 This hook is mostly useful to set the `cookies-path'.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
