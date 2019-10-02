@@ -93,7 +93,8 @@ This should not rely on the minibuffer's content.")
 candidates.")
    ;; TODO: Move input-* slots to a separate text class?
    (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input:")
-   (input-buffer :accessor input-buffer :initform "")
+   (input-buffer :initarg :input-buffer :accessor input-buffer :initform ""
+                 :documentation "Initial text to place at the prompt, ready to edit.")
    (input-cursor-position :accessor input-cursor-position :initform 0)
    (invisible-input-p :initarg :invisible-input-p :accessor invisible-input-p
                       :initform nil
