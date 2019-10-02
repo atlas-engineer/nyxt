@@ -158,14 +158,14 @@ You might want to configure the value on HiDPI screen.")
                                    :padding "0"
                                    :margin "0")
                                   (li :padding "2px")
-                                  (.selected :background-color "gray"
-                                             :color "white")
-                                  ;; Make sure .selected and .marked can stack
-                                  ;; since the candidate can be both marked on
-                                  ;; selected.
                                   (.marked :background-color "darkgray"
                                            :font-weight "bold"
-                                           :color "white")))
+                                           :color "white")
+                                  ;; .selected must be set _after_ .marked so
+                                  ;; that it overrides its attributes since the
+                                  ;; candidate can be both marked and selected.
+                                  (.selected :background-color "gray"
+                                             :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
@@ -572,11 +572,13 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                  for completion in (nthcdr i completions)
                                  collect
                                  (cl-markup:markup
-                                  (:li :class (cond
-                                                ((= i cursor-index) "selected")
-                                                ((member completion (marked-completions minibuffer)) "marked")
-                                                ((= i (completion-head minibuffer)) "head"))
-                                       :id (cond
+                                  (:li :class (let ((selected-p (= i cursor-index))
+                                                    (marked-p (member completion (marked-completions minibuffer)))
+                                                    (head-p (= i (completion-head minibuffer))))
+                                                (str:join " " (delete-if #'null (list (and marked-p "marked")
+                                                                                      (and selected-p "selected")
+                                                                                      (and head-p "head")))))
+                                       :id (cond ; TODO: Unused?
                                              ((= i cursor-index) "selected")
                                              ((member completion (marked-completions minibuffer)) "marked")
                                              ((= i (completion-head minibuffer)) "head"))
