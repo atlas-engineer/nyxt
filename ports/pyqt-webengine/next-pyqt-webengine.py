@@ -312,8 +312,7 @@ class DBusWindow(QObject):
         return utility.list_buffers()
 
 
-def main():
-    app = QApplication(sys.argv)
+def main(app):
     app.setApplicationName("Next")
 
     dbus_window = DBusWindow()
@@ -332,4 +331,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    app = QApplication(sys.argv)
+    main(app)
