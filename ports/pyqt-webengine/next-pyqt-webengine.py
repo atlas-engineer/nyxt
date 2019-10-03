@@ -325,11 +325,10 @@ def main(app):
     event_filter = utility.EventFilter(app)  # noqa: F841
     logging.info("Listening...")
 
-    sys.exit(app.exec_())
+    return app.exec()
 
-    return
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main(app)
+    sys.exit(main(app))
