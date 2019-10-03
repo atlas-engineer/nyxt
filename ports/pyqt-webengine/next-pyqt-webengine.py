@@ -312,8 +312,7 @@ class DBusWindow(QObject):
         return utility.list_buffers()
 
 
-def main():
-    app = QApplication(sys.argv)
+def main(app):
     app.setApplicationName("Next")
 
     dbus_window = DBusWindow()
@@ -326,10 +325,10 @@ def main():
     event_filter = utility.EventFilter(app)  # noqa: F841
     logging.info("Listening...")
 
-    sys.exit(app.exec_())
+    return app.exec()
 
-    return
 
 
 if __name__ == '__main__':
-    main()
+    app = QApplication(sys.argv)
+    sys.exit(main(app))
