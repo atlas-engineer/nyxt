@@ -486,7 +486,7 @@ with a running Common Lisp process for compilation, debugging,
 documentation lookup, and so on.
 #+end_quote
 
-To use SLIME with a compiled version of Next use the keybinding ~S-h s~ to
+To use SLIME with a compiled version of Next use the keybinding ~C-h s~ to
 launch a Swank server. SLIME will connect to the Swank server and give you
 completion, debugging, documentation, etc. The port for Swank is define in
 ~*swank-port*~ and its default value is different from that of Swank on Emacs to
