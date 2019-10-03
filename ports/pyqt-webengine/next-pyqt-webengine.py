@@ -54,6 +54,7 @@ class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
       <arg direction="in"  type="s" name="window_id" />
     </method>
     <method name="window_active">
+      <arg direction="out" type="s" name="id" />
     </method>
     <method name="window_exists">
       <arg direction="in"  type="s" name="window_id" />
@@ -78,12 +79,13 @@ class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
     </method>
     <method name="buffer_evaluate_javascript">
       <arg direction="in"  type="s" name="buffer_id" />
-      <arg direction="in"  type="s" name="script" />
-      <arg direction="out" type="s" />
+      <arg direction="in"  type="s" name="javascript" />
+      <arg direction="out" type="s" name="callback_id"/>
     </method>
     <method name="minibuffer_evaluate_javascript">
       <arg direction="in"  type="s" name="window_id" />
-      <arg direction="in"  type="s" name="script" />
+      <arg direction="in"  type="s" name="javascript" />
+      <arg direction="out"  type="s" name="callback_id" />
     </method>
     <method name="set_proxy">
       <arg direction="in"  type="as" name="buffer_ids" />

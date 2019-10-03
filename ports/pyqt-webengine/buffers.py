@@ -29,7 +29,6 @@ class Buffer(QWebEngineView):
 
     def __init__(self, identifier=None, parent=None):
         super(Buffer, self).__init__(parent)
-        self.page().setHtml("")  # necessary for runJavaScript to work on new buffers.
         self.identifier = str(identifier)
         page = self.page()
         profile = page.profile()
@@ -42,10 +41,16 @@ class Buffer(QWebEngineView):
         self.urlChanged.connect(self.did_commit_navigation)
         self.loadFinished.connect(self.did_finish_navigation)
 
+        page.setHtml("")  # necessary for runJavaScript to work on new buffers.
+
+        # Keep track of whether the page is finished loading
+        self.ready = False
+
     def did_commit_navigation(self, url):
         """Invoked whenever the webview starts navigation.
         """
         core_interface.buffer_did_commit_navigation(self.identifier, str(url.url()))
+        self.ready = False
 
     def did_finish_navigation(self, status):
         """Invoked whenever the webview finishes navigation.
@@ -55,6 +60,7 @@ class Buffer(QWebEngineView):
         """
         url = self.url().url()
         core_interface.buffer_did_finish_navigation(self.identifier, str(url))
+        self.ready = True
 
     def evaluate_javascript(self, script):
         """
@@ -65,16 +71,28 @@ class Buffer(QWebEngineView):
 
         Return: a callback_id (str).
         """
-        self.callback_count += 1
-        self.page().runJavaScript(
-            script,
-            lambda x: self.javascript_callback(x, str(self.callback_count)))
-        return str(self.callback_count)
 
+        self.callback_count += 1
+
+        def run_javascript_handler(ok):
+            return self.page().runJavaScript(
+                script,
+                lambda x: self.javascript_callback(x, str(self.callback_count)))
+
+        # If called in the middle of a page-load, then wait till the load is
+        # complete to run the javascript.
+        if not self.ready:
+            self.page().loadFinished.connect(run_javascript_handler)
+        else:  # Otherwise, run it NOW!
+            run_javascript_handler(True)
+
+        return str(self.callback_count)
+    
     def javascript_callback(self, res, callback_id):
         if res is None:
             return
-        core_interface.buffer_javascript_call_back(self.identifier, res, callback_id)
+        core_interface.buffer_javascript_call_back(self.identifier, str(res),
+                                                   callback_id)
 
     def set_height(self, height):
         self.setFixedHeight(height)
