@@ -29,7 +29,7 @@ as a string.")
 (defmethod path ((port port))
   (let ((p (port-accessor port 'path (name port))))
     (if (uiop:file-exists-p p)
-        (truename p)
+        (uiop:truename* p)
         p)))
 
 (defmethod args ((port port))
@@ -51,7 +51,7 @@ This function is an acceptable value for the PATH slot of the PORT class."
         (root-dir (uiop:pathname-directory-pathname
                    (or (let ((program (executable-find (uiop:argv0))))
                          (when program
-                           (truename program)))
+                           (uiop:truename* program)))
                        (nth-value 2 (asdf:locate-system :next))))))
     (or
      (when root-dir

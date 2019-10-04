@@ -54,7 +54,7 @@ When non-nil, INIT-FUNCTION is used to create the file, else the file will be em
     (if init-function
         (funcall init-function path)
         (close (open (ensure-parent-exists path) :direction :probe :if-does-not-exist :create))))
-  (truename path))
+  (uiop:truename* path))
 
 (defun find-slot (class slot-name)
   "CLASS can be a symbol or a class."
