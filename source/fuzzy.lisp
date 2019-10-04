@@ -4,15 +4,17 @@
 (annot:enable-annot-syntax)
 
 
-(defun substring-norm (substrings string)
+(defun substring-norm (substrings string &key (substring-length 2))
   "Return the norm of SUBSTRINGS with regard to STRING.
 The norm is closer to 1 if
 - substrings start near the beginning of STRING;
 - substrings length are closer to the length of STRING.
 
-Only substrings of 3 characters or more are considered."
+Only substrings of SUBSTRING-LENGTH characters or more are considered."
   ;; TODO: Remove duplicates in SUBSTRINGS?  Repeats could mean we insist more on it.
-  (let ((long-substrings (remove-if (lambda (s) (> 3 (length s)))
+  (let ((position-factor 1.0)
+        (length-factor 1.0)
+        (long-substrings (remove-if (lambda (s) (> substring-length (length s)))
                                     substrings)))
     (if long-substrings
         (/ (apply #'+
@@ -21,13 +23,16 @@ Only substrings of 3 characters or more are considered."
                               (if (not position)
                                   0
                                   (/ (+
-                                      ;; Position factor.
-                                      (/ (- (length string) position)
-                                         (length string))
-                                      ;; Length factor.
-                                      (/ (min (length s) (length string))
-                                         (length string)))
-                                     2))))
+                                      (* position-factor
+                                         (/ 1
+                                            ;; We use the sqrt to slow down the
+                                            ;; decrease rate, we want the a
+                                            ;; position of 10-15 still be >0.1.
+                                            (sqrt (1+ position))))
+                                      (* length-factor
+                                         (/ (min (length s) (length string))
+                                            (length string))))
+                                     (+ position-factor length-factor)))))
                           long-substrings))
            (length long-substrings))
         0)))
