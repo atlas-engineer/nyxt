@@ -4,7 +4,7 @@
 (annot:enable-annot-syntax)
 
 
-(defun substring-norm (string substrings)
+(defun substring-norm (substrings string)
   "Return the norm of SUBSTRINGS with regard to STRING.
 The norm is closer to 1 if
 - substrings start near the beginning of STRING;
@@ -32,7 +32,7 @@ Only substrings of 3 characters or more are considered."
            (length long-substrings))
         0)))
 
-(defun exact-match-norm (candidate input)
+(defun exact-match-norm (input candidate)
   "Average of the normalized position of all the exact matches in input substrings.
 If 0 exact matches, return 0."
   (let* ((exactly-matching-substrings (find-exactly-matching-substrings
@@ -61,8 +61,8 @@ A higher score means the candidate comes first."
   ;; Damerau-Levensthein.
   ;; TODO: Check out fzf for a possibly good scoring algorithm.
   (+ (* 1.0 (mk-string-metrics:jaccard candidate input))
-     (* 1.0 (substring-norm candidate (str:split " " input)))
-     (* 1.0 (exact-match-norm candidate input))))
+     (* 1.0 (substring-norm (str:split " " input) candidate))
+     (* 1.0 (exact-match-norm input candidate))))
 
 (defun sort-candidates (input candidate-pairs)
   "Sort CANDIDATE-PAIRS, the pair closest to INPUT in the levenshtein distance comes first.
