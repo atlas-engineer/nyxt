@@ -572,7 +572,7 @@ modified by any library.
 
 *** VI-style bindings
 
-[[https://en.wikipedia.org/wiki/Vi][VI]] is a model text editor that is famous for its /modal/ key bindings.
+[[https://en.wikipedia.org/wiki/Vi][VI]] is a modal text editor that is famous for its /modal/ key bindings.
 In /normal mode/, all keys are commands, they won't insert any text anywhere.
 
 In /insert mode/, all textual keys insert the corresponding text.
