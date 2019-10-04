@@ -74,6 +74,7 @@ class Buffer(QWebEngineView):
 
         self.callback_count += 1
 
+        # FIXME: Attaching this to a slot results in a memory leak!!!
         def run_javascript_handler(ok):
             return self.page().runJavaScript(
                 script,
