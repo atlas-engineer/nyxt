@@ -104,15 +104,18 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (defun bookmark-completion-filter ()
   (lambda (input)
-    (let ((validator (ignore-errors (tag-specification-validator (parse-tag-specification
-                                                                  (str:replace-all " " " " input)))))
-          (bookmarks (bookmarks-data *interface*)))
+    (let* ((input-specs (multiple-value-list (parse-tag-specification
+                                              (str:replace-all " " " " input))))
+           (tag-specs (nth 0 input-specs))
+           (non-tags (str:downcase (str:join " " (nth 1 input-specs))))
+           (validator (ignore-errors (tag-specification-validator tag-specs)))
+           (bookmarks (bookmarks-data *interface*)))
       (when validator
         (setf bookmarks (remove-if (lambda (bookmark)
                                      (not (funcall validator
                                                    (tags bookmark))))
                                    bookmarks)))
-      (fuzzy-match input bookmarks))))
+      (fuzzy-match non-tags bookmarks))))
 
 (defun tag-completion-filter (&key with-empty-tag)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
