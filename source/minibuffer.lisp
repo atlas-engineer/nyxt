@@ -593,7 +593,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 @export
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-cursor-position
-               completions completion-cursor)
+               completions marked-completions completion-cursor)
       minibuffer
     (let ((input-text (if (invisible-input-p minibuffer)
                           (generate-input-html-invisible input-buffer input-cursor-position)
@@ -602,7 +602,16 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
       (evaluate-script minibuffer
                        (ps:ps
                          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
-                               (ps:lisp (input-prompt minibuffer)))
+                               (ps:lisp
+                                (format nil "~a~a:"
+                                        (input-prompt minibuffer)
+                                        (when completions
+                                          (if marked-completions
+                                              (format nil "[~a/~a]"
+                                                      (length marked-completions)
+                                                      (length completions))
+                                              (format nil "[~a]"
+                                                      (length completions)))))))
                          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                                (ps:lisp input-text))
                          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
