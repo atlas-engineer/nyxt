@@ -45,7 +45,7 @@ If 0 exact matches, return 0."
                                                       (search substring candidate))
                                                     exactly-matching-substrings)))))
           (/ (apply #'+ positions)
-                  (* (length positions) (length candidate))))
+             (* (length positions) (length candidate))))
         0)))
 
 (defun to-unicode (input)
@@ -108,28 +108,6 @@ then all candidates that are not exactly matched by at least one substring are r
                          candidate-pairs))
         candidate-pairs)))
 
-(defun sort-exact-matches-in-candidates (input candidate-pairs)
-  "Destructively sort candidates by the position of the exact match.
-The earlier the match in the candidate, the first in the list.
-The comparition is done against the first exact match, then the second, etc. "
-  (let* ((exactly-matching-substrings (find-exactly-matching-substrings
-                                       input
-                                       (mapcar #'first candidate-pairs))))
-    (if exactly-matching-substrings
-        (setf candidate-pairs
-              (sort candidate-pairs
-                    (lambda (candidate-pair1 candidate-pair2)
-                      (loop for substring in exactly-matching-substrings
-                            for pos1 = (search substring (first candidate-pair1))
-                            for pos2 = (search substring (first candidate-pair2))
-                            when (and pos1 (not pos2))
-                              return t
-                            when (and (not pos1) pos2)
-                              return nil
-                            when (and pos1 pos2)
-                              return (< pos1 pos2)))))
-        candidate-pairs)))
-
 @export
 (defun fuzzy-match (input candidates)   ; TODO: Make score functions customizable, e.g. for global history.
   "From the user input and a list of candidates, return a filtered list of
@@ -145,10 +123,11 @@ The match is case-sensitive if INPUT contains at least one uppercase character."
                         (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)
                         pairs))
              (pairs (keep-exact-matches-in-candidates input pairs))
-             ;; (pairs (sort-exact-matches-in-candidates input pairs)) ; TODO: Is this useful when we have the exact-match-norm?
              (pairs (sort-candidates input pairs)))
-        (log:debug "~a" (mapcar (lambda (c) (list (first c)
-                                                  (score-candidate (to-unicode input) (first c))))
+        (log:debug "~a"
+                   (mapcar (lambda (c)
+                             (list (first c)
+                                   (score-candidate (to-unicode input) (first c))))
                                 pairs))
         (mapcar #'second pairs))
       candidates))
