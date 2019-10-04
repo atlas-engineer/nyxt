@@ -102,10 +102,26 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - Faster and improved minibuffer fuzzy completion.
 
+- New customizable =startup-function=.
+
 - New history tree commands: =buffer-history-tree=, =history-forwards-maybe-query=,
   =history-backwards-query=, =history-all-query=.
 
+- New =delete-history-entry= command.
+
+- New =next-user= package, left for the user to use in their initialization file.
+
 - New =--no-init=, =-Q= command line argument.
+
+- New =messages= command to show all the echoed messages.
+
+- Bind =M-:= to =command-evaluate=.
+
+- Bind =s-button1= to open URL in background.
+
+- Fix clicking in text areas to stick to vi-insert-mode. (Thanks to @4t0m.)
+
+- Downcase command name in =execute-command=.
 
 - Move the ~search-engines~ slot from the ~window~ class to the
   ~remote-interface~ class.
@@ -121,6 +137,8 @@ MAJOR.MINOR.PATCH, we increment the:
 - Remove broken =:mode= argument from ~define-key~.
 
 - Deprecate calling ~define-key~ without a keymap argument.
+
+- Rename buffer slot =title= to =url=, remove =buffer-get-url= and deprecate =%buffer-get-title=.
 
 ** DONE 1.3.2
 - Hooks for commands, modes and various UI or networking events.
