@@ -79,16 +79,19 @@ more details."
           (> (score-candidate input (first x))
              (score-candidate input (first y))))))
 
-(defun find-exactly-matching-substrings (input candidates)
-  "Return the list of input substrings that match at least one candidate."
-  (let ((input-strings (str:split " " input :omit-nulls t)))
-    (delete-duplicates
-     (loop for candidate in candidates
-           append (remove-if
-                   (lambda (i)
-                     (not (search i candidate)))
-                   input-strings))
-     :test #'string=)))
+(defun find-exactly-matching-substrings (input candidates &key (substring-length 2))
+  "Return the list of input substrings that match at least one candidate.
+The substrings must be SUBSTRING-LENGTH characters long or more."
+  (let ((input-strings (delete-if (lambda (s) (< (length s) substring-length))
+                                  (str:split " " input :omit-nulls t))))
+    (when input-strings
+      (delete-duplicates
+       (loop for candidate in candidates
+             append (remove-if
+                     (lambda (i)
+                       (not (search i candidate)))
+                     input-strings))
+       :test #'string=))))
 
 (defun keep-exact-matches-in-candidates (input candidate-pairs)
   "Destructively filter out non-exact matches from candidates.
