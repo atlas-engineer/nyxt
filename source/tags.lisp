@@ -12,7 +12,7 @@ Supported operators:
 - 'not: the single tag selector argument must be false.
 
 Example:
-  (funcall (tag-specification-validator (parse-tag-specification ))
+  (funcall (tag-specification-validator (parse-tag-specification \"...\"))
            '(tag1 tag2...))
 
 Throw a simpler error if the s-exp is not valid.
@@ -55,9 +55,12 @@ Throw a simpler error if the s-exp is not valid.
        (_ (error "Operator ~a not allowed" op))))
     (_ (error "Do not know how to parse ~a" s-exp))))
 
-(declaim (ftype (function (string) list) parse-tag-specification))
+(declaim (ftype (function (string)) parse-tag-specification))
 (defun parse-tag-specification (input)
   "Return a s-exp from a tag specification string.
+The substrings not part of the specification are returns as a list in the second
+return value.
+
 The s-exp can then be consumed by `tag-specification-validator'.
 The input string is scanned for symbols starting with
 - \"+\": include tag;
@@ -72,18 +75,24 @@ form \"(OPERATOR TAG-SPECIFICATION)\", where
 Example input:
 
   \"+foo -bar (or (and john doe) (not (and tic tac)))\""
-  (let ((specs (loop with start = 0
-                     for (object new-start) = (multiple-value-list
-                                               (ignore-errors
-                                                (read-from-string input nil :eof :start start)))
-                     until (or (typep new-start 'error)
-                               (eq object :eof))
-                     do (setf start new-start)
-                     when (or (not (atom object))
-                              (and (<= 2 (length (symbol-name object)))
-                                   (or
-                                    (str:starts-with? "-" (symbol-name object))
-                                    (str:starts-with? "+" (symbol-name object)))))
-                       collect object)))
-    (when specs
-      (cons 'and specs))))
+  (let* ((non-specs nil)
+         (specs (loop with start = 0
+                      for (object new-start) = (multiple-value-list
+                                                (ignore-errors
+                                                 (read-from-string input nil :eof :start start)))
+                      until (or (typep new-start 'error)
+                                (eq object :eof))
+                      do (setf start new-start)
+                      if (or (not (atom object))
+                             (and (<= 2 (length (symbol-name object)))
+                                  (or
+                                   (str:starts-with? "-" (symbol-name object))
+                                   (str:starts-with? "+" (symbol-name object)))))
+                        collect object
+                      else
+                        do (push object non-specs))))
+
+    (values
+     (when specs
+       (cons 'and specs))
+     (nreverse non-specs))))
