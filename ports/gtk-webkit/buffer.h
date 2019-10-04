@@ -68,9 +68,6 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 		 * load is requested or a navigation within the
 		 * same page is performed */
 		uri = webkit_web_view_get_uri(web_view); // TODO: Only need to set URI at the beginning?
-		// TODO: This duplicates the buffer_did_commit_navigation call with
-		// buffer_notify_uri.  But is it always the same URI?  What about
-		// redirections?
 
 		// TODO: Notify Lisp core on invalid TLS certificate, leave to the Lisp core
 		// the possibility to load the non-HTTPS URL.
@@ -85,6 +82,10 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 	case WEBKIT_LOAD_FINISHED:
 		/* Load finished, we can now stop the spinner */
 		method_name = "buffer_did_finish_navigation";
+		// TODO: This duplicates the buffer_did_commit_navigation call with
+		// buffer_notify_uri.  But is it always the same URI?  What about
+		// redirections?
+		break;
 	}
 
 	if (uri == NULL) {
@@ -108,7 +109,7 @@ static void buffer_web_view_load_changed(WebKitWebView *web_view,
 static void buffer_notify_uri(WebKitWebView *web_view, GParamSpec *_spec, gpointer data) {
 	Buffer *buffer = (Buffer *)data;
 
-	const char *method_name = "buffer_did_commit_navigation";
+	const char *method_name = "buffer_did_finish_navigation";
 	const gchar *uri = webkit_web_view_get_uri(web_view);
 	GVariant *arg = g_variant_new("(ss)", buffer->identifier, uri);
 	g_message("RPC message: %s %s", method_name, g_variant_print(arg, TRUE));
