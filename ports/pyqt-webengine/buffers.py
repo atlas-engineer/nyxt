@@ -44,13 +44,23 @@ class Buffer(QWebEngineView):
         page.setHtml("")  # necessary for runJavaScript to work on new buffers.
 
         # Keep track of whether the page is finished loading
+        self.js_ready_signal = page.loadFinished
+        self.js_wait_signal = page.urlChanged
+
+        self.ready = False
+        self.js_ready_signal.connect(self.set_js_ready)
+        self.js_wait_signal.connect(self.set_js_wait)
+
+    def set_js_ready(self):
+        self.ready = True
+
+    def set_js_wait(self):
         self.ready = False
 
     def did_commit_navigation(self, url):
         """Invoked whenever the webview starts navigation.
         """
         core_interface.buffer_did_commit_navigation(self.identifier, str(url.url()))
-        self.ready = False
 
     def did_finish_navigation(self, status):
         """Invoked whenever the webview finishes navigation.
@@ -60,7 +70,6 @@ class Buffer(QWebEngineView):
         """
         url = self.url().url()
         core_interface.buffer_did_finish_navigation(self.identifier, str(url))
-        self.ready = True
 
     def evaluate_javascript(self, script):
         """
@@ -78,7 +87,8 @@ class Buffer(QWebEngineView):
         def run_javascript_handler(ok):
             return self.page().runJavaScript(
                 script,
-                lambda x: self.javascript_callback(x, str(self.callback_count)))
+                lambda x: self.javascript_callback(x, str(self.callback_count))
+            )
 
         # If called in the middle of a page-load, then wait till the load is
         # complete to run the javascript.
@@ -88,7 +98,7 @@ class Buffer(QWebEngineView):
             run_javascript_handler(True)
 
         return str(self.callback_count)
-    
+
     def javascript_callback(self, res, callback_id):
         if res is None:
             return
