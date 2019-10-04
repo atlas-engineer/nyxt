@@ -58,9 +58,9 @@ If 0 exact matches, return 0."
   "Return a CANDIDATE's score for INPUT.
 A higher score means the candidate comes first."
   ;; The Jaccard metric seems to provide much better results than, say,
-  ;; Damerau-Levensthein.
+  ;; Damerau-Levensthein but it's much slower.
   ;; TODO: Check out fzf for a possibly good scoring algorithm.
-  (+ (* 1.0 (mk-string-metrics:jaccard candidate input))
+  (+ (* 1.0 (mk-string-metrics:norm-damerau-levenshtein candidate input))
      (* 1.0 (substring-norm (str:split " " input) candidate))
      (* 1.0 (exact-match-norm input candidate))))
 
