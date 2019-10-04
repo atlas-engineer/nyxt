@@ -122,6 +122,40 @@ features for productive professionals.")
        ("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Infinitely extensible web-browser (ring)")))
 
+(define sbcl-next-history-tree
+  (package
+    (inherit next-gtk-webkit)
+    (name "sbcl-next-history-tree")
+    (build-system asdf-build-system/sbcl)
+    (arguments
+     `(#:tests? #t
+       #:asd-file "next.asd"
+       #:asd-system-name "next/history-tree"))
+    (native-inputs
+     `(("trivial-features" ,sbcl-trivial-features)
+       ("prove-asdf" ,sbcl-prove-asdf)))
+    (synopsis "Infinitely extensible web-browser (history-tree)")))
+
+(define sbcl-next-password-manager
+  (package
+    (inherit next-gtk-webkit)
+    (name "sbcl-next-password-manager")
+    (build-system asdf-build-system/sbcl)
+    (arguments
+     `(#:tests? #t
+       #:asd-file "next.asd"
+       #:asd-system-name "next/password-manager"))
+    (inputs
+     `(("bordeaux-threads" ,sbcl-bordeaux-threads)
+       ("cl-annot" ,sbcl-cl-annot)
+       ("cl-ppcre" ,sbcl-cl-ppcre)
+       ("str" ,sbcl-cl-str)
+       ("trivial-clipboard" ,sbcl-trivial-clipboard)))
+    (native-inputs
+     `(("trivial-features" ,sbcl-trivial-features)
+       ("prove-asdf" ,sbcl-prove-asdf)))
+    (synopsis "Infinitely extensible web-browser (password manager)")))
+
 (define-public next
   (let ((version (package-version next-gtk-webkit)))
     (package
@@ -186,12 +220,14 @@ features for productive professionals.")
        `(("alexandria" ,sbcl-alexandria)
          ("bordeaux-threads" ,sbcl-bordeaux-threads)
          ("cl-annot" ,sbcl-cl-annot)
+         ("cl-ansi-text" ,sbcl-cl-ansi-text)
          ("cl-css" ,sbcl-cl-css)
          ("cl-hooks" ,sbcl-cl-hooks)
          ("cl-json" ,sbcl-cl-json)
          ("cl-markup" ,sbcl-cl-markup)
          ("cl-ppcre" ,sbcl-cl-ppcre)
          ("cl-ppcre-unicode" ,sbcl-cl-ppcre-unicode)
+         ("cl-prevalence" ,sbcl-cl-prevalence)
          ("closer-mop" ,sbcl-closer-mop)
          ("dbus" ,cl-dbus)
          ("dexador" ,sbcl-dexador)
@@ -211,7 +247,9 @@ features for productive professionals.")
          ;; Local deps
          ("next-gtk-webkit" ,next-gtk-webkit)
          ("next-download-manager" ,sbcl-next-download-manager)
-         ("next-ring" ,sbcl-next-ring)))
+         ("next-ring" ,sbcl-next-ring)
+         ("next-history-tree" ,sbcl-next-history-tree)
+         ("next-password-manager" ,sbcl-next-password-manager)))
       (native-inputs
        `(("trivial-features" ,sbcl-trivial-features)
          ("prove-asdf" ,sbcl-prove-asdf)))

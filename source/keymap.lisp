@@ -11,9 +11,6 @@
   "Return an empty keymap."
   (make-instance 'keymap :table (make-hash-table :test 'equal)))
 
-(defun keymapp (arg)
-  (typep arg 'keymap))
-
 (defmethod set-key ((map keymap) key-sequence-string command)
   "Bind KEY-SEQUENCE-STRING to COMMAND in MAP.
 
@@ -44,16 +41,15 @@ sequence of keys longer than one key-chord can be recorded."
   ;; TODO: Make use of keycode?
   ;; TODO: Case opposite to Caps-Lock status?
   "When NORMALIZE is non-nil, remove the shift modifier and upcase the keys."
-  (when (and normalize
-             (member-string "s" (key-chord-modifiers key-chord)))
-    (setf (key-chord-modifiers key-chord)
-          (delete "s" (key-chord-modifiers key-chord) :test #'string=))
-    (string-upcase (key-chord-key-string key-chord)))
-  (setf (key-chord-modifiers key-chord) (delete-if #'str:emptyp
-                                                   (key-chord-modifiers key-chord)))
-  (append (list nil
-                (key-chord-key-string key-chord))
-          (key-chord-modifiers key-chord)))
+  (let ((modifiers (copy-list (key-chord-modifiers key-chord))))
+    (when (and normalize
+               (member-string "s" modifiers))
+      (setf modifiers (delete "s" modifiers :test #'string=))
+      (string-upcase (key-chord-key-string key-chord)))
+    (setf modifiers (delete-if #'str:emptyp modifiers))
+    (append (list nil
+                  (key-chord-key-string key-chord))
+            modifiers)))
 
 (defun serialize-key-chord-stack (key-chord-stack &key normalize)
   (mapcar (lambda (k) (serialize-key-chord k :normalize normalize))
@@ -80,7 +76,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
     (when buffer
       (cons (override-map buffer)
             (delete-if #'null (mapcar #'keymap (modes (if (active-minibuffers window)
-                                                          (minibuffer *interface*)
+                                                          (current-minibuffer)
                                                           (active-buffer window)))))))))
 
 (defun look-up-key-chord-stack (window key-chord-stack)
@@ -94,10 +90,18 @@ This is effectively the inverse of `serialize-key-chord-stack'."
           when fun
             return fun)))
 
+(declaim (ftype (function (key-chord) boolean) pointer-event-p))
 (defun pointer-event-p (key-chord)
   "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."
-  (check-type key-chord key-chord)
+  ;; See INPUT_IS_NOT_POINTER in platform port.
   (not (= -1 (first (key-chord-position key-chord)))))
+
+(declaim (ftype (function (key-chord) boolean) printable-p))
+(defun printable-p (key-chord)
+  "Return non-nil if key-chord is printable.
+Letters are printable, while function keys or backspace are not."
+  ;; See INPUT_IS_PRINTABLE in platform port.
+  (= -2 (second (key-chord-position key-chord))))
 
 ;; "Add a new key chord to the interface key-chord-stack.
 ;; For example, it may add C-M-s or C-x to a stack which will be consumed by
@@ -122,6 +126,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
                     :low-level-data low-level-data)))
     ;; Don't stack the release key-chords or else pressing "C-x" then "C-+""
     ;; will be understood as "C-x C-R-x C-+ C-R-+".
+    (log:debug key-chord)
     (when (or (null (key-chord-stack *interface*))
               (not (member-string "R" (key-chord-modifiers key-chord))))
       (push key-chord (key-chord-stack *interface*))
@@ -147,7 +152,7 @@ This is effectively the inverse of `serialize-key-chord-stack'."
                (progn
                  ;; (log:debug "Key released") ; TODO: This makes the debug trace too verbose.  Middle ground?
                  nil)
-               (progn
+               (when (printable-p (first (key-chord-stack *interface*)))
                  (log:debug "Insert ~s in minibuffer" (key-chord-key-string
                                                        (first (key-chord-stack *interface*))))
                  (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
@@ -158,61 +163,55 @@ This is effectively the inverse of `serialize-key-chord-stack'."
            ;; forward-input-events-p is NIL in VI normal mode so that we don't
            ;; forward unbound keys, unless it's a pointer (mouse) event.
            ;; TODO: Remove this special case and bind button1 to "self-insert" instead?
-           (rpc-generate-input-event *interface*
+           (rpc-generate-input-event
                                      active-window
                                      key-chord)
            (setf (key-chord-stack *interface*) nil))
           (t (setf (key-chord-stack *interface*) nil)))))))
 
+(declaim (ftype (function (&rest t &key (:scheme list) (:keymap keymap) &allow-other-keys)) define-key))
 @export
 (defun define-key (&rest key-command-pairs
-                   &key mode (scheme :emacs) keymap
+                   &key keymap
+                     (scheme :emacs) ; TODO: Deprecated, remove after some version.
                    &allow-other-keys)
+  ;; TODO: Add option to define-key over the keymaps of all instantiated modes.
   "Bind KEY to COMMAND.
 The KEY command transforms key chord strings to valid key sequences.
-When MODE is provided (as a symbol referring to a class name), the binding is
-registered into the mode class and all future mode instances will use the
-binding.
-If MODE and KEYMAP are nil, the binding is registered into root-mode.
-
-If SCHEME is unspecified, it defaults to :EMACS.  If SCHEME is unspecified, it
-defaults to :EMACS.  SCHEME is only useful together with MODE, it does not have
-any effect on KEYMAP.
 
 Examples:
 
-  (define-key \"C-x C-c\" 'quit)
-  (define-key \"C-n\" 'history-forwards
-              :mode 'document-mode)
   ;; Only affect the first mode of the current buffer:
   (define-key \"C-c C-c\" 'reload
-              :keymap (getf (keymap-schemes (first (modes (active-buffer *interface*)))) :emacs))"
-  (dolist (key (remove-if (complement #'keywordp) key-command-pairs))
-    (remf key-command-pairs key))
-  (when (and (null mode) (not (keymapp keymap)))
-    (setf mode 'root-mode))
-  (loop for (key-sequence-string command . rest) on key-command-pairs by #'cddr
-        do (when mode
-             (setf (get-default mode 'keymap-schemes)
-                   (let* ((map-scheme (closer-mop:slot-definition-initform
-                                       (find-slot mode 'keymap-schemes)))
-                          ;; REVIEW: The return value of
-                          ;; slot-definition-initform should be evaluated, but
-                          ;; this only works if it is not a list.  Since we
-                          ;; use a property list for the map-scheme, we need
-                          ;; to check manually if it has been initialized.  We
-                          ;; could make this cleaner by using a dedicated
-                          ;; structure for map-scheme
-                          (map-scheme (if (ignore-errors (getf map-scheme :emacs))
-                                          map-scheme
-                                          (eval map-scheme)))
-                          (map (or (getf map-scheme scheme)
-                                   (make-keymap))))
-                     (set-key map key-sequence-string command)
-                     (setf (getf map-scheme scheme) map)
-                     map-scheme)))
-           (when (keymapp keymap)
-             (set-key keymap key-sequence-string command))))
+              :keymap (getf (keymap-schemes (first (modes (current-buffer)))) :emacs))"
+  ;; SBCL complains if we modify KEY-COMMAND-PAIRS directly, so we work on a copy.
+  (let ((key-command-pairs-copy (copy-list key-command-pairs)))
+    (dolist (key (remove-if (complement #'keywordp) key-command-pairs-copy))
+      (remf key-command-pairs-copy key))
+    (if keymap
+        (loop for (key-sequence-string command . rest) on key-command-pairs-copy by #'cddr
+              do (set-key keymap key-sequence-string command))
+        (progn
+          (log:warn "Calling define-key without specifying a keymap is deprecated.~&Consider moving the definition to the mode definition site or to a hook.")
+          (loop for (key-sequence-string command . rest) on key-command-pairs-copy by #'cddr
+                do (setf (get-default 'root-mode 'keymap-schemes)
+                         (let* ((map-scheme (closer-mop:slot-definition-initform
+                                             (find-slot 'root-mode 'keymap-schemes)))
+                                ;; REVIEW: The return value of
+                                ;; slot-definition-initform should be evaluated, but
+                                ;; this only works if it is not a list.  Since we
+                                ;; use a property list for the map-scheme, we need
+                                ;; to check manually if it has been initialized.  We
+                                ;; could make this cleaner by using a dedicated
+                                ;; structure for map-scheme
+                                (map-scheme (if (ignore-errors (getf map-scheme :emacs))
+                                                map-scheme
+                                                (eval map-scheme)))
+                                (map (or (getf map-scheme scheme)
+                                         (make-keymap))))
+                           (set-key map key-sequence-string command)
+                           (setf (getf map-scheme scheme) map)
+                           map-scheme)))))))
 
 (defun key (key-sequence-string)
   "Turn KEY-SEQUENCE-STRING into a sequence of serialized key-chords.

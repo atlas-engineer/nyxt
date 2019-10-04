@@ -40,28 +40,105 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Add support for external editor
 + Allow Next to call out to an external editor to fill in the contents
   of a particular text field
-*** Extend bookmark support
-+ Switch from SQLite to an s-exp based text file.
-+ Bookmarks can have tags, a shortcut string, a timestamp.
-+ Bookmarks and search engines can be merged.
-+ Proposed format:
-  #+begin_src
-  (:url "https://en.wikipedia.org/wiki/Main_Page" :title "Wikipedia, the free encyclopedia" :shortcut "wiki" :search "http://en.wikipedia.org/wiki/Special:Search?search=%s" :time "Sat Jul 14 09:41:56 2018" :tags '("encyclopedia" "knowledge" "wiki"))
-  #+end_src
-  Minibuffer usage:
-  - =wiki=: Open the main page.
-  - =wiki elephant=: search Wikipedia for "elephant".
-+ Support user-defined filters to avoid duplicating bookmarks.
-  For instance detect duplicates =http://foo= and =https://foo=.
-+ Support user-define read/write hooks so that bookmarks can be automatically
-  imported, say, from Firefox, or exported to a SQLite database or a custom text
-  format.
+*** Add online suggestions from search engines
+** DONE 1.3.3
+- Select multiple candidates in minibuffer
+  The default bindings are:
 
-** TASK 1.3.3
+  - =C-SPACE= to toggle the mark of an entry,
+
+  - =M-a= to mark all visible entries,
+
+  - =M-u= to unmark all visible entries.
+
+- Extend bookmark support.
+
+  + Bookmarks can have tags, a shortcut string, a search-url and a timestamp.
+
+  + Minibuffer usage:
+
+    - =wiki=: Open the Wikipedia main page.
+
+    - =wiki elephant=: search Wikipedia for "elephant".
+
+  + Switch from SQLite to an s-exp based text file.
+    A bookmark entry is stored as follwos:
+    #+begin_src
+    (:url "https://en.wikipedia.org/wiki/Main_Page" :title "Wikipedia, the free encyclopedia" :shortcut "wiki" :search-url "http://en.wikipedia.org/wiki/Special:Search?search=%s" :date "Sat Jul 14 09:41:56 2018" :tags '("encyclopedia" "knowledge" "wiki"))
+    #+end_src
+
+  + Bookmark can have search engines.
+    ~remote-interface~ search engines and bookmark search engines are
+    automatically merged.
+
+  + Bookmarks can be stored and restored in a customizable format.
+
+    See the ~bookmarks-store-function~ and ~bookmarks-restore-function~ in ~remote-interface~.
+
+- Password manager. (Thanks to Solomon Bloch.)
+
+  See the commands =save-new-password= and =copy-password=.
+
+  Support for multiple backends.  Currently:
+
+  + [[https://keepassxc.org/][KeepassXC]]
+
+  + [[https://www.passwordstore.org/][password-store]]
+
+- Session persistence
+
+  The "user session", that is, the list of buffers and their tree-histories, is
+  now automatically persisted.  Upon restarting Next, the previously open
+  buffers will automatically be restored.
+
+- New ~quit-after-clearing-session~ command.
+
+- New ~download-video~ command.
+  It is a wrapper around the [[http://ytdl-org.github.io/youtube-dl/][youtube-dl]] program.
+
+- New ~vcs-clone~ command to clone Git repositories to a prefered or queried location.
+
+- New =reopen-buffer= and =reopen-last-buffers= commands.  (Thanks to @4t0m.)
+
+- Faster and improved minibuffer fuzzy completion.
+
+- New customizable =startup-function=.
+
+- New history tree commands: =buffer-history-tree=, =history-forwards-maybe-query=,
+  =history-backwards-query=, =history-all-query=.
+
+- New =delete-history-entry= command.
+
+- New =next-user= package, left for the user to use in their initialization file.
+
+- New =--no-init=, =-Q= command line argument.
+
+- New =messages= command to show all the echoed messages.
+
+- Bind =M-:= to =command-evaluate=.
+
+- Bind =s-button1= to open URL in background.
+
+- Fix clicking in text areas to stick to vi-insert-mode. (Thanks to @4t0m.)
+
+- Downcase command name in =execute-command=.
+
 - Move the ~search-engines~ slot from the ~window~ class to the
   ~remote-interface~ class.
+
 - Rename ~new-buffer~, ~new-window~ and ~make-visible-new-buffer~ to
   ~make-buffer~, ~make-window~ and ~make-buffer-focus~.
+
+- Rename ~document-mode~ to ~web-mode~.
+
+- Rename ~history-db-path~ and ~bookmark-db-path~ to ~history-path~ and
+  ~bookmarks-path~ respectively.
+
+- Remove broken =:mode= argument from ~define-key~.
+
+- Deprecate calling ~define-key~ without a keymap argument.
+
+- Rename buffer slot =title= to =url=, remove =buffer-get-url= and deprecate =%buffer-get-title=.
 
 ** DONE 1.3.2
 - Hooks for commands, modes and various UI or networking events.
@@ -94,7 +171,7 @@ MAJOR.MINOR.PATCH, we increment the:
   *Note:* This feature is experimental and is meant to grow in future versions
   of Next!
 
-- New ~paste-from-ring~ command. (Thanks to Solomon Block.)
+- New ~paste-from-ring~ command. (Thanks to Solomon Bloch.)
 
   All copied text snippets are saved in a clipboard "ring."  Any snippet can be
   fuzzy-searched and pasted later.

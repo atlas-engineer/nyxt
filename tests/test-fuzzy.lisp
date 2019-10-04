@@ -62,10 +62,10 @@
 
   (is "foo-bar" (first (next::fuzzy-match "foobar"
                                           '("foo-dash-bar" "foo-bar")))
-      "search witout a space. All characters count (small list).")
+      "search without a space. All characters count (small list).")
   (is "SWITCH-BUFFER" (first (next::fuzzy-match "sbf"
                                                 *candidates*))
-      "search witout a space. All characters count, real list.")
+      "search without a space. All characters count, real list.")
   (is "FOO-BAR" (first (next::fuzzy-match "FOO"
                                           '("foo-dash-bar" "FOO-BAR")))
       "input is uppercase (small list)."))
@@ -90,8 +90,6 @@
   (is "http://[1:0:0:2::3:0.]/" (first (next::fuzzy-match "[" '("test1"
                                                                 "http://[1:0:0:2::3:0.]/"
                                                                 "test2")))
-      "match regex meta-characters")
-  (is "https://duckduckgo.com/?q=*spurious*" (next::parse-url "*spurious*")
-      "ignore wildcards"))
+      "match regex meta-characters"))
 
 (finalize)

@@ -19,7 +19,8 @@ will be made at updating it.")
    (path :accessor path :initarg :path
          :initform nil
          :documentation "Where to find the list locally.
-If nil, the list won't be persisted.")
+If nil, the list won't be persisted.
+If path is relative, it will be set to (xdg-data-home path).")
    (hosts :accessor hosts :initarg :hosts
           :initform '()
           :documentation "The list of domain name.")
@@ -27,6 +28,13 @@ If nil, the list won't be persisted.")
                     :initform (* 60 60 24)
                     :documentation "If URL is provided, update the list after
 this amount of seconds.")))
+
+@export
+(defmethod path ((hostlist hostlist))
+  (with-slots (path) hostlist
+    (if (uiop:absolute-pathname-p path)
+        path
+        (xdg-data-home path))))
 
 @export
 (defun make-hostlist (&rest args)
@@ -66,12 +74,16 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                     collect (second (str:split " " line))))))
   (hosts hostlist))
 
+@export
+(defparameter *default-host-list*
+  (make-instance 'hostlist
+                 :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+                 :path "hostlist-stevenblack"))
+
 (define-mode blocker-mode ()
     "Enable blocking of blacklisted hosts."
     ((hostlists :accessor hostlists :initarg :hostlists
-                :initform (list (make-instance 'hostlist
-                                               :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-                                               :path (xdg-data-home "hostlist-stevenblack"))))
+                :initform (list *default-host-list*))
      (previous-blocker :initform nil
                        :documentation "Save the previous blocker to be restored
 when disabling the mode.")

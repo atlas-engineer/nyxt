@@ -32,13 +32,14 @@ typedef struct {
 } KeyTranslation;
 
 static KeyTranslation key_translations[] = {
-	{.old = "", .new = "BACKSPACE"},
+	{.old = "BackSpace", .new = "BACKSPACE"},
 	{.old = " ", .new = "SPACE"},
-	{.old = "", .new = "DELETE"},
-	{.old = "-", .new = "HYPHEN"},
-	{.old = "", .new = "ESCAPE"},
-	{.old = "\r", .new = "RETURN"},
-	{.old = "\t", .new = "TAB"},
+	{.old = "space", .new = "SPACE"},
+	{.old = "Delete", .new = "DELETE"},
+	{.old = "minus", .new = "HYPHEN"},
+	{.old = "Escape", .new = "ESCAPE"},
+	{.old = "Return", .new = "RETURN"},
+	{.old = "Tab", .new = "TAB"},
 };
 
 guint window_string_to_modifier(gchar *s) {
@@ -50,34 +51,14 @@ guint window_string_to_modifier(gchar *s) {
 	return 0;
 }
 
-
-static guint key_blacklist[] = {
-	GDK_ISO_Level2_Latch,
-	GDK_ISO_Level3_Shift,
-	GDK_ISO_Level3_Latch,
-	GDK_ISO_Level3_Lock,
-	GDK_ISO_Level5_Shift,
-	GDK_ISO_Level5_Latch,
-	GDK_ISO_Level5_Lock,
-	GDK_ISO_Group_Shift,
-	GDK_ISO_Group_Latch,
-	GDK_ISO_Group_Lock,
-	GDK_ISO_Next_Group,
-	GDK_ISO_Next_Group_Lock,
-	GDK_ISO_Prev_Group,
-	GDK_ISO_Prev_Group_Lock,
-	GDK_ISO_First_Group,
-	GDK_ISO_First_Group_Lock,
-	GDK_ISO_Last_Group,
-	GDK_ISO_Last_Group_Lock,
-};
-
 typedef struct {
 	GtkWidget *base;
+	GtkEntry *key_string_buffer;
 	Buffer *buffer;
 	char *identifier;
 	Minibuffer *minibuffer;
 	int minibuffer_height;
+	gboolean notify_synchronously;
 } Window;
 
 typedef struct {
@@ -108,13 +89,25 @@ void window_delete(Window *window) {
 		GVariant *window_id = g_variant_new("(s)", window->identifier);
 		g_message("RPC message: %s %s", method_name, g_variant_print(window_id, TRUE));
 
-		// Send synchronously so that if this is the last window, we don't quit
-		// GTK before actually sending the message.
-		g_dbus_connection_call_sync(state.connection,
-			CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
-			method_name,
-			window_id,
-			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+		if (window->notify_synchronously) {
+			// Send synchronously so that if this is the last window, we don't quit
+			// GTK before actually sending the message.
+			g_dbus_connection_call_sync(state.connection,
+				CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+				method_name,
+				window_id,
+				NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+		} else {
+			// If Lisp core instructed to close the window, then it is still
+			// synchronously waiting on the RPC return at this point, so we can't send
+			// synchronously lest we enter a dead lock.  But that's OK, because the
+			// Lisp core should never delete the last window.
+			g_dbus_connection_call(state.connection,
+				CORE_NAME, CORE_OBJECT_PATH, CORE_INTERFACE,
+				method_name,
+				window_id,
+				NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+		}
 
 		if (error != NULL) {
 			g_warning("Error in RPC call: %s", error->message);
@@ -122,12 +115,6 @@ void window_delete(Window *window) {
 			// If the RPC request fails, we should still close the window on the GTK
 			// side.
 		}
-	}
-
-	if (window->base != NULL && !gtk_widget_in_destruction(window->base)) {
-		// If window was destroyed externally, then this is already done.
-		g_debug("Destroy window widget %s", window->identifier);
-		gtk_widget_destroy(window->base);
 	}
 
 	minibuffer_delete(window->minibuffer);
@@ -274,6 +261,10 @@ gboolean window_send_event(gpointer window_data,
 	return TRUE;
 }
 
+#define INPUT_IS_NOT_POINTER -1
+#define INPUT_IS_NOT_PRINTABLE -1
+#define INPUT_IS_PRINTABLE -2
+
 gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer window_data) {
 	{
 		gchar *type = "pressed";
@@ -295,21 +286,13 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 		return FALSE;
 	}
 
-	// Don't pass modifiers alone, otherwise the core could see them as self-inserting
-	// character, which would print "Control_L" and the like in the minibuffer.
-	if (event->is_modifier) {
-		g_debug("Forward modifier-only to GTK");
-		return FALSE;
-	}
+	Window *window = window_data;
 
-	// Don't pass GDK_ISO_Level3_Shift and the like, those (non-modifier) keys
-	// alter the keymap upstream, we only want the result.
-	for (int i = 0; i < (sizeof key_blacklist)/(sizeof key_blacklist[0]); i++) {
-		if (event->keyval == key_blacklist[i]) {
-			g_debug("Forward unsupported special keys to GTK");
-			return FALSE;
-		}
-	}
+	// Generate the result of the current keypress into the dummy
+	// key_string_buffer (a GtkEntry that's never shown on screen) so that we can
+	// collect the printed representation of composed keypress, such as dead keys.
+	// This must come right after the unconsumed event test.
+	gtk_entry_im_context_filter_keypress(window->key_string_buffer, event);
 
 	// Translate ISO_Left_Tab to shift-TAB.
 	if (event->keyval == GDK_ISO_Left_Tab) {
@@ -317,18 +300,13 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 		event->state |= GDK_SHIFT_MASK;
 	}
 
-	// event->string is deprecated but it's very much what we want.
-	gchar *keyval_string = event->string;
-	if ((event->state & GDK_CONTROL_MASK) &&
-		(((event->keyval >= 'A') && (event->keyval <= 'Z')) ||
-		((event->keyval >= 'a') && (event->keyval <= 'z')))) {
-		// The control modifier turns the A-Za-z event->string into ASCII control
-		// characters (e.g. '^A').  We want the regular letter instead.
-		keyval_string = gdk_keyval_name(event->keyval);
-	} else if (keyval_string[0] == '\0') {
-		// Some keys like F1 don't have a printed representation, so we send the
-		// associated GDK symbol then.
-		keyval_string = gdk_keyval_name(event->keyval);
+	gchar *keyval_string = gdk_keyval_name(event->keyval);
+	gdouble type = INPUT_IS_NOT_PRINTABLE;
+
+	if (gtk_entry_get_text_length(window->key_string_buffer) >= 1) {
+		type = INPUT_IS_PRINTABLE;
+		keyval_string = strdup(gtk_entry_get_text(window->key_string_buffer));
+		gtk_entry_set_text(window->key_string_buffer, "");
 	}
 
 	// If at this point the keyval_string is not standard, we use the key
@@ -350,7 +328,7 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 	return window_send_event(window_data,
 		       keyval_string, event->state,
 		       event->hardware_keycode, event->keyval,
-		       -1, -1,
+		       INPUT_IS_NOT_POINTER, type, // 'type' is used to pass extra information such as "is printable?".
 		       event->type == GDK_KEY_RELEASE);
 }
 
@@ -480,9 +458,14 @@ Window *window_init() {
 		exit(1);
 	}
 
+	window->notify_synchronously = true;
+
 	// Create an 800x600 window that will contain the browser instance
 	window->base = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window->base), 800, 600);
+
+	// Key string buffer is used to store the key event characters.
+	window->key_string_buffer = GTK_ENTRY(gtk_entry_new());
 
 	// Deprecated, but we want it to be "Next", not "Next-gtk-webkit".
 	gtk_window_set_wmclass(GTK_WINDOW(window->base), g_string_ascii_down(g_string_new(APPNAME))->str, APPNAME);

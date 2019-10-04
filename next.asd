@@ -2,7 +2,7 @@
 ;;; next.asd
 
 (asdf:defsystem :next
-  :version "1.3.2"
+  :version "1.3.3"
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
   :serial t
@@ -10,6 +10,7 @@
   :depends-on (:alexandria
                :bordeaux-threads
                :cl-annot
+               :cl-ansi-text
                :cl-css
                :cl-hooks
                :cl-json
@@ -35,13 +36,19 @@
                :unix-opts
                ;; Local systems:
                :next/download-manager
-               :next/ring)
+               :next/ring
+               :next/history-tree
+               :next/password-manager)
   :components ((:module "source"
                 :components
                 ((:file "patch-annot")
-                 ;; Core Functionality
+                 (:file "patch-serialization")
+                 ;; Independent utilities
                  (:file "package")
-                 (:file "serialization")
+                 (:file "tags")
+                 (:file "time")
+                 (:file "file-human-size")
+                 ;; Core Functionality
                  (:file "macro")
                  (:file "global")
                  (:file "port")
@@ -49,11 +56,15 @@
                  (:file "command")
                  (:file "mode")
                  (:file "utility")
+                 (:file "urls")
+                 (:file "fuzzy")
                  (:file "buffer")
                  (:file "window")
                  (:file "minibuffer")
                  (:file "keymap")
+                 (:file "recent-buffers")
                  ;; Core Packages
+                 (:file "password")
                  (:file "bookmark")
                  (:file "zoom")
                  (:file "scroll")
@@ -64,13 +75,15 @@
                  (:file "help")
                  ;; Core Modes
                  (:file "application-mode")
-                 (:file "document-mode")
+                 (:file "web-mode")
                  (:file "vi-mode")
                  (:file "blocker-mode")
                  (:file "proxy-mode")
                  (:file "noscript-mode")
                  (:file "file-manager-mode")
                  (:file "download-mode")
+                 (:file "vcs-mode")
+                 (:file "video-mode")
                  ;; Port Compatibility Layers
                  (:file "ports/pyqt-webengine" :if-feature :darwin)
                  (:file "ports/gtk-webkit" :if-feature (:and :unix (:not :darwin)))
@@ -120,3 +133,30 @@
                 :components ((:test-file "tests"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))
+
+(asdf:defsystem next/history-tree
+  :components ((:module source :pathname "libraries/history-tree/"
+                :components ((:file "package")
+                             (:file "history-tree")))))
+
+(asdf:defsystem next/history-tree/tests
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (prove
+               next/history-tree)
+  :components ((:module source/tests :pathname "libraries/history-tree/tests/"
+                :components ((:test-file "tests"))))
+  :perform (asdf:test-op (op c) (uiop:symbol-call
+                                 :prove-asdf 'run-test-system c)))
+
+(asdf:defsystem next/password-manager
+  :depends-on (bordeaux-threads
+               cl-ppcre
+               cl-annot
+               str
+               trivial-clipboard
+               uiop)
+  :components ((:module source :pathname "libraries/password-manager/"
+                :components ((:file "package")
+                             (:file "password")
+                             (:file "password-pass")
+                             (:file "password-keepassxc")))))

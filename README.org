@@ -10,17 +10,16 @@ productive professionals.
 *Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
 instabilities or feature wishes.
 
+#+html: <br />
+
 -----
 
-# sorry for the one-line, github doesn't read #+begin_export html !
-
-#+html: <p align="center"> <a href="http://next.atlas.engineer/"><b>Homepage</b></a> | <a href="https://next.atlas.engineer/download"><b>Downloads</b></a> | <a href="https://next.atlas.engineer/documentation"><b>User Manual</b></a> | <a href="https://next.atlas.engineer/articles"><b>Articles</b></a> </p>
+#+html: <div align="center"> <a href="http://next.atlas.engineer/"><b>Homepage</b></a> | <a href="https://next.atlas.engineer/download"><b>Downloads</b></a> | <a href="https://next.atlas.engineer/documentation"><b>User Manual</b></a> | <a href="https://next.atlas.engineer/articles"><b>Articles</b></a> | <a href="https://www.reddit.com/r/next_browser/"><b>Reddit</b></a> | Freenode IRC: <a href="https://webchat.freenode.net/#next-browser">#next-browser</a> </div>
 
 -----
 
 If you like Next and if you want to help future development, support us on
 [[https://www.patreon.com/next_browser][Patreon]] and help make our [[https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/][crowdfunding campaign for v1.4]] a success!
-
 
 #+html: <div align="center"> <a href="https://www.indiegogo.com/projects/next-browser-v1-4-0/x/13474269#/"> <img title="Support our campaign" alt="Support our crowdfunding campaign" style="height: 50px; width: auto;" src="assets/indiegogo-logo-small.png"></a> &nbsp;&nbsp; <a href="https://www.patreon.com/next_browser"> <img title="Donate monthly using Patreon" alt="Donate monthly using Patreon" style="height: 50px; width: auto;" src="assets/patreon-25x.png"></a> &nbsp;&nbsp; </div>
 
@@ -36,7 +35,18 @@ looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 ** History as a tree
 History is represented as a tree that you can traverse. smarter than
 the "forwards-backwards" abstraction found in other browsers, the tree
-makes sure you never lose track of where you've been.
+makes sure  you never lose  track of where  you've been.
+
+** Multiple selection
+Commands can accept multiple input, allowing you to quickly perform an
+operation against multiple tabs.
+
+#+html: <img src="https://next.atlas.engineer/image/next-multiple-selection.png" align="center"/>
+
+** Powerful Bookmarks
+Bookmark a page with tags. Search bookmarks with compound
+queries. Capture more data about your bookmarks, and group and wrangle
+them in any way you like.
 
 ** Lightning fast navigation
 Next is lightweight and fast. The interface does not get in your way-
@@ -54,8 +64,10 @@ WebKit and WebEngine/Blink.
 Please see the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating
 systems provide packages for Next:
 
+- Debian and derivatives (Ubuntu, LinuxMint), for Debian >= 10 (Sid).
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
-- [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
+- [[https://aur.archlinux.org/packages/next-browser/][Arch Linux AUR]] (and the [[https://aur.archlinux.org/packages/next-browser-git/][-git PKGBUILD]])
+- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.
 - [[https://guix.gnu.org][Guix]]: Install with =guix install next=.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
@@ -113,15 +125,6 @@ request with your new extension appended to EXTENSION.org.
 
 For improved security while you browse the internet, you can run Next
 with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
-
-#+begin_quote
-Firejail is a SUID program that reduces the risk of security breaches
-by restricting the running environment of untrusted applications using
-Linux namespaces and seccomp-bpf. It allows a process and all its
-descendants to have their own private view of the globally shared
-kernel resources, such as the network stack, process table, mount
-table.
-#+end_quote
 
 Run it like this:
 
