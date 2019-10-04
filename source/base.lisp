@@ -224,12 +224,7 @@ Finally, run the `*after-init-hook*'."
     ;; Start the port after the interface so that we don't overwrite the log when
     ;; an instance is already running.
     (handler-case
-        (progn
-          (initialize-port)
-          (setf (slot-value *interface* 'init-time)
-                (local-time:timestamp-difference (local-time:now) startup-timestamp))
-          (hooks:run-hook '*after-init-hook*)
-          (funcall (startup-function *interface*) (or urls *free-args*)))
+        (initialize-port)
       (error (c)
         (log:error "~a~&~a" c
                    "Make sure the platform port executable is either in the
@@ -238,7 +233,17 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
      (setf +platform-port-command+
          \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
         (when non-interactive
-          (uiop:quit))))))
+          (uiop:quit))))
+    (setf (slot-value *interface* 'init-time)
+          (local-time:timestamp-difference (local-time:now) startup-timestamp))
+    (handler-case
+        (hooks:run-hook '*after-init-hook*)
+      (error (c)
+        (log:error "In *after-init-hook*: ~a" c)))
+    (handler-case
+        (funcall (startup-function *interface*) (or urls *free-args*))
+      (error (c)
+        (log:error "In startup-function ~a: ~a" (startup-function *interface*) c)))))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."
