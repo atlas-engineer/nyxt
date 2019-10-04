@@ -37,22 +37,6 @@ Only substrings of SUBSTRING-LENGTH characters or more are considered."
            (length long-substrings))
         0)))
 
-(defun exact-match-norm (input candidate)
-  "Average of the normalized position of all the exact matches in input substrings.
-If 0 exact matches, return 0."
-  (let* ((exactly-matching-substrings (find-exactly-matching-substrings
-                                       input
-                                       (list candidate))))
-    (if exactly-matching-substrings
-        (let ((positions (mapcar (lambda (p) (- (length candidate) p))
-                                 (delete-if #'null
-                                            (mapcar (lambda (substring)
-                                                      (search substring candidate))
-                                                    exactly-matching-substrings)))))
-          (/ (apply #'+ positions)
-             (* (length positions) (length candidate))))
-        0)))
-
 (defun to-unicode (input)
   "Convert INPUT to (simple-array character) type."
   (if (typep input 'base-string)
@@ -66,8 +50,7 @@ A higher score means the candidate comes first."
   ;; Damerau-Levensthein but it's much slower.
   ;; TODO: Check out fzf for a possibly good scoring algorithm.
   (+ (* 1.0 (mk-string-metrics:norm-damerau-levenshtein candidate input))
-     (* 1.0 (substring-norm (str:split " " input) candidate))
-     (* 1.0 (exact-match-norm input candidate))))
+     (* 1.0 (substring-norm (str:split " " input) candidate))))
 
 (defun sort-candidates (input candidate-pairs)
   "Sort CANDIDATE-PAIRS, the pair closest to INPUT in the levenshtein distance comes first.
