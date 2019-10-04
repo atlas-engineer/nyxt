@@ -49,8 +49,9 @@ If it is not found, NAME is used as is and will be looked for in PATH.
 This function is an acceptable value for the PATH slot of the PORT class."
   (let ((names (or names '("next-gtk-webkit" "next-pyqt-webengine")))
         (root-dir (uiop:pathname-directory-pathname
-                   (or (and (uiop:argv0)
-                            (truename (uiop:argv0)))
+                   (or (let ((program (executable-find (uiop:argv0))))
+                         (when program
+                           (truename program)))
                        (nth-value 2 (asdf:locate-system :next))))))
     (or
      (when root-dir
