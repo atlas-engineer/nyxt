@@ -3,7 +3,7 @@
   (:export
    :open-file-function
    :*open-file-function*
-   :open-file-from-directory-completion-fn)
+   :open-file-from-directory-completion-filter)
   (:documentation "Manage files.
 
 Open any file from within Next, with the usual fuzzy completion.
@@ -79,13 +79,13 @@ command `open-file'."
               :vi-normal vi-map)))))
 
 @export
-(defun open-file-from-directory-completion-fn (input &optional (directory *current-directory*))
+(defun open-file-from-directory-completion-filter (input &optional (directory *current-directory*))
   "Fuzzy-match files and directories from `*current-directory*'."
   (let ((filenames (uiop:directory-files directory))
         (dirnames (uiop:subdirectories directory)))
     (fuzzy-match input (append filenames dirnames))))
 
-(define-command display-parent-directory (&optional (minibuffer (minibuffer *interface*)))
+(define-command display-parent-directory (&optional (minibuffer (current-minibuffer)))
   "Get the parent directory and update the minibuffer.
 
 Default keybindings: `M-Left' and `C-l'."
@@ -93,7 +93,7 @@ Default keybindings: `M-Left' and `C-l'."
   (erase-input minibuffer)
   (update-display minibuffer))
 
-(define-command enter-directory (&optional (minibuffer (minibuffer *interface*)))
+(define-command enter-directory (&optional (minibuffer (current-minibuffer)))
   "If the candidate at point is a directory, refresh the minibuffer candidates with its list of files.
 
 Default keybindings: `M-Right' and `C-j'. "
@@ -131,13 +131,6 @@ Note: this feature is alpha, get in touch for more!"
                             (make-instance 'minibuffer
                                            :default-modes '(next/file-manager-mode::file-manager-mode minibuffer-mode)
                                            :input-prompt (file-namestring directory)
-                                           :completion-function #'next/file-manager-mode::open-file-from-directory-completion-fn)))
+                                           :completion-function #'next/file-manager-mode::open-file-from-directory-completion-filter)))
 
       (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
-
-
-(define-key "C-x C-f" #'open-file)
-(define-key :scheme :vi-normal "C-x C-f" #'open-file)
-
-;; This currently dosen't work, we must use the keymap at the mode definition:
-;; (define-key :mode 'file-manager-mode  "M-Left" #'display-parent-directory)

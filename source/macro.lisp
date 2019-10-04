@@ -14,7 +14,6 @@ Any Lisp expression must be wrapped in (PS:LISP ...).
 
 The returned function is called over 3 key arguments beside ARGS:
 - %CALLBACK: a function to call when the script returns.  Defaults to nil.
-- %INTERFACE: The remote-interface, defaults to `*interface*'.
 - %BUFFER: The buffer used to execute the script.  Defaults to the current buffer.
 
 Those variables can be used from the SCRIPT-BODY (the parenscript code).
@@ -22,10 +21,9 @@ Those variables can be used from the SCRIPT-BODY (the parenscript code).
 ARGS must be key arguments."
   `(progn
      (defun ,script-name ,(append '(&key ((:callback %callback) nil)
-                                    ((:interface %interface) *interface*)
-                                    ((:buffer %buffer) (active-buffer %interface)))
+                                    ((:buffer %buffer) (current-buffer)))
                            args)
-       (rpc-buffer-evaluate-javascript %interface %buffer
+       (rpc-buffer-evaluate-javascript %buffer
                                        (ps:ps ,@script-body)
                                        :callback %callback))))
 
@@ -40,7 +38,7 @@ Example:
   (with-result (url (read-from-minibuffer
                      (make-instance 'minibuffer
                                     :input-prompt \"Bookmark URL:\"))
-    (%bookmark-url url))"
+    (bookmark-add url))"
   `(,(first async-form)
     ,@(rest async-form)
     :callback (lambda (,symbol) ,@body)))
@@ -51,11 +49,12 @@ Example:
 
 Example:
 
-  (with-result* ((url (buffer-get-url))
-                 (title (buffer-get-title)))
-    (rpc-window-set-title *interface* (rpc-window-active *interface*)
-                        (concatenate 'string \"Next - \" title \" - \" url)))
-"
+  (with-result* ((links-json (add-link-hints))
+                 (selected-hint (read-from-minibuffer
+                                 (make-instance 'minibuffer
+                                                :input-prompt \"Bookmark hint:\"
+                                                :cleanup-function #'remove-link-hints))))
+    ...)"
   (if (null bindings)
     `(progn ,@body)
     `(with-result ,(first bindings)

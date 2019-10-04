@@ -15,7 +15,10 @@ Setting the start page can easily be achieved in the following manner:
 
 #+NAME: start-page-set
 #+BEGIN_SRC lisp
-(setf (get-default 'remote-interface 'start-page-url) "about:blank")
+(defun my-interface-defaults ()
+  (setf (start-page-url *interface*) "about:blank"))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+END_SRC
 
 * Creating your own Parenscript
@@ -87,7 +90,7 @@ the command output.
   "Open a shell buffer."
   (set-active-buffer *interface* (make-buffer :name "*shell*" :default-modes '(shell-mode))))
 
-(define-key "C-x s" #'shell)
+(define-key :keymap *my-keymap* "C-x s" #'shell)
 #+END_SRC
 
 * Reloading the page
@@ -103,7 +106,7 @@ The following function provides a way to reload the current page.
   "Reload page."
   (%reload-page))
 
-(define-key "C-r" #'reload-page)
+(define-key :keymap *my-keymap* "C-r" #'reload-page)
 #+END_SRC
 
 * Scroll the page up and down by a screen
@@ -127,6 +130,6 @@ one screen.
   (%scroll-page-up))
 
 ;; Bind the new functions.
-(define-key "C-v" #'scroll-page-down)
-(define-key "M-v" #'scroll-page-up)
+(define-key :keymap *my-keymap* "C-v" #'scroll-page-down)
+(define-key :keymap *my-keymap* "M-v" #'scroll-page-up)
 #+END_SRC

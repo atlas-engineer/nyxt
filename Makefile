@@ -20,7 +20,18 @@ help:
 
 lisp_files := next.asd source/*.lisp source/ports/*.lisp
 
-next: $(lisp_files) quicklisp-update
+.PHONY: clean-fasls
+clean-fasls:
+	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--eval '(ql:quickload :swank)' \
+		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
+		--eval '(swank:delete-system-fasls "next")' \
+		--eval '(uiop:quit)' || true
+
+next: $(lisp_files) clean-fasls quicklisp-update
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -29,7 +40,14 @@ next: $(lisp_files) quicklisp-update
 		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(asdf:make :next)' \
-		--eval '(uiop:quit)' || printf "\n%s\n%s\n" "Compilation failed." "Make sure the 'xclip' binary and the 'sqlite' and 'libfixposix' development files are available on your system."
+		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure the 'xclip' binary and the 'sqlite' and 'libfixposix' development files are available on your system." && exit 1)
+
+
+.PHONY: debian
+# Install Debian 10 dependencies.
+debian:
+	apt install -y sbcl libwebkit2gtk-4.0-dev default-dbus-session-bus glib-networking sqlite gsettings-desktop-schemas libfixposix-dev libgstreamer1.0-0 gir1.2-gst-plugins-base-1.0 xclip
+
 
 .PHONY: app-bundle
 app-bundle: next
@@ -48,7 +66,7 @@ install-app-bundle:
 
 .PHONY: gtk-webkit
 gtk-webkit:
-	$(MAKE) -C ports/gtk-webkit || printf "\n%s\n%s\n" "Compilation failed." "Make sure 'webkitgtk >=2.22' development files are available on your system."
+	$(MAKE) -C ports/gtk-webkit || (printf "\n%s\n%s\n" "Compilation failed." "Make sure 'webkitgtk >=2.22' development files are available on your system." && exit 1)
 
 .PHONY: all
 all:
@@ -105,8 +123,8 @@ ifeq ($(UNAME), Darwin)
 install: install-app-bundle
 endif
 
-.PHONY: clean
-clean:
+.PHONY: clean-port
+clean-port:
 	rm -rf build
 
 QUICKLISP_URL = https://beta.quicklisp.org/quicklisp.lisp
@@ -137,7 +155,7 @@ deps: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)' || true
 
-## This rule only update the internal distribution.
+## This rule only updates the internal distribution.
 .PHONY: quicklisp-update
 quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 	$(NEXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
@@ -164,5 +182,5 @@ clean-deps:
 	rm -rf quicklisp.lisp
 	rm -rf $(QUICKLISP_DIR)
 
-.PHONY: clean-all
-clean-all: clean clean-deps
+.PHONY: clean
+clean: clean-fasls clean-port clean-deps

@@ -87,8 +87,7 @@ deprecated and by what in the docstring."
          ,documentation
          (progn
            ;; TODO: Implement `warn'.
-           (echo "Warning: ~a is deprecated." ',name)
-           (log:warn "Deprecated command ~a" ',name)
+           (echo-warning "~a is deprecated." ',name)
            ,@body)))))
 
 (defun package-defined-symbols (&optional (package (find-package :next)))
@@ -156,13 +155,13 @@ Otherwise list all commands."
           when (not (null bindings))
             return bindings)
     (if bindings
-        (format nil "~a (~{~a~^, ~})" (sym command) bindings)
-        (format nil "~a" (sym command)))))
+        (format nil "~a (~{~a~^, ~})" (str:downcase (sym command)) bindings)
+        (format nil "~a" (str:downcase (sym command))))))
 
-(defun command-complete (input)
+(defun command-completion-filter (input)
   (fuzzy-match input
                (sort (apply #'list-commands (mapcar (alexandria:compose #'class-name #'class-of)
-                                                    (modes (active-buffer *interface*))))
+                                                    (modes (current-buffer))))
                      (lambda (c1 c2)
                        (> (access-time c1) (access-time c2))))))
 
@@ -183,6 +182,6 @@ This function can be `funcall'ed."
   (with-result (command (read-from-minibuffer
                          (make-instance 'minibuffer
                                         :input-prompt "Execute command:"
-                                        :completion-function 'command-complete)))
+                                        :completion-function 'command-completion-filter)))
     (setf (access-time command) (get-internal-real-time))
     (run command)))

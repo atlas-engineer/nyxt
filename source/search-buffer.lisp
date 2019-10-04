@@ -14,7 +14,7 @@
     (setf index (+ 1 index))
     (ps:let* ((el (ps:chain document (create-element "span"))))
       (setf (ps:@ el class-name) "next-search-hint")
-      (setf (ps:@ el style) (ps:lisp (box-style (active-buffer *interface*))))
+      (setf (ps:@ el style) (ps:lisp (box-style (current-buffer))))
       (setf (ps:@ el text-content) index)
       ;; TODO: Ensure uniqueness of match IDs.
       (setf (ps:@ el id) index)

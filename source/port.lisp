@@ -6,7 +6,7 @@
 ;; we have no way to access the old value.
 
 (defclass port ()
-  ((name :initarg :name :initform "next-platform-port" :accessor name
+  ((name :initarg :name :initform +platform-port-command+ :accessor name
          :documentation "Basename of the executable.")
    (path :initarg :path :initform #'derive-path-from-name
          :documentation "Full path to the executable.
@@ -29,7 +29,7 @@ as a string.")
 (defmethod path ((port port))
   (let ((p (port-accessor port 'path (name port))))
     (if (uiop:file-exists-p p)
-        (truename p)
+        (uiop:truename* p)
         p)))
 
 (defmethod args ((port port))
@@ -38,32 +38,33 @@ as a string.")
 (defmethod log-file ((port port))
   (port-accessor port 'log-file (name port)))
 
-(defun derive-path-from-name (name)
+(defun derive-path-from-name (&rest names)
   "Find a platform port binary.
-Find one of next-gtk-webkit and next-pyqt-webengine in the current directory.
-If not found, then it is looked in the ports/ subfolder corresponding the NAME (e.g. \"gtk-webkit\").
-If still not found, NAME is used as is and will be looked for in PATH.
 
-This is an acceptable value for the PATH slot of the PORT class."
-  (let ((names (list "next-gtk-webkit" "next-pyqt-webengine")))
+It is looked in the ports/ subfolder corresponding to the
+NAME (e.g. \"gtk-webkit\") relative to the 'next' executable or the ASD system.
+
+If it is not found, NAME is used as is and will be looked for in PATH.
+
+This function is an acceptable value for the PATH slot of the PORT class."
+  (let ((names (or names '("next-gtk-webkit" "next-pyqt-webengine")))
+        (root-dir (uiop:pathname-directory-pathname
+                   (or (let ((program (executable-find (uiop:argv0))))
+                         (when program
+                           (uiop:truename* program)))
+                       (nth-value 2 (asdf:locate-system :next))))))
     (or
-     ;; look at the current directory.
-     (loop for name in names
-        when (uiop:file-exists-p name)
-        return name)
-
-     ;; look in the ports/ subdir.
-     (loop for name in names
-        for dir-name = (str:replace-all "next-" "" name)
-        for file-in-subdir = (merge-pathnames
-                              (file-namestring name)
-                              (merge-pathnames (format nil "ports/~a/" dir-name)
-                                               *default-pathname-defaults*))
-        when (uiop:file-exists-p file-in-subdir)
-        return file-in-subdir)
-
-     ;; as a last resort, return "name".
-     name)))
+     (when root-dir
+       (loop for name in names
+             for dir-name = (str:replace-all "next-" "" (file-namestring name))
+             for file-in-subdir = (merge-pathnames
+                                   (file-namestring name)
+                                   (merge-pathnames (format nil "ports/~a/" dir-name)
+                                                    root-dir))
+             when (uiop:file-exists-p file-in-subdir)
+               return file-in-subdir))
+     ;; As a last resort, return the first argument unchanged.
+     (first names))))
 
 (defun derive-logfile-from-name (name)
   "This is an acceptable value for the LOG-FILE slot of the PORT class."
