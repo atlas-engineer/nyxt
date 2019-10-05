@@ -603,14 +603,14 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                        (ps:ps
                          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                                (ps:lisp
-                                (format nil "~a~a:"
+                                (format nil "~a~a"
                                         (input-prompt minibuffer)
                                         (if completions
                                             (if marked-completions
-                                                (format nil "[~a/~a]"
+                                                (format nil "[~a/~a]:"
                                                         (length marked-completions)
                                                         (length completions))
-                                                (format nil "[~a]"
+                                                (format nil "[~a]:"
                                                         (length completions)))
                                             ""))))
                          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
