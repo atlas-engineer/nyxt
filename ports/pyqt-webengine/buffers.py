@@ -43,19 +43,25 @@ class Buffer(QWebEngineView):
 
         page.setHtml("")  # necessary for runJavaScript to work on new buffers.
 
-        # Keep track of whether the page is finished loading
-        self.js_ready_signal = page.loadFinished
-        self.js_wait_signal = page.urlChanged
+        # Queue JS calls from the core so that we can hold them until the page
+        # is ready to display/run them.
+        self.js_ready = False
+        self.script_queue = []
 
-        self.ready = False
+        # Consider ourselves ready to run JS when page has finished loading.
+        self.js_ready_signal = page.loadFinished
         self.js_ready_signal.connect(self.set_js_ready)
+
+        self.js_wait_signal = page.urlChanged
         self.js_wait_signal.connect(self.set_js_wait)
 
+        self.js_ready_signal.connect(self.run_js_queue)
+
     def set_js_ready(self):
-        self.ready = True
+        self.js_ready = True
 
     def set_js_wait(self):
-        self.ready = False
+        self.js_ready = False
 
     def did_commit_navigation(self, url):
         """Invoked whenever the webview starts navigation.
@@ -71,6 +77,16 @@ class Buffer(QWebEngineView):
         url = self.url().url()
         core_interface.buffer_did_finish_navigation(self.identifier, str(url))
 
+    def run_js_queue(self, ok):
+        """Run ALL queued JavaScript calls."""
+        for script in self.script_queue:
+            self.page().runJavaScript(
+                script,
+                lambda x: self.javascript_callback(x, str(self.callback_count))
+            )
+
+        self.script_queue = []
+
     def evaluate_javascript(self, script):
         """
         This method returns an identifier (str) to the LISP core. Upon
@@ -82,20 +98,10 @@ class Buffer(QWebEngineView):
         """
 
         self.callback_count += 1
+        self.script_queue.append(script)
 
-        # FIXME: Attaching this to a slot results in a memory leak!!!
-        def run_javascript_handler(ok):
-            return self.page().runJavaScript(
-                script,
-                lambda x: self.javascript_callback(x, str(self.callback_count))
-            )
-
-        # If called in the middle of a page-load, then wait till the load is
-        # complete to run the javascript.
-        if not self.ready:
-            self.page().loadFinished.connect(run_javascript_handler)
-        else:  # Otherwise, run it NOW!
-            run_javascript_handler(True)
+        if self.js_ready:  # If we're ready to rock and roll, then GO!
+            self.run_js_queue(True)
 
         return str(self.callback_count)
 
