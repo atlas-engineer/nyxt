@@ -524,6 +524,9 @@ Keys are defined with the ~define-key~ command.
 
 #+NAME: define key
 #+BEGIN_SRC lisp
+(defvar *my-keymap* (make-keymap)
+  "My keymap.")
+
 (define-key :keymap *my-keymap*
   "C-x o" #'example
   "SPACE" #'scroll-page-down)
@@ -562,6 +565,33 @@ scheme for all active modes in the current buffer.
 
 You can change the default binding scheme for any buffer by setting
 ~current-key-scheme~ to the appropriate value.
+
+To create a keymap, use the ~make-keymap~ function.
+
+The user can define key bindings by creating a mode that is loaded before any
+other mode.  In your configuration file:
+
+#+begin_src lisp
+(defvar *my-keymap* (make-keymap)
+  "Keymap for `my-mode'.")
+
+(define-mode my-mode ()
+  "Dummy mode for the custom key bindings in `*my-keymap*'."
+  ((keymap-schemes :initform (list :emacs-map *my-keymap*
+                                   :vi-normal *my-keymap*))))
+
+(defun my-buffer-defaults (buffer)
+  (dolist (mode '(proxy-mode
+                  ;; ... More modes...
+                  ;; Put your mode last so that it has highest priority.
+                  my-mode))))
+
+(defun my-interface-defaults ()
+  (hooks:add-to-hook (hooks:object-hook *interface* 'buffer-make-hook)
+                     #'my-buffer-defaults))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
+#+end_src
 
 *** Override map
 
