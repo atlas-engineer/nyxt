@@ -41,6 +41,22 @@ MAJOR.MINOR.PATCH, we increment the:
 + Allow Next to call out to an external editor to fill in the contents
   of a particular text field
 *** Add online suggestions from search engines
+** DONE 1.3.4
+
+- Display number of (marked) candidates in minibuffer.
+
+- Improve fuzzy search performance and relevance.
+
+- Swap =C-x k= and =C-x C-k= bindings to match Emacs' behaviour.
+
+- Fix platform port lookup failure on startup when looked up in PATH.
+
+- Fix *default-hostlist* path in pre-compiled binaries.
+
+- Fix compound tags lookup for bookmarks.
+
+- Fix history update on Javascript-loaded pages (e.g. GitHub).
+
 ** DONE 1.3.3
 - Select multiple candidates in minibuffer
   The default bindings are:
