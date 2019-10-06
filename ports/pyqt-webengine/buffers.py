@@ -52,12 +52,12 @@ class Buffer(QWebEngineView):
         self.js_ready_signal = page.loadFinished
         self.js_ready_signal.connect(self.set_js_ready)
 
-        self.js_wait_signal = page.urlChanged
+        self.js_wait_signal = page.loadStarted
         self.js_wait_signal.connect(self.set_js_wait)
 
         self.js_ready_signal.connect(self.run_js_queue)
 
-    def set_js_ready(self):
+    def set_js_ready(self, ok=True):
         self.js_ready = True
 
     def set_js_wait(self):
@@ -77,7 +77,7 @@ class Buffer(QWebEngineView):
         url = self.url().url()
         core_interface.buffer_did_finish_navigation(self.identifier, str(url))
 
-    def run_js_queue(self, ok):
+    def run_js_queue(self, ok=True):
         """Run ALL queued JavaScript calls."""
         for script in self.script_queue:
             self.page().runJavaScript(
