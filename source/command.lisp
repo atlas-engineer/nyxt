@@ -154,9 +154,14 @@ Otherwise list all commands."
                         table))
           when (not (null bindings))
             return bindings)
-    (if bindings
-        (format nil "~a (~{~a~^, ~})" (str:downcase (sym command)) bindings)
-        (format nil "~a" (str:downcase (sym command))))))
+    (format nil "~a~a~a"
+            (str:downcase (sym command))
+            (if bindings
+                (format nil " (~{~a~^, ~})" bindings)
+                "")
+            (match (object-string (pkg command))
+              ((or "" "next" "next-user") "")
+              (a (format nil " [~a]" a))))))
 
 (defun command-completion-filter (input)
   (fuzzy-match input
