@@ -199,7 +199,7 @@ For =next= to work, it must find the platform port.  There are a few options:
 (in-package :next)
 
 ;; Use development platform port.
-(setf (get-default 'port 'path)
+(setf +platform-port-command+
       "~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit")
 ;; ...
   #+END_SRC
