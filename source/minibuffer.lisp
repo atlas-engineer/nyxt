@@ -22,8 +22,10 @@
         "SPACE" #'self-insert
         "C-f" #'cursor-forwards
         "M-f" #'cursor-forwards-word
+        "C-Right" #'cursor-forwards-word
         "C-b" #'cursor-backwards
         "M-b" #'cursor-backwards-word
+        "C-Left" #'cursor-backwards-word
         "M-d" #'delete-forwards-word
         "M-BACKSPACE" #'delete-backwards-word
         "Right" #'cursor-forwards
@@ -32,7 +34,9 @@
         "DELETE" #'delete-forwards
         "BACKSPACE" #'delete-backwards
         "C-a" #'cursor-beginning
+        "Home" #'cursor-beginning
         "C-e" #'cursor-end
+        "End" #'cursor-end
         "C-k" #'kill-line
         "RETURN" #'return-input
         "C-RETURN" #'return-immediate
