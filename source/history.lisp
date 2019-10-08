@@ -50,13 +50,10 @@ The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
   (unless (str:emptyp url)
-    (let ((entry nil)
-          (global-history (history-data *interface*)))
-      (setf global-history
-            (delete-if (lambda (e)
-                         (when (string= url (url e))
-                           (setf entry e)))
-                       global-history))
+    (unless (history-data *interface*)
+      (setf (slot-value *interface* 'history-data)
+            (make-hash-table :test #'equal)))
+    (let ((entry (gethash url (history-data *interface*))))
       (unless entry
         (setf entry (make-instance 'history-entry
                                    :url url)))
@@ -66,8 +63,9 @@ The history is sorted by last access."
       (setf (last-access entry) (local-time:now))
       (unless (str:emptyp title)
         (setf (title entry) title))
+      (setf (gethash url (history-data *interface*)) entry)
       ;; Use accessor to ensure store function is called.
-      (push entry (history-data *interface*)))))
+      (setf (history-data *interface*) (history-data *interface*)))))
 
 (define-command delete-history-entry ()
   "Delete queried history entries."
@@ -77,8 +75,10 @@ The history is sorted by last access."
                                         :completion-function (history-completion-filter)
                                         :history (minibuffer-set-url-history *interface*)
                                         :multi-selection-p t)))
-    (setf (history-data *interface*)
-          (set-difference (history-data *interface*) entries :test #'equals))))
+    (dolist (entry entries)
+      (remhash (url entry) (history-data *interface*)))
+    ;; Use accessor to ensure store function is called.
+    (setf (history-data *interface*) (history-data *interface*))))
 
 
 
@@ -98,12 +98,20 @@ lot."
                   (* 60 60)))))))
 
 (defun history-completion-filter ()
-  (let ((history (sort (history-data *interface*)
+  (let ((history (sort (alexandria:hash-table-values
+                        (history-data *interface*))
                        (lambda (x y)
                          (> (score-history-entry x)
                             (score-history-entry y))))))
     (lambda (input)
       (fuzzy-match input history))))
+
+(defun history-stored-data ()
+  "Return the history data that needs to be serialized.
+This data can be used to restore the session later, e.g. when starting a new
+instance of Next."
+  (list +version+
+        (history-data *interface*)))
 
 (defun store-sexp-history ()            ; TODO: Factor with `store-sexp-session'.
   "Store the global history to the interface `history-path'."
@@ -119,23 +127,14 @@ lot."
       (format file
               "~s"
               (with-input-from-string (in (with-output-to-string (out)
-                                            (s-serialization:serialize-sexp (history-data *interface*) out)))
+                                            (s-serialization:serialize-sexp
+                                             (history-stored-data)
+                                             out)))
                 (read in))))))
 
 (defun restore-sexp-history ()
   "Restore the global history from the interface `history-path'."
   (let ((path (history-path *interface*)))
-    (if (not (uiop:file-exists-p path))
-        ;; TODO: Stop importing the SQLite history after 1.3.3?
-        (dolist (url-visit (import-sqlite-history))
-          (unless (str:emptyp (first url-visit))
-            (let ((entry (make-instance 'history-entry
-                                        :url (first url-visit)
-                                        :implicit-visits (second url-visit))))
-              ;; Calling (history-data *interface*) calls the restore function if
-              ;; empty, so we need to use SLOT-VALUE here.
-              (pushnew entry (slot-value *interface* 'history-data) :test #'equals) ; TODO: Does this persist the data on each call?
-              ))))
     (handler-case
         (let ((data (with-open-file (file path
                                           :direction :input
@@ -146,10 +145,28 @@ lot."
                         (let ((*package* *package*))
                           (in-package :next)
                           (s-serialization:deserialize-sexp file))))))
-          (when data
-            (echo "Loading global history of ~a URLs."
-                  (length data))
-            (setf (slot-value *interface* 'history-data) data)))
+          (match data
+            ((guard (list version history)
+               (hash-table-p history))
+             (unless (string= version +version+)
+               (log:warn "Session version ~s differs from current version ~s"
+                         version +version+))
+             (echo "Loading global history of ~a URLs."
+                   (hash-table-count history))
+             (setf (slot-value *interface* 'history-data) history))
+
+            ((guard history (listp history))
+             (let ((new-history (make-hash-table :test #'equal)))
+               (dolist (e history)
+                 (if (nth-value 1 (gethash (url e) new-history))
+                     (incf (implicit-visits (gethash (url e) new-history)) (implicit-visits e))
+                     (setf (gethash (url e) new-history) e)))
+               (log:info "Imported 1.3.4 history from ~a entries to ~a entries (~a duplicates)."
+                         (length history)
+                         (hash-table-count new-history)
+                         (- (length history)
+                            (hash-table-count new-history)))
+               (setf (slot-value *interface* 'history-data) new-history)))))
       (error (c)
         (echo-warning "Failed to restore history from ~a: ~a" path c)))))
 
