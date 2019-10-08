@@ -152,23 +152,32 @@
 (declaim (ftype (function (htree:node &optional buffer)) set-url-from-history))
 (defun set-url-from-history (history-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
-  (when history-node
-    (setf (htree:current (history (find-mode buffer 'web-mode))) history-node)
-    (set-url (url (htree:data history-node)))))
+  (let ((history (history (find-mode buffer 'web-mode))))
+    (if (eq history-node (htree:current history))
+        (echo "History entry is already the current URL.")
+        (progn
+          (setf (htree:current history) history-node)
+          (set-url (url (htree:data history-node)))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (let* ((mode (find-mode buffer 'web-mode)))
-    (htree:back (history mode))
-    (match (htree:current (history mode))
-      ((guard n n) (set-url (url (htree:data n)))))))
+    (if (eq (htree:root (history mode)) (htree:current (history mode)))
+        (echo "No backward history.")
+        (progn
+          (htree:back (history mode))
+          (match (htree:current (history mode))
+            ((guard n n) (set-url (url (htree:data n)))))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (let* ((mode (find-mode buffer 'web-mode)))
-    (htree:forward (history mode))
-    (match (htree:current (history mode))
-      ((guard n n) (set-url (url (htree:data n)))))))
+    (if (htree:children-nodes (history mode))
+        (progn
+          (htree:forward (history mode))
+          (match (htree:current (history mode))
+            ((guard n n) (set-url (url (htree:data n))))))
+        (echo "No forward history."))))
 
 (defun history-backwards-completion-filter (&optional (mode (find-mode
                                                         (current-buffer)
