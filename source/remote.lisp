@@ -116,6 +116,12 @@ distance scroll-left or scroll-right will scroll.")
                    :documentation "The maximum zoom ratio relative to the default.")
    (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0
                        :documentation "The default zoom ratio.")
+   (page-scroll-ratio :accessor page-scroll-ratio
+                      :type number
+                      :initform 0.90
+                      :documentation "The ratio of the page to scroll.
+A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
+down.")
    (cookies-path :accessor cookies-path
                  :initform (xdg-data-home "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
