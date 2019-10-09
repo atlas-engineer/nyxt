@@ -125,6 +125,10 @@ Run it like this:
 
 : firejail --ignore=nodbus next-gtk-webkit
 
+*** For StumpWM users
+
+If the mouse scroll does not work for you, see the [[https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to][StumpWM FAQ]] for a fix.
+
 ** Documentation
 
 For full documentation about Next, how it works, and how to extend it
