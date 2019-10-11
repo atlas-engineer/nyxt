@@ -110,4 +110,9 @@ def active():
 
     """
     active_window = QApplication.activeWindow()
-    return active_window.identifier if active_window else "-1"
+    # The activeWindow might not be of class Window (e.g. it could be a
+    # QDialog), so we can't assume it has an identifier member.
+    try:
+        return active_window.identifier if active_window else "-1"
+    except AttributeError:
+        return "-1"
