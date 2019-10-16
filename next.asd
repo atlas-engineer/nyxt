@@ -50,6 +50,7 @@
                  (:file "file-human-size")
                  ;; Core Functionality
                  (:file "macro")
+                 (:file "types")
                  (:file "global")
                  (:file "port")
                  (:file "remote")
