@@ -393,6 +393,8 @@ Use  the  =vcs-clone=  (alias  =git-clone=) command  to  clone  a  Git
 repository to  disk.  It asks  you for  the destination and  then runs
 asynchronously.
 
+/This feature is meant to grow with Next 1.4 and onwards!/.
+
 By  default, the  command  looks into  the  following directories  for
 existing projects:
 
@@ -407,8 +409,10 @@ You can change the list like this:
 
 When there is one single choice, it doesn't ask for confirmation.
 
-You can  set your username for  GitHub and other forges.  It helps the
-clone command  in doing the right  thing©, such as using  a git remote
+You can set your username for GitHub and other forges.  It helps the
+clone command in doing the right thing©. For example, if it sees that
+you are cloning a repository of yours (the user/organization name of
+the cloned repository equals your vcs-username), it will use a git remote
 url instead of https.
 
 Set =next/vcs:*vcs-username*= as a default username.
