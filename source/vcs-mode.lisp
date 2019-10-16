@@ -42,8 +42,8 @@ To get this list with a minimal of type checking, use `vcs-projects-roots'.")
           (typep *vcs-projects-roots* 'list-of-strings))
       *vcs-projects-roots*
       (progn
-        (echo-warning "This list of vcs project roots is not a list of strings: ~s~&" *vcs-projects-roots*)
-        nil)))
+        (echo-warning "The list *vcs-projects-roots* is not a list of strings: ~s~&" *vcs-projects-roots*)
+        (error 'next-type-mismatch :message (format nil "The list *vcs-projects-roots* is not a list of strings:~& ~s~&" *vcs-projects-roots*)))))
 
 (defvar *vcs-usernames-alist* '(("github.com" . "")
                                 ("gitlab.com" . "")
