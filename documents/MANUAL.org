@@ -402,7 +402,7 @@ You can change the list like this:
 
 #+begin_src lisp
 (in-package :next)
-(setf next/vcs:*vcs-projects-roots* '("~/my/directory"))
+(setf next/vcs:*vcs-projects-roots* '("~/src" "~/work" "~/my/directory"))
 #+end_src
 
 When there is one single choice, it doesn't ask for confirmation.
