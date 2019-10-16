@@ -51,6 +51,7 @@
                  ;; Core Functionality
                  (:file "macro")
                  (:file "types")
+                 (:file "conditions")
                  (:file "global")
                  (:file "port")
                  (:file "remote")
