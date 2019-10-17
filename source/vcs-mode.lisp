@@ -30,6 +30,7 @@ changes, browse files in a text editor, use hooks...
 
 (in-package :next/vcs)
 
+(declaim (type list-of-strings *vcs-projects-roots*))
 (defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects")
   "A list of directories to look for VCS repositories into.
 To get this list with a minimal of type checking, use `vcs-projects-roots'.")
