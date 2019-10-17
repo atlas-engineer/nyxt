@@ -145,7 +145,7 @@ Error out if no platform port can be started."
 (defun load-lisp-file (file &key interactive)
   "Load the provided lisp file.
 If FILE is \"-\", read from the standard input.
-If INTERACTIVE is non-nil, allow the debugger on errors."
+If INTERACTIVE is t, allow the debugger on errors. If :running, show an error but don't quit the lisp process. If nil, quit lisp (specially useful when Next starts up)."
   (unless (str:emptyp (namestring file))
     (handler-case (if (string= (pathname-name file) "-")
                       (progn
@@ -159,26 +159,29 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
       (error (c)
         ;; TODO: Handle warning from `echo'.
         (let ((message "Error: could not load the init file"))
-          ;; (echo-warning message)
-          (if interactive
-              (error (format nil "~a:~&~a" message c))
-              (progn
-                (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
-                (uiop:quit 1))))))))
+          (cond
+            ((equal interactive :running)
+             (echo-safe "Could not load the init file: ~a" c))
+            ((null interactive)
+             (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
+             (uiop:quit 1))
+            (t
+             (error (format nil "~a:~&~s" message c)))))))))
 
 (define-command load-file (&key interactive)
   "Load the prompted Lisp file.
-If INTERACTIVE is non-nil, allow the debugger on errors."
+If INTERACTIVE is t, allow the debugger on errors. If :running, show an error but don't quit the lisp process.
+"
   (with-result (file-name-input (read-from-minibuffer
                                  (make-instance 'minibuffer
                                                 :input-prompt "Load file:")))
-    (load-lisp-file file-name-input :interactive interactive)))
+    (load-lisp-file file-name-input :interactive :running)))
 
 (define-command load-init-file (&key (init-file (init-file-path))
                                      interactive)
   "Load or reload the init file.
 If INTERACTIVE is non-nil, allow the debugger on errors."
-  (load-lisp-file init-file :interactive interactive))
+  (load-lisp-file init-file :interactive :running))
 
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers.
