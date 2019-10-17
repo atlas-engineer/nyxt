@@ -142,6 +142,9 @@ Error out if no platform port can be started."
   (or (getf *options* :init-file)
       (xdg-config-home filename)))
 
+(defparameter *load-init-error-message* "Error: we could not load the init file")
+(defparameter *load-init-type-error-message* (str:concat *load-init-error-message* " because of a type error."))
+
 (defun load-lisp-file (file &key interactive)
   "Load the provided lisp file.
 If FILE is \"-\", read from the standard input.
@@ -158,7 +161,9 @@ If INTERACTIVE is t, allow the debugger on errors. If :running, show an error bu
                         (load file)))
       (error (c)
         ;; TODO: Handle warning from `echo'.
-        (let ((message "Error: could not load the init file"))
+        (let ((message (if (subtypep (type-of c) 'type-error)
+                           *load-init-type-error-message*
+                           *load-init-error-message*)))
           (cond
             ((equal interactive :running)
              (echo-safe "Could not load the init file: ~a" c))
