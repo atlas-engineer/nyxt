@@ -32,19 +32,9 @@ changes, browse files in a text editor, use hooks...
 
 (declaim (type (or null list-of-strings) *vcs-projects-roots*))
 (defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects")
-  "A list of directories to look for VCS repositories into.
-To get this list with a minimal of type checking, use `vcs-projects-roots'.")
+  "A list of directories to look for VCS repositories into.")
 ;; Possible improvement: specify the depth to look for projects alongside the directory.
 ;; See magit-list-repositories.
-
-(defun vcs-projects-roots ()
-  "Return `*vcs-projects-roots*', with a minimum of type checking and error reporting."
-  (if (or (null *vcs-projects-roots*)
-          (typep *vcs-projects-roots* 'list-of-strings))
-      *vcs-projects-roots*
-      (progn
-        (echo-warning "The list *vcs-projects-roots* is not a list of strings: ~s~&" *vcs-projects-roots*)
-        (error 'next-type-mismatch :message (format nil "The list *vcs-projects-roots* is not a list of strings:~& ~s~&" *vcs-projects-roots*)))))
 
 (defvar *vcs-usernames-alist* '(("github.com" . "")
                                 ("gitlab.com" . "")
@@ -83,7 +73,7 @@ The forge name should be a domain, such as github.com.")
 
 (defun parse-projects ()
   "Scan `*vcs-projects-roots*'."
-  (mapcan #'search-git-directories (vcs-projects-roots)))
+  (mapcan #'search-git-directories *vcs-projects-roots*))
 
 (defun find-project-directory (name &key exit-recursive-scan)
   "Return the directory pathname of the project named NAME by searching the local projects.
@@ -127,7 +117,7 @@ Create BASE if it doesn't exist."
 
 (defun projects-roots-completion-filter (input)
   "Fuzzy-match local project roots."
-  (fuzzy-match input (vcs-projects-roots)))
+  (fuzzy-match input *vcs-projects-roots*))
 
 (defun choose-clone-url (root-name project-name clone-uri)
   "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."
@@ -178,7 +168,7 @@ Ask for which directory to clone to, expect if there is one single choice."
        (echo "Could not find the project name."))
       (existing-repo
        (echo "This repository exists in ~a" existing-repo))
-      ((= 1 (length (next/vcs::vcs-projects-roots)))
+      ((= 1 (length next/vcs::*vcs-projects-roots*))
        (setf target-dir (first next/vcs::*vcs-projects-roots*))
        (next/vcs::clone project-name root-name target-dir clone-uri))
       (t (with-result (target-dir (read-from-minibuffer
