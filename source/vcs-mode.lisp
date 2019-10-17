@@ -36,12 +36,14 @@ changes, browse files in a text editor, use hooks...
 ;; Possible improvement: specify the depth to look for projects alongside the directory.
 ;; See magit-list-repositories.
 
+(declaim (type (or null alist-of-strings) *vcs-usernames-alist*))
 (defvar *vcs-usernames-alist* '(("github.com" . "")
                                 ("gitlab.com" . "")
                                 ("bitbucket.org" . ""))
   "Your VCS usernames on different forges. Helps some commands to do things right, such as cloning with a git remote url instead of https.
 The forge name should be a domain, such as github.com.")
 
+(declaim (type (or null string) *vcs-username*))
 (defvar *vcs-username* ""
   "Default username to use for forges if none is found in `*vcs-usernames-alist*'.")
 

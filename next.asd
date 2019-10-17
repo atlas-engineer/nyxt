@@ -33,6 +33,7 @@
                :swank
                :trivia
                :trivial-clipboard
+               :trivial-types
                :unix-opts
                ;; Local systems:
                :next/download-manager
