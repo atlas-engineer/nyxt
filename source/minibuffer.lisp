@@ -6,6 +6,7 @@
 ;; TODO: We need to separate the minibuffer from the echo area.  The
 ;; `show'/`hide' functions are not dealing well with `echo'/`echo-dismiss'.
 
+(declaim (type (list-of-characters) *word-separation-characters*))
 (defparameter *word-separation-characters* '(#\: #\/ #\- #\. #\Space #\ )
   "Characters delimiting words (space, colon, slash, dot, etc).")
 
@@ -96,10 +97,12 @@ This should not rely on the minibuffer's content.")
                              :documentation "If non-nil, allow input matching no
 candidates.")
    ;; TODO: Move input-* slots to a separate text class?
-   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input:")
+   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input:"
+                 :type string)
    (input-buffer :initarg :input-buffer :accessor input-buffer :initform ""
+                 :type string
                  :documentation "Initial text to place at the prompt, ready to edit.")
-   (input-cursor-position :accessor input-cursor-position :initform 0)
+   (input-cursor-position :accessor input-cursor-position :initform 0 :type integer)
    (invisible-input-p :initarg :invisible-input-p :accessor invisible-input-p
                       :initform nil
                       :documentation "If non-nil, input is replaced by
@@ -118,7 +121,7 @@ candidates.")
    (marked-completions :accessor marked-completions :initform nil)
    (completion-head :accessor completion-head :initform 0)
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
-   (content :initform ""
+   (content :initform "" :type string
             :documentation "The HTML content of the minibuffer.")
    (max-lines :initarg :max-lines
               :accessor max-lines

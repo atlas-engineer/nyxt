@@ -14,6 +14,7 @@
 (defclass hostlist ()
   ((url :accessor url :initarg :url
         :initform nil
+        :type string
         :documentation "URL where to download the list from.  If nil, no attempt
 will be made at updating it.")
    (path :accessor path :initarg :path

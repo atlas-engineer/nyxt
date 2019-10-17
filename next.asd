@@ -48,11 +48,11 @@
                  (:file "package")
                  (:file "tags")
                  (:file "time")
+                 (:file "types")
+                 (:file "conditions")
                  (:file "file-human-size")
                  ;; Core Functionality
                  (:file "macro")
-                 (:file "types")
-                 (:file "conditions")
                  (:file "global")
                  (:file "port")
                  (:file "remote")
