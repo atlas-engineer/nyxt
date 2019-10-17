@@ -76,12 +76,6 @@ have to build it from source.
   here]] (you have to download the build artifacts), and run it with
   =./next=.
 
-*** D-Bus requirement
-
-Next needs a D-Bus session bus to run. In most cases, it should
-already be running. If Next does not start up, it is very likely that
-D-Bus is not running for your user.
-
 ** Quickstart keys
 
 - ~C-l~:     Load URL in tab
@@ -104,7 +98,14 @@ The following keys exist as special keys:
 ~BACKSPACE~, ~DELETE~, ~ESCAPE~ , ~HYPHEN~, ~RETURN~, ~SPACE~, ~TAB~,
 ~Left~, ~Right~, ~Up~, ~Down~
 
-** Configuration
+** Documentation
+
+For full documentation about Next, how it works, and how to extend it
+please see the [[file:documents/MANUAL.org][MANUAL.org]].
+
+If you want to help with development or build Next from scratch, read
+the developer's documentation at [[https://github.com/atlas-engineer/next/blob/master/documents/README.org][documents/README.org]].
+
 *** Customize and extend Next
 
 Complete customization is possible through the creation of a
@@ -115,27 +116,6 @@ Additionally, a document provided in the documents directory named
 [[file:documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
 customizations. To share your own extension, please make a pull
 request with your new extension appended to EXTENSION.org.
-
-*** Run Next in a security sandbox
-
-For improved security while you browse the internet, you can run Next
-with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
-
-Run it like this:
-
-: firejail --ignore=nodbus next-gtk-webkit
-
-*** For StumpWM users
-
-If the mouse scroll does not work for you, see the [[https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to][StumpWM FAQ]] for a fix.
-
-** Documentation
-
-For full documentation about Next, how it works, and how to extend it
-please see the [[file:documents/MANUAL.org][MANUAL.org]].
-
-If you want to help with development or build Next from scratch, read
-the developer's documentation at [[https://github.com/atlas-engineer/next/blob/master/documents/README.org][documents/README.org]].
 
 ** History of changes
 Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].

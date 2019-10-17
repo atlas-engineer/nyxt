@@ -37,6 +37,10 @@ end-user allowing for infinite customization.
   - [[#styles][Styles]]
   - [[#hooks][Hooks]]
   - [[#startup-behaviour][Startup behaviour]]
+  - [[#run-next-in-a-security-sandbox][Run Next in a security sandbox]]
+- [[#troubleshooting][Troubleshooting]]
+  - [[#stumpwm-mouse-scroll][StumpWM mouse scroll]]
+  - [[#d-bus-requirement][D-Bus requirement]]
 
 * Basics
 ** Navigation
@@ -462,7 +466,6 @@ Quick example:
 See also the variable =next/video:*preferred-download-directories*= (a
 list of directories). If it contains more than one entry, we are asked
 for the destination.
-
 
 * Advanced Topics
 ** Execute Extended Command
@@ -908,3 +911,23 @@ to Next as command line arguments.
 You can assign you own function to ~startup-function~ to change the behaviour of
 Next on startup, such as which URL it should display, if it should restore the
 previous session or not, etc.
+** Run Next in a security sandbox
+For improved security while you browse the internet, you can run Next
+with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
+
+Run it like this:
+
+: firejail --ignore=nodbus next-gtk-webkit
+
+* Troubleshooting
+** StumpWM mouse scroll
+
+If the mouse scroll does not work for you, see the [[https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to][StumpWM FAQ]] for a
+fix.
+
+** D-Bus requirement
+
+Next needs a D-Bus session bus to run. In most cases, it should
+already be running. If Next does not start up, it is very likely that
+D-Bus is not running for your user.
+
