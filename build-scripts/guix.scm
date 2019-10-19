@@ -252,6 +252,7 @@ features for productive professionals.")
          ("next-password-manager" ,sbcl-next-password-manager)))
       (native-inputs
        `(("trivial-features" ,sbcl-trivial-features)
+         ("trivial-types" ,sbcl-trivial-types)
          ("prove-asdf" ,sbcl-prove-asdf)))
       (synopsis "Infinitely extensible web-browser (with Lisp development files)"))))
 
