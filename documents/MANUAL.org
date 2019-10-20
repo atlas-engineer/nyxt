@@ -13,7 +13,7 @@ end-user allowing for infinite customization.
   - [[#input-minibuffer][Input (Minibuffer)]]
   - [[#multi-selection][Multi-selection]]
   - [[#buffers-tabs][Buffers ("tabs")]]
-  - [[#searching][Searching]]
+  - [[#searching][Searching]]/
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
   - [[#download-manager][Download manager]]
@@ -642,6 +642,14 @@ The default keybindings for ~vi-normal-mode~ are:
 ":": execute-command
 "W": new-window
 #+END_SRC
+
+The minimal config that sets your Next in vi mode, is:
+
+```lisp
+; $HOME/.config/next/init.lisp
+(in-package :next)
+(add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
+```
 
 ** Decide how to open files
 
