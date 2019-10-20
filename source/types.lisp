@@ -2,10 +2,11 @@
 
 (in-package :next)
 
-(export '(list-of-strings
-          list-of-characters
-          alist-of-strings
-          alist-of-3tuples-strings))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(list-of-strings
+            list-of-characters
+            alist-of-strings
+            alist-of-3tuples-strings)))
 
 (defun list-of-type-p (list typep)
   "Return t if LIST contains only elements of the given TYPEP predicate (stringp ,integerp etc)."

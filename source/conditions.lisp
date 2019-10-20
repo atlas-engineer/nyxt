@@ -2,7 +2,8 @@
 
 (in-package :next)
 
-(export '(next-condition))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(next-condition)))
 
 (define-condition next-condition (error)
   ((message :initarg :message :accessor next-condition-message))
