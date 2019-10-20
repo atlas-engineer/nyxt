@@ -13,7 +13,7 @@ end-user allowing for infinite customization.
   - [[#input-minibuffer][Input (Minibuffer)]]
   - [[#multi-selection][Multi-selection]]
   - [[#buffers-tabs][Buffers ("tabs")]]
-  - [[#searching][Searching]]/
+  - [[#searching][Searching]]
   - [[#history][History]]
   - [[#bookmarks][Bookmarks]]
   - [[#download-manager][Download manager]]
