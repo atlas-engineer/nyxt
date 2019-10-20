@@ -40,11 +40,9 @@ class Window(QWidget):
         self.layout.setSpacing(0)
         self.identifier = identifier
 
-        self.buffer = buffers.Buffer()
         self.minibuffer = minibuffer.Minibuffer(identifier)
         self.minibuffer.set_height(self.minibuffer_height)
 
-        self.layout.addWidget(self.buffer)
         self.layout.addWidget(self.minibuffer)
         self.setLayout(self.layout)
         self.resize(1024, 768)
@@ -66,11 +64,16 @@ class Window(QWidget):
         """
         Set the active buffer of the window to buffer.
         """
+
         # Remove the current buffer from the layout (hide it).
-        self.buffer.setParent(None)
+        if self.buffer:
+            self.buffer.setParent(None)
+
         self.layout.insertWidget(0, buffer)
         self.buffer = buffer
+
         return True
+
 
     def set_minibuffer_height(self, height):
         assert isinstance(height, int)

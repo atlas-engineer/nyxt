@@ -243,7 +243,11 @@ class DBusWindow(QObject):
     def window_set_active_buffer(self, window_id, buffer_id):
         _window = window.get_window(window_id)
         _buffer = buffers.get_buffer(buffer_id)
-        return _window.set_active_buffer(_buffer)
+
+        if _window and _buffer:
+            return _window.set_active_buffer(_buffer)
+
+        return False
 
     def window_set_minibuffer_height(self, window_id, height):
         _window = window.get_window(window_id)
@@ -345,7 +349,6 @@ def main(app):
     logging.info("Listening...")
 
     return app.exec()
-
 
 
 if __name__ == '__main__':
