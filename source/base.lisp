@@ -148,7 +148,9 @@ Error out if no platform port can be started."
 (defun load-lisp-file (file &key interactive)
   "Load the provided lisp file.
 If FILE is \"-\", read from the standard input.
-If INTERACTIVE is t, allow the debugger on errors. If :running, show an error but don't quit the lisp process. If nil, quit lisp (specially useful when Next starts up)."
+If INTERACTIVE is t, allow the debugger on errors. If :running, show
+an error but don't quit the lisp process. If nil, quit lisp (specially
+useful when Next starts up)."
   (unless (str:emptyp (namestring file))
     (handler-case (if (string= (pathname-name file) "-")
                       (progn
