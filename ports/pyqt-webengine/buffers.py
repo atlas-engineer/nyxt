@@ -27,7 +27,7 @@ class Buffer(QWebEngineView):
     identifier = "0"
     callback_count = 0
 
-    def __init__(self, identifier=None, parent=None):
+    def __init__(self, identifier=None, parent=None, storage_path=None):
         super(Buffer, self).__init__(parent)
         self.identifier = str(identifier)
         page = self.page()
@@ -36,6 +36,9 @@ class Buffer(QWebEngineView):
         self.interceptor = utility.WebEngineUrlRequestInterceptor(self.identifier)
         profile.setUrlRequestInterceptor(self.interceptor)
         profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
+
+        if storage_path:
+            self.set_storage_path(storage_path)
 
         # listen for page loading
         self.urlChanged.connect(self.did_commit_navigation)
@@ -86,7 +89,13 @@ class Buffer(QWebEngineView):
         self.url_old = self.url()
         core_interface.buffer_did_finish_navigation(self.identifier, str(url))
 
+    def set_storage_path(self, storage_path):
+        """Determines where QtWebEngine will store ALL persistence data (e.g. cookies
+        and cache)."""
+        self.page().profile.setPersistentStoragePath(storage_path)
+
     def run_js_queue(self, ok=True):
+
         """Run ALL queued JavaScript calls."""
         for script in self.script_queue:
             self.page().runJavaScript(
@@ -132,7 +141,7 @@ class Buffer(QWebEngineView):
         return True
 
 
-def make(identifier: str):
+def make(identifier: str, options: dict):
     """Create a buffer, assign it the given unique identifier (str).
 
     We must pass a reference to the lisp core's dbus proxy, in order
@@ -141,7 +150,13 @@ def make(identifier: str):
     return: The Buffer identifier
     """
     assert isinstance(identifier, str)
+    assert isinstance(options, dict)
+
+    # TODO: We could use options["cookies-path"] to set Buffer's persistent
+    # storage location, but qtwebengine is actually gonna store a whole lot more
+    # crap there than JUST cookies (so for now I'm deferring to default loc).
     buffer = Buffer(identifier=identifier)
+
     BUFFERS[buffer.identifier] = buffer
     logging.info("New buffer created, id {}".format(buffer.identifier))
     return identifier
