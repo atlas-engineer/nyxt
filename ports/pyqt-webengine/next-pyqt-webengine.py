@@ -217,6 +217,7 @@ class DBusWindowAdaptor(QtDBus.QDBusAbstractAdaptor):
 class DBusWindow(QObject):
     def __init__(self):
         super().__init__()
+        self.adaptor = DBusWindowAdaptor(self)
         return
 
     def window_make(self, window_id):
@@ -339,8 +340,6 @@ def main(app):
     app.setApplicationName("Next")
 
     dbus_window = DBusWindow()
-    dbus_window_adaptor = DBusWindowAdaptor(dbus_window)
-
     session_bus = QtDBus.QDBusConnection.sessionBus()
     session_bus.registerObject(PLATFORM_PORT_OBJECT_PATH, dbus_window)
     session_bus.registerService(PLATFORM_PORT_NAME)
