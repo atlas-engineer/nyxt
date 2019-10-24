@@ -534,6 +534,13 @@ declaration in order to modify Next-specific variables and functions:
 Following the package declaration, you can write or override any
 functions and variables.
 
+When you are done, you can load your changes while Next is running
+with the command =load-init-file=. Or load any file with =load-file=
+(=C-o=).
+
+Next will warn you its best about type mismatches.
+
+
 ** Keybinding
 Keys are defined with the ~define-key~ command.
 
