@@ -352,11 +352,20 @@ files, and you can select one with the usual fuzzy completion. You can
 go one directory  up with =M-Left= or =C-l=, and  enter the directory
 at point with =M-Right= or =C-j=.
 
-Next  will open  the  file  with the  system's  default program  using
-=xdg-open=.  See  the  command  help  for  further  details,  and  the
-customization section to override the default behavior.
+Next will open itself directories and supported media types (new in
+Next 1.3.5), otherwise it will try to open the file with the system's
+default using =xdg-open=.  See the command help for further details,
+and the customization section to override the default behavior.
 
-__Note__: this feature is alpha and is meant to grow in Next 1.4 and onwards.
+/Note: this feature is alpha and is meant to grow in Next 1.4 and onwards./
+
+Next opening a directory:
+
+#+html: <img src="https://user-images.githubusercontent.com/3721004/66169709-9c3cbe00-e641-11e9-9aca-0d4af29d7977.png" align="center"/>
+
+Next opening a video. We can treat it like any other buffer:
+
+#+html: <img src="https://user-images.githubusercontent.com/3721004/66169802-f2116600-e641-11e9-9f5d-3af0724fc9fe.png" align="center" caption="Delgres - Mr President" title="Delgres - Mr President"/>
 
 ** Clearing the Echo Area
 In the area at the bottom of the screen where the minibuffer resides,
@@ -435,7 +444,6 @@ Change also the =*vcs-username-alist*=:
 #+end_src
 
 Note that the forge name should be a domain, such as github.com.
-
 
 ** Downloading videos
 
@@ -653,26 +661,36 @@ The minimal config that sets your Next in vi mode, is:
 
 ** Decide how to open files
 
-The commands  =open-file= and  =download-open-file= call  the function
-=open-file-function <filename>=. Its  default behaviour is to  open the file
-with the  system's default, using  =xdg-open=.  You can  override this
-behaviour   by    binding   another    function   to    the   variable
-=next:*open-file-function*=.
+The commands =open-file= and =download-open-file= call the function
+=next/file-manager-mode:open-file-function <filename>=.
 
-For example:
+You can override this behaviour by binding another function to the
+variable =next:*open-file-function*=, in which you can fallback to the
+default function.
+
+For example, below we open directories with =emacsclient= and some music ad
+videos with =mpv=:
 
 #+begin_src lisp
-(defun my-open-videos (filename)
-  "Open videos with mpv."
-  (handler-case (let ((extension (pathname-type filename)))
-                  (match extension
-                    ((or "flv" "mkv" "mp4")
-                     (uiop:launch-program (list "mpv" filename)))
-                    (_
-                     (next/file-manager-mode:open-file-function filename))))
-    (error (c) (log:error "Error opening ~a: ~a" filename c))))
+  (defun my-open-files (filename)
+    "Open music and videos with mpv, open directories with emacsclient."
+    (let ((args)
+          (extension (pathname-type filename)))
+      (cond
+        ((uiop:directory-pathname-p filename)
+         (log:info "Opening ~a with emacsclient." filename)
+         (setf args (list "emacsclient" filename)))
 
-(setf next/file-manager-mode:*open-file-function* #'my-open-videos)
+        ((member extension '("flv" "mkv" "mp4") :test #'string-equal)
+         (setf args (list "mpv" filename))))
+
+      (handler-case (if args
+                        (uiop:launch-program args)
+                        ;; fallback to Next's default.
+                        (next/file-manager-mode:open-file-function filename))
+        (error (c) (log:error "Error opening ~a: ~a" filename c)))))
+
+  (setf next/file-manager-mode:*open-file-function* #'my-open-files)
 #+end_src
 
 ** Loading Files
@@ -938,4 +956,3 @@ fix.
 Next needs a D-Bus session bus to run. In most cases, it should
 already be running. If Next does not start up, it is very likely that
 D-Bus is not running for your user.
-

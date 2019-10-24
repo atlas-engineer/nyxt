@@ -40,13 +40,37 @@ Open any file from within Next, with the usual fuzzy completion.
 (defvar *current-directory* download-manager::*default-download-directory*
   "Default directory to open files from. Defaults to the downloads directory.")
 
+(defparameter *open-file-in-new-buffer* t
+  "If non-t, don't open files and directories in a new buffer.")
+
+(defparameter *supported-media-types* '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
+  ;XXX: either trully read supported MIME types, either try to open
+  ;all, either make this list a different purpose (for a user selection).
+  "Supported media types.")
+
+(defun supported-media (filename)
+  "Return t if this filename's extension is a media that Next can open."
+  (when (uiop:file-pathname-p filename)
+    (let ((extension (str:downcase (pathname-type filename))))
+      (find extension *supported-media-types* :test #'string-equal))))
+
 @export
-(defun open-file-function (filename)
+(defun open-file-function (filename &key (new-buffer-p *open-file-in-new-buffer*))
   "Open FILENAME.
-FILENAME is the full path of the file (or directory), as a string.
-By default, try to open it with the system's default external program, using `xdg-open'.
-The user can override this function to decide what to do with the file."
-  (handler-case (uiop:launch-program (list "xdg-open" (namestring filename)))
+FILENAME is the full path of the file (or directory), as a string, with no tilde (it would be expanded before).
+By default, open directories in a new buffer (NEW-BUFFER-P), open supported media in a new buffer (see `supported-media'), otherwise try to open the filename with the system's default external program, using `xdg-open'.
+The user can set `*open-file-function*' to another function to decide what to do with the file."
+  (handler-case
+      (cond
+        ((and (uiop:directory-pathname-p filename)
+              (uiop:directory-exists-p filename))
+         (set-url-to-buffer (format nil "file://~a" (uiop:ensure-directory-pathname filename))
+                            :new-buffer-p new-buffer-p))
+        ((supported-media filename)
+         (set-url-to-buffer (format nil "file://~a" filename)
+                            :new-buffer-p new-buffer-p))
+        (t
+         (uiop:launch-program (list "xdg-open" (namestring filename)))))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
 
