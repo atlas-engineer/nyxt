@@ -98,6 +98,15 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
     (setf (url buffer) url)
     (rpc-buffer-load buffer url)))
 
+@export
+(defun set-url-to-buffer (input-url &key new-buffer-p)
+  "Load INPUT-URL in the current buffer or a new one when NEW-BUFFER-P is t."
+  (if new-buffer-p
+      (let ((buffer (make-buffer)))
+        (set-url input-url :buffer buffer)
+        (set-current-buffer buffer))
+      (set-url input-url)))
+
 (define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."
   (let ((history (minibuffer-set-url-history *interface*)))
@@ -113,11 +122,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
         ;; In case read-from-minibuffer returned a string upon
         ;; empty-complete-immediate.
         (setf url (url url)))
-      (if new-buffer-p
-          (let ((buffer (make-buffer)))
-            (set-url url :buffer buffer)
-            (set-current-buffer buffer))
-          (set-url url)))))
+      (set-url-to-buffer url :new-buffer-p new-buffer-p))))
 
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new focused buffer."
