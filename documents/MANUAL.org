@@ -528,7 +528,7 @@ declaration in order to modify Next-specific variables and functions:
 
 #+NAME: package
 #+BEGIN_SRC lisp
-(in-package :next)
+(in-package :next-user)
 #+END_SRC
 
 Following the package declaration, you can write or override any
