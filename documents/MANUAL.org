@@ -538,7 +538,8 @@ When you are done, you can load your changes while Next is running
 with the command =load-init-file=. Or load any file with =load-file=
 (=C-o=).
 
-Next will warn you its best about type mismatches.
+Next will warn you its best about type mismatches (new in Next 1.3.5). You should be
+confident that "if it loads, it works"©.
 
 
 ** Keybinding
