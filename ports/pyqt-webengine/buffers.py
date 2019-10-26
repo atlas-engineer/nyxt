@@ -137,7 +137,10 @@ class Buffer(QWebEngineView):
         return True
 
     def delete(self):
+        logging.info("Buffer {0} is being deleted".format(self.identifier))
+        self.setParent(None)
         self.hide()
+        self.deleteLater()
         return True
 
 
@@ -160,3 +163,24 @@ def make(identifier: str, options: dict):
     BUFFERS[buffer.identifier] = buffer
     logging.info("New buffer created, id {}".format(buffer.identifier))
     return identifier
+
+def delete(identifier: str):
+    """Setup a slot to remove the buffer associated with identifier from the
+    global BUFFER container upon deletion, then delete it.
+
+    """
+    assert isinstance(identifier, str)
+    
+    buffer = get_buffer(identifier)
+
+    if buffer:
+        buffer.destroyed.connect(lambda x: buffer_destroyed_handler(identifier))
+
+    return buffer.delete()
+
+def buffer_destroyed_handler(identifier: str):
+    assert isinstance(identifier, str)
+
+    # TODO: Trying to actually pop the buffer from the dict causes a crash for
+    # some reason, still need to figure out why.
+    # BUFFERS.pop(identifier)

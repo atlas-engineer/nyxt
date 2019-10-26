@@ -258,8 +258,7 @@ class DBusWindow(QObject):
         return buffers.make(buffer_id, options)
 
     def buffer_delete(self, buffer_id):
-        _buffer = buffers.get_buffer(buffer_id)
-        return _buffer.delete()
+        return buffers.delete(buffer_id)
 
     def buffer_load(self, buffer_id, url):
         _buffer = buffers.get_buffer(buffer_id)

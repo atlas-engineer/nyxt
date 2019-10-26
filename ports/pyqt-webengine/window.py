@@ -68,12 +68,21 @@ class Window(QWidget):
         # Remove the current buffer from the layout (hide it).
         if self.buffer:
             self.buffer.setParent(None)
+            # Don't bother us when this buffer gets deleted.
+            self.buffer.destroyed.disconnect(self.active_buffer_destroyed_handler)
 
         self.layout.insertWidget(0, buffer)
         self.buffer = buffer
 
+        # Inform us of when our new buffer is deleted elsewhere.
+        self.buffer.destroyed.connect(self.active_buffer_destroyed_handler)
+
         return True
 
+    def active_buffer_destroyed_handler(self):
+        # Unset the active buffer obj, so that we don't mistakenly try to access
+        # an already destroyed QT obj later on down the line.
+        self.buffer = None
 
     def set_minibuffer_height(self, height):
         assert isinstance(height, int)
