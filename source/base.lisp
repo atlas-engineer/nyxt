@@ -168,7 +168,8 @@ useful when Next starts up)."
                            *load-init-error-message*)))
           (cond
             ((equal interactive :running)
-             (echo-safe "Could not load the init file: ~a" c))
+             (echo-safe "Could not load the init file: ~a" c)
+             (notify "We could not load the init file."))
             ((null interactive)
              (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
              (uiop:quit 1))
