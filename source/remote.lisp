@@ -415,6 +415,11 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
+;; Catch a common case for a better error message.
+(defmethod buffers :before ((interface t))
+  (when (null interface)
+    (error "There is no current *interface*. Is Next started?")))
+
 (defmethod bookmark-db-path ((interface remote-interface))
   (log:warn "Deprecated, use `bookmarks-path' instead.")
   (bookmarks-path interface))
