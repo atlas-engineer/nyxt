@@ -238,13 +238,26 @@ See `rpc-buffer-make'."
   (dolist (mode (modes buffer))
     (did-finish-navigation mode url)))
 
+
+(declaim (type (alist-of-3tuples-strings) *search-engines*))
+(defparameter *search-engines* '(("default"
+                                  "https://duckduckgo.com/?q=~a"
+                                  "https://duckduckgo.com/")
+                                 ("wiki"
+                                  "https://en.wikipedia.org/w/index.php?search=~a"
+                                  "https://en.wikipedia.org/")
+                                 ("github"
+                                  "https://github.com/search?q=~a&ref=opensearch"
+                                  "https://github.com"))
+  "Default search engines. A list of 3-tuples: the search engine keyword, the string with the search placeholder, the fallback url.")
+
 @export
 @export-accessors
 (defclass remote-interface ()
   ((port :accessor port :initform (make-instance 'port)
          :documentation "The CLOS object responible for handling the platform port.")
    (platform-port-poll-duration :accessor platform-port-poll-duration :initform 1.0
-                                 :type number
+                                :type number
                                 :documentation "The duration in seconds to wait
 for the platform port to start up.")
    (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.025
@@ -289,8 +302,7 @@ is run after the platform port has been initialized and after the
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
    (search-engines :accessor search-engines
-                   :initform '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
-                               ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
+                   :initform *search-engines*
                    :type alist-of-3tuples-strings
                    :documentation "A list of the search engines.
 
