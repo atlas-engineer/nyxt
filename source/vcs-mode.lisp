@@ -146,10 +146,12 @@ CLONE-URI: quri:uri object."
   (log:debug "Cloning ~a into ~a" project-name target-dir)
   (echo "Cloning ~a into ~a" project-name target-dir)
   (handler-case (progn
-                  (uiop:launch-program
+                  (launch-and-notify
                    (list "git" "clone"
                          (choose-clone-url root-name project-name clone-uri)
-                         (next/vcs::concat-filenames target-dir project-name))))
+                         (next/vcs::concat-filenames target-dir project-name))
+                   :success-msg (format nil "Repository ~a cloned." project-name)
+                   :error-msg (format nil "Repository ~a was NOT cloned." project-name)))
     (error (c)
       (echo-warning "Error cloning ~a: ~a" project-name c))))
 
