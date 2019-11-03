@@ -151,8 +151,9 @@ def generate_input_event(window_id, key_code, modifiers, low_level_data, x, y):
 
     if x == -1:
         # Key event.
-        if key_code not in SPECIAL_KEYS:
-            text = chr(key_code)
+        # if key_code not in SPECIAL_KEYS or key_code == Qt.Key_Space:
+        #     text = chr(key_code)
+        text = chr(key_code)
 
         event = QKeyEvent(QEvent.KeyPress, key_code, modifiers_flag,
                           10000, 10000, 10000, text=text)
