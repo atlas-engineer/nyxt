@@ -29,6 +29,7 @@ end-user allowing for infinite customization.
   - [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
+  - [[#start-up-options][Start-up options]]
   - [[#decide-how-to-open-files][Decide how to open files]]
   - [[#loading-files][Loading Files]]
   - [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
@@ -666,6 +667,40 @@ The minimal config that sets your Next in vi mode, is:
 (in-package :next)
 (add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
 ```
+
+** Start-up options
+
+The =next= command accepts URLs as parameters, as well as some options.
+
+The available options are:
+
+#+begin_export ascii
+-h, --help               Print this help and exit.
+-v, --verbose            Print debugging information to stdout.
+--version                Print version and exit.
+-i, --init-file ARG      Set path to initialization file.
+                         Set to '-' to read standard input instead.
+-Q, --no-init            Do not load the user init file.
+-s, --session ARG        With --session nil, don't restore nor store the session.
+#+end_export
+
+*** Using the session
+
+By default, Next will restore the previous session, and save the
+current one to disk.
+
+You can disable this behavior with a command line option:
+
+: next --session nil
+
+and a lisp parameter:
+
+#+begin_src lisp
+(setf next:*use-session* nil)
+#+end_src
+
+To quit Next without saving the session, use the command
+=quit-after-clearing-session=.
 
 ** Decide how to open files
 

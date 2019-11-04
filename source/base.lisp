@@ -34,7 +34,12 @@ Set to '-' to read standard input instead.")
     (:name :no-init
            :short #\Q
            :long "no-init"
-           :description "Do not load the user init file."))
+           :description "Do not load the user init file.")
+    (:name :session
+           :short #\s
+           :long "session"
+           :arg-parser #'identity
+           :description "With --session nil, don't restore or store the session."))
 
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
@@ -90,6 +95,9 @@ next [options] [urls]")
     (when (getf options :verbose)
       (set-debug-level :debug)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
+    (when (getf options :session)
+      (when (string-equal (getf options :session) "nil")
+        (setf next:*use-session* nil)))
     (setf *options* options
           *free-args* free-args)
     (start :urls free-args
