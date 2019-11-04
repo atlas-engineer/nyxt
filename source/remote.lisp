@@ -251,6 +251,18 @@ See `rpc-buffer-make'."
                                   "https://github.com"))
   "Default search engines. A list of 3-tuples: the search engine keyword, the string with the search placeholder, the fallback url.")
 
+(defun search-engines-names ()
+  "Return a list of search engines names."
+  (mapcar (lambda (tuple)
+            (car tuple))
+          *search-engines*))
+
+(defun search-engine-starting-with (start)
+  "Return the full search engine name if there is one that starts with START."
+  (loop for name in (search-engines-names)
+     when (str:starts-with-p start name)
+     return name))
+
 @export
 @export-accessors
 (defclass remote-interface ()
