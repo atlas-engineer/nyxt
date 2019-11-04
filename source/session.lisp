@@ -5,6 +5,7 @@
 (defparameter *use-session* t
   "If nil, don't restore nor store the session.")
 
+
 (defun buffer-history (buffer)
   "Return the buffer history of BUFFER."
   (match (find-mode buffer 'web-mode)
