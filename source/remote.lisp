@@ -420,6 +420,18 @@ The handlers take the `download-manager:download' class instance as argument."))
   (when (null interface)
     (error "There is no current *interface*. Is Next started?")))
 
+(defun search-engines-names (&optional (interface *interface*))
+  "Return a list of search engines names."
+  (mapcar (lambda (tuple)
+            (car tuple))
+          (search-engines interface)))
+
+(defun search-engine-starting-with (prefix)
+  "Return the full search engine name if there is one that starts with PREFIX."
+  (loop for name in (search-engines-names)
+     when (str:starts-with-p prefix name)
+     return name))
+
 (defmethod bookmark-db-path ((interface remote-interface))
   (log:warn "Deprecated, use `bookmarks-path' instead.")
   (bookmarks-path interface))

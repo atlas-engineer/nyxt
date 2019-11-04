@@ -774,9 +774,18 @@ Return most recent entry in RING."
 (define-command insert-candidate (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
-    (when candidate
-      (kill-whole-line minibuffer)
-      (insert candidate minibuffer))))
+    (cond
+      ;; Complete a search engine name.
+      ((and candidate
+            (zerop (completion-cursor minibuffer)))
+       (let ((name (search-engine-starting-with candidate)))
+         (when name
+           (kill-whole-line minibuffer)
+           (insert (str:concat name " ")))))
+      (t
+       (when candidate
+         (kill-whole-line minibuffer)
+         (insert candidate minibuffer))))))
 
 (declaim (ftype (function (ring:ring)) minibuffer-history-completion-filter))
 (defun minibuffer-history-completion-filter (history)
