@@ -211,7 +211,8 @@ This function is suitable as a `remote-interface' `startup-function'."
         (window-set-active-buffer window buffer)))
   (match (session-restore-function *interface*)
     ((guard f f)
-     (funcall f))))
+     (when *use-session*
+       (funcall f)))))
 
 @export
 (defun start (&key urls

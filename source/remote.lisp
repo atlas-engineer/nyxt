@@ -810,7 +810,9 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
     (match (session-store-function *interface*)
-      ((guard f f) (funcall f)))))
+      ((guard f f)
+       (when *use-session*
+         (funcall f))))))
 
 (declaim (ftype (function (buffer string)) rpc-buffer-load))
 @export
