@@ -110,8 +110,12 @@ From a Lisp REPL, you can query the list of search engines with
 It will return something like
 
 #+begin_src lisp
-'(("default" . "https://duckduckgo.com/?q=~a")
-  ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
+  '(("default"
+     "https://duckduckgo.com/?q=~a"
+     "https://duckduckgo.com/")
+    ("wiki"
+     "https://en.wikipedia.org/w/index.php?search=~a"
+     "https://en.wikipedia.org/"))
 #+end_src
 
 The =~a= in the search engine URI is a place holder for the search pattern.
@@ -119,30 +123,40 @@ The =~a= in the search engine URI is a place holder for the search pattern.
 To set the list of search engines, do:
 
 #+begin_src lisp
-(in-package :next)
+  (in-package :next)
 
-(defun my-interface-defaults ()
-  (setf (search-engines *interface*)
-        '(("default" . "https://duckduckgo.com/?q=~a")
-          ("yt" . "https://www.youtube.com/results?search_query=~a")
-          ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))))
+  (defun my-interface-defaults ()
+    (setf (search-engines *interface*)
+          '(("default"
+             "https://duckduckgo.com/?q=~a"
+             "https://duckduckgo.com/")
+            ("yt"
+             "https://www.youtube.com/results?search_query=~a"
+             "https://www.youtube.com/")
+            ("wiki"
+             "https://en.wikipedia.org/w/index.php?search=~a"
+             "https://en.wikipedia.org/"))))
 
-(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
+  (hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 and to append a search engine do the list, you can do
 
 #+begin_src lisp
-(in-package :next)
+  (in-package :next)
 
-(defun my-interface-defaults ()
-  (setf (search-engines *interface*)
-        (append
-         '(("yt" . "https://www.youtube.com/results?search_query=~a")
-           ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
-         (search-engines *interface*))))
+  (defun my-interface-defaults ()
+    (setf (search-engines *interface*)
+          (append
+           '(("yt"
+              "https://www.youtube.com/results?search_query=~a"
+              "https://www.youtube.com/")
+             ("wiki"
+              "https://en.wikipedia.org/w/index.php?search=~a"
+              "https://en.wikipedia.org/"))
+           (search-engines *interface*))))
 
-(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
+  (hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 ** Jumping to Headings
