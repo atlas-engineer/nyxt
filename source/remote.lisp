@@ -292,7 +292,7 @@ window or not.")
                    :initform '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
                                ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
                    :type alist-of-3tuples-strings
-                   :documentation "An association list of the search engines.
+                   :documentation "A list of the search engines.
 
 The elements are in the form of a 3-tuple of strings (SHORTCUT SEARCH-URL FALLBACK-URL).
 You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
@@ -427,7 +427,7 @@ The handlers take the `download-manager:download' class instance as argument."))
           (search-engines interface)))
 
 (defun search-engine-starting-with (prefix)
-  "Return the full search engine name if there is one that starts with PREFIX."
+  "Return the first search engine name that starts with PREFIX."
   (loop for name in (search-engines-names)
      when (str:starts-with-p prefix name)
      return name))
