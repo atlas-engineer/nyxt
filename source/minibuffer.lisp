@@ -66,6 +66,27 @@
             :vi-normal map
             :vi-insert map)))))
 
+(declaim (type (integer) *max-lines*))
+@export
+(defparameter *max-lines* 8
+  "Max number of candidate lines to show in the minibuffer.
+You will want edit this to match the changes done to `minibuffer-font-size',
+`minibuffer-line-height' and `minibuffer-open-height'.")
+
+(declaim (type (string) *minibuffer-font-size*))
+@export
+(defparameter *minibuffer-font-size* "1em"
+  "CSS font size for the minibuffer.
+Value is a string, e.g. '1em'.
+You might want to configure the value on HiDPI screen.")
+
+(declaim (type (string) *minibuffer-line-height*))
+@export
+(defparameter *minibuffer-line-height* ""
+  "CSS line height for the minibuffer.
+Value is a string, e.g. '1em'.
+You might want to configure the value on HiDPI screen.")
+
 @export
 @export-accessors
 (defclass minibuffer (buffer)
@@ -125,25 +146,13 @@ candidates.")
             :documentation "The HTML content of the minibuffer.")
    (max-lines :initarg :max-lines
               :accessor max-lines
-              :type integer
-              :initform 8
-              :documentation "Max number of candidate lines to show.
-You will want edit this to match the changes done to `minibuffer-font-size',
-`minibuffer-line-height' and `minibuffer-open-height'.")
+              :initform *max-lines*)
    (minibuffer-font-size :initarg :minibuffer-font-size
                          :accessor minibuffer-font-size
-                         :type string
-                         :initform "1em"
-                         :documentation "CSS font size for the minibuffer.
-Value is a string, e.g. '1em'.
-You might want to configure the value on HiDPI screen.")
+                         :initform *minibuffer-font-size*)
    (minibuffer-line-height :initarg :minibuffer-line-height
                            :accessor minibuffer-line-height
-                           :type string
-                           :initform ""
-                           :documentation "CSS line height for the minibuffer.
-Value is a string, e.g. '1em'.
-You might want to configure the value on HiDPI screen.")
+                           :initform *minibuffer-line-height*)
    (minibuffer-style :accessor minibuffer-style
                      :initform (cl-css:css
                                 '((* :font-family "monospace,monospace")

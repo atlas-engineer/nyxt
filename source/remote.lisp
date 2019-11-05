@@ -5,6 +5,16 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+(declaim (type (integer) *status-buffer-height*))
+@export
+(defparameter *status-buffer-height* 36
+  "The height of the status buffer in pixels.")
+
+(declaim (type (integer) *minibuffer-open-height*))
+@export
+(defparameter *minibuffer-open-height* 200
+  "The height of the minibuffer when open.")
+
 @export
 @export-accessors
 (defclass window ()
@@ -16,14 +26,10 @@
                   :initform (make-instance 'minibuffer)
                   :documentation "Buffer for displaying information such as
 current URL or event messages.")
-   (status-buffer-height :accessor status-buffer-height :initform 36
-                         :type integer
-                         :documentation "The height of the status buffer in pixels.")
+   (status-buffer-height :accessor status-buffer-height :initform *status-buffer-height*)
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))
-   (minibuffer-open-height :accessor minibuffer-open-height :initform 200
-                           :type integer
-                           :documentation "The height of the minibuffer when open.")
+   (minibuffer-open-height :accessor minibuffer-open-height :initform *minibuffer-open-height*)
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
@@ -31,29 +37,89 @@ The handlers take the window and the buffer as argument.")
                        :documentation "Hook run after `rpc-window-delete' takes effect.
 The handlers take the window as argument.")))
 
+(declaim (type (string) *server-address*))
+@export
+(defparameter *server-address* "socks5://127.0.0.1:9050"
+  "The address of the proxy server.
+It's made of three components: protocol, host and port.
+Example:
+  http://192.168.1.254:8080")
+
+(declaim (type (list-of-strings) *proxy-whitelist*))
+@export
+(defparameter *proxy-whitelist* '("localhost" "localhost:8080")
+  "A list of URI not to forward to the proxy.
+It must be a list of strings.")
+
+(declaim (type (boolean) *proxied-downloads-p*))
+@export
+(defparameter *proxied-downloads-p* t
+  "Non-nil if downloads should also use
+the proxy.")
+
 @export
 @export-accessors
 (defclass proxy ()
   ;; TODO: for the PyQt side, we now want the protocol, the IP and the
   ;; port on different slots.
   ((server-address :accessor server-address :initarg :server-address
-                   :initform "socks5://127.0.0.1:9050"
-                   :type string
-                   :documentation "The address of the proxy server.
-It's made of three components: protocol, host and port.
-Example:
-  http://192.168.1.254:8080")
+                   :initform *server-address*)
    (whitelist :accessor whitelist :initarg :whitelist
-              :initform '("localhost" "localhost:8080")
-              :type list-of-strings
-              :documentation "A list of URI not to forward to the proxy.
-It must be a list of strings.")
+              :initform *proxy-whitelist*)
    (proxied-downloads-p :accessor proxied-downloads-p :initarg :proxied-downloads-p
-                        :initform t
-                        :documentation "Non-nil if downloads should also use
-the proxy."))
+                        :initform *proxied-downloads-p*))
   (:documentation "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."))
+
+
+(declaim (type (string) *default-new-buffer-url*))
+@export
+(defparameter *default-new-buffer-url* "https://next.atlas.engineer/start"
+  "The URL set to a new blank buffer opened by Next.")
+
+;; (declaim (type (number) *scroll-distance*)) ;; => "bad thing to be a type specifier"
+(declaim (type (or integer float) *scroll-distance*))
+@export
+(defparameter *scroll-distance*  50
+  "The distance scroll-down or scroll-up will scroll.")
+
+(declaim (type (or integer float) *horizontal-scroll-distance*))
+@export
+(defparameter *horizontal-scroll-distance* 50
+  "Horizontal scroll distance. The
+distance scroll-left or scroll-right will scroll.")
+
+(declaim (type (float) *current-zoom-ratio*))
+@export
+(defparameter *current-zoom-ratio* 1.0
+  "The current zoom relative to the default zoom.")
+
+(declaim (type (float) *zoom-ratio-step*))
+@export
+(defparameter *zoom-ratio-step* 0.2
+  "The step size for zooming in and out.")
+
+(declaim (type (float) *zoom-ratio-min*))
+@export
+(defparameter *zoom-ratio-min* 0.2
+  "The minimum zoom ratio relative to the default.")
+
+(declaim (type (float) *zoom-ratio-max*))
+@export
+(defparameter *zoom-ratio-max* 5.0
+  "The maximum zoom ratio relative to the default.")
+
+(declaim (type (float) *zoom-ratio-default*))
+@export
+(defparameter *zoom-ratio-default* 1.0
+  "The default zoom ratio.")
+
+(declaim (type (float) *page-scroll-ratio*))
+@export
+(defparameter *page-scroll-ratio*  0.90
+  "The ratio of the page to scroll.
+A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
+down.")
 
 @export
 @export-accessors
@@ -104,29 +170,18 @@ For now we only store the very last key chord.")
                             :initform #'resource-query-default)
    (callbacks :accessor callbacks
               :initform (make-hash-table :test #'equal))
-   (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
-                           :documentation "The URL set to a new blank buffer opened by Next.")
-   (scroll-distance :accessor scroll-distance :initform 50 :type number
-                    :documentation "The distance scroll-down or scroll-up will scroll.")
-   (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50 :type number
-                               :documentation "Horizontal scroll distance. The
-distance scroll-left or scroll-right will scroll.")
-   (current-zoom-ratio :accessor current-zoom-ratio :initform 1.0 :type number
-                       :documentation "The current zoom relative to the default zoom.")
-   (zoom-ratio-step :accessor zoom-ratio-step :initform 0.2 :type number
-                    :documentation "The step size for zooming in and out.")
-   (zoom-ratio-min :accessor zoom-ratio-min :initform 0.2 :type number
-                   :documentation "The minimum zoom ratio relative to the default.")
-   (zoom-ratio-max :accessor zoom-ratio-max :initform 5.0 :type number
-                   :documentation "The maximum zoom ratio relative to the default.")
-   (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0 :type number
-                       :documentation "The default zoom ratio.")
-   (page-scroll-ratio :accessor page-scroll-ratio
-                      :type number
-                      :initform 0.90
-                      :documentation "The ratio of the page to scroll.
-A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
-down.")
+   (default-new-buffer-url :accessor default-new-buffer-url
+     :initform *default-new-buffer-url*)
+   (scroll-distance :accessor scroll-distance :initform *scroll-distance* )
+   (horizontal-scroll-distance :accessor horizontal-scroll-distance
+                               :initform *horizontal-scroll-distance*)
+   (current-zoom-ratio :accessor current-zoom-ratio :initform *current-zoom-ratio*)
+   (zoom-ratio-step :accessor zoom-ratio-step :initform *zoom-ratio-step*  )
+   (zoom-ratio-min :accessor zoom-ratio-min :initform *zoom-ratio-min* )
+   (zoom-ratio-max :accessor zoom-ratio-max :initform *zoom-ratio-max*)
+   (zoom-ratio-default :accessor zoom-ratio-default
+                       :initform *zoom-ratio-default*)
+   (page-scroll-ratio :accessor page-scroll-ratio :initform *page-scroll-ratio*)
    (cookies-path :accessor cookies-path
                  :initform (xdg-data-home "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
@@ -239,7 +294,18 @@ See `rpc-buffer-make'."
     (did-finish-navigation mode url)))
 
 
+@export
+(defparameter *start-page-url* "https://next.atlas.engineer/quickstart"
+  "The URL of the first buffer opened by Next when started.")
+
+@export
+(defparameter *open-external-link-in-new-window-p* nil
+  "When open links from an external program, or
+when C-cliking on a URL, decide whether to open in a new
+window or not.")
+
 (declaim (type (alist-of-3tuples-strings) *search-engines*))
+@export
 (defparameter *search-engines* '(("default"
                                   "https://duckduckgo.com/?q=~a"
                                   "https://duckduckgo.com/")
@@ -262,6 +328,20 @@ See `rpc-buffer-make'."
   (loop for name in (search-engines-names)
      when (str:starts-with-p start name)
      return name))
+
+@export
+(defparameter *download-directory* nil
+  "Path of directory where downloads will be
+stored.  Nil means use system default.")
+
+(declaim (type (or pathname string) *session-path*))
+(defparameter *session-path* (xdg-data-home "session.lisp")
+  "The path where the session is persisted.")
+
+(declaim (type (or pathname string) *bookmarks-path*))
+@export
+(defparameter *bookmarks-path* (xdg-data-home "bookmarks.lisp")
+  "The path where the system will create/save the bookmarks.")
 
 @export
 @export-accessors
@@ -306,34 +386,18 @@ Most recent messages are first.")
 list of URLs (strings) as argument (the command line positional arguments).  It
 is run after the platform port has been initialized and after the
 `*after-init-hook*' has run.")
-   (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
-                   :documentation "The URL of the first buffer opened by Next when started.")
+   (start-page-url :accessor start-page-url :initform *start-page-url*)
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
-                                       :initform nil
-                                       :documentation "When open links from an external program, or
-when C-cliking on a URL, decide whether to open in a new
-window or not.")
+                                       :initform *open-external-link-in-new-window-p*)
    (search-engines :accessor search-engines
-                   :initform *search-engines*
-                   :type alist-of-3tuples-strings
-                   :documentation "A list of the search engines.
-
-The elements are in the form of a 3-tuple of strings (SHORTCUT SEARCH-URL FALLBACK-URL).
-You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
-If the query is empty, FALLBACK-URL is loaded instead.  If
-FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
-
-The 'default' engine is used when the query is not a valid URL, or the first
-keyword is not recognized.")
+                   :initform *search-engines*)
    (key-chord-stack :accessor key-chord-stack :initform '()
                     :documentation "A stack that keeps track of the key chords a user has inputted.")
    (downloads :accessor downloads :initform '()
               :documentation "List of downloads.")
    (download-watcher :accessor download-watcher :initform nil
                      :documentation "List of downloads.")
-   (download-directory :accessor download-directory :initform nil
-                       :documentation "Path of directory where downloads will be
-stored.  Nil means use system default.")
+   (download-directory :accessor download-directory :initform *download-directory*)
    (startup-timestamp :initarg :startup-timestamp :accessor startup-timestamp
                       :type local-time:timestamp
                       :initform nil
@@ -370,13 +434,10 @@ The function which stores the global history into `history-path'.")
 The function which restores the global history from `history-path'.")
    (bookmarks-data :accessor bookmarks-data
                    :initform nil
-                   :documentation "
-The bookmarks kept in memory.")
+                   :documentation "The bookmarks kept in memory.")
    (bookmarks-path :initarg :bookmarks-path
                    :accessor bookmarks-path
-                   :initform (xdg-data-home "bookmarks.lisp")
-                   :documentation "
-The path where the system will create/save the bookmarks.")
+                   :initform *bookmarks-path*)
    (bookmark-db-path :initarg :bookmark-db-path
                      :accessor bookmark-db-path
                      :initform (xdg-data-home "bookmarks.lisp")
@@ -395,9 +456,7 @@ The function which stores the bookmarks into `bookmarks-path'.")
                                :documentation "
 The function which restores the bookmarks from `bookmarks-path'.")
    (session-path :accessor session-path
-                 :type string
-                 :initform (xdg-data-home "session.lisp")
-                 :documentation "The path where the session is persisted.")
+                 :initform *session-path*)
    (session-store-function :accessor session-store-function
                            :type function
                            :initform #'store-sexp-session
@@ -408,6 +467,7 @@ into `session-path'.")
                              :initform #'restore-sexp-session
                              :documentation "The function which restores the session
 from `session-path'.")
+
    ;; Hooks follow:
    (before-exit-hook :accessor before-exit-hook :initform '() :type list
                      :documentation "Hook run before both `*interface*' and the
@@ -443,18 +503,6 @@ The handlers take the `download-manager:download' class instance as argument."))
 (defmethod buffers :before ((interface t))
   (when (null interface)
     (error "There is no current *interface*. Is Next started?")))
-
-(defun search-engines-names (&optional (interface *interface*))
-  "Return a list of search engines names."
-  (mapcar (lambda (tuple)
-            (car tuple))
-          (search-engines interface)))
-
-(defun search-engine-starting-with (prefix)
-  "Return the first search engine name that starts with PREFIX."
-  (loop for name in (search-engines-names)
-     when (str:starts-with-p prefix name)
-     return name))
 
 (defmethod bookmark-db-path ((interface remote-interface))
   (log:warn "Deprecated, use `bookmarks-path' instead.")
