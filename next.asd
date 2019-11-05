@@ -164,3 +164,9 @@
                              (:file "password")
                              (:file "password-pass")
                              (:file "password-keepassxc")))))
+
+(asdf:defsystem next/hooks
+  :depends-on (alexandria serapeum)
+  :components ((:module source :pathname "libraries/hooks/"
+                :components ((:file "package")
+                             (:file "hooks")))))
