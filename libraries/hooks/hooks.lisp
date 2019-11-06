@@ -183,6 +183,15 @@ Handlers after the successful one are not run."
         (unless (member handler (handlers hook))
           (alexandria:appendf (symbol-value hook) (list handler))))))
 
+(defmethod add-hook ((hook hook) fn &key append)
+  "Add FN to HOOK.
+FN cannot be an anonymous function.
+To add anonymous functions to HOOK, use
+
+  (add-hook hook (make-handler (lambda () ...) :name ...))"
+  (let ((handler (make-handler fn)))
+    (add-hook hook handler :append append)))
+
 ;; (defmacro add-hook* (hook handler &key append)
 ;;   (when (hook-type hook)
 ;;     (assert (typep (fn handler) (hook-type hook)) ((fn handler))
