@@ -199,18 +199,35 @@ To add anonymous functions to HOOK, use
 ;;   `(progn
 ;;      (add-hook ,hook ,handler :append ,append)))
 
-(defmethod remove-hook ((hook hook) (fn handler)) ; TODO: Add method to remove handlers by name.
+(defmethod remove-hook ((hook hook) (fn handler))
   (serapeum:synchronized (hook)
-    (let ((found? nil))
-      (setf (handlers hook)
-            (delete-if (lambda (f)
-                         (when (equals f fn)
-                           (setf found? t)
-                           t))
-                       (handlers hook)))
-      (unless found?
-        (delete fn (handlers hook)
-                :test #'equals)))))
+    (let ((found-handler nil))
+      (flet ((find-handler (handlers)
+               (setf (handlers hook)
+                     (delete-if (lambda (f)
+                                  (when (equals f fn)
+                                    (setf found-handler f)
+                                    t))
+                                handlers))))
+        (find-handler (handlers hook))
+        (unless found-handler
+          (find-handler (disabled-handlers hook))))
+      found-handler)))
+
+(defmethod remove-hook ((hook hook) handler-name)
+  (serapeum:synchronized (hook)
+    (let ((found-handler nil))
+      (flet ((find-handler (handlers)
+               (setf (handlers hook)
+                     (delete-if (lambda (f)
+                                  (when (eq handler-name (name f))
+                                    (setf found-handler f)
+                                    t))
+                                handlers))))
+        (find-handler (handlers hook))
+        (unless found-handler
+          (find-handler (disabled-handlers hook))))
+      found-handler)))
 
 (defmethod run-hook ((hook hook))
   (funcall (combination hook) hook))
