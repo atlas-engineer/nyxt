@@ -87,16 +87,18 @@ non-nil.")
           :initform nil
           :documentation "")))
 
-(defun make-handler (function &key name place value)
+(defun make-handler (fn &key name place value)
   "NAME is a symbol."
-  (setf name (or name (let ((fname (nth-value 2 (function-lambda-expression function))))
+  (unless (typep fn 'function)          ; TODO: Should we allow symbols here?  It might be better to be stricter in terms of type-checking.
+    (setf fn (function fn)))
+  (setf name (or name (let ((fname (nth-value 2 (function-lambda-expression fn))))
                         (when (typep fname 'symbol)
                           fname))))
   (unless name
     (error "Can't make a handler without a name"))
   (make-instance 'handler
                  :name name
-                 :fn function
+                 :fn fn
                  :place place
                  :value value))
 
