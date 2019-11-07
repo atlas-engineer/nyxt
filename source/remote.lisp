@@ -31,6 +31,17 @@ The handlers take the window and the buffer as argument.")
                        :documentation "Hook run after `rpc-window-delete' takes effect.
 The handlers take the window as argument.")))
 
+;; TODO: Compile-time type-checking with `satisfies' only works at the
+;; top-level with SBCL.
+;; (defun window-class-symbol-p (class-symbol)
+;;   (closer-mop:subclassp (find-class class-symbol)
+;;                         (find-class 'window)))
+;; (deftype window-type ()
+;;   `(satisfies window-class-symbol-p))
+;; (declaim (type (window-type) *window-class*))
+@export
+(defparameter *window-class* 'window)
+
 @export
 @export-accessors
 (defclass proxy ()
@@ -54,6 +65,9 @@ It must be a list of strings.")
 the proxy."))
   (:documentation "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."))
+
+@export
+(defparameter *proxy-class* 'proxy)
 
 @export
 @export-accessors
@@ -160,6 +174,9 @@ return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook :initform '() :type list
                        :documentation "Hook run before `rpc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
+
+@export
+(defparameter *buffer-class* 'buffer)
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
@@ -415,6 +432,9 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
+@export
+(defparameter *remote-interface-class* 'remote-interface)
+
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((interface t))
   (when (null interface)
@@ -660,7 +680,7 @@ For an array of string, that would be \"as\"."
   "Create a window and return the window object.
 Run INTERFACE's `window-make-hook' over the created window."
   (let* ((window-id (get-unique-window-identifier))
-         (window (make-instance 'window :id window-id)))
+         (window (make-instance *window-class* :id window-id)))
     (setf (gethash window-id (windows *interface*)) window)
     (incf (total-window-count *interface*))
     (%rpc-send "window_make" window-id)
@@ -760,7 +780,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let* ((buffer (if dead-buffer
                      (progn (setf (id dead-buffer) (get-unique-buffer-identifier))
                             dead-buffer)
-                     (apply #'make-instance 'buffer :id (get-unique-buffer-identifier)
+                     (apply #'make-instance *buffer-class* :id (get-unique-buffer-identifier)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
     (hooks:run-hook (hooks:object-hook *interface* 'buffer-before-make-hook) buffer)

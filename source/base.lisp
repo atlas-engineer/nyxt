@@ -234,10 +234,10 @@ Finally, run the `*after-init-hook*'."
     (when *interface*
       (kill-interface *interface*)
       ;; It's important to set it to nil or else if we re-run this function,
-      ;; (make-instance 'remote-interface) will be run while an existing
+      ;; (make-instance *remote-interface-class*) will be run while an existing
       ;; *interface* is still floating around.
       (setf *interface* nil))
-    (setf *interface* (make-instance 'remote-interface
+    (setf *interface* (make-instance *remote-interface-class*
                                      :non-interactive non-interactive
                                      :startup-timestamp startup-timestamp))
     ;; Start the port after the interface so that we don't overwrite the log when

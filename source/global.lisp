@@ -14,7 +14,7 @@
   "The entry-point object to a complete instance of Next.
 It can be initialized with
 
-  (setf *interface* (make-instance 'remote-interface))
+  (setf *interface* (make-instance *remote-interface-class*))
 
 It's possible to run multiple interfaces of Next at the same time.  You can
 let-bind *interface* to temporarily switch interface.")

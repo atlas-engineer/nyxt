@@ -176,6 +176,9 @@ You might want to configure the value on HiDPI screen.")
                                              :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
+@export
+(defparameter *minibuffer-class* 'minibuffer)
+
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
   "Reset the minibuffer state on every input change.
 This is necessary or else completion cursor / head could be beyond the updated
