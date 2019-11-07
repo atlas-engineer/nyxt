@@ -65,65 +65,60 @@ non-nil.")
          :accessor name
          :type symbol
          :initform nil
-         :documentation "")
+         :documentation "
+Name of the handler.
+If defaults to the function name if `fn' is a named function.
+This is useful so that the user can build handlers out of anonymous functions.")
    (description :initarg :description
                 :accessor description
                 :type string
                 :initform ""
-                :documentation "")
+                :documentation "
+Description of the handler.  This is purely informative.")
    (fn :initarg :fn
        :accessor fn
        :type function
        :initform nil
-       :documentation "")
+       :documentation "
+The handler function.  It can be an anonymous function.")
+   (handler-type :initarg :handler-type
+                 :accessor handler-type
+                 :type list
+                 :initform nil
+                 :documentation "The function type of FN.
+This is purely informative.")
    (place :initarg :place
           :accessor place
-          :type list
+          :type (or symbol list)
           :initform nil
-          :documentation "")
+          :documentation "
+If the handler is meant to be a setter, PLACE describes what is set.
+PLACE can be a symbol or a pair (CLASS SLOT).
+This can be left empty if the handler is not a setter.")
    (value :initarg :value
           :accessor value
           :type t
           :initform nil
-          :documentation "")))
+          :documentation "
+If the handler is meant to be a setter, VALUE can be used to describe what FN is
+going to set to PLACE.
+In particular, PLACE and VALUE can be used to compare handlers.
+This can be left empty if the handler is not a setter.")))
 
 ;; TODO: Don't export make-handler, so that user is forced to use the typed versions.
-;; But then how does the user define a custom-type handler?
-(defun make-handler (fn &key name place value)
+(defun make-handler (fn &key (class-name 'handler) name handler-type place value)
   "NAME is a symbol."
-  (unless (typep fn 'function)          ; TODO: Should we allow symbols here?  It might be better to be stricter in terms of type-checking.
-    (setf fn (function fn)))
   (setf name (or name (let ((fname (nth-value 2 (function-lambda-expression fn))))
                         (when (typep fname 'symbol)
                           fname))))
   (unless name
     (error "Can't make a handler without a name"))
-  (make-instance 'handler
+  (make-instance class-name
                  :name name
                  :fn fn
+                 :handler-type handler-type
                  :place place
                  :value value))
-
-
-(declaim (ftype (function ((function ()) &key (:name symbol) (:place t) (:value t))) make-void-handler))
-(defun make-void-handler (fn &key name place value)
-  "Make handler that accepts no argument."
-  (make-handler fn :name name :place place :value value))
-
-(declaim (ftype (function ((function (&rest t)) &key (:name symbol) (:place t) (:value t))) make-*-handler))
-(defun make-*-handler (fn &key name place value)
-  "Make handler that accepts any argument."
-  (make-handler fn :name name :place place :value value))
-
-(declaim (ftype (function ((function (number) number) &key (:name symbol) (:place t) (:value t)))
-                make-number->number-handler))
-(defun make-number->number-handler (fn &key name place value)
-  (make-handler fn :name name :place place :value value))
-
-(declaim (ftype (function ((function (string) string) &key (:name symbol) (:place t) (:value t)))
-                make-string->string-handler))
-(defun make-string->string-handler (fn &key name place value)
-  (make-handler fn :name name :place place :value value))
 
 (defmethod equals ((fn1 handler) (fn2 handler))
   "Return non-nil if FN1 and FN2 are equal."
@@ -144,12 +139,11 @@ non-nil.")
          (name fn2)))))
 
 (defclass hook ()
-  ((hook-type :initarg :hook-type
-              :accessor hook-type
-              :type symbol
-              :initform t
-              :documentation "
-The type of the handlers, typically (function (input types) output-type).")
+  ((handler-class :reader handler-class
+                  :type symbol
+                  :initform t
+                  :documentation "
+The class of the supported handlers.")
    (handlers :initarg :handlers
              :accessor handlers
              :type list
@@ -196,33 +190,12 @@ Handlers after the successful one are not run."
   (apply (apply #'alexandria:compose (mapcar #'fn (handlers hook))) args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Compile-time type checking for add-hook is useful in case `add-hook' is not
-;; run when the user config is loaded.  We declaim the type for `add-hook'
-;; because `satisfies' takes the object (the `add-hook' function) as argument,
-;; but we have no way to access the hook or the handler passed as parameter.
-
-(defmethod add-hook ((hook hook) (handler handler) &key append)
+(defun add-hook-internal (hook handler &key append)
   (serapeum:synchronized (hook)
     (if (not append)
         (pushnew handler (handlers hook) :test #'equals)
         (unless (member handler (handlers hook))
           (alexandria:appendf (symbol-value hook) (list handler))))))
-
-(defmethod add-hook ((hook hook) fn &key append)
-  "Add FN to HOOK.
-FN cannot be an anonymous function.
-To add anonymous functions to HOOK, use
-
-  (add-hook hook (make-handler (lambda () ...) :name ...))"
-  (let ((handler (make-handler fn)))
-    (add-hook hook handler :append append)))
-
-;; (defmacro add-hook* (hook handler &key append)
-;;   (when (hook-type hook)
-;;     (assert (typep (fn handler) (hook-type hook)) ((fn handler))
-;;             'type-error :datum (fn handler) :expected-type (hook-type hook)))
-;;   `(progn
-;;      (add-hook ,hook ,handler :append ,append)))
 
 (defmethod remove-hook ((hook hook) (fn handler))
   (serapeum:synchronized (hook)
@@ -259,8 +232,8 @@ To add anonymous functions to HOOK, use
 
 ;; TODO: Because our hooks are typed, having both `run-hook` and
 ;; `run-hook-with-args' makes little sense.  Remove `run-hook-with-args'?
-(defmethod run-hook-with-args ((hook hook) &rest args)
-  (apply (combination hook) hook args))
+;; (defmethod run-hook-with-args ((hook hook) &rest args)
+;;   (apply (combination hook) hook args))
 
 ;; TODO: Implement the following methods? Isn't the `combination' slot more general?
 ;; (defmethod run-hook-with-args-until-failure ((hook hook) &rest args)
@@ -295,11 +268,10 @@ If APPEND is non-nil, append them instead."
 (defvar %hook-table (make-hash-table :test #'equal)
   "")
 
-(defun define-hook (name &key object type handlers disabled-handlers combination)
+(defun define-hook (name &key object handlers disabled-handlers combination)
   "Create a globally accessible hook."
   (let ((hook
-          (make-instance 'hook
-                         :type type
+          (make-instance 'hook          ; TODO: Handler class?
                          :handlers handlers
                          :disabled-handlers disabled-handlers
                          :combination combination)))
@@ -313,3 +285,47 @@ The following examples return different hooks:
 - (find-hook 'foo-hook 'bar-class)
 - (find-hook 'foo-hook (make-instance 'bar-class))"
   (gethash (list name object) %hook-table))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Compile-time type checking for add-hook is useful in case `add-hook' is not
+;; run when the user config is loaded.  Sadly Common Lisp does not seem to allow
+;; to extract the type of a function so that it can be checked against what a
+;; hook would allow.  We work around this issue with a macro:
+;;
+;; - Generates hook and handler subclasses.
+;; - Generate a handler maker with provided function type declaim.
+;; - Generate a `add-hook' defmethod against those 2 classes.
+
+(defmacro define-hook-type (name type)
+  "Type must be something like
+ (function (string) (values integer t)).
+A function with name make-handler-NAME will be created.
+A class with name handler-NAME will be created."
+  (let* ((name (string name))
+         (function-name (intern (str:concat "MAKE-HANDLER-" name)))
+         (handler-class-name (intern (str:concat "HANDLER-" name)))
+         (hook-class-name (intern (str:concat "HOOK-" name))))
+    `(progn
+       (defclass ,handler-class-name (handler) ())
+       (declaim (ftype (function (,type &key (:name symbol) (:place t) (:value t)))
+                       ,function-name))
+       (defun ,function-name (fn &key name place value)
+         (make-handler fn :class-name ',handler-class-name
+                          :name name
+                          :handler-type ',type
+                          :place place
+                          :value value))
+       (defclass ,hook-class-name (hook)
+         ((handler-class :initform (find-class ',handler-class-name))))
+       (defmethod add-hook ((hook ,hook-class-name) (handler ,handler-class-name) &key append)
+         ,(format nil "Add HANDLER to HOOK.
+HOOK msut be of type ~a
+FN must be of type ~a."
+                  hook-class-name
+                  handler-class-name)
+         (add-hook-internal hook handler :append append)))))
+
+(define-hook-type void (function ()))
+(define-hook-type string->string (function (string) string))
+(define-hook-type number->number (function (number) number))
+(define-hook-type any (function (&rest t)))
