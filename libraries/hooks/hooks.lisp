@@ -266,17 +266,19 @@ If APPEND is non-nil, append them instead."
 ;; TODO: cl-hooks uses symbol properties.  Is it a good idea?
 ;; TODO: Test this!
 (defvar %hook-table (make-hash-table :test #'equal)
-  "")
+  "Global hook table.")
 
-(defun define-hook (name &key object handlers disabled-handlers combination)
-  "Create a globally accessible hook."
+(defun define-hook (hook-type name &key object handlers disabled-handlers combination)
+  "Return a globally-accessible hook.
+The hook can be accessed with `find-hook'."
   (let ((hook
-          (make-instance 'hook          ; TODO: Handler class?
+          (make-instance hook-type
                          :handlers handlers
                          :disabled-handlers disabled-handlers
                          :combination combination)))
     (setf (gethash (list name object) %hook-table)
-          hook)))
+          hook)
+    hook))
 
 (defun find-hook (name &optional object)
   "Return the global hook with name NAME associated to OBJECT, if provided.
