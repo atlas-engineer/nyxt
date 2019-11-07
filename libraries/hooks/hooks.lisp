@@ -208,10 +208,10 @@ To add anonymous functions to HOOK, use
                                   (when (equals f fn)
                                     (setf found-handler f)
                                     t))
-                                handlers)))))
-      (find-handler (handlers hook))
-      (unless found-handler
-        (find-handler (disabled-handlers hook)))
+                                handlers))))
+        (find-handler (handlers hook))
+        (unless found-handler
+          (find-handler (disabled-handlers hook))))
       found-handler)))
 
 (defmethod remove-hook ((hook hook) handler-name)
@@ -223,10 +223,10 @@ To add anonymous functions to HOOK, use
                                   (when (eq handler-name (name f))
                                     (setf found-handler f)
                                     t))
-                                handlers)))))
-      (find-handler (handlers hook))
-      (unless found-handler
-        (find-handler (disabled-handlers hook)))
+                                handlers))))
+        (find-handler (handlers hook))
+        (unless found-handler
+          (find-handler (disabled-handlers hook))))
       found-handler)))
 
 (defmethod run-hook ((hook hook))
