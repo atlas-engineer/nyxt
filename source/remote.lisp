@@ -13,7 +13,7 @@
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
    (status-buffer :accessor status-buffer ;; TODO: Use a separate class for status bars once the platform port has a separate display.
-                  :initform (make-instance 'minibuffer)
+                  :initform (make-minibuffer)
                   :documentation "Buffer for displaying information such as
 current URL or event messages.")
    (status-buffer-height :accessor status-buffer-height :initform 36

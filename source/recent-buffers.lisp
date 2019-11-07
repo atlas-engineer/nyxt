@@ -18,10 +18,10 @@
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."
   (with-result (buffers (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Reopen buffer(s):"
-                                        :multi-selection-p t
-                                        :completion-function (recent-buffer-completion-filter))))
+                         (make-minibuffer
+                          :input-prompt "Reopen buffer(s):"
+                          :multi-selection-p t
+                          :completion-function (recent-buffer-completion-filter))))
     (dolist (buffer buffers)
       (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
       (reload-current-buffer (rpc-buffer-make :dead-buffer buffer))

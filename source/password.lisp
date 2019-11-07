@@ -9,12 +9,12 @@
   "Save password to password interface."
   (if (password-interface *interface*)
       (with-result* ((password-name (read-from-minibuffer
-                                     (make-instance 'minibuffer
-                                                    :input-prompt "Name for new password:")))
+                                     (make-minibuffer
+                                      :input-prompt "Name for new password:")))
                      (new-password (read-from-minibuffer
-                                    (make-instance 'minibuffer
-                                                   :invisible-input-p t
-                                                   :input-prompt "New password (leave empty to generate):"))))
+                                    (make-minibuffer
+                                     :invisible-input-p t
+                                     :input-prompt "New password (leave empty to generate):"))))
         (password:save-password (password-interface *interface*)
                                 password-name
                                 new-password))
@@ -30,9 +30,9 @@
       (with-password (password-interface *interface*)
         (with-result (password-name
                       (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :completion-function
-                                      (copy-password-completion-filter
-                                       (password-interface *interface*)))))
+                       (make-minibuffer
+                        :completion-function
+                        (copy-password-completion-filter
+                         (password-interface *interface*)))))
           (password:clip-password (password-interface *interface*) password-name)))
       (echo-warning "No password manager found.")))

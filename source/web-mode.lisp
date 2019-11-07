@@ -192,9 +192,9 @@
 (define-command history-backwards-query ()
   "Query parent URL to navigate back to."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Navigate backwards to:"
-                                      :completion-function (history-backwards-completion-filter))))
+                       (make-minibuffer
+                        :input-prompt "Navigate backwards to:"
+                        :completion-function (history-backwards-completion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -211,9 +211,9 @@
 (define-command history-forwards-query ()
   "Query forward-URL to navigate to."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Navigate forwards to:"
-                                      :completion-function (history-forwards-completion-filter))))
+                       (make-minibuffer
+                        :input-prompt "Navigate forwards to:"
+                        :completion-function (history-forwards-completion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -239,9 +239,9 @@ Otherwise go forward to the only child."
 (define-command history-forwards-all-query ()
   "Query URL to forward to, from all child branches."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Navigate forwards to (all branches):"
-                                      :completion-function (history-forwards-all-completion-filter))))
+                       (make-minibuffer
+                        :input-prompt "Navigate forwards to (all branches):"
+                        :completion-function (history-forwards-all-completion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -258,9 +258,9 @@ Otherwise go forward to the only child."
 (define-command history-all-query ()
   "Query URL to go to, from the whole history."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Navigate to:"
-                                      :completion-function (history-all-completion-filter))))
+                       (make-minibuffer
+                        :input-prompt "Navigate to:"
+                        :completion-function (history-all-completion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -329,9 +329,9 @@ Otherwise go forward to the only child."
 (define-command paste-from-ring ()
   "Show `*interface*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
-                           (make-instance 'minibuffer
-                                          :completion-function (ring-completion-filter
-                                                                (clipboard-ring *interface*)))))
+                           (make-minibuffer
+                            :completion-function (ring-completion-filter
+                                                  (clipboard-ring *interface*)))))
     (%paste :input-text ring-item)))
 
 (define-parenscript %copy ()

@@ -70,11 +70,11 @@ The history is sorted by last access."
 (define-command delete-history-entry ()
   "Delete queried history entries."
   (with-result (entries (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Delete entries:"
-                                        :completion-function (history-completion-filter)
-                                        :history (minibuffer-set-url-history *interface*)
-                                        :multi-selection-p t)))
+                         (make-minibuffer
+                          :input-prompt "Delete entries:"
+                          :completion-function (history-completion-filter)
+                          :history (minibuffer-set-url-history *interface*)
+                          :multi-selection-p t)))
     (dolist (entry entries)
       (remhash (url entry) (history-data *interface*)))
     ;; Use accessor to ensure store function is called.

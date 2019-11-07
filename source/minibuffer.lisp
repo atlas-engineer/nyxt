@@ -178,6 +178,58 @@ You might want to configure the value on HiDPI screen.")
 
 @export
 (defparameter *minibuffer-class* 'minibuffer)
+@export
+(defun make-minibuffer (&key
+                          (default-modes nil explicit-default-modes)
+                          (completion-function nil explicit-completion-function)
+                          (callback nil explicit-callback)
+                          (callback-buffer nil explicit-callback-buffer)
+                          (setup-function nil explicit-setup-function)
+                          (cleanup-function nil explicit-cleanup-function)
+                          (empty-complete-immediate nil explicit-empty-complete-immediate)
+                          (input-prompt nil explicit-input-prompt)
+                          (input-buffer nil explicit-input-buffer)
+                          (invisible-input-p nil explicit-invisible-input-p)
+                          (history nil explicit-history)
+                          (multi-selection-p nil explicit-multi-selection-p))
+  "See the `minibuffer' class for the argument documentation."
+  (apply #'make-instance *minibuffer-class*
+         `(,@(if explicit-default-modes
+                `(:default-modes ,default-modes)
+                '())
+           ,@(if explicit-completion-function
+                `(:completion-function ,completion-function)
+                '())
+           ,@(if explicit-callback
+                `(:callback ,callback)
+                '())
+           ,@(if explicit-callback-buffer
+                `(:callback-buffer ,callback-buffer)
+                '())
+           ,@(if explicit-setup-function
+                `(:setup-function ,setup-function)
+                '())
+           ,@(if explicit-cleanup-function
+                `(:cleanup-function ,cleanup-function)
+                '())
+           ,@(if explicit-empty-complete-immediate
+                `(:empty-complete-immediate ,empty-complete-immediate)
+                '())
+           ,@(if explicit-input-prompt
+                `(:input-prompt ,input-prompt)
+                '())
+           ,@(if explicit-input-buffer
+                `(:input-buffer ,input-buffer)
+                '())
+           ,@(if explicit-invisible-input-p
+                `(:invisible-input-p ,invisible-input-p)
+                '())
+           ,@(if explicit-history
+                `(:history ,history)
+                '())
+           ,@(if explicit-multi-selection-p
+                `(:multi-selection-p ,multi-selection-p)
+                '()))))
 
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
   "Reset the minibuffer state on every input change.
@@ -235,8 +287,8 @@ This runs a call"
 Example use:
 
   (read-from-minibuffer
-   (make-instance 'minibuffer
-                  :completion-function #'my-completion-filter))
+   (make-minibuffer
+    :completion-function #'my-completion-filter))
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
   (when callback
@@ -801,10 +853,10 @@ Return most recent entry in RING."
   "Choose a minibuffer input history entry to insert as input."
   (when (history minibuffer)
     (with-result (input (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Input history:"
-                                        :history nil
-                                        :completion-function (minibuffer-history-completion-filter (history minibuffer)))))
+                         (make-minibuffer
+                          :input-prompt "Input history:"
+                          :history nil
+                          :completion-function (minibuffer-history-completion-filter (history minibuffer)))))
       (unless (str:empty? input)
         (log:debug input minibuffer)
         (setf (input-buffer minibuffer) "")
