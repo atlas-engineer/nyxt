@@ -36,8 +36,8 @@ ASYNC-FORM is a function that has at least a :CALLBACK key argument.
 Example:
 
   (with-result (url (read-from-minibuffer
-                     (make-instance 'minibuffer
-                                    :input-prompt \"Bookmark URL:\"))
+                     (make-minibuffer
+                      :input-prompt \"Bookmark URL:\"))
     (bookmark-add url))"
   `(,(first async-form)
     ,@(rest async-form)
@@ -51,9 +51,9 @@ Example:
 
   (with-result* ((links-json (add-link-hints))
                  (selected-hint (read-from-minibuffer
-                                 (make-instance 'minibuffer
-                                                :input-prompt \"Bookmark hint:\"
-                                                :cleanup-function #'remove-link-hints))))
+                                 (make-minibuffer
+                                  :input-prompt \"Bookmark hint:\"
+                                  :cleanup-function #'remove-link-hints))))
     ...)"
   (if (null bindings)
     `(progn ,@body)

@@ -189,8 +189,8 @@ useful when Next starts up)."
 If INTERACTIVE is t, allow the debugger on errors. If :running, show an error but don't quit the lisp process.
 "
   (with-result (file-name-input (read-from-minibuffer
-                                 (make-instance 'minibuffer
-                                                :input-prompt "Load file:")))
+                                 (make-minibuffer
+                                  :input-prompt "Load file:")))
     (load-lisp-file file-name-input :interactive :running)))
 
 (define-command load-init-file (&key (init-file (init-file-path))

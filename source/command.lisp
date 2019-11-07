@@ -189,8 +189,8 @@ This function can be `funcall'ed."
 (define-command execute-command ()
   "Execute a command by name."
   (with-result (command (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Execute command:"
-                                        :completion-function 'command-completion-filter)))
+                         (make-minibuffer
+                          :input-prompt "Execute command:"
+                          :completion-function 'command-completion-filter)))
     (setf (access-time command) (get-internal-real-time))
     (run command)))

@@ -176,9 +176,9 @@ Ask for which directory to clone to, expect if there is one single choice."
        (setf target-dir (first next/vcs::*vcs-projects-roots*))
        (next/vcs::clone project-name root-name target-dir clone-uri))
       (t (with-result (target-dir (read-from-minibuffer
-                                   (make-instance 'minibuffer
-                                                  :input-prompt "Target directory:"
-                                                  :completion-function #'next/vcs::projects-roots-completion-filter)))
+                                   (make-minibuffer
+                                    :input-prompt "Target directory:"
+                                    :completion-function #'next/vcs::projects-roots-completion-filter)))
            (next/vcs::clone project-name root-name target-dir clone-uri))))))
 
 (define-command git-clone ()

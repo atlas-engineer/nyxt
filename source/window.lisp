@@ -16,10 +16,10 @@
 (define-command delete-window ()
   "Delete the queried window(s)."
   (with-result (windows (read-from-minibuffer
-                         (make-instance 'minibuffer
-                                        :input-prompt "Delete window(s):"
-                                        :multi-selection-p t
-                                        :completion-function (window-completion-filter))))
+                         (make-minibuffer
+                          :input-prompt "Delete window(s):"
+                          :multi-selection-p t
+                          :completion-function (window-completion-filter))))
     (mapcar #'delete-current-window windows)))
 
 (define-command delete-current-window (&optional (window (rpc-window-active)))

@@ -33,9 +33,9 @@
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :completion-function #'variable-completion-filter
-                                      :input-prompt "Inspect variable:")))
+                       (make-minibuffer
+                        :completion-function #'variable-completion-filter
+                        :input-prompt "Inspect variable:")))
     (let* ((help-buffer (make-buffer
                          :title (str:concat "*Help-" (symbol-name input) "*")
                          :modes (cons 'help-mode
@@ -48,15 +48,15 @@
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (rpc-buffer-evaluate-javascript help-buffer insert-help)
-   (set-current-buffer help-buffer))))
+      (set-current-buffer help-buffer))))
 
 ;; TODO: Have both "function-inspect" and "command-inspect"?
 (define-command command-inspect ()
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Inspect command:"
-                                      :completion-function #'function-completion-filter)))
+                       (make-minibuffer
+                        :input-prompt "Inspect command:"
+                        :completion-function #'function-completion-filter)))
     (let* ((help-buffer (make-buffer
                          :title (str:concat "*Help-" (symbol-name (sym input)) "*")
                          :modes (cons 'help-mode
@@ -85,8 +85,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 (define-command command-evaluate ()
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Evaluate Lisp:")))
+                       (make-minibuffer
+                        :input-prompt "Evaluate Lisp:")))
     (let* ((result-buffer (make-buffer
                            :title "*List Evaluation*" ; TODO: Reuse buffer / create REPL mode.
                            :modes (cons 'help-mode
