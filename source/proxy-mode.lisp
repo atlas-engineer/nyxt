@@ -6,7 +6,7 @@
 
 @export
 (defparameter *default-proxy*
-  (make-instance 'proxy
+  (make-instance next::*proxy-class*
                  :server-address "socks5://127.0.0.1:9050"
                  :whitelist '("localhost" "localhost:8080")
                  :proxied-downloads-p t))
