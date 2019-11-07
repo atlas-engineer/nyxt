@@ -87,6 +87,8 @@ non-nil.")
           :initform nil
           :documentation "")))
 
+;; TODO: Don't export make-handler, so that user is forced to use the typed versions.
+;; But then how does the user define a custom-type handler?
 (defun make-handler (fn &key name place value)
   "NAME is a symbol."
   (unless (typep fn 'function)          ; TODO: Should we allow symbols here?  It might be better to be stricter in terms of type-checking.
@@ -101,6 +103,27 @@ non-nil.")
                  :fn fn
                  :place place
                  :value value))
+
+
+(declaim (ftype (function ((function ()) &key (:name symbol) (:place t) (:value t))) make-void-handler))
+(defun make-void-handler (fn &key name place value)
+  "Make handler that accepts no argument."
+  (make-handler fn :name name :place place :value value))
+
+(declaim (ftype (function ((function (&rest t)) &key (:name symbol) (:place t) (:value t))) make-*-handler))
+(defun make-*-handler (fn &key name place value)
+  "Make handler that accepts any argument."
+  (make-handler fn :name name :place place :value value))
+
+(declaim (ftype (function ((function (number) number) &key (:name symbol) (:place t) (:value t)))
+                make-number->number-handler))
+(defun make-number->number-handler (fn &key name place value)
+  (make-handler fn :name name :place place :value value))
+
+(declaim (ftype (function ((function (string) string) &key (:name symbol) (:place t) (:value t)))
+                make-string->string-handler))
+(defun make-string->string-handler (fn &key name place value)
+  (make-handler fn :name name :place place :value value))
 
 (defmethod equals ((fn1 handler) (fn2 handler))
   "Return non-nil if FN1 and FN2 are equal."
