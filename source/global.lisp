@@ -34,6 +34,10 @@ Add a handler can be added with
 (Mind the quote.)")
 
 @export
+(defparameter *use-session* t
+  "If nil, don't restore nor store the session.")
+
+@export
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Next to avoid collisions).")
