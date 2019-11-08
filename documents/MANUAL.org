@@ -473,22 +473,7 @@ installed first.
 
 /Disclaimer: this feature is meant to grow with Next 1.4 and onwards!/
 
-To customize it, you can write a  new function that takes a URL and an
-optional   target   directory   as   parameter,   and   bind   it   to
-=next/video:*download-function*=.  In  doing so,  you can rely  on the
-=next/video:download= function,  that does error handling  and process
-management.
-
-Quick example:
-
-#+begin_src lisp
-  (defun my-download-videos (url &optional target-dir)
-     (next/video:download (list "path/to/program" url "-o" (or target-dir "~/Downloads"))))
-#+end_src
-
-See also the variable =next/video:*preferred-download-directories*= (a
-list of directories). If it contains more than one entry, we are asked
-for the destination.
+To customize it, see all the variables and functions in [[https://github.com/atlas-engineer/next/blob/master/source/video-mode.lisp][video-mode]].
 
 * Advanced Topics
 ** Execute Extended Command
