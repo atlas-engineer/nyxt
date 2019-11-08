@@ -769,11 +769,22 @@ An example of a trivial command definition can be seen below.
 
 #+NAME: bookmark-url
 #+BEGIN_SRC lisp
-(define-command bookmark-url ()
-  "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer (minibuffer *interface*)))
-    (%bookmark-url url)))
+  (define-command bookmark-url ()
+    "Allow the user to bookmark a URL via minibuffer input."
+    (with-result (url (read-from-minibuffer
+                       (make-instance 'minibuffer
+                                      :input-prompt "Bookmark URL:")))
+      (bookmark-add url)))
 #+END_SRC
+
+These functions will help you retrieve information:
+
+- =(current-buffer)= returns the current, visible buffer in Next.
+- use the accessors =(url …)= and =(title …)= accessors to get its url
+  and its title.
+- =(buffers *interface*)= returns a hash-table of all the buffers in
+  the current session. The keys are the buffers id (a string), the
+  values the buffer object.
 
 ** Getting input from the user
 Getting input from the user via the minibuffer is an asynchronous
@@ -971,7 +982,7 @@ platform port get terminated.
 - =before-download-hook=: hook run before downloading a URL.
   - argument: the URL.
 - =after-download-hook=: hook run after a download has completed.
-  - argument: the `download-manager:download' class instance.
+  - argument: the =download-manager:download= class instance.
 
 *Mode* hooks
 
