@@ -18,6 +18,22 @@
 * Developer Installation with Guix
 Install [[https://guix.gnu.org][Guix]] and follow the instructions in [[../build-scripts/guix.scm]].
 
+** Run from source
+If you are developing Next, you might prefer to run Next directly from
+source so that you can skip the compilation step and iterate faster.
+
+It is most convenient to clone the Next repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]). You can then start Next using the command
+
+#+begin_src sh
+guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next")' --eval '(next:start)'
+#+end_src
+
+You can even start a Swank server immediately at startup using
+
+#+begin_src sh
+guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next")' --eval '(next:start-swank)' --eval '(next:start)'
+#+end_src
+
 * Generic Developer Installation
 Next is written in Common Lisp. It can be built with any standard
 Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] (≥ 1.4.2) support is tested.
@@ -199,7 +215,7 @@ For =next= to work, it must find the platform port.  There are a few options:
 (in-package :next)
 
 ;; Use development platform port.
-(setf (get-default 'port 'path)
+(setf +platform-port-command+
       "~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit")
 ;; ...
   #+END_SRC

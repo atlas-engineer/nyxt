@@ -75,9 +75,9 @@
     (inputs
      `(("glib-networking" ,glib-networking)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("webkitgtk" ,webkitgtk-2.24)))
+       ("webkitgtk" ,webkitgtk)))
     (native-inputs
-     `(("gcc-7" ,gcc-7) ; needed because webkitgtk-2.24 is compiled with gcc-7
+     `(("gcc-7" ,gcc-7) ; needed because webkitgtk-2.24+ is compiled with gcc-7
        ("pkg-config" ,pkg-config)))
     (home-page "https://next.atlas.engineer")
     (synopsis "Infinitely extensible web-browser (user interface only)")
@@ -252,6 +252,7 @@ features for productive professionals.")
          ("next-password-manager" ,sbcl-next-password-manager)))
       (native-inputs
        `(("trivial-features" ,sbcl-trivial-features)
+         ("trivial-types" ,sbcl-trivial-types)
          ("prove-asdf" ,sbcl-prove-asdf)))
       (synopsis "Infinitely extensible web-browser (with Lisp development files)"))))
 

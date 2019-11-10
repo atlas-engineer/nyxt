@@ -33,13 +33,13 @@ Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a
 Otherwise, build a search query with the default search engine."
   (let* ((search-engines (append (search-engines *interface*)
                                  (bookmark-search-engines)))
-         (engine (assoc (first (str:split " " input-url))
+         (terms (str:split " " input-url :omit-nulls t))
+         (engine (assoc (first terms)
                         search-engines :test #'string=))
          (default (assoc "default"
                          search-engines :test #'string=)))
     (if engine
-        (let ((new-input (subseq input-url
-                                 (length (first (str:split " " input-url))))))
+        (let ((new-input (str:join " " (rest terms))))
           (if (and (listp (rest engine))
                    (str:emptyp new-input))
               (third engine)

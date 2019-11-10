@@ -33,7 +33,7 @@
          :initform (local-time:now))
    (tags :initarg :tags
          :accessor tags
-         :type list
+         :type list-of-strings
          :initform nil
          :documentation "A list of strings.")
    (shortcut :initarg :shortcut

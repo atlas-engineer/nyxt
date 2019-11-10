@@ -7,12 +7,14 @@
 
 (defclass port ()
   ((name :initarg :name :initform +platform-port-command+ :accessor name
+         :type string
          :documentation "Basename of the executable.")
    (path :initarg :path :initform #'derive-path-from-name
          :documentation "Full path to the executable.
 It can also be a function that takes NAME as argument and returns the path as a
 string.")
    (args :initarg :args :initform nil
+         :type list-of-strings
          :documentation "List of strings passed as argument to the executable.")
    (log-file :initarg :log-file :initform #'derive-logfile-from-name
              :documentation "Log file for the platform port.

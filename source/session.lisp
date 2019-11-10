@@ -1,4 +1,5 @@
 (in-package :next)
+(annot:enable-annot-syntax)
 
 (defun buffer-history (buffer)
   "Return the buffer history of BUFFER."
@@ -72,10 +73,10 @@ Currently we store the list of current URLs of all buffers."
              ;; Make the new ones.
              ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
              (loop for history in buffer-histories
-                   for buffer = (make-buffer)
-                   for mode = (find-mode buffer 'web-mode)
-                   do (set-url (url (htree:data (htree:current history))) :buffer buffer)
-                   do (setf (next/web-mode:history mode) history))
+                for buffer = (make-buffer)
+                for mode = (find-mode buffer 'web-mode)
+                do (set-url (url (htree:data (htree:current history))) :buffer buffer)
+                do (setf (next/web-mode:history mode) history))
              ;; TODO: Switch to the last active buffer.  We probably need to serialize *interface*.
              ;; Or else we could include `access-time' in the buffer class.
              )))

@@ -6,6 +6,7 @@
 ;; TODO: We need to separate the minibuffer from the echo area.  The
 ;; `show'/`hide' functions are not dealing well with `echo'/`echo-dismiss'.
 
+(declaim (type (list-of-characters) *word-separation-characters*))
 (defparameter *word-separation-characters* '(#\: #\/ #\- #\. #\Space #\ )
   "Characters delimiting words (space, colon, slash, dot, etc).")
 
@@ -22,8 +23,10 @@
         "SPACE" #'self-insert
         "C-f" #'cursor-forwards
         "M-f" #'cursor-forwards-word
+        "C-Right" #'cursor-forwards-word
         "C-b" #'cursor-backwards
         "M-b" #'cursor-backwards-word
+        "C-Left" #'cursor-backwards-word
         "M-d" #'delete-forwards-word
         "M-BACKSPACE" #'delete-backwards-word
         "Right" #'cursor-forwards
@@ -32,7 +35,9 @@
         "DELETE" #'delete-forwards
         "BACKSPACE" #'delete-backwards
         "C-a" #'cursor-beginning
+        "Home" #'cursor-beginning
         "C-e" #'cursor-end
+        "End" #'cursor-end
         "C-k" #'kill-line
         "RETURN" #'return-input
         "C-RETURN" #'return-immediate
@@ -92,10 +97,12 @@ This should not rely on the minibuffer's content.")
                              :documentation "If non-nil, allow input matching no
 candidates.")
    ;; TODO: Move input-* slots to a separate text class?
-   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input:")
+   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input:"
+                 :type string)
    (input-buffer :initarg :input-buffer :accessor input-buffer :initform ""
+                 :type string
                  :documentation "Initial text to place at the prompt, ready to edit.")
-   (input-cursor-position :accessor input-cursor-position :initform 0)
+   (input-cursor-position :accessor input-cursor-position :initform 0 :type integer)
    (invisible-input-p :initarg :invisible-input-p :accessor invisible-input-p
                       :initform nil
                       :documentation "If non-nil, input is replaced by
@@ -114,7 +121,7 @@ candidates.")
    (marked-completions :accessor marked-completions :initform nil)
    (completion-head :accessor completion-head :initform 0)
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
-   (content :initform ""
+   (content :initform "" :type string
             :documentation "The HTML content of the minibuffer.")
    (max-lines :initarg :max-lines
               :accessor max-lines
@@ -603,15 +610,16 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                        (ps:ps
                          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                                (ps:lisp
-                                (format nil "~a~a:"
+                                (format nil "~a~a"
                                         (input-prompt minibuffer)
-                                        (when completions
-                                          (if marked-completions
-                                              (format nil "[~a/~a]"
-                                                      (length marked-completions)
-                                                      (length completions))
-                                              (format nil "[~a]"
-                                                      (length completions)))))))
+                                        (if completions
+                                            (if marked-completions
+                                                (format nil "[~a/~a]:"
+                                                        (length marked-completions)
+                                                        (length completions))
+                                                (format nil "[~a]:"
+                                                        (length completions)))
+                                            ""))))
                          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                                (ps:lisp input-text))
                          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
@@ -766,9 +774,18 @@ Return most recent entry in RING."
 (define-command insert-candidate (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
   (let ((candidate (get-candidate minibuffer)))
-    (when candidate
-      (kill-whole-line minibuffer)
-      (insert candidate minibuffer))))
+    (cond
+      ;; Complete a search engine name.
+      ((and candidate
+            (zerop (completion-cursor minibuffer)))
+       (let ((name (search-engine-starting-with candidate)))
+         (when name
+           (kill-whole-line minibuffer)
+           (insert (str:concat name " ")))))
+      (t
+       (when candidate
+         (kill-whole-line minibuffer)
+         (insert candidate minibuffer))))))
 
 (declaim (ftype (function (ring:ring)) minibuffer-history-completion-filter))
 (defun minibuffer-history-completion-filter (history)

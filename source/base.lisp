@@ -34,7 +34,12 @@ Set to '-' to read standard input instead.")
     (:name :no-init
            :short #\Q
            :long "no-init"
-           :description "Do not load the user init file."))
+           :description "Do not load the user init file.")
+    (:name :session
+           :short #\s
+           :long "session"
+           :arg-parser #'identity
+           :description "With --session nil, don't restore or store the session."))
 
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
@@ -90,6 +95,9 @@ next [options] [urls]")
     (when (getf options :verbose)
       (set-debug-level :debug)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
+    (when (getf options :session)
+      (when (string-equal (getf options :session) "nil")
+        (setf next:*use-session* nil)))
     (setf *options* options
           *free-args* free-args)
     (start :urls free-args
@@ -142,10 +150,15 @@ Error out if no platform port can be started."
   (or (getf *options* :init-file)
       (xdg-config-home filename)))
 
+(defparameter *load-init-error-message* "Error: we could not load the init file")
+(defparameter *load-init-type-error-message* (str:concat *load-init-error-message* " because of a type error."))
+
 (defun load-lisp-file (file &key interactive)
   "Load the provided lisp file.
 If FILE is \"-\", read from the standard input.
-If INTERACTIVE is non-nil, allow the debugger on errors."
+If INTERACTIVE is t, allow the debugger on errors. If :running, show
+an error but don't quit the lisp process. If nil, quit lisp (specially
+useful when Next starts up)."
   (unless (str:emptyp (namestring file))
     (handler-case (if (string= (pathname-name file) "-")
                       (progn
@@ -158,27 +171,33 @@ If INTERACTIVE is non-nil, allow the debugger on errors."
                         (load file)))
       (error (c)
         ;; TODO: Handle warning from `echo'.
-        (let ((message "Error: could not load the init file"))
-          ;; (echo-warning message)
-          (if interactive
-              (error (format nil "~a:~&~a" message c))
-              (progn
-                (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
-                (uiop:quit 1))))))))
+        (let ((message (if (subtypep (type-of c) 'type-error)
+                           *load-init-type-error-message*
+                           *load-init-error-message*)))
+          (cond
+            ((equal interactive :running)
+             (echo-safe "Could not load the init file: ~a" c)
+             (notify "We could not load the init file."))
+            ((null interactive)
+             (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
+             (uiop:quit 1))
+            (t
+             (error (format nil "~a:~&~s" message c)))))))))
 
 (define-command load-file (&key interactive)
   "Load the prompted Lisp file.
-If INTERACTIVE is non-nil, allow the debugger on errors."
+If INTERACTIVE is t, allow the debugger on errors. If :running, show an error but don't quit the lisp process.
+"
   (with-result (file-name-input (read-from-minibuffer
                                  (make-instance 'minibuffer
                                                 :input-prompt "Load file:")))
-    (load-lisp-file file-name-input :interactive interactive)))
+    (load-lisp-file file-name-input :interactive :running)))
 
 (define-command load-init-file (&key (init-file (init-file-path))
                                      interactive)
   "Load or reload the init file.
 If INTERACTIVE is non-nil, allow the debugger on errors."
-  (load-lisp-file init-file :interactive interactive))
+  (load-lisp-file init-file :interactive :running))
 
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers.
@@ -192,7 +211,8 @@ This function is suitable as a `remote-interface' `startup-function'."
         (window-set-active-buffer window buffer)))
   (match (session-restore-function *interface*)
     ((guard f f)
-     (funcall f))))
+     (when *use-session*
+       (funcall f)))))
 
 @export
 (defun start (&key urls

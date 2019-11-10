@@ -60,14 +60,18 @@ Regardless of the hook, the command returns the last expression of BODY."
        @export
        (defun ,name ,arglist
          ,documentation
-         (hooks:run-hook ',before-hook)
-         (log:debug "Calling command ~a." ',name)
-         ;; TODO: How can we print the arglist as well?
-         ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-         (prog1
+         (handler-case
              (progn
-               ,@body)
-           (hooks:run-hook ',after-hook))))))
+               (hooks:run-hook ',before-hook)
+               (log:debug "Calling command ~a." ',name)
+               ;; TODO: How can we print the arglist as well?
+               ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
+               (prog1
+                   (progn
+                     ,@body)
+                 (hooks:run-hook ',after-hook)))
+           (next-condition (c)
+             (format t "~s" c)))))))
 
 ;; TODO: Update define-deprecated-command
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
@@ -154,9 +158,14 @@ Otherwise list all commands."
                         table))
           when (not (null bindings))
             return bindings)
-    (if bindings
-        (format nil "~a (~{~a~^, ~})" (str:downcase (sym command)) bindings)
-        (format nil "~a" (str:downcase (sym command))))))
+    (format nil "~a~a~a"
+            (str:downcase (sym command))
+            (if bindings
+                (format nil " (~{~a~^, ~})" bindings)
+                "")
+            (match (object-string (pkg command))
+              ((or "" "next" "next-user") "")
+              (a (format nil " [~a]" a))))))
 
 (defun command-completion-filter (input)
   (fuzzy-match input

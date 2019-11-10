@@ -17,6 +17,7 @@
                   :documentation "Buffer for displaying information such as
 current URL or event messages.")
    (status-buffer-height :accessor status-buffer-height :initform 36
+                         :type integer
                          :documentation "The height of the status buffer in pixels.")
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))
@@ -37,12 +38,14 @@ The handlers take the window as argument.")))
   ;; port on different slots.
   ((server-address :accessor server-address :initarg :server-address
                    :initform "socks5://127.0.0.1:9050"
+                   :type string
                    :documentation "The address of the proxy server.
 It's made of three components: protocol, host and port.
 Example:
   http://192.168.1.254:8080")
    (whitelist :accessor whitelist :initarg :whitelist
               :initform '("localhost" "localhost:8080")
+              :type list-of-strings
               :documentation "A list of URI not to forward to the proxy.
 It must be a list of strings.")
    (proxied-downloads-p :accessor proxied-downloads-p :initarg :proxied-downloads-p
@@ -65,6 +68,7 @@ not associated with a web view) have an empty ID.")
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
                   :initform '(web-mode root-mode)
+                  :type trivial-types:proper-list
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
    (current-keymap-scheme ; TODO: Name keymap-scheme instead?
@@ -90,6 +94,7 @@ events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
    (last-key-chords :accessor last-key-chords
                     :initform '()
+                    :type trivial-types:proper-list
                     ;; TODO: Store multiple key chords?  Maybe when implementing keyboard macros.
                     :documentation "The last key chords that were received for the current buffer.
 For now we only store the very last key chord.")
@@ -101,21 +106,27 @@ For now we only store the very last key chord.")
               :initform (make-hash-table :test #'equal))
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
                            :documentation "The URL set to a new blank buffer opened by Next.")
-   (scroll-distance :accessor scroll-distance :initform 50
+   (scroll-distance :accessor scroll-distance :initform 50 :type number
                     :documentation "The distance scroll-down or scroll-up will scroll.")
-   (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50
+   (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50 :type number
                                :documentation "Horizontal scroll distance. The
 distance scroll-left or scroll-right will scroll.")
-   (current-zoom-ratio :accessor current-zoom-ratio :initform 1.0
+   (current-zoom-ratio :accessor current-zoom-ratio :initform 1.0 :type number
                        :documentation "The current zoom relative to the default zoom.")
-   (zoom-ratio-step :accessor zoom-ratio-step :initform 0.2
+   (zoom-ratio-step :accessor zoom-ratio-step :initform 0.2 :type number
                     :documentation "The step size for zooming in and out.")
-   (zoom-ratio-min :accessor zoom-ratio-min :initform 0.2
+   (zoom-ratio-min :accessor zoom-ratio-min :initform 0.2 :type number
                    :documentation "The minimum zoom ratio relative to the default.")
-   (zoom-ratio-max :accessor zoom-ratio-max :initform 5.0
+   (zoom-ratio-max :accessor zoom-ratio-max :initform 5.0 :type number
                    :documentation "The maximum zoom ratio relative to the default.")
-   (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0
+   (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0 :type number
                        :documentation "The default zoom ratio.")
+   (page-scroll-ratio :accessor page-scroll-ratio
+                      :type number
+                      :initform 0.90
+                      :documentation "The ratio of the page to scroll.
+A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
+down.")
    (cookies-path :accessor cookies-path
                  :initform (xdg-data-home "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
@@ -233,9 +244,11 @@ See `rpc-buffer-make'."
   ((port :accessor port :initform (make-instance 'port)
          :documentation "The CLOS object responible for handling the platform port.")
    (platform-port-poll-duration :accessor platform-port-poll-duration :initform 1.0
+                                 :type number
                                 :documentation "The duration in seconds to wait
 for the platform port to start up.")
    (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.025
+                                :type number
                                 :documentation "The speed at which to poll the
 RPC endpoint of a platform-port to see if it is ready to begin accepting RPC
 commands.")
@@ -260,7 +273,7 @@ Most recent messages are first.")
    (last-active-window :accessor last-active-window :initform nil)
    (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
-   (total-buffer-count :accessor total-buffer-count :initform 0)
+   (total-buffer-count :accessor total-buffer-count :initform 0 :type integer)
    (startup-function :accessor startup-function
                      :type function
                      :initform #'default-startup
@@ -278,12 +291,13 @@ window or not.")
    (search-engines :accessor search-engines
                    :initform '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
                                ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
-                   :documentation "An association list of the search engines.
+                   :type alist-of-3tuples-strings
+                   :documentation "A list of the search engines.
 
-The elements are in the form (SHORTCUT SEARCH-URL FALLBACK-URL).  You can invoke
-them from the minibuffer by prefixing your query with SHORTCUT.  If the query is
-empty, FALLBACK-URL is loaded instead.  If FALLBACK-URL is empty, SEARCH-URL is
-used on an empty search.
+The elements are in the form of a 3-tuple of strings (SHORTCUT SEARCH-URL FALLBACK-URL).
+You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
+If the query is empty, FALLBACK-URL is loaded instead.  If
+FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
 The 'default' engine is used when the query is not a valid URL, or the first
 keyword is not recognized.")
@@ -400,6 +414,23 @@ The handlers take the URL as argument.")
    (after-download-hook :accessor after-download-hook :initform '() :type list
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
+
+;; Catch a common case for a better error message.
+(defmethod buffers :before ((interface t))
+  (when (null interface)
+    (error "There is no current *interface*. Is Next started?")))
+
+(defun search-engines-names (&optional (interface *interface*))
+  "Return a list of search engines names."
+  (mapcar (lambda (tuple)
+            (car tuple))
+          (search-engines interface)))
+
+(defun search-engine-starting-with (prefix)
+  "Return the first search engine name that starts with PREFIX."
+  (loop for name in (search-engines-names)
+     when (str:starts-with-p prefix name)
+     return name))
 
 (defmethod bookmark-db-path ((interface remote-interface))
   (log:warn "Deprecated, use `bookmarks-path' instead.")
@@ -779,7 +810,9 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
     (match (session-store-function *interface*)
-      ((guard f f) (funcall f)))))
+      ((guard f f)
+       (when *use-session*
+         (funcall f))))))
 
 (declaim (ftype (function (buffer string)) rpc-buffer-load))
 @export

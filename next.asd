@@ -2,7 +2,7 @@
 ;;; next.asd
 
 (asdf:defsystem :next
-  :version "1.3.3"
+  :version "1.3.4"
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
   :serial t
@@ -33,6 +33,7 @@
                :swank
                :trivia
                :trivial-clipboard
+               :trivial-types
                :unix-opts
                ;; Local systems:
                :next/download-manager
@@ -47,6 +48,8 @@
                  (:file "package")
                  (:file "tags")
                  (:file "time")
+                 (:file "types")
+                 (:file "conditions")
                  (:file "file-human-size")
                  ;; Core Functionality
                  (:file "macro")

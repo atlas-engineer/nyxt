@@ -8,6 +8,11 @@
 (defmethod object-string ((object t))
   (princ-to-string object))
 
+(defmethod object-string ((package package))
+  (if (eq (package-name package) (find-package :next))
+      ""
+      (str:replace-all "next/" "" (str:downcase (package-name package)))))
+
 (define-command start-swank (&optional (swank-port *swank-port*))
   "Start a Swank server that can be connected to, for instance, in Emacs via
 SLIME."

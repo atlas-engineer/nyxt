@@ -29,6 +29,7 @@ end-user allowing for infinite customization.
   - [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
+  - [[#start-up-options][Start-up options]]
   - [[#decide-how-to-open-files][Decide how to open files]]
   - [[#loading-files][Loading Files]]
   - [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
@@ -37,6 +38,10 @@ end-user allowing for infinite customization.
   - [[#styles][Styles]]
   - [[#hooks][Hooks]]
   - [[#startup-behaviour][Startup behaviour]]
+  - [[#run-next-in-a-security-sandbox][Run Next in a security sandbox]]
+- [[#troubleshooting][Troubleshooting]]
+  - [[#stumpwm-mouse-scroll][StumpWM mouse scroll]]
+  - [[#d-bus-requirement][D-Bus requirement]]
 
 * Basics
 ** Navigation
@@ -105,8 +110,12 @@ From a Lisp REPL, you can query the list of search engines with
 It will return something like
 
 #+begin_src lisp
-'(("default" . "https://duckduckgo.com/?q=~a")
-  ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
+  '(("default"
+     "https://duckduckgo.com/?q=~a"
+     "https://duckduckgo.com/")
+    ("wiki"
+     "https://en.wikipedia.org/w/index.php?search=~a"
+     "https://en.wikipedia.org/"))
 #+end_src
 
 The =~a= in the search engine URI is a place holder for the search pattern.
@@ -114,30 +123,40 @@ The =~a= in the search engine URI is a place holder for the search pattern.
 To set the list of search engines, do:
 
 #+begin_src lisp
-(in-package :next)
+  (in-package :next)
 
-(defun my-interface-defaults ()
-  (setf (search-engines *interface*)
-        '(("default" . "https://duckduckgo.com/?q=~a")
-          ("yt" . "https://www.youtube.com/results?search_query=~a")
-          ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))))
+  (defun my-interface-defaults ()
+    (setf (search-engines *interface*)
+          '(("default"
+             "https://duckduckgo.com/?q=~a"
+             "https://duckduckgo.com/")
+            ("yt"
+             "https://www.youtube.com/results?search_query=~a"
+             "https://www.youtube.com/")
+            ("wiki"
+             "https://en.wikipedia.org/w/index.php?search=~a"
+             "https://en.wikipedia.org/"))))
 
-(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
+  (hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 and to append a search engine do the list, you can do
 
 #+begin_src lisp
-(in-package :next)
+  (in-package :next)
 
-(defun my-interface-defaults ()
-  (setf (search-engines *interface*)
-        (append
-         '(("yt" . "https://www.youtube.com/results?search_query=~a")
-           ("wiki" . "https://en.wikipedia.org/w/index.php?search=~a"))
-         (search-engines *interface*))))
+  (defun my-interface-defaults ()
+    (setf (search-engines *interface*)
+          (append
+           '(("yt"
+              "https://www.youtube.com/results?search_query=~a"
+              "https://www.youtube.com/")
+             ("wiki"
+              "https://en.wikipedia.org/w/index.php?search=~a"
+              "https://en.wikipedia.org/"))
+           (search-engines *interface*))))
 
-(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
+  (hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
 #+end_src
 
 ** Jumping to Headings
@@ -193,8 +212,8 @@ The standard keybindings for buffer management are:
 1. ~C-x b~: Switch buffer
 2. ~C-x Left~: Switch to previous buffer
 3. ~C-x Right~: Switch to next buffer
-4. ~C-x C-k~: Delete a buffer
-5. ~C-x k~: Delete the current buffer
+4. ~C-x k~: Delete a buffer
+5. ~C-x C-k~: Delete the current buffer
 6. ~M-l~: Open URL in new buffer
 7. ~C-l~: Change URL of current buffer
 8. ~C-t~: Make new empty buffer
@@ -348,11 +367,20 @@ files, and you can select one with the usual fuzzy completion. You can
 go one directory  up with =M-Left= or =C-l=, and  enter the directory
 at point with =M-Right= or =C-j=.
 
-Next  will open  the  file  with the  system's  default program  using
-=xdg-open=.  See  the  command  help  for  further  details,  and  the
-customization section to override the default behavior.
+Next will open itself directories and supported media types (new in
+Next 1.3.5), otherwise it will try to open the file with the system's
+default using =xdg-open=.  See the command help for further details,
+and the customization section to override the default behavior.
 
-__Note__: this feature is alpha and is meant to grow in Next 1.4 and onwards.
+/Note: this feature is alpha and is meant to grow in Next 1.4 and onwards./
+
+Next opening a directory:
+
+#+html: <img src="https://user-images.githubusercontent.com/3721004/66169709-9c3cbe00-e641-11e9-9aca-0d4af29d7977.png" align="center"/>
+
+Next opening a video. We can treat it like any other buffer:
+
+#+html: <img src="https://user-images.githubusercontent.com/3721004/66169802-f2116600-e641-11e9-9f5d-3af0724fc9fe.png" align="center" caption="Delgres - Mr President" title="Delgres - Mr President"/>
 
 ** Clearing the Echo Area
 In the area at the bottom of the screen where the minibuffer resides,
@@ -393,6 +421,8 @@ Use  the  =vcs-clone=  (alias  =git-clone=) command  to  clone  a  Git
 repository to  disk.  It asks  you for  the destination and  then runs
 asynchronously.
 
+/This feature is meant to grow with Next 1.4 and onwards!/.
+
 By  default, the  command  looks into  the  following directories  for
 existing projects:
 
@@ -402,13 +432,15 @@ You can change the list like this:
 
 #+begin_src lisp
 (in-package :next)
-(setf next/vcs:*vcs-projects-roots* '("~/my/directory"))
+(setf next/vcs:*vcs-projects-roots* '("~/src" "~/work" "~/my/directory"))
 #+end_src
 
 When there is one single choice, it doesn't ask for confirmation.
 
-You can  set your username for  GitHub and other forges.  It helps the
-clone command  in doing the right  thing©, such as using  a git remote
+You can set your username for GitHub and other forges.  It helps the
+clone command in doing the right thing©. For example, if it sees that
+you are cloning a repository of yours (the user/organization name of
+the cloned repository equals your vcs-username), it will use a git remote
 url instead of https.
 
 Set =next/vcs:*vcs-username*= as a default username.
@@ -428,7 +460,6 @@ Change also the =*vcs-username-alist*=:
 
 Note that the forge name should be a domain, such as github.com.
 
-
 ** Downloading videos
 
 The command =M-x download-video= will try to download the video at the
@@ -442,23 +473,7 @@ installed first.
 
 /Disclaimer: this feature is meant to grow with Next 1.4 and onwards!/
 
-To customize it, you can write a  new function that takes a URL and an
-optional   target   directory   as   parameter,   and   bind   it   to
-=next/video:*download-function*=.  In  doing so,  you can rely  on the
-=next/video:download= function,  that does error handling  and process
-management.
-
-Quick example:
-
-#+begin_src lisp
-  (defun my-download-videos (url &optional target-dir)
-     (next/video:download (list "path/to/program" url "-o" (or target-dir "~/Downloads"))))
-#+end_src
-
-See also the variable =next/video:*preferred-download-directories*= (a
-list of directories). If it contains more than one entry, we are asked
-for the destination.
-
+To customize it, see all the variables and functions in [[https://github.com/atlas-engineer/next/blob/master/source/video-mode.lisp][video-mode]].
 
 * Advanced Topics
 ** Execute Extended Command
@@ -513,17 +528,28 @@ declaration in order to modify Next-specific variables and functions:
 
 #+NAME: package
 #+BEGIN_SRC lisp
-(in-package :next)
+(in-package :next-user)
 #+END_SRC
 
 Following the package declaration, you can write or override any
 functions and variables.
+
+When you are done, you can load your changes while Next is running
+with the command =load-init-file=. Or load any file with =load-file=
+(=C-o=).
+
+Next will warn you its best about type mismatches (new in Next 1.3.5). You should be
+confident that "if it loads, it works"©.
+
 
 ** Keybinding
 Keys are defined with the ~define-key~ command.
 
 #+NAME: define key
 #+BEGIN_SRC lisp
+(defvar *my-keymap* (make-keymap)
+  "My keymap.")
+
 (define-key :keymap *my-keymap*
   "C-x o" #'example
   "SPACE" #'scroll-page-down)
@@ -562,6 +588,33 @@ scheme for all active modes in the current buffer.
 
 You can change the default binding scheme for any buffer by setting
 ~current-key-scheme~ to the appropriate value.
+
+To create a keymap, use the ~make-keymap~ function.
+
+The user can define key bindings by creating a mode that is loaded before any
+other mode.  In your configuration file:
+
+#+begin_src lisp
+(defvar *my-keymap* (make-keymap)
+  "Keymap for `my-mode'.")
+
+(define-mode my-mode ()
+  "Dummy mode for the custom key bindings in `*my-keymap*'."
+  ((keymap-schemes :initform (list :emacs-map *my-keymap*
+                                   :vi-normal *my-keymap*))))
+
+(defun my-buffer-defaults (buffer)
+  (dolist (mode '(proxy-mode
+                  ;; ... More modes...
+                  ;; Put your mode last so that it has highest priority.
+                  my-mode))))
+
+(defun my-interface-defaults ()
+  (hooks:add-to-hook (hooks:object-hook *interface* 'buffer-make-hook)
+                     #'my-buffer-defaults))
+
+(hooks:add-to-hook '*after-init-hook* #'my-interface-defaults)
+#+end_src
 
 *** Override map
 
@@ -606,28 +659,80 @@ The default keybindings for ~vi-normal-mode~ are:
 "W": new-window
 #+END_SRC
 
-** Decide how to open files
+The minimal config that sets your Next in vi mode, is:
 
-The commands  =open-file= and  =download-open-file= call  the function
-=open-file-function <filename>=. Its  default behaviour is to  open the file
-with the  system's default, using  =xdg-open=.  You can  override this
-behaviour   by    binding   another    function   to    the   variable
-=next:*open-file-function*=.
+```lisp
+; $HOME/.config/next/init.lisp
+(in-package :next)
+(add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
+```
 
-For example:
+** Start-up options
+
+The =next= command accepts URLs as parameters, as well as some options.
+
+The available options are:
+
+#+begin_export ascii
+-h, --help               Print this help and exit.
+-v, --verbose            Print debugging information to stdout.
+--version                Print version and exit.
+-i, --init-file ARG      Set path to initialization file.
+                         Set to '-' to read standard input instead.
+-Q, --no-init            Do not load the user init file.
+-s, --session ARG        With --session nil, don't restore nor store the session.
+#+end_export
+
+*** Using the session
+
+By default, Next will restore the previous session, and save the
+current one to disk.
+
+You can disable this behavior with a command line option:
+
+: next --session nil
+
+and a lisp parameter:
 
 #+begin_src lisp
-(defun my-open-videos (filename)
-  "Open videos with mpv."
-  (handler-case (let ((extension (pathname-type filename)))
-                  (match extension
-                    ((or "flv" "mkv" "mp4")
-                     (uiop:launch-program (list "mpv" filename)))
-                    (_
-                     (next/file-manager-mode:open-file-function filename))))
-    (error (c) (log:error "Error opening ~a: ~a" filename c))))
+(setf next:*use-session* nil)
+#+end_src
 
-(setf next/file-manager-mode:*open-file-function* #'my-open-videos)
+To quit Next without saving the session, use the command
+=quit-after-clearing-session=.
+
+** Decide how to open files
+
+The commands =open-file= and =download-open-file= call the function
+=next/file-manager-mode:open-file-function <filename>=.
+
+You can override this behaviour by binding another function to the
+variable =next:*open-file-function*=, in which you can fallback to the
+default function.
+
+For example, below we open directories with =emacsclient= and some music ad
+videos with =mpv=:
+
+#+begin_src lisp
+  (defun my-open-files (filename)
+    "Open music and videos with mpv, open directories with emacsclient."
+    (let ((args)
+          (extension (pathname-type filename)))
+      (cond
+        ((uiop:directory-pathname-p filename)
+         (log:info "Opening ~a with emacsclient." filename)
+         (setf args (list "emacsclient" filename)))
+
+        ((member extension '("flv" "mkv" "mp4") :test #'string-equal)
+         (setf args (list "mpv" filename))))
+
+      (handler-case (if args
+                        (uiop:launch-program args)
+                        ;; fallback to Next's default.
+                        (next/file-manager-mode:open-file-function filename))
+        (error (c) (log:error "Error opening ~a: ~a" filename c)))))
+
+  (setf next/file-manager-mode:*open-file-function* #'my-open-files)
 #+end_src
 
 ** Loading Files
@@ -649,11 +754,22 @@ An example of a trivial command definition can be seen below.
 
 #+NAME: bookmark-url
 #+BEGIN_SRC lisp
-(define-command bookmark-url ()
-  "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer (minibuffer *interface*)))
-    (%bookmark-url url)))
+  (define-command bookmark-url ()
+    "Allow the user to bookmark a URL via minibuffer input."
+    (with-result (url (read-from-minibuffer
+                       (make-instance 'minibuffer
+                                      :input-prompt "Bookmark URL:")))
+      (bookmark-add url)))
 #+END_SRC
+
+These functions will help you retrieve information:
+
+- =(current-buffer)= returns the current, visible buffer in Next.
+- use the accessors =(url …)= and =(title …)= accessors to get its url
+  and its title.
+- =(buffers *interface*)= returns a hash-table of all the buffers in
+  the current session. The keys are the buffers id (a string), the
+  values the buffer object.
 
 ** Getting input from the user
 Getting input from the user via the minibuffer is an asynchronous
@@ -851,7 +967,7 @@ platform port get terminated.
 - =before-download-hook=: hook run before downloading a URL.
   - argument: the URL.
 - =after-download-hook=: hook run after a download has completed.
-  - argument: the `download-manager:download' class instance.
+  - argument: the =download-manager:download= class instance.
 
 *Mode* hooks
 
@@ -874,3 +990,22 @@ to Next as command line arguments.
 You can assign you own function to ~startup-function~ to change the behaviour of
 Next on startup, such as which URL it should display, if it should restore the
 previous session or not, etc.
+** Run Next in a security sandbox
+For improved security while you browse the internet, you can run Next
+with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
+
+Run it like this:
+
+: firejail --ignore=nodbus next-gtk-webkit
+
+* Troubleshooting
+** StumpWM mouse scroll
+
+If the mouse scroll does not work for you, see the [[https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to][StumpWM FAQ]] for a
+fix.
+
+** D-Bus requirement
+
+Next needs a D-Bus session bus to run. In most cases, it should
+already be running. If Next does not start up, it is very likely that
+D-Bus is not running for your user.

@@ -30,17 +30,20 @@ changes, browse files in a text editor, use hooks...
 
 (in-package :next/vcs)
 
+(declaim (type (or null list-of-strings) *vcs-projects-roots*))
 (defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects")
   "A list of directories to look for VCS repositories into.")
 ;; Possible improvement: specify the depth to look for projects alongside the directory.
 ;; See magit-list-repositories.
 
+(declaim (type (or null alist-of-strings) *vcs-usernames-alist*))
 (defvar *vcs-usernames-alist* '(("github.com" . "")
                                 ("gitlab.com" . "")
                                 ("bitbucket.org" . ""))
   "Your VCS usernames on different forges. Helps some commands to do things right, such as cloning with a git remote url instead of https.
 The forge name should be a domain, such as github.com.")
 
+(declaim (type (or null string) *vcs-username*))
 (defvar *vcs-username* ""
   "Default username to use for forges if none is found in `*vcs-usernames-alist*'.")
 
@@ -143,10 +146,12 @@ CLONE-URI: quri:uri object."
   (log:debug "Cloning ~a into ~a" project-name target-dir)
   (echo "Cloning ~a into ~a" project-name target-dir)
   (handler-case (progn
-                  (uiop:launch-program
+                  (launch-and-notify
                    (list "git" "clone"
                          (choose-clone-url root-name project-name clone-uri)
-                         (next/vcs::concat-filenames target-dir project-name))))
+                         (next/vcs::concat-filenames target-dir project-name))
+                   :success-msg (format nil "Repository ~a cloned." project-name)
+                   :error-msg (format nil "Repository ~a was NOT cloned." project-name)))
     (error (c)
       (echo-warning "Error cloning ~a: ~a" project-name c))))
 
@@ -167,8 +172,8 @@ Ask for which directory to clone to, expect if there is one single choice."
        (echo "Could not find the project name."))
       (existing-repo
        (echo "This repository exists in ~a" existing-repo))
-      ((= 1 (length next/vcs:*vcs-projects-roots*))
-       (setf target-dir (first next/vcs:*vcs-projects-roots*))
+      ((= 1 (length next/vcs::*vcs-projects-roots*))
+       (setf target-dir (first next/vcs::*vcs-projects-roots*))
        (next/vcs::clone project-name root-name target-dir clone-uri))
       (t (with-result (target-dir (read-from-minibuffer
                                    (make-instance 'minibuffer
