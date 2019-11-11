@@ -177,7 +177,7 @@ Otherwise list all commands."
                        (> (access-time c1) (access-time c2))))))
 
 (defmethod command-function ((command command))
-  "Return the function associate to COMMAND.
+  "Return the function associated to COMMAND.
 This function can be `funcall'ed."
   (symbol-function (find-symbol
                     (string (sym command))
