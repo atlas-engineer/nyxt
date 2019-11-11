@@ -58,6 +58,8 @@ Regardless of the hook, the command returns the last expression of BODY."
                         %%command-list)
          (push (make-instance 'command :sym ',name :pkg *package*) %%command-list))
        @export
+       ;; We use defun to define the command instead of storing a lambda because we want
+       ;; to be able to call the foo command from Lisp with (FOO ...).
        (defun ,name ,arglist
          ,documentation
          (handler-case
