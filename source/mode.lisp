@@ -60,7 +60,7 @@ If :ACTIVATE is omitted, the mode is toggled."
   "The root of all modes."
   ((buffer :accessor buffer :initarg :buffer)
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
-   (constructor :accessor constructor :initarg :constructor :type :function :initform nil
+   (constructor :accessor constructor :initarg :constructor :type :function :initform nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :documentation
                 "A lambda function which initializes the mode upon activation.
 It takes the mode as argument.")
