@@ -71,11 +71,13 @@ It takes the mode as argument.")
    (enable-hook :accessor enable-hook :initarg :enable-hook :type :list
                 :initform '()
                 :documentation "This hook is run when enabling the mode.
-It takes the mode as argument.")
+It takes the mode as argument
+It is run before the destructor.")
    (disable-hook :accessor disable-hook :initarg :disable-hook :type :list
                  :initform '()
                  :documentation "This hook is run when disabling the mode.
-It takes the mode as argument.")
+It takes the mode as argument.
+It is run before the destructor.")
    (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes :type :list
                    :initform
                    (let ((vi-map (make-keymap))
