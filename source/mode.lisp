@@ -18,29 +18,33 @@ Two arguments have a special meaning beside the slot value of the mode:
   any, might not be the right buffer.
 - :ACTIVATE is used to choose whether to enable or disable the mode.
 If :ACTIVATE is omitted, the mode is toggled."
-  `(progn
-     @export
-     @export-accessors
-     (defclass ,name ,(unless (eq (first direct-superclasses) t)
-                        (append direct-superclasses '(root-mode)))
-       ,direct-slots
-       (:documentation ,docstring))
-     ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
-     ;; Should probably always have root-mode.
-     ,(unless (eq name 'root-mode)
-        `(define-command ,name (&rest args &key (buffer (current-buffer))
-                                      (activate t explicit?)
-                                      &allow-other-keys)
-           ,docstring
-           (unless (typep buffer 'buffer)
-             (error ,(format nil "Mode command ~a called on empty buffer" name)))
-           (let ((existing-instance (find-mode buffer ',name)))
+  (let ((class-var (intern (format nil "*~a-CLASS*" name))))
+    `(progn
+       @export
+       @export-accessors
+       (defclass ,name ,(unless (eq (first direct-superclasses) t)
+                          (append direct-superclasses '(root-mode)))
+         ,direct-slots
+         (:documentation ,docstring))
+       @export
+       (defparameter ,class-var ',name
+         ,(format nil "Default class to use for ~a." name))
+       ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
+       ;; Should probably always have root-mode.
+       ,(unless (eq name 'root-mode)
+          `(define-command ,name (&rest args &key (buffer (current-buffer))
+                                        (activate t explicit?)
+                                        &allow-other-keys)
+             ,docstring
+             (unless (typep buffer 'buffer)
+               (error ,(format nil "Mode command ~a called on empty buffer" name)))
+             (let ((existing-instance (find-mode buffer ',name)))
                (unless explicit?
                  (setf activate (not existing-instance)))
                (if activate
                    (unless existing-instance
                      ;; TODO: Should we move mode to the front when it already exists?
-                     (let ((new-mode (apply #'make-instance ',name
+                     (let ((new-mode (apply #'make-instance ,class-var
                                             :buffer buffer
                                             args)))
                        (when (constructor new-mode)
@@ -54,7 +58,7 @@ If :ACTIVATE is omitted, the mode is toggled."
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
                                                   (modes buffer)))
-                     (log:debug "~a disabled." ',name))))))))
+                     (log:debug "~a disabled." ',name)))))))))
 
 (define-mode root-mode (t)
   "The root of all modes."
