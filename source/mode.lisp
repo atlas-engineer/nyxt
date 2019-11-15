@@ -26,6 +26,9 @@ If :ACTIVATE is omitted, the mode is toggled."
                           (append direct-superclasses '(root-mode)))
          ,direct-slots
          (:documentation ,docstring))
+       ;; Class symbol customization:
+       (define-class-type ,name)
+       (declaim (type (,(intern (format nil "~a-TYPE" name))) ,class-var))
        @export
        (defparameter ,class-var ',name
          ,(format nil "Default class to use for ~a." name))

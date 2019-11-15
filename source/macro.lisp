@@ -3,6 +3,20 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+;; WARNING: Compile-time type-checking with `satisfies' only works at the
+;; top-level with SBCL.
+(defmacro define-class-type (class-sym)
+  "Define a type named CLASS-SYM-type.
+An object of this type is a subclass of CLASS-SYM."
+  (let ((type-pred (intern (str:concat (string class-sym) "-TYPE-P")))
+        (type-fun (intern (str:concat (string class-sym) "-TYPE"))))
+    `(progn
+       (defun ,type-pred (class-symbol)
+         (closer-mop:subclassp (find-class class-symbol)
+                               (find-class ',class-sym)))
+       (deftype ,type-fun ()
+         '(satisfies ,type-pred)))))
+
 ;; TODO: The distinction between compile-time script and runtime scripts is confusing.
 ;; It's tempting to write legal PS that depends on run-time values while passing no parameters.
 ;; Make parenscript always dynamic?

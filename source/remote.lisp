@@ -31,14 +31,8 @@ The handlers take the window and the buffer as argument.")
                        :documentation "Hook run after `rpc-window-delete' takes effect.
 The handlers take the window as argument.")))
 
-;; TODO: Compile-time type-checking with `satisfies' only works at the
-;; top-level with SBCL.
-;; (defun window-class-symbol-p (class-symbol)
-;;   (closer-mop:subclassp (find-class class-symbol)
-;;                         (find-class 'window)))
-;; (deftype window-type ()
-;;   `(satisfies window-class-symbol-p))
-;; (declaim (type (window-type) *window-class*))
+(define-class-type window)
+(declaim (type (window-type) *window-class*))
 @export
 (defparameter *window-class* 'window)
 
@@ -66,6 +60,8 @@ the proxy."))
   (:documentation "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."))
 
+(define-class-type proxy)
+(declaim (type (proxy-type) *proxy-class*))
 @export
 (defparameter *proxy-class* 'proxy)
 
@@ -175,6 +171,8 @@ return a (possibly new) URL.")
                        :documentation "Hook run before `rpc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
 
+(define-class-type buffer)
+(declaim (type (buffer-type) *buffer-class*))
 @export
 (defparameter *buffer-class* 'buffer)
 
@@ -432,6 +430,8 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
+(define-class-type remote-interface)
+(declaim (type (remote-interface-type) *remote-interface-class*))
 @export
 (defparameter *remote-interface-class* 'remote-interface)
 
