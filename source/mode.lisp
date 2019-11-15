@@ -167,6 +167,20 @@ can be 'web-mode as well as 'next/web-mode:web-mode."
                (modes buffer)))))
 
 @export
+(defmethod find-submode ((buffer buffer) mode-symbol)
+  "Like `find-mode' but return the first mode in BUFFER that is a sub-mode of MODE-SYMBOL.
+It may be MODE-SYMBOL itself."
+  (let ((mode-full-symbol (if (find-class mode-symbol nil)
+                              mode-symbol
+                              (match (mode-command mode-symbol)
+                                ((guard c (not (null c))) (sym c))))))
+    (when mode-full-symbol
+      (find-if (lambda (m)
+                 (closer-mop:subclassp (class-of m)
+                                       (find-class mode-full-symbol)))
+               (modes buffer)))))
+
+@export
 (defun find-buffer (mode-symbol)
   "Return first buffer matching MODE-SYMBOL."
   (find-if (lambda (b)
