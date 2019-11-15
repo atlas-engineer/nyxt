@@ -17,7 +17,8 @@ Two arguments have a special meaning beside the slot value of the mode:
   This should always be specified in Lisp code since the active buffer might, if
   any, might not be the right buffer.
 - :ACTIVATE is used to choose whether to enable or disable the mode.
-If :ACTIVATE is omitted, the mode is toggled."
+If :ACTIVATE is omitted, the mode is toggled.
+The buffer is returned so that mode activation can be chained."
   (let ((class-var (intern (format nil "*~a-CLASS*" name))))
     `(progn
        @export
@@ -61,7 +62,8 @@ If :ACTIVATE is omitted, the mode is toggled."
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
                                                   (modes buffer)))
-                     (log:debug "~a disabled." ',name)))))))))
+                     (log:debug "~a disabled." ',name))))
+             buffer)))))
 
 (define-mode root-mode (t)
   "The root of all modes."
