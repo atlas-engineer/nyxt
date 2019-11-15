@@ -118,19 +118,21 @@ when disabling the mode.")
   "Block resource queries from blacklisted hosts.
 Fall back on `resource-query-default'."
   ;; TODO: Use quri:uri-domain?
-  (if (blacklisted-host-p (find-mode buffer 'blocker-mode)
-                          (ignore-errors (quri:uri-host (quri:uri url))))
-      (progn
-        (log:info "Dropping ~a" url)
-        nil)
-      (resource-query-default buffer
-                              :url url
-                              :cookies cookies
-                              :event-type event-type
-                              :is-new-window is-new-window
-                              :is-known-type is-known-type
-                              :mouse-button mouse-button
-                              :modifiers modifiers)))
+  (let ((mode (find-submode buffer 'blocker-mode)))
+    (if (and mode
+             (blacklisted-host-p mode
+                                 (ignore-errors (quri:uri-host (quri:uri url)))))
+        (progn
+          (log:info "Dropping ~a" url)
+          nil)
+        (resource-query-default buffer
+                                :url url
+                                :cookies cookies
+                                :event-type event-type
+                                :is-new-window is-new-window
+                                :is-known-type is-known-type
+                                :mouse-button mouse-button
+                                :modifiers modifiers))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :s-serialization)

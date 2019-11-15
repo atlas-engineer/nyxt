@@ -152,7 +152,7 @@
 (declaim (ftype (function (htree:node &optional buffer)) set-url-from-history))
 (defun set-url-from-history (history-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
-  (let ((history (history (find-mode buffer 'web-mode))))
+  (let ((history (history (find-submode buffer 'web-mode))))
     (if (eq history-node (htree:current history))
         (echo "History entry is already the current URL.")
         (progn
@@ -161,7 +161,7 @@
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
-  (let* ((mode (find-mode buffer 'web-mode)))
+  (let* ((mode (find-submode buffer 'web-mode)))
     (if (eq (htree:root (history mode)) (htree:current (history mode)))
         (echo "No backward history.")
         (progn
@@ -171,7 +171,7 @@
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
-  (let* ((mode (find-mode buffer 'web-mode)))
+  (let* ((mode (find-submode buffer 'web-mode)))
     (if (htree:children-nodes (history mode))
         (progn
           (htree:forward (history mode))
@@ -179,9 +179,9 @@
             ((guard n n) (set-url (url (htree:data n))))))
         (echo "No forward history."))))
 
-(defun history-backwards-completion-filter (&optional (mode (find-mode
-                                                        (current-buffer)
-                                                        'web-mode)))
+(defun history-backwards-completion-filter (&optional (mode (find-submode
+                                                             (current-buffer)
+                                                             'web-mode)))
   "Completion function over all parent URLs."
   (let ((parents (htree:parent-nodes (history mode))))
     (lambda (input)
@@ -198,9 +198,9 @@
     (when input
       (set-url-from-history input))))
 
-(defun history-forwards-completion-filter (&optional (mode (find-mode
-                                                        (current-buffer)
-                                                        'web-mode)))
+(defun history-forwards-completion-filter (&optional (mode (find-submode
+                                                            (current-buffer)
+                                                            'web-mode)))
   "Completion function over forward-children URL."
   (let ((children (htree:forward-children-nodes (history mode))))
     (lambda (input)
@@ -217,7 +217,7 @@
     (when input
       (set-url-from-history input))))
 
-(define-command history-forwards-maybe-query (&optional (mode (find-mode
+(define-command history-forwards-maybe-query (&optional (mode (find-submode
                                                                (current-buffer)
                                                                'web-mode)))
   "If current node has multiple chidren, query forward-URL to navigate to.
@@ -226,9 +226,9 @@ Otherwise go forward to the only child."
       (history-forwards-all-query)
       (history-forwards)))
 
-(defun history-forwards-all-completion-filter (&optional (mode (find-mode
-                                                        (current-buffer)
-                                                        'web-mode)))
+(defun history-forwards-all-completion-filter (&optional (mode (find-submode
+                                                                (current-buffer)
+                                                                'web-mode)))
   "Completion function over children URL from all branches."
   (let ((children (htree:children-nodes (history mode))))
     (lambda (input)
@@ -245,9 +245,9 @@ Otherwise go forward to the only child."
     (when input
       (set-url-from-history input))))
 
-(defun history-all-completion-filter (&optional (mode (find-mode
-                                                   (current-buffer)
-                                                   'web-mode)))
+(defun history-all-completion-filter (&optional (mode (find-submode
+                                                       (current-buffer)
+                                                       'web-mode)))
   "Completion function over all history URLs."
   (let ((urls (htree:all-nodes (history mode))))
     (lambda (input)
@@ -282,7 +282,7 @@ Otherwise go forward to the only child."
            (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
                                        (alexandria:hash-table-values (buffers *interface*)))
                               (help-mode :activate t :buffer (make-buffer :title buffer-name))))
-           (history (history (find-mode buffer 'web-mode)))
+           (history (history (find-submode buffer 'web-mode)))
            (tree (traverse (htree:root history)
                            (htree:current history)))
            (content (cl-markup:markup*

@@ -3,7 +3,7 @@
 
 (defun buffer-history (buffer)
   "Return the buffer history of BUFFER."
-  (match (find-mode buffer 'web-mode)
+  (match (find-submode buffer 'web-mode)
     ((guard m m) (next/web-mode:history m))))
 
 (defun web-buffers ()
@@ -74,7 +74,7 @@ Currently we store the list of current URLs of all buffers."
              ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
              (loop for history in buffer-histories
                 for buffer = (make-buffer)
-                for mode = (find-mode buffer 'web-mode)
+                for mode = (find-submode buffer 'web-mode)
                 do (set-url (url (htree:data (htree:current history))) :buffer buffer)
                 do (setf (next/web-mode:history mode) history))
              ;; TODO: Switch to the last active buffer.  We probably need to serialize *interface*.

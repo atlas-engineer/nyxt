@@ -68,10 +68,10 @@
      :callback (lambda (response)
                  (cond
                    ((and (input-tag-p response)
-                         (find-mode (buffer root-mode) 'vi-normal-mode))
+                         (find-submode (buffer root-mode) 'vi-normal-mode))
                     (vi-insert-mode))
                    ((and (not (input-tag-p response))
-                         (find-mode (buffer root-mode) 'vi-insert-mode))
+                         (find-submode (buffer root-mode) 'vi-insert-mode))
                     (vi-normal-mode)))))))
 
 (defmethod did-finish-navigation ((mode vi-insert-mode) url)
