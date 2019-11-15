@@ -9,10 +9,8 @@
 (defun download-refresh ()
   "Display a buffer listing all downloads."
   (let* ((download-buffer (or (find-buffer 'download-mode)
-                              (make-buffer
-                               :title "*Downloads*"
-                               :modes (cons 'download-mode
-                                            (get-default 'buffer 'default-modes)))))
+                              (download-mode :activate t
+                                             :buffer (make-buffer :title "*Downloads*"))))
          (contents (cl-markup:markup
                     (:h1 "Downloads")
                     (:p (:b "Directory: ") (namestring (or (download-directory *interface*)

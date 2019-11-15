@@ -2,10 +2,7 @@
 
 (define-command about ()
   "Show the list of contributors."
-  (let* ((buffer (make-buffer
-                  :title "*About*"
-                  :modes (cons 'help-mode
-                               (get-default 'buffer 'default-modes))))
+  (let* ((buffer (help-mode :activate t :buffer (make-buffer :title "*About*")))
          (contents (cl-markup:markup
                     (:h1 "Contributors")
                     (:p "Let us know if you've contributed to the development of
