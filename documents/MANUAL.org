@@ -125,7 +125,7 @@ To set the list of search engines, do:
 #+begin_src lisp
 (in-package :next-user)
 
-(defclass my-remote-interface ()
+(defclass my-remote-interface (remote-interface)
   ((search-engines :initform
     '(("default"
        "https://duckduckgo.com/?q=~a"
