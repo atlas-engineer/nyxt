@@ -5,14 +5,17 @@ which external dependencies we are directly relying on.
 + WebkitGTK+ https://webkitgtk.org
 + Qt https://www.qt.io
 + SBCL http://www.sbcl.org
++ SQLite
++ GiQT https://github.com/mrosset/giqt
++ D-Bus
 
 * Lisp Dependencies (available via Quicklisp)
-+ GiQT  https://github.com/mrosset/giqt
 + alexandria
 + bordeaux-threads
 + cl-annot
 + cl-ansi-text
 + cl-css
++ cl-gobject-introspection
 + cl-hooks
 + cl-json
 + cl-markup
