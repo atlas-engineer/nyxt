@@ -1,0 +1,38 @@
+This document serves as a Software Bill of Materials. It indicates
+which external dependencies we are directly relying on.
+
+* Foreign Dependencies
++ WebkitGTK+ https://webkitgtk.org
++ Qt https://www.qt.io
++ SBCL http://www.sbcl.org
+
+* Lisp Dependencies (available via Quicklisp)
++ GiQT  https://github.com/mrosset/giqt
++ alexandria
++ bordeaux-threads
++ cl-annot
++ cl-ansi-text
++ cl-css
++ cl-hooks
++ cl-json
++ cl-markup
++ cl-ppcre
++ cl-ppcre-unicode
++ cl-prevalence
++ closer-mop
++ dbus
++ dexador
++ ironclad
++ local-time
++ log4cl
++ lparallel
++ mk-string-metrics
++ parenscript
++ quri
++ sqlite
++ str
++ swank
++ trivia
++ trivial-clipboard
++ trivial-types
++ unix-opts
