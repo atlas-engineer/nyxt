@@ -597,7 +597,7 @@ other mode.  In your configuration file:
 
 (define-mode my-mode ()
   "Dummy mode for the custom key bindings in `*my-keymap*'."
-  ((keymap-schemes :initform (list :emacs-map *my-keymap*
+  ((keymap-schemes :initform (list :emacs *my-keymap*
                                    :vi-normal *my-keymap*))))
 
 (defclass my-buffer (buffer)
