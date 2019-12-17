@@ -28,6 +28,7 @@
                :mk-string-metrics
                :parenscript
                :quri
+               :serapeum
                :sqlite
                :str
                :plump
