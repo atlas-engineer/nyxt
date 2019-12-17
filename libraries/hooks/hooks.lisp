@@ -278,7 +278,6 @@ If APPEND is non-nil, append them instead."
 ;; Global hooks.
 
 ;; TODO: cl-hooks uses symbol properties.  Is it a good idea?
-;; TODO: Test this!
 (defvar %hook-table (make-hash-table :test #'equal)
   "Global hook table.")
 
