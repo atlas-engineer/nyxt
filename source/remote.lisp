@@ -5,6 +5,14 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+;; Create necessary hook types.
+;; TODO: Is it OK to use WINDOW and BUFFER before their declaration?
+(next-hooks:define-hook-type window (function (window)))
+(next-hooks:define-hook-type buffer (function (buffer)))
+(next-hooks:define-hook-type minibuffer (function (minibuffer)))
+(next-hooks:define-hook-type download (function (download-manager:download)))
+(next-hooks:define-hook-type window-buffer (function (window buffer)))
+
 @export
 @export-accessors
 (defclass window ()
@@ -24,10 +32,14 @@ current URL or event messages.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 200
                            :type integer
                            :documentation "The height of the minibuffer when open.")
-   (window-set-active-buffer-hook :accessor window-set-active-buffer-hook :initform '() :type list
+   (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
+                                  :initform (make-instance 'hook-window-buffer)
+                                  :type hook-window-buffer
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
-   (window-delete-hook :accessor window-delete-hook :initform '() :type list
+   (window-delete-hook :accessor window-delete-hook
+                       :initform (make-instance 'hook-window)
+                       :type hook-window
                        :documentation "Hook run after `rpc-window-delete' takes effect.
 The handlers take the window as argument.")))
 
@@ -163,11 +175,16 @@ platform ports might support this.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
-   (load-hook :accessor load-hook :initform '() :type list
+   (load-hook :accessor load-hook
+              :initform (make-instance 'next-hooks:hook-string->string
+                                       :combination #'next-hooks:combine-composed-hook)
+              :type next-hooks:hook-string->string
               :documentation "Hook run in `set-url' after `parse-url' was
 processed.  The handlers take the URL going to be loaded as argument and must
 return a (possibly new) URL.")
-   (buffer-delete-hook :accessor buffer-delete-hook :initform '() :type list
+   (buffer-delete-hook :accessor buffer-delete-hook
+                       :initform (make-instance 'hook-buffer)
+                       :type hook-buffer
                        :documentation "Hook run before `rpc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
 
@@ -400,33 +417,45 @@ into `session-path'.")
                              :documentation "The function which restores the session
 from `session-path'.")
    ;; Hooks follow:
-   (before-exit-hook :accessor before-exit-hook :initform '() :type list
+   (before-exit-hook :accessor before-exit-hook
+                     :initform (make-instance 'next-hooks:hook-void)
+                     :type next-hooks:hook-void
                      :documentation "Hook run before both `*interface*' and the
 platform port get terminated.  The handlers take no argument.")
-   (window-make-hook :accessor window-make-hook :initform '() :type list
+   (window-make-hook :accessor window-make-hook
+                     :initform (make-instance 'hook-window)
+                     :type hook-window
                      :documentation "Hook run after `rpc-window-make'.
 The handlers take the window as argument.")
-   (buffer-make-hook :accessor buffer-make-hook :initform '() :type list
+   (buffer-make-hook :accessor buffer-make-hook
+                     :initform (make-instance 'hook-buffer)
+                     :type hook-buffer
                      :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
    (buffer-before-make-hook :accessor buffer-before-make-hook
-                            :type list
-                            :initform '()
+                            :initform (make-instance 'hook-buffer)
+                            :type hook-buffer
                             :documentation "Hook run before `rpc-buffer-make'.
 This hook is mostly useful to set the `cookies-path'.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
-   (minibuffer-make-hook :accessor minibuffer-make-hook :initform '() :type list
+   (minibuffer-make-hook :accessor minibuffer-make-hook
+                         :initform (make-instance 'hook-minibuffer)
+                         :type hook-minibuffer
                          :documentation "Hook run after the `minibuffer' class
 is instantiated and before initializing the minibuffer modes.
 The handlers take the minibuffer as argument.")
-   (before-download-hook :accessor buffer-download-hook :initform '() :type list
+   (before-download-hook :accessor before-download-hook
+                         :initform (make-instance 'hook-download)
+                         :type hook-download
                          :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
-   (after-download-hook :accessor after-download-hook :initform '() :type list
+   (after-download-hook :accessor after-download-hook
+                        :initform (make-instance 'hook-download)
+                        :type hook-download
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
@@ -508,7 +537,7 @@ This function is meant to be run in the background."
   (loop for d = (lparallel:receive-result download-manager:*notifications*)
         while d
         when (download-manager:finished-p d)
-          do (hooks:run-hook (hooks:object-hook *interface* 'after-download-hook))
+          do (next-hooks:run-hook (after-download-hook *interface*))
         do (let ((buffer (find-buffer 'download-mode)))
              ;; Only update if buffer exists.  We update even when out of focus
              ;; because if we switch to the buffer after all downloads are
@@ -537,7 +566,7 @@ when `proxied-downloads-p' is true."
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
-  (hooks:run-hook (hooks:object-hook *interface* 'before-download-hook) url)
+  (next-hooks:run-hook-with-args (before-download-hook *interface*) url)
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
@@ -688,7 +717,7 @@ Run INTERFACE's `window-make-hook' over the created window."
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and rpc-window-active would then return nil.
       (setf (last-active-window *interface*) window))
-    (hooks:run-hook (hooks:object-hook *interface* 'window-make-hook) window)
+    (next-hooks:run-hook-with-args (window-make-hook *interface*) window)
     window))
 
 (declaim (ftype (function (window string)) rpc-window-set-title))
@@ -726,7 +755,7 @@ INTERFACE's `window-delete-hook' over WINDOW."
   "Set INTERFACE's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
-  (hooks:run-hook (hooks:object-hook window 'window-set-active-buffer-hook) window buffer)
+  (next-hooks:run-hook-with-args (window-set-active-buffer-hook window) window buffer)
   (%rpc-send "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer)
   (when (and window buffer)
@@ -783,7 +812,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                      (apply #'make-instance *buffer-class* :id (get-unique-buffer-identifier)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
-    (hooks:run-hook (hooks:object-hook *interface* 'buffer-before-make-hook) buffer)
+    (next-hooks:run-hook-with-args (buffer-before-make-hook *interface*) buffer)
     (unless (str:emptyp (namestring (cookies-path buffer)))
       (ensure-parent-exists (cookies-path buffer)))
     (setf (gethash (id buffer) (buffers *interface*)) buffer)
@@ -796,7 +825,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       (setf (last-active-buffer *interface*) buffer))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
-    (hooks:run-hook (hooks:object-hook *interface* 'buffer-make-hook) buffer)
+    (next-hooks:run-hook-with-args (buffer-make-hook *interface*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
@@ -817,7 +846,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun rpc-buffer-delete (buffer)
   "Delete BUFFER from `*interface*'.
 Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
-  (hooks:run-hook (hooks:object-hook buffer 'buffer-delete-hook) buffer)
+  (next-hooks:run-hook-with-args (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
@@ -981,8 +1010,7 @@ TODO: Only booleans are supported for now."
          (window (gethash window-id windows)))
     (log:debug "Closing window ID ~a (new total: ~a)" window-id
                (1- (hash-table-count windows)))
-    (hooks:run-hook (hooks:object-hook window 'window-delete-hook)
-                    window)
+    (next-hooks:run-hook-with-args (window-delete-hook window) window)
     (remhash window-id windows))
   (values))
 

@@ -94,7 +94,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   (let ((url (if raw-url-p
                  input-url
                  (parse-url input-url))))
-    (setf url (run-composed-hook (load-hook buffer) url))
+    (setf url (next-hooks:run-hook-with-args (load-hook buffer) url))
     (setf (url buffer) url)
     (rpc-buffer-load buffer url)))
 

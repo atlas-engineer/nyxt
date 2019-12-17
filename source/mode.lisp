@@ -54,16 +54,19 @@ The buffer is returned so that mode activation can be chained."
                        (when (constructor new-mode)
                          (funcall (constructor new-mode) new-mode))
                        (push new-mode (modes buffer))
-                       (hooks:run-hook (hooks:object-hook new-mode 'enable-hook) new-mode))
+                       (next-hooks:run-hook-with-args (enable-hook new-mode) new-mode))
                      (log:debug "~a enabled." ',name))
                    (when existing-instance
-                     (hooks:run-hook (hooks:object-hook existing-instance 'disable-hook) existing-instance)
+                     (next-hooks:run-hook-with-args (disable-hook existing-instance) existing-instance)
                      (when (destructor existing-instance)
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
                                                   (modes buffer)))
                      (log:debug "~a disabled." ',name))))
              buffer)))))
+
+
+(next-hooks:define-hook-type mode (function (root-mode)))
 
 (define-mode root-mode (t)
   "The root of all modes."
@@ -77,13 +80,15 @@ It takes the mode as argument.")
                :documentation
                "A lambda function which tears down the mode upon deactivation.
 It takes the mode as argument.")
-   (enable-hook :accessor enable-hook :initarg :enable-hook :type :list
-                :initform '()
+   (enable-hook :accessor enable-hook :initarg :enable-hook
+                :initform (make-instance 'hook-mode)
+                :type hook-mode
                 :documentation "This hook is run when enabling the mode.
 It takes the mode as argument
 It is run before the destructor.")
-   (disable-hook :accessor disable-hook :initarg :disable-hook :type :list
-                 :initform '()
+   (disable-hook :accessor disable-hook :initarg :disable-hook
+                 :initform (make-instance 'hook-mode)
+                 :type hook-mode
                  :documentation "This hook is run when disabling the mode.
 It takes the mode as argument.
 It is run before the destructor.")

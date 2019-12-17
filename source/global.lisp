@@ -19,8 +19,9 @@ It can be initialized with
 It's possible to run multiple interfaces of Next at the same time.  You can
 let-bind *interface* to temporarily switch interface.")
 
+(declaim (type next-hooks:hook-void *after-init-hook*))
 @export
-(defvar *after-init-hook* nil
+(defvar *after-init-hook* (make-instance 'next-hooks:hook-void)
   "The entry-point object to configure everything in Next.
 The hook takes no argument.
 
@@ -29,9 +30,8 @@ This hook is run after the `*interface*' is instantiated and before the
 
 Add a handler can be added with
 
-  (hooks:add-hook '*after-init-hook* #'my-foo-function)
-
-(Mind the quote.)")
+  (next-hooks:add-hook *after-init-hook*
+    (next-hooks:make-handler-void #'my-foo-function))")
 
 @export
 (defparameter *use-session* t
