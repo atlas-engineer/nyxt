@@ -241,8 +241,8 @@ This is an acceptable `combination' for `hook'."
 
 ;; TODO: Because our hooks are typed, having both `run-hook` and
 ;; `run-hook-with-args' makes little sense.  Remove `run-hook-with-args'?
-;; (defmethod run-hook-with-args ((hook hook) &rest args)
-;;   (apply (combination hook) hook args))
+(defmethod run-hook-with-args ((hook hook) &rest args)
+  (apply (combination hook) hook args))
 
 ;; TODO: Implement the following methods? Isn't the `combination' slot more general?
 ;; (defmethod run-hook-with-args-until-failure ((hook hook) &rest args)
