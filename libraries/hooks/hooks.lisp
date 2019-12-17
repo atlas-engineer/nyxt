@@ -236,6 +236,8 @@ This is an acceptable `combination' for `hook'."
           (find-handler (disabled-handlers hook))))
       found-handler)))
 
+;; TODO: What do we return when hook has no handler?  How do we distinguish
+;; between a NIL return value and no handler?
 (defmethod run-hook ((hook hook))
   (funcall (combination hook) hook))
 
@@ -269,6 +271,8 @@ If APPEND is non-nil, append them instead."
               (append (handlers hook) (disabled-handlers hook))
               (append (disabled-handlers hook) (handlers hook))))
     (setf (disabled-handlers hook) nil)))
+
+;; TODO: Add `disable-handler' and `enable-handler'?  Or simply add `handlers' argument to disable-hook / enable-hook?
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global hooks.

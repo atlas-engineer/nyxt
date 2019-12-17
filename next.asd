@@ -171,3 +171,12 @@
   :components ((:module source :pathname "libraries/hooks/"
                 :components ((:file "package")
                              (:file "hooks")))))
+
+(asdf:defsystem next/hooks/tests
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (prove
+               next/hooks)
+  :components ((:module source/tests :pathname "libraries/hooks/tests/"
+                :components ((:test-file "tests"))))
+  :perform (asdf:test-op (op c) (uiop:symbol-call
+                                 :prove-asdf 'run-test-system c)))
