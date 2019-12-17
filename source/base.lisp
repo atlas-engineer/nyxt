@@ -51,7 +51,7 @@ Set to '-' to read standard input instead.")
 
 (define-command quit ()
   "Quit Next."
-  (hooks:run-hook (hooks:object-hook *interface* 'before-exit-hook))
+  (next-hooks:run-hook (before-exit-hook *interface*))
   (kill-interface *interface*)
   (kill-port (port *interface*)))
 
@@ -227,8 +227,6 @@ Finally, run the `*after-init-hook*'."
     ;; Randomness should be seeded as early as possible to avoid generating
     ;; deterministic tokens.
     (setf *random-state* (make-random-state t))
-    ;; Reset `*after-init-hook*' or else the handlers will stack.
-    (setf *after-init-hook* nil)
     (unless (getf *options* :no-init)
       (load-lisp-file init-file :interactive (not non-interactive)))
     ;; create the interface object
@@ -257,7 +255,7 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
     (setf (slot-value *interface* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
     (handler-case
-        (hooks:run-hook '*after-init-hook*)
+        (next-hooks:run-hook *after-init-hook*)
       (error (c)
         (log:error "In *after-init-hook*: ~a" c)))
     (handler-case

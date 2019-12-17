@@ -268,7 +268,7 @@ This runs a call"
                     (write (ps:lisp (content minibuffer)))))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
-  (hooks:run-hook (hooks:object-hook *interface* 'minibuffer-make-hook) minibuffer)
+  (next-hooks:run-hook-with-args (minibuffer-make-hook *interface*) minibuffer)
   ;; We don't want to show the input in the candidate list when invisible.
   (unless (completion-function minibuffer)
     ;; If we have no completion function, then we have no candidates beside
