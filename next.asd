@@ -41,7 +41,8 @@
                :next/download-manager
                :next/ring
                :next/history-tree
-               :next/password-manager)
+               :next/password-manager
+               :next/hooks)
   :components ((:module "source"
                 :components
                 ((:file "patch-annot")
