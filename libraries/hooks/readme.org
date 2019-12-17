@@ -19,6 +19,7 @@ What we need from hooks:
   - (find-hook 'foo-hook)
   - (find-hook 'foo-hook 'bar-class)
   - (find-hook 'foo-hook (make-instance 'bar-class))
+- Adding the same hook twice should be a no-op.
 
 
 Links:
