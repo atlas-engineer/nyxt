@@ -12,7 +12,6 @@
                :cl-annot
                :cl-ansi-text
                :cl-css
-               :cl-hooks
                :cl-json
                :cl-markup
                :cl-ppcre
