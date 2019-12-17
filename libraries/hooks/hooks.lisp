@@ -342,6 +342,7 @@ HANDLER must be of type ~a."
          (add-hook-internal hook handler :append append)))))
 
 ;; TODO: Add make-hook-* function?
+;; TODO: Allow listing all the hooks?
 
 (define-hook-type void (function ()))
 (define-hook-type string->string (function (string) string))
