@@ -13,3 +13,6 @@
 Package left for the user to fiddgle with.
 It's recommended to use this package in the Next configuration file, instead of
 `next' itself."))
+
+(uiop:define-package parenscript-user
+  (:use :common-lisp :next :parenscript))
