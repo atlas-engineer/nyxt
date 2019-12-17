@@ -1,7 +1,7 @@
 What we need from hooks:
 
 - Be able to tell what is a hook, so it must be a class.
-- The user should be able to easily enabled/disabled hooks, without modifying
+- The user should be able to easily enable/disable hooks, without modifying
   the handler list.
   What about enabling / disabling handlers individually?  It's more general, a hook could
   have 2 lists, one of enabled handlers, the other of disabled handlers.  A
@@ -9,7 +9,7 @@ What we need from hooks:
 - List all the hooks.
 - Make closures more usable as handlers.  We need a handler type that can name
   the closure.
-- Handlers can take parameters can return values.  Hook should be typed accordingly.
+- Handlers can take parameters and can return values.  Hook should be typed accordingly.
 - The handler composition can be customized, e.g. we could set a function to
   tell what to do with it, one of `reduce`, `list`, etc.
   This can be used to customize the order in which the handlers are run
