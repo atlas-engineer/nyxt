@@ -105,7 +105,8 @@ going to set to PLACE.
 In particular, PLACE and VALUE can be used to compare handlers.
 This can be left empty if the handler is not a setter.")))
 
-;; TODO: Don't export make-handler, so that user is forced to use the typed versions.
+;; TODO: Maybe don't export make-handler, so that user is forced to use the
+;; typed versions.
 (defun make-handler (fn &key (class-name 'handler) name handler-type place value)
   "NAME is a symbol."
   (setf name (or name (let ((fname (nth-value 2 (function-lambda-expression fn))))
@@ -121,7 +122,9 @@ This can be left empty if the handler is not a setter.")))
                  :value value))
 
 (defmethod equals ((fn1 handler) (fn2 handler))
-  "Return non-nil if FN1 and FN2 are equal."
+  "Return non-nil if FN1 and FN2 are equal.
+Handlers are equal if they are setters of the same place and same value, or if
+their names are equal."
   (cond
     ((or (and (place fn1)
               (not (place fn2) ))
@@ -164,14 +167,17 @@ removing them from the hook.")
 This can be used to reverse the execution order, return a single value, etc.")))
 
 (defmethod default-combine-hook ((hook hook) &rest args)
-  "Return the list of the results of the HOOK handlers applied from youngest to oldest to ARGS."
+  "Return the list of the results of the HOOK handlers applied from youngest to
+oldest to ARGS.
+This is an acceptable `combination' for `hook'."
   (mapcar (lambda (handler)
             (with-hook-restart (apply (fn handler) args)))
           (handlers hook)))
 
 (defmethod combine-hook-until-failure ((hook hook) &rest args)
   "Return the list of values until the first nil result.
-Handlers after the successful one are not run."
+Handlers after the successful one are not run.
+This is an acceptable `combination' for `hook'."
   (let ((result nil))
     (loop for handler in (handlers hook)
           for res = (apply (fn handler) args)
@@ -181,12 +187,15 @@ Handlers after the successful one are not run."
 
 (defmethod combine-hook-until-success ((hook hook) &rest args)
   "Return the value of the first non-nil result.
-Handlers after the successful one are not run."
+Handlers after the successful one are not run.
+This is an acceptable `combination' for `hook'."
   (loop for handler in (handlers hook)
-          thereis (apply (fn handler) args)))
+     thereis (apply (fn handler) args)))
 
 (defmethod combine-composed-hook ((hook hook) &rest args)
-  "Return the result of the composition of the HOOK handlers on ARGS, from oldest to youngest."
+  "Return the result of the composition of the HOOK handlers on ARGS, from
+oldest to youngest.
+This is an acceptable `combination' for `hook'."
   (apply (apply #'alexandria:compose (mapcar #'fn (handlers hook))) args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -262,6 +271,7 @@ If APPEND is non-nil, append them instead."
     (setf (disabled-handlers hook) nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Global hooks.
 
 ;; TODO: cl-hooks uses symbol properties.  Is it a good idea?
 ;; TODO: Test this!
@@ -270,7 +280,7 @@ If APPEND is non-nil, append them instead."
 
 (defun define-hook (hook-type name &key object handlers disabled-handlers combination)
   "Return a globally-accessible hook.
-The hook can be accessed with `find-hook'."
+The hook can be accessed with `find-hook' at (list NAME OBJECT)."
   (let ((hook
           (make-instance hook-type
                          :handlers handlers
@@ -295,14 +305,18 @@ The following examples return different hooks:
 ;; hook would allow.  We work around this issue with a macro:
 ;;
 ;; - Generates hook and handler subclasses.
-;; - Generate a handler maker with provided function type declaim.
+;; - Generate a handler maker and declaim provided function type.
 ;; - Generate a `add-hook' defmethod against those 2 classes.
 
 (defmacro define-hook-type (name type)
-  "Type must be something like
- (function (string) (values integer t)).
+  "Define hook class and constructor and the associated handler class.
+Type must be something like:
+
+  (function (string) (values integer t))
+
 A function with name make-handler-NAME will be created.
-A class with name handler-NAME will be created."
+A class with name handler-NAME will be created.
+The method `add-hook' is added for the new hook and handler types."
   (let* ((name (string name))
          (function-name (intern (str:concat "MAKE-HANDLER-" name)))
          (handler-class-name (intern (str:concat "HANDLER-" name)))
@@ -321,11 +335,13 @@ A class with name handler-NAME will be created."
          ((handler-class :initform (find-class ',handler-class-name))))
        (defmethod add-hook ((hook ,hook-class-name) (handler ,handler-class-name) &key append)
          ,(format nil "Add HANDLER to HOOK.
-HOOK msut be of type ~a
-FN must be of type ~a."
+HOOK must be of type ~a
+HANDLER must be of type ~a."
                   hook-class-name
                   handler-class-name)
          (add-hook-internal hook handler :append append)))))
+
+;; TODO: Add make-hook-* function?
 
 (define-hook-type void (function ()))
 (define-hook-type string->string (function (string) string))
