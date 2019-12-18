@@ -60,7 +60,12 @@
                                                        (next-hooks:make-handler-number->number #'mul2))
                                        :combination #'next-hooks:combine-composed-hook)))
               (next-hooks:run-hook-with-args hook 17))
-            35))
+            35)
+  (prove:is (let ((hook
+                        (make-instance 'next-hooks:hook-number->number
+                                       :combination #'next-hooks:combine-composed-hook)))
+              (next-hooks:run-hook-with-args hook 17))
+            17))
 
 (prove:subtest "Remove handler from hook"
   (prove:is (let* ((handler1 (next-hooks:make-handler-number->number #'add1))
