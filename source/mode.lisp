@@ -66,6 +66,7 @@ The buffer is returned so that mode activation can be chained."
              buffer)))))
 
 
+(defclass root-mode () ())
 (next-hooks:define-hook-type mode (function (root-mode)))
 
 (define-mode root-mode (t)

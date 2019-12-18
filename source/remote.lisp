@@ -6,7 +6,11 @@
 (annot:enable-annot-syntax)
 
 ;; Create necessary hook types.
-;; TODO: Is it OK to use WINDOW and BUFFER before their declaration?
+;; We must forward-declare the class since the hook take the type of the class
+;; that hosts them.
+(defclass buffer () ())
+(defclass minibuffer () ())
+(defclass window () ())
 (next-hooks:define-hook-type window (function (window)))
 (next-hooks:define-hook-type buffer (function (buffer)))
 (next-hooks:define-hook-type minibuffer (function (minibuffer)))
