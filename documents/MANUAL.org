@@ -851,9 +851,11 @@ to change the style to using upper case, no gradiant, and square boxes:
 
 ** Hooks
 
-A hook is a variable that holds a list of functions.
-We say a hook is executed when all its functions are run one after the other,
-over its arguments (which are decided at the call site).
+A /hook/ holds a list of /handlers/.
+Handlers are specialized functions
+
+Hooks can be /run/, that is, their handlers are run according to the
+=combination= slot of the hook.  This combination is a funtion of the handlers.
 
 Hooks are exposed to the users so that they can customize the behaviour of
 specific actions in arbitrary ways.
@@ -880,7 +882,12 @@ can set a hook like the following in you =~/.config/next/init.lisp=:
         url)))
 
 (defclass my-buffer (buffer)
- ((load-hook :initform (list #'old-reddit-hook))))
+ ((load-hook :initform
+              (make-instance
+               'next-hooks:hook-string->string
+               :handlers (list
+                          (next-hooks:make-handler-string->string #'old-reddit-handler))
+               :combination #'next-hooks:combine-composed-hook))))
 
 (setf *buffer-class* 'my-buffer)
 #+end_src
@@ -896,14 +903,14 @@ for more details.
 All commands  have an associated  "before" and "after" list  of hooks:
 the =help= command has =help-before-hook= and =help-after-hook=.
 
-To add a hook handler, just =push= a function to those lists:
+To add a hook handler, call =add-hook=:
 
 #+begin_src lisp
 (defun hello-hook ()
   (log:info "hello"))
 
-(push #'hello-hook help-before-hook)
-;; (#<FUNCTION HELLO-HOOK>)
+(add-hook help-before-hook
+  (next-hooks:make-handler-void #'hello-hook))
 #+end_src
 
 Now when you press =M-x help=, you'll see
@@ -912,53 +919,53 @@ Now when you press =M-x help=, you'll see
 
 *Initialization and exit* hooks
 
-- =after-init-hook=: hook run after both the lisp side and the
+- =after-init-hook=: Hook run after both the Lisp side and the
 platform port have started.
-  - argument: none
-- =before-exit-hook=: hook run before both the lisp side and the
+  - argument: None.
+- =before-exit-hook=: Hook run before both the Lisp side and the
 platform port get terminated.
-  - argument: none
+  - argument: None.
 
 *Networking* hooks
 
-- =load-hook=: hook  run after the url  to be visited was  parsed. The
-  url isn't loaded yet.
-  - argument: the URL that is going  to be visited.
-  - return: handlers must return a (possibly new) URL (see example above).
+- =load-hook=: Hook  run after the URL  to be visited was  parsed. The
+  URL isn't loaded yet.
+  - argument: The URL that is going  to be visited.
+  - return: Handlers must return a (possibly new) URL (see example above).
 
 *Window* hooks
 
-- =window-make-hook=:  hook run  after the  window is  created on  the
+- =window-make-hook=:  Hook run  after the  window is  created on  the
   platform port.
-  - argument: the window.
-- =window-delete-hook=: hook run before the window is deleted.
-  - argument: the window.
-- =window-set-active-buffer-hook=: hook run before the given buffer is
+  - argument: The window.
+- =window-delete-hook=: Hook run before the window is deleted.
+  - argument: The window.
+- =window-set-active-buffer-hook=: Hook run before the given buffer is
   added to the window and marked the active buffer.
-  - arguments: the window and the buffer.
+  - arguments: The window and the buffer.
 
 *Buffer* hooks
 
-- =buffer-make-hook=:  hook run  after the  buffer is  created on  the
+- =buffer-make-hook=:  Hook run  after the  buffer is  created on  the
   platform port.
-  - argument: the buffer.
-- =buffer-delete-hook=: this hook is run  before the buffer is deleted
+  - argument: The buffer.
+- =buffer-delete-hook=: This hook is run  before the buffer is deleted
   on the platform port.
-  - argument: the buffer object.
+  - argument: The buffer object.
 
 *Download* hooks
 
 - =before-download-hook=: hook run before downloading a URL.
-  - argument: the URL.
-- =after-download-hook=: hook run after a download has completed.
-  - argument: the =download-manager:download= class instance.
+  - argument: The URL.
+- =after-download-hook=: Hook run after a download has completed.
+  - argument: The =download-manager:download= class instance.
 
 *Mode* hooks
 
-- =enable-hook=: this hook is run when enabling the mode.
-  - argument: the mode.
-- =disable-hook=: this hook is run when disabling the mode.
-  - argument: the mode.
+- =enable-hook=: This hook is run when enabling the mode.
+  - argument: The mode.
+- =disable-hook=: This hook is run when disabling the mode.
+  - argument: The mode.
 
 ** Startup behaviour
 
