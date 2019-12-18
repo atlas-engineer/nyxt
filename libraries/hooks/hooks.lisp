@@ -169,12 +169,13 @@ This can be used to reverse the execution order, return a single value, etc.")))
 (defmethod default-combine-hook ((hook hook) &rest args)
   "Return the list of the results of the HOOK handlers applied from youngest to
 oldest to ARGS.
+Return '() when there is no handler.
 This is an acceptable `combination' for `hook'."
   (mapcar (lambda (handler)
             (with-hook-restart (apply (fn handler) args)))
           (handlers hook)))
 
-(defmethod combine-hook-until-failure ((hook hook) &rest args)
+(defmethod combine-hook-until-failure ((hook hook) &rest args) ; TODO: Result difference between "all fail" and "no handlers"?
   "Return the list of values until the first nil result.
 Handlers after the successful one are not run.
 This is an acceptable `combination' for `hook'."
@@ -185,7 +186,7 @@ This is an acceptable `combination' for `hook'."
           always res)
     (nreverse result)))
 
-(defmethod combine-hook-until-success ((hook hook) &rest args)
+(defmethod combine-hook-until-success ((hook hook) &rest args) ; TODO: Result difference between "no success" and "no handlers"?
   "Return the value of the first non-nil result.
 Handlers after the successful one are not run.
 This is an acceptable `combination' for `hook'."
@@ -195,8 +196,12 @@ This is an acceptable `combination' for `hook'."
 (defmethod combine-composed-hook ((hook hook) &rest args)
   "Return the result of the composition of the HOOK handlers on ARGS, from
 oldest to youngest.
+Without handler, return ARGS as values.
 This is an acceptable `combination' for `hook'."
-  (apply (apply #'alexandria:compose (mapcar #'fn (handlers hook))) args))
+  (let ((fn-list (mapcar #'fn (handlers hook))))
+    (if fn-list
+        (apply (apply #'alexandria:compose fn-list) args)
+        (values-list args))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-hook-internal (hook handler &key append)
@@ -236,8 +241,6 @@ This is an acceptable `combination' for `hook'."
           (find-handler (disabled-handlers hook))))
       found-handler)))
 
-;; TODO: What do we return when hook has no handler?  How do we distinguish
-;; between a NIL return value and no handler?
 (defmethod run-hook ((hook hook))
   (funcall (combination hook) hook))
 
