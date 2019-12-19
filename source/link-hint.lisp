@@ -77,43 +77,58 @@
 
 (defmacro query-hints (prompt (symbol) &body body)
   `(with-result* ((elements-json (add-element-hints))
-                  (selected-hint (read-from-minibuffer
-                                  (make-minibuffer
-                                   :input-prompt ,prompt
-                                   :history nil
-                                   :cleanup-function #'remove-element-hints))))
-     (let* ((element-hints (cl-json:decode-json-from-string elements-json))
-            (,symbol (cadr (assoc selected-hint element-hints :test #'equalp))))
-       (when ,symbol
-         ,@body))))
+                  (,symbol (read-from-minibuffer
+                            (make-minibuffer
+                             :input-prompt ,prompt
+                             :history nil
+                             :completion-function (hint-completion-filter
+                                                   (elements-from-json elements-json))
+                             :cleanup-function #'remove-element-hints))))
+     ,@body))
+
+(defun hint-completion-filter (hints)
+  (lambda (input)
+    (fuzzy-match input hints)))
+
+(defun elements-from-json (elements-json)
+  (loop for element in (cl-json:decode-json-from-string elements-json)
+        collect (make-instance 'link-hint
+                               :hint (first element)
+                               :url (second element))))
+
+(defclass link-hint ()
+  ((url :accessor url :initarg :url)
+   (hint :accessor hint :initarg :hint)
+   (identifier :accessor identifier :initarg identifier)))
+
+(defmethod object-string ((link-hint link-hint))
+  (format nil "~a  ~a" (hint link-hint) (url link-hint)))
 
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
   (query-hints "Go to element:" (selected-element)
-    (set-url selected-element :buffer (current-buffer)
-                           :raw-url-p t)))
+    (set-url (url selected-element) :buffer (current-buffer) :raw-url-p t)))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
   (query-hints "Open element in new buffer:" (selected-element)
     (let ((new-buffer (make-buffer)))
-      (set-url selected-element :buffer new-buffer
-                             :raw-url-p t))))
+      (set-url (url selected-element) :buffer new-buffer :raw-url-p t))))
 
 (define-command follow-hint-new-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
   (query-hints "Go to element in new buffer:" (selected-element)
     (let ((new-buffer (make-buffer)))
-      (set-url selected-element :buffer new-buffer :raw-url-p t)
+      (set-url (url selected-element) :buffer new-buffer :raw-url-p t)
       (set-current-buffer new-buffer))))
 
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
   (query-hints "Copy element URL:" (selected-element)
-    (trivial-clipboard:text selected-element)))
+    (trivial-clipboard:text (url selected-element))))
 
 (define-deprecated-command copy-anchor-url ()
   "Deprecated by `copy-hint-url'."
