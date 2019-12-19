@@ -99,13 +99,20 @@
                                :hint (first element)
                                :url (second element))))
 
-(defclass link-hint ()
-  ((url :accessor url :initarg :url)
-   (hint :accessor hint :initarg :hint)
+(defclass hint ()
+  ((hint :accessor hint :initarg :hint)
    (identifier :accessor identifier :initarg identifier)))
+
+(defclass button-hint (hint) ())
+
+(defclass link-hint (hint)
+  ((url :accessor url :initarg :url)))
 
 (defmethod object-string ((link-hint link-hint))
   (format nil "~a  ~a" (hint link-hint) (url link-hint)))
+
+(defmethod object-string ((button-hint button-hint))
+  (format nil "~a  Button" (hint button-hint)))
 
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
