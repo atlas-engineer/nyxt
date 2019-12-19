@@ -31,7 +31,7 @@
     (ps:let ((hint-element (hint-create-element element hint)))
       (ps:chain document body (append-child hint-element))))
   (defun object-create (element hint)
-    (list hint (ps:@ element href)))
+    (ps:create "type" "link" "hint" hint "href" (ps:@ element href)))
   (defun hints-add (elements)
     "Adds hints on elements"
     (ps:let* ((elements-length (length elements))
@@ -91,8 +91,8 @@
 (defun elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)
         collect (make-instance 'link-hint
-                               :hint (first element)
-                               :url (second element))))
+                               :hint (cdr (assoc :hint element))
+                               :url (cdr (assoc :href element)))))
 
 (defclass hint ()
   ((hint :accessor hint :initarg :hint)
