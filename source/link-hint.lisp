@@ -29,8 +29,9 @@
   (defun hint-add (element hint)
     "Adds a hint on a single element"
     (ps:let ((hint-element (hint-create-element element hint)))
-      (ps:chain document body (append-child hint-element))
-      hint-element))
+      (ps:chain document body (append-child hint-element))))
+  (defun object-create (element hint)
+    (list hint (ps:@ element href)))
   (defun hints-add (elements)
     "Adds hints on elements"
     (ps:let* ((elements-length (length elements))
@@ -38,9 +39,8 @@
       (ps:chain -j-s-o-n
                 (stringify
                  (loop for i from 0 to (- elements-length 1)
-                       collect (list
-                                (ps:@ (hint-add (elt elements i) (elt hints i)) inner-text)
-                                (ps:@ (elt elements i) href)))))))
+                       do (hint-add (elt elements i) (elt hints i))
+                       collect (object-create (elt elements i) (elt hints i)))))))
   (defun hints-determine-chars-length (length)
     "Finds out how many chars long the hints must be"
     (ps:let ((i 1))
