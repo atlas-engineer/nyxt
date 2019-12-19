@@ -89,8 +89,7 @@
 (defun hint-completion-filter (hints)
   (lambda (input)
     (let* ((matched-hints (remove-if-not (lambda (x) (str:starts-with-p input (hint x) :ignore-case t)) hints))
-           (fuzzy-matched-hints
-             (fuzzy-match input (remove-if (lambda (x) (str:starts-with-p input (hint x) :ignore-case t)) hints))))
+           (fuzzy-matched-hints (fuzzy-match input (set-difference hints matched-hints))))
       (append matched-hints fuzzy-matched-hints))))
 
 (defun elements-from-json (elements-json)
