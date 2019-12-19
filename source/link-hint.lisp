@@ -43,11 +43,7 @@
                        collect (object-create (elt elements i) (elt hints i)))))))
   (defun hints-determine-chars-length (length)
     "Finds out how many chars long the hints must be"
-    (ps:let ((i 1))
-      ;; 26 chars in alphabet
-      (loop while (> length (expt 26 i))
-            do (incf i))
-      i))
+    (floor (+ 1 (/ (log length) (log 26)))))
   (defun hints-generate (length)
     "Generates hints that will appear on the elements"
     (strings-generate length (hints-determine-chars-length length)))
