@@ -137,6 +137,18 @@
     (prove:is (next-hooks:find-hook 'foo #'mul2)
               hook)))
 
+(prove:subtest "Find handler"
+  (let* ((add-handler (next-hooks:make-handler-number->number #'add1))
+         (mul-handler (next-hooks:make-handler-number->number #'mul2))
+         (other-handler (next-hooks:make-handler-void #'void-function))
+         (handlers (list add-handler mul-handler)))
+    (prove:is (next-hooks:find-handler 'add1 handlers)
+              add-handler)
+    (prove:is (next-hooks:find-handler mul-handler handlers)
+              mul-handler)
+    (prove:is (next-hooks:find-handler other-handler handlers)
+              nil)))
+
 ;; TODO: Test that make-handler-* raise a warning when passed a function with the wrong type.
 ;; Example: (next-hooks:make-handler-string->string #'mul2)
 

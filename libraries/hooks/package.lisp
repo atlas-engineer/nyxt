@@ -15,7 +15,7 @@
    #:combine-hook-until-failure
    #:combine-hook-until-success
    #:combine-composed-hook
-   #:remove-hook
+   #:find-handler
    #:disable-hook
    #:enable-hook
    #:define-hook
