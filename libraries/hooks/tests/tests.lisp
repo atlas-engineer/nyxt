@@ -23,14 +23,14 @@
   (* 2 n))
 
 (prove:subtest "Run default numeric hook"
-  (prove:is (next-hooks:run-hook-with-args
+  (prove:is (next-hooks:run-hook
              (make-instance 'next-hooks:hook-number->number
                             :handlers (list (next-hooks:make-handler-number->number #'add1)))
              17)
             '(18)))
 
 (prove:subtest "Run default numeric hook with multiple handlers"
-  (prove:is (next-hooks:run-hook-with-args
+  (prove:is (next-hooks:run-hook
              (make-instance 'next-hooks:hook-number->number
                             :handlers (list (next-hooks:make-handler-number->number #'add1)
                                             (next-hooks:make-handler-number->number
@@ -44,13 +44,13 @@
                         (make-instance 'next-hooks:hook-number->number
                                        :handlers (list (next-hooks:make-handler-number->number #'add1)))))
               (next-hooks:add-hook hook (next-hooks:make-handler-number->number #'add1))
-              (next-hooks:run-hook-with-args hook 17))
+              (next-hooks:run-hook hook 17))
             '(18))
   (prove:is (let ((hook
                         (make-instance 'next-hooks:hook-number->number
                                        :handlers (list (next-hooks:make-handler-number->number #'add1)))))
               (next-hooks:add-hook hook (next-hooks:make-handler-number->number (lambda (n) (+ 1 n)) :name 'add1))
-              (next-hooks:run-hook-with-args hook 17))
+              (next-hooks:run-hook hook 17))
             '(18)))
 
 (prove:subtest "Combine handlers"
@@ -59,12 +59,12 @@
                                        :handlers (list (next-hooks:make-handler-number->number #'add1)
                                                        (next-hooks:make-handler-number->number #'mul2))
                                        :combination #'next-hooks:combine-composed-hook)))
-              (next-hooks:run-hook-with-args hook 17))
+              (next-hooks:run-hook hook 17))
             35)
   (prove:is (let ((hook
                         (make-instance 'next-hooks:hook-number->number
                                        :combination #'next-hooks:combine-composed-hook)))
-              (next-hooks:run-hook-with-args hook 17))
+              (next-hooks:run-hook hook 17))
             17))
 
 (prove:subtest "Remove handler from hook"
@@ -75,7 +75,7 @@
                                                     (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
               (next-hooks:remove-hook hook 'mul3)
               (next-hooks:remove-hook hook handler1)
-              (next-hooks:run-hook-with-args hook 17))
+              (next-hooks:run-hook hook 17))
             nil))
 
 (prove:subtest "Disable hook"
