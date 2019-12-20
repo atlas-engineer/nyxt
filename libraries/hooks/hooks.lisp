@@ -220,6 +220,14 @@ If APPEND is non-nil, HANDLER is added at the end."
           (alexandria:appendf (symbol-value hook) (list handler))
           (pushnew handler (handlers hook) :test #'equals)))))
 
+(declaim (ftype (function ((or handler symbol) list) (or handler boolean)) find-handler))
+(defun find-handler (handler-or-name handlers)
+  "Return handler matching HANDLER-OR-NAME in HANDLERS sequence."
+  (apply #'find handler-or-name handlers
+         (if (typep handler-or-name 'handler)
+             (list :test #'equals)
+             (list :key #'name))))
+
 (defmethod remove-hook ((hook hook) (fn handler))
   (serapeum:synchronized (hook)
     (let ((found-handler nil))
