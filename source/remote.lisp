@@ -570,7 +570,7 @@ when `proxied-downloads-p' is true."
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
-  (next-hooks:run-hook-with-args (before-download-hook *interface*) url)
+  (next-hooks:run-hook (before-download-hook *interface*) url)
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
@@ -721,7 +721,7 @@ Run INTERFACE's `window-make-hook' over the created window."
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and rpc-window-active would then return nil.
       (setf (last-active-window *interface*) window))
-    (next-hooks:run-hook-with-args (window-make-hook *interface*) window)
+    (next-hooks:run-hook (window-make-hook *interface*) window)
     window))
 
 (declaim (ftype (function (window string)) rpc-window-set-title))
@@ -759,7 +759,7 @@ INTERFACE's `window-delete-hook' over WINDOW."
   "Set INTERFACE's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
-  (next-hooks:run-hook-with-args (window-set-active-buffer-hook window) window buffer)
+  (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
   (%rpc-send "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer)
   (when (and window buffer)
@@ -816,7 +816,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                      (apply #'make-instance *buffer-class* :id (get-unique-buffer-identifier)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
-    (next-hooks:run-hook-with-args (buffer-before-make-hook *interface*) buffer)
+    (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
     (unless (str:emptyp (namestring (cookies-path buffer)))
       (ensure-parent-exists (cookies-path buffer)))
     (setf (gethash (id buffer) (buffers *interface*)) buffer)
@@ -829,7 +829,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       (setf (last-active-buffer *interface*) buffer))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
-    (next-hooks:run-hook-with-args (buffer-make-hook *interface*) buffer)
+    (next-hooks:run-hook (buffer-make-hook *interface*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
@@ -850,7 +850,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun rpc-buffer-delete (buffer)
   "Delete BUFFER from `*interface*'.
 Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
-  (next-hooks:run-hook-with-args (buffer-delete-hook buffer) buffer)
+  (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
@@ -1014,7 +1014,7 @@ TODO: Only booleans are supported for now."
          (window (gethash window-id windows)))
     (log:debug "Closing window ID ~a (new total: ~a)" window-id
                (1- (hash-table-count windows)))
-    (next-hooks:run-hook-with-args (window-delete-hook window) window)
+    (next-hooks:run-hook (window-delete-hook window) window)
     (remhash window-id windows))
   (values))
 

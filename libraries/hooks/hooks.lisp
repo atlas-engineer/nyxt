@@ -23,21 +23,14 @@
   `(with-simple-restart (continue "Call next function in hook ~s" *hook*)
      ,@body))
 
-(defun run-hooks (&rest hooks)          ; TODO: What about running hooks over arguments?
-  "Run all the hooks in HOOKS.
+(defun run-hooks (&rest hooks)
+  "Run all the hooks in HOOKS, without arguments.
 The variable `*hook*' is bound to the name of each hook as it is being
 run."
   (dolist (*hook* hooks)
     (run-hook *hook*)))
 
-(defgeneric run-hook (hook)
-  (:documentation "Run the functions in HOOK.")
-  (:method ((*hook* symbol))
-    (dolist (fn (symbol-value *hook*))
-      (with-hook-restart
-        (funcall fn)))))
-
-(defgeneric run-hook-with-args (hook &rest args)
+(defgeneric run-hook (hook &rest args)
   (:documentation "Apply each function in HOOK to ARGS.")
   (:method ((*hook* symbol) &rest args)
     (dolist (fn (symbol-value *hook*))
@@ -241,12 +234,7 @@ This is an acceptable `combination' for `hook'."
           (find-handler (disabled-handlers hook))))
       found-handler)))
 
-(defmethod run-hook ((hook hook))
-  (funcall (combination hook) hook))
-
-;; TODO: Because our hooks are typed, having both `run-hook` and
-;; `run-hook-with-args' makes little sense.  Remove `run-hook-with-args'?
-(defmethod run-hook-with-args ((hook hook) &rest args)
+(defmethod run-hook ((hook hook) &rest args)
   (apply (combination hook) hook args))
 
 ;; TODO: Implement the following methods? Isn't the `combination' slot more general?
