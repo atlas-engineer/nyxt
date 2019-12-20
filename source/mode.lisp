@@ -82,13 +82,13 @@ It takes the mode as argument.")
                "A lambda function which tears down the mode upon deactivation.
 It takes the mode as argument.")
    (enable-hook :accessor enable-hook :initarg :enable-hook
-                :initform (make-instance 'hook-mode)
+                :initform (make-hook-mode)
                 :type hook-mode
                 :documentation "This hook is run when enabling the mode.
 It takes the mode as argument
 It is run before the destructor.")
    (disable-hook :accessor disable-hook :initarg :disable-hook
-                 :initform (make-instance 'hook-mode)
+                 :initform (make-hook-mode)
                  :type hook-mode
                  :documentation "This hook is run when disabling the mode.
 It takes the mode as argument.

@@ -50,9 +50,9 @@ Regardless of the hook, the command returns the last expression of BODY."
         (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
     `(progn
        @export
-       (defparameter ,before-hook (make-instance 'next-hooks:hook-void))
+       (defparameter ,before-hook (next-hooks:make-hook-void))
        @export
-       (defparameter ,after-hook (make-instance 'next-hooks:hook-void))
+       (defparameter ,after-hook (next-hooks:make-hook-void))
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
                                          (eq (pkg c) *package*)))
                         %%command-list)
