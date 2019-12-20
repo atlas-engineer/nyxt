@@ -31,7 +31,10 @@
     (ps:let ((hint-element (hint-create-element element hint)))
       (ps:chain document body (append-child hint-element))))
   (defun object-create (element hint)
-    (ps:create "type" "link" "hint" hint "href" (ps:@ element href)))
+    (cond ((equal "A" (ps:@ element tag-name))
+           (ps:create "type" "link" "hint" hint "href" (ps:@ element href)))
+          ((equal "BUTTON" (ps:@ element tag-name))
+           (ps:create "type" "button" "hint" hint))))
   (defun hints-add (elements)
     "Adds hints on elements"
     (ps:let* ((elements-length (length elements))
@@ -58,7 +61,7 @@
         (+ (string-generate (floor (- (/ n 26) 1)))
            (code-char (+ 65
                          (rem n 26)))) ""))
-  (hints-add (qsa document (list "a"))))
+  (hints-add (qsa document (list "a" "button"))))
 
 (define-parenscript %remove-element-hints ()
   (defun hints-remove-all ()
@@ -90,9 +93,14 @@
 
 (defun elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)
-        collect (make-instance 'link-hint
-                               :hint (cdr (assoc :hint element))
-                               :url (cdr (assoc :href element)))))
+        collect (let ((object-type (cdr (assoc :type element))))
+                  (cond ((equal "link" object-type)
+                         (make-instance 'link-hint
+                                        :hint (cdr (assoc :hint element))
+                                        :url (cdr (assoc :href element))))
+                        ((equal "button" object-type)
+                         (make-instance 'button-hint
+                                        :hint (cdr (assoc :hint element))))))))
 
 (defclass hint ()
   ((hint :accessor hint :initarg :hint)
