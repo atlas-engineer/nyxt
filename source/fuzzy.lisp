@@ -52,20 +52,32 @@ A higher score means the candidate comes first."
   (+ (* 1.0 (mk-string-metrics:norm-damerau-levenshtein candidate input))
      (* 1.0 (substring-norm (str:split " " input) candidate))))
 
+(defvar score-threshold 0.0             ; TODO: Learn good value and enable low-score filtering below.
+  "The threshold under which candidates are eleminated.")
+
 (defun sort-candidates (input candidate-pairs)
   "Sort CANDIDATE-PAIRS, the pair closest to INPUT in the levenshtein distance comes first.
 CANDIDATE-PAIRS is a list of (display-value real-value).  See `fuzzy-match' for
 more details."
-    ;; WARNING: mk-string-metrics works on low-level arrays and might not get
-    ;; the text encoding right.  We need to make sure the candidates and the
-    ;; input are of the same encoding.
+  ;; WARNING: mk-string-metrics works on low-level arrays and might not get
+  ;; the text encoding right.  We need to make sure the candidates and the
+  ;; input are of the same encoding.
   (setf input (to-unicode input))
   (dolist (candidate-pair candidate-pairs)
     (setf (first candidate-pair) (to-unicode (first candidate-pair))))
-  (sort candidate-pairs
-        (lambda (x y)
-          (> (score-candidate input (first x))
-             (score-candidate input (first y))))))
+  (flet ((score-candidate (pair)
+           (cons (score-candidate input (first pair)) pair))
+         ;; (low-score (triplet)
+         ;;   (< (first triplet) score-threshold))
+         (sort-candidate (triplet1 triplet2)
+           (> (first triplet1)
+              (first triplet2)))
+         (triplet-to-pair (triplet)
+           (rest triplet)))
+    (mapcar #'triplet-to-pair
+            (sort ;; (remove-if #'low-score)
+                  (mapcar #'score-candidate candidate-pairs)
+                  #'sort-candidate))))
 
 (defun find-exactly-matching-substrings (input candidates &key (substring-length 2))
   "Return the list of input substrings that match at least one candidate.
