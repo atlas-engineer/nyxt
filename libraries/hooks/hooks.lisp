@@ -228,35 +228,45 @@ If APPEND is non-nil, HANDLER is added at the end."
              (list :test #'equals)
              (list :key #'name))))
 
-(defmethod remove-hook ((hook hook) (fn handler))
-  (serapeum:synchronized (hook)
-    (let ((found-handler nil))
-      (flet ((find-handler (handlers)
-               (setf (handlers hook)
-                     (delete-if (lambda (f)
-                                  (when (equals f fn)
-                                    (setf found-handler f)
-                                    t))
-                                handlers))))
-        (find-handler (handlers hook))
-        (unless found-handler
-          (find-handler (disabled-handlers hook))))
-      found-handler)))
+(defun delete* (item sequence
+                &key from-end (test #'eql) (start 0)
+                  end count key)
+  "Like `delete' but return (values NEW-SEQUENCE FOUNDP)
+with FOUNDP being T if the element was found, NIL otherwise."
+  (let* ((foundp nil)
+         (new-sequence (delete-if (lambda (f)
+                                    (when (funcall test item f)
+                                      (setf foundp t)
+                                      t))
+                                  sequence
+                                  :from-end from-end
+                                  :start start
+                                  :key key
+                                  :end end
+                                  :count count)))
+    (values new-sequence foundp)))
 
-(defmethod remove-hook ((hook hook) handler-name)
+(defmethod remove-hook ((hook hook) handler-or-name)
+  "Remove handler matching HANDLER-OR-NAME from the handlers or the
+disabled-handlers in HOOK.
+HANDLER-OR-NAME is either a handler object or a symbol.
+Return HOOK's handlers."
   (serapeum:synchronized (hook)
-    (let ((found-handler nil))
-      (flet ((find-handler (handlers)
-               (setf (handlers hook)
-                     (delete-if (lambda (f)
-                                  (when (eq handler-name (name f))
-                                    (setf found-handler f)
-                                    t))
-                                handlers))))
-        (find-handler (handlers hook))
-        (unless found-handler
-          (find-handler (disabled-handlers hook))))
-      found-handler)))
+    (multiple-value-bind (new-sequence foundp)
+        (apply #'delete* handler-or-name (handlers hook)
+               (if (typep handler-or-name 'handler)
+                   (list :test #'equals)
+                   (list :key #'name)))
+      (if foundp
+          (setf (handlers hook) new-sequence)
+          (multiple-value-bind (new-sequence foundp)
+              (apply #'delete* handler-or-name (disabled-handlers hook)
+                     (if (typep handler-or-name 'handler)
+                         (list :test #'equals)
+                         (list :key #'name)))
+            (when foundp
+              (setf (disabled-handlers hook) new-sequence)))))
+    (handlers hook)))
 
 (defmethod run-hook ((hook hook) &rest args)
   (apply (combination hook) hook args))
@@ -267,27 +277,31 @@ If APPEND is non-nil, HANDLER is added at the end."
 ;; (defmethod run-hook-with-args-until-success ((hook hook) &rest args)
 ;;   (apply (combination hook) hook args))
 
-(defmethod disable-hook ((hook hook) &key append)
-  "Prepend all active handlers to the list of disabled handlers.
-If APPEND is non-nil, append them instead."
+(defun move-hook-handlers (hook source-handlers-slot destination-handlers-slot select-handlers)
   (serapeum:synchronized (hook)
-    (setf (disabled-handlers hook)
-          (if append
-              (append (disabled-handlers hook) (handlers hook))
-              (append (handlers hook) (disabled-handlers hook))))
-    (setf (handlers hook) nil)))
+    (let* ((handlers-to-move (if select-handlers
+                                 (intersection (slot-value hook source-handlers-slot)
+                                               select-handlers
+                                               :test (lambda (e1 e2)
+                                                       (if (typep e2 'handler)
+                                                           (equals e1 e2)
+                                                           (eq (name e1) e2))))
+                                 (slot-value hook source-handlers-slot)))
+           (handlers-to-keep (set-difference (slot-value hook source-handlers-slot)
+                                             handlers-to-move)))
+      (setf (slot-value hook destination-handlers-slot)
+            (append handlers-to-move (slot-value hook destination-handlers-slot)))
+      (setf (slot-value hook source-handlers-slot) handlers-to-keep))))
 
-(defmethod enable-hook ((hook hook) &key append)
-  "Prepend all disabled handlers to the list of active handlers.
-If APPEND is non-nil, append them instead."
-  (serapeum:synchronized (hook)
-    (setf (handlers hook)
-          (if append
-              (append (handlers hook) (disabled-handlers hook))
-              (append (disabled-handlers hook) (handlers hook))))
-    (setf (disabled-handlers hook) nil)))
+(defmethod disable-hook ((hook hook) &rest handlers)
+  "Prepend HANDLERS to the list of disabled handlers.
+Without HANDLERS, disable all of them."
+  (move-hook-handlers hook 'handlers 'disabled-handlers handlers))
 
-;; TODO: Add `disable-handler' and `enable-handler'?  Or simply add `handlers' argument to disable-hook / enable-hook?
+(defmethod enable-hook ((hook hook) &rest handlers)
+  "Prepend HANDLERS to the list of HOOK's handlers.
+Without HANDLERS, enable all of them."
+  (move-hook-handlers hook 'disabled-handlers 'handlers handlers))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global hooks.

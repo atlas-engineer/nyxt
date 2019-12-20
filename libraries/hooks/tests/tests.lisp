@@ -79,43 +79,38 @@
             nil))
 
 (prove:subtest "Disable hook"
-  (prove:is (let* ((handler1 (next-hooks:make-handler-number->number #'add1))
-                   (hook
-                     (make-instance 'next-hooks:hook-number->number
-                                    :handlers (list handler1
-                                                    (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
-              (next-hooks:disable-hook hook)
-              (length (next-hooks:disabled-handlers hook)))
-            2)
-  (prove:is (let* ((handler1 (next-hooks:make-handler-number->number #'add1))
-                   (hook
-                     (make-instance 'next-hooks:hook-number->number
-                                    :handlers (list (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
-              (next-hooks:disable-hook hook)
-              (next-hooks:add-hook hook handler1)
-              (next-hooks:disable-hook hook :append t)
-              (eq (second (next-hooks:disabled-handlers hook))
-                  handler1))
-            t)
-  (prove:is (let* ((handler1 (next-hooks:make-handler-number->number #'add1))
-                   (hook
-                     (make-instance 'next-hooks:hook-number->number
-                                    :handlers (list (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
-              (next-hooks:disable-hook hook)
-              (next-hooks:add-hook hook handler1)
-              (next-hooks:disable-hook hook)
-              (eq (first (next-hooks:disabled-handlers hook))
-                  handler1))
-            t)
-  (prove:is (let* ((handler1 (next-hooks:make-handler-number->number #'add1))
-                   (hook
-                     (make-instance 'next-hooks:hook-number->number
-                                    :handlers (list handler1
-                                                    (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
-              (next-hooks:disable-hook hook)
-              (next-hooks:enable-hook hook)
-              (length (next-hooks:disabled-handlers hook)))
-            0))
+  (let* ((handler1 (next-hooks:make-handler-number->number #'add1))
+         (handler2 (next-hooks:make-handler-number->number #'mul2)))
+    (prove:is (let* ((hook (make-instance 'next-hooks:hook-number->number
+                                          :handlers (list handler1
+                                                          (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
+                (next-hooks:disable-hook hook)
+                (length (next-hooks:disabled-handlers hook)))
+              2)
+    (prove:is (let* ((hook
+                       (make-instance 'next-hooks:hook-number->number
+                                      :handlers (list (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
+                (next-hooks:disable-hook hook)
+                (next-hooks:add-hook hook handler1)
+                (next-hooks:disable-hook hook)
+                (eq (first (next-hooks:disabled-handlers hook))
+                    handler1))
+              t)
+    (prove:is (let* ((hook
+                       (make-instance 'next-hooks:hook-number->number
+                                      :handlers (list handler1
+                                                      (next-hooks:make-handler-number->number (lambda (n) (* 3 n)) :name 'mul3)))))
+                (next-hooks:disable-hook hook)
+                (next-hooks:enable-hook hook)
+                (length (next-hooks:disabled-handlers hook)))
+              0)
+    (prove:is (let* ((hook
+                       (make-instance 'next-hooks:hook-number->number
+                                      :handlers (list handler1 handler2))))
+                (next-hooks:disable-hook hook handler1)
+                (list (first (next-hooks:handlers hook))
+                      (first (next-hooks:disabled-handlers hook))))
+              (list handler2 handler1))))
 
 (prove:subtest "Don't accept lambdas without names."
   (prove:is-error (next-hooks:make-handler-number->number (lambda (n) (+ 1 n)))
