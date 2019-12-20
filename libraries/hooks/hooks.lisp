@@ -96,12 +96,24 @@ This can be left empty if the handler is not a setter.")
 If the handler is meant to be a setter, VALUE can be used to describe what FN is
 going to set to PLACE.
 In particular, PLACE and VALUE can be used to compare handlers.
-This can be left empty if the handler is not a setter.")))
+This can be left empty if the handler is not a setter."))
+  (:documentation "Handlers are wrappers around functions used in typed hooks.
+They serve two purposes as opposed to regular functions:
 
-;; TODO: Maybe don't export make-handler, so that user is forced to use the
-;; typed versions.
+- They can embed a NAME so that anonymous functions can be conveniently used in lambda.
+- If the handler is meant to be a setter, the PLACE and VALUE slot can be used to identify and compare setters.
+
+With this extra information, it's possible to compare handlers and, in particular, avoid duplicates in hooks."))
+
 (defun make-handler (fn &key (class-name 'handler) name handler-type place value)
-  "NAME is a symbol."
+  "Return a `handler'.
+NAME is only mandatory if FN is a lambda.
+CLASS-NAME can be used to create handler subclasses.
+
+HANDLER-TYPE, PLACE and VALUE are as per the sltos in `handler-type'.
+
+This function should not be used directly.
+Prefer the typed make-handler-* functions instead."
   (setf name (or name (let ((fname (nth-value 2 (function-lambda-expression fn))))
                         (when (typep fname 'symbol)
                           fname))))
