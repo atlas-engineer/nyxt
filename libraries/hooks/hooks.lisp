@@ -180,9 +180,13 @@ This is an acceptable `combination' for `hook'."
             (with-hook-restart (apply (fn handler) args)))
           (handlers hook)))
 
-(defmethod combine-hook-until-failure ((hook hook) &rest args) ; TODO: Result difference between "all fail" and "no handlers"?
+(defmethod combine-hook-until-failure ((hook hook) &rest args)
   "Return the list of values until the first nil result.
-Handlers after the successful one are not run.
+Handlers after the failing one are not run.
+
+You need to check if the hook has handlers to know if a NIL return value is due
+to the first handler failing or an empty hook.
+
 This is an acceptable `combination' for `hook'."
   (let ((result nil))
     (loop for handler in (handlers hook)
@@ -191,9 +195,13 @@ This is an acceptable `combination' for `hook'."
           always res)
     (nreverse result)))
 
-(defmethod combine-hook-until-success ((hook hook) &rest args) ; TODO: Result difference between "no success" and "no handlers"?
+(defmethod combine-hook-until-success ((hook hook) &rest args)
   "Return the value of the first non-nil result.
 Handlers after the successful one are not run.
+
+You need to check if the hook has handlers to know if a NIL return value is due
+to all handlers failing or an empty hook.
+
 This is an acceptable `combination' for `hook'."
   (loop for handler in (handlers hook)
      thereis (apply (fn handler) args)))
