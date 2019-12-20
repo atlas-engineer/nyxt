@@ -279,11 +279,15 @@ Return HOOK's handlers."
 (defmethod run-hook ((hook hook) &rest args)
   (apply (combination hook) hook args))
 
-;; TODO: Implement the following methods? Isn't the `combination' slot more general?
-;; (defmethod run-hook-with-args-until-failure ((hook hook) &rest args)
-;;   (apply (combination hook) hook args))
-;; (defmethod run-hook-with-args-until-success ((hook hook) &rest args)
-;;   (apply (combination hook) hook args))
+(defmethod run-hook-with-args-until-failure ((hook hook) &rest args)
+  "This is equivalent to setting the combination function to
+`combine-hook-until-failure' and calling `run-hook'."
+  (apply #'combine-hook-until-failure hook args))
+
+(defmethod run-hook-with-args-until-success ((hook hook) &rest args)
+  "This is equivalent to setting the combination function to
+`combine-hook-until-success' and calling `run-hook'."
+  (apply #'combine-hook-until-success hook args))
 
 (defun move-hook-handlers (hook source-handlers-slot destination-handlers-slot select-handlers)
   (serapeum:synchronized (hook)
