@@ -37,12 +37,12 @@ current URL or event messages.")
                            :type integer
                            :documentation "The height of the minibuffer when open.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
-                                  :initform (make-instance 'hook-window-buffer)
+                                  :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
                                   :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
    (window-delete-hook :accessor window-delete-hook
-                       :initform (make-instance 'hook-window)
+                       :initform (make-hook-window)
                        :type hook-window
                        :documentation "Hook run after `rpc-window-delete' takes effect.
 The handlers take the window as argument.")))
@@ -180,14 +180,14 @@ platform ports might support this.")
           :documentation "Proxy for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
-              :initform (make-instance 'next-hooks:hook-string->string
-                                       :combination #'next-hooks:combine-composed-hook)
+              :initform (next-hooks:make-hook-string->string
+                         :combination #'next-hooks:combine-composed-hook)
               :type next-hooks:hook-string->string
               :documentation "Hook run in `set-url' after `parse-url' was
 processed.  The handlers take the URL going to be loaded as argument and must
 return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook
-                       :initform (make-instance 'hook-buffer)
+                       :initform (make-hook-buffer)
                        :type hook-buffer
                        :documentation "Hook run before `rpc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
@@ -422,24 +422,24 @@ into `session-path'.")
 from `session-path'.")
    ;; Hooks follow:
    (before-exit-hook :accessor before-exit-hook
-                     :initform (make-instance 'next-hooks:hook-void)
+                     :initform (next-hooks:make-hook-void)
                      :type next-hooks:hook-void
                      :documentation "Hook run before both `*interface*' and the
 platform port get terminated.  The handlers take no argument.")
    (window-make-hook :accessor window-make-hook
-                     :initform (make-instance 'hook-window)
+                     :initform (make-hook-window)
                      :type hook-window
                      :documentation "Hook run after `rpc-window-make'.
 The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook
-                     :initform (make-instance 'hook-buffer)
+                     :initform (make-hook-buffer)
                      :type hook-buffer
                      :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
    (buffer-before-make-hook :accessor buffer-before-make-hook
-                            :initform (make-instance 'hook-buffer)
+                            :initform (make-hook-buffer)
                             :type hook-buffer
                             :documentation "Hook run before `rpc-buffer-make'.
 This hook is mostly useful to set the `cookies-path'.
@@ -447,18 +447,18 @@ The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
    (minibuffer-make-hook :accessor minibuffer-make-hook
-                         :initform (make-instance 'hook-minibuffer)
+                         :initform (make-hook-minibuffer)
                          :type hook-minibuffer
                          :documentation "Hook run after the `minibuffer' class
 is instantiated and before initializing the minibuffer modes.
 The handlers take the minibuffer as argument.")
    (before-download-hook :accessor before-download-hook
-                         :initform (make-instance 'hook-download)
+                         :initform (make-hook-download)
                          :type hook-download
                          :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
    (after-download-hook :accessor after-download-hook
-                        :initform (make-instance 'hook-download)
+                        :initform (make-hook-download)
                         :type hook-download
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
