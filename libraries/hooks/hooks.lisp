@@ -210,11 +210,15 @@ This is an acceptable `combination' for `hook'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-hook-internal (hook handler &key append)
+  "Add HANDLER to HOOK if not already in it.
+HANDLER is also not added if in the `disabled-handlers'.
+If APPEND is non-nil, HANDLER is added at the end."
   (serapeum:synchronized (hook)
-    (if (not append)
-        (pushnew handler (handlers hook) :test #'equals)
-        (unless (member handler (handlers hook))
-          (alexandria:appendf (symbol-value hook) (list handler))))))
+    (unless (or (member handler (handlers hook) :test #'equals)
+                (member handler (disabled-handlers hook) :test #'equals))
+      (if append
+          (alexandria:appendf (symbol-value hook) (list handler))
+          (pushnew handler (handlers hook) :test #'equals)))))
 
 (defmethod remove-hook ((hook hook) (fn handler))
   (serapeum:synchronized (hook)
