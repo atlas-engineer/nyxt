@@ -169,7 +169,16 @@ removing them from the hook.")
                 :type function
                 :initform #'default-combine-hook
                 :documentation "
-This can be used to reverse the execution order, return a single value, etc.")))
+This can be used to reverse the execution order, return a single value, etc."))
+  (:documentation "This hook class serves as support for typed-hook.
+
+Typing in hook is crucial to guarantee that a hook is well formed, i.e. that
+it's handlers accept the right argument types and return the right value types.
+
+Because typing is too limited in Common Lisp, we leverage CLOS to generate
+subclasses of `hook' and `handlers' with typed helper functions.
+The `add-hook' will thus only accept handlers of the right types.
+This implementation is good enough to catch typing errors at compile time."))
 
 (defmethod default-combine-hook ((hook hook) &rest args)
   "Return the list of the results of the HOOK handlers applied from youngest to
