@@ -8,11 +8,9 @@
    #:remove-hook
    #:run-hooks
    #:run-hook
-   #:run-hook-with-args
    #:run-hook-with-args-until-failure
    #:run-hook-with-args-until-success
    ;; #:make-handler ; Leave unexported to incite using typed handlers.
-   #:equals
    #:default-combine-hook
    #:combine-hook-until-failure
    #:combine-hook-until-success
