@@ -37,12 +37,16 @@
    #:make-handler-void
    #:handler-void
    #:hook-void
+   #:make-hook-void
    #:make-handler-string->string
    #:handler-string->string
    #:hook-string->string
+   #:make-hook-string->string
    #:make-handler-number->number
    #:handler-number->number
    #:hook-number->number
+   #:make-hook-number->number
    #:make-handler-any
    #:handler-any
-   #:hook-any))
+   #:hook-any
+   #:make-hook-any))

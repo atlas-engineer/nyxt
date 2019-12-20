@@ -360,11 +360,16 @@ Type must be something like:
 
 A function with name make-handler-NAME will be created.
 A class with name handler-NAME will be created.
-The method `add-hook' is added for the new hook and handler types."
+The method `add-hook' is added for the new hook and handler types.
+
+The function make-hook-NAME is created.  It is similar to (make-instance
+'hook-NAME ...) except that named functions are also accepted.  Named functions
+will be automatically encapsulated with make-handler-NAME."
   (let* ((name (string name))
          (function-name (intern (str:concat "MAKE-HANDLER-" name)))
          (handler-class-name (intern (str:concat "HANDLER-" name)))
-         (hook-class-name (intern (str:concat "HOOK-" name))))
+         (hook-class-name (intern (str:concat "HOOK-" name)))
+         (hook-function-name (intern (str:concat "MAKE-HOOK-" name))))
     `(progn
        (defclass ,handler-class-name (handler) ())
        (declaim (ftype (function (,type &key (:name symbol) (:place t) (:value t)))
@@ -383,9 +388,21 @@ HOOK must be of type ~a
 HANDLER must be of type ~a."
                   hook-class-name
                   handler-class-name)
-         (add-hook-internal hook handler :append append)))))
+         (add-hook-internal hook handler :append append))
+       (defun ,hook-function-name (&key handlers (combination #'default-combine-hook explicit?))
+         ,(format nil "Make hook and return it.
+HANDLERS can also contain named functions.
+Those will automatically be encapsulated with ~a." function-name)
+         (when (and explicit?
+                      (not (functionp combination)))
+           (error "Function combination required."))
+         (make-instance ',hook-class-name
+                        :handlers (mapcar (lambda (f) (if (typep f 'handler)
+                                                          f
+                                                          (,function-name f)))
+                                          handlers)
+                        :combination combination)))))
 
-;; TODO: Add make-hook-* function?
 ;; TODO: Allow listing all the hooks?
 
 (define-hook-type void (function ()))
