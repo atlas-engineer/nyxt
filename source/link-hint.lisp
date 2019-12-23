@@ -123,40 +123,58 @@ identifier for every hinted element."
 (defmethod object-string ((button-hint button-hint))
   (format nil "~a  Button" (hint button-hint)))
 
-(defgeneric follow-hint-action (hint)
+(defgeneric %follow-hint (hint)
   (:documentation "Action preformed for follow-hint"))
 
-(defmethod follow-hint-action ((link-hint link-hint))
+(defmethod %follow-hint ((link-hint link-hint))
   (set-url (url link-hint) :buffer (current-buffer) :raw-url-p t))
 
-(defmethod follow-hint-action ((button-hint button-hint))
+(defmethod %follow-hint ((button-hint button-hint))
   (click-button :buffer (current-buffer) :next-identifier (identifier button-hint)))
+
+(defmethod %follow-hint-new-buffer-focus ((link-hint link-hint))
+  (let ((new-buffer (make-buffer)))
+    (set-url (url link-hint) :buffer new-buffer :raw-url-p t)
+    (set-current-buffer new-buffer)))
+
+(defmethod %follow-hint-new-buffer-focus ((button-hint button-hint))
+  (echo "Can't open button in new buffer."))
+
+(defmethod %follow-hint-new-buffer ((link-hint link-hint))
+  (let ((new-buffer (make-buffer)))
+      (set-url (url link-hint) :buffer new-buffer :raw-url-p t)))
+
+(defmethod %follow-hint-new-buffer ((button-hint button-hint))
+  (echo "Can't open button in new buffer."))
+
+(defmethod %copy-hint-url ((link-hint link-hint))
+  (trivial-clipboard:text (url link-hint)))
+
+(defmethod %copy-hint-url ((button-hint button-hint))
+  (echo "Can't copy URL from button."))
 
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
   (query-hints "Go to element:" (selected-element)
-    (follow-hint-action selected-element)))
+    (%follow-hint selected-element)))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
   (query-hints "Open element in new buffer:" (selected-element)
-    (let ((new-buffer (make-buffer)))
-      (set-url (url selected-element) :buffer new-buffer :raw-url-p t))))
+    (%follow-hint-new-buffer selected-element)))
 
 (define-command follow-hint-new-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
   (query-hints "Go to element in new buffer:" (selected-element)
-    (let ((new-buffer (make-buffer)))
-      (set-url (url selected-element) :buffer new-buffer :raw-url-p t)
-      (set-current-buffer new-buffer))))
+    (%follow-hint-new-buffer-focus selected-element)))
 
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
   (query-hints "Copy element URL:" (selected-element)
-    (trivial-clipboard:text (url selected-element))))
+    (%copy-hint-url selected-element)))
 
 (define-deprecated-command copy-anchor-url ()
   "Deprecated by `copy-hint-url'."
