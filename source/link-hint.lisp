@@ -19,7 +19,7 @@
     (ps:let* ((rect (ps:chain element (get-bounding-client-rect)))
               (position (hint-determine-position rect))
               (element (ps:chain document (create-element "span"))))
-      (setf (ps:@ element class-name) "next-element-hint")
+      (setf (ps:@ element class-name) "next-hint")
       (setf (ps:@ element style) (ps:lisp (box-style (current-buffer))))
       (setf (ps:@ element style position) "absolute")
       (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
@@ -27,14 +27,16 @@
       (setf (ps:@ element text-content) hint)
       element))
   (defun hint-add (element hint)
-    "Adds a hint on a single element"
+    "Adds a hint on a single element. Additionally sets a unique
+identifier for every hinted element."
+    (ps:chain element (set-attribute "next-identifier" hint))
     (ps:let ((hint-element (hint-create-element element hint)))
       (ps:chain document body (append-child hint-element))))
   (defun object-create (element hint)
     (cond ((equal "A" (ps:@ element tag-name))
            (ps:create "type" "link" "hint" hint "href" (ps:@ element href)))
           ((equal "BUTTON" (ps:@ element tag-name))
-           (ps:create "type" "button" "hint" hint))))
+           (ps:create "type" "button" "hint" hint "identifier" hint))))
   (defun hints-add (elements)
     "Adds hints on elements"
     (ps:let* ((elements-length (length elements))
@@ -66,9 +68,15 @@
 (define-parenscript %remove-element-hints ()
   (defun hints-remove-all ()
     "Removes all the elements"
-    (ps:dolist (element (qsa document ".next-element-hint"))
+    (ps:dolist (element (qsa document ".next-hint"))
       (ps:chain element (remove))))
   (hints-remove-all))
+
+(define-parenscript click-button (next-identifier)
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
+  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
 
 (defun remove-element-hints ()
   (%remove-element-hints
@@ -100,11 +108,12 @@
                                         :url (cdr (assoc :href element))))
                         ((equal "button" object-type)
                          (make-instance 'button-hint
+                                        :identifier (cdr (assoc :identifier element))
                                         :hint (cdr (assoc :hint element))))))))
 
 (defclass hint ()
   ((hint :accessor hint :initarg :hint)
-   (identifier :accessor identifier :initarg identifier)))
+   (identifier :accessor identifier :initarg :identifier)))
 
 (defclass button-hint (hint) ())
 
@@ -117,11 +126,20 @@
 (defmethod object-string ((button-hint button-hint))
   (format nil "~a  Button" (hint button-hint)))
 
+(defgeneric follow-hint-action (hint)
+  (:documentation "Action preformed for follow-hint"))
+
+(defmethod follow-hint-action ((link-hint link-hint))
+  (set-url (url link-hint) :buffer (current-buffer) :raw-url-p t))
+
+(defmethod follow-hint-action ((button-hint button-hint))
+  (click-button :buffer (current-buffer) :next-identifier (identifier button-hint)))
+
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
   (query-hints "Go to element:" (selected-element)
-    (set-url (url selected-element) :buffer (current-buffer) :raw-url-p t)))
+    (follow-hint-action selected-element)))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
