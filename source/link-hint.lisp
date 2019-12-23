@@ -65,7 +65,7 @@ identifier for every hinted element."
                          (rem n 26)))) ""))
   (hints-add (qsa document (list "a" "button"))))
 
-(define-parenscript %remove-element-hints ()
+(define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
     "Removes all the elements"
     (ps:dolist (element (qsa document ".next-hint"))
@@ -78,10 +78,6 @@ identifier for every hinted element."
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
 
-(defun remove-element-hints ()
-  (%remove-element-hints
-   :buffer (callback-buffer (current-minibuffer))))
-
 (defmacro query-hints (prompt (symbol) &body body)
   `(with-result* ((elements-json (add-element-hints))
                   (,symbol (read-from-minibuffer
@@ -90,7 +86,8 @@ identifier for every hinted element."
                              :history nil
                              :completion-function (hint-completion-filter
                                                    (elements-from-json elements-json))
-                             :cleanup-function #'remove-element-hints))))
+                             :cleanup-function
+                             (lambda () (remove-element-hints :buffer (callback-buffer (current-minibuffer))))))))
      ,@body))
 
 (defun hint-completion-filter (hints)
