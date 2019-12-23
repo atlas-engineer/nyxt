@@ -123,9 +123,6 @@ identifier for every hinted element."
 (defmethod object-string ((button-hint button-hint))
   (format nil "~a  Button" (hint button-hint)))
 
-(defgeneric %follow-hint (hint)
-  (:documentation "Action preformed for follow-hint"))
-
 (defmethod %follow-hint ((link-hint link-hint))
   (set-url (url link-hint) :buffer (current-buffer) :raw-url-p t))
 
