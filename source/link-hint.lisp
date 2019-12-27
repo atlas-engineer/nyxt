@@ -34,9 +34,9 @@ identifier for every hinted element."
       (ps:chain document body (append-child hint-element))))
   (defun object-create (element hint)
     (cond ((equal "A" (ps:@ element tag-name))
-           (ps:create "type" "link" "hint" hint "href" (ps:@ element href)))
+           (ps:create "type" "link" "hint" hint "href" (ps:@ element href) "body" (ps:@ element inner-H-T-M-L)))
           ((equal "BUTTON" (ps:@ element tag-name))
-           (ps:create "type" "button" "hint" hint "identifier" hint))))
+           (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element inner-H-T-M-L)))))
   (defun hints-add (elements)
     "Adds hints on elements"
     (ps:let* ((elements-length (length elements))
@@ -102,15 +102,19 @@ identifier for every hinted element."
                   (cond ((equal "link" object-type)
                          (make-instance 'link-hint
                                         :hint (cdr (assoc :hint element))
-                                        :url (cdr (assoc :href element))))
+                                        :url (cdr (assoc :href element))
+                                        :body (plump:text (plump:parse (cdr (assoc :body element))))))
                         ((equal "button" object-type)
                          (make-instance 'button-hint
                                         :identifier (cdr (assoc :identifier element))
-                                        :hint (cdr (assoc :hint element))))))))
+                                        :hint (cdr (assoc :hint element))
+                                        :body (plump:text (plump:parse (cdr (assoc :body element))))))))))
 
 (defclass hint ()
   ((hint :accessor hint :initarg :hint)
-   (identifier :accessor identifier :initarg :identifier)))
+   (identifier :accessor identifier :initarg :identifier)
+   (body :accessor body :initarg :body
+         :documentation "The body of the anchor tag.")))
 
 (defclass button-hint (hint) ())
 
@@ -118,10 +122,10 @@ identifier for every hinted element."
   ((url :accessor url :initarg :url)))
 
 (defmethod object-string ((link-hint link-hint))
-  (format nil "~a  ~a" (hint link-hint) (url link-hint)))
+  (format nil "~a  ~a  ~a" (hint link-hint) (body link-hint) (url link-hint)))
 
 (defmethod object-string ((button-hint button-hint))
-  (format nil "~a  Button" (hint button-hint)))
+  (format nil "~a  ~a  Button" (hint button-hint) (body button-hint)))
 
 (defmethod %follow-hint ((link-hint link-hint))
   (set-url (url link-hint) :buffer (current-buffer) :raw-url-p t))

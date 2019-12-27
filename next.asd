@@ -30,6 +30,7 @@
                :quri
                :sqlite
                :str
+               :plump
                :swank
                :trivia
                :trivial-clipboard
