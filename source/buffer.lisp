@@ -89,10 +89,16 @@ buffer to the start page."
                             raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
-  (let ((url (if raw-url-p
-                 input-url
-                 (parse-url input-url))))
-    (setf url (next-hooks:run-hook (load-hook buffer) url))
+  (let* ((url (if raw-url-p
+                  input-url
+                  (parse-url input-url))))
+    (handler-case
+        (progn
+          (let ((new-url (next-hooks:run-hook (load-hook buffer) url)))
+            (check-type new-url string)
+            (setf url new-url)))
+      (error (c)
+        (log:error "In `load-hook': ~a" c)))
     (setf (url buffer) url)
     (rpc-buffer-load buffer url)))
 
