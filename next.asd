@@ -76,7 +76,7 @@
                  (:file "history")
                  (:file "search-buffer")
                  (:file "jump-heading")
-                 (:file "link-hint")
+                 (:file "element-hint")
                  (:file "help")
                  ;; Core Modes
                  (:file "application-mode")
