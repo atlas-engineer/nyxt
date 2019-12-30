@@ -95,7 +95,7 @@
                  ;; Depends on everything else:
                  (:file "about")
                  (:file "session")
-                 (:file "base"))))
+                 (:file "start"))))
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:entry-point")

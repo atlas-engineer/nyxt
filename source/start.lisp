@@ -1,7 +1,4 @@
-;;; base.lisp --- main entry point into Next
-
-;; TODO: Rename to start.lisp.  This should probably be the last file before the
-;; modes in the .asd.
+;;; start.lisp --- main entry point into Next
 
 (in-package :next)
 (annot:enable-annot-syntax)
