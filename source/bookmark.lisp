@@ -180,11 +180,11 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
-  (with-result* ((links-json (add-link-hints))
+  (with-result* ((links-json (add-element-hints))
                  (selected-hint (read-from-minibuffer
                                  (make-minibuffer
                                   :input-prompt "Bookmark hint:"
-                                  :cleanup-function #'remove-link-hints))))
+                                  :cleanup-function #'remove-element-hints))))
     (let* ((link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-hint link-hints :test #'equalp))))
       (when selected-link
