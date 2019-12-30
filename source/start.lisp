@@ -154,7 +154,7 @@ Error out if no platform port can be started."
   "Load the provided lisp file.
 If FILE is \"-\", read from the standard input.
 If INTERACTIVE is t, allow the debugger on errors. If :running, show
-an error but don't quit the lisp process. If nil, quit lisp (specially
+an error but don't quit the Lisp process. If nil, quit Lisp (especially
 useful when Next starts up)."
   (unless (str:emptyp (namestring file))
     (handler-case (if (string= (pathname-name file) "-")
@@ -181,20 +181,21 @@ useful when Next starts up)."
             (t
              (error (format nil "~a:~&~s" message c)))))))))
 
-(define-command load-file (&key interactive)
+(define-command load-file (&key (interactive :running))
   "Load the prompted Lisp file.
-If INTERACTIVE is t, allow the debugger on errors. If :running, show an error but don't quit the lisp process.
-"
+If INTERACTIVE is t, allow the debugger on errors.
+If :running, show an error but don't quit the Lisp process."
   (with-result (file-name-input (read-from-minibuffer
                                  (make-minibuffer
                                   :input-prompt "Load file:")))
-    (load-lisp-file file-name-input :interactive :running)))
+    (load-lisp-file file-name-input :interactive interactive)))
 
 (define-command load-init-file (&key (init-file (init-file-path))
-                                     interactive)
+                                (interactive :running))
   "Load or reload the init file.
-If INTERACTIVE is non-nil, allow the debugger on errors."
-  (load-lisp-file init-file :interactive :running))
+If INTERACTIVE is t, allow the debugger on errors.
+If :running, show an error but don't quit the Lisp process."
+  (load-lisp-file init-file :interactive interactive))
 
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers.
