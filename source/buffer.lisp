@@ -20,7 +20,6 @@ An entry is uniquely identified from its URL.  Not that we should not take the
 title into accound as it may vary from one load to the next."
   (string= (url bd1) (url bd2)))
 
-;; TODO: Use standard `print-object' instead?
 (defmethod object-string ((buffer buffer))
   (format nil "~a  ~a" (url buffer) (title buffer)))
 
