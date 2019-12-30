@@ -39,8 +39,7 @@ MODES is a list of mode symbols."
     (when (and current-is-last-p
                (equal (first buffers)
                       active-buffer))
-      ;; TODO: No need for copy-seq since buffers is already a copy, isn't it?
-      (setf buffers (alexandria:rotate (copy-seq buffers) -1)))
+      (setf buffers (alexandria:rotate buffers -1)))
     (lambda (input)
       (fuzzy-match input buffers))))
 
