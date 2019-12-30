@@ -87,10 +87,6 @@ returns
                   (echo "No match.")
                   (%next-search-hint))))))
 
-(define-deprecated-command add-search-hints ()
-  "Deprecated by `search-buffer'."
-  (search-buffer))
-
 (define-parenscript %remove-search-hints ()
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
@@ -124,3 +120,7 @@ returns
 (define-command previous-search-hint ()
   "Go to previous search hint."
   (%previous-search-hint))
+
+(define-deprecated-command add-search-hints ()
+  "Deprecated by `search-buffer'."
+  (search-buffer))
