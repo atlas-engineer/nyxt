@@ -71,6 +71,16 @@ MODES is a list of mode symbols."
                           :completion-function (buffer-completion-filter))))
     (mapcar #'rpc-buffer-delete buffers)))
 
+(defun delete-buffers ()
+  "Delete all the current buffers."
+  (mapcar #'rpc-buffer-delete (alexandria:hash-table-values (buffers *interface*))))
+
+(define-command delete-all-buffers ()
+  "Delete all the current buffers, with confirmation."
+  (let ((count (hash-table-count (buffers *interface*))))
+    (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
+      (delete-buffers))))
+
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
