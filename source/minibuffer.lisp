@@ -119,6 +119,10 @@ If nil, no history is used.")
 candidates.")
    (completions :accessor completions :initform nil)
    (marked-completions :accessor marked-completions :initform nil)
+   (show-current-choices-nb :accessor show-current-choices-nb
+                            :initarg :show-current-choices-nb :initform t
+                            :type boolean
+                            :documentation "Show the number of chosen candidates inside brackets. In the case of yes/no questions, there is no need for it.")
    (completion-head :accessor completion-head :initform 0)
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
    (content :initform "" :type string
@@ -190,6 +194,7 @@ You might want to configure the value on HiDPI screen.")
                           (input-prompt nil explicit-input-prompt)
                           (input-buffer nil explicit-input-buffer)
                           (invisible-input-p nil explicit-invisible-input-p)
+                          (show-current-choices-nb t explicit-show-current-choices-nb)
                           (history nil explicit-history)
                           (multi-selection-p nil explicit-multi-selection-p))
   "See the `minibuffer' class for the argument documentation."
@@ -223,6 +228,9 @@ You might want to configure the value on HiDPI screen.")
                 '())
            ,@(if explicit-invisible-input-p
                 `(:invisible-input-p ,invisible-input-p)
+                '())
+           ,@(if explicit-show-current-choices-nb
+                `(:show-current-choices-nb ,show-current-choices-nb)
                 '())
            ,@(if explicit-history
                 `(:history ,history)
@@ -667,14 +675,20 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                (ps:lisp
                                 (format nil "~a~a"
                                         (input-prompt minibuffer)
-                                        (if completions
-                                            (if marked-completions
-                                                (format nil "[~a/~a]:"
-                                                        (length marked-completions)
-                                                        (length completions))
-                                                (format nil "[~a]:"
-                                                        (length completions)))
-                                            ""))))
+                                        (cond
+                                          ((not completions)
+                                           "")
+                                          ((not (show-current-choices-nb minibuffer))
+                                           "")
+                                          ((not marked-completions)
+                                           (format nil "[~a]:"
+                                                   (length completions)))
+                                          (marked-completions
+                                           (format nil "[~a/~a]:"
+                                                   (length marked-completions)
+                                                   (length completions)))
+                                          (t
+                                           "[?]")))))
                          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                                (ps:lisp input-text))
                          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
