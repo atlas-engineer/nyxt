@@ -73,3 +73,29 @@ Example:
     `(progn ,@body)
     `(with-result ,(first bindings)
        (with-result* ,(rest bindings) ,@body))))
+
+(defparameter *yes-no-choices* '("yes" "no"))
+
+(defun yes-no-completion-filter ()
+  (lambda (input)
+    (fuzzy-match input *yes-no-choices*)))
+
+(defun confirmed-p (answer)
+  (string-equal answer "yes"))
+
+(defmacro with-confirm (prompt &body body)
+  "Ask the user for confirmation in a yes/no question before executing BODY.
+PROMPT will be fed to `format nil'.
+
+Example usage:
+
+  (with-macro (\"Are you sure to kill ~a buffers?\" nb)
+     (delete-buffers))
+"
+  `(with-result (answer (read-from-minibuffer
+                         (make-minibuffer
+                          :input-prompt (format nil ,@prompt)
+                          :completion-function (yes-no-completion-filter)
+                          :show-current-choices-nb nil)))
+     (when (confirmed-p answer)
+       ,@body)))
