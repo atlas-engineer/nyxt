@@ -84,12 +84,12 @@ Example:
   (string-equal answer "yes"))
 
 (defmacro with-confirm (prompt &body body)
-  "Ask the user for confirmation in a yes/no question before executing BODY.
-PROMPT will be fed to `format nil'.
+  "Ask the user for confirmation before executing BODY.
+PROMPT is a list fed to `format nil'.
 
 Example usage:
 
-  (with-macro (\"Are you sure to kill ~a buffers?\" nb)
+  (with-confirm (\"Are you sure to kill ~a buffers?\" count)
      (delete-buffers))
 "
   `(with-result (answer (read-from-minibuffer
