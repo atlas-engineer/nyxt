@@ -72,11 +72,11 @@ MODES is a list of mode symbols."
     (mapcar #'rpc-buffer-delete buffers)))
 
 (defun delete-buffers ()
-  "Delete all the current buffers."
+  "Delete all buffers."
   (mapcar #'rpc-buffer-delete (alexandria:hash-table-values (buffers *interface*))))
 
 (define-command delete-all-buffers ()
-  "Delete all the current buffers, with confirmation."
+  "Delete all buffers, with confirmation."
   (let ((count (hash-table-count (buffers *interface*))))
     (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
       (delete-buffers))))
