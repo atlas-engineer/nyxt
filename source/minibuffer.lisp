@@ -119,8 +119,8 @@ If nil, no history is used.")
 candidates.")
    (completions :accessor completions :initform nil)
    (marked-completions :accessor marked-completions :initform nil)
-   (show-current-choices-nb :accessor show-current-choices-nb
-                            :initarg :show-current-choices-nb :initform t
+   (show-completion-count :accessor show-completion-count
+                            :initarg :show-completion-count :initform t
                             :type boolean
                             :documentation "Show the number of chosen candidates inside brackets. In the case of yes/no questions, there is no need for it.")
    (completion-head :accessor completion-head :initform 0)
@@ -194,7 +194,7 @@ You might want to configure the value on HiDPI screen.")
                           (input-prompt nil explicit-input-prompt)
                           (input-buffer nil explicit-input-buffer)
                           (invisible-input-p nil explicit-invisible-input-p)
-                          (show-current-choices-nb t explicit-show-current-choices-nb)
+                          (show-completion-count t explicit-show-completion-count)
                           (history nil explicit-history)
                           (multi-selection-p nil explicit-multi-selection-p))
   "See the `minibuffer' class for the argument documentation."
@@ -229,8 +229,8 @@ You might want to configure the value on HiDPI screen.")
            ,@(if explicit-invisible-input-p
                 `(:invisible-input-p ,invisible-input-p)
                 '())
-           ,@(if explicit-show-current-choices-nb
-                `(:show-current-choices-nb ,show-current-choices-nb)
+           ,@(if explicit-show-completion-count
+                `(:show-completion-count ,show-completion-count)
                 '())
            ,@(if explicit-history
                 `(:history ,history)
@@ -678,7 +678,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                         (cond
                                           ((not completions)
                                            "")
-                                          ((not (show-current-choices-nb minibuffer))
+                                          ((not (show-completion-count minibuffer))
                                            "")
                                           ((not marked-completions)
                                            (format nil "[~a]:"
