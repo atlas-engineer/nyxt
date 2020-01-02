@@ -23,6 +23,7 @@ end-user allowing for infinite customization.
   - [[#proxy-and-tor-support][Proxy and Tor support]]
   - [[#cloning-git-repositories][Cloning Git repositories]]
   - [[#downloading-videos][Downloading videos]]
+  - [[#password-manager][Password manager]]
 - [[#advanced-topics][Advanced Topics]]
   - [[#execute-extended-command][Execute Extended Command]]
   - [[#help][Help]]
@@ -471,6 +472,14 @@ installed first.
 /Disclaimer: this feature is meant to grow with Next 1.4 and onwards!/
 
 To customize it, see all the variables and functions in [[https://github.com/atlas-engineer/next/blob/master/source/video-mode.lisp][video-mode]].
+
+** Password manager
+
+Next provides a password manager interface to [[https://keepassxc.org/][KeepassXC]] or [[https://www.passwordstore.org/][Pass]].
+
+The two commands to know to use it are =save-new-password= and
+=copy-password=, to choose a password from the minibuffer and to copy
+it to the clipboard.
 
 * Advanced Topics
 ** Execute Extended Command
