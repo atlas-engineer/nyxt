@@ -680,12 +680,16 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                            "")
                                           ((not (show-completion-count minibuffer))
                                            "")
-                                          ((not marked-completions)
-                                           (format nil " [~a]"
-                                                   (length completions)))
                                           (marked-completions
                                            (format nil " [~a/~a]"
                                                    (length marked-completions)
+                                                   (length completions)))
+                                          ((and (not marked-completions)
+                                                (multi-selection-p minibuffer))
+                                           (format nil " [0/~a]"
+                                                   (length completions)))
+                                          ((not marked-completions)
+                                           (format nil " [~a]"
                                                    (length completions)))
                                           (t
                                            "[?]")))))
