@@ -193,7 +193,7 @@
   "Query parent URL to navigate back to."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Navigate backwards to:"
+                        :input-prompt "Navigate backwards to"
                         :completion-function (history-backwards-completion-filter))))
     (when input
       (set-url-from-history input))))
@@ -212,7 +212,7 @@
   "Query forward-URL to navigate to."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Navigate forwards to:"
+                        :input-prompt "Navigate forwards to"
                         :completion-function (history-forwards-completion-filter))))
     (when input
       (set-url-from-history input))))
@@ -240,7 +240,7 @@ Otherwise go forward to the only child."
   "Query URL to forward to, from all child branches."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Navigate forwards to (all branches):"
+                        :input-prompt "Navigate forwards to (all branches)"
                         :completion-function (history-forwards-all-completion-filter))))
     (when input
       (set-url-from-history input))))
@@ -259,7 +259,7 @@ Otherwise go forward to the only child."
   "Query URL to go to, from the whole history."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Navigate to:"
+                        :input-prompt "Navigate to"
                         :completion-function (history-all-completion-filter))))
     (when input
       (set-url-from-history input))))

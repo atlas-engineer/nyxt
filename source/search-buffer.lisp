@@ -77,7 +77,7 @@ returns
   (initialize-search-buffer)
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Search for:"
+                        :input-prompt "Search for"
                         :history (minibuffer-search-history *interface*))))
     (%remove-search-hints)
     (%add-search-hints

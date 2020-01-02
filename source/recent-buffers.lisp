@@ -19,7 +19,7 @@
   "Reopen queried deleted buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Reopen buffer(s):"
+                          :input-prompt "Reopen buffer(s)"
                           :multi-selection-p t
                           :completion-function (recent-buffer-completion-filter))))
     (dolist (buffer buffers)

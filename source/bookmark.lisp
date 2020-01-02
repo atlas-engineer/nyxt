@@ -136,7 +136,7 @@ This can be useful to let the user select no tag when returning directly."
   (if (url buffer)
       (with-result (tags (read-from-minibuffer
                           (make-minibuffer
-                           :input-prompt "Space-separated tag(s):"
+                           :input-prompt "Space-separated tag(s)"
                            :multi-selection-p t
                            :completion-function (tag-completion-filter :with-empty-tag t)
                            :empty-complete-immediate t)))
@@ -156,7 +156,7 @@ This can be useful to let the user select no tag when returning directly."
   "Bookmark the currently opened page(s) in the active buffer."
   (with-result (buffers (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Bookmark URL from buffer(s):"
+                          :input-prompt "Bookmark URL from buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
     (mapcar #'bookmark-current-page buffers)))
@@ -165,14 +165,14 @@ This can be useful to let the user select no tag when returning directly."
   "Allow the user to bookmark a URL via minibuffer input."
   (with-result (url (read-from-minibuffer
                      (make-minibuffer
-                      :input-prompt "Bookmark URL:")))
+                      :input-prompt "Bookmark URL")))
     (bookmark-add url)))
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
   (with-result (entries (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Delete bookmark(s):"
+                          :input-prompt "Delete bookmark(s)"
                           :multi-selection-p t
                           :completion-function (bookmark-completion-filter))))
     (setf (bookmarks-data *interface*)
@@ -183,7 +183,7 @@ This can be useful to let the user select no tag when returning directly."
   (with-result* ((links-json (add-element-hints))
                  (selected-hint (read-from-minibuffer
                                  (make-minibuffer
-                                  :input-prompt "Bookmark hint:"
+                                  :input-prompt "Bookmark hint"
                                   :cleanup-function #'remove-element-hints))))
     (let* ((link-hints (cl-json:decode-json-from-string links-json))
            (selected-link (cadr (assoc selected-hint link-hints :test #'equalp))))
@@ -198,7 +198,7 @@ This can be useful to let the user select no tag when returning directly."
   "Set the URL for the current buffer from a bookmark."
   (with-result (entry (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Open bookmark:"
+                        :input-prompt "Open bookmark"
                         :completion-function (bookmark-completion-filter))))
     ;; TODO: Add support for multiple bookmarks?
     (set-url (url entry) :buffer (current-buffer) :raw-url-p t)))

@@ -192,7 +192,7 @@ This function can be `funcall'ed."
   "Execute a command by name."
   (with-result (command (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Execute command:"
+                          :input-prompt "Execute command"
                           :completion-function 'command-completion-filter
                           :show-completion-count nil)))
     (setf (access-time command) (get-internal-real-time))

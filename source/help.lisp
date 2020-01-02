@@ -35,7 +35,7 @@
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :completion-function #'variable-completion-filter
-                        :input-prompt "Inspect variable:")))
+                        :input-prompt "Inspect variable")))
     (let* ((help-buffer (help-mode :activate t
                                    :buffer (make-buffer
                                             :title (str:concat "*Help-"
@@ -56,7 +56,7 @@
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Inspect command:"
+                        :input-prompt "Inspect command"
                         :completion-function #'function-completion-filter)))
     (let* ((help-buffer (help-mode :activate t
                                    :buffer (make-buffer
@@ -88,7 +88,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Evaluate Lisp:")))
+                        :input-prompt "Evaluate Lisp")))
     (let* ((result-buffer (help-mode :activate t
                                      :buffer (make-buffer
                                               ;; TODO: Reuse buffer / create REPL mode.

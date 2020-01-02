@@ -71,7 +71,7 @@ The history is sorted by last access."
   "Delete queried history entries."
   (with-result (entries (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Delete entries:"
+                          :input-prompt "Delete entries"
                           :completion-function (history-completion-filter)
                           :history (minibuffer-set-url-history *interface*)
                           :multi-selection-p t)))

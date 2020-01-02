@@ -98,7 +98,7 @@ Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube
       (t
        (with-result (target-dir (read-from-minibuffer
                                  (make-minibuffer
-                                  :input-prompt "Target directory:"
+                                  :input-prompt "Target directory"
                                   :completion-function
                                   (lambda (input)
                                     (file-completion-function input next/video::*preferred-download-directories*)))))

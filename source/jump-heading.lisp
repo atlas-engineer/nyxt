@@ -44,7 +44,7 @@ For example, Wikipedia ones end with '[edit]'. We strip what comes after the fir
   (with-result* ((headings (get-headings))
                  (heading (read-from-minibuffer
                            (make-minibuffer
-                            :input-prompt "Jump to heading:"
+                            :input-prompt "Jump to heading"
                             :completion-function (lambda (input)
                                                    (fuzzy-match
                                                     input

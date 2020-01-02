@@ -97,7 +97,7 @@ This should not rely on the minibuffer's content.")
                              :documentation "If non-nil, allow input matching no
 candidates.")
    ;; TODO: Move input-* slots to a separate text class?
-   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input:"
+   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input"
                  :type string)
    (input-buffer :initarg :input-buffer :accessor input-buffer :initform ""
                  :type string
@@ -673,7 +673,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                        (ps:ps
                          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                                (ps:lisp
-                                (format nil "~a~a"
+                                (format nil "~a~a:"
                                         (input-prompt minibuffer)
                                         (cond
                                           ((not completions)
@@ -868,7 +868,7 @@ Return most recent entry in RING."
   (when (history minibuffer)
     (with-result (input (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Input history:"
+                          :input-prompt "Input history"
                           :history nil
                           :completion-function (minibuffer-history-completion-filter (history minibuffer)))))
       (unless (str:empty? input)

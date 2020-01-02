@@ -17,7 +17,7 @@
   "Delete the queried window(s)."
   (with-result (windows (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Delete window(s):"
+                          :input-prompt "Delete window(s)"
                           :multi-selection-p t
                           :completion-function (window-completion-filter))))
     (mapcar #'delete-current-window windows)))

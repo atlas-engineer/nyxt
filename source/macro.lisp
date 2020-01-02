@@ -61,7 +61,7 @@ Example:
 
   (with-result (url (read-from-minibuffer
                      (make-minibuffer
-                      :input-prompt \"Bookmark URL:\"))
+                      :input-prompt \"Bookmark URL\"))
     (bookmark-add url))"
   `(,(first async-form)
     ,@(rest async-form)
@@ -76,7 +76,7 @@ Example:
   (with-result* ((links-json (add-link-hints))
                  (selected-hint (read-from-minibuffer
                                  (make-minibuffer
-                                  :input-prompt \"Bookmark hint:\"
+                                  :input-prompt \"Bookmark hint\"
                                   :cleanup-function #'remove-link-hints))))
     ...)"
   (if (null bindings)

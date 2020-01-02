@@ -47,7 +47,7 @@ MODES is a list of mode symbols."
   "Switch the active buffer in the current window."
   (with-result (buffer (read-from-minibuffer
                         (make-minibuffer
-                         :input-prompt "Switch to buffer:"
+                         :input-prompt "Switch to buffer"
                          ;; For commodity, the current buffer shouldn't be the first one on the list.
                          :completion-function (buffer-completion-filter :current-is-last-p t))))
     (set-current-buffer buffer)))
@@ -66,7 +66,7 @@ MODES is a list of mode symbols."
   "Delete the buffer(s) via minibuffer input."
   (with-result (buffers (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Delete buffer(s):"
+                          :input-prompt "Delete buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
     (mapcar #'rpc-buffer-delete buffers)))
@@ -128,7 +128,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
       (ring:insert history (url (current-buffer))))
     (with-result (url (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt (format nil "Open URL in ~A buffer:"
+                        :input-prompt (format nil "Open URL in ~A buffer"
                                               (if new-buffer-p
                                                   "new"
                                                   "current"))
@@ -153,7 +153,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   "Reload queried buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Reload buffer(s):"
+                          :input-prompt "Reload buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
     (mapcar #'reload-current-buffer buffers)))
@@ -208,7 +208,7 @@ item in the list, jump to the first item."
   "Disable queried mode(s)."
   (with-result (modes (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Disable mode(s):"
+                        :input-prompt "Disable mode(s)"
                         :multi-selection-p t
                         :completion-function (active-mode-completion-filter buffers))))
     (dolist (buffer buffers)
@@ -220,7 +220,7 @@ item in the list, jump to the first item."
   "Disable queried mode(s) for select buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Disable mode(s) for buffer(s):"
+                          :input-prompt "Disable mode(s) for buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
     (disable-mode-for-current-buffer :buffers buffers)))
@@ -229,7 +229,7 @@ item in the list, jump to the first item."
   "Enable queried mode(s)."
   (with-result (modes (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Enable mode(s):"
+                        :input-prompt "Enable mode(s)"
                         :multi-selection-p t
                         :completion-function (inactive-mode-completion-filter buffers))))
     (dolist (buffer buffers)
@@ -241,7 +241,7 @@ item in the list, jump to the first item."
   "Enable queried mode(s) for select buffer(s)."
   (with-result (buffers (read-from-minibuffer
                          (make-minibuffer
-                          :input-prompt "Enable mode(s) for buffer(s):"
+                          :input-prompt "Enable mode(s) for buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
     (enable-mode-for-current-buffer :buffers buffers)))

@@ -10,11 +10,11 @@
   (if (password-interface *interface*)
       (with-result* ((password-name (read-from-minibuffer
                                      (make-minibuffer
-                                      :input-prompt "Name for new password:")))
+                                      :input-prompt "Name for new password")))
                      (new-password (read-from-minibuffer
                                     (make-minibuffer
                                      :invisible-input-p t
-                                     :input-prompt "New password (leave empty to generate):"))))
+                                     :input-prompt "New password (leave empty to generate)"))))
         (password:save-password (password-interface *interface*)
                                 password-name
                                 new-password))
