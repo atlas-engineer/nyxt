@@ -41,6 +41,16 @@ ARGS must be key arguments."
                                        (ps:ps ,@script-body)
                                        :callback %callback))))
 
+(defmacro with-ps (&body body)
+  "Execute the parenscript body against the current buffer."
+  ;XXX: we might as well do it synchronously.
+  `(with-result (res
+                 (rpc-buffer-evaluate-javascript (current-buffer)
+                                                 (ps:ps ,@body)
+                                                 :callback (lambda (res)
+                                                             (format t res))))
+     (declare (ignorable res))))
+
 @export
 (defmacro with-result ((symbol async-form) &body body)
   "Call ASYNC-FORM.
