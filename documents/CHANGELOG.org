@@ -72,6 +72,9 @@ Offset is configurable in the =page-scroll-ratio= buffer slot.
 - Omit extra space in search engine queries.
 - Show if new or current buffer in =set-url= prompt (Thanks to Rune Juhl Jacobsen).
 - Fix minibuffer performance hog.
+- Fix element hint performance.
+- Buttons hints can now be followed.
+- Fix element hint rendered offscreen on a scaled display.
 
 ** DONE 1.3.4
 
