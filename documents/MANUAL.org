@@ -495,11 +495,14 @@ directly within Next. Docstrings will appear in a new help buffer.
 2. ~C-h c~: Look up a command docstring
 
 ** Eval Lisp forms
-Next 1.4 comes with a =--eval EXPR== command line argument that allows
-you to execute a Lisp expression:
+The command line option =--eval EXPR== allows you to execute a Lisp
+expression:
 
 : next --eval '(format t "hello Next!")'
 
+The plateform port is not started. If you want to execute commands
+against a running Next process, see the =sart-swank= command and the
+developer setup.
 
 ** SLIME with a compiled version of Next
 =SLIME= provides a way of interacting with Next, and with Lisp code in
