@@ -12,9 +12,9 @@
 ;; - Access-time: This is useful to sort command by the time they were last
 ;;   called.  The only way to do this is to persist the command instances.
 (defclass command ()
-  ((sym :accessor sym :initarg :sym :type :symbol :initform nil) ; TODO: Make constructor?
-   (pkg :accessor pkg :initarg :pkg :type :package :initform nil)
-   (access-time :accessor access-time :type :integer :initform 0
+  ((sym :accessor sym :initarg :sym :type symbol :initform nil) ; TODO: Make constructor?
+   (pkg :accessor pkg :initarg :pkg :type package :initform nil)
+   (access-time :accessor access-time :type integer :initform 0
                 :documentation "Last time this command was called from minibuffer.
 This can be used to order the commands.")))
 
