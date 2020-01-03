@@ -27,6 +27,7 @@ end-user allowing for infinite customization.
 - [[#advanced-topics][Advanced Topics]]
   - [[#execute-extended-command][Execute Extended Command]]
   - [[#help][Help]]
+  - [[#eval-lisp-forms][Eval Lisp forms]]
   - [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
 - [[#customization][Customization]]
   - [[#keybinding][Keybinding]]
@@ -492,6 +493,13 @@ directly within Next. Docstrings will appear in a new help buffer.
 
 1. ~C-h v~: Look up a variable docstring
 2. ~C-h c~: Look up a command docstring
+
+** Eval Lisp forms
+Next 1.4 comes with a =--eval EXPR== command line argument that allows
+you to execute a Lisp expression:
+
+: next --eval '(format t "hello Next!")'
+
 
 ** SLIME with a compiled version of Next
 =SLIME= provides a way of interacting with Next, and with Lisp code in
