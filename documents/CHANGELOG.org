@@ -43,38 +43,61 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Add online suggestions from search engines
 
 ** 1.4.0
-*** CLOS-style configuration.
+- CLOS-style configuration.
 This simplifies setting the default slots of the various classes (=buffer=,
 =window=, =remote-interface=, =minibuffer=, etc.).  In particular, the
 user-specialized (or extension-specialized) classes can in turn be composed to
 form a new specialized classes.
-*** Revamped hook system. (Backward incompatible.)
+
+- Revamped hook system. (Backward incompatible.)
 Hooks are now simpler to use but also more powerful.
 In particular, handlers can be typed and composed.
 See the manual for examples.
-*** Link hints: Add fuzzy-completion over titles and URLs.
-*** New =--eval= command line argument.
-*** New delete-all-buffers command.
-*** Open directories, music and videos directly from Next.
-*** VCS: More checks and notifications.
-*** Complete search-engine names with Tab.
-*** Display package in =execute-command= candidate list.
-*** New =+platform-port-command+= global.
-*** More minibuffer default bindings.
-Bind "C-Right", "C-Left", "Home", "End" in the minibuffer.
-*** Remove history duplicates.
-*** Scroll page with an offset by default.
-Offset is configurable in the =page-scroll-ratio= buffer slot.
-*** New command line parameter =--session= to skip loading the previous session.
-*** Password manager fixes. (Thanks to Rune Juhl Jacobsen.)
-*** Bug fixes.
-- Don't reload page when there is no history change.
-- Omit extra space in search engine queries.
-- Show if new or current buffer in =set-url= prompt (Thanks to Rune Juhl Jacobsen).
-- Fix minibuffer performance hog.
-- Fix element hint performance.
-- Buttons hints can now be followed.
-- Fix element hint rendered offscreen on a scaled display.
+
+- Link hints: Add fuzzy-completion over titles and URLs.
+
+- New =--eval= command line argument.
+
+- New delete-all-buffers command.
+
+- Open directories, music and videos directly from Next.
+
+- VCS: More checks and notifications.
+
+- Complete search-engine names with Tab.
+
+- Display package in =execute-command= candidate list.
+
+- New =+platform-port-command+= global.
+
+- More minibuffer default bindings.
+  Bind =C-Right=, =C-Left=, =Home=, =End= in the minibuffer.
+
+- Remove history duplicates.
+
+- Scroll page with an offset by default.
+
+  Offset is configurable in the =page-scroll-ratio= buffer slot.
+- New command line parameter =--session= to skip loading the previous session.
+
+- Password manager fixes. (Thanks to Rune Juhl Jacobsen.)
+
+- Bug fixes.
+
+  - Don't reload page when there is no history change.
+
+  - Omit extra space in search engine queries.
+
+  - Show if new or current buffer in =set-url= prompt (Thanks to Rune Juhl
+    Jacobsen).
+
+  - Fix minibuffer performance hog.
+
+  - Fix element hint performance.
+
+  - Buttons hints can now be followed.
+
+  - Fix element hint rendered offscreen on a scaled display.
 
 ** DONE 1.3.4
 
