@@ -53,6 +53,7 @@ Hooks are now simpler to use but also more powerful.
 In particular, handlers can be typed and composed.
 See the manual for examples.
 *** Link hints: Add fuzzy-completion over titles and URLs.
+*** Added the --eval command line argument
 *** Open directories, music and videos directly from Next.
 *** VCS: More checks and notifications.
 *** Complete search-engine names with Tab.
