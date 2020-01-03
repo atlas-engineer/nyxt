@@ -375,10 +375,10 @@ The function make-hook-NAME is created.  It is similar to (make-instance
 'hook-NAME ...) except that named functions are also accepted.  Named functions
 will be automatically encapsulated with make-handler-NAME."
   (let* ((name (string name))
-         (function-name (intern (str:concat "MAKE-HANDLER-" name)))
-         (handler-class-name (intern (str:concat "HANDLER-" name)))
-         (hook-class-name (intern (str:concat "HOOK-" name)))
-         (hook-function-name (intern (str:concat "MAKE-HOOK-" name))))
+         (function-name (intern (serapeum:concat "MAKE-HANDLER-" name)))
+         (handler-class-name (intern (serapeum:concat "HANDLER-" name)))
+         (hook-class-name (intern (serapeum:concat "HOOK-" name)))
+         (hook-function-name (intern (serapeum:concat "MAKE-HOOK-" name))))
     `(progn
        (defclass ,handler-class-name (handler) ())
        (declaim (ftype (function (,type &key (:name symbol) (:place t) (:value t)))
