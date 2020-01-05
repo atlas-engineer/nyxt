@@ -203,7 +203,8 @@ If INTERACTIVE is t, allow the debugger on errors.
 If :running, show an error but don't quit the Lisp process."
   (with-result (file-name-input (read-from-minibuffer
                                  (make-minibuffer
-                                  :input-prompt "Load file")))
+                                  :input-prompt "Load file"
+                                  :show-completion-count nil)))
     (load-lisp-file file-name-input :interactive interactive)))
 
 (define-command load-init-file (&key (init-file (init-file-path))
