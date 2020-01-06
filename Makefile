@@ -177,6 +177,10 @@ test: $(lisp_files)
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)'
 
+# Usage: make VERSION=1.x.y release
+release:
+	./build-scripts/release.sh $(VERSION)
+
 .PHONY: clean-deps
 clean-deps:
 	rm -rf quicklisp.lisp
