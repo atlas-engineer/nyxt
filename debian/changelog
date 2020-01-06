@@ -1,6 +1,6 @@
-next (1.4) unstable; urgency=low
+next (1.4.0) unstable; urgency=low
 
-  * release 1.4
+  * release 1.4.0
   * release 1.3.4
   * ca0b9fa set default hostlist path at runtime instead of compile time
   * release 1.3.3

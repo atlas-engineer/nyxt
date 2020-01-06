@@ -3,7 +3,7 @@ Section: Web Software
 Priority: extra
 Maintainer: Next developers <hello@atlas.engineer>
 Build-Depends: debhelper (>= 8.0.0)
-Standards-Version: 1.4
+Standards-Version: 1.4.0
 Homepage: http://next.atlas.engineer/
 
 Package: next
