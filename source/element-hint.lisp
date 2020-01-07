@@ -8,13 +8,16 @@
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
+
   (defun code-char (n)
     "Alias of String.fromCharCode"
     (ps:chain -string (from-char-code n)))
+
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the element"
     (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
                :left (+ (ps:@ window page-x-offset) (- (ps:@ rect left) 20))))
+
   (defun hint-create-element (element hint)
     "Creates a DOM element to be used as a hint"
     (ps:let* ((rect (ps:chain element (get-bounding-client-rect)))
@@ -27,17 +30,20 @@
       (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
       (setf (ps:@ element text-content) hint)
       element))
+
   (defun hint-add (element hint)
     "Adds a hint on a single element. Additionally sets a unique
 identifier for every hinted element."
     (ps:chain element (set-attribute "next-identifier" hint))
     (ps:let ((hint-element (hint-create-element element hint)))
       (ps:chain document body (append-child hint-element))))
+
   (defun object-create (element hint)
     (cond ((equal "A" (ps:@ element tag-name))
            (ps:create "type" "link" "hint" hint "href" (ps:@ element href) "body" (ps:@ element inner-H-T-M-L)))
           ((equal "BUTTON" (ps:@ element tag-name))
            (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element inner-H-T-M-L)))))
+
   (defun hints-add (elements)
     "Adds hints on elements"
     (ps:let* ((elements-length (length elements))
@@ -47,23 +53,28 @@ identifier for every hinted element."
                  (loop for i from 0 to (- elements-length 1)
                        do (hint-add (elt elements i) (elt hints i))
                        collect (object-create (elt elements i) (elt hints i)))))))
+
   (defun hints-determine-chars-length (length)
     "Finds out how many chars long the hints must be"
     (floor (+ 1 (/ (log length) (log 26)))))
+
   (defun hints-generate (length)
     "Generates hints that will appear on the elements"
     (strings-generate length (hints-determine-chars-length length)))
+
   (defun strings-generate (length chars-length)
     "Generates strings of specified length"
     (ps:let ((minimum (1+ (ps:chain -math (pow 26 (- chars-length 1))))))
       (loop for i from minimum to (+ minimum length)
             collect (string-generate i))))
+
   (defun string-generate (n)
     "Generates a string from a number"
     (if (>= n 0)
         (+ (string-generate (floor (- (/ n 26) 1)))
            (code-char (+ 65
                          (rem n 26)))) ""))
+
   (hints-add (qsa document (list "a" "button"))))
 
 (define-parenscript remove-element-hints ()
