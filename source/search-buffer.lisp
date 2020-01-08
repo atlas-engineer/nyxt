@@ -1,13 +1,5 @@
 ;;; search-buffer.lisp --- functions to enable searching within a buffer
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Version 1                             ;;
-;; String -> Candidates                  ;;
-;; Completion Filter                     ;;
-;; RET -> Jump To                        ;;
-;; Prev/Next                             ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (in-package :next)
 
 (define-parenscript query-buffer (query)
@@ -16,6 +8,9 @@
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
+  
+  (defun match-object-create (body)
+    (ps:create "type" "match" "identifier" 0 "body" body))
   
   (defun get-substring (index string)
     "Return the substring and preceding/trailing text for a given index."
@@ -30,7 +25,7 @@
           (string (if case-sensitive-p string (ps:chain string (to-lower-case)))))
       (loop with i = (ps:chain string (index-of search-string 0))
             until (equal i -1)
-            collect (get-substring i string)
+            collect (match-object-create (get-substring i string))
             do (setf i (ps:chain string (index-of search-string (+ i 1)))))))
   
   (defun matches-from-element (element query)
@@ -49,6 +44,19 @@
   (let ((*matches* (array)))
     (walk-document (ps:chain document body) matches-from-element)
     (ps:chain -j-s-o-n (stringify *matches*))))
+
+(defclass match ()
+  ((identifier :accessor identifier :initarg :identifier)
+   (body :accessor body :initarg :body)))
+
+(defmethod object-string ((match match))
+  (format nil "...~a..." (body match)))
+
+(defun matches-from-json (matches-json)
+  (loop for element in (cl-json:decode-json-from-string matches-json)
+        collect (make-instance 'match
+                               :identifier (cdr (assoc :identifier element))
+                               :body (cdr (assoc :body element)))))
 
 (define-command search-buffer ()
   "Add search boxes for a given search string."
