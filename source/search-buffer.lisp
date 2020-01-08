@@ -35,7 +35,8 @@
   
   (defun matches-from-element (element query)
     (when (= (ps:chain (typeof (ps:@ element node-value))) "string")
-      (ps:chain *matches* (push (get-substring-matches query (ps:@ element node-value) nil)))))
+      (ps:chain *matches* push (apply *matches*
+                                      (get-substring-matches query (ps:@ element node-value) t)))))
   
   (defun walk-document (node process-node)
     (when (and node (not (ps:chain node first-child)))
