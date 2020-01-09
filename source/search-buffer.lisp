@@ -3,14 +3,23 @@
 (in-package :next)
 
 (define-parenscript query-buffer (query)
+  (defvar *identifier* 0)
   (defvar *matches* (array))
   
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
   
-  (defun match-object-create (body)
-    (ps:create "type" "match" "identifier" 0 "body" body))
+  (defun match-object-create (body identifier)
+    (ps:create "type" "match" "identifier" identifier "body" body))
+  
+  (defun create-search-span (body identifier)
+    (ps:let* ((el (ps:chain document (create-element "span"))))
+      (setf (ps:@ el class-name) "next-search-hint")
+      (setf (ps:@ el style) (ps:lisp (box-style (current-buffer))))
+      (setf (ps:@ el text-content) body)
+      (setf (ps:@ el id) identifier)
+      el))
   
   (defun get-substring (index string)
     "Return the substring and preceding/trailing text for a given index."
@@ -25,7 +34,7 @@
           (string (if case-sensitive-p string (ps:chain string (to-lower-case)))))
       (loop with i = (ps:chain string (index-of search-string 0))
             until (equal i -1)
-            collect (match-object-create (get-substring i string))
+            collect (match-object-create (get-substring i string) (incf *identifier*))
             do (setf i (ps:chain string (index-of search-string (+ i 1)))))))
   
   (defun matches-from-element (element query)
@@ -41,7 +50,8 @@
           do (walk-document node process-node)
           do (setf node (ps:chain node next-sibling))))
   
-  (let ((*matches* (array)))
+  (let ((*matches* (array))
+        (*identifier* 0))
     (walk-document (ps:chain document body) matches-from-element)
     (ps:chain -j-s-o-n (stringify *matches*))))
 
@@ -50,7 +60,7 @@
    (body :accessor body :initarg :body)))
 
 (defmethod object-string ((match match))
-  (format nil "...~a..." (body match)))
+  (format nil "~a ...~a..." (identifier match) (body match)))
 
 (defun matches-from-json (matches-json)
   (loop for element in (cl-json:decode-json-from-string matches-json)
