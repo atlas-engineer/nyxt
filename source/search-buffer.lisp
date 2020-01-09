@@ -14,7 +14,7 @@
   
   (defun get-substring (index string)
     "Return the substring and preceding/trailing text for a given index."
-    (let ((start-index (if (> (- index 20) 0) (- index 20) 0))
+    (let ((start-index (if (> (- index 40) 0) (- index 40) 0))
           (end-index (+ index 20)))
       (ps:chain string (substring start-index end-index))))
   
@@ -70,7 +70,7 @@ in a closure."
                                   (matches-from-json result)))))
   ;; return an empty list, the completions will be updated
   ;; asynchronously by the callback from query-buffer
-  (list ""))
+  ())
 
 (define-command search-buffer ()
   "Add search boxes for a given search string."
