@@ -10,10 +10,10 @@
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
   
-  (defun match-object-create (body identifier)
+  (defun create-match-object (body identifier)
     (ps:create "type" "match" "identifier" identifier "body" body))
   
-  (defun create-search-span (body identifier)
+  (defun create-match-span (body identifier)
     (ps:let* ((el (ps:chain document (create-element "span"))))
       (setf (ps:@ el class-name) "next-search-hint")
       (setf (ps:@ el style) (ps:lisp (box-style (current-buffer))))
@@ -29,18 +29,17 @@
   
   (defun get-substring-matches (search-string string case-sensitive-p)
     "Return all of substrings that match the search-string."
-    (let ((search-string-length (ps:chain search-string length))
-          (search-string (if case-sensitive-p search-string (ps:chain search-string (to-lower-case))))
+    (let ((search-string (if case-sensitive-p search-string (ps:chain search-string (to-lower-case))))
           (string (if case-sensitive-p string (ps:chain string (to-lower-case)))))
       (loop with i = (ps:chain string (index-of search-string 0))
             until (equal i -1)
-            collect (match-object-create (get-substring i string) (incf *identifier*))
+            collect (create-match-object (get-substring i string) (incf *identifier*))
             do (setf i (ps:chain string (index-of search-string (+ i 1)))))))
   
-  (defun matches-from-element (element query)
-    (when (= (ps:chain (typeof (ps:@ element node-value))) "string")
+  (defun matches-from-node (node query)
+    (when (= (ps:chain (typeof (ps:@ node node-value))) "string")
       (ps:chain *matches* push (apply *matches*
-                                      (get-substring-matches query (ps:@ element node-value) t)))))
+                                      (get-substring-matches query (ps:@ node node-value) t)))))
   
   (defun walk-document (node process-node)
     (when (and node (not (ps:chain node first-child)))
@@ -52,7 +51,7 @@
   
   (let ((*matches* (array))
         (*identifier* 0))
-    (walk-document (ps:chain document body) matches-from-element)
+    (walk-document (ps:chain document body) matches-from-node)
     (ps:chain -j-s-o-n (stringify *matches*))))
 
 (defclass match ()
