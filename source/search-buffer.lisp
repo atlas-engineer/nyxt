@@ -58,11 +58,23 @@
                                :identifier (cdr (assoc :identifier element))
                                :body (cdr (assoc :body element)))))
 
+(defun match-completion-function (input)
+  (when (> (length input) 2)
+    (query-buffer
+     :query input
+     :callback (lambda (result)
+                 (set-completions (current-minibuffer)
+                                  (matches-from-json result)))))
+  ;; return an empty list, the completions will be updated
+  ;; asynchronously by the callback from query-buffer
+  (list ""))
+
 (define-command search-buffer ()
   "Add search boxes for a given search string."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Search for"
+                        :input-prompt "Search for (3+ characters)"
+                        :completion-function 'match-completion-function
                         :history (minibuffer-search-history *interface*))))
     (print input)))
 
