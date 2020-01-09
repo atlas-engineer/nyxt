@@ -660,6 +660,11 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                          ((guard s (not (str:emptyp s))) s)
                                          (_ " ")))))))))
 
+(defmethod set-completions ((minibuffer minibuffer) completions)
+  "Convenience method to set the completions and update the display."
+  (setf (completions minibuffer) completions)
+  (update-display minibuffer))
+
 @export
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-cursor-position
