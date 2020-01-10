@@ -5,29 +5,37 @@
 (define-parenscript query-buffer (query)
   (defvar *identifier* 0)
   (defvar *matches* (array))
-  
+  (defvar *nodes* (ps:new (-Object)))
+
+  (defun qsa (context selector)
+    "Alias of document.querySelectorAll"
+    (ps:chain context (query-selector-all selector)))
+
   (defun create-match-object (body identifier)
     (ps:create "type" "match" "identifier" identifier "body" body))
-  
+
   (defun create-match-span (body identifier)
     (ps:let* ((el (ps:chain document (create-element "span"))))
-      (setf (ps:@ el class-name) "next-search-hint")
       (setf (ps:@ el style) (ps:lisp (box-style (current-buffer))))
       (setf (ps:@ el text-content) body)
       (setf (ps:@ el id) identifier)
       el))
-  
+
   (defun get-substring (string-before string-after query)
     "Return the substring and preceding/trailing text for a given index."
     (let ((character-preview-count 40))
       (+ (ps:chain string-before (substring (- (length string-before) character-preview-count)))
          query
          (ps:chain string-after (substring 0 character-preview-count)))))
-  
+
   (defun create-substring-matches (query node)
     "Return all of substrings that match the search-string."
     (let ((substrings (ps:chain (ps:@ node text-content) (split query)))
+          (node-identifier (incf (ps:chain *nodes* identifier)))
           (new-node (ps:chain document (create-element "span"))))
+      (setf (ps:@ new-node class-name) "next-search-node")
+      (setf (ps:@ new-node id) node-identifier)
+      (setf (aref *nodes* node-identifier) node)
       (when (> (length substrings) 1)
         (loop for i from 0 to (- (length substrings) 1) by 2
               do (incf *identifier*)
@@ -44,12 +52,12 @@
                                       query)
                        *identifier*)
               finally (ps:chain node (replace-with new-node))))))
-  
+
   (defun matches-from-node (node query)
     (when (= (ps:chain (typeof (ps:@ node node-value))) "string")
       (let ((matches (create-substring-matches query node)))
         (ps:chain *matches* push (apply *matches* matches)))))
-  
+
   (defun walk-document (node process-node)
     (when (and node (not (ps:chain node first-child)))
       (funcall process-node node (ps:lisp query)))
@@ -57,9 +65,16 @@
     (loop while node
           do (walk-document node process-node)
           do (setf node (ps:chain node next-sibling))))
-  
+
+  (defun remove-search-nodes ()
+    "Removes all the search elements"
+    (ps:dolist (node (qsa document ".next-search-node"))
+      (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
+
   (let ((*matches* (array))
         (*identifier* 0))
+    (remove-search-nodes)
+    (setf (ps:chain *nodes* identifier) 0)
     (walk-document (ps:chain document body) matches-from-node)
     (ps:chain -j-s-o-n (stringify *matches*))))
 
