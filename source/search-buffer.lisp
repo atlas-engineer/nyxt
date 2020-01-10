@@ -1,5 +1,10 @@
 ;;; search-buffer.lisp --- functions to enable searching within a buffer
 
+;;; NOTE: Consider using string.split instead of looping through the
+;;; string to collect the matches. In using string split you can also
+;;; save the information about preceding and succeeding characters
+;;; within the string for assembling the final replacement node.
+
 (in-package :next)
 
 (define-parenscript query-buffer (query)
@@ -10,7 +15,9 @@
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
   
-  (defun create-match-object (body identifier)
+  (defun create-match-object (body identifier index)
+    "identifier: unique identifier for match, body: the text around the match,
+index: the index of the match within the text node"
     (ps:create "type" "match" "identifier" identifier "body" body))
   
   (defun create-match-span (body identifier)
@@ -27,19 +34,34 @@
           (end-index (+ index 20)))
       (ps:chain string (substring start-index end-index))))
   
-  (defun get-substring-matches (search-string string case-sensitive-p)
+  (defun get-substring-matches (search-string node case-sensitive-p)
     "Return all of substrings that match the search-string."
-    (let ((search-string (if case-sensitive-p search-string (ps:chain search-string (to-lower-case))))
-          (string (if case-sensitive-p string (ps:chain string (to-lower-case)))))
+    (let* ((string (ps:@ node text-content))
+           (search-string (if case-sensitive-p search-string (ps:chain search-string (to-lower-case))))
+           (string (if case-sensitive-p string (ps:chain string (to-lower-case)))))
       (loop with i = (ps:chain string (index-of search-string 0))
             until (equal i -1)
-            collect (create-match-object (get-substring i string) (incf *identifier*))
+            collect (create-match-object (get-substring i string) (incf *identifier*) i)
             do (setf i (ps:chain string (index-of search-string (+ i 1)))))))
+  
+  (defun create-substring-highlights (node matches query)
+    "Modify the nodes in the document to highlight the matches"
+    (let ((new-node (ps:chain document (create-element "span")))
+          (substrings (ps:chain (ps:@ node text-content) (split query))))
+      (when (> (length substrings) 1)
+        (loop for i from 0 to (- (length substrings) 1) do
+          (ps:chain new-node (append-child
+                              (ps:chain document (create-text-node (elt substrings i)))))
+          (unless (= i (- (length substrings) 1))
+            (ps:chain new-node (append-child
+                                (create-match-span query (ps:chain (elt matches i) identifier))))))
+        (ps:chain node (replace-with new-node)))))
   
   (defun matches-from-node (node query)
     (when (= (ps:chain (typeof (ps:@ node node-value))) "string")
-      (ps:chain *matches* push (apply *matches*
-                                      (get-substring-matches query (ps:@ node node-value) t)))))
+      (let ((matches (get-substring-matches query node t)))
+        (create-substring-highlights node matches query)
+        (ps:chain *matches* push (apply *matches* matches)))))
   
   (defun walk-document (node process-node)
     (when (and node (not (ps:chain node first-child)))
