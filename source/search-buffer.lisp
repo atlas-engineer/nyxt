@@ -24,34 +24,30 @@
          query
          (ps:chain string-after (substring 0 character-preview-count)))))
   
-  (defun get-substring-matches (query node)
+  (defun create-substring-matches (query node)
     "Return all of substrings that match the search-string."
-    (let ((substrings (ps:chain (ps:@ node text-content) (split query))))
+    (let ((substrings (ps:chain (ps:@ node text-content) (split query)))
+          (new-node (ps:chain document (create-element "span"))))
       (when (> (length substrings) 1)
         (loop for i from 0 to (- (length substrings) 1) by 2
+              do (incf *identifier*)
+                 (ps:chain new-node (append-child
+                                     (ps:chain document (create-text-node (elt substrings i)))))
+                 (ps:chain new-node (append-child
+                                     (create-match-span query *identifier*)))
+                 (unless (= i (- (length substrings) 1))
+                   (ps:chain new-node (append-child
+                                       (ps:chain document (create-text-node (elt substrings (+ i 1)))))))
               collect (create-match-object 
                        (get-substring (elt substrings i)
                                       (elt substrings (+ i 1))
                                       query)
-                       (incf *identifier*))))))
-  
-  (defun create-substring-highlights (node matches query)
-    "Modify the nodes in the document to highlight the matches"
-    (let ((new-node (ps:chain document (create-element "span")))
-          (substrings (ps:chain (ps:@ node text-content) (split query))))
-      (when (> (length substrings) 1)
-        (loop for i from 0 to (- (length substrings) 1) do
-          (ps:chain new-node (append-child
-                              (ps:chain document (create-text-node (elt substrings i)))))
-          (unless (= i (- (length substrings) 1))
-            (ps:chain new-node (append-child
-                                (create-match-span query (ps:chain (elt matches i) identifier))))))
-        (ps:chain node (replace-with new-node)))))
+                       *identifier*)
+              finally (ps:chain node (replace-with new-node))))))
   
   (defun matches-from-node (node query)
     (when (= (ps:chain (typeof (ps:@ node node-value))) "string")
-      (let ((matches (get-substring-matches query node t)))
-        (create-substring-highlights node matches query)
+      (let ((matches (create-substring-matches query node)))
         (ps:chain *matches* push (apply *matches* matches)))))
   
   (defun walk-document (node process-node)
