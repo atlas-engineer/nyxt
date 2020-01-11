@@ -105,6 +105,16 @@ in a closure."
   ;; asynchronously by the callback from query-buffer
   ())
 
+(define-parenscript %remove-search-hints ()
+  (defun qsa (context selector)
+    "Alias of document.querySelectorAll"
+    (ps:chain context (query-selector-all selector)))
+  (defun remove-search-nodes ()
+    "Removes all the search elements"
+    (ps:dolist (node (qsa document ".next-search-node"))
+      (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
+  (remove-search-nodes))
+
 (define-command search-buffer ()
   "Add search boxes for a given search string."
   (with-result (input (read-from-minibuffer
@@ -115,7 +125,8 @@ in a closure."
     (print input)))
 
 (define-command remove-search-hints ()
-  "Remove all search hints.")
+  "Remove all search hints."
+  (%remove-search-hints))
 
 (define-command next-search-hint ()
   "Go to next search hint.")
