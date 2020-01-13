@@ -78,6 +78,10 @@
     (walk-document (ps:chain document body) matches-from-node)
     (ps:chain -j-s-o-n (stringify *matches*))))
 
+(define-parenscript focus-match (match)
+  (let ((element (ps:chain document (get-element-by-id (ps:lisp (identifier match))))))
+    (ps:chain element (scroll-into-view t))))
+
 (defclass match ()
   ((identifier :accessor identifier :initarg :identifier)
    (body :accessor body :initarg :body)))
@@ -122,7 +126,7 @@ in a closure."
                         :input-prompt "Search for (3+ characters)"
                         :completion-function 'match-completion-function
                         :history (minibuffer-search-history *interface*))))
-    (print input)))
+    (focus-match :match input)))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
