@@ -121,12 +121,19 @@ in a closure."
 
 (define-command search-buffer ()
   "Add search boxes for a given search string."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Search for (3+ characters)"
-                        :completion-function 'match-completion-function
-                        :history (minibuffer-search-history *interface*))))
-    (focus-match :match input)))
+  (let* ((minibuffer (make-minibuffer
+                      :input-prompt "Search for (3+ characters)"
+                      :completion-function 'match-completion-function
+                      :history (minibuffer-search-history *interface*)))
+         (keymap-scheme (current-keymap-scheme minibuffer))
+         (keymap (getf (keymap-schemes (first (modes minibuffer))) keymap-scheme)))
+    (define-key :keymap keymap "C-s"
+      #'(lambda ()
+          (when (completions minibuffer)
+            (focus-match :match (nth (completion-cursor minibuffer)
+                                     (completions minibuffer))))))
+    (with-result (input (read-from-minibuffer minibuffer))
+      (focus-match :match input))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
