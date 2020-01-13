@@ -22,11 +22,13 @@
       el))
 
   (defun get-substring (string-before string-after query)
-    "Return the substring and preceding/trailing text for a given index."
-    (let ((character-preview-count 40))
-      (+ (ps:chain string-before (substring (- (length string-before) character-preview-count)))
-         query
-         (ps:chain string-after (substring 0 character-preview-count)))))
+    "Return the substring and preceding/trailing text for a given
+index. TODO: figure out why string-after trimming causes break of
+search (string-after (ps:chain string-after (substring 0
+character-preview-count)))."
+    (let* ((character-preview-count 40)
+           (string-before (ps:chain string-before (substring (- (length string-before) character-preview-count)))))
+      (+ string-before query string-after)))
 
   (defun create-substring-matches (query node)
     "Return all of substrings that match the search-string."
