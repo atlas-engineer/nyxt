@@ -106,8 +106,8 @@ capture the current-buffer and current-minibuffer in a closure."
      :callback (lambda (result)
                  (set-completions (current-minibuffer)
                                   (matches-from-json result)))))
-  ;; return an empty list, the completions will be updated
-  ;; asynchronously by the callback from query-buffer
+  ;; return NIL, the completions will be updated asynchronously by the
+  ;; callback from query-buffer
   ())
 
 (define-parenscript %remove-search-hints ()
