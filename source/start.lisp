@@ -47,14 +47,10 @@ Set to '-' to read standard input instead.")
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
     (opts:get-opts)))
 
-;; TODO: Find a way to list/introspect available platform port methods from a
-;; running Next.
-
 (define-command quit ()
   "Quit Next."
   (next-hooks:run-hook (before-exit-hook *interface*))
-  (kill-interface *interface*)
-  (kill-port (port *interface*)))
+  (kill-interface *interface*))
 
 (define-command quit-after-clearing-session ()
   "Clear session then quit Next."
@@ -62,12 +58,7 @@ Set to '-' to read standard input instead.")
    (session-store-function *interface*) nil
    (session-restore-function *interface*) nil)
   (uiop:delete-file-if-exists (session-path *interface*))
-  (kill-interface *interface*)
-  (kill-port (port *interface*)))
-
-(define-deprecated-command kill ()
-  "Deprecated by `quit'."
-  (quit))
+  (kill-interface *interface*))
 
 (defun set-debug-level (level)
   "Supported values for LEVEL are
@@ -75,15 +66,13 @@ Set to '-' to read standard input instead.")
 - `t': Normal logging."
   (match level
     (:debug
-      (log:config :debug)
-      (setf (uiop:getenv "G_MESSAGES_DEBUG") "all"))
-    (_
-     (log:config :info)
-     (setf (uiop:getenv "G_MESSAGES_DEBUG") ""))))
+     (log:config :debug))
+    (otherwise
+     (log:config :info))))
 
 @export
 (defun entry-point ()
-  "Read the CLI arguments and start the plateform port."
+  "Read the CLI arguments and start the interface."
   (multiple-value-bind (options free-args)
       (parse-cli-args)
     (when (getf options :help)
@@ -113,48 +102,7 @@ next [options] [urls]")
     (setf *options* options
           *free-args* free-args)
     (start :urls free-args
-           :non-interactive t))
-
-  (handler-case (progn (run-loop (port *interface*))
-                       (kill-interface *interface*))
-    ;; Catch a C-c, don't print a full stacktrace.
-    (#+sbcl sb-sys:interactive-interrupt
-     #+ccl ccl:interrupt-signal-condition
-     #+clisp system::simple-interrupt-condition
-     #+ecl ext:interactive-interrupt
-     #+allegro excl:interrupt-signal
-     () (progn
-          (kill-interface *interface*)
-          (kill-port (port *interface*))
-          (format t "Bye!~&")
-          (uiop:quit)))))
-
-(defun ping-platform-port (&optional (bus-type (session-server-addresses)))
-  (dbus:with-open-bus (bus bus-type)
-    (member-string +platform-port-name+ (dbus:list-names bus))))
-
-(defun initialize-port ()
-  "Start platform port if necessary.
-Error out if no platform port can be started."
-  ;; TODO: With D-Bus we can "watch" a connection.  Is this implemented in the
-  ;; CL library?  Else we could bind initialize-port to a D-Bus notification.
-  (let ((port-running (ping-platform-port)))
-    (unless (or port-running
-                (and (port *interface*)
-                     (running-process (port *interface*))))
-      (run-program (port *interface*)))
-    (let ((max-attempts (/ (platform-port-poll-duration *interface*)
-                           (platform-port-poll-interval *interface*))))
-      ;; Poll the platform port in case it takes some time to start up.
-      (loop while (not port-running)
-            repeat max-attempts
-            do (unless (setf port-running (ping-platform-port))
-                 (sleep (platform-port-poll-interval *interface*))))
-      (unless port-running
-        (progn
-          (kill-port (port *interface*))
-          (kill-interface *interface*))
-        (error "Could not connect to platform port: ~a" (path (port *interface*)))))))
+           :non-interactive t)))
 
 (defun init-file-path (&optional (filename "init.lisp"))
   ;; This can't be a regular variable or else the value will be hard-coded at
@@ -239,43 +187,20 @@ This function is suitable as a `remote-interface' `startup-function'."
        (funcall f)))))
 
 @export
-(defun start (&key urls
-                (init-file (init-file-path))
-                non-interactive)
+(defun start (&key urls (init-file (init-file-path)))
   "Start Next and load URLS if any.
 A new `*interface*' is instantiated.
 The platform port is automatically started if needed.
 Finally, run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now)))
     (format t "Next version ~a~&" +version+)
-    ;; Randomness should be seeded as early as possible to avoid generating
-    ;; deterministic tokens.
-    (setf *random-state* (make-random-state t))
     (unless (getf *options* :no-init)
-      (load-lisp-file init-file :interactive (not non-interactive)))
+      (load-lisp-file init-file :interactive t))
     ;; create the interface object
-    (when *interface*
-      (kill-interface *interface*)
-      ;; It's important to set it to nil or else if we re-run this function,
-      ;; (make-instance *remote-interface-class*) will be run while an existing
-      ;; *interface* is still floating around.
-      (setf *interface* nil))
-    (setf *interface* (make-instance *remote-interface-class*
-                                     :non-interactive non-interactive
+    (setf *interface* (make-instance 'remote-interface
                                      :startup-timestamp startup-timestamp))
     ;; Start the port after the interface so that we don't overwrite the log when
     ;; an instance is already running.
-    (handler-case
-        (initialize-port)
-      (error (c)
-        (log:error "~a~&~a" c
-                   "Make sure the platform port executable is either in the
-PATH or set in you ~/.config/next/init.lisp, for instance:
-
-     (setf +platform-port-command+
-         \"~/common-lisp/next/ports/gtk-webkit/next-gtk-webkit\")")
-        (when non-interactive
-          (uiop:quit))))
     (setf (slot-value *interface* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
     (handler-case

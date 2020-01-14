@@ -1,6 +1,4 @@
-;;; remote.lisp --- remote gui interface
-
-;; We prefix all functions communicating over RPC with "rpc-".
+;;; interface.lisp --- interface state
 
 (in-package :next)
 (annot:enable-annot-syntax)
@@ -279,7 +277,7 @@ See `rpc-buffer-make'."
 @export
 @export-accessors
 (defclass remote-interface ()
-  ((port :accessor port :initform (make-instance 'port)
+  ((port :accessor port :initform nil
          :documentation "The CLOS object responible for handling the platform port.")
    (platform-port-poll-duration :accessor platform-port-poll-duration :initform 1.0
                                  :type number
@@ -620,42 +618,6 @@ current buffer."
          (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
          (setf (dbus-pid interface) (parse-integer pid)))))))
 
-(defmethod initialize-instance :after ((interface remote-interface)
-                                       &key non-interactive
-                                       &allow-other-keys)
-  "Start the RPC server."
-  (ensure-dbus-session interface
-                       :non-interactive non-interactive)
-  (let ((lock (bt:make-lock))
-        (condition (bt:make-condition-variable)))
-    (setf (active-connection interface)
-          (bt:make-thread
-           (lambda ()
-             (log:info "D-Bus addresses: ~a"
-                       (mapcar #'dbus/transport-unix::server-address-socket-address
-                               (session-server-addresses)))
-             (dbus:with-open-bus (bus (session-server-addresses))
-               (let ((status (dbus:request-name bus +core-name+ :do-not-queue)))
-                 (when (eq status :exists)
-                   (let ((url-list (or *free-args*
-                                       (list (get-default 'buffer 'default-new-buffer-url)))))
-                     (log:info "Next already started, requesting to open URL(s) ~a." url-list)
-                     (handler-case
-                         (%rpc-send-self "make_buffers" "as" url-list)
-                       (error ()
-                         (log:error "Can't communicate with existing Next.
-Make sure to kill existing processes or if you were running Next from a REPL, kill the interface:
-
-(next::kill-interface next::*interface*)
-")))
-                     (when non-interactive
-                       (uiop:quit)))))
-               (log:info "Bus connection name: ~A" (dbus:bus-name bus))
-               (bt:condition-notify condition)
-               (dbus:publish-objects bus)))))
-    (bt:acquire-lock lock)
-    (bt:condition-wait condition lock)))
-
 (defun session-server-addresses ()
   (or
    (dbus:session-server-addresses)
@@ -665,13 +627,8 @@ Make sure to kill existing processes or if you were running Next from a REPL, ki
             (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET")))))
 
 (defmethod kill-interface ((interface remote-interface))
-  "Stop the RPC server."
-  (when (active-connection interface)
-    (log:debug "Stopping server")
-    ;; TODO: How do we close the connection properly?
-    (ignore-errors (bt:destroy-thread (active-connection interface)))
-    (when (dbus-pid interface)
-      (kill-program (dbus-pid interface)))))
+  "Kill the interface."
+  )
 
 (defun %rpc-send-self (method-name signature &rest args)
   "Call METHOD over ARGS.

@@ -57,7 +57,8 @@
                  ;; Core Functionality
                  (:file "macro")
                  (:file "global")
-                 (:file "remote")
+                 (:file "interface")
+                 (:file "interprocess-communication")
                  (:file "command")
                  (:file "mode")
                  (:file "utility")
