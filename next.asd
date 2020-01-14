@@ -57,7 +57,6 @@
                  ;; Core Functionality
                  (:file "macro")
                  (:file "global")
-                 (:file "port")
                  (:file "remote")
                  (:file "command")
                  (:file "mode")
