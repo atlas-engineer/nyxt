@@ -661,7 +661,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                          (_ " ")))))))))
 
 (defmethod set-completions ((minibuffer minibuffer) completions)
-  "Convenience method to set the completions and update the display."
+  "Set the completions and update the display."
   (setf (completions minibuffer) completions)
   (update-display minibuffer))
 

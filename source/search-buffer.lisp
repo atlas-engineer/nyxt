@@ -98,9 +98,8 @@ character-preview-count)))."
                                :body (cdr (assoc :body element)))))
 
 (defun match-completion-function (input)
-  "This function will update the completions asynchronously via
-query-buffer. TODO: capture the current-buffer and current-minibuffer
-in a closure."
+  "Update the completions asynchronously via query-buffer. TODO:
+capture the current-buffer and current-minibuffer in a closure."
   (when (> (length input) 2)
     (query-buffer
      :query input
