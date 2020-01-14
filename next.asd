@@ -45,8 +45,8 @@
                :next/hooks)
   :components ((:module "source"
                 :components
-                ((:file "patch-annot")
-                 (:file "patch-serialization")
+                ((:file "patches/patch-annot")
+                 (:file "patches/patch-serialization")
                  ;; Independent utilities
                  (:file "package")
                  (:file "tags")
