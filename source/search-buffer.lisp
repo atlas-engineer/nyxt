@@ -101,11 +101,12 @@ character-preview-count)))."
   "Update the completions asynchronously via query-buffer. TODO:
 capture the current-buffer and current-minibuffer in a closure."
   (when (> (length input) 2)
-    (query-buffer
-     :query input
-     :callback (lambda (result)
-                 (set-completions (current-minibuffer)
-                                  (matches-from-json result)))))
+    (let ((input (str:replace-all " " " " input)))
+      (query-buffer
+       :query input
+       :callback (lambda (result)
+                   (set-completions (current-minibuffer)
+                                    (matches-from-json result))))))
   ;; return NIL, the completions will be updated asynchronously by the
   ;; callback from query-buffer
   ())
