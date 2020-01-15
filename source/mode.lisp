@@ -26,17 +26,23 @@ The buffer is returned so that mode activation can be chained."
   (let ((class-var (intern (format nil "*~a-CLASS*" name)))
         (docstring (if (stringp (first body))
                        (first body)
-                       ""))
+                       (progn
+                         (log:warn "The define-mode definition for ~a doesn't have a documentation string." name)
+                         nil)))
         (direct-slots (if (stringp (first body))
                           (cadr body)
                           (first body))))
     `(progn
        @export
        @export-accessors
-       (defclass ,name ,(unless (eq (first direct-superclasses) t)
-                          (append direct-superclasses '(root-mode)))
-         ,direct-slots
-         (:documentation ,docstring))
+       ,(if docstring
+            `(defclass ,name ,(unless (eq (first direct-superclasses) t)
+                                (append direct-superclasses '(root-mode)))
+               ,direct-slots
+               (:documentation ,docstring))
+            `(defclass ,name ,(unless (eq (first direct-superclasses) t)
+                                (append direct-superclasses '(root-mode)))
+               ,direct-slots))
        ;; Class symbol customization:
        (define-class-type ,name)
        (declaim (type (,(intern (format nil "~a-TYPE" name))) ,class-var))
