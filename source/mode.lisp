@@ -5,10 +5,14 @@
 (annot:enable-annot-syntax)
 
 @export
-(defmacro define-mode (name direct-superclasses docstring direct-slots)
+(defmacro define-mode (name direct-superclasses &body body)
   "Define mode NAME.
 When DIRECT-SUPERCLASSES is T, then the mode has no parents.
 Otherwise, the mode's parents are ROOT-MODE and DIRECT-SUPERCLASSES.
+
+As a third argument, a documentation-string can be provided.
+The last argument (third if no doc-string provided, fourth if one is)
+is the direct-slots list.
 
 A mode toggler command is also defined as NAME.
 Its arguments are passed to the class instantiation.
@@ -19,7 +23,13 @@ Two arguments have a special meaning beside the slot value of the mode:
 - :ACTIVATE is used to choose whether to enable or disable the mode.
 If :ACTIVATE is omitted, the mode is toggled.
 The buffer is returned so that mode activation can be chained."
-  (let ((class-var (intern (format nil "*~a-CLASS*" name))))
+  (let ((class-var (intern (format nil "*~a-CLASS*" name)))
+        (docstring (if (stringp (first body))
+                       (first body)
+                       ""))
+        (direct-slots (if (stringp (first body))
+                          (cadr body)
+                          (first body))))
     `(progn
        @export
        @export-accessors
