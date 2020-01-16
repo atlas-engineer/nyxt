@@ -106,13 +106,7 @@ Letters are printable, while function keys or backspace are not."
 ;; "Add a new key chord to the interface key-chord-stack.
 ;; For example, it may add C-M-s or C-x to a stack which will be consumed by
 ;; `consume-key-sequence'."
-(dbus:define-dbus-method (core-object push-input-event)
-    ((key-code :int32) (key-string :string) (modifiers (:array :string))
-     (x :double) (y :double)
-     (low-level-data :int32) (sender :string))
-    ()
-  (:interface +core-interface+)
-  (:name "push_input_event")
+(defun push-input-event (key-code key-string modifiers x y low-level-data sender)
   (%%push-input-event key-code key-string modifiers x y low-level-data sender)
   (values))
 

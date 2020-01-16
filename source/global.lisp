@@ -42,23 +42,6 @@ Add a handler can be added with
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Next to avoid collisions).")
 
-(defparameter +platform-port-name+ "engineer.atlas.next.platform")
-(defparameter +platform-port-object-path+ "/engineer/atlas/next/platform")
-(defparameter +platform-port-interface+ +platform-port-name+)
-
-(defparameter +core-name+ "engineer.atlas.next.core")
-(defparameter +core-object-path+ "/engineer/atlas/next/core")
-(defparameter +core-interface+ +core-name+)
-
-@export
-(defparameter +dbus-launch-command+ '("dbus-launch")
-  "The command to start dbus, if necessary.
-The first string is the command, the other strings are the arguments.")
-
-@export
-(defparameter +platform-port-command+ "next-platform-port"
-  "The command to start the platform port.")
-
 @export
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
