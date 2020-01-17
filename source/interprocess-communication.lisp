@@ -3,29 +3,6 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
-(defun %rpc-send-self (method-name signature &rest args)
-  "Call METHOD over ARGS.
-SIGNATURE must be the D-Bus encoded type string of ARGS.
-For an array of string, that would be \"as\"."
-  (dbus:with-open-bus (bus (session-server-addresses))
-    (dbus:invoke-method (dbus:bus-connection bus) method-name
-                        :path +core-object-path+
-                        :destination +core-name+
-                        :interface +core-interface+
-                        :signature signature
-                        :arguments args)))
-
-(declaim (ftype (function (string &rest t)) %rpc-send))
-(defun %rpc-send (method &rest args)
-  "Call RPC method METHOD over ARGS."
-  ;; D-Bus calls should raise an error so that we can detect errors when telling
-  ;; another instance to open URLs.
-  (dbus:with-open-bus (bus (session-server-addresses))
-    ;; TODO: Make %rpc-send asynchronous?
-    ;; If the platform port ever hangs, the next %rpc-send will hang the Lisp core too.
-    (dbus:with-introspected-object (platform-port bus +platform-port-object-path+ +platform-port-name+)
-      (apply #'platform-port +platform-port-interface+ method args))))
-
 @export
 (defun rpc-window-make ()
   "Create a window and return the window object.
