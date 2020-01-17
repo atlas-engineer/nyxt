@@ -87,6 +87,15 @@ visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
   (rpc-buffer-delete buffer))
 
+(define-command delete-other-buffers (&optional (buffer (current-buffer)))
+  "Delete all other buffers but `buffer` which if not explicitly set defaults
+to the currently active buffer."
+  (let* ((all-buffers (alexandria:hash-table-values (buffers *interface*)))
+         (buffers-to-delete (remove buffer all-buffers))
+         (count (list-length buffers-to-delete)))
+    (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
+      (mapcar #'rpc-buffer-delete buffers-to-delete))))
+
 ;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.
 @export
 (define-parenscript %%buffer-get-title () ; TODO: `did-commit-navigation' should
