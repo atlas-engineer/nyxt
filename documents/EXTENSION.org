@@ -16,10 +16,10 @@ Setting the start page can easily be achieved in the following manner:
 
 #+NAME: start-page-set
 #+BEGIN_SRC lisp
-(defclass my-remote-interface ()
+(defclass my-interface ()
   ((start-page-url :initform "about:blank")))
 
-(setf *remote-interface-class* 'my-remote-interface)
+(setf *interface-class* 'my-interface)
 #+END_SRC
 
 * Creating your own Parenscript

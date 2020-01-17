@@ -276,7 +276,7 @@ See `rpc-buffer-make'."
 
 @export
 @export-accessors
-(defclass remote-interface ()
+(defclass interface ()
   ((port :accessor port :initform nil
          :documentation "The CLOS object responible for handling the platform port.")
    (platform-port-poll-duration :accessor platform-port-poll-duration :initform 1.0
@@ -460,10 +460,10 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
-(define-class-type remote-interface)
-(declaim (type (remote-interface-type) *remote-interface-class*))
+(define-class-type interface)
+(declaim (type (interface-type) *interface-class*))
 @export
-(defparameter *remote-interface-class* 'remote-interface)
+(defparameter *interface-class* 'interface)
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((interface t))
@@ -482,15 +482,15 @@ The handlers take the `download-manager:download' class instance as argument."))
      when (str:starts-with-p prefix name)
      return name))
 
-(defmethod bookmark-db-path ((interface remote-interface))
+(defmethod bookmark-db-path ((interface interface))
   (log:warn "Deprecated, use `bookmarks-path' instead.")
   (bookmarks-path interface))
 
-(defmethod history-db-path ((interface remote-interface))
+(defmethod history-db-path ((interface interface))
   (log:warn "Deprecated, use `history-path' instead.")
   (history-path interface))
 
-(defmethod history-data ((interface remote-interface))
+(defmethod history-data ((interface interface))
   "Return the `history-data' slot from INTERFACE.
 If empty, the history data is initialized with `history-restore-function'."
   (when (and (null (slot-value interface 'history-data))
@@ -498,7 +498,7 @@ If empty, the history data is initialized with `history-restore-function'."
     (funcall (history-restore-function interface)))
   (slot-value interface 'history-data))
 
-(defmethod (setf history-data) (value (interface remote-interface))
+(defmethod (setf history-data) (value (interface interface))
   "Set `history-data' to VALUE.
 Persist the `history-data' slot from INTERFACE to `history-path' with
 `history-store-function'."
@@ -506,7 +506,7 @@ Persist the `history-data' slot from INTERFACE to `history-path' with
   (match (history-store-function interface)
     ((guard f f) (funcall f))))
 
-(defmethod bookmarks-data ((interface remote-interface))
+(defmethod bookmarks-data ((interface interface))
   "Return the `bookmarks-data' slot from INTERFACE.
 If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
   (when (and (null (slot-value interface 'bookmarks-data))
@@ -514,7 +514,7 @@ If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
     (funcall (bookmarks-restore-function interface)))
   (slot-value interface 'bookmarks-data))
 
-(defmethod (setf bookmarks-data) (value (interface remote-interface))
+(defmethod (setf bookmarks-data) (value (interface interface))
   "Set `bookmarks-data' to VALUE.
 Persist the `bookmarks-data' slot from INTERFACE to `bookmarks-path' with
 `bookmarks-store-function'."
@@ -585,7 +585,7 @@ current buffer."
         (echo-warning "Download error: ~a" c)
         nil))))
 
-(defmethod kill-interface ((interface remote-interface))
+(defmethod kill-interface ((interface interface))
   "Kill the interface."
   )
 

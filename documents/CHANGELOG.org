@@ -45,7 +45,7 @@ MAJOR.MINOR.PATCH, we increment the:
 ** 1.4.0
 - CLOS-style configuration.
 This simplifies setting the default slots of the various classes (=buffer=,
-=window=, =remote-interface=, =minibuffer=, etc.).  In particular, the
+=window=, =interface=, =minibuffer=, etc.).  In particular, the
 user-specialized (or extension-specialized) classes can in turn be composed to
 form a new specialized classes.
 
@@ -142,12 +142,12 @@ See the manual for examples.
     #+end_src
 
   + Bookmark can have search engines.
-    ~remote-interface~ search engines and bookmark search engines are
+    ~interface~ search engines and bookmark search engines are
     automatically merged.
 
   + Bookmarks can be stored and restored in a customizable format.
 
-    See the ~bookmarks-store-function~ and ~bookmarks-restore-function~ in ~remote-interface~.
+    See the ~bookmarks-store-function~ and ~bookmarks-restore-function~ in ~interface~.
 
 - Password manager. (Thanks to Solomon Bloch.)
 
@@ -198,7 +198,7 @@ See the manual for examples.
 - Downcase command name in =execute-command=.
 
 - Move the ~search-engines~ slot from the ~window~ class to the
-  ~remote-interface~ class.
+  ~interface~ class.
 
 - Rename ~new-buffer~, ~new-window~ and ~make-visible-new-buffer~ to
   ~make-buffer~, ~make-window~ and ~make-buffer-focus~.

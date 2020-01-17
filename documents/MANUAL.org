@@ -107,7 +107,7 @@ For instance, to search "parrot" on Wikipedia:
 
 From a Lisp REPL, you can query the list of search engines with
 #+begin_src lisp
-(get-default 'remote-interface 'search-engines)
+(get-default 'interface 'search-engines)
 #+end_src
 
 It will return something like
@@ -128,7 +128,7 @@ To set the list of search engines, do:
 #+begin_src lisp
 (in-package :next-user)
 
-(defclass my-remote-interface (remote-interface)
+(defclass my-interface (interface)
   ((search-engines :initform
     '(("default"
        "https://duckduckgo.com/?q=~a"
@@ -140,7 +140,7 @@ To set the list of search engines, do:
        "https://en.wikipedia.org/w/index.php?search=~a"
        "https://en.wikipedia.org/")))))
 
-(setf *remote-interface-class* 'my-remote-interface)
+(setf *interface-class* 'my-interface)
 #+end_src
 
 and to append a search engine to the list, you can do
@@ -148,7 +148,7 @@ and to append a search engine to the list, you can do
 #+begin_src lisp
 (in-package :next-user)
 
-(defclass my-remote-interface ()
+(defclass my-interface ()
   ((search-engines :initform
     (append
      '(("yt"
@@ -157,9 +157,9 @@ and to append a search engine to the list, you can do
        ("wiki"
         "https://en.wikipedia.org/w/index.php?search=~a"
         "https://en.wikipedia.org/"))
-       (get-default 'remote-interface 'search-engines)))))
+       (get-default 'interface 'search-engines)))))
 
-(setf *remote-interface-class* 'my-remote-interface)
+(setf *interface-class* 'my-interface)
 #+end_src
 
 ** Jumping to Headings
@@ -273,10 +273,10 @@ configuration file:
 #+begin_src lisp
 (in-package :next-user)
 
-(defun my-remote-interface ()
+(defun my-interface ()
   ((open-external-link-in-new-window-p :initform t)))
 
-(setf *remote-interface-class* 'my-remote-interface)
+(setf *interface-class* 'my-interface)
 #+end_src
 
 ** Searching

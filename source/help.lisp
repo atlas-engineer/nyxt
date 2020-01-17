@@ -29,7 +29,7 @@
   (fuzzy-match input (list-commands)))
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to
-;; augment the latter function so that we can inspect classes like remote-interface.
+;; augment the latter function so that we can inspect classes like interface.
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer

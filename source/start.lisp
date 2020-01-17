@@ -172,35 +172,33 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
       (uiop:quit 1))))
 
 (defun default-startup (&optional urls)
-  "Make a window and load URLS in new buffers.
-This function is suitable as a `remote-interface' `startup-function'."
-  (if urls
-      (open-urls urls)
-      ;; TODO: Test if network is available.  If not, display help,
-      ;; otherwise display start-page-url.
-      (let ((window (rpc-window-make))
-            (buffer (help)))
-        (window-set-active-buffer window buffer)))
-  (match (session-restore-function *interface*)
-    ((guard f f)
-     (when *use-session*
-       (funcall f)))))
+  "Make a window and load URLS in new buffers. This function is
+suitable as a `interface' `startup-function'."
+  ;; (if urls
+  ;;     (open-urls urls)
+  ;;     ;; TODO: Test if network is available.  If not, display help,
+  ;;     ;; otherwise display start-page-url.
+  ;;     (let ((window (rpc-window-make))
+  ;;           (buffer (help)))
+  ;;       (window-set-active-buffer window buffer)))
+  ;; (match (session-restore-function *interface*)
+  ;;   ((guard f f)
+  ;;    (when *use-session*
+  ;;      (funcall f))))
+
+  )
 
 @export
 (defun start (&key urls (init-file (init-file-path)))
-  "Start Next and load URLS if any.
-A new `*interface*' is instantiated.
-The platform port is automatically started if needed.
-Finally, run the `*after-init-hook*'."
+  "Start Next and load URLS if any. A new `*interface*' is
+instantiated. The platform port is automatically started if
+needed. Finally, run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now)))
     (format t "Next version ~a~&" +version+)
     (unless (getf *options* :no-init)
       (load-lisp-file init-file :interactive t))
-    ;; create the interface object
-    (setf *interface* (make-instance 'remote-interface
+    (setf *interface* (make-instance 'interface
                                      :startup-timestamp startup-timestamp))
-    ;; Start the port after the interface so that we don't overwrite the log when
-    ;; an instance is already running.
     (setf (slot-value *interface* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
     (handler-case
