@@ -3,9 +3,8 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
-;; Create necessary hook types.
-;; We must forward-declare the class since the hook take the type of the class
-;; that hosts them.
+;; Create necessary hook types. We must forward-declare the class
+;; since the hook take the type of the class that hosts them.
 (defclass buffer () ())
 (defclass minibuffer () ())
 (defclass window () ())
@@ -19,13 +18,15 @@
 @export-accessors
 (defclass window ()
   ((id :accessor id :initarg :id)
+   (object :accessor object :initarg :object :documentation "The
+   reference to the foreign object for the window.")
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
-   (status-buffer :accessor status-buffer ;; TODO: Use a separate class for status bars once the platform port has a separate display.
+   (status-buffer :accessor status-buffer
                   :initform (make-minibuffer)
                   :documentation "Buffer for displaying information such as
-current URL or event messages.")
+                  current URL or event messages.")
    (status-buffer-height :accessor status-buffer-height :initform 24
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
@@ -37,13 +38,15 @@ current URL or event messages.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
                                   :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
-                                  :documentation "Hook run before `rpc-window-set-active-buffer' takes effect.
-The handlers take the window and the buffer as argument.")
+                                  :documentation "Hook run before
+   `rpc-window-set-active-buffer' takes effect. The handlers take the
+   window and the buffer as argument.")
    (window-delete-hook :accessor window-delete-hook
                        :initform (make-hook-window)
                        :type hook-window
-                       :documentation "Hook run after `rpc-window-delete' takes effect.
-The handlers take the window as argument.")))
+                       :documentation "Hook run after
+    `rpc-window-delete' takes effect.  The handlers take the window as
+    argument.")))
 
 (define-class-type window)
 (declaim (type (window-type) *window-class*))
@@ -53,8 +56,6 @@ The handlers take the window as argument.")))
 @export
 @export-accessors
 (defclass proxy ()
-  ;; TODO: for the PyQt side, we now want the protocol, the IP and the
-  ;; port on different slots.
   ((server-address :accessor server-address :initarg :server-address
                    :initform "socks5://127.0.0.1:9050"
                    :type string
@@ -689,7 +690,7 @@ current buffer."
 
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
-First URL is focused if NO-FOCUS is nil."
+   First URL is focused if NO-FOCUS is nil."
   (handler-case
       (let ((first-buffer (first (mapcar
                                   (lambda (url)
@@ -703,9 +704,7 @@ First URL is focused if NO-FOCUS is nil."
                 (window-set-active-buffer window first-buffer))
               (set-current-buffer first-buffer))))
     (error (c)
-      ;; Forward error or else external caller of "next foo.url" won't know
-      ;; there was an error.
-      (error "Could not make buffer to open ~a: ~a~%Is the platform port running?" urls c))))
+      (error "Could not make buffer to open ~a: ~a" urls c))))
 
 @export
 (defmethod resource-query-default ((buffer buffer)

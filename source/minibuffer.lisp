@@ -75,21 +75,24 @@
                   :initform '(minibuffer-mode))
    (completion-function :initarg :completion-function :accessor completion-function
                         :initform nil
-                        :documentation "Function that takes the user input
-string and returns a list of candidate strings")
+                        :documentation "Function that takes the user
+                        input string and returns a list of candidate
+                        strings")
    (callback :initarg :callback :accessor callback
              :initform nil
              :documentation "Function to call over the selected candidate.")
    (callback-buffer :initarg :callback-buffer
                     :accessor callback-buffer
                     :initform (when *interface* (current-buffer))
-                    :documentation "The active buffer when the minibuffer was
-brought up.  This can be useful to know which was the original buffer in the
-`callback' in case the buffer was changed.")
+                    :documentation "The active buffer when the
+                    minibuffer was brought up.  This can be useful to
+                    know which was the original buffer in the
+                    `callback' in case the buffer was changed.")
    (setup-function :initarg :setup-function :accessor setup-function
                    :initform #'setup-default
-                   :documentation "Function of no argument that fills the
-`content' on when the minibuffer is created.  Called only once.")
+                   :documentation "Function of no argument that fills
+                   the `content' on when the minibuffer is created.
+                   Called only once.")
    (cleanup-function :initarg :cleanup-function :accessor cleanup-function
                      :initform nil
                      :documentation "Function run after a completion has been selected.
@@ -100,9 +103,8 @@ This should not rely on the minibuffer's content.")
                      :documentation "Function to call whenever a change happens.")
    (empty-complete-immediate :initarg :empty-complete-immediate :accessor empty-complete-immediate ; TODO: Rename?
                              :initform nil
-                             :documentation "If non-nil, allow input matching no)))
-candidates.")
-   ;; TODO: Move input-* slots to a separate text class?
+                             :documentation "If non-nil, allow input
+                             matching no candidates.")
    (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input"
                  :type string)
    (input-buffer :initarg :input-buffer :accessor input-buffer :initform ""
@@ -112,25 +114,28 @@ candidates.")
    (invisible-input-p :initarg :invisible-input-p :accessor invisible-input-p
                       :initform nil
                       :documentation "If non-nil, input is replaced by
-placeholder character.  This is useful to conceal passwords.")
+                      placeholder character.  This is useful to
+                      conceal passwords.")
    (history :initarg :history :accessor history
             :initform (minibuffer-generic-history *interface*)
             :type ring:ring
-            :documentation "History of inputs for the minibuffer.
-If nil, no history is used.")
+            :documentation "History of inputs for the minibuffer. If
+            nil, no history is used.")
    (multi-selection-p :initarg :multi-selection-p :accessor multi-selection-p
                       :initform nil
                       :type boolean
-                      :documentation "If non-nil, allow for selecting multiple
-candidates.")
+                      :documentation "If non-nil, allow for selecting
+                      multiple candidates.")
    (completions :accessor completions :initform nil)
    (marked-completions :accessor marked-completions :initform nil)
    (show-completion-count :accessor show-completion-count
                           :initarg :show-completion-count :initform t
                           :type boolean
-                          :documentation "Show the number of chosen candidates inside brackets. In the case of yes/no questions, there is no need for it.")
+                          :documentation "Show the number of chosen
+                          candidates inside brackets. In the case of
+                          yes/no questions, there is no need for it.")
    (completion-head :accessor completion-head :initform 0)
-   (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
+   (completion-cursor :accessor completion-cursor :initform 0)
    (content :initform "" :type string
             :documentation "The HTML content of the minibuffer.")
    (max-lines :initarg :max-lines
@@ -138,22 +143,25 @@ candidates.")
               :type integer
               :initform 10
               :documentation "Max number of candidate lines to show.
-You will want edit this to match the changes done to `minibuffer-font-size',
-`minibuffer-line-height' and `minibuffer-open-height'.")
+              You will want edit this to match the changes done to
+              `minibuffer-font-size', `minibuffer-line-height' and
+              `minibuffer-open-height'.")
    (minibuffer-font-size :initarg :minibuffer-font-size
                          :accessor minibuffer-font-size
                          :type string
                          :initform "1em"
-                         :documentation "CSS font size for the minibuffer.
-Value is a string, e.g. '1em'.
-You might want to configure the value on HiDPI screen.")
+                         :documentation "CSS font size for the
+                         minibuffer.  Value is a string, e.g. '1em'.
+                         You might want to configure the value on
+                         HiDPI screen.")
    (minibuffer-line-height :initarg :minibuffer-line-height
                            :accessor minibuffer-line-height
                            :type string
                            :initform ""
-                           :documentation "CSS line height for the minibuffer.
-Value is a string, e.g. '1em'.
-You might want to configure the value on HiDPI screen.")
+                           :documentation "CSS line height for the
+                           minibuffer.  Value is a string, e.g. '1em'.
+                           You might want to configure the value on
+                           HiDPI screen.")
    (minibuffer-style :accessor minibuffer-style
                      :initform (cl-css:css
                                 '((* :font-family "monospace,monospace")
@@ -179,9 +187,6 @@ You might want to configure the value on HiDPI screen.")
                                   (.marked :background-color "darkgray"
                                            :font-weight "bold"
                                            :color "white")
-                                  ;; .selected must be set _after_ .marked so
-                                  ;; that it overrides its attributes since the
-                                  ;; candidate can be both marked and selected.
                                   (.selected :background-color "gray"
                                              :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
@@ -251,8 +256,8 @@ You might want to configure the value on HiDPI screen.")
 
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
   "Reset the minibuffer state on every input change.
-This is necessary or else completion cursor / head could be beyond the updated
-list length."
+  This is necessary or else completion cursor / head could be beyond
+  the updated list length."
   (with-slots (completion-function completions input-buffer
                empty-complete-immediate completion-cursor completion-head)
       minibuffer
@@ -278,7 +283,7 @@ list length."
 
 (defmethod (setf content) (html-content minibuffer)
   "Set the `content' of the MINIBUFFER to HTML-CONTENT.
-This runs a call"
+   This runs a call"
   (setf (slot-value minibuffer 'content) html-content)
   (rpc-minibuffer-evaluate-javascript
    (last-active-window *interface*)
@@ -302,13 +307,13 @@ This runs a call"
 @export
 (defun read-from-minibuffer (minibuffer &key callback)
   "Open the minibuffer, ready for user input.
-Example use:
+   Example use:
 
-  (read-from-minibuffer
-   (make-minibuffer
-    :completion-function #'my-completion-filter))
+   (read-from-minibuffer
+    (make-minibuffer
+     :completion-function #'my-completion-filter))
 
-See the documentation of `minibuffer' to know more about the minibuffer options."
+   See the documentation of `minibuffer' to know more about the minibuffer options."
   (when callback
     ;; We need a :callback key argument so that `read-from-minibuffer' can be
     ;; called in `with-result'.
@@ -564,12 +569,10 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
            ;; In the minibuffer, the cursor is actually one position *after* the last char.
            (word-separation-character-p (char-at-position input
                                                           (max 0 (1- position))))))
-
     ;; Move past all delimiters at the end of input.
     (loop while (and (ahead-delimiter-p input position)
                      (plusp position))
        do (decf position))
-
     ;; Move past one word.
     (loop while (and (not (ahead-delimiter-p input position))
                      (plusp position))

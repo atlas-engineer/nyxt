@@ -41,7 +41,6 @@ Set to '-' to read standard input instead.")
            :long "session"
            :arg-parser #'identity
            :description "With --session nil, don't restore or store the session."))
-
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
@@ -62,8 +61,8 @@ Set to '-' to read standard input instead.")
 
 (defun set-debug-level (level)
   "Supported values for LEVEL are
-- `:debug': Debug logging.
-- `t': Normal logging."
+   - `:debug': Debug logging.
+   - `t': Normal logging."
   (match level
     (:debug
      (log:config :debug))
@@ -80,34 +79,30 @@ Set to '-' to read standard input instead.")
 
 next [options] [urls]")
       (uiop:quit))
-
     (when (getf options :version)
       (format t "Next ~a~&" +version+)
       (uiop:quit))
-
     (when (getf options :verbose)
       (set-debug-level :debug)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
-
     (when (getf options :eval)
       (unless (getf options :no-init)
         (load-lisp-file (init-file-path) :interactive nil))
       (eval-expr (getf options :eval))
       (uiop:quit))
-
     (when (getf options :session)
       (when (string-equal (getf options :session) "nil")
         (setf next:*use-session* nil)))
-
     (setf *options* options
           *free-args* free-args)
     (start :urls free-args
            :non-interactive t)))
 
 (defun init-file-path (&optional (filename "init.lisp"))
-  ;; This can't be a regular variable or else the value will be hard-coded at
-  ;; compile time.  It seems to be hard-coded with (eval-when (:execute) ...) as well.
-  "The path where the system will look to load an init file from."
+  "The path where the system will look to load an init file from. This
+   can't be a regular variable or else the value will be hard-coded at
+   compile time.  It seems to be hard-coded with (eval-when (:execute)
+   ...) as well."
   (or (getf *options* :init-file)
       (xdg-config-home filename)))
 
@@ -116,10 +111,10 @@ next [options] [urls]")
 
 (defun load-lisp-file (file &key interactive)
   "Load the provided lisp file.
-If FILE is \"-\", read from the standard input.
-If INTERACTIVE is t, allow the debugger on errors. If :running, show
-an error but don't quit the Lisp process. If nil, quit Lisp (especially
-useful when Next starts up)."
+   If FILE is \"-\", read from the standard input.
+   If INTERACTIVE is t, allow the debugger on errors. If :running, show
+   an error but don't quit the Lisp process. If nil, quit Lisp (especially
+   useful when Next starts up)."
   (unless (str:emptyp (namestring file))
     (handler-case (if (string= (pathname-name file) "-")
                       (progn
@@ -142,13 +137,12 @@ useful when Next starts up)."
             ((null interactive)
              (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
              (uiop:quit 1))
-            (t
-             (error (format nil "~a:~&~s" message c)))))))))
+            (t (error (format nil "~a:~&~s" message c)))))))))
 
 (define-command load-file (&key (interactive :running))
   "Load the prompted Lisp file.
-If INTERACTIVE is t, allow the debugger on errors.
-If :running, show an error but don't quit the Lisp process."
+   If INTERACTIVE is t, allow the debugger on errors.
+   If :running, show an error but don't quit the Lisp process."
   (with-result (file-name-input (read-from-minibuffer
                                  (make-minibuffer
                                   :input-prompt "Load file"
@@ -158,8 +152,8 @@ If :running, show an error but don't quit the Lisp process."
 (define-command load-init-file (&key (init-file (init-file-path))
                                 (interactive :running))
   "Load or reload the init file.
-If INTERACTIVE is t, allow the debugger on errors.
-If :running, show an error but don't quit the Lisp process."
+   If INTERACTIVE is t, allow the debugger on errors.
+   If :running, show an error but don't quit the Lisp process."
   (load-lisp-file init-file :interactive interactive))
 
 (defun eval-expr (expr)
@@ -173,31 +167,28 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
 
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers. This function is
-suitable as a `interface' `startup-function'."
-  ;; (if urls
-  ;;     (open-urls urls)
-  ;;     ;; TODO: Test if network is available.  If not, display help,
-  ;;     ;; otherwise display start-page-url.
-  ;;     (let ((window (rpc-window-make))
-  ;;           (buffer (help)))
-  ;;       (window-set-active-buffer window buffer)))
-  ;; (match (session-restore-function *interface*)
-  ;;   ((guard f f)
-  ;;    (when *use-session*
-  ;;      (funcall f))))
-
-  )
+   suitable as a `interface' `startup-function'."
+  (if urls
+      (open-urls urls))
+      (let ((window (rpc-window-make))
+            (buffer (help)))
+        (window-set-active-buffer window buffer))
+  (match (session-restore-function *interface*)
+    ((guard f f)
+     (when *use-session*
+       (funcall f)))))
 
 @export
 (defun start (&key urls (init-file (init-file-path)))
   "Start Next and load URLS if any. A new `*interface*' is
-instantiated. The platform port is automatically started if
-needed. Finally, run the `*after-init-hook*'."
+   instantiated. The platform port is automatically started if
+   needed. Finally, run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now)))
     (format t "Next version ~a~&" +version+)
     (unless (getf *options* :no-init)
       (load-lisp-file init-file :interactive t))
-    (setf *interface* (make-instance 'interface
+    ;; TODO: change gtk-interface to interface
+    (setf *interface* (make-instance 'gtk-interface
                                      :startup-timestamp startup-timestamp))
     (setf (slot-value *interface* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
@@ -206,7 +197,8 @@ needed. Finally, run the `*after-init-hook*'."
       (error (c)
         (log:error "In *after-init-hook*: ~a" c)))
     (handler-case
-        (funcall (startup-function *interface*) (or urls *free-args*))
+        (print "Startup function")
+        ; (funcall (startup-function *interface*) (or urls *free-args*))
       (error (c)
         (log:error "In startup-function ~a: ~a" (startup-function *interface*) c)))
     (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))))

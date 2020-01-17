@@ -3,20 +3,29 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+(defclass gtk-interface (interface)
+  ((gtk-ffi :accessor gtk-ffi :initform (gir:ffi "Gtk"))
+   (gdk-ffi :accessor gdk-ffi :initform (gir:ffi "Gdk"))
+   (webkit-ffi :accessor webkit-ffi :initform (gir:require-namespace "WebKit2"))))
+
+(defmethod initialize-instance :after ((interface gtk-interface) &key)
+  (gir:invoke ((gtk-ffi interface) 'init) nil))
+
 @export
-(defun rpc-window-make ()
-  "Create a window and return the window object.
-Run INTERFACE's `window-make-hook' over the created window."
+(defmethod ipc-window-make ((interface gtk-interface))
   (let* ((window-id (get-unique-window-identifier))
-         (window (make-instance *window-class* :id window-id)))
-    (setf (gethash window-id (windows *interface*)) window)
-    (incf (total-window-count *interface*))
-    (%rpc-send "window_make" window-id)
-    (unless (last-active-window *interface*)
-      ;; When starting from a REPL, it's possible that the window is spawned in
-      ;; the background and rpc-window-active would then return nil.
-      (setf (last-active-window *interface*) window))
-    (next-hooks:run-hook (window-make-hook *interface*) window)
+         (foreign-window-object (gir:invoke
+                                 ((gtk-ffi interface) "Window" 'new)
+                                 (gir:nget (gtk-ffi interface) "WindowType" :toplevel)))
+         (window (make-instance *window-class*
+                                :id window-id
+                                :object foreign-window-object)))
+    (setf (gethash window-id (windows interface)) window)
+    (incf (total-window-count interface))
+    (unless (last-active-window interface)
+      (setf (last-active-window interface) window))
+    (next-hooks:run-hook (window-make-hook interface) window)
+    (gir:invoke (foreign-window-object 'show-all))
     window))
 
 (declaim (ftype (function (window string)) rpc-window-set-title))
