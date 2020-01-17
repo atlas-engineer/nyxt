@@ -23,26 +23,26 @@ Two arguments have a special meaning beside the slot value of the mode:
 - :ACTIVATE is used to choose whether to enable or disable the mode.
 If :ACTIVATE is omitted, the mode is toggled.
 The buffer is returned so that mode activation can be chained."
-  (let ((class-var (intern (format nil "*~a-CLASS*" name)))
-        (docstring (if (stringp (first body))
-                       (first body)
-                       (progn
-                         (log:warn "The define-mode definition for ~a doesn't have a documentation string." name)
-                         nil)))
-        (direct-slots (if (stringp (first body))
-                          (cadr body)
-                          (first body))))
+  (let* ((class-var (intern (format nil "*~a-CLASS*" name)))
+         (docstring (if (stringp (first body))
+                        (first body)
+                        (progn
+                          (log:warn "The define-mode definition for ~a doesn't have a documentation string." name)
+                          nil)))
+         (direct-slots (if (stringp (first body))
+                           (cadr body)
+                           (first body)))
+         (class-args `(,name
+                       ,(unless (eq (first direct-superclasses) t)
+                          (append direct-superclasses '(root-mode)))
+                       ,direct-slots)))
+    (when docstring
+      (setf class-args (append class-args
+                               `((:documentation ,docstring)))))
     `(progn
        @export
        @export-accessors
-       ,(if docstring
-            `(defclass ,name ,(unless (eq (first direct-superclasses) t)
-                                (append direct-superclasses '(root-mode)))
-               ,direct-slots
-               (:documentation ,docstring))
-            `(defclass ,name ,(unless (eq (first direct-superclasses) t)
-                                (append direct-superclasses '(root-mode)))
-               ,direct-slots))
+       (defclass ,@class-args)
        ;; Class symbol customization:
        (define-class-type ,name)
        (declaim (type (,(intern (format nil "~a-TYPE" name))) ,class-var))
