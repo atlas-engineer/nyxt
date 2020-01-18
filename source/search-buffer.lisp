@@ -86,7 +86,12 @@ character-preview-count)))."
   ;; TODO: scroll doesn't work properly because it seems it tries to scroll
   ;; before switching buffer in cases where the buffer should be switched
   ;; so have to find a way to sync that up
-  (let* ((rel-identifier (ps:lisp (cadr (str:split ":" (identifier match)))))
+  (let* ((rel-identifier
+           (ps:lisp
+            (let ((id (identifier match)))
+              (if (stringp id)
+                  (cadr (str:split ":" id))
+                  id))))
          (element (ps:chain document (get-element-by-id rel-identifier))))
     (ps:chain element (scroll-into-view t))))
 
@@ -101,7 +106,9 @@ character-preview-count)))."
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)) (padding 1))
   (loop for element in (cl-json:decode-json-from-string matches-json)
         collect (make-instance 'match
-                               :identifier (format nil "~d:~d" padding (cdr (assoc :identifier element)))
+                               :identifier (if padding
+                                               (format nil "~d:~d" padding (cdr (assoc :identifier element)))
+                                               (cdr (assoc :identifier element)))
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
@@ -111,12 +118,13 @@ capture the current-buffer and current-minibuffer in a closure."
   (when (> (length input) 2)
     (let ((input (str:replace-all " " " " input))
           (all-matches nil)
-          (padding 0))
+          (padding (if (> (list-length buffers) 1) 0 nil)))
       (map nil
            (lambda (buffer)
              (query-buffer :query input :buffer buffer
               :callback (lambda (result)
-                          (setf padding (1+ padding))
+                          (when padding
+                            (setf padding (1+ padding)))
                           (let* ((matches (matches-from-json
                                            result buffer padding)))
                             (setf all-matches (append all-matches matches))
@@ -138,27 +146,13 @@ capture the current-buffer and current-minibuffer in a closure."
 
 (define-command search-buffer ()
   "Add search boxes for a given search string."
-  (let* ((minibuffer (make-minibuffer
-                      :input-prompt "Search for (3+ characters)"
-                      :completion-function 'match-completion-function
-                      :history (minibuffer-search-history *interface*)))
-         (keymap-scheme (current-keymap-scheme minibuffer))
-         (keymap (getf (keymap-schemes (first (modes minibuffer))) keymap-scheme)))
-    (define-key :keymap keymap "C-s"
-      #'(lambda ()
-          (when (completions minibuffer)
-            (focus-match :match (nth (completion-cursor minibuffer)
-                                     (completions minibuffer))))))
-    (with-result (input (read-from-minibuffer minibuffer))
-      (focus-match :match input))))
+  (search-buffers (list (current-buffer))))
 
-(define-command search-buffers ()
-  "Like search-buffer but for multiple buffers at a time."
-  (with-result (buffers (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Search buffer(s)"
-                            :multi-selection-p t
-                            :completion-function (buffer-completion-filter))))
+(define-command search-buffers (&optional buffers)
+  "Search one or more buffers at a time.
+If no buffers are provided, the minibuffer will show a
+prompt where one can choose which buffers to do the search on."
+  (let ((funk (lambda (buffers)
     (let* ((minibuffer (make-minibuffer
                         :input-prompt "Search for (3+ characters)"
                         :completion-function #'(lambda (input)
@@ -174,7 +168,15 @@ capture the current-buffer and current-minibuffer in a closure."
               (focus-match :match (nth (completion-cursor minibuffer)
                                        (completions minibuffer))))))
       (with-result (input (read-from-minibuffer minibuffer))
-        (focus-match :match input)))))
+        (focus-match :match input))))))
+    (if buffers
+        (funcall funk buffers)
+        (with-result (buffers (read-from-minibuffer
+                               (make-minibuffer
+                                :input-prompt "Search buffer(s)"
+                                :multi-selection-p t
+                                :completion-function (buffer-completion-filter))))
+          (funcall funk buffers)))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
