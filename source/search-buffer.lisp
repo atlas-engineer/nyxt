@@ -103,11 +103,11 @@ character-preview-count)))."
 (defmethod object-string ((match match))
   (format nil "~a ...~a..." (identifier match) (body match)))
 
-(defun matches-from-json (matches-json &optional (buffer (current-buffer)) (padding 1))
+(defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
   (loop for element in (cl-json:decode-json-from-string matches-json)
         collect (make-instance 'match
-                               :identifier (if padding
-                                               (format nil "~d:~d" padding (cdr (assoc :identifier element)))
+                               :identifier (if multi-buffer
+                                               (format nil "~d:~d" (id buffer) (cdr (assoc :identifier element)))
                                                (cdr (assoc :identifier element)))
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
@@ -118,15 +118,13 @@ capture the current-buffer and current-minibuffer in a closure."
   (when (> (length input) 2)
     (let ((input (str:replace-all " " " " input))
           (all-matches nil)
-          (padding (if (> (list-length buffers) 1) 0 nil)))
+          (multi-buffer (if (> (list-length buffers) 1) t nil)))
       (map nil
            (lambda (buffer)
              (query-buffer :query input :buffer buffer
               :callback (lambda (result)
-                          (when padding
-                            (setf padding (1+ padding)))
                           (let* ((matches (matches-from-json
-                                           result buffer padding)))
+                                           result buffer multi-buffer)))
                             (setf all-matches (append all-matches matches))
                             (set-completions (current-minibuffer) all-matches)))))
            buffers)))
