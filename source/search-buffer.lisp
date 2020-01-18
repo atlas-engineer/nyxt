@@ -81,32 +81,46 @@ character-preview-count)))."
     (ps:chain -j-s-o-n (stringify *matches*))))
 
 (define-parenscript focus-match (match)
-  (let ((element (ps:chain document (get-element-by-id (ps:lisp (identifier match))))))
+  (ps:lisp (when (not (equal (buffer match) (current-buffer)))
+             (set-current-buffer (buffer match))))
+  ;; TODO: scroll doesn't work properly because it seems it tries to scroll
+  ;; because switching buffer
+  (let* ((rel-identifier (ps:lisp (cadr (str:split ":" (identifier match)))))
+         (element (ps:chain document (get-element-by-id rel-identifier))))
     (ps:chain element (scroll-into-view t))))
 
 (defclass match ()
   ((identifier :accessor identifier :initarg :identifier)
-   (body :accessor body :initarg :body)))
+   (body :accessor body :initarg :body)
+   (buffer :accessor buffer :initarg :buffer)))
 
 (defmethod object-string ((match match))
   (format nil "~a ...~a..." (identifier match) (body match)))
 
-(defun matches-from-json (matches-json)
+(defun matches-from-json (matches-json &optional (buffer (current-buffer)) (padding 1))
   (loop for element in (cl-json:decode-json-from-string matches-json)
         collect (make-instance 'match
-                               :identifier (cdr (assoc :identifier element))
-                               :body (cdr (assoc :body element)))))
+                               :identifier (format nil "~d:~d" padding (cdr (assoc :identifier element)))
+                               :body (cdr (assoc :body element))
+                               :buffer buffer)))
 
-(defun match-completion-function (input)
+(defun match-completion-function (input &optional (buffers (list (current-buffer))))
   "Update the completions asynchronously via query-buffer. TODO:
 capture the current-buffer and current-minibuffer in a closure."
   (when (> (length input) 2)
-    (let ((input (str:replace-all " " " " input)))
-      (query-buffer
-       :query input
-       :callback (lambda (result)
-                   (set-completions (current-minibuffer)
-                                    (matches-from-json result))))))
+    (let ((input (str:replace-all " " " " input))
+          (all-matches nil)
+          (padding 0))
+      (map nil
+           (lambda (buffer)
+             (query-buffer :query input :buffer buffer
+              :callback (lambda (result)
+                          (setf padding (1+ padding))
+                          (let* ((matches (matches-from-json
+                                           result buffer padding)))
+                            (setf all-matches (append all-matches matches))
+                            (set-completions (current-minibuffer) all-matches)))))
+           buffers)))
   ;; return NIL, the completions will be updated asynchronously by the
   ;; callback from query-buffer
   ())
@@ -136,6 +150,30 @@ capture the current-buffer and current-minibuffer in a closure."
                                      (completions minibuffer))))))
     (with-result (input (read-from-minibuffer minibuffer))
       (focus-match :match input))))
+
+(define-command search-buffers ()
+  "Like search-buffer but for multiple buffers at a time."
+  (with-result (buffers (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Search buffer(s)"
+                            :multi-selection-p t
+                            :completion-function (buffer-completion-filter))))
+    (let* ((minibuffer (make-minibuffer
+                        :input-prompt "Search for (3+ characters)"
+                        :completion-function #'(lambda (input)
+                                                (match-completion-function
+                                                 input
+                                                 buffers))
+                        :history (minibuffer-search-history *interface*)))
+           (keymap-scheme (current-keymap-scheme minibuffer))
+           (keymap (getf (keymap-schemes (first (modes minibuffer))) keymap-scheme)))
+      (define-key :keymap keymap "C-s"
+        #'(lambda ()
+            (when (completions minibuffer)
+              (focus-match :match (nth (completion-cursor minibuffer)
+                                       (completions minibuffer))))))
+      (with-result (input (read-from-minibuffer minibuffer))
+        (focus-match :match input)))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
