@@ -895,6 +895,7 @@ Only available if minibuffer `multi-selection-p' is non-nil."
         (match (member candidate marked-completions)
           ((guard n n) (setf marked-completions (delete candidate marked-completions)))
           (_ (push candidate marked-completions)))))
+    (update-display minibuffer)
     (select-next minibuffer)))
 
 (define-command minibuffer-mark-all (&optional (minibuffer (current-minibuffer)))
