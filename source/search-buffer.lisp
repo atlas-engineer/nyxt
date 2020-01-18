@@ -84,7 +84,8 @@ character-preview-count)))."
   (ps:lisp (when (not (equal (buffer match) (current-buffer)))
              (set-current-buffer (buffer match))))
   ;; TODO: scroll doesn't work properly because it seems it tries to scroll
-  ;; because switching buffer
+  ;; before switching buffer in cases where the buffer should be switched
+  ;; so have to find a way to sync that up
   (let* ((rel-identifier (ps:lisp (cadr (str:split ":" (identifier match)))))
          (element (ps:chain document (get-element-by-id rel-identifier))))
     (ps:chain element (scroll-into-view t))))
