@@ -143,45 +143,44 @@ capture the current-buffer and current-minibuffer in a closure."
   (remove-search-nodes))
 
 (define-command search-buffer ()
-  "Add search boxes for a given search string."
-  (search-buffers (list (current-buffer))))
+  "Start a search on the current buffer."
+  (search-over-buffers (list (current-buffer))))
 
-(define-command search-buffers (&optional buffers)
-  "Search one or more buffers at a time.
-If no buffers are provided, the minibuffer will show a
-prompt where one can choose which buffers to do the search on."
-  (let ((funk
-          (lambda (buffers)
-            (let* ((num-buffers (list-length buffers))
-                   (prompt-text
-                     (if (> num-buffers 1)
-                         (format nil "Search over ~d buffers for (3+ characters)" num-buffers)
-                         "Search for (3+ characters)"))
-                   (minibuffer (make-minibuffer
-                                :input-prompt prompt-text
-                                :completion-function
-                                #'(lambda (input)
-                                    (match-completion-function
-                                     input
-                                     buffers))
-                                :history (minibuffer-search-history *interface*)))
-                   (keymap-scheme (current-keymap-scheme minibuffer))
-                   (keymap (getf (keymap-schemes (first (modes minibuffer))) keymap-scheme)))
-              (define-key :keymap keymap "C-s"
+(define-command search-buffers ()
+  "Show a prompt in the minibuffer that allows to choose
+one or more buffers, and then start a search prompt that
+searches over the selected buffer(s)."
+  (with-result (buffers (read-from-minibuffer
+                         (make-minibuffer
+                          :input-prompt "Search buffer(s)"
+                          :multi-selection-p t
+                          :completion-function (buffer-completion-filter))))
+   (search-over-buffers buffers)))
+
+(defun search-over-buffers (buffers)
+  "Add search boxes for a given search string over the
+provided buffers."
+  (let* ((num-buffers (list-length buffers))
+         (prompt-text
+          (if (> num-buffers 1)
+              (format nil "Search over ~d buffers for (3+ characters)" num-buffers)
+              "Search for (3+ characters)"))
+         (minibuffer (make-minibuffer
+                      :input-prompt prompt-text
+                      :completion-function #'(lambda (input)
+                                               (match-completion-function
+                                                input buffers))
+                      :history (minibuffer-search-history *interface*)))
+         (keymap-scheme (current-keymap-scheme minibuffer))
+         (keymap (getf (keymap-schemes (first (modes minibuffer))) keymap-scheme)))
+    (define-key :keymap keymap "C-s"
                 #'(lambda ()
-                    (when (completions minibuffer)
-                      (focus-match :match (nth (completion-cursor minibuffer)
-                                               (completions minibuffer))))))
-              (with-result (input (read-from-minibuffer minibuffer))
-                (focus-match :match input))))))
-    (if buffers
-        (funcall funk buffers)
-        (with-result (buffers (read-from-minibuffer
-                               (make-minibuffer
-                                :input-prompt "Search buffer(s)"
-                                :multi-selection-p t
-                                :completion-function (buffer-completion-filter))))
-          (funcall funk buffers)))))
+                   (when (completions minibuffer)
+                    (focus-match :match (nth (completion-cursor minibuffer)
+                                             (completions minibuffer))))))
+    (with-result (input (read-from-minibuffer minibuffer))
+     (focus-match :match input))))
+
 
 (define-command remove-search-hints ()
   "Remove all search hints."
