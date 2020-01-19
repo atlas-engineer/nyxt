@@ -107,7 +107,11 @@ character-preview-count)))."
   (loop for element in (cl-json:decode-json-from-string matches-json)
         collect (make-instance 'match
                                :identifier (if multi-buffer
-                                               (format nil "~d:~d" (id buffer) (cdr (assoc :identifier element)))
+                                               (format
+                                                nil
+                                                "~d:~d"
+                                                (id buffer)
+                                                (cdr (assoc :identifier element)))
                                                (cdr (assoc :identifier element)))
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
@@ -121,7 +125,9 @@ capture the current-buffer and current-minibuffer in a closure."
           (multi-buffer (if (> (list-length buffers) 1) t nil)))
       (map nil
            (lambda (buffer)
-             (query-buffer :query input :buffer buffer
+             (query-buffer
+              :query input
+              :buffer buffer
               :callback (lambda (result)
                           (let* ((matches (matches-from-json
                                            result buffer multi-buffer)))
@@ -155,32 +161,36 @@ searches over the selected buffer(s)."
                           :input-prompt "Search buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
-   (search-over-buffers buffers)))
+    (search-over-buffers buffers)))
 
 (defun search-over-buffers (buffers)
   "Add search boxes for a given search string over the
 provided buffers."
   (let* ((num-buffers (list-length buffers))
          (prompt-text
-          (if (> num-buffers 1)
-              (format nil "Search over ~d buffers for (3+ characters)" num-buffers)
-              "Search for (3+ characters)"))
+           (if (> num-buffers 1)
+               (format
+                nil
+                "Search over ~d buffers for (3+ characters)"
+                num-buffers)
+               "Search for (3+ characters)"))
          (minibuffer (make-minibuffer
                       :input-prompt prompt-text
                       :completion-function #'(lambda (input)
                                                (match-completion-function
-                                                input buffers))
+                                                input
+                                                buffers))
                       :history (minibuffer-search-history *interface*)))
          (keymap-scheme (current-keymap-scheme minibuffer))
-         (keymap (getf (keymap-schemes (first (modes minibuffer))) keymap-scheme)))
+         (keymap (getf (keymap-schemes (first (modes minibuffer)))
+                       keymap-scheme)))
     (define-key :keymap keymap "C-s"
                 #'(lambda ()
-                   (when (completions minibuffer)
-                    (focus-match :match (nth (completion-cursor minibuffer)
-                                             (completions minibuffer))))))
+                    (when (completions minibuffer)
+                      (focus-match :match (nth (completion-cursor minibuffer)
+                                               (completions minibuffer))))))
     (with-result (input (read-from-minibuffer minibuffer))
-     (focus-match :match input))))
-
+      (focus-match :match input))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
