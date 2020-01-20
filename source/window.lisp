@@ -32,7 +32,7 @@
 
 (define-command make-window (&optional buffer)
   "Create a new window."
-  (let ((window (rpc-window-make))
+  (let ((window (ipc-window-make *interface*))
         (buffer (or buffer (make-buffer))))
     (window-set-active-buffer window buffer)
     (values window buffer)))
