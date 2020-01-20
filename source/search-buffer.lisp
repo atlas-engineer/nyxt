@@ -81,11 +81,6 @@ character-preview-count)))."
     (ps:chain -j-s-o-n (stringify *matches*))))
 
 (define-parenscript focus-match (match)
-  (ps:lisp (when (not (equal (buffer match) (current-buffer)))
-             (set-current-buffer (buffer match))))
-  ;; TODO: scroll doesn't work properly because it seems it tries to scroll
-  ;; before switching buffer in cases where the buffer should be switched
-  ;; so have to find a way to sync that up
   (let* ((rel-identifier
            (ps:lisp
             (let ((id (identifier match)))
@@ -94,6 +89,11 @@ character-preview-count)))."
                   id))))
          (element (ps:chain document (get-element-by-id rel-identifier))))
     (ps:chain element (scroll-into-view t))))
+
+(defun handle-match (match)
+  (when (not (equal (buffer match) (current-buffer)))
+    (set-current-buffer (buffer match)))
+  (focus-match :match match))
 
 (defclass match ()
   ((identifier :accessor identifier :initarg :identifier)
@@ -185,12 +185,13 @@ provided buffers."
          (keymap (getf (keymap-schemes (first (modes minibuffer)))
                        keymap-scheme)))
     (define-key :keymap keymap "C-s"
-                #'(lambda ()
-                    (when (completions minibuffer)
-                      (focus-match :match (nth (completion-cursor minibuffer)
-                                               (completions minibuffer))))))
-    (with-result (input (read-from-minibuffer minibuffer))
-      (focus-match :match input))))
+      #'(lambda ()
+          (when (completions minibuffer)
+            (let ((match (nth (completion-cursor minibuffer)
+                              (completions minibuffer))))
+              (handle-match match)))))
+    (with-result (match (read-from-minibuffer minibuffer))
+      (handle-match match))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
