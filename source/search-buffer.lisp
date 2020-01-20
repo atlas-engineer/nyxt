@@ -81,13 +81,9 @@ character-preview-count)))."
     (ps:chain -j-s-o-n (stringify *matches*))))
 
 (define-parenscript focus-match (match)
-  (let* ((rel-identifier
-           (ps:lisp
-            (let ((id (identifier match)))
-              (if (stringp id)
-                  (cadr (str:split ":" id))
-                  id))))
-         (element (ps:chain document (get-element-by-id rel-identifier))))
+  (let ((element
+            (ps:chain
+             document (get-element-by-id (ps:lisp (identifier match))))))
     (ps:chain element (scroll-into-view t))))
 
 (defun handle-match (match)
@@ -101,7 +97,10 @@ character-preview-count)))."
    (buffer :accessor buffer :initarg :buffer)))
 
 (defmethod object-string ((match match))
-  (format nil "~a ...~a..." (identifier match) (body match)))
+  (let ((id (identifier match)))
+    (if (stringp (identifier match))
+        (format nil "~a ...~a...  ~a" id (body match) (title (buffer match)))
+        (format nil "~a ...~a..." id (body match)))))
 
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
   (loop for element in (cl-json:decode-json-from-string matches-json)
