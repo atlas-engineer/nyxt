@@ -81,10 +81,8 @@ character-preview-count)))."
     (ps:chain -j-s-o-n (stringify *matches*))))
 
 (define-parenscript focus-match (match)
-  (let ((element
-            (ps:chain
-             document (get-element-by-id (ps:lisp (identifier match))))))
-    (ps:chain element (scroll-into-view t))))
+  (let ((id (ps:lisp (identifier match))))
+    (ps:chain document (get-element-by-id id) (scroll-into-view t))))
 
 (defun handle-match (match)
   (when (not (equal (buffer match) (current-buffer)))
@@ -94,24 +92,21 @@ character-preview-count)))."
 (defclass match ()
   ((identifier :accessor identifier :initarg :identifier)
    (body :accessor body :initarg :body)
-   (buffer :accessor buffer :initarg :buffer)))
+   (buffer :accessor buffer :initarg :buffer)
+   (multi-buffer :accessor multi-buffer :initarg :multi-buffer)))
 
 (defmethod object-string ((match match))
-  (let ((id (identifier match)))
-    (if (stringp (identifier match))
-        (format nil "~a ...~a...  ~a" id (body match) (title (buffer match)))
+  (let* ((id (identifier match))
+         (buffer-id (id (buffer match))))
+    (if (multi-buffer match)
+        (format nil "~a:~a ...~a...  ~a" buffer-id id (body match) (title (buffer match)))
         (format nil "~a ...~a..." id (body match)))))
 
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
   (loop for element in (cl-json:decode-json-from-string matches-json)
         collect (make-instance 'match
-                               :identifier (if multi-buffer
-                                               (format
-                                                nil
-                                                "~d:~d"
-                                                (id buffer)
-                                                (cdr (assoc :identifier element)))
-                                               (cdr (assoc :identifier element)))
+                               :identifier (cdr (assoc :identifier element))
+                               :multi-buffer multi-buffer
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
