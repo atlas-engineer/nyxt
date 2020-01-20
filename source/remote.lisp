@@ -28,12 +28,12 @@
                   :initform (make-minibuffer)
                   :documentation "Buffer for displaying information such as
 current URL or event messages.")
-   (status-buffer-height :accessor status-buffer-height :initform 36
+   (status-buffer-height :accessor status-buffer-height :initform 24
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
    (minibuffer-callbacks :accessor minibuffer-callbacks
                          :initform (make-hash-table :test #'equal))
-   (minibuffer-open-height :accessor minibuffer-open-height :initform 200
+   (minibuffer-open-height :accessor minibuffer-open-height :initform 256
                            :type integer
                            :documentation "The height of the minibuffer when open.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
