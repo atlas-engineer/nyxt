@@ -98,10 +98,10 @@ not associated with a web view) have an empty ID.")
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
    (current-keymap-scheme ; TODO: Name keymap-scheme instead?
-                          :accessor current-keymap-scheme
-                          :initarg :current-keymap-scheme
-                          :initform :emacs
-                          :documentation "The keymap scheme that will be used
+    :accessor current-keymap-scheme
+    :initarg :current-keymap-scheme
+    :initform :emacs
+    :documentation "The keymap scheme that will be used
 for all modes in the current buffer.")
    (override-map :accessor override-map
                  :initarg :override-map
@@ -169,6 +169,18 @@ platform ports might support this.")
                            :border-radius "3px"
                            :z-index #.(1- (expt 2 31))))
               :documentation "The style of the boxes, e.g. link hints.")
+   (hi-box-style :accessor hi-box-style
+                 :initform (cl-css:inline-css
+                            '(:background "linear-gradient(to bottom, #abff85, #5dc221)"
+                              :color "black"
+                              :border "1px #6ec221 solid"
+                              :font-weight "bold"
+                              :padding "1px 3px 0px 3px"
+                              :text-align "center"
+                              :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)"
+                              :border-radius "3px"
+                              :z-index #.(1- (expt 2 31))))
+                 :documentation "The style of highlighted boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
