@@ -45,6 +45,8 @@
         "ESCAPE" #'cancel-input
         "C-n" #'select-next
         "C-p" #'select-previous
+        "M-n" #'select-next-follow
+        "M-p" #'select-previous-follow
         "button4" #'select-previous
         "button5" #'select-next
         "Down" #'select-next
@@ -53,7 +55,7 @@
         "C-y" #'minibuffer-paste
         "C-w" #'copy-candidate
         "TAB" #'insert-candidate
-        "M-p" #'minibuffer-history
+        "M-h" #'minibuffer-history
         "C-SPACE" #'minibuffer-toggle-mark
         "M-a" #'minibuffer-mark-all
         "M-u" #'minibuffer-unmark-all
@@ -120,9 +122,9 @@ candidates.")
    (completions :accessor completions :initform nil)
    (marked-completions :accessor marked-completions :initform nil)
    (show-completion-count :accessor show-completion-count
-                            :initarg :show-completion-count :initform t
-                            :type boolean
-                            :documentation "Show the number of chosen candidates inside brackets. In the case of yes/no questions, there is no need for it.")
+                          :initarg :show-completion-count :initform t
+                          :type boolean
+                          :documentation "Show the number of chosen candidates inside brackets. In the case of yes/no questions, there is no need for it.")
    (completion-head :accessor completion-head :initform 0)
    (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Rename to completion-index?
    (content :initform "" :type string
@@ -152,23 +154,23 @@ You might want to configure the value on HiDPI screen.")
                      :initform (cl-css:css
                                 '((* :font-family "monospace,monospace")
                                   (body :border-top "4px solid dimgray"
-                                   :margin "0"
-                                   :padding "0 6px")
+                                        :margin "0"
+                                        :padding "0 6px")
                                   ("#container" :display "flex"
-                                   :flex-flow "column"
-                                   :height "100%")
+                                                :flex-flow "column"
+                                                :height "100%")
                                   ("#input" :padding "6px 0"
-                                   :border-bottom "solid 1px lightgray")
+                                            :border-bottom "solid 1px lightgray")
                                   ("#completions" :flex-grow "1"
-                                   :overflow-y "auto"
-                                   :overflow-x "auto")
+                                                  :overflow-y "auto"
+                                                  :overflow-x "auto")
                                   ("#cursor" :background-color "gray"
-                                   :color "white")
+                                             :color "white")
                                   ("#prompt" :padding-right "4px"
-                                   :color "dimgray")
+                                             :color "dimgray")
                                   (ul :list-style "none"
-                                   :padding "0"
-                                   :margin "0")
+                                      :padding "0"
+                                      :margin "0")
                                   (li :padding "2px")
                                   (.marked :background-color "darkgray"
                                            :font-weight "bold"
@@ -200,44 +202,44 @@ You might want to configure the value on HiDPI screen.")
   "See the `minibuffer' class for the argument documentation."
   (apply #'make-instance *minibuffer-class*
          `(,@(if explicit-default-modes
-                `(:default-modes ,default-modes)
-                '())
+                 `(:default-modes ,default-modes)
+                 '())
            ,@(if explicit-completion-function
-                `(:completion-function ,completion-function)
-                '())
+                 `(:completion-function ,completion-function)
+                 '())
            ,@(if explicit-callback
-                `(:callback ,callback)
-                '())
+                 `(:callback ,callback)
+                 '())
            ,@(if explicit-callback-buffer
-                `(:callback-buffer ,callback-buffer)
-                '())
+                 `(:callback-buffer ,callback-buffer)
+                 '())
            ,@(if explicit-setup-function
-                `(:setup-function ,setup-function)
-                '())
+                 `(:setup-function ,setup-function)
+                 '())
            ,@(if explicit-cleanup-function
-                `(:cleanup-function ,cleanup-function)
-                '())
+                 `(:cleanup-function ,cleanup-function)
+                 '())
            ,@(if explicit-empty-complete-immediate
-                `(:empty-complete-immediate ,empty-complete-immediate)
-                '())
+                 `(:empty-complete-immediate ,empty-complete-immediate)
+                 '())
            ,@(if explicit-input-prompt
-                `(:input-prompt ,input-prompt)
-                '())
+                 `(:input-prompt ,input-prompt)
+                 '())
            ,@(if explicit-input-buffer
-                `(:input-buffer ,input-buffer)
-                '())
+                 `(:input-buffer ,input-buffer)
+                 '())
            ,@(if explicit-invisible-input-p
-                `(:invisible-input-p ,invisible-input-p)
-                '())
+                 `(:invisible-input-p ,invisible-input-p)
+                 '())
            ,@(if explicit-show-completion-count
-                `(:show-completion-count ,show-completion-count)
-                '())
+                 `(:show-completion-count ,show-completion-count)
+                 '())
            ,@(if explicit-history
-                `(:history ,history)
-                '())
+                 `(:history ,history)
+                 '())
            ,@(if explicit-multi-selection-p
-                `(:multi-selection-p ,multi-selection-p)
-                '()))))
+                 `(:multi-selection-p ,multi-selection-p)
+                 '()))))
 
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
   "Reset the minibuffer state on every input change.
@@ -712,6 +714,12 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                                       (scroll-into-view false))))))
 
+(define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
+  "Select next entry in minibuffer and focus the referencing hint/match
+if there is one such."
+  (select-next minibuffer)
+  (update-selection-hi-hint))
+
 (define-command select-previous (&optional (minibuffer (current-minibuffer)))
   "Select previous entry in minibuffer."
   (when (> (completion-cursor minibuffer) 0)
@@ -720,6 +728,12 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
     (evaluate-script minibuffer
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "head"))
                                       (scroll-into-view false))))))
+
+(define-command select-previous-follow (&optional (minibuffer (current-minibuffer)))
+  "Select previous entry in minibuffer and focus the referencing hint/match
+if there is one such."
+  (select-previous minibuffer)
+  (update-selection-hi-hint))
 
 (defun %echo-status (text &key (message (list text))
                           ;; Need to ignore RPC errors in case platform port is

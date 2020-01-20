@@ -28,6 +28,7 @@
       (setf (ps:@ element style position) "absolute")
       (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
       (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
+      (setf (ps:@ element id) (+ "next-hint-" hint))
       (setf (ps:@ element text-content) hint)
       element))
 
@@ -90,14 +91,52 @@ identifier for every hinted element."
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
 
+(define-parenscript focus-selected-hint (link-hint)
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
+
+  (defun update-hints ()
+    (ps:let* ((new-element
+                (qs document
+                    (ps:lisp (format
+                              nil
+                              "#next-hint-~a"
+                              (identifier link-hint)))))
+              (o-left (ps:@ new-element style left))
+              (o-top (ps:@ new-element style top))
+              (o-pos (ps:@ new-element style position)))
+      (ps:lisp (remove-focus))
+      (setf (ps:@ new-element class-name) "next-hi-hint next-hint")
+      (setf (ps:@ new-element style) (ps:lisp (hi-box-style (current-buffer))))
+      (setf (ps:@ new-element style position) o-pos)
+      (setf (ps:@ new-element style left) o-left)
+      (setf (ps:@ new-element style top) o-top))
+    (ps:chain new-element (scroll-into-view t)))
+
+  (update-hints))
+
+(define-parenscript remove-focus ()
+  (ps:let ((old-elements (qsa document ".next-hi-hint")))
+    (ps:dolist (e old-elements)
+      (ps:let* ((o-left (ps:@ e style left))
+                (o-top (ps:@ e style top))
+                (o-pos (ps:@ e style position)))
+        (setf (ps:@ e class-name) "next-hint")
+        (setf (ps:@ e style) (ps:lisp (box-style (current-buffer))))
+        (setf (ps:@ e style position) o-pos)
+        (setf (ps:@ e style left) o-left)
+        (setf (ps:@ e style top) o-top)))))
+
 (defmacro query-hints (prompt (symbol) &body body)
   `(with-result* ((elements-json (add-element-hints))
                   (,symbol (read-from-minibuffer
                             (make-minibuffer
                              :input-prompt ,prompt
                              :history nil
-                             :completion-function (hint-completion-filter
-                                                   (elements-from-json elements-json))
+                             :completion-function
+                             (hint-completion-filter
+                              (elements-from-json elements-json))
                              :cleanup-function
                              (lambda () (remove-element-hints :buffer (callback-buffer (current-minibuffer))))))))
      ,@body))
@@ -114,6 +153,7 @@ identifier for every hinted element."
                   (cond ((equal "link" object-type)
                          (make-instance 'link-hint
                                         :hint (cdr (assoc :hint element))
+                                        :identifier (cdr (assoc :hint element))
                                         :url (cdr (assoc :href element))
                                         :body (plump:text (plump:parse (cdr (assoc :body element))))))
                         ((equal "button" object-type)
@@ -131,7 +171,11 @@ identifier for every hinted element."
 (defclass button-hint (hint) ())
 
 (defclass link-hint (hint)
-  ((url :accessor url :initarg :url)))
+  ((url :accessor url :initarg :url)
+   (identifier :accessor identifier :initarg :identifier)
+   (hint :accessor hint :initarg :hint)
+   (body :accessor body :initarg :body
+         :documentation "The body of the anchor tag.")))
 
 (defmethod object-string ((link-hint link-hint))
   (format nil "~a  ~a  ~a" (hint link-hint) (body link-hint) (url link-hint)))
@@ -155,7 +199,7 @@ identifier for every hinted element."
 
 (defmethod %follow-hint-new-buffer ((link-hint link-hint))
   (let ((new-buffer (make-buffer)))
-      (set-url (url link-hint) :buffer new-buffer :raw-url-p t)))
+    (set-url (url link-hint) :buffer new-buffer :raw-url-p t)))
 
 (defmethod %follow-hint-new-buffer ((button-hint button-hint))
   (echo "Can't open button in new buffer."))
@@ -165,6 +209,21 @@ identifier for every hinted element."
 
 (defmethod %copy-hint-url ((button-hint button-hint))
   (echo "Can't copy URL from button."))
+
+(defun update-selection-hi-hint (&optional completions)
+  (let ((hint (if completions
+                  (if (typep (first completions)
+                             '(or link-hint button-hint match))
+                      (first completions)
+                      nil)
+                  (when (current-minibuffer)
+                    (nth (completion-cursor (current-minibuffer))
+                         (completions (current-minibuffer)))))))
+    (when hint
+      (when (and (slot-exists-p hint 'buffer)
+                 (not (equal (buffer hint) (current-buffer))))
+        (set-current-buffer (buffer hint)))
+      (focus-selected-hint :buffer (current-buffer) :link-hint hint))))
 
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
