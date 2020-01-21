@@ -11,13 +11,20 @@
 (defmethod initialize-instance :after ((interface gtk-interface) &key)
   (gir:invoke ((gtk-ffi interface) 'init) nil))
 
+(defclass gtk-window (window)
+  ((object :accessor object :initarg :object :documentation "The
+   reference to the foreign object for the window.")))
+
+(defmethod initialize-instance :after ((gtk-window window) &key)
+  (gir:invoke (foreign-window-object 'show-all)))
+
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
   (let* ((window-id (get-unique-window-identifier))
          (foreign-window-object (gir:invoke
                                  ((gtk-ffi interface) "Window" 'new)
                                  (gir:nget (gtk-ffi interface) "WindowType" :toplevel)))
-         (window (make-instance *window-class*
+         (window (make-instance gtk-window
                                 :id window-id
                                 :object foreign-window-object)))
     (setf (gethash window-id (windows interface)) window)
@@ -25,7 +32,7 @@
     (unless (last-active-window interface)
       (setf (last-active-window interface) window))
     (next-hooks:run-hook (window-make-hook interface) window)
-    (gir:invoke (foreign-window-object 'show-all))
+    
     window))
 
 @export

@@ -18,8 +18,6 @@
 @export-accessors
 (defclass window ()
   ((id :accessor id :initarg :id)
-   (object :accessor object :initarg :object :documentation "The
-   reference to the foreign object for the window.")
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
