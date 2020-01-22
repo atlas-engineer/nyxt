@@ -45,7 +45,6 @@
   ;;;;;;;;;;;;;;
   ;; GTK CODE ;;
   ;;;;;;;;;;;;;;
-  (log:debug "Window ID ~a closed." (id window))
   (next-hooks:run-hook (window-delete-hook window) window)
   (remhash (id window) (windows *interface*)))
 
@@ -56,12 +55,6 @@
         when (gir:invoke ((object window) 'is-active))
           do (setf (last-active-window interface) window))
   (last-active-window interface))
-
-@export
-(defun rpc-window-exists (window)
-  "Return if a window exists."
-  ;(%rpc-send "window_exists" (id window))
-  )
 
 @export
 (defun rpc-window-set-active-buffer (window buffer)
