@@ -22,11 +22,11 @@
                           :completion-function (window-completion-filter))))
     (mapcar #'delete-current-window windows)))
 
-(define-command delete-current-window (&optional (window (rpc-window-active)))
+(define-command delete-current-window (&optional (window (ipc-window-active *interface*)))
   "Delete WINDOW, or the currently active window if unspecified."
   (let ((window-count (hash-table-count (windows *interface*))))
     (cond ((and window (> window-count 1))
-           (rpc-window-delete window))
+           (ipc-window-delete window))
           (window
            (echo "Can't delete sole window.")))))
 

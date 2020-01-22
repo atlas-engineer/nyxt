@@ -32,30 +32,30 @@
     (unless (last-active-window interface)
       (setf (last-active-window interface) window))
     (next-hooks:run-hook (window-make-hook interface) window)
-    
     window))
 
 @export
-(defun ipc-window-set-title (window title)
-  "Set the title for a given window."
+(defmethod ipc-window-set-title ((window gtk-window) title)
+  "Set the title for a window."
   (gir:invoke ((object window) 'set-title) title))
 
 @export
-(defun rpc-window-delete (window)
-  "Delete a window object and remove it from the hash of windows.
-Once deleted, the `window-will-close' RPC endpoint will be called, running
-INTERFACE's `window-delete-hook' over WINDOW."
-  ;(%rpc-send "window_delete" (id window))
-  )
+(defmethod ipc-window-delete ((window gtk-window))
+  "Delete a window object and remove it from the hash of windows."
+  ;;;;;;;;;;;;;;
+  ;; GTK CODE ;;
+  ;;;;;;;;;;;;;;
+  (log:debug "Window ID ~a closed." (id window))
+  (next-hooks:run-hook (window-delete-hook window) window)
+  (remhash (id window) (windows *interface*)))
 
 @export
-(defun rpc-window-active ()
+(defmethod ipc-window-active ((interface gtk-interface))
   "Return the window object for the currently active window."
-  (let ((window (gethash "goldfish"; (%rpc-send "window_active")
-                         (windows *interface*))))
-    (when window
-      (setf (last-active-window *interface*) window))
-    (last-active-window *interface*)))
+  (loop for window being the hash-values of (windows interface)
+        when (gir:invoke ((object window) 'is-active))
+          do (setf (last-active-window interface) window))
+  (last-active-window interface))
 
 @export
 (defun rpc-window-exists (window)

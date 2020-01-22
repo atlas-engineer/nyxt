@@ -673,15 +673,6 @@ current buffer."
       (echo "→ ~a" url))
   (values))
 
-(defun window-will-close (window-id)
-  (let* ((windows (windows *interface*))
-         (window (gethash window-id windows)))
-    (log:debug "Closing window ID ~a (new total: ~a)" window-id
-               (1- (hash-table-count windows)))
-    (next-hooks:run-hook (window-delete-hook window) window)
-    (remhash window-id windows))
-  (values))
-
 (defun make-buffers (urls)
   (open-urls urls)
   (values))
@@ -781,7 +772,7 @@ Deal with URL with the following rules:
 @export
 (defun current-buffer ()
   "Get the active buffer for the active window."
-  (match (rpc-window-active)
+  (match (ipc-window-active *interface*)
     ((guard w w) (active-buffer w))
     (_ (log:warn "No active window, picking last active buffer.")
        (last-active-buffer *interface*))))
@@ -795,9 +786,9 @@ Deal with URL with the following rules:
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
   (unless (eq 'minibuffer (class-name (class-of buffer)))
-    (let ((rpc-window-active (rpc-window-active)))
-      (if rpc-window-active
-          (window-set-active-buffer rpc-window-active buffer)
+    (let ((active-window (ipc-window-active *interface*)))
+      (if active-window
+          (window-set-active-buffer active-window buffer)
           (make-window buffer))
       buffer)))
 

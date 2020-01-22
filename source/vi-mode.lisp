@@ -61,7 +61,7 @@
   "Enable VI insert mode when focus is on an input element on the web page."
   (let ((root-mode (find-mode buffer 'root-mode)))
     (rpc-generate-input-event
-     (rpc-window-active)
+     (ipc-window-active *interface*)
      (first (last-key-chords
              (buffer root-mode))))
     (%clicked-in-input?

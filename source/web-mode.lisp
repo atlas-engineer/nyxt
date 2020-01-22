@@ -351,7 +351,7 @@ Otherwise go forward to the only child."
   (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
-  (let* ((active-window (rpc-window-active))
+  (let* ((active-window (ipc-window-active *interface*))
          (buffer (active-buffer active-window)))
     ;; TODO: Setting the default zoom level works with pure Javascript, but it
     ;; can only be done after the URL has been loaded which is a bit of a

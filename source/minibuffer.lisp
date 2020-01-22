@@ -410,7 +410,7 @@ This should not rely on the minibuffer's content.")
 (defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
-  (let ((active-window (rpc-window-active)))
+  (let ((active-window (ipc-window-active *interface*)))
     (when minibuffer
       (with-result (new-content (rpc-minibuffer-evaluate-javascript
                                  active-window
@@ -436,7 +436,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
-  (let ((active-window (rpc-window-active)))
+  (let ((active-window (ipc-window-active *interface*)))
     ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
     ;; minibuffer was invoked before the old one reaches here.
     (setf (active-minibuffers active-window)
@@ -771,7 +771,7 @@ if there is one such."
                           ;; Need to ignore RPC errors in case platform port is
                           ;; not available and we use this function before
                           ;; checking for it.
-                            (window (ignore-errors (when *interface* (rpc-window-active))))
+                            (window (ignore-errors (when *interface* (ipc-window-active *interface*))))
                             (status-buffer (when window (status-buffer window))))
   "Echo TEXT in the status buffer.
 MESSAGE is a cl-markup list."
