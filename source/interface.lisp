@@ -602,7 +602,7 @@ current buffer."
         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
     (setf url (if (str:emptyp url) "<no url/name>" url))
-    (rpc-window-set-title window
+    (ipc-window-set-title window
                           (concatenate 'string "Next - "
                                        title (unless (str:emptyp title) " - ")
                                        url))))

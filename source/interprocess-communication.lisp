@@ -15,8 +15,8 @@
   ((object :accessor object :initarg :object :documentation "The
    reference to the foreign object for the window.")))
 
-(defmethod initialize-instance :after ((gtk-window window) &key)
-  (gir:invoke (foreign-window-object 'show-all)))
+(defmethod initialize-instance :after ((window gtk-window) &key)
+  (gir:invoke ((object window) 'show-all)))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
@@ -24,7 +24,7 @@
          (foreign-window-object (gir:invoke
                                  ((gtk-ffi interface) "Window" 'new)
                                  (gir:nget (gtk-ffi interface) "WindowType" :toplevel)))
-         (window (make-instance gtk-window
+         (window (make-instance 'gtk-window
                                 :id window-id
                                 :object foreign-window-object)))
     (setf (gethash window-id (windows interface)) window)
@@ -36,10 +36,9 @@
     window))
 
 @export
-(defun rpc-window-set-title (window title)
+(defun ipc-window-set-title (window title)
   "Set the title for a given window."
-  ; (%rpc-send "window_set_title" (id window) title)
-  )
+  (gir:invoke ((object window) 'set-title) title))
 
 @export
 (defun rpc-window-delete (window)
