@@ -429,7 +429,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Show the last active minibuffer, if any."
   (let ((active-window (last-active-window *interface*)))
     (when minibuffer
-      (rpc-window-set-minibuffer-height
+      (ipc-window-set-minibuffer-height
        active-window
        (or height
            (minibuffer-open-height active-window))))))
@@ -451,7 +451,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
           ;; TODO: We need a mode-line before we can afford to really hide the
           ;; minibuffer.  Until then, we "blank" it.
           (echo "")                     ; Or echo-dismiss?
-          (rpc-window-set-minibuffer-height
+          (ipc-window-set-minibuffer-height
            active-window
            ;; TODO: Until we have a mode-line, it's best to keep the
            ;; closed-height equal to the echo-height to avoid the stuttering,

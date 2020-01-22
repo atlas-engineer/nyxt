@@ -42,9 +42,7 @@
 @export
 (defmethod ipc-window-delete ((window gtk-window))
   "Delete a window object and remove it from the hash of windows."
-  ;;;;;;;;;;;;;;
-  ;; GTK CODE ;;
-  ;;;;;;;;;;;;;;
+  ;; GTK CODE
   (next-hooks:run-hook (window-delete-hook window) window)
   (remhash (id window) (windows *interface*)))
 
@@ -57,19 +55,20 @@
   (last-active-window interface))
 
 @export
-(defun rpc-window-set-active-buffer (window buffer)
+(defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer buffer))
   "Set INTERFACE's WINDOW buffer to BUFFER.
-Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
-proceeding."
+   Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
+   proceeding."
   (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
+  ; GTK CODE
   ; (%rpc-send "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer)
-  (when (and window buffer)
-    (setf (last-active-buffer *interface*) buffer))
+  (setf (last-active-buffer *interface*) buffer)
   buffer)
 
 @export
-(defun rpc-window-set-minibuffer-height (window height)
+(defmethod ipc-window-set-minibuffer-height ((window gtk-window) height)
+  ; GTK CODE
   ; (%rpc-send "window_set_minibuffer_height" (id window) height)
   )
 
