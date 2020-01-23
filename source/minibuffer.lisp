@@ -94,9 +94,13 @@ brought up.  This can be useful to know which was the original buffer in the
                      :initform nil
                      :documentation "Function run after a completion has been selected.
 This should not rely on the minibuffer's content.")
+   (changed-callback :initarg :changed-callback
+                     :accessor changed-callback
+                     :initform nil
+                     :documentation "Function to call whenever a change happens.")
    (empty-complete-immediate :initarg :empty-complete-immediate :accessor empty-complete-immediate ; TODO: Rename?
                              :initform nil
-                             :documentation "If non-nil, allow input matching no
+                             :documentation "If non-nil, allow input matching no)))
 candidates.")
    ;; TODO: Move input-* slots to a separate text class?
    (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input"
@@ -192,6 +196,7 @@ You might want to configure the value on HiDPI screen.")
                           (callback-buffer nil explicit-callback-buffer)
                           (setup-function nil explicit-setup-function)
                           (cleanup-function nil explicit-cleanup-function)
+                          (changed-callback nil explicit-changed-callback)
                           (empty-complete-immediate nil explicit-empty-complete-immediate)
                           (input-prompt nil explicit-input-prompt)
                           (input-buffer nil explicit-input-buffer)
@@ -217,8 +222,11 @@ You might want to configure the value on HiDPI screen.")
                  `(:setup-function ,setup-function)
                  '())
            ,@(if explicit-cleanup-function
-                 `(:cleanup-function ,cleanup-function)
-                 '())
+                `(:cleanup-function ,cleanup-function)
+                '())
+           ,@(if explicit-changed-callback
+                `(:changed-callback ,changed-callback)
+                '())
            ,@(if explicit-empty-complete-immediate
                  `(:empty-complete-immediate ,empty-complete-immediate)
                  '())
@@ -703,7 +711,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                                (ps:lisp input-text))
                          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
-                               (ps:lisp completion-html)))))))
+                               (ps:lisp completion-html))))
+      (when (changed-callback minibuffer)
+        (funcall (changed-callback minibuffer))))))
 
 (define-command select-next (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer."
