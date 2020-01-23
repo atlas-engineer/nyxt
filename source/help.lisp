@@ -70,7 +70,11 @@
                                 ;; TODO: This only display the first method, i.e. the first command of one of the modes.
                                 ;; Ask for modes instead?
                                 (documentation (command-function input)
-                                               t)))))
+                                               t)))
+                           (:p "Source file: "
+                               (getf (getf (swank:find-definition-for-thing (command-function input))
+                                           :location)
+                                     :file))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (rpc-buffer-evaluate-javascript help-buffer insert-help)
