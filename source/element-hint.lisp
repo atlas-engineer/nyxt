@@ -112,7 +112,8 @@ identifier for every hinted element."
       (setf (ps:@ new-element style position) o-pos)
       (setf (ps:@ new-element style left) o-left)
       (setf (ps:@ new-element style top) o-top))
-    (ps:chain new-element (scroll-into-view t)))
+    (ps:chain new-element (scroll-into-view
+                           (ps:create block "nearest"))))
 
   (update-hints))
 
