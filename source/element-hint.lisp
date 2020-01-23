@@ -5,6 +5,10 @@
 (in-package :next)
 
 (define-parenscript add-element-hints ()
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
+  
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -12,6 +16,16 @@
   (defun code-char (n)
     "Alias of String.fromCharCode"
     (ps:chain -string (from-char-code n)))
+
+  (defun add-stylesheet ()
+    (unless (qs document "#next-stylesheet") 
+      (ps:let* ((style-element (ps:chain document (create-element "style")))
+                (box-style (ps:lisp (box-style (current-buffer))))
+                (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
+        (setf (ps:@ style-element id) "next-stylesheet")
+        (ps:chain document head (append-child style-element))
+        (ps:chain style-element sheet (insert-rule box-style 0))
+        (ps:chain style-element sheet (insert-rule highlighted-style 1)))))
 
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the element"
@@ -24,7 +38,6 @@
               (position (hint-determine-position rect))
               (element (ps:chain document (create-element "span"))))
       (setf (ps:@ element class-name) "next-hint")
-      (setf (ps:@ element style) (ps:lisp (box-style (current-buffer))))
       (setf (ps:@ element style position) "absolute")
       (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
       (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
@@ -76,6 +89,7 @@ identifier for every hinted element."
            (code-char (+ 65
                          (rem n 26)))) ""))
 
+  (add-stylesheet)
   (hints-add (qsa document (list "a" "button"))))
 
 (define-parenscript remove-element-hints ()
@@ -102,42 +116,21 @@ identifier for every hinted element."
                     (ps:lisp (format
                               nil
                               "#next-hint-~a"
-                              (identifier link-hint)))))
-              (o-left (ps:@ new-element style left))
-              (o-top (ps:@ new-element style top))
-              (o-pos (ps:@ new-element style position)))
+                              (identifier link-hint))))))
       (unless ((ps:@ new-element class-list contains) "next-hi-hint")
         (ps:let ((old-elements (qsa document ".next-hi-hint")))
           (ps:dolist (e old-elements)
-            (ps:let* ((o-left (ps:@ e style left))
-                      (o-top (ps:@ e style top))
-                      (o-pos (ps:@ e style position)))
-              (setf (ps:@ e class-name) "next-hint")
-              (setf (ps:@ e style) (ps:lisp (box-style (current-buffer))))
-              (setf (ps:@ e style position) o-pos)
-              (setf (ps:@ e style left) o-left)
-              (setf (ps:@ e style top) o-top))))
-        (setf (ps:@ new-element class-name) "next-hi-hint next-hint")
-        (setf (ps:@ new-element style) (ps:lisp (hi-box-style (current-buffer))))
-        (setf (ps:@ new-element style position) o-pos)
-        (setf (ps:@ new-element style left) o-left)
-        (setf (ps:@ new-element style top) o-top))
-      (ps:chain new-element (scroll-into-view
-                             (ps:create block "nearest")))))
+            (setf (ps:@ e class-name) "next-hint"))))
+      (setf (ps:@ new-element class-name) "next-hint next-hi-hint"))
+    (ps:chain new-element (scroll-into-view
+                           (ps:create block "nearest"))))
 
   (update-hints))
 
 (define-parenscript remove-focus ()
   (ps:let ((old-elements (qsa document ".next-hi-hint")))
     (ps:dolist (e old-elements)
-      (ps:let* ((o-left (ps:@ e style left))
-                (o-top (ps:@ e style top))
-                (o-pos (ps:@ e style position)))
-        (setf (ps:@ e class-name) "next-hint")
-        (setf (ps:@ e style) (ps:lisp (box-style (current-buffer))))
-        (setf (ps:@ e style position) o-pos)
-        (setf (ps:@ e style left) o-left)
-        (setf (ps:@ e style top) o-top)))))
+        (setf (ps:@ e class-name) "next-hint"))))
 
 (defmacro query-hints (prompt (symbol) &body body)
   `(with-result* ((elements-json (add-element-hints))
