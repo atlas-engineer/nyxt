@@ -13,7 +13,10 @@
 
 (defclass gtk-window (window)
   ((object :accessor object :initarg :object :documentation "The
-   reference to the foreign object for the window.")))
+   reference to the GTK object for the window.")
+   (minibuffer-view :acessor minibuffer-view :documentation "The
+   reference to the GTK view that is used for displaying the
+   minibuffer.")))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (gir:invoke ((object window) 'show-all)))
@@ -143,27 +146,6 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
           ))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
-
-@export
-(defun rpc-generate-input-event (window event)
-  "For now, we only generate keyboard events.
-In the future, we could also support other input device events such as mouse
-events."
-  (log:debug "Generate input ~a for window ~a"
-             (list
-              (key-chord-key-code event)
-              (key-chord-modifiers event)
-              (key-chord-low-level-data event)
-              (key-chord-position event))
-             (id window))
-  ;; (%rpc-send "generate_input_event"
-  ;;            (id window)
-  ;;            (key-chord-key-code event)
-  ;;            (or (key-chord-modifiers event) (list ""))
-  ;;            (key-chord-low-level-data event)
-  ;;            (float (or (first (key-chord-position event)) -1.0))
-  ;;            (float (or (second (key-chord-position event)) -1.0)))
-  )
 
 @export
 (defun rpc-set-proxy (buffer &optional (proxy-uri "") (ignore-hosts (list nil)))

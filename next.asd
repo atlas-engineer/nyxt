@@ -19,7 +19,6 @@
                :cl-prevalence
                :closer-mop
                :cl-gobject-introspection
-               :dbus
                :dexador
                :ironclad
                :local-time
