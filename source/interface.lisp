@@ -588,8 +588,8 @@ current buffer."
   "Kill the interface."
   )
 
-(defun get-unique-window-identifier ()
-  (format nil "~a" (1+ (total-window-count *interface*))))
+(defmethod get-unique-window-identifier ((interface interface))
+  (incf (total-window-count interface)))
 
 (defmethod get-unique-buffer-identifier ()
   (format nil "~a" (1+ (total-buffer-count *interface*))))

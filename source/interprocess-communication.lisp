@@ -14,24 +14,21 @@
 (defclass gtk-window (window)
   ((object :accessor object :initarg :object :documentation "The
    reference to the GTK object for the window.")
-   (minibuffer-view :acessor minibuffer-view :documentation "The
+   (minibuffer-view :accessor minibuffer-view :documentation "The
    reference to the GTK view that is used for displaying the
    minibuffer.")))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
+  (setf (id window) (get-unique-window-identifier *interface*))
+  (setf (object window) (gir:invoke
+                         ((gtk-ffi *interface*) "Window" 'new)
+                         (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
   (gir:invoke ((object window) 'show-all)))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
-  (let* ((window-id (get-unique-window-identifier))
-         (foreign-window-object (gir:invoke
-                                 ((gtk-ffi interface) "Window" 'new)
-                                 (gir:nget (gtk-ffi interface) "WindowType" :toplevel)))
-         (window (make-instance 'gtk-window
-                                :id window-id
-                                :object foreign-window-object)))
-    (setf (gethash window-id (windows interface)) window)
-    (incf (total-window-count interface))
+  (let* ((window (make-instance 'gtk-window)))
+    (setf (gethash (id window) (windows interface)) window)
     (unless (last-active-window interface)
       (setf (last-active-window interface) window))
     (next-hooks:run-hook (window-make-hook interface) window)
