@@ -319,6 +319,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
       (progn
         (match (setup-function minibuffer)
           ((guard f f) (funcall f minibuffer)))
+        (state-changed minibuffer)
         (update-display minibuffer))
     (error (c)
       (echo "~a" c)
@@ -439,6 +440,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         (progn
           (show)
           ;; We need to refresh so that the nested minibuffers don't have to do it.
+          (state-changed (first (active-minibuffers active-window)))
           (update-display (first (active-minibuffers active-window))))
         (progn
           ;; TODO: We need a mode-line before we can afford to really hide the
@@ -457,6 +459,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                     (input-cursor-position minibuffer)
                     (input-buffer minibuffer)))
   (incf (input-cursor-position minibuffer) (length characters))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command self-insert ()
@@ -481,6 +484,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          (subseq buffer
                                  (+ 1 cursor)
                                  (length buffer))))))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command delete-backwards (&optional (minibuffer (current-minibuffer)))
@@ -492,6 +496,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          (subseq buffer 0 (- cursor 1))
                          (subseq buffer cursor (length buffer))))
       (decf cursor)))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-forwards (&optional (minibuffer (current-minibuffer)))
@@ -499,6 +504,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (with-slots (input-buffer input-cursor-position) minibuffer
     (when (< input-cursor-position (length input-buffer))
       (incf input-cursor-position)))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-backwards (&optional (minibuffer (current-minibuffer)))
@@ -506,18 +512,21 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (with-slots (input-cursor-position) minibuffer
     (when (> input-cursor-position 0)
       (decf input-cursor-position)))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-beginning (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the input area."
   (with-slots (input-cursor-position) minibuffer
     (setf input-cursor-position 0))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-end (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the input area."
   (with-slots (input-buffer input-cursor-position) minibuffer
     (setf input-cursor-position (length input-buffer)))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (defun char-at-cursor (&optional (minibuffer (current-minibuffer)))
@@ -543,6 +552,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                      (not (intersection *word-separation-characters* (list (char-at-cursor minibuffer))))
                      (< input-cursor-position (length input-buffer)))
               do (incf input-cursor-position))))
+  (state-changed minibuffer)
   (update-display minibuffer)
   (input-cursor-position minibuffer))
 
@@ -574,7 +584,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Move cursor to the beginning of the word at point."
   (with-slots (input-buffer input-cursor-position) minibuffer
     (setf input-cursor-position (backwards-word-position input-buffer input-cursor-position)))
-
+  (state-changed minibuffer)
   (update-display minibuffer)
   (input-cursor-position minibuffer))
 
@@ -589,6 +599,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          (subseq buffer 0 current-cursor-position)
                          (subseq buffer new-cursor-position (length buffer))))
       (setf cursor (- cursor transpose-distance))))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (defun %delete-backwards-word (input position)
@@ -606,12 +617,14 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
     (multiple-value-bind (new-string new-position) (%delete-backwards-word buffer cursor)
       (setf buffer new-string
             cursor new-position)))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters from cursor position until the end of the line."
   (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
     (setf buffer (subseq buffer 0 cursor)))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
@@ -619,6 +632,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
     (setf buffer ""
           cursor 0))
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 (defun generate-input-html (input-buffer cursor-index)
@@ -673,6 +687,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 (defmethod set-completions ((minibuffer minibuffer) completions)
   "Set the completions and update the display."
   (setf (completions minibuffer) completions)
+  (state-changed minibuffer)
   (update-display minibuffer))
 
 @export
@@ -711,14 +726,17 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                                (ps:lisp input-text))
                          (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
-                               (ps:lisp completion-html))))
-      (when (changed-callback minibuffer)
-        (funcall (changed-callback minibuffer))))))
+                               (ps:lisp completion-html)))))))
+
+(defmethod state-changed ((minibuffer minibuffer))
+  (when (changed-callback minibuffer)
+    (funcall (changed-callback minibuffer))))
 
 (define-command select-next (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer."
   (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
     (incf (completion-cursor minibuffer))
+    (state-changed minibuffer)
     (update-display minibuffer)
     (evaluate-script minibuffer
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
@@ -734,6 +752,7 @@ if there is one such."
   "Select previous entry in minibuffer."
   (when (> (completion-cursor minibuffer) 0)
     (decf (completion-cursor minibuffer))
+    (state-changed minibuffer)
     (update-display minibuffer)
     (evaluate-script minibuffer
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "head"))
@@ -919,6 +938,7 @@ Only available if minibuffer `multi-selection-p' is non-nil."
         (match (member candidate marked-completions)
           ((guard n n) (setf marked-completions (delete candidate marked-completions)))
           (_ (push candidate marked-completions)))))
+    (state-changed minibuffer)
     (update-display minibuffer)
     (select-next minibuffer)))
 
@@ -928,6 +948,7 @@ Only available if minibuffer `multi-selection-p' is non-nil."
   (when (multi-selection-p minibuffer)
     (with-slots (completions marked-completions) minibuffer
       (setf marked-completions (union completions marked-completions)))
+    (state-changed minibuffer)
     (update-display minibuffer)))
 
 (define-command minibuffer-unmark-all (&optional (minibuffer (current-minibuffer)))
@@ -936,4 +957,5 @@ Only available if minibuffer `multi-selection-p' is non-nil."
   (when (multi-selection-p minibuffer)
     (with-slots (completions marked-completions) minibuffer
       (setf marked-completions (set-difference marked-completions completions)))
+    (state-changed minibuffer)
     (update-display minibuffer)))
