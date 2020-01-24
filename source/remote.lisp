@@ -160,21 +160,18 @@ platform ports might support this.")
    (box-style :accessor box-style
               :initform (cl-css:css
                          '((".next-hint"
-                            :background "linear-gradient(to bottom, #FFF785, #C38A22)"
+                            :background "linear-gradient(#fcff9e, #efcc00)"
                             :color "black"
-                            :border "1px #C38A22 solid"
-                            :font-weight "bold"
-                            :padding "1px 3px 0px 3px"
-                            :text-align "center"
-                            :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)"
-                            :border-radius "3px"
+                            :border "1px black solid"
+                            :padding "1px 3px 1px 3px"
+                            :border-radius "2px"
                             :z-index #.(1- (expt 2 31)))))
               :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style :accessor highlighted-box-style
                           :initform (cl-css:css
                                      '((".next-hint.next-highlight-hint"
-                                        :background "linear-gradient(to bottom, #abff85, #5dc221)"
-                                        :border "1px #6ec221 solid")))
+                                        :font-weight "bold"
+                                        :background "#fcff9e")))
 
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
