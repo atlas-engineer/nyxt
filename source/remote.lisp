@@ -172,7 +172,7 @@ platform ports might support this.")
               :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style :accessor highlighted-box-style
                           :initform (cl-css:css
-                                     '((".next-hint.next-hi-hint"
+                                     '((".next-hint.next-highlight-hint"
                                         :background "linear-gradient(to bottom, #abff85, #5dc221)"
                                         :border "1px #6ec221 solid")))
 

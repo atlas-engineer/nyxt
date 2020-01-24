@@ -187,10 +187,10 @@ provided buffers."
                        keymap-scheme)))
     (define-key :keymap keymap "C-s"
       #'(lambda ()
-          (update-selection-hi-hint)))
+          (update-selection-highlight-hint)))
     (with-result (match (read-from-minibuffer minibuffer))
       (declare (ignore match))
-      (update-selection-hi-hint))))
+      (update-selection-highlight-hint))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."

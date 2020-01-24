@@ -117,18 +117,18 @@ identifier for every hinted element."
                               nil
                               "#next-hint-~a"
                               (identifier link-hint))))))
-      (unless ((ps:@ new-element class-list contains) "next-hi-hint")
-        (ps:let ((old-elements (qsa document ".next-hi-hint")))
+      (unless ((ps:@ new-element class-list contains) "next-highlight-hint")
+        (ps:let ((old-elements (qsa document ".next-highlight-hint")))
           (ps:dolist (e old-elements)
             (setf (ps:@ e class-name) "next-hint"))))
-      (setf (ps:@ new-element class-name) "next-hint next-hi-hint"))
+      (setf (ps:@ new-element class-name) "next-hint next-highlight-hint"))
     (ps:chain new-element (scroll-into-view
                            (ps:create block "nearest"))))
 
   (update-hints))
 
 (define-parenscript remove-focus ()
-  (ps:let ((old-elements (qsa document ".next-hi-hint")))
+  (ps:let ((old-elements (qsa document ".next-highlight-hint")))
     (ps:dolist (e old-elements)
         (setf (ps:@ e class-name) "next-hint"))))
 
@@ -214,7 +214,7 @@ identifier for every hinted element."
 (defmethod %copy-hint-url ((button-hint button-hint))
   (echo "Can't copy URL from button."))
 
-(defun update-selection-hi-hint (&optional completions)
+(defun update-selection-highlight-hint (&optional completions)
   (let ((hint (if completions
                   (if (typep (first completions)
                              '(or link-hint button-hint match))

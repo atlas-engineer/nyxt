@@ -718,7 +718,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Select next entry in minibuffer and focus the referencing hint/match
 if there is one such."
   (select-next minibuffer)
-  (update-selection-hi-hint))
+  (update-selection-highlight-hint))
 
 (define-command select-previous (&optional (minibuffer (current-minibuffer)))
   "Select previous entry in minibuffer."
@@ -733,7 +733,7 @@ if there is one such."
   "Select previous entry in minibuffer and focus the referencing hint/match
 if there is one such."
   (select-previous minibuffer)
-  (update-selection-hi-hint))
+  (update-selection-highlight-hint))
 
 (defun %echo-status (text &key (message (list text))
                           ;; Need to ignore RPC errors in case platform port is
