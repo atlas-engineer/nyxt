@@ -9,21 +9,39 @@
    (webkit-ffi :accessor webkit-ffi :initform (gir:require-namespace "WebKit2"))))
 
 (defmethod initialize-instance :after ((interface gtk-interface) &key)
-  (gir:invoke ((gtk-ffi interface) 'init) nil))
+  (gir:invoke ((gtk-ffi interface) 'init) nil)
+  (gir:invoke ((gtk-ffi interface) 'main)))
 
 (defclass gtk-window (window)
   ((object :accessor object :initarg :object :documentation "The
    reference to the GTK object for the window.")
+   (buffer-view :accessor buffer-view :documentation "The reference to
+   the GTK view that is used for displaying the buffer.")
    (minibuffer-view :accessor minibuffer-view :documentation "The
    reference to the GTK view that is used for displaying the
-   minibuffer.")))
+   minibuffer.")
+   (main-box-view :accessor main-box-view)
+   (bottom-box-view :accessor bottom-box-view)))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (setf (id window) (get-unique-window-identifier *interface*))
-  (setf (object window) (gir:invoke
-                         ((gtk-ffi *interface*) "Window" 'new)
-                         (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
-  (gir:invoke ((object window) 'show-all)))
+  (with-slots (buffer-view minibuffer-view main-box-view bottom-box-view object id) window
+    (setf buffer-view 
+          (gir:invoke ((gtk-ffi *interface*) "Button" 'new-with-label) "Buffer-View"))
+    (setf minibuffer-view 
+          (gir:invoke ((gtk-ffi *interface*) "Button" 'new-with-label) "Minibuffer-View"))
+    (setf main-box-view
+          (gir:invoke ((gtk-ffi *interface*) "Box" 'new)
+                      (gir:nget (gtk-ffi *interface*) "Orientation" :vertical) 0))
+    (setf bottom-box-view
+          (gir:invoke ((gtk-ffi *interface*) "Box" 'new)
+                      (gir:nget (gtk-ffi *interface*) "Orientation" :vertical) 0))
+    (setf object (gir:invoke ((gtk-ffi *interface*) "Window" 'new)
+                                      (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
+    (setf id (get-unique-window-identifier *interface*))
+    (gir:invoke (main-box-view 'add) bottom-box-view)
+    (gir:invoke (bottom-box-view 'add) minibuffer-view)
+    (gir:invoke (window 'add) main-box-view)
+    (gir:invoke ((object window) 'show-all))))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
