@@ -170,7 +170,7 @@ platform ports might support this.")
    (highlighted-box-style :accessor highlighted-box-style
                           :initform (cl-css:css
                                      '((".next-hint.next-highlight-hint"
-                                        :font-weight "bold"
+                                        :font-weight "500"
                                         :background "#fcff9e")))
 
                           :documentation "The style of highlighted boxes, e.g. link hints.")
