@@ -148,7 +148,7 @@ one screen.
   The =butlast= in the following procedure removes the device count string from the device list.
   #+begin_src lisp
     (defun kdeconnect-devices (&optional (kdeconnect-command "kdeconnect-cli") (arg "-a"))
-      "execute a kdeconnect command."
+      "List KDEConnect devices."
       (declare (type string kdeconnect-command))
       (butlast (cl-irregsexp:match-split #\Linefeed (next::run-program-to-string kdeconnect-command arg))))
   #+end_src
