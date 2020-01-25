@@ -139,10 +139,10 @@ one screen.
   The following snippets call kdeconnect command to send a URL to the device selected via minibuffer.
   Change the kdeconnect-command string to whatever the kdeconnect command is called on your system.
 
-  It uses =match-bind= and =match-split= from =cl-irregsexp= package to parse the device id, and =aif= anaphoric macro from =anaphora= package. Both packages are available via quicklisp:
+  It uses =match-bind= and =match-split= from =cl-irregsexp= package to parse the device id, which is available via quicklisp:
 
   #+begin_src lisp
-    (ql:quickload '("cl-irregsexp" "anaphora"))
+    (ql:quickload "cl-irregsexp")
   #+end_src
 
   The =butlast= in the following procedure removes the device count string from the device list.
@@ -153,16 +153,17 @@ one screen.
       (butlast (cl-irregsexp:match-split #\Linefeed (next::run-program-to-string kdeconnect-command arg))))
   #+end_src
 
-    The following command lists available devices with =-a= option. If none are already detected, it probes them with =-l= option, and lists available devices again.
+    The following command lists available devices with =-a= option. If none are already detected, it probes them with =-l= option, and lists available devices again. After parsing the device id from selected string, it executes the command to send the url.
 
   #+begin_src lisp
     (define-command kdeconnect-send-url (&optional (url (url (current-buffer)))
                                          (kdeconnect-command "kdeconnect-cli"))
       "Sends a URL to a device via kdeconnect cli interface."
-      (let ((device-strings (anaphora:aif (kdeconnect-devices kdeconnect-command "-a")
-                                          it
-                                          (progn (kdeconnect-devices kdeconnect-command "-l")
-                                                 (kdeconnect-devices kdeconnect-command "-a")))))
+      (let ((device-strings
+              (trivia:match (kdeconnect-devices kdeconnect-command "-a")
+                ((guard device (not (null device))) device)
+                (progn (kdeconnect-devices kdeconnect-command "-l")
+                       (kdeconnect-devices kdeconnect-command "-a")))))
         (with-result (device
                       (read-from-minibuffer
                        (make-instance 'minibuffer
