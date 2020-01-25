@@ -145,7 +145,7 @@ one screen.
     (ql:quickload '("cl-irregsexp" "anaphora"))
   #+end_src
 
-  The =butlast= in the following procedures removes the device count string from the device list.
+  The =butlast= in the following procedure removes the device count string from the device list.
   #+begin_src lisp
     (defun kdeconnect-devices (&optional (kdeconnect-command "kdeconnect-cli") (arg "-a"))
       "execute a kdeconnect command."
