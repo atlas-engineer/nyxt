@@ -149,7 +149,6 @@ one screen.
   #+begin_src lisp
     (defun kdeconnect-devices (&optional (kdeconnect-command "kdeconnect-cli") (arg "-a"))
       "List KDEConnect devices."
-      (declare (type string kdeconnect-command))
       (butlast (cl-irregsexp:match-split #\Linefeed (next::run-program-to-string kdeconnect-command arg))))
   #+end_src
 
