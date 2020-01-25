@@ -159,11 +159,10 @@ one screen.
     (define-command kdeconnect-send-url (&optional (url (url (current-buffer)))
                                          (kdeconnect-command "kdeconnect-cli"))
       "Sends a URL to a device via kdeconnect cli interface."
-      (let ((device-strings
-              (trivia:match (kdeconnect-devices kdeconnect-command "-a")
-                ((guard device (not (null device))) device)
-                (progn (kdeconnect-devices kdeconnect-command "-l")
-                       (kdeconnect-devices kdeconnect-command "-a")))))
+      (let ((device-strings (trivia:match (kdeconnect-devices kdeconnect-command "-a")
+                              ((guard device (not (null device))) device)
+                              (progn (kdeconnect-devices kdeconnect-command "-l")
+                                     (kdeconnect-devices kdeconnect-command "-a")))))
         (with-result (device
                       (read-from-minibuffer
                        (make-instance 'minibuffer
