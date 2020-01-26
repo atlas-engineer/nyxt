@@ -105,7 +105,7 @@ identifier for every hinted element."
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
 
-(define-parenscript focus-selected-hint (link-hint)
+(define-parenscript highlight-selected-hint (link-hint scroll)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
@@ -121,9 +121,10 @@ identifier for every hinted element."
         (ps:let ((old-elements (qsa document ".next-highlight-hint")))
           (ps:dolist (e old-elements)
             (setf (ps:@ e class-name) "next-hint"))))
-      (setf (ps:@ new-element class-name) "next-hint next-highlight-hint"))
-    (ps:chain new-element (scroll-into-view
-                           (ps:create block "nearest"))))
+      (setf (ps:@ new-element class-name) "next-hint next-highlight-hint")
+      (if (ps:lisp scroll)
+          (ps:chain new-element (scroll-into-view
+                                 (ps:create block "nearest"))))))
 
   (update-hints))
 
@@ -141,6 +142,8 @@ identifier for every hinted element."
                              :completion-function
                              (hint-completion-filter
                               (elements-from-json elements-json))
+                             :changed-callback
+                             (lambda () (update-selection-highlight-hint))
                              :cleanup-function
                              (lambda () (remove-element-hints :buffer (callback-buffer (current-minibuffer))))))))
      ,@body))
@@ -214,20 +217,31 @@ identifier for every hinted element."
 (defmethod %copy-hint-url ((button-hint button-hint))
   (echo "Can't copy URL from button."))
 
-(defun update-selection-highlight-hint (&optional completions)
+(defun update-selection-highlight-hint (&key (completions nil) (follow nil))
+  (defun hintp (hint-candidate)
+    (if (typep hint-candidate
+               '(or link-hint button-hint match))
+        hint-candidate
+        nil))
+  
   (let ((hint (if completions
-                  (if (typep (first completions)
-                             '(or link-hint button-hint match))
-                      (first completions)
-                      nil)
+                  (hintp (first completions))
                   (when (current-minibuffer)
-                    (nth (completion-cursor (current-minibuffer))
-                         (completions (current-minibuffer)))))))
+                    (let ((hint-candidate (nth (completion-cursor
+                                                (current-minibuffer))
+                                               (completions
+                                                (current-minibuffer)))))
+                      (hintp hint-candidate))))))
     (when hint
-      (when (and (slot-exists-p hint 'buffer)
+      (when (and follow
+                 (slot-exists-p hint 'buffer)
                  (not (equal (buffer hint) (current-buffer))))
         (set-current-buffer (buffer hint)))
-      (focus-selected-hint :buffer (current-buffer) :link-hint hint))))
+      (if (or (not (slot-exists-p hint 'buffer)) ;; type link-hint or button-hint
+              (and (slot-exists-p hint 'buffer) ;; type match, can be multi-buffer
+                   (equal (buffer hint) (current-buffer))))
+          (highlight-selected-hint :buffer (current-buffer) :link-hint hint :scroll t)
+          (remove-focus)))))
 
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
