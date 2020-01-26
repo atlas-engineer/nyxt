@@ -178,11 +178,7 @@ identifier for every hinted element."
 (defclass button-hint (hint) ())
 
 (defclass link-hint (hint)
-  ((url :accessor url :initarg :url)
-   (identifier :accessor identifier :initarg :identifier)
-   (hint :accessor hint :initarg :hint)
-   (body :accessor body :initarg :body
-         :documentation "The body of the anchor tag.")))
+  ((url :accessor url :initarg :url)))
 
 (defmethod object-string ((link-hint link-hint))
   (format nil "~a  ~a  ~a" (hint link-hint) (body link-hint) (url link-hint)))
