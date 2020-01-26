@@ -147,9 +147,11 @@ one screen.
 
   The =butlast= in the following procedure removes the device count string from the device list.
   #+begin_src lisp
-    (defun kdeconnect-devices (&optional (kdeconnect-command "kdeconnect-cli") (arg "-a"))
+    (defun kdeconnect-devices (&optional (kdeconnect-command "kdeconnect-cli")
+                                 &rest args)
       "List KDEConnect devices."
-      (butlast (cl-irregsexp:match-split #\Linefeed (next::run-program-to-string kdeconnect-command arg))))
+      (butlast (cl-irregsexp:match-split #\Linefeed (apply #'next::run-program-to-string
+                                                           kdeconnect-command args))))
   #+end_src
 
     The following command lists available devices with =-a= option. If none are already detected, it probes them with =-l= option, and lists available devices again. After parsing the device id from selected string, it executes the command to send the url.
