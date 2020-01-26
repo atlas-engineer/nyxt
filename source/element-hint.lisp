@@ -143,7 +143,13 @@ identifier for every hinted element."
                              (hint-completion-filter
                               (elements-from-json elements-json))
                              :changed-callback
-                             (lambda () (update-selection-highlight-hint))
+                             (let ((subsequent-call nil))
+                               (lambda ()
+                                 ;; when the minibuffer initially appears, we don't
+                                 ;; want update-selection-highlight-hint to scroll
+                                 ;; but on subsequent calls, it should scroll
+                                 (update-selection-highlight-hint :scroll subsequent-call)
+                                 (setf subsequent-call t)))
                              :cleanup-function
                              (lambda () (remove-element-hints :buffer (callback-buffer (current-minibuffer))))))))
      ,@body))
@@ -213,7 +219,7 @@ identifier for every hinted element."
 (defmethod %copy-hint-url ((button-hint button-hint))
   (echo "Can't copy URL from button."))
 
-(defun update-selection-highlight-hint (&key (completions nil) (follow nil))
+(defun update-selection-highlight-hint (&key (completions nil) (scroll nil) (follow nil))
   (defun hintp (hint-candidate)
     (if (typep hint-candidate
                '(or link-hint button-hint match))
@@ -236,7 +242,7 @@ identifier for every hinted element."
       (if (or (not (slot-exists-p hint 'buffer)) ;; type link-hint or button-hint
               (and (slot-exists-p hint 'buffer) ;; type match, can be multi-buffer
                    (equal (buffer hint) (current-buffer))))
-          (highlight-selected-hint :buffer (current-buffer) :link-hint hint :scroll t)
+          (highlight-selected-hint :buffer (current-buffer) :link-hint hint :scroll scroll)
           (remove-focus)))))
 
 (define-command follow-hint ()
