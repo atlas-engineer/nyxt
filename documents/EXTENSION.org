@@ -136,8 +136,7 @@ one screen.
 #+END_SRC
 
 * Send current URL to KDEConnect devices
-  The following snippets call kdeconnect command to send a URL to the device selected via minibuffer.
-  Change the kdeconnect-command string to whatever the kdeconnect command is called on your system.
+  The following snippets call kdeconnect command to send a URL to the devices selected via minibuffer. Change the kdeconnect-command string to whatever the kdeconnect command is called on your system.
 
   It uses =match-bind= and =match-split= from =cl-irregsexp= package to parse the device id, which is available via quicklisp:
 
@@ -154,7 +153,7 @@ one screen.
                                                            kdeconnect-command args))))
   #+end_src
 
-    The following command lists available devices with =-a= option. If none are already detected, it probes them with =-l= option, and lists available devices again. After parsing the device id from selected string, it executes the command to send the url.
+    The following command lists available devices with =-a= option. If none are already detected, it probes them with =-l= option (instead of =--refresh=) and lists available devices again. After parsing the device id from selected string, it executes the commands to send the url to selected devices.
 
   #+begin_src lisp
     (define-command kdeconnect-send-url (&optional (url (url (current-buffer)))
@@ -164,12 +163,17 @@ one screen.
                               ((guard device (not (null device))) device)
                               (progn (kdeconnect-devices kdeconnect-command "-l")
                                      (kdeconnect-devices kdeconnect-command "-a")))))
-        (with-result (device
+        (with-result (devices
                       (read-from-minibuffer
                        (make-instance 'minibuffer
-                                      :input-prompt "Device: "
+                                      :input-prompt "Select Devices: "
+                                      :multi-selection-p t
                                       :completion-function (lambda (input)
                                                              (fuzzy-match input device-strings)))))
-          (cl-irregsexp:match-bind ("- " name ": " id " (" pairing-status ")") device
-                      (next::run-program-to-string kdeconnect-command "--share" url "-d" id)))))
+          (mapcar (lambda (dev)
+                    (cl-irregsexp:match-bind ("- " name ": " id " (" pairing-status ")") dev
+                                             (next::run-program-to-string kdeconnect-command
+                                                                          "--share" url
+                                                                          "-d" id)))
+                  devices))))
   #+end_src
