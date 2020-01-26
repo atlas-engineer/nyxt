@@ -180,6 +180,8 @@ provided buffers."
                                                (match-completion-function
                                                 input
                                                 buffers))
+                      :changed-callback
+                      (lambda () (update-selection-highlight-hint))
                       :cleanup-function (lambda () (remove-focus))
                       :history (minibuffer-search-history *interface*)))
          (keymap-scheme (current-keymap-scheme minibuffer))
@@ -187,7 +189,7 @@ provided buffers."
                        keymap-scheme)))
     (define-key :keymap keymap "C-s"
       #'(lambda ()
-          (update-selection-highlight-hint)))
+          (update-selection-highlight-hint :follow t)))
     (with-result (match (read-from-minibuffer minibuffer))
       (declare (ignore match))
       (update-selection-highlight-hint))))
