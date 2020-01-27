@@ -225,7 +225,9 @@ identifier for every hinted element."
 (defmethod %copy-hint-url ((button-hint button-hint))
   (echo "Can't copy URL from button."))
 
-(defun update-selection-highlight-hint (&key (completions nil) (scroll nil) (follow nil) (minibuffer (current-minibuffer)) (buffer (current-buffer)))
+(defun update-selection-highlight-hint (&key completions scroll follow
+                                          (minibuffer (current-minibuffer))
+                                          (buffer (current-buffer)))
   (defun hintp (hint-candidate)
     (if (typep hint-candidate '(or link-hint button-hint match))
         hint-candidate
