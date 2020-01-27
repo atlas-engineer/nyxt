@@ -135,7 +135,7 @@ identifier for every hinted element."
 
 (defun query-hints (prompt func)
   (let* ((buffer (current-buffer))
-         (minibuffer nil))
+         (minibuffer))
      (setf minibuffer (make-minibuffer
                        :input-prompt prompt
                        :history nil
