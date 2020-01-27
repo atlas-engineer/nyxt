@@ -228,28 +228,32 @@ identifier for every hinted element."
 (defun update-selection-highlight-hint (&key completions scroll follow
                                           (minibuffer (current-minibuffer))
                                           (buffer (current-buffer)))
-  (defun hintp (hint-candidate)
-    (if (typep hint-candidate '(or link-hint button-hint match))
-        hint-candidate
-        nil))
-  
-  (let ((hint (if completions
-                  (hintp (first completions))
-                  (when minibuffer
-                    (let ((hint-candidate (nth (completion-cursor minibuffer)
-                                               (completions minibuffer))))
-                      (hintp hint-candidate))))))
-    (when hint
-      (when (and follow
-                 (slot-exists-p hint 'buffer)
-                 (not (equal (buffer hint) buffer)))
-        (set-current-buffer (buffer hint))
-        (setf buffer (buffer hint)))
-      (if (or (not (slot-exists-p hint 'buffer)) ;; type link-hint or button-hint
-              (and (slot-exists-p hint 'buffer) ;; type match, can be multi-buffer
-                   (equal (buffer hint) buffer)))
-          (highlight-selected-hint :buffer buffer :link-hint hint :scroll scroll)
-          (remove-focus)))))
+  (flet ((hintp (hint-candidate)
+           (if (typep hint-candidate '(or link-hint button-hint match))
+               hint-candidate
+               nil)))
+    (let ((hint (if completions
+                    (hintp (first completions))
+                    (when minibuffer
+                      (let ((hint-candidate (nth (completion-cursor minibuffer)
+                                                 (completions minibuffer))))
+                        (hintp hint-candidate))))))
+      (when hint
+        (when (and follow
+                   (slot-exists-p hint 'buffer)
+                   (not (equal (buffer hint) buffer)))
+          (set-current-buffer (buffer hint))
+          (setf buffer (buffer hint)))
+        (if (or
+             ;; type link or button hint - these are single-buffer
+             (not (slot-exists-p hint 'buffer))
+             ;; type match - is multi-buffer
+             (and (slot-exists-p hint 'buffer)
+                  (equal (buffer hint) buffer)))
+            (highlight-selected-hint :buffer buffer
+                                     :link-hint hint
+                                     :scroll scroll)
+            (remove-focus))))))
 
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
