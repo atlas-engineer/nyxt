@@ -227,24 +227,22 @@ identifier for every hinted element."
 
 (defun update-selection-highlight-hint (&key (completions nil) (scroll nil) (follow nil) (minibuffer (current-minibuffer)) (buffer (current-buffer)))
   (defun hintp (hint-candidate)
-    (if (typep hint-candidate
-               '(or link-hint button-hint match))
+    (if (typep hint-candidate '(or link-hint button-hint match))
         hint-candidate
         nil))
   
   (let ((hint (if completions
                   (hintp (first completions))
                   (when minibuffer
-                    (let ((hint-candidate (nth (completion-cursor
-                                                minibuffer)
-                                               (completions
-                                                minibuffer))))
+                    (let ((hint-candidate (nth (completion-cursor minibuffer)
+                                               (completions minibuffer))))
                       (hintp hint-candidate))))))
     (when hint
       (when (and follow
                  (slot-exists-p hint 'buffer)
                  (not (equal (buffer hint) buffer)))
-        (set-current-buffer (buffer hint)))
+        (set-current-buffer (buffer hint))
+        (setf buffer (buffer hint)))
       (if (or (not (slot-exists-p hint 'buffer)) ;; type link-hint or button-hint
               (and (slot-exists-p hint 'buffer) ;; type match, can be multi-buffer
                    (equal (buffer hint) buffer)))
