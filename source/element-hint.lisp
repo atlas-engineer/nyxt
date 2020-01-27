@@ -133,11 +133,11 @@ identifier for every hinted element."
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "next-hint"))))
 
-(defmacro query-hints (prompt (symbol) &body body)
-  `(let* ((buffer (current-buffer))
-          (minibuffer nil))
+(defun query-hints (prompt func)
+  (let* ((buffer (current-buffer))
+         (minibuffer nil))
      (setf minibuffer (make-minibuffer
-                       :input-prompt ,prompt
+                       :input-prompt prompt
                        :history nil
                        :completion-function
                        (lambda (input) (declare (ignore input)))
@@ -154,13 +154,12 @@ identifier for every hinted element."
                            (setf subsequent-call t)))
                        :cleanup-function
                        (lambda ()
-                         (remove-element-hints :buffer
-                                               (callback-buffer minibuffer)))))
+                         (remove-element-hints :buffer buffer))))
      (with-result (elements-json (add-element-hints))
        (setf (completion-function minibuffer)
              (hint-completion-filter (elements-from-json elements-json)))
-       (with-result (,symbol (read-from-minibuffer minibuffer))
-         ,@body))))
+       (with-result (result (read-from-minibuffer minibuffer))
+         (funcall func result)))))
 
 (defun hint-completion-filter (hints)
   (lambda (input)
@@ -261,25 +260,21 @@ identifier for every hinted element."
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
-  (query-hints "Go to element:" (selected-element)
-    (%follow-hint selected-element)))
+  (query-hints "Go to element:" '%follow-hint))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
-  (query-hints "Open element in new buffer:" (selected-element)
-    (%follow-hint-new-buffer selected-element)))
+  (query-hints "Open element in new buffer:" '%follow-hint-new-buffer))
 
 (define-command follow-hint-new-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
-  (query-hints "Go to element in new buffer:" (selected-element)
-    (%follow-hint-new-buffer-focus selected-element)))
+  (query-hints "Go to element in new buffer:" '%follow-hint-new-buffer-focus))
 
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
-  (query-hints "Copy element URL:" (selected-element)
-    (%copy-hint-url selected-element)))
+  (query-hints "Copy element URL:" '%copy-hint-url)) 
 
 (define-deprecated-command copy-anchor-url ()
   "Deprecated by `copy-hint-url'."
