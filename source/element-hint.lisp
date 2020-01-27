@@ -139,6 +139,8 @@ identifier for every hinted element."
      (setf minibuffer (make-minibuffer
                        :input-prompt ,prompt
                        :history nil
+                       :completion-function
+                       (lambda (input) (declare (ignore input)))
                        :changed-callback
                        (let ((subsequent-call nil))
                          (lambda ()
