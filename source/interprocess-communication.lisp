@@ -40,6 +40,7 @@
     (gir::g-signal-connect-data (gir::this-of gtk-object) "destroy" (cffi:foreign-symbol-pointer "gtk_main_quit")
                                 (cffi:null-pointer) (cffi:null-pointer) 0)
 
+    (gir:invoke (main-box-view 'add) buffer-view)
     (gir:invoke (main-box-view 'add) bottom-box-view)
     (gir:invoke (bottom-box-view 'add) minibuffer-view)
     (gir:invoke (gtk-object 'add) main-box-view)
