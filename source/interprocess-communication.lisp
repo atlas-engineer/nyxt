@@ -35,6 +35,11 @@
     (setf gtk-object (gir:invoke ((gtk-ffi *interface*) "Window" 'new)
                                       (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
     (setf id (get-unique-window-identifier *interface*))
+
+    ;; REMOVE: Quit GTK when window is closed
+    (gir::g-signal-connect-data (gir::this-of gtk-object) "destroy" (cffi:foreign-symbol-pointer "gtk_main_quit")
+                                (cffi:null-pointer) (cffi:null-pointer) 0)
+
     (gir:invoke (main-box-view 'add) bottom-box-view)
     (gir:invoke (bottom-box-view 'add) minibuffer-view)
     (gir:invoke (gtk-object 'add) main-box-view)
