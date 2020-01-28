@@ -4,16 +4,13 @@
 (annot:enable-annot-syntax)
 
 (defclass gtk-interface (interface)
-  ((gtk-ffi :accessor gtk-ffi :initform (gir:ffi "Gtk"))
-   (gdk-ffi :accessor gdk-ffi :initform (gir:ffi "Gdk"))
-   (webkit-ffi :accessor webkit-ffi :initform (gir:require-namespace "WebKit2"))))
+  ((gtk-ffi :accessor gtk-ffi :initform (gir:ffi "Gtk"))))
 
 (defmethod initialize-instance :after ((interface gtk-interface) &key)
-  (gir:invoke ((gtk-ffi interface) 'init) nil)
-  (gir:invoke ((gtk-ffi interface) 'main)))
+  (gir:invoke ((gtk-ffi interface) 'init) nil))
 
 (defclass gtk-window (window)
-  ((object :accessor object :initarg :object :documentation "The
+  ((gtk-object :accessor gtk-object :initarg :gtk-object :documentation "The
    reference to the GTK object for the window.")
    (buffer-view :accessor buffer-view :documentation "The reference to
    the GTK view that is used for displaying the buffer.")
@@ -24,7 +21,7 @@
    (bottom-box-view :accessor bottom-box-view)))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (with-slots (buffer-view minibuffer-view main-box-view bottom-box-view object id) window
+  (with-slots (buffer-view minibuffer-view main-box-view bottom-box-view gtk-object id) window
     (setf buffer-view 
           (gir:invoke ((gtk-ffi *interface*) "Button" 'new-with-label) "Buffer-View"))
     (setf minibuffer-view 
@@ -35,13 +32,13 @@
     (setf bottom-box-view
           (gir:invoke ((gtk-ffi *interface*) "Box" 'new)
                       (gir:nget (gtk-ffi *interface*) "Orientation" :vertical) 0))
-    (setf object (gir:invoke ((gtk-ffi *interface*) "Window" 'new)
+    (setf gtk-object (gir:invoke ((gtk-ffi *interface*) "Window" 'new)
                                       (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
     (setf id (get-unique-window-identifier *interface*))
     (gir:invoke (main-box-view 'add) bottom-box-view)
     (gir:invoke (bottom-box-view 'add) minibuffer-view)
-    (gir:invoke (window 'add) main-box-view)
-    (gir:invoke ((object window) 'show-all))))
+    (gir:invoke (gtk-object 'add) main-box-view)
+    (gir:invoke (gtk-object 'show-all))))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
@@ -55,7 +52,7 @@
 @export
 (defmethod ipc-window-set-title ((window gtk-window) title)
   "Set the title for a window."
-  (gir:invoke ((object window) 'set-title) title))
+  (gir:invoke ((gtk-object window) 'set-title) title))
 
 @export
 (defmethod ipc-window-delete ((window gtk-window))
@@ -68,7 +65,7 @@
 (defmethod ipc-window-active ((interface gtk-interface))
   "Return the window object for the currently active window."
   (loop for window being the hash-values of (windows interface)
-        when (gir:invoke ((object window) 'is-active))
+        when (gir:invoke ((gtk-object window) 'is-active))
           do (setf (last-active-window interface) window))
   (last-active-window interface))
 

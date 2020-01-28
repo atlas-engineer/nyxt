@@ -37,13 +37,13 @@
                                   :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
                                   :documentation "Hook run before
-   `rpc-window-set-active-buffer' takes effect. The handlers take the
+   `ipc-window-set-active-buffer' takes effect. The handlers take the
    window and the buffer as argument.")
    (window-delete-hook :accessor window-delete-hook
                        :initform (make-hook-window)
                        :type hook-window
                        :documentation "Hook run after
-    `rpc-window-delete' takes effect.  The handlers take the window as
+    `ipc-window-delete' takes effect.  The handlers take the window as
     argument.")))
 
 (define-class-type window)
@@ -188,7 +188,7 @@ return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook
                        :initform (make-hook-buffer)
                        :type hook-buffer
-                       :documentation "Hook run before `rpc-buffer-delete' takes effect.
+                       :documentation "Hook run before `ipc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
 
 (define-class-type buffer)
@@ -202,10 +202,10 @@ The handlers take the buffer as argument.")))
 (defmethod (setf proxy) (proxy (buffer buffer))
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
-      (rpc-set-proxy buffer
+      (ipc-set-proxy buffer
                      (server-address proxy)
                      (whitelist proxy))
-      (rpc-set-proxy buffer
+      (ipc-set-proxy buffer
                      ""
                      nil)))
 
@@ -240,7 +240,7 @@ defined in any package and is unique."
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
 This must be called after BUFFER has been created on the platform port.
-See `rpc-buffer-make'."
+See `ipc-buffer-make'."
   (let ((root-mode (make-instance 'root-mode :buffer buffer)))
     (dolist (mode-class (reverse (default-modes buffer)))
       ;; ":activate t" should not be necessary here since (modes buffer) should be
@@ -285,7 +285,7 @@ for the platform port to start up.")
    (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.025
                                 :type number
                                 :documentation "The speed at which to poll the
-RPC endpoint of a platform-port to see if it is ready to begin accepting RPC
+IPC endpoint of a platform-port to see if it is ready to begin accepting IPC
 commands.")
    (active-connection :accessor active-connection :initform nil)
    (password-interface :accessor password-interface
@@ -430,14 +430,14 @@ The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook
                      :initform (make-hook-buffer)
                      :type hook-buffer
-                     :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
+                     :documentation "Hook run after `ipc-buffer-make' and before `ipc-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
    (buffer-before-make-hook :accessor buffer-before-make-hook
                             :initform (make-hook-buffer)
                             :type hook-buffer
-                            :documentation "Hook run before `rpc-buffer-make'.
+                            :documentation "Hook run before `ipc-buffer-make'.
 This hook is mostly useful to set the `cookies-path'.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
@@ -558,7 +558,7 @@ when `proxied-downloads-p' is true."
       (server-address proxy))))
 
 ;; TODO: To download any URL at any moment and not just in resource-query, we
-;; need to query the cookies for URL.  Thus we need to add an RPC endpoint to
+;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
 ;; query cookies.
 (defun download (url &key
                      cookies
@@ -610,20 +610,20 @@ current buffer."
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 @export
 (defun window-set-active-buffer (window buffer)
-  ;; TODO: Replace this swapping business with a simple swap + a "refresh rendering" RPC call?
+  ;; TODO: Replace this swapping business with a simple swap + a "refresh rendering" IPC call?
   (let ((window-with-same-buffer (find-if
                                   (lambda (other-window) (and (not (eq other-window window))
                                                               (eql (active-buffer other-window) buffer)))
                                   (alexandria:hash-table-values (windows *interface*)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (rpc-buffer-make))
+        (let ((temp-buffer (ipc-buffer-make))
               (buffer-swap (active-buffer window)))
           (log:debug "Swapping with buffer from existing window.")
-          (rpc-window-set-active-buffer window-with-same-buffer temp-buffer)
-          (rpc-window-set-active-buffer window buffer)
-          (rpc-window-set-active-buffer window-with-same-buffer buffer-swap)
-          (rpc-buffer-delete temp-buffer))
-        (rpc-window-set-active-buffer window buffer))
+          (ipc-window-set-active-buffer window-with-same-buffer temp-buffer)
+          (ipc-window-set-active-buffer window buffer)
+          (ipc-window-set-active-buffer window-with-same-buffer buffer-swap)
+          (ipc-buffer-delete temp-buffer))
+        (ipc-window-set-active-buffer window buffer))
     (set-window-title window buffer)
     (echo-dismiss)
     (setf (active-buffer window) buffer)))

@@ -197,8 +197,7 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
       (error (c)
         (log:error "In *after-init-hook*: ~a" c)))
     (handler-case
-        (print "Startup function")
-        ; (funcall (startup-function *interface*) (or urls *free-args*))
+        (funcall (startup-function *interface*) (or urls *free-args*))
       (error (c)
         (log:error "In startup-function ~a: ~a" (startup-function *interface*) c)))
     (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))))
