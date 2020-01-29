@@ -65,10 +65,10 @@
 
 (define-command download-hint-url ()
   "Download the file under the URL hinted by the user."
-  (query-hints "Download link URL:" (selected-link)
-    (download selected-link)
-    (unless (find-buffer 'download-mode)
-      (download-list))))
+  (query-hints "Download link URL:" (lambda (selected-link)
+                                      (download selected-link)
+                                      (unless (find-buffer 'download-mode)
+                                        (download-list)))))
 
 (defun get-downloaded-filenames ()
   "Return the list of downloaded filenames of the current session, as strings."
