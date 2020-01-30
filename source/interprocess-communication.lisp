@@ -4,7 +4,9 @@
 (annot:enable-annot-syntax)
 
 (defclass gtk-interface (interface)
-  ((gtk-ffi :accessor gtk-ffi :initform (gir:ffi "Gtk"))))
+  ((gtk-ffi :accessor gtk-ffi :initform (gir:ffi "Gtk"))
+   (gdk-ffi :accessor gdk-ffi :initform (gir:ffi "Gdk"))
+   (webkit-ffi :accessor webkit-ffi :initform (gir:require-namespace "WebKit2"))))
 
 (defmethod initialize-instance :after ((interface gtk-interface) &key)
   (gir:invoke ((gtk-ffi interface) 'init) nil))
