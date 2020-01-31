@@ -676,8 +676,13 @@ The minimal config that sets your Next in vi mode, is:
 
 #+BEGIN_SRC lisp
 ; $HOME/.config/next/init.lisp
-(in-package :next)
-(add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
+(in-package :next-user)
+
+(defclass my-buffer (buffer)
+  ((default-modes :initform
+     (cons 'vi-normal-mode (get-default 'buffer 'default-modes)))))
+
+(setf *buffer-class* 'my-buffer)
 #+END_SRC
 
 ** Start-up options
