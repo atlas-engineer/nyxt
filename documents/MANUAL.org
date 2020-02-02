@@ -21,6 +21,7 @@ end-user allowing for infinite customization.
   - [[#clearing-the-echo-area][Clearing the Echo Area]]
   - [[#exiting][Exiting]]
   - [[#proxy-and-tor-support][Proxy and Tor support]]
+  - [[#certificate-host-whitelisting][Certificate host whitelisting]]
   - [[#cloning-git-repositories][Cloning Git repositories]]
   - [[#downloading-videos][Downloading videos]]
   - [[#password-manager][Password manager]]
@@ -414,6 +415,29 @@ global for the Qt one.
 
 To enable proxy for all buffers by default, add the proxy mode to the default
 modes.  See [[Modes]] for details.
+
+** Certificate host whitelisting
+
+By default the WebKit engine refuses to establish a secure connection to a host with an erroneous
+certificate (e.g. self-signed ones). The buffer mode =certificate-whitelist=
+allows to mitigate this problem by providing a mechanism to specify a list of hosts
+for which certificate errors shall be ignored. A hostname does not contain a protocol
+like HTTP or HTTPS and is basically the domain name of the server serving the web content
+to which a URL refers, e.g. the hostname in the URL https://next.atlas.engineer/
+is =next.atlas.engineer=.
+
+To enable this mode put the following statements into your =init.lisp= configuration   
+
+#+begin_src lisp
+(in-package :next-user)
+
+(setf next/certificate-whitelist-mode:*default-certificate-whitelist*
+      (make-instance 'certificate-whitelist :whitelist '("next.atlas.engineer")))
+
+(defclass my-buffer (buffer)
+  ((default-modes :initform '(web-mode root-mode proxy-mode certificate-whitelist-mode))))
+(setf buffer-class 'my-buffer)
+#+end_src
 
 ** Cloning Git repositories
 

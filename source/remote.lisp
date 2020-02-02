@@ -83,6 +83,22 @@ This can apply to specific buffer."))
 
 @export
 @export-accessors
+(defclass certificate-whitelist ()
+  ((whitelist :accessor whitelist :initarg :whitelist
+              :initform '()
+              :type list-of-strings
+              :documentation "A list of hostnames for which certificate errors shall be ignored.
+It must be a list of strings."))
+  (:documentation "Enable ignoring of certificate errors.
+This can apply to specific buffers."))
+
+(define-class-type certificate-whitelist)
+(declaim (type (certificate-whitelist-type) *certificate-whitelist-class*))
+@export
+(defparameter *certificate-whitelist-class* 'certificate-whitelist)
+
+@export
+@export-accessors
 (defclass buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
@@ -180,6 +196,8 @@ platform ports might support this.")
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
+   (certificate-whitelist :initform nil :type :certificate-whitelist
+                          :documentation "Certificate host whitelisting for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
               :initform (next-hooks:make-hook-string->string
@@ -211,6 +229,17 @@ The handlers take the buffer as argument.")))
       (rpc-set-proxy buffer
                      ""
                      nil)))
+
+(defmethod certificate-whitelist ((buffer buffer))
+  (slot-value buffer 'certificate-whitelist))
+
+(defmethod (setf certificate-whitelist) (certificate-whitelist (buffer buffer))
+  (setf (slot-value buffer 'certificate-whitelist) certificate-whitelist)
+  (if certificate-whitelist
+      (rpc-set-certificate-whitelist buffer
+                                     (whitelist certificate-whitelist))
+      (rpc-set-certificate-whitelist buffer
+                                     nil)))
 
 ;; TODO: Find a better way to uniquely identify commands from mode methods.
 ;; What about symbol properties?  We could use:
@@ -939,6 +968,17 @@ user."
 MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
 ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send "get_proxy" (id buffer)))
+
+(declaim (ftype (function (buffer &optional list)) rpc-set-certificate-whitelist))
+@export
+(defun rpc-set-certificate-whitelist (buffer &optional (whitelist-hosts (list nil)))
+  (%rpc-send "set_certificate_whitelist" (list (id buffer))
+             whitelist-hosts))
+
+(declaim (ftype (function (buffer)) rpc-get-certificate-whitelist))
+@export
+(defun rpc-get-certificate-whitelist (buffer)
+  (%rpc-send "get_certificate_whitelist" (id buffer)))
 
 (declaim (ftype (function (buffer string boolean)) rpc-buffer-set))
 @export
