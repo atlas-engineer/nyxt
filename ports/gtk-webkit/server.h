@@ -473,6 +473,60 @@ static GVariant *server_get_proxy(GVariant *parameters) {
 	return g_variant_builder_end(&builder);
 }
 
+static GVariant *server_set_tls_certificate_whitelist(GVariant *parameters) {
+	g_message("TLS set certificate whitelist");
+	GList *buffer_ids = NULL;
+	char **whitelist_hosts = NULL;
+	// whitelist_hosts is passed as a list of string variants.
+	{
+		GVariantIter *iter;
+		GVariantIter *iter_buffers;
+		g_variant_get(parameters, "(asas)", &iter_buffers, &iter);
+
+		buffer_ids = server_unwrap_string_list(iter_buffers);
+		GList *whitelist_hosts_list = server_unwrap_string_list(iter);
+		whitelist_hosts = server_string_list_to_array_pointer(whitelist_hosts_list);
+		g_list_free(whitelist_hosts_list);
+	}
+	{
+		gchar *pretty_whitelist_hosts = g_strjoinv(",", whitelist_hosts);
+		char **buffer_ids_buf = server_string_list_to_array_pointer(buffer_ids);
+		gchar *pretty_buffer_ids = g_strjoinv(",", buffer_ids_buf);
+		g_message("Method parameter(s): buffer ID(s) %s, whitelist_hosts=%s",
+			pretty_buffer_ids, pretty_whitelist_hosts);
+		g_free(buffer_ids_buf);
+		g_free(pretty_buffer_ids);
+		g_free(pretty_whitelist_hosts);
+	}
+	while (buffer_ids != NULL) {
+		Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_ids->data);
+		if (buffer != NULL) {
+			// Protect against spurious buffer IDs.
+			buffer_set_tls_certificate_whitelist(buffer, (const char *const *)whitelist_hosts);
+		}
+		buffer_ids = buffer_ids->next;
+	}
+	g_list_free(buffer_ids);
+	return g_variant_new("(b)", TRUE);
+}
+
+static GVariant *server_get_tls_certificate_whitelist(GVariant *parameters) {
+	const char *a_key = NULL;
+	g_variant_get(parameters, "(&s)", &a_key);
+	g_message("Method parameter(s): %s", a_key);
+
+	const gchar *const *whitelist_hosts = NULL;
+	buffer_get_tls_certificate_whitelist(g_hash_table_lookup(state.buffers, a_key),
+		&whitelist_hosts);
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
+	while (whitelist_hosts != NULL && whitelist_hosts[0] != NULL) {
+		g_variant_builder_add(&builder, "s", whitelist_hosts[0]);
+		whitelist_hosts++;
+	}
+	return g_variant_builder_end(&builder);
+}
+
 // TODO: Some settings take an integer or a string (e.g. the user agent).
 static GVariant *server_buffer_set(GVariant *parameters) {
 	const char *id = NULL;
@@ -560,6 +614,8 @@ void start_server(GDBusConnection *connection,
 	g_hash_table_insert(state.server_callbacks, "generate_input_event", &server_generate_input_event);
 	g_hash_table_insert(state.server_callbacks, "set_proxy", &server_set_proxy); // TODO: Rename buffer_set_proxy?
 	g_hash_table_insert(state.server_callbacks, "get_proxy", &server_get_proxy);
+	g_hash_table_insert(state.server_callbacks, "set_tls_certificate_whitelist", &server_set_tls_certificate_whitelist);
+	g_hash_table_insert(state.server_callbacks, "get_tls_certificate_whitelist", &server_get_tls_certificate_whitelist);
 	g_hash_table_insert(state.server_callbacks, "buffer_set", &server_buffer_set);
 }
 

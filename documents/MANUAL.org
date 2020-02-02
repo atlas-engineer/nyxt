@@ -21,6 +21,7 @@ end-user allowing for infinite customization.
   - [[#clearing-the-echo-area][Clearing the Echo Area]]
   - [[#exiting][Exiting]]
   - [[#proxy-and-tor-support][Proxy and Tor support]]
+  - [[#tls-certificate-host-whitelisting][TLS certificate host whitelisting]]
   - [[#cloning-git-repositories][Cloning Git repositories]]
   - [[#downloading-videos][Downloading videos]]
   - [[#password-manager][Password manager]]
@@ -414,6 +415,26 @@ global for the Qt one.
 
 To enable proxy for all buffers by default, add the proxy mode to the default
 modes.  See [[Modes]] for details.
+
+** TLS certificate host whitelisting
+
+By default the WebKit engine refuses to establish a TLS communication to a host with an erroneous
+TLS certificate (e.g. self-signed ones). The buffer mode =tls-certificate-whitelis=
+allows to mitigate this problem by providing a mechanism to specify a list of hosts
+for which TLS certificate errors shall be ignored.
+
+To enable this mode put the following statements into your =init.lisp= configuration   
+
+#+begin_src lisp
+(in-package :next-user)
+
+(setf next/tls-certificate-whitelist-mode:default-tls-certificate-whitelist
+(make-instance 'tls-certificate-whitelist :whitelist '("atlas.engineer")))
+
+(defclass my-buffer (buffer)
+((default-modes :initform '(web-mode root-mode proxy-mode tls-certificate-whitelist-mode))))
+(setf buffer-class 'my-buffer)
+#+end_src
 
 ** Cloning Git repositories
 

@@ -83,6 +83,22 @@ This can apply to specific buffer."))
 
 @export
 @export-accessors
+(defclass tls-certificate-whitelist ()
+  ((whitelist :accessor whitelist :initarg :whitelist
+              :initform '()
+              :type list-of-strings
+              :documentation "A list of URI for which TLS certificate errors shall be ignored.
+It must be a list of strings."))
+  (:documentation "Enable ignoring of TLS certificate errors.
+This can apply to specific buffer."))
+
+(define-class-type tls-certificate-whitelist)
+(declaim (type (tls-certificate-whitelist-type) *tls-certificate-whitelist-class*))
+@export
+(defparameter *tls-certificate-whitelist-class* 'tls-certificate-whitelist)
+
+@export
+@export-accessors
 (defclass buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
@@ -176,6 +192,8 @@ platform ports might support this.")
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
+   (tls-certificate-whitelist :initform nil :type :tls-certificate-whitelist
+          :documentation "TLS certificate host whitelisting for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
               :initform (next-hooks:make-hook-string->string
@@ -207,6 +225,17 @@ The handlers take the buffer as argument.")))
       (rpc-set-proxy buffer
                      ""
                      nil)))
+
+(defmethod tls-certificate-whitelist ((buffer buffer))
+  (slot-value buffer 'tls-certificate-whitelist))
+
+(defmethod (setf tls-certificate-whitelist) (tls-certificate-whitelist (buffer buffer))
+  (setf (slot-value buffer 'tls-certificate-whitelist) tls-certificate-whitelist)
+  (if tls-certificate-whitelist
+      (rpc-set-tls-certificate-whitelist buffer
+                                         (whitelist tls-certificate-whitelist))
+      (rpc-set-tls-certificate-whitelist buffer
+                                         nil)))
 
 ;; TODO: Find a better way to uniquely identify commands from mode methods.
 ;; What about symbol properties?  We could use:
@@ -932,6 +961,17 @@ user."
 MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
 ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send "get_proxy" (id buffer)))
+
+(declaim (ftype (function (buffer &optional list)) rpc-set-tls-certificate-whitelist))
+@export
+(defun rpc-set-tls-certificate-whitelist (buffer &optional (whitelist-hosts (list nil)))
+  (%rpc-send "set_tls_certificate_whitelist" (list (id buffer))
+             whitelist-hosts))
+
+(declaim (ftype (function (buffer)) rpc-get-tls-certificate-whitelist))
+@export
+(defun rpc-get-tls-certificate-whitelist (buffer)
+  (%rpc-send "get_tls_certificate_whitelist" (id buffer)))
 
 (declaim (ftype (function (buffer string boolean)) rpc-buffer-set))
 @export
