@@ -5,6 +5,7 @@ Use of this file is governed by the license that can be found in LICENSE.
 #pragma once
 
 #include <webkit2/webkit2.h>
+#include <libsoup/soup.h>
 #include <JavaScriptCore/JavaScript.h>
 
 #include "javascript.h"
@@ -415,6 +416,19 @@ void buffer_mouse_target_changed(WebKitWebView *web_view,
 	// 'uri' is freed automatically.
 }
 
+static gboolean buffer_load_failed_with_tls_errors(WebKitWebView *web_view,
+	gchar *failing_uri, GTlsCertificate *certificate, GTlsCertificateFlags errors,
+	gpointer user_data) {
+	Buffer *buffer = (Buffer *)user_data;
+	SoupURI *soup_uri = soup_uri_new(failing_uri);
+	g_message("TLS certificate error for host: %s", soup_uri->host);
+	webkit_web_context_allow_tls_certificate_for_host(
+		webkit_web_view_get_context(buffer->web_view), certificate, soup_uri->host);
+	soup_uri_free(soup_uri);
+	webkit_web_view_load_uri(buffer->web_view, failing_uri);
+	return TRUE;
+}
+
 Buffer *buffer_init(const char *cookie_file) {
 	Buffer *buffer = calloc(1, sizeof (Buffer));
 	if (buffer == NULL) {
@@ -454,6 +468,10 @@ Buffer *buffer_init(const char *cookie_file) {
 	g_signal_connect(buffer->web_view, "button-press-event", G_CALLBACK(window_button_event), buffer);
 	g_signal_connect(buffer->web_view, "button-release-event", G_CALLBACK(window_button_event), buffer);
 	g_signal_connect(buffer->web_view, "scroll-event", G_CALLBACK(window_scroll_event), buffer);
+
+        // TLS certificate handling
+	g_signal_connect(buffer->web_view, "load-failed-with-tls-errors",
+		G_CALLBACK(buffer_load_failed_with_tls_errors), buffer);
 
 	// We need to hold a reference to the view, otherwise changing buffer in the a
 	// window will unref+destroy the view.
