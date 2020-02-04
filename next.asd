@@ -35,6 +35,7 @@
                :trivia
                :trivial-clipboard
                :trivial-types
+               :trivial-main-thread
                :unix-opts
                ;; Local systems:
                :next/download-manager

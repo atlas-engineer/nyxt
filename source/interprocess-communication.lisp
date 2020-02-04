@@ -24,10 +24,8 @@
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (buffer-view minibuffer-view main-box-view bottom-box-view gtk-object id) window
-    (setf buffer-view 
-          (gir:invoke ((gtk-ffi *interface*) "Button" 'new-with-label) "Buffer-View"))
-    (setf minibuffer-view 
-          (gir:invoke ((gtk-ffi *interface*) "Button" 'new-with-label) "Minibuffer-View"))
+    (setf buffer-view (gir:invoke ((webkit-ffi *interface*) "WebView" 'new)))
+    (setf minibuffer-view (gir:invoke ((webkit-ffi *interface*) "WebView" 'new)))
     (setf main-box-view
           (gir:invoke ((gtk-ffi *interface*) "Box" 'new)
                       (gir:nget (gtk-ffi *interface*) "Orientation" :vertical) 0))
@@ -35,7 +33,7 @@
           (gir:invoke ((gtk-ffi *interface*) "Box" 'new)
                       (gir:nget (gtk-ffi *interface*) "Orientation" :vertical) 0))
     (setf gtk-object (gir:invoke ((gtk-ffi *interface*) "Window" 'new)
-                                      (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
+                                 (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
     (setf id (get-unique-window-identifier *interface*))
 
     ;; REMOVE: Quit GTK when window is closed
