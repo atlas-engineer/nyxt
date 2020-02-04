@@ -83,19 +83,19 @@ This can apply to specific buffer."))
 
 @export
 @export-accessors
-(defclass tls-certificate-whitelist ()
+(defclass certificate-whitelist ()
   ((whitelist :accessor whitelist :initarg :whitelist
               :initform '()
               :type list-of-strings
-              :documentation "A list of URI for which TLS certificate errors shall be ignored.
+              :documentation "A list of hostnames for which certificate errors shall be ignored.
 It must be a list of strings."))
-  (:documentation "Enable ignoring of TLS certificate errors.
-This can apply to specific buffer."))
+  (:documentation "Enable ignoring of certificate errors.
+This can apply to specific buffers."))
 
-(define-class-type tls-certificate-whitelist)
-(declaim (type (tls-certificate-whitelist-type) *tls-certificate-whitelist-class*))
+(define-class-type certificate-whitelist)
+(declaim (type (certificate-whitelist-type) *certificate-whitelist-class*))
 @export
-(defparameter *tls-certificate-whitelist-class* 'tls-certificate-whitelist)
+(defparameter *certificate-whitelist-class* 'certificate-whitelist)
 
 @export
 @export-accessors
@@ -192,8 +192,8 @@ platform ports might support this.")
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
-   (tls-certificate-whitelist :initform nil :type :tls-certificate-whitelist
-                              :documentation "TLS certificate host whitelisting for buffer.")
+   (certificate-whitelist :initform nil :type :certificate-whitelist
+                          :documentation "Certificate host whitelisting for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
               :initform (next-hooks:make-hook-string->string
@@ -226,16 +226,16 @@ The handlers take the buffer as argument.")))
                      ""
                      nil)))
 
-(defmethod tls-certificate-whitelist ((buffer buffer))
-  (slot-value buffer 'tls-certificate-whitelist))
+(defmethod certificate-whitelist ((buffer buffer))
+  (slot-value buffer 'certificate-whitelist))
 
-(defmethod (setf tls-certificate-whitelist) (tls-certificate-whitelist (buffer buffer))
-  (setf (slot-value buffer 'tls-certificate-whitelist) tls-certificate-whitelist)
-  (if tls-certificate-whitelist
-      (rpc-set-tls-certificate-whitelist buffer
-                                         (whitelist tls-certificate-whitelist))
-      (rpc-set-tls-certificate-whitelist buffer
-                                         nil)))
+(defmethod (setf certificate-whitelist) (certificate-whitelist (buffer buffer))
+  (setf (slot-value buffer 'certificate-whitelist) certificate-whitelist)
+  (if certificate-whitelist
+      (rpc-set-certificate-whitelist buffer
+                                     (whitelist certificate-whitelist))
+      (rpc-set-certificate-whitelist buffer
+                                     nil)))
 
 ;; TODO: Find a better way to uniquely identify commands from mode methods.
 ;; What about symbol properties?  We could use:
@@ -279,8 +279,8 @@ See `rpc-buffer-make'."
           (progn
             (log:debug mode-class buffer (mode-command mode-class))
             (match (mode-command mode-class)
-              ((guard c c) (funcall (sym c) :buffer buffer :activate t))
-              (_ (log:warn "Mode command ~a not found." mode-class))))))))
+                   ((guard c c) (funcall (sym c) :buffer buffer :activate t))
+                   (_ (log:warn "Mode command ~a not found." mode-class))))))))
 
 ;; A struct used to describe a key-chord
 (defstruct key-chord
@@ -307,7 +307,7 @@ See `rpc-buffer-make'."
   ((port :accessor port :initform (make-instance 'port)
          :documentation "The CLOS object responible for handling the platform port.")
    (platform-port-poll-duration :accessor platform-port-poll-duration :initform 1.0
-                                 :type number
+                                :type number
                                 :documentation "The duration in seconds to wait
 for the platform port to start up.")
    (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.025
@@ -534,7 +534,7 @@ Persist the `history-data' slot from INTERFACE to `history-path' with
 `history-store-function'."
   (setf (slot-value interface 'history-data) value)
   (match (history-store-function interface)
-    ((guard f f) (funcall f))))
+         ((guard f f) (funcall f))))
 
 (defmethod bookmarks-data ((interface remote-interface))
   "Return the `bookmarks-data' slot from INTERFACE.
@@ -550,7 +550,7 @@ Persist the `bookmarks-data' slot from INTERFACE to `bookmarks-path' with
 `bookmarks-store-function'."
   (setf (slot-value interface 'bookmarks-data) value)
   (match (bookmarks-store-function interface)
-    ((guard f f) (funcall f))))
+         ((guard f f) (funcall f))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
@@ -566,17 +566,17 @@ This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
   (loop for d = (lparallel:receive-result download-manager:*notifications*)
-        while d
-        when (download-manager:finished-p d)
-          do (next-hooks:run-hook (after-download-hook *interface*))
-        do (let ((buffer (find-buffer 'download-mode)))
-             ;; Only update if buffer exists.  We update even when out of focus
-             ;; because if we switch to the buffer after all downloads are
-             ;; completed, we won't receive notifications so the content needs
-             ;; to be updated already.
-             ;; TODO: Disable when out of focus?  Maybe need hook for that.
-             (when buffer
-               (download-refresh)))))
+     while d
+     when (download-manager:finished-p d)
+     do (next-hooks:run-hook (after-download-hook *interface*))
+     do (let ((buffer (find-buffer 'download-mode)))
+          ;; Only update if buffer exists.  We update even when out of focus
+          ;; because if we switch to the buffer after all downloads are
+          ;; completed, we won't receive notifications so the content needs
+          ;; to be updated already.
+          ;; TODO: Disable when out of focus?  Maybe need hook for that.
+          (when buffer
+            (download-refresh)))))
 
 (defun proxy-address (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
@@ -592,8 +592,8 @@ when `proxied-downloads-p' is true."
 ;; need to query the cookies for URL.  Thus we need to add an RPC endpoint to
 ;; query cookies.
 (defun download (url &key
-                     cookies
-                     (proxy-address :auto))
+                       cookies
+                       (proxy-address :auto))
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
@@ -636,18 +636,18 @@ current buffer."
                                     (log:error "Failed to run ~a: ~a" +dbus-launch-command+ c)
                                     (when non-interactive
                                       (uiop:quit))))))
-        ((list (list _ address) (list _ pid))
-         (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
-                   (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")
-                         (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))
-                   address)
-         (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
-         (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
-         (setf (dbus-pid interface) (parse-integer pid)))))))
+             ((list (list _ address) (list _ pid))
+              (log:info "D-Bus session inaccessible, starting our own one.~%  Old D-Bus addresses: ~a~%  New D-Bus address: ~a"
+                        (list (uiop:getenv "DBUS_SESSION_BUS_ADDRESS")
+                              (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET"))
+                        address)
+              (setf (uiop:getenv "DBUS_SESSION_BUS_ADDRESS") address)
+              (setf (uiop:getenv "DBUS_LAUNCHD_SESSION_BUS_SOCKET") address)
+              (setf (dbus-pid interface) (parse-integer pid)))))))
 
 (defmethod initialize-instance :after ((interface remote-interface)
                                        &key non-interactive
-                                       &allow-other-keys)
+                                         &allow-other-keys)
   "Start the RPC server."
   (ensure-dbus-session interface
                        :non-interactive non-interactive)
@@ -865,12 +865,12 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun %get-inactive-buffer ()
   "Return inactive buffer or NIL if none."
   (let ((active-buffers
-          (mapcar #'active-buffer
-                  (alexandria:hash-table-values (windows *interface*))))
+         (mapcar #'active-buffer
+                 (alexandria:hash-table-values (windows *interface*))))
         (buffers (alexandria:hash-table-values (buffers *interface*))))
     (match (set-difference buffers active-buffers)
-      ((guard diff diff)
-       (alexandria:last-elt diff)))))
+           ((guard diff diff)
+            (alexandria:last-elt diff)))))
 
 (declaim (ftype (function (buffer)) rpc-buffer-delete))
 @export
@@ -890,9 +890,9 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
     (match (session-store-function *interface*)
-      ((guard f f)
-       (when *use-session*
-         (funcall f))))))
+           ((guard f f)
+            (when *use-session*
+              (funcall f))))))
 
 (declaim (ftype (function (buffer string)) rpc-buffer-load))
 @export
@@ -903,7 +903,7 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
 @export
 (defun rpc-buffer-evaluate-javascript (buffer javascript &key callback)
   (let ((callback-id
-          (%rpc-send "buffer_evaluate_javascript" (id buffer) javascript)))
+         (%rpc-send "buffer_evaluate_javascript" (id buffer) javascript)))
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
@@ -912,7 +912,7 @@ Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
 (defun rpc-minibuffer-evaluate-javascript (window javascript &key callback)
   ;; JS example: document.body.innerHTML = 'hello'
   (let ((callback-id
-          (%rpc-send "minibuffer_evaluate_javascript" (id window) javascript)))
+         (%rpc-send "minibuffer_evaluate_javascript" (id window) javascript)))
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 
@@ -962,16 +962,16 @@ MODE is one of \"default\" (use system configuration), \"custom\" or \"none\".
 ADDRESS is in the form PROTOCOL://HOST:PORT."
   (%rpc-send "get_proxy" (id buffer)))
 
-(declaim (ftype (function (buffer &optional list)) rpc-set-tls-certificate-whitelist))
+(declaim (ftype (function (buffer &optional list)) rpc-set-certificate-whitelist))
 @export
-(defun rpc-set-tls-certificate-whitelist (buffer &optional (whitelist-hosts (list nil)))
-  (%rpc-send "set_tls_certificate_whitelist" (list (id buffer))
+(defun rpc-set-certificate-whitelist (buffer &optional (whitelist-hosts (list nil)))
+  (%rpc-send "set_certificate_whitelist" (list (id buffer))
              whitelist-hosts))
 
-(declaim (ftype (function (buffer)) rpc-get-tls-certificate-whitelist))
+(declaim (ftype (function (buffer)) rpc-get-certificate-whitelist))
 @export
-(defun rpc-get-tls-certificate-whitelist (buffer)
-  (%rpc-send "get_tls_certificate_whitelist" (id buffer)))
+(defun rpc-get-certificate-whitelist (buffer)
+  (%rpc-send "get_certificate_whitelist" (id buffer)))
 
 (declaim (ftype (function (buffer string boolean)) rpc-buffer-set))
 @export
@@ -987,11 +987,11 @@ TODO: Only booleans are supported for now."
 ;; Expose Lisp Core RPC endpoints.
 
 (dbus:define-dbus-object core-object
-  (:path +core-object-path+))
+    (:path +core-object-path+))
 
 (dbus:define-dbus-method (core-object buffer-javascript-call-back)
     ((buffer-id :string) (javascript-response :string) (callback-id :string))
-    ()
+  ()
   (:interface +core-interface+)
   (:name "buffer_javascript_call_back")
   (let ((buffer (gethash buffer-id (buffers *interface*))))
@@ -1004,7 +1004,7 @@ TODO: Only booleans are supported for now."
 
 (dbus:define-dbus-method (core-object minibuffer-javascript-call-back)
     ((window-id :string) (javascript-response :string) (callback-id :string))
-    ()
+  ()
   (:interface +core-interface+)
   (:name "minibuffer_javascript_call_back")
   (let ((window (gethash window-id (windows *interface*))))
@@ -1017,7 +1017,7 @@ TODO: Only booleans are supported for now."
 
 (dbus:define-dbus-method (core-object buffer-did-commit-navigation)
     ((buffer-id :string) (url :string))
-    ()
+  ()
   (:interface +core-interface+)
   (:name "buffer_did_commit_navigation")
   (let ((buffer (gethash buffer-id (buffers *interface*))))
@@ -1026,7 +1026,7 @@ TODO: Only booleans are supported for now."
 
 (dbus:define-dbus-method (core-object buffer-did-finish-navigation)
     ((buffer-id :string) (url :string))
-    ()
+  ()
   (:interface +core-interface+)
   (:name "buffer_did_finish_navigation")
   (let ((buffer (gethash buffer-id (buffers *interface*))))
@@ -1035,7 +1035,7 @@ TODO: Only booleans are supported for now."
 
 (dbus:define-dbus-method (core-object buffer-uri-at-point)
     ((url :string))
-    ()
+  ()
   (:interface +core-interface+)
   (:name "buffer_uri_at_point")
   (if (str:emptyp url)
@@ -1045,7 +1045,7 @@ TODO: Only booleans are supported for now."
 
 (dbus:define-dbus-method (core-object window-will-close)
     ((window-id :string))
-    ()
+  ()
   (:interface +core-interface+)
   (:name "window_will_close")
   (let* ((windows (windows *interface*))
@@ -1058,7 +1058,7 @@ TODO: Only booleans are supported for now."
 
 (dbus:define-dbus-method (core-object make-buffers)
     ((urls (:array :string)))
-    ()
+  ()
   (:interface +core-interface+)
   (:name "make_buffers")
   (open-urls urls)
@@ -1093,7 +1093,7 @@ First URL is focused if NO-FOCUS is nil."
                                      (is-known-type t)
                                      (mouse-button "")
                                      (modifiers '())
-                                   &allow-other-keys)
+                                     &allow-other-keys)
   "Return non-nil to let platform port load URL.
 Return nil otherwise.
 
@@ -1131,7 +1131,7 @@ Deal with URL with the following rules:
      (cookies :string)
      (event-type :string) (is-new-window :boolean)
      (is-known-type :boolean) (mouse-button :string) (modifiers (:array :string)))
-    (:boolean)
+  (:boolean)
   (:interface +core-interface+)
   (:name "request_resource")
   (unless (member-string event-type '("other"
@@ -1168,9 +1168,9 @@ Deal with URL with the following rules:
 (defun current-buffer ()
   "Get the active buffer for the active window."
   (match (rpc-window-active)
-    ((guard w w) (active-buffer w))
-    (_ (log:warn "No active window, picking last active buffer.")
-       (last-active-buffer *interface*))))
+         ((guard w w) (active-buffer w))
+         (_ (log:warn "No active window, picking last active buffer.")
+            (last-active-buffer *interface*))))
 
 (declaim (ftype (function (buffer)) set-current-buffer))
 ;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.

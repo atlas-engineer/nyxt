@@ -40,7 +40,7 @@ typedef struct {
 	WebKitNetworkProxyMode _proxy_mode;
 	const char *_proxy_uri;
 	const char *const *_ignore_hosts;
-	const char *const *_tls_certificate_whitelist_hosts;
+	const char *const *_certificate_whitelist_hosts;
 } Buffer;
 
 typedef struct {
@@ -422,7 +422,7 @@ static gboolean buffer_load_failed_with_tls_errors(WebKitWebView *web_view,
 	gpointer user_data) {
 	Buffer *buffer = (Buffer *)user_data;
 	SoupURI *soup_uri = soup_uri_new(failing_uri);
-	const gchar *const *whitelist_hosts = buffer->_tls_certificate_whitelist_hosts;
+	const gchar *const *whitelist_hosts = buffer->_certificate_whitelist_hosts;
 	gboolean match = FALSE;
 
 	while (whitelist_hosts != NULL && whitelist_hosts[0] != NULL) {
@@ -562,14 +562,14 @@ void buffer_get_proxy(Buffer *buffer, WebKitNetworkProxyMode *mode,
 	}
 }
 
-void buffer_set_tls_certificate_whitelist(Buffer *buffer,
+void buffer_set_certificate_whitelist(Buffer *buffer,
 	const gchar *const *whitelist_hosts) {
-	buffer->_tls_certificate_whitelist_hosts = whitelist_hosts;
-	g_debug("TLS certificate whitelist set");
+	buffer->_certificate_whitelist_hosts = whitelist_hosts;
+	g_debug("Certificate whitelist set");
 }
 
-void buffer_get_tls_certificate_whitelist(Buffer *buffer, const gchar *const **whitelist_hosts) {
-	*whitelist_hosts = buffer->_tls_certificate_whitelist_hosts;
+void buffer_get_certificate_whitelist(Buffer *buffer, const gchar *const **whitelist_hosts) {
+	*whitelist_hosts = buffer->_certificate_whitelist_hosts;
 }
 
 void buffer_set(Buffer *buffer, const gchar *setting, gboolean value) {

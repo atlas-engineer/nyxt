@@ -97,7 +97,7 @@ static ServerState state = {
 		"      <arg type='as' name='whitelist' direction='in'/>"
 		"      <arg type='b' name='status' direction='out'/>"
 		"    </method>"
-		"    <method name='set_tls_certificate_whitelist'>"
+		"    <method name='set_certificate_whitelist'>"
 		"      <arg type='as' name='buffer_ids' direction='in'/>"
 		"      <arg type='as' name='whitelist' direction='in'/>"
 		"      <arg type='b' name='status' direction='out'/>"

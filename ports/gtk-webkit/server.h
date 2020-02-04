@@ -473,8 +473,8 @@ static GVariant *server_get_proxy(GVariant *parameters) {
 	return g_variant_builder_end(&builder);
 }
 
-static GVariant *server_set_tls_certificate_whitelist(GVariant *parameters) {
-	g_message("TLS set certificate whitelist");
+static GVariant *server_set_certificate_whitelist(GVariant *parameters) {
+	g_message("Set certificate whitelist");
 	GList *buffer_ids = NULL;
 	char **whitelist_hosts = NULL;
 	// whitelist_hosts is passed as a list of string variants.
@@ -502,7 +502,7 @@ static GVariant *server_set_tls_certificate_whitelist(GVariant *parameters) {
 		Buffer *buffer = g_hash_table_lookup(state.buffers, buffer_ids->data);
 		if (buffer != NULL) {
 			// Protect against spurious buffer IDs.
-			buffer_set_tls_certificate_whitelist(buffer, (const char *const *)whitelist_hosts);
+			buffer_set_certificate_whitelist(buffer, (const char *const *)whitelist_hosts);
 		}
 		buffer_ids = buffer_ids->next;
 	}
@@ -510,13 +510,13 @@ static GVariant *server_set_tls_certificate_whitelist(GVariant *parameters) {
 	return g_variant_new("(b)", TRUE);
 }
 
-static GVariant *server_get_tls_certificate_whitelist(GVariant *parameters) {
+static GVariant *server_get_certificate_whitelist(GVariant *parameters) {
 	const char *a_key = NULL;
 	g_variant_get(parameters, "(&s)", &a_key);
 	g_message("Method parameter(s): %s", a_key);
 
 	const gchar *const *whitelist_hosts = NULL;
-	buffer_get_tls_certificate_whitelist(g_hash_table_lookup(state.buffers, a_key),
+	buffer_get_certificate_whitelist(g_hash_table_lookup(state.buffers, a_key),
 		&whitelist_hosts);
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
@@ -614,8 +614,8 @@ void start_server(GDBusConnection *connection,
 	g_hash_table_insert(state.server_callbacks, "generate_input_event", &server_generate_input_event);
 	g_hash_table_insert(state.server_callbacks, "set_proxy", &server_set_proxy); // TODO: Rename buffer_set_proxy?
 	g_hash_table_insert(state.server_callbacks, "get_proxy", &server_get_proxy);
-	g_hash_table_insert(state.server_callbacks, "set_tls_certificate_whitelist", &server_set_tls_certificate_whitelist);
-	g_hash_table_insert(state.server_callbacks, "get_tls_certificate_whitelist", &server_get_tls_certificate_whitelist);
+	g_hash_table_insert(state.server_callbacks, "set_certificate_whitelist", &server_set_certificate_whitelist);
+	g_hash_table_insert(state.server_callbacks, "get_certificate_whitelist", &server_get_certificate_whitelist);
 	g_hash_table_insert(state.server_callbacks, "buffer_set", &server_buffer_set);
 }
 

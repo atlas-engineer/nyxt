@@ -84,7 +84,7 @@
                  (:file "vi-mode")
                  (:file "blocker-mode")
                  (:file "proxy-mode")
-                 (:file "tls-certificate-whitelist-mode")
+                 (:file "certificate-whitelist-mode")
                  (:file "noscript-mode")
                  (:file "file-manager-mode")
                  (:file "download-mode")
