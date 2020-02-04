@@ -11,7 +11,7 @@
 
 (define-mode tls-certificate-whitelist-mode ()
   "Enable ignoring of TLS certificate errors.
-This can apply to specific buffer."
+This can apply to specific buffers."
   ((tls-certificate-whitelist :initarg :tls-certificate-whitelist
           :accessor tls-certificate-whitelist
           :type tls-certificate-whitelist

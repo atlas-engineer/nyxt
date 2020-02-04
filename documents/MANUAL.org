@@ -419,20 +419,23 @@ modes.  See [[Modes]] for details.
 ** TLS certificate host whitelisting
 
 By default the WebKit engine refuses to establish a TLS communication to a host with an erroneous
-TLS certificate (e.g. self-signed ones). The buffer mode =tls-certificate-whitelis=
+TLS certificate (e.g. self-signed ones). The buffer mode =tls-certificate-whitelist=
 allows to mitigate this problem by providing a mechanism to specify a list of hosts
-for which TLS certificate errors shall be ignored.
+for which TLS certificate errors shall be ignored. A hostname does not contain a protocol
+like http or https and is basically the domain name of the server serving the web content
+to which an URL refers, e.g. the hostname in the URL https://intra.ec.krugercorp.com/
+is =intra.ec.krugercorp.com=.
 
 To enable this mode put the following statements into your =init.lisp= configuration   
 
 #+begin_src lisp
 (in-package :next-user)
 
-(setf next/tls-certificate-whitelist-mode:default-tls-certificate-whitelist
-(make-instance 'tls-certificate-whitelist :whitelist '("atlas.engineer")))
+(setf next/tls-certificate-whitelist-mode:*default-tls-certificate-whitelist*
+      (make-instance 'tls-certificate-whitelist :whitelist '("atlas.engineer")))
 
 (defclass my-buffer (buffer)
-((default-modes :initform '(web-mode root-mode proxy-mode tls-certificate-whitelist-mode))))
+  ((default-modes :initform '(web-mode root-mode proxy-mode tls-certificate-whitelist-mode))))
 (setf buffer-class 'my-buffer)
 #+end_src
 

@@ -424,6 +424,7 @@ static gboolean buffer_load_failed_with_tls_errors(WebKitWebView *web_view,
 	SoupURI *soup_uri = soup_uri_new(failing_uri);
 	const gchar *const *whitelist_hosts = buffer->_tls_certificate_whitelist_hosts;
 	gboolean match = FALSE;
+
 	while (whitelist_hosts != NULL && whitelist_hosts[0] != NULL) {
 		if (g_strcmp0(soup_uri->host, whitelist_hosts[0]) == 0) {
 			webkit_web_context_allow_tls_certificate_for_host(
@@ -434,7 +435,9 @@ static gboolean buffer_load_failed_with_tls_errors(WebKitWebView *web_view,
 		}
 		whitelist_hosts++;
 	}
+
 	soup_uri_free(soup_uri);
+
 	return match;
 }
 

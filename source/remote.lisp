@@ -193,7 +193,7 @@ platform ports might support this.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
    (tls-certificate-whitelist :initform nil :type :tls-certificate-whitelist
-          :documentation "TLS certificate host whitelisting for buffer.")
+                              :documentation "TLS certificate host whitelisting for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
               :initform (next-hooks:make-hook-string->string
