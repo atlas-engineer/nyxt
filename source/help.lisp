@@ -186,6 +186,16 @@ The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
+(defclass messages-appender (log4cl-impl:appender)
+  ())
+
+(defmethod log4cl-impl:appender-do-append ((appender messages-appender) logger level log-func)
+  (push
+   `(:p ,(with-output-to-string (s)
+           (log4cl-impl:layout-to-stream
+            (slot-value appender 'log4cl-impl:layout) s logger level log-func)))
+   (messages-content *interface*)))
+
 (define-command messages ()
   "Show the *Messages* buffer."
   (let ((buffer (find-if (lambda (b)
