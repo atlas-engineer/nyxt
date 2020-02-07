@@ -285,7 +285,8 @@ PATH or set in you ~/.config/next/init.lisp, for instance:
     (handler-case
         (funcall (startup-function *interface*) (or urls *free-args*))
       (error (c)
-        (log:error "In startup-function ~a: ~a" (startup-function *interface*) c)))))
+        (log:error "In startup-function ~a: ~a" (startup-function *interface*) c)))
+    (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."
