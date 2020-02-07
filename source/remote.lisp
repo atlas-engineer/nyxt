@@ -98,10 +98,10 @@ not associated with a web view) have an empty ID.")
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
    (current-keymap-scheme ; TODO: Name keymap-scheme instead?
-                          :accessor current-keymap-scheme
-                          :initarg :current-keymap-scheme
-                          :initform :emacs
-                          :documentation "The keymap scheme that will be used
+    :accessor current-keymap-scheme
+    :initarg :current-keymap-scheme
+    :initform :emacs
+    :documentation "The keymap scheme that will be used
 for all modes in the current buffer.")
    (override-map :accessor override-map
                  :initarg :override-map
@@ -158,17 +158,22 @@ down.")
                  :documentation "The path where cookies are stored.  Not all
 platform ports might support this.")
    (box-style :accessor box-style
-              :initform (cl-css:inline-css
-                         '(:background "linear-gradient(to bottom, #FFF785, #C38A22)"
-                           :color "black"
-                           :border "1px #C38A22 solid"
-                           :font-weight "bold"
-                           :padding "1px 3px 0px 3px"
-                           :text-align "center"
-                           :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)"
-                           :border-radius "3px"
-                           :z-index #.(1- (expt 2 31))))
+              :initform (cl-css:css
+                         '((".next-hint"
+                            :background "linear-gradient(#fcff9e, #efcc00)"
+                            :color "black"
+                            :border "1px black solid"
+                            :padding "1px 3px 1px 3px"
+                            :border-radius "2px"
+                            :z-index #.(1- (expt 2 31)))))
               :documentation "The style of the boxes, e.g. link hints.")
+   (highlighted-box-style :accessor highlighted-box-style
+                          :initform (cl-css:css
+                                     '((".next-hint.next-highlight-hint"
+                                        :font-weight "500"
+                                        :background "#fcff9e")))
+
+                          :documentation "The style of highlighted boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
@@ -176,7 +181,7 @@ platform ports might support this.")
               :initform (next-hooks:make-hook-string->string
                          :combination #'next-hooks:combine-composed-hook)
               :type next-hooks:hook-string->string
-              :documentation "Hook run in `set-url' after `parse-url' was
+              :documentation "Hook run in `set-url' after `parse-url' was)))))
 processed.  The handlers take the URL going to be loaded as argument and must
 return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook

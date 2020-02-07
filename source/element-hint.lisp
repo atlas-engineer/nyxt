@@ -5,6 +5,10 @@
 (in-package :next)
 
 (define-parenscript add-element-hints ()
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
+  
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
@@ -12,6 +16,16 @@
   (defun code-char (n)
     "Alias of String.fromCharCode"
     (ps:chain -string (from-char-code n)))
+
+  (defun add-stylesheet ()
+    (unless (qs document "#next-stylesheet") 
+      (ps:let* ((style-element (ps:chain document (create-element "style")))
+                (box-style (ps:lisp (box-style (current-buffer))))
+                (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
+        (setf (ps:@ style-element id) "next-stylesheet")
+        (ps:chain document head (append-child style-element))
+        (ps:chain style-element sheet (insert-rule box-style 0))
+        (ps:chain style-element sheet (insert-rule highlighted-style 1)))))
 
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the element"
@@ -24,10 +38,10 @@
               (position (hint-determine-position rect))
               (element (ps:chain document (create-element "span"))))
       (setf (ps:@ element class-name) "next-hint")
-      (setf (ps:@ element style) (ps:lisp (box-style (current-buffer))))
       (setf (ps:@ element style position) "absolute")
       (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
       (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
+      (setf (ps:@ element id) (+ "next-hint-" hint))
       (setf (ps:@ element text-content) hint)
       element))
 
@@ -75,6 +89,7 @@ identifier for every hinted element."
            (code-char (+ 65
                          (rem n 26)))) ""))
 
+  (add-stylesheet)
   (hints-add (qsa document (list "a" "button"))))
 
 (define-parenscript remove-element-hints ()
@@ -90,17 +105,61 @@ identifier for every hinted element."
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
 
-(defmacro query-hints (prompt (symbol) &body body)
-  `(with-result* ((elements-json (add-element-hints))
-                  (,symbol (read-from-minibuffer
-                            (make-minibuffer
-                             :input-prompt ,prompt
-                             :history nil
-                             :completion-function (hint-completion-filter
-                                                   (elements-from-json elements-json))
-                             :cleanup-function
-                             (lambda () (remove-element-hints :buffer (callback-buffer (current-minibuffer))))))))
-     ,@body))
+(define-parenscript highlight-selected-hint (link-hint scroll)
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
+
+  (defun update-hints ()
+    (ps:let* ((new-element
+                (qs document
+                    (ps:lisp (format
+                              nil
+                              "#next-hint-~a"
+                              (identifier link-hint))))))
+      (unless ((ps:@ new-element class-list contains) "next-highlight-hint")
+        (ps:let ((old-elements (qsa document ".next-highlight-hint")))
+          (ps:dolist (e old-elements)
+            (setf (ps:@ e class-name) "next-hint"))))
+      (setf (ps:@ new-element class-name) "next-hint next-highlight-hint")
+      (if (ps:lisp scroll)
+          (ps:chain new-element (scroll-into-view
+                                 (ps:create block "nearest"))))))
+
+  (update-hints))
+
+(define-parenscript remove-focus ()
+  (ps:let ((old-elements (qsa document ".next-highlight-hint")))
+    (ps:dolist (e old-elements)
+      (setf (ps:@ e class-name) "next-hint"))))
+
+(defun query-hints (prompt func)
+  (let* ((buffer (current-buffer))
+         minibuffer)
+     (setf minibuffer (make-minibuffer
+                       :input-prompt prompt
+                       :history nil
+                       :completion-function
+                       (lambda (input) (declare (ignore input)))
+                       :changed-callback
+                       (let ((subsequent-call nil))
+                         (lambda ()
+                           ;; when the minibuffer initially appears, we don't
+                           ;; want update-selection-highlight-hint to scroll
+                           ;; but on subsequent calls, it should scroll
+                           (update-selection-highlight-hint
+                            :scroll subsequent-call
+                            :buffer buffer
+                            :minibuffer minibuffer)
+                           (setf subsequent-call t)))
+                       :cleanup-function
+                       (lambda ()
+                         (remove-element-hints :buffer buffer))))
+     (with-result (elements-json (add-element-hints))
+       (setf (completion-function minibuffer)
+             (hint-completion-filter (elements-from-json elements-json)))
+       (with-result (result (read-from-minibuffer minibuffer))
+         (funcall func result)))))
 
 (defun hint-completion-filter (hints)
   (lambda (input)
@@ -114,6 +173,7 @@ identifier for every hinted element."
                   (cond ((equal "link" object-type)
                          (make-instance 'link-hint
                                         :hint (cdr (assoc :hint element))
+                                        :identifier (cdr (assoc :hint element))
                                         :url (cdr (assoc :href element))
                                         :body (plump:text (plump:parse (cdr (assoc :body element))))))
                         ((equal "button" object-type)
@@ -155,7 +215,7 @@ identifier for every hinted element."
 
 (defmethod %follow-hint-new-buffer ((link-hint link-hint))
   (let ((new-buffer (make-buffer)))
-      (set-url (url link-hint) :buffer new-buffer :raw-url-p t)))
+    (set-url (url link-hint) :buffer new-buffer :raw-url-p t)))
 
 (defmethod %follow-hint-new-buffer ((button-hint button-hint))
   (echo "Can't open button in new buffer."))
@@ -166,28 +226,55 @@ identifier for every hinted element."
 (defmethod %copy-hint-url ((button-hint button-hint))
   (echo "Can't copy URL from button."))
 
+(defun update-selection-highlight-hint (&key completions scroll follow
+                                          (minibuffer (current-minibuffer))
+                                          (buffer (current-buffer)))
+  (let ((hint (flet ((hintp (hint-candidate)
+                       (if (typep hint-candidate
+                                  '(or link-hint button-hint match))
+                           hint-candidate
+                           nil)))
+                (if completions
+                    (hintp (first completions))
+                    (when minibuffer
+                      (let ((hint-candidate (nth (completion-cursor minibuffer)
+                                                 (completions minibuffer))))
+                        (hintp hint-candidate)))))))
+    (when hint
+      (when (and follow
+                 (slot-exists-p hint 'buffer)
+                 (not (equal (buffer hint) buffer)))
+        (set-current-buffer (buffer hint))
+        (setf buffer (buffer hint)))
+      (if (or
+           ;; type link or button hint - these are single-buffer
+           (not (slot-exists-p hint 'buffer))
+           ;; type match - is multi-buffer
+           (and (slot-exists-p hint 'buffer)
+                (equal (buffer hint) buffer)))
+          (highlight-selected-hint :buffer buffer
+                                   :link-hint hint
+                                   :scroll scroll)
+          (remove-focus)))))
+
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
-  (query-hints "Go to element:" (selected-element)
-    (%follow-hint selected-element)))
+  (query-hints "Go to element:" '%follow-hint))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
-  (query-hints "Open element in new buffer:" (selected-element)
-    (%follow-hint-new-buffer selected-element)))
+  (query-hints "Open element in new buffer:" '%follow-hint-new-buffer))
 
 (define-command follow-hint-new-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
-  (query-hints "Go to element in new buffer:" (selected-element)
-    (%follow-hint-new-buffer-focus selected-element)))
+  (query-hints "Go to element in new buffer:" '%follow-hint-new-buffer-focus))
 
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
-  (query-hints "Copy element URL:" (selected-element)
-    (%copy-hint-url selected-element)))
+  (query-hints "Copy element URL:" '%copy-hint-url)) 
 
 (define-deprecated-command copy-anchor-url ()
   "Deprecated by `copy-hint-url'."

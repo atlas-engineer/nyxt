@@ -41,6 +41,7 @@ end-user allowing for infinite customization.
   - [[#hooks][Hooks]]
   - [[#startup-behaviour][Startup behaviour]]
   - [[#run-next-in-a-security-sandbox][Run Next in a security sandbox]]
+  - [[#font-size-on-hidpi-displays][Font size on HiDPI displays]]
 - [[#troubleshooting][Troubleshooting]]
   - [[#stumpwm-mouse-scroll][StumpWM mouse scroll]]
   - [[#d-bus-requirement][D-Bus requirement]]
@@ -612,6 +613,8 @@ The user can define key bindings by creating a mode that is loaded before any
 other mode.  In your configuration file:
 
 #+begin_src lisp
+(in-package :next-user)
+
 (defvar *my-keymap* (make-keymap)
   "Keymap for `my-mode'.")
 
@@ -622,7 +625,7 @@ other mode.  In your configuration file:
 
 (defclass my-buffer (buffer)
   ((default-modes :initform
-     (cons 'vi-normal-mode (get-default 'buffer 'default-modes)))))
+     (cons 'my-mode (get-default 'buffer 'default-modes)))))
 
 (setf *buffer-class* 'my-buffer)
 #+end_src
@@ -674,8 +677,13 @@ The minimal config that sets your Next in vi mode, is:
 
 #+BEGIN_SRC lisp
 ; $HOME/.config/next/init.lisp
-(in-package :next)
-(add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
+(in-package :next-user)
+
+(defclass my-buffer (buffer)
+  ((default-modes :initform
+     (cons 'vi-normal-mode (get-default 'buffer 'default-modes)))))
+
+(setf *buffer-class* 'my-buffer)
 #+END_SRC
 
 ** Start-up options
@@ -1005,6 +1013,17 @@ with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
 Run it like this:
 
 : firejail --ignore=nodbus next-gtk-webkit
+** Font size on HiDPI displays
+
+On HiDPI displays the font size used for displaying web and next's minibuffer content might be too tiny.
+
+To fix this issue for the GTK port use this
+
+#+begin_src sh
+export GDK_SCALE=2
+export GDK_DPI_SCALE=0.5
+next &
+#+end_src
 
 * Troubleshooting
 ** StumpWM mouse scroll

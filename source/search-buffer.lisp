@@ -7,18 +7,32 @@
   (defvar *matches* (array))
   (defvar *nodes* (ps:new (-Object)))
 
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
+
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
+
+  (defun add-stylesheet ()
+    (unless (qs document "#next-stylesheet") 
+      (ps:let* ((style-element (ps:chain document (create-element "style")))
+                (box-style (ps:lisp (box-style (current-buffer))))
+                (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
+        (setf (ps:@ style-element id) "next-stylesheet")
+        (ps:chain document head (append-child style-element))
+        (ps:chain style-element sheet (insert-rule box-style 0))
+        (ps:chain style-element sheet (insert-rule highlighted-style 1)))))
 
   (defun create-match-object (body identifier)
     (ps:create "type" "match" "identifier" identifier "body" body))
 
   (defun create-match-span (body identifier)
     (ps:let* ((el (ps:chain document (create-element "span"))))
-      (setf (ps:@ el style) (ps:lisp (box-style (current-buffer))))
+      (setf (ps:@ el class-name) "next-hint")
       (setf (ps:@ el text-content) body)
-      (setf (ps:@ el id) identifier)
+      (setf (ps:@ el id) (+ "next-hint-" identifier))
       el))
 
   (defun get-substring (string-before string-after query)
@@ -75,19 +89,11 @@ character-preview-count)))."
 
   (let ((*matches* (array))
         (*identifier* 0))
+    (add-stylesheet)
     (remove-search-nodes)
     (setf (ps:chain *nodes* identifier) 0)
     (walk-document (ps:chain document body) matches-from-node)
     (ps:chain -j-s-o-n (stringify *matches*))))
-
-(define-parenscript focus-match (match)
-  (let ((id (ps:lisp (identifier match))))
-    (ps:chain document (get-element-by-id id) (scroll-into-view t))))
-
-(defun handle-match (match)
-  (when (not (equal (buffer match) (current-buffer)))
-    (set-current-buffer (buffer match)))
-  (focus-match :match match))
 
 (defclass match ()
   ((identifier :accessor identifier :initarg :identifier)
@@ -174,18 +180,26 @@ provided buffers."
                                                (match-completion-function
                                                 input
                                                 buffers))
+                      :changed-callback
+                      (let ((subsequent-call nil))
+                        (lambda ()
+                          ;; when the minibuffer initially appears, we don't
+                          ;; want update-selection-highlight-hint to scroll
+                          ;; but on subsequent calls, it should scroll
+                          (update-selection-highlight-hint
+                           :scroll subsequent-call)
+                          (setf subsequent-call t)))
+                      :cleanup-function (lambda () (remove-focus))
                       :history (minibuffer-search-history *interface*)))
          (keymap-scheme (current-keymap-scheme minibuffer))
          (keymap (getf (keymap-schemes (first (modes minibuffer)))
                        keymap-scheme)))
     (define-key :keymap keymap "C-s"
       #'(lambda ()
-          (when (completions minibuffer)
-            (let ((match (nth (completion-cursor minibuffer)
-                              (completions minibuffer))))
-              (handle-match match)))))
+          (update-selection-highlight-hint :follow t :scroll t)))
     (with-result (match (read-from-minibuffer minibuffer))
-      (handle-match match))))
+      (declare (ignore match))
+      (update-selection-highlight-hint :follow t :scroll t))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
