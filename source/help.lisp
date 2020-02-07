@@ -186,6 +186,18 @@ The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
+(defclass syslog-appender (log4cl-impl:appender)
+  ())
+
+(defmethod log4cl-impl:appender-do-append ((appender syslog-appender) logger level log-func)
+  (push
+   `(:p ,(with-output-to-string (s)
+           (log4cl-impl:layout-to-stream
+            (slot-value appender 'log4cl-impl:layout) s logger level log-func)))
+   (messages-content *interface*)))
+
+(log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'syslog-appender))
+
 (define-command messages ()
   "Show the *Messages* buffer."
   (let ((buffer (find-if (lambda (b)
