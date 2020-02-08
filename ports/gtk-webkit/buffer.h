@@ -565,6 +565,7 @@ void buffer_get_proxy(Buffer *buffer, WebKitNetworkProxyMode *mode,
 void buffer_set_certificate_whitelist(Buffer *buffer,
 	const gchar *const *whitelist_hosts) {
 	buffer->_certificate_whitelist_hosts = whitelist_hosts;
+	webkit_web_view_reload(buffer->web_view);
 	g_debug("Certificate whitelist set");
 }
 
