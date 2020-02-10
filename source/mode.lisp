@@ -207,7 +207,7 @@ It may be MODE-SYMBOL itself."
   "Return first buffer matching MODE-SYMBOL."
   (find-if (lambda (b)
              (find-mode b mode-symbol))
-           (alexandria:hash-table-values (buffers *interface*))))
+           (buffer-list)))
 
 (defmethod keymap ((mode root-mode))
   "Return the keymap of MODE according to its buffer keymap scheme.

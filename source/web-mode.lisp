@@ -280,7 +280,7 @@ Otherwise go forward to the only child."
                         ((guard l l) l))))))
     (let* ((buffer-name (format nil "*History-~a*" (id buffer)))
            (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
-                                       (alexandria:hash-table-values (buffers *interface*)))
+                                       (buffer-list))
                               (help-mode :activate t :buffer (make-buffer :title buffer-name))))
            (history (history (find-submode buffer 'web-mode)))
            (tree (traverse (htree:root history)
