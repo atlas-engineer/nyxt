@@ -136,6 +136,34 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
         (set-current-buffer buffer))
       (set-url input-url)))
 
+(define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
+  "Paste clipboard text or to input.
+If minibuffer input is not empty and the selection is on first position,
+complete against a search engine."
+  (let ((candidate (get-candidate minibuffer)))
+    (cond
+      ;; Complete a search engine name.
+      ((and (not (str:emptyp (input-buffer minibuffer)))
+            (zerop (completion-cursor minibuffer)))
+       (let ((name (search-engine-starting-with candidate)))
+         (when name
+           (kill-whole-line minibuffer)
+           (insert (str:concat name " ")))))
+      (t
+       (when candidate
+         (kill-whole-line minibuffer)
+         (insert candidate minibuffer))))))
+
+(define-mode %set-url-mode (minibuffer-mode)
+  "Minibuffer mode for setting the URL of a buffer."
+  ((keymap-schemes
+    :initform
+    (let ((map (make-keymap)))
+      (define-key :keymap map
+        "TAB" #'insert-candidate-or-search-engine)
+      (list :emacs map
+            :vi-normal map)))))
+
 (define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."
   (let ((history (minibuffer-set-url-history *interface*)))
@@ -147,6 +175,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
                                               (if new-buffer-p
                                                   "new"
                                                   "current"))
+                        :default-modes '(%set-url-mode minibuffer-mode)
                         :completion-function (history-completion-filter)
                         :history history
                         :empty-complete-immediate t)))
