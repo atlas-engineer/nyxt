@@ -12,6 +12,9 @@
           :initform "" :type string)))
 
 (defmethod object-string ((buffer-description buffer-description))
+  (url buffer-description))
+
+(defmethod object-display ((buffer-description buffer-description))
   (format nil "~a  ~a" (url buffer-description) (title buffer-description)))
 
 (defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
@@ -21,6 +24,9 @@ title into accound as it may vary from one load to the next."
   (string= (url bd1) (url bd2)))
 
 (defmethod object-string ((buffer buffer))
+  (url buffer))
+
+(defmethod object-display ((buffer buffer))
   (format nil "~a  ~a" (url buffer) (title buffer)))
 
 (define-command make-buffer (&key (title "default")

@@ -8,6 +8,10 @@
 (defmethod object-string ((object t))
   (princ-to-string object))
 
+(defmethod object-display ((object t))
+  "Text shown by completion candidates in the minibuffer."
+  (object-string object))
+
 (defmethod object-string ((package package))
   (if (eq (package-name package) (find-package :next))
       ""

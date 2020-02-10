@@ -145,6 +145,9 @@ Otherwise list all commands."
       %%command-list))
 
 (defmethod object-string ((command command))
+  (str:downcase (sym command)))
+
+(defmethod object-display ((command command))
   ;; Use `last-active-window' for speed, or else the minibuffer will stutter
   ;; because of the RPC calls.
   (let* ((buffer (active-buffer (last-active-window *interface*)))

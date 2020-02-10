@@ -56,6 +56,9 @@ SEARCH-URL maybe either be a full URL or a path.  If the latter, the path is
 appended to the URL.")))
 
 (defmethod object-string ((entry bookmark-entry))
+  (url entry))
+
+(defmethod object-display ((entry bookmark-entry))
   (format nil "~a~a  ~a~a"
           (if (str:emptyp (shortcut entry))
               ""

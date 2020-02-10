@@ -373,4 +373,4 @@ Otherwise go forward to the only child."
   (echo-dismiss))
 
 (defmethod object-string ((node htree:node))
-  (format nil "~a" (object-string (when node (htree:data node)))))
+  (object-string (when node (htree:data node))))
