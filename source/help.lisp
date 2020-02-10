@@ -190,7 +190,7 @@ The version number is stored in the clipboard."
   "Show the *Messages* buffer."
   (let ((buffer (find-if (lambda (b)
                            (string= "*Messages*" (title b)))
-                         (alexandria:hash-table-values (buffers *interface*)))))
+                         (buffer-list))))
     (unless buffer
       (setf buffer (help-mode :activate t :buffer (make-buffer :title "*Messages*"))))
     (let* ((content

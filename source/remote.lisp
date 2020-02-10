@@ -90,6 +90,10 @@ not associated with a web view) have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (url :accessor url :initarg :url :type string :initform "")
    (title :accessor title :initarg :title :type string :initform "")
+   (last-access :accessor last-access
+                :initform (local-time:now)
+                :type number
+                :documentation "Timestamp when the buffer was last switched to.")
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
@@ -761,6 +765,7 @@ proceeding."
   (%rpc-send "window_set_active_buffer" (id window) (id buffer))
   (setf (active-buffer window) buffer)
   (when (and window buffer)
+    (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *interface*) buffer))
   buffer)
 
@@ -838,10 +843,11 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let ((active-buffers
           (mapcar #'active-buffer
                   (alexandria:hash-table-values (windows *interface*))))
-        (buffers (alexandria:hash-table-values (buffers *interface*))))
+        (buffers (buffer-list)))
     (match (set-difference buffers active-buffers)
       ((guard diff diff)
-       (alexandria:last-elt diff)))))
+       ;; Display the most recent inactive buffer.
+       (first (sort diff #'local-time:timestamp> :key #'last-access))))))
 
 (declaim (ftype (function (buffer)) rpc-buffer-delete))
 @export

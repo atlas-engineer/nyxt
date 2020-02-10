@@ -10,7 +10,7 @@
   "Return list of web buffers.
 I.e. non-special buffers, those with a non-empty URL slot."
   (delete-if (alexandria:compose #'str:emptyp #'url)
-             (alexandria:hash-table-values (buffers *interface*))))
+             (buffer-list)))
 
 (defun session-data ()
   "Return the data that needs to be serialized.
