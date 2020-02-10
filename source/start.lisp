@@ -168,15 +168,17 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers. This function is
    suitable as a `interface' `startup-function'."
-  (if urls
-      (open-urls urls))
-      (let ((window (ipc-window-make *interface*))
-            (buffer (help)))
-        (window-set-active-buffer window buffer))
-  (match (session-restore-function *interface*)
-    ((guard f f)
-     (when *use-session*
-       (funcall f)))))
+  ;; (if urls
+  ;;     (open-urls urls))
+  ;;     (let ((window (ipc-window-make *interface*))
+  ;;           (buffer (help)))
+  ;;       (window-set-active-buffer window buffer))
+  ;; (match (session-restore-function *interface*)
+  ;;   ((guard f f)
+  ;;    (when *use-session*
+  ;;      (funcall f))))
+
+  )
 
 @export
 (defun start (&key urls (init-file (init-file-path)))
@@ -200,7 +202,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
         (funcall (startup-function *interface*) (or urls *free-args*))
       (error (c)
         (log:error "In startup-function ~a: ~a" (startup-function *interface*) c)))
-    (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))))
+    (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
+  (initialize *interface*))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."

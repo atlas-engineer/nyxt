@@ -18,7 +18,8 @@
                :cl-ppcre-unicode
                :cl-prevalence
                :closer-mop
-               :cl-gobject-introspection
+               :cl-cffi-gtk
+               :cl-webkit2
                :dexador
                :ironclad
                :local-time

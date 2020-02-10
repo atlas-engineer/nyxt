@@ -3,48 +3,16 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
-(defclass gtk-interface (interface)
-  ((gtk-ffi :accessor gtk-ffi :initform (gir:ffi "Gtk"))
-   (gdk-ffi :accessor gdk-ffi :initform (gir:ffi "Gdk"))
-   (webkit-ffi :accessor webkit-ffi :initform (gir:require-namespace "WebKit2"))))
+(defclass gtk-interface (interface) ())
 
-(defmethod initialize-instance :after ((interface gtk-interface) &key)
-  (gir:invoke ((gtk-ffi interface) 'init) nil))
+(defmethod initialize ((interface gtk-interface))
+  (log:debug "Initializing GTK Interface"))
 
 (defclass gtk-window (window)
   ((gtk-object :accessor gtk-object :initarg :gtk-object :documentation "The
    reference to the GTK object for the window.")
    (buffer-view :accessor buffer-view :documentation "The reference to
-   the GTK view that is used for displaying the buffer.")
-   (minibuffer-view :accessor minibuffer-view :documentation "The
-   reference to the GTK view that is used for displaying the
-   minibuffer.")
-   (main-box-view :accessor main-box-view)
-   (bottom-box-view :accessor bottom-box-view)))
-
-(defmethod initialize-instance :after ((window gtk-window) &key)
-  (with-slots (buffer-view minibuffer-view main-box-view bottom-box-view gtk-object id) window
-    (setf buffer-view (gir:invoke ((webkit-ffi *interface*) "WebView" 'new)))
-    (setf minibuffer-view (gir:invoke ((webkit-ffi *interface*) "WebView" 'new)))
-    (setf main-box-view
-          (gir:invoke ((gtk-ffi *interface*) "Box" 'new)
-                      (gir:nget (gtk-ffi *interface*) "Orientation" :vertical) 0))
-    (setf bottom-box-view
-          (gir:invoke ((gtk-ffi *interface*) "Box" 'new)
-                      (gir:nget (gtk-ffi *interface*) "Orientation" :vertical) 0))
-    (setf gtk-object (gir:invoke ((gtk-ffi *interface*) "Window" 'new)
-                                 (gir:nget (gtk-ffi *interface*) "WindowType" :toplevel)))
-    (setf id (get-unique-window-identifier *interface*))
-
-    ;; REMOVE: Quit GTK when window is closed
-    (gir::g-signal-connect-data (gir::this-of gtk-object) "destroy" (cffi:foreign-symbol-pointer "gtk_main_quit")
-                                (cffi:null-pointer) (cffi:null-pointer) 0)
-
-    (gir:invoke (main-box-view 'add) buffer-view)
-    (gir:invoke (main-box-view 'add) bottom-box-view)
-    (gir:invoke (bottom-box-view 'add) minibuffer-view)
-    (gir:invoke (gtk-object 'add) main-box-view)
-    (gir:invoke (gtk-object 'show-all))))
+   the GTK view that is used for displaying the buffer.")))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
@@ -58,7 +26,7 @@
 @export
 (defmethod ipc-window-set-title ((window gtk-window) title)
   "Set the title for a window."
-  (gir:invoke ((gtk-object window) 'set-title) title))
+  )
 
 @export
 (defmethod ipc-window-delete ((window gtk-window))
@@ -70,10 +38,8 @@
 @export
 (defmethod ipc-window-active ((interface gtk-interface))
   "Return the window object for the currently active window."
-  (loop for window being the hash-values of (windows interface)
-        when (gir:invoke ((gtk-object window) 'is-active))
-          do (setf (last-active-window interface) window))
-  (last-active-window interface))
+  (make-instance 'gtk-window)
+  )
 
 @export
 (defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer buffer))
