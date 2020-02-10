@@ -194,9 +194,15 @@ identifier for every hinted element."
   ((url :accessor url :initarg :url)))
 
 (defmethod object-string ((link-hint link-hint))
+  (url link-hint))
+
+(defmethod object-display ((link-hint link-hint))
   (format nil "~a  ~a  ~a" (hint link-hint) (body link-hint) (url link-hint)))
 
 (defmethod object-string ((button-hint button-hint))
+  (body button-hint))
+
+(defmethod object-display ((button-hint button-hint))
   (format nil "~a  ~a  Button" (hint button-hint) (body button-hint)))
 
 (defmethod %follow-hint ((link-hint link-hint))

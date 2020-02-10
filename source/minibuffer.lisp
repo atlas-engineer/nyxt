@@ -680,7 +680,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                              ((= i cursor-index) "selected")
                                              ((member completion (marked-completions minibuffer)) "marked")
                                              ((= i (completion-head minibuffer)) "head"))
-                                       (match (object-string completion)
+                                       (match (object-display completion)
                                          ((guard s (not (str:emptyp s))) s)
                                          (_ " ")))))))))
 

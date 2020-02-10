@@ -102,6 +102,9 @@ character-preview-count)))."
    (multi-buffer :accessor multi-buffer :initarg :multi-buffer)))
 
 (defmethod object-string ((match match))
+  (body match))
+
+(defmethod object-display ((match match))
   (let* ((id (identifier match))
          (buffer-id (id (buffer match))))
     (if (multi-buffer match)

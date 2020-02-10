@@ -38,6 +38,9 @@ Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
 
 (defmethod object-string ((entry history-entry))
+  (url entry))
+
+(defmethod object-display ((entry history-entry))
   (format nil "~a  ~a" (url entry) (title entry)))
 
 (defmethod equals ((e1 history-entry) (e2 history-entry))
