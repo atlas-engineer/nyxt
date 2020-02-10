@@ -160,7 +160,7 @@ complete against a search engine."
          (kill-whole-line minibuffer)
          (insert candidate minibuffer))))))
 
-(define-mode %set-url-mode (minibuffer-mode)
+(define-mode set-url-mode (minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."
   ((keymap-schemes
     :initform
@@ -181,7 +181,7 @@ complete against a search engine."
                                               (if new-buffer-p
                                                   "new"
                                                   "current"))
-                        :default-modes '(%set-url-mode minibuffer-mode)
+                        :default-modes '(set-url-mode minibuffer-mode)
                         :completion-function (history-completion-filter)
                         :history history
                         :empty-complete-immediate t)))
