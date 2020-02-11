@@ -200,3 +200,73 @@ This function can be `funcall'ed."
                           :show-completion-count nil)))
     (setf (access-time command) (get-internal-real-time))
     (run command)))
+
+(defclass hook-description ()
+  ((name :accessor name :initarg :name
+         :initform ""
+         :type string
+         :documentation "The hook name.")
+   (value :accessor value :initarg :value
+          :documentation "The hook value.")))
+
+(defmethod object-string ((hook-desc hook-description))
+  (name hook-desc))
+
+(defmethod object-string ((handler next-hooks:handler))
+  (str:downcase (next-hooks:name handler)))
+
+(defun hook-completion-filter (input)
+  (flet ((list-hooks (object)
+           (mapcar (lambda (hook)
+                     (make-instance 'hook-description
+                                    :name (str:downcase (closer-mop:slot-definition-name hook))
+                                    :value (funcall (symbol-function (closer-mop:slot-definition-name hook))
+                                                    object)))
+                   (delete-if-not (lambda (s)
+                                    (str:ends-with-p "-hook"
+                                                     (str:downcase (closer-mop:slot-definition-name s))))
+                                  (closer-mop:class-slots (class-of object))))))
+    (let ((window-hooks
+            (list-hooks (last-active-window *interface*)))
+          (buffer-hooks (list-hooks (current-buffer)))
+          (remote-interface-hooks (list-hooks *interface*)))
+      (fuzzy-match input
+                   (append window-hooks
+                           buffer-hooks
+                           remote-interface-hooks)))))
+
+(defun handler-completion-filter (hook)
+  (lambda (input)
+    (fuzzy-match input
+                 (next-hooks:handlers hook))))
+
+(defun disabled-handler-completion-filter (hook)
+  (lambda (input)
+    (fuzzy-match input
+                 (next-hooks:disabled-handlers hook))))
+
+(define-command disable-hook-handler ()
+  "Remove handler(s) from a hook."
+  (with-result (hook-desc (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Hook where to disable handler"
+                            :completion-function 'hook-completion-filter)))
+    (with-result (handler
+                  (read-from-minibuffer
+                   (make-minibuffer
+                    :input-prompt (format nil "Disable handler from ~a" (name hook-desc))
+                    :completion-function (handler-completion-filter (value hook-desc)))))
+      (next-hooks:disable-hook (value hook-desc) handler))))
+
+(define-command enable-hook-handler ()
+  "Remove handler(s) from a hook."
+  (with-result (hook-desc (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Hook where to enable handler"
+                            :completion-function 'hook-completion-filter)))
+    (with-result (handler
+                  (read-from-minibuffer
+                   (make-minibuffer
+                    :input-prompt (format nil "Enable handler from ~a" (name hook-desc))
+                    :completion-function (disabled-handler-completion-filter (value hook-desc)))))
+      (next-hooks:enable-hook (value hook-desc) handler))))
