@@ -39,6 +39,7 @@ MODES is a list of mode symbols."
   "Deprecated by `make-buffer'."
   (make-buffer))
 
+@export
 (defun buffer-list (&key sort-by-time)
   (let ((buf-list (alexandria:hash-table-values (buffers *interface*))))
     (if sort-by-time
@@ -48,8 +49,7 @@ MODES is a list of mode symbols."
         buf-list)))
 
 (defun buffer-completion-filter (&key current-is-last-p)
-  (let ((buffers (buffer-list :sort-by-time t))
-        (active-buffer (current-buffer)))
+  (let ((buffers (buffer-list :sort-by-time t)))
     (when current-is-last-p
       (setf buffers (alexandria:rotate buffers -1)))
     (lambda (input)
