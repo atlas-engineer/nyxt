@@ -6,16 +6,26 @@
 (defclass gtk-interface (interface) ())
 
 (defmethod initialize ((interface gtk-interface))
-  (log:debug "Initializing GTK Interface"))
+  (log:debug "Initializing GTK Interface")
+  (gtk:gtk-main))
 
 (defclass gtk-window (window)
-  ((gtk-object :accessor gtk-object :initarg :gtk-object :documentation "The
-   reference to the GTK object for the window.")
-   (buffer-view :accessor buffer-view :documentation "The reference to
-   the GTK view that is used for displaying the buffer.")))
+  ((gtk-object :accessor gtk-object)))
+
+(defmethod initialize-instance :after ((window gtk-window) &key)
+  (with-slots (gtk-object id) window
+    (setf id (get-unique-window-identifier *interface*))
+    (setf gtk-object (make-instance 'gtk:gtk-window
+                                    :type :toplevel
+                                    :default-width 1024
+                                    :default-height 768))
+    (gtk:gtk-widget-show-all gtk-object)))
+
+(defclass gtk-buffer (buffer) ())
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
+  "Make a window."
   (let* ((window (make-instance 'gtk-window)))
     (setf (gethash (id window) (windows interface)) window)
     (unless (last-active-window interface)
@@ -26,7 +36,7 @@
 @export
 (defmethod ipc-window-set-title ((window gtk-window) title)
   "Set the title for a window."
-  )
+  (setf (gtk:gtk-window-title (gtk-object window)) title))
 
 @export
 (defmethod ipc-window-delete ((window gtk-window))
@@ -38,8 +48,10 @@
 @export
 (defmethod ipc-window-active ((interface gtk-interface))
   "Return the window object for the currently active window."
-  (make-instance 'gtk-window)
-  )
+  (loop for window being the hash-values of (windows interface)
+        when (gtk:gtk-window-is-active (gtk-object window))
+          do (setf (last-active-window interface) window))
+  (last-active-window interface))
 
 @export
 (defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer buffer))
@@ -87,7 +99,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after it has been created on the platform port.
     (initialize-modes buffer)
-    buffer))
+    buffer)
+  (make-instance 'gtk-buffer))
 
 @export
 (defun rpc-buffer-delete (buffer)
