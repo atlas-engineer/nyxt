@@ -64,11 +64,11 @@ The user can set `*open-file-function*' to another function to decide what to do
       (cond
         ((and (uiop:directory-pathname-p filename)
               (uiop:directory-exists-p filename))
-         (set-url-to-buffer (format nil "file://~a" (uiop:ensure-directory-pathname filename))
-                            :new-buffer-p new-buffer-p))
+         (set-url (format nil "file://~a" (uiop:ensure-directory-pathname filename))
+                  :buffer (make-buffer-focus :url nil)))
         ((supported-media filename)
-         (set-url-to-buffer (format nil "file://~a" filename)
-                            :new-buffer-p new-buffer-p))
+         (set-url (format nil "file://~a" filename)
+                  :buffer (make-buffer-focus :url nil)))
         (t
          (uiop:launch-program (list "xdg-open" (namestring filename)))))
     ;; We can probably signal something and display a notification.
