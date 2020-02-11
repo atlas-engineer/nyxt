@@ -21,7 +21,16 @@
                                     :default-height 768))
     (gtk:gtk-widget-show-all gtk-object)))
 
-(defclass gtk-buffer (buffer) ())
+(defclass gtk-buffer (buffer)
+  ((gtk-object :accessor gtk-object)))
+
+(defmethod initialize-instance :after ((buffer gtk-buffer) &key)
+  (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
+  (setf (id buffer) (get-unique-buffer-identifier *interface*))
+  (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
+  ;; Modes might require that buffer exists, so we need to initialize them
+  ;; after it has been created on the platform port.
+  (initialize-modes buffer))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
@@ -72,35 +81,25 @@
   )
 
 @export
-(defun rpc-buffer-make (&key title default-modes dead-buffer)
+(defmethod ipc-buffer-make ((interface gtk-interface) &key title default-modes dead-buffer)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
-Run `*interface*'s `buffer-make-hook' over the created buffer before returning it.
-If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  (let* ((buffer (if dead-buffer
-                     (progn (setf (id dead-buffer) (get-unique-buffer-identifier))
-                            dead-buffer)
-                     (apply #'make-instance *buffer-class* :id (get-unique-buffer-identifier)
-                            (append (when title `(:title ,title))
-                                    (when default-modes `(:default-modes ,default-modes)))))))
-    (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
+   Run `*interface*'s `buffer-make-hook' over the created buffer before returning it.
+   If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
+  ;; TODO: Dead Buffer
+  (let* ((buffer (apply #'make-instance 'gtk-buffer
+                        (append (when title `(:title ,title))
+                                (when default-modes `(:default-modes ,default-modes))))))
     (unless (str:emptyp (namestring (cookies-path buffer)))
       (ensure-parent-exists (cookies-path buffer)))
-    (setf (gethash (id buffer) (buffers *interface*)) buffer)
-    (incf (total-buffer-count *interface*))
-    ;; (%rpc-send "buffer_make" (id buffer)
-    ;;            `(("cookies-path" ,(namestring (cookies-path buffer)))))
-    (unless (last-active-buffer *interface*)
+    (setf (gethash (id buffer) (buffers interface)) buffer)
+    (unless (last-active-buffer interface)
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and current-buffer would then return nil.
-      (setf (last-active-buffer *interface*) buffer))
+      (setf (last-active-buffer interface) buffer))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
-    (next-hooks:run-hook (buffer-make-hook *interface*) buffer)
-    ;; Modes might require that buffer exists, so we need to initialize them
-    ;; after it has been created on the platform port.
-    (initialize-modes buffer)
-    buffer)
-  (make-instance 'gtk-buffer))
+    (next-hooks:run-hook (buffer-make-hook interface) buffer)
+    buffer))
 
 @export
 (defun rpc-buffer-delete (buffer)
@@ -111,7 +110,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer)
-                                (rpc-buffer-make))))
+                                (ipc-buffer-make *interface*))))
     ; (%rpc-send "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))

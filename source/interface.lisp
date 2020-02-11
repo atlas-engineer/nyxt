@@ -239,8 +239,8 @@ defined in any package and is unique."
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
-This must be called after BUFFER has been created on the platform port.
-See `rpc-buffer-make'."
+   This must be called after BUFFER has been created on the platform port.
+   See `ipc-buffer-make'."
   (let ((root-mode (make-instance 'root-mode :buffer buffer)))
     (dolist (mode-class (reverse (default-modes buffer)))
       ;; ":activate t" should not be necessary here since (modes buffer) should be
@@ -430,7 +430,7 @@ The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook
                      :initform (make-hook-buffer)
                      :type hook-buffer
-                     :documentation "Hook run after `rpc-buffer-make' and before `rpc-buffer-load'.
+                     :documentation "Hook run after `ipc-buffer-make' and before `rpc-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
@@ -591,8 +591,8 @@ current buffer."
 (defmethod get-unique-window-identifier ((interface interface))
   (incf (total-window-count interface)))
 
-(defmethod get-unique-buffer-identifier ()
-  (format nil "~a" (1+ (total-buffer-count *interface*))))
+(defmethod get-unique-buffer-identifier ((interface interface))
+  (incf (total-buffer-count interface)))
 
 (declaim (ftype (function (window buffer)) set-window-title))
 @export
@@ -616,7 +616,7 @@ current buffer."
                                                               (eql (active-buffer other-window) buffer)))
                                   (alexandria:hash-table-values (windows *interface*)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (rpc-buffer-make))
+        (let ((temp-buffer (ipc-buffer-make *interface*))
               (buffer-swap (active-buffer window)))
           (log:debug "Swapping with buffer from existing window.")
           (ipc-window-set-active-buffer window-with-same-buffer temp-buffer)

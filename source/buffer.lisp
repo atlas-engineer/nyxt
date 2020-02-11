@@ -35,7 +35,7 @@ title into accound as it may vary from one load to the next."
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
-  (let* ((buffer (rpc-buffer-make :title title :default-modes modes))
+  (let* ((buffer (ipc-buffer-make *interface* :title title :default-modes modes))
          (url (if (eq url :default)
                   (default-new-buffer-url buffer)
                   url)))
