@@ -10,7 +10,8 @@
   (gtk:gtk-main))
 
 (defclass gtk-window (window)
-  ((gtk-object :accessor gtk-object)))
+  ((gtk-object :accessor gtk-object)
+   (box :accessor box)))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object id) window
@@ -85,7 +86,7 @@
   "Make buffer with title TITLE and modes DEFAULT-MODES.
    Run `*interface*'s `buffer-make-hook' over the created buffer before returning it.
    If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  ;; TODO: Dead Buffer
+  (declare (ignore dead-buffer)) ;; TODO: Dead Buffer
   (let* ((buffer (apply #'make-instance 'gtk-buffer
                         (append (when title `(:title ,title))
                                 (when default-modes `(:default-modes ,default-modes))))))
