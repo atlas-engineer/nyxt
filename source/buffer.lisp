@@ -30,10 +30,18 @@ title into accound as it may vary from one load to the next."
   (format nil "~a  ~a" (url buffer) (title buffer)))
 
 (define-command make-buffer (&key (title "default")
-                                  modes)
+                             modes
+                             url)
   "Create a new buffer.
-MODES is a list of mode symbols."
-  (rpc-buffer-make :title title :default-modes modes))
+MODES is a list of mode symbols.
+If URL is `:default', use `default-new-buffer-url'."
+  (let* ((buffer (rpc-buffer-make :title title :default-modes modes))
+         (url (if (eq url :default)
+                  (default-new-buffer-url buffer)
+                  url)))
+    (when url
+      (set-url url :buffer buffer))
+    buffer))
 
 (define-deprecated-command new-buffer ()
   "Deprecated by `make-buffer'."
@@ -64,11 +72,12 @@ MODES is a list of mode symbols."
                          :completion-function (buffer-completion-filter :current-is-last-p t))))
     (set-current-buffer buffer)))
 
-(define-command make-buffer-focus ()
-  "Switch to a new buffer showing default-new-buffer-url."
-  (let ((buffer (make-buffer)))
-  (set-current-buffer buffer)
-    (set-url (default-new-buffer-url buffer) :buffer buffer)))
+(define-command make-buffer-focus (&key (url :default))
+  "Switch to a new buffer.
+See `make-buffer'."
+  (let ((buffer (make-buffer :url url)))
+    (set-current-buffer buffer)
+    buffer))
 
 (define-deprecated-command make-visible-new-buffer ()
   "Deprecated by `make-buffer-focus'."
@@ -116,8 +125,7 @@ to the currently active buffer."
   (ps:chain document title))
 
 @export
-(defun set-url (input-url &key (buffer (current-buffer))
-                            raw-url-p)
+(defun set-url (input-url &key buffer raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   (let* ((url (if raw-url-p
@@ -132,15 +140,6 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
         (log:error "In `load-hook': ~a" c)))
     (setf (url buffer) url)
     (rpc-buffer-load buffer url)))
-
-@export
-(defun set-url-to-buffer (input-url &key new-buffer-p)
-  "Load INPUT-URL in the current buffer or a new one when NEW-BUFFER-P is t."
-  (if new-buffer-p
-      (let ((buffer (make-buffer)))
-        (set-url input-url :buffer buffer)
-        (set-current-buffer buffer))
-      (set-url input-url)))
 
 (define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text or to input.
@@ -189,7 +188,9 @@ complete against a search engine."
         ;; In case read-from-minibuffer returned a string upon
         ;; empty-complete-immediate.
         (setf url (url url)))
-      (set-url-to-buffer url :new-buffer-p new-buffer-p))))
+      (set-url url :buffer (if new-buffer-p
+                               (make-buffer-focus :url nil)
+                               (current-buffer))))))
 
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new focused buffer."
