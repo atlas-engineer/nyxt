@@ -11,15 +11,28 @@
 
 (defclass gtk-window (window)
   ((gtk-object :accessor gtk-object)
-   (box :accessor box)))
+   (box-layout :accessor box-layout)
+   (minibuffer-view :accessor minibuffer-view)))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (with-slots (gtk-object id) window
+  (with-slots (gtk-object box-layout minibuffer-view active-buffer id) window
     (setf id (get-unique-window-identifier *interface*))
     (setf gtk-object (make-instance 'gtk:gtk-window
                                     :type :toplevel
                                     :default-width 1024
                                     :default-height 768))
+    (setf box-layout (make-instance 'gtk:gtk-box
+                             :orientation :vertical
+                             :spacing 0))
+    (setf minibuffer-view (make-instance 'cl-webkit2:webkit-web-view))
+    (setf active-buffer (make-instance 'gtk-buffer))
+    ;; Add the views to the box layout
+    (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
+    (gtk:gtk-box-pack-end box-layout minibuffer-view)
+    ;; Set the initial height of the minibuffer
+    (setf (gtk:gtk-widget-size-request minibuffer-view)
+          (list -1 (status-buffer-height window)))
+    (gtk:gtk-container-add gtk-object box-layout)
     (gtk:gtk-widget-show-all gtk-object)))
 
 (defclass gtk-buffer (buffer)
