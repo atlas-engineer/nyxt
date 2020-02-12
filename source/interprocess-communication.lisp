@@ -26,10 +26,9 @@
                              :spacing 0))
     (setf minibuffer-view (make-instance 'cl-webkit2:webkit-web-view))
     (setf active-buffer (make-instance 'gtk-buffer))
-    ;; Add the views to the box layout
+    ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
-    (gtk:gtk-box-pack-end box-layout minibuffer-view)
-    ;; Set the initial height of the minibuffer
+    (gtk:gtk-box-pack-end box-layout minibuffer-view :expand nil)
     (setf (gtk:gtk-widget-size-request minibuffer-view)
           (list -1 (status-buffer-height window)))
     (gtk:gtk-container-add gtk-object box-layout)
@@ -90,9 +89,8 @@
 
 @export
 (defmethod ipc-window-set-minibuffer-height ((window gtk-window) height)
-  ; GTK CODE
-  ; (%rpc-send "window_set_minibuffer_height" (id window) height)
-  )
+  (setf (gtk:gtk-widget-size-request (minibuffer-view window))
+        (list -1 height)))
 
 @export
 (defmethod ipc-buffer-make ((interface gtk-interface) &key title default-modes dead-buffer)
