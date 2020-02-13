@@ -502,7 +502,7 @@ expression:
 : next --eval '(format t "hello Next!")'
 
 The plateform port is not started. If you want to execute commands
-against a running Next process, see the =sart-swank= command and the
+against a running Next process, see the =start-swank= command and the
 developer setup.
 
 ** SLIME with a compiled version of Next
