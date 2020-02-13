@@ -84,13 +84,13 @@
   (last-active-window interface))
 
 @export
-(defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer buffer))
+(defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
   "Set INTERFACE's WINDOW buffer to BUFFER.
    Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
    proceeding."
   (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
-  ; GTK CODE
-  ; (%rpc-send "window_set_active_buffer" (id window) (id buffer))
+  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
+  (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (setf (active-buffer window) buffer)
   (setf (last-active-buffer *interface*) buffer)
   buffer)
