@@ -32,7 +32,13 @@
     (setf (gtk:gtk-widget-size-request minibuffer-view)
           (list -1 (status-buffer-height window)))
     (gtk:gtk-container-add gtk-object box-layout)
-    (gtk:gtk-widget-show-all gtk-object)))
+    (gtk:gtk-widget-show-all gtk-object)
+    ;; TODO: REMOVE
+    (gobject:g-signal-connect gtk-object "destroy"
+                              (lambda (widget)
+                                (declare (ignore widget))
+                                (print "Destroy")
+                                (gtk:leave-gtk-main)))))
 
 (defclass gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)))
@@ -41,6 +47,7 @@
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
   (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
+  (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) "file:///Users/jmercouris/Downloads/file.html")
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after it has been created on the platform port.
   (initialize-modes buffer))
