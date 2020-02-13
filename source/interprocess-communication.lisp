@@ -142,9 +142,8 @@
          (funcall f))))))
 
 @export
-(defun rpc-buffer-load (buffer uri)
-  ;(%rpc-send "buffer_load" (id buffer) uri)
-  )
+(defmethod ipc-buffer-load ((buffer gtk-buffer) uri)
+  (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) uri))
 
 @export
 (defun rpc-buffer-evaluate-javascript (buffer javascript &key callback)

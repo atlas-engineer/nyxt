@@ -139,7 +139,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
       (error (c)
         (log:error "In `load-hook': ~a" c)))
     (setf (url buffer) url)
-    (rpc-buffer-load buffer url)))
+    (ipc-buffer-load buffer url)))
 
 (define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text or to input.

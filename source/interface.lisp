@@ -431,7 +431,7 @@ The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook
                      :initform (make-hook-buffer)
                      :type hook-buffer
-                     :documentation "Hook run after `ipc-buffer-make' and before `rpc-buffer-load'.
+                     :documentation "Hook run after `ipc-buffer-make' and before `ipc-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
