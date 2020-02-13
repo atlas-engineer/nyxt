@@ -25,6 +25,7 @@
                              :orientation :vertical
                              :spacing 0))
     (setf minibuffer-view (make-instance 'cl-webkit2:webkit-web-view))
+    (cl-webkit2:webkit-web-view-load-uri minibuffer-view "about:blank")
     (setf active-buffer (make-instance 'gtk-buffer))
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
@@ -47,7 +48,7 @@
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
   (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
-  (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) "file:///Users/jmercouris/Downloads/file.html")
+  (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) "about:blank")
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after it has been created on the platform port.
   (initialize-modes buffer))
@@ -146,18 +147,18 @@
   (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) uri))
 
 @export
-(defun rpc-buffer-evaluate-javascript (buffer javascript &key callback)
-  (let ((callback-id 0
-          ; (%rpc-send "buffer_evaluate_javascript" (id buffer) javascript)
-          ))
+(defmethod ipc-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
+  (let ((callback-id 0)
+        (np (cffi:null-pointer)))
+    (webkit2:webkit-web-view-run-javascript (gtk-object buffer) javascript np np np)
     (setf (gethash callback-id (callbacks buffer)) callback)
     callback-id))
 
 @export
-(defun rpc-minibuffer-evaluate-javascript (window javascript &key callback)
-  (let ((callback-id 0
-          ;(%rpc-send "minibuffer_evaluate_javascript" (id window) javascript)
-          ))
+(defmethod ipc-minibuffer-evaluate-javascript ((window gtk-window) javascript &key callback)
+  (let ((callback-id 0)
+        (np (cffi:null-pointer)))
+    (webkit2:webkit-web-view-run-javascript (minibuffer-view window) javascript np np np)
     (setf (gethash callback-id (minibuffer-callbacks window)) callback)
     callback-id))
 

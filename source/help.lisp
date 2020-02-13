@@ -48,7 +48,7 @@
                            (:p (write-to-string (symbol-value input)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (rpc-buffer-evaluate-javascript help-buffer insert-help)
+      (ipc-buffer-evaluate-javascript help-buffer insert-help)
       (set-current-buffer help-buffer))))
 
 ;; TODO: Have both "function-inspect" and "command-inspect"?
@@ -77,7 +77,7 @@
                                      :file))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (rpc-buffer-evaluate-javascript help-buffer insert-help)
+      (ipc-buffer-evaluate-javascript help-buffer insert-help)
    (set-current-buffer help-buffer))))
 
 (defun evaluate (string)
@@ -109,7 +109,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                                          collect (cl-markup:markup (:p result)))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp result-contents)))))
-      (rpc-buffer-evaluate-javascript result-buffer insert-results)
+      (ipc-buffer-evaluate-javascript result-buffer insert-results)
       (set-current-buffer result-buffer))))
 
 (define-command help ()
@@ -176,7 +176,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-      (rpc-buffer-evaluate-javascript help-buffer insert-help)
+      (ipc-buffer-evaluate-javascript help-buffer insert-help)
   (set-current-buffer help-buffer)
     help-buffer))
 
@@ -209,7 +209,7 @@ The version number is stored in the clipboard."
                     (reverse (messages-content *interface*))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
-      (rpc-buffer-evaluate-javascript buffer insert-content))
+      (ipc-buffer-evaluate-javascript buffer insert-content))
     (set-current-buffer buffer)
     buffer))
 

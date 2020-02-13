@@ -285,7 +285,7 @@ This should not rely on the minibuffer's content.")
   "Set the `content' of the MINIBUFFER to HTML-CONTENT.
    This runs a call"
   (setf (slot-value minibuffer 'content) html-content)
-  (rpc-minibuffer-evaluate-javascript
+  (ipc-minibuffer-evaluate-javascript
    (last-active-window *interface*)
    (ps:ps (ps:chain document
                     (write (ps:lisp (content minibuffer)))))))
@@ -412,7 +412,7 @@ This should not rely on the minibuffer's content.")
 The new webview HTML content it set as the MINIBUFFER's `content'."
   (let ((active-window (ipc-window-active *interface*)))
     (when minibuffer
-      (with-result (new-content (rpc-minibuffer-evaluate-javascript
+      (with-result (new-content (ipc-minibuffer-evaluate-javascript
                                  active-window
                                  (str:concat
                                   script

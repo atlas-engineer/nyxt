@@ -290,7 +290,7 @@ Otherwise go forward to the only child."
                      tree))
            (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp content)))))
-      (rpc-buffer-evaluate-javascript output-buffer insert-content)
+      (ipc-buffer-evaluate-javascript output-buffer insert-content)
       (set-current-buffer output-buffer))))
 
 (define-command copy-url ()

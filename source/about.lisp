@@ -122,5 +122,5 @@
                      (:li "18 anonymous"))))
          (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                       (ps:lisp contents)))))
-    (rpc-buffer-evaluate-javascript buffer insert-content)
+    (ipc-buffer-evaluate-javascript buffer insert-content)
     (set-current-buffer buffer)))

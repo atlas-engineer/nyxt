@@ -65,8 +65,8 @@ the command output.
 
 (define-command clear-shell (shell-mode)
   "Clear the output in the shell buffer."
-  (rpc-buffer-evaluate-javascript
-   *interface* (active-buffer *interface*)
+  (ipc-buffer-evaluate-javascript
+   (active-buffer *interface*)
    (clear-shell-output)))
 
 (define-parenscript append-output (output)
@@ -81,8 +81,8 @@ the command output.
       (input (read-from-minibuffer
               (minibuffer *interface*)
               :input-prompt "Run in shell:"))
-    (rpc-buffer-evaluate-javascript
-     *interface* (active-buffer *interface*)
+    (ipc-buffer-evaluate-javascript
+     (active-buffer *interface*)
      (append-output
       :output
       (uiop:run-program input :force-shell t :output :string)))))
