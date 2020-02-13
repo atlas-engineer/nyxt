@@ -800,6 +800,7 @@ proceeding."
           (rpc-buffer-delete temp-buffer))
         (rpc-window-set-active-buffer window buffer))
     (set-window-title window buffer)
+    (echo-dismiss)
     (setf (active-buffer window) buffer)))
 
 (declaim (ftype (function (window integer)) rpc-window-set-minibuffer-height))
