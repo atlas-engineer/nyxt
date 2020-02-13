@@ -125,7 +125,7 @@ to the currently active buffer."
   (ps:chain document title))
 
 @export
-(defun set-url (input-url &key buffer raw-url-p)
+(defun set-url (input-url &key (buffer (current-buffer)) raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   (let* ((url (if raw-url-p
