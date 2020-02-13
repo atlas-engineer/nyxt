@@ -91,6 +91,7 @@
   (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
+  (gtk:gtk-widget-show (gtk-object buffer))
   (setf (active-buffer window) buffer)
   (setf (last-active-buffer *interface*) buffer)
   buffer)
