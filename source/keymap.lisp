@@ -14,12 +14,12 @@
 (defmethod set-key ((map keymap) key-sequence-string command)
   "Bind KEY-SEQUENCE-STRING to COMMAND in MAP.
 
-  A sequence of \"C-x\" \"C-s\" \"C-a\" will be broken up into three
+  A sequence of 'C-x' 'C-s' 'C-a' will be broken up into three
   keys for the mode map, which are
 
-  \"C-x\" \"C-s\" \"C-a\" - points to COMMAND
-  \"C-x\" \"C-s\"         - set to \"prefix\"
-  \"C-x\"                 - set to \"prefix\"
+  'C-x' 'C-s' 'C-a' - points to COMMAND
+  'C-x' 'C-s'         - set to 'prefix'
+  'C-x'                 - set to 'prefix'
 
   When a key is set to #'prefix it will not consume the stack, so that
   a sequence of keys longer than one key-chord can be recorded."
@@ -55,7 +55,7 @@
 
 (defun stringify (serialized-key-stack)
   "Return string representation of a serialized key-chord stack.
-   E.g. print ((nil - C) (nil x C)) as \"C-x C--\". This is
+   E.g. print ((nil - C) (nil x C)) as 'C-x C--'. This is
    effectively the inverse of `serialize-key-chord-stack'."
   (format nil "~{~a~^ ~}"
           (mapcar (lambda (serialized-key-chord)
@@ -99,14 +99,8 @@
   ;; See INPUT_IS_PRINTABLE in platform port.
   (= -2 (second (key-chord-position key-chord))))
 
-;; "Add a new key chord to the interface key-chord-stack.
-;; For example, it may add C-M-s or C-x to a stack which will be consumed by
-;; `consume-key-sequence'."
 (defun push-input-event (key-code key-string modifiers x y low-level-data sender)
-  (%%push-input-event key-code key-string modifiers x y low-level-data sender)
-  (values))
-
-(defun %%push-input-event (key-code key-string modifiers x y low-level-data sender)
+  "Add a new key chord to the interface key-chord-stack."
   (let ((key-chord (make-key-chord
                     :key-code key-code
                     :key-string key-string
@@ -174,7 +168,7 @@
    Examples:
 
   ;; Only affect the first mode of the current buffer:
-  (define-key \"C-c C-c\" 'reload
+  (define-key 'C-c C-c' 'reload
               :keymap (getf (keymap-schemes (first (modes (current-buffer)))) :emacs))"
   ;; SBCL complains if we modify KEY-COMMAND-PAIRS directly, so we work on a copy.
   (let ((key-command-pairs-copy (copy-list key-command-pairs)))
@@ -208,9 +202,9 @@
 (defun key (key-sequence-string)
   "Turn KEY-SEQUENCE-STRING into a sequence of serialized key-chords.
    The return value is a list of strings.  The KEY-SEQUENCE-STRING is in the form
-   of \"C-x C-s\".
+   of 'C-x C-s'.
    
-   Firstly, we break it apart into chords: \"C-x\" and \"C-s\".  Then, we break
+   Firstly, we break it apart into chords: 'C-x' and 'C-s'.  Then, we break
    apart the chords into individual keys.  We use those individual keys to create a
    `key' struct that describes the chord.  We now have two `key's.  We connect
    these two keys in a list in reverse (<key C-s> <key C-x>) to
