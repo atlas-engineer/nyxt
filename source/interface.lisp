@@ -28,8 +28,6 @@
    (status-buffer-height :accessor status-buffer-height :initform 24
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
-   (minibuffer-callbacks :accessor minibuffer-callbacks
-                         :initform (make-hash-table :test #'equal))
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
                            :type integer
                            :documentation "The height of the minibuffer when open.")
@@ -130,8 +128,6 @@ For now we only store the very last key chord.")
                             ;; TODO: What about having multiple functions?  And what about moving this to modes?
                             :initarg :resource-query-function
                             :initform #'resource-query-default)
-   (callbacks :accessor callbacks
-              :initform (make-hash-table :test #'equal))
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
                            :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
@@ -639,24 +635,6 @@ current buffer."
       ((guard diff diff)
        ;; Display the most recent inactive buffer.
        (first (sort diff #'local-time:timestamp> :key #'last-access))))))
-
-(defun buffer-javascript-call-back (buffer-id javascript-response callback-id)
-  (let ((buffer (gethash buffer-id (buffers *interface*))))
-    ;; Buffer might not exist, e.g. if it has been deleted in the mean time.
-    (when buffer
-      (let ((callback (gethash callback-id (callbacks buffer))))
-        (when callback
-          (funcall callback javascript-response)))))
-  (values))
-
-(defun minibuffer-javascript-call-back (window-id javascript-response callback-id)
-  (let ((window (gethash window-id (windows *interface*))))
-    ;; Window might not exist, e.g. if it has been deleted in the mean time.
-    (when window
-      (let ((callback (gethash callback-id (minibuffer-callbacks window))))
-        (when callback
-          (funcall callback javascript-response)))))
-  (values))
 
 (defun buffer-did-commit-navigation (buffer-id url)
     (let ((buffer (gethash buffer-id (buffers *interface*))))
