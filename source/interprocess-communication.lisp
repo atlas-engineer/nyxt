@@ -149,19 +149,11 @@
 
 @export
 (defmethod ipc-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
-  (let ((callback-id 0)
-        (np (cffi:null-pointer)))
-    (webkit2:webkit-web-view-run-javascript (gtk-object buffer) javascript np np np)
-    (setf (gethash callback-id (callbacks buffer)) callback)
-    callback-id))
+  (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer) javascript callback))
 
 @export
 (defmethod ipc-minibuffer-evaluate-javascript ((window gtk-window) javascript &key callback)
-  (let ((callback-id 0)
-        (np (cffi:null-pointer)))
-    (webkit2:webkit-web-view-run-javascript (minibuffer-view window) javascript np np np)
-    (setf (gethash callback-id (minibuffer-callbacks window)) callback)
-    callback-id))
+  (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript callback))
 
 @export
 (defun rpc-set-proxy (buffer &optional (proxy-uri "") (ignore-hosts (list nil)))
