@@ -159,7 +159,7 @@
                    &key keymap
                      (scheme :emacs) ; TODO: Deprecated, remove after some version.
                      ;; We need `&allow-other-keys' so that the `:keymap' key
-                     ;; can preceed the list of keys.
+                     ;; can precede the list of keys.
                    &allow-other-keys)
   ;; TODO: Add option to define-key over the keymaps of all instantiated modes.
   "Bind KEY to COMMAND.
