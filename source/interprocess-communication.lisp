@@ -47,14 +47,18 @@
 
 (defun process-event (event sender)
   (let* ((modifier-state (gdk:gdk-event-key-state event))
+         (modifiers ())
          (character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
          (character-code (char-code character)))
-    (log:debug "Character: ~a, Code: ~a C:~a M:~a S:~a ~%~%"
-               character character-code
-               (member :control-mask modifier-state :test #'equalp)
-               (member :mod1-mask modifier-state :test #'equalp)
-               (member :super-mask modifier-state :test #'equalp))
-    (push-input-event character-code character (list "C") 0 0 nil sender)))
+    (when (member :control-mask modifier-state :test #'equalp)
+      (push "C" modifiers))
+    (when (member :mod1-mask modifier-state :test #'equalp)
+      (push "M" modifiers))
+    (when (member :super-mask modifier-state :test #'equalp)
+      (push "S" modifiers))
+    (log:debug "Character: ~a, Code: ~a Modifiers: ~a"
+               character character-code modifiers)
+    (push-input-event character-code character modifiers -1 -1 nil sender)))
 
 (defclass gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)))
