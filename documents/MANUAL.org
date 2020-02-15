@@ -422,9 +422,9 @@ By default the WebKit engine refuses to establish a secure connection to a host 
 certificate (e.g. self-signed ones). The buffer mode =certificate-whitelist=
 allows to mitigate this problem by providing a mechanism to specify a list of hosts
 for which certificate errors shall be ignored. A hostname does not contain a protocol
-like http or https and is basically the domain name of the server serving the web content
-to which an URL refers, e.g. the hostname in the URL https://intra.ec.krugercorp.com/
-is =intra.ec.krugercorp.com=.
+like HTTP or HTTPS and is basically the domain name of the server serving the web content
+to which a URL refers, e.g. the hostname in the URL https://next.atlas.engineer/
+is =next.atlas.engineer=.
 
 To enable this mode put the following statements into your =init.lisp= configuration   
 
