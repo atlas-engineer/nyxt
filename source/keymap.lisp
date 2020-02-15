@@ -114,10 +114,8 @@
     (when (or (null (key-chord-stack *interface*))
               (not (member-string "R" (key-chord-modifiers key-chord))))
       (push key-chord (key-chord-stack *interface*))
-      (let* ((active-window (gethash sender (windows *interface*)))
-             (active-buffer (active-buffer active-window))
-             (bound-function (look-up-key-chord-stack active-window
-                                                      (key-chord-stack *interface*))))
+      (let* ((active-buffer (active-buffer sender))
+             (bound-function (look-up-key-chord-stack sender (key-chord-stack *interface*))))
         (when active-buffer
           (setf (last-key-chords active-buffer) (list key-chord)))
         (cond
@@ -131,7 +129,7 @@
            (funcall bound-function)
            (setf (key-chord-stack *interface*) nil))
           ;; minibuffer is active
-          ((active-minibuffers active-window)
+          ((active-minibuffers sender)
            (if (member-string "R" (key-chord-modifiers (first (key-chord-stack *interface*))))
                (progn
                  ;; (log:debug "Key released") ; TODO: This makes the debug trace too verbose.  Middle ground?
@@ -144,12 +142,7 @@
           ;; forward back to the platform port
           ((or (and active-buffer (forward-input-events-p active-buffer))
                (pointer-event-p key-chord))
-           ;; forward-input-events-p is NIL in VI normal mode so that we don't
-           ;; forward unbound keys, unless it's a pointer (mouse) event.
-           ;; TODO: Remove this special case and bind button1 to "self-insert" instead?
-           (rpc-generate-input-event
-                                     active-window
-                                     key-chord)
+           ;; RETURN NIL to continue propagation
            (setf (key-chord-stack *interface*) nil))
           (t (setf (key-chord-stack *interface*) nil)))))))
 

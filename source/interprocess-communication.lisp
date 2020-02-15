@@ -36,8 +36,8 @@
     (gtk:gtk-widget-show-all gtk-object)
     (gobject:g-signal-connect
      gtk-object "key_press_event"
-     (lambda (window event) (declare (ignore window))
-       (process-event event)))
+     (lambda (wiget event) (declare (ignore widget))
+       (process-event event window)))
     ;; TODO: REMOVE
     (gobject:g-signal-connect
      gtk-object "destroy"
@@ -45,19 +45,16 @@
        (print "Destroy")
        (gtk:leave-gtk-main)))))
 
-(defun process-event (event)
+(defun process-event (event sender)
   (let* ((modifier-state (gdk:gdk-event-key-state event))
          (character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
          (character-code (char-code character)))
-    (unless (equalp character #\Null)
-      (format t "Character: ~a, Code: ~a C:~a M:~a S:~a ~%~%"
-              character character-code
-              (member :control-mask modifier-state :test #'equalp)
-              (member :mod1-mask modifier-state :test #'equalp)
-              (member :super-mask modifier-state :test #'equalp))))
-  (force-output)
-  ;; do not propagate event with t, propagate with nil
-  t)
+    (log:debug "Character: ~a, Code: ~a C:~a M:~a S:~a ~%~%"
+               character character-code
+               (member :control-mask modifier-state :test #'equalp)
+               (member :mod1-mask modifier-state :test #'equalp)
+               (member :super-mask modifier-state :test #'equalp))
+    (push-input-event character-code character (list "C") 0 0 nil sender)))
 
 (defclass gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)))
