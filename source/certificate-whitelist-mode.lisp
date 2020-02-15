@@ -25,8 +25,7 @@ This can apply to specific buffers."
     (lambda (mode)
       (setf (certificate-whitelist (buffer mode)) (certificate-whitelist mode))
       (echo "Certificate host whitelist set to ~a."
-            (whitelist (certificate-whitelist mode))))))
-  )
+            (whitelist (certificate-whitelist mode)))))))
 
 (define-command add-domain-to-certificate-whitelist (&optional (buffer (current-buffer)))
   "Add the current domain to the buffer's certificate whitelist."
