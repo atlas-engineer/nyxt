@@ -432,7 +432,7 @@ To enable this mode put the following statements into your =init.lisp= configura
 (in-package :next-user)
 
 (setf next/certificate-whitelist-mode:*default-certificate-whitelist*
-      (make-instance 'certificate-whitelist :whitelist '("intra.ec.krugercorp.com")))
+      (make-instance 'certificate-whitelist :whitelist '("next.atlas.engineer")))
 
 (defclass my-buffer (buffer)
   ((default-modes :initform '(web-mode root-mode proxy-mode certificate-whitelist-mode))))
