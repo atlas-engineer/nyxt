@@ -1,6 +1,5 @@
 ;;; element-hint.lisp --- functions to enable link hinting and
-;;; navigation. This file's original parenscript is licensed under
-;;; license documents/external/LICENSE1
+;;; navigation.
 
 (in-package :next)
 
