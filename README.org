@@ -60,15 +60,6 @@ systems provide packages for Next:
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
 
-If you want to use the Qt Webengine/Blink platform port, you currently
-have to build it from source.
-
-- Download a Qt Webengine archive [[https://next.atlas.engineer/static/release/next-pyqt-webengine.tar.gz][here]]. Once you have extracted it,
-  run the =next-pyqt-webengine= binary.
-- Download a GNU/Linux Debian binary of the Lisp core [[https://gitlab.com/atlas-engineer/next/pipelines?scope=all&page=1][on our CI system
-  here]] (you have to download the build artifacts), and run it with
-  =./next=.
-
 ** Quickstart keys
 
 - ~C-l~:     Load URL in tab
