@@ -96,8 +96,7 @@
 (defun printable-p (key-chord)
   "Return non-nil if key-chord is printable.
    Letters are printable, while function keys or backspace are not."
-  ;; See INPUT_IS_PRINTABLE in platform port.
-  (= -2 (second (key-chord-position key-chord))))
+  t)
 
 (defun push-input-event (key-code key-string modifiers x y low-level-data sender)
   "Add a new key chord to the interface key-chord-stack."
@@ -111,40 +110,34 @@
     ;; Don't stack the release key-chords or else pressing "C-x" then "C-+""
     ;; will be understood as "C-x C-R-x C-+ C-R-+".
     (log:debug key-chord)
-    (when (or (null (key-chord-stack *interface*))
-              (not (member-string "R" (key-chord-modifiers key-chord))))
-      (push key-chord (key-chord-stack *interface*))
-      (let* ((active-buffer (active-buffer sender))
-             (bound-function (look-up-key-chord-stack sender (key-chord-stack *interface*))))
-        (when active-buffer
-          (setf (last-key-chords active-buffer) (list key-chord)))
-        (cond
-          ;; prefix binding
-          ((eq bound-function #'prefix)
-           (log:debug "Prefix binding"))
-          ;; function bound
-          ((functionp bound-function)
-           (log:debug "Key sequence ~a bound to:"
-                      (serialize-key-chord-stack (key-chord-stack *interface*)))
-           (funcall bound-function)
-           (setf (key-chord-stack *interface*) nil))
-          ;; minibuffer is active
-          ((active-minibuffers sender)
-           (if (member-string "R" (key-chord-modifiers (first (key-chord-stack *interface*))))
-               (progn
-                 ;; (log:debug "Key released") ; TODO: This makes the debug trace too verbose.  Middle ground?
-                 nil)
-               (when (printable-p (first (key-chord-stack *interface*)))
-                 (log:debug "Insert ~s in minibuffer" (key-chord-key-string
-                                                       (first (key-chord-stack *interface*))))
-                 (insert (key-chord-key-string (first (key-chord-stack *interface*))))))
-           (setf (key-chord-stack *interface*) nil))
-          ;; forward back to the platform port
-          ((or (and active-buffer (forward-input-events-p active-buffer))
-               (pointer-event-p key-chord))
-           ;; RETURN NIL to continue propagation
-           (setf (key-chord-stack *interface*) nil))
-          (t (setf (key-chord-stack *interface*) nil)))))))
+    (push key-chord (key-chord-stack *interface*))
+    (let* ((active-buffer (active-buffer sender))
+           (bound-function (look-up-key-chord-stack sender (key-chord-stack *interface*))))
+      (when active-buffer
+        (setf (last-key-chords active-buffer) (list key-chord)))
+      (cond
+        ;; prefix binding
+        ((eq bound-function #'prefix)
+         (log:debug "Prefix binding"))
+        ;; function bound
+        ((functionp bound-function)
+         (log:debug "Key sequence ~a bound to:"
+                    (serialize-key-chord-stack (key-chord-stack *interface*)))
+         (funcall bound-function)
+         (setf (key-chord-stack *interface*) nil))
+        ;; minibuffer is active
+        ((active-minibuffers sender)
+         (when (printable-p (first (key-chord-stack *interface*)))
+           (log:debug "Insert ~s in minibuffer" (key-chord-key-string
+                                                 (first (key-chord-stack *interface*))))
+           (insert (key-chord-key-string (first (key-chord-stack *interface*)))))
+         (setf (key-chord-stack *interface*) nil))
+        ;; forward back to the platform port
+        ((or (and active-buffer (forward-input-events-p active-buffer))
+             (pointer-event-p key-chord))
+         ;; RETURN NIL to continue propagation
+         (setf (key-chord-stack *interface*) nil))
+        (t (setf (key-chord-stack *interface*) nil))))))
 
 (declaim (ftype (function (&rest t &key (:scheme list) (:keymap keymap) &allow-other-keys)) define-key))
 @export
