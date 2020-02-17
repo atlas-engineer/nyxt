@@ -36,14 +36,5 @@ This can apply to specific buffers."
         (setf (certificate-whitelist buffer) certificate-whitelist))
       (echo "Buffer has no URL.")))
 
-(define-command remove-domain-from-certificate-whitelist (&optional (buffer (current-buffer)))
-  "Remove the current domain from the buffer's certificate whitelist."
-  (if (url buffer)
-      (let ((domain (quri:uri-host (quri:uri (url buffer))))
-            (certificate-whitelist (certificate-whitelist buffer)))
-        (setf (whitelist certificate-whitelist)
-              (remove-if (lambda (host)
-                           (string= host domain))
-                         (whitelist certificate-whitelist)))
-        (setf (certificate-whitelist buffer) certificate-whitelist))
-      (echo "Buffer has no URL.")))
+;; TODO: Implement command remove-domain-from-certificate-whitelist.
+;;       Currently it is not possible due to WebKit limitations.
