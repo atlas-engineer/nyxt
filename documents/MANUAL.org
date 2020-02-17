@@ -426,7 +426,7 @@ like HTTP or HTTPS and is basically the domain name of the server serving the we
 to which a URL refers, e.g. the hostname in the URL https://next.atlas.engineer/
 is =next.atlas.engineer=.
 
-To enable this mode put the following statements into your =init.lisp= configuration   
+To enable this mode put the following statements into your =init.lisp= configuration
 
 #+begin_src lisp
 (in-package :next-user)
