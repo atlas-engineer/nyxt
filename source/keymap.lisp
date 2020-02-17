@@ -107,8 +107,6 @@
                     :modifiers (when (listp modifiers)
                                  (sort modifiers #'string-lessp))
                     :low-level-data low-level-data)))
-    ;; Don't stack the release key-chords or else pressing "C-x" then "C-+""
-    ;; will be understood as "C-x C-R-x C-+ C-R-+".
     (log:debug key-chord)
     (push key-chord (key-chord-stack *interface*))
     (let* ((active-buffer (active-buffer sender))

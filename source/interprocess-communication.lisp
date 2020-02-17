@@ -37,7 +37,7 @@
     (gobject:g-signal-connect
      gtk-object "key_press_event"
      (lambda (widget event) (declare (ignore widget))
-       (process-key-press-event event window)))
+       (process-key-press-event window event)))
     ;; TODO: REMOVE
     (gobject:g-signal-connect
      gtk-object "destroy"
@@ -45,7 +45,7 @@
        (print "Destroy")
        (gtk:leave-gtk-main)))))
 
-(defun process-key-press-event (event sender)
+(defmethod process-key-press-event ((sender gtk-window) event)
   (let* ((modifier-state (gdk:gdk-event-key-state event))
          (modifiers ())
          (character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
