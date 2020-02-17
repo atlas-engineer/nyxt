@@ -56,9 +56,7 @@
       (push "M" modifiers))
     (when (member :super-mask modifier-state :test #'equalp)
       (push "S" modifiers))
-    (log:debug "Character: ~a, Code: ~a Modifiers: ~a"
-               character character-code modifiers)
-    (push-input-event character-code character modifiers -1 -1 nil sender)))
+    (push-input-event character-code (string character) modifiers -1 -1 nil sender)))
 
 (defclass gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)))
