@@ -44,7 +44,6 @@ end-user allowing for infinite customization.
   - [[#font-size-on-hidpi-displays][Font size on HiDPI displays]]
 - [[#troubleshooting][Troubleshooting]]
   - [[#stumpwm-mouse-scroll][StumpWM mouse scroll]]
-  - [[#d-bus-requirement][D-Bus requirement]]
 
 * Basics
 ** Navigation
@@ -1010,9 +1009,6 @@ previous session or not, etc.
 For improved security while you browse the internet, you can run Next
 with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
 
-Run it like this:
-
-: firejail --ignore=nodbus next-gtk-webkit
 ** Font size on HiDPI displays
 
 On HiDPI displays the font size used for displaying web and next's minibuffer content might be too tiny.
@@ -1031,8 +1027,3 @@ next &
 If the mouse scroll does not work for you, see the [[https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to][StumpWM FAQ]] for a
 fix.
 
-** D-Bus requirement
-
-Next needs a D-Bus session bus to run. In most cases, it should
-already be running. If Next does not start up, it is very likely that
-D-Bus is not running for your user.
