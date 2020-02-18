@@ -42,7 +42,44 @@ MAJOR.MINOR.PATCH, we increment the:
   of a particular text field
 *** Add online suggestions from search engines
 
-** 1.4.0
+** 1.5.0
+- Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
+
+  This mode temporarily authorizes invalid certificates for the current buffer
+  (e.g. TLS certificates).
+
+  The mode can also be enabled for all buffers with a custom whitelist so that
+  the whitelisting is remembered across sessions.
+
+- Add =enable-hook-handler= and =disable-hook-handler= commands.
+
+  This is particularly convenient to temporarily disable hooks that are set in
+  the =init.lisp= file.
+
+- Overhaul buffer search to behave in a Helm/Ivy fashion.
+
+- Add =search-buffers= command to search across the given buffers.  (Thanks to Chris Bøg.)
+
+- Add =delete-other-buffers= command.  (Thanks to Chris Bøg.)
+
+- Sort buffer by last-access time.
+
+  In particular, the latest buffer buffer will be popped when deleting the
+  current buffer.
+
+- Display log messages in =*Messages*= buffer.  (Thanks to Bruno Cichon.)
+
+- Show source location with =command-inspect=.  (Thanks to Bruno Cichon.)
+
+- Fix define-mode when there is no docstring.  (Thanks to Chris Bøg.)
+
+- Fix tab-insert on candidates.
+
+- Rename "link-hint" to "element-hint".
+
+- Fix updating echo area on buffer change.
+
+** DONE 1.4.0
 - CLOS-style configuration.
 This simplifies setting the default slots of the various classes (=buffer=,
 =window=, =remote-interface=, =minibuffer=, etc.).  In particular, the
