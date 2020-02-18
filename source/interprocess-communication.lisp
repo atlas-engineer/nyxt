@@ -155,7 +155,7 @@
     buffer))
 
 @export
-(defun rpc-buffer-delete (buffer)
+(defun ipc-buffer-delete (buffer)
   "Delete BUFFER from `*interface*'.
    Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
   (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
