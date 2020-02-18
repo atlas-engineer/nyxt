@@ -9,9 +9,6 @@ MAJOR.MINOR.PATCH, we increment the:
 - PATCH version when we make backwards-compatible bug fixes.
 
 ** TASK Upcoming
-*** Smart searching across all tabs
-+ You should be able to search all tabs simultaneously and see a list
-  of completion candidates in the minibuffer
 *** Jump to heading across all tabs
 + Add a jump to heading command that works across all open tabs
 *** Package manager
@@ -42,7 +39,7 @@ MAJOR.MINOR.PATCH, we increment the:
   of a particular text field
 *** Add online suggestions from search engines
 
-** 1.5.0
+** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
 
   This mode temporarily authorizes invalid certificates for the current buffer
