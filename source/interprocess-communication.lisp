@@ -12,25 +12,30 @@
 (defclass gtk-window (window)
   ((gtk-object :accessor gtk-object)
    (box-layout :accessor box-layout)
+   (minibuffer-container :accessor minibuffer-container)
    (minibuffer-view :accessor minibuffer-view)))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (with-slots (gtk-object box-layout minibuffer-view active-buffer id) window
+  (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer id) window
     (setf id (get-unique-window-identifier *interface*))
     (setf gtk-object (make-instance 'gtk:gtk-window
                                     :type :toplevel
                                     :default-width 1024
                                     :default-height 768))
     (setf box-layout (make-instance 'gtk:gtk-box
-                             :orientation :vertical
-                             :spacing 0))
+                                    :orientation :vertical
+                                    :spacing 0))
+    (setf minibuffer-container (make-instance 'gtk:gtk-box
+                                              :orientation :vertical
+                                              :spacing 0))
     (setf minibuffer-view (make-instance 'cl-webkit2:webkit-web-view))
     (cl-webkit2:webkit-web-view-load-uri minibuffer-view "about:blank")
     (setf active-buffer (make-instance 'gtk-buffer))
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
-    (gtk:gtk-box-pack-end box-layout minibuffer-view :expand nil)
-    (setf (gtk:gtk-widget-size-request minibuffer-view)
+    (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
+    (gtk:gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
+    (setf (gtk:gtk-widget-size-request minibuffer-container)
           (list -1 (status-buffer-height window)))
     (gtk:gtk-container-add gtk-object box-layout)
     (gtk:gtk-widget-show-all gtk-object)
@@ -125,7 +130,7 @@
 
 @export
 (defmethod ipc-window-set-minibuffer-height ((window gtk-window) height)
-  (setf (gtk:gtk-widget-size-request (minibuffer-view window))
+  (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
 @export
