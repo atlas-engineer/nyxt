@@ -155,7 +155,7 @@
     buffer))
 
 @export
-(defun ipc-buffer-delete (buffer)
+(defmethod ipc-buffer-delete ((buffer gtk-buffer))
   "Delete BUFFER from `*interface*'.
    Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
   (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
@@ -164,9 +164,9 @@
                         (alexandria:hash-table-values (windows *interface*))))
         (replacement-buffer (or (%get-inactive-buffer)
                                 (ipc-buffer-make *interface*))))
-    ; (%rpc-send "buffer_delete" (id buffer))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))
+    (gtk:gtk-widget-destroy (gtk-object buffer))
     (remhash (id buffer) (buffers *interface*))
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
