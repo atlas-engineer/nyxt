@@ -631,11 +631,12 @@ current buffer."
        ;; Display the most recent inactive buffer.
        (first (sort diff #'local-time:timestamp> :key #'last-access))))))
 
-(defun buffer-uri-at-point (url)
+(defmethod push-url-at-point ((buffer buffer) url)
+  ;; TODO: Use buffer local queue to avoid many/duplicate echo
+  (declare (ignore buffer))
   (if (str:emptyp url)
       (echo-dismiss)
-      (echo "→ ~a" url))
-  (values))
+      (echo "→ ~a" url)))
 
 (defun make-buffers (urls)
   (open-urls urls)

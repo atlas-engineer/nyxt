@@ -95,6 +95,16 @@
               (did-commit-navigation buffer url))
              ((eq load-event :webkit-load-finished)
               (did-finish-navigation buffer url))))))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "mouse-target-changed"
+   (lambda (web-view hit-test-result modifiers)
+     (declare (ignore web-view modifiers))
+     (cond ((cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)
+            (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)))
+           ((cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)
+            (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)))
+           ((cl-webkit2:webkit-hit-test-result-media-uri hit-test-result)
+            (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-media-uri hit-test-result))))))
   (initialize-modes buffer))
 
 @export
