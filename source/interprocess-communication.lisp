@@ -33,7 +33,6 @@
                                               :orientation :vertical
                                               :spacing 0))
     (setf minibuffer-view (make-instance 'cl-webkit2:webkit-web-view))
-    (cl-webkit2:webkit-web-view-load-uri minibuffer-view "about:blank")
     (setf active-buffer (make-instance 'gtk-buffer))
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
@@ -84,7 +83,6 @@
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
   (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
-  (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) "about:blank")
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after the view has been created.
   (gobject:g-signal-connect

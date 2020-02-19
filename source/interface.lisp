@@ -603,7 +603,6 @@ current buffer."
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 @export
 (defun window-set-active-buffer (window buffer)
-  ;; TODO: Replace this swapping business with a simple swap + a "refresh rendering" IPC call?
   (let ((window-with-same-buffer (find-if
                                   (lambda (other-window) (and (not (eq other-window window))
                                                               (eql (active-buffer other-window) buffer)))
