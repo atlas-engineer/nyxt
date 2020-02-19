@@ -46,12 +46,16 @@
      gtk-object "key_press_event"
      (lambda (widget event) (declare (ignore widget))
        (process-key-press-event window event)))
-    ;; TODO: REMOVE
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
-       (print "Destroy")
-       (gtk:leave-gtk-main)))))
+       (process-destroy-event window)))))
+
+(defmethod process-destroy-event ((window gtk-window))
+  ;; remove buffer from window to avoid corruption of buffer
+  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
+  (next-hooks:run-hook (window-delete-hook window) window)
+  (remhash (id window) (windows *interface*)))
 
 (defun character->string (character)
   (cond ((eq character #\Return) "RETURN")
