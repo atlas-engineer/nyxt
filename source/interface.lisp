@@ -632,16 +632,6 @@ current buffer."
        ;; Display the most recent inactive buffer.
        (first (sort diff #'local-time:timestamp> :key #'last-access))))))
 
-(defun buffer-did-commit-navigation (buffer-id url)
-    (let ((buffer (gethash buffer-id (buffers *interface*))))
-      (did-commit-navigation buffer url))
-  (values))
-
-(defun buffer-did-finish-navigation (buffer-id url)
-  (let ((buffer (gethash buffer-id (buffers *interface*))))
-    (did-finish-navigation buffer url))
-  (values))
-
 (defun buffer-uri-at-point (url)
   (if (str:emptyp url)
       (echo-dismiss)
