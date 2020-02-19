@@ -37,6 +37,10 @@ static KeyTranslation key_translations[] = {
 	{.old = "space", .new = "SPACE"},
 	{.old = "Delete", .new = "DELETE"},
 	{.old = "minus", .new = "HYPHEN"},
+	{.old = "plus", .new = "+"},
+	{.old = "equal", .new = "="},
+	{.old = "bracketleft", .new = "["},
+	{.old = "bracketright", .new = "]"},
 	{.old = "Escape", .new = "ESCAPE"},
 	{.old = "Return", .new = "RETURN"},
 	{.old = "Tab", .new = "TAB"},
@@ -318,16 +322,13 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 		}
 	}
 
-	// C-[ and C-] are turned to \u001b and \u001d (escape) respectively.  Fix this.
-	if (g_strcmp0(gdk_keyval_name(event->keyval), "bracketleft") == 0) {
-		keyval_string = "[";
-	} else if (g_strcmp0(gdk_keyval_name(event->keyval), "bracketright") == 0) {
-		keyval_string = "]";
-		// Same problem for + and =.
-	} else if (g_strcmp0(gdk_keyval_name(event->keyval), "equal") == 0) {
-		keyval_string = "=";
-	} else if (g_strcmp0(gdk_keyval_name(event->keyval), "plus") == 0) {
-		keyval_string = "+";
+	// Some keys with modifiers like C-[ and C-] are turned to \u001b and \u001d
+	// (escape) respectively.  Fix this.
+	for (int i = 0; i < (sizeof key_translations)/(sizeof key_translations[0]); i++) {
+		if (g_strcmp0(gdk_keyval_name(event->keyval), key_translations[i].old) == 0) {
+			keyval_string = key_translations[i].new;
+			break;
+		}
 	}
 
 	return window_send_event(window_data,
