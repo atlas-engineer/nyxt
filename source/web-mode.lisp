@@ -37,6 +37,8 @@
         "C-p" #'scroll-up
         "C-n" #'scroll-down
         "C-x C-=" #'zoom-in-page
+        "C-x s-+" #'zoom-in-page
+        "C-x C-s-+" #'zoom-in-page
         "C-x C-+" #'zoom-in-page
         "C-x +" #'zoom-in-page
         "C-x C-HYPHEN" #'zoom-out-page
