@@ -9,6 +9,10 @@
   (log:debug "Initializing GTK Interface")
   (gtk:gtk-main))
 
+(defmethod kill-interface ((interface gtk-interface))
+  (gtk:leave-gtk-main)
+  (uiop:quit 0 nil))
+
 (defclass gtk-window (window)
   ((gtk-object :accessor gtk-object)
    (box-layout :accessor box-layout)

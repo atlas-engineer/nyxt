@@ -581,10 +581,6 @@ current buffer."
         (echo-warning "Download error: ~a" c)
         nil))))
 
-(defmethod kill-interface ((interface interface))
-  "Kill the interface."
-  )
-
 (defmethod get-unique-window-identifier ((interface interface))
   (incf (total-window-count interface)))
 
