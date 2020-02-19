@@ -87,6 +87,16 @@
   (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) "about:blank")
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after the view has been created.
+  (gobject:g-signal-connect
+   (gtk-object buffer) "load-changed"
+   (lambda (web-view load-event)
+     (let ((url (cl-webkit2:webkit-web-view-uri web-view)))
+       (cond ((eq load-event :webkit-load-started) nil)
+             ((eq load-event :webkit-load-redirected) nil)
+             ((eq load-event :webkit-load-committed)
+              (did-commit-navigation buffer url))
+             ((eq load-event :webkit-load-finished)
+              (did-finish-navigation buffer url))))))
   (initialize-modes buffer))
 
 @export
