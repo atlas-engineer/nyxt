@@ -86,7 +86,7 @@
   (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
   (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) "about:blank")
   ;; Modes might require that buffer exists, so we need to initialize them
-  ;; after it has been created on the platform port.
+  ;; after the view has been created.
   (initialize-modes buffer))
 
 @export
