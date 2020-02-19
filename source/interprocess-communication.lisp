@@ -103,7 +103,8 @@
 @export
 (defmethod ipc-window-delete ((window gtk-window))
   "Delete a window object and remove it from the hash of windows."
-  ;; GTK CODE
+  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
+  (gtk:gtk-widget-destroy (gtk-object window))
   (next-hooks:run-hook (window-delete-hook window) window)
   (remhash (id window) (windows *interface*)))
 
