@@ -323,6 +323,11 @@ gboolean window_key_event(GtkWidget *_widget, GdkEventKey *event, gpointer windo
 		keyval_string = "[";
 	} else if (g_strcmp0(gdk_keyval_name(event->keyval), "bracketright") == 0) {
 		keyval_string = "]";
+		// Same problem for + and =.
+	} else if (g_strcmp0(gdk_keyval_name(event->keyval), "equal") == 0) {
+		keyval_string = "=";
+	} else if (g_strcmp0(gdk_keyval_name(event->keyval), "plus") == 0) {
+		keyval_string = "+";
 	}
 
 	return window_send_event(window_data,
