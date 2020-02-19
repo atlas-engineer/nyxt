@@ -74,7 +74,8 @@
       (push "M" modifiers))
     (when (member :super-mask modifier-state :test #'equalp)
       (push "S" modifiers))
-    (push-input-event character-code key-string modifiers -1 -1 nil sender)))
+    (unless (eq character #\Nul)
+      (push-input-event character-code key-string modifiers -1 -1 nil sender))))
 
 (defclass gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)))
