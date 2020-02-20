@@ -241,6 +241,12 @@
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript callback))
 
 @export
+(defmethod ipc-buffer-enable-javascript ((buffer gtk-buffer) value)
+  (setf (cl-webkit2:webkit-settings-enable-javascript
+         (cl-webkit2:webkit-web-view-get-settings (gtk-object buffer)))
+        value))
+
+@export
 (defun rpc-set-proxy (buffer &optional (proxy-uri "") (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
    Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
@@ -267,10 +273,3 @@
   ;(%rpc-send "get_proxy" (id buffer))
   )
 
-@export
-(defun rpc-buffer-set (buffer setting value)
-  "Set SETTING to VALUE for BUFFER.
-   Specification:
-   https://webkitgtk.org/reference/webkit2gtk/stable/WebKitSettings.html."
-  ;(%rpc-send "buffer_set" (id buffer) setting value)
-  )
