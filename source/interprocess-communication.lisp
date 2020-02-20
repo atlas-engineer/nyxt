@@ -3,7 +3,8 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
-(defclass gtk-interface (interface) ())
+(defclass gtk-interface (interface)
+  ((modifiers :accessor modifiers :initform ())))
 
 (defmethod initialize ((interface gtk-interface))
   (log:debug "Initializing GTK Interface")
@@ -45,7 +46,12 @@
     (gobject:g-signal-connect
      gtk-object "key_press_event"
      (lambda (widget event) (declare (ignore widget))
+       (push-modifier *interface* event)
        (process-key-press-event window event)))
+    (gobject:g-signal-connect
+     gtk-object "key_release_event"
+     (lambda (widget event) (declare (ignore widget))
+       (pop-modifier *interface* event)))
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
@@ -66,22 +72,39 @@
         ((eq character #\Tab) "TAB")
         (t (string character))))
 
-(defmethod process-key-press-event ((sender gtk-window) event)
-  (let* ((modifier-state (gdk:gdk-event-key-state event))
-         (modifiers ())
-         (character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
-         (character-code (char-code character))
-         (key-string (character->string character)))
+(defmethod push-modifier ((interface gtk-interface) event)
+  (let ((modifier-state (gdk:gdk-event-key-state event))
+        (key-value (gdk:gdk-event-key-keyval event)))
     (when (member :control-mask modifier-state)
-      (push "C" modifiers))
-    (when (member :mod1-mask modifier-state)
-      (push "M" modifiers))
+      (push "C" (modifiers interface)))
+    (when (or (member :mod1-mask modifier-state)
+              (eq key-value 65406))
+      (push "M" (modifiers interface)))
     (when (or (member :super-mask modifier-state)
               (and (member :mod2-mask modifier-state)
                    (member :meta-mask modifier-state)))
-      (push "S" modifiers))
+      (push "S" (modifiers interface))))
+  (setf (modifiers interface) (remove-duplicates (modifiers interface) :test #'equal)))
+
+(defmethod pop-modifier ((interface gtk-interface) event)
+  (let ((modifier-state (gdk:gdk-event-key-state event))
+        (key-value (gdk:gdk-event-key-keyval event)))
+    (when (member :control-mask modifier-state)
+      (setf (modifiers interface) (remove "C" (modifiers interface) :test #'equal)))
+    (when (or (member :mod1-mask modifier-state)
+              (eq key-value 65406))
+      (setf (modifiers interface) (remove "M" (modifiers interface) :test #'equal)))
+    (when (or (member :super-mask modifier-state)
+              (and (member :mod2-mask modifier-state)
+                   (member :meta-mask modifier-state)))
+      (setf (modifiers interface) (remove "S" (modifiers interface) :test #'equal)))))
+
+(defmethod process-key-press-event ((sender gtk-window) event)
+  (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
+         (character-code (char-code character))
+         (key-string (character->string character)))
     (unless (eq character #\Nul)
-      (push-input-event character-code key-string modifiers -1 -1 nil sender))))
+      (push-input-event character-code key-string (modifiers *interface*) -1 -1 nil sender))))
 
 (defclass gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)))
