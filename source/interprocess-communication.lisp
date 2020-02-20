@@ -247,29 +247,22 @@
         value))
 
 @export
-(defun rpc-set-proxy (buffer &optional (proxy-uri "") (ignore-hosts (list nil)))
+(defmethod ipc-buffer-set-proxy ((buffer gtk-buffer) &optional (proxy-uri "") (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
    Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
    For the user-level interface, see `proxy-mode'.
 
-   Note: WebKit supports three proxy \"modes\": default (the system proxy),
-   custom (the specified proxy) and none.
-   TODO: We don't use \"none\" here, but it could be useful to expose it to the
-   user."
-  ;; (%rpc-send "set_proxy" (list (id buffer))
-  ;;            (if (string= proxy-uri "")
-  ;;                "default"
-  ;;                "custom")
-  ;;            proxy-uri ignore-hosts)
+   Note: WebKit supports three proxy 'modes': default (the system proxy),
+   custom (the specified proxy) and none."
+  ;; TODO: Implement support in cl-webkit
   )
 
 @export
-(defun rpc-get-proxy (buffer)
+(defmethod ipc-buffer-get-proxy ((buffer gtk-buffer))
   "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy
    configuration.
-   MODE is one of \"default\" (use system configuration), \"custom\"
-   or \"none\".
+   MODE is one of 'default' (use system configuration), 'custom'
+   or 'none'.
    ADDRESS is in the form PROTOCOL://HOST:PORT."
-  ;(%rpc-send "get_proxy" (id buffer))
+  ;; TODO: Implement support in cl-webkit
   )
-
