@@ -95,8 +95,7 @@ next [options] [urls]")
         (setf next:*use-session* nil)))
     (setf *options* options
           *free-args* free-args)
-    (start :urls free-args
-           :non-interactive t)))
+    (start :urls free-args)))
 
 (defun init-file-path (&optional (filename "init.lisp"))
   "The path where the system will look to load an init file from. This
