@@ -207,13 +207,3 @@ provided buffers."
 (define-command remove-search-hints ()
   "Remove all search hints."
   (%remove-search-hints))
-
-(define-deprecated-command next-search-hint ()
-  "Go to next search hint.")
-
-(define-deprecated-command previous-search-hint ()
-  "Go to previous search hint.")
-
-(define-deprecated-command add-search-hints ()
-  "Deprecated by `search-buffer'."
-  (search-buffer))
