@@ -126,8 +126,8 @@
   (gobject:g-signal-connect
    (gtk-object buffer) "mouse-target-changed"
    (lambda (web-view hit-test-result modifiers)
-     (declare (ignore web-view modifiers))
-     (process-mouse-target-changed buffer hit-test-result)))
+     (declare (ignore web-view))
+     (process-mouse-target-changed buffer hit-test-result modifiers)))
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after the view has been created.
   (initialize-modes buffer))
@@ -144,7 +144,8 @@
           ((eq load-event :webkit-load-finished)
            (did-finish-navigation buffer url)))))
 
-(defmethod process-mouse-target-changed ((buffer gtk-buffer) hit-test-result)
+(defmethod process-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
+  (declare (ignore modifiers))
   (cond ((cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)
          (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)))
         ((cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)
