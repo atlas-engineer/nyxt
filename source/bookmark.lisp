@@ -193,10 +193,6 @@ This can be useful to let the user select no tag when returning directly."
       (when selected-link
         (bookmark-add selected-link)))))
 
-(define-deprecated-command bookmark-anchor ()
-  "Deprecated by `bookmark-hint'."
-  (bookmark-hint))
-
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark."
   (with-result (entry (read-from-minibuffer
