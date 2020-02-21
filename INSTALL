@@ -1,13 +1,10 @@
 Usage:
 
-   make next                Create the Lisp core.
-   make install-next        Install the Lisp core.
+   make next                Create Next.
+   make install-next        Install Next.
 
-   make gtk-webkit          Create the GTK-WebKit port.
-   make install-gtk-webkit  Install the GTK-WebKit port.
-
-   make all                 Create the Lisp core and the GTK-WebKit port.
-   make install             Install the Lisp core and the GTK-WebKit port.
+   make all                 Create Next.
+   make install             Install Next.
 
 Set DESTDIR to change the target destinatation.  It should be
 an absolute path.
@@ -19,7 +16,7 @@ dependencies will be fetched with Quicklisp into the
 QUICKLISP_DIR directory.
 
 Otherwise, the dependencies will have to be locally installed
-on your system.  You might have to accomodate the LISP_FLAGS
-to, say, use your local install of Quicklisp.  For instance:
+on your system.  You may have to accomodate the LISP_FLAGS
+to, use your local install of Quicklisp.  For example:
 
-   make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
