@@ -55,9 +55,9 @@
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
-       (process-destroy-event window)))))
+       (process-destroy window)))))
 
-(defmethod process-destroy-event ((window gtk-window))
+(defmethod process-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (next-hooks:run-hook (window-delete-hook window) window)
@@ -122,7 +122,7 @@
    (gtk-object buffer) "decide-policy"
    (lambda (web-view response-policy-decision policy-decision-type-response)
      (declare (ignore web-view))
-     (process-decision buffer response-policy-decision policy-decision-type-response)))
+     (process-decide-policy buffer response-policy-decision policy-decision-type-response)))
   (gobject:g-signal-connect
    (gtk-object buffer) "load-changed"
    (lambda (web-view load-event)
@@ -137,8 +137,8 @@
   ;; after the view has been created.
   (initialize-modes buffer))
 
-(defmethod process-decision ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
-  (declare (ignore buffer response-policy-decision policy-decision-type-response)))
+(defmethod process-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
+  (declare (ignore buffer)))
 
 (defmethod process-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (cl-webkit2:webkit-web-view-uri (gtk-object buffer))))
