@@ -113,29 +113,44 @@
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
   (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
-  ;; Modes might require that buffer exists, so we need to initialize them
-  ;; after the view has been created.
+  (gobject:g-signal-connect
+   (gtk-object buffer) "decide-policy"
+   (lambda (web-view response-policy-decision policy-decision-type-response)
+     (declare (ignore web-view))
+     (process-decision buffer response-policy-decision policy-decision-type-response)))
   (gobject:g-signal-connect
    (gtk-object buffer) "load-changed"
    (lambda (web-view load-event)
-     (let ((url (cl-webkit2:webkit-web-view-uri web-view)))
-       (cond ((eq load-event :webkit-load-started) nil)
-             ((eq load-event :webkit-load-redirected) nil)
-             ((eq load-event :webkit-load-committed)
-              (did-commit-navigation buffer url))
-             ((eq load-event :webkit-load-finished)
-              (did-finish-navigation buffer url))))))
+     (declare (ignore web-view))
+     (process-load-changed buffer load-event)))
   (gobject:g-signal-connect
    (gtk-object buffer) "mouse-target-changed"
    (lambda (web-view hit-test-result modifiers)
      (declare (ignore web-view modifiers))
-     (cond ((cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)
-            (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)))
-           ((cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)
-            (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)))
-           ((cl-webkit2:webkit-hit-test-result-media-uri hit-test-result)
-            (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-media-uri hit-test-result))))))
+     (process-mouse-target-changed buffer hit-test-result)))
+  ;; Modes might require that buffer exists, so we need to initialize them
+  ;; after the view has been created.
   (initialize-modes buffer))
+
+(defmethod process-decision ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
+  (declare (ignore buffer response-policy-decision policy-decision-type-response)))
+
+(defmethod process-load-changed ((buffer gtk-buffer) load-event)
+  (let ((url (cl-webkit2:webkit-web-view-uri (gtk-object buffer))))
+    (cond ((eq load-event :webkit-load-started) nil)
+          ((eq load-event :webkit-load-redirected) nil)
+          ((eq load-event :webkit-load-committed)
+           (did-commit-navigation buffer url))
+          ((eq load-event :webkit-load-finished)
+           (did-finish-navigation buffer url)))))
+
+(defmethod process-mouse-target-changed ((buffer gtk-buffer) hit-test-result)
+  (cond ((cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)
+         (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)))
+        ((cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)
+         (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)))
+        ((cl-webkit2:webkit-hit-test-result-media-uri hit-test-result)
+         (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-media-uri hit-test-result)))))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
