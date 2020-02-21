@@ -273,19 +273,7 @@ defined in any package and is unique."
 @export
 @export-accessors
 (defclass interface ()
-  ((port :accessor port :initform nil
-         :documentation "The CLOS object responible for handling the platform port.")
-   (platform-port-poll-duration :accessor platform-port-poll-duration :initform 1.0
-                                 :type number
-                                :documentation "The duration in seconds to wait
-for the platform port to start up.")
-   (platform-port-poll-interval :accessor platform-port-poll-interval :initform 0.025
-                                :type number
-                                :documentation "The speed at which to poll the
-IPC endpoint of a platform-port to see if it is ready to begin accepting IPC
-commands.")
-   (active-connection :accessor active-connection :initform nil)
-   (password-interface :accessor password-interface
+  ((password-interface :accessor password-interface
                        :initform (password:make))
    (messages-content :accessor messages-content :initform nil :type :list
                      :documentation "A cl-markup plist of all echoed messages.
