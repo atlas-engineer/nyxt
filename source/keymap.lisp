@@ -122,18 +122,19 @@
          (log:debug "Key sequence ~a bound to:"
                     (serialize-key-chord-stack (key-chord-stack *interface*)))
          (funcall bound-function)
-         (setf (key-chord-stack *interface*) nil))
+         (setf (key-chord-stack *interface*) nil)
+         t) ; return t to avoid further propagation
         ;; minibuffer is active
         ((active-minibuffers sender)
          (when (printable-p (first (key-chord-stack *interface*)))
            (log:debug "Insert ~s in minibuffer" (key-chord-key-string
                                                  (first (key-chord-stack *interface*))))
            (insert (key-chord-key-string (first (key-chord-stack *interface*)))))
-         (setf (key-chord-stack *interface*) nil))
-        ;; forward back to the platform port
+         (setf (key-chord-stack *interface*) nil)
+         t) ; return t to avoid further propagation
         ((or (and active-buffer (forward-input-events-p active-buffer))
              (pointer-event-p key-chord))
-         ;; RETURN NIL to continue propagation
+         ;; return nil to continue propagation
          (setf (key-chord-stack *interface*) nil))
         (t (setf (key-chord-stack *interface*) nil))))))
 
