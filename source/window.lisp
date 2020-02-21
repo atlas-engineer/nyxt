@@ -36,7 +36,3 @@
         (buffer (or buffer (make-buffer))))
     (window-set-active-buffer window buffer)
     (values window buffer)))
-
-(define-deprecated-command new-window ()
-  "Deprecated by `make-window'."
-  (make-window))
