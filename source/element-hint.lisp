@@ -280,19 +280,3 @@ visible active buffer."
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
   (query-hints "Copy element URL:" '%copy-hint-url)) 
-
-(define-deprecated-command copy-anchor-url ()
-  "Deprecated by `copy-hint-url'."
-  (copy-hint-url))
-
-(define-deprecated-command go-anchor ()
-  "Deprecated by `follow-hint'."
-  (follow-hint))
-
-(define-deprecated-command go-anchor-new-buffer-focus ()
-  "Deprecated by `follow-hint-new-buffer-focus'."
-  (follow-hint-new-buffer-focus))
-
-(define-deprecated-command go-anchor-new-buffer ()
-  "Deprecated by `follow-hint-new-buffer'."
-  (follow-hint-new-buffer))

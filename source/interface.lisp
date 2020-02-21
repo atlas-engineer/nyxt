@@ -355,12 +355,6 @@ The history data kept in memory.")
                  :initform (xdg-data-home "history.lisp")
                  :documentation "
 The path where the system will create/save the global history.")
-   (history-db-path :initarg :history-db-path
-                    :accessor history-db-path
-                    :type pathname
-                    :initform (xdg-data-home "history.lisp")
-                    :documentation "
-Deprecated.  See `history-path'.")
    (history-store-function :initarg :history-store-function
                            :accessor history-store-function
                            :type function
@@ -382,11 +376,6 @@ The bookmarks kept in memory.")
                    :initform (xdg-data-home "bookmarks.lisp")
                    :documentation "
 The path where the system will create/save the bookmarks.")
-   (bookmark-db-path :initarg :bookmark-db-path
-                     :accessor bookmark-db-path
-                     :initform (xdg-data-home "bookmarks.lisp")
-                     :documentation "
-Deprecated.  See `bookmarks-path'.")
    (bookmarks-store-function :initarg :bookmarks-store-function
                              :accessor bookmarks-store-function
                              :type function
@@ -477,14 +466,6 @@ The handlers take the `download-manager:download' class instance as argument."))
   (loop for name in (search-engines-names)
      when (str:starts-with-p prefix name)
      return name))
-
-(defmethod bookmark-db-path ((interface interface))
-  (log:warn "Deprecated, use `bookmarks-path' instead.")
-  (bookmarks-path interface))
-
-(defmethod history-db-path ((interface interface))
-  (log:warn "Deprecated, use `history-path' instead.")
-  (history-path interface))
 
 (defmethod history-data ((interface interface))
   "Return the `history-data' slot from INTERFACE.

@@ -43,10 +43,6 @@ If URL is `:default', use `default-new-buffer-url'."
       (set-url url :buffer buffer))
     buffer))
 
-(define-deprecated-command new-buffer ()
-  "Deprecated by `make-buffer'."
-  (make-buffer))
-
 @export
 (defun buffer-list (&key sort-by-time)
   (let ((buf-list (alexandria:hash-table-values (buffers *interface*))))
@@ -78,10 +74,6 @@ See `make-buffer'."
   (let ((buffer (make-buffer :url url)))
     (set-current-buffer buffer)
     buffer))
-
-(define-deprecated-command make-visible-new-buffer ()
-  "Deprecated by `make-buffer-focus'."
-  (make-buffer-focus))
 
 (define-command delete-buffer ()
   "Delete the buffer(s) via minibuffer input."

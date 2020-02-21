@@ -38,7 +38,3 @@
         (when (focus-on-reopened-buffer-p *interface*)
           (set-current-buffer buffer)))
       (echo "There are no recently-deleted buffers.")))
-
-(define-deprecated-command undo-buffer-deletion ()
-  "Deprecated by `reopen-last-buffer'."
-  (reopen-last-buffer))

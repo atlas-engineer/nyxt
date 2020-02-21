@@ -50,8 +50,6 @@
         "C-m C-s" #'bookmark-page
         "C-m g" #'bookmark-hint
         "C-s s" #'search-buffer
-        "C-s n" #'next-search-hint
-        "C-s p" #'previous-search-hint
         "C-s k" #'remove-search-hints
         "C-." #'jump-to-heading
         "M-s->" #'scroll-to-bottom
@@ -130,8 +128,6 @@
         "y t" #'copy-title
         "g h" #'jump-to-heading         ; TODO: VI binding for this?
         "/" #'search-buffer
-        "n" #'next-search-hint
-        "N" #'previous-search-hint
         "?" #'remove-search-hints
         "G" #'scroll-to-bottom
         "g g" #'scroll-to-top
