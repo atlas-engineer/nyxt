@@ -63,14 +63,18 @@
   (next-hooks:run-hook (window-delete-hook window) window)
   (remhash (id window) (windows *interface*)))
 
-(defun character->string (character)
+(defun character->string (character &optional key-value)
   (cond ((eq character #\Return) "RETURN")
         ((eq character #\Backspace) "BACKSPACE")
         ((eq character #\Esc) "ESCAPE")
         ((eq character #\-) "HYPHEN")
         ((eq character #\Space) "SPACE")
         ((eq character #\Tab) "TAB")
-        (t (string character))))
+        ((eq key-value 65361) "Left")
+        ((eq key-value 65362) "Up")
+        ((eq key-value 65364) "Down")
+        ((eq key-value 65363) "Right")
+        ((not (eq character #\Nul)) (string character))))
 
 (defmethod push-modifier ((interface gtk-interface) event)
   (let ((modifier-state (gdk:gdk-event-key-state event))
@@ -102,8 +106,9 @@
 (defmethod process-key-press-event ((sender gtk-window) event)
   (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
          (character-code (char-code character))
-         (key-string (character->string character)))
-    (unless (eq character #\Nul)
+         (key-value (gdk:gdk-event-key-keyval event))
+         (key-string (character->string character key-value)))
+    (when key-string
       (push-input-event character-code key-string (modifiers *interface*) -1 -1 nil sender))))
 
 (defclass gtk-buffer (buffer)
