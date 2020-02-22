@@ -1,5 +1,9 @@
 ;;; keymap.lisp --- lisp subroutines for key binding detection
 
+;; TODO: Remove intermediary serialization.
+;; TODO: Perform key translation, e.g. if s-FOO is not bound, call command bound to FOO.
+;; TODO: Decide of a key string protocol: https://github.com/atlas-engineer/next/issues/564
+
 (in-package :next)
 (annot:enable-annot-syntax)
 
