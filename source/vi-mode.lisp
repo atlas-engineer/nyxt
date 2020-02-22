@@ -60,10 +60,11 @@
 (define-command vi-button1 (&optional (buffer (current-buffer)))
   "Enable VI insert mode when focus is on an input element on the web page."
   (let ((root-mode (find-mode buffer 'root-mode)))
-    (rpc-generate-input-event
-     (ipc-window-active *interface*)
-     (first (last-key-chords
-             (buffer root-mode))))
+    ;; TODO: Send last key chords? We used to, but why?
+    ;; (rpc-generate-input-event
+    ;;  (ipc-window-active *interface*)
+    ;;  (first (last-key-chords
+    ;;          (buffer root-mode))))
     (%clicked-in-input?
      :callback (lambda (response)
                  (cond
