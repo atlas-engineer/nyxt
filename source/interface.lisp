@@ -44,11 +44,6 @@
     `ipc-window-delete' takes effect.  The handlers take the window as
     argument.")))
 
-(define-class-type window)
-(declaim (type (window-type) *window-class*))
-@export
-(defparameter *window-class* 'window)
-
 @export
 @export-accessors
 (defclass proxy ()
@@ -187,11 +182,6 @@ return a (possibly new) URL.")
                        :type hook-buffer
                        :documentation "Hook run before `ipc-buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
-
-(define-class-type buffer)
-(declaim (type (buffer-type) *buffer-class*))
-@export
-(defparameter *buffer-class* 'buffer)
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
@@ -432,11 +422,6 @@ The handlers take the URL as argument.")
                         :type hook-download
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
-
-(define-class-type interface)
-(declaim (type (interface-type) *interface-class*))
-@export
-(defparameter *interface-class* 'interface)
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((interface t))

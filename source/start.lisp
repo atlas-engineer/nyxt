@@ -189,8 +189,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
     (format t "Next version ~a~&" +version+)
     (unless (getf *options* :no-init)
       (load-lisp-file init-file :interactive t))
-    ;; TODO: change gtk-interface to interface
-    (setf *interface* (make-instance 'gtk-interface :startup-timestamp startup-timestamp))
+    (setf *interface* (make-instance *interface-class*
+                                     :startup-timestamp startup-timestamp))
     (setf (slot-value *interface* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
     (handler-case

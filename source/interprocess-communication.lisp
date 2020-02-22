@@ -3,8 +3,19 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+;; TODO: Restarting Next does not work, some Javascript error with cl-webkit.
+;; See John's email.
+
+@export
+@export-accessors
 (defclass gtk-interface (interface)
+  ;; TODO: Why do we need to specialize the interface?  Are modifiers special for GTK?
   ((modifiers :accessor modifiers :initform ())))
+
+(define-class-type interface)
+(declaim (type (interface-type) *interface-class*))
+@export
+(defparameter *interface-class* 'gtk-interface)
 
 (defmethod initialize ((interface gtk-interface))
   (log:debug "Initializing GTK Interface")
@@ -13,12 +24,30 @@
 (defmethod kill-interface ((interface gtk-interface))
   (gtk:leave-gtk-main))
 
+@export
+@export-accessors
 (defclass gtk-window (window)
   ((gtk-object :accessor gtk-object)
    (box-layout :accessor box-layout)
    (minibuffer-container :accessor minibuffer-container)
    (minibuffer-view :accessor minibuffer-view)))
 
+(define-class-type window)
+(declaim (type (window-type) *window-class*))
+@export
+(defparameter *window-class* 'gtk-window)
+
+@export
+@export-accessors
+(defclass gtk-buffer (buffer)
+  ((gtk-object :accessor gtk-object)))
+
+(define-class-type buffer)
+(declaim (type (buffer-type) *buffer-class*))
+@export
+(defparameter *buffer-class* 'gtk-buffer)
+
+;; TODO: Break this into smaller subfunctions.
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer id) window
     (setf id (get-unique-window-identifier *interface*))
@@ -33,7 +62,7 @@
                                               :orientation :vertical
                                               :spacing 0))
     (setf minibuffer-view (make-instance 'cl-webkit2:webkit-web-view))
-    (setf active-buffer (make-instance 'gtk-buffer))
+    (setf active-buffer (make-instance *buffer-class*))
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
     (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
@@ -114,9 +143,6 @@
          (key-string (character->string character key-value)))
     (when key-string
       (push-input-event character-code key-string (modifiers *interface*) -1 -1 nil sender))))
-
-(defclass gtk-buffer (buffer)
-  ((gtk-object :accessor gtk-object)))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
@@ -217,7 +243,7 @@
    Run `*interface*'s `buffer-make-hook' over the created buffer before returning it.
    If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (declare (ignore dead-buffer)) ;; TODO: Dead Buffer
-  (let* ((buffer (apply #'make-instance 'gtk-buffer
+  (let* ((buffer (apply #'make-instance *buffer-class*
                         (append (when title `(:title ,title))
                                 (when default-modes `(:default-modes ,default-modes))))))
     (unless (str:emptyp (namestring (cookies-path buffer)))
