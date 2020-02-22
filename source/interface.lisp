@@ -199,12 +199,12 @@ The handlers take the buffer as argument.")))
 (defmethod (setf proxy) (proxy (buffer buffer))
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
-      (ipc-set-proxy buffer
-                     (server-address proxy)
-                     (whitelist proxy))
-      (ipc-set-proxy buffer
-                     ""
-                     nil)))
+      (ipc-buffer-set-proxy buffer
+                            (server-address proxy)
+                            (whitelist proxy))
+      (ipc-buffer-set-proxy buffer
+                            ""
+                            nil)))
 
 ;; TODO: Find a better way to uniquely identify commands from mode methods.
 ;; What about symbol properties?  We could use:
