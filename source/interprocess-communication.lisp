@@ -143,6 +143,16 @@
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
   (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
+
+  ;; TODO: Why doesn't cookie storage work?
+  (when (stringp (cookies-path buffer))
+    (let* ((context (cl-webkit2:webkit-web-view-web-context (gtk-object buffer)))
+           (cookie-manager (cl-webkit2:webkit-web-context-get-cookie-manager context)))
+      (cl-webkit2:webkit-cookie-manager-set-persistent-storage
+       cookie-manager
+       (cookies-path buffer)
+       :webkit-cookie-persistent-storage-text)))
+
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
    (lambda (web-view response-policy-decision policy-decision-type-response)
