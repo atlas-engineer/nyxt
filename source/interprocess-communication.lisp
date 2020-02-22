@@ -12,7 +12,9 @@
 
 (defmethod kill-interface ((interface gtk-interface))
   (gtk:leave-gtk-main)
-  (uiop:quit 0 nil))
+  ;; TODO: Only quit when not connected to REPL.
+  ;; (uiop:quit 0 nil)
+  )
 
 (defclass gtk-window (window)
   ((gtk-object :accessor gtk-object)
@@ -20,6 +22,7 @@
    (minibuffer-container :accessor minibuffer-container)
    (minibuffer-view :accessor minibuffer-view)))
 
+;; TODO: Break this into smaller subfunctions.
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer id) window
     (setf id (get-unique-window-identifier *interface*))
@@ -61,9 +64,15 @@
   ;; remove buffer from window to avoid corruption of buffer
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (next-hooks:run-hook (window-delete-hook window) window)
-  (remhash (id window) (windows *interface*)))
+  (remhash (id window) (windows *interface*))
+  (when (zerop (hash-table-count (windows *interface*)))
+    (kill-interface *interface*)))
+
+(defmethod window-destroy ((window gtk-window))
+  (gtk:gtk-widget-destroy (gtk-object window)))
 
 (defun character->string (character &optional key-value)
+  ;; TODO: Use `match'.
   (cond ((eq character #\Return) "RETURN")
         ((eq character #\Backspace) "BACKSPACE")
         ((eq character #\Esc) "ESCAPE")

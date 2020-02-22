@@ -49,6 +49,8 @@ Set to '-' to read standard input instead.")
 (define-command quit ()
   "Quit Next."
   (next-hooks:run-hook (before-exit-hook *interface*))
+  (loop for window in (alexandria:hash-table-values (windows *interface*))
+        do (window-destroy window))
   (kill-interface *interface*))
 
 (define-command quit-after-clearing-session ()
@@ -57,7 +59,7 @@ Set to '-' to read standard input instead.")
    (session-store-function *interface*) nil
    (session-restore-function *interface*) nil)
   (uiop:delete-file-if-exists (session-path *interface*))
-  (kill-interface *interface*))
+  (quit))
 
 (defun set-debug-level (level)
   "Supported values for LEVEL are
