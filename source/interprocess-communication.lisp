@@ -139,20 +139,23 @@
     (when key-string
       (push-input-event character-code key-string (modifiers *interface*) -1 -1 nil sender))))
 
+(declaim (ftype (function (&optional buffer)) make-context))
+(defun make-context (&optional buffer)
+  (let* ((context (cl-webkit2:webkit-web-context-get-default))
+         (cookie-manager (cl-webkit2:webkit-web-context-get-cookie-manager context)))
+    (when (and buffer (not (str:emptyp (namestring (cookies-path buffer)))))
+      (cl-webkit2:webkit-cookie-manager-set-persistent-storage
+       cookie-manager
+       (namestring (cookies-path buffer))
+       :webkit-cookie-persistent-storage-text))
+    context))
+
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
-  (setf (gtk-object buffer) (make-instance 'cl-webkit2:webkit-web-view))
-
-  ;; TODO: Why doesn't cookie storage work?
-  (when (stringp (cookies-path buffer))
-    (let* ((context (cl-webkit2:webkit-web-view-web-context (gtk-object buffer)))
-           (cookie-manager (cl-webkit2:webkit-web-context-get-cookie-manager context)))
-      (cl-webkit2:webkit-cookie-manager-set-persistent-storage
-       cookie-manager
-       (cookies-path buffer)
-       :webkit-cookie-persistent-storage-text)))
-
+  (setf (gtk-object buffer)
+        (make-instance 'cl-webkit2:webkit-web-view
+                       :context (make-context buffer)))
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
    (lambda (web-view response-policy-decision policy-decision-type-response)
