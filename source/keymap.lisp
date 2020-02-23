@@ -100,6 +100,8 @@
 (defun printable-p (key-chord)
   "Return non-nil if key-chord is printable.
    Letters are printable, while function keys or backspace are not."
+  ;; TODO: Implement printable-p?
+  (declare (ignore key-chord))
   t)
 
 (defun push-input-event (key-code key-string modifiers x y low-level-data sender)
