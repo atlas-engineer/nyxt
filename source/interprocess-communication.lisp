@@ -155,6 +155,7 @@
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
   (setf (gtk-object buffer)
         (make-instance 'cl-webkit2:webkit-web-view
+                       ;; TODO: Should be :web-context, shouldn't it?
                        :context (make-context buffer)))
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
@@ -313,8 +314,19 @@
 
    Note: WebKit supports three proxy 'modes': default (the system proxy),
    custom (the specified proxy) and none."
-  ;; TODO: Implement support in cl-webkit
-  )
+  (let* ((context (cl-webkit2:webkit-web-view-web-context (gtk-object buffer)))
+         (settings (cffi:null-pointer))
+         (mode :webkit-network-proxy-mode-no-proxy))
+    (unless (str:emptyp proxy-uri)
+      (setf mode :webkit-network-proxy-mode-custom)
+      (setf settings
+            (cl-webkit2:webkit-network-proxy-settings-new
+             proxy-uri
+             ;; TODO: Support ignore-hosts.
+             (cffi:null-pointer))))
+    (cl-webkit2:webkit-web-context-set-network-proxy-settings
+     context
+     :webkit-network-proxy-mode-custom settings)))
 
 @export
 (defmethod ipc-buffer-get-proxy ((buffer gtk-buffer))
@@ -323,5 +335,5 @@
    MODE is one of 'default' (use system configuration), 'custom'
    or 'none'.
    ADDRESS is in the form PROTOCOL://HOST:PORT."
-  ;; TODO: Implement support in cl-webkit
+  ;; TODO: Store proxy settings in BUFFER since webkit cannot return the current proxy.
   )
