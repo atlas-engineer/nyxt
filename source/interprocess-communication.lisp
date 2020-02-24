@@ -56,7 +56,7 @@
     (setf minibuffer-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
-    (setf minibuffer-view (make-instance 'cl-webkit2:webkit-web-view))
+    (setf minibuffer-view (make-instance 'webkit:webkit-web-view))
     (setf active-buffer (make-instance *buffer-class*))
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
@@ -141,10 +141,10 @@
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
-  (let* ((context (cl-webkit2:webkit-web-context-get-default))
-         (cookie-manager (cl-webkit2:webkit-web-context-get-cookie-manager context)))
+  (let* ((context (webkit:webkit-web-context-get-default))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (when (and buffer (not (str:emptyp (namestring (cookies-path buffer)))))
-      (cl-webkit2:webkit-cookie-manager-set-persistent-storage
+      (webkit:webkit-cookie-manager-set-persistent-storage
        cookie-manager
        (namestring (cookies-path buffer))
        :webkit-cookie-persistent-storage-text))
@@ -154,7 +154,7 @@
   (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *interface*))
   (setf (gtk-object buffer)
-        (make-instance 'cl-webkit2:webkit-web-view
+        (make-instance 'webkit:webkit-web-view
                        ;; TODO: Should be :web-context, shouldn't it?
                        :context (make-context buffer)))
   (gobject:g-signal-connect
@@ -180,7 +180,7 @@
   (declare (ignore buffer)))
 
 (defmethod process-load-changed ((buffer gtk-buffer) load-event)
-  (let ((url (cl-webkit2:webkit-web-view-uri (gtk-object buffer))))
+  (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
     (cond ((eq load-event :webkit-load-started) nil)
           ((eq load-event :webkit-load-redirected) nil)
           ((eq load-event :webkit-load-committed)
@@ -190,12 +190,12 @@
 
 (defmethod process-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
-  (cond ((cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)
-         (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-link-uri hit-test-result)))
-        ((cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)
-         (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-image-uri hit-test-result)))
-        ((cl-webkit2:webkit-hit-test-result-media-uri hit-test-result)
-         (push-url-at-point buffer (cl-webkit2:webkit-hit-test-result-media-uri hit-test-result)))))
+  (cond ((webkit:webkit-hit-test-result-link-uri hit-test-result)
+         (push-url-at-point buffer (webkit:webkit-hit-test-result-link-uri hit-test-result)))
+        ((webkit:webkit-hit-test-result-image-uri hit-test-result)
+         (push-url-at-point buffer (webkit:webkit-hit-test-result-image-uri hit-test-result)))
+        ((webkit:webkit-hit-test-result-media-uri hit-test-result)
+         (push-url-at-point buffer (webkit:webkit-hit-test-result-media-uri hit-test-result)))))
 
 @export
 (defmethod ipc-window-make ((interface gtk-interface))
@@ -290,7 +290,7 @@
 
 @export
 (defmethod ipc-buffer-load ((buffer gtk-buffer) uri)
-  (cl-webkit2:webkit-web-view-load-uri (gtk-object buffer) uri))
+  (webkit:webkit-web-view-load-uri (gtk-object buffer) uri))
 
 @export
 (defmethod ipc-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
@@ -302,8 +302,8 @@
 
 @export
 (defmethod ipc-buffer-enable-javascript ((buffer gtk-buffer) value)
-  (setf (cl-webkit2:webkit-settings-enable-javascript
-         (cl-webkit2:webkit-web-view-get-settings (gtk-object buffer)))
+  (setf (webkit:webkit-settings-enable-javascript
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
 @export
@@ -314,17 +314,17 @@
 
    Note: WebKit supports three proxy 'modes': default (the system proxy),
    custom (the specified proxy) and none."
-  (let* ((context (cl-webkit2:webkit-web-view-web-context (gtk-object buffer)))
+  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (settings (cffi:null-pointer))
          (mode :webkit-network-proxy-mode-no-proxy))
     (unless (str:emptyp proxy-uri)
       (setf mode :webkit-network-proxy-mode-custom)
       (setf settings
-            (cl-webkit2:webkit-network-proxy-settings-new
+            (webkit:webkit-network-proxy-settings-new
              proxy-uri
              ;; TODO: Support ignore-hosts.
              (cffi:null-pointer))))
-    (cl-webkit2:webkit-web-context-set-network-proxy-settings
+    (webkit:webkit-web-context-set-network-proxy-settings
      context
      :webkit-network-proxy-mode-custom settings)))
 
