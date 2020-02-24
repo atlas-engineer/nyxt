@@ -307,7 +307,7 @@
         value))
 
 @export
-(defmethod ipc-buffer-set-proxy ((buffer gtk-buffer) &optional (proxy-uri "") (ignore-hosts (list nil)))
+(defmethod ipc-buffer-set-proxy ((buffer gtk-buffer) &optional proxy-uri (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
    Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
    For the user-level interface, see `proxy-mode'.
@@ -317,7 +317,7 @@
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (settings (cffi:null-pointer))
          (mode :webkit-network-proxy-mode-no-proxy))
-    (unless (str:emptyp proxy-uri)
+    (when proxy-uri
       (setf mode :webkit-network-proxy-mode-custom)
       (setf settings
             (webkit:webkit-network-proxy-settings-new
