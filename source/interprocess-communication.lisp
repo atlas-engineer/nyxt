@@ -3,13 +3,9 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
-;; TODO: Restarting Next does not work, some Javascript error with cl-webkit.
-;; See John's email.
-
 @export
 @export-accessors
 (defclass gtk-interface (interface)
-  ;; TODO: Why do we need to specialize the interface?  Are modifiers special for GTK?
   ((modifiers :accessor modifiers :initform ())))
 
 (define-class-type interface)
@@ -47,7 +43,6 @@
 @export
 (defparameter *buffer-class* 'gtk-buffer)
 
-;; TODO: Break this into smaller subfunctions.
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer id) window
     (setf id (get-unique-window-identifier *interface*))
