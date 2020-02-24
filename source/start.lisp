@@ -51,7 +51,8 @@ Set to '-' to read standard input instead.")
   (next-hooks:run-hook (before-exit-hook *interface*))
   (loop for window in (alexandria:hash-table-values (windows *interface*))
         do (window-destroy window))
-  (kill-interface *interface*))
+  (kill-interface *interface*)
+  (uiop:quit 0 nil))
 
 (define-command quit-after-clearing-session ()
   "Clear session then quit Next."
