@@ -177,7 +177,34 @@
   (initialize-modes buffer))
 
 (defmethod process-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
-  (declare (ignore buffer)))
+  ;; in progress, see buffer.h
+  (declare (ignore buffer))
+  (let ((is-known-type nil)
+        (action nil)
+        (event-type nil))
+    (cond ((eq policy-decision-type-response :webkit-policy-decision-type-navigation-action)
+           (setf action (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
+          ((eq policy-decision-type-response :webkit-policy-decision-type-new-window-action)
+           (setf action (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
+          ((eq policy-decision-type-response :webkit-policy-decision-type-response)
+           (setf is-known-type
+                 (webkit:webkit-response-policy-decision-is-mime-type-supported
+                  response-policy-decision))))
+    (cond
+      ((eq action :webkit-navigation-type-link-clicked)
+       (setf event-type "link-click"))
+      ((eq action :webkit-navigation-type-form-submitted)
+       (setf event-type "form-submission"))
+      ((eq action :webkit-navigation-type-back-forward)
+       (setf event-type "backward-or-forward"))
+      ((eq action :webkit-navigation-type-reload)
+       (setf event-type "reload"))
+      ((eq action :webkit-navigation-type-form-resubmitted)
+       (setf event-type "form-resubmission"))
+      ((eq action :webkit-navigation-type-other)
+       (setf event-type "other"))))
+  nil)
+
 
 (defmethod process-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
