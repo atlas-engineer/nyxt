@@ -75,7 +75,11 @@ with the file."
          (set-url (format nil "file://~a" filename)
                   :buffer (make-buffer-focus :url nil)))
         (t
-         (uiop:launch-program (list "xdg-open" (namestring filename)))))
+         (uiop:launch-program
+          #+linux
+          (list "xdg-open" (namestring filename))
+          #+darwin
+          (list "open" (namestring filename)))))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Error opening ~a: ~a~&" filename c))))
 
