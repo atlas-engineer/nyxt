@@ -119,10 +119,6 @@ forwarded when no binding is found.")
                     ;; TODO: Store multiple key chords?  Maybe when implementing keyboard macros.
                     :documentation "The last key chords that were received for the current buffer.
 For now we only store the very last key chord.")
-   (resource-query-function :accessor resource-query-function
-                            ;; TODO: What about having multiple functions?  And what about moving this to modes?
-                            :initarg :resource-query-function
-                            :initform #'resource-query-default)
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
                            :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
@@ -615,15 +611,9 @@ current buffer."
       (error "Could not make buffer to open ~a: ~a" urls c))))
 
 @export
-(defmethod resource-query-default ((buffer buffer)
-                                   &key url
-                                     (cookies "")
-                                     event-type
-                                     (is-new-window nil)
-                                     (is-known-type t)
-                                     (mouse-button "")
-                                     (modifiers '())
-                                   &allow-other-keys)
+(defmethod request-resource ((buffer buffer) &key url (cookies "") event-type
+                             (is-new-window nil) (is-known-type t) (mouse-button "")
+                             (modifiers '()) &allow-other-keys)
   "Return non-nil to let platform port load URL.
    Return nil otherwise.
 
@@ -639,39 +629,19 @@ current buffer."
                   (equal modifiers '("s")))
               (string= mouse-button "button1"))
          (string= mouse-button "button2"))
-     (log:debug "Load in new buffer: ~a" url)
-     (open-urls
-      (list url)
-      :no-focus (equal modifiers '("s")))
-     nil)
+     (log:debug "Load URL in new buffer: ~a" url)
+     (open-urls (list url) :no-focus (equal modifiers '("s")))
+     t)
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
      (download url :proxy-address (proxy-address buffer :downloads-only t)
                    :cookies cookies)
      (unless (find-buffer 'download-mode)
        (download-list))
-     nil)
+     t)
     (t
      (log:debug "Forwarding back to platform port: ~a" url)
-     t)))
-
-(defmethod request-resource
-    ((buffer buffer) url cookies event-type is-new-window
-     is-known-type mouse-button modifiers)
-  "Return non-nil to tell the platform port to load the URL."
-  ;; TODO: Define an EVENT type, e.g.
-  ;; (deftype event () '(member :other :link-click ...))
-  ;; https://stackoverflow.com/questions/578290/common-lisp-equivalent-to-c-enums#
-  (log:debug "Request resource ~s with mouse ~s, modifiers ~a" url mouse-button modifiers)
-  (funcall (resource-query-function buffer)
-           buffer
-           :url url
-           :cookies cookies
-           :event-type event-type
-           :is-new-window is-new-window
-           :is-known-type is-known-type
-           :mouse-button mouse-button
-           :modifiers modifiers))
+     nil)))
 
 @export
 (defun current-buffer ()
