@@ -625,13 +625,13 @@ current buffer."
                                      (modifiers '())
                                    &allow-other-keys)
   "Return non-nil to let platform port load URL.
-Return nil otherwise.
+   Return nil otherwise.
 
-Deal with URL with the following rules:
-- If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
-- If IS-KNOWN-TYPE is nil, download the file.  (TODO: Implement it!)
-- Otherwise return non-nil to let the platform port load the URL."
-  (declare (ignore event-type))         ; TODO: Do something with the event type?
+   Deal with URL with the following rules:
+   - If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
+   - If IS-KNOWN-TYPE is nil, download the file.  (TODO: Implement it!)
+   - Otherwise return non-nil to let the platform port load the URL."
+  (declare (ignore event-type)) ; TODO: Do something with the event type?
   (cond
     ((or is-new-window
          ;; TODO: Streamline the customization of this binding.
@@ -647,7 +647,7 @@ Deal with URL with the following rules:
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
      (download url :proxy-address (proxy-address buffer :downloads-only t)
-               :cookies cookies)
+                   :cookies cookies)
      (unless (find-buffer 'download-mode)
        (download-list))
      nil)
@@ -655,38 +655,23 @@ Deal with URL with the following rules:
      (log:debug "Forwarding back to platform port: ~a" url)
      t)))
 
-;; Return non-nil to tell the platform port to load the URL.
-(defun request-resource
-    (buffer-id url cookies event-type is-new-window
+(defmethod request-resource
+    ((buffer buffer) url cookies event-type is-new-window
      is-known-type mouse-button modifiers)
-  (unless (member-string event-type '("other"
-                                      "link-click"
-                                      "form-submission"
-                                      "form-resubmission"
-                                      "backward-or-forward"
-                                      "reload"))
-    (setf event-type "other"))
-  (setf event-type (intern event-type "KEYWORD"))
-  ;; TODO: We need to define an EVENT type, e.g. with
+  "Return non-nil to tell the platform port to load the URL."
+  ;; TODO: Define an EVENT type, e.g.
   ;; (deftype event () '(member :other :link-click ...))
   ;; https://stackoverflow.com/questions/578290/common-lisp-equivalent-to-c-enums#
   (log:debug "Request resource ~s with mouse ~s, modifiers ~a" url mouse-button modifiers)
-  (let ((buffer (gethash buffer-id (buffers *interface*))))
-    (if buffer
-        (funcall (resource-query-function buffer)
-                 buffer
-                 :url url
-                 :cookies cookies
-                 :event-type event-type
-                 :is-new-window is-new-window
-                 :is-known-type is-known-type
-                 :mouse-button mouse-button
-                 :modifiers modifiers)
-        (progn
-          (log:debug "no buffer of id '~a'~&" buffer-id)
-          t))))
-
-;; Convenience methods and functions for users of the API.
+  (funcall (resource-query-function buffer)
+           buffer
+           :url url
+           :cookies cookies
+           :event-type event-type
+           :is-new-window is-new-window
+           :is-known-type is-known-type
+           :mouse-button mouse-button
+           :modifiers modifiers))
 
 @export
 (defun current-buffer ()
