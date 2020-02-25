@@ -192,17 +192,17 @@
                   response-policy-decision))))
     (cond
       ((eq action :webkit-navigation-type-link-clicked)
-       (setf event-type "link-click"))
+       (setf event-type :link-click))
       ((eq action :webkit-navigation-type-form-submitted)
-       (setf event-type "form-submission"))
+       (setf event-type :form-submission))
       ((eq action :webkit-navigation-type-back-forward)
-       (setf event-type "backward-or-forward"))
+       (setf event-type :backward-or-forward))
       ((eq action :webkit-navigation-type-reload)
-       (setf event-type "reload"))
+       (setf event-type :reload))
       ((eq action :webkit-navigation-type-form-resubmitted)
-       (setf event-type "form-resubmission"))
+       (setf event-type :form-resubmission))
       ((eq action :webkit-navigation-type-other)
-       (setf event-type "other"))))
+       (setf event-type :other))))
   nil)
 
 
