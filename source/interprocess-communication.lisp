@@ -179,38 +179,43 @@
 (defmethod process-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
   (let ((is-new-window nil)
         (is-known-type t)
-        (action nil)
+        (navigation-type nil)
         (url nil)
         (event-type nil)
         (request nil)
         (mouse-button nil)
         (cookies nil))
     (cond ((eq policy-decision-type-response :webkit-policy-decision-type-navigation-action)
-           (setf action (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision))
+           (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision))
            (setf request (webkit:webkit-navigation-policy-decision-request response-policy-decision)))
           ((eq policy-decision-type-response :webkit-policy-decision-type-new-window-action)
            (setf is-new-window t)
-           (setf action (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision))
+           (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision))
            (setf request (webkit:webkit-navigation-policy-decision-request response-policy-decision)))
           ((eq policy-decision-type-response :webkit-policy-decision-type-response)
            (setf request (webkit:webkit-response-policy-decision-request response-policy-decision))
            (setf is-known-type
                  (webkit:webkit-response-policy-decision-is-mime-type-supported
                   response-policy-decision))))
-    (cond ((eq action :webkit-navigation-type-link-clicked)
+    (cond ((eq navigation-type :webkit-navigation-type-link-clicked)
            (setf event-type :link-click))
-          ((eq action :webkit-navigation-type-form-submitted)
+          ((eq navigation-type :webkit-navigation-type-form-submitted)
            (setf event-type :form-submission))
-          ((eq action :webkit-navigation-type-back-forward)
+          ((eq navigation-type :webkit-navigation-type-back-forward)
            (setf event-type :backward-or-forward))
-          ((eq action :webkit-navigation-type-reload)
+          ((eq navigation-type :webkit-navigation-type-reload)
            (setf event-type :reload))
-          ((eq action :webkit-navigation-type-form-resubmitted)
+          ((eq navigation-type :webkit-navigation-type-form-resubmitted)
            (setf event-type :form-resubmission))
-          ((eq action :webkit-navigation-type-other)
+          ((eq navigation-type :webkit-navigation-type-other)
            (setf event-type :other)))
+    (when navigation-type
+      (setf mouse-button (format nil "button~d" (webkit:webkit-navigation-policy-decision-mouse-button response-policy-decision))))
     (request-resource buffer
-                      :url url
+                      :url nil
+                      :cookies nil
+                      :mouse-button mouse-button
+                      :event-type event-type
                       :is-new-window is-new-window
                       :is-known-type is-known-type
                       :modifiers (modifiers *interface*))))
