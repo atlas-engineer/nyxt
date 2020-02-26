@@ -376,6 +376,14 @@ into `session-path'.")
                              :initform #'restore-sexp-session
                              :documentation "The function which restores the session
 from `session-path'.")
+   (standard-output-path :accessor standard-output-path
+                         :initform (xdg-data-home "standard-out.txt")
+                         :documentation "Path where *standard-output*
+                         can be written to.")
+   (error-output-path :accessor error-output-path
+                      :initform (xdg-data-home "standard-error.txt")
+                      :documentation "Path where *error-output* can be
+                      written to.")
    ;; Hooks follow:
    (before-exit-hook :accessor before-exit-hook
                      :initform (next-hooks:make-hook-void)
