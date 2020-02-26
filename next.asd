@@ -2,7 +2,7 @@
 ;;; next.asd
 
 (asdf:defsystem :next
-  :version "1.4.0"
+  :version "1.5.0"
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
   :serial t
@@ -86,6 +86,7 @@
                  (:file "vi-mode")
                  (:file "blocker-mode")
                  (:file "proxy-mode")
+                 (:file "certificate-whitelist-mode")
                  (:file "noscript-mode")
                  (:file "file-manager-mode")
                  (:file "download-mode")

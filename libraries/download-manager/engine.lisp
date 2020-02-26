@@ -96,8 +96,9 @@ downloads."
    (format nil "~a.part" (namestring (file download)))))
 
 (defmethod bytes-total ((download download))
-  (gethash "content-length"
-           (header download) 0))
+  (let ((bytes (gethash "content-length"
+                        (header download) 0)))
+    (if (stringp bytes) (parse-integer bytes) bytes)))
 
 (defmethod progress ((download download))
   "Return progress ratio.

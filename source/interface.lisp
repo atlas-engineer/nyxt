@@ -74,6 +74,22 @@
 
 @export
 @export-accessors
+(defclass certificate-whitelist ()
+  ((whitelist :accessor whitelist :initarg :whitelist
+              :initform '()
+              :type list-of-strings
+              :documentation "A list of hostnames for which certificate errors shall be ignored.
+It must be a list of strings."))
+  (:documentation "Enable ignoring of certificate errors.
+This can apply to specific buffers."))
+
+(define-class-type certificate-whitelist)
+(declaim (type (certificate-whitelist-type) *certificate-whitelist-class*))
+@export
+(defparameter *certificate-whitelist-class* 'certificate-whitelist)
+
+@export
+@export-accessors
 (defclass buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
@@ -165,6 +181,8 @@ platform ports might support this.")
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
+   (certificate-whitelist :initform nil :type :certificate-whitelist
+                          :documentation "Certificate host whitelisting for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
               :initform (next-hooks:make-hook-string->string

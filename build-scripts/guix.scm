@@ -80,11 +80,10 @@
      `(("gcc-7" ,gcc-7) ; needed because webkitgtk-2.24+ is compiled with gcc-7
        ("pkg-config" ,pkg-config)))
     (home-page "https://next.atlas.engineer")
-    (synopsis "Infinitely extensible web-browser (user interface only)")
+    (synopsis "Extensible web-browser in Common Lisp")
     (description "Next is a keyboard-oriented, extensible web-browser
-inspired by Emacs and designed for power users.  The application has familiar
-key-bindings, is fully configurable and extensible in Lisp, and has powerful
-features for productive professionals.")
+designed for power users.  The application has familiar Emacs and VI
+key-bindings and is fully configurable and extensible in Common Lisp.")
     (license bsd-3)))
 
 (define sbcl-next-download-manager
@@ -106,7 +105,7 @@ features for productive professionals.")
     (native-inputs
      `(("trivial-features" ,sbcl-trivial-features)
        ("prove-asdf" ,sbcl-prove-asdf)))
-    (synopsis "Infinitely extensible web-browser (download manager)")))
+    (synopsis "Extensible web-browser in Common Lisp (download manager)")))
 
 (define sbcl-next-ring
   (package
@@ -120,7 +119,7 @@ features for productive professionals.")
     (native-inputs
      `(("trivial-features" ,sbcl-trivial-features)
        ("prove-asdf" ,sbcl-prove-asdf)))
-    (synopsis "Infinitely extensible web-browser (ring)")))
+    (synopsis "Extensible web-browser in Common Lisp (ring)")))
 
 (define sbcl-next-history-tree
   (package
@@ -134,7 +133,7 @@ features for productive professionals.")
     (native-inputs
      `(("trivial-features" ,sbcl-trivial-features)
        ("prove-asdf" ,sbcl-prove-asdf)))
-    (synopsis "Infinitely extensible web-browser (history-tree)")))
+    (synopsis "Extensible web-browser in Common Lisp (history-tree)")))
 
 (define sbcl-next-password-manager
   (package
@@ -154,7 +153,7 @@ features for productive professionals.")
     (native-inputs
      `(("trivial-features" ,sbcl-trivial-features)
        ("prove-asdf" ,sbcl-prove-asdf)))
-    (synopsis "Infinitely extensible web-browser (password manager)")))
+    (synopsis "Extensible web-browser in Common Lisp (password manager)")))
 
 (define sbcl-next-hooks
   (package
@@ -167,12 +166,11 @@ features for productive professionals.")
        #:asd-system-name "next/hooks"))
     (inputs
      `(("alexandria" ,sbcl-alexandria)
-       ("serapeum" ,sbcl-serapeum)
-       ("fare-quasiquote-extras" ,cl-fare-quasiquote-extras)))
+       ("serapeum" ,sbcl-serapeum)))
     (native-inputs
      `(("trivial-features" ,sbcl-trivial-features)
        ("prove-asdf" ,sbcl-prove-asdf)))
-    (synopsis "Infinitely extensible web-browser (hooks)")))
+    (synopsis "Extensible web-browser in Common Lisp (hooks)")))
 
 (define-public next
   (let ((version (package-version next-gtk-webkit)))
@@ -248,7 +246,6 @@ features for productive professionals.")
          ("closer-mop" ,sbcl-closer-mop)
          ("dbus" ,cl-dbus)
          ("dexador" ,sbcl-dexador)
-         ("fare-quasiquote-extras" ,cl-fare-quasiquote-extras) ; For serapeum.  Guix bug?
          ("ironclad" ,sbcl-ironclad)
          ("local-time" ,sbcl-local-time)
          ("log4cl" ,sbcl-log4cl)
@@ -275,7 +272,7 @@ features for productive professionals.")
        `(("trivial-features" ,sbcl-trivial-features)
          ("trivial-types" ,sbcl-trivial-types)
          ("prove-asdf" ,sbcl-prove-asdf)))
-      (synopsis "Infinitely extensible web-browser (with Lisp development files)"))))
+      (synopsis "Extensible web-browser in Common Lisp"))))
 
 (define-public sbcl-next
   (deprecated-package "sbcl-next" next))
