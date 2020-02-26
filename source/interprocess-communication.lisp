@@ -211,8 +211,9 @@
            (setf event-type :other)))
     (when navigation-type
       (setf mouse-button (format nil "button~d" (webkit:webkit-navigation-policy-decision-mouse-button response-policy-decision))))
+    (setf url (webkit:webkit-uri-request-uri request))
     (request-resource buffer
-                      :url nil
+                      :url url
                       :cookies nil
                       :mouse-button mouse-button
                       :event-type event-type
