@@ -376,13 +376,3 @@
     (webkit:webkit-web-context-set-network-proxy-settings
      context
      :webkit-network-proxy-mode-custom settings)))
-
-@export
-(defmethod ipc-buffer-get-proxy ((buffer gtk-buffer))
-  "Return (MODE ADDRESS WHITELISTED-ADDRESSES...) of the active proxy
-   configuration.
-   MODE is one of 'default' (use system configuration), 'custom'
-   or 'none'.
-   ADDRESS is in the form PROTOCOL://HOST:PORT."
-  ;; TODO: Store proxy settings in BUFFER since webkit cannot return the current proxy.
-  )
