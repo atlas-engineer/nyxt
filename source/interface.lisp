@@ -637,7 +637,7 @@ current buffer."
       (error "Could not make buffer to open ~a: ~a" urls c))))
 
 @export
-(defmethod request-resource ((buffer buffer) &key url (cookies "") event-type
+(defmethod request-resource ((buffer buffer) &key url event-type
                              (is-new-window nil) (is-known-type t) (mouse-button "")
                              (modifiers '()) &allow-other-keys)
   "Return non-nil to let platform port load URL.
@@ -661,7 +661,7 @@ current buffer."
     ((not is-known-type)
      (log:info "Buffer ~a downloads ~a" buffer url)
      (download url :proxy-address (proxy-address buffer :downloads-only t)
-                   :cookies cookies)
+                   :cookies "")
      (unless (find-buffer 'download-mode)
        (download-list))
      t)
