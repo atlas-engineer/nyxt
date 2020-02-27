@@ -179,6 +179,7 @@
 (defmethod process-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
   (let ((is-new-window nil)
         (is-known-type t)
+        (navigation-action nil)
         (navigation-type nil)
         (url nil)
         (event-type nil)
@@ -209,9 +210,8 @@
            (setf event-type :form-resubmission))
           ((eq navigation-type :webkit-navigation-type-other)
            (setf event-type :other)))
-    (when navigation-type
-      (setf mouse-button (format nil "button~d" (webkit:webkit-navigation-policy-decision-mouse-button response-policy-decision))))
-    (setf url (webkit:webkit-uri-request-uri request))
+    (when (and navigation-type nil)
+      (webkit:webkit-navigation-policy-decision-navigation-action response-policy-decision))
     (request-resource buffer
                       :url url
                       :cookies nil
@@ -219,7 +219,7 @@
                       :event-type event-type
                       :is-new-window is-new-window
                       :is-known-type is-known-type
-                      :modifiers (modifiers *interface*))))
+                      :modifiers nil)))
 
 (defmethod process-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
