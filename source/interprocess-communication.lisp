@@ -362,14 +362,17 @@
    custom (the specified proxy) and none."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (settings (cffi:null-pointer))
-         (mode :webkit-network-proxy-mode-no-proxy))
+         (mode :webkit-network-proxy-mode-no-proxy)
+         (ignore-hosts (cffi:foreign-alloc :string
+                                           :initial-contents ignore-hosts
+                                           :null-terminated-p t)))
     (when proxy-uri
       (setf mode :webkit-network-proxy-mode-custom)
       (setf settings
             (webkit:webkit-network-proxy-settings-new
              proxy-uri
-             ;; TODO: Support ignore-hosts.
-             (cffi:null-pointer))))
+             ignore-hosts)))
+    (cffi:foreign-free ignore-hosts)
     (webkit:webkit-web-context-set-network-proxy-settings
      context
      :webkit-network-proxy-mode-custom settings)))
