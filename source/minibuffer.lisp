@@ -83,7 +83,7 @@
              :documentation "Function to call over the selected candidate.")
    (callback-buffer :initarg :callback-buffer
                     :accessor callback-buffer
-                    :initform (when *interface* (current-buffer))
+                    :initform (when *browser* (current-buffer))
                     :documentation "The active buffer when the
                     minibuffer was brought up.  This can be useful to
                     know which was the original buffer in the
@@ -117,7 +117,7 @@ This should not rely on the minibuffer's content.")
                       placeholder character.  This is useful to
                       conceal passwords.")
    (history :initarg :history :accessor history
-            :initform (minibuffer-generic-history *interface*)
+            :initform (minibuffer-generic-history *browser*)
             :type ring:ring
             :documentation "History of inputs for the minibuffer. If
             nil, no history is used.")
@@ -286,12 +286,12 @@ This should not rely on the minibuffer's content.")
    This runs a call"
   (setf (slot-value minibuffer 'content) html-content)
   (ipc-minibuffer-evaluate-javascript
-   (last-active-window *interface*)
+   (last-active-window *browser*)
    (ps:ps (ps:chain document
                     (write (ps:lisp (content minibuffer)))))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
-  (next-hooks:run-hook (minibuffer-make-hook *interface*) minibuffer)
+  (next-hooks:run-hook (minibuffer-make-hook *browser*) minibuffer)
   ;; We don't want to show the input in the candidate list when invisible.
   (unless (completion-function minibuffer)
     ;; If we have no completion function, then we have no candidates beside
@@ -329,11 +329,11 @@ This should not rely on the minibuffer's content.")
     (error (c)
       (echo "~a" c)
       (return-from read-from-minibuffer)))
-  (push minibuffer (active-minibuffers (last-active-window *interface*)))
+  (push minibuffer (active-minibuffers (last-active-window *browser*)))
   (apply #'show
          (unless (completion-function minibuffer)
            ;; We don't need so much height since there is no candidate to display.
-           (list :height (status-buffer-height (last-active-window *interface*))))))
+           (list :height (status-buffer-height (last-active-window *browser*))))))
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
@@ -410,7 +410,7 @@ This should not rely on the minibuffer's content.")
 (defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
-  (let ((active-window (ipc-window-active *interface*)))
+  (let ((active-window (ipc-window-active *browser*)))
     (when minibuffer
       (with-result (new-content (ipc-minibuffer-evaluate-javascript
                                  active-window
@@ -424,10 +424,10 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (defun show (&key
              (minibuffer (first (active-minibuffers
-                                 (last-active-window *interface*))))
+                                 (last-active-window *browser*))))
              height)
   "Show the last active minibuffer, if any."
-  (let ((active-window (last-active-window *interface*)))
+  (let ((active-window (last-active-window *browser*)))
     (when minibuffer
       (ipc-window-set-minibuffer-height
        active-window
@@ -436,7 +436,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
-  (let ((active-window (ipc-window-active *interface*)))
+  (let ((active-window (ipc-window-active *browser*)))
     ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
     ;; minibuffer was invoked before the old one reaches here.
     (setf (active-minibuffers active-window)
@@ -469,7 +469,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (define-command self-insert ()
   "Insert key-chord-stack in MINIBUFFER."
-  (let ((key-string (key-chord-key-string (first (key-chord-stack *interface*))))
+  (let ((key-string (key-chord-key-string (first (key-chord-stack *browser*))))
         (translation-table '(("HYPHEN" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking
@@ -771,7 +771,7 @@ if there is one such."
                           ;; Need to ignore RPC errors in case platform port is
                           ;; not available and we use this function before
                           ;; checking for it.
-                            (window (ignore-errors (when *interface* (ipc-window-active *interface*))))
+                            (window (ignore-errors (when *browser* (ipc-window-active *browser*))))
                             (status-buffer (when window (status-buffer window))))
   "Echo TEXT in the status buffer.
 MESSAGE is a cl-markup list."
@@ -787,7 +787,7 @@ MESSAGE is a cl-markup list."
                          "]")
                      " "
                      ,@message)
-                (messages-content *interface*)))
+                (messages-content *browser*)))
         (unless (active-minibuffers window)
           (erase-document status-buffer)
           (let ((style (cl-css:css
@@ -872,7 +872,7 @@ Return most recent entry in RING."
 
 (define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
-  (insert (ring-insert-clipboard (clipboard-ring *interface*)) minibuffer))
+  (insert (ring-insert-clipboard (clipboard-ring *browser*)) minibuffer))
 
 @export
 (defmethod get-candidate ((minibuffer minibuffer))

@@ -276,7 +276,7 @@ defined in any package and is unique."
 
 @export
 @export-accessors
-(defclass interface ()
+(defclass browser ()
   ((password-interface :accessor password-interface
                        :initform (password:make))
    (messages-content :accessor messages-content :initform nil :type :list
@@ -406,7 +406,7 @@ from `session-path'.")
    (before-exit-hook :accessor before-exit-hook
                      :initform (next-hooks:make-hook-void)
                      :type next-hooks:hook-void
-                     :documentation "Hook run before both `*interface*' and the
+                     :documentation "Hook run before both `*browser*' and the
 platform port get terminated.  The handlers take no argument.")
    (window-make-hook :accessor window-make-hook
                      :initform (make-hook-window)
@@ -446,15 +446,15 @@ The handlers take the URL as argument.")
 The handlers take the `download-manager:download' class instance as argument.")))
 
 ;; Catch a common case for a better error message.
-(defmethod buffers :before ((interface t))
-  (when (null interface)
-    (error "There is no current *interface*. Is Next started?")))
+(defmethod buffers :before ((browser t))
+  (when (null browser)
+    (error "There is no current *browser*. Is Next started?")))
 
-(defun search-engines-names (&optional (interface *interface*))
+(defun search-engines-names (&optional (browser *browser*))
   "Return a list of search engines names."
   (mapcar (lambda (tuple)
             (car tuple))
-          (search-engines interface)))
+          (search-engines browser)))
 
 (defun search-engine-starting-with (prefix)
   "Return the first search engine name that starts with PREFIX."
@@ -462,36 +462,36 @@ The handlers take the `download-manager:download' class instance as argument."))
      when (str:starts-with-p prefix name)
      return name))
 
-(defmethod history-data ((interface interface))
-  "Return the `history-data' slot from INTERFACE.
+(defmethod history-data ((browser browser))
+  "Return the `history-data' slot from BROWSER.
 If empty, the history data is initialized with `history-restore-function'."
-  (when (and (null (slot-value interface 'history-data))
-             (history-restore-function interface))
-    (funcall (history-restore-function interface)))
-  (slot-value interface 'history-data))
+  (when (and (null (slot-value browser 'history-data))
+             (history-restore-function browser))
+    (funcall (history-restore-function browser)))
+  (slot-value browser 'history-data))
 
-(defmethod (setf history-data) (value (interface interface))
+(defmethod (setf history-data) (value (browser browser))
   "Set `history-data' to VALUE.
-Persist the `history-data' slot from INTERFACE to `history-path' with
+Persist the `history-data' slot from BROWSER to `history-path' with
 `history-store-function'."
-  (setf (slot-value interface 'history-data) value)
-  (match (history-store-function interface)
+  (setf (slot-value browser 'history-data) value)
+  (match (history-store-function browser)
     ((guard f f) (funcall f))))
 
-(defmethod bookmarks-data ((interface interface))
-  "Return the `bookmarks-data' slot from INTERFACE.
+(defmethod bookmarks-data ((browser browser))
+  "Return the `bookmarks-data' slot from BROWSER.
 If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
-  (when (and (null (slot-value interface 'bookmarks-data))
-             (bookmarks-restore-function interface))
-    (funcall (bookmarks-restore-function interface)))
-  (slot-value interface 'bookmarks-data))
+  (when (and (null (slot-value browser 'bookmarks-data))
+             (bookmarks-restore-function browser))
+    (funcall (bookmarks-restore-function browser)))
+  (slot-value browser 'bookmarks-data))
 
-(defmethod (setf bookmarks-data) (value (interface interface))
+(defmethod (setf bookmarks-data) (value (browser browser))
   "Set `bookmarks-data' to VALUE.
-Persist the `bookmarks-data' slot from INTERFACE to `bookmarks-path' with
+Persist the `bookmarks-data' slot from BROWSER to `bookmarks-path' with
 `bookmarks-store-function'."
-  (setf (slot-value interface 'bookmarks-data) value)
-  (match (bookmarks-store-function interface)
+  (setf (slot-value browser 'bookmarks-data) value)
+  (match (bookmarks-store-function browser)
     ((guard f f) (funcall f))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
@@ -499,8 +499,8 @@ Persist the `bookmarks-data' slot from INTERFACE to `bookmarks-path' with
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
   ;; Make sure it's a dead buffer:
   (setf (id buffer) "")
-  (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
-  (ring:insert (recent-buffers *interface*) buffer))
+  (ring:delete-match (recent-buffers *browser*) (buffer-match-predicate buffer))
+  (ring:insert (recent-buffers *browser*) buffer))
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -510,7 +510,7 @@ This function is meant to be run in the background."
   (loop for d = (lparallel:receive-result download-manager:*notifications*)
         while d
         when (download-manager:finished-p d)
-          do (next-hooks:run-hook (after-download-hook *interface*))
+          do (next-hooks:run-hook (after-download-hook *browser*))
         do (let ((buffer (find-buffer 'download-mode)))
              ;; Only update if buffer exists.  We update even when out of focus
              ;; because if we switch to the buffer after all downloads are
@@ -539,7 +539,7 @@ when `proxied-downloads-p' is true."
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
-  (next-hooks:run-hook (before-download-hook *interface*) url)
+  (next-hooks:run-hook (before-download-hook *browser*) url)
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
@@ -548,20 +548,20 @@ current buffer."
         (progn
           (setf download (download-manager:resolve
                           url
-                          :directory (download-directory *interface*)
+                          :directory (download-directory *browser*)
                           :cookies cookies
                           :proxy proxy-address))
-          (push download (downloads *interface*))
+          (push download (downloads *browser*))
           download)
       (error (c)
         (echo-warning "Download error: ~a" c)
         nil))))
 
-(defmethod get-unique-window-identifier ((interface interface))
-  (incf (total-window-count interface)))
+(defmethod get-unique-window-identifier ((browser browser))
+  (incf (total-window-count browser)))
 
-(defmethod get-unique-buffer-identifier ((interface interface))
-  (incf (total-buffer-count interface)))
+(defmethod get-unique-buffer-identifier ((browser browser))
+  (incf (total-buffer-count browser)))
 
 (declaim (ftype (function (window buffer)) set-window-title))
 @export
@@ -582,9 +582,9 @@ current buffer."
   (let ((window-with-same-buffer (find-if
                                   (lambda (other-window) (and (not (eq other-window window))
                                                               (eql (active-buffer other-window) buffer)))
-                                  (alexandria:hash-table-values (windows *interface*)))))
+                                  (alexandria:hash-table-values (windows *browser*)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (ipc-buffer-make *interface*))
+        (let ((temp-buffer (ipc-buffer-make *browser*))
               (buffer-swap (active-buffer window)))
           (log:debug "Swapping with buffer from existing window.")
           (ipc-window-set-active-buffer window-with-same-buffer temp-buffer)
@@ -600,7 +600,7 @@ current buffer."
   "Return inactive buffer or NIL if none."
   (let ((active-buffers
           (mapcar #'active-buffer
-                  (alexandria:hash-table-values (windows *interface*))))
+                  (alexandria:hash-table-values (windows *browser*))))
         (buffers (buffer-list)))
     (match (set-difference buffers active-buffers)
       ((guard diff diff)
@@ -629,7 +629,7 @@ current buffer."
                                       buffer))
                                   urls))))
         (unless no-focus
-          (if (open-external-link-in-new-window-p *interface*)
+          (if (open-external-link-in-new-window-p *browser*)
               (let ((window (ipc-window-make)))
                 (window-set-active-buffer window first-buffer))
               (set-current-buffer first-buffer))))
@@ -672,10 +672,10 @@ current buffer."
 @export
 (defun current-buffer ()
   "Get the active buffer for the active window."
-  (match (ipc-window-active *interface*)
+  (match (ipc-window-active *browser*)
     ((guard w w) (active-buffer w))
     (_ (log:warn "No active window, picking last active buffer.")
-       (last-active-buffer *interface*))))
+       (last-active-buffer *browser*))))
 
 (declaim (ftype (function (buffer)) set-current-buffer))
 ;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.
@@ -686,7 +686,7 @@ current buffer."
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
   (unless (eq 'minibuffer (class-name (class-of buffer)))
-    (let ((active-window (ipc-window-active *interface*)))
+    (let ((active-window (ipc-window-active *browser*)))
       (if active-window
           (window-set-active-buffer active-window buffer)
           (make-window buffer))
@@ -695,4 +695,4 @@ current buffer."
 @export
 (defun current-minibuffer ()
   "Return the currently active minibuffer."
-  (first (active-minibuffers (last-active-window *interface*))))
+  (first (active-minibuffers (last-active-window *browser*))))

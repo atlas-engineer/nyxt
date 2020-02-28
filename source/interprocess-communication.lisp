@@ -5,19 +5,19 @@
 
 @export
 @export-accessors
-(defclass gtk-interface (interface)
+(defclass gtk-browser (browser)
   ((modifiers :accessor modifiers :initform ())))
 
-(define-class-type interface)
-(declaim (type (interface-type) *interface-class*))
+(define-class-type browser)
+(declaim (type (browser-type) *browser-class*))
 @export
-(defparameter *interface-class* 'gtk-interface)
+(defparameter *browser-class* 'gtk-browser)
 
-(defmethod initialize ((interface gtk-interface))
+(defmethod initialize ((browser gtk-browser))
   (log:debug "Initializing GTK Interface")
   (gtk:gtk-main))
 
-(defmethod kill-interface ((interface gtk-interface))
+(defmethod kill-interface ((browser gtk-browser))
   (gtk:leave-gtk-main))
 
 @export
@@ -45,7 +45,7 @@
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer id) window
-    (setf id (get-unique-window-identifier *interface*))
+    (setf id (get-unique-window-identifier *browser*))
     (setf gtk-object (make-instance 'gtk:gtk-window
                                     :type :toplevel
                                     :default-width 1024
@@ -69,12 +69,12 @@
     (gobject:g-signal-connect
      gtk-object "key_press_event"
      (lambda (widget event) (declare (ignore widget))
-       (push-modifier *interface* event)
+       (push-modifier *browser* event)
        (process-key-press-event window event)))
     (gobject:g-signal-connect
      gtk-object "key_release_event"
      (lambda (widget event) (declare (ignore widget))
-       (pop-modifier *interface* event)))
+       (pop-modifier *browser* event)))
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
@@ -84,9 +84,9 @@
   ;; remove buffer from window to avoid corruption of buffer
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (next-hooks:run-hook (window-delete-hook window) window)
-  (remhash (id window) (windows *interface*))
-  (when (zerop (hash-table-count (windows *interface*)))
-    (kill-interface *interface*)))
+  (remhash (id window) (windows *browser*))
+  (when (zerop (hash-table-count (windows *browser*)))
+    (kill-interface *browser*)))
 
 (defmethod window-destroy ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))
@@ -104,7 +104,7 @@
         ((eq key-value 65363) "Right")
         ((not (eq character #\Nul)) (string character))))
 
-(defmethod translate-modifier-list ((interface gtk-interface) modifier-state)
+(defmethod translate-modifier-list ((browser gtk-browser) modifier-state)
   (let ((modifiers ()))
     (when (member :control-mask modifier-state)
       (push "C" modifiers))
@@ -116,32 +116,32 @@
       (push "S" modifiers))
     modifiers))
 
-(defmethod push-modifier ((interface gtk-interface) event)
+(defmethod push-modifier ((browser gtk-browser) event)
   (let ((modifier-state (gdk:gdk-event-key-state event))
         (key-value (gdk:gdk-event-key-keyval event)))
     (when (member :control-mask modifier-state)
-      (push "C" (modifiers interface)))
+      (push "C" (modifiers browser)))
     (when (or (member :mod1-mask modifier-state)
               (eq key-value 65406))
-      (push "M" (modifiers interface)))
+      (push "M" (modifiers browser)))
     (when (or (member :super-mask modifier-state)
               (and (member :mod2-mask modifier-state)
                    (member :meta-mask modifier-state)))
-      (push "S" (modifiers interface))))
-  (setf (modifiers interface) (remove-duplicates (modifiers interface) :test #'equal)))
+      (push "S" (modifiers browser))))
+  (setf (modifiers browser) (remove-duplicates (modifiers browser) :test #'equal)))
 
-(defmethod pop-modifier ((interface gtk-interface) event)
+(defmethod pop-modifier ((browser gtk-browser) event)
   (let ((modifier-state (gdk:gdk-event-key-state event))
         (key-value (gdk:gdk-event-key-keyval event)))
     (when (member :control-mask modifier-state)
-      (setf (modifiers interface) (remove "C" (modifiers interface) :test #'equal)))
+      (setf (modifiers browser) (remove "C" (modifiers browser) :test #'equal)))
     (when (or (member :mod1-mask modifier-state)
               (eq key-value 65406))
-      (setf (modifiers interface) (remove "M" (modifiers interface) :test #'equal)))
+      (setf (modifiers browser) (remove "M" (modifiers browser) :test #'equal)))
     (when (or (member :super-mask modifier-state)
               (and (member :mod2-mask modifier-state)
                    (member :meta-mask modifier-state)))
-      (setf (modifiers interface) (remove "S" (modifiers interface) :test #'equal)))))
+      (setf (modifiers browser) (remove "S" (modifiers browser) :test #'equal)))))
 
 (defmethod process-key-press-event ((sender gtk-window) event)
   (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
@@ -149,7 +149,7 @@
          (key-value (gdk:gdk-event-key-keyval event))
          (key-string (character->string character key-value)))
     (when key-string
-      (push-input-event character-code key-string (modifiers *interface*) -1 -1 nil sender))))
+      (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
@@ -163,8 +163,8 @@
     context))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
-  (next-hooks:run-hook (buffer-before-make-hook *interface*) buffer)
-  (setf (id buffer) (get-unique-buffer-identifier *interface*))
+  (next-hooks:run-hook (buffer-before-make-hook *browser*) buffer)
+  (setf (id buffer) (get-unique-buffer-identifier *browser*))
   (setf (gtk-object buffer)
         (make-instance 'webkit:webkit-web-view
                        ;; TODO: Should be :web-context, shouldn't it?
@@ -215,7 +215,7 @@
       (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action response-policy-decision))
       (setf request (webkit:webkit-navigation-action-get-request navigation-action))
       (setf mouse-button (format nil "button~d" (webkit:webkit-navigation-action-get-mouse-button navigation-action)))
-      (setf modifiers (translate-modifier-list *interface* (webkit:webkit-navigation-action-get-modifiers navigation-action))))
+      (setf modifiers (translate-modifier-list *browser* (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (webkit:webkit-uri-request-uri request))
     (request-resource buffer
                       :url url
@@ -244,13 +244,13 @@
          (push-url-at-point buffer (webkit:webkit-hit-test-result-media-uri hit-test-result)))))
 
 @export
-(defmethod ipc-window-make ((interface gtk-interface))
+(defmethod ipc-window-make ((browser gtk-browser))
   "Make a window."
   (let* ((window (make-instance 'gtk-window)))
-    (setf (gethash (id window) (windows interface)) window)
-    (unless (last-active-window interface)
-      (setf (last-active-window interface) window))
-    (next-hooks:run-hook (window-make-hook interface) window)
+    (setf (gethash (id window) (windows browser)) window)
+    (unless (last-active-window browser)
+      (setf (last-active-window browser) window))
+    (next-hooks:run-hook (window-make-hook browser) window)
     window))
 
 @export
@@ -264,19 +264,19 @@
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-widget-destroy (gtk-object window))
   (next-hooks:run-hook (window-delete-hook window) window)
-  (remhash (id window) (windows *interface*)))
+  (remhash (id window) (windows *browser*)))
 
 @export
-(defmethod ipc-window-active ((interface gtk-interface))
+(defmethod ipc-window-active ((browser gtk-browser))
   "Return the window object for the currently active window."
-  (loop for window being the hash-values of (windows interface)
+  (loop for window being the hash-values of (windows browser)
         when (gtk:gtk-window-is-active (gtk-object window))
-          do (setf (last-active-window interface) window))
-  (last-active-window interface))
+          do (setf (last-active-window browser) window))
+  (last-active-window browser))
 
 @export
 (defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
-  "Set INTERFACE's WINDOW buffer to BUFFER.
+  "Set BROWSER's WINDOW buffer to BUFFER.
    Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
    proceeding."
   (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
@@ -284,7 +284,7 @@
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))
   (setf (active-buffer window) buffer)
-  (setf (last-active-buffer *interface*) buffer)
+  (setf (last-active-buffer *browser*) buffer)
   buffer)
 
 @export
@@ -293,9 +293,9 @@
         (list -1 height)))
 
 @export
-(defmethod ipc-buffer-make ((interface gtk-interface) &key title default-modes dead-buffer)
+(defmethod ipc-buffer-make ((browser gtk-browser) &key title default-modes dead-buffer)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
-   Run `*interface*'s `buffer-make-hook' over the created buffer before returning it.
+   Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
    If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (declare (ignore dead-buffer)) ;; TODO: Dead Buffer
   (let* ((buffer (apply #'make-instance *buffer-class*
@@ -303,33 +303,33 @@
                                 (when default-modes `(:default-modes ,default-modes))))))
     (unless (str:emptyp (namestring (cookies-path buffer)))
       (ensure-parent-exists (cookies-path buffer)))
-    (setf (gethash (id buffer) (buffers interface)) buffer)
-    (unless (last-active-buffer interface)
+    (setf (gethash (id buffer) (buffers browser)) buffer)
+    (unless (last-active-buffer browser)
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and current-buffer would then return nil.
-      (setf (last-active-buffer interface) buffer))
+      (setf (last-active-buffer browser) buffer))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
-    (next-hooks:run-hook (buffer-make-hook interface) buffer)
+    (next-hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
 @export
 (defmethod ipc-buffer-delete ((buffer gtk-buffer))
-  "Delete BUFFER from `*interface*'.
+  "Delete BUFFER from `*browser*'.
    Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
   (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
-                        (alexandria:hash-table-values (windows *interface*))))
+                        (alexandria:hash-table-values (windows *browser*))))
         (replacement-buffer (or (%get-inactive-buffer)
-                                (ipc-buffer-make *interface*))))
+                                (ipc-buffer-make *browser*))))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))
     (gtk:gtk-widget-destroy (gtk-object buffer))
-    (remhash (id buffer) (buffers *interface*))
+    (remhash (id buffer) (buffers *browser*))
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
-    (match (session-store-function *interface*)
+    (match (session-store-function *browser*)
       ((guard f f)
        (when *use-session*
          (funcall f))))))

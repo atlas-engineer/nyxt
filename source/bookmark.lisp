@@ -90,11 +90,11 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (unless (or (str:emptyp url)
               (string= "about:blank" url))
     (let ((entry nil))
-      (setf (bookmarks-data *interface*)
+      (setf (bookmarks-data *browser*)
             (delete-if (lambda (b)
                          (when (equal-url (url b) url)
                            (setf entry b)))
-                       (bookmarks-data *interface*)))
+                       (bookmarks-data *browser*)))
       (unless entry
         (setf entry (make-instance 'bookmark-entry
                                    :url url)))
@@ -103,7 +103,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (setf tags (delete-duplicates (append (tags entry) tags)
                                     :test #'string=))
       (setf (tags entry) (sort tags #'string<))
-      (push entry (bookmarks-data *interface*)))))
+      (push entry (bookmarks-data *browser*)))))
 
 (defun bookmark-completion-filter ()
   (lambda (input)
@@ -112,7 +112,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
            (tag-specs (nth 0 input-specs))
            (non-tags (str:downcase (str:join " " (nth 1 input-specs))))
            (validator (ignore-errors (tag-specification-validator tag-specs)))
-           (bookmarks (bookmarks-data *interface*)))
+           (bookmarks (bookmarks-data *browser*)))
       (when validator
         (setf bookmarks (remove-if (lambda (bookmark)
                                      (not (funcall validator
@@ -126,7 +126,7 @@ This can be useful to let the user select no tag when returning directly."
   (let ((tags (sort (delete-duplicates
                      (apply #'append
                             (mapcar (lambda (b) (tags b))
-                                    (bookmarks-data *interface*)))
+                                    (bookmarks-data *browser*)))
                      :test #'string-equal)
                     #'string-lessp)))
     (when with-empty-tag
@@ -178,8 +178,8 @@ This can be useful to let the user select no tag when returning directly."
                           :input-prompt "Delete bookmark(s)"
                           :multi-selection-p t
                           :completion-function (bookmark-completion-filter))))
-    (setf (bookmarks-data *interface*)
-          (set-difference (bookmarks-data *interface*) entries :test #'equals))))
+    (setf (bookmarks-data *browser*)
+          (set-difference (bookmarks-data *browser*) entries :test #'equals))))
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
@@ -246,41 +246,41 @@ This can be useful to let the user select no tag when returning directly."
       nil)))
 
 (defun store-sexp-bookmarks ()
-  "Store the bookmarks to the interface `bookmarks-path'."
-  (with-open-file (file (bookmarks-path *interface*)
+  "Store the bookmarks to the browser `bookmarks-path'."
+  (with-open-file (file (bookmarks-path *browser*)
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
     ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
     ;; already a customizable function.
-    (setf (slot-value *interface* 'bookmarks-data)
-          (sort (slot-value *interface* 'bookmarks-data)
+    (setf (slot-value *browser* 'bookmarks-data)
+          (sort (slot-value *browser* 'bookmarks-data)
                 (lambda (e1 e2)
                   (string< (url-sans-protocol (url e1))
                            (url-sans-protocol (url e2))))))
     (write-string "(" file)
-    (dolist (entry (slot-value *interface* 'bookmarks-data))
+    (dolist (entry (slot-value *browser* 'bookmarks-data))
       (write-char #\newline file)
       (serialize-object entry file))
     (write-char #\newline file)
     (write-string ")" file)
     (echo "Saved ~a bookmarks to ~a."
-          (length (slot-value *interface* 'bookmarks-data))
-          (bookmarks-path *interface*)))
+          (length (slot-value *browser* 'bookmarks-data))
+          (bookmarks-path *browser*)))
   t)
 
 (defun restore-sexp-bookmarks ()
-  "Restore the bookmarks from the interface `bookmarks-path'."
-  (let ((path (bookmarks-path *interface*)))
+  "Restore the bookmarks from the browser `bookmarks-path'."
+  (let ((path (bookmarks-path *browser*)))
     (if (not (uiop:file-exists-p path))
         ;; TODO: Stop importing the SQLite bookmarks after 1.3.3?
         (dolist (url (import-sqlite-bookmarks))
           (unless (str:emptyp url)
             (let ((entry (make-instance 'bookmark-entry
                                         :url url)))
-              ;; Calling (bookmarks-data *interface*) calls the restore function if
+              ;; Calling (bookmarks-data *browser*) calls the restore function if
               ;; empty, so we need to use SLOT-VALUE here.
-              (pushnew entry (slot-value *interface* 'bookmarks-data) :test #'equals)))))
+              (pushnew entry (slot-value *browser* 'bookmarks-data) :test #'equals)))))
     (handler-case
         (let ((data (with-open-file (file path
                                           :direction :input
@@ -290,8 +290,8 @@ This can be useful to let the user select no tag when returning directly."
           (when data
             (echo "Loading ~a bookmarks from ~a."
                   (length data)
-                  (bookmarks-path *interface*))
-            (setf (slot-value *interface* 'bookmarks-data) data)))
+                  (bookmarks-path *browser*))
+            (setf (slot-value *browser* 'bookmarks-data) data)))
       (error (c)
         (echo-warning "Failed to load bookmarks from ~a: ~a" path c)))))
 
@@ -299,12 +299,12 @@ This can be useful to let the user select no tag when returning directly."
 ;; SQLite importer.
 (defun import-sqlite-bookmarks ()
   (let ((database-path (cl-ppcre:regex-replace "\\.lisp$"
-                                               (namestring (bookmarks-path *interface*))
+                                               (namestring (bookmarks-path *browser*))
                                                ".db")))
     (unless (uiop:file-exists-p database-path)
       ;; Next 1.3.2 default database was named "bookmark.db".
       (setf database-path (cl-ppcre:regex-replace "s\\.lisp$"
-                                                  (namestring (bookmarks-path *interface*))
+                                                  (namestring (bookmarks-path *browser*))
                                                   ".db")))
     (when (uiop:file-exists-p database-path)
       (log:info "Importing bookmarks from ~a." database-path)

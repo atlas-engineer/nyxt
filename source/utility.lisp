@@ -171,12 +171,12 @@ won't be affected."
                        (uiop:launch-program command))))
        (notify (if (zerop exit-code) success-msg error-msg))))))
 
-(defmethod write-output-to-log ((interface interface))
+(defmethod write-output-to-log ((browser browser))
   "Set the *standard-output* and *error-output* to write to a log file."
   (values
    (setf *standard-output*
-         (open (standard-output-path interface) :direction :output
+         (open (standard-output-path browser) :direction :output
                                                 :if-does-not-exist :create :if-exists :append))
    (setf *error-output*
-         (open (error-output-path interface) :direction :output :if-does-not-exist :create
+         (open (error-output-path browser) :direction :output :if-does-not-exist :create
                                              :if-exists :append))))

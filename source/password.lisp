@@ -7,7 +7,7 @@
 
 (define-command save-new-password ()
   "Save password to password interface."
-  (if (password-interface *interface*)
+  (if (password-interface *browser*)
       (with-result* ((password-name (read-from-minibuffer
                                      (make-minibuffer
                                       :input-prompt "Name for new password")))
@@ -15,7 +15,7 @@
                                     (make-minibuffer
                                      :invisible-input-p t
                                      :input-prompt "New password (leave empty to generate)"))))
-        (password:save-password (password-interface *interface*)
+        (password:save-password (password-interface *browser*)
                                 password-name
                                 new-password))
       (echo-warning "No password manager found.")))
@@ -26,13 +26,13 @@
 
 (define-command copy-password ()
   "Copy chosen password from minibuffer."
-  (if (password-interface *interface*)
-      (with-password (password-interface *interface*)
+  (if (password-interface *browser*)
+      (with-password (password-interface *browser*)
         (with-result (password-name
                       (read-from-minibuffer
                        (make-minibuffer
                         :completion-function
                         (copy-password-completion-filter
-                         (password-interface *interface*)))))
-          (password:clip-password (password-interface *interface*) password-name)))
+                         (password-interface *browser*)))))
+          (password:clip-password (password-interface *browser*) password-name)))
       (echo-warning "No password manager found.")))

@@ -10,14 +10,14 @@
   "The list of positional command line arguments.")
 
 @export
-(defvar *interface* nil
+(defvar *browser* nil
   "The entry-point object to a complete instance of Next.
 It can be initialized with
 
-  (setf *interface* (make-instance *interface-class*))
+  (setf *browser* (make-instance *browser-class*))
 
 It's possible to run multiple interfaces of Next at the same time.  You can
-let-bind *interface* to temporarily switch interface.")
+let-bind *browser* to temporarily switch interface.")
 
 (declaim (type next-hooks:hook-void *after-init-hook*))
 @export
@@ -25,7 +25,7 @@ let-bind *interface* to temporarily switch interface.")
   "The entry-point object to configure everything in Next.
 The hook takes no argument.
 
-This hook is run after the `*interface*' is instantiated and before the
+This hook is run after the `*browser*' is instantiated and before the
 `startup-function' is run.
 
 Add a handler can be added with

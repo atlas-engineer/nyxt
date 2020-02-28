@@ -53,10 +53,10 @@ The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
   (unless (str:emptyp url)
-    (unless (history-data *interface*)
-      (setf (slot-value *interface* 'history-data)
+    (unless (history-data *browser*)
+      (setf (slot-value *browser* 'history-data)
             (make-hash-table :test #'equal)))
-    (let ((entry (gethash url (history-data *interface*))))
+    (let ((entry (gethash url (history-data *browser*))))
       (unless entry
         (setf entry (make-instance 'history-entry
                                    :url url)))
@@ -66,9 +66,9 @@ The history is sorted by last access."
       (setf (last-access entry) (local-time:now))
       (unless (str:emptyp title)
         (setf (title entry) title))
-      (setf (gethash url (history-data *interface*)) entry)
+      (setf (gethash url (history-data *browser*)) entry)
       ;; Use accessor to ensure store function is called.
-      (setf (history-data *interface*) (history-data *interface*)))))
+      (setf (history-data *browser*) (history-data *browser*)))))
 
 (define-command delete-history-entry ()
   "Delete queried history entries."
@@ -76,12 +76,12 @@ The history is sorted by last access."
                          (make-minibuffer
                           :input-prompt "Delete entries"
                           :completion-function (history-completion-filter)
-                          :history (minibuffer-set-url-history *interface*)
+                          :history (minibuffer-set-url-history *browser*)
                           :multi-selection-p t)))
     (dolist (entry entries)
-      (remhash (url entry) (history-data *interface*)))
+      (remhash (url entry) (history-data *browser*)))
     ;; Use accessor to ensure store function is called.
-    (setf (history-data *interface*) (history-data *interface*))))
+    (setf (history-data *browser*) (history-data *browser*))))
 
 
 
@@ -102,7 +102,7 @@ lot."
 
 (defun history-completion-filter ()
   (let ((history (sort (alexandria:hash-table-values
-                        (history-data *interface*))
+                        (history-data *browser*))
                        (lambda (x y)
                          (> (score-history-entry x)
                             (score-history-entry y))))))
@@ -114,11 +114,11 @@ lot."
 This data can be used to restore the session later, e.g. when starting a new
 instance of Next."
   (list +version+
-        (history-data *interface*)))
+        (history-data *browser*)))
 
 (defun store-sexp-history ()            ; TODO: Factor with `store-sexp-session'.
-  "Store the global history to the interface `history-path'."
-  (with-open-file (file (history-path *interface*)
+  "Store the global history to the browser `history-path'."
+  (with-open-file (file (history-path *browser*)
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
@@ -136,8 +136,8 @@ instance of Next."
                 (read in))))))
 
 (defun restore-sexp-history ()
-  "Restore the global history from the interface `history-path'."
-  (let ((path (history-path *interface*)))
+  "Restore the global history from the browser `history-path'."
+  (let ((path (history-path *browser*)))
     (handler-case
         (let ((data (with-open-file (file path
                                           :direction :input
@@ -156,7 +156,7 @@ instance of Next."
                          version +version+))
              (echo "Loading global history of ~a URLs."
                    (hash-table-count history))
-             (setf (slot-value *interface* 'history-data) history))
+             (setf (slot-value *browser* 'history-data) history))
 
             ((guard history (listp history))
              (let ((new-history (make-hash-table :test #'equal)))
@@ -169,7 +169,7 @@ instance of Next."
                          (hash-table-count new-history)
                          (- (length history)
                             (hash-table-count new-history)))
-               (setf (slot-value *interface* 'history-data) new-history)))))
+               (setf (slot-value *browser* 'history-data) new-history)))))
       (error (c)
         (echo-warning "Failed to restore history from ~a: ~a" path c)))))
 
@@ -179,7 +179,7 @@ instance of Next."
 ;; SQLite importer.
 (defun import-sqlite-history ()
   (let ((database-path (cl-ppcre:regex-replace "\\.lisp$"
-                                               (namestring (history-path *interface*))
+                                               (namestring (history-path *browser*))
                                                ".db")))
     (when (uiop:file-exists-p database-path)
       (log:info "Importing global history from ~a" database-path)

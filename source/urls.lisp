@@ -11,7 +11,7 @@
          (url (format nil search-url encoded-search-string)))
     url))
 
-(defun bookmark-search-engines (&optional (bookmarks (bookmarks-data *interface*)))
+(defun bookmark-search-engines (&optional (bookmarks (bookmarks-data *browser*)))
   (mapcar (lambda (b)
             (list
              (shortcut b)
@@ -31,7 +31,7 @@ If the input starts with an uri scheme, open it as is.
 If the input is actually a file path, open it.
 Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
 Otherwise, build a search query with the default search engine."
-  (let* ((search-engines (append (search-engines *interface*)
+  (let* ((search-engines (append (search-engines *browser*)
                                  (bookmark-search-engines)))
          (terms (str:split " " input-url :omit-nulls t))
          (engine (assoc (first terms)

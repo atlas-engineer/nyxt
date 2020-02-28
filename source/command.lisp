@@ -150,7 +150,7 @@ Otherwise list all commands."
 (defmethod object-display ((command command))
   ;; Use `last-active-window' for speed, or else the minibuffer will stutter
   ;; because of the RPC calls.
-  (let* ((buffer (active-buffer (last-active-window *interface*)))
+  (let* ((buffer (active-buffer (last-active-window *browser*)))
          (scheme (current-keymap-scheme buffer))
          (bindings '()))
     (loop for mode in (modes buffer)
@@ -227,13 +227,13 @@ This function can be `funcall'ed."
                                                      (str:downcase (closer-mop:slot-definition-name s))))
                                   (closer-mop:class-slots (class-of object))))))
     (let ((window-hooks
-            (list-hooks (last-active-window *interface*)))
+            (list-hooks (last-active-window *browser*)))
           (buffer-hooks (list-hooks (current-buffer)))
-          (remote-interface-hooks (list-hooks *interface*)))
+          (browser-hooks (list-hooks *browser*)))
       (fuzzy-match input
                    (append window-hooks
                            buffer-hooks
-                           remote-interface-hooks)))))
+                           browser-hooks)))))
 
 (defun handler-completion-filter (hook)
   (lambda (input)

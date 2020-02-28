@@ -62,7 +62,7 @@
   (let ((root-mode (find-mode buffer 'root-mode)))
     ;; TODO: Send last key chords? We used to, but why?
     ;; (rpc-generate-input-event
-    ;;  (ipc-window-active *interface*)
+    ;;  (ipc-window-active *browser*)
     ;;  (first (last-key-chords
     ;;          (buffer root-mode))))
     (%clicked-in-input?

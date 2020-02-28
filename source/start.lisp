@@ -48,18 +48,18 @@ Set to '-' to read standard input instead.")
 
 (define-command quit ()
   "Quit Next."
-  (next-hooks:run-hook (before-exit-hook *interface*))
-  (loop for window in (alexandria:hash-table-values (windows *interface*))
+  (next-hooks:run-hook (before-exit-hook *browser*))
+  (loop for window in (alexandria:hash-table-values (windows *browser*))
         do (window-destroy window))
-  (kill-interface *interface*)
+  (kill-interface *browser*)
   (uiop:quit 0 nil))
 
 (define-command quit-after-clearing-session ()
   "Clear session then quit Next."
   (setf
-   (session-store-function *interface*) nil
-   (session-restore-function *interface*) nil)
-  (uiop:delete-file-if-exists (session-path *interface*))
+   (session-store-function *browser*) nil
+   (session-restore-function *browser*) nil)
+  (uiop:delete-file-if-exists (session-path *browser*))
   (quit))
 
 (defun set-debug-level (level)
@@ -169,41 +169,41 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
 
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers. This function is
-   suitable as a `interface' `startup-function'."
+   suitable as a `browser' `startup-function'."
   (when urls
     (open-urls urls))
-  (let ((window (ipc-window-make *interface*))
+  (let ((window (ipc-window-make *browser*))
         (buffer (help)))
     (window-set-active-buffer window buffer))
-  (match (session-restore-function *interface*)
+  (match (session-restore-function *browser*)
     ((guard f f)
      (when *use-session*
        (funcall f)))))
 
 @export
 (defun start (&key urls (init-file (init-file-path)))
-  "Start Next and load URLS if any. A new `*interface*' is
+  "Start Next and load URLS if any. A new `*browser*' is
    instantiated. The platform port is automatically started if
    needed. Finally, run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now)))
     (format t "Next version ~a~&" +version+)
     (unless (getf *options* :no-init)
       (load-lisp-file init-file :interactive t))
-    (setf *interface* (make-instance *interface-class*
+    (setf *browser* (make-instance *browser-class*
                                      :startup-timestamp startup-timestamp))
-    (setf (slot-value *interface* 'init-time)
+    (setf (slot-value *browser* 'init-time)
           (local-time:timestamp-difference (local-time:now) startup-timestamp))
     (handler-case
         (next-hooks:run-hook *after-init-hook*)
       (error (c)
         (log:error "In *after-init-hook*: ~a" c)))
     (handler-case
-        (funcall (startup-function *interface*) (or urls *free-args*))
+        (funcall (startup-function *browser*) (or urls *free-args*))
       (error (c)
-        (log:error "In startup-function ~a: ~a" (startup-function *interface*) c)))
+        (log:error "In startup-function ~a: ~a" (startup-function *browser*) c)))
     (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
-  (initialize *interface*))
+  (initialize *browser*))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."
-  (echo "~,2f seconds" (slot-value *interface* 'init-time)))
+  (echo "~,2f seconds" (slot-value *browser* 'init-time)))

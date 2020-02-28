@@ -193,7 +193,7 @@ provided buffers."
                            :scroll subsequent-call)
                           (setf subsequent-call t)))
                       :cleanup-function (lambda () (remove-focus))
-                      :history (minibuffer-search-history *interface*)))
+                      :history (minibuffer-search-history *browser*)))
          (keymap-scheme (current-keymap-scheme minibuffer))
          (keymap (getf (keymap-schemes (first (modes minibuffer)))
                        keymap-scheme)))

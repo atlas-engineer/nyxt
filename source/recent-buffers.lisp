@@ -11,7 +11,7 @@
            (string= (title buffer) (title other-buffer))))))
 
 (defun recent-buffer-completion-filter ()
-  (let ((buffers (ring:recent-list (recent-buffers *interface*))))
+  (let ((buffers (ring:recent-list (recent-buffers *browser*))))
     (lambda (input)
       (fuzzy-match input buffers))))
 
@@ -23,18 +23,18 @@
                           :multi-selection-p t
                           :completion-function (recent-buffer-completion-filter))))
     (dolist (buffer buffers)
-      (ring:delete-match (recent-buffers *interface*) (buffer-match-predicate buffer))
-      (reload-current-buffer (ipc-buffer-make *interface* :dead-buffer buffer))
+      (ring:delete-match (recent-buffers *browser*) (buffer-match-predicate buffer))
+      (reload-current-buffer (ipc-buffer-make *browser* :dead-buffer buffer))
       (when (and (eq buffer (first buffers))
-                 (focus-on-reopened-buffer-p *interface*))
+                 (focus-on-reopened-buffer-p *browser*))
         (set-current-buffer buffer)))))
 
 (define-command reopen-last-buffer ()
   "Open a new buffer with the URL of the most recently deleted buffer."
-  (if (plusp (ring:item-count (recent-buffers *interface*)))
-      (let ((buffer (ipc-buffer-make *interface*
-                     :dead-buffer (ring:pop-most-recent (recent-buffers *interface*)))))
+  (if (plusp (ring:item-count (recent-buffers *browser*)))
+      (let ((buffer (ipc-buffer-make *browser*
+                     :dead-buffer (ring:pop-most-recent (recent-buffers *browser*)))))
         (reload-current-buffer buffer)
-        (when (focus-on-reopened-buffer-p *interface*)
+        (when (focus-on-reopened-buffer-p *browser*)
           (set-current-buffer buffer)))
       (echo "There are no recently-deleted buffers.")))

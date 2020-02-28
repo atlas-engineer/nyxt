@@ -29,7 +29,7 @@
   (fuzzy-match input (list-commands)))
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to
-;; augment the latter function so that we can inspect classes like interface.
+;; augment the latter function so that we can inspect classes like browser.
 (define-command variable-inspect ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
@@ -194,7 +194,7 @@ The version number is stored in the clipboard."
    `(:p ,(with-output-to-string (s)
            (log4cl-impl:layout-to-stream
             (slot-value appender 'log4cl-impl:layout) s logger level log-func)))
-   (messages-content *interface*)))
+   (messages-content *browser*)))
 
 (define-command messages ()
   "Show the *Messages* buffer."
@@ -206,7 +206,7 @@ The version number is stored in the clipboard."
     (let* ((content
              (apply #'cl-markup:markup*
                     '(:h1 "Messages")
-                    (reverse (messages-content *interface*))))
+                    (reverse (messages-content *browser*))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ipc-buffer-evaluate-javascript buffer insert-content))
@@ -215,5 +215,5 @@ The version number is stored in the clipboard."
 
 (define-command clear-messages ()
   "Clear the *Messages* buffer."
-  (setf (messages-content *interface*) '())
+  (setf (messages-content *browser*) '())
   (echo "Messages cleared."))

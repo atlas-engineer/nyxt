@@ -16,10 +16,10 @@ Setting the start page can easily be achieved in the following manner:
 
 #+NAME: start-page-set
 #+BEGIN_SRC lisp
-(defclass my-interface ()
+(defclass my-browser ()
   ((start-page-url :initform "about:blank")))
 
-(setf *interface-class* 'my-interface)
+(setf *browser-class* 'my-browser)
 #+END_SRC
 
 * Creating your own Parenscript
@@ -66,7 +66,7 @@ the command output.
 (define-command clear-shell (shell-mode)
   "Clear the output in the shell buffer."
   (ipc-buffer-evaluate-javascript
-   (active-buffer *interface*)
+   (active-buffer *browser*)
    (clear-shell-output)))
 
 (define-parenscript append-output (output)
@@ -79,17 +79,17 @@ the command output.
   "Run a shell command."
   (with-result
       (input (read-from-minibuffer
-              (minibuffer *interface*)
+              (minibuffer *browser*)
               :input-prompt "Run in shell:"))
     (ipc-buffer-evaluate-javascript
-     (active-buffer *interface*)
+     (active-buffer *browser*)
      (append-output
       :output
       (uiop:run-program input :force-shell t :output :string)))))
 
 (define-command shell ()
   "Open a shell buffer."
-  (set-active-buffer *interface* (make-buffer :name "*shell*" :default-modes '(shell-mode))))
+  (set-active-buffer *browser* (make-buffer :name "*shell*" :default-modes '(shell-mode))))
 
 (define-key :keymap *my-keymap* "C-x s" #'shell)
 #+END_SRC

@@ -301,7 +301,7 @@ Otherwise go forward to the only child."
   (copy-to-clipboard (title (current-buffer)))
   (echo "~a copied to clipboard." (title (current-buffer))))
 
-(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *interface*))))
+(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *browser*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
          (end-position (ps:chain active-element selection-end)))
@@ -322,11 +322,11 @@ Otherwise go forward to the only child."
       (fuzzy-match input ring-items))))
 
 (define-command paste-from-ring ()
-  "Show `*interface*' clipboard ring and paste selected entry."
+  "Show `*browser*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
                            (make-minibuffer
                             :completion-function (ring-completion-filter
-                                                  (clipboard-ring *interface*)))))
+                                                  (clipboard-ring *browser*)))))
     (%paste :input-text ring-item)))
 
 (define-parenscript %copy ()
@@ -335,7 +335,7 @@ Otherwise go forward to the only child."
 
 (defun copy-to-clipboard (input)
   "Save INPUT text to clipboard, and ring."
-  (ring:insert (clipboard-ring *interface*) (trivial-clipboard:text input)))
+  (ring:insert (clipboard-ring *browser*) (trivial-clipboard:text input)))
 
 (define-command copy ()
   "Copy selected text to clipboard."
@@ -349,7 +349,7 @@ Otherwise go forward to the only child."
   (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
-  (let* ((active-window (ipc-window-active *interface*))
+  (let* ((active-window (ipc-window-active *browser*))
          (buffer (active-buffer active-window)))
     ;; TODO: Setting the default zoom level works with pure Javascript, but it
     ;; can only be done after the URL has been loaded which is a bit of a
@@ -364,7 +364,7 @@ Otherwise go forward to the only child."
                      :test #'equals)
     (when url
       (history-add url :title (title buffer)))
-    (match (session-store-function *interface*)
+    (match (session-store-function *browser*)
       ((guard f f) (funcall f))))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the minibuffer.

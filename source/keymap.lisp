@@ -105,7 +105,7 @@
   t)
 
 (defun push-input-event (key-code key-string modifiers x y low-level-data sender)
-  "Add a new key chord to the interface key-chord-stack."
+  "Add a new key chord to the browser key-chord-stack."
   (let ((key-chord (make-key-chord
                     :key-code key-code
                     :key-string key-string
@@ -114,9 +114,9 @@
                                  (sort modifiers #'string-lessp))
                     :low-level-data low-level-data)))
     (log:debug key-chord)
-    (push key-chord (key-chord-stack *interface*))
+    (push key-chord (key-chord-stack *browser*))
     (let* ((active-buffer (active-buffer sender))
-           (bound-function (look-up-key-chord-stack sender (key-chord-stack *interface*))))
+           (bound-function (look-up-key-chord-stack sender (key-chord-stack *browser*))))
       (when active-buffer
         (setf (last-key-chords active-buffer) (list key-chord)))
       (cond
@@ -126,23 +126,23 @@
         ;; function bound
         ((functionp bound-function)
          (log:debug "Key sequence ~a bound to:"
-                    (serialize-key-chord-stack (key-chord-stack *interface*)))
+                    (serialize-key-chord-stack (key-chord-stack *browser*)))
          (funcall bound-function)
-         (setf (key-chord-stack *interface*) nil)
+         (setf (key-chord-stack *browser*) nil)
          t) ; return t to avoid further propagation
         ;; minibuffer is active
         ((active-minibuffers sender)
-         (when (printable-p (first (key-chord-stack *interface*)))
+         (when (printable-p (first (key-chord-stack *browser*)))
            (log:debug "Insert ~s in minibuffer" (key-chord-key-string
-                                                 (first (key-chord-stack *interface*))))
-           (insert (key-chord-key-string (first (key-chord-stack *interface*)))))
-         (setf (key-chord-stack *interface*) nil)
+                                                 (first (key-chord-stack *browser*))))
+           (insert (key-chord-key-string (first (key-chord-stack *browser*)))))
+         (setf (key-chord-stack *browser*) nil)
          t) ; return t to avoid further propagation
         ((or (and active-buffer (forward-input-events-p active-buffer))
              (pointer-event-p key-chord))
          ;; return nil to continue propagation
-         (setf (key-chord-stack *interface*) nil))
-        (t (setf (key-chord-stack *interface*) nil))))))
+         (setf (key-chord-stack *browser*) nil))
+        (t (setf (key-chord-stack *browser*) nil))))))
 
 (declaim (ftype (function (&rest t &key (:scheme list) (:keymap keymap) &allow-other-keys)) define-key))
 @export
@@ -199,7 +199,7 @@
    apart the chords into individual keys.  We use those individual keys to create a
    `key' struct that describes the chord.  We now have two `key's.  We connect
    these two keys in a list in reverse (<key C-s> <key C-x>) to
-   match (key-chord-stack *interface*).
+   match (key-chord-stack *browser*).
    
    This can serve as the key in the keymap."
   (serialize-key-chord-stack

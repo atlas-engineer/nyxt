@@ -35,7 +35,7 @@ title into accound as it may vary from one load to the next."
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
-  (let* ((buffer (ipc-buffer-make *interface* :title title :default-modes modes))
+  (let* ((buffer (ipc-buffer-make *browser* :title title :default-modes modes))
          (url (if (eq url :default)
                   (default-new-buffer-url buffer)
                   url)))
@@ -45,7 +45,7 @@ If URL is `:default', use `default-new-buffer-url'."
 
 @export
 (defun buffer-list (&key sort-by-time)
-  (let ((buf-list (alexandria:hash-table-values (buffers *interface*))))
+  (let ((buf-list (alexandria:hash-table-values (buffers *browser*))))
     (if sort-by-time
         (sort buf-list
               #'local-time:timestamp>
@@ -90,7 +90,7 @@ See `make-buffer'."
 
 (define-command delete-all-buffers ()
   "Delete all buffers, with confirmation."
-  (let ((count (hash-table-count (buffers *interface*))))
+  (let ((count (hash-table-count (buffers *browser*))))
     (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
       (delete-buffers))))
 
@@ -163,7 +163,7 @@ complete against a search engine."
 
 (define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."
-  (let ((history (minibuffer-set-url-history *interface*)))
+  (let ((history (minibuffer-set-url-history *browser*)))
     (when history
       (ring:insert history (url (current-buffer))))
     (with-result (url (read-from-minibuffer
