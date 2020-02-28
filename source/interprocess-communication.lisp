@@ -88,8 +88,14 @@
   (when (zerop (hash-table-count (windows *browser*)))
     (kill-interface *browser*)))
 
-(defmethod window-destroy ((window gtk-window))
+(defmethod ipc-window-destroy ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))
+
+(defmethod ipc-window-fullscreen ((window gtk-window))
+  (gtk:gtk-window-fullscreen (gtk-object window)))
+
+(defmethod ipc-window-unfullscreen ((window gtk-window))
+  (gtk:gtk-window-unfullscreen (gtk-object window)))
 
 (defun character->string (character &optional key-value)
   (cond ((eq character #\Return) "RETURN")

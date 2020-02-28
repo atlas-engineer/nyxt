@@ -36,3 +36,12 @@
         (buffer (or buffer (make-buffer))))
     (window-set-active-buffer window buffer)
     (values window buffer)))
+
+(define-command fullscreen-current-window (&optional (window (ipc-window-active *browser*)))
+  "Fullscreen WINDOW, or the currently active window if unspecified."
+  (ipc-window-fullscreen window))
+
+(define-command unfullscreen-current-window (&optional (window (ipc-window-active *browser*)))
+  "Unfullscreen WINDOW, or the currently active window if unspecified."
+  (ipc-window-unfullscreen window))
+

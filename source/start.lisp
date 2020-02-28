@@ -50,7 +50,7 @@ Set to '-' to read standard input instead.")
   "Quit Next."
   (next-hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (alexandria:hash-table-values (windows *browser*))
-        do (window-destroy window))
+        do (ipc-window-destroy window))
   (kill-interface *browser*)
   (uiop:quit 0 nil))
 
