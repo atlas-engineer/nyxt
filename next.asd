@@ -59,7 +59,7 @@
                  (:file "macro")
                  (:file "global")
                  (:file "interface")
-                 (:file "interprocess-communication")
+                 (:file "interprocess-communication-gtk")
                  (:file "command")
                  (:file "mode")
                  (:file "utility")
