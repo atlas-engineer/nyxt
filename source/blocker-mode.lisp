@@ -125,14 +125,14 @@ Fall back on `resource-query-default'."
         (progn
           (log:info "Dropping ~a" url)
           nil)
-        (resource-query-default buffer
-                                :url url
-                                :cookies cookies
-                                :event-type event-type
-                                :is-new-window is-new-window
-                                :is-known-type is-known-type
-                                :mouse-button mouse-button
-                                :modifiers modifiers))))
+        (request-resource buffer
+                          :url url
+                          :cookies cookies
+                          :event-type event-type
+                          :is-new-window is-new-window
+                          :is-known-type is-known-type
+                          :mouse-button mouse-button
+                          :modifiers modifiers))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :s-serialization)
