@@ -43,7 +43,7 @@ Return NEW-ITEM."
         for item = (ref ring index)
         when item collect item))
 
-(declaim (ftype (function (ring) ring) ring-copy))
+(declaim (ftype (function (ring) ring) copy))
 (defun copy (ring)
   "Return a copy of RING."
   (let ((copy (make-instance 'ring :items nil)))
