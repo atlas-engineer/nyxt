@@ -72,6 +72,7 @@
 @export
 (defparameter *proxy-class* 'proxy)
 
+;; TODO: Reimplement certificate whitelist mode
 @export
 @export-accessors
 (defclass certificate-whitelist ()
