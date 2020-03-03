@@ -58,7 +58,7 @@
                  ;; Core Functionality
                  (:file "macro")
                  (:file "global")
-                 (:file "interface")
+                 (:file "browser")
                  (:file "interprocess-communication-gtk")
                  (:file "command")
                  (:file "mode")
