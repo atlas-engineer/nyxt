@@ -1,14 +1,15 @@
 * Next Developer Readme                                                 :TOC:
 - [[#developer-installation-with-guix][Developer Installation with Guix]]
+  - [[#run-from-source][Run from source]]
 - [[#generic-developer-installation][Generic Developer Installation]]
   - [[#installing-sbcl][Installing SBCL]]
   - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
   - [[#gnulinux-specific-dependencies][GNU/Linux specific dependencies]]
   - [[#macos-specific-dependencies][macOS specific dependencies]]
+  - [[#lisp-specific-dependencies][Lisp specific dependencies]]
   - [[#fetch-the-source-code][Fetch the source code]]
   - [[#compile][Compile]]
-  - [[#run][Run]]
-  - [[#run-from-source][Run from Source]]
+  - [[#run-from-source-1][Run from Source]]
   - [[#update-local-lisp-libraries][Update local Lisp libraries]]
 - [[#help--community][Help & Community]]
   - [[#learning-common-lisp][Learning Common Lisp]]
@@ -129,6 +130,14 @@ these fixes.
 + XQuartz
 + SQLite (available by default)
 
+** Lisp specific dependencies
+Clone the cl-webkit repository into =~/common-lisp= or any directory
+listed in ~asdf:*central-registry*~:
+
+#+begin_src sh
+git clone https://github.com/atlas-engineer/cl-webkit ~/common-lisp/cl-webkit
+#+end_src
+
 ** Fetch the source code
 Clone the Next repository into =~/common-lisp= or any directory listed in
 ~asdf:*central-registry*~:
@@ -136,7 +145,6 @@ Clone the Next repository into =~/common-lisp= or any directory listed in
 #+begin_src sh
 git clone https://github.com/atlas-engineer/next ~/common-lisp/next
 #+end_src
-
 ** Compile
 Next consists of two standalone executables: the Lisp core and the
 platform port. There are two ways to build Next depending on if
