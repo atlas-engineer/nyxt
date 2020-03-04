@@ -190,19 +190,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
     (unless (getf *options* :no-init)
       (load-lisp-file init-file :interactive t))
     (setf *browser* (make-instance *browser-class*
-                                     :startup-timestamp startup-timestamp))
-    (setf (slot-value *browser* 'init-time)
-          (local-time:timestamp-difference (local-time:now) startup-timestamp))
-    (handler-case
-        (next-hooks:run-hook *after-init-hook*)
-      (error (c)
-        (log:error "In *after-init-hook*: ~a" c)))
-    (handler-case
-        (funcall (startup-function *browser*) (or urls *free-args*))
-      (error (c)
-        (log:error "In startup-function ~a: ~a" (startup-function *browser*) c)))
-    (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
-  (initialize *browser*))
+                                   :startup-timestamp startup-timestamp))
+    (initialize *browser* urls startup-timestamp)))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."

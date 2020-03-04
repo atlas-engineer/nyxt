@@ -13,9 +13,13 @@
 @export
 (defparameter *browser-class* 'gtk-browser)
 
-(defmethod initialize ((browser gtk-browser))
+(defmethod initialize ((browser gtk-browser) urls startup-timestamp)
   (log:debug "Initializing GTK Interface")
-  (gtk:gtk-main))
+  ;; gtk:within-main-loop handles all the GTK initialization.  On GNU/Linux,
+  ;; Next could hang after 10 minutes if it's not used.
+  (gtk:within-main-loop
+    (finalize browser urls startup-timestamp))
+  (gtk:join-gtk-main))
 
 (defmethod kill-interface ((browser gtk-browser))
   (gtk:leave-gtk-main))

@@ -450,6 +450,23 @@ The handlers take the URL as argument.")
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")))
 
+(defmethod finalize ((browser browser) urls startup-timestamp)
+  "Run `*after-init-hook*' then BROWSER's `startup-function'."
+  ;; `messages-appender' requires `*browser*' to be initialized.
+  (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))
+  (handler-case
+      (next-hooks:run-hook *after-init-hook*)
+    (error (c)
+      (log:error "In *after-init-hook*: ~a" c)))
+  (handler-case
+      (funcall (startup-function browser) (or urls *free-args*))
+    (error (c)
+      (log:error "In startup-function ~a: ~a" (startup-function browser) c)))
+  ;; Set 'init-time at the end of finalize to take the complete startup time
+  ;; into account.
+  (setf (slot-value *browser* 'init-time)
+        (local-time:timestamp-difference (local-time:now) startup-timestamp)))
+
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
   (when (null browser)
