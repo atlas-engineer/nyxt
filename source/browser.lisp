@@ -652,7 +652,7 @@ current buffer."
                                   urls))))
         (unless no-focus
           (if (open-external-link-in-new-window-p *browser*)
-              (let ((window (ipc-window-make)))
+              (let ((window (ipc-window-make *browser*)))
                 (window-set-active-buffer window first-buffer))
               (set-current-buffer first-buffer))))
     (error (c)
