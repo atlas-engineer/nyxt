@@ -14,12 +14,22 @@
 (defparameter *browser-class* 'gtk-browser)
 
 (defmethod initialize ((browser gtk-browser) urls startup-timestamp)
+  "gtk:within-main-loop handles all the GTK initialization. On
+   GNU/Linux, Next could hang after 10 minutes if it's not
+   used. Conversely, on Darwin, if gtk:within-main-loop is used, no
+   drawing happens. Drawing operations on Darwin MUST originate from
+   the main thread, which the GTK main loop is not guaranteed to be
+   on."
   (log:debug "Initializing GTK Interface")
-  ;; gtk:within-main-loop handles all the GTK initialization.  On GNU/Linux,
-  ;; Next could hang after 10 minutes if it's not used.
-  (gtk:within-main-loop
-    (finalize browser urls startup-timestamp))
-  (gtk:join-gtk-main))
+  #+linux
+  (progn
+    (gtk:within-main-loop
+      (finalize browser urls startup-timestamp))
+    (gtk:join-gtk-main))
+  #+darwin
+  (progn
+    (finalize browser urls startup-timestamp)
+    (gtk:gtk-main)))
 
 (defmethod kill-interface ((browser gtk-browser))
   (gtk:leave-gtk-main))
