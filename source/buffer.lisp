@@ -15,7 +15,7 @@
   (url buffer-description))
 
 (defmethod object-display ((buffer-description buffer-description))
-  (format nil "~a  ~a" (url buffer-description) (title buffer-description)))
+  (format nil "~a  ~a" (title buffer-description) (url buffer-description)))
 
 (defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
   "Comparison function for buffer history entries.
@@ -27,7 +27,7 @@ title into accound as it may vary from one load to the next."
   (url buffer))
 
 (defmethod object-display ((buffer buffer))
-  (format nil "~a  ~a" (url buffer) (title buffer)))
+  (format nil "~a  ~a" (title buffer) (url buffer)))
 
 (define-command make-buffer (&key (title "default")
                              modes
