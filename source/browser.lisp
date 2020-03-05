@@ -401,11 +401,11 @@ into `session-path'.")
 from `session-path'.")
    (standard-output-path :accessor standard-output-path
                          :initform (xdg-data-home "standard-out.txt")
-                         :documentation "Path where *standard-output*
+                         :documentation "Path where `*standard-output*'
                          can be written to.")
    (error-output-path :accessor error-output-path
                       :initform (xdg-data-home "standard-error.txt")
-                      :documentation "Path where *error-output* can be
+                      :documentation "Path where `*error-output*' can be
                       written to.")
    ;; Hooks follow:
    (before-exit-hook :accessor before-exit-hook
