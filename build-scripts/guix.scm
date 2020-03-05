@@ -52,44 +52,11 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
-(define next-gtk-webkit
-  (package
-    (name "next-gtk-webkit")
-    (version "0.0.0")                   ; Because this can be checkout.
-    (source (local-file %source-dir #:recursive? #t #:select? git-file?))
-    (build-system glib-or-gtk-build-system)
-    (arguments
-     `(#:tests? #f                      ; no tests
-       #:make-flags (list "gtk-webkit"
-                          (string-append
-                           "CC="
-                           (assoc-ref %build-inputs "gcc-7")
-                           "/bin/gcc")
-                          (string-append "PREFIX=" %output))
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)
-         (replace 'install
-           (lambda* (#:key (make-flags '()) #:allow-other-keys)
-             (apply invoke "make" "install-gtk-webkit" make-flags))))))
-    (inputs
-     `(("glib-networking" ,glib-networking)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("webkitgtk" ,webkitgtk)))
-    (native-inputs
-     `(("gcc-7" ,gcc-7) ; needed because webkitgtk-2.24+ is compiled with gcc-7
-       ("pkg-config" ,pkg-config)))
-    (home-page "https://next.atlas.engineer")
-    (synopsis "Extensible web-browser in Common Lisp")
-    (description "Next is a keyboard-oriented, extensible web-browser
-designed for power users.  The application has familiar Emacs and VI
-key-bindings and is fully configurable and extensible in Common Lisp.")
-    (license bsd-3)))
-
 (define sbcl-next-download-manager
   (package
-    (inherit next-gtk-webkit)
     (name "sbcl-next-download-manager")
+    (version "0.0.0")                   ; Because this can be checkout.
+    (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system asdf-build-system/sbcl)
     (arguments
      `(#:tests? #f                      ; Need online access.
@@ -103,13 +70,17 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("quri" ,sbcl-quri)
        ("str" ,sbcl-cl-str)))
     (native-inputs
-     `(("trivial-features" ,sbcl-trivial-features)
-       ("prove-asdf" ,sbcl-prove-asdf)))
-    (synopsis "Extensible web-browser in Common Lisp (download manager)")))
+     `(("prove-asdf" ,sbcl-prove-asdf)))
+    (synopsis "Extensible web-browser in Common Lisp (download manager)")
+    (home-page "https://next.atlas.engineer")
+    (description "Next is a keyboard-oriented, extensible web-browser
+designed for power users.  The application has familiar Emacs and VI
+key-bindings and is fully configurable and extensible in Common Lisp.")
+    (license bsd-3)))
 
 (define sbcl-next-ring
   (package
-    (inherit next-gtk-webkit)
+    (inherit sbcl-next-download-manager)
     (name "sbcl-next-ring")
     (build-system asdf-build-system/sbcl)
     (arguments
@@ -117,13 +88,12 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        #:asd-file "next.asd"
        #:asd-system-name "next/ring"))
     (native-inputs
-     `(("trivial-features" ,sbcl-trivial-features)
-       ("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (ring)")))
 
 (define sbcl-next-history-tree
   (package
-    (inherit next-gtk-webkit)
+    (inherit sbcl-next-download-manager)
     (name "sbcl-next-history-tree")
     (build-system asdf-build-system/sbcl)
     (arguments
@@ -131,13 +101,12 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        #:asd-file "next.asd"
        #:asd-system-name "next/history-tree"))
     (native-inputs
-     `(("trivial-features" ,sbcl-trivial-features)
-       ("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (history-tree)")))
 
 (define sbcl-next-password-manager
   (package
-    (inherit next-gtk-webkit)
+    (inherit sbcl-next-download-manager)
     (name "sbcl-next-password-manager")
     (build-system asdf-build-system/sbcl)
     (arguments
@@ -151,13 +120,12 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("str" ,sbcl-cl-str)
        ("trivial-clipboard" ,sbcl-trivial-clipboard)))
     (native-inputs
-     `(("trivial-features" ,sbcl-trivial-features)
-       ("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (password manager)")))
 
 (define sbcl-next-hooks
   (package
-    (inherit next-gtk-webkit)
+    (inherit sbcl-next-download-manager)
     (name "sbcl-next-hooks")
     (build-system asdf-build-system/sbcl)
     (arguments
@@ -168,28 +136,20 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
      `(("alexandria" ,sbcl-alexandria)
        ("serapeum" ,sbcl-serapeum)))
     (native-inputs
-     `(("trivial-features" ,sbcl-trivial-features)
-       ("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (hooks)")))
 
 (define-public next
-  (let ((version (package-version next-gtk-webkit)))
+  (let ((version (package-version sbcl-next-download-manager)))
     (package
-      (inherit next-gtk-webkit)
+      (inherit sbcl-next-download-manager)
       (name "next")
       (build-system asdf-build-system/sbcl)
       (outputs '("out" "lib"))
       (arguments
-       `(#:tests? #f                    ; no tests
+       `(#:tests? #f                    ; TODO: Enable tests!
          #:asd-system-name "next"
          #:phases (modify-phases %standard-phases
-                    (add-after 'unpack 'patch-platform-port-path
-                      (lambda* (#:key inputs #:allow-other-keys)
-                        (substitute* "source/ports/gtk-webkit.lisp"
-                          (("\"next-gtk-webkit\"")
-                           (string-append "\"" (assoc-ref inputs "next-gtk-webkit")
-                                          "/bin/next-gtk-webkit\"")))
-                        #t))
                     (add-after 'patch-platform-port-path 'patch-version
                       ;; When the version is not just dot-separated numerals
                       ;; (e.g. a git-commit version), Guix modifies the .asd with
@@ -228,7 +188,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
                       (lambda* (#:key outputs #:allow-other-keys)
                         (with-output-to-file "version"
                           (lambda _
-                            (format #t "~a" ,(package-version next-gtk-webkit))))
+                            (format #t "~a" ,(package-version sbcl-next-download-manager))))
                         (invoke "make" "install-assets"
                                 (string-append "PREFIX="
                                                (assoc-ref outputs "out"))))))))
@@ -244,7 +204,8 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("cl-ppcre-unicode" ,sbcl-cl-ppcre-unicode)
          ("cl-prevalence" ,sbcl-cl-prevalence)
          ("closer-mop" ,sbcl-closer-mop)
-         ("dbus" ,cl-dbus)
+         ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
+         ("cl-webkit" ,sbcl-cl-webkit)
          ("dexador" ,sbcl-dexador)
          ("ironclad" ,sbcl-ironclad)
          ("local-time" ,sbcl-local-time)
@@ -262,15 +223,13 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("trivial-clipboard" ,sbcl-trivial-clipboard)
          ("unix-opts" ,sbcl-unix-opts)
          ;; Local deps
-         ("next-gtk-webkit" ,next-gtk-webkit)
          ("next-download-manager" ,sbcl-next-download-manager)
          ("next-ring" ,sbcl-next-ring)
          ("next-history-tree" ,sbcl-next-history-tree)
          ("next-password-manager" ,sbcl-next-password-manager)
          ("next-hooks" ,sbcl-next-hooks)))
       (native-inputs
-       `(("trivial-features" ,sbcl-trivial-features)
-         ("trivial-types" ,sbcl-trivial-types)
+       `(("trivial-types" ,sbcl-trivial-types)
          ("prove-asdf" ,sbcl-prove-asdf)))
       (synopsis "Extensible web-browser in Common Lisp"))))
 
