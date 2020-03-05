@@ -144,7 +144,7 @@
          (setf (key-chord-stack *browser*) nil))
         (t (setf (key-chord-stack *browser*) nil))))))
 
-(declaim (ftype (function (&rest t &key (:scheme list) (:keymap keymap) &allow-other-keys)) define-key))
+;; (declaim (ftype (function (&rest t &key (:scheme list) (:keymap keymap) &allow-other-keys)) define-key)) ; TODO: This fails with Guix.
 @export
 (defun define-key (&rest key-command-pairs
                    &key keymap
