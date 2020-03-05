@@ -1,7 +1,5 @@
 (in-package :password)
 
-(annot:enable-annot-syntax)
-
 (defvar *sleep-timer* 15)
 
 (defclass password-interface ()
@@ -21,20 +19,24 @@
                     :initarg :master-password
                     :initform nil)))
 
-@export
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'list-passwords))
 (defgeneric list-passwords (password-interface)
   (:documentation "Retrieve all available passwords."))
 
-@export
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'clip-password))
 (defgeneric clip-password (password-interface password-name)
   (:documentation "Retrieve specific password by name."))
 
-@export
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'save-password))
 (defgeneric save-password (password-interface password-name password)
   (:documentation "Save password to database.
 If PASSWORD-NAME is empty, then generate a new password."))
 
-@export
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'password-correct-p))
 (defgeneric password-correct-p (password-interface)
   (:documentation "Return T if set password is correct, NIL otherwise."))
 
@@ -60,7 +62,8 @@ Return nil if COMMAND is not found anywhere."
                          :output '(:string :stripped t)))
     path))
 
-@export
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'make))
 (defun make ()
   (cond ((executable-find "pass")
          (make-instance 'password-store-interface))

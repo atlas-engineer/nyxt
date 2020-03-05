@@ -150,7 +150,6 @@
 (asdf:defsystem next/password-manager
   :depends-on (bordeaux-threads
                cl-ppcre
-               cl-annot
                str
                trivial-clipboard
                uiop)

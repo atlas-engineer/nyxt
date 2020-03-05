@@ -1,4 +1,4 @@
 (in-package :cl-user)
 
-(defpackage :password
+(uiop:define-package :password
   (:use :common-lisp))
