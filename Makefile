@@ -119,8 +119,21 @@ $(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
 		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")' \
 		--eval '(uiop:quit)' || true
 
+# TODO: This updated package is not on Quicklisp yet, but once it is we can
+# remove this special rule.
+.PHONY: cl-webkit
+cl-webkit: $(QUICKLISP_DIR)/setup.lisp
+	if $(NEXT_INTERNAL_QUICKLISP); then \
+			[ -e "$(QUICKLISP_DIR)"/local-projects/cl-webkit ] && true || \
+				git clone https://github.com/atlas-engineer/cl-webkit $(QUICKLISP_DIR)/local-projects/cl-webkit ; \
+		else \
+			mkdir -p ~/common-lisp && \
+				[ -e ~/common-lisp/cl-webkit ] && true || \
+				git clone https://github.com/atlas-engineer/cl-webkit ~/common-lisp/cl-webkit ; \
+		fi
+
 .PHONY: deps
-deps: $(QUICKLISP_DIR)/setup.lisp
+deps: $(QUICKLISP_DIR)/setup.lisp cl-webkit
 	$(NEXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load $< \
@@ -140,6 +153,7 @@ quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 
 ## Testing that next loads is a first test.
 ## TODO: Test that Next starts even with broken init file.
+.PHONY: test
 test: $(lisp_files)
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
