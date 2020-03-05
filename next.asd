@@ -3,7 +3,6 @@
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
   :serial t
-  :defsystem-depends-on ("trivial-features")
   :depends-on (:alexandria
                :bordeaux-threads
                :cl-annot
