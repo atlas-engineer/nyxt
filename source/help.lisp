@@ -76,7 +76,7 @@
                                            :location)
                                      :file))
                            (:h2 "Source:")
-                           (:p (write-to-string (sexp input)))))
+                           (:pre (:code (write-to-string (sexp input) )))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ipc-buffer-evaluate-javascript help-buffer insert-help)
