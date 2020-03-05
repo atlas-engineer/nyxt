@@ -9,6 +9,11 @@
 (defvar *free-args* '()
   "The list of positional command line arguments.")
 
+(defvar *keep-alive* t
+  "If non-nil, don't terminate the Lisp process when quitting the browser.
+This is useful when the browser is run from a REPL so that quitting does not
+close the connection.")
+
 @export
 (defvar *browser* nil
   "The entry-point object to a complete instance of Next.

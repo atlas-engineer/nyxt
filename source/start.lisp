@@ -52,7 +52,8 @@ Set to '-' to read standard input instead.")
   (loop for window in (alexandria:hash-table-values (windows *browser*))
         do (ipc-window-destroy window))
   (kill-interface *browser*)
-  (uiop:quit 0 nil))
+  (unless *keep-alive*
+    (uiop:quit 0 nil)))
 
 (define-command quit-after-clearing-session ()
   "Clear session then quit Next."
@@ -98,6 +99,7 @@ next [options] [urls]")
         (setf next:*use-session* nil)))
     (setf *options* options
           *free-args* free-args)
+    (setf *keep-alive* nil)             ; Not a REPL.
     (start :urls free-args)))
 
 (defun init-file-path (&optional (filename "init.lisp"))
