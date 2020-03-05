@@ -1,6 +1,3 @@
-;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
-;;; next.asd
-
 (asdf:defsystem :next
   :version "1.5.0"
   :author "Atlas Engineer LLC"
