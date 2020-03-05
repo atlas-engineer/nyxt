@@ -100,7 +100,7 @@
   (next-hooks:run-hook (window-delete-hook window) window)
   (remhash (id window) (windows *browser*))
   (when (zerop (hash-table-count (windows *browser*)))
-    (kill-interface *browser*)))
+    (quit)))
 
 (defmethod ipc-window-destroy ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))
@@ -278,6 +278,11 @@
       (setf (last-active-window browser) window))
     (next-hooks:run-hook (window-make-hook browser) window)
     window))
+
+@export
+(defmethod ipc-window-to-foreground ((window gtk-window))
+  "Show window in foreground."
+  (gtk:gtk-window-present (gtk-object window)))
 
 @export
 (defmethod ipc-window-set-title ((window gtk-window) title)

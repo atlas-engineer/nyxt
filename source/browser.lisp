@@ -282,7 +282,26 @@ defined in any package and is unique."
 @export
 @export-accessors
 (defclass browser ()
-  ((password-interface :accessor password-interface
+  ((socket-thread :accessor socket-thread
+                  :initform nil
+                  :documentation "Thread that listens on socket.
+See `socket-path'.
+This slot is mostly meant to clean up the thread if necessary.")
+   (socket-path :accessor socket-path
+                :initarg :socket-path
+                :initform (namestring (xdg-data-home "next.socket"))
+                :type string
+                :documentation "Path string of the Unix socket used to communicate
+                between different instances of Next.")
+   (single-instance-p :accessor single-instance-p
+                      :initarg :single-instance-p
+                      :initform t
+                      :type boolean
+                      :documentation "If non-nil, executing Next when a first
+                      instance is already running will bring that instance to
+                      the foreground and query it to load the URLs passed as
+                      command line arguments.")
+   (password-interface :accessor password-interface
                        :initform (password:make))
    (messages-content :accessor messages-content :initform nil :type :list
                      :documentation "A cl-markup plist of all echoed messages.
@@ -635,10 +654,6 @@ current buffer."
   (if (str:emptyp url)
       (echo-dismiss)
       (echo "→ ~a" url)))
-
-(defun make-buffers (urls)
-  (open-urls urls)
-  (values))
 
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.

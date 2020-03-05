@@ -17,6 +17,7 @@
                :cl-cffi-gtk
                :cl-webkit2
                :dexador
+               :iolib
                :ironclad
                :local-time
                :log4cl

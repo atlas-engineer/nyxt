@@ -52,6 +52,12 @@ Set to '-' to read standard input instead.")
   (loop for window in (alexandria:hash-table-values (windows *browser*))
         do (ipc-window-destroy window))
   (kill-interface *browser*)
+  (when (socket-thread *browser*)
+    (ignore-errors
+     (bt:destroy-thread (socket-thread *browser*))))
+  (when (uiop:file-exists-p (socket-path *browser*))
+    (log:info "Deleting socket ~a" (socket-path *browser*))
+    (uiop:delete-file-if-exists (socket-path *browser*)))
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
@@ -182,6 +188,47 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
      (when *use-session*
        (funcall f)))))
 
+(defun listen-socket ()
+  (log:info "Listening on socket ~s" (socket-path *browser*))
+  ;; TODO: Catch error against race conditions?
+  (iolib:with-open-socket (s :address-family :local
+                             :connect :passive
+                             :local-filename (socket-path *browser*))
+    (loop as connection = (iolib:accept-connection s)
+          while connection
+          do (progn (match (str:split (string #\newline)
+                                      (alexandria:read-stream-content-into-string connection)
+                                      :omit-nulls t)
+                      ((guard urls urls)
+                       (log:info "External process requested URL(s): ~{~a~^, ~}" urls)
+                       ;; `open-urls` must be done on the GTK thread.
+                       (gdk:gdk-threads-add-idle (lambda ()
+                                                   (open-urls urls)
+                                                   ;; Return nil so that the callback is called only once.
+                                                   nil)))
+                      (_
+                       (log:info "External process pinged Next.")))
+                    (ipc-window-to-foreground (last-active-window *browser*))))))
+
+(defun bind-socket-or-quit (urls)
+  "If another Next is listening on the socket, tell it to open URLS.
+Otherwise bind socket."
+  (if (ignore-errors
+       (iolib:with-open-socket (s :address-family :local
+                                  :remote-filename (socket-path *browser*))
+         (iolib:socket-connected-p s)))
+      (progn
+        (if urls
+            (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
+            (log:info "Next already started." urls))
+        (iolib:with-open-socket (s :address-family :local
+                                   :remote-filename (socket-path *browser*))
+          (format s "~{~a~%~}" urls))
+        (uiop:quit))
+      (progn
+        (uiop:delete-file-if-exists (socket-path *browser*))
+        (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))
+
 @export
 (defun start (&key urls (init-file (init-file-path)))
   "Start Next and load URLS if any. A new `*browser*' is
@@ -193,6 +240,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
       (load-lisp-file init-file :interactive t))
     (setf *browser* (make-instance *browser-class*
                                    :startup-timestamp startup-timestamp))
+    (when (single-instance-p *browser*)
+      (bind-socket-or-quit urls))
     (initialize *browser* urls startup-timestamp)))
 
 (define-command next-init-time ()
