@@ -90,6 +90,11 @@ The full list of dependencies can be installed in a one-liner:
   sudo apt install sbcl libwebkit2gtk-4.0-dev glib-networking sqlite gsettings-desktop-schemas libfixposix-dev libgstreamer1.0-0 gir1.2-gst-plugins-base-1.0 xclip notify-osd
   #+end_src
 
+- Fedora:
+  #+begin_src sh
+  sudo dnf install sbcl webkit2gtk3-devel glib-networking sqlite gsettings-desktop-schemas libfixposix-devel gstreamer1-devel gstreamer1-plugins-base xclip   
+  #+end_src
+
 If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
 have to let know your Lisp compiler where to find them.  To do so, add the
 library directories to ~cffi:*foreign-library-directories*~ list.  For instance,
