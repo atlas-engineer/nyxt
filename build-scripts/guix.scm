@@ -222,6 +222,9 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("trivia" ,sbcl-trivia)
          ("trivial-clipboard" ,sbcl-trivial-clipboard)
          ("unix-opts" ,sbcl-unix-opts)
+         ;; WebKitGTK deps
+         ("glib-networking" ,glib-networking)
+         ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
          ;; Local deps
          ("next-download-manager" ,sbcl-next-download-manager)
          ("next-ring" ,sbcl-next-ring)
