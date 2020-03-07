@@ -1,8 +1,35 @@
 ;;; keymap.lisp --- lisp subroutines for key binding detection
 
+;; TODO: Fix doubled keys / broken stack.
+;; TODO: Fix dead keys in the minibuffer.
+;; TODO: Rename to input.lisp.
+;; TODO: Check out lispkit / lem / nomad / emacsy.  Emacsy implementation is good.
+
+;; TODO: Turn into a library.
+;; TODO: Add tests.
+
+;; TODO: Support self-insertable keys.  Make sure dead keys work.
+;; TODO: Add customizable function when key is not found.
+;; TODO: Make modifiers customizable.
 ;; TODO: Remove intermediary serialization.
 ;; TODO: Perform key translation, e.g. if s-FOO is not bound, call command bound to FOO.
 ;; TODO: Decide of a key string protocol: https://github.com/atlas-engineer/next/issues/564
+;; TODO: Fix define-key: lambda list, type, compile-time key string checking.
+;; TODO: Use CUA scheme by default.
+;; TODO: Support key codes.  Make sure it's dynamic, i.e. when the keyboard
+;; layout changes, the binding should remain on the same hardware keys.
+;; TODO: Support keymap inheritance.
+
+;; TODO: Bind key to keymap / keymap prefix.  Better: use this to break down
+;; multi-stroke bindings.  E.g. if we have C-x C-f and C-x C-b, then C-x binds
+;; to an anonymous keymap and C-f and C-b are bound in the key map.  This makes
+;; implementation of which-key trivial + it allows for binding prefix keys to keymaps.
+;; TODO: which-key: List all bindings with some prefix.
+;; TODO: List command bindings (find Emacs equivalent name).  Make sure it's
+;; dynamic, e.g. that it's updated when the keymap scheme is updated.
+;; TODO: Make sure it's easy enough to set global bindings.
+;; TODO: Implement `C-h k`: documentation for keypresses.  Make sure it tells
+;; which keymap it's defined in.
 
 (in-package :next)
 (annot:enable-annot-syntax)
