@@ -324,16 +324,10 @@ TODO: Report issue to CL-CFFI-GTK."
 
 @export
 (defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
-  "Set BROWSER's WINDOW buffer to BUFFER.
-   Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
-   proceeding."
-  (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
+  "Set BROWSER's WINDOW buffer to BUFFER. "
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))
-  (setf (active-buffer window) buffer)
-  (setf (last-access buffer) (local-time:now))
-  (setf (last-active-buffer *browser*) buffer)
   buffer)
 
 @export

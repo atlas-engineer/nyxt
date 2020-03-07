@@ -620,10 +620,14 @@ current buffer."
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 @export
 (defun window-set-active-buffer (window buffer)
+  "Set BROWSER's WINDOW buffer to BUFFER.
+Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
+proceeding."
   (let ((window-with-same-buffer (find-if
                                   (lambda (other-window) (and (not (eq other-window window))
                                                               (eql (active-buffer other-window) buffer)))
                                   (alexandria:hash-table-values (windows *browser*)))))
+    (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (ipc-buffer-make *browser*))
               (buffer-swap (active-buffer window)))
@@ -633,6 +637,9 @@ current buffer."
           (ipc-window-set-active-buffer window-with-same-buffer buffer-swap)
           (ipc-buffer-delete temp-buffer))
         (ipc-window-set-active-buffer window buffer))
+    (setf (active-buffer window) buffer)
+    (setf (last-access buffer) (local-time:now))
+    (setf (last-active-buffer *browser*) buffer)
     (set-window-title window buffer)
     (echo-dismiss)
     (setf (active-buffer window) buffer)))
