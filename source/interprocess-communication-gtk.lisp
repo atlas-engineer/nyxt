@@ -99,10 +99,7 @@
 (defmethod process-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
-  (next-hooks:run-hook (window-delete-hook window) window)
-  (remhash (id window) (windows *browser*))
-  (when (zerop (hash-table-count (windows *browser*)))
-    (quit)))
+  (window-delete window))
 
 (defmethod ipc-window-destroy ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))
@@ -309,10 +306,7 @@ TODO: Report issue to CL-CFFI-GTK."
 @export
 (defmethod ipc-window-delete ((window gtk-window))
   "Delete a window object and remove it from the hash of windows."
-  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
-  (gtk:gtk-widget-destroy (gtk-object window))
-  (next-hooks:run-hook (window-delete-hook window) window)
-  (remhash (id window) (windows *browser*)))
+  (gtk:gtk-widget-destroy (gtk-object window)))
 
 @export
 (defmethod ipc-window-active ((browser gtk-browser))
