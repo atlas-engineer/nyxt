@@ -332,6 +332,7 @@ TODO: Report issue to CL-CFFI-GTK."
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))
   (setf (active-buffer window) buffer)
+  (setf (last-access buffer) (local-time:now))
   (setf (last-active-buffer *browser*) buffer)
   buffer)
 
