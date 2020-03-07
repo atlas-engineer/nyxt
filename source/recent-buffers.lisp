@@ -24,7 +24,7 @@
                           :completion-function (recent-buffer-completion-filter))))
     (dolist (buffer buffers)
       (ring:delete-match (recent-buffers *browser*) (buffer-match-predicate buffer))
-      (reload-current-buffer (ipc-buffer-make *browser* :dead-buffer buffer))
+      (reload-current-buffer (buffer-make *browser* :dead-buffer buffer))
       (when (and (eq buffer (first buffers))
                  (focus-on-reopened-buffer-p *browser*))
         (set-current-buffer buffer)))))
@@ -32,7 +32,7 @@
 (define-command reopen-last-buffer ()
   "Open a new buffer with the URL of the most recently deleted buffer."
   (if (plusp (ring:item-count (recent-buffers *browser*)))
-      (let ((buffer (ipc-buffer-make *browser*
+      (let ((buffer (buffer-make *browser*
                      :dead-buffer (ring:pop-most-recent (recent-buffers *browser*)))))
         (reload-current-buffer buffer)
         (when (focus-on-reopened-buffer-p *browser*)

@@ -35,12 +35,31 @@ title into accound as it may vary from one load to the next."
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
-  (let* ((buffer (ipc-buffer-make *browser* :title title :default-modes modes))
+  (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
          (url (if (eq url :default)
                   (default-new-buffer-url buffer)
                   url)))
     (when url
       (set-url url :buffer buffer))
+    buffer))
+
+(declaim (ftype (function (browser &key (:title string) (:default-modes list) (:dead-buffer buffer))) buffer-make))
+(defun buffer-make (browser &key title default-modes dead-buffer)
+  "Make buffer with title TITLE and modes DEFAULT-MODES.
+Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
+If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
+  (declare (ignore dead-buffer)) ;; TODO: Dead Buffer
+  (let* ((buffer (ipc-buffer-make browser :title title :default-modes default-modes)))
+    (unless (str:emptyp (namestring (cookies-path buffer)))
+      (ensure-parent-exists (cookies-path buffer)))
+    (setf (gethash (id buffer) (buffers browser)) buffer)
+    (unless (last-active-buffer browser)
+      ;; When starting from a REPL, it's possible that the window is spawned in
+      ;; the background and current-buffer would then return nil.
+      (setf (last-active-buffer browser) buffer))
+    ;; Run hooks before `initialize-modes' to allow for last-minute modification
+    ;; of the default modes.
+    (next-hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
 @export
