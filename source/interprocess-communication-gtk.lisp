@@ -176,7 +176,7 @@
 
 (defun duplicated-event? (event)
   "For some reason, we sometimes receive duplicate events.
-TODO: Report issue to CL-CFFI-GTK."
+TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
   (when (and *previous-event* event)
     (= (gdk:GDK-EVENT-KEY-TIME event)
        (gdk:GDK-EVENT-KEY-TIME *previous-event*))))
