@@ -13,6 +13,15 @@
     (lambda (input)
       (fuzzy-match input windows))))
 
+(declaim (ftype (function (browser)) window-make))
+(defun window-make (browser)
+  (let* ((window (ipc-window-make browser)))
+    (setf (gethash (id window) (windows browser)) window)
+    (unless (last-active-window browser)
+      (setf (last-active-window browser) window))
+    (next-hooks:run-hook (window-make-hook browser) window)
+    window))
+
 (declaim (ftype (function (window)) window-delete))
 (defun window-delete (window)
   "This function must be called by the renderer when a window is deleted."

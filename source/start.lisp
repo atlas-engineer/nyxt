@@ -180,7 +180,7 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
    suitable as a `browser' `startup-function'."
   (when urls
     (open-urls urls))
-  (let ((window (ipc-window-make *browser*))
+  (let ((window (window-make *browser*))
         (buffer (help)))
     (window-set-active-buffer window buffer))
   (match (session-restore-function *browser*)

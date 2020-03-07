@@ -435,7 +435,7 @@ platform port get terminated.  The handlers take no argument.")
    (window-make-hook :accessor window-make-hook
                      :initform (make-hook-window)
                      :type hook-window
-                     :documentation "Hook run after `ipc-window-make'.
+                     :documentation "Hook run after `window-make'.
 The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook
                      :initform (make-hook-buffer)
@@ -674,7 +674,7 @@ proceeding."
                                   urls))))
         (unless no-focus
           (if (open-external-link-in-new-window-p *browser*)
-              (let ((window (ipc-window-make *browser*)))
+              (let ((window (window-make *browser*)))
                 (window-set-active-buffer window first-buffer))
               (set-current-buffer first-buffer))))
     (error (c)
