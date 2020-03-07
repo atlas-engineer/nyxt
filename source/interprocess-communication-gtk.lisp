@@ -286,12 +286,7 @@ TODO: Report issue to CL-CFFI-GTK."
 @export
 (defmethod ipc-window-make ((browser gtk-browser))
   "Make a window."
-  (let* ((window (make-instance 'gtk-window)))
-    (setf (gethash (id window) (windows browser)) window)
-    (unless (last-active-window browser)
-      (setf (last-active-window browser) window))
-    (next-hooks:run-hook (window-make-hook browser) window)
-    window))
+  (make-instance 'gtk-window))
 
 @export
 (defmethod ipc-window-to-foreground ((window gtk-window))
