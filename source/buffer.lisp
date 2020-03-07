@@ -62,6 +62,25 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (next-hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
+(declaim (ftype (function (buffer)) buffer-delete))
+(defun buffer-delete (buffer)
+  (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
+  (let ((parent-window (find-if
+                        (lambda (window) (eql (active-buffer window) buffer))
+                        (alexandria:hash-table-values (windows *browser*))))
+        (replacement-buffer (or (%get-inactive-buffer)
+                                (buffer-make *browser*))))
+    (when parent-window
+      (window-set-active-buffer parent-window replacement-buffer))
+    (ipc-buffer-delete buffer)
+    (remhash (id buffer) (buffers *browser*))
+    (setf (id buffer) "")
+    (add-to-recent-buffers buffer)
+    (match (session-store-function *browser*)
+      ((guard f f)
+       (when *use-session*
+         (funcall f))))))
+
 @export
 (defun buffer-list (&key sort-by-time)
   (let ((buf-list (alexandria:hash-table-values (buffers *browser*))))
@@ -101,11 +120,11 @@ See `make-buffer'."
                           :input-prompt "Delete buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
-    (mapcar #'ipc-buffer-delete buffers)))
+    (mapcar #'buffer-delete buffers)))
 
 (defun delete-buffers ()
   "Delete all buffers."
-  (mapcar #'ipc-buffer-delete (buffer-list)))
+  (mapcar #'buffer-delete (buffer-list)))
 
 (define-command delete-all-buffers ()
   "Delete all buffers, with confirmation."
@@ -117,7 +136,7 @@ See `make-buffer'."
   "Delete the currently active buffer, and make the next buffer the
 visible buffer. If no other buffers exist, set the url of the current
 buffer to the start page."
-  (ipc-buffer-delete buffer))
+  (buffer-delete buffer))
 
 (define-command delete-other-buffers (&optional (buffer (current-buffer)))
   "Delete all other buffers but `buffer` which if not explicitly set defaults
@@ -126,7 +145,7 @@ to the currently active buffer."
          (buffers-to-delete (remove buffer all-buffers))
          (count (list-length buffers-to-delete)))
     (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
-      (mapcar #'ipc-buffer-delete buffers-to-delete))))
+      (mapcar #'buffer-delete buffers-to-delete))))
 
 ;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.
 @export

@@ -333,24 +333,7 @@ TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
 
 @export
 (defmethod ipc-buffer-delete ((buffer gtk-buffer))
-  "Delete BUFFER from `*browser*'.
-   Run BUFFER's `buffer-delete-hook' over BUFFER before deleting it."
-  (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (let ((parent-window (find-if
-                        (lambda (window) (eql (active-buffer window) buffer))
-                        (alexandria:hash-table-values (windows *browser*))))
-        (replacement-buffer (or (%get-inactive-buffer)
-                                (buffer-make *browser*))))
-    (when parent-window
-      (window-set-active-buffer parent-window replacement-buffer))
-    (gtk:gtk-widget-destroy (gtk-object buffer))
-    (remhash (id buffer) (buffers *browser*))
-    (setf (id buffer) "")
-    (add-to-recent-buffers buffer)
-    (match (session-store-function *browser*)
-      ((guard f f)
-       (when *use-session*
-         (funcall f))))))
+  (gtk:gtk-widget-destroy (gtk-object buffer)))
 
 @export
 (defmethod ipc-buffer-load ((buffer gtk-buffer) uri)

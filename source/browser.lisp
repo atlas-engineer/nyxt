@@ -199,7 +199,7 @@ return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook
                        :initform (make-hook-buffer)
                        :type hook-buffer
-                       :documentation "Hook run before `ipc-buffer-delete' takes effect.
+                       :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")))
 
 (defmethod proxy ((buffer buffer))
@@ -635,7 +635,7 @@ proceeding."
           (ipc-window-set-active-buffer window-with-same-buffer temp-buffer)
           (ipc-window-set-active-buffer window buffer)
           (ipc-window-set-active-buffer window-with-same-buffer buffer-swap)
-          (ipc-buffer-delete temp-buffer))
+          (buffer-delete temp-buffer))
         (ipc-window-set-active-buffer window buffer))
     (setf (active-buffer window) buffer)
     (setf (last-access buffer) (local-time:now))

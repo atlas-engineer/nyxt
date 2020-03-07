@@ -68,7 +68,7 @@ Currently we store the list of current URLs of all buffers."
              ;; Delete the old buffers?
              ;; (maphash (lambda (id buffer)
              ;;            (declare (ignore id))
-             ;;            (ipc-buffer-delete buffer))
+             ;;            (buffer-delete buffer))
              ;;          buffers)
              ;; Make the new ones.
              ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
