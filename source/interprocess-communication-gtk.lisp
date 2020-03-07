@@ -174,7 +174,7 @@
 
 (defparameter *previous-event* nil)
 
-(defun duplicated-event? (event)        ; Taken from lispkit.
+(defun duplicated-event? (event)
   "For some reason, we sometimes receive duplicate events.
 TODO: Report issue to CL-CFFI-GTK."
   (when (and *previous-event* event)
