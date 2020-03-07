@@ -325,25 +325,11 @@ TODO: Report issue to CL-CFFI-GTK."
         (list -1 height)))
 
 @export
-(defmethod ipc-buffer-make ((browser gtk-browser) &key title default-modes dead-buffer)
-  "Make buffer with title TITLE and modes DEFAULT-MODES.
-   Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
-   If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  (declare (ignore dead-buffer)) ;; TODO: Dead Buffer
-  (let* ((buffer (apply #'make-instance *buffer-class*
-                        (append (when title `(:title ,title))
-                                (when default-modes `(:default-modes ,default-modes))))))
-    (unless (str:emptyp (namestring (cookies-path buffer)))
-      (ensure-parent-exists (cookies-path buffer)))
-    (setf (gethash (id buffer) (buffers browser)) buffer)
-    (unless (last-active-buffer browser)
-      ;; When starting from a REPL, it's possible that the window is spawned in
-      ;; the background and current-buffer would then return nil.
-      (setf (last-active-buffer browser) buffer))
-    ;; Run hooks before `initialize-modes' to allow for last-minute modification
-    ;; of the default modes.
-    (next-hooks:run-hook (buffer-make-hook browser) buffer)
-    buffer))
+(defmethod ipc-buffer-make ((browser gtk-browser) &key title default-modes)
+  "Make buffer with title TITLE and modes DEFAULT-MODES."
+  (apply #'make-instance *buffer-class*
+         (append (when title `(:title ,title))
+                 (when default-modes `(:default-modes ,default-modes)))))
 
 @export
 (defmethod ipc-buffer-delete ((buffer gtk-buffer))
@@ -354,7 +340,7 @@ TODO: Report issue to CL-CFFI-GTK."
                         (lambda (window) (eql (active-buffer window) buffer))
                         (alexandria:hash-table-values (windows *browser*))))
         (replacement-buffer (or (%get-inactive-buffer)
-                                (ipc-buffer-make *browser*))))
+                                (buffer-make *browser*))))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))
     (gtk:gtk-widget-destroy (gtk-object buffer))
