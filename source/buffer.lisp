@@ -207,9 +207,10 @@ That is to say, the one with the most recent access time after the current buffe
 The current buffer access time is set to be the last."
   (let* ((buffers (buffer-list :sort-by-time t))
          (last-buffer (alexandria:last-elt buffers)))
-    (setf (last-access (current-buffer))
-          (local-time:timestamp- (last-access last-buffer) 1 :sec))
-    (set-current-buffer (second buffers))))
+    (when (second buffers)
+      (setf (last-access (current-buffer))
+            (local-time:timestamp- (last-access last-buffer) 1 :sec))
+      (set-current-buffer (second buffers)))))
 
 (define-command switch-buffer-next ()   ; TODO: Rename switch-buffer-oldest
   "Switch to the oldest buffer in the list of buffers."
