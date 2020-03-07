@@ -24,10 +24,12 @@
   #+linux
   (progn
     (gtk:within-main-loop
+      (gdk:gdk-set-program-class "next")
       (finalize browser urls startup-timestamp))
     (gtk:join-gtk-main))
   #+darwin
   (progn
+    (gdk:gdk-set-program-class "next")
     (finalize browser urls startup-timestamp)
     (gtk:gtk-main)))
 
