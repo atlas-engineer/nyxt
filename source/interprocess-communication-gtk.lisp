@@ -172,13 +172,24 @@
                    (member :meta-mask modifier-state)))
       (setf (modifiers browser) (remove "S" (modifiers browser) :test #'equal)))))
 
+(defparameter *previous-event* nil)
+
+(defun duplicated-event? (event)        ; Taken from lispkit.
+  "For some reason, we sometimes receive duplicate events.
+TODO: Report issue to CL-CFFI-GTK."
+  (when (and *previous-event* event)
+    (= (gdk:GDK-EVENT-KEY-TIME event)
+       (gdk:GDK-EVENT-KEY-TIME *previous-event*))))
+
 (defmethod process-key-press-event ((sender gtk-window) event)
-  (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
-         (character-code (char-code character))
-         (key-value (gdk:gdk-event-key-keyval event))
-         (key-string (character->string character key-value)))
-    (when key-string
-      (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender))))
+  (unless (duplicated-event? event)
+    (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
+           (character-code (char-code character))
+           (key-value (gdk:gdk-event-key-keyval event))
+           (key-string (character->string character key-value)))
+      (when key-string
+        (log:debug character-code key-string (modifiers *browser*))
+        (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender)))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
