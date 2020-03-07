@@ -13,6 +13,15 @@
     (lambda (input)
       (fuzzy-match input windows))))
 
+(declaim (ftype (function (window)) window-delete))
+(defun window-delete (window)
+  "This function must be called by the renderer when a window is deleted."
+  (ipc-window-delete window)
+  (next-hooks:run-hook (window-delete-hook window) window)
+  (remhash (id window) (windows *browser*))
+  (when (zerop (hash-table-count (windows *browser*)))
+    (quit)))
+
 (define-command delete-window ()
   "Delete the queried window(s)."
   (with-result (windows (read-from-minibuffer
