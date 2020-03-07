@@ -1,0 +1,29 @@
+General-purpose keymap management.
+
+This keymap library is inspired by [[https://savannah.nongnu.org/projects/emacsy][Emacsy]] (=keymap.scm=) which is inspired by
+Emacs.
+
+Goals:
+
+- Support dead keys.
+- Customize fallback function when binding is not found.
+- Provide a self-insert function.
+- Support prefix keys to other keymaps.  For instance, if you prefix my-mode-map
+  with =C-c=, then all bindings for my-mode will be accessible after pressing =C-c=.
+- List all bindings matching a given prefix.  (Also known as =which-key= in Emacs.)
+- List the bindings associated to a command.
+
+Changes compared to Emacsy:
+
+- Modifiers are customizable.  For instance =control= and =meta= can be swapped.
+- Support multiple inheritance.
+- Support keycode.
+- Validate keyspec at compile time.
+- Support multiple scheme to make it easy to switch between, say, Emacs-style
+  and VI-style bindings.  This orthogonality to keymaps composes better than
+  having multiple keymaps: changing scheme applies to the entire program, which
+  is easier than looping through all keymaps to change them.
+- Translate keyspecs as a fallback.  For instance if =shift-a= is not bound, check =A=.
+
+This library does not deal with global or local bindings: it's up to the calling
+application to manage the locallity of their keymaps.
