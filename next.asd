@@ -40,7 +40,8 @@
                :next/ring
                :next/history-tree
                :next/password-manager
-               :next/hooks)
+               :next/hooks
+               :next/keymap)
   :components ((:module "source"
                 :components
                 ((:file "patches/patch-annot")
@@ -172,6 +173,20 @@
   :depends-on (prove
                next/hooks)
   :components ((:module source/tests :pathname "libraries/hooks/tests/"
+                :components ((:test-file "tests"))))
+  :perform (asdf:test-op (op c) (uiop:symbol-call
+                                 :prove-asdf 'run-test-system c)))
+
+(asdf:defsystem next/keymap
+  :depends-on (alexandria fset)
+  :components ((:module source :pathname "libraries/keymap/"
+                :components ((:file "package")
+                             (:file "keymap")))))
+
+(asdf:defsystem next/keymap/tests
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (alexandria fset prove next/keymap)
+  :components ((:module source/tests :pathname "libraries/keymap/tests/"
                 :components ((:test-file "tests"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))
