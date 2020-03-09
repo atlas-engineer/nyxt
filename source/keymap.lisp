@@ -161,7 +161,7 @@ Return nil to forward to renderer or non-nil otherwise."
         ((functionp bound-function)
          (log:debug "Key sequence ~a bound to:"
                     (serialize-key-chord-stack (key-chord-stack *browser*)))
-         (funcall bound-function)
+         (funcall-safely bound-function)
          (setf (key-chord-stack *browser*) nil)
          t)
         ;; minibuffer is active

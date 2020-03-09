@@ -180,3 +180,16 @@ won't be affected."
    (setf *error-output*
          (open (error-output-path browser) :direction :output :if-does-not-exist :create
                                              :if-exists :append))))
+
+(defun funcall-safely (f &rest args)
+  "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run
+from a binary) then any condition is logged instead of triggering the debugger."
+  (handler-case
+      (apply f args)
+    (error (c)
+      (if *keep-alive*
+          (error c)
+          ;; TODO: Echo this in a status bar or else it won't be seen if it
+          ;; happens when the minibuffer is up.
+          (log:error "Error in ~a: ~a" f c))
+      nil)))

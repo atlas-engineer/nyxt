@@ -189,8 +189,7 @@ This function can be `funcall'ed."
 
 (defmethod run ((command command) &rest args)
   "Run COMMAND over ARGS."
-  (apply (command-function command)
-         args))
+  (apply #'funcall-safely (command-function command) args))
 
 (define-command execute-command ()
   "Execute a command by name."
