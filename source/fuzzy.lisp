@@ -125,10 +125,15 @@ The match is case-sensitive if INPUT contains at least one uppercase character."
              (pairs (keep-exact-matches-in-candidates input pairs))
              (pairs (sort-candidates input pairs)))
         (log:debug "~a"
-                   (mapcar (lambda (c)
-                             (list (first c)
-                                   (score-candidate (to-unicode input) (first c))))
-                                pairs))
+                   (let ((limit 100)
+                         (pairs (mapcar (lambda (c)
+                                          (list (first c)
+                                                (score-candidate (to-unicode input) (first c))))
+                                        pairs)))
+                     ;; Don't display more than 100 elements to avoid flooding stdout.
+                     (if (< (length pairs) limit)
+                         pairs
+                         (nconc (subseq pairs 0 limit) (list "...")))))
         (mapcar #'second pairs))
       candidates))
 
