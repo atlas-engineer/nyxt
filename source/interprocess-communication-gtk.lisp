@@ -138,9 +138,19 @@
       (push "S" modifiers))
     modifiers))
 
+(defun gdk-event-button-state (button-event) ; TODO: Fix upstream, see https://github.com/crategus/cl-cffi-gtk/issues/74.
+  "Return BUTTON-EVENT modifiers as a `gdk-modifier-type', i.e. a list of keywords."
+  (with-foreign-objects ((modifiers 'gdk-modifier-type))
+    (setf (mem-ref modifiers 'gdk-modifier-type) (gdk:gdk-event-button-state event))
+    (mem-ref modifiers 'gdk-modifier-type)))
+
 (defmethod push-modifier ((browser gtk-browser) event)
-  (let ((modifier-state (gdk:gdk-event-key-state event))
-        (key-value (gdk:gdk-event-key-keyval event)))
+  (let ((modifier-state (match (type-of event)
+                          ('gdk:gdk-event-key (gdk:gdk-event-key-state event))
+                          ('gdk:gdk-event-button (gdk-event-button-state event))))
+        (key-value (match (type-of event)
+                     ('gdk:gdk-event-key (gdk:gdk-event-key-keyval event))
+                     (_ 0))))
     (when (member :control-mask modifier-state)
       (push "C" (modifiers browser)))
     (when (member :shift-mask modifier-state)
@@ -188,6 +198,18 @@ TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
         (log:debug character-code key-string (modifiers *browser*))
         (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender)))))
 
+(defmethod process-button-press-event ((sender gtk-buffer) event)
+  (unless (duplicated-event? event)
+    (let* ((button (gdk:gdk-event-button-button event))
+           (x (gdk:gdk-event-button-x event))
+           (y (gdk:gdk-event-button-y event))
+           (key-string (format nil "button~s" button))
+           (window (find sender
+                         (alexandria:hash-table-values (windows *browser*))
+                         :key #'active-buffer)))
+      (when key-string
+        (push-input-event 0 key-string (modifiers *browser*) x y nil window)))))
+
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
   (let* ((context (webkit:webkit-web-context-get-default))
@@ -221,6 +243,13 @@ TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
    (lambda (web-view hit-test-result modifiers)
      (declare (ignore web-view))
      (process-mouse-target-changed buffer hit-test-result modifiers)))
+  ;; Mouse events are captured by the web view first, so we must intercept them here.
+  (gobject:g-signal-connect
+   (gtk-object buffer) "button-press-event"
+   (lambda (web-view event) (declare (ignore web-view))
+     (push-modifier *browser* event)
+     (process-button-press-event buffer event)))
+  ;; TODO: Capture button-release-event?
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after the view has been created.
   (initialize-modes buffer))
