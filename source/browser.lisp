@@ -130,12 +130,11 @@ this is left for the user to customize to their needs.")
 forwarded to the platform port when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
-   (last-key-chords :accessor last-key-chords
-                    :initform '()
-                    :type trivial-types:proper-list
-                    ;; TODO: Store multiple key chords?  Maybe when implementing keyboard macros.
-                    :documentation "The last key chords that were received for the current buffer.
-For now we only store the very last key chord.")
+   (last-event :accessor last-event
+               :initform nil
+               :type 'gdk:gdk-event
+               ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
+               :documentation "The last event that was received for the current buffer.")
    (resource-query-function :accessor resource-query-function
                             ;; TODO: What about having multiple functions?  And what about moving this to modes?
                             :initarg :resource-query-function

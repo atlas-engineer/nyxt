@@ -140,9 +140,10 @@
 
 (defun gdk-event-button-state (button-event) ; TODO: Fix upstream, see https://github.com/crategus/cl-cffi-gtk/issues/74.
   "Return BUTTON-EVENT modifiers as a `gdk-modifier-type', i.e. a list of keywords."
-  (with-foreign-objects ((modifiers 'gdk-modifier-type))
-    (setf (mem-ref modifiers 'gdk-modifier-type) (gdk:gdk-event-button-state event))
-    (mem-ref modifiers 'gdk-modifier-type)))
+  (cffi:with-foreign-objects ((modifiers 'gdk:gdk-modifier-type))
+    (setf (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)
+          (gdk:gdk-event-button-state button-event))
+    (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))
 
 (defmethod push-modifier ((browser gtk-browser) event)
   (let ((modifier-state (match (type-of event)
@@ -198,7 +199,8 @@ TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
            (key-string (character->string character key-value)))
       (when key-string
         (log:debug character-code key-string (modifiers *browser*))
-        (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender)))))
+        (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender
+                          event)))))
 
 (defmethod process-button-press-event ((sender gtk-buffer) event)
   (unless (duplicated-event? event)
@@ -210,7 +212,8 @@ TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
                          (alexandria:hash-table-values (windows *browser*))
                          :key #'active-buffer)))
       (when key-string
-        (push-input-event 0 key-string (modifiers *browser*) x y nil window)))))
+        (push-input-event 0 key-string (modifiers *browser*) x y nil window
+                          event)))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
@@ -408,3 +411,14 @@ TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
     (webkit:webkit-web-context-set-network-proxy-settings
      context
      :webkit-network-proxy-mode-custom settings)))
+
+@export
+(defmethod ipc-generate-input-event ((window gtk-window) event)
+  ;; The "send_event" field is used to mark the event as an "unconsumed"
+  ;; keypress.  The distinction allows us to avoid looping indefinitely.
+  (setf (gdk:gdk-event-button-send-event event) t)
+  (gtk:gtk-main-do-event event))
+
+@export
+(defmethod ipc-generated-input-event-p ((window gtk-window) event)
+  (gdk:gdk-event-send-event event))

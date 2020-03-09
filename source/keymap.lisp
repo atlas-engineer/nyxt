@@ -131,8 +131,9 @@
   (declare (ignore key-chord))
   t)
 
-(defun push-input-event (key-code key-string modifiers x y low-level-data sender)
-  "Add a new key chord to the browser key-chord-stack."
+(defun push-input-event (key-code key-string modifiers x y low-level-data sender event)
+  "Add a new key chord to the browser key-chord-stack.
+Return nil to forward to renderer or non-nil otherwise."
   (let ((key-chord (make-key-chord
                     :key-code key-code
                     :key-string key-string
@@ -145,18 +146,24 @@
     (let* ((active-buffer (active-buffer sender))
            (bound-function (look-up-key-chord-stack sender (key-chord-stack *browser*))))
       (when active-buffer
-        (setf (last-key-chords active-buffer) (list key-chord)))
+        (setf (last-event active-buffer) event))
       (cond
+        ((ipc-generated-input-event-p sender event)
+         (log:debug "Forward generated event ~a"
+                    (serialize-key-chord-stack (key-chord-stack *browser*)))
+         nil)
         ;; prefix binding
         ((eq bound-function #'prefix)
-         (log:debug "Prefix binding"))
+         (log:debug "Prefix binding ~a"
+                    (serialize-key-chord-stack (key-chord-stack *browser*)))
+         t)
         ;; function bound
         ((functionp bound-function)
          (log:debug "Key sequence ~a bound to:"
                     (serialize-key-chord-stack (key-chord-stack *browser*)))
          (funcall bound-function)
          (setf (key-chord-stack *browser*) nil)
-         t) ; return t to avoid further propagation
+         t)
         ;; minibuffer is active
         ((active-minibuffers sender)
          (when (printable-p (first (key-chord-stack *browser*)))
@@ -167,9 +174,15 @@
          t) ; return t to avoid further propagation
         ((or (and active-buffer (forward-input-events-p active-buffer))
              (pointer-event-p key-chord))
-         ;; return nil to continue propagation
-         (setf (key-chord-stack *browser*) nil))
-        (t (setf (key-chord-stack *browser*) nil))))))
+         (log:debug "Forward key ~s"
+                    (serialize-key-chord-stack (key-chord-stack *browser*)))
+         (setf (key-chord-stack *browser*) nil)
+         nil)
+        (t
+         (log:debug "Fallback forward key ~s"
+                    (serialize-key-chord-stack (key-chord-stack *browser*)))
+         (setf (key-chord-stack *browser*) nil)
+         nil)))))
 
 ;; (declaim (ftype (function (&rest t &key (:scheme list) (:keymap keymap) &allow-other-keys)) define-key)) ; TODO: This fails with Guix.
 @export
