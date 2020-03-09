@@ -101,7 +101,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                                               :title "*List Evaluation*")))
            (results (handler-case
                         (mapcar #'write-to-string (evaluate input))
-                      (error (c) (format nil "~a" c))))
+                      (error (c) (list (format nil "Error: ~a" c)))))
            (result-contents (apply #'concatenate 'string
                                    (cl-markup:markup
                                     (:h1 "Form")
