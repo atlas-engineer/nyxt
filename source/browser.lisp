@@ -313,11 +313,21 @@ Most recent messages are first.")
                    :documentation "A ring that keeps track of deleted buffers.")
    (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p :initform t) ; TODO: Replace this with minibuffer Helm-style actions.
    (windows :accessor windows :initform (make-hash-table :test #'equal))
-   (total-window-count :accessor total-window-count :initform 0)
+   (total-window-count :accessor total-window-count
+                       :initform 0
+                       :type integer
+                       :documentation "This is used to generate unique window
+identifiers in `get-unique-window-identifier'.  We can't rely on the windows
+count since deleting windows may reseult in duplicate identifiers.")
    (last-active-window :accessor last-active-window :initform nil)
    (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
-   (total-buffer-count :accessor total-buffer-count :initform 0 :type integer)
+   (total-buffer-count :accessor total-buffer-count
+                       :initform 0
+                       :type integer
+                       :documentation "This is used to generate unique buffer
+identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
+count since deleting windows may reseult in duplicate identifiers.")
    (startup-function :accessor startup-function
                      :type function
                      :initform #'default-startup
