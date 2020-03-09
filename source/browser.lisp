@@ -313,9 +313,11 @@ Most recent messages are first.")
                    :documentation "A ring that keeps track of deleted buffers.")
    (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p :initform t) ; TODO: Replace this with minibuffer Helm-style actions.
    (windows :accessor windows :initform (make-hash-table :test #'equal))
+   (total-window-count :accessor total-window-count :initform 0)
    (last-active-window :accessor last-active-window :initform nil)
    (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
+   (total-buffer-count :accessor total-buffer-count :initform 0 :type integer)
    (startup-function :accessor startup-function
                      :type function
                      :initform #'default-startup
@@ -596,10 +598,10 @@ current buffer."
         nil))))
 
 (defmethod get-unique-window-identifier ((browser browser))
-  (1+ (hash-table-count (windows browser))))
+  (incf (total-window-count browser)))
 
 (defmethod get-unique-buffer-identifier ((browser browser))
-  (1+ (hash-table-count (buffers browser))))
+  (incf (total-buffer-count browser)))
 
 (declaim (ftype (function (window buffer)) set-window-title))
 @export
