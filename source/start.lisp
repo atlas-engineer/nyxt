@@ -50,7 +50,7 @@ Set to '-' to read standard input instead.")
   "Quit Next."
   (next-hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (alexandria:hash-table-values (windows *browser*))
-        do (ipc-window-destroy window))
+        do (ipc-window-delete window))
   (kill-interface *browser*)
   (when (socket-thread *browser*)
     (ignore-errors

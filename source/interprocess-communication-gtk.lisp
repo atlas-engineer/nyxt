@@ -101,7 +101,9 @@
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (window-delete window))
 
-(defmethod ipc-window-destroy ((window gtk-window))
+@export
+(defmethod ipc-window-delete ((window gtk-window))
+  "Delete a window object and remove it from the hash of windows."
   (gtk:gtk-widget-destroy (gtk-object window)))
 
 (defmethod ipc-window-fullscreen ((window gtk-window))
@@ -320,11 +322,6 @@
 (defmethod ipc-window-set-title ((window gtk-window) title)
   "Set the title for a window."
   (setf (gtk:gtk-window-title (gtk-object window)) title))
-
-@export
-(defmethod ipc-window-delete ((window gtk-window))
-  "Delete a window object and remove it from the hash of windows."
-  (gtk:gtk-widget-destroy (gtk-object window)))
 
 @export
 (defmethod ipc-window-active ((browser gtk-browser))
