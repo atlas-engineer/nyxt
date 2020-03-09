@@ -50,7 +50,7 @@
 
 (define-command make-window (&optional buffer)
   "Create a new window."
-  (let ((window (ipc-window-make *browser*))
+  (let ((window (window-make *browser*))
         (buffer (or buffer (make-buffer))))
     (window-set-active-buffer window buffer)
     (values window buffer)))
