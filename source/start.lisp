@@ -208,7 +208,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
                                                    nil)))
                       (_
                        (log:info "External process pinged Next.")))
-                    (ipc-window-to-foreground (last-active-window *browser*))))))
+                    (ignore-errors      ; TODO: Can we do anything smarter?
+                     (ipc-window-to-foreground (last-active-window *browser*)))))))
 
 (defun bind-socket-or-quit (urls)
   "If another Next is listening on the socket, tell it to open URLS.

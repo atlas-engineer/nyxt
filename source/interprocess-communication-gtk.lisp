@@ -182,38 +182,27 @@
                    (member :meta-mask modifier-state)))
       (setf (modifiers browser) (remove "S" (modifiers browser) :test #'equal)))))
 
-(defparameter *previous-event* nil)
-
-(defun duplicated-event? (event)
-  "For some reason, we sometimes receive duplicate events.
-TODO: Report issue to CL-CFFI-GTK. Source: Lispkit"
-  (when (and *previous-event* event)
-    (= (gdk:GDK-EVENT-KEY-TIME event)
-       (gdk:GDK-EVENT-KEY-TIME *previous-event*))))
-
 (defmethod process-key-press-event ((sender gtk-window) event)
-  (unless (duplicated-event? event)
-    (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
-           (character-code (char-code character))
-           (key-value (gdk:gdk-event-key-keyval event))
-           (key-string (character->string character key-value)))
-      (when key-string
-        (log:debug character-code key-string (modifiers *browser*))
-        (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender
-                          event)))))
+  (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
+         (character-code (char-code character))
+         (key-value (gdk:gdk-event-key-keyval event))
+         (key-string (character->string character key-value)))
+    (when key-string
+      (log:debug character-code key-string (modifiers *browser*))
+      (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender
+                        event))))
 
 (defmethod process-button-press-event ((sender gtk-buffer) event)
-  (unless (duplicated-event? event)
-    (let* ((button (gdk:gdk-event-button-button event))
-           (x (gdk:gdk-event-button-x event))
-           (y (gdk:gdk-event-button-y event))
-           (key-string (format nil "button~s" button))
-           (window (find sender
-                         (alexandria:hash-table-values (windows *browser*))
-                         :key #'active-buffer)))
-      (when key-string
-        (push-input-event 0 key-string (modifiers *browser*) x y nil window
-                          event)))))
+  (let* ((button (gdk:gdk-event-button-button event))
+         (x (gdk:gdk-event-button-x event))
+         (y (gdk:gdk-event-button-y event))
+         (key-string (format nil "button~s" button))
+         (window (find sender
+                       (alexandria:hash-table-values (windows *browser*))
+                       :key #'active-buffer)))
+    (when key-string
+      (push-input-event 0 key-string (modifiers *browser*) x y nil window
+                        event))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
