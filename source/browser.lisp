@@ -35,7 +35,7 @@
                                   :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
                                   :documentation "Hook run before
-   `ipc-window-set-active-buffer' takes effect. The handlers take the
+   `window-set-active-buffer' takes effect. The handlers take the
    window and the buffer as argument.")
    (window-delete-hook :accessor window-delete-hook
                        :initform (make-hook-window)
@@ -628,14 +628,14 @@ current buffer."
 
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 @export
-(defun window-set-active-buffer (window buffer)
+(defun window-set-active-buffer (window buffer) ; TODO: Rename window-set-buffer.
   "Set BROWSER's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
-  (let ((window-with-same-buffer (find-if
-                                  (lambda (other-window) (and (not (eq other-window window))
-                                                              (eql (active-buffer other-window) buffer)))
-                                  (alexandria:hash-table-values (windows *browser*)))))
+  (let ((window-with-same-buffer (find buffer
+                                       (delete window (alexandria:hash-table-values
+                                                       (windows *browser*)))
+                                       :key #'active-buffer)))
     (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (buffer-make *browser*))
