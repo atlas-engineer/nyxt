@@ -319,7 +319,7 @@ Most recent messages are first.")
                        :documentation "This is used to generate unique window
 identifiers in `get-unique-window-identifier'.  We can't rely on the windows
 count since deleting windows may reseult in duplicate identifiers.")
-   (last-active-window :accessor last-active-window :initform nil)
+   (last-active-window :accessor last-active-window :initform nil) ; TODO: Replace by CURRENT-WINDOW?
    (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
    (total-buffer-count :accessor total-buffer-count
