@@ -337,6 +337,7 @@
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))
+  (setf (active-buffer window) buffer)
   buffer)
 
 @export

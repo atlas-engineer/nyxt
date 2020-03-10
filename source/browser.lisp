@@ -646,7 +646,6 @@ proceeding."
           (ipc-window-set-active-buffer window-with-same-buffer buffer-swap)
           (buffer-delete temp-buffer))
         (ipc-window-set-active-buffer window buffer))
-    (setf (active-buffer window) buffer)
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
     (set-window-title window buffer)
