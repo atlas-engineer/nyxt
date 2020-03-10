@@ -90,6 +90,10 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
               :key #'last-access)
         buf-list)))
 
+@export
+(defun window-list ()
+  (alexandria:hash-table-values (windows *browser*)))
+
 (defun buffer-completion-filter (&key current-is-last-p)
   (let ((buffers (buffer-list :sort-by-time t)))
     (when current-is-last-p
