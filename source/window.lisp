@@ -9,7 +9,7 @@
     (_ (format nil "<#WINDOW ~a>" (id window)))))
 
 (defun window-completion-filter ()
-  (let ((windows (alexandria:hash-table-values (windows *browser*))))
+  (let ((windows (window-list)))
     (lambda (input)
       (fuzzy-match input windows))))
 

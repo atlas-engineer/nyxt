@@ -199,8 +199,7 @@
          (x (gdk:gdk-event-button-x event))
          (y (gdk:gdk-event-button-y event))
          (key-string (format nil "button~s" button))
-         (window (find sender
-                       (alexandria:hash-table-values (windows *browser*))
+         (window (find sender (window-list)
                        :key #'active-buffer)))
     (when key-string
       (push-input-event 0 key-string (modifiers *browser*) x y nil window

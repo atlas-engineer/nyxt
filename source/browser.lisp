@@ -632,9 +632,7 @@ current buffer."
   "Set BROWSER's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
-  (let ((window-with-same-buffer (find buffer
-                                       (delete window (alexandria:hash-table-values
-                                                       (windows *browser*)))
+  (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
     (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
@@ -655,8 +653,7 @@ proceeding."
 (defun %get-inactive-buffer ()
   "Return inactive buffer or NIL if none."
   (let ((active-buffers
-          (mapcar #'active-buffer
-                  (alexandria:hash-table-values (windows *browser*))))
+          (mapcar #'active-buffer (window-list)))
         (buffers (buffer-list)))
     (match (set-difference buffers active-buffers)
       ((guard diff diff)

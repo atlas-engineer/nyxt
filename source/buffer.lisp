@@ -67,7 +67,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
-                        (alexandria:hash-table-values (windows *browser*))))
+                        (window-list)))
         (replacement-buffer (or (%get-inactive-buffer)
                                 (buffer-make *browser*))))
     (when parent-window
