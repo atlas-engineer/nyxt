@@ -326,9 +326,8 @@
 @export
 (defmethod ipc-window-active ((browser gtk-browser))
   "Return the window object for the currently active window."
-  (loop for window being the hash-values of (windows browser)
-        when (gtk:gtk-window-is-active (gtk-object window))
-          do (setf (last-active-window browser) window))
+  (setf (last-active-window browser)
+        (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object))
   (last-active-window browser))
 
 @export
