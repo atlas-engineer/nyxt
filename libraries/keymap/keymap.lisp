@@ -124,9 +124,8 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
 
 (declaim (ftype (function (string) list) keyspecs->keys))
 (defun keyspecs->keys (spec)
-  "Return list of keys.
-Return nil if SPEC is invalid."
-  ;; TODO: Return nil?
+  "Return list of keys."
+  ;; TODO: Return nil if SPEC is invalid?
   (let* ((result (str:split " " spec :omit-nulls t)))
     (mapcar #'keyspec->key result)))
 
