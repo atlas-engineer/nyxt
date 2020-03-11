@@ -159,13 +159,22 @@ The first parent has highest priority.")))
 (deftype keyspecs-type ()               ; TODO: Rename to KEYDESC?
   `(satisfies keyspecs->keys))
 
+;; We need a macro to check that bindings are valid at compile time.
+;; This is because most Common Lisp implementations or not capable of checking
+;; types that use `satisfies' for non-top-level symbols.
+;; We can verify this with:
+;;
+;;   (compile 'foo (lambda () (keymap::define-key keymap "C-x C-f" 'find-file)))
 (defmacro define-key (keymap &rest binding-sym-pairs)
-  (check-type keymap keymap)
+  ;; The type checking of KEYMAP is done by `define-key*'.
   (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-        :do (progn (check-type binding keyspecs-type)
-                   (check-type sym symbol)))
-  `(loop :for (binding sym . rest) :on ,binding-sym-pairs :by #'cddr
-         :do (define-key* ,keymap binding sym)))
+        :do (progn (check-type binding ;; (or list)
+                               (or keyspecs-type list))
+                   (check-type (second sym) symbol)))
+  `(progn
+     ,@(loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
+             :collect (list 'define-key* keymap binding sym))
+     ,keymap))
 
 (declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key*))
 (defun define-key* (keymap binding sym)
