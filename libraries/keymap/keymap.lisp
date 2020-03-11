@@ -215,14 +215,13 @@ Return KEYMAP."
         (when (fset:@ (entries keymap) (first keys))
           ;; TODO: Notify caller properly.
           (warn "Key was bound to ~a" (fset:@ (entries keymap) (first keys))))
-        (setf (fset:@ (entries keymap) (first keys)) sym)
-        keymap)
+        (setf (fset:@ (entries keymap) (first keys)) sym))
       (let ((submap (fset:@ (entries keymap) (first keys))))
         (unless (keymap-p submap)
           (setf submap (make-keymap))
           (setf (fset:@ (entries keymap) (first keys)) submap))
-        (bind-key submap (rest keys) sym))))
-
+        (bind-key submap (rest keys) sym)))
+  keymap)
 
 (declaim (ftype (function (standard-char) standard-char) toggle-case))
 ;; TODO: Use toggle-case in translate-keys.
