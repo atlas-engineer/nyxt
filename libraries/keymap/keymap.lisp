@@ -59,9 +59,12 @@ specify a key-code binding."
        (eq (key-status key1)
            (key-status key2))))
 
+(declaim (ftype (function (&key (:code integer) (:value string)
+                                (:modifiers list) (:status keyword))
+                          key) make-key))
 (defun make-key (&key (code 0 explicit-code) (value "" explicit-value)
                       modifiers
-                      (status :pressed)) ; TODO: make-key-chord from modifier structure?
+                      (status :pressed))
   "Modifiers can be either a `modifier' type or a string that will be looked up in `modifier-list'."
   ;; TODO: Display warning on duplicate modifiers.
   ;; Better: Make set.
