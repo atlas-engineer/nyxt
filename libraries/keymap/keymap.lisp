@@ -176,6 +176,10 @@ Examples:
 
   (define-key foo-map \"C-x C-f\" 'find-file)
 
+  (define-key foo-map
+              \"C-x C-f\" 'find-file
+              \"C-h k\" 'describe-key)
+
 \"C-M-1 x\" on a QWERTY:
 
   (define-key foo-map '((:code 10 :modifiers (\"C\" \"M\") (:value \"x\"))) 'find-file)
