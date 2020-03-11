@@ -86,6 +86,7 @@ specify a key-code binding."
      (fset:convert 'fset:set mods)
      status)))
 
+;; TODO: Define conditions.
 (declaim (ftype (function (string) key) keyspec->key))
 (defun keyspec->key (string)
   "Parse STRING and return a new `key'.
@@ -107,7 +108,9 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
          (value "")
          (code-or-value (subseq string (1+ last-nonval-hyphen)))
          (rest (subseq string 0 (1+ last-nonval-hyphen)))
-         (modifiers (str:split "-" rest :omit-nulls t)))
+         (modifiers (butlast (str:split "-" rest))))
+    (when (find "" modifiers :test #'string=)
+      (error "Empty modifier(s)"))
     (when (and (<= 2 (length code-or-value))
                (string= (subseq code-or-value (1- (length code-or-value)))
                         "-"))
