@@ -130,6 +130,7 @@ The first parent has highest priority.")))
 ;; TODO: Test if this does compile time type-checking when called inside lets.
 ;; If not, turn it to a macro.
 ;; TODO: Parse keycode with #.
+;; TODO: Support multiple bindings.
 (declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key))
 (defun define-key (keymap binding sym)
   "BINDING is either a `keyspecs-type' or a list of arguments passed to invocations of `make-key's.
