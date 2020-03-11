@@ -145,12 +145,12 @@ symbol or a keymap.")
 The first parent has highest priority.")))
 
 
-;; (declaim (ftype (function (&rest t) keymap) make-keymap)) ; TODO: Fix type.
+(declaim (ftype (function (&rest keymap) t) make-keymap)) ; TODO: Set type of return value.
 (defun make-keymap (&rest parents)
   (make-instance 'keymap
                  :parents parents
                  ;; We cannot use the standard (make-hash-table :test #'equalp)
-                 ;; because then it (set "a") and (set "A") would be the same thing.
+                 ;; because then (set "a") and (set "A") would be the same thing.
                  :entries (fset:map)))
 
 (defun keymap-p (object)
@@ -161,11 +161,14 @@ The first parent has highest priority.")))
 
 ;; TODO: Test if this does compile time type-checking when called inside lets.
 ;; If not, turn it to a macro.
-;; TODO: Parse keycode with #.
 ;; TODO: Support multiple bindings.
 (declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key))
 (defun define-key (keymap binding sym)
-  "BINDING is either a `keyspecs-type' or a list of arguments passed to invocations of `make-key's.
+  "Bind BINDING to SYM in KEYMAP.
+Return KEYMAP.
+
+BINDING is either a `keyspecs-type' or a list of arguments passed to invocations
+of `make-key's.
 
 Examples:
 
@@ -173,7 +176,11 @@ Examples:
 
 \"C-M-1 x\" on a QWERTY:
 
-  (define-key foo-map '((:code 10 :modifiers (\"C\" \"M\") (:value \"x\")) 'find-file)"
+  (define-key foo-map '((:code 10 :modifiers (\"C\" \"M\") (:value \"x\"))) 'find-file)
+
+or the shorter:
+
+  (define-key foo-map \"C-M-#1\" 'find-file)"
   (let ((keys (if (listp binding)
                   (mapcar (alex:curry #'apply #'make-key) binding)
                   (keyspecs->keys binding))))
@@ -181,7 +188,8 @@ Examples:
 
 (defun bind-key (keymap keys sym)
   "Recursively bind the KEYS to keymaps starting from KEYMAP.
-The last key is bound to SYM."
+The last key is bound to SYM.
+Return KEYMAP."
   (when (< (length keys) 1)
     (error "Empty key specifier."))
   (if (= (length keys) 1)
@@ -189,7 +197,8 @@ The last key is bound to SYM."
         (when (fset:@ (entries keymap) (first keys))
           ;; TODO: Notify caller properly.
           (warn "Key was bound to ~a" (fset:@ (entries keymap) (first keys))))
-        (setf (fset:@  (entries keymap) (first keys)) sym))
+        (setf (fset:@  (entries keymap) (first keys)) sym)
+        keymap)
       (let ((submap (fset:@ keymap (first keys))))
         (unless (keymap-p submap)
           (setf submap (make-keymap))
