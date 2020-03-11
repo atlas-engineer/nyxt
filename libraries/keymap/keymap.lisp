@@ -59,12 +59,14 @@ specify a key-code binding."
        (eq (key-status key1)
            (key-status key2))))
 
-(defun make-key (&key code value modifiers status) ; TODO: make-key-chord from modifier structure?
+(defun make-key (&key (code 0 explicit-code) (value "" explicit-value)
+                      modifiers
+                      (status :pressed)) ; TODO: make-key-chord from modifier structure?
   "Modifiers can be either a `modifier' type or a string that will be looked up in `modifier-list'."
   ;; TODO: Display warning on duplicate modifiers.
   ;; Better: Make set.
-  (unless (or code value)
-    (error "One of CODE or VALUE must be givven."))
+  (unless (or explicit-code explicit-value)
+    (error "One of CODE or VALUE must be given."))
   (let ((mods (when modifiers
                 (delete-duplicates
                  (mapcar (lambda (mod)
@@ -79,7 +81,7 @@ specify a key-code binding."
      code
      value
      (fset:convert 'fset:set mods)
-     (or status :pressed))))
+     status)))
 
 (defun keyspec->key (string)
   (let* ((tokens (str:split "-" string))
