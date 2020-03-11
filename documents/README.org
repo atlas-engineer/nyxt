@@ -136,11 +136,12 @@ these fixes.
 + SQLite (available by default)
 
 ** Lisp specific dependencies
+Next requires the latest version of the cl-webkit library.
 Clone the cl-webkit repository into =~/common-lisp= or any directory
 listed in ~asdf:*central-registry*~:
 
 #+begin_src sh
-git clone https://github.com/atlas-engineer/cl-webkit ~/common-lisp/cl-webkit
+git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 #+end_src
 
 ** Fetch the source code
@@ -248,6 +249,8 @@ or else future versions of Next might fail to build.  In a REPL:
 If you use the internal Quicklisp distribution (i.e. with the default
 =NEXT_INTERNAL_QUICKLISP=true=), the distribution is updated automatically for
 you.
+
+You will also need to manually update the [[Lisp specific dependencies]].
 
 * Help & Community
 There are several ways to ask for help from the community. The first
