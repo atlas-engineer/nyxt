@@ -222,6 +222,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("swank" ,sbcl-slime-swank)
          ("trivia" ,sbcl-trivia)
          ("trivial-clipboard" ,sbcl-trivial-clipboard)
+         ("trivial-features" ,sbcl-trivial-features)
          ("unix-opts" ,sbcl-unix-opts)
          ;; WebKitGTK deps
          ("glib-networking" ,glib-networking)

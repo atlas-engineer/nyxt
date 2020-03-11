@@ -32,6 +32,7 @@
                :swank
                :trivia
                :trivial-clipboard
+               :trivial-features
                :trivial-types
                :unix-opts
                ;; Local systems:
