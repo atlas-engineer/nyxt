@@ -59,6 +59,10 @@
             :test #'keymap::key=)
   (prove:is (keymap::keyspec->key "C-#10")
             (keymap:make-key :code 10 :modifiers '("C"))
-            :test #'keymap::key=))
+            :test #'keymap::key=)
+  (prove:is-error (keymap::keyspec->key "C-")
+                  'simple-error)
+  (prove:is-error (keymap::keyspec->key "C---")
+                  'simple-error))
 
 (prove:finalize)
