@@ -159,10 +159,13 @@ The first parent has highest priority.")))
 (deftype keyspecs-type ()               ; TODO: Rename to KEYDESC?
   `(satisfies keyspecs->keys))
 
-;; TODO: Support multiple bindings.
-(defmacro define-key (keymap binding sym)
-  (check-type binding keyspecs-type)
-  `(define-key* ,keymap ,binding ,sym))
+(defmacro define-key (keymap &rest binding-sym-pairs)
+  (check-type keymap keymap)
+  (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
+        :do (progn (check-type binding keyspecs-type)
+                   (check-type sym symbol)))
+  `(loop :for (binding sym . rest) :on ,binding-sym-pairs :by #'cddr
+         :do (define-key* ,keymap binding sym)))
 
 (declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key*))
 (defun define-key* (keymap binding sym)
