@@ -24,4 +24,12 @@
   (prove:is-error (keymap:make-key ::status :pressed)
                   'simple-error))
 
+(prove:subtest "Make same key"
+  (prove:is (keymap:make-key :value "a" :modifiers '("C" "M"))
+            (keymap:make-key :value "a" :modifiers '("M" "C"))
+            :test #'keymap::key=)
+  (prove:is (keymap:make-key :value "a" :modifiers '("C"))
+            (keymap:make-key :value "a" :modifiers '("control"))
+            :test #'keymap::key=))
+
 (prove:finalize)
