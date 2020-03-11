@@ -65,4 +65,17 @@
   (prove:is-error (keymap::keyspec->key "C---")
                   'simple-error))
 
+(defun binding= (keys1 keys2)
+  (not (position nil (mapcar #'keymap::key= keys1 keys2))))
+
+(prove:subtest "Keyspecs->keys"
+  (prove:is (keymap::keyspecs->keys "C-x C-f")
+            (list (keymap:make-key :value "x" :modifiers '("C"))
+                  (keymap:make-key :value "f" :modifiers '("C")))
+            :test #'binding=)
+  (prove:is (keymap::keyspecs->keys "  C-x   C-f  ")
+            (list (keymap:make-key :value "x" :modifiers '("C"))
+                  (keymap:make-key :value "f" :modifiers '("C")))
+            :test #'binding=))
+
 (prove:finalize)
