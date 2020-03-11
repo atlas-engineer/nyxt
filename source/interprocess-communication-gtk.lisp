@@ -21,7 +21,7 @@
    the main thread, which the GTK main loop is not guaranteed to be
    on."
   (log:debug "Initializing GTK Interface")
-  #+linux
+  #-darwin
   (progn
     (gtk:within-main-loop
       (gdk:gdk-set-program-class "next")
