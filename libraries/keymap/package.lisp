@@ -3,6 +3,7 @@
 (defpackage :keymap
   (:use :common-lisp)
   (:import-from #:fset)
+  (:import-from #:str)
   (:local-nicknames (#:alex #:alexandria))
   (:export
    modifier=
