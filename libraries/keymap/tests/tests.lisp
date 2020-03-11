@@ -16,4 +16,10 @@
     (prove:is (keymap:modifier= mod keymap:+control+)
               t)))
 
+(prove:subtest "Make bad key"
+  (prove:is-error (keymap:make-key :value "a" :status :dummy)
+                  'type-error)
+  (prove:is-error (keymap:make-key ::status :pressed)
+                  'simple-error))
+
 (prove:finalize)
