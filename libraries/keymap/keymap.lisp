@@ -86,11 +86,34 @@ specify a key-code binding."
      (fset:convert 'fset:set mods)
      status)))
 
+(declaim (ftype (function (string) key) keyspec->key))
 (defun keyspec->key (string)
-  (let* ((tokens (str:split "-" string))
-         (modifiers (butlast tokens))
-         (value (first (last tokens))))
-    (make-key :value value :modifiers modifiers)))
+  "Parse STRING and return a new `key'.
+The specifier is expected to be in the form
+
+  MOFIFIERS-CODE/VALUE
+
+MODIFIERS are hyphen-separated modifiers as per `modifier-list'.
+CODE/VALUE is either a code that starts with '#' or a key symbol.
+
+Note that '-' or '#' as a last character is supported, e.g. 'control--' and
+'control-#' are valid."
+  (when (string= string "")
+    (error "Empty keyspec"))
+  (let* ((last-nonval-hyphen (or (position #\- string :from-end t
+                                                      :end (1- (length string)))
+                                 -1))
+         (code 0)
+         (value "")
+         (code-or-value (subseq string (1+ last-nonval-hyphen)))
+         (rest (subseq string 0 (1+ last-nonval-hyphen)))
+         (modifiers (str:split "-" rest :omit-nulls t)))
+    (if (and (<= 2 (length code-or-value))
+             (string= "#" (subseq code-or-value 0 1)))
+        (setf code (or (parse-integer code-or-value :start 1 :junk-allowed t)
+                       code))
+        (setf value code-or-value))
+    (make-key :code code :value value :modifiers modifiers)))
 
 (declaim (ftype (function (string) list) keyspecs->keys))
 (defun keyspecs->keys (spec)
