@@ -9,12 +9,12 @@
               38)
     (prove:is (keymap:key-value key)
               "a")
-    (prove:is (keymap:modifier= mod "C")
-              t)
-    (prove:is (keymap:modifier= mod "control")
-              t)
-    (prove:is (keymap:modifier= mod keymap:+control+)
-              t)))
+    (prove:is mod "C" :test #'keymap:modifier=)
+    (prove:is mod "control" :test #'keymap:modifier=)
+    (prove:is mod keymap:+control+ :test #'keymap:modifier=)
+    (prove:isnt mod "" :test #'keymap:modifier=)
+    (prove:isnt mod "M" :test #'keymap:modifier=)
+    (prove:isnt mod "meta" :test #'keymap:modifier=)))
 
 (prove:subtest "Make bad key"
   (prove:is-error (keymap:make-key :value "a" :status :dummy)
