@@ -166,18 +166,6 @@ The first parent has highest priority.")))
 ;;
 ;;   (compile 'foo (lambda () (keymap::define-key keymap "C-x C-f" 'find-file)))
 (defmacro define-key (keymap &rest binding-sym-pairs)
-  ;; The type checking of KEYMAP is done by `define-key*'.
-  (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-        :do (progn (check-type binding ;; (or list)
-                               (or keyspecs-type list))
-                   (check-type (second sym) symbol)))
-  `(progn
-     ,@(loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-             :collect (list 'define-key* keymap binding sym))
-     ,keymap))
-
-(declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key*))
-(defun define-key* (keymap binding sym)
   "Bind BINDING to SYM in KEYMAP.
 Return KEYMAP.
 
@@ -195,6 +183,18 @@ Examples:
 or the shorter:
 
   (define-key foo-map \"C-M-#1\" 'find-file)"
+  ;; The type checking of KEYMAP is done by `define-key*'.
+  (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
+        :do (progn (check-type binding ;; (or list)
+                               (or keyspecs-type list))
+                   (check-type (second sym) symbol)))
+  `(progn
+     ,@(loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
+             :collect (list 'define-key* keymap binding sym))
+     ,keymap))
+
+(declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key*))
+(defun define-key* (keymap binding sym)
   (let ((keys (if (listp binding)
                   (mapcar (alex:curry #'apply #'make-key) binding)
                   (keyspecs->keys binding))))
