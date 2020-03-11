@@ -1,4 +1,4 @@
-(in-package :next-keymap)
+(in-package :keymap)
 
 (defstruct modifier
   (string "" :type string)

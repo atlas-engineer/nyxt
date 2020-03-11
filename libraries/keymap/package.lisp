@@ -1,6 +1,6 @@
 (in-package :cl-user)
 
-(defpackage :next-keymap
+(defpackage :keymap
   (:use :common-lisp)
   (:import-from #:fset)
   (:local-nicknames (#:alex #:alexandria))
