@@ -19,6 +19,8 @@
 (prove:subtest "Make bad key"
   (prove:is-error (keymap:make-key :value "a" :status :dummy)
                   'type-error)
+  (prove:is-error (keymap:make-key :value "a" :modifiers '("Z"))
+                  'simple-error)
   (prove:is-error (keymap:make-key ::status :pressed)
                   'simple-error))
 
