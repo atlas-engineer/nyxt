@@ -62,7 +62,7 @@ instructions can be found here: [[http://www.sbcl.org/getting.html]].
 Quicklisp is downloaded and installed automatically by the
 Makefile. If you wish to install it manually, system-wide, the
 official Quicklisp website can provide updated links to downloads, and
-instructions: https://www.quicklisp.org
+instructions: https://www.quicklisp.org.
 
 To install Quicklisp:
 - Download https://beta.quicklisp.org/quicklisp.lisp.
@@ -148,18 +148,17 @@ Clone the Next repository into =~/common-lisp= or any directory listed in
 ~asdf:*central-registry*~:
 
 #+begin_src sh
+mkdir -p ~/common-lisp
 git clone https://github.com/atlas-engineer/next ~/common-lisp/next
 #+end_src
 ** Compile
-Next consists of two standalone executables: the Lisp core and the
-platform port. There are two ways to build Next depending on if
+There are two ways to build Next depending on if
 you want to use [[https://github.com/roswell/roswell][Roswell]].
 
-*** Compile Image with a Lisp Implementation
+*** Compile image with a Lisp Implementation
 
-The following command will build both Lisp core and the platform
-port. On macOS this will produce an application bundle which you can
-copy into your =/Applications= folder.
+The following command will build the Lisp core. On macOS this will produce an
+application bundle which you can copy into your =/Applications= folder.
 
 - GNU/Linux:
 #+BEGIN_SRC sh
@@ -195,12 +194,6 @@ ros build build-scripts/next.ros
 
 An executable file named =./build-scripts/next= will be generated under the project root.
 
-Afterwards, you need to build the platform port:
-
-#+BEGIN_SRC sh
-make install-gtk-webkit
-#+END_SRC
-
 You may simply type =make= to display documentation.
 
 Please refer to the next section to make the two parts work together.
@@ -210,24 +203,19 @@ Please refer to the next section to make the two parts work together.
 If you are developing Next, you might prefer to run Next directly from
 source so that you can skip the compilation step and iterate faster.
 
-First, make sure the platform port is properly installed as explained in the
-previous section.
-
-Second, make sure that Quicklisp is set up as explained in the Quicklisp section.
+Make sure that Quicklisp is set up and up-to-date (see [[Update local Lisp
+libraries]]) as explained in the Quicklisp section.
 
 Then in a shell execute the following:
 
 1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
    supported Common Lisp compiler).
-2. Execute ~(ql:quickload "trivial-features")~.
-3. Execute ~(require :asdf)~ if ASDF is not already loaded.
-4. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
+2. Execute ~(require :asdf)~ if ASDF is not already loaded.
+3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
    system definition (you can not use relative pathnames).
-5. Execute ~(ql:quickload :next)~ to load the Next system into your
+4. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image.
-6. Make sure the platform port can be found by Next, as described
-   in the previous section.
-7. Execute ~(next:start)~ to open your first Next window.
+5. Execute ~(next:start)~ to open your first Next window.
 
 The above process is a bit cumbersome and you'll probably want a more
 comfortable workflow from within your favourite editor.  For instance, with
