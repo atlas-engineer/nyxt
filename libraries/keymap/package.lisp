@@ -4,5 +4,20 @@
   (:use :common-lisp)
   (:import-from #:fset)
   (:local-nicknames (#:alex #:alexandria))
-  (:export define-key
-           make-keymap))
+  (:export
+   modifier=
+   +control+
+   +meta+
+   +shift+
+   +super+
+   +hyper+
+   modifier-list
+
+   make-key
+   key-code
+   key-value
+   key-modifiers
+   key-status
+
+   define-key
+   make-keymap))
