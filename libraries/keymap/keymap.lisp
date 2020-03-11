@@ -78,8 +78,8 @@ specify a key-code binding."
     (%make-key
      code
      value
-     (fset:convert 'set mods)
-     status)))
+     (fset:convert 'fset:set mods)
+     (or status :pressed))))
 
 (defun keyspec->key (string)
   (let* ((tokens (str:split "-" string))
