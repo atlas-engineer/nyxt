@@ -159,11 +159,13 @@ The first parent has highest priority.")))
 (deftype keyspecs-type ()               ; TODO: Rename to KEYDESC?
   `(satisfies keyspecs->keys))
 
-;; TODO: Test if this does compile time type-checking when called inside lets.
-;; If not, turn it to a macro.
 ;; TODO: Support multiple bindings.
-(declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key))
-(defun define-key (keymap binding sym)
+(defmacro define-key (keymap binding sym)
+  (check-type binding keyspecs-type)
+  `(define-key* ,keymap ,binding ,sym))
+
+(declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key*))
+(defun define-key* (keymap binding sym)
   "Bind BINDING to SYM in KEYMAP.
 Return KEYMAP.
 
