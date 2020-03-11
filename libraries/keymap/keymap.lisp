@@ -197,12 +197,12 @@ Return KEYMAP."
         (when (fset:@ (entries keymap) (first keys))
           ;; TODO: Notify caller properly.
           (warn "Key was bound to ~a" (fset:@ (entries keymap) (first keys))))
-        (setf (fset:@  (entries keymap) (first keys)) sym)
+        (setf (fset:@ (entries keymap) (first keys)) sym)
         keymap)
-      (let ((submap (fset:@ keymap (first keys))))
+      (let ((submap (fset:@ (entries keymap) (first keys))))
         (unless (keymap-p submap)
           (setf submap (make-keymap))
-          (setf (fset:@ keymap (first keys)) submap))
+          (setf (fset:@ (entries keymap) (first keys)) submap))
         (bind-key submap (rest keys) sym))))
 
 
