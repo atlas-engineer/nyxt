@@ -54,8 +54,8 @@ specify a key-code binding."
               (key-code key2))
            (string= (key-value key1)
                     (key-value key2)))
-       (equalp (key-modifiers key1)
-               (key-modifiers key2))
+       (fset:equal? (key-modifiers key1)
+                    (key-modifiers key2))
        (eq (key-status key1)
            (key-status key2))))
 
