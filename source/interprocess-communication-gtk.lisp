@@ -311,7 +311,7 @@
 @export
 (defmethod ipc-window-make ((browser gtk-browser))
   "Make a window."
-  (make-instance 'gtk-window))
+  (make-instance *window-class*))
 
 @export
 (defmethod ipc-window-to-foreground ((window gtk-window))
