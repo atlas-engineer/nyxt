@@ -122,9 +122,9 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
         (setf value code-or-value))
     (make-key :code code :value value :modifiers modifiers)))
 
-(declaim (ftype (function (string) list) keyspecs->keys))
+(declaim (ftype (function (string) (types:proper-list key)) keyspecs->keys))
 (defun keyspecs->keys (spec)
-  "Return list of keys."
+  "Parse SPEC and return corresponding list of keys."
   ;; TODO: Return nil if SPEC is invalid?
   (let* ((result (str:split " " spec :omit-nulls t)))
     (mapcar #'keyspec->key result)))

@@ -5,6 +5,7 @@
   (:import-from #:fset)
   (:import-from #:str)
   (:local-nicknames (#:alex #:alexandria))
+  (:local-nicknames (#:types #:trivial-types))
   (:export
    modifier=
    +control+
