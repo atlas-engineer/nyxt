@@ -194,14 +194,14 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
   ((entries :accessor entries
             :initarg :entries
             :initform nil
-            :type hash-table
+            :type fset:wb-map
             :documentation
             "Hash table of which the keys are key-chords and the values are a
 symbol or a keymap.")
    (parents :accessor parents
             :initarg :parents
             :initform nil
-            :type list
+            :type (types:proper-list keymap)
             :documentation "List of parent keymaps.
 Parents are ordered by priority, the first parent has highest priority.")
    (default :accessor default
@@ -298,7 +298,8 @@ Return KEYMAP."
         (setf (fset:@ (entries keymap) (first keys)) sym))
       (let ((submap (fset:@ (entries keymap) (first keys))))
         (unless (keymap-p submap)
-          (setf submap (make-keymap))
+          (setf submap (make-keymap :default (default keymap)
+                                    :translator (translator keymap)))
           (setf (fset:@ (entries keymap) (first keys)) submap))
         (bind-key submap (rest keys) sym)))
   keymap)
@@ -315,7 +316,7 @@ Return KEYMAP."
       (when hit
         (if (and (keymap-p hit)
                  (rest keys))
-            (the symbol (lookup-key* hit (rest keys) visited))
+            (coerce 'symbol (lookup-key* hit (rest keys) visited))
             hit)))))
 
 (declaim (ftype (function (keymap
