@@ -66,8 +66,7 @@ specify a key-code binding."
                       modifiers
                       (status :pressed))
   "Modifiers can be either a `modifier' type or a string that will be looked up in `modifier-list'."
-  ;; TODO: Display warning on duplicate modifiers.
-  ;; Better: Make set.
+  ;; TODO: Display warning on duplicate modifiers?
   (unless (or explicit-code explicit-value)
     (error "One of CODE or VALUE must be given."))
   (let ((mods (when modifiers
@@ -144,14 +143,17 @@ symbol or a keymap.")
             :documentation "List of parent keymaps.
 The first parent has highest priority.")))
 
-
-(declaim (ftype (function (&rest keymap) t) make-keymap)) ; TODO: Set type of return value.
+(declaim (ftype (function (&rest keymap) keymap) make-keymap))
 (defun make-keymap (&rest parents)
-  (make-instance 'keymap
-                 :parents parents
-                 ;; We cannot use the standard (make-hash-table :test #'equalp)
-                 ;; because then (set "a") and (set "A") would be the same thing.
-                 :entries (fset:map)))
+  ;; We coerce to 'keymap because otherwise SBCL complains "type assertion too
+  ;; complex to check: (VALUES KEYMAP::KEYMAP &REST T)."
+  (coerce
+   (make-instance 'keymap
+                  :parents parents
+                  ;; We cannot use the standard (make-hash-table :test #'equalp)
+                  ;; because then (set "a") and (set "A") would be the same thing.
+                  :entries (fset:map))
+   'keymap))
 
 (defun keymap-p (object)
   (typep object 'keymap))
