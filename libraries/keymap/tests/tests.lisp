@@ -32,6 +32,11 @@
             (keymap:make-key :value "a" :modifiers '("control"))
             :test #'keymap::key=))
 
+(prove:subtest "Make different key"
+  (prove:isnt (keymap:make-key :value "a")
+              (keymap:make-key :value "A")
+              :test #'keymap::key=))
+
 (prove:subtest "Keyspec->key"
   (prove:is (keymap::keyspec->key "a")
             (keymap:make-key :value "a")
