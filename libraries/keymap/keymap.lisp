@@ -310,7 +310,8 @@ VISITED is used to detect cycles."
 Return nil if there is none.
 First keymap parents are lookup up one after the other.
 Then keys translation are looked up one after the other."
-  (lookup-key* keymap keys '()))
+  (or (lookup-key* keymap keys '())
+      (coerce (default keymap) 'symbol)))
 
 (defun key->keyspec (key)
   "Warning: Only KEY value is supported."

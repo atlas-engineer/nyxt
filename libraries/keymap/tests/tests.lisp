@@ -101,7 +101,7 @@
 (prove:subtest "define-key & lookup-key with parents"
   (let* ((parent1 (keymap:make-keymap))
          (parent2 (keymap:make-keymap))
-         (keymap (keymap:make-keymap parent1 parent2)))
+         (keymap (keymap:make-keymap :parents (list parent1 parent2))))
     (keymap:define-key parent1 "x" 'parent1-x)
     (keymap:define-key parent1 "a" 'parent1-a)
     (keymap:define-key parent2 "x" 'parent2-x)
@@ -130,5 +130,14 @@
     (push keymap (keymap:parents parent2))
     (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "x"))
               nil)))
+
+(prove:subtest "define-key & lookup-key default value"
+  (let ((keymap (keymap:make-keymap :default 'foo))
+        (keymap2 (keymap:make-keymap )))
+    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "x"))
+              'foo)
+    (setf (keymap:default keymap2) 'bar)
+    (prove:is (keymap:lookup-key keymap2 (keymap::keyspecs->keys "x"))
+              'bar)))
 
 (prove:finalize)
