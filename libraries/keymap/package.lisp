@@ -24,4 +24,5 @@
    make-keymap
    define-key
    lookup-key
-   parents))
+   parents
+   default))
