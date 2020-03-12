@@ -157,26 +157,29 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
 - With control and shift, keys without control except for the first key and
   without shift everywhere:
   'C-shift-C C-shift-f' -> 'C-c F."
-  (let ((shift? (find +shift+ keys :key #'key-modifiers :test #'modifier=))
-        (control? (find +control+ (rest keys) :key #'key-modifiers :test #'modifier=)))
+  (let ((shift? (find +shift+ keys :key #'key-modifiers :test #'fset:find))
+        (control? (find +control+ (rest keys) :key #'key-modifiers :test #'fset:find)))
     (delete nil
             (list
              (when shift?
                (mapcar (lambda (key)
                          (let ((new-key (copy-key key)))
                            (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
-                           (setf (key-value new-key) (toggle-case (key-value new-key)))))
+                           (setf (key-value new-key) (toggle-case (key-value new-key)))
+                           new-key))
                        keys))
              (when shift?
                (mapcar (lambda (key)
                          (let ((new-key (copy-key key)))
-                           (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))))
+                           (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
+                           new-key))
                        keys))
              (when control?
                (cons (first keys)
                      (mapcar (lambda (key)
                                (let ((new-key (copy-key key)))
-                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))))
+                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))
+                                 new-key))
                              (rest keys))))
              (when (and control? shift?)
                (cons (let ((new-key (copy-key (first keys))))
@@ -184,7 +187,8 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
                      (mapcar (lambda (key)
                                (let ((new-key (copy-key key)))
                                  (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))
-                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))))
+                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
+                                 new-key))
                              (rest keys))))))))
 
 (defvar *default-translator* #'translate-shifted-keys
@@ -229,7 +233,7 @@ returns a list of list of keys.")))
    (make-instance 'keymap
                   :parents parents
                   :default default
-                  :translator translator
+                  :translator (or translator *default-translator*)
                   ;; We cannot use the standard (make-hash-table :test #'equalp)
                   ;; because then (set "a") and (set "A") would be the same thing.
                   :entries (fset:empty-map default))
@@ -316,7 +320,7 @@ Return KEYMAP."
       (when hit
         (if (and (keymap-p hit)
                  (rest keys))
-            (coerce 'symbol (lookup-key* hit (rest keys) visited))
+            (coerce (lookup-key* hit (rest keys) visited) 'symbol)
             hit)))))
 
 (declaim (ftype (function (keymap
@@ -349,7 +353,9 @@ VISITED is used to detect cycles."
         (let ((sym nil))
           (find-if (lambda (keys)
                      (setf sym (lookup-translated-keys keymap keys (cons keymap visited))))
-                   (cons keys (funcall (or (translator keymap) #'identity) keys)))
+                   (progn
+                     (format t "TRANSLATIONS (fun ~a): ~a~%" (translator keymap) (funcall (or (translator keymap) (constantly nil)) keys))
+                     (cons keys (funcall (or (translator keymap) (constantly nil)) keys))))
           sym))))
 
 (declaim (ftype (function (keymap (types:proper-list keys)) symbol) lookup-key))
