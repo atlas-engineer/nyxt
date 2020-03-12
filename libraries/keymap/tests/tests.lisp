@@ -83,4 +83,10 @@
                   (keymap:make-key :value "f" :modifiers '("C")))
             :test #'binding=))
 
+(prove:subtest "define-key & lookup-key"
+  (let ((keymap (keymap:make-keymap)))
+    (keymap:define-key keymap "C-x" 'foo)
+    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-x"))
+              'foo)))
+
 (prove:finalize)
