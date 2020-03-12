@@ -50,8 +50,9 @@ modifier that is not in this list.")
 If codes don't match, the values are compared instead.  This way, code-matching
 keys match before the value which is usually what the users want when they
 specify a key-code binding."
-  (and (or (= (key-code key1)
-              (key-code key2))
+  (and (or (and (not (zerop (key-code key1)))
+                (= (key-code key1)
+                   (key-code key2)))
            (string= (key-value key1)
                     (key-value key2)))
        (fset:equal? (key-modifiers key1)
