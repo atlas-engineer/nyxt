@@ -148,7 +148,7 @@ symbol or a keymap.")
             :initform nil
             :type list
             :documentation "List of parent keymaps.
-The first parent has highest priority.")))
+Parents are ordered by priority, the first parent has highest priority.")))
 
 (declaim (ftype (function (&rest keymap) keymap) make-keymap))
 (defun make-keymap (&rest parents)
@@ -198,15 +198,13 @@ or the shorter:
   (define-key foo-map \"C-M-#1\" 'find-file)"
   ;; The type checking of KEYMAP is done by `define-key*'.
   (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-        :do (progn (check-type binding ;; (or list)
-                               (or keyspecs-type list))
-                   (check-type (second sym) symbol)))
+        :do (check-type binding (or keyspecs-type list)))
   `(progn
      ,@(loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
              :collect (list 'define-key* keymap binding sym))
      ,keymap))
 
-(declaim (ftype (function (keymap (or keyspecs-type list) symbol)) define-key*))
+(declaim (ftype (function (keymap (or keyspecs-type list) (or symbol keymap))) define-key*))
 (defun define-key* (keymap binding sym)
   (let ((keys (if (listp binding)
                   (mapcar (alex:curry #'apply #'make-key) binding)
