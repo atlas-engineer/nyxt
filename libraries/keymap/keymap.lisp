@@ -424,24 +424,27 @@ Then keys translation are looked up one after the other."
   (or (lookup-key* keymap keys '())
       (coerce (default keymap) 'symbol)))
 
-(defun key->keyspec (key)
-  "Warning: Only KEY value is supported."
-  (format nil "~a~a"
-          (if (and (key-modifiers key) (not (fset:empty? (key-modifiers key))))
-              (str:join (str:join "-" (fset:convert 'list (key-modifiers key)))
-                        "-")
-              "")
-          (if (zerop (key-code key))    ; TODO: Can a keycode be 0?  I think not.
-              (key-value key)
-              (format nil "#~a" (key-code key)))))
+(defparameter *print-shortcut* t
+  "Whether to print the short form of the modifiers.")
 
-;; (declaim (ftype (function (list) string) keys->keyspecs)) ; TODO: Fix type
+(declaim (ftype (function (key) keyspecs-type) key->keyspec))
+(defun key->keyspec (key)
+  "Return the keyspec of KEY."
+  (let ((value (if (zerop (key-code key)) ; TODO: Can a keycode be 0?  I think not.
+                   (key-value key)
+                   (format nil "#~a" (key-code key))))
+        (modifiers (fset:reduce (lambda (&rest mods) (str:join "-" mods))
+                                (key-modifiers key)
+                                :key (if *print-shortcut*
+                                         #'modifier-shortcut
+                                         #'modifier-string))))
+    (coerce (str:concat (if (str:empty? modifiers) "" (str:concat modifiers "-"))
+                        value)
+            'keyspecs-type)))
+
+(declaim (ftype (function ((types:proper-list key)) keyspecs-type) keys->keyspecs))
 (defun keys->keyspecs (keys)
   "Return a keyspecs"
-  (str:join " " (mapcar #'key->keyspec keys)))
-
-;; (defun keys->string (keys)
-;;   ;; TODO: Implement keys->string?  Do we have a 1-1 mapping between keyspecs and keys?
-;;   )
+  (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
 ;; TODO: Do we need a keymap->list function?
