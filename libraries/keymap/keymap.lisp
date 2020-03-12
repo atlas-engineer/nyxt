@@ -28,7 +28,7 @@
 (defvar +super+ (make-modifier :string "super" :shortcut "S"))
 (defvar +hyper+ (make-modifier :string "hyper" :shortcut "H"))
 
-(defparameter modifier-list
+(defparameter *modifier-list*
   (list +control+ +meta+ +shift+ +super+ +hyper+)
   "List of known modifiers.
 `make-key' and `define-key' raise an error when setting a modifier that is not
@@ -66,7 +66,7 @@ specify a key-code binding."
 (defun make-key (&key (code 0 explicit-code) (value "" explicit-value)
                       modifiers
                       (status :pressed))
-  "Modifiers can be either a `modifier' type or a string that will be looked up in `modifier-list'."
+  "Modifiers can be either a `modifier' type or a string that will be looked up in `*modifier-list*'."
   ;; TODO: Display warning on duplicate modifiers?
   (unless (or explicit-code explicit-value)
     (error "One of CODE or VALUE must be given."))
@@ -75,7 +75,7 @@ specify a key-code binding."
                  (mapcar (lambda (mod)
                            (if (modifier-p mod)
                                mod
-                               (let ((modifier (find-if (alex:curry #'modifier= mod) modifier-list)))
+                               (let ((modifier (find-if (alex:curry #'modifier= mod) *modifier-list*)))
                                  (or modifier
                                      (error "Unknown modifier ~a" mod)))))
                          modifiers)
@@ -100,7 +100,7 @@ The specifier is expected to be in the form
 
   MOFIFIERS-CODE/VALUE
 
-MODIFIERS are hyphen-separated modifiers as per `modifier-list'.
+MODIFIERS are hyphen-separated modifiers as per `*modifier-list*'.
 CODE/VALUE is either a code that starts with '#' or a key symbol.
 
 Note that '-' or '#' as a last character is supported, e.g. 'control--' and
