@@ -1,4 +1,4 @@
-;;; interprocess-communication.lisp --- IPC for creating interface onscreen
+;;; renderer-gtk.lisp --- functions for creating GTK interface onscreen
 
 (in-package :next)
 (annot:enable-annot-syntax)
