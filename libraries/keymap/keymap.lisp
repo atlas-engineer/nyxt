@@ -22,6 +22,10 @@
            (string= (modifier-shortcut string-or-modifier1)
                     (modifier-shortcut string-or-modifier2)))))))
 
+(defmethod fset:compare ((x modifier) (y modifier))
+  "Needed to user the KEY structure as keys in Fset maps."
+  (fset:compare-lexicographically (modifier-string x) (modifier-string y)))
+
 (defvar +control+ (make-modifier :string "control" :shortcut "C"))
 (defvar +meta+ (make-modifier :string "meta" :shortcut "M"))
 (defvar +shift+ (make-modifier :string "shift" :shortcut "s"))
