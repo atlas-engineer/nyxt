@@ -56,7 +56,7 @@
                  (:file "macro")
                  (:file "global")
                  (:file "browser")
-                 (:file "interprocess-communication-gtk")
+                 (:file "renderer-gtk")
                  (:file "command")
                  (:file "mode")
                  (:file "utility")
