@@ -13,7 +13,9 @@
    +shift+
    +super+
    +hyper+
-   modifier-list
+
+   *modifier-list*
+   *default-translator*
 
    make-key
    key-code
