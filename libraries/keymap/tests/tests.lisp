@@ -161,4 +161,23 @@
     (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "shift-return"))
               'ret)))
 
+(prove:subtest "keys->keyspecs"
+  (prove:is (keymap::keys->keyspecs (list (keymap:make-key :code 10 :value "a")))
+            "#10")
+  (prove:is (keymap::keys->keyspecs (list (keymap:make-key :value "a")
+                                          (keymap:make-key :value "b")))
+            "a b")
+  (prove:is (keymap::keys->keyspecs (list (keymap:make-key :value "a" :modifiers '("C"))))
+            "C-a")
+  (prove:is (keymap::keys->keyspecs (list (keymap:make-key :value "a" :modifiers '("C" "M"))))
+            "C-M-a")
+  (prove:is (keymap::keys->keyspecs (list (keymap:make-key :value "a" :modifiers '("M" "C"))))
+            "C-M-a")
+  (prove:is (keymap::keys->keyspecs (list (keymap:make-key :value "a" :modifiers '("C" "M"))
+                                          (keymap:make-key :value "x" :modifiers '("super" "hyper"))))
+            "C-M-a H-S-x")
+  (let ((keymap:*print-shortcut* nil))
+    (prove:is (keymap::keys->keyspecs (list (keymap:make-key :value "a" :modifiers '("C"))))
+              "control-a")))
+
 (prove:finalize)
