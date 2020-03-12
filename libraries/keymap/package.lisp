@@ -36,4 +36,7 @@
    translate-remove-but-first-control
    translate-remove-shift-but-first-control
    translate-remove-shift-but-first-control-toggle-case
-   translate-shifted-control-combinations))
+   translate-shifted-control-combinations
+
+   *print-shortcut*
+   keys->keyspecs))
