@@ -31,4 +31,9 @@
    default
    translator
 
-   translate-shifted-keys))
+   translate-remove-shift-toggle-case
+   translate-remove-shift
+   translate-remove-but-first-control
+   translate-remove-shift-but-first-control
+   translate-remove-shift-but-first-control-toggle-case
+   translate-shifted-control-combinations))
