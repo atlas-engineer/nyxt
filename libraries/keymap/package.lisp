@@ -28,4 +28,6 @@
    lookup-key
    parents
    default
-   translator))
+   translator
+
+   translate-shifted-keys))
