@@ -121,4 +121,14 @@
     (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-c x"))
               'prefix-sym)))
 
+(prove:subtest "define-key & lookup-key with cycle"
+  (let ((keymap (keymap:make-keymap))
+        (parent1 (keymap:make-keymap))
+        (parent2 (keymap:make-keymap)))
+    (push parent1 (keymap:parents keymap))
+    (push parent2 (keymap:parents parent1))
+    (push keymap (keymap:parents parent2))
+    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "x"))
+              nil)))
+
 (prove:finalize)
