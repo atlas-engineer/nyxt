@@ -21,5 +21,6 @@
    key-modifiers
    key-status
 
+   make-keymap
    define-key
-   make-keymap))
+   lookup-key))
