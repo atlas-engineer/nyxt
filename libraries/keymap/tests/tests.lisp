@@ -133,11 +133,17 @@
 
 (prove:subtest "define-key & lookup-key default value"
   (let ((keymap (keymap:make-keymap :default 'foo))
-        (keymap2 (keymap:make-keymap )))
+        (keymap2 (keymap:make-keymap)))
     (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "x"))
               'foo)
     (setf (keymap:default keymap2) 'bar)
     (prove:is (keymap:lookup-key keymap2 (keymap::keyspecs->keys "x"))
               'bar)))
+
+(prove:subtest "Translator"
+  (let ((keymap (keymap:make-keymap)))
+    (keymap:define-key keymap "A b" 'foo)
+    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "shift-a shift-B"))
+              'foo)))
 
 (prove:finalize)
