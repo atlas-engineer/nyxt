@@ -183,7 +183,8 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
                              (rest keys))))
              (when (and control? shift?)
                (cons (let ((new-key (copy-key (first keys))))
-                       (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+)))
+                       (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
+                       new-key)
                      (mapcar (lambda (key)
                                (let ((new-key (copy-key key)))
                                  (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))
@@ -311,10 +312,10 @@ Return KEYMAP."
 (declaim (ftype (function (keymap
                            (types:proper-list keys)
                            (types:proper-list keymap))
-                          symbol)
+                          (or symbol keymap))
                 lookup-keys-in-keymap))
 (defun lookup-keys-in-keymap (keymap keys visited)
-  "Return bound symbol or nil if there is none."
+  "Return bound symbol or keymap, or nil if there is none."
   (when keys
     (let ((hit (fset:@ (entries keymap) (first keys))))
       (when hit
@@ -326,11 +327,11 @@ Return KEYMAP."
 (declaim (ftype (function (keymap
                            (types:proper-list keys)
                            (types:proper-list keymap))
-                          symbol)
+                          (or symbol keymap))
                 lookup-translated-keys))
 (defun lookup-translated-keys (keymap keys visited)
-  "Return the symbol associated to KEYS in KEYMAP.
-Return nil if there is non.
+  "Return the symbol or keymap associated to KEYS in KEYMAP.
+Return nil if there is none.
 Keymap parents are looked up one after the other."
   (let ((sym (lookup-keys-in-keymap keymap keys visited)))
     (unless sym
@@ -342,23 +343,20 @@ Keymap parents are looked up one after the other."
 (declaim (ftype (function (keymap
                            (types:proper-list keys)
                            (types:proper-list keymap))
-                          symbol)
+                          (or symbol keymap))
                 lookup-key*))
 (defun lookup-key* (keymap keys visited)
   "Internal function, see `lookup-key' for the user-facing function.
 VISITED is used to detect cycles."
   (if (find keymap visited)
       (warn "Cycle detected in keymap ~a" keymap)
-      (progn
-        (let ((sym nil))
-          (find-if (lambda (keys)
-                     (setf sym (lookup-translated-keys keymap keys (cons keymap visited))))
-                   (progn
-                     (format t "TRANSLATIONS (fun ~a): ~a~%" (translator keymap) (funcall (or (translator keymap) (constantly nil)) keys))
-                     (cons keys (funcall (or (translator keymap) (constantly nil)) keys))))
-          sym))))
+      (let ((sym nil))
+        (find-if (lambda (keys)
+                   (setf sym (lookup-translated-keys keymap keys (cons keymap visited))))
+                 (cons keys (funcall (or (translator keymap) (constantly nil)) keys)))
+        sym)))
 
-(declaim (ftype (function (keymap (types:proper-list keys)) symbol) lookup-key))
+(declaim (ftype (function (keymap (types:proper-list keys)) (or symbol keymap)) lookup-key))
 (defun lookup-key (keymap keys)   ; TODO: Rename to lookup-keys? lookup-binding?
   "Return the symbol associated to keymap.
 Return nil if there is none.
