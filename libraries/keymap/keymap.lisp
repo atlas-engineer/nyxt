@@ -86,6 +86,12 @@ specify a key-code binding."
      (fset:convert 'fset:set mods)
      status)))
 
+(defmethod fset:compare ((x key) (y key))
+  "Needed to user the KEY structure as keys in Fset maps."
+  (if (key= x y)
+      :equal
+      :unequal))
+
 ;; TODO: Define conditions.
 (declaim (ftype (function (string) key) keyspec->key))
 (defun keyspec->key (string)
@@ -246,36 +252,40 @@ The returned list contains KEYS as the first element."
   ;; TODO: Finish translate-keys.
   (list keys))
 
-(defun lookup-key-chord (keymap keys)
-  "Return nil when no hit."
-  (unless (null keys)
-    (let ((hit (fset:@ keymap (first keys))))
+(declaim (ftype (function (keymap (types:proper-list keys)) symbol) lookup-keys-in-keymap))
+(defun lookup-keys-in-keymap (keymap keys)
+  "Return bound symbol or nil if there is none."
+  (when keys
+    (let ((hit (fset:@ (entries keymap) (first keys))))
       (when hit
         (if (and (keymap-p hit)
                  (rest keys))
-            (lookup-key-chord hit (rest keys))
-            ;; TODO: Return keymap or nil?
+            (lookup-keys-in-keymap hit (rest keys))
             hit)))))
 
+(declaim (ftype (function (keymap (types:proper-list keys)) symbol) lookup-translated-keys))
 (defun lookup-translated-keys (keymap keys)
   "Return the symbol associated to KEYS in KEYMAP.
+Return nil if there is non.
 Keymap parents are looked up one after the other."
-  (let ((sym (lookup-key-chord keymap keys)))
-    (or sym
-        (loop for parent-keymap in (parents keymap)
-              for sym = (lookup-translated-keys parent-keymap keys)
-              when sym
-              return sym))))
+  (let ((sym nil))
+    (find-if (lambda (keymap)
+               (setf sym (lookup-keys-in-keymap keymap keys)))
+             (cons keymap (parents keymap)))
+    sym))
 
 ;; TODO: Catch cycles in lookups.
+(declaim (ftype (function (keymap (types:proper-list keys)) symbol) lookup-key))
 (defun lookup-key (keymap keys)   ; TODO: Rename to lookup-keys? lookup-binding?
   "Return the symbol associated to keymap.
-Keymap parents are looked up one after the other."
-  (let ((translations (translate-keys keys)))
-    (loop for translated-key-chord in translations
-          for sym = (lookup-translated-keys keymap translated-key-chord)
-          when sym
-          return sym)))
+Return nil if there is none.
+First keymap parents are lookup up one after the other.
+Then keys translation are looked up one after the other."
+  (let ((sym nil))
+    (find-if (lambda (keys)
+               (setf sym (lookup-translated-keys keymap keys)))
+             (translate-keys keys))
+    sym))
 
 (defun key->keyspec (key)
   "Warning: Only KEY value is supported."
