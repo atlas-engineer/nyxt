@@ -18,6 +18,7 @@
    *default-translator*
 
    make-key
+   copy-key
    key-code
    key-value
    key-modifiers

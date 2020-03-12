@@ -39,7 +39,8 @@ in this list.")
 
 ;; Must be a structure so that it can served as a key in a hash-table with
 ;; #'equalp tests.
-(defstruct (key (:constructor %make-key (code value modifiers status)))
+(defstruct (key (:constructor %make-key (code value modifiers status))
+                (:copier %copy-key))
   (code 0 :type integer)
   (value "" :type string)
   (modifiers (fset:set) :type fset:wb-set)
@@ -60,9 +61,33 @@ specify a key-code binding."
        (eq (key-status key1)
            (key-status key2))))
 
+(declaim (ftype (function ((or string modifier)) modifier) modspec->modifier))
+(defun modspec->modifier (string-or-modifier)
+  "Return the `modifier' corresponding to STRING-OR-MODIFIER."
+  (if (modifier-p string-or-modifier)
+      string-or-modifier
+      (let ((modifier (find-if (alex:curry #'modifier= string-or-modifier) *modifier-list*)))
+        (or modifier
+            (error "Unknown modifier ~a" string-or-modifier)))))
+
+(declaim (ftype (function ((or (types:proper-list string)
+                               fset:wb-set))
+                          fset:wb-set)
+                modspecs->modifiers))
+(defun modspecs->modifiers (strings-or-modifiers)
+  "Return the list of `modifier's corresponding to STRINGS-OR-MODIFIERS."
+  (if (fset:set? strings-or-modifiers)
+      strings-or-modifiers
+      (coerce  (fset:convert 'fset:set
+                             (delete-duplicates
+                              (mapcar #'modspec->modifier strings-or-modifiers)
+                              :test #'modifier=))
+               'fset:wb-set)))
+
 (declaim (ftype (function (&key (:code integer) (:value string)
                                 (:modifiers list) (:status keyword))
-                          key) make-key))
+                          key)
+                make-key))
 (defun make-key (&key (code 0 explicit-code) (value "" explicit-value)
                       modifiers
                       (status :pressed))
@@ -70,21 +95,25 @@ specify a key-code binding."
   ;; TODO: Display warning on duplicate modifiers?
   (unless (or explicit-code explicit-value)
     (error "One of CODE or VALUE must be given."))
-  (let ((mods (when modifiers
-                (delete-duplicates
-                 (mapcar (lambda (mod)
-                           (if (modifier-p mod)
-                               mod
-                               (let ((modifier (find-if (alex:curry #'modifier= mod) *modifier-list*)))
-                                 (or modifier
-                                     (error "Unknown modifier ~a" mod)))))
-                         modifiers)
-                 :test #'equalp))))
-    (%make-key
-     code
-     value
-     (fset:convert 'fset:set mods)
-     status)))
+  (%make-key
+   code
+   value
+   (modspecs->modifiers modifiers)
+   status))
+
+(declaim (ftype (function (key &key (:code integer) (:value string)
+                               (:modifiers fset:wb-set) (:status keyword))
+                          key)
+                copy-key))
+(defun copy-key (key &key (code (key-code key)) (value (key-value key))
+                        (modifiers (key-modifiers key))
+                        (status (key-status key)))
+  (let ((new-key (%copy-key key)))
+    (setf (key-value new-key) value
+          (key-code new-key) code
+          (key-status new-key) status
+          (key-modifiers new-key) (modspecs->modifiers modifiers))
+    new-key))
 
 (defmethod fset:compare ((x key) (y key))
   "Needed to user the KEY structure as keys in Fset maps."
@@ -146,7 +175,7 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
       string))
 
 ;; TODO: Enable override in lookup?
-(defun translate-shifted-keys (keys) ; TODO: Can we make this shorter?
+(defun translate-shifted-keys (keys)
   "Return, in the following order:
 - With shift, keys without shift and with their key value case reversed:
   'shift-a shift-B' -> 'A b'
@@ -163,33 +192,24 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
             (list
              (when shift?
                (mapcar (lambda (key)
-                         (let ((new-key (copy-key key)))
-                           (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
-                           (setf (key-value new-key) (toggle-case (key-value new-key)))
-                           new-key))
+                         (copy-key key :modifiers (fset:less (key-modifiers key) +shift+)
+                                       :value (toggle-case (key-value key))))
                        keys))
              (when shift?
                (mapcar (lambda (key)
-                         (let ((new-key (copy-key key)))
-                           (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
-                           new-key))
+                         (copy-key key :modifiers (fset:less (key-modifiers key) +shift+)))
                        keys))
              (when control?
                (cons (first keys)
                      (mapcar (lambda (key)
-                               (let ((new-key (copy-key key)))
-                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))
-                                 new-key))
+                               (copy-key key :modifiers (fset:less (key-modifiers key) +control+)))
                              (rest keys))))
              (when (and control? shift?)
-               (cons (let ((new-key (copy-key (first keys))))
-                       (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
-                       new-key)
+               (cons (copy-key (first keys)
+                               :modifiers (fset:less (key-modifiers (first keys)) +shift+))
                      (mapcar (lambda (key)
-                               (let ((new-key (copy-key key)))
-                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))
-                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
-                                 new-key))
+                               (copy-key key :modifiers (fset:set-difference (key-modifiers key)
+                                                                             (fset:set +control+ +shift+))))
                              (rest keys))))))))
 
 (defvar *default-translator* #'translate-shifted-keys
@@ -372,7 +392,7 @@ Then keys translation are looked up one after the other."
               (str:join (str:join "-" (fset:convert 'list (key-modifiers key)))
                         "-")
               "")
-          (if (zerop (key-code key))    ; TODO: Can a keycode be 0?
+          (if (zerop (key-code key))    ; TODO: Can a keycode be 0?  I think not.
               (key-value key)
               (format nil "#~a" (key-code key)))))
 
