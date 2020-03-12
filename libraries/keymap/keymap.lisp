@@ -31,8 +31,8 @@
 (defparameter modifier-list
   (list +control+ +meta+ +shift+ +super+ +hyper+)
   "List of known modifiers.
-`make-key-chord' and `define-key' will raise an error if you try setting a
-modifier that is not in this list.")
+`make-key' and `define-key' raise an error when setting a modifier that is not
+in this list.")
 
 (deftype key-status-type ()
   `(or (eql :pressed) (eql :released)))
@@ -148,18 +148,24 @@ symbol or a keymap.")
             :initform nil
             :type list
             :documentation "List of parent keymaps.
-Parents are ordered by priority, the first parent has highest priority.")))
+Parents are ordered by priority, the first parent has highest priority.")
+   (default :accessor default
+            :initarg :default
+            :initform nil
+            :type symbol
+            :documentation "Default symbol when no binding is found.")))
 
-(declaim (ftype (function (&rest keymap) keymap) make-keymap))
-(defun make-keymap (&rest parents)
+(declaim (ftype (function (&key (:default symbol) (:parents (types:proper-list keymap))) keymap) make-keymap))
+(defun make-keymap (&key default parents)
   ;; We coerce to 'keymap because otherwise SBCL complains "type assertion too
   ;; complex to check: (VALUES KEYMAP::KEYMAP &REST T)."
   (coerce
    (make-instance 'keymap
                   :parents parents
+                  :default default
                   ;; We cannot use the standard (make-hash-table :test #'equalp)
                   ;; because then (set "a") and (set "A") would be the same thing.
-                  :entries (fset:map))
+                  :entries (fset:empty-map default))
    'keymap))
 
 (defun keymap-p (object)
@@ -220,7 +226,7 @@ Return KEYMAP."
   (if (= (length keys) 1)
       (progn
         (when (fset:@ (entries keymap) (first keys))
-          ;; TODO: Notify caller properly.
+          ;; TODO: Notify caller properly?
           (warn "Key was bound to ~a" (fset:@ (entries keymap) (first keys))))
         (setf (fset:@ (entries keymap) (first keys)) sym))
       (let ((submap (fset:@ (entries keymap) (first keys))))
