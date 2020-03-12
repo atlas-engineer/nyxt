@@ -226,6 +226,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("unix-opts" ,sbcl-unix-opts)
          ;; WebKitGTK deps
          ("glib-networking" ,glib-networking)
+         ("dconf" ,dconf)
          ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
          ;; Local deps
          ("next-download-manager" ,sbcl-next-download-manager)
