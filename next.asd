@@ -178,7 +178,7 @@
                                  :prove-asdf 'run-test-system c)))
 
 (asdf:defsystem next/keymap
-  :depends-on (alexandria fset str)
+  :depends-on (alexandria fset str trivial-types)
   :components ((:module source :pathname "libraries/keymap/"
                 :components ((:file "package")
                              (:file "keymap")))))
