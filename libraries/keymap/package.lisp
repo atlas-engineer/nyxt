@@ -25,4 +25,5 @@
    define-key
    lookup-key
    parents
-   default))
+   default
+   translator))
