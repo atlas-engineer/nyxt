@@ -135,6 +135,61 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
   (let* ((result (str:split " " spec :omit-nulls t)))
     (mapcar #'keyspec->key result)))
 
+(declaim (ftype (function (string) string) toggle-case))
+(defun toggle-case (string)
+  "Return the input with reversed case if it has only one character."
+  (if (= 1 (length string))
+      (let ((down (string-downcase string)))
+        (if (string= down string)
+            (string-upcase string)
+            down))
+      string))
+
+;; TODO: Enable override in lookup?
+(defun translate-shifted-keys (keys) ; TODO: Can we make this shorter?
+  "Return, in the following order:
+- With shift, keys without shift and with their key value case reversed:
+  'shift-a shift-B' -> 'A b'
+- With shift, keys without shift:
+  'shift-a' -> 'a'
+- With control, keys without control except for the first key:
+  'C-x C-c' -> 'C-x c'.
+- With control and shift, keys without control except for the first key and
+  without shift everywhere:
+  'C-shift-C C-shift-f' -> 'C-c F."
+  (let ((shift? (find +shift+ keys :key #'key-modifiers :test #'modifier=))
+        (control? (find +control+ (rest keys) :key #'key-modifiers :test #'modifier=)))
+    (delete nil
+            (list
+             (when shift?
+               (mapcar (lambda (key)
+                         (let ((new-key (copy-key key)))
+                           (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))
+                           (setf (key-value new-key) (toggle-case (key-value new-key)))))
+                       keys))
+             (when shift?
+               (mapcar (lambda (key)
+                         (let ((new-key (copy-key key)))
+                           (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))))
+                       keys))
+             (when control?
+               (cons (first keys)
+                     (mapcar (lambda (key)
+                               (let ((new-key (copy-key key)))
+                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))))
+                             (rest keys))))
+             (when (and control? shift?)
+               (cons (let ((new-key (copy-key (first keys))))
+                       (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+)))
+                     (mapcar (lambda (key)
+                               (let ((new-key (copy-key key)))
+                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +control+))
+                                 (setf (key-modifiers new-key) (fset:less (key-modifiers new-key) +shift+))))
+                             (rest keys))))))))
+
+(defvar *default-translator* #'translate-shifted-keys
+  "Default key translator to use in `keymap' objects.")
+
 (defclass keymap ()
   ((entries :accessor entries
             :initarg :entries
@@ -153,16 +208,28 @@ Parents are ordered by priority, the first parent has highest priority.")
             :initarg :default
             :initform nil
             :type symbol
-            :documentation "Default symbol when no binding is found.")))
+            :documentation "Default symbol when no binding is found.")
+   (translator :accessor translator
+               :initarg :translator
+               :initform *default-translator*
+               :type function
+               :documentation "When no binding is found, call this function to
+generate new bindings to lookup.  The function takes a list of `key' objects and
+returns a list of list of keys.")))
 
-(declaim (ftype (function (&key (:default symbol) (:parents (types:proper-list keymap))) keymap) make-keymap))
-(defun make-keymap (&key default parents)
+(declaim (ftype (function (&key (:default symbol)
+                                (:translator function)
+                                (:parents (types:proper-list keymap)))
+                          keymap)
+                make-keymap))
+(defun make-keymap (&key default translator parents)
   ;; We coerce to 'keymap because otherwise SBCL complains "type assertion too
   ;; complex to check: (VALUES KEYMAP::KEYMAP &REST T)."
   (coerce
    (make-instance 'keymap
                   :parents parents
                   :default default
+                  :translator translator
                   ;; We cannot use the standard (make-hash-table :test #'equalp)
                   ;; because then (set "a") and (set "A") would be the same thing.
                   :entries (fset:empty-map default))
@@ -236,26 +303,6 @@ Return KEYMAP."
         (bind-key submap (rest keys) sym)))
   keymap)
 
-(declaim (ftype (function (standard-char) standard-char) toggle-case))
-;; TODO: Use toggle-case in translate-keys.
-(defun toggle-case (char)               ; TODO: Should we deal with strings or chars?
-  "Return the input with reversed case. "
-  (let ((down (char-downcase char)))
-    (if (char= down char)
-        (char-upcase char)
-        down)))
-
-;; TODO: Make this customizable.  Inside keymap?  Default to global parameter.
-;; Enable override in lookup?
-(defun translate-keys (keys)
-  "Return list of bindings that can be derived from KEYS.
-The returned list contains KEYS as the first element."
-  ;; Reverse case when shift is present.
-  ;; Remove shift (without changing case) when other modifiers are there.  E.g. C-shift-a can be translated to C-A, C-a.
-  ;; For last key-chord, toggle Control.
-  ;; TODO: Finish translate-keys.
-  (list keys))
-
 (declaim (ftype (function (keymap
                            (types:proper-list keys)
                            (types:proper-list keymap))
@@ -301,7 +348,7 @@ VISITED is used to detect cycles."
         (let ((sym nil))
           (find-if (lambda (keys)
                      (setf sym (lookup-translated-keys keymap keys (cons keymap visited))))
-                   (translate-keys keys))
+                   (cons keys (funcall (or (translator keymap) #'identity) keys)))
           sym))))
 
 (declaim (ftype (function (keymap (types:proper-list keys)) symbol) lookup-key))
