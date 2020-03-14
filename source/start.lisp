@@ -178,11 +178,11 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers. This function is
    suitable as a `browser' `startup-function'."
-  (when urls
-    (open-urls urls))
   (let ((window (window-make *browser*))
         (buffer (help)))
-    (window-set-active-buffer window buffer))
+    (if urls
+        (open-urls urls)
+        (window-set-active-buffer window buffer)))
   (match (session-restore-function *browser*)
     ((guard f f)
      (when *use-session*
