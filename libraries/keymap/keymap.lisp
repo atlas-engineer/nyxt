@@ -447,8 +447,35 @@ Then keys translation are looked up one after the other."
   "Return a keyspecs"
   (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
-;; TODO: Do we need a keymap->list function?
-;; Probably yes if we want to describe a mode or have the equivalent of Emacs' "C-h b".
+(defun keymap->map* (keymap &optional visited)
+  "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP."
+  (fset:reduce
+   (lambda (result key sym)
+     (let ((keyspec (key->keyspec key)))
+       (if (keymap-p sym)
+           (cond
+             ((find sym visited)
+              (warn "Cycle detected in keymap ~a" keymap)
+              result)
+             (t
+              (fset:map-union result
+                              (fset:image (lambda (subkey subsym)
+                                            (values (format nil "~a ~a" keyspec subkey)
+                                                    subsym))
+                                          (keymap->map* sym (cons sym visited))))))
+           (fset:with result keyspec sym))))
+   (entries keymap)
+   :initial-value (fset:empty-map)))
+
+(defun keymap->map (&rest keymaps)
+  "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP.
+Parent bindings are not listed; see `keymap-with-parents->map' instead.
+This is convenient if the caller wants to list all the bindings.
+When multiple keymaps are provided, return the union of the `fset:map' of each arguments.
+Keymaps are ordered by precedence, highest precedence comes first."
+  (let ((keymaps (reverse keymaps)))
+    (reduce #'fset:map-union
+            (mapcar #'keymap->map* keymaps))))
 
 ;; TODO: (command-keys keymap sym) function to return list of keys known for SYM.
 ;; Support multiple keymaps?
