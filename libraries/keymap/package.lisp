@@ -42,7 +42,9 @@
    keys->keyspecs
 
    keymap->map
-   keymap-with-parents->map)
+   keymap-with-parents->map
+
+   compose)
   (:documentation "
 The workflow goes as follows:
 - Make a keymap with `make-keymap'.

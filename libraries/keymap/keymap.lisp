@@ -491,6 +491,28 @@ See `keymap->map'."
                                        (parents keymap)))))))
     (apply #'keymap->map (list-keymaps keymap '()))))
 
+(defun compose (&rest keymaps)
+  "Return a new keymap that's the composition of all given KEYMAPS.
+KEYMAPS are composed by order of precedence, first keymap being the one with
+highest precedence."
+  (flet ((stable-union (list1 list2)
+           (delete-duplicates (append list1 list2)
+                              :from-end t)))
+    (cond
+      ((uiop:emptyp keymaps)
+       nil)
+      ((= 1 (length keymaps))
+       (first keymaps))
+      (t
+       (let ((keymap1 (first keymaps))
+             (keymap2 (second keymaps))
+             (merge (make-keymap)))
+         (setf (default merge) (default keymap1))
+         (setf (translator merge) (translator keymap1))
+         (setf (parents merge) (stable-union (parents keymap1) (parents keymap2)))
+         (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
+         (apply #'compose merge (rest (rest keymaps))))))))
+
 ;; TODO: (command-keys keymap sym) function to return list of keys known for SYM.
 ;; Support multiple keymaps?
 
@@ -498,8 +520,5 @@ See `keymap->map'."
 ;; (define-key *foo-map* (remap 'bar-sym) 'new-sym)
 
 ;; TODO: We need a "lookup-key" that goes through a list of keymaps.
-
-;; TODO: Function that composes keymaps.
-;; (compose-keymaps ...) => KEYMAP
 
 ;; TODO: Add timeout support, e.g. "jk" in less than 0.1s could be ESC in VI-style.
