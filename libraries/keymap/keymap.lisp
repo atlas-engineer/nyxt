@@ -352,7 +352,7 @@ or the shorter:
   "Recursively bind the KEYS to keymaps starting from KEYMAP.
 The last key is bound to SYM.
 Return KEYMAP."
-  (when (< (length keys) 1)
+  (when (uiop:emptyp keys)
     (error "Empty key specifier."))
   (if (= (length keys) 1)
       (progn
