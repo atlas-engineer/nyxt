@@ -477,6 +477,20 @@ Keymaps are ordered by precedence, highest precedence comes first."
     (reduce #'fset:map-union
             (mapcar #'keymap->map* keymaps))))
 
+(defun keymap-with-parents->map (keymap)
+  "List bindings in KEYMAP and all its parents.
+See `keymap->map'."
+  (labels ((list-keymaps (keymap visited)
+             (if (find keymap visited)
+                 (progn
+                   (warn "Cycle detected in parent keymap ~a" keymap)
+                   '())
+                 (progn
+                   (cons keymap
+                         (alex:mappend (alex:rcurry #'list-keymaps (cons keymap visited))
+                                       (parents keymap)))))))
+    (apply #'keymap->map (list-keymaps keymap '()))))
+
 ;; TODO: (command-keys keymap sym) function to return list of keys known for SYM.
 ;; Support multiple keymaps?
 
