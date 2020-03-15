@@ -39,7 +39,9 @@
    translate-shifted-control-combinations
 
    *print-shortcut*
-   keys->keyspecs)
+   keys->keyspecs
+
+   keymap->map)
   (:documentation "
 The workflow goes as follows:
 - Make a keymap with `make-keymap'.
