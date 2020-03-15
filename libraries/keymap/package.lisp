@@ -41,7 +41,8 @@
    *print-shortcut*
    keys->keyspecs
 
-   keymap->map)
+   keymap->map
+   keymap-with-parents->map)
   (:documentation "
 The workflow goes as follows:
 - Make a keymap with `make-keymap'.
