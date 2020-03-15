@@ -282,4 +282,26 @@
               (fset:empty-map)
               :test #'fset:equal?)))
 
+(prove:subtest "compose-keymaps"
+  (let* ((parent1 (keymap:make-keymap))
+         (keymap1 (keymap:make-keymap :parents (list parent1)))
+         (parent2 (keymap:make-keymap))
+         (keymap2 (keymap:make-keymap :parents (list parent2)))
+         (keymap3 (keymap:make-keymap)))
+    (keymap:define-key keymap1 "a" 'foo-a)
+    (keymap:define-key keymap1 "b" 'foo-b)
+    (keymap:define-key keymap2 "b" 'bar-b)
+    (keymap:define-key keymap2 "c" 'bar-c)
+    (keymap:define-key keymap3 "c" 'qux-c)
+    (keymap:define-key keymap3 "d" 'qux-d)
+    (prove:is (keymap:keymap->map (keymap:compose keymap1 keymap2 keymap3))
+              (fset:map
+               ("a" 'foo-a)
+               ("b" 'foo-b)
+               ("c" 'bar-c)
+               ("d" 'qux-d))
+              :test #'fset:equal?)
+    (prove:is (keymap:parents (keymap:compose keymap1 keymap2 keymap3))
+              (list parent1 parent2))))
+
 (prove:finalize)
