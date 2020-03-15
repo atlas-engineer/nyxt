@@ -45,7 +45,7 @@ in this list.")
 ;; #'equalp tests.
 (defstruct (key (:constructor %make-key (code value modifiers status))
                 (:copier %copy-key))
-  (code 0 :type integer)
+  (code 0 :type integer) ; TODO: Can a keycode be 0?  I think not, so 0 might be a good non-value.
   (value "" :type string)
   (modifiers (fset:set) :type fset:wb-set)
   (status :pressed :type key-status-type))
@@ -178,7 +178,6 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
             down))
       string))
 
-;; TODO: Enable override in lookup?
 (defun translate-remove-shift-toggle-case (keys)
   "With shift, keys without shift and with their key value case reversed:
 'shift-a shift-B' -> 'A b'."
@@ -254,6 +253,7 @@ without shift everywhere: 'C-shift-C C-shift-f' -> 'C-c F. "
 (defvar *default-translator* #'translate-shift-control-combinations
   "Default key translator to use in `keymap' objects.")
 
+;; TODO: Enable override of default and translator in lookup?
 (defclass keymap ()
   ((entries :accessor entries
             :initarg :entries
@@ -430,7 +430,7 @@ Then keys translation are looked up one after the other."
 (declaim (ftype (function (key) keyspecs-type) key->keyspec))
 (defun key->keyspec (key)
   "Return the keyspec of KEY."
-  (let ((value (if (zerop (key-code key)) ; TODO: Can a keycode be 0?  I think not.
+  (let ((value (if (zerop (key-code key))
                    (key-value key)
                    (format nil "#~a" (key-code key))))
         (modifiers (fset:reduce (lambda (&rest mods) (str:join "-" mods))
@@ -448,3 +448,17 @@ Then keys translation are looked up one after the other."
   (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
 ;; TODO: Do we need a keymap->list function?
+;; Probably yes if we want to describe a mode or have the equivalent of Emacs' "C-h b".
+
+;; TODO: (command-keys keymap sym) function to return list of keys known for SYM.
+;; Support multiple keymaps?
+
+;; TODO: Remap binding, e.g.
+;; (define-key *foo-map* (remap 'bar-sym) 'new-sym)
+
+;; TODO: We need a "lookup-key" that goes through a list of keymaps.
+
+;; TODO: Function that composes keymaps.
+;; (compose-keymaps ...) => KEYMAP
+
+;; TODO: Add timeout support, e.g. "jk" in less than 0.1s could be ESC in VI-style.
