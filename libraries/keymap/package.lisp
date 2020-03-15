@@ -43,6 +43,7 @@
 
    keymap->map
    keymap-with-parents->map
+   symbol-keys
 
    compose)
   (:documentation "

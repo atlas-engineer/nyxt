@@ -304,4 +304,26 @@
     (prove:is (keymap:parents (keymap:compose keymap1 keymap2 keymap3))
               (list parent1 parent2))))
 
+(prove:subtest "symbol-keys"
+  (let* ((keymap1 (keymap:make-keymap))
+         (keymap2 (keymap:make-keymap)))
+    (keymap:define-key keymap1 "a" 'foo-a)
+    (keymap:define-key keymap1 "b" 'foo-b)
+    (keymap:define-key keymap1 "C-c a" 'foo-a)
+
+    (prove:is (keymap:symbol-keys 'foo-a keymap1)
+              `(("C-c a" ,keymap1)
+                ("a" ,keymap1)))
+    (prove:is (keymap:symbol-keys 'foo-b keymap1)
+              `(("b" ,keymap1)))
+    (prove:is (keymap:symbol-keys 'missing keymap1)
+              nil)
+    (keymap:define-key keymap2 "a" 'foo-a)
+    (keymap:define-key keymap2 "c" 'foo-a)
+    (prove:is (keymap:symbol-keys 'foo-a keymap1 keymap2)
+              `(("C-c a" ,keymap1)
+                ("a" ,keymap1)
+                ("a" ,keymap2)
+                ("c" ,keymap2)))))
+
 (prove:finalize)

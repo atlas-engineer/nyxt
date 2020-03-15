@@ -447,7 +447,8 @@ Then keys translation are looked up one after the other."
   "Return a keyspecs"
   (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
-(defun keymap->map* (keymap &optional visited)
+;; TODO: Declare types.
+(defun keymap->map* (keymap &optional visited) ; TODO: Return a regular hash-table instead?
   "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP."
   (fset:reduce
    (lambda (result key sym)
@@ -513,8 +514,22 @@ highest precedence."
          (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
          (apply #'compose merge (rest (rest keymaps))))))))
 
-;; TODO: (command-keys keymap sym) function to return list of keys known for SYM.
-;; Support multiple keymaps?
+(defun symbol-keys* (symbol keymap)
+  "Return a the list of `keyspec's bound to SYMBOL in KEYMAP.
+The list is sorted alphabetically to ensure reproducible results."
+  (let ((result '()))
+    (fset:do-map (key sym (keymap->map keymap))
+      (when (eq symbol sym)
+        (push key result)))
+    (sort result #'string<)))
+
+(defun symbol-keys (symbol &rest keymaps) ; TODO: Return hash-table or alist?
+  "Return a the list of `keyspec's bound to SYMBOL in KEYMAP."
+  (alex:mappend (lambda (keymap)
+                  (let ((hit (symbol-keys* symbol keymap)))
+                    (when hit
+                      (mapcar (alex:rcurry #'list keymap) hit))))
+                keymaps))
 
 ;; TODO: Remap binding, e.g.
 ;; (define-key *foo-map* (remap 'bar-sym) 'new-sym)
