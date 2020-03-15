@@ -447,27 +447,30 @@ Then keys translation are looked up one after the other."
   "Return a keyspecs"
   (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
-;; TODO: Declare types.
+(declaim (ftype (function (keymap &optional (types:proper-list keymap)) fset:map) keymap->map*))
 (defun keymap->map* (keymap &optional visited) ; TODO: Return a regular hash-table instead?
   "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP."
-  (fset:reduce
-   (lambda (result key sym)
-     (let ((keyspec (key->keyspec key)))
-       (if (keymap-p sym)
-           (cond
-             ((find sym visited)
-              (warn "Cycle detected in keymap ~a" keymap)
-              result)
-             (t
-              (fset:map-union result
-                              (fset:image (lambda (subkey subsym)
-                                            (values (format nil "~a ~a" keyspec subkey)
-                                                    subsym))
-                                          (keymap->map* sym (cons sym visited))))))
-           (fset:with result keyspec sym))))
-   (entries keymap)
-   :initial-value (fset:empty-map)))
+  (coerce
+   (fset:reduce
+    (lambda (result key sym)
+      (let ((keyspec (key->keyspec key)))
+        (if (keymap-p sym)
+            (cond
+              ((find sym visited)
+               (warn "Cycle detected in keymap ~a" keymap)
+               result)
+              (t
+               (fset:map-union result
+                               (fset:image (lambda (subkey subsym)
+                                             (values (format nil "~a ~a" keyspec subkey)
+                                                     subsym))
+                                           (keymap->map* sym (cons sym visited))))))
+            (fset:with result keyspec sym))))
+    (entries keymap)
+    :initial-value (fset:empty-map))
+   'fset:map))
 
+(declaim (ftype (function (&rest keymap) fset:map) keymap->map))
 (defun keymap->map (&rest keymaps)
   "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP.
 Parent bindings are not listed; see `keymap-with-parents->map' instead.
@@ -478,6 +481,7 @@ Keymaps are ordered by precedence, highest precedence comes first."
     (reduce #'fset:map-union
             (mapcar #'keymap->map* keymaps))))
 
+(declaim (ftype (function (keymap) fset:map) keymap-with-parents->map))
 (defun keymap-with-parents->map (keymap)
   "List bindings in KEYMAP and all its parents.
 See `keymap->map'."
@@ -492,6 +496,7 @@ See `keymap->map'."
                                        (parents keymap)))))))
     (apply #'keymap->map (list-keymaps keymap '()))))
 
+(declaim (ftype (function (&rest keymap) (or keymap nil)) compose))
 (defun compose (&rest keymaps)
   "Return a new keymap that's the composition of all given KEYMAPS.
 KEYMAPS are composed by order of precedence, first keymap being the one with
@@ -514,6 +519,7 @@ highest precedence."
          (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
          (apply #'compose merge (rest (rest keymaps))))))))
 
+(declaim (ftype (function (symbol keymap) (types:proper-list string)) symbol-keys*))
 (defun symbol-keys* (symbol keymap)
   "Return a the list of `keyspec's bound to SYMBOL in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results."
@@ -523,13 +529,16 @@ The list is sorted alphabetically to ensure reproducible results."
         (push key result)))
     (sort result #'string<)))
 
+(declaim (ftype (function (symbol &rest keymap) (types:association-list symbol keymap))
+                symbol-keys))
 (defun symbol-keys (symbol &rest keymaps) ; TODO: Return hash-table or alist?
   "Return a the list of `keyspec's bound to SYMBOL in KEYMAP."
-  (alex:mappend (lambda (keymap)
-                  (let ((hit (symbol-keys* symbol keymap)))
-                    (when hit
-                      (mapcar (alex:rcurry #'list keymap) hit))))
-                keymaps))
+  (coerce (alex:mappend (lambda (keymap)
+                          (let ((hit (symbol-keys* symbol keymap)))
+                            (when hit
+                              (mapcar (alex:rcurry #'list keymap) hit))))
+                        keymaps)
+          '(types:association-list symbol keymap)))
 
 ;; TODO: Remap binding, e.g.
 ;; (define-key *foo-map* (remap 'bar-sym) 'new-sym)
