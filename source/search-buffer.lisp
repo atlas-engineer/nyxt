@@ -5,7 +5,8 @@
 (define-parenscript query-buffer (query)
   (defvar *identifier* 0)
   (defvar *matches* (array))
-  (defvar *nodes* (ps:new (-Object)))
+  (when (= (typeof (ps:chain self *nodes*)) "undefined")
+    (defvar *nodes* (ps:new (-Object))))
 
   (defun qs (context selector)
     "Alias of document.querySelector"
