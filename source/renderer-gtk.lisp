@@ -328,8 +328,7 @@
   "Return the window object for the currently active window."
   (setf (last-active-window browser)
         (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
-            (last-active-window browser)))
-  (last-active-window browser))
+            (last-active-window browser))))
 
 @export
 (defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
