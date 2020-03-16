@@ -117,6 +117,7 @@
         "KP_Page_Up" #'scroll-page-up
         "KP_Prior" #'scroll-page-up
 
+        "C-v" #'paste
         "z i" #'zoom-in-page
         "z o" #'zoom-out-page
         "z z" #'unzoom-page
