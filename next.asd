@@ -66,7 +66,7 @@
                  (:file "buffer")
                  (:file "window")
                  (:file "minibuffer")
-                 (:file "keymap")
+                 (:file "input")
                  (:file "recent-buffers")
                  ;; Core Packages
                  (:file "password")

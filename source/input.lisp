@@ -1,7 +1,6 @@
 ;;; keymap.lisp --- lisp subroutines for key binding detection
 
 ;; TODO: Fix dead keys in the minibuffer.
-;; TODO: Rename to input.lisp.
 ;; TODO: Support self-insertable keys.  Make sure dead keys work.
 ;; TODO: Make modifiers customizable.
 ;; TODO: Decide of a key string protocol: https://github.com/atlas-engineer/next/issues/564
