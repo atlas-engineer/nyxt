@@ -19,11 +19,15 @@ Changes compared to Emacsy:
 - Support multiple inheritance.
 - Support keycode.
 - Validate keyspec at compile time.
+- ~define-key~ can set multiple bindings in a single call.
 - Support multiple scheme to make it easy to switch between, say, Emacs-style
   and VI-style bindings.  This orthogonality to keymaps composes better than
   having multiple keymaps: changing scheme applies to the entire program, which
   is easier than looping through all keymaps to change them.
 - Translate keyspecs as a fallback.  For instance if =shift-a= is not bound, check =A=.
+- Behaviour can be customized with global parameters such as ~*print-shortcut*~.
+- The ~compose~ function can merge multiple keymaps together.
+- Support multiple arguments when that makes sense (e.g. multiple keymaps for ~lookup-key~).
 
 This library does not deal with global or local bindings: it's up to the calling
 application to manage the locality of their keymaps.
