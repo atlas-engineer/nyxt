@@ -16,6 +16,7 @@
    *modifier-list*
    *default-translator*
 
+   key
    make-key
    copy-key
    key-code
