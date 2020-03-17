@@ -111,9 +111,9 @@ It takes the mode as argument.
 It is run before the destructor.")
    (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes :type list
                    :initform
-                   (let ((vi-map (make-keymap))
-                         (emacs-map (make-keymap)))
-                     (define-key :keymap emacs-map
+                   (let ((vi-map (keymap:make-keymap))
+                         (emacs-map (keymap:make-keymap)))
+                     (define-key emacs-map
                        "C-x C-c" #'quit
                        "C-[" #'switch-buffer-previous
                        "C-]" #'switch-buffer-next
@@ -142,7 +142,7 @@ It is run before the destructor.")
                        "C-/" #'reopen-buffer
                        "C-x C-f" #'open-file)
 
-                     (define-key :keymap vi-map
+                     (define-key vi-map
                        "Z Z" #'quit
                        "[" #'switch-buffer-previous
                        "]" #'switch-buffer-next

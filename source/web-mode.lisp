@@ -1,5 +1,6 @@
 (uiop:define-package :next/web-mode
-    (:use :common-lisp :trivia :next :annot.class)
+  (:use :common-lisp :trivia :next :annot.class)
+  (:import-from #:keymap #:define-key)
   (:documentation "Mode for web pages"))
 (in-package :next/web-mode)
 
@@ -17,9 +18,9 @@
             :initform (htree:make))
    (keymap-schemes
     :initform
-    (let ((emacs-map (make-keymap))
-          (vi-map (make-keymap)))
-      (define-key :keymap emacs-map
+    (let ((emacs-map (keymap:make-keymap))
+          (vi-map (keymap:make-keymap)))
+      (define-key emacs-map
         "C-M-f" #'history-forwards-all-query
         "C-M-b" #'history-all-query
         "M-f" #'history-forwards-query
@@ -82,7 +83,7 @@
         "KP_Page_Up" #'scroll-page-up
         "KP_Prior" #'scroll-page-up)
 
-      (define-key :keymap vi-map
+      (define-key vi-map
         "H" #'history-backwards
         "L" #'history-forwards
         "M-h" #'history-backwards-query

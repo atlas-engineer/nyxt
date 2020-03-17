@@ -196,9 +196,9 @@ provided buffers."
          (keymap-scheme (current-keymap-scheme minibuffer))
          (keymap (getf (keymap-schemes (first (modes minibuffer)))
                        keymap-scheme)))
-    (define-key :keymap keymap "C-s"
-      #'(lambda ()
-          (update-selection-highlight-hint :follow t :scroll t)))
+    (define-key keymap
+      "C-s" #'(lambda ()
+                (update-selection-highlight-hint :follow t :scroll t)))
     (with-result (match (read-from-minibuffer minibuffer))
       (declare (ignore match))
       (update-selection-highlight-hint :follow t :scroll t))))

@@ -18,8 +18,9 @@
   "Mode for the minibuffer."
   ((keymap-schemes
     :initform
-    (let ((map (make-keymap)))
-      (define-key "HYPHEN" #'self-insert
+    (let ((map (keymap:make-keymap)))
+      (define-key map
+        "HYPHEN" #'self-insert
         "SPACE" #'self-insert
         "C-f" #'cursor-forwards
         "M-f" #'cursor-forwards-word
@@ -58,8 +59,7 @@
         "M-h" #'minibuffer-history
         "C-SPACE" #'minibuffer-toggle-mark
         "M-a" #'minibuffer-mark-all
-        "M-u" #'minibuffer-unmark-all
-        :keymap map)
+        "M-u" #'minibuffer-unmark-all)
       (list :emacs map
             ;; TODO: We could have VI bindings for the minibuffer too.
             ;; But we need to make sure it's optional + to have an indicator
@@ -468,8 +468,8 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (update-display minibuffer))
 
 (define-command self-insert ()
-  "Insert key-chord-stack in MINIBUFFER."
-  (let ((key-string (key-chord-key-string (first (key-chord-stack *browser*))))
+  "Insert first key from `*browser*' `key-stack' in the minibuffer."
+  (let ((key-string (keymap:key-value (first (key-stack *browser*))))
         (translation-table '(("HYPHEN" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking

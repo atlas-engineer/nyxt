@@ -117,8 +117,8 @@ instantiate on buffer creation, unless specified.")
 for all modes in the current buffer.")
    (override-map :accessor override-map
                  :initarg :override-map
-                 :initform (let ((map (make-keymap)))
-                             (define-key :keymap map
+                 :initform (let ((map (keymap:make-keymap)))
+                             (define-key map
                                "M-x" #'execute-command)
                              map)
                  :documentation "This keymap is always looked up first, it
@@ -259,14 +259,6 @@ defined in any package and is unique."
               ((guard c c) (funcall (sym c) :buffer buffer :activate t))
               (_ (log:warn "Mode command ~a not found." mode-class))))))))
 
-;; A struct used to describe a key-chord
-(defstruct key-chord
-  key-code
-  key-string
-  modifiers
-  position
-  low-level-data)
-
 (defmethod did-commit-navigation ((buffer buffer) url)
   (setf (url buffer) url)
   (with-result (title (%%buffer-get-title :buffer buffer))
@@ -360,8 +352,8 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
 The 'default' engine is used when the query is not a valid URL, or the first
 keyword is not recognized.")
-   (key-chord-stack :accessor key-chord-stack :initform '()
-                    :documentation "A stack that keeps track of the key chords a user has inputted.")
+   (key-stack :accessor key-stack :initform '()
+              :documentation "A stack that keeps track of the key chords a user has pressed.")
    (downloads :accessor downloads :initform '()
               :documentation "List of downloads.")
    (download-watcher :accessor download-watcher :initform nil

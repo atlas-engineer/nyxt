@@ -1,5 +1,6 @@
 (uiop:define-package :next/file-manager-mode
-    (:use :common-lisp :trivia :next)
+  (:use :common-lisp :trivia :next)
+  (:import-from #:keymap #:define-key)
   (:export
    :open-file-function
    :*open-file-function*
@@ -95,16 +96,16 @@ on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
     ((keymap-schemes
       :initform
-      (let ((emacs-map (make-keymap))
-            (vi-map (make-keymap)))
+      (let ((emacs-map (keymap:make-keymap))
+            (vi-map (keymap:make-keymap)))
 
-        (define-key :keymap emacs-map
+        (define-key emacs-map
           "M-Left" #'display-parent-directory
           "C-l" #'display-parent-directory
           "C-j" #'enter-directory
           "M-Right" #'enter-directory)
 
-        (define-key :keymap vi-map
+        (define-key vi-map
           "M-Right" #'enter-directory
           "M-Left" #'display-parent-directory)
 
