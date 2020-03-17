@@ -395,12 +395,10 @@ Return KEYMAP."
   "Return the symbol or keymap associated to KEYS in KEYMAP.
 Return nil if there is none.
 Keymap parents are looked up one after the other."
-  (let ((sym (lookup-keys-in-keymap keymap keys visited)))
-    (unless sym
-      (find-if (lambda (map)
-                 (setf sym (lookup-key* map keys visited)))
-               (parents keymap)))
-    sym))
+  (or (lookup-keys-in-keymap keymap keys visited)
+      (some (lambda (map)
+              (lookup-key* map keys visited))
+            (parents keymap))))
 
 (declaim (ftype (function (keymap
                            list-of-keys
@@ -412,11 +410,9 @@ Keymap parents are looked up one after the other."
 VISITED is used to detect cycles."
   (if (find keymap visited)
       (warn "Cycle detected in keymap ~a" keymap)
-      (let ((sym nil))
-        (find-if (lambda (keys)
-                   (setf sym (lookup-translated-keys keymap keys (cons keymap visited))))
-                 (cons keys (funcall (or (translator keymap) (constantly nil)) keys)))
-        sym)))
+      (some (lambda (keys)
+              (lookup-translated-keys keymap keys (cons keymap visited)))
+            (cons keys (funcall (or (translator keymap) (constantly nil)) keys)))))
 
 (declaim (ftype (function (list-of-keys keymap &rest keymap) (or symbol keymap)) lookup-key))
 (defun lookup-key (keys keymap &rest more-keymaps)   ; TODO: Rename to lookup-keys? lookup-binding?
