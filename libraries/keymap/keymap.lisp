@@ -314,7 +314,7 @@ returns a list of list of keys.")))
 ;; We can verify this with:
 ;;
 ;;   (compile 'foo (lambda () (keymap::define-key keymap "C-x C-f" 'find-file)))
-(defmacro define-key (keymap &rest binding-sym-pairs)
+(defmacro define-key (keymap binding sym &rest more-binding-sym-pairs)
   "Bind BINDING to SYM in KEYMAP.
 Return KEYMAP.
 
@@ -337,12 +337,13 @@ or the shorter:
 
   (define-key foo-map \"C-M-#1\" 'find-file)"
   ;; The type checking of KEYMAP is done by `define-key*'.
-  (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-        :do (check-type binding (or keyspecs-type list)))
-  `(progn
-     ,@(loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-             :collect (list 'define-key* keymap binding sym))
-     ,keymap))
+  (let ((binding-sym-pairs (append (list binding sym) more-binding-sym-pairs)))
+    (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
+          :do (check-type binding (or keyspecs-type list)))
+    `(progn
+       ,@(loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
+               :collect (list 'define-key* keymap binding sym))
+       ,keymap)))
 
 (declaim (ftype (function (keymap (or keyspecs-type list) (or symbol keymap))) define-key*))
 (defun define-key* (keymap binding sym)
@@ -471,14 +472,14 @@ Then keys translation are looked up one after the other."
                   :initial-value (fset:empty-map))
      'fset:map)))
 
-(declaim (ftype (function (&rest keymap) hash-table) keymap->map))
-(defun keymap->map (&rest keymaps)
+(declaim (ftype (function (keymap &rest keymap) hash-table) keymap->map))
+(defun keymap->map (keymap &rest more-keymaps)
   "Return a hash-table of (KEYSPEC SYM) from KEYMAP.
 Parent bindings are not listed; see `keymap-with-parents->map' instead.
 This is convenient if the caller wants to list all the bindings.
 When multiple keymaps are provided, return the union of the `fset:map' of each arguments.
 Keymaps are ordered by precedence, highest precedence comes first."
-  (let ((keymaps (reverse keymaps)))
+  (let ((keymaps (reverse (cons keymap more-keymaps))))
     (coerce
      (fset:convert 'hash-table
                    (reduce #'fset:map-union
@@ -500,28 +501,29 @@ See `keymap->map'."
                                        (parents keymap)))))))
     (apply #'keymap->map (list-keymaps keymap '()))))
 
-(declaim (ftype (function (&rest keymap) (or keymap null)) compose))
-(defun compose (&rest keymaps)
+(declaim (ftype (function (keymap &rest keymap) (or keymap null)) compose))
+(defun compose (keymap &rest more-keymaps)
   "Return a new keymap that's the composition of all given KEYMAPS.
 KEYMAPS are composed by order of precedence, first keymap being the one with
 highest precedence."
   (flet ((stable-union (list1 list2)
            (delete-duplicates (append list1 list2)
                               :from-end t)))
-    (cond
-      ((uiop:emptyp keymaps)
-       nil)
-      ((= 1 (length keymaps))
-       (first keymaps))
-      (t
-       (let ((keymap1 (first keymaps))
-             (keymap2 (second keymaps))
-             (merge (make-keymap)))
-         (setf (default merge) (default keymap1))
-         (setf (translator merge) (translator keymap1))
-         (setf (parents merge) (stable-union (parents keymap1) (parents keymap2)))
-         (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
-         (apply #'compose merge (rest (rest keymaps))))))))
+    (let ((keymaps (cons keymap more-keymaps)))
+      (cond
+        ((uiop:emptyp keymaps)
+         nil)
+        ((= 1 (length keymaps))
+         (first keymaps))
+        (t
+         (let ((keymap1 (first keymaps))
+               (keymap2 (second keymaps))
+               (merge (make-keymap)))
+           (setf (default merge) (default keymap1))
+           (setf (translator merge) (translator keymap1))
+           (setf (parents merge) (stable-union (parents keymap1) (parents keymap2)))
+           (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
+           (apply #'compose merge (rest (rest keymaps)))))))))
 
 (declaim (ftype (function (symbol keymap) list-of-strings) symbol-keys*))
 (defun symbol-keys* (symbol keymap)
@@ -534,14 +536,14 @@ The list is sorted alphabetically to ensure reproducible results."
              (keymap->map keymap))
     (sort result #'string<)))
 
-(declaim (ftype (function (symbol &rest keymap) list) symbol-keys))
-(defun symbol-keys (symbol &rest keymaps) ; TODO: Return hash-table or alist?
+(declaim (ftype (function (symbol keymap &rest keymap) list) symbol-keys))
+(defun symbol-keys (symbol keymap &rest more-keymaps) ; TODO: Return hash-table or alist?
   "Return a the list of `keyspec's bound to SYMBOL in KEYMAP."
   (coerce (alex:mappend (lambda (keymap)
                           (let ((hit (symbol-keys* symbol keymap)))
                             (when hit
                               (mapcar (alex:rcurry #'list keymap) hit))))
-                        keymaps)
+                        (cons keymap more-keymaps))
           'list))
 
 ;; TODO: Remap binding, e.g.
