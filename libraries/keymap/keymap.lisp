@@ -74,7 +74,7 @@ specify a key-code binding."
         (or modifier
             (error "Unknown modifier ~a" string-or-modifier)))))
 
-(declaim (ftype (function ((or (types:proper-list string)
+(declaim (ftype (function ((or list-of-strings
                                fset:wb-set))
                           fset:wb-set)
                 modspecs->modifiers))
@@ -161,7 +161,7 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
         (setf value code-or-value))
     (make-key :code code :value value :modifiers modifiers)))
 
-(declaim (ftype (function (string) (types:proper-list key)) keyspecs->keys))
+(declaim (ftype (function (string) list-of-keys) keyspecs->keys))
 (defun keyspecs->keys (spec)
   "Parse SPEC and return corresponding list of keys."
   ;; TODO: Return nil if SPEC is invalid?
@@ -265,7 +265,7 @@ symbol or a keymap.")
    (parents :accessor parents
             :initarg :parents
             :initform nil
-            :type (types:proper-list keymap)
+            :type list-of-keymaps
             :documentation "List of parent keymaps.
 Parents are ordered by priority, the first parent has highest priority.")
    (default :accessor default
@@ -283,7 +283,7 @@ returns a list of list of keys.")))
 
 (declaim (ftype (function (&key (:default symbol)
                                 (:translator function)
-                                (:parents (types:proper-list keymap)))
+                                (:parents list-of-keymaps))
                           keymap)
                 make-keymap))
 (defun make-keymap (&key default translator parents)
@@ -369,8 +369,8 @@ Return KEYMAP."
   keymap)
 
 (declaim (ftype (function (keymap
-                           (types:proper-list keys)
-                           (types:proper-list keymap))
+                           list-of-keys
+                           list-of-keymaps)
                           (or symbol keymap))
                 lookup-keys-in-keymap))
 (defun lookup-keys-in-keymap (keymap keys visited)
@@ -384,8 +384,8 @@ Return KEYMAP."
             hit)))))
 
 (declaim (ftype (function (keymap
-                           (types:proper-list keys)
-                           (types:proper-list keymap))
+                           list-of-keys
+                           list-of-keymaps)
                           (or symbol keymap))
                 lookup-translated-keys))
 (defun lookup-translated-keys (keymap keys visited)
@@ -400,8 +400,8 @@ Keymap parents are looked up one after the other."
     sym))
 
 (declaim (ftype (function (keymap
-                           (types:proper-list keys)
-                           (types:proper-list keymap))
+                           list-of-keys
+                           list-of-keymaps)
                           (or symbol keymap))
                 lookup-key*))
 (defun lookup-key* (keymap keys visited)
@@ -415,7 +415,7 @@ VISITED is used to detect cycles."
                  (cons keys (funcall (or (translator keymap) (constantly nil)) keys)))
         sym)))
 
-(declaim (ftype (function (keymap (types:proper-list keys)) (or symbol keymap)) lookup-key))
+(declaim (ftype (function (keymap list-of-keys) (or symbol keymap)) lookup-key))
 (defun lookup-key (keymap keys)   ; TODO: Rename to lookup-keys? lookup-binding?
   "Return the symbol associated to keymap.
 Return nil if there is none.
@@ -442,12 +442,12 @@ Then keys translation are looked up one after the other."
                         value)
             'keyspecs-type)))
 
-(declaim (ftype (function ((types:proper-list key)) keyspecs-type) keys->keyspecs))
+(declaim (ftype (function (list-of-keys) keyspecs-type) keys->keyspecs))
 (defun keys->keyspecs (keys)
   "Return a keyspecs"
   (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
-(declaim (ftype (function (keymap &optional (types:proper-list keymap)) fset:map) keymap->map*))
+(declaim (ftype (function (keymap &optional list-of-keymaps) fset:map) keymap->map*))
 (defun keymap->map* (keymap &optional visited) ; TODO: Return a regular hash-table instead?
   "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP."
   (coerce
@@ -496,7 +496,7 @@ See `keymap->map'."
                                        (parents keymap)))))))
     (apply #'keymap->map (list-keymaps keymap '()))))
 
-(declaim (ftype (function (&rest keymap) (or keymap nil)) compose))
+(declaim (ftype (function (&rest keymap) (or keymap null)) compose))
 (defun compose (&rest keymaps)
   "Return a new keymap that's the composition of all given KEYMAPS.
 KEYMAPS are composed by order of precedence, first keymap being the one with
@@ -519,7 +519,7 @@ highest precedence."
          (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
          (apply #'compose merge (rest (rest keymaps))))))))
 
-(declaim (ftype (function (symbol keymap) (types:proper-list string)) symbol-keys*))
+(declaim (ftype (function (symbol keymap) list-of-strings) symbol-keys*))
 (defun symbol-keys* (symbol keymap)
   "Return a the list of `keyspec's bound to SYMBOL in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results."
@@ -529,8 +529,7 @@ The list is sorted alphabetically to ensure reproducible results."
         (push key result)))
     (sort result #'string<)))
 
-(declaim (ftype (function (symbol &rest keymap) (types:association-list symbol keymap))
-                symbol-keys))
+(declaim (ftype (function (symbol &rest keymap) list) symbol-keys))
 (defun symbol-keys (symbol &rest keymaps) ; TODO: Return hash-table or alist?
   "Return a the list of `keyspec's bound to SYMBOL in KEYMAP."
   (coerce (alex:mappend (lambda (keymap)
@@ -538,7 +537,7 @@ The list is sorted alphabetically to ensure reproducible results."
                             (when hit
                               (mapcar (alex:rcurry #'list keymap) hit))))
                         keymaps)
-          '(types:association-list symbol keymap)))
+          'list))
 
 ;; TODO: Remap binding, e.g.
 ;; (define-key *foo-map* (remap 'bar-sym) 'new-sym)
