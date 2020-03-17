@@ -182,6 +182,7 @@
   :components ((:module source :pathname "libraries/keymap/"
                 :components ((:file "package")
                              (:file "types")
+                             (:file "conditions")
                              (:file "keymap")))))
 
 (asdf:defsystem next/keymap/tests

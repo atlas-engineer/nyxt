@@ -4,10 +4,11 @@
   (string "" :type string)
   (shortcut "" :type string))
 
+(declaim (ftype (function ((or string modifier) (or string modifier)) boolean) modifier=))
 (defun modifier= (string-or-modifier1 string-or-modifier2)
   (unless (or (modifier-p string-or-modifier1)
               (modifier-p string-or-modifier2))
-    (error "At least one of the arguments must be a modifier."))
+    (error 'bad-modifier :message "At least one of the arguments must be a modifier."))
   (flet ((match-modifier (modifier string)
            (or (string= (modifier-string modifier) string)
                (string= (modifier-shortcut modifier) string))))
@@ -72,7 +73,8 @@ specify a key-code binding."
       string-or-modifier
       (let ((modifier (find-if (alex:curry #'modifier= string-or-modifier) *modifier-list*)))
         (or modifier
-            (error "Unknown modifier ~a" string-or-modifier)))))
+            (error 'bad-modifier
+                   :message (format nil "Unknown modifier ~a" string-or-modifier))))))
 
 (declaim (ftype (function ((or list-of-strings
                                fset:wb-set))
@@ -95,10 +97,12 @@ specify a key-code binding."
 (defun make-key (&key (code 0 explicit-code) (value "" explicit-value)
                       modifiers
                       (status :pressed))
-  "Modifiers can be either a `modifier' type or a string that will be looked up in `*modifier-list*'."
+  "Return new `key'.
+Modifiers can be either a `modifier' type or a string that will be looked up in
+`*modifier-list*'."
   ;; TODO: Display warning on duplicate modifiers?
   (unless (or explicit-code explicit-value)
-    (error "One of CODE or VALUE must be given."))
+    (error 'make-key-required-arg))
   (%make-key
    code
    value
@@ -125,7 +129,6 @@ specify a key-code binding."
       :equal
       :unequal))
 
-;; TODO: Define conditions.
 (declaim (ftype (function (string) key) keyspec->key))
 (defun keyspec->key (string)
   "Parse STRING and return a new `key'.
@@ -139,7 +142,7 @@ CODE/VALUE is either a code that starts with '#' or a key symbol.
 Note that '-' or '#' as a last character is supported, e.g. 'control--' and
 'control-#' are valid."
   (when (string= string "")
-    (error "Empty keyspec"))
+    (error 'empty-keyspec))
   (let* ((last-nonval-hyphen (or (position #\- string :from-end t
                                                       :end (1- (length string)))
                                  -1))
@@ -149,11 +152,11 @@ Note that '-' or '#' as a last character is supported, e.g. 'control--' and
          (rest (subseq string 0 (1+ last-nonval-hyphen)))
          (modifiers (butlast (str:split "-" rest))))
     (when (find "" modifiers :test #'string=)
-      (error "Empty modifier(s)"))
+      (error 'empty-modifiers))
     (when (and (<= 2 (length code-or-value))
                (string= (subseq code-or-value (1- (length code-or-value)))
                         "-"))
-      (error "Missing key code or value"))
+      (error 'empty-value))
     (if (and (<= 2 (length code-or-value))
              (string= "#" (subseq code-or-value 0 1)))
         (setf code (or (parse-integer code-or-value :start 1 :junk-allowed t)
@@ -348,12 +351,11 @@ or the shorter:
                   (keyspecs->keys binding))))
     (bind-key keymap keys sym)))
 
+(declaim (ftype (function (keymap list-of-keys (or symbol keymap)) keymap) bind-key))
 (defun bind-key (keymap keys sym)
   "Recursively bind the KEYS to keymaps starting from KEYMAP.
 The last key is bound to SYM.
 Return KEYMAP."
-  (when (uiop:emptyp keys)
-    (error "Empty key specifier."))
   (if (= (length keys) 1)
       (progn
         (when (fset:@ (entries keymap) (first keys))

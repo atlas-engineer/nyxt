@@ -20,9 +20,9 @@
   (prove:is-error (keymap:make-key :value "a" :status :dummy)
                   'type-error)
   (prove:is-error (keymap:make-key :value "a" :modifiers '("Z"))
-                  'simple-error)
-  (prove:is-error (keymap:make-key ::status :pressed)
-                  'simple-error))
+                  'keymap:bad-modifier)
+  (prove:is-error (keymap:make-key :status :pressed)
+                  'keymap:make-key-required-arg))
 
 (prove:subtest "Make same key"
   (prove:is (keymap:make-key :value "a" :modifiers '("C" "M"))
@@ -65,10 +65,12 @@
   (prove:is (keymap::keyspec->key "C-#10")
             (keymap:make-key :code 10 :modifiers '("C"))
             :test #'keymap::key=)
+  (prove:is-error (keymap::keyspec->key "")
+                  'keymap:empty-keyspec)
   (prove:is-error (keymap::keyspec->key "C-")
-                  'simple-error)
+                  'keymap:empty-value)
   (prove:is-error (keymap::keyspec->key "C---")
-                  'simple-error))
+                  'keymap:empty-modifiers))
 
 (defun binding= (keys1 keys2)
   (not (position nil (mapcar #'keymap::key= keys1 keys2))))
