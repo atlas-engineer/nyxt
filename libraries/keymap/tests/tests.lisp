@@ -100,6 +100,16 @@
     (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-c C-h"))
               'bar2)))
 
+(prove:subtest "define-key & multiple bindings"
+  (let ((keymap (keymap:make-keymap)))
+    (keymap:define-key keymap
+      "C-x" 'foo
+      "C-c" 'bar)
+    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-x"))
+              'foo)
+    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-c"))
+              'bar)))
+
 (prove:subtest "define-key & lookup-key with parents"
   (let* ((parent1 (keymap:make-keymap))
          (parent2 (keymap:make-keymap))
