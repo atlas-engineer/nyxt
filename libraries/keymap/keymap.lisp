@@ -450,40 +450,42 @@ Then keys translation are looked up one after the other."
   (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
 (declaim (ftype (function (keymap &optional list-of-keymaps) fset:map) keymap->map*))
-(defun keymap->map* (keymap &optional visited) ; TODO: Return a regular hash-table instead?
-  "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP."
-  (coerce
-   (fset:reduce
-    (lambda (result key sym)
-      (let ((keyspec (key->keyspec key)))
-        (if (keymap-p sym)
-            (cond
-              ((find sym visited)
-               (warn "Cycle detected in keymap ~a" keymap)
-               result)
-              (t
-               (fset:map-union result
-                               (fset:image (lambda (subkey subsym)
-                                             (values (format nil "~a ~a" keyspec subkey)
-                                                     subsym))
-                                           (keymap->map* sym (cons sym visited))))))
-            (fset:with result keyspec sym))))
-    (entries keymap)
-    :initial-value (fset:empty-map))
-   'fset:map))
+(defun keymap->map* (keymap &optional visited)
+  "Return a map of (KEYSPEC SYM) from KEYMAP."
+  (flet ((fold-keymap (result key sym)
+           (let ((keyspec (key->keyspec key)))
+             (if (keymap-p sym)
+                 (cond
+                   ((find sym visited)
+                    (warn "Cycle detected in keymap ~a" keymap)
+                    result)
+                   (t
+                    (fset:map-union result
+                                    (fset:image (lambda (subkey subsym)
+                                                  (values (format nil "~a ~a" keyspec subkey)
+                                                          subsym))
+                                                (keymap->map* sym (cons sym visited))))))
+                 (fset:with result keyspec sym)))))
+    (coerce
+     (fset:reduce #'fold-keymap (entries keymap)
+                  :initial-value (fset:empty-map))
+     'fset:map)))
 
-(declaim (ftype (function (&rest keymap) fset:map) keymap->map))
+(declaim (ftype (function (&rest keymap) hash-table) keymap->map))
 (defun keymap->map (&rest keymaps)
-  "Return a `fset:map' of (KEYSPEC SYM) from KEYMAP.
+  "Return a hash-table of (KEYSPEC SYM) from KEYMAP.
 Parent bindings are not listed; see `keymap-with-parents->map' instead.
 This is convenient if the caller wants to list all the bindings.
 When multiple keymaps are provided, return the union of the `fset:map' of each arguments.
 Keymaps are ordered by precedence, highest precedence comes first."
   (let ((keymaps (reverse keymaps)))
-    (reduce #'fset:map-union
-            (mapcar #'keymap->map* keymaps))))
+    (coerce
+     (fset:convert 'hash-table
+                   (reduce #'fset:map-union
+                           (mapcar #'keymap->map* keymaps)))
+     'hash-table)))
 
-(declaim (ftype (function (keymap) fset:map) keymap-with-parents->map))
+(declaim (ftype (function (keymap) hash-table) keymap-with-parents->map))
 (defun keymap-with-parents->map (keymap)
   "List bindings in KEYMAP and all its parents.
 See `keymap->map'."
@@ -526,9 +528,10 @@ highest precedence."
   "Return a the list of `keyspec's bound to SYMBOL in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results."
   (let ((result '()))
-    (fset:do-map (key sym (keymap->map keymap))
-      (when (eq symbol sym)
-        (push key result)))
+    (maphash (lambda (key sym)
+               (when (eq symbol sym)
+                 (push key result)))
+             (keymap->map keymap))
     (sort result #'string<)))
 
 (declaim (ftype (function (symbol &rest keymap) list) symbol-keys))
