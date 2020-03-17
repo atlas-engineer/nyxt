@@ -44,7 +44,14 @@
    keymap-with-parents->map
    symbol-keys
 
-   compose)
+   compose
+
+   ;; conditions
+   bad-modifier
+   make-key-required-arg
+   empty-keyspec
+   empty-value
+   empty-modifiers)
   (:documentation "
 The workflow goes as follows:
 - Make a keymap with `make-keymap'.
