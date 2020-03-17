@@ -179,6 +179,14 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
                          (string-append (assoc-ref outputs "out") "/bin/next")
                          outputs
                          #:entry-program '((next:entry-point) 0))))
+                    (add-after 'build-program 'wrap-program
+                      (lambda* (#:key inputs outputs #:allow-other-keys)
+                        (let ((bin (string-append (assoc-ref outputs "out") "/bin/next"))
+                              (glib-networking (assoc-ref inputs "glib-networking")))
+                          (wrap-program bin
+                            `("GIO_EXTRA_MODULES" prefix
+                              (,(string-append glib-networking "/lib/gio/modules"))))
+                          #t)))
                     (add-before 'build 'install-assets
                       ;; Since the ASDF build system generates a new .asd with a
                       ;; possibly suffixed and thus illegal version number, assets
