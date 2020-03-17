@@ -418,14 +418,20 @@ VISITED is used to detect cycles."
                  (cons keys (funcall (or (translator keymap) (constantly nil)) keys)))
         sym)))
 
-(declaim (ftype (function (keymap list-of-keys) (or symbol keymap)) lookup-key))
-(defun lookup-key (keymap keys)   ; TODO: Rename to lookup-keys? lookup-binding?
-  "Return the symbol associated to keymap.
-Return nil if there is none.
+(declaim (ftype (function (list-of-keys keymap &rest keymap) (or symbol keymap)) lookup-key))
+(defun lookup-key (keys keymap &rest more-keymaps)   ; TODO: Rename to lookup-keys? lookup-binding?
+  "Return the symbol bound to KEYS in KEYMAP.
+Return the default value of the first KEYMAP if no binding is found.
+
+The second return value is T if a binding is found, NIL otherwise.
+
 First keymap parents are lookup up one after the other.
-Then keys translation are looked up one after the other."
-  (or (lookup-key* keymap keys '())
-      (coerce (default keymap) 'symbol)))
+Then keys translation are looked up one after the other.
+The same is done for the successive MORE-KEYMAPS."
+  (or (values (some (alex:rcurry #'lookup-key* keys '()) (cons keymap more-keymaps))
+              t)
+      (values (coerce (default keymap) 'symbol)
+              nil)))
 
 (defparameter *print-shortcut* t
   "Whether to print the short form of the modifiers.")
@@ -548,7 +554,5 @@ The list is sorted alphabetically to ensure reproducible results."
 
 ;; TODO: Remap binding, e.g.
 ;; (define-key *foo-map* (remap 'bar-sym) 'new-sym)
-
-;; TODO: We need a "lookup-key" that goes through a list of keymaps.
 
 ;; TODO: Add timeout support, e.g. "jk" in less than 0.1s could be ESC in VI-style.

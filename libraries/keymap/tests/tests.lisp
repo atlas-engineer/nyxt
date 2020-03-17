@@ -88,16 +88,16 @@
 (prove:subtest "define-key & lookup-key"
   (let ((keymap (keymap:make-keymap)))
     (keymap:define-key keymap "C-x" 'foo)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-x") keymap)
               'foo)
     (keymap:define-key keymap "C-x" 'foo2)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-x") keymap)
               'foo2)
     (keymap:define-key keymap "C-c C-f" 'bar)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-c C-f"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-c C-f") keymap)
               'bar)
     (keymap:define-key keymap "C-c C-h" 'bar2)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-c C-h"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-c C-h") keymap)
               'bar2)))
 
 (prove:subtest "define-key & multiple bindings"
@@ -105,9 +105,9 @@
     (keymap:define-key keymap
       "C-x" 'foo
       "C-c" 'bar)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-x") keymap)
               'foo)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-c"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-c") keymap)
               'bar)))
 
 (prove:subtest "define-key & lookup-key with parents"
@@ -118,11 +118,11 @@
     (keymap:define-key parent1 "a" 'parent1-a)
     (keymap:define-key parent2 "x" 'parent2-x)
     (keymap:define-key parent2 "b" 'parent2-b)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "x") keymap)
               'parent1-x)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "a"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "a") keymap)
               'parent1-a)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "b"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "b") keymap)
               'parent2-b)))
 
 (prove:subtest "define-key & lookup-key with prefix keymap"
@@ -130,7 +130,7 @@
         (prefix (keymap:make-keymap)))
     (keymap:define-key keymap "C-c" prefix)
     (keymap:define-key prefix "x" 'prefix-sym)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-c x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-c x") keymap)
               'prefix-sym)))
 
 (prove:subtest "define-key & lookup-key with cycle"
@@ -140,37 +140,37 @@
     (push parent1 (keymap:parents keymap))
     (push parent2 (keymap:parents parent1))
     (push keymap (keymap:parents parent2))
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "x") keymap)
               nil)))
 
 (prove:subtest "define-key & lookup-key default value"
   (let ((keymap (keymap:make-keymap :default 'foo))
         (keymap2 (keymap:make-keymap)))
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "x") keymap)
               'foo)
     (setf (keymap:default keymap2) 'bar)
-    (prove:is (keymap:lookup-key keymap2 (keymap::keyspecs->keys "x"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "x") keymap2)
               'bar)))
 
 (prove:subtest "Translator"
   (let ((keymap (keymap:make-keymap)))
     (keymap:define-key keymap "A b" 'foo)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "shift-a shift-B"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "shift-a shift-B") keymap)
               'foo)
     (keymap:define-key keymap "c" 'bar)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "shift-c"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "shift-c") keymap)
               'bar)
     (keymap:define-key keymap "C-x c" 'baz)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-x C-c"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-x C-c") keymap)
               'baz)
     (keymap:define-key keymap "C-c F" 'qux)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "C-shift-c C-shift-F"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "C-shift-c C-shift-F") keymap)
               'qux)
     (keymap:define-key keymap "1" 'quux)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "shift-1"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "shift-1") keymap)
               'quux)
     (keymap:define-key keymap "return" 'ret)
-    (prove:is (keymap:lookup-key keymap (keymap::keyspecs->keys "shift-return"))
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "shift-return") keymap)
               'ret)))
 
 (prove:subtest "keys->keyspecs"
