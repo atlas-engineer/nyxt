@@ -86,12 +86,8 @@
     (gobject:g-signal-connect
      gtk-object "key_press_event"
      (lambda (widget event) (declare (ignore widget))
-       (push-modifier *browser* event)
        (process-key-press-event window event)))
-    (gobject:g-signal-connect
-     gtk-object "key_release_event"
-     (lambda (widget event) (declare (ignore widget))
-       (pop-modifier *browser* event)))
+    ;; REVIEW: No need to handle release events?
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
@@ -129,16 +125,25 @@
          (_ (unless (eq character #\Nul)
               (string character)))))))
 
-(defmethod translate-modifier-list ((browser gtk-browser) modifier-state)
-  (let ((modifiers ()))
+(defmethod translate-modifiers ((browser gtk-browser) modifier-state &optional event)
+  (let ((modifiers ())
+        (macintosh-alt-key-value 65406)
+        (key-value (match (type-of event)
+                     ('gdk:gdk-event-key (gdk:gdk-event-key-keyval event))
+                     (_ 0))))
     (when (member :control-mask modifier-state)
-      (push "C" modifiers))
-    (when (member :mod1-mask modifier-state)
-      (push "M" modifiers))
+      (push "control" modifiers))
+    (when (or (member :mod1-mask modifier-state)
+              (= key-value macintosh-alt-key-value))
+      (push "meta" modifiers))
+    (when (member :shift-mask modifier-state)
+      (push "shift" modifiers))
     (when (or (member :super-mask modifier-state)
               (and (member :mod2-mask modifier-state)
                    (member :meta-mask modifier-state)))
-      (push "S" modifiers))
+      (push "super" modifiers))
+    (when (member :hyper-mask modifier-state)
+      (push "hyper" modifiers))
     modifiers))
 
 (defun gdk-event-button-state (button-event) ; TODO: Fix upstream, see https://github.com/crategus/cl-cffi-gtk/issues/74.
@@ -148,43 +153,6 @@
           (gdk:gdk-event-button-state button-event))
     (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))
 
-(defmethod push-modifier ((browser gtk-browser) event)
-  (let ((modifier-state (match (type-of event)
-                          ('gdk:gdk-event-key (gdk:gdk-event-key-state event))
-                          ('gdk:gdk-event-button (gdk-event-button-state event))))
-        (key-value (match (type-of event)
-                     ('gdk:gdk-event-key (gdk:gdk-event-key-keyval event))
-                     (_ 0)))
-        (macintosh-alt-key-value 65406))
-    (when (member :control-mask modifier-state)
-      (push "C" (modifiers browser)))
-    (when (member :shift-mask modifier-state)
-      (push "s" (modifiers browser)))
-    (when (or (member :mod1-mask modifier-state)
-              (= key-value macintosh-alt-key-value))
-      (push "M" (modifiers browser)))
-    (when (or (member :super-mask modifier-state)
-              (and (member :mod2-mask modifier-state)
-                   (member :meta-mask modifier-state)))
-      (push "S" (modifiers browser))))
-  (setf (modifiers browser) (remove-duplicates (modifiers browser) :test #'equal)))
-
-(defmethod pop-modifier ((browser gtk-browser) event)
-  (let ((modifier-state (gdk:gdk-event-key-state event))
-        (key-value (gdk:gdk-event-key-keyval event))
-        (macintosh-alt-key-value 65406))
-    (when (member :control-mask modifier-state)
-      (setf (modifiers browser) (remove "C" (modifiers browser) :test #'equal)))
-    (when (member :shift-mask modifier-state)
-      (setf (modifiers browser) (remove "s" (modifiers browser) :test #'equal)))
-    (when (or (member :mod1-mask modifier-state)
-              (= key-value macintosh-alt-key-value))
-      (setf (modifiers browser) (remove "M" (modifiers browser) :test #'equal)))
-    (when (or (member :super-mask modifier-state)
-              (and (member :mod2-mask modifier-state)
-                   (member :meta-mask modifier-state)))
-      (setf (modifiers browser) (remove "S" (modifiers browser) :test #'equal)))))
-
 (defmethod process-key-press-event ((sender gtk-window) event)
   (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
          (character-code (char-code character))
@@ -192,19 +160,32 @@
          (key-string (character->string character key-value)))
     (when key-string
       (log:debug character-code key-string (modifiers *browser*))
-      (push-input-event character-code key-string (modifiers *browser*) -1 -1 nil sender
-                        event))))
+      (push (keymap:make-key :code character-code
+                             :value key-string
+                             :modifiers (translate-modifiers
+                                         *browser*
+                                         (gdk:gdk-event-key-state event)
+                                         event)
+                             :status :pressed)
+            (key-stack *browser*))
+      (dispatch-input-event event (active-buffer sender) sender))))
 
 (defmethod process-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
-         (x (gdk:gdk-event-button-x event))
-         (y (gdk:gdk-event-button-y event))
-         (key-string (format nil "button~s" button))
-         (window (find sender (window-list)
-                       :key #'active-buffer)))
+         ;; REVIEW: No need to store X and Y?
+         ;; (x (gdk:gdk-event-button-x event))
+         ;; (y (gdk:gdk-event-button-y event))
+         (window (find sender (window-list) :key #'active-buffer))
+         (key-string (format nil "button~s" button)))
     (when key-string
-      (push-input-event 0 key-string (modifiers *browser*) x y nil window
-                        event))))
+      (push (keymap:make-key :value key-string
+                             :modifiers (translate-modifiers
+                                         *browser*
+                                         (gdk:gdk-event-button-state event)
+                                         event)
+                             :status :pressed)
+            (key-stack *browser*))
+      (dispatch-input-event event sender window))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
@@ -243,7 +224,6 @@
   (gobject:g-signal-connect
    (gtk-object buffer) "button-press-event"
    (lambda (web-view event) (declare (ignore web-view))
-     (push-modifier *browser* event)
      (process-button-press-event buffer event)))
   ;; TODO: Capture button-release-event?
   ;; Modes might require that buffer exists, so we need to initialize them
@@ -280,7 +260,7 @@
       (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action response-policy-decision))
       (setf request (webkit:webkit-navigation-action-get-request navigation-action))
       (setf mouse-button (format nil "button~d" (webkit:webkit-navigation-action-get-mouse-button navigation-action)))
-      (setf modifiers (translate-modifier-list *browser* (webkit:webkit-navigation-action-get-modifiers navigation-action))))
+      (setf modifiers (translate-modifiers *browser* (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (webkit:webkit-uri-request-uri request))
     (request-resource buffer
                       :url url

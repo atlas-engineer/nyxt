@@ -157,11 +157,8 @@ Otherwise list all commands."
     (loop for mode in (modes buffer)
           for scheme-keymap = (getf (keymap-schemes mode) scheme)
           when scheme-keymap
-            do (let ((table (table scheme-keymap)))
-               (maphash (lambda (binding c)
-                          (when (eq c (command-function command))
-                            (push (stringify binding) bindings)))
-                        table))
+            do (setf bindings (mapcar #'first
+                                      (keymap:symbol-keys (command-function command) scheme-keymap)))
           when (not (null bindings))
             return bindings)
     (format nil "~a~a~a"

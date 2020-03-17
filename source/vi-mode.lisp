@@ -1,5 +1,6 @@
 (uiop:define-package :next/vi-mode
   (:use :common-lisp :trivia :next)
+  (:import-from #:keymap #:define-key)
   (:documentation "VI-style bindings."))
 (in-package :next/vi-mode)
 
@@ -7,8 +8,8 @@
   "Enable VI-style modal bindings (normal mode)"
   ((keymap-schemes
     :initform
-    (let ((map (make-keymap)))
-      (define-key :keymap map
+    (let ((map (keymap:make-keymap)))
+      (define-key map
         "i" #'vi-insert-mode
         "button1" #'vi-button1)
       (list :vi-normal map)))
@@ -32,7 +33,7 @@
   "Enable VI-style modal bindings (insert mode)"
   ((keymap-schemes
     :initform
-    (let ((map (make-keymap)))
+    (let ((map (keymap:make-keymap)))
       (define-key :keymap map
         ;; TODO: Forwarding C-v crashes cl-webkit.  See
         ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
