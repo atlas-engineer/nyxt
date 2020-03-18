@@ -533,24 +533,24 @@ highest precedence."
            (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
            (apply #'compose merge (rest (rest keymaps)))))))))
 
-(declaim (ftype (function (t keymap) list-of-strings) symbol-keys*))
-(defun symbol-keys* (symbol keymap)
+(declaim (ftype (function (t keymap &key (:test function)) list-of-strings) symbol-keys*))
+(defun symbol-keys* (symbol keymap &key (test #'eql))
   "Return a the list of `keyspec's bound to SYMBOL in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results.
-Comparison against SYMBOL is done with `equal'."
+Comparison against SYMBOL is done with TEST."
   (let ((result '()))
     (maphash (lambda (key sym)
-               (when (equal symbol sym)
+               (when (funcall test symbol sym)
                  (push key result)))
              (keymap->map keymap))
     (sort result #'string<)))
 
-(declaim (ftype (function (t keymap &rest keymap) list) symbol-keys))
-(defun symbol-keys (symbol keymap &rest more-keymaps) ; TODO: Return hash-table or alist?
-  "Return a the list of `keyspec's bound to SYMBOL in KEYMAP.
-Comparison against SYMBOL is done with `equal'."
+(declaim (ftype (function (t keymap &key (:more-keymaps list-of-keymaps) (:test function)) list) symbol-keys))
+(defun symbol-keys (symbol keymap &key more-keymaps (test #'eql)) ; TODO: Return hash-table or alist?
+  "Return an alist of (keyspec keymap) for all the `keyspec's bound to SYMBOL in KEYMAP.
+Comparison against SYMBOL is done with TEST."
   (coerce (alex:mappend (lambda (keymap)
-                          (let ((hit (symbol-keys* symbol keymap)))
+                          (let ((hit (symbol-keys* symbol keymap :test test)))
                             (when hit
                               (mapcar (alex:rcurry #'list keymap) hit))))
                         (cons keymap more-keymaps))
