@@ -251,15 +251,18 @@ without shift everywhere: 'C-shift-C C-shift-f' -> 'C-c F. "
 
 (defun translate-shift-control-combinations (keys)
   "Return the successive translations of
-- `translate-remove-shift-toggle-case'
-- `translate-remove-shift'
-- `translate-remove-but-first-control'
-- `translate-remove-shift-but-first-control'
-- `translate-remove-shift-but-first-control-toggle-case'"
+- `translate-remove-shift',
+- `translate-remove-shift-toggle-case',
+- `translate-remove-but-first-control',
+- `translate-remove-shift-but-first-control',
+- `translate-remove-shift-but-first-control-toggle-case'.
+
+We first remove shift before toggle the case because we want 's-A' to match an
+'A' binding before matching 'a'."
   (delete nil
           (mapcar (lambda (translator) (funcall translator keys))
-                  (list #'translate-remove-shift-toggle-case
-                        #'translate-remove-shift
+                  (list #'translate-remove-shift
+                        #'translate-remove-shift-toggle-case
                         #'translate-remove-but-first-control
                         #'translate-remove-shift-but-first-control
                         #'translate-remove-shift-but-first-control-toggle-case))))
