@@ -34,7 +34,7 @@
   ((keymap-schemes
     :initform
     (let ((map (keymap:make-keymap)))
-      (define-key :keymap map
+      (define-key map
         ;; TODO: Forwarding C-v crashes cl-webkit.  See
         ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
         "C-v" #'next/web-mode:paste
