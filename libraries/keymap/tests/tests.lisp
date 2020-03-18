@@ -32,6 +32,11 @@
             (keymap:make-key :value "a" :modifiers '("control"))
             :test #'keymap::key=))
 
+(prove:subtest "Make key with duplicate modifiers (trigger warning)"
+  (prove:is (keymap:make-key :value "a" :modifiers '("C" "control"))
+            (keymap:make-key :value "a" :modifiers '("C"))
+            :test #'keymap::key=))
+
 (prove:subtest "Make different key"
   (prove:isnt (keymap:make-key :value "a")
               (keymap:make-key :value "A")

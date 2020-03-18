@@ -82,13 +82,20 @@ specify a key-code binding."
                 modspecs->modifiers))
 (defun modspecs->modifiers (strings-or-modifiers)
   "Return the list of `modifier's corresponding to STRINGS-OR-MODIFIERS."
-  (if (fset:set? strings-or-modifiers)
-      strings-or-modifiers
-      (coerce  (fset:convert 'fset:set
-                             (delete-duplicates
-                              (mapcar #'modspec->modifier strings-or-modifiers)
-                              :test #'modifier=))
-               'fset:wb-set)))
+  (flet ((list-difference (list1 list2)
+           (dolist (list2-elt list2 list1)
+             (setf list1 (delete list2-elt list1 :count 1)))))
+    (if (fset:set? strings-or-modifiers)
+        strings-or-modifiers
+        (coerce  (fset:convert 'fset:set
+                               (let* ((mods (mapcar #'modspec->modifier strings-or-modifiers))
+                                      (no-dups-mods (delete-duplicates mods :test #'modifier=)))
+                                 (when (/=  (length mods) (length no-dups-mods))
+                                   (warn "Duplicate modifiers: ~a"
+                                         (mapcar #'modifier-string
+                                                 (list-difference mods no-dups-mods))))
+                                 no-dups-mods))
+                 'fset:wb-set))))
 
 (declaim (ftype (function (&key (:code integer) (:value string)
                                 (:modifiers list) (:status keyword))
@@ -100,7 +107,6 @@ specify a key-code binding."
   "Return new `key'.
 Modifiers can be either a `modifier' type or a string that will be looked up in
 `*modifier-list*'."
-  ;; TODO: Display warning on duplicate modifiers?
   (unless (or explicit-code explicit-value)
     (error 'make-key-required-arg))
   (%make-key
