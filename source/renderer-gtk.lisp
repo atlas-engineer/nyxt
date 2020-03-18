@@ -374,6 +374,12 @@
         value))
 
 @export
+(defmethod ipc-buffer-enable-javascript-markup ((buffer gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-javascript-markup
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+        value))
+
+@export
 (defmethod ipc-buffer-set-proxy ((buffer gtk-buffer) &optional proxy-uri (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
    Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
