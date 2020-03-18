@@ -267,7 +267,6 @@ without shift everywhere: 'C-shift-C C-shift-f' -> 'C-c F. "
 (defvar *default-translator* #'translate-shift-control-combinations
   "Default key translator to use in `keymap' objects.")
 
-;; TODO: Enable override of default and translator in lookup?
 (defclass keymap ()
   ((entries :accessor entries
             :initarg :entries
@@ -443,22 +442,30 @@ VISITED is used to detect cycles."
 
 (declaim (ftype (function (keymap
                            list-of-keys
-                           list-of-keymaps)
+                           list-of-keymaps
+                           &key (:translator-override function))
                           (or keymap t))
                 lookup-key*))
-(defun lookup-key* (keymap keys visited)
+(defun lookup-key* (keymap keys visited &key translator-override)
   "Internal function, see `lookup-key' for the user-facing function.
 VISITED is used to detect cycles."
   (if (find keymap visited)
       (warn "Cycle detected in keymap ~a" keymap)
       (some (lambda (keys)
               (lookup-translated-keys keymap keys (cons keymap visited)))
-            (cons keys (funcall (or (translator keymap) (constantly nil)) keys)))))
+            (cons keys (funcall (or translator-override
+                                    (translator keymap)
+                                    (constantly nil))
+                                keys)))))
 
-(declaim (ftype (function ((or list-of-keys keyspecs-type) keymap &rest keymap)
+(declaim (ftype (function ((or list-of-keys keyspecs-type)
+                           keymap
+                           &key (:more-keymaps list-of-keymaps)
+                           (:translator-override function)
+                           (:default-override t))
                           (or keymap t))
                 lookup-key))
-(defun lookup-key (keys-or-keyspecs keymap &rest more-keymaps)
+(defun lookup-key (keys-or-keyspecs keymap &key more-keymaps translator-override default-override)
   ;; We name this user-facing function using the singular form to be consistent
   ;; with `define-key'.
   "Return the value bound to KEYS-OR-KEYSPECS in KEYMAP.
@@ -468,13 +475,18 @@ The second return value is T if a binding is found, NIL otherwise.
 
 First keymap parents are lookup up one after the other.
 Then keys translation are looked up one after the other.
-The same is done for the successive MORE-KEYMAPS."
+The same is done for the successive MORE-KEYMAPS.
+
+When non-nil, TRANSLATOR-OVERRIDE and DEFAULT-OVERRIDE are used instead of the
+individual keymaps `translator' and `default' value, respectively."
   (let ((keys (if (stringp keys-or-keyspecs)
                   (keymap::keyspecs->keys keys-or-keyspecs)
                   keys-or-keyspecs)))
-    (or (values (some (alex:rcurry #'lookup-key* keys '()) (cons keymap more-keymaps))
+    (or (values (some (alex:rcurry #'lookup-key* keys '()
+                                   :translator-override translator-override)
+                      (cons keymap more-keymaps))
                 t)
-        (values (default keymap)
+        (values (or default-override (default keymap))
                 nil))))
 
 (defparameter *print-shortcut* t
