@@ -455,9 +455,13 @@ VISITED is used to detect cycles."
               (lookup-translated-keys keymap keys (cons keymap visited)))
             (cons keys (funcall (or (translator keymap) (constantly nil)) keys)))))
 
-(declaim (ftype (function (list-of-keys keymap &rest keymap) (or keymap t)) lookup-key))
-(defun lookup-key (keys keymap &rest more-keymaps)   ; TODO: Rename to lookup-keys? lookup-binding?
-  "Return the value bound to KEYS in KEYMAP.
+(declaim (ftype (function ((or list-of-keys keyspecs-type) keymap &rest keymap)
+                          (or keymap t))
+                lookup-key))
+(defun lookup-key (keys-or-keyspecs keymap &rest more-keymaps)
+  ;; We name this user-facing function using the singular form to be consistent
+  ;; with `define-key'.
+  "Return the value bound to KEYS-OR-KEYSPECS in KEYMAP.
 Return the default value of the first KEYMAP if no binding is found.
 
 The second return value is T if a binding is found, NIL otherwise.
@@ -465,10 +469,13 @@ The second return value is T if a binding is found, NIL otherwise.
 First keymap parents are lookup up one after the other.
 Then keys translation are looked up one after the other.
 The same is done for the successive MORE-KEYMAPS."
-  (or (values (some (alex:rcurry #'lookup-key* keys '()) (cons keymap more-keymaps))
-              t)
-      (values (default keymap)
-              nil)))
+  (let ((keys (if (stringp keys-or-keyspecs)
+                  (keymap::keyspecs->keys keys-or-keyspecs)
+                  keys-or-keyspecs)))
+    (or (values (some (alex:rcurry #'lookup-key* keys '()) (cons keymap more-keymaps))
+                t)
+        (values (default keymap)
+                nil))))
 
 (defparameter *print-shortcut* t
   "Whether to print the short form of the modifiers.")
