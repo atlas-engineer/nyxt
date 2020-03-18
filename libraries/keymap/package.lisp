@@ -43,7 +43,7 @@
 
    keymap->map
    keymap-with-parents->map
-   symbol-keys
+   binding-keys
 
    compose
 
