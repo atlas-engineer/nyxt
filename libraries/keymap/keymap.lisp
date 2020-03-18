@@ -280,8 +280,8 @@ Parents are ordered by priority, the first parent has highest priority.")
    (default :accessor default
             :initarg :default
             :initform nil
-            :type symbol
-            :documentation "Default symbol when no binding is found.")
+            :type t
+            :documentation "Default value when no binding is found.")
    (translator :accessor translator
                :initarg :translator
                :initform *default-translator*
@@ -320,11 +320,11 @@ returns a list of list of keys.")))
 ;; We can verify this with:
 ;;
 ;;   (compile 'foo (lambda () (keymap::define-key keymap "C-x C-f" 'find-file)))
-(defmacro define-key (keymap binding sym &rest more-binding-sym-pairs)
-  "Bind BINDING to SYM in KEYMAP.
+(defmacro define-key (keymap keyspecs bound-value &rest more-keyspecs-value-pairs)
+  "Bind KEYS to BOUND-VALUE in KEYMAP.
 Return KEYMAP.
 
-BINDING is either a `keyspecs-type' or a list of arguments passed to invocations
+KEYS is either a `keyspecs-type' or a list of arguments passed to invocations
 of `make-key's.
 
 Examples:
@@ -343,38 +343,38 @@ or the shorter:
 
   (define-key foo-map \"C-M-#1\" 'find-file)"
   ;; The type checking of KEYMAP is done by `define-key*'.
-  (let ((binding-sym-pairs (append (list binding sym) more-binding-sym-pairs)))
-    (loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-          :do (check-type binding (or keyspecs-type list)))
+  (let ((keyspecs-value-pairs (append (list keyspecs bound-value) more-keyspecs-value-pairs)))
+    (loop :for (keyspecs bound-value . rest) :on keyspecs-value-pairs :by #'cddr
+          :do (check-type keyspecs (or keyspecs-type list)))
     `(progn
-       ,@(loop :for (binding sym . rest) :on binding-sym-pairs :by #'cddr
-               :collect (list 'define-key* keymap binding sym))
+       ,@(loop :for (keyspecs bound-value . rest) :on keyspecs-value-pairs :by #'cddr
+               :collect (list 'define-key* keymap keyspecs bound-value))
        ,keymap)))
 
 (declaim (ftype (function (keymap (or keyspecs-type list) (or keymap t))) define-key*))
-(defun define-key* (keymap binding sym)
-  (let ((keys (if (listp binding)
-                  (mapcar (alex:curry #'apply #'make-key) binding)
-                  (keyspecs->keys binding))))
-    (bind-key keymap keys sym)))
+(defun define-key* (keymap keyspecs bound-value)
+  (let ((keys (if (listp keyspecs)
+                  (mapcar (alex:curry #'apply #'make-key) keyspecs)
+                  (keyspecs->keys keyspecs))))
+    (bind-key keymap keys bound-value)))
 
 (declaim (ftype (function (keymap list-of-keys (or keymap t)) keymap) bind-key))
-(defun bind-key (keymap keys sym)
+(defun bind-key (keymap keys bound-value)
   "Recursively bind the KEYS to keymaps starting from KEYMAP.
-The last key is bound to SYM.
+The last key is bound to BOUND-VALUE.
 Return KEYMAP."
   (if (= (length keys) 1)
       (progn
         (when (fset:@ (entries keymap) (first keys))
           ;; TODO: Notify caller properly?
           (warn "Key was bound to ~a" (fset:@ (entries keymap) (first keys))))
-        (setf (fset:@ (entries keymap) (first keys)) sym))
+        (setf (fset:@ (entries keymap) (first keys)) bound-value))
       (let ((submap (fset:@ (entries keymap) (first keys))))
         (unless (keymap-p submap)
           (setf submap (make-keymap :default (default keymap)
                                     :translator (translator keymap)))
           (setf (fset:@ (entries keymap) (first keys)) submap))
-        (bind-key submap (rest keys) sym)))
+        (bind-key submap (rest keys) bound-value)))
   keymap)
 
 (declaim (ftype (function (keymap
@@ -383,13 +383,15 @@ Return KEYMAP."
                           (or keymap t))
                 lookup-keys-in-keymap))
 (defun lookup-keys-in-keymap (keymap keys visited)
-  "Return bound symbol or keymap, or nil if there is none."
+  "Return bound value or keymap for KEYS.
+Return nil when KEYS is not found in KEYMAP.
+VISITED is used to detect cycles."
   (when keys
     (let ((hit (fset:@ (entries keymap) (first keys))))
       (when hit
         (if (and (keymap-p hit)
                  (rest keys))
-            (coerce (lookup-key* hit (rest keys) visited) 'symbol)
+            (lookup-key* hit (rest keys) visited)
             hit)))))
 
 (declaim (ftype (function (keymap
@@ -398,9 +400,10 @@ Return KEYMAP."
                           (or keymap t))
                 lookup-translated-keys))
 (defun lookup-translated-keys (keymap keys visited)
-  "Return the symbol or keymap associated to KEYS in KEYMAP.
+  "Return the bound value or keymap associated to KEYS in KEYMAP.
 Return nil if there is none.
-Keymap parents are looked up one after the other."
+Keymap parents are looked up one after the other.
+VISITED is used to detect cycles."
   (or (lookup-keys-in-keymap keymap keys visited)
       (some (lambda (map)
               (lookup-key* map keys visited))
@@ -422,7 +425,7 @@ VISITED is used to detect cycles."
 
 (declaim (ftype (function (list-of-keys keymap &rest keymap) (or keymap t)) lookup-key))
 (defun lookup-key (keys keymap &rest more-keymaps)   ; TODO: Rename to lookup-keys? lookup-binding?
-  "Return the symbol bound to KEYS in KEYMAP.
+  "Return the value bound to KEYS in KEYMAP.
 Return the default value of the first KEYMAP if no binding is found.
 
 The second return value is T if a binding is found, NIL otherwise.
@@ -432,7 +435,7 @@ Then keys translation are looked up one after the other.
 The same is done for the successive MORE-KEYMAPS."
   (or (values (some (alex:rcurry #'lookup-key* keys '()) (cons keymap more-keymaps))
               t)
-      (values (coerce (default keymap) 'symbol)
+      (values (default keymap)
               nil)))
 
 (defparameter *print-shortcut* t
@@ -533,24 +536,24 @@ highest precedence."
            (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
            (apply #'compose merge (rest (rest keymaps)))))))))
 
-(declaim (ftype (function (t keymap &key (:test function)) list-of-strings) symbol-keys*))
-(defun symbol-keys* (symbol keymap &key (test #'eql))
-  "Return a the list of `keyspec's bound to SYMBOL in KEYMAP.
+(declaim (ftype (function (t keymap &key (:test function)) list-of-strings) binding-keys*))
+(defun binding-keys* (binding keymap &key (test #'eql))
+  "Return a the list of `keyspec's bound to BINDING in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results.
-Comparison against SYMBOL is done with TEST."
+Comparison against BINDING is done with TEST."
   (let ((result '()))
     (maphash (lambda (key sym)
-               (when (funcall test symbol sym)
+               (when (funcall test binding sym)
                  (push key result)))
              (keymap->map keymap))
     (sort result #'string<)))
 
-(declaim (ftype (function (t keymap &key (:more-keymaps list-of-keymaps) (:test function)) list) symbol-keys))
-(defun symbol-keys (symbol keymap &key more-keymaps (test #'eql)) ; TODO: Return hash-table or alist?
-  "Return an alist of (keyspec keymap) for all the `keyspec's bound to SYMBOL in KEYMAP.
-Comparison against SYMBOL is done with TEST."
+(declaim (ftype (function (t keymap &key (:more-keymaps list-of-keymaps) (:test function)) list) binding-keys))
+(defun binding-keys (bound-value keymap &key more-keymaps (test #'eql)) ; TODO: Return hash-table or alist?
+  "Return an alist of (keyspec keymap) for all the `keyspec's bound to BINDING in KEYMAP.
+Comparison against BINDING is done with TEST."
   (coerce (alex:mappend (lambda (keymap)
-                          (let ((hit (symbol-keys* symbol keymap :test test)))
+                          (let ((hit (binding-keys* bound-value keymap :test test)))
                             (when hit
                               (mapcar (alex:rcurry #'list keymap) hit))))
                         (cons keymap more-keymaps))
