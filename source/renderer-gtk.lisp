@@ -109,19 +109,19 @@
 (defmethod ipc-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
-(defun character->string (character &optional key-value)
+(defun translate-key-string (character &optional key-value)
   (match character
-    (#\Return "RETURN")
-    (#\Backspace "BACKSPACE")
-    (#\Esc "ESCAPE")
-    (#\- "HYPHEN")
-    (#\Space "SPACE")
-    (#\Tab "TAB")
+    (#\Return "return")
+    (#\Backspace "backspace")
+    (#\Esc "escape")
+    (#\- "hyphen")
+    (#\Space "space")
+    (#\Tab "tab")
     (_ (match key-value
-         (65361 "Left")
-         (65362 "Up")
-         (65364 "Down")
-         (65363 "Right")
+         (65361 "left")
+         (65362 "up")
+         (65364 "down")
+         (65363 "right")
          (_ (unless (eq character #\Nul)
               (string character)))))))
 
@@ -157,9 +157,9 @@
   (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
          (character-code (char-code character))
          (key-value (gdk:gdk-event-key-keyval event))
-         (key-string (character->string character key-value)))
+         (key-string (translate-key-string character key-value)))
     (when key-string
-      (log:debug character-code key-string (modifiers *browser*))
+      (log:debug character key-value key-string (modifiers *browser*))
       (push (keymap:make-key :code character-code
                              :value key-string
                              :modifiers (translate-modifiers

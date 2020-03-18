@@ -38,7 +38,7 @@
         ;; TODO: Forwarding C-v crashes cl-webkit.  See
         ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
         "C-v" #'next/web-mode:paste
-        "ESCAPE" #'vi-normal-mode
+        "escape" #'vi-normal-mode
         "button1" #'vi-button1)
       (list :vi-insert map)))
    (destructor

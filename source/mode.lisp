@@ -120,10 +120,10 @@ It is run before the destructor.")
                        "C-x b" #'switch-buffer
                        "C-x k" #'delete-buffer ; Emacs' default behaviour is to query.
                        "C-x C-k" #'delete-current-buffer
-                       "C-x Left" #'switch-buffer-previous
-                       "C-x Right" #'switch-buffer-next
-                       "C-Page_Up" #'switch-buffer-previous
-                       "C-Page_Down" #'switch-buffer-next
+                       "C-x left" #'switch-buffer-previous
+                       "C-x right" #'switch-buffer-next
+                       "C-pageup" #'switch-buffer-previous
+                       "C-pagedown" #'switch-buffer-next
                        "C-l" #'set-url-current-buffer
                        "M-l" #'set-url-new-buffer
                        "C-m k" #'bookmark-delete
@@ -146,8 +146,8 @@ It is run before the destructor.")
                        "Z Z" #'quit
                        "[" #'switch-buffer-previous
                        "]" #'switch-buffer-next
-                       "C-Page_Up" #'switch-buffer-previous
-                       "C-Page_Down" #'switch-buffer-next
+                       "C-pageup" #'switch-buffer-previous
+                       "C-pagedown" #'switch-buffer-next
                        "g b" #'switch-buffer
                        "d" #'delete-buffer
                        "D" #'delete-current-buffer

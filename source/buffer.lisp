@@ -199,7 +199,7 @@ complete against a search engine."
     :initform
     (let ((map (keymap:make-keymap)))
       (define-key map
-        "TAB" #'insert-candidate-or-search-engine)
+        "tab" #'insert-candidate-or-search-engine)
       (list :emacs map
             :vi-normal map)))))
 

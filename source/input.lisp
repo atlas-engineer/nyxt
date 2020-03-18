@@ -3,7 +3,6 @@
 ;; TODO: Fix dead keys in the minibuffer.
 ;; TODO: Support self-insertable keys.  Make sure dead keys work.
 ;; TODO: Make modifiers customizable.
-;; TODO: Decide of a key string protocol: https://github.com/atlas-engineer/next/issues/564
 ;; TODO: Move scheme support to library?
 ;; TODO: Use CUA scheme by default.
 ;; TODO: Make Emacs / VI schemes inherit from each other.
@@ -46,7 +45,12 @@
   "Dispatch keys in `browser's `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
   (with-accessors ((key-stack key-stack)) *browser*
-    (let ((keyspecs (keymap:keys->keyspecs key-stack)))
+    (let ((keyspecs (let ((specs (keymap:keys->keyspecs key-stack))
+                          (no-code-specs (keymap:keys->keyspecs (mapcar (lambda (key) (keymap:copy-key key :code 0))
+                                                                        key-stack))))
+                      (if (find-if (complement #'zerop) key-stack :key #'keymap:key-code)
+                          (format nil "~a (~a)" no-code-specs specs)
+                          (format nil "~a" no-code-specs)))))
       (when buffer
         (setf (last-event buffer) event))
       (cond

@@ -20,44 +20,44 @@
     :initform
     (let ((map (keymap:make-keymap)))
       (define-key map
-        "HYPHEN" #'self-insert
-        "SPACE" #'self-insert
+        "hyphen" #'self-insert
+        "space" #'self-insert
         "C-f" #'cursor-forwards
         "M-f" #'cursor-forwards-word
-        "C-Right" #'cursor-forwards-word
+        "C-right" #'cursor-forwards-word
         "C-b" #'cursor-backwards
         "M-b" #'cursor-backwards-word
-        "C-Left" #'cursor-backwards-word
+        "C-left" #'cursor-backwards-word
         "M-d" #'delete-forwards-word
-        "M-BACKSPACE" #'delete-backwards-word
-        "Right" #'cursor-forwards
-        "Left" #'cursor-backwards
+        "M-backspace" #'delete-backwards-word
+        "right" #'cursor-forwards
+        "left" #'cursor-backwards
         "C-d" #'delete-forwards
-        "DELETE" #'delete-forwards
-        "BACKSPACE" #'delete-backwards
+        "delete" #'delete-forwards
+        "backspace" #'delete-backwards
         "C-a" #'cursor-beginning
-        "Home" #'cursor-beginning
+        "home" #'cursor-beginning
         "C-e" #'cursor-end
-        "End" #'cursor-end
+        "end" #'cursor-end
         "C-k" #'kill-line
-        "RETURN" #'return-input
-        "C-RETURN" #'return-immediate
+        "return" #'return-input
+        "C-return" #'return-immediate
         "C-g" #'cancel-input
-        "ESCAPE" #'cancel-input
+        "escape" #'cancel-input
         "C-n" #'select-next
         "C-p" #'select-previous
         "M-n" #'select-next-follow
         "M-p" #'select-previous-follow
         "button4" #'select-previous
         "button5" #'select-next
-        "Down" #'select-next
-        "Up" #'select-previous
+        "down" #'select-next
+        "up" #'select-previous
         "C-v" #'minibuffer-paste
         "C-y" #'minibuffer-paste
         "C-w" #'copy-candidate
-        "TAB" #'insert-candidate
+        "tab" #'insert-candidate
         "M-h" #'minibuffer-history
-        "C-SPACE" #'minibuffer-toggle-mark
+        "C-space" #'minibuffer-toggle-mark
         "M-a" #'minibuffer-mark-all
         "M-u" #'minibuffer-unmark-all)
       (list :emacs map

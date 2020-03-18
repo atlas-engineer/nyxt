@@ -42,8 +42,8 @@
         "C-x C-s-+" #'zoom-in-page
         "C-x C-+" #'zoom-in-page
         "C-x +" #'zoom-in-page
-        "C-x C-HYPHEN" #'zoom-out-page
-        "C-x HYPHEN" #'zoom-out-page
+        "C-x C-hyphen" #'zoom-out-page
+        "C-x hyphen" #'zoom-out-page
         "C-x C-0" #'unzoom-page
         "C-x 0" #'unzoom-page
         "C-r" #'reload-current-buffer
@@ -65,23 +65,23 @@
         "M-w" #'copy-title
         ;; Leave SPACE unbound so that the paltform port decides wether to
         ;; insert of scroll.
-        "s-SPACE" #'scroll-page-up
+        "s-space" #'scroll-page-up
 
         ;; keypad:
-        "Page_Up" #'scroll-page-up
-        "Page_Down" #'scroll-page-down
-        "Page_End" #'scroll-to-bottom
-        "Page_Home" #'scroll-to-top
+        "pageup" #'scroll-page-up
+        "pagedown" #'scroll-page-down
+        "pageend" #'scroll-to-bottom
+        "pagehome" #'scroll-to-top
         ;; keypad, gtk:
-        "KP_Left" #'scroll-left
-        "KP_Down" #'scroll-down
-        "KP_Up" #'scroll-up
-        "KP_Right" #'scroll-right
-        "KP_End" #'scroll-to-bottom
-        "KP_Home" #'scroll-to-top
-        "KP_Next" #'scroll-page-down
-        "KP_Page_Up" #'scroll-page-up
-        "KP_Prior" #'scroll-page-up)
+        "keypadleft" #'scroll-left
+        "keypaddown" #'scroll-down
+        "keypadup" #'scroll-up
+        "keypadright" #'scroll-right
+        "keypadend" #'scroll-to-bottom
+        "keypadhome" #'scroll-to-top
+        "keypadnext" #'scroll-page-down
+        "keypadpageup" #'scroll-page-up
+        "keypadpagedown" #'scroll-page-up)
 
       (define-key vi-map
         "H" #'history-backwards
@@ -100,23 +100,23 @@
         "j" #'scroll-down
         "k" #'scroll-up
         "l" #'scroll-right
-        "Left" #'scroll-left
-        "Down" #'scroll-down
-        "Up" #'scroll-up
-        "Right" #'scroll-right
+        "left" #'scroll-left
+        "down" #'scroll-down
+        "up" #'scroll-up
+        "right" #'scroll-right
         ;; keypad:
-        "Page_End" #'scroll-to-bottom
-        "Page_Home" #'scroll-to-top
+        "pageend" #'scroll-to-bottom
+        "pagehome" #'scroll-to-top
         ;; keypad, gtk:
-        "KP_Left" #'scroll-left
-        "KP_Down" #'scroll-down
-        "KP_Up" #'scroll-up
-        "KP_Right" #'scroll-right
-        "KP_End" #'scroll-to-bottom
-        "KP_Home" #'scroll-to-top
-        "KP_Next" #'scroll-page-down
-        "KP_Page_Up" #'scroll-page-up
-        "KP_Prior" #'scroll-page-up
+        "keypadleft" #'scroll-left
+        "keypaddown" #'scroll-down
+        "keypadup" #'scroll-up
+        "keypadright" #'scroll-right
+        "keypadend" #'scroll-to-bottom
+        "keypadhome" #'scroll-to-top
+        "keypadnext" #'scroll-page-down
+        "keypadpageup" #'scroll-page-up
+        "keypadprior" #'scroll-page-up
 
         "C-v" #'paste
         "z i" #'zoom-in-page
@@ -130,17 +130,17 @@
         "m f" #'bookmark-hint
         "y u" #'copy-url
         "y t" #'copy-title
-        "g h" #'jump-to-heading         ; TODO: VI binding for this?
+        "g h" #'jump-to-heading ; REVIEW: VI binding?  "gh" is probably good enough.
         "/" #'search-buffer
         "?" #'remove-search-hints
         "G" #'scroll-to-bottom
         "g g" #'scroll-to-top
         "C-f" #'scroll-page-down
         "C-b" #'scroll-page-up
-        "SPACE" #'scroll-page-down
-        "s-SPACE" #'scroll-page-up
-        "Page_Up" #'scroll-page-up
-        "Page_Down" #'scroll-page-down)
+        "space" #'scroll-page-down
+        "s-space" #'scroll-page-up
+        "pageup" #'scroll-page-up
+        "pagedown" #'scroll-page-down)
       (list :emacs emacs-map
             :vi-normal vi-map))))
   ;; Init.
