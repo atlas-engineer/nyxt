@@ -1,5 +1,7 @@
 (in-package :keymap)
 
+;; TODO: Add timeout support, e.g. "jk" in less than 0.1s could be ESC in VI-style.
+
 (defstruct modifier
   (string "" :type string)
   (shortcut "" :type string))
@@ -324,10 +326,14 @@ returns a list of list of keys.")))
   "Bind KEYS to BOUND-VALUE in KEYMAP.
 Return KEYMAP.
 
-KEYSPECS is either a `keyspecs-type' or a list of arguments passed to invocations
-of `make-key's.
+KEYSPECS is either a `keyspecs-type', or a list of arguments passed to invocations
+of `make-key's, or (:REMAP OTHER-VALUE &OPTIONAL OTHER-KEYMAP).
 
 BOUND-VALUE can be anything.  If NIL, the binding is removed.
+
+With (:REMAP OTHER-VALUE &OPTIONAL OTHER-KEYMAP), define-key maps the binding of
+OTHER-VALUE in OTHER-KEYMAP (default to KEYMAP) to BOUND-VALUE.
+In other words, it remaps OTHER-VALUE to VALUE.
 
 Examples:
 
@@ -343,7 +349,12 @@ Examples:
 
 or the shorter:
 
-  (define-key foo-map \"C-M-#1\" 'find-file)"
+  (define-key foo-map \"C-M-#1\" 'find-file)
+
+Remapping keys:
+
+  (define-key foo-map '(:remap foo-a) 'foo-value)
+  (define-key foo-map `(:remap foo-a ,bar-map) 'new-value)"
   ;; The type checking of KEYMAP is done by `define-key*'.
   (let ((keyspecs-value-pairs (append (list keyspecs bound-value) more-keyspecs-value-pairs)))
     (loop :for (keyspecs bound-value . rest) :on keyspecs-value-pairs :by #'cddr
@@ -357,9 +368,14 @@ or the shorter:
 (defun define-key* (keymap keyspecs bound-value)
   "Prepare arguments before defining keys.
 See `define-key' for the user-facing function."
-  (let ((keys (if (listp keyspecs)
-                  (mapcar (alex:curry #'apply #'make-key) keyspecs)
-                  (keyspecs->keys keyspecs))))
+  (let ((keys (cond
+                ((and (listp keyspecs) (eq (first keyspecs) :remap))
+                 (let ((other-value (second keyspecs))
+                       (other-keymap (or (third keyspecs) keymap)))
+                   (keyspecs->keys (first (first (binding-keys other-value other-keymap))))))
+                ((listp keyspecs)
+                 (mapcar (alex:curry #'apply #'make-key) keyspecs))
+                (t (keyspecs->keys keyspecs)))))
     (bind-key keymap keys bound-value)))
 
 (declaim (ftype (function (keymap list-of-keys (or keymap t)) keymap) bind-key))
@@ -570,7 +586,3 @@ Comparison against BINDING is done with TEST."
                         (cons keymap more-keymaps))
           'list))
 
-;; TODO: Remap binding, e.g.
-;; (define-key *foo-map* (remap 'bar-sym) 'new-sym)
-
-;; TODO: Add timeout support, e.g. "jk" in less than 0.1s could be ESC in VI-style.
