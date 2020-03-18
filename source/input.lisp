@@ -45,43 +45,39 @@
 (defun dispatch-input-event (event buffer window)
   "Dispatch keys in `browser's `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
-  ;; TODO: Use (with-accessors key-stack *browser*)
-  (when buffer
-    (setf (last-event buffer) event))
-  (cond
-    ((ipc-generated-input-event-p window event)
-     (log:debug "Forward generated event ~a"
-                (keymap:keys->keyspecs (key-stack *browser*)))
-     nil)
+  (with-accessors ((key-stack key-stack)) *browser*
+    (let ((keyspecs (keymap:keys->keyspecs key-stack)))
+      (when buffer
+        (setf (last-event buffer) event))
+      (cond
+        ((ipc-generated-input-event-p window event)
+         (log:debug "Forward generated event ~a" keyspecs)
+         nil)
 
-    (t
-     (let ((bound-function (apply #'keymap:lookup-key
-                                  (key-stack *browser*)
-                                  (current-keymaps window))))
-       (cond
-         ((functionp bound-function)
-          (log:debug "Key sequence ~a bound to:"
-                     (keymap:keys->keyspecs (key-stack *browser*)))
-          (funcall-safely bound-function)
-          (setf (key-stack *browser*) nil)
-          t)
+        (t
+         (let ((bound-function (keymap:lookup-key key-stack (current-keymaps window))))
+           (cond
+             ((functionp bound-function)
+              (log:debug "Key sequence ~a bound to:" keyspecs)
+              (funcall-safely bound-function)
+              (setf key-stack nil)
+              t)
 
-         ((active-minibuffers window)
-          (when (printable-p (first (key-stack *browser*)))
-            (let ((value (keymap:key-value (first (key-stack *browser*)))))
-              (log:debug "Insert ~s in minibuffer" value)
-              (insert value)))
-          (setf (key-stack *browser*) nil)
-          t)
+             ((active-minibuffers window)
+              (when (printable-p (first key-stack))
+                (let ((value (keymap:key-value (first key-stack))))
+                  (log:debug "Insert ~s in minibuffer" value)
+                  (insert value)))
+              (setf key-stack nil)
+              t)
 
-         ((or (and buffer (forward-input-events-p buffer))
-              (pointer-event-p (first (key-stack *browser*))))
-          (log:debug "Forward key ~s" (keymap:keys->keyspecs (key-stack *browser*)))
-          (setf (key-stack *browser*) nil)
-          nil)
+             ((or (and buffer (forward-input-events-p buffer))
+                  (pointer-event-p (first key-stack)))
+              (log:debug "Forward key ~s" keyspecs)
+              (setf key-stack nil)
+              nil)
 
-         (t
-          (log:debug "Fallback forward key ~s"
-                     (keymap:keys->keyspecs (key-stack *browser*)))
-          (setf (key-stack *browser*) nil)
-          nil))))))
+             (t
+              (log:debug "Fallback forward key ~s" keyspecs)
+              (setf key-stack nil)
+              nil))))))))
