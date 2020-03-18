@@ -356,4 +356,16 @@
               (fset:empty-map)
               :test 'fset:equal?)))
 
+(prove:subtest "remap"
+  (let* ((keymap (keymap:make-keymap))
+         (keymap2 (keymap:make-keymap)))
+    (keymap:define-key keymap "a" 'foo-a)
+    (keymap:define-key keymap '(:remap foo-a) 'foo-b)
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "a") keymap)
+              'foo-b)
+    (keymap:define-key keymap2 "b" 'bar-1)
+    (keymap:define-key keymap `(:remap bar-1 ,keymap2) 'bar-2)
+    (prove:is (keymap:lookup-key (keymap::keyspecs->keys "b") keymap)
+              'bar-2)))
+
 (prove:finalize)
