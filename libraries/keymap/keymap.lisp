@@ -377,7 +377,7 @@ See `define-key' for the user-facing function."
                 ((and (listp keyspecs) (eq (first keyspecs) :remap))
                  (let ((other-value (second keyspecs))
                        (other-keymap (or (third keyspecs) keymap)))
-                   (keyspecs->keys (first (first (binding-keys other-value other-keymap))))))
+                   (keyspecs->keys (first (binding-keys other-value other-keymap)))))
                 ((listp keyspecs)
                  (mapcar (alex:curry #'apply #'make-key) keyspecs))
                 (t (keyspecs->keys keyspecs)))))
@@ -587,14 +587,26 @@ Comparison against BINDING is done with TEST."
              (keymap->map keymap))
     (sort result #'string<)))
 
-(declaim (ftype (function (t keymap &key (:more-keymaps list-of-keymaps) (:test function)) list) binding-keys))
-(defun binding-keys (bound-value keymap &key more-keymaps (test #'eql)) ; TODO: Return hash-table or alist?
-  "Return an alist of (keyspec keymap) for all the `keyspec's bound to BINDING in KEYMAP.
-Comparison against BINDING is done with TEST."
-  (coerce (alex:mappend (lambda (keymap)
+(declaim (ftype (function (t keymap &key (:more-keymaps list-of-keymaps) (:test function))
+                          (values list list))
+                binding-keys))
+(defun binding-keys (bound-value keymap &key more-keymaps (test #'eql))
+  "Return a the list of `keyspec's bound to BINDING in KEYMAP.
+The list is sorted alphabetically to ensure reproducible results.
+Duplicates are removed.
+
+A a second value, return an alist of (keyspec keymap) for all the `keyspec's
+bound to BINDING in KEYMAP.
+Comparison against BINDING is done with TEST.
+
+For instance, to list all keymaps that have a binding, call
+
+  (mapcar #'second (nth-value 1 (binding-keys ...)))"
+  (let ((alist (alex:mappend (lambda (keymap)
                           (let ((hit (binding-keys* bound-value keymap :test test)))
                             (when hit
                               (mapcar (alex:rcurry #'list keymap) hit))))
-                        (cons keymap more-keymaps))
-          'list))
-
+                             (cons keymap more-keymaps))))
+    (values
+     (sort (delete-duplicates (mapcar #'first alist) :test #'string=) #'string<)
+     alist)))
