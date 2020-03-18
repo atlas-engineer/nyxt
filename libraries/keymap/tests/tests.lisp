@@ -343,4 +343,17 @@
                 ("a" ,keymap2)
                 ("c" ,keymap2)))))
 
+(prove:subtest "undefine"
+  (let* ((keymap (keymap:make-keymap)))
+    (keymap:define-key keymap "a" 'foo-a)
+    (keymap:define-key keymap "a" nil)
+    (prove:is (keymap::entries keymap)
+              (fset:empty-map)
+              :test 'fset:equal?)
+    (keymap:define-key keymap "C-c b" 'foo-b)
+    (keymap:define-key keymap "C-c b" nil)
+    (prove:is (keymap::entries keymap)
+              (fset:empty-map)
+              :test 'fset:equal?)))
+
 (prove:finalize)
