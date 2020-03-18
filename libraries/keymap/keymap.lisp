@@ -26,7 +26,8 @@
                     (modifier-shortcut string-or-modifier2)))))))
 
 (defmethod fset:compare ((x modifier) (y modifier))
-  "Needed to user the KEY structure as keys in Fset maps."
+  "Modifier sets need this comparison function to be ordered, so that (\"C\"
+\"M\") is the same as (\"M\" \"C\")."
   (fset:compare-lexicographically (modifier-string x) (modifier-string y)))
 
 (defvar +control+ (make-modifier :string "control" :shortcut "C"))
@@ -132,7 +133,9 @@ Modifiers can be either a `modifier' type or a string that will be looked up in
     new-key))
 
 (defmethod fset:compare ((x key) (y key))
-  "Needed to user the KEY structure as keys in Fset maps."
+  "Needed to use the KEY structure as keys in Fset maps.
+Would we use the default comparison function, case-sensitivity would be lost on
+key values because `fset:equal?` folds case."
   (if (key= x y)
       :equal
       :unequal))
@@ -313,11 +316,13 @@ returns a list of list of keys.")))
 (defun keymap-p (object)
   (typep object 'keymap))
 
-(deftype keyspecs-type ()               ; TODO: Rename to KEYDESC?
+;; "keyspec" is better then "keydesc" since the strings are well specified,
+;; while a "description" could be anything.
+(deftype keyspecs-type ()
   `(satisfies keyspecs->keys))
 
 ;; We need a macro to check that bindings are valid at compile time.
-;; This is because most Common Lisp implementations or not capable of checking
+;; This is because most Common Lisp implementations are not capable of checking
 ;; types that use `satisfies' for non-top-level symbols.
 ;; We can verify this with:
 ;;
