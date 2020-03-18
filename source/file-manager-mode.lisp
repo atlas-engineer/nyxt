@@ -100,14 +100,14 @@ command `open-file'."
             (vi-map (keymap:make-keymap)))
 
         (define-key emacs-map
-          "M-Left" #'display-parent-directory
+          "M-left" #'display-parent-directory
           "C-l" #'display-parent-directory
           "C-j" #'enter-directory
-          "M-Right" #'enter-directory)
+          "M-right" #'enter-directory)
 
         (define-key vi-map
-          "M-Right" #'enter-directory
-          "M-Left" #'display-parent-directory)
+          "M-right" #'enter-directory
+          "M-left" #'display-parent-directory)
 
         (list :emacs emacs-map
               :vi-normal vi-map)))))
