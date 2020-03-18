@@ -158,7 +158,7 @@ Otherwise list all commands."
           for scheme-keymap = (getf (keymap-schemes mode) scheme)
           when scheme-keymap
             do (setf bindings (mapcar #'first
-                                      (keymap:symbol-keys (command-function command) scheme-keymap)))
+                                      (keymap:binding-keys (command-function command) scheme-keymap)))
           when (not (null bindings))
             return bindings)
     (format nil "~a~a~a"
