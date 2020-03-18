@@ -459,23 +459,24 @@ VISITED is used to detect cycles."
                                 keys)))))
 
 (declaim (ftype (function ((or list-of-keys keyspecs-type)
-                           keymap
-                           &key (:more-keymaps list-of-keymaps)
+                           (or keymap list-of-keymaps)
+                           &key
                            (:translator-override function)
                            (:default-override t))
                           (or keymap t))
                 lookup-key))
-(defun lookup-key (keys-or-keyspecs keymap &key more-keymaps translator-override default-override)
+(defun lookup-key (keys-or-keyspecs keymap-or-keymaps &key translator-override default-override)
   ;; We name this user-facing function using the singular form to be consistent
   ;; with `define-key'.
-  "Return the value bound to KEYS-OR-KEYSPECS in KEYMAP.
+  "Return the value bound to KEYS-OR-KEYSPECS in KEYMAP-OR-KEYMAPS.
 Return the default value of the first KEYMAP if no binding is found.
 
 The second return value is T if a binding is found, NIL otherwise.
 
 First keymap parents are lookup up one after the other.
 Then keys translation are looked up one after the other.
-The same is done for the successive MORE-KEYMAPS.
+The same is done for the successive keymaps if KEYMAP-OR-KEYMAPS is a list of
+keymaps.
 
 When non-nil, TRANSLATOR-OVERRIDE and DEFAULT-OVERRIDE are used instead of the
 individual keymaps `translator' and `default' value, respectively."
@@ -484,9 +485,10 @@ individual keymaps `translator' and `default' value, respectively."
                   keys-or-keyspecs)))
     (or (values (some (alex:rcurry #'lookup-key* keys '()
                                    :translator-override translator-override)
-                      (cons keymap more-keymaps))
+                      (uiop:ensure-list keymap-or-keymaps))
                 t)
-        (values (or default-override (default keymap))
+        (values (or default-override
+                    (default (first (uiop:ensure-list keymap-or-keymaps))))
                 nil))))
 
 (defparameter *print-shortcut* t
@@ -599,10 +601,10 @@ Comparison against BINDING is done with TEST."
              (keymap->map keymap))
     (sort result #'string<)))
 
-(declaim (ftype (function (t keymap &key (:more-keymaps list-of-keymaps) (:test function))
+(declaim (ftype (function (t (or keymap list-of-keymaps) &key (:test function))
                           (values list list))
                 binding-keys))
-(defun binding-keys (bound-value keymap &key more-keymaps (test #'eql))
+(defun binding-keys (bound-value keymap-or-keymaps &key (test #'eql))
   "Return a the list of `keyspec's bound to BINDING in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results.
 Duplicates are removed.
@@ -618,7 +620,7 @@ For instance, to list all keymaps that have a binding, call
                           (let ((hit (binding-keys* bound-value keymap :test test)))
                             (when hit
                               (mapcar (alex:rcurry #'list keymap) hit))))
-                             (cons keymap more-keymaps))))
+                             (uiop:ensure-list keymap-or-keymaps))))
     (values
      (sort (delete-duplicates (mapcar #'first alist) :test #'string=) #'string<)
      alist)))

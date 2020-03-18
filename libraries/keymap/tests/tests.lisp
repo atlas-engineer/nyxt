@@ -339,7 +339,7 @@
               nil)
     (keymap:define-key keymap2 "a" 'foo-a)
     (keymap:define-key keymap2 "c" 'foo-a)
-    (prove:is (multiple-value-list (keymap:binding-keys 'foo-a keymap1 :more-keymaps (list keymap2)))
+    (prove:is (multiple-value-list (keymap:binding-keys 'foo-a (list keymap1 keymap2)))
               `(("C-c a" "a" "c")
                 (("C-c a" ,keymap1)
                  ("a" ,keymap1)
