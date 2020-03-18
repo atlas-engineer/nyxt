@@ -324,8 +324,10 @@ returns a list of list of keys.")))
   "Bind KEYS to BOUND-VALUE in KEYMAP.
 Return KEYMAP.
 
-KEYS is either a `keyspecs-type' or a list of arguments passed to invocations
+KEYSPECS is either a `keyspecs-type' or a list of arguments passed to invocations
 of `make-key's.
+
+BOUND-VALUE can be anything.  If NIL, the binding is removed.
 
 Examples:
 
@@ -353,6 +355,8 @@ or the shorter:
 
 (declaim (ftype (function (keymap (or keyspecs-type list) (or keymap t))) define-key*))
 (defun define-key* (keymap keyspecs bound-value)
+  "Prepare arguments before defining keys.
+See `define-key' for the user-facing function."
   (let ((keys (if (listp keyspecs)
                   (mapcar (alex:curry #'apply #'make-key) keyspecs)
                   (keyspecs->keys keyspecs))))
@@ -362,19 +366,26 @@ or the shorter:
 (defun bind-key (keymap keys bound-value)
   "Recursively bind the KEYS to keymaps starting from KEYMAP.
 The last key is bound to BOUND-VALUE.
+If BOUND-VALUE is nil, the key is unbound.
 Return KEYMAP."
   (if (= (length keys) 1)
       (progn
         (when (fset:@ (entries keymap) (first keys))
           ;; TODO: Notify caller properly?
           (warn "Key was bound to ~a" (fset:@ (entries keymap) (first keys))))
-        (setf (fset:@ (entries keymap) (first keys)) bound-value))
+        (if bound-value
+            (setf (fset:@ (entries keymap) (first keys)) bound-value)
+            (setf (entries keymap) (fset:less (entries keymap) (first keys)))))
       (let ((submap (fset:@ (entries keymap) (first keys))))
-        (unless (keymap-p submap)
+        (when (and (not (keymap-p submap))
+                   bound-value)
           (setf submap (make-keymap :default (default keymap)
                                     :translator (translator keymap)))
           (setf (fset:@ (entries keymap) (first keys)) submap))
-        (bind-key submap (rest keys) bound-value)))
+        (bind-key submap (rest keys) bound-value)
+        (unless bound-value
+          (when (fset:equal? (fset:empty-map) (entries submap))
+            (setf (entries keymap) (fset:less (entries keymap) (first keys)))))))
   keymap)
 
 (declaim (ftype (function (keymap
