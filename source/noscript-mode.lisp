@@ -8,8 +8,8 @@
     ((destructor
       :initform
       (lambda (mode)
-        (ipc-buffer-enable-javascript (buffer mode) t)))
+        (ipc-buffer-enable-javascript-markup (buffer mode) t)))
      (constructor
       :initform
       (lambda (mode)
-        (ipc-buffer-enable-javascript (buffer mode) nil)))))
+        (ipc-buffer-enable-javascript-markup (buffer mode) nil)))))
