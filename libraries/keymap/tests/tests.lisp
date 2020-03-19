@@ -371,4 +371,12 @@
     (prove:is (keymap:lookup-key "b" keymap)
               'bar-2)))
 
+(prove:subtest "retrieve translated key"
+  (let* ((keymap (keymap:make-keymap)))
+    (keymap:define-key keymap "a" 'foo-a)
+    (multiple-value-bind (hit key)
+        (keymap:lookup-key "s-A" keymap)
+      (prove:is hit 'foo-a)
+      (prove:is (keymap:keys->keyspecs key) "a"))))
+
 (prove:finalize)
