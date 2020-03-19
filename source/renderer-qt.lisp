@@ -19,7 +19,8 @@
         (qt:new-q-application 1 (cffi:foreign-alloc :string
                                                     :initial-contents (list "Next")
                                                     :null-terminated-p t)))
-  (finalize browser urls startup-timestamp))
+  (finalize browser urls startup-timestamp)
+  (qt:application-exec (application browser)))
 
 (defmethod kill-interface ((browser qt-browser)))
 
