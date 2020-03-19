@@ -28,7 +28,7 @@
    define-key
    lookup-key
    parents
-   default
+   name
 
    translate-remove-shift-toggle-case
    translate-remove-shift
