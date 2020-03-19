@@ -165,7 +165,8 @@ Return nil when key must be discarded, e.g. for modifiers."
     (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))
 
 (defmethod process-key-press-event ((sender gtk-window) event)
-  (let* ((keyval (gdk:gdk-event-key-keyval event))
+  (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
+         (keyval (gdk:gdk-event-key-keyval event))
          (keyval-name (gdk:gdk-keyval-name keyval))
          (character (gdk:gdk-keyval-to-unicode keyval))
          (key-string (derive-key-string character keyval-name))
@@ -181,10 +182,10 @@ Return nil when key must be discarded, e.g. for modifiers."
       (setf key-string (gtk:gtk-entry-text (key-string-buffer sender)))
       (setf (gtk:gtk-entry-text (key-string-buffer sender)) ""))
     (if modifiers
-        (log:debug key-string character keyval-name modifiers)
-        (log:debug key-string character keyval-name))
+        (log:debug key-string keycode character keyval-name modifiers)
+        (log:debug key-string keycode character keyval-name))
     (when key-string
-      (push (keymap:make-key :code (char-code character)
+      (push (keymap:make-key :code keycode
                              :value key-string
                              :modifiers modifiers
                              :status :pressed)

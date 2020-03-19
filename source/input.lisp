@@ -1,11 +1,7 @@
-;;; keymap.lisp --- lisp subroutines for key binding detection
-
 ;; TODO: Make modifiers customizable.
 ;; TODO: Move scheme support to library?
 ;; TODO: Use CUA scheme by default.
 ;; TODO: Make Emacs / VI schemes inherit from each other.
-;; TODO: Support key codes.  Make sure it's dynamic, i.e. when the keyboard
-;; layout changes, the binding should remain on the same hardware keys.
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: List command bindings (find Emacs equivalent name).  Make sure it's
 ;; dynamic, e.g. that it's updated when the keymap scheme is updated.
@@ -14,7 +10,6 @@
 ;; which keymap it's defined in.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 (defun current-keymaps (window)
   "Return the list of `keymap' for the current buffer, ordered by priority."
