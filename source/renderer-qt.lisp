@@ -26,7 +26,9 @@
 @export
 @export-accessors
 (defclass qt-window (window)
-  ((qt-object :accessor qt-object)))
+  ((qt-object :accessor qt-object)
+   (box-layout :accessor box-layout)
+   (minibuffer-view :accessor minibuffer-view)))
 
 (define-class-type window)
 (declaim (type (window-type) *window-class*))
@@ -44,7 +46,18 @@
 (defparameter *buffer-class* 'qt-buffer)
 
 (defmethod initialize-instance :after ((window qt-window) &key)
-  (print "Making a window!"))
+  (with-slots (id qt-object box-layout active-buffer minibuffer-view) window
+    (setf id (get-unique-window-identifier *browser*))
+    (setf qt-object (qt:new-q-widget))
+    (setf box-layout (qt:new-qv-box-layout))
+    (setf active-buffer (make-instance *buffer-class*))
+    (setf minibuffer-view (qt:new-q-web-engine-view))
+    ;; Add views to window, configure window widget
+    (qt:widget-set-layout qt-object box-layout)
+    (qt:layout-add-widget box-layout minibuffer-view)
+    ;; FIX: REMOVE
+    (qt:web-engine-view-load minibuffer-view "https://www.duckduckgo.com")
+    (qt:widget-show qt-object)))
 
 (defmethod process-destroy ((window qt-window))
   (window-delete window))
@@ -74,7 +87,10 @@
 
 @export
 (defmethod ipc-window-active ((browser qt-browser))
-  "Return the window object for the currently active window.")
+  "Return the window object for the currently active window."
+  (setf (last-active-window browser)
+        (or (find-if #'qt:window-is-active-window (window-list) :key #'qt-object)
+            (last-active-window browser))))
 
 @export
 (defmethod ipc-window-set-active-buffer ((window qt-window) (buffer qt-buffer))
