@@ -65,9 +65,10 @@ Return nil to forward to renderer or non-nil otherwise."
            nil)
 
           (t
-           (multiple-value-bind (bound-function translated-key)
+           (multiple-value-bind (bound-function matching-keymap translated-key)
                (keymap:lookup-key (reverse key-stack)
                                   (current-keymaps window))
+             (declare (ignore matching-keymap))
              (cond
                ((keymap:keymap-p bound-function)
                 (log:debug "Prefix binding ~a" (keyspecs reverse-key-stack translated-key))
