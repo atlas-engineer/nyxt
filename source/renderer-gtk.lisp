@@ -109,21 +109,29 @@
 (defmethod ipc-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
-(defun translate-key-string (character &optional key-value)
-  (match character
-    (#\Return "return")
-    (#\Backspace "backspace")
-    (#\Esc "escape")
-    (#\- "hyphen")
-    (#\Space "space")
-    (#\Tab "tab")
-    (_ (match key-value
-         (65361 "left")
-         (65362 "up")
-         (65364 "down")
-         (65363 "right")
-         (_ (unless (eq character #\Nul)
-              (string character)))))))
+(defun derive-key-string (character keyval-name)
+  "Return string representation of a key, given the two CHARACTER and KEYVAL-NAME representations.
+Return nil when key must be discarded, e.g. for modifiers."
+  (let ((result
+          (match keyval-name
+            ((or "Alt_L" "Super_L" "Control_L" "Shift_L"
+                 "Alt_R" "Super_R" "Control_R" "Shift_R"
+                 "ISO_Level3_Shift")
+             ;; Discard modifiers (they usually have a null character).
+             nil)
+            ((or "Escape" "BackSpace" "Return" "space" "Tab")
+             ;; We can't use the rule "if character is #\Nul use keyval-name"
+             ;; because some keys like Escape have a non-null character.
+             keyval-name)
+            ((guard s (str:contains? "KP_" s))
+             (str:replace-all "KP_" "keypad" s))
+            (_ (match character
+                 (#\- "hyphen")
+                 (#\Nul keyval-name)
+                 (_ (string character)))))))
+    (if (< 1 (length result))
+        (str:replace-all "_" "" (string-downcase result))
+        result)))
 
 (defmethod translate-modifiers ((browser gtk-browser) modifier-state &optional event)
   (let ((modifiers ())
@@ -154,18 +162,20 @@
     (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))
 
 (defmethod process-key-press-event ((sender gtk-window) event)
-  (let* ((character (gdk:gdk-keyval-to-unicode (gdk:gdk-event-key-keyval event)))
-         (character-code (char-code character))
-         (key-value (gdk:gdk-event-key-keyval event))
-         (key-string (translate-key-string character key-value)))
-    (when key-string
-      (log:debug character key-value key-string (modifiers *browser*))
-      (push (keymap:make-key :code character-code
-                             :value key-string
-                             :modifiers (translate-modifiers
-                                         *browser*
+  (let* ((keyval (gdk:gdk-event-key-keyval event))
+         (keyval-name (gdk:gdk-keyval-name keyval))
+         (character (gdk:gdk-keyval-to-unicode keyval))
+         (key-string (derive-key-string character keyval-name))
+         (modifiers (translate-modifiers *browser*
                                          (gdk:gdk-event-key-state event)
-                                         event)
+                                         event)))
+    (if modifiers
+        (log:debug key-string character keyval-name modifiers)
+        (log:debug key-string character keyval-name))
+    (when key-string
+      (push (keymap:make-key :code (char-code character)
+                             :value key-string
+                             :modifiers modifiers
                              :status :pressed)
             (key-stack *browser*))
       (dispatch-input-event event (active-buffer sender) sender))))
