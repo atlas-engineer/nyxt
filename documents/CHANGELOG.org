@@ -39,6 +39,13 @@ MAJOR.MINOR.PATCH, we increment the:
   of a particular text field
 *** Add online suggestions from search engines
 
+** 2.0.0
+- Change key string specifications: all lowercase without underscore.
+  For instance "Page_Up" becomes "pageup".
+
+- Keycode bindings: Use the "#N" syntax to bind the N keycode to a command.
+  Example: ~(define-key *my-keymap* "C-#10" #'next/web-mode::copy-url)~.
+
 ** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
 
