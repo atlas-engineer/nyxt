@@ -81,7 +81,7 @@
         "keypadhome" #'scroll-to-top
         "keypadnext" #'scroll-page-down
         "keypadpageup" #'scroll-page-up
-        "keypadpagedown" #'scroll-page-up)
+        "keypadprior" #'scroll-page-up)
 
       (define-key vi-map
         "H" #'history-backwards
