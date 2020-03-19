@@ -432,8 +432,8 @@ VISITED is used to detect cycles."
                            list-of-keys
                            list-of-keymaps)
                           (or keymap t))
-                lookup-key-in-keymap-and-parents))
-(defun lookup-key-in-keymap-and-parents (keymap keys visited)
+                lookup-translated-keys))
+(defun lookup-translated-keys (keymap keys visited)
   "Return the bound value or keymap associated to KEYS in KEYMAP.
 Return nil if there is none.
 Keymap parents are looked up one after the other.
@@ -448,54 +448,25 @@ VISITED is used to detect cycles."
                            list-of-keymaps
                            &key (:translator-override function))
                           (or keymap t))
-                lookup-key-translations))
-(defun lookup-key-translations (keymap keys visited &key translator-override)
-  "Return the bound value or keymap associdated to a translation of KEYS in KEYMAP.
-Return translated key as a second value."
-  (let* ((matching-key nil)
-         (result
-          (some (lambda (translated-keys)
-                  (let ((hit (lookup-key-in-keymap-and-parents keymap translated-keys (cons keymap visited))))
-                    (when hit
-                      (setf matching-key translated-keys)
-                      hit)))
-                (funcall (or translator-override
-                             (translator keymap)
-                             (constantly nil))
-                         keys))))
-    (values result matching-key)))
-
-(declaim (ftype (function ((or keymap list-of-keymaps)
-                           list-of-keys
-                           list-of-keymaps
-                           &key (:translate-keys boolean)
-                           (:translator-override function))
-                          (or keymap t))
                 lookup-key*))
-(defun lookup-key* (keymap-or-keymaps keys visited &key translate-keys translator-override)
+(defun lookup-key* (keymap keys visited &key translator-override)
   "Internal function, see `lookup-key' for the user-facing function.
 VISITED is used to detect cycles.
-As a second value, return the hit keymap.
-As a third value, return the possibly translated key."
-  (let* ((matching-keymap nil)
-         (matching-key nil)
+As a second value, return the possibly translated KEYS."
+  (let* ((matching-key nil)
          (result
-           (some (lambda (keymap)
-                   (if (find keymap visited)
-                       (warn "Cycle detected in keymap ~a" keymap)
-                       (let ((hit (if translate-keys
-                                      (multiple-value-bind (bound-value key)
-                                          (lookup-key-translations keymap keys (cons keymap visited)
-                                                                   :translator-override translator-override)
-                                        (when bound-value
-                                          (setf matching-key key))
-                                        bound-value)
-                                      (lookup-key-in-keymap-and-parents keymap keys (cons keymap visited)))))
-                         (when hit
-                           (setf matching-keymap keymap)
-                           hit))))
-                 (uiop:ensure-list keymap-or-keymaps))))
-    (values result matching-keymap matching-key)))
+          (if (find keymap visited)
+              (warn "Cycle detected in keymap ~a" keymap)
+              (some (lambda (keys)
+                      (let ((hit (lookup-translated-keys keymap keys (cons keymap visited))))
+                        (when hit
+                          (setf matching-key keys)
+                          hit)))
+                    (cons keys (funcall (or translator-override
+                                            (translator keymap)
+                                            (constantly nil))
+                                        keys))))))
+    (values result matching-key)))
 
 (declaim (ftype (function ((or list-of-keys keyspecs-type)
                            (or keymap list-of-keymaps)
@@ -510,38 +481,34 @@ As a third value, return the possibly translated key."
   "Return the value bound to KEYS-OR-KEYSPECS in KEYMAP-OR-KEYMAPS.
 Return the default value of the first KEYMAP if no binding is found.
 
-The second return value is the matching keymap in KEYMAP-OR-KEYMAPS if a binding
-is found, NIL otherwise.
-
-The third return value is the possibly translated key if a binding is found,
+The second return value is the possibly translated key if a binding is found,
 NIL otherwise.
 
-A binding can be found in multiple keymaps.
-The priority rules are as follows:
-- first keymap without parents,
-- first keymap parents,
-- other keymaps and their parents,
-- translated KEYS-OR-KEYSPECS for each keymap and their parents.
+First keymap parents are lookup up one after the other.
+Then keys translation are looked up one after the other.
+The same is done for the successive keymaps if KEYMAP-OR-KEYMAPS is a list of
+keymaps.
 
 When non-nil, TRANSLATOR-OVERRIDE and DEFAULT-OVERRIDE are used instead of the
 individual keymaps `translator' and `default' value, respectively."
   (let* ((keys (if (stringp keys-or-keyspecs)
                    (keymap::keyspecs->keys keys-or-keyspecs)
-                   keys-or-keyspecs)))
-    (multiple-value-bind (hit keymap translated-key)
-        (lookup-key* keymap-or-keymaps keys '())
-      (if hit
-          (values hit keymap translated-key)
-          (multiple-value-bind (hit keymap translated-key)
-              (lookup-key* keymap-or-keymaps keys '() :translate-keys t
-                                                      :translator-override translator-override)
-
-            (if hit
-                (values hit keymap translated-key)
-                (values (or default-override
-                            (default (first (uiop:ensure-list keymap-or-keymaps))))
-                        nil
-                        nil)))))))
+                   keys-or-keyspecs))
+         (translated-key nil)
+         (result
+           (some (lambda (keymap)
+                   (multiple-value-bind (hit key)
+                       (lookup-key* keymap keys '()
+                                    :translator-override translator-override)
+                     (when hit
+                       (setf translated-key key)
+                       hit)))
+                 (uiop:ensure-list keymap-or-keymaps))))
+    (if result
+        (values result translated-key)
+        (values (or default-override
+                    (default (first (uiop:ensure-list keymap-or-keymaps))))
+                nil))))
 
 (defparameter *print-shortcut* t
   "Whether to print the short form of the modifiers.")
