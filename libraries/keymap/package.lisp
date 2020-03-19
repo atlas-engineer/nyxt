@@ -25,6 +25,7 @@
    key-status
 
    make-keymap
+   keymap-p
    define-key
    lookup-key
    parents
