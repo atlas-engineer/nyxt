@@ -14,7 +14,6 @@
    +hyper+
 
    *modifier-list*
-   *default-translator*
 
    key
    make-key
@@ -30,7 +29,6 @@
    lookup-key
    parents
    default
-   translator
 
    translate-remove-shift-toggle-case
    translate-remove-shift
@@ -38,6 +36,7 @@
    translate-remove-shift-but-first-control
    translate-remove-shift-but-first-control-toggle-case
    translate-shifted-control-combinations
+   *translator*
 
    *print-shortcut*
    keys->keyspecs
@@ -63,7 +62,7 @@ The workflow goes as follows:
 Some globals can be tweaked to customize the library to your needs:
 
 - `*modifier-list*': List of known keyboard modifiers like `+control+'.
-- `*default-translator*': The default function to infer the right binding when
+- `*translator*': The function to infer the right binding when
   the exact binding hits nothing.
 - `*print-shortcuts*': Print modifiers using their short form instead of the
   full name, e.g. \"C\" instead of \"control\"."))
