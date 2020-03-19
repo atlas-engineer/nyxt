@@ -56,8 +56,9 @@
     (setf minibuffer-view (qt:new-q-web-engine-view))
     ;; Add views to window, configure window widget
     (qt:widget-set-layout qt-object box-layout)
-    (qt:layout-add-widget box-layout minibuffer-view)
     (qt:layout-add-widget box-layout (qt-object active-buffer))
+    (qt:layout-add-widget box-layout minibuffer-view)
+    (ipc-window-set-minibuffer-height window (status-buffer-height window))
     ;; load about:blank to permit JS evaluation
     (qt:web-engine-view-load minibuffer-view "about:blank")
     (qt:widget-show qt-object)))
