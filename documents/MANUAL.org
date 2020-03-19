@@ -76,7 +76,7 @@ the keyboard. It works like this:
 2. Several strings will appear on screen "AZ" "CY", these
    special strings represent links that you can visit
 3. Enter in one of these strings into the minibuffer
-4. Press ~Return~
+4. Press ~return~
 5. Visit the page
 
 The full key-bindings for link-hint based navigate are found below:
@@ -103,7 +103,7 @@ search engine prefix will use the corresponding search engine for the query.
 For instance, to search "parrot" on Wikipedia:
 - =C-l= or =M-l= to open a new URL prompt.
 - =wiki parrot=
-- =Return=
+- =return=
 
 From a Lisp REPL, you can query the list of search engines with
 #+begin_src lisp
@@ -177,9 +177,9 @@ completions.
 Any time a function activates the minibuffer there are two applicable
 returns:
 
-1. ~C-RET~: Return Immediate - Return EXACTLY what has been typed into
+1. ~C-return~: Return Immediate - Return EXACTLY what has been typed into
    the minibuffer, ignoring completions.
-2. ~RET~: Return Complete - If completion function provided, return
+2. ~return~: Return Complete - If completion function provided, return
    the selected completion candidate. If completion not provided
    return the EXACT text inputted into the minibuffer. If completion
    function provided, no completion applicable (selected), and the
@@ -191,7 +191,7 @@ returns:
 When that makes sense (e.g. for the =delete-buffer= command), multiple entries
 can be marked.  The default bindings are:
 
-- =C-SPACE= to toggle the mark of an entry.
+- =C-space= to toggle the mark of an entry.
 - =M-a= to mark all visible entries.
 - =M-u= to unmark all visible entries.
 
@@ -593,7 +593,7 @@ Keys are defined with the ~define-key~ command.
 
 (define-key :keymap *my-keymap*
   "C-x o" #'example
-  "SPACE" #'scroll-page-down)
+  "space" #'scroll-page-down)
 
 ;; Bind in current buffer's first mode.  This won't affect other buffers.
 (define-key :keymap (getf (keymap-scheme
