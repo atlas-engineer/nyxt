@@ -1,7 +1,5 @@
 ;;; keymap.lisp --- lisp subroutines for key binding detection
 
-;; TODO: Fix dead keys in the minibuffer.
-;; TODO: Support self-insertable keys.  Make sure dead keys work.
 ;; TODO: Make modifiers customizable.
 ;; TODO: Move scheme support to library?
 ;; TODO: Use CUA scheme by default.
@@ -37,9 +35,7 @@
 (defun printable-p (key)
   "Return non-nil if key-chord is printable.
    Letters are printable, while function keys or backspace are not."
-  ;; TODO: Implement printable-p?
-  (declare (ignore key))
-  t)
+  (not (str:starts-with? "dead" (keymap:key-value key))))
 
 (defun dispatch-input-event (event buffer window)
   "Dispatch keys in `browser's `key-stack'.

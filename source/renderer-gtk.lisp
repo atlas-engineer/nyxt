@@ -43,7 +43,8 @@
   ((gtk-object :accessor gtk-object)
    (box-layout :accessor box-layout)
    (minibuffer-container :accessor minibuffer-container)
-   (minibuffer-view :accessor minibuffer-view)))
+   (minibuffer-view :accessor minibuffer-view)
+   (key-string-buffer :accessor key-string-buffer)))
 
 (define-class-type window)
 (declaim (type (window-type) *window-class*))
@@ -61,7 +62,8 @@
 (defparameter *buffer-class* 'gtk-buffer)
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer id) window
+  (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer
+               id key-string-buffer) window
     (setf id (get-unique-window-identifier *browser*))
     (setf gtk-object (make-instance 'gtk:gtk-window
                                     :type :toplevel
@@ -73,6 +75,7 @@
     (setf minibuffer-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
+    (setf key-string-buffer (make-instance 'gtk:gtk-entry))
     (setf minibuffer-view (make-instance 'webkit:webkit-web-view))
     (setf active-buffer (make-instance *buffer-class*))
     ;; Add the views to the box layout and to the window
@@ -169,6 +172,14 @@ Return nil when key must be discarded, e.g. for modifiers."
          (modifiers (translate-modifiers *browser*
                                          (gdk:gdk-event-key-state event)
                                          event)))
+    ;; Generate the result of the current keypress into the dummy
+    ;; key-string-buffer (a GtkEntry that's never shown on screen) so that we
+    ;; can collect the printed representation of composed keypress, such as dead
+    ;; keys.
+    (gtk:gtk-entry-im-context-filter-keypress (key-string-buffer sender) event)
+    (when (<= 1 (gtk:gtk-entry-text-length (key-string-buffer sender)))
+      (setf key-string (gtk:gtk-entry-text (key-string-buffer sender)))
+      (setf (gtk:gtk-entry-text (key-string-buffer sender)) ""))
     (if modifiers
         (log:debug key-string character keyval-name modifiers)
         (log:debug key-string character keyval-name))
