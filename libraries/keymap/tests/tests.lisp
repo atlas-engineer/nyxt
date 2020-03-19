@@ -178,6 +178,14 @@
     (prove:is (keymap:lookup-key "shift-return" keymap)
               'ret)))
 
+(prove:subtest "Translator: Ensure other keymaps have priority over translations"
+  (let ((keymap (keymap:make-keymap))
+        (keymap2 (keymap:make-keymap)))
+    (keymap:define-key keymap "g g" 'prefix-g)
+    (keymap:define-key keymap2 "G" 'up-g)
+    (prove:is (keymap:lookup-key "s-G" (list keymap keymap2))
+              'up-g)))
+
 (prove:subtest "keys->keyspecs"
   (prove:is (keymap::keys->keyspecs (list (keymap:make-key :code 10 :value "a")))
             "#10")
@@ -374,9 +382,10 @@
 (prove:subtest "retrieve translated key"
   (let* ((keymap (keymap:make-keymap)))
     (keymap:define-key keymap "a" 'foo-a)
-    (multiple-value-bind (hit key)
+    (multiple-value-bind (hit km key)
         (keymap:lookup-key "s-A" keymap)
       (prove:is hit 'foo-a)
+      (prove:is km keymap)
       (prove:is (keymap:keys->keyspecs key) "a"))))
 
 (prove:finalize)
