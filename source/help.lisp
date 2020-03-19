@@ -67,10 +67,17 @@
                            (:h1 (symbol-name (sym input)))
                            (:h2 "Documentation")
                            (:p (write-to-string
-                                ;; TODO: This only display the first method, i.e. the first command of one of the modes.
-                                ;; Ask for modes instead?
+                                  ;; TODO: This only display the first method, i.e. the first command of one of the modes.
+                                  ;; Ask for modes instead?
                                 (documentation (command-function input)
                                                t)))
+                           (:p "Bindings: "
+                               (let ((key-keymap-pairs
+                                       (nth-value 1 (keymap:binding-keys (command-function input) (all-keymaps)))))
+                                 (format nil "~:{ ~S (~a)~:^, ~}" (mapcar (lambda (pair)
+                                                                       (list (first pair)
+                                                                             (keymap:name (second pair))))
+                                                                     key-keymap-pairs))))
                            (:p "Source file: "
                                (getf (getf (swank:find-definition-for-thing (command-function input))
                                            :location)
@@ -80,7 +87,7 @@
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ipc-buffer-evaluate-javascript help-buffer insert-help)
-   (set-current-buffer help-buffer))))
+      (set-current-buffer help-buffer))))
 
 (defun evaluate (string)
   "Evaluate all expressions in string and return a list of values.
