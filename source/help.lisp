@@ -7,8 +7,8 @@
     "Mode for displaying documentation."
     ((keymap-schemes
       :initform
-      (let ((emacs-map (keymap:make-keymap))
-            (vi-map (keymap:make-keymap)))
+      (let ((emacs-map (keymap:make-keymap "help-emacs-map"))
+            (vi-map (keymap:make-keymap "help-vi-map")))
         (define-key emacs-map
           "C-p" #'scroll-up
           "C-n" #'scroll-down)

@@ -46,6 +46,8 @@ MAJOR.MINOR.PATCH, we increment the:
 - Keycode bindings: Use the "#N" syntax to bind the N keycode to a command.
   Example: ~(define-key *my-keymap* "C-#10" #'next/web-mode::copy-url)~.
 
+- Keymaps must be named, e.g. ~(keymap:make-keymap "my-map")~.
+
 ** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
 

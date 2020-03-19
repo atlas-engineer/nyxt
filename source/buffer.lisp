@@ -197,7 +197,7 @@ complete against a search engine."
   "Minibuffer mode for setting the URL of a buffer."
   ((keymap-schemes
     :initform
-    (let ((map (keymap:make-keymap)))
+    (let ((map (keymap:make-keymap "set-url-map")))
       (define-key map
         "tab" #'insert-candidate-or-search-engine)
       (list :emacs map
