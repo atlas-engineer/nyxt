@@ -470,11 +470,11 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 (define-command self-insert ()
   "Insert first key from `*browser*' `key-stack' in the minibuffer."
   (let ((key-string (keymap:key-value (first (key-stack *browser*))))
-        (translation-table '(("HYPHEN" "-")
+        (translation-table '(("hyphen" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking
                              ;; space to avoid confusing the user.
-                             ("SPACE" " "))))
+                             ("space" " "))))
     (setf key-string (or (cadr (assoc key-string translation-table :test #'string=))
                          key-string))
     (insert key-string)))
