@@ -107,7 +107,8 @@
   buffer)
 
 @export
-(defmethod ipc-window-set-minibuffer-height ((window qt-window) height))
+(defmethod ipc-window-set-minibuffer-height ((window qt-window) height)
+  (qt:widget-set-fixed-height (minibuffer-view window) height))
 
 @export
 (defmethod ipc-buffer-make ((browser qt-browser) &key title default-modes)
