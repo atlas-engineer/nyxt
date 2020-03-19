@@ -111,7 +111,8 @@
 (defmethod ipc-buffer-delete ((buffer qt-buffer)))
 
 @export
-(defmethod ipc-buffer-load ((buffer qt-buffer) uri))
+(defmethod ipc-buffer-load ((buffer qt-buffer) uri)
+  (qt:web-engine-view-load (qt-object buffer) uri))
 
 @export
 (defmethod ipc-buffer-evaluate-javascript ((buffer qt-buffer) javascript &key callback))
