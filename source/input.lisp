@@ -1,4 +1,3 @@
-;; TODO: Make modifiers customizable.
 ;; TODO: Move scheme support to library?
 ;; TODO: Use CUA scheme by default.
 ;; TODO: Make Emacs / VI schemes inherit from each other.
