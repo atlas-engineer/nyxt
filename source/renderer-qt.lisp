@@ -55,6 +55,7 @@
     ;; Add views to window, configure window widget
     (qt:widget-set-layout qt-object box-layout)
     (qt:layout-add-widget box-layout minibuffer-view)
+    (qt:layout-add-widget box-layout (qt-object active-buffer))
     ;; load about:blank to permit JS evaluation
     (qt:web-engine-view-load minibuffer-view "about:blank")
     (qt:widget-show qt-object)))
@@ -73,7 +74,9 @@
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)
   (next-hooks:run-hook (buffer-before-make-hook *browser*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *browser*))
-  (setf (qt-object buffer) (new-q-web-engine-view)))
+  (setf (qt-object buffer) (qt:new-q-web-engine-view))
+  ;; load about:blank to permit JS evaluation
+  (qt:web-engine-view-load (qt-object buffer) "about:blank"))
 
 @export
 (defmethod ipc-window-make ((browser qt-browser))
