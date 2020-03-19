@@ -276,7 +276,14 @@ returns a list of list of keys.
 Ths parameter can be let-bound around `lookup-key' calls.")
 
 (defclass keymap ()
-  ((entries :accessor entries
+  ((name :accessor name
+         :initarg :name
+         :initform "anonymous"
+         :type string
+         :documentation
+         "Name of the keymap.
+Used for documentation purposes, e.g. referring to a keymap by a well known name.")
+   (entries :accessor entries
             :initarg :entries
             :initform nil
             :type fset:wb-map
@@ -290,14 +297,15 @@ symbol or a keymap.")
             :documentation "List of parent keymaps.
 Parents are ordered by priority, the first parent has highest priority.")))
 
-(declaim (ftype (function (&rest list-of-keymaps)
+(declaim (ftype (function (string &rest list-of-keymaps)
                           keymap)
                 make-keymap))
-(defun make-keymap (&rest parents)
+(defun make-keymap (name &rest parents)
   ;; We coerce to 'keymap because otherwise SBCL complains "type assertion too
   ;; complex to check: (VALUES KEYMAP::KEYMAP &REST T)."
   (coerce
    (make-instance 'keymap
+                  :name name
                   :parents parents
                   ;; We cannot use the standard (make-hash-table :test #'equalp)
                   ;; because then (set "a") and (set "A") would be the same thing.
@@ -391,7 +399,7 @@ Return KEYMAP."
       (let ((submap (fset:@ (entries keymap) (first keys))))
         (when (and (not (keymap-p submap))
                    bound-value)
-          (setf submap (make-keymap))
+          (setf submap (make-keymap "anonymous"))
           (setf (fset:@ (entries keymap) (first keys)) submap))
         (bind-key submap (rest keys) bound-value)
         (unless bound-value
@@ -579,9 +587,9 @@ highest precedence."
         ((= 1 (length keymaps))
          (first keymaps))
         (t
-         (let ((keymap1 (first keymaps))
+         (let* ((keymap1 (first keymaps))
                (keymap2 (second keymaps))
-               (merge (make-keymap)))
+               (merge (make-keymap (format nil "~a+~a" (name keymap1) (name keymap2)))))
            (setf (parents merge) (stable-union (parents keymap1) (parents keymap2)))
            (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
            (apply #'compose merge (rest (rest keymaps)))))))))
