@@ -118,7 +118,7 @@
 (prove:subtest "define-key & lookup-key with parents"
   (let* ((parent1 (keymap:make-keymap))
          (parent2 (keymap:make-keymap))
-         (keymap (keymap:make-keymap :parents (list parent1 parent2))))
+         (keymap (keymap:make-keymap parent1 parent2)))
     (keymap:define-key parent1 "x" 'parent1-x)
     (keymap:define-key parent1 "a" 'parent1-a)
     (keymap:define-key parent2 "x" 'parent2-x)
@@ -148,15 +148,6 @@
     (prove:is (keymap:lookup-key "x" keymap)
               nil)))
 
-(prove:subtest "define-key & lookup-key default value"
-  (let ((keymap (keymap:make-keymap :default 'foo))
-        (keymap2 (keymap:make-keymap)))
-    (prove:is (keymap:lookup-key "x" keymap)
-              'foo)
-    (setf (keymap:default keymap2) 'bar)
-    (prove:is (keymap:lookup-key "x" keymap2)
-              'bar)))
-
 (prove:subtest "Translator"
   (let ((keymap (keymap:make-keymap)))
     (keymap:define-key keymap "A b" 'foo)
@@ -177,6 +168,14 @@
     (keymap:define-key keymap "return" 'ret)
     (prove:is (keymap:lookup-key "shift-return" keymap)
               'ret)))
+
+(prove:subtest "Translator: Ensure other keymaps have priority over translations"
+  (let ((keymap (keymap:make-keymap))
+        (keymap2 (keymap:make-keymap)))
+    (keymap:define-key keymap "g g" 'prefix-g)
+    (keymap:define-key keymap2 "G" 'up-g)
+    (prove:is (keymap:lookup-key "s-G" (list keymap keymap2))
+              'up-g)))
 
 (prove:subtest "keys->keyspecs"
   (prove:is (keymap::keys->keyspecs (list (keymap:make-key :code 10 :value "a")))
@@ -247,8 +246,8 @@
 (prove:subtest "keymap-with-parents->map"
   (let* ((grand-parent (keymap:make-keymap))
          (parent1 (keymap:make-keymap))
-         (parent2 (keymap:make-keymap :parents (list grand-parent)))
-         (keymap (keymap:make-keymap :parents (list parent1 parent2))))
+         (parent2 (keymap:make-keymap grand-parent))
+         (keymap (keymap:make-keymap parent1 parent2)))
     (keymap:define-key keymap "a" 'foo-a)
     (keymap:define-key parent1 "b" 'bar-b)
     (keymap:define-key parent2 "c" 'qux-c)
@@ -301,9 +300,9 @@
 
 (prove:subtest "compose-keymaps"
   (let* ((parent1 (keymap:make-keymap))
-         (keymap1 (keymap:make-keymap :parents (list parent1)))
+         (keymap1 (keymap:make-keymap parent1))
          (parent2 (keymap:make-keymap))
-         (keymap2 (keymap:make-keymap :parents (list parent2)))
+         (keymap2 (keymap:make-keymap parent2))
          (keymap3 (keymap:make-keymap)))
     (keymap:define-key keymap1 "a" 'foo-a)
     (keymap:define-key keymap1 "b" 'foo-b)
@@ -374,9 +373,10 @@
 (prove:subtest "retrieve translated key"
   (let* ((keymap (keymap:make-keymap)))
     (keymap:define-key keymap "a" 'foo-a)
-    (multiple-value-bind (hit key)
+    (multiple-value-bind (hit km key)
         (keymap:lookup-key "s-A" keymap)
       (prove:is hit 'foo-a)
+      (prove:is km keymap)
       (prove:is (keymap:keys->keyspecs key) "a"))))
 
 (prove:finalize)
