@@ -18,8 +18,8 @@
             :initform (htree:make))
    (keymap-schemes
     :initform
-    (let ((emacs-map (keymap:make-keymap))
-          (vi-map (keymap:make-keymap)))
+    (let ((emacs-map (keymap:make-keymap "web-emacs-map"))
+          (vi-map (keymap:make-keymap "web-vi-map")))
       (define-key emacs-map
         "C-M-f" #'history-forwards-all-query
         "C-M-b" #'history-all-query

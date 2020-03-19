@@ -117,7 +117,7 @@ instantiate on buffer creation, unless specified.")
 for all modes in the current buffer.")
    (override-map :accessor override-map
                  :initarg :override-map
-                 :initform (let ((map (keymap:make-keymap)))
+                 :initform (let ((map (keymap:make-keymap "overide-map")))
                              (define-key map
                                "M-x" #'execute-command)
                              map)
