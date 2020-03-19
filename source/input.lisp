@@ -3,8 +3,6 @@
 ;; TODO: Use CUA scheme by default.
 ;; TODO: Make Emacs / VI schemes inherit from each other.
 ;; TODO: which-key: List all bindings with some prefix.
-;; TODO: List command bindings (find Emacs equivalent name).  Make sure it's
-;; dynamic, e.g. that it's updated when the keymap scheme is updated.
 ;; TODO: Make sure it's easy enough to set global bindings.
 ;; TODO: Implement `C-h k`: documentation for keypresses.  Make sure it tells
 ;; which keymap it's defined in.
@@ -19,6 +17,15 @@
             (delete-if #'null (mapcar #'keymap (modes (if (active-minibuffers window)
                                                           (current-minibuffer)
                                                           (active-buffer window)))))))))
+
+(defun all-keymaps (&optional (window (ipc-window-active *browser*)))
+  "Return all keymaps for WINDOW, including the buffer keymaps and the
+minibuffer keymaps."
+  (let ((buffer (active-buffer window)))
+    (when buffer
+      (append (list (override-map buffer))
+            (delete-if #'null (mapcar #'keymap (modes (active-buffer window))))
+            (delete-if #'null (mapcar #'keymap (modes (current-minibuffer))))))))
 
 (declaim (ftype (function (keymap:key) boolean) pointer-event-p))
 (defun pointer-event-p (key)
