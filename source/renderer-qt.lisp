@@ -5,7 +5,8 @@
 
 @export
 @export-accessors
-(defclass qt-browser (browser) ())
+(defclass qt-browser (browser)
+  ((application :accessor application)))
 
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))
@@ -13,7 +14,12 @@
 (defparameter *browser-class* 'qt-browser)
 
 (defmethod initialize ((browser qt-browser) urls startup-timestamp)
-  (log:debug "Initializing Qt Interface"))
+  (log:debug "Initializing Qt Interface")
+  (setf (application browser)
+        (qt:new-q-application 1 (cffi:foreign-alloc :string
+                                                    :initial-contents (list "Next")
+                                                    :null-terminated-p t)))
+  (finalize browser urls startup-timestamp))
 
 (defmethod kill-interface ((browser qt-browser)))
 
@@ -37,7 +43,8 @@
 @export
 (defparameter *buffer-class* 'qt-buffer)
 
-(defmethod initialize-instance :after ((window qt-window) &key))
+(defmethod initialize-instance :after ((window qt-window) &key)
+  (print "Making a window!"))
 
 (defmethod process-destroy ((window qt-window))
   (window-delete window))
