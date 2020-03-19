@@ -90,7 +90,9 @@
 
 @export
 (defmethod ipc-window-set-title ((window qt-window) title)
-  "Set the title for a window.")
+  "Set the title for a window."
+  (qt:window-set-window-title (qt-object window) title)
+  title)
 
 @export
 (defmethod ipc-window-active ((browser qt-browser))
