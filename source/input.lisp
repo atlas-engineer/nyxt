@@ -46,8 +46,9 @@
 Return nil to forward to renderer or non-nil otherwise."
   (with-accessors ((key-stack key-stack)) *browser*
     (let ((keyspecs (let ((specs (keymap:keys->keyspecs key-stack))
-                          (no-code-specs (keymap:keys->keyspecs (mapcar (lambda (key) (keymap:copy-key key :code 0))
-                                                                        key-stack))))
+                          (no-code-specs (keymap:keys->keyspecs
+                                          (mapcar (lambda (key) (keymap:copy-key key :code 0))
+                                                  key-stack))))
                       (if (find-if (complement #'zerop) key-stack :key #'keymap:key-code)
                           (format nil "~a (~a)" no-code-specs specs)
                           (format nil "~a" no-code-specs)))))
@@ -59,8 +60,13 @@ Return nil to forward to renderer or non-nil otherwise."
          nil)
 
         (t
-         (let ((bound-function (keymap:lookup-key key-stack (current-keymaps window))))
+         (let ((bound-function (keymap:lookup-key (reverse key-stack)
+                                                  (current-keymaps window))))
            (cond
+             ((keymap:keymap-p bound-function)
+              (log:debug "Prefix binding ~a" keyspecs)
+              t)
+
              ((functionp bound-function)
               (log:debug "Key sequence ~a bound to:" keyspecs)
               (funcall-safely bound-function)
