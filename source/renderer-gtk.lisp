@@ -6,7 +6,14 @@
 @export
 @export-accessors
 (defclass gtk-browser (browser)
-  ((modifiers :accessor modifiers :initform ())))
+  ((modifiers :accessor modifiers :initform ())
+   (modifier-translator :accessor modifier-translator
+                        :initform #'translate-modifiers
+                        :type function
+                        :documentation "Function that returns a list of
+modifiers understood by `keymap:make-key'.  You can customize this slot if you
+want to change the behaviour of modifiers, for instance swap 'control' and
+'meta'.")))
 
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))
@@ -136,7 +143,10 @@ Return nil when key must be discarded, e.g. for modifiers."
         (str:replace-all "_" "" (string-downcase result))
         result)))
 
-(defmethod translate-modifiers ((browser gtk-browser) modifier-state &optional event)
+(declaim (ftype (function (list &optional gdk:gdk-event) list) translate-modifiers))
+(defun translate-modifiers (modifier-state &optional event)
+  "Return list of modifiers fit for `keymap:make-key'.
+See `gtk-browser's `modifier-translator' slot."
   (let ((modifiers ())
         (macintosh-alt-key-value 65406)
         (key-value (match (type-of event)
@@ -170,9 +180,9 @@ Return nil when key must be discarded, e.g. for modifiers."
          (keyval-name (gdk:gdk-keyval-name keyval))
          (character (gdk:gdk-keyval-to-unicode keyval))
          (key-string (derive-key-string character keyval-name))
-         (modifiers (translate-modifiers *browser*
-                                         (gdk:gdk-event-key-state event)
-                                         event)))
+         (modifiers (funcall (modifier-translator *browser*)
+                             (gdk:gdk-event-key-state event)
+                             event)))
     ;; Generate the result of the current keypress into the dummy
     ;; key-string-buffer (a GtkEntry that's never shown on screen) so that we
     ;; can collect the printed representation of composed keypress, such as dead
@@ -201,8 +211,7 @@ Return nil when key must be discarded, e.g. for modifiers."
          (key-string (format nil "button~s" button)))
     (when key-string
       (push (keymap:make-key :value key-string
-                             :modifiers (translate-modifiers
-                                         *browser*
+                             :modifiers (funcall (modifier-translator *browser*)
                                          (gdk:gdk-event-button-state event)
                                          event)
                              :status :pressed)
@@ -282,7 +291,8 @@ Return nil when key must be discarded, e.g. for modifiers."
       (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action response-policy-decision))
       (setf request (webkit:webkit-navigation-action-get-request navigation-action))
       (setf mouse-button (format nil "button~d" (webkit:webkit-navigation-action-get-mouse-button navigation-action)))
-      (setf modifiers (translate-modifiers *browser* (webkit:webkit-navigation-action-get-modifiers navigation-action))))
+      (setf modifiers (funcall (modifier-translator *browser*)
+                               (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (webkit:webkit-uri-request-uri request))
     (request-resource buffer
                       :url url
