@@ -22,6 +22,7 @@
    key-value
    key-modifiers
    key-status
+   key=
 
    make-keymap
    keymap-p
