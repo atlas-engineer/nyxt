@@ -3,8 +3,7 @@
 ;; TODO: Make Emacs / VI schemes inherit from each other.
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
-;; TODO: Implement `C-h k`: documentation for keypresses.  Make sure it tells
-;; which keymap it's defined in.
+;; TODO: Implement `C-h b`.
 
 (in-package :next)
 

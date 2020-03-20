@@ -200,7 +200,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                  :value key-string
                                                  :modifiers modifiers
                                                  :status :pressed)))
-      (dispatch-input-event event (active-buffer sender) sender))))
+      (funcall (input-dispatcher sender) event (active-buffer sender) sender))))
 
 (defmethod process-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
@@ -217,7 +217,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                      (gdk:gdk-event-button-state event)
                                                      event)
                                  :status :pressed)))
-      (dispatch-input-event event sender window))))
+      (funcall (input-dispatcher window) event sender window))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
