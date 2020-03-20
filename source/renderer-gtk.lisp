@@ -195,11 +195,11 @@ See `gtk-browser's `modifier-translator' slot."
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
     (when key-string
-      (push (keymap:make-key :code keycode
-                             :value key-string
-                             :modifiers modifiers
-                             :status :pressed)
-            (key-stack *browser*))
+      (alexandria:appendf (key-stack *browser*)
+                          (list (keymap:make-key :code keycode
+                                                 :value key-string
+                                                 :modifiers modifiers
+                                                 :status :pressed)))
       (dispatch-input-event event (active-buffer sender) sender))))
 
 (defmethod process-button-press-event ((sender gtk-buffer) event)
@@ -210,12 +210,13 @@ See `gtk-browser's `modifier-translator' slot."
          (window (find sender (window-list) :key #'active-buffer))
          (key-string (format nil "button~s" button)))
     (when key-string
-      (push (keymap:make-key :value key-string
-                             :modifiers (funcall (modifier-translator *browser*)
-                                         (gdk:gdk-event-button-state event)
-                                         event)
-                             :status :pressed)
-            (key-stack *browser*))
+      (alexandria:appendf (key-stack *browser*)
+                          (list (keymap:make-key
+                                 :value key-string
+                                 :modifiers (funcall (modifier-translator *browser*)
+                                                     (gdk:gdk-event-button-state event)
+                                                     event)
+                                 :status :pressed)))
       (dispatch-input-event event sender window))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
