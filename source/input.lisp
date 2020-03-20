@@ -6,7 +6,7 @@
 
 (in-package :next)
 
-(defun current-keymaps (window)
+(defun current-keymaps (&optional (window (ipc-window-active *browser*)))
   "Return the list of `keymap' for the current buffer, ordered by priority."
   (let ((buffer (active-buffer window)))
     (when buffer
@@ -67,8 +67,7 @@ Return nil to forward to renderer or non-nil otherwise."
 
         (t
          (multiple-value-bind (bound-function matching-keymap translated-key)
-             (keymap:lookup-key key-stack
-                                (current-keymaps window))
+             (keymap:lookup-key key-stack (current-keymaps))
            (declare (ignore matching-keymap))
            (cond
              ((keymap:keymap-p bound-function)
