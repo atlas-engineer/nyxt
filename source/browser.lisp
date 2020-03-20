@@ -31,6 +31,11 @@
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
                            :type integer
                            :documentation "The height of the minibuffer when open.")
+   (input-dispatcher :accessor input-dispatcher
+                     :initform #'dispatch-input-event
+                     :type function
+                     :documentation "Function to process input events.
+It takes EVENT, BUFFER and WINDOW parameters.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
                                   :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
