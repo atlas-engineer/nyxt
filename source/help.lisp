@@ -94,6 +94,31 @@
                         :completion-function #'function-completion-filter)))
     (describe-command* input)))
 
+(define-command bindings-inspect ()
+  "Show a buffer with the list of all known bindings for the current buffer."
+  (let* ((title (str:concat "*Help-bindings"))
+         (help-buffer (help-mode :activate t
+                                 :buffer (make-buffer :title title)))
+         (window (ipc-window-active *browser*))
+         (help-contents
+                        (cl-markup:markup
+                         (:h1 "Bindings")
+                         (:p
+                          (loop for keymap in (current-keymaps window)
+                                collect (cl-markup:markup
+                                         (:p (keymap:name keymap))
+                                         (:table
+                                          (loop for keyspec being the hash-keys in (keymap:keymap-with-parents->map keymap)
+                                                  using (hash-value bound-value)
+                                                collect (cl-markup:markup
+                                                         (:tr
+                                                          (:td keyspec)
+                                                          (:td (string-downcase (sym (function-command bound-value)))))))))))))
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+    (ipc-buffer-evaluate-javascript help-buffer insert-help)
+    (set-current-buffer help-buffer)))
+
 (defun describe-key-dispatch-input (event buffer window)
   "Display bound value documentation.
 Cancel with 'escape escape'.
