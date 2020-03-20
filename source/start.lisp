@@ -201,11 +201,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
                                       :omit-nulls t)
                       ((guard urls urls)
                        (log:info "External process requested URL(s): ~{~a~^, ~}" urls)
-                       ;; `open-urls` must be done on the GTK thread.
-                       (gdk:gdk-threads-add-idle (lambda ()
-                                                   (open-urls urls)
-                                                   ;; Return nil so that the callback is called only once.
-                                                   nil)))
+                       (gtk:within-gtk-thread
+                         (open-urls urls)))
                       (_
                        (log:info "External process pinged Next.")))
                     ;; If we get pinged too early, we not have a last-active-window yet.
