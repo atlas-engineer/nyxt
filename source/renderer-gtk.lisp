@@ -189,7 +189,10 @@ See `gtk-browser's `modifier-translator' slot."
     ;; keys.
     (gtk:gtk-entry-im-context-filter-keypress (key-string-buffer sender) event)
     (when (<= 1 (gtk:gtk-entry-text-length (key-string-buffer sender)))
-      (setf key-string (gtk:gtk-entry-text (key-string-buffer sender)))
+      (match (gtk:gtk-entry-text (key-string-buffer sender))
+        ;; REVIEW: Deal with these special keys in a single place?
+        ((or " " "-"))
+        (character (setf key-string character)))
       (setf (gtk:gtk-entry-text (key-string-buffer sender)) ""))
     (if modifiers
         (log:debug key-string keycode character keyval-name modifiers)
