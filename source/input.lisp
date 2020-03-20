@@ -32,12 +32,6 @@ minibuffer keymaps."
   (coerce (str:starts-with? "button" (keymap:key-value key))
           'boolean))
 
-(declaim (ftype (function (keymap:key) boolean) printable-p))
-(defun printable-p (key)
-  "Return non-nil if key-chord is printable.
-   Letters are printable, while function keys or backspace are not."
-  (not (str:starts-with? "dead" (keymap:key-value key))))
-
 (defun keyspecs-with-optional-keycode (keys)
   "Like `keymap:keyspecs' but displayes keys with keycodes like this:
 KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
@@ -48,7 +42,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
         (format nil "~a (~a)" no-code-specs (keymap:keys->keyspecs keys))
         (format nil "~a" no-code-specs))))
 
-(defun dispatch-input-event (event buffer window)
+(defun dispatch-input-event (event buffer window printable-p)
   "Dispatch keys in `browser's `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
   (with-accessors ((key-stack key-stack)) *browser*
@@ -81,15 +75,16 @@ Return nil to forward to renderer or non-nil otherwise."
               t)
 
              ((active-minibuffers window)
-              (when (printable-p (first key-stack))
-                (let ((value (keymap:key-value (first key-stack))))
-                  (log:debug "Insert ~s in minibuffer" value)
-                  (insert value)))
+              (when printable-p
+                (dolist (key key-stack)
+                  (let ((value (keymap:key-value key)))
+                    (log:debug "Insert ~s in minibuffer" value)
+                    (insert value))))
               (setf key-stack nil)
               t)
 
              ((or (and buffer (forward-input-events-p buffer))
-                  (pointer-event-p (first key-stack)))
+                  (pointer-event-p (first (last key-stack))))
               (log:debug "Forward key ~s" (keyspecs key-stack))
               (setf key-stack nil)
               nil)

@@ -182,7 +182,8 @@ See `gtk-browser's `modifier-translator' slot."
          (key-string (derive-key-string character keyval-name))
          (modifiers (funcall (modifier-translator *browser*)
                              (gdk:gdk-event-key-state event)
-                             event)))
+                             event))
+         (printable? nil))
     ;; Generate the result of the current keypress into the dummy
     ;; key-string-buffer (a GtkEntry that's never shown on screen) so that we
     ;; can collect the printed representation of composed keypress, such as dead
@@ -193,6 +194,7 @@ See `gtk-browser's `modifier-translator' slot."
         ;; REVIEW: Deal with these special keys in a single place?
         ((or " " "-"))
         (character (setf key-string character)))
+      (setf printable? t)
       (setf (gtk:gtk-entry-text (key-string-buffer sender)) ""))
     (if modifiers
         (log:debug key-string keycode character keyval-name modifiers)
@@ -203,7 +205,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                  :value key-string
                                                  :modifiers modifiers
                                                  :status :pressed)))
-      (funcall (input-dispatcher sender) event (active-buffer sender) sender))))
+      (funcall (input-dispatcher sender) event (active-buffer sender) sender printable?))))
 
 (defmethod process-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))

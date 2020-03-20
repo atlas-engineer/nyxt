@@ -35,7 +35,7 @@
                      :initform #'dispatch-input-event
                      :type function
                      :documentation "Function to process input events.
-It takes EVENT, BUFFER and WINDOW parameters.")
+It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
                                   :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
