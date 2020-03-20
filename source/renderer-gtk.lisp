@@ -126,7 +126,7 @@ Return nil when key must be discarded, e.g. for modifiers."
           (match keyval
             ((or "Alt_L" "Super_L" "Control_L" "Shift_L"
                  "Alt_R" "Super_R" "Control_R" "Shift_R"
-                 "ISO_Level3_Shift")
+                 "ISO_Level3_Shift" "Arabic_switch")
              ;; Discard modifiers (they usually have a null character).
              nil)
             ((guard s (str:contains? "KP_" s))
