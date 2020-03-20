@@ -183,6 +183,13 @@ This function can be `funcall'ed."
                     (string (sym command))
                     (pkg command))))
 
+(defun function-command (function)
+  "Return the command associated to function, if any."
+  (find-if (lambda (cmd)
+             (eq function (command-function cmd)))
+           (list-commands)))
+
+
 (defmethod run ((command command) &rest args)
   "Run COMMAND over ARGS."
   (apply #'funcall-safely (command-function command) args))
