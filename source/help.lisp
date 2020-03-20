@@ -99,12 +99,11 @@
   (let* ((title (str:concat "*Help-bindings"))
          (help-buffer (help-mode :activate t
                                  :buffer (make-buffer :title title)))
-         (window (ipc-window-active *browser*))
          (help-contents
                         (cl-markup:markup
                          (:h1 "Bindings")
                          (:p
-                          (loop for keymap in (current-keymaps window)
+                          (loop for keymap in (current-keymaps)
                                 collect (cl-markup:markup
                                          (:p (keymap:name keymap))
                                          (:table
@@ -130,8 +129,7 @@ This function can be used as a `window' `input-dispatcher'."
         (with-accessors ((key-stack key-stack)) *browser*
           (log:debug "Intercepted key ~a" (first (last key-stack)))
           (let ((escape-key (keymap:make-key :value "escape"))
-                (bound-value (keymap:lookup-key key-stack
-                                        (current-keymaps window))))
+                (bound-value (keymap:lookup-key key-stack (current-keymaps))))
             (cond
               ((and bound-value (not (keymap:keymap-p bound-value)))
                ;; TODO: Highlight hit bindings and display translation if any.
