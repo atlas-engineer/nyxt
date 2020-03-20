@@ -139,6 +139,23 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
      `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (hooks)")))
 
+(define sbcl-next-keymap
+  (package
+    (inherit sbcl-next-download-manager)
+    (name "sbcl-next-keymap")
+    (build-system asdf-build-system/sbcl)
+    (arguments
+     `(#:tests? #t
+       #:asd-file "next.asd"
+       #:asd-system-name "next/keymap"))
+    (inputs
+     `(("alexandria" ,sbcl-alexandria)
+       ("fset" ,sbcl-fset)
+       ("str" ,sbcl-cl-str)))
+    (native-inputs
+     `(("prove-asdf" ,sbcl-prove-asdf)))
+    (synopsis "Extensible web-browser in Common Lisp (keymap)")))
+
 (define-public next
   (let ((version (package-version sbcl-next-download-manager)))
     (package
@@ -215,6 +232,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
          ("cl-webkit" ,sbcl-cl-webkit)
          ("dexador" ,sbcl-dexador)
+         ("fset" ,sbcl-fset)
          ("iolib" ,sbcl-iolib)
          ("ironclad" ,sbcl-ironclad)
          ("local-time" ,sbcl-local-time)
@@ -240,7 +258,8 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("next-ring" ,sbcl-next-ring)
          ("next-history-tree" ,sbcl-next-history-tree)
          ("next-password-manager" ,sbcl-next-password-manager)
-         ("next-hooks" ,sbcl-next-hooks)))
+         ("next-hooks" ,sbcl-next-hooks)
+         ("next-keymap" ,sbcl-next-keymap)))
       (native-inputs
        `(("trivial-types" ,sbcl-trivial-types)
          ("prove-asdf" ,sbcl-prove-asdf)))
