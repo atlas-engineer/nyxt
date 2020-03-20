@@ -51,6 +51,40 @@
       (ipc-buffer-evaluate-javascript help-buffer insert-help)
       (set-current-buffer help-buffer))))
 
+(declaim (ftype (function (command)) describe-command*))
+(defun describe-command* (command)
+  "Display NAME command documentation in a new focused buffer."
+  (let* ((title (str:concat "*Help-" (symbol-name (sym command)) "*"))
+         (help-buffer (help-mode :activate t
+                                 :buffer (make-buffer :title title)))
+         (key-keymap-pairs (nth-value 1 (keymap:binding-keys
+                                         (command-function command)
+                                         (all-keymaps))))
+         (key-keymapname-pairs (mapcar (lambda (pair)
+                                         (list (first pair)
+                                               (keymap:name (second pair))))
+                                       key-keymap-pairs))
+         (help-contents (cl-markup:markup
+                         (:h1 (symbol-name (sym command)))
+                         (:h2 "Documentation")
+                         (:p (write-to-string
+                              ;; TODO: This only display the first method, i.e. the first command of one of the modes.
+                              ;; Ask for modes instead?
+                              (documentation (command-function command)
+                                             t)))
+                         (:p "Bindings: "
+                             (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
+                         (:p "Source file: "
+                             (getf (getf (swank:find-definition-for-thing (command-function command))
+                                         :location)
+                                   :file))
+                         (:h2 "Source:")
+                         (:pre (:code (write-to-string (sexp command))))))
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+    (ipc-buffer-evaluate-javascript help-buffer insert-help)
+    (set-current-buffer help-buffer)))
+
 ;; TODO: Have both "function-inspect" and "command-inspect"?
 (define-command command-inspect ()
   "Inspect a function and show it in a help buffer."
@@ -58,36 +92,50 @@
                        (make-minibuffer
                         :input-prompt "Inspect command"
                         :completion-function #'function-completion-filter)))
-    (let* ((help-buffer (help-mode :activate t
-                                   :buffer (make-buffer
-                                            :title (str:concat "*Help-"
-                                                               (symbol-name (sym input))
-                                                               "*"))))
-           (help-contents (cl-markup:markup
-                           (:h1 (symbol-name (sym input)))
-                           (:h2 "Documentation")
-                           (:p (write-to-string
-                                  ;; TODO: This only display the first method, i.e. the first command of one of the modes.
-                                  ;; Ask for modes instead?
-                                (documentation (command-function input)
-                                               t)))
-                           (:p "Bindings: "
-                               (let ((key-keymap-pairs
-                                       (nth-value 1 (keymap:binding-keys (command-function input) (all-keymaps)))))
-                                 (format nil "~:{ ~S (~a)~:^, ~}" (mapcar (lambda (pair)
-                                                                       (list (first pair)
-                                                                             (keymap:name (second pair))))
-                                                                     key-keymap-pairs))))
-                           (:p "Source file: "
-                               (getf (getf (swank:find-definition-for-thing (command-function input))
-                                           :location)
-                                     :file))
-                           (:h2 "Source:")
-                           (:pre (:code (write-to-string (sexp input) )))))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ipc-buffer-evaluate-javascript help-buffer insert-help)
-      (set-current-buffer help-buffer))))
+    (describe-command* input)))
+
+(defun describe-key-dispatch-input (event buffer window)
+  "Display bound value documentation.
+Cancel with 'escape escape'.
+Input is not forwarded.
+This function can be used as a `window' `input-dispatcher'."
+  (declare (ignore event buffer))
+  (handler-case
+      (progn
+        (with-accessors ((key-stack key-stack)) *browser*
+          (log:debug "Intercepted key ~a" (first (last key-stack)))
+          (let ((escape-key (keymap:make-key :value "escape"))
+                (bound-value (keymap:lookup-key key-stack
+                                        (current-keymaps window))))
+            (cond
+              ((and bound-value (not (keymap:keymap-p bound-value)))
+               ;; TODO: Highlight hit bindings and display translation if any.
+               ;; For this, we probably need to call `lookup-key' on key-stack.
+               (describe-command* (find-if (lambda (cmd)
+                                             (eq bound-value (command-function cmd)))
+                                           (list-commands)))
+               (setf key-stack nil)
+               (setf (input-dispatcher window) #'dispatch-input-event))
+              ((and (<= 2 (length key-stack))
+                    (every (lambda (key) (keymap:key= key escape-key))
+                           (last key-stack 2)))
+               (echo "Cancelled.")
+               (setf key-stack nil)
+               (setf (input-dispatcher window) #'dispatch-input-event))
+              (t
+               (echo "Press a key sequence to describe (cancel with 'escape escape'): ~a"
+                      (keyspecs-with-optional-keycode key-stack)))))))
+    (error (c)
+      (declare (ignore c))
+      (setf (key-stack *browser*) nil)
+      (setf (input-dispatcher window) #'dispatch-input-event)))
+  ;; Never forward events.
+  t)
+
+(define-command key-inspect ()
+  "Display binding of user-inputted keys."
+  (setf (input-dispatcher (ipc-window-active *browser*)) #'describe-key-dispatch-input)
+  (echo "Press a key sequence to describe (cancel with 'escape escape'):"))
 
 (defun evaluate (string)
   "Evaluate all expressions in string and return a list of values.

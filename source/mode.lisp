@@ -132,6 +132,7 @@ It is run before the destructor.")
                        ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
                        "C-h v" #'variable-inspect
                        "C-h c" #'command-inspect
+                       "C-h k" #'key-inspect
                        "C-o" #'load-file
                        "C-h s" #'start-swank
                        "M-x" #'execute-command
@@ -159,6 +160,7 @@ It is run before the destructor.")
                        "C-o" #'load-file
                        "C-h v" #'variable-inspect
                        "C-h c" #'command-inspect
+                       "C-h k" #'command-inspect
                        "C-h s" #'start-swank
                        ":" #'execute-command
                        "M-:" #'command-evaluate
