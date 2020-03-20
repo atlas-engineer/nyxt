@@ -545,7 +545,7 @@ keymaps."
 
 (declaim (ftype (function (keymap &rest keymap) hash-table) keymap->map))
 (defun keymap->map (keymap &rest more-keymaps)
-  "Return a hash-table of (KEYSPEC SYM) from KEYMAP.
+  "Return a hash-table of (KEYSPEC BOUND-VALUE) from KEYMAP.
 Parent bindings are not listed; see `keymap-with-parents->map' instead.
 This is convenient if the caller wants to list all the bindings.
 When multiple keymaps are provided, return the union of the `fset:map' of each arguments.
