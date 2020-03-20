@@ -218,7 +218,7 @@ See `gtk-browser's `modifier-translator' slot."
                           (list (keymap:make-key
                                  :value key-string
                                  :modifiers (funcall (modifier-translator *browser*)
-                                                     (gdk:gdk-event-button-state event)
+                                                     (gdk-event-button-state event)
                                                      event)
                                  :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
