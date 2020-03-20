@@ -111,9 +111,7 @@ This function can be used as a `window' `input-dispatcher'."
               ((and bound-value (not (keymap:keymap-p bound-value)))
                ;; TODO: Highlight hit bindings and display translation if any.
                ;; For this, we probably need to call `lookup-key' on key-stack.
-               (describe-command* (find-if (lambda (cmd)
-                                             (eq bound-value (command-function cmd)))
-                                           (list-commands)))
+               (describe-command* (function-command bound-value))
                (setf key-stack nil)
                (setf (input-dispatcher window) #'dispatch-input-event))
               ((and (<= 2 (length key-stack))
