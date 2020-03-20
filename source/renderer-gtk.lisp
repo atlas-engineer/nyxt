@@ -119,26 +119,19 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (defmethod ipc-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
-(defun derive-key-string (character keyval-name)
-  "Return string representation of a key, given the two CHARACTER and KEYVAL-NAME representations.
+(defun derive-keyval (keyval)
+  "Return string representation of a keyval.
 Return nil when key must be discarded, e.g. for modifiers."
   (let ((result
-          (match keyval-name
+          (match keyval
             ((or "Alt_L" "Super_L" "Control_L" "Shift_L"
                  "Alt_R" "Super_R" "Control_R" "Shift_R"
                  "ISO_Level3_Shift")
              ;; Discard modifiers (they usually have a null character).
              nil)
-            ((or "Escape" "BackSpace" "Return" "space" "Tab")
-             ;; We can't use the rule "if character is #\Nul use keyval-name"
-             ;; because some keys like Escape have a non-null character.
-             keyval-name)
             ((guard s (str:contains? "KP_" s))
              (str:replace-all "KP_" "keypad" s))
-            (_ (match character
-                 (#\- "hyphen")
-                 (#\Nul keyval-name)
-                 (_ (string character)))))))
+            (_ keyval))))
     (if (< 1 (length result))
         (str:replace-all "_" "" (string-downcase result))
         result)))
@@ -174,28 +167,34 @@ See `gtk-browser's `modifier-translator' slot."
           (gdk:gdk-event-button-state button-event))
     (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))
 
+(defun printable-p (window event)
+  "Return the printable value of EVENT."
+  ;; Generate the result of the current keypress into the dummy
+  ;; key-string-buffer (a GtkEntry that's never shown on screen) so that we
+  ;; can collect the printed representation of composed keypress, such as dead
+  ;; keys.
+  (gtk:gtk-entry-im-context-filter-keypress (key-string-buffer window) event)
+  (when (<= 1 (gtk:gtk-entry-text-length (key-string-buffer window)))
+    (prog1
+        (match (gtk:gtk-entry-text (key-string-buffer window))
+          ;; Special cases: these characters are not supported as is in KEY values.
+          ;; See `self-insert' for the reverse translation.
+          (" " "space")
+          ("-" "hyphen")
+          (character character))
+      (setf (gtk:gtk-entry-text (key-string-buffer window)) ""))))
+
 (defmethod process-key-press-event ((sender gtk-window) event)
   (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
          (keyval (gdk:gdk-event-key-keyval event))
          (keyval-name (gdk:gdk-keyval-name keyval))
          (character (gdk:gdk-keyval-to-unicode keyval))
-         (key-string (derive-key-string character keyval-name))
+         (printable-value (printable-p sender event))
+         (key-string (or printable-value
+                         (derive-keyval keyval-name)))
          (modifiers (funcall (modifier-translator *browser*)
                              (gdk:gdk-event-key-state event)
-                             event))
-         (printable? nil))
-    ;; Generate the result of the current keypress into the dummy
-    ;; key-string-buffer (a GtkEntry that's never shown on screen) so that we
-    ;; can collect the printed representation of composed keypress, such as dead
-    ;; keys.
-    (gtk:gtk-entry-im-context-filter-keypress (key-string-buffer sender) event)
-    (when (<= 1 (gtk:gtk-entry-text-length (key-string-buffer sender)))
-      (match (gtk:gtk-entry-text (key-string-buffer sender))
-        ;; REVIEW: Deal with these special keys in a single place?
-        ((or " " "-"))
-        (character (setf key-string character)))
-      (setf printable? t)
-      (setf (gtk:gtk-entry-text (key-string-buffer sender)) ""))
+                             event)))
     (if modifiers
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
@@ -205,7 +204,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                  :value key-string
                                                  :modifiers modifiers
                                                  :status :pressed)))
-      (funcall (input-dispatcher sender) event (active-buffer sender) sender printable?))))
+      (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))))
 
 (defmethod process-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
@@ -222,7 +221,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                      (gdk:gdk-event-button-state event)
                                                      event)
                                  :status :pressed)))
-      (funcall (input-dispatcher window) event sender window))))
+      (funcall (input-dispatcher window) event sender window nil))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
