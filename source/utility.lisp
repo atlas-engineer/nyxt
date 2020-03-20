@@ -42,28 +42,10 @@ FILE-NAME is appended to the result."
     (make-pathname :directory '(:relative "next"))
     (uiop:xdg-config-home))))
 
-(defun executable-find (command)
-  "Search for COMMAND in the PATH and return the absolute file name.
-Return nil if COMMAND is not found anywhere."
-  (multiple-value-bind (path)
-      (ignore-errors
-       (uiop:run-program (format nil "command -v ~A" command)
-                         :output '(:string :stripped t)))
-    path))
-
 (defun ensure-parent-exists (path)
   "Create parent directories of PATH if they don't exist and return PATH."
   (ensure-directories-exist (directory-namestring path))
   path)
-
-(defun ensure-file-exists (path &optional (init-function))
-  "Create file pointed by PATH if it does not exists.  Return PATH's truename.
-When non-nil, INIT-FUNCTION is used to create the file, else the file will be empty."
-  (unless (uiop:file-exists-p path)
-    (if init-function
-        (funcall init-function path)
-        (close (open (ensure-parent-exists path) :direction :probe :if-does-not-exist :create))))
-  (uiop:truename* path))
 
 (defun find-slot (class slot-name)
   "CLASS can be a symbol or a class."
@@ -97,59 +79,10 @@ The second value is the initfunction."
         value)))
 
 @export
-(defun (setf get-default) (value class-name slot-name)
-  "Set default value of SLOT-NAME from CLASS-NAME.
-Return VALUE.
-
-This only changes the default value for future instances.  Existing instances
-won't be affected."
-  ;; Warning: This is quite subtle: the :initform and :initfunction are tightly
-  ;; coupled, it seems that both must be changed together.  We need to change
-  ;; the class-slots and not the class-direct-slots.  TODO: Explain why.
-  (log:warn "The (setf (get-default ...)) and (add-to-default-list ...) forms are deprecated.") ; TODO: Remove after 1.3.3.
-  (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
-         (slot (find-slot class slot-name)))
-    (setf (closer-mop:slot-definition-initfunction slot) (lambda () value))
-    (setf (closer-mop:slot-definition-initform slot) value)))
-
-(defun add-to-default-list (value class-name slot-name)
-  "Add VALUE to the list SLOT-NAME from CLASS-NAME.
-If VALUE is already present, move it to the head of the list.
-
-This only changes the default value for future instances.  Existing instances
-won't be affected."
-  (setf (get-default class-name slot-name)
-        (remove-duplicates (cons value
-                                 (get-default class-name slot-name))
-                           :from-end t)))
-
-@export
 (defun member-string (string list)
   "Return the tail of LIST beginning whose first element is STRING."
   (check-type string string)
   (member string list :test #'string=))
-(declaim (ftype (function (fixnum &optional fixnum)) kill-program))
-(defun kill-program (pid &optional (signal 15))
-  (handler-case (uiop:run-program
-                 (list "kill" (format nil "-~a" signal)
-                       (write-to-string pid)))
-    (error ()
-      (log:error "Process with PID ~a is not running" pid))))
-
-(declaim (ftype (function (string &rest string)) run-program-to-string))
-(defun run-program-to-string (program &rest args)
-  "Run PROGRAM over ARGS and return the its standard output."
-  (handler-case
-      (multiple-value-bind (output error code)
-          (uiop:run-program (cons program args)
-                            :output '(:string :stripped t)
-                            :error-output '(:string :stripped t)
-                            :ignore-error-status t)
-        (if (not (= 0 code))
-            (error "~a error: ~a" program error)
-            output))
-    (error ()
-      (error "~a not found" program))))
 
 @export
 (defun notify (msg)
