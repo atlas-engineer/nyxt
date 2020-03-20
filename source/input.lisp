@@ -12,18 +12,20 @@
   (let ((buffer (active-buffer window)))
     (when buffer
       (cons (override-map buffer)
-            (delete-if #'null (mapcar #'keymap (modes (if (active-minibuffers window)
-                                                          (current-minibuffer)
-                                                          (active-buffer window)))))))))
+            (delete nil (mapcar #'keymap (modes (if (active-minibuffers window)
+                                                    (current-minibuffer)
+                                                    buffer))))))))
 
 (defun all-keymaps (&optional (window (ipc-window-active *browser*)))
   "Return all keymaps for WINDOW, including the buffer keymaps and the
 minibuffer keymaps."
   (let ((buffer (active-buffer window)))
     (when buffer
-      (append (list (override-map buffer))
-            (delete-if #'null (mapcar #'keymap (modes (active-buffer window))))
-            (delete-if #'null (mapcar #'keymap (modes (current-minibuffer))))))))
+      (apply #'append (list (override-map buffer))
+             (mapcar
+              (lambda (buffer-or-minibuffer)
+                (delete nil (mapcar #'keymap (modes buffer-or-minibuffer))))
+              (delete nil (list buffer (current-minibuffer))))))))
 
 (declaim (ftype (function (keymap:key) boolean) pointer-event-p))
 (defun pointer-event-p (key)
@@ -37,6 +39,16 @@ minibuffer keymaps."
    Letters are printable, while function keys or backspace are not."
   (not (str:starts-with? "dead" (keymap:key-value key))))
 
+(defun keyspecs-with-optional-keycode (keys)
+  "Like `keymap:keyspecs' but displayes keys with keycodes like this:
+KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
+  (let ((no-code-specs (keymap:keys->keyspecs
+                        (mapcar (lambda (key) (keymap:copy-key key :code 0))
+                                keys))))
+    (if (find-if (complement #'zerop) keys :key #'keymap:key-code)
+        (format nil "~a (~a)" no-code-specs (keymap:keys->keyspecs keys))
+        (format nil "~a" no-code-specs))))
+
 (defun dispatch-input-event (event buffer window)
   "Dispatch keys in `browser's `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
@@ -46,12 +58,7 @@ Return nil to forward to renderer or non-nil otherwise."
                    (format nil "~a (translated from ~a)"
                            (keyspecs translated-key)
                            (keyspecs key))
-                   (let ((no-code-specs (keymap:keys->keyspecs
-                                         (mapcar (lambda (key) (keymap:copy-key key :code 0))
-                                                 key))))
-                     (if (find-if (complement #'zerop) key :key #'keymap:key-code)
-                         (format nil "~a (~a)" no-code-specs (keymap:keys->keyspecs key))
-                         (format nil "~a" no-code-specs))))))
+                   (keyspecs-with-optional-keycode key))))
       (when buffer
         (setf (last-event buffer) event))
       (cond
