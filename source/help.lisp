@@ -118,12 +118,12 @@
     (ipc-buffer-evaluate-javascript help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
-(defun describe-key-dispatch-input (event buffer window)
+(defun describe-key-dispatch-input (event buffer window printable-p)
   "Display bound value documentation.
 Cancel with 'escape escape'.
 Input is not forwarded.
 This function can be used as a `window' `input-dispatcher'."
-  (declare (ignore event buffer))
+  (declare (ignore event buffer printable-p))
   (handler-case
       (progn
         (with-accessors ((key-stack key-stack)) *browser*
