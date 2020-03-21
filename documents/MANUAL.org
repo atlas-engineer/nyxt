@@ -676,25 +676,14 @@ For instance, if you want swap ~control~ and ~meta~:
 
 #+begin_src lisp
 (defun my-translate-modifiers (modifier-state &optional event)
-  (let ((modifiers ())
-        (macintosh-alt-key-value 65406)
-        (key-value (match (type-of event)
-                     ('gdk:gdk-event-key (gdk:gdk-event-key-keyval event))
-                     (_ 0))))
-    (when (member :control-mask modifier-state)
-      (push "meta" modifiers))
-    (when (or (member :mod1-mask modifier-state)
-              (= key-value macintosh-alt-key-value))
-      (push "control" modifiers))
-    (when (member :shift-mask modifier-state)
-      (push "shift" modifiers))
-    (when (or (member :super-mask modifier-state)
-              (and (member :mod2-mask modifier-state)
-                   (member :meta-mask modifier-state)))
-      (push "super" modifiers))
-    (when (member :hyper-mask modifier-state)
-      (push "hyper" modifiers))
-    modifiers))
+  "Swap control and meta."
+  (declare (ignore event))
+  (let ((plist '(:control-mask "meta"
+                 :mod1-mask "control"
+                 :shift-mask "shift"
+                 :super-mask "super"
+                 :hyper-mask "hyper")))
+    (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 (defclass my-browser (gtk-browser)
   ((modifier-translator :initform #'my-translate-modifiers)))
