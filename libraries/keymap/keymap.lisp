@@ -503,7 +503,9 @@ keymaps."
 
 (declaim (ftype (function (key) keyspecs-type) key->keyspec))
 (defun key->keyspec (key)
-  "Return the keyspec of KEY."
+  "Return the keyspec of KEY.
+If the key has a code, return it prefixed with '#'.
+For now the status is not encoded in the keyspec, this may change in the future."
   (let ((value (if (zerop (key-code key))
                    (key-value key)
                    (format nil "#~a" (key-code key))))
@@ -518,7 +520,8 @@ keymaps."
 
 (declaim (ftype (function (list-of-keys) keyspecs-type) keys->keyspecs))
 (defun keys->keyspecs (keys)
-  "Return a keyspecs"
+  "Return the keyspecs (a list of `keyspec') for KEYS.
+See `key->keyspec' for the details."
   (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
 
 (declaim (ftype (function (keymap &optional list-of-keymaps) fset:map) keymap->map*))
