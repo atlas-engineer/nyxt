@@ -3,6 +3,22 @@ General-purpose keymap management.
 This keymap library is inspired by [[https://savannah.nongnu.org/projects/emacsy][Emacsy]] (=keymap.scm=) which is inspired by
 Emacs.
 
+The main types are:
+
+- A =key= structure has a hardware =code=, a symbolic =value=, an ordered set of
+  modifiers (the order is to avoid inequality on permutation) and possibly more
+  in the future.
+
+- A =keyspec= is a string representation of a =key=.  A =keyspecs= is a
+  space-separate string representation of a sequence of =key='s.
+
+  Reserved characters are =-= and = = (space).  Anything else can be store in
+  the =key= value.
+
+- A =keymap= is contains a hash-table where the keys are a keyspec and the values
+  either a keymap or anything else.  As a special case, a =nil= value signifies
+  to unbind the key.
+
 Goals:
 
 - Support prefix keys to other keymaps.  For instance, if you prefix my-mode-map
