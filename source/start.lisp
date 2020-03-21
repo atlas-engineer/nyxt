@@ -147,7 +147,7 @@ next [options] [urls]")
             ((null interactive)
              (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
              (uiop:quit 1))
-            (t (error (format nil "~a:~&~s" message c)))))))))
+            (t (error "~a:~&~a" message c))))))))
 
 (define-command load-file (&key (interactive :running))
   "Load the prompted Lisp file.
