@@ -24,6 +24,9 @@ It can be initialized with
 It's possible to run multiple interfaces of Next at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
+;; Only allow function in `define-key':
+(setf keymap:*default-bound-type* '(or keymap:keymap function))
+
 (declaim (type next-hooks:hook-void *after-init-hook*))
 @export
 (defvar *after-init-hook* (make-instance 'next-hooks:hook-void)
