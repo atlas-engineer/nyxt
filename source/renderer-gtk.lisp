@@ -13,12 +13,9 @@
               :documentation "On macOS some modifiers like Super and Meta are
 seen like regular keys.
 To work around this issue, we store them in this list while they are pressed.
-See `push-modifiers', `pop-modifiers' and `translate-modifiers-macos'.")
+See `push-modifiers', `pop-modifiers' and `key-event-modifiers'.")
    (modifier-translator :accessor modifier-translator
-                        :initform #+darwin
-                                  #'translate-modifiers-macos
-                                  #-darwin
-                                  #'translate-modifiers
+                        :initform #'translate-modifiers
                         :type function
                         :documentation "Function that returns a list of
 modifiers understood by `keymap:make-key'.  You can customize this slot if you
@@ -163,25 +160,19 @@ Return nil when key must be discarded, e.g. for modifiers."
 
 #+darwin
 (defmethod push-modifier ((browser gtk-browser) event)
-  (let* ((modifier-state (match (type-of event)
-                           ('gdk:gdk-event-key (gdk:gdk-event-key-state event))
-                           ('gdk:gdk-event-button (gdk-event-button-state event))))
-         (key-value (match (type-of event)
-                      ('gdk:gdk-event-key (gdk:gdk-event-key-keyval event))
-                      (_ 0)))
+  (let* ((modifier-state (gdk:gdk-event-key-state event))
+         (key-value (gdk:gdk-event-key-keyval event))
          (key-value-name (gdk:gdk-keyval-name key-value)))
     (when (member :control-mask modifier-state)
-      (push "control" (modifiers browser)))
+      (push :control-mask (modifiers browser)))
     (when (member :shift-mask modifier-state)
-      (push "shift" (modifiers browser)))
-    (when (or (member :mod1-mask modifier-state)
-              (string= key-value-name "Arabic_switch"))
-      (push "meta" (modifiers browser)))
-    (when (or (member :super-mask modifier-state)
-              (and (member :mod2-mask modifier-state)
-                   (member :meta-mask modifier-state)))
-      (push "super" (modifiers browser))))
-  (setf (modifiers browser) (delete-duplicates (modifiers browser) :test #'equal)))
+      (push :shift-mask (modifiers browser)))
+    (when (string= key-value-name "Arabic_switch")
+      (push :mod1-mask (modifiers browser)))
+    (when (and (member :mod2-mask modifier-state)
+               (member :meta-mask modifier-state))
+      (push :super-mask (modifiers browser))))
+  (setf (modifiers browser) (delete-duplicates (modifiers browser))))
 
 #+darwin
 (defmethod pop-modifier ((browser gtk-browser) event)
@@ -189,25 +180,14 @@ Return nil when key must be discarded, e.g. for modifiers."
          (key-value (gdk:gdk-event-key-keyval event))
          (key-value-name (gdk:gdk-keyval-name key-value)))
     (when (member :control-mask modifier-state)
-      (alexandria:deletef (modifiers browser) "control" :test #'equal))
+      (alexandria:deletef (modifiers browser) :control-mask))
     (when (member :shift-mask modifier-state)
-      (alexandria:deletef (modifiers browser) "shift" :test #'equal))
-    (when (or (member :mod1-mask modifier-state)
-              (string= key-value-name "Arabic_switch"))
-      (alexandria:deletef (modifiers browser) "meta" :test #'equal))
-    (when (or (member :super-mask modifier-state)
-              (and (member :mod2-mask modifier-state)
-                   (member :meta-mask modifier-state)))
-      (alexandria:deletef (modifiers browser) "super" :test #'equal))))
-
-#+darwin
-(defun translate-modifiers-macos (modifier-state &optional event)
-  "A `gtk-browser' `modifier-translator' for macOS.
-On macOS some modifiers are mistakenly seen as regular keys.
-To work around this, we keep a `modifier' list of currently pressed modifiers in
-`gtk-browser'."
-  (declare (ignore modifier-state event))
-  (modifiers *browser*))
+      (alexandria:deletef (modifiers browser) :shift-mask))
+    (when (string= key-value-name "Arabic_switch")
+      (alexandria:deletef (modifiers browser) :mod1-mask))
+    (when (and (member :mod2-mask modifier-state)
+               (member :meta-mask modifier-state))
+      (alexandria:deletef (modifiers browser) :super-mask))))
 
 (declaim (ftype (function (list &optional gdk:gdk-event) list) translate-modifiers))
 (defun translate-modifiers (modifier-state &optional event)
@@ -221,6 +201,15 @@ See `gtk-browser's `modifier-translator' slot."
                  :hyper-mask "hyper")))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
+#+darwin
+(defun key-event-modifiers (key-event)
+  (declare (ignore key-event))
+  (modifiers *browser*))
+
+#-darwin
+(defun key-event-modifiers (key-event)
+  (gdk:gdk-event-key-state key-event))
+
 ;; REVIEW: Remove after upstream fix is merged in Quicklisp, see https://github.com/crategus/cl-cffi-gtk/issues/74.
 (defun gdk-event-button-state (button-event)
   "Return BUTTON-EVENT modifiers as a `gdk-modifier-type', i.e. a list of keywords."
@@ -230,6 +219,15 @@ See `gtk-browser's `modifier-translator' slot."
         (cffi:with-foreign-objects ((modifiers 'gdk:gdk-modifier-type))
           (setf (cffi:mem-ref modifiers 'gdk:gdk-modifier-type) state)
           (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))))
+
+#+darwin
+(defun button-event-modifiers (button-event)
+  (declare (ignore button-event))
+  (modifiers *browser*))
+
+#-darwin
+(defun button-event-modifiers (button-event)
+  (gdk-event-button-state button-event))
 
 (defun printable-p (window event)
   "Return the printable value of EVENT."
@@ -257,7 +255,7 @@ See `gtk-browser's `modifier-translator' slot."
          (key-string (or printable-value
                          (derive-key-string keyval-name character)))
          (modifiers (funcall (modifier-translator *browser*)
-                             (gdk:gdk-event-key-state event)
+                             (key-event-modifiers event)
                              event)))
     (if modifiers
         (log:debug key-string keycode character keyval-name modifiers)
@@ -276,14 +274,15 @@ See `gtk-browser's `modifier-translator' slot."
          ;; (x (gdk:gdk-event-button-x event))
          ;; (y (gdk:gdk-event-button-y event))
          (window (find sender (window-list) :key #'active-buffer))
-         (key-string (format nil "button~s" button)))
+         (key-string (format nil "button~s" button))
+         (modifiers (funcall (modifier-translator *browser*)
+                             (button-event-modifiers event)
+                             event)))
     (when key-string
       (alexandria:appendf (key-stack *browser*)
                           (list (keymap:make-key
                                  :value key-string
-                                 :modifiers (funcall (modifier-translator *browser*)
-                                                     (gdk-event-button-state event)
-                                                     event)
+                                 :modifiers modifiers
                                  :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
