@@ -160,12 +160,15 @@ See `gtk-browser's `modifier-translator' slot."
       (push "hyper" modifiers))
     modifiers))
 
-(defun gdk-event-button-state (button-event) ; TODO: Fix upstream, see https://github.com/crategus/cl-cffi-gtk/issues/74.
+;; REVIEW: Remove after upstream fix is merged in Quicklisp, see https://github.com/crategus/cl-cffi-gtk/issues/74.
+(defun gdk-event-button-state (button-event)
   "Return BUTTON-EVENT modifiers as a `gdk-modifier-type', i.e. a list of keywords."
-  (cffi:with-foreign-objects ((modifiers 'gdk:gdk-modifier-type))
-    (setf (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)
-          (gdk:gdk-event-button-state button-event))
-    (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))
+  (let ((state (gdk:gdk-event-button-state button-event)))
+    (if (listp state)
+        state
+        (cffi:with-foreign-objects ((modifiers 'gdk:gdk-modifier-type))
+          (setf (cffi:mem-ref modifiers 'gdk:gdk-modifier-type) state)
+          (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))))
 
 (defun printable-p (window event)
   "Return the printable value of EVENT."
