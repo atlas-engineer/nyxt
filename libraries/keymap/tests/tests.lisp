@@ -326,6 +326,18 @@
       (prove:is (keymap:parents composition)
                 (list parent1 parent2)))))
 
+(prove:subtest "compose: Altering source does not impact composition"
+  (let* ((keymap1 (keymap:make-keymap "1"))
+         (keymap2 nil))
+    (keymap:define-key keymap1 "a" 'foo-a)
+    (setf keymap2 (keymap:compose keymap1))
+    (keymap:define-key keymap1 "a" 'foo-a-alt)
+    (keymap:define-key keymap1 "b" 'new-foo)
+    (prove:is (fset:convert 'fset:map (keymap:keymap->map keymap2))
+              (fset:map
+               ("a" 'foo-a))
+              :test #'fset:equal?)))
+
 (prove:subtest "binding-keys"
   (let* ((keymap1 (empty-keymap))
          (keymap2 (empty-keymap)))
