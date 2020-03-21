@@ -275,6 +275,10 @@ returns a list of list of keys.
 
 Ths parameter can be let-bound around `lookup-key' calls.")
 
+(defparameter *default-bound-type* '(or keymap t)
+  "Default value for the `bound-type' slot of `keymap'.
+Changing this will only impact newly created keymaps.")
+
 (defclass keymap ()
   ((name :accessor name
          :initarg :name
@@ -290,6 +294,14 @@ Used for documentation purposes, e.g. referring to a keymap by a well known name
             :documentation
             "Hash table of which the keys are key-chords and the values are a
 symbol or a keymap.")
+   (bound-type :accessor bound-type
+               :initarg :bound-type
+               :initform *default-bound-type*
+               :documentation
+               "Type of the bound-value.
+The type is enforced in `define-key' at macro-expansion time.
+Type should allow keymaps, so it should probably be in the form
+\(or keymap NON-KEYMAP-BOUND-TYPE).")
    (parents :accessor parents
             :initarg :parents
             :initform nil
@@ -372,6 +384,12 @@ Remapping keys:
 (defun define-key* (keymap keyspecs bound-value)
   "Prepare arguments before defining keys.
 See `define-key' for the user-facing function."
+  (unless (typep bound-value (bound-type keymap))
+    (assert (typep bound-value (bound-type keymap)) (bound-value)
+            'type-error :datum bound-value :expected-type (bound-type keymap))
+    ;; (error 'type-error "Bound value ~a not of type ~a"
+    ;;        bound-value (bound-type keymap))
+    )
   (let ((keys (cond
                 ((and (listp keyspecs) (eq (first keyspecs) :remap))
                  (let ((other-value (second keyspecs))

@@ -38,6 +38,9 @@ Goals:
 - The ~compose~ function can merge multiple keymaps together.
 - Support multiple arguments when that makes sense (e.g. multiple keymaps for ~lookup-key~).
 - Key remapping à-la Emacs.
+- Typed keymaps, i.e. keymaps where bound values can only be of a given type.
+  This is convenient to catch typos, for instance when binding ='FOO= instead of
+  =#'FOO=.
 
 Non-goals:
 

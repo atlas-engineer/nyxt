@@ -108,6 +108,14 @@
     (prove:is (keymap:lookup-key "C-c C-h" keymap)
               'bar2)))
 
+(prove:subtest "define-key type error"
+  (let ((keymap (empty-keymap)))
+    (setf (keymap:bound-type keymap) '(or keymap::keymap function))
+    (prove:is (keymap:define-key keymap "C-x" #'format)
+              keymap)
+    (prove:is-error (keymap:define-key keymap "C-c" 'append)
+                    'type-error)))
+
 (prove:subtest "define-key & multiple bindings"
   (let ((keymap (empty-keymap)))
     (keymap:define-key keymap
