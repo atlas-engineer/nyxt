@@ -297,7 +297,7 @@ symbol or a keymap.")
             :documentation "List of parent keymaps.
 Parents are ordered by priority, the first parent has highest priority.")))
 
-(declaim (ftype (function (string &rest list-of-keymaps)
+(declaim (ftype (function (string &rest keymap)
                           keymap)
                 make-keymap))
 (defun make-keymap (name &rest parents)
@@ -588,11 +588,15 @@ highest precedence."
         ((uiop:emptyp keymaps)
          nil)
         ((= 1 (length keymaps))
-         (first keymaps))
+         ;; Copy the map, don't just refer to it or all modifying the source
+         ;; will alter the target.
+         (let ((keymap (apply #'make-keymap (name (first keymaps)) (parents (first keymaps)))))
+           (setf (entries keymap) (fset:convert 'fset:map (entries (first keymaps))))
+           keymap))
         (t
          (let* ((keymap1 (first keymaps))
-               (keymap2 (second keymaps))
-               (merge (make-keymap (format nil "~a+~a" (name keymap1) (name keymap2)))))
+                (keymap2 (second keymaps))
+                (merge (make-keymap (format nil "~a+~a" (name keymap1) (name keymap2)))))
            (setf (parents merge) (stable-union (parents keymap1) (parents keymap2)))
            (setf (entries merge) (fset:map-union (entries keymap2) (entries keymap1)))
            (apply #'compose merge (rest (rest keymaps)))))))))
