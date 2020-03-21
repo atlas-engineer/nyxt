@@ -6,9 +6,19 @@
 @export
 @export-accessors
 (defclass gtk-browser (browser)
-  ((modifiers :accessor modifiers :initform ())
+  (#+darwin
+   (modifiers :accessor modifiers
+              :initform '()
+              :type list
+              :documentation "On macOS some modifiers like Super and Meta are
+seen like regular keys.
+To work around this issue, we store them in this list while they are pressed.
+See `push-modifiers', `pop-modifiers' and `translate-modifiers-macos'.")
    (modifier-translator :accessor modifier-translator
-                        :initform #'translate-modifiers
+                        :initform #+darwin
+                                  #'translate-modifiers-macos
+                                  #-darwin
+                                  #'translate-modifiers
                         :type function
                         :documentation "Function that returns a list of
 modifiers understood by `keymap:make-key'.  You can customize this slot if you
@@ -96,8 +106,16 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (gobject:g-signal-connect
      gtk-object "key_press_event"
      (lambda (widget event) (declare (ignore widget))
+       #+darwin
+       (push-modifier *browser* event)
        (process-key-press-event window event)))
-    ;; REVIEW: No need to handle release events?
+    ;; For now we only need to deal with release events for macOS as a
+    ;; workaround for the modifier issue.
+    #+darwin
+    (gobject:g-signal-connect
+     gtk-object "key_release_event"
+     (lambda (widget event) (declare (ignore widget))
+       (pop-modifier *browser* event)))
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
@@ -135,6 +153,54 @@ Return nil when key must be discarded, e.g. for modifiers."
     (if (< 1 (length result))
         (str:replace-all "_" "" (string-downcase result))
         result)))
+
+#+darwin
+(defmethod push-modifier ((browser gtk-browser) event)
+  (let* ((modifier-state (match (type-of event)
+                           ('gdk:gdk-event-key (gdk:gdk-event-key-state event))
+                           ('gdk:gdk-event-button (gdk-event-button-state event))))
+         (key-value (match (type-of event)
+                      ('gdk:gdk-event-key (gdk:gdk-event-key-keyval event))
+                      (_ 0)))
+         (key-value-name (gdk:gdk-keyval-name key-value)))
+    (when (member :control-mask modifier-state)
+      (push "control" (modifiers browser)))
+    (when (member :shift-mask modifier-state)
+      (push "shift" (modifiers browser)))
+    (when (or (member :mod1-mask modifier-state)
+              (string= key-value-name "Arabic_switch"))
+      (push "meta" (modifiers browser)))
+    (when (or (member :super-mask modifier-state)
+              (and (member :mod2-mask modifier-state)
+                   (member :meta-mask modifier-state)))
+      (push "super" (modifiers browser))))
+  (setf (modifiers browser) (delete-duplicates (modifiers browser) :test #'equal)))
+
+#+darwin
+(defmethod pop-modifier ((browser gtk-browser) event)
+  (let* ((modifier-state (gdk:gdk-event-key-state event))
+         (key-value (gdk:gdk-event-key-keyval event))
+         (key-value-name (gdk:gdk-keyval-name key-value)))
+    (when (member :control-mask modifier-state)
+      (alexandria:deletef (modifiers browser) "control" :test #'equal))
+    (when (member :shift-mask modifier-state)
+      (alexandria:deletef (modifiers browser) "shift" :test #'equal))
+    (when (or (member :mod1-mask modifier-state)
+              (string= key-value-name "Arabic_switch"))
+      (alexandria:deletef (modifiers browser) "meta" :test #'equal))
+    (when (or (member :super-mask modifier-state)
+              (and (member :mod2-mask modifier-state)
+                   (member :meta-mask modifier-state)))
+      (alexandria:deletef (modifiers browser) "super" :test #'equal))))
+
+#+darwin
+(defun translate-modifiers-macos (modifier-state &optional event)
+  "A `gtk-browser' `modifier-translator' for macOS.
+On macOS some modifiers are mistakenly seen as regular keys.
+To work around this, we keep a `modifier' list of currently pressed modifiers in
+`gtk-browser'."
+  (declare (ignore modifier-state event))
+  (modifiers *browser*))
 
 (declaim (ftype (function (list &optional gdk:gdk-event) list) translate-modifiers))
 (defun translate-modifiers (modifier-state &optional event)
