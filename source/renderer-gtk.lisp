@@ -151,7 +151,9 @@ Return nil when key must be discarded, e.g. for modifiers."
             ;; ASCII control characters like Escape, Delete or BackSpace have a
             ;; non-printable character (usually beneath #\space), so we use the
             ;; keyval in this case.
-            (_ (if (or (char< character #\space)
+            ;; Even if space in printable, C-space is not so we return the
+            ;; keyval in this case.
+            (_ (if (or (char<= character #\space)
                        (char= character #\Del))
                    keyval
                    (string character))))))
