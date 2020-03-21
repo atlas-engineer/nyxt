@@ -206,25 +206,13 @@ To work around this, we keep a `modifier' list of currently pressed modifiers in
 (defun translate-modifiers (modifier-state &optional event)
   "Return list of modifiers fit for `keymap:make-key'.
 See `gtk-browser's `modifier-translator' slot."
-  (let ((modifiers ())
-        (macintosh-alt-key-value 65406)
-        (key-value (match (type-of event)
-                     ('gdk:gdk-event-key (gdk:gdk-event-key-keyval event))
-                     (_ 0))))
-    (when (member :control-mask modifier-state)
-      (push "control" modifiers))
-    (when (or (member :mod1-mask modifier-state)
-              (= key-value macintosh-alt-key-value))
-      (push "meta" modifiers))
-    (when (member :shift-mask modifier-state)
-      (push "shift" modifiers))
-    (when (or (member :super-mask modifier-state)
-              (and (member :mod2-mask modifier-state)
-                   (member :meta-mask modifier-state)))
-      (push "super" modifiers))
-    (when (member :hyper-mask modifier-state)
-      (push "hyper" modifiers))
-    modifiers))
+  (declare (ignore event))
+  (let ((plist '(:control-mask "control"
+                 :mod1-mask "meta"
+                 :shift-mask "shift"
+                 :super-mask "super"
+                 :hyper-mask "hyper")))
+    (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 ;; REVIEW: Remove after upstream fix is merged in Quicklisp, see https://github.com/crategus/cl-cffi-gtk/issues/74.
 (defun gdk-event-button-state (button-event)
