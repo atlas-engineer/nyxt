@@ -24,12 +24,16 @@
    key-status
    key=
 
+   *default-bound-type*
+
+   keymap
    make-keymap
    keymap-p
    define-key
    lookup-key
    parents
    name
+   bound-type
 
    translate-remove-shift-toggle-case
    translate-remove-shift
@@ -66,4 +70,5 @@ Some globals can be tweaked to customize the library to your needs:
 - `*translator*': The function to infer the right binding when
   the exact binding hits nothing.
 - `*print-shortcuts*': Print modifiers using their short form instead of the
-  full name, e.g. \"C\" instead of \"control\"."))
+  full name, e.g. \"C\" instead of \"control\".
+- `*default-bound-type*': The allowed type for bound values; default to T (everything)."))
