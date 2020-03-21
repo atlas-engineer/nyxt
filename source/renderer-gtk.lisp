@@ -137,7 +137,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (defmethod ipc-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
-(defun derive-keyval (keyval)
+(defun derive-key-string (keyval character)
   "Return string representation of a keyval.
 Return nil when key must be discarded, e.g. for modifiers."
   (let ((result
@@ -149,7 +149,14 @@ Return nil when key must be discarded, e.g. for modifiers."
              nil)
             ((guard s (str:contains? "KP_" s))
              (str:replace-all "KP_" "keypad" s))
-            (_ keyval))))
+            ;; In most cases, return character and not keyval for punctuation.
+            ;; For instance, C-[ is not printable but the keyval is "bracketleft".
+            ;; Control characters like Escape, Left or BackSpace have a
+            ;; non-printable character in the 0-#\space ASCII range, so we use the
+            ;; keyval in this case.
+            (_ (if (char< character #\space)
+                   keyval
+                   (string character))))))
     (if (< 1 (length result))
         (str:replace-all "_" "" (string-downcase result))
         result)))
@@ -248,7 +255,7 @@ See `gtk-browser's `modifier-translator' slot."
          (character (gdk:gdk-keyval-to-unicode keyval))
          (printable-value (printable-p sender event))
          (key-string (or printable-value
-                         (derive-keyval keyval-name)))
+                         (derive-key-string keyval-name character)))
          (modifiers (funcall (modifier-translator *browser*)
                              (gdk:gdk-event-key-state event)
                              event)))
