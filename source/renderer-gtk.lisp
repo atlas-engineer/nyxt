@@ -148,10 +148,11 @@ Return nil when key must be discarded, e.g. for modifiers."
              (str:replace-all "KP_" "keypad" s))
             ;; In most cases, return character and not keyval for punctuation.
             ;; For instance, C-[ is not printable but the keyval is "bracketleft".
-            ;; Control characters like Escape, Left or BackSpace have a
-            ;; non-printable character in the 0-#\space ASCII range, so we use the
+            ;; ASCII control characters like Escape, Delete or BackSpace have a
+            ;; non-printable character (usually beneath #\space), so we use the
             ;; keyval in this case.
-            (_ (if (char< character #\space)
+            (_ (if (or (char< character #\space)
+                       (char= character #\Del))
                    keyval
                    (string character))))))
     (if (< 1 (length result))
