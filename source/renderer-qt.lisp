@@ -127,10 +127,14 @@
   (qt:web-engine-view-load (qt-object buffer) uri))
 
 @export
-(defmethod ipc-buffer-evaluate-javascript ((buffer qt-buffer) javascript &key callback))
+(defmethod ipc-buffer-evaluate-javascript ((buffer qt-buffer) javascript &key callback)
+  (declare (ignore callback))
+  (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript))
 
 @export
-(defmethod ipc-minibuffer-evaluate-javascript ((window qt-window) javascript &key callback))
+(defmethod ipc-minibuffer-evaluate-javascript ((window qt-window) javascript &key callback)
+  (declare (ignore callback))
+  (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript))
 
 @export
 (defmethod ipc-buffer-enable-javascript ((buffer qt-buffer) value))
