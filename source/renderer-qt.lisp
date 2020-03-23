@@ -72,9 +72,11 @@
 (defmethod ipc-window-delete ((window qt-window))
   "Delete a window object and remove it from the hash of windows.")
 
-(defmethod ipc-window-fullscreen ((window qt-window)))
+(defmethod ipc-window-fullscreen ((window qt-window))
+  (qt:window-show-full-screen (qt-object window)))
 
-(defmethod ipc-window-unfullscreen ((window qt-window)))
+(defmethod ipc-window-unfullscreen ((window qt-window))
+  (qt:window-show-normal (qt-object window)))
 
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)
   (next-hooks:run-hook (buffer-before-make-hook *browser*) buffer)
