@@ -58,6 +58,8 @@
     (qt:widget-set-layout qt-object box-layout)
     (qt:layout-add-widget box-layout (qt-object active-buffer))
     (qt:layout-add-widget box-layout minibuffer-view)
+    (qt:layout-set-contents-margins box-layout 0 0 0 0)
+    (qt:layout-set-spacing box-layout 0)
     (ipc-window-set-minibuffer-height window (status-buffer-height window))
     ;; load about:blank to permit JS evaluation
     (qt:web-engine-view-load minibuffer-view "about:blank")
