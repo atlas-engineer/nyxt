@@ -105,8 +105,10 @@
 
 @export
 (defmethod ipc-window-set-active-buffer ((window qt-window) (buffer qt-buffer))
-  "Set BROWSER's WINDOW buffer to BUFFER. "
-  buffer)
+  "Set BROWSER's WINDOW buffer to BUFFER."
+  (qt:widget-set-parent (qt-object (active-buffer window)) (cffi:null-pointer))
+  (qt:layout-insert-widget (box-layout window) 0 (qt-object buffer))
+  (setf (active-buffer window) buffer))
 
 @export
 (defmethod ipc-window-set-minibuffer-height ((window qt-window) height)
