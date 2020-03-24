@@ -3,6 +3,12 @@
 (in-package :next)
 (annot:enable-annot-syntax)
 
+(define-condition unsupported-operation (error)
+  ()
+  (:report (lambda (c stream)
+             (declare (ignore c))
+             (format stream "~a" "Unsupported operation for this renderer."))))
+
 @export
 @export-accessors
 (defclass qt-browser (browser)
@@ -146,7 +152,11 @@
 (defmethod ipc-buffer-enable-javascript ((buffer qt-buffer) value))
 
 @export
-(defmethod ipc-buffer-set-proxy ((buffer qt-buffer) &optional proxy-uri (ignore-hosts (list nil))))
+(defmethod ipc-buffer-set-proxy ((buffer qt-buffer) &optional proxy-uri (ignore-hosts (list nil)))
+  (declare (ignore buffer))
+  (declare (ignore proxy-uri))
+  (declare (ignore ignore-hosts))
+  (error 'unsupported-operation))
 
 @export
 (defmethod ipc-generate-input-event ((window qt-window) event))
