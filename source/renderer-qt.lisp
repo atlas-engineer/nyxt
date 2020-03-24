@@ -80,7 +80,9 @@
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)
   (next-hooks:run-hook (buffer-before-make-hook *browser*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *browser*))
-  (setf (qt-object buffer) (qt:new-q-web-engine-view)))
+  (setf (qt-object buffer) (qt:new-q-web-engine-view))
+  (qt:widget-show (qt-object buffer))
+  (qt:web-engine-view-load (qt-object buffer) "https://www.example.com"))
 
 @export
 (defmethod ipc-window-make ((browser qt-browser))
@@ -109,6 +111,7 @@
   "Set BROWSER's WINDOW buffer to BUFFER."
   (qt:widget-set-parent (qt-object (active-buffer window)) (cffi:null-pointer))
   (qt:layout-insert-widget (box-layout window) 0 (qt-object buffer))
+  (qt:widget-show (qt-object buffer))
   (setf (active-buffer window) buffer))
 
 @export
