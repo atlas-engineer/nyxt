@@ -3,21 +3,23 @@
 (prove:plan nil)
 
 (prove:subtest "Make scheme"
-  (let* ((scheme (keymap:define-scheme
+  (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua '("C-c" copy
                                   "C-v" paste)))
-         (keymap (keymap:make-keymap "cua-map")))
+         (keymap (keymap:make-keymap "test-cua-map")))
     (keymap:define-key keymap "C-c" 'copy)
     (keymap:define-key keymap "C-v" 'paste)
     (prove:is (fset:convert 'fset:map (keymap:keymap->map (gethash scheme:cua scheme)))
               (fset:convert 'fset:map (keymap:keymap->map keymap))
-              :test #'fset:equal?)))
+              :test #'fset:equal?)
+    (prove:is (keymap:name (gethash scheme:cua scheme))
+              (keymap:name keymap))))
 
 (prove:subtest "Make scheme with LIST"
-  (let* ((scheme (keymap:define-scheme
+  (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)))
-         (keymap (keymap:make-keymap "cua-map")))
+         (keymap (keymap:make-keymap "test-cua-map")))
     (keymap:define-key keymap
       "C-c" 'copy
       "C-v" 'paste)
@@ -26,13 +28,13 @@
               :test #'fset:equal?)))
 
 (prove:subtest "Make scheme with multiple names"
-  (let* ((scheme (keymap:define-scheme
+  (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)
                    scheme:emacs (list "M-w" 'copy
                                       "M-y" 'paste)))
-         (cua-keymap (keymap:make-keymap "cua-map"))
-         (emacs-keymap (keymap:make-keymap "emacs-map")))
+         (cua-keymap (keymap:make-keymap "test-cua-map"))
+         (emacs-keymap (keymap:make-keymap "test-emacs-map")))
     (keymap:define-key cua-keymap
       "C-c" 'copy
       "C-v" 'paste)
@@ -47,13 +49,13 @@
               :test #'fset:equal?)))
 
 (prove:subtest "Test inheritance"
-  (let* ((scheme (keymap:define-scheme
+  (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)
                    scheme:emacs (list "M-w" 'copy
                                       "M-y" 'paste)))
-         (cua-keymap (keymap:make-keymap "cua-map"))
-         (emacs-keymap (keymap:make-keymap "emacs-map")))
+         (cua-keymap (keymap:make-keymap "test-cua-map"))
+         (emacs-keymap (keymap:make-keymap "test-emacs-map")))
     (keymap:define-key cua-keymap
       "C-c" 'copy
       "C-v" 'paste)

@@ -34,14 +34,14 @@ schemes.  See `define-scheme'.")))
   `(and hash-table
         (satisfies scheme-p)))
 
-(declaim (ftype (function (scheme-name list &rest list) scheme) define-scheme*))
-(defun define-scheme* (name bindings &rest more-name+bindings-pairs)
+(declaim (ftype (function (string scheme-name list &rest list) scheme) define-scheme*))
+(defun define-scheme* (name-prefix name bindings &rest more-name+bindings-pairs)
   "Define scheme.
 See `define-scheme' for the user-facing function."
   (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs))
         (scheme (make-hash-table :test #'equal)))
     (loop :for (name _ . rest) :on name+bindings-pairs :by #'cddr
-          :do (setf (gethash name scheme) (make-keymap (format nil "~s-map" name))))
+          :do (setf (gethash name scheme) (make-keymap (format nil "~a-~a-map" name-prefix (name name)))))
     ;; Set parents now that all keymaps exist.
     (maphash (lambda (name keymap)
                (setf (parents keymap)
@@ -56,12 +56,13 @@ See `define-scheme' for the user-facing function."
     scheme))
 
 ;; We need a macro here for the same reason `define-key' is a macro.
-(defmacro define-scheme (name bindings &rest more-name+bindings-pairs)
+(defmacro define-scheme (name-prefix name bindings &rest more-name+bindings-pairs)
   "Return a scheme, a hash table with scheme NAMEs as key and their BINDINGS as value.
+The keymap names are prefixed with NAME-PREFIX and suffixed with \"-map\".
 
 Example:
 
-  (define-scheme
+  (define-scheme \"my-mode\"
     scheme:cua (list
                 \"C-c\" 'copy
                 \"C-v\" 'paste)
@@ -70,7 +71,8 @@ Example:
                    \"M-y\" paste))
 
 In the above, `scheme:cua' is a parent of `scheme:cua'; thus the Emacs keymap
-will have the CUA keymap as parent."
+will have the CUA keymap as parent.
+The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
   (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs)))
     (loop :for (_ quoted-bindings . rest) :on name+bindings-pairs :by #'cddr
           :for bindings = (rest quoted-bindings)
@@ -78,4 +80,4 @@ will have the CUA keymap as parent."
           :do (loop :for (keyspecs _ . rest) :on bindings :by #'cddr
                     :do (check-type keyspecs (or keyspecs-type list))))
     `(progn
-       (define-scheme* ,name ,bindings ,@more-name+bindings-pairs))))
+       (define-scheme* ,name-prefix ,name ,bindings ,@more-name+bindings-pairs))))
