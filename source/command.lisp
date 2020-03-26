@@ -152,10 +152,10 @@ Otherwise list all commands."
   ;; Use `last-active-window' for speed, or else the minibuffer will stutter
   ;; because of the RPC calls.
   (let* ((buffer (active-buffer (last-active-window *browser*)))
-         (scheme (keymap-scheme-name buffer))
+         (scheme-name (keymap-scheme-name buffer))
          (bindings '()))
     (loop for mode in (modes buffer)
-          for scheme-keymap = (gethash scheme (keymap-schemes mode))
+          for scheme-keymap = (keymap:get-keymap scheme-name (keymap-schemes mode))
           when scheme-keymap
             do (setf bindings (keymap:binding-keys (command-function command) scheme-keymap))
           when (not (null bindings))

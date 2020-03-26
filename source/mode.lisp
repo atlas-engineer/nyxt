@@ -212,8 +212,8 @@ It may be MODE-SYMBOL itself."
 (defmethod keymap ((mode root-mode))
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."
-  (gethash (keymap-scheme-name (buffer mode))
-           (keymap-schemes mode)))
+  (keymap:get-keymap (keymap-scheme-name (buffer mode))
+                     (keymap-schemes mode)))
 
 (defmethod did-commit-navigation ((mode root-mode) url)
   url)

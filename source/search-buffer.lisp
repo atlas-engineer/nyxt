@@ -194,8 +194,8 @@ provided buffers."
                       :cleanup-function (lambda () (remove-focus))
                       :history (minibuffer-search-history *browser*)))
          (keymap-scheme (keymap-scheme-name minibuffer))
-         (keymap (gethash keymap-scheme
-                          (keymap-schemes (first (modes minibuffer))))))
+         (keymap (keymap:get-keymap keymap-scheme
+                                    (keymap-schemes (first (modes minibuffer))))))
     (define-key keymap
       "C-s" #'(lambda ()
                 (update-selection-highlight-hint :follow t :scroll t)))
