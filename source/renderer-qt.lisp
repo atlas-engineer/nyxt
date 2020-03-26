@@ -91,7 +91,11 @@
   (qt:load-started-listener-connect
    (qt-object buffer)
    (lambda ()
-     (did-commit-navigation buffer (qt:web-engine-view-url (qt-object buffer))))))
+     (did-commit-navigation buffer (qt:web-engine-view-url (qt-object buffer)))))
+  (qt:load-finished-listener-connect
+   (qt-object buffer)
+   (lambda ()
+     (did-finish-navigation buffer (qt:web-engine-view-url (qt-object buffer))))))
 
 @export
 (defmethod ipc-window-make ((browser qt-browser))
