@@ -104,7 +104,8 @@
 
 @export
 (defmethod ipc-window-to-foreground ((window qt-window))
-  "Show window in foreground.")
+  "Show window in foreground."
+  (qt:window-present (qt-object window)))
 
 @export
 (defmethod ipc-window-set-title ((window qt-window) title)
