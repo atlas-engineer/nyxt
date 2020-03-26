@@ -81,3 +81,21 @@ The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
                     :do (check-type keyspecs (or keyspecs-type list))))
     `(progn
        (define-scheme* ,name-prefix ,name ,bindings ,@more-name+bindings-pairs))))
+
+(declaim (ftype (function (scheme-name scheme) (or keymap null)) get-keymap))
+(defun get-keymap (name scheme)
+  "Return keymap corresponding to NAME in SCHEME.
+Return nil if not found."
+  (gethash name scheme))
+
+(declaim (ftype (function (scheme-name keymap &rest list) scheme) make-scheme))
+(defun make-scheme (name keymap &rest more-name+keymaps-pairs)
+  "Return a new scheme associating NAME to KEYMAP.
+With MORE-NAME+KEYMAPS-PAIRS, include those names and keymaps as well.  This is
+useful in complement to `define-scheme' to make a scheme with pre-existing
+keymaps."
+  (let ((scheme (make-hash-table :test #'equal))
+        (name+keymaps-pairs (append (list name keymap) more-name+keymaps-pairs)))
+    (loop :for (name keymaps) :on name+keymaps-pairs :by #'cddr
+          :do (setf (gethash name scheme) keymap))
+    scheme))

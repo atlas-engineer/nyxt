@@ -62,7 +62,9 @@
    ;; scheme
    scheme
    make-scheme-name
-   define-scheme)
+   define-scheme
+   get-keymap
+   make-scheme)
   (:documentation "
 The workflow goes as follows:
 - Make a keymap with `make-keymap'.
