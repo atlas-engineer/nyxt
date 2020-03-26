@@ -183,12 +183,15 @@
                 :components ((:file "package")
                              (:file "types")
                              (:file "conditions")
-                             (:file "keymap")))))
+                             (:file "keymap")
+                             (:file "scheme")
+                             (:file "scheme-names")))))
 
 (asdf:defsystem next/keymap/tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (alexandria fset prove next/keymap)
   :components ((:module source/tests :pathname "libraries/keymap/tests/"
-                :components ((:test-file "tests"))))
+                :components ((:test-file "tests")
+                             (:test-file "scheme-tests"))))
   :perform (asdf:test-op (op c) (uiop:symbol-call
                                  :prove-asdf 'run-test-system c)))

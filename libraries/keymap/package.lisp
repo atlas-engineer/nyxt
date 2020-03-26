@@ -57,7 +57,12 @@
    make-key-required-arg
    empty-keyspec
    empty-value
-   empty-modifiers)
+   empty-modifiers
+
+   ;; scheme
+   scheme
+   make-scheme-name
+   define-scheme)
   (:documentation "
 The workflow goes as follows:
 - Make a keymap with `make-keymap'.
@@ -72,3 +77,14 @@ Some globals can be tweaked to customize the library to your needs:
 - `*print-shortcuts*': Print modifiers using their short form instead of the
   full name, e.g. \"C\" instead of \"control\".
 - `*default-bound-type*': The allowed type for bound values; default to T (everything)."))
+
+(defpackage :scheme
+  (:use :common-lisp)
+  (:import-from :keymap :make-scheme-name )
+  (:export
+   :cua
+   :emacs
+   :vi-normal
+   :vi-insert)
+  (:documentation "Package holding the list of well-known scheme names.
+We use a dedicated package so that scheme names can easily be listed and completed."))

@@ -23,3 +23,4 @@ Example:
 (define-list-type 'string)
 (define-list-type 'key)
 (define-list-type 'keymap)
+(define-list-type 'scheme-name)
