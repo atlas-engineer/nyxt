@@ -114,10 +114,11 @@ not associated with a web view) have an empty ID.")
                   :type trivial-types:proper-list
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
-   (current-keymap-scheme ; TODO: Name keymap-scheme instead?
-    :accessor current-keymap-scheme
-    :initarg :current-keymap-scheme
-    :initform :emacs
+   (keymap-scheme-name
+    :accessor keymap-scheme-name
+    :initarg :keymap-scheme-name
+    :initform scheme:emacs
+    :type keymap:scheme
     :documentation "The keymap scheme that will be used
 for all modes in the current buffer.")
    (override-map :accessor override-map

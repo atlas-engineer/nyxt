@@ -1,6 +1,6 @@
 (uiop:define-package :next/vi-mode
   (:use :common-lisp :trivia :next)
-  (:import-from #:keymap #:define-key)
+  (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "VI-style bindings."))
 (in-package :next/vi-mode)
 
@@ -8,24 +8,24 @@
   "Enable VI-style modal bindings (normal mode)"
   ((keymap-schemes
     :initform
-    (let ((map (make-keymap "vi-normal-map")))
-      (define-key map
+    (define-scheme "vi"
+      scheme:vi-normal
+      (list
         "i" #'vi-insert-mode
-        "button1" #'vi-button1)
-      (list :vi-normal map)))
+        "button1" #'vi-button1)))
    (destructor
     :initform
     (lambda (mode)
-      (setf (current-keymap-scheme (buffer mode))
-            (get-default 'buffer 'current-keymap-scheme))
+      (setf (keymap-scheme-name (buffer mode))
+            (get-default 'buffer 'keymap-scheme-name))
       (setf (forward-input-events-p (buffer mode))
-            (get-default 'buffer 'current-keymap-scheme))))
+            (get-default 'buffer 'keymap-scheme-name))))
    (constructor
     :initform
     (lambda (mode)
       (let ((active-buffer (buffer mode)))
         (vi-insert-mode :activate nil :buffer active-buffer)
-        (setf (current-keymap-scheme active-buffer) :vi-normal)
+        (setf (keymap-scheme-name active-buffer) scheme:vi-normal)
         (setf (forward-input-events-p active-buffer) nil))))))
 
 ;; TODO: Move ESCAPE binding to the override map?
@@ -33,25 +33,25 @@
   "Enable VI-style modal bindings (insert mode)"
   ((keymap-schemes
     :initform
-    (let ((map (make-keymap "vi-insert-map")))
-      (define-key map
-        ;; TODO: Forwarding C-v crashes cl-webkit.  See
-        ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
-        "C-v" #'next/web-mode:paste
-        "escape" #'vi-normal-mode
-        "button1" #'vi-button1)
-      (list :vi-insert map)))
+    (define-scheme "vi"
+      scheme:vi-insert
+      (list
+       ;; TODO: Forwarding C-v crashes cl-webkit.  See
+       ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
+       "C-v" #'next/web-mode:paste
+       "escape" #'vi-normal-mode
+       "button1" #'vi-button1)))
    (destructor
     :initform
     (lambda (mode)
-      (setf (current-keymap-scheme (buffer mode))
-            (get-default 'buffer 'current-keymap-scheme))))
+      (setf (keymap-scheme-name (buffer mode))
+            (get-default 'buffer 'keymap-scheme-name))))
    (constructor
     :initform
     (lambda (mode)
       (let ((active-buffer (buffer mode)))
         (vi-normal-mode :activate nil :buffer active-buffer)
-        (setf (current-keymap-scheme active-buffer) :vi-insert))))))
+        (setf (keymap-scheme-name active-buffer) scheme:vi-insert))))))
 
 (define-parenscript %clicked-in-input? ()
   (ps:chain document active-element tag-name))

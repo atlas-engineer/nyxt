@@ -197,11 +197,13 @@ complete against a search engine."
   "Minibuffer mode for setting the URL of a buffer."
   ((keymap-schemes
     :initform
-    (let ((map (make-keymap "set-url-map")))
-      (define-key map
-        "tab" #'insert-candidate-or-search-engine)
-      (list :emacs map
-            :vi-normal map)))))
+    (define-scheme "set-url"
+      scheme:emacs
+      (list
+       "tab" #'insert-candidate-or-search-engine)
+      scheme:vi-normal
+      (list
+       "tab" #'insert-candidate-or-search-engine)))))
 
 (define-command set-url-current-buffer (&key new-buffer-p)
   "Set the URL for the current buffer, completing with history."

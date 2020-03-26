@@ -1,6 +1,4 @@
-;; TODO: Move scheme support to library?
 ;; TODO: Use CUA scheme by default.
-;; TODO: Make Emacs / VI schemes inherit from each other.
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
 

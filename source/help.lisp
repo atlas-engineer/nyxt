@@ -4,19 +4,18 @@
 
 ;; TODO: Move to a separate package like other modes?
 (define-mode help-mode ()
-    "Mode for displaying documentation."
-    ((keymap-schemes
-      :initform
-      (let ((emacs-map (make-keymap "help-emacs-map"))
-            (vi-map (make-keymap "help-vi-map")))
-        (define-key emacs-map
-          "C-p" #'scroll-up
-          "C-n" #'scroll-down)
-        (define-key vi-map
-          "k" #'scroll-up
-          "j" #'scroll-down)
-        (list :emacs emacs-map
-              :vi-normal vi-map)))))
+  "Mode for displaying documentation."
+  ((keymap-schemes
+    :initform
+    (define-scheme "help"
+      scheme:emacs
+      (list
+       "C-p" #'scroll-up
+       "C-n" #'scroll-down)
+      scheme:vi-normal
+      (list
+       "k" #'scroll-up
+       "j" #'scroll-down)))))
 
 (defun package-symbols (p)
   (let (l) (do-symbols (s p l)

@@ -1,6 +1,6 @@
 (uiop:define-package :next/file-manager-mode
   (:use :common-lisp :trivia :next)
-  (:import-from #:keymap #:define-key)
+  (:import-from #:keymap #:define-key #:define-scheme)
   (:export
    :open-file-function
    :*open-file-function*
@@ -91,26 +91,23 @@ with the file."
   "Function triggered to open files.")
 
 (define-mode file-manager-mode (minibuffer-mode)
-    "Mode to open any file from the filesystem with fuzzy completion
+  "Mode to open any file from the filesystem with fuzzy completion
 on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
-    ((keymap-schemes
-      :initform
-      (let ((emacs-map (make-keymap "file-manager-emacs-map"))
-            (vi-map (make-keymap "file-manager-vi-map")))
+  ((keymap-schemes
+    :initform
+    (define-scheme "file-manager"
+      scheme:emacs
+      (list
+       "M-left" #'display-parent-directory
+       "C-l" #'display-parent-directory
+       "C-j" #'enter-directory
+       "M-right" #'enter-directory)
 
-        (define-key emacs-map
-          "M-left" #'display-parent-directory
-          "C-l" #'display-parent-directory
-          "C-j" #'enter-directory
-          "M-right" #'enter-directory)
-
-        (define-key vi-map
-          "M-right" #'enter-directory
-          "M-left" #'display-parent-directory)
-
-        (list :emacs emacs-map
-              :vi-normal vi-map)))))
+      scheme:vi-normal
+      (list
+       "M-right" #'enter-directory
+       "M-left" #'display-parent-directory)))))
 
 @export
 (defun open-file-from-directory-completion-filter (input &optional (directory *current-directory*))
