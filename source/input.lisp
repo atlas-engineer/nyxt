@@ -1,4 +1,3 @@
-;; TODO: Use CUA scheme by default.
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
 

@@ -18,7 +18,8 @@
   "Mode for the minibuffer."
   ((keymap-schemes
     :initform
-    (define-scheme "minibuffer" scheme:emacs
+    (define-scheme "minibuffer"
+      scheme:cua
       (list
        "hyphen" #'self-insert
        "space" #'self-insert

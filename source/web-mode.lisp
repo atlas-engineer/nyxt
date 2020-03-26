@@ -19,6 +19,70 @@
    (keymap-schemes
     :initform
     (define-scheme "web"
+      scheme:cua
+      (list
+       "C-M-f" #'history-forwards-all-query
+       "C-M-b" #'history-all-query
+       "C-f" #'history-forwards-query
+       "C-b" #'history-backwards-query
+       "M-right" #'history-forwards
+       "M-left" #'history-backwards
+       "C-g" #'follow-hint
+       "M-g" #'follow-hint-new-buffer-focus
+       "C-u M-g" #'follow-hint-new-buffer
+       "C-x C-w" #'copy-hint-url
+       "C-v" #'paste
+       "C-c" #'copy
+       "button9" #'history-forwards
+       "button8" #'history-backwards
+       "C-p" #'scroll-up
+       "C-n" #'scroll-down
+       "C-x C-=" #'zoom-in-page
+       "C-x s-+" #'zoom-in-page
+       "C-x C-s-+" #'zoom-in-page
+       "C-x C-+" #'zoom-in-page
+       "C-x +" #'zoom-in-page
+       "C-x C-hyphen" #'zoom-out-page
+       "C-x hyphen" #'zoom-out-page
+       "C-x C-0" #'unzoom-page
+       "C-x 0" #'unzoom-page
+       "C-r" #'reload-current-buffer
+       "C-R" #'reload-buffer
+       "C-m o" #'set-url-from-bookmark
+       "C-m s" #'bookmark-current-page
+       "C-m C-s" #'bookmark-page
+       "C-m g" #'bookmark-hint
+       "C-f" #'search-buffer
+       "M-f" #'remove-search-hints
+       "C-." #'jump-to-heading
+       "M-s->" #'scroll-to-bottom
+       "M-s-<" #'scroll-to-top
+       "M->" #'scroll-to-bottom
+       "M-<" #'scroll-to-top
+       ;; "C-v" #'scroll-page-down
+       "M-v" #'scroll-page-up
+       "C-w" #'copy-url
+       "M-w" #'copy-title
+       ;; Leave SPACE unbound so that the paltform port decides wether to
+       ;; insert of scroll.
+       "s-space" #'scroll-page-up
+
+       ;; keypad:
+       "pageup" #'scroll-page-up
+       "pagedown" #'scroll-page-down
+       "pageend" #'scroll-to-bottom
+       "pagehome" #'scroll-to-top
+       ;; keypad, gtk:
+       "keypadleft" #'scroll-left
+       "keypaddown" #'scroll-down
+       "keypadup" #'scroll-up
+       "keypadright" #'scroll-right
+       "keypadend" #'scroll-to-bottom
+       "keypadhome" #'scroll-to-top
+       "keypadnext" #'scroll-page-down
+       "keypadpageup" #'scroll-page-up
+       "keypadprior" #'scroll-page-up)
+
       scheme:emacs
       (list
        "C-M-f" #'history-forwards-all-query
@@ -31,8 +95,8 @@
        "M-g" #'follow-hint-new-buffer-focus
        "C-u M-g" #'follow-hint-new-buffer
        "C-x C-w" #'copy-hint-url
-       "C-v" #'paste
-       "C-c" #'copy
+       "M-y" #'paste
+       "C-y" #'copy
        "button9" #'history-forwards
        "button8" #'history-backwards
        "C-p" #'scroll-up

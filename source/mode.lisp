@@ -111,6 +111,41 @@ It takes the mode as argument.
 It is run before the destructor.")
    (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes :type keymap:scheme
                    :initform (define-scheme "root"
+                               scheme:cua
+                               (list
+                                "C-q" #'quit
+                                "C-[" #'switch-buffer-previous
+                                "C-]" #'switch-buffer-next
+                                "C-x b" #'switch-buffer
+                                "C-x k" #'delete-buffer ; Emacs' default behaviour is to query.
+                                "C-x C-k" #'delete-current-buffer
+                                "C-x left" #'switch-buffer-previous
+                                "C-x right" #'switch-buffer-next
+                                "C-pageup" #'switch-buffer-previous
+                                "C-pagedown" #'switch-buffer-next
+                                "C-l" #'set-url-current-buffer
+                                "M-l" #'set-url-new-buffer
+                                "C-m k" #'bookmark-delete
+                                "C-t" #'make-buffer-focus
+                                "C-m u" #'bookmark-url
+                                ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
+                                "f1 v" #'variable-inspect
+                                "f1 c" #'command-inspect
+                                "f1 k" #'key-inspect
+                                "f1 b" #'bindings-inspect
+                                "C-h v" #'variable-inspect
+                                "C-h c" #'command-inspect
+                                "C-h k" #'key-inspect
+                                "C-h b" #'bindings-inspect
+                                "C-o" #'load-file
+                                "C-h s" #'start-swank
+                                "M-x" #'execute-command
+                                "M-:" #'command-evaluate
+                                "C-x 5 2" #'make-window
+                                "C-x 5 0" #'delete-current-window
+                                "C-x 5 1" #'delete-window
+                                "C-/" #'reopen-buffer
+                                "C-x C-f" #'open-file)
                                scheme:emacs
                                (list
                                 "C-x C-c" #'quit
