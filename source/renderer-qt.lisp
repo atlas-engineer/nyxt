@@ -87,8 +87,6 @@
   (next-hooks:run-hook (buffer-before-make-hook *browser*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *browser*))
   (setf (qt-object buffer) (qt:new-q-web-engine-view))
-  (qt:widget-show (qt-object buffer))
-  ;; set page html to ""
   (qt:load-started-listener-connect
    (qt-object buffer)
    (lambda () (print "Load!"))))
@@ -152,7 +150,10 @@
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript))
 
 @export
-(defmethod ipc-buffer-enable-javascript ((buffer qt-buffer) value))
+(defmethod ipc-buffer-enable-javascript ((buffer qt-buffer) value)
+  (declare (ignore buffer))
+  (declare (ignore value))
+  (error 'unsupported-operation))
 
 @export
 (defmethod ipc-buffer-set-proxy ((buffer qt-buffer) &optional proxy-uri (ignore-hosts (list nil)))
