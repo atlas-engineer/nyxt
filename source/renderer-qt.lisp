@@ -87,9 +87,11 @@
   (next-hooks:run-hook (buffer-before-make-hook *browser*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *browser*))
   (setf (qt-object buffer) (qt:new-q-web-engine-view))
+  (qt:web-engine-view-load (qt-object buffer) "https://www.example.com")
   (qt:load-started-listener-connect
    (qt-object buffer)
-   (lambda () (print "Load!"))))
+   (lambda ()
+     (did-commit-navigation buffer (qt:web-engine-view-url (qt-object buffer))))))
 
 @export
 (defmethod ipc-window-make ((browser qt-browser))
