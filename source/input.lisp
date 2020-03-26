@@ -6,6 +6,17 @@
 
 (in-package :next)
 
+(declaim (ftype (function (string &rest keymap:keymap)
+                          keymap:keymap)
+                make-keymap))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(make-keymap)))
+(defun make-keymap (name &rest parents)
+  "Like `keymap:make-keymap' but only allow binding functions."
+  (let ((keymap (apply #'keymap:make-keymap name parents)))
+    (setf (keymap:bound-type keymap) '(or keymap:keymap function))
+    keymap))
+
 (defun current-keymaps (&optional (window (ipc-window-active *browser*)))
   "Return the list of `keymap' for the current buffer, ordered by priority."
   (let ((buffer (active-buffer window)))

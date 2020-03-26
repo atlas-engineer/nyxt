@@ -8,7 +8,7 @@
   "Enable VI-style modal bindings (normal mode)"
   ((keymap-schemes
     :initform
-    (let ((map (keymap:make-keymap "vi-normal-map")))
+    (let ((map (make-keymap "vi-normal-map")))
       (define-key map
         "i" #'vi-insert-mode
         "button1" #'vi-button1)
@@ -33,7 +33,7 @@
   "Enable VI-style modal bindings (insert mode)"
   ((keymap-schemes
     :initform
-    (let ((map (keymap:make-keymap "vi-insert-map")))
+    (let ((map (make-keymap "vi-insert-map")))
       (define-key map
         ;; TODO: Forwarding C-v crashes cl-webkit.  See
         ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350

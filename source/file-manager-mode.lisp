@@ -96,8 +96,8 @@ on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
     ((keymap-schemes
       :initform
-      (let ((emacs-map (keymap:make-keymap "file-manager-emacs-map"))
-            (vi-map (keymap:make-keymap "file-manager-vi-map")))
+      (let ((emacs-map (make-keymap "file-manager-emacs-map"))
+            (vi-map (make-keymap "file-manager-vi-map")))
 
         (define-key emacs-map
           "M-left" #'display-parent-directory

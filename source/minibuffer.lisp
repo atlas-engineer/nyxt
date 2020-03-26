@@ -18,7 +18,7 @@
   "Mode for the minibuffer."
   ((keymap-schemes
     :initform
-    (let ((map (keymap:make-keymap "minibuffer-map")))
+    (let ((map (make-keymap "minibuffer-map")))
       (define-key map
         "hyphen" #'self-insert
         "space" #'self-insert
