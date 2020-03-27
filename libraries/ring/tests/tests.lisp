@@ -6,7 +6,7 @@
 (setf test-ring1 (ring:make))
 
 (loop for i from 1 to 1000
-      do (ring::insert test-ring1 (make-string i :initial-element #/a)))
+      do (ring::insert test-ring1 (make-string i :initial-element #\a)))
 
 (prove:subtest "Add 1000 items, test head-index, item-count, first of recent-list length."
   (prove:is 0
@@ -18,7 +18,7 @@
 
 
 (loop for i from 1 to 5
-      do (ring::insert test-ring1 (make-string i :initial-element #/b)))
+      do (ring::insert test-ring1 (make-string i :initial-element #\b)))
 
 (prove:subtest "Add 5 more items; test head-index, item-count, first recent-list, value at head-index, and (1- head-index)."
   (prove:is 5
