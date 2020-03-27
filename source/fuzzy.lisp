@@ -1,7 +1,6 @@
 ;;; utility.lisp --- fuzzy matching utilities.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 
 (defun substring-norm (substrings string &key (substring-length 2))
@@ -108,7 +107,7 @@ then all candidates that are not exactly matched by at least one substring are r
                          candidate-pairs))
         candidate-pairs)))
 
-@export
+(serapeum:export-always 'fuzzy-match)
 (defun fuzzy-match (input candidates)   ; TODO: Make score functions customizable, e.g. for global history.
   "From the user input and a list of candidates, return a filtered list of
 candidates that have all the input words in them, and sort this list to have the
@@ -137,7 +136,7 @@ The match is case-sensitive if INPUT contains at least one uppercase character."
         (mapcar #'second pairs))
       candidates))
 
-@export
+(serapeum:export-always 'file-completion-function)
 (defun file-completion-function (input files)
   "Fuzzy-match this list of files."
   (fuzzy-match input files))

@@ -1,5 +1,4 @@
 (in-package :next)
-(annot:enable-annot-syntax)
 
 (defun buffer-history (buffer)
   "Return the buffer history of BUFFER."

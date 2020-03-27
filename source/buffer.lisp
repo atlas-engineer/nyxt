@@ -1,11 +1,8 @@
 ;;; buffer.lisp --- lisp subroutines for creating / managing buffers
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
-@export
-@export-accessors
-(defclass buffer-description ()
+(serapeum.exporting:defclass buffer-description ()
   ((url :accessor url :initarg :url
         :initform "" :type string)
    (title :accessor title :initarg :title
@@ -81,7 +78,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
        (when *use-session*
          (funcall f))))))
 
-@export
+(serapeum:export-always 'buffer-list)
 (defun buffer-list (&key sort-by-time)
   (let ((buf-list (alexandria:hash-table-values (buffers *browser*))))
     (if sort-by-time
@@ -90,7 +87,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
               :key #'last-access)
         buf-list)))
 
-@export
+(serapeum:export-always 'window-list)
 (defun window-list ()
   (alexandria:hash-table-values (windows *browser*)))
 
@@ -152,13 +149,12 @@ to the currently active buffer."
       (mapcar #'buffer-delete buffers-to-delete))))
 
 ;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.
-@export
 (define-parenscript %%buffer-get-title () ; TODO: `did-commit-navigation' should
                                           ; pass the title so that we don't have
                                           ; to call this.
   (ps:chain document title))
 
-@export
+(serapeum:export-always 'set-url)
 (defun set-url (input-url &key (buffer (current-buffer)) raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'."

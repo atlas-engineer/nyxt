@@ -18,7 +18,7 @@ Open any file from within Next, with the usual fuzzy completion.
 - open files. By default, with xdg-open. See `open-file-function'.
 "))
 (in-package :next/file-manager-mode)
-(annot:enable-annot-syntax)
+(trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
 
 ;;; ***********************************************************************
 ;;; *Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
@@ -56,7 +56,7 @@ Open any file from within Next, with the usual fuzzy completion.
       (find extension *supported-media-types* :test #'string-equal))))
 
 ;; TODO: By default, we should open directories in a new buffer (see NEW-BUFFER-P), and open supported media in a new buffer (see `supported-media').
-@export
+(serapeum:export-always 'open-file-function)
 (defun open-file-function (filename &key ;; (new-buffer-p *open-file-in-new-buffer*)
                                       )
   "Open FILENAME.
@@ -86,7 +86,7 @@ with the file."
 
 ;; note: put under the function definition.
 ;; the user is encouraged to override this in her init file.
-@export
+(serapeum:export-always '*open-file-function*)
 (defparameter *open-file-function* #'open-file-function
   "Function triggered to open files.")
 
@@ -109,7 +109,7 @@ command `open-file'."
        "M-right" #'enter-directory
        "M-left" #'display-parent-directory)))))
 
-@export
+(serapeum:export-always 'open-file-from-directory-completion-filter)
 (defun open-file-from-directory-completion-filter (input &optional (directory *current-directory*))
   "Fuzzy-match files and directories from `*current-directory*'."
   (let ((filenames (uiop:directory-files directory))

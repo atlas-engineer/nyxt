@@ -1,8 +1,7 @@
 (in-package :next)
-(annot:enable-annot-syntax)
 
 ;; This is mostly inspired by Emacs 26.2.
-@export
+(serapeum:export-always 'file-size-human-readable)
 (defun file-size-human-readable (file-size &optional flavor)
   "Produce a string showing FILE-SIZE in human-readable form.
 

@@ -5,7 +5,6 @@
   :serial t
   :depends-on (:alexandria
                :bordeaux-threads
-               :cl-annot
                :cl-ansi-text
                :cl-css
                :cl-json
@@ -33,6 +32,7 @@
                :trivia
                :trivial-clipboard
                :trivial-features
+               :trivial-package-local-nicknames
                :trivial-types
                :unix-opts
                ;; Local systems:
@@ -44,10 +44,9 @@
                :next/keymap)
   :components ((:module "source"
                 :components
-                ((:file "patches/patch-annot")
-                 (:file "patches/patch-serialization")
-                 ;; Independent utilities
+                ((:file "patches/patch-serialization")
                  (:file "package")
+                 ;; Independent utilities
                  (:file "tags")
                  (:file "time")
                  (:file "types")

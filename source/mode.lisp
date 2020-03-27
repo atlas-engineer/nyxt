@@ -2,9 +2,8 @@
 ;;; All modes inherit from the root-mode.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
-@export
+(serapeum:export-always 'define-mode)
 (defmacro define-mode (name direct-superclasses &body body)
   "Define mode NAME.
 When DIRECT-SUPERCLASSES is T, then the mode has no parents.
@@ -40,13 +39,11 @@ The buffer is returned so that mode activation can be chained."
       (setf class-args (append class-args
                                `((:documentation ,docstring)))))
     `(progn
-       @export
-       @export-accessors
-       (defclass ,@class-args)
+       (serapeum.exporting:defclass ,@class-args)
        ;; Class symbol customization:
        (define-class-type ,name)
        (declaim (type (,(intern (format nil "~a-TYPE" name))) ,class-var))
-       @export
+       (serapeum:export-always ',class-var)
        (defparameter ,class-var ',name
          ,(format nil "Default class to use for ~a." name))
        ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
@@ -210,7 +207,7 @@ It is run before the destructor.")
 (defmethod object-string ((mode root-mode))
   (symbol-name (class-name (class-of mode))))
 
-@export
+(serapeum:export-always 'find-mode)
 (defmethod find-mode ((buffer buffer) mode-symbol)
   "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
 Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
@@ -223,7 +220,7 @@ can be 'web-mode as well as 'next/web-mode:web-mode."
       (find-if (lambda (m) (eq mode-full-symbol (class-name (class-of m))))
                (modes buffer)))))
 
-@export
+(serapeum:export-always 'find-submode)
 (defmethod find-submode ((buffer buffer) mode-symbol)
   "Like `find-mode' but return the first mode in BUFFER that is a sub-mode of MODE-SYMBOL.
 It may be MODE-SYMBOL itself."
@@ -237,7 +234,7 @@ It may be MODE-SYMBOL itself."
                                        (find-class mode-full-symbol)))
                (modes buffer)))))
 
-@export
+(serapeum:export-always 'find-buffer)
 (defun find-buffer (mode-symbol)
   "Return first buffer matching MODE-SYMBOL."
   (find-if (lambda (b)

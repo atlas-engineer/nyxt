@@ -1,9 +1,8 @@
 ;;; recent-buffers.lisp --- Manage list of recent buffers.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
-@export
+(serapeum:export-always 'buffer-match-predicate)
 (defmethod buffer-match-predicate ((buffer buffer))
   (lambda (other-buffer)
     (when other-buffer

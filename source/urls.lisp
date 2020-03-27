@@ -1,7 +1,6 @@
 ;;; urls.lisp --- utility classes and functions for hanlding urls.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string

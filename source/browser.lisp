@@ -1,7 +1,6 @@
 ;;; interface.lisp --- interface state
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 ;; Create necessary hook types. We must forward-declare the class
 ;; since the hook take the type of the class that hosts them.
@@ -14,9 +13,7 @@
 (next-hooks:define-hook-type download (function (download-manager:download)))
 (next-hooks:define-hook-type window-buffer (function (window buffer)))
 
-@export
-@export-accessors
-(defclass window ()
+(serapeum.exporting:defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
@@ -49,9 +46,7 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
     `ipc-window-delete' takes effect.  The handlers take the window as
     argument.")))
 
-@export
-@export-accessors
-(defclass proxy ()
+(serapeum.exporting:defclass proxy ()
   ((server-address :accessor server-address :initarg :server-address
                    :initform "socks5://127.0.0.1:9050"
                    :type string
@@ -74,13 +69,11 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
 
 (define-class-type proxy)
 (declaim (type (proxy-type) *proxy-class*))
-@export
+(serapeum:export-always '*proxy-class*)
 (defparameter *proxy-class* 'proxy)
 
 ;; TODO: Reimplement certificate whitelist mode
-@export
-@export-accessors
-(defclass certificate-whitelist ()
+(serapeum.exporting:defclass certificate-whitelist ()
   ((whitelist :accessor whitelist :initarg :whitelist
               :initform '()
               :type list-of-strings
@@ -91,12 +84,10 @@ This can apply to specific buffers."))
 
 (define-class-type certificate-whitelist)
 (declaim (type (certificate-whitelist-type) *certificate-whitelist-class*))
-@export
+(serapeum:export-always '*certificate-whitelist-class*)
 (defparameter *certificate-whitelist-class* 'certificate-whitelist)
 
-@export
-@export-accessors
-(defclass buffer ()
+(serapeum.exporting:defclass buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
 not associated with a web view) have an empty ID.")
@@ -276,9 +267,7 @@ defined in any package and is unique."
   (dolist (mode (modes buffer))
     (did-finish-navigation mode url)))
 
-@export
-@export-accessors
-(defclass browser ()
+(serapeum.exporting:defclass browser ()
   ((socket-thread :accessor socket-thread
                   :initform nil
                   :documentation "Thread that listens on socket.
@@ -617,7 +606,7 @@ current buffer."
   (incf (total-buffer-count browser)))
 
 (declaim (ftype (function (window buffer)) set-window-title))
-@export
+(serapeum:export-always 'set-window-title)
 (defun set-window-title (window buffer)
   "Set current window title to 'Next - TITLE - URL."
   (let ((url (url buffer))
@@ -630,7 +619,7 @@ current buffer."
                                        url))))
 
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
-@export
+(serapeum:export-always 'window-set-active-buffer)
 (defun window-set-active-buffer (window buffer) ; TODO: Rename window-set-buffer.
   "Set BROWSER's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
@@ -688,7 +677,7 @@ proceeding."
     (error (c)
       (error "Could not make buffer to open ~a: ~a" urls c))))
 
-@export
+(serapeum:export-always 'request-resource)
 (defmethod request-resource ((buffer buffer) &key url event-type
                              (is-new-window nil) (is-known-type t) (mouse-button "")
                              (modifiers '()) &allow-other-keys)
@@ -721,7 +710,7 @@ proceeding."
      (log:debug "Forwarding back to platform port: ~a" url)
      nil)))
 
-@export
+(serapeum:export-always 'current-buffer)
 (defun current-buffer ()
   "Get the active buffer for the active window."
   (match (ipc-window-active *browser*)
@@ -734,7 +723,7 @@ proceeding."
 ;; But we can't use "minibuffer" here since it's not declared yet.  It will
 ;; crash Next if we call set-current-buffer before instantiating the first
 ;; minibuffer.
-@export
+(serapeum:export-always 'set-current-buffer)
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
   (unless (eq 'minibuffer (class-name (class-of buffer)))
@@ -744,7 +733,7 @@ proceeding."
           (make-window buffer))
       buffer)))
 
-@export
+(serapeum:export-always 'current-minibuffer)
 (defun current-minibuffer ()
   "Return the currently active minibuffer."
   (first (active-minibuffers (last-active-window *browser*))))

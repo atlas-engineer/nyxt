@@ -1,7 +1,6 @@
 ;;; minibuffer.lisp --- major mode for input
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 ;; TODO: We need to separate the minibuffer from the echo area.  The
 ;; `show'/`hide' functions are not dealing well with `echo'/`echo-dismiss'.
@@ -67,9 +66,7 @@
     ;; echo area separate from the minibuffer.
     )))
 
-@export
-@export-accessors
-(defclass minibuffer (buffer)
+(serapeum.exporting:defclass minibuffer (buffer)
   ((default-modes :initarg :default-modes
                   :initform '(minibuffer-mode))
    (completion-function :initarg :completion-function :accessor completion-function
@@ -190,9 +187,9 @@ This should not rely on the minibuffer's content.")
                                              :color "white")))
                      :documentation "The CSS applied to a minibuffer when it is set-up.")))
 
-@export
+(serapeum:export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
-@export
+(serapeum:export-always 'make-minibuffer)
 (defun make-minibuffer (&key
                           (default-modes nil explicit-default-modes)
                           (completion-function nil explicit-completion-function)
@@ -303,7 +300,7 @@ This should not rely on the minibuffer's content.")
   (initialize-modes minibuffer))
 
 (declaim (ftype (function (minibuffer &key (:callback function))) read-from-minibuffer))
-@export
+(serapeum:export-always 'read-from-minibuffer)
 (defun read-from-minibuffer (minibuffer &key callback)
   "Open the minibuffer, ready for user input.
    Example use:
@@ -379,7 +376,7 @@ This should not rely on the minibuffer's content.")
     ((guard f f) (funcall f)))
   (hide minibuffer))
 
-@export
+(serapeum:export-always 'erase-input)
 (defmethod erase-input ((minibuffer minibuffer))
   "Clean-up the minibuffer input."
   (setf (input-buffer minibuffer) "")
@@ -692,7 +689,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (state-changed minibuffer)
   (update-display minibuffer))
 
-@export
+(serapeum:export-always 'update-display)
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-cursor-position
                completions marked-completions completion-cursor)
@@ -804,7 +801,7 @@ MESSAGE is a cl-markup list."
                 :height (status-buffer-height window))))
       (log:warn "Can't echo '~a' without status buffer or interface" text)))
 
-@export
+(serapeum:export-always 'echo)
 (defun echo (&rest args)
   "Echo ARGS in the status buffer.
 The first argument can be a format string and the following arguments will be
@@ -823,7 +820,7 @@ Untrusted content should be given as argument with a format string."
            instead of (echo \"directory is ~~/Downloads/\")
 - use echo-safe or use the ~~s directive directly." args))))
 
-@export
+(serapeum:export-always 'echo-safe)
 (defun echo-safe (&rest args)
   "Echo strings without expanding format directives unlike other `echo' commands."
   (let ((text (str:join " " args)))
@@ -831,7 +828,7 @@ Untrusted content should be given as argument with a format string."
     (unless (str:emptyp text)
       (log:info "~s" text))))
 
-@export
+(serapeum:export-always 'echo-warning)
 (defun echo-warning (&rest args)
   "Like `echo' but prefix with \"Warning\" and output to the standard error."
   (let ((text (apply #'format nil args)))
@@ -840,7 +837,7 @@ Untrusted content should be given as argument with a format string."
     (unless (str:emptyp text)
       (log:warn "~a" text))))
 
-@export
+(serapeum:export-always 'echo-dismiss)
 (defmethod echo-dismiss ()
   ;; TODO: If we erase the document here, it will show a blank widget instead
   ;; of the minibuffer when we don't fully hide it.  We can only erase the
@@ -859,7 +856,7 @@ Untrusted content should be given as argument with a format string."
                   :message nil)))
 
 (declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
-@export
+(serapeum:export-always 'ring-insert-clipboard)
 (defun ring-insert-clipboard (ring)
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
@@ -873,7 +870,7 @@ Return most recent entry in RING."
   "Paste clipboard text to input."
   (insert (ring-insert-clipboard (clipboard-ring *browser*)) minibuffer))
 
-@export
+(serapeum:export-always 'get-candidate)
 (defmethod get-candidate ((minibuffer minibuffer))
   "Return the string for the current candidate in the minibuffer."
   (with-slots (completions completion-cursor)

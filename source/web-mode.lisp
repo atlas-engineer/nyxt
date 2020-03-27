@@ -1,8 +1,10 @@
 (uiop:define-package :next/web-mode
-  (:use :common-lisp :trivia :next :annot.class)
+  (:use :common-lisp :trivia :next)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Mode for web pages"))
 (in-package :next/web-mode)
+
+(trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
 
 ;; TODO: Remove web-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).

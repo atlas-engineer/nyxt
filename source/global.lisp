@@ -2,7 +2,6 @@
 ;; Packagers are welcome to customize the `defparameter's to suit the host system.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 (defvar *options* '()
   "The list of command line options.")
@@ -14,7 +13,7 @@
 This is useful when the browser is run from a REPL so that quitting does not
 close the connection.")
 
-@export
+(serapeum:export-always '*browser*)
 (defvar *browser* nil
   "The entry-point object to a complete instance of Next.
 It can be initialized with
@@ -25,7 +24,7 @@ It's possible to run multiple interfaces of Next at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
 (declaim (type next-hooks:hook-void *after-init-hook*))
-@export
+(serapeum:export-always '*after-init-hook*)
 (defvar *after-init-hook* (make-instance 'next-hooks:hook-void)
   "The entry-point object to configure everything in Next.
 The hook takes no argument.
@@ -38,16 +37,16 @@ Add a handler can be added with
   (next-hooks:add-hook *after-init-hook*
     (next-hooks:make-handler-void #'my-foo-function))")
 
-@export
+(serapeum:export-always '*use-session*)
 (defparameter *use-session* t
   "If nil, don't restore nor store the session.")
 
-@export
+(serapeum:export-always '*swank-port*)
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Next to avoid collisions).")
 
-@export
+(serapeum:export-always '+version+)
 (defparameter +version+
   (let ((version (asdf/component:component-version (asdf:find-system :next)))
         (directory (asdf:system-source-directory :next)))

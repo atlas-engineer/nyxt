@@ -1,8 +1,5 @@
 (uiop:define-package :next/vcs
-    (:use :common-lisp :trivia :next)
-  (:export :*vcs-projects-roots*
-           :*vcs-usernames-alist*
-           :*vcs-username*)
+  (:use :common-lisp :trivia :next)
   (:documentation "Interact with Git repositories.
 
 New command: vcs-clone (alias git-clone), to clone a VCS repository on
@@ -27,16 +24,19 @@ See `next/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
 We could clone on GitHub/GitLab, be notified if we have unpushed
 changes, browse files in a text editor, use hooks...
 "))
-
 (in-package :next/vcs)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (declaim (type (or null list-of-strings) *vcs-projects-roots*))
+(sera:export-always '*vcs-projects-roots*)
 (defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects")
   "A list of directories to look for VCS repositories into.")
 ;; Possible improvement: specify the depth to look for projects alongside the directory.
 ;; See magit-list-repositories.
 
 (declaim (type (or null alist-of-strings) *vcs-usernames-alist*))
+(sera:export-always '*vcs-usernames-alist*)
 (defvar *vcs-usernames-alist* '(("github.com" . "")
                                 ("gitlab.com" . "")
                                 ("bitbucket.org" . ""))
@@ -44,6 +44,7 @@ changes, browse files in a text editor, use hooks...
 The forge name should be a domain, such as github.com.")
 
 (declaim (type (or null string) *vcs-username*))
+(sera:export-always '*vcs-username*)
 (defvar *vcs-username* ""
   "Default username to use for forges if none is found in `*vcs-usernames-alist*'.")
 
@@ -84,7 +85,7 @@ If EXIT-RECURSIVE-SCAN is non-nil, avoid recursive scan of local projects. By de
     (setf *git-projects* (parse-projects)))
   (let ((result (find name *git-projects*
                       :key (lambda (dir)
-                              (alexandria:last-elt (str:split "/" (namestring dir) :omit-nulls t)))
+                              (alex:last-elt (str:split "/" (namestring dir) :omit-nulls t)))
                       :test #'string=)))
     ;; If null, re-parse the local projects.
     ;; It could have been cloned manually.

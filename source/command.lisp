@@ -2,7 +2,6 @@
 ;;; This file is licensed under license documents/external/LICENSE1.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 ;; We need a `command' class for multiple reasons:
 ;; - Identify commands uniquely (although being a member of `%%command-list' is enough).
@@ -33,7 +32,7 @@ This can be used to order the commands.")))
     (documentation-style-warning)
   ((subject-type :initform 'command)))
 
-@export
+(serapeum:export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
 ARGLIST must be a list of optional arguments.
@@ -50,15 +49,15 @@ Regardless of the hook, the command returns the last expression of BODY."
         (before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")))
         (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
     `(progn
-       @export
+       (serapeum:export-always ',before-hook)
        (defparameter ,before-hook (next-hooks:make-hook-void))
-       @export
+       (serapeum:export-always ',after-hook)
        (defparameter ,after-hook (next-hooks:make-hook-void))
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
                                          (eq (pkg c) *package*)))
                         %%command-list)
          (push (make-instance 'command :sym ',name :pkg *package* :sexp '(progn ,@body)) %%command-list))
-       @export
+       (serapeum:export-always ',name)
        ;; We use defun to define the command instead of storing a lambda because we want
        ;; to be able to call the foo command from Lisp with (FOO ...).
        (defun ,name ,arglist

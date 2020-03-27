@@ -1,7 +1,29 @@
 ;;; macro.lisp --- macros used in Next
 
 (in-package :next)
-(annot:enable-annot-syntax)
+
+;; While we don't use this macro yet, it could prove useful if we decide to use
+;; a `defclass' macro other than serapeum's.
+(defmacro export-class (class-symbol &optional
+                                       (package nil package-supplied?)
+                                       (accessor-fn #'identity))
+  "Export class and all its readers, writers and accessors.
+Accessor symbols are derived from ACCESSOR-FN applied to the slot name."
+  (let* ((slot-definitions (closer-mop:class-direct-slots (find-class class-symbol)))
+         (slot-readers (mapcar #'car (mapcar #'closer-mop:slot-definition-readers slot-definitions)))
+         (slot-writers (mapcar #'cadar (mapcar #'closer-mop:slot-definition-writers slot-definitions)))
+         (slot-accessors (delete-if-not (lambda (sym)
+                                          (and (typep (symbol-function sym) 'generic-function)
+                                               (some (lambda (method)
+                                                       (equal (closer-mop:method-lambda-list method)
+                                                              (list class-symbol)))
+                                                     (closer-mop:generic-function-methods (symbol-function 'active-buffer)))))
+                                        (mapcar accessor-fn (mapcar #'closer-mop:slot-definition-name slot-definitions))))
+         (syms (delete-duplicates (append slot-readers slot-writers slot-accessors))))
+    `(progn
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         (export ',class-symbol)
+         (export ',syms ,@(and package-supplied? (list package)))))))
 
 ;; WARNING: Compile-time type-checking with `satisfies' only works at the
 ;; top-level with SBCL.
@@ -20,7 +42,7 @@ An object of this type is a subclass of CLASS-SYM."
 ;; TODO: The distinction between compile-time script and runtime scripts is confusing.
 ;; It's tempting to write legal PS that depends on run-time values while passing no parameters.
 ;; Make parenscript always dynamic?
-@export
+(serapeum:export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.
 SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
@@ -51,7 +73,7 @@ ARGS must be key arguments."
                                                              (format t res))))
      (declare (ignorable res))))
 
-@export
+(serapeum:export-always 'with-result)
 (defmacro with-result ((symbol async-form) &body body)
   "Call ASYNC-FORM.
 When ASYNC-FORM returns, its result is bound to SYMBOL and BODY is executed.
@@ -67,7 +89,7 @@ Example:
     ,@(rest async-form)
     :callback (lambda (,symbol) ,@body)))
 
-@export
+(serapeum:export-always 'with-result*)
 (defmacro with-result* (bindings &body body)
   "Like WITH-RESULT but allows for chained asynchronous bindings.
 

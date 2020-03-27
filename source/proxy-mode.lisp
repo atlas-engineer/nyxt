@@ -2,9 +2,10 @@
     (:use :common-lisp :trivia :next)
   (:documentation "Proxy mode (e.g. Tor et al.)"))
 (in-package :next/proxy-mode)
-(annot:enable-annot-syntax)
 
-@export
+(trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
+
+(serapeum:export-always '*default-proxy*)
 (defparameter *default-proxy*
   (make-instance next::*proxy-class*
                  :server-address "socks5://127.0.0.1:9050"

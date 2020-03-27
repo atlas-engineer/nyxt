@@ -1,17 +1,13 @@
 (uiop:define-package :next/blocker-mode
-    (:use :common-lisp :trivia :next :annot.class)
-  (:export
-   :hostlist
-   :make-hostlist)
+  (:use :common-lisp :trivia :next)
   (:documentation "Block resource queries blacklisted hosts."))
 (in-package :next/blocker-mode)
-(annot:enable-annot-syntax)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
-@export
-@export-accessors
-(defclass hostlist ()
+(serapeum.exporting:defclass hostlist ()
   ((url :accessor url :initarg :url
         :initform nil
         :type string
@@ -30,14 +26,14 @@ If path is relative, it will be set to (xdg-data-home path).")
                     :documentation "If URL is provided, update the list after
 this amount of seconds.")))
 
-@export
+(serapeum:export-always 'path)
 (defmethod path ((hostlist hostlist))
   (with-slots (path) hostlist
     (if (uiop:absolute-pathname-p path)
         path
         (xdg-data-home path))))
 
-@export
+(serapeum:export-always 'make-hostlist)
 (defun make-hostlist (&rest args)
   (apply #'make-instance 'hostlist args))
 
@@ -75,7 +71,7 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                     collect (second (str:split " " line))))))
   (hosts hostlist))
 
-@export
+(serapeum:export-always '*default-host-list*)
 (defparameter *default-host-list*
   (make-instance 'hostlist
                  :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"

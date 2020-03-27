@@ -2,9 +2,8 @@
 ;; Split this file into smaller ones when it becomes relevant.
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
-@export
+(serapeum:export-always 'object-string)
 (defmethod object-string ((object t))
   (princ-to-string object))
 
@@ -22,7 +21,7 @@
 SLIME."
   (swank:create-server :port swank-port :dont-close t))
 
-@export
+(serapeum:export-always 'xdg-data-home)
 (defun xdg-data-home (&optional (file-name ""))
   "Return XDG_DATA_HOME as per XDG directory specification.
 FILE-NAME is appended to the result."
@@ -32,7 +31,7 @@ FILE-NAME is appended to the result."
     (make-pathname :directory '(:relative "next"))
     (uiop:xdg-data-home))))
 
-@export
+(serapeum:export-always 'xdg-config-home)
 (defun xdg-config-home (&optional (file-name ""))
   "Return XDG_CONFIG_HOME as per XDG directory specification.
 FILE-NAME is appended to the result."
@@ -56,7 +55,7 @@ FILE-NAME is appended to the result."
                  slot-name))
            (closer-mop:class-slots class)))
 
-@export
+(serapeum:export-always 'get-default)
 (defun get-default (class-name slot-name)
   "Get default value of slot SLOT-NAME from class CLASS-NAME.
 The second value is the initfunction."
@@ -78,13 +77,13 @@ The second value is the initfunction."
         (eval value)
         value)))
 
-@export
+(serapeum:export-always 'member-string)
 (defun member-string (string list)
   "Return the tail of LIST beginning whose first element is STRING."
   (check-type string string)
   (member string list :test #'string=))
 
-@export
+(serapeum:export-always 'notify)
 (defun notify (msg)
   "Echo this message and display it with a desktop notification system (notify-send on linux, terminal-notifier on macOs)."
   (echo-safe msg)
@@ -95,7 +94,7 @@ The second value is the initfunction."
      #+darwin
      (list "terminal-notifier" "-title" "Next" "-message" msg))))
 
-@export
+(serapeum:export-always 'launch-and-notify)
 (defun launch-and-notify (command &key (success-msg "Command succeded.") (error-msg "Command failed."))
   "Run this program asynchronously and notify when it is finished."
   (bt:make-thread

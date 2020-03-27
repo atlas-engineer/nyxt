@@ -1,7 +1,6 @@
 ;;; start.lisp --- main entry point into Next
 
 (in-package :next)
-(annot:enable-annot-syntax)
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
@@ -79,7 +78,7 @@ Set to '-' to read standard input instead.")
     (otherwise
      (log:config :info))))
 
-@export
+(serapeum:export-always 'entry-point)
 (defun entry-point ()
   "Read the CLI arguments and start the interface."
   (multiple-value-bind (options free-args)
@@ -228,7 +227,7 @@ Otherwise bind socket."
         (uiop:delete-file-if-exists (socket-path *browser*))
         (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))
 
-@export
+(serapeum:export-always 'start)
 (defun start (&key urls (init-file (init-file-path)))
   "Start Next and load URLS if any. A new `*browser*' is
    instantiated. The platform port is automatically started if
