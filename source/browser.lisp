@@ -102,7 +102,7 @@ not associated with a web view) have an empty ID.")
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
                   :initform '(web-mode root-mode)
-                  :type trivial-types:proper-list
+                  :type list-of-symbols
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
    (keymap-scheme-name
@@ -337,7 +337,7 @@ window or not.")
    (search-engines :accessor search-engines
                    :initform '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
                                ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
-                   :type alist-of-3tuples-strings
+                   :type alist-of-string+2strings
                    :documentation "A list of the search engines.
 
 The elements are in the form of a 3-tuple of strings (SHORTCUT SEARCH-URL FALLBACK-URL).
