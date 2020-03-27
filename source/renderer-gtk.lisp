@@ -176,14 +176,14 @@ Return nil when key must be discarded, e.g. for modifiers."
          (key-value (gdk:gdk-event-key-keyval event))
          (key-value-name (gdk:gdk-keyval-name key-value)))
     (when (member :control-mask modifier-state)
-      (alexandria:deletef (modifiers browser) :control-mask))
+      (alex:deletef (modifiers browser) :control-mask))
     (when (member :shift-mask modifier-state)
-      (alexandria:deletef (modifiers browser) :shift-mask))
+      (alex:deletef (modifiers browser) :shift-mask))
     (when (string= key-value-name "Arabic_switch")
-      (alexandria:deletef (modifiers browser) :mod1-mask))
+      (alex:deletef (modifiers browser) :mod1-mask))
     (when (and (member :mod2-mask modifier-state)
                (member :meta-mask modifier-state))
-      (alexandria:deletef (modifiers browser) :super-mask))))
+      (alex:deletef (modifiers browser) :super-mask))))
 
 (declaim (ftype (function (list &optional gdk:gdk-event) list) translate-modifiers))
 (defun translate-modifiers (modifier-state &optional event)
@@ -257,7 +257,7 @@ See `gtk-browser's `modifier-translator' slot."
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
     (when key-string
-      (alexandria:appendf (key-stack *browser*)
+      (alex:appendf (key-stack *browser*)
                           (list (keymap:make-key :code keycode
                                                  :value key-string
                                                  :modifiers modifiers
@@ -275,7 +275,7 @@ See `gtk-browser's `modifier-translator' slot."
                              (button-event-modifiers event)
                              event)))
     (when key-string
-      (alexandria:appendf (key-stack *browser*)
+      (alex:appendf (key-stack *browser*)
                           (list (keymap:make-key
                                  :value key-string
                                  :modifiers modifiers

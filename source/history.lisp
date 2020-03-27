@@ -100,7 +100,7 @@ lot."
                   (* 60 60)))))))
 
 (defun history-completion-filter ()
-  (let ((history (sort (alexandria:hash-table-values
+  (let ((history (sort (alex:hash-table-values
                         (history-data *browser*))
                        (lambda (x y)
                          (> (score-history-entry x)

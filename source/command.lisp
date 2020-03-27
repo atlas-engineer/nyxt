@@ -170,7 +170,7 @@ Otherwise list all commands."
 
 (defun command-completion-filter (input)
   (fuzzy-match input
-               (sort (apply #'list-commands (mapcar (alexandria:compose #'class-name #'class-of)
+               (sort (apply #'list-commands (mapcar (alex:compose #'class-name #'class-of)
                                                     (modes (current-buffer))))
                      (lambda (c1 c2)
                        (> (access-time c1) (access-time c2))))))

@@ -26,6 +26,7 @@ changes, browse files in a text editor, use hooks...
 "))
 (in-package :next/vcs)
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (declaim (type (or null list-of-strings) *vcs-projects-roots*))

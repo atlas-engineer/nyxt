@@ -196,7 +196,7 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
     (loop as connection = (iolib:accept-connection s)
           while connection
           do (progn (match (str:split (string #\newline)
-                                      (alexandria:read-stream-content-into-string connection)
+                                      (alex:read-stream-content-into-string connection)
                                       :omit-nulls t)
                       ((guard urls urls)
                        (log:info "External process requested URL(s): ~{~a~^, ~}" urls)

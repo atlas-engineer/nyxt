@@ -8,7 +8,7 @@
 (defun web-buffers ()
   "Return list of web buffers.
 I.e. non-special buffers, those with a non-empty URL slot."
-  (delete-if (alexandria:compose #'str:emptyp #'url)
+  (delete-if (alex:compose #'str:emptyp #'url)
              (buffer-list)))
 
 (defun session-data ()
@@ -63,7 +63,7 @@ Currently we store the list of current URLs of all buffers."
            (setf buffer-histories (delete-if-not #'htree:current buffer-histories))
            (when buffer-histories
              (log:info "Restoring ~a"
-                       (mapcar #'object-string (mapcar (alexandria:compose #'htree:data #'htree:current)
+                       (mapcar #'object-string (mapcar (alex:compose #'htree:data #'htree:current)
                                                        buffer-histories)))
              ;; Delete the old buffers?
              ;; (maphash (lambda (id buffer)

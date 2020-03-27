@@ -3,6 +3,7 @@
   (:documentation "Block resource queries blacklisted hosts."))
 (in-package :next/blocker-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
@@ -45,7 +46,7 @@ If HOSTLIST has a `path', persist it locally."
     (let ((hosts (dex:get (url hostlist))))
       (when (path hostlist)
         ;; TODO: In general, we should do more error checking when writing to disk.
-        (alexandria:write-string-into-file hosts (path hostlist)
+        (alex:write-string-into-file hosts (path hostlist)
                                            :if-exists :overwrite
                                            :if-does-not-exist :create))
       hosts)))

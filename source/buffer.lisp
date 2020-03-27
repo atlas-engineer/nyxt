@@ -80,7 +80,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 
 (serapeum:export-always 'buffer-list)
 (defun buffer-list (&key sort-by-time)
-  (let ((buf-list (alexandria:hash-table-values (buffers *browser*))))
+  (let ((buf-list (alex:hash-table-values (buffers *browser*))))
     (if sort-by-time
         (sort buf-list
               #'local-time:timestamp>
@@ -89,12 +89,12 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 
 (serapeum:export-always 'window-list)
 (defun window-list ()
-  (alexandria:hash-table-values (windows *browser*)))
+  (alex:hash-table-values (windows *browser*)))
 
 (defun buffer-completion-filter (&key current-is-last-p)
   (let ((buffers (buffer-list :sort-by-time t)))
     (when current-is-last-p
-      (setf buffers (alexandria:rotate buffers -1)))
+      (setf buffers (alex:rotate buffers -1)))
     (lambda (input)
       (fuzzy-match input buffers))))
 
@@ -246,7 +246,7 @@ complete against a search engine."
 That is to say, the one with the most recent access time after the current buffer.
 The current buffer access time is set to be the last."
   (let* ((buffers (buffer-list :sort-by-time t))
-         (last-buffer (alexandria:last-elt buffers)))
+         (last-buffer (alex:last-elt buffers)))
     (when (second buffers)
       (setf (last-access (current-buffer))
             (local-time:timestamp- (last-access last-buffer) 1 :sec))
@@ -254,7 +254,7 @@ The current buffer access time is set to be the last."
 
 (define-command switch-buffer-next ()   ; TODO: Rename switch-buffer-oldest
   "Switch to the oldest buffer in the list of buffers."
-  (set-current-buffer (alexandria:last-elt (buffer-list :sort-by-time t))))
+  (set-current-buffer (alex:last-elt (buffer-list :sort-by-time t))))
 
 (defun active-mode-completion-filter (buffers)
   "Return the union of the active modes in BUFFERS."

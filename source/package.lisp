@@ -8,6 +8,7 @@
   (:use :common-lisp :trivia)
   (:import-from #:keymap #:define-key #:define-scheme))
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :next)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :next))
 
 (uiop:define-package next-user
@@ -18,6 +19,7 @@ Package left for the user to fiddgle with.
 It's recommended to use this package in the Next configuration file, instead of
 `next' itself."))
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :next)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :next-user))
 
 (uiop:define-package parenscript-user

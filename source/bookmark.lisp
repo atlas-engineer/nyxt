@@ -145,7 +145,7 @@ This can be useful to let the user select no tag when returning directly."
                            :empty-complete-immediate t)))
         (when tags
           ;; Turn tags with spaces into multiple tags.
-          (setf tags (alexandria:flatten
+          (setf tags (alex:flatten
                       (mapcar (lambda (tag)
                                 (str:split " " tag :omit-nulls t))
                               tags))))
