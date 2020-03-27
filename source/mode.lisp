@@ -135,7 +135,6 @@ It is run before the destructor.")
                                 "C-h k" #'key-inspect
                                 "C-h b" #'bindings-inspect
                                 "C-o" #'load-file
-                                "C-h s" #'start-swank
                                 "M-x" #'execute-command
                                 "M-:" #'command-evaluate
                                 "C-x 5 2" #'make-window
@@ -166,7 +165,6 @@ It is run before the destructor.")
                                 "C-h k" #'key-inspect
                                 "C-h b" #'bindings-inspect
                                 "C-o" #'load-file
-                                "C-h s" #'start-swank
                                 "M-x" #'execute-command
                                 "M-:" #'command-evaluate
                                 "C-x 5 2" #'make-window
@@ -194,7 +192,6 @@ It is run before the destructor.")
                                 "C-h c" #'command-inspect
                                 "C-h k" #'command-inspect
                                 "C-h b" #'bindings-inspect
-                                "C-h s" #'start-swank
                                 ":" #'execute-command
                                 "M-:" #'command-evaluate
                                 "W" #'make-window
