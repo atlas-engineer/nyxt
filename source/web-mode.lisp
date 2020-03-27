@@ -350,7 +350,7 @@ Otherwise go forward to the only child."
            (history (history (find-submode buffer 'web-mode)))
            (tree (traverse (htree:root history)
                            (htree:current history)))
-           (content (cl-markup:markup*
+           (content (markup:markup*
                      '(:h1 "History")
                      tree))
            (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)

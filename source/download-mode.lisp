@@ -11,14 +11,14 @@
   (let* ((download-buffer (or (find-buffer 'download-mode)
                               (download-mode :activate t
                                              :buffer (make-buffer :title "*Downloads*"))))
-         (contents (cl-markup:markup
+         (contents (markup:markup
                     (:h1 "Downloads")
                     (:p (:b "Directory: ") (namestring (or (download-directory *browser*)
                                                            (download-manager:default-download-directory))))
                     (:span              ; TODO: Do we need this span?  We need something because of the loop.
                      (loop for d in (downloads *browser*)
                            collect
-                           (cl-markup:markup
+                           (markup:markup
                             (:p
                              (:progress :background "red" :value (format nil "~a" (download-manager:bytes-fetched d))
                                         :max (format nil "~a" (download-manager:bytes-total d))

@@ -40,7 +40,7 @@
                                             :title (str:concat "*Help-"
                                                                (symbol-name input)
                                                                "*"))))
-           (help-contents (cl-markup:markup
+           (help-contents (markup:markup
                            (:h1 (symbol-name input))
                            (:p (documentation input 'variable))
                            (:h2 "Current Value:")
@@ -63,7 +63,7 @@
                                          (list (first pair)
                                                (keymap:name (second pair))))
                                        key-keymap-pairs))
-         (help-contents (cl-markup:markup
+         (help-contents (markup:markup
                          (:h1 (symbol-name (sym command)))
                          (:h2 "Documentation")
                          (:p (write-to-string
@@ -99,16 +99,16 @@
          (help-buffer (help-mode :activate t
                                  :buffer (make-buffer :title title)))
          (help-contents
-                        (cl-markup:markup
+                        (markup:markup
                          (:h1 "Bindings")
                          (:p
                           (loop for keymap in (current-keymaps)
-                                collect (cl-markup:markup
+                                collect (markup:markup
                                          (:p (keymap:name keymap))
                                          (:table
                                           (loop for keyspec being the hash-keys in (keymap:keymap-with-parents->map keymap)
                                                   using (hash-value bound-value)
-                                                collect (cl-markup:markup
+                                                collect (markup:markup
                                                          (:tr
                                                           (:td keyspec)
                                                           (:td (string-downcase (sym (function-command bound-value)))))))))))))
@@ -178,12 +178,12 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                         (mapcar #'write-to-string (evaluate input))
                       (error (c) (list (format nil "Error: ~a" c)))))
            (result-contents (apply #'concatenate 'string
-                                   (cl-markup:markup
+                                   (markup:markup
                                     (:h1 "Form")
                                     (:p input)
                                     (:h1 "Result"))
                                    (loop for result in results
-                                         collect (cl-markup:markup (:p result)))))
+                                         collect (markup:markup (:p result)))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp result-contents)))))
       (ipc-buffer-evaluate-javascript result-buffer insert-results)
@@ -193,7 +193,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
   "Print some help."
   (let* ((help-buffer (help-mode :activate t :buffer (make-buffer :title "*Help*")))
          (help-contents
-           (cl-markup:markup
+           (markup:markup
             (:h1 "Getting started")
             (:p (:b "Warning: ") "Next is under active development. Feel free to "
                 (:a :href "https://github.com/atlas-engineer/next/issues"
@@ -281,7 +281,7 @@ The version number is stored in the clipboard."
     (unless buffer
       (setf buffer (help-mode :activate t :buffer (make-buffer :title "*Messages*"))))
     (let* ((content
-             (apply #'cl-markup:markup*
+             (apply #'markup:markup*
                     '(:h1 "Messages")
                     (reverse (messages-content *browser*))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)

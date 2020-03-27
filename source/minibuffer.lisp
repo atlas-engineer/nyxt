@@ -395,7 +395,7 @@ This should not rely on the minibuffer's content.")
   (setf (input-buffer minibuffer) "")
   (setf (input-cursor-position minibuffer) 0)
   (setf (content minibuffer)
-        (cl-markup:markup
+        (markup:markup
          (:head (:style (minibuffer-style minibuffer))
                 (:style (minibuffer-line-style minibuffer)))
          (:body
@@ -635,20 +635,20 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (update-display minibuffer))
 
 (defun generate-input-html (input-buffer cursor-index)
-  (cond ((equal "" input-buffer) (cl-markup:markup (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
-        ((eql cursor-index (length input-buffer)) (cl-markup:markup (:span input-buffer)
-                                                                    (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
-        (t (cl-markup:markup (:span (subseq input-buffer 0 cursor-index))
+  (cond ((equal "" input-buffer) (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
+        ((eql cursor-index (length input-buffer)) (markup:markup (:span input-buffer)
+                                                                    (:span :id "cursor" (markup:raw "&nbsp;"))))
+        (t (markup:markup (:span (subseq input-buffer 0 cursor-index))
                              (:span :id "cursor" (subseq input-buffer cursor-index (+ 1 cursor-index)))
                              (:span (subseq input-buffer (+ 1  cursor-index)))))))
 
 (defun generate-input-html-invisible (input-buffer cursor-index)
   (let ((input-buffer-password (make-string (length input-buffer) :initial-element #\*)))
-    (cond ((equal "" input-buffer-password) (cl-markup:markup (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
+    (cond ((equal "" input-buffer-password) (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
           ((eql cursor-index (length input-buffer-password))
-           (cl-markup:markup (:span input-buffer-password)
-                             (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
-          (t (cl-markup:markup (:span (subseq input-buffer-password 0 cursor-index))
+           (markup:markup (:span input-buffer-password)
+                             (:span :id "cursor" (markup:raw "&nbsp;"))))
+          (t (markup:markup (:span (subseq input-buffer-password 0 cursor-index))
                                (:span :id "cursor" (subseq input-buffer-password cursor-index (+ 1 cursor-index)))
                                (:span (subseq input-buffer-password (+ 1  cursor-index))))))))
 
@@ -664,11 +664,11 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
             (max
              (- (completion-head minibuffer) 1)
              0)))
-    (cl-markup:markup (:ul (loop repeat lines
+    (markup:markup (:ul (loop repeat lines
                                  for i from (completion-head minibuffer)
                                  for completion in (nthcdr i completions)
                                  collect
-                                 (cl-markup:markup
+                                 (markup:markup
                                   (:li :class (let ((selected-p (= i cursor-index))
                                                     (marked-p (member completion (marked-completions minibuffer)))
                                                     (head-p (= i (completion-head minibuffer))))
@@ -792,7 +792,7 @@ MESSAGE is a cl-markup list."
                                 :padding "0 6px")
                           (p :margin "0")))))
             (setf (content status-buffer)
-                  (cl-markup:markup
+                  (markup:markup
                    (:head (:style style)
                           (:style (minibuffer-line-style status-buffer)))
                    (:body
