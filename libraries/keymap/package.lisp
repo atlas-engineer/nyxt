@@ -60,8 +60,11 @@
    empty-modifiers
 
    ;; scheme
-   scheme
+   scheme-name
    make-scheme-name
+   scheme-name-p
+   scheme
+   scheme-p
    define-scheme
    get-keymap
    make-scheme)
