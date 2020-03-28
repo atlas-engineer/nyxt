@@ -125,15 +125,14 @@ It is run before the destructor.")
                                 "C-m k" #'bookmark-delete
                                 "C-t" #'make-buffer-focus
                                 "C-m u" #'bookmark-url
-                                ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
-                                "f1 v" #'variable-inspect
-                                "f1 c" #'command-inspect
-                                "f1 k" #'key-inspect
-                                "f1 b" #'bindings-inspect
-                                "C-h v" #'variable-inspect
-                                "C-h c" #'command-inspect
-                                "C-h k" #'key-inspect
-                                "C-h b" #'bindings-inspect
+                                "f1 v" #'describe-variable
+                                "f1 c" #'describe-command
+                                "f1 k" #'describe-key
+                                "f1 b" #'describe-bindings
+                                "C-h v" #'describe-variable
+                                "C-h c" #'describe-command
+                                "C-h k" #'describe-key
+                                "C-h b" #'describe-bindings
                                 "C-o" #'load-file
                                 "M-x" #'execute-command
                                 "M-:" #'command-evaluate
@@ -159,11 +158,10 @@ It is run before the destructor.")
                                 "C-m k" #'bookmark-delete
                                 "C-t" #'make-buffer-focus
                                 "C-m u" #'bookmark-url
-                                ;; TODO: Rename to inspect-variable?  Wouldn't describe-variable be more familiar?
-                                "C-h v" #'variable-inspect
-                                "C-h c" #'command-inspect
-                                "C-h k" #'key-inspect
-                                "C-h b" #'bindings-inspect
+                                "C-h v" #'describe-variable
+                                "C-h c" #'describe-command
+                                "C-h k" #'describe-key
+                                "C-h b" #'describe-bindings
                                 "C-o" #'load-file
                                 "M-x" #'execute-command
                                 "M-:" #'command-evaluate
@@ -188,10 +186,10 @@ It is run before the destructor.")
                                 "m u" #'bookmark-url
                                 "m d" #'bookmark-delete
                                 "C-o" #'load-file
-                                "C-h v" #'variable-inspect
-                                "C-h c" #'command-inspect
-                                "C-h k" #'command-inspect
-                                "C-h b" #'bindings-inspect
+                                "C-h v" #'describe-variable
+                                "C-h c" #'describe-command
+                                "C-h k" #'describe-command
+                                "C-h b" #'describe-bindings
                                 ":" #'execute-command
                                 "M-:" #'command-evaluate
                                 "W" #'make-window

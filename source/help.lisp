@@ -29,7 +29,7 @@
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to
 ;; augment the latter function so that we can inspect classes like browser.
-(define-command variable-inspect ()
+(define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
@@ -84,8 +84,8 @@
     (ipc-buffer-evaluate-javascript help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
-;; TODO: Have both "function-inspect" and "command-inspect"?
-(define-command command-inspect ()
+;; TODO: Have both "function-inspect" and "describe-command"?
+(define-command describe-command ()
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
@@ -93,7 +93,7 @@
                         :completion-function #'function-completion-filter)))
     (describe-command* input)))
 
-(define-command bindings-inspect ()
+(define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
   (let* ((title (str:concat "*Help-bindings"))
          (help-buffer (help-mode :activate t
@@ -152,7 +152,7 @@ This function can be used as a `window' `input-dispatcher'."
   ;; Never forward events.
   t)
 
-(define-command key-inspect ()
+(define-command describe-key ()
   "Display binding of user-inputted keys."
   (setf (input-dispatcher (ipc-window-active *browser*)) #'describe-key-dispatch-input)
   (echo "Press a key sequence to describe (cancel with 'escape escape'):"))
