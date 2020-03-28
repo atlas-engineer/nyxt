@@ -303,7 +303,7 @@ See `gtk-browser's `modifier-translator' slot."
     context))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
-  (next-hooks:run-hook (buffer-before-make-hook *browser*) buffer)
+  (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *browser*))
   (setf (gtk-object buffer)
         (make-instance 'webkit:webkit-web-view

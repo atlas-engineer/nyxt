@@ -287,7 +287,7 @@ This should not rely on the minibuffer's content.")
                     (write (ps:lisp (content minibuffer)))))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
-  (next-hooks:run-hook (minibuffer-make-hook *browser*) minibuffer)
+  (hooks:run-hook (minibuffer-make-hook *browser*) minibuffer)
   ;; We don't want to show the input in the candidate list when invisible.
   (unless (completion-function minibuffer)
     ;; If we have no completion function, then we have no candidates beside

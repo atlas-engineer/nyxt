@@ -67,10 +67,10 @@ The buffer is returned so that mode activation can be chained."
                        (when (constructor new-mode)
                          (funcall (constructor new-mode) new-mode))
                        (push new-mode (modes buffer))
-                       (next-hooks:run-hook (enable-hook new-mode) new-mode))
+                       (hooks:run-hook (enable-hook new-mode) new-mode))
                      (log:debug "~a enabled." ',name))
                    (when existing-instance
-                     (next-hooks:run-hook (disable-hook existing-instance) existing-instance)
+                     (hooks:run-hook (disable-hook existing-instance) existing-instance)
                      (when (destructor existing-instance)
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
@@ -80,7 +80,7 @@ The buffer is returned so that mode activation can be chained."
 
 
 (defclass root-mode () ())
-(next-hooks:define-hook-type mode (function (root-mode)))
+(hooks:define-hook-type mode (function (root-mode)))
 
 (define-mode root-mode (t)
   "The root of all modes."

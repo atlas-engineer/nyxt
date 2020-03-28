@@ -50,9 +50,9 @@ Regardless of the hook, the command returns the last expression of BODY."
         (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
     `(progn
        (serapeum:export-always ',before-hook)
-       (defparameter ,before-hook (next-hooks:make-hook-void))
+       (defparameter ,before-hook (hooks:make-hook-void))
        (serapeum:export-always ',after-hook)
-       (defparameter ,after-hook (next-hooks:make-hook-void))
+       (defparameter ,after-hook (hooks:make-hook-void))
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
                                          (eq (pkg c) *package*)))
                         %%command-list)
@@ -64,14 +64,14 @@ Regardless of the hook, the command returns the last expression of BODY."
          ,documentation
          (handler-case
              (progn
-               (next-hooks:run-hook ,before-hook)
+               (hooks:run-hook ,before-hook)
                (log:debug "Calling command ~a." ',name)
                ;; TODO: How can we print the arglist as well?
                ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
                (prog1
                    (progn
                      ,@body)
-                 (next-hooks:run-hook ,after-hook)))
+                 (hooks:run-hook ,after-hook)))
            (next-condition (c)
              (format t "~s" c)))))))
 
@@ -214,8 +214,8 @@ This function can be `funcall'ed."
 (defmethod object-string ((hook-desc hook-description))
   (name hook-desc))
 
-(defmethod object-string ((handler next-hooks:handler))
-  (str:downcase (next-hooks:name handler)))
+(defmethod object-string ((handler hooks:handler))
+  (str:downcase (hooks:name handler)))
 
 (defun hook-completion-filter (input)
   (flet ((list-hooks (object)
@@ -240,12 +240,12 @@ This function can be `funcall'ed."
 (defun handler-completion-filter (hook)
   (lambda (input)
     (fuzzy-match input
-                 (next-hooks:handlers hook))))
+                 (hooks:handlers hook))))
 
 (defun disabled-handler-completion-filter (hook)
   (lambda (input)
     (fuzzy-match input
-                 (next-hooks:disabled-handlers hook))))
+                 (hooks:disabled-handlers hook))))
 
 (define-command disable-hook-handler ()
   "Remove handler(s) from a hook."
@@ -258,7 +258,7 @@ This function can be `funcall'ed."
                    (make-minibuffer
                     :input-prompt (format nil "Disable handler from ~a" (name hook-desc))
                     :completion-function (handler-completion-filter (value hook-desc)))))
-      (next-hooks:disable-hook (value hook-desc) handler))))
+      (hooks:disable-hook (value hook-desc) handler))))
 
 (define-command enable-hook-handler ()
   "Remove handler(s) from a hook."
@@ -271,4 +271,4 @@ This function can be `funcall'ed."
                    (make-minibuffer
                     :input-prompt (format nil "Enable handler from ~a" (name hook-desc))
                     :completion-function (disabled-handler-completion-filter (value hook-desc)))))
-      (next-hooks:enable-hook (value hook-desc) handler))))
+      (hooks:enable-hook (value hook-desc) handler))))

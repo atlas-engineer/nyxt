@@ -7,11 +7,11 @@
 (defclass buffer () ())
 (defclass minibuffer () ())
 (defclass window () ())
-(next-hooks:define-hook-type window (function (window)))
-(next-hooks:define-hook-type buffer (function (buffer)))
-(next-hooks:define-hook-type minibuffer (function (minibuffer)))
-(next-hooks:define-hook-type download (function (download-manager:download)))
-(next-hooks:define-hook-type window-buffer (function (window buffer)))
+(hooks:define-hook-type window (function (window)))
+(hooks:define-hook-type buffer (function (buffer)))
+(hooks:define-hook-type minibuffer (function (minibuffer)))
+(hooks:define-hook-type download (function (download-manager:download)))
+(hooks:define-hook-type window-buffer (function (window buffer)))
 
 (serapeum.exporting:defclass window ()
   ((id :accessor id :initarg :id)
@@ -186,9 +186,9 @@ platform ports might support this.")
                           :documentation "Certificate host whitelisting for buffer.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
-              :initform (next-hooks:make-hook-string->string
-                         :combination #'next-hooks:combine-composed-hook)
-              :type next-hooks:hook-string->string
+              :initform (hooks:make-hook-string->string
+                         :combination #'hooks:combine-composed-hook)
+              :type hooks:hook-string->string
               :documentation "Hook run in `set-url' after `parse-url' was)))))
 processed.  The handlers take the URL going to be loaded as argument and must
 return a (possibly new) URL.")
@@ -429,8 +429,8 @@ from `session-path'.")
                       written to.")
    ;; Hooks follow:
    (before-exit-hook :accessor before-exit-hook
-                     :initform (next-hooks:make-hook-void)
-                     :type next-hooks:hook-void
+                     :initform (hooks:make-hook-void)
+                     :type hooks:hook-void
                      :documentation "Hook run before both `*browser*' and the
 platform port get terminated.  The handlers take no argument.")
    (window-make-hook :accessor window-make-hook
@@ -475,7 +475,7 @@ The handlers take the `download-manager:download' class instance as argument."))
   ;; `messages-appender' requires `*browser*' to be initialized.
   (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))
   (handler-case
-      (next-hooks:run-hook *after-init-hook*)
+      (hooks:run-hook *after-init-hook*)
     (error (c)
       (log:error "In *after-init-hook*: ~a" c)))
   (handler-case
@@ -552,7 +552,7 @@ This function is meant to be run in the background."
   (loop for d = (lparallel:receive-result download-manager:*notifications*)
         while d
         when (download-manager:finished-p d)
-          do (next-hooks:run-hook (after-download-hook *browser*))
+          do (hooks:run-hook (after-download-hook *browser*))
         do (let ((buffer (find-buffer 'download-mode)))
              ;; Only update if buffer exists.  We update even when out of focus
              ;; because if we switch to the buffer after all downloads are
@@ -581,7 +581,7 @@ when `proxied-downloads-p' is true."
   "Download URI.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
-  (next-hooks:run-hook (before-download-hook *browser*) url)
+  (hooks:run-hook (before-download-hook *browser*) url)
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
@@ -626,7 +626,7 @@ Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
-    (next-hooks:run-hook (window-set-active-buffer-hook window) window buffer)
+    (hooks:run-hook (window-set-active-buffer-hook window) window buffer)
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (buffer-make *browser*))
               (buffer-swap (active-buffer window)))

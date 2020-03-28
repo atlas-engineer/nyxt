@@ -47,7 +47,7 @@ Set to '-' to read standard input instead.")
 
 (define-command quit ()
   "Quit Next."
-  (next-hooks:run-hook (before-exit-hook *browser*))
+  (hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (window-list)
         do (ffi-window-delete window))
   (kill-interface *browser*)

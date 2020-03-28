@@ -56,12 +56,12 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       (setf (last-active-buffer browser) buffer))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
-    (next-hooks:run-hook (buffer-make-hook browser) buffer)
+    (hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
 (declaim (ftype (function (buffer)) buffer-delete))
 (defun buffer-delete (buffer)
-  (next-hooks:run-hook (buffer-delete-hook buffer) buffer)
+  (hooks:run-hook (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find-if
                         (lambda (window) (eql (active-buffer window) buffer))
                         (window-list)))
@@ -163,7 +163,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
                   (parse-url input-url))))
     (handler-case
         (progn
-          (let ((new-url (next-hooks:run-hook (load-hook buffer) url)))
+          (let ((new-url (hooks:run-hook (load-hook buffer) url)))
             (check-type new-url string)
             (setf url new-url)))
       (error (c)
