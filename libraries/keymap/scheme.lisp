@@ -55,10 +55,12 @@ See `define-scheme' for the user-facing function."
                     :do (define-key* keymap keyspecs bound-value))) ; TODO: Can we use define-key?
     scheme))
 
-;; We need a macro here for the same reason `define-key' is a macro.
 (defmacro define-scheme (name-prefix name bindings &rest more-name+bindings-pairs)
   "Return a scheme, a hash table with scheme NAMEs as key and their BINDINGS as value.
 The keymap names are prefixed with NAME-PREFIX and suffixed with \"-map\".
+
+This is a macro like `define-key' so that it can type-check the BINDINGS
+keyspecs at compile-time.
 
 Example:
 
