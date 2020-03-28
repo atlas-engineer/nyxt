@@ -1,6 +1,6 @@
 (in-package :cl-user)
 
-(defpackage :next-hooks
+(defpackage :hooks
   (:use :common-lisp)
   (:export
    #:*hook*

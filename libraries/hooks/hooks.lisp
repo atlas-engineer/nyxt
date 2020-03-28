@@ -1,4 +1,4 @@
-(in-package :next-hooks)
+(in-package :hooks)
 
 (defvar *hook* nil
   "The hook currently being run.")
