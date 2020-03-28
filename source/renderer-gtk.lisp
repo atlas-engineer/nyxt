@@ -61,7 +61,15 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (defparameter *window-class* 'gtk-window)
 
 (serapeum.exporting:defclass gtk-buffer (buffer)
-  ((gtk-object :accessor gtk-object)))
+  ((gtk-object :accessor gtk-object)
+   (proxy-uri :accessor proxy-uri
+              :initarg :proxy-uri
+              :type string
+              :initform "")
+   (proxy-ignored-hosts :accessor proxy-ignored-hosts
+                        :initarg :proxy-ignored-hosts
+                        :type list
+                        :initform '())))
 
 (define-class-type buffer)
 (declaim (type (buffer-type) *buffer-class*))
@@ -465,6 +473,8 @@ See `gtk-browser's `modifier-translator' slot."
 
    Note: WebKit supports three proxy 'modes': default (the system proxy),
    custom (the specified proxy) and none."
+  (setf (proxy-uri buffer) proxy-uri)
+  (setf (proxy-ignored-hosts buffer) ignore-hosts)
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (settings (cffi:null-pointer))
          (mode :webkit-network-proxy-mode-no-proxy)
@@ -481,6 +491,12 @@ See `gtk-browser's `modifier-translator' slot."
     (webkit:webkit-web-context-set-network-proxy-settings
      context
      :webkit-network-proxy-mode-custom settings)))
+
+(serapeum:export-always 'ffi-buffer-get-proxy)
+(defmethod ffi-buffer-get-proxy ((buffer gtk-buffer))
+  "Return the proxy URI and list of ignored hosts (a list of strings) as second value."
+  (values (proxy-uri buffer)
+          (proxy-ignored-hosts buffer)))
 
 (serapeum:export-always 'ffi-generate-input-event)
 (defmethod ffi-generate-input-event ((window gtk-window) event)
