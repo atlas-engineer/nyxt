@@ -282,7 +282,7 @@ This should not rely on the minibuffer's content.")
    This runs a call"
   (setf (slot-value minibuffer 'content) html-content)
   (ffi-minibuffer-evaluate-javascript
-   (last-active-window *browser*)
+   (current-window)
    (ps:ps (ps:chain document
                     (write (ps:lisp (content minibuffer)))))))
 
@@ -325,11 +325,11 @@ This should not rely on the minibuffer's content.")
     (error (c)
       (echo "~a" c)
       (return-from read-from-minibuffer)))
-  (push minibuffer (active-minibuffers (last-active-window *browser*)))
+  (push minibuffer (active-minibuffers (current-window)))
   (apply #'show
          (unless (completion-function minibuffer)
            ;; We don't need so much height since there is no candidate to display.
-           (list :height (status-buffer-height (last-active-window *browser*))))))
+           (list :height (status-buffer-height (current-window))))))
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
@@ -406,53 +406,48 @@ This should not rely on the minibuffer's content.")
 (defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
-  (let ((active-window (ffi-window-active *browser*)))
-    (when minibuffer
-      (with-result (new-content (ffi-minibuffer-evaluate-javascript
-                                 active-window
-                                 (str:concat
-                                  script
-                                  ;; Return the new HTML body.
-                                  (ps:ps (ps:chain document body |outerHTML|)))))
-        ;; Since the script may have changed the content on the platform port,
-        ;; we need to update the slot's value.
-        (setf (slot-value minibuffer 'content) new-content)))))
+  (when minibuffer
+    (with-result (new-content (ffi-minibuffer-evaluate-javascript
+                               (current-window)
+                               (str:concat
+                                script
+                                ;; Return the new HTML body.
+                                (ps:ps (ps:chain document body |outerHTML|)))))
+      ;; Since the script may have changed the content on the platform port,
+      ;; we need to update the slot's value.
+      (setf (slot-value minibuffer 'content) new-content))))
 
 (defun show (&key
-             (minibuffer (first (active-minibuffers
-                                 (last-active-window *browser*))))
-             height)
+               (minibuffer (first (active-minibuffers (current-window))))
+               height)
   "Show the last active minibuffer, if any."
-  (let ((active-window (last-active-window *browser*)))
-    (when minibuffer
-      (ffi-window-set-minibuffer-height
-       active-window
-       (or height
-           (minibuffer-open-height active-window))))))
+  (when minibuffer
+    (ffi-window-set-minibuffer-height
+     (current-window)
+     (or height
+         (minibuffer-open-height (current-window))))))
 
 (defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
-  (let ((active-window (ffi-window-active *browser*)))
-    ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
-    ;; minibuffer was invoked before the old one reaches here.
-    (setf (active-minibuffers active-window)
-          (delete minibuffer (active-minibuffers active-window)))
-    (if (active-minibuffers active-window)
-        (progn
-          (show)
-          ;; We need to refresh so that the nested minibuffers don't have to do it.
-          (state-changed (first (active-minibuffers active-window)))
-          (update-display (first (active-minibuffers active-window))))
-        (progn
-          ;; TODO: We need a mode-line before we can afford to really hide the
-          ;; minibuffer.  Until then, we "blank" it.
-          (echo "")                     ; Or echo-dismiss?
-          (ffi-window-set-minibuffer-height
-           active-window
-           ;; TODO: Until we have a mode-line, it's best to keep the
-           ;; closed-height equal to the echo-height to avoid the stuttering,
-           ;; especially when hovering over links.
-           (status-buffer-height active-window))))))
+  ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
+  ;; minibuffer was invoked before the old one reaches here.
+  (alex:deletef (active-minibuffers (current-window)) minibuffer)
+  (if (active-minibuffers (current-window))
+      (progn
+        (show)
+        ;; We need to refresh so that the nested minibuffers don't have to do it.
+        (state-changed (first (active-minibuffers (current-window))))
+        (update-display (first (active-minibuffers (current-window)))))
+      (progn
+        ;; TODO: We need a mode-line before we can afford to really hide the
+        ;; minibuffer.  Until then, we "blank" it.
+        (echo "")                       ; Or echo-dismiss?
+        (ffi-window-set-minibuffer-height
+         (current-window)
+         ;; TODO: Until we have a mode-line, it's best to keep the
+         ;; closed-height equal to the echo-height to avoid the stuttering,
+         ;; especially when hovering over links.
+         (status-buffer-height (current-window))))))
 
 (defun insert (characters &optional (minibuffer (current-minibuffer)))
   (setf (input-buffer minibuffer)
@@ -767,7 +762,7 @@ if there is one such."
                           ;; Need to ignore RPC errors in case platform port is
                           ;; not available and we use this function before
                           ;; checking for it.
-                            (window (ignore-errors (when *browser* (ffi-window-active *browser*))))
+                            (window (ignore-errors (when *browser* (current-window))))
                             (status-buffer (when window (status-buffer window))))
   "Echo TEXT in the status buffer.
 MESSAGE is a cl-markup list."

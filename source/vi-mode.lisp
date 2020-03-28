@@ -67,7 +67,7 @@
     ;; First we generate a button1 event so that the web view element is clicked
     ;; (e.g. a text field gets focus).
     (ffi-generate-input-event
-     (ffi-window-active *browser*)
+     (current-window)
      (last-event (buffer root-mode)))
     (%clicked-in-input?
      :callback (lambda (response)

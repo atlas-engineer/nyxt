@@ -306,12 +306,12 @@ Most recent messages are first.")
                        :documentation "This is used to generate unique window
 identifiers in `get-unique-window-identifier'.  We can't rely on the windows
 count since deleting windows may reseult in duplicate identifiers.")
-   (last-active-window :accessor last-active-window
-                       :initform nil
+   (last-active-window :initform nil
                        :type window
                        :documentation "Records the last active window.  This is
 useful when no Next window is focused and we still want `ffi-window-active' to
-return something.")
+return something.
+See `current-window' for the user-facing function.")
    (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
    (total-buffer-count :accessor total-buffer-count
@@ -710,10 +710,25 @@ proceeding."
      (log:debug "Forwarding back to platform port: ~a" url)
      nil)))
 
+(serapeum:export-always 'current-window)
+(defun current-window (&optional no-rescan)
+  ;; TODO: Get rid of the NO-RESCAN option and find a fast way to retrieve
+  ;; current window reliably.
+  ;; Tests:
+  ;; - Make two windows and make sure minibuffer gets spawned in the right window.
+  ;; - Delete the second window and see if the minibuffer still works in the first one.
+  "Return the currently active window.
+If NO-RESCAN is non-nil, fetch the window from the `last-active-window' cache
+instead of asking the renderer for the active window.  It is faster but
+sometimes yields the wrong reasult."
+  (if (and no-rescan (slot-value *browser* 'last-active-window))
+      (slot-value *browser* 'last-active-window)
+      (ffi-window-active *browser*)))
+
 (serapeum:export-always 'current-buffer)
 (defun current-buffer ()
   "Get the active buffer for the active window."
-  (match (ffi-window-active *browser*)
+  (match (current-window)
     ((guard w w) (active-buffer w))
     (_ (log:warn "No active window, picking last active buffer.")
        (last-active-buffer *browser*))))
@@ -727,13 +742,12 @@ proceeding."
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
   (unless (eq 'minibuffer (class-name (class-of buffer)))
-    (let ((active-window (ffi-window-active *browser*)))
-      (if active-window
-          (window-set-active-buffer active-window buffer)
-          (make-window buffer))
-      buffer)))
+    (if (current-window)
+        (window-set-active-buffer (current-window) buffer)
+        (make-window buffer))
+    buffer))
 
 (serapeum:export-always 'current-minibuffer)
 (defun current-minibuffer ()
   "Return the currently active minibuffer."
-  (first (active-minibuffers (last-active-window *browser*))))
+  (first (active-minibuffers (current-window))))

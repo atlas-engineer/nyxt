@@ -154,7 +154,7 @@ This function can be used as a `window' `input-dispatcher'."
 
 (define-command describe-key ()
   "Display binding of user-inputted keys."
-  (setf (input-dispatcher (ffi-window-active *browser*)) #'describe-key-dispatch-input)
+  (setf (input-dispatcher (current-window)) #'describe-key-dispatch-input)
   (echo "Press a key sequence to describe (cancel with 'escape escape'):"))
 
 (defun evaluate (string)

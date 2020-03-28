@@ -17,8 +17,8 @@
 (defun window-make (browser)
   (let* ((window (ffi-window-make browser)))
     (setf (gethash (id window) (windows browser)) window)
-    (unless (last-active-window browser)
-      (setf (last-active-window browser) window))
+    (unless (slot-value browser 'last-active-window)
+      (setf (slot-value browser 'last-active-window) window))
     (next-hooks:run-hook (window-make-hook browser) window)
     window))
 
@@ -40,7 +40,7 @@
                           :completion-function (window-completion-filter))))
     (mapcar #'delete-current-window windows)))
 
-(define-command delete-current-window (&optional (window (ffi-window-active *browser*)))
+(define-command delete-current-window (&optional (window (current-window)))
   "Delete WINDOW, or the currently active window if unspecified."
   (let ((window-count (hash-table-count (windows *browser*))))
     (cond ((and window (> window-count 1))
@@ -55,11 +55,11 @@
     (window-set-active-buffer window buffer)
     (values window buffer)))
 
-(define-command fullscreen-current-window (&optional (window (ffi-window-active *browser*)))
+(define-command fullscreen-current-window (&optional (window (current-window)))
   "Fullscreen WINDOW, or the currently active window if unspecified."
   (ffi-window-fullscreen window))
 
-(define-command unfullscreen-current-window (&optional (window (ffi-window-active *browser*)))
+(define-command unfullscreen-current-window (&optional (window (current-window)))
   "Unfullscreen WINDOW, or the currently active window if unspecified."
   (ffi-window-unfullscreen window))
 

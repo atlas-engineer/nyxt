@@ -148,9 +148,9 @@ Otherwise list all commands."
   (str:downcase (sym command)))
 
 (defmethod object-display ((command command))
-  ;; Use `last-active-window' for speed, or else the minibuffer will stutter
+  ;; Use `(current-window :no-recan)' or else the minibuffer will stutter
   ;; because of the RPC calls.
-  (let* ((buffer (active-buffer (last-active-window *browser*)))
+  (let* ((buffer (active-buffer (current-window :no-rescan)))
          (scheme-name (keymap-scheme-name buffer))
          (bindings '()))
     (loop for mode in (modes buffer)
@@ -229,7 +229,7 @@ This function can be `funcall'ed."
                                                      (str:downcase (closer-mop:slot-definition-name s))))
                                   (closer-mop:class-slots (class-of object))))))
     (let ((window-hooks
-            (list-hooks (last-active-window *browser*)))
+            (list-hooks (current-window)))
           (buffer-hooks (list-hooks (current-buffer)))
           (browser-hooks (list-hooks *browser*)))
       (fuzzy-match input

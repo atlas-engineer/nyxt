@@ -204,9 +204,9 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
                          (open-urls urls)))
                       (_
                        (log:info "External process pinged Next.")))
-                    ;; If we get pinged too early, we not have a last-active-window yet.
-                    (when (last-active-window *browser*)
-                     (ffi-window-to-foreground (last-active-window *browser*)))))))
+                    ;; If we get pinged too early, we not have a current-window yet.
+                    (when (current-window)
+                     (ffi-window-to-foreground (current-window)))))))
 
 (defun bind-socket-or-quit (urls)
   "If another Next is listening on the socket, tell it to open URLS.

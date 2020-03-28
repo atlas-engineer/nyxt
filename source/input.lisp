@@ -14,7 +14,7 @@
     (setf (keymap:bound-type keymap) '(or keymap:keymap function))
     keymap))
 
-(defun current-keymaps (&optional (window (ffi-window-active *browser*)))
+(defun current-keymaps (&optional (window (current-window)))
   "Return the list of `keymap' for the current buffer, ordered by priority."
   (let ((buffer (active-buffer window)))
     (when buffer
@@ -23,7 +23,7 @@
                                                     (current-minibuffer)
                                                     buffer))))))))
 
-(defun all-keymaps (&optional (window (ffi-window-active *browser*)))
+(defun all-keymaps (&optional (window (current-window)))
   "Return all keymaps for WINDOW, including the buffer keymaps and the
 minibuffer keymaps."
   (let ((buffer (active-buffer window)))

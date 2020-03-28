@@ -92,6 +92,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (setf (gtk:gtk-widget-size-request minibuffer-container)
           (list -1 (status-buffer-height window)))
     (gtk:gtk-container-add gtk-object box-layout)
+    (setf (slot-value *browser* 'last-active-window) window)
     (gtk:gtk-widget-show-all gtk-object)
     (gobject:g-signal-connect
      gtk-object "key_press_event"
@@ -392,7 +393,8 @@ See `gtk-browser's `modifier-translator' slot."
 (serapeum:export-always 'ffi-window-to-foreground)
 (defmethod ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
-  (gtk:gtk-window-present (gtk-object window)))
+  (gtk:gtk-window-present (gtk-object window))
+  (setf (slot-value *browser* 'last-active-window) window))
 
 (serapeum:export-always 'ffi-window-set-title)
 (defmethod ffi-window-set-title ((window gtk-window) title)
@@ -402,9 +404,9 @@ See `gtk-browser's `modifier-translator' slot."
 (serapeum:export-always 'ffi-window-active)
 (defmethod ffi-window-active ((browser gtk-browser))
   "Return the window object for the currently active window."
-  (setf (last-active-window browser)
+  (setf (slot-value browser 'last-active-window)
         (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
-            (last-active-window browser))))
+            (slot-value browser 'last-active-window))))
 
 (serapeum:export-always 'ffi-window-set-active-buffer)
 (defmethod ffi-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))

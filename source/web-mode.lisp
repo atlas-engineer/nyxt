@@ -416,14 +416,13 @@ Otherwise go forward to the only child."
   (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
-  (let* ((active-window (ffi-window-active *browser*))
-         (buffer (active-buffer active-window)))
+  (let* ((buffer (active-buffer (current-window))))
     ;; TODO: Setting the default zoom level works with pure Javascript, but it
     ;; can only be done after the URL has been loaded which is a bit of a
     ;; kludge.  Instead we could add an RPC endpoint,
     ;; e.g. webkit_web_view_set_zoom_level.
     (unzoom-page :buffer buffer)
-    (set-window-title active-window buffer)
+    (set-window-title (current-window) buffer)
     (htree:add-child (make-instance 'buffer-description
                                     :url url
                                     :title (title buffer))
