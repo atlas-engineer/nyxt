@@ -66,8 +66,8 @@
   (let ((root-mode (find-mode buffer 'root-mode)))
     ;; First we generate a button1 event so that the web view element is clicked
     ;; (e.g. a text field gets focus).
-    (ipc-generate-input-event
-     (ipc-window-active *browser*)
+    (ffi-generate-input-event
+     (ffi-window-active *browser*)
      (last-event (buffer root-mode)))
     (%clicked-in-input?
      :callback (lambda (response)

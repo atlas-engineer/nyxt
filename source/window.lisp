@@ -15,7 +15,7 @@
 
 (declaim (ftype (function (browser)) window-make))
 (defun window-make (browser)
-  (let* ((window (ipc-window-make browser)))
+  (let* ((window (ffi-window-make browser)))
     (setf (gethash (id window) (windows browser)) window)
     (unless (last-active-window browser)
       (setf (last-active-window browser) window))
@@ -25,7 +25,7 @@
 (declaim (ftype (function (window)) window-delete))
 (defun window-delete (window)
   "This function must be called by the renderer when a window is deleted."
-  (ipc-window-delete window)
+  (ffi-window-delete window)
   (next-hooks:run-hook (window-delete-hook window) window)
   (remhash (id window) (windows *browser*))
   (when (zerop (hash-table-count (windows *browser*)))
@@ -40,11 +40,11 @@
                           :completion-function (window-completion-filter))))
     (mapcar #'delete-current-window windows)))
 
-(define-command delete-current-window (&optional (window (ipc-window-active *browser*)))
+(define-command delete-current-window (&optional (window (ffi-window-active *browser*)))
   "Delete WINDOW, or the currently active window if unspecified."
   (let ((window-count (hash-table-count (windows *browser*))))
     (cond ((and window (> window-count 1))
-           (ipc-window-delete window))
+           (ffi-window-delete window))
           (window
            (echo "Can't delete sole window.")))))
 
@@ -55,11 +55,11 @@
     (window-set-active-buffer window buffer)
     (values window buffer)))
 
-(define-command fullscreen-current-window (&optional (window (ipc-window-active *browser*)))
+(define-command fullscreen-current-window (&optional (window (ffi-window-active *browser*)))
   "Fullscreen WINDOW, or the currently active window if unspecified."
-  (ipc-window-fullscreen window))
+  (ffi-window-fullscreen window))
 
-(define-command unfullscreen-current-window (&optional (window (ipc-window-active *browser*)))
+(define-command unfullscreen-current-window (&optional (window (ffi-window-active *browser*)))
   "Unfullscreen WINDOW, or the currently active window if unspecified."
-  (ipc-window-unfullscreen window))
+  (ffi-window-unfullscreen window))
 

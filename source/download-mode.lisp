@@ -48,7 +48,7 @@
                     (:p (:em "Open a file with " (:code "M-x download-open-file") "."))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
-    (ipc-buffer-evaluate-javascript download-buffer insert-content)
+    (ffi-buffer-evaluate-javascript download-buffer insert-content)
     download-buffer))
 
 (define-command download-list ()

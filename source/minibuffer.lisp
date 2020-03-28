@@ -281,7 +281,7 @@ This should not rely on the minibuffer's content.")
   "Set the `content' of the MINIBUFFER to HTML-CONTENT.
    This runs a call"
   (setf (slot-value minibuffer 'content) html-content)
-  (ipc-minibuffer-evaluate-javascript
+  (ffi-minibuffer-evaluate-javascript
    (last-active-window *browser*)
    (ps:ps (ps:chain document
                     (write (ps:lisp (content minibuffer)))))))
@@ -406,9 +406,9 @@ This should not rely on the minibuffer's content.")
 (defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
-  (let ((active-window (ipc-window-active *browser*)))
+  (let ((active-window (ffi-window-active *browser*)))
     (when minibuffer
-      (with-result (new-content (ipc-minibuffer-evaluate-javascript
+      (with-result (new-content (ffi-minibuffer-evaluate-javascript
                                  active-window
                                  (str:concat
                                   script
@@ -425,14 +425,14 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Show the last active minibuffer, if any."
   (let ((active-window (last-active-window *browser*)))
     (when minibuffer
-      (ipc-window-set-minibuffer-height
+      (ffi-window-set-minibuffer-height
        active-window
        (or height
            (minibuffer-open-height active-window))))))
 
 (defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
-  (let ((active-window (ipc-window-active *browser*)))
+  (let ((active-window (ffi-window-active *browser*)))
     ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
     ;; minibuffer was invoked before the old one reaches here.
     (setf (active-minibuffers active-window)
@@ -447,7 +447,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
           ;; TODO: We need a mode-line before we can afford to really hide the
           ;; minibuffer.  Until then, we "blank" it.
           (echo "")                     ; Or echo-dismiss?
-          (ipc-window-set-minibuffer-height
+          (ffi-window-set-minibuffer-height
            active-window
            ;; TODO: Until we have a mode-line, it's best to keep the
            ;; closed-height equal to the echo-height to avoid the stuttering,
@@ -767,7 +767,7 @@ if there is one such."
                           ;; Need to ignore RPC errors in case platform port is
                           ;; not available and we use this function before
                           ;; checking for it.
-                            (window (ignore-errors (when *browser* (ipc-window-active *browser*))))
+                            (window (ignore-errors (when *browser* (ffi-window-active *browser*))))
                             (status-buffer (when window (status-buffer window))))
   "Echo TEXT in the status buffer.
 MESSAGE is a cl-markup list."

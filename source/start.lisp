@@ -49,7 +49,7 @@ Set to '-' to read standard input instead.")
   "Quit Next."
   (next-hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (window-list)
-        do (ipc-window-delete window))
+        do (ffi-window-delete window))
   (kill-interface *browser*)
   (when (socket-thread *browser*)
     (ignore-errors
@@ -206,7 +206,7 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
                        (log:info "External process pinged Next.")))
                     ;; If we get pinged too early, we not have a last-active-window yet.
                     (when (last-active-window *browser*)
-                     (ipc-window-to-foreground (last-active-window *browser*)))))))
+                     (ffi-window-to-foreground (last-active-window *browser*)))))))
 
 (defun bind-socket-or-quit (urls)
   "If another Next is listening on the socket, tell it to open URLS.

@@ -47,7 +47,7 @@
                            (:p (write-to-string (symbol-value input)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (ipc-buffer-evaluate-javascript help-buffer insert-help)
+      (ffi-buffer-evaluate-javascript help-buffer insert-help)
       (set-current-buffer help-buffer))))
 
 (declaim (ftype (function (command)) describe-command*))
@@ -81,7 +81,7 @@
                          (:pre (:code (write-to-string (sexp command))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ipc-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 ;; TODO: Have both "function-inspect" and "describe-command"?
@@ -114,7 +114,7 @@
                                                           (:td (string-downcase (sym (function-command bound-value)))))))))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ipc-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 (defun describe-key-dispatch-input (event buffer window printable-p)
@@ -154,7 +154,7 @@ This function can be used as a `window' `input-dispatcher'."
 
 (define-command describe-key ()
   "Display binding of user-inputted keys."
-  (setf (input-dispatcher (ipc-window-active *browser*)) #'describe-key-dispatch-input)
+  (setf (input-dispatcher (ffi-window-active *browser*)) #'describe-key-dispatch-input)
   (echo "Press a key sequence to describe (cancel with 'escape escape'):"))
 
 (defun evaluate (string)
@@ -186,7 +186,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                                          collect (markup:markup (:p result)))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp result-contents)))))
-      (ipc-buffer-evaluate-javascript result-buffer insert-results)
+      (ffi-buffer-evaluate-javascript result-buffer insert-results)
       (set-current-buffer result-buffer))))
 
 (define-command help ()
@@ -253,7 +253,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-      (ipc-buffer-evaluate-javascript help-buffer insert-help)
+      (ffi-buffer-evaluate-javascript help-buffer insert-help)
   (set-current-buffer help-buffer)
     help-buffer))
 
@@ -286,7 +286,7 @@ The version number is stored in the clipboard."
                     (reverse (messages-content *browser*))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
-      (ipc-buffer-evaluate-javascript buffer insert-content))
+      (ffi-buffer-evaluate-javascript buffer insert-content))
     (set-current-buffer buffer)
     buffer))
 

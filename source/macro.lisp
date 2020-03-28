@@ -59,7 +59,7 @@ ARGS must be key arguments."
      (defun ,script-name ,(append '(&key ((:callback %callback) nil)
                                     ((:buffer %buffer) (current-buffer)))
                            args)
-       (ipc-buffer-evaluate-javascript %buffer
+       (ffi-buffer-evaluate-javascript %buffer
                                        (ps:ps ,@script-body)
                                        :callback %callback))))
 
@@ -67,7 +67,7 @@ ARGS must be key arguments."
   "Execute the parenscript body against the current buffer."
   ;XXX: we might as well do it synchronously.
   `(with-result (res
-                 (ipc-buffer-evaluate-javascript (current-buffer)
+                 (ffi-buffer-evaluate-javascript (current-buffer)
                                                  (ps:ps ,@body)
                                                  :callback (lambda (res)
                                                              (format t res))))

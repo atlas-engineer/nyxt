@@ -46,7 +46,7 @@ If URL is `:default', use `default-new-buffer-url'."
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (declare (ignore dead-buffer)) ;; TODO: Dead Buffer
-  (let* ((buffer (ipc-buffer-make browser :title title :default-modes default-modes)))
+  (let* ((buffer (ffi-buffer-make browser :title title :default-modes default-modes)))
     (unless (str:emptyp (namestring (cookies-path buffer)))
       (ensure-parent-exists (cookies-path buffer)))
     (setf (gethash (id buffer) (buffers browser)) buffer)
@@ -69,7 +69,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                                 (buffer-make *browser*))))
     (when parent-window
       (window-set-active-buffer parent-window replacement-buffer))
-    (ipc-buffer-delete buffer)
+    (ffi-buffer-delete buffer)
     (remhash (id buffer) (buffers *browser*))
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
@@ -169,7 +169,7 @@ URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
       (error (c)
         (log:error "In `load-hook': ~a" c)))
     (setf (url buffer) url)
-    (ipc-buffer-load buffer url)))
+    (ffi-buffer-load buffer url)))
 
 (define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text or to input.

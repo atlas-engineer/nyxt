@@ -43,7 +43,7 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
                        :initform (make-hook-window)
                        :type hook-window
                        :documentation "Hook run after
-    `ipc-window-delete' takes effect.  The handlers take the window as
+    `ffi-window-delete' takes effect.  The handlers take the window as
     argument.")))
 
 (serapeum.exporting:defclass proxy ()
@@ -204,10 +204,10 @@ The handlers take the buffer as argument.")))
 (defmethod (setf proxy) (proxy (buffer buffer))
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
-      (ipc-buffer-set-proxy buffer
+      (ffi-buffer-set-proxy buffer
                             (server-address proxy)
                             (whitelist proxy))
-      (ipc-buffer-set-proxy buffer
+      (ffi-buffer-set-proxy buffer
                             ""
                             nil)))
 
@@ -310,7 +310,7 @@ count since deleting windows may reseult in duplicate identifiers.")
                        :initform nil
                        :type window
                        :documentation "Records the last active window.  This is
-useful when no Next window is focused and we still want `ipc-window-active' to
+useful when no Next window is focused and we still want `ffi-window-active' to
 return something.")
    (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
@@ -441,7 +441,7 @@ The handlers take the window as argument.")
    (buffer-make-hook :accessor buffer-make-hook
                      :initform (make-hook-buffer)
                      :type hook-buffer
-                     :documentation "Hook run after `buffer-make' and before `ipc-buffer-load'.
+                     :documentation "Hook run after `buffer-make' and before `ffi-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
@@ -613,7 +613,7 @@ current buffer."
         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
     (setf url (if (str:emptyp url) "<no url/name>" url))
-    (ipc-window-set-title window
+    (ffi-window-set-title window
                           (concatenate 'string "Next - "
                                        title (unless (str:emptyp title) " - ")
                                        url))))
@@ -631,11 +631,11 @@ proceeding."
         (let ((temp-buffer (buffer-make *browser*))
               (buffer-swap (active-buffer window)))
           (log:debug "Swapping with buffer from existing window.")
-          (ipc-window-set-active-buffer window-with-same-buffer temp-buffer)
-          (ipc-window-set-active-buffer window buffer)
-          (ipc-window-set-active-buffer window-with-same-buffer buffer-swap)
+          (ffi-window-set-active-buffer window-with-same-buffer temp-buffer)
+          (ffi-window-set-active-buffer window buffer)
+          (ffi-window-set-active-buffer window-with-same-buffer buffer-swap)
           (buffer-delete temp-buffer))
-        (ipc-window-set-active-buffer window buffer))
+        (ffi-window-set-active-buffer window buffer))
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
     (set-window-title window buffer)
@@ -713,7 +713,7 @@ proceeding."
 (serapeum:export-always 'current-buffer)
 (defun current-buffer ()
   "Get the active buffer for the active window."
-  (match (ipc-window-active *browser*)
+  (match (ffi-window-active *browser*)
     ((guard w w) (active-buffer w))
     (_ (log:warn "No active window, picking last active buffer.")
        (last-active-buffer *browser*))))
@@ -727,7 +727,7 @@ proceeding."
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
   (unless (eq 'minibuffer (class-name (class-of buffer)))
-    (let ((active-window (ipc-window-active *browser*)))
+    (let ((active-window (ffi-window-active *browser*)))
       (if active-window
           (window-set-active-buffer active-window buffer)
           (make-window buffer))

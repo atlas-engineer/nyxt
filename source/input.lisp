@@ -14,7 +14,7 @@
     (setf (keymap:bound-type keymap) '(or keymap:keymap function))
     keymap))
 
-(defun current-keymaps (&optional (window (ipc-window-active *browser*)))
+(defun current-keymaps (&optional (window (ffi-window-active *browser*)))
   "Return the list of `keymap' for the current buffer, ordered by priority."
   (let ((buffer (active-buffer window)))
     (when buffer
@@ -23,7 +23,7 @@
                                                     (current-minibuffer)
                                                     buffer))))))))
 
-(defun all-keymaps (&optional (window (ipc-window-active *browser*)))
+(defun all-keymaps (&optional (window (ffi-window-active *browser*)))
   "Return all keymaps for WINDOW, including the buffer keymaps and the
 minibuffer keymaps."
   (let ((buffer (active-buffer window)))
@@ -63,7 +63,7 @@ Return nil to forward to renderer or non-nil otherwise."
       (when buffer
         (setf (last-event buffer) event))
       (cond
-        ((ipc-generated-input-event-p window event)
+        ((ffi-generated-input-event-p window event)
          (log:debug "Forward generated event ~a" (keyspecs key-stack))
          nil)
 

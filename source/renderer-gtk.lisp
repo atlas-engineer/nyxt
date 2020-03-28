@@ -116,15 +116,15 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (window-delete window))
 
-(serapeum:export-always 'ipc-window-delete)
-(defmethod ipc-window-delete ((window gtk-window))
+(serapeum:export-always 'ffi-window-delete)
+(defmethod ffi-window-delete ((window gtk-window))
   "Delete a window object and remove it from the hash of windows."
   (gtk:gtk-widget-destroy (gtk-object window)))
 
-(defmethod ipc-window-fullscreen ((window gtk-window))
+(defmethod ffi-window-fullscreen ((window gtk-window))
   (gtk:gtk-window-fullscreen (gtk-object window)))
 
-(defmethod ipc-window-unfullscreen ((window gtk-window))
+(defmethod ffi-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
 (defun derive-key-string (keyval character)
@@ -384,30 +384,30 @@ See `gtk-browser's `modifier-translator' slot."
         ((webkit:webkit-hit-test-result-media-uri hit-test-result)
          (push-url-at-point buffer (webkit:webkit-hit-test-result-media-uri hit-test-result)))))
 
-(serapeum:export-always 'ipc-window-make)
-(defmethod ipc-window-make ((browser gtk-browser))
+(serapeum:export-always 'ffi-window-make)
+(defmethod ffi-window-make ((browser gtk-browser))
   "Make a window."
   (make-instance *window-class*))
 
-(serapeum:export-always 'ipc-window-to-foreground)
-(defmethod ipc-window-to-foreground ((window gtk-window))
+(serapeum:export-always 'ffi-window-to-foreground)
+(defmethod ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
   (gtk:gtk-window-present (gtk-object window)))
 
-(serapeum:export-always 'ipc-window-set-title)
-(defmethod ipc-window-set-title ((window gtk-window) title)
+(serapeum:export-always 'ffi-window-set-title)
+(defmethod ffi-window-set-title ((window gtk-window) title)
   "Set the title for a window."
   (setf (gtk:gtk-window-title (gtk-object window)) title))
 
-(serapeum:export-always 'ipc-window-active)
-(defmethod ipc-window-active ((browser gtk-browser))
+(serapeum:export-always 'ffi-window-active)
+(defmethod ffi-window-active ((browser gtk-browser))
   "Return the window object for the currently active window."
   (setf (last-active-window browser)
         (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
             (last-active-window browser))))
 
-(serapeum:export-always 'ipc-window-set-active-buffer)
-(defmethod ipc-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
+(serapeum:export-always 'ffi-window-set-active-buffer)
+(defmethod ffi-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
   "Set BROWSER's WINDOW buffer to BUFFER. "
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
@@ -415,48 +415,48 @@ See `gtk-browser's `modifier-translator' slot."
   (setf (active-buffer window) buffer)
   buffer)
 
-(serapeum:export-always 'ipc-window-set-minibuffer-height)
-(defmethod ipc-window-set-minibuffer-height ((window gtk-window) height)
+(serapeum:export-always 'ffi-window-set-minibuffer-height)
+(defmethod ffi-window-set-minibuffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
-(serapeum:export-always 'ipc-buffer-make)
-(defmethod ipc-buffer-make ((browser gtk-browser) &key title default-modes)
+(serapeum:export-always 'ffi-buffer-make)
+(defmethod ffi-buffer-make ((browser gtk-browser) &key title default-modes)
   "Make buffer with title TITLE and modes DEFAULT-MODES."
   (apply #'make-instance *buffer-class*
          (append (when title `(:title ,title))
                  (when default-modes `(:default-modes ,default-modes)))))
 
-(serapeum:export-always 'ipc-buffer-delete)
-(defmethod ipc-buffer-delete ((buffer gtk-buffer))
+(serapeum:export-always 'ffi-buffer-delete)
+(defmethod ffi-buffer-delete ((buffer gtk-buffer))
   (gtk:gtk-widget-destroy (gtk-object buffer)))
 
-(serapeum:export-always 'ipc-buffer-load)
-(defmethod ipc-buffer-load ((buffer gtk-buffer) uri)
+(serapeum:export-always 'ffi-buffer-load)
+(defmethod ffi-buffer-load ((buffer gtk-buffer) uri)
   (webkit:webkit-web-view-load-uri (gtk-object buffer) uri))
 
-(serapeum:export-always 'ipc-buffer-evaluate-javascript)
-(defmethod ipc-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
+(serapeum:export-always 'ffi-buffer-evaluate-javascript)
+(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
   (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer) javascript callback))
 
-(serapeum:export-always 'ipc-minibuffer-evaluate-javascript)
-(defmethod ipc-minibuffer-evaluate-javascript ((window gtk-window) javascript &key callback)
+(serapeum:export-always 'ffi-minibuffer-evaluate-javascript)
+(defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript &key callback)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript callback))
 
-(serapeum:export-always 'ipc-buffer-enable-javascript)
-(defmethod ipc-buffer-enable-javascript ((buffer gtk-buffer) value)
+(serapeum:export-always 'ffi-buffer-enable-javascript)
+(defmethod ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
-(serapeum:export-always 'ipc-buffer-enable-javascript-markup)
-(defmethod ipc-buffer-enable-javascript-markup ((buffer gtk-buffer) value)
+(serapeum:export-always 'ffi-buffer-enable-javascript-markup)
+(defmethod ffi-buffer-enable-javascript-markup ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript-markup
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
-(serapeum:export-always 'ipc-buffer-set-proxy)
-(defmethod ipc-buffer-set-proxy ((buffer gtk-buffer) &optional proxy-uri (ignore-hosts (list nil)))
+(serapeum:export-always 'ffi-buffer-set-proxy)
+(defmethod ffi-buffer-set-proxy ((buffer gtk-buffer) &optional proxy-uri (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
    Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
    For the user-level interface, see `proxy-mode'.
@@ -480,13 +480,13 @@ See `gtk-browser's `modifier-translator' slot."
      context
      :webkit-network-proxy-mode-custom settings)))
 
-(serapeum:export-always 'ipc-generate-input-event)
-(defmethod ipc-generate-input-event ((window gtk-window) event)
+(serapeum:export-always 'ffi-generate-input-event)
+(defmethod ffi-generate-input-event ((window gtk-window) event)
   ;; The "send_event" field is used to mark the event as an "unconsumed"
   ;; keypress.  The distinction allows us to avoid looping indefinitely.
   (setf (gdk:gdk-event-button-send-event event) t)
   (gtk:gtk-main-do-event event))
 
-(serapeum:export-always 'ipc-generated-input-event-p)
-(defmethod ipc-generated-input-event-p ((window gtk-window) event)
+(serapeum:export-always 'ffi-generated-input-event-p)
+(defmethod ffi-generated-input-event-p ((window gtk-window) event)
   (gdk:gdk-event-send-event event))

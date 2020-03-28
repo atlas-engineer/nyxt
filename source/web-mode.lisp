@@ -355,7 +355,7 @@ Otherwise go forward to the only child."
                      tree))
            (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp content)))))
-      (ipc-buffer-evaluate-javascript output-buffer insert-content)
+      (ffi-buffer-evaluate-javascript output-buffer insert-content)
       (set-current-buffer output-buffer))))
 
 (define-command copy-url ()
@@ -416,7 +416,7 @@ Otherwise go forward to the only child."
   (echo "Loading: ~a." url))
 
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
-  (let* ((active-window (ipc-window-active *browser*))
+  (let* ((active-window (ffi-window-active *browser*))
          (buffer (active-buffer active-window)))
     ;; TODO: Setting the default zoom level works with pure Javascript, but it
     ;; can only be done after the URL has been loaded which is a bit of a
