@@ -124,7 +124,7 @@ this is left for the user to customize to their needs.")
    (forward-input-events-p :accessor forward-input-events-p :initarg :forward-input-events-p
                            :initform t
                            :documentation "When non-nil, keyboard events are
-forwarded to the platform port when no binding is found.  Pointer
+forwarded to the renderer when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
    (last-event :accessor last-event
@@ -162,7 +162,7 @@ down.")
    (cookies-path :accessor cookies-path
                  :initform (xdg-data-home "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
-platform ports might support this.")
+renderers might support this.")
    (box-style :accessor box-style
               :initform (cl-css:css
                          '((".next-hint"
@@ -241,7 +241,7 @@ defined in any package and is unique."
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
-   This must be called after BUFFER has been created on the platform port.
+   This must be called after BUFFER has been created by the renderer.
    See `buffer-make'."
   (let ((root-mode (make-instance 'root-mode :buffer buffer)))
     (dolist (mode-class (reverse (default-modes buffer)))
@@ -325,7 +325,7 @@ count since deleting windows may reseult in duplicate identifiers.")
                      :initform #'default-startup
                      :documentation "The function run on startup.  It takes a
 list of URLs (strings) as argument (the command line positional arguments).  It
-is run after the platform port has been initialized and after the
+is run after the renderer has been initialized and after the
 `*after-init-hook*' has run.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
@@ -432,7 +432,7 @@ from `session-path'.")
                      :initform (hooks:make-hook-void)
                      :type hooks:hook-void
                      :documentation "Hook run before both `*browser*' and the
-platform port get terminated.  The handlers take no argument.")
+renderer get terminated.  The handlers take no argument.")
    (window-make-hook :accessor window-make-hook
                      :initform (make-hook-window)
                      :type hook-window
