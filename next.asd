@@ -51,7 +51,6 @@
                  (:file "time")
                  (:file "types")
                  (:file "conditions")
-                 (:file "file-human-size")
                  ;; Core Functionality
                  (:file "macro")
                  (:file "global")
