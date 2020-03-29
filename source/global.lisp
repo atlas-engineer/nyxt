@@ -37,9 +37,13 @@ Add a handler can be added with
   (hooks:add-hook *after-init-hook*
     (hooks:make-handler-void #'my-foo-function))")
 
-(serapeum:export-always '*use-session*)
-(defparameter *use-session* t
-  "If nil, don't restore nor store the session.")
+(serapeum:export-always '*session*)
+;; We don't set *session* to (xdg-data-home "sessions/default.lisp") because it
+;; would result in XDG_DATA_HOME being expanded at compile-time.
+(defparameter *session* "default"
+  "Original value is the default session name.
+Current value is the current session file.
+See `derive-session'.")
 
 (serapeum:export-always '*swank-port*)
 (defvar *swank-port* 4006

@@ -35,11 +35,19 @@ Set to '-' to read standard input instead.")
            :short #\Q
            :long "no-init"
            :description "Do not load the user init file.")
+    (:name :no-session
+           :short #\S
+           :long "no-session"
+     :description "Do not load any session.")
     (:name :session
            :short #\s
            :long "session"
            :arg-parser #'identity
-           :description "With --session nil, don't restore or store the session."))
+     :description (format nil "The argument can be empty (same effect as --no-session), a file if it contains a
+slash (prefix with ./ to refer to files in current directory) or the basename of
+a file in the sessions directory '~a'.
+Warning: any existing file will be overwritten."
+                          (xdg-data-home "sessions"))))
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
@@ -65,7 +73,7 @@ Set to '-' to read standard input instead.")
   (setf
    (session-store-function *browser*) nil
    (session-restore-function *browser*) nil)
-  (uiop:delete-file-if-exists (session-path *browser*))
+  (uiop:delete-file-if-exists *session*)
   (quit))
 
 (defun set-debug-level (level)
@@ -77,6 +85,24 @@ Set to '-' to read standard input instead.")
      (log:config :debug))
     (otherwise
      (log:config :info))))
+
+(defun derive-session (name)
+  "Derive session file from NAME.
+If NAME has a slash, use the file it refers to.
+Without slash, NAME (with .lisp appended if not already there), store in
+the (xdg-data-home \"sessions \") folder."
+  (cond
+    ((uiop:emptyp name)
+     "")
+    ((search "/" name)
+     name)
+    (t
+     (let ((name (format nil "~a/~a"
+                         (xdg-data-home "sessions")
+                         name)))
+       (unless (str:ends-with? ".lisp" name :ignore-case t)
+         (setf name (str:concat name ".lisp")))
+       name))))
 
 (serapeum:export-always 'entry-point)
 (defun entry-point ()
@@ -99,9 +125,11 @@ next [options] [urls]")
         (load-lisp-file (init-file-path) :interactive nil))
       (eval-expr (getf options :eval))
       (uiop:quit))
-    (when (getf options :session)
-      (when (string-equal (getf options :session) "nil")
-        (setf next:*use-session* nil)))
+    (setf *session*
+          (if (getf options :no-session)
+              ""
+              (derive-session (or (getf options :session)
+                                  *session*))))
     (setf *options* options
           *free-args* free-args)
     (setf *keep-alive* nil)             ; Not a REPL.
@@ -184,7 +212,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
         (window-set-active-buffer window buffer)))
   (match (session-restore-function *browser*)
     ((guard f f)
-     (when *use-session*
+     (when (uiop:file-exists-p *session*)
+       (log:info "Restoring session '~a'" *session*)
        (funcall f)))))
 
 (defun listen-socket ()

@@ -75,8 +75,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (add-to-recent-buffers buffer)
     (match (session-store-function *browser*)
       ((guard f f)
-       (when *use-session*
-         (funcall f))))))
+       (funcall f)))))
 
 (serapeum:export-always 'buffer-list)
 (defun buffer-list (&key sort-by-time)
