@@ -2,6 +2,16 @@
 
 (in-package :next)
 
+(sera:export-always 'resource-handler-return-type)
+(deftype resource-handler-return-type ()
+  `(or (eql :forward)
+       (eql :stop)
+       boolean))
+
+(sera:export-always 'resource-handler-type)
+(deftype resource-handler-type ()
+  `(function (buffer &key &allow-other-keys) resource-handler-return-type))
+
 ;; trivial-types:proper-list doesn't check its element type.
 
 (defun list-of-type-p (list typep)

@@ -12,6 +12,8 @@
 (hooks:define-hook-type minibuffer (function (minibuffer)))
 (hooks:define-hook-type download (function (download-manager:download)))
 (hooks:define-hook-type window-buffer (function (window buffer)))
+(hooks:define-hook-type resource resource-handler-type)
+(sera:export-always 'make-handler-resource)
 
 (serapeum.exporting:defclass window ()
   ((id :accessor id :initarg :id)
@@ -132,10 +134,16 @@ forwarded when no binding is found.")
                :type 'gdk:gdk-event
                ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
                :documentation "The last event that was received for the current buffer.")
-   (resource-query-function :accessor resource-query-function
-                            ;; TODO: What about having multiple functions?  And what about moving this to modes?
-                            :initarg :resource-query-function
-                            :initform #'request-resource)
+   (request-resource-hook :accessor request-resource-hook
+                          :initarg :request-resource-hook
+                          :initform (make-hook-resource
+                                     :combination #'hooks:combine-hook-until-success
+                                     :handlers (list (make-handler-resource #'request-resource)))
+                          :documentation "Hook run on every resource load.
+The handlers are run sequentially until one returns non-nil.
+Newest hook is run first.
+If :FORWARD is returned, the resource loading is deferred to the renderer.
+If :STOP (or T) is returned, stop the the hook.")
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
                            :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
@@ -678,16 +686,14 @@ proceeding."
       (error "Could not make buffer to open ~a: ~a" urls c))))
 
 (serapeum:export-always 'request-resource)
-(defmethod request-resource ((buffer buffer) &key url event-type
-                             (is-new-window nil) (is-known-type t) (mouse-button "")
-                             (modifiers '()) &allow-other-keys)
-  "Return non-nil to let platform port load URL.
-   Return nil otherwise.
-
-   Deal with URL with the following rules:
-   - If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
-   - If IS-KNOWN-TYPE is nil, download the file.  (TODO: Implement it!)
-   - Otherwise return non-nil to let the platform port load the URL."
+(defun request-resource (buffer &key url event-type
+                                  (is-new-window nil) (is-known-type t) (mouse-button "")
+                                  (modifiers '()) &allow-other-keys)
+  "Candidate for `request-resource-hook'.
+Deal with URL with the following rules:
+- If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
+- If IS-KNOWN-TYPE is nil, download the file.
+- Otherwise return :FORWARD to let the renderer load the URL."
   (declare (ignore event-type)) ; TODO: Do something with the event type?
   (cond
     ((or is-new-window
@@ -708,7 +714,7 @@ proceeding."
      t)
     (t
      (log:debug "Forwarding back to platform port: ~a" url)
-     nil)))
+     :forward)))
 
 (serapeum:export-always 'current-window)
 (defun current-window (&optional no-rescan)

@@ -82,20 +82,16 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
     "Enable blocking of blacklisted hosts."
     ((hostlists :accessor hostlists :initarg :hostlists
                 :initform (list *default-host-list*))
-     (previous-blocker :initform nil
-                       :documentation "Save the previous blocker to be restored
-when disabling the mode.")
      (destructor
       :initform
       (lambda (mode)
-        (setf (resource-query-function (buffer mode))
-              (slot-value mode 'previous-blocker))))
+        (hooks:remove-hook (request-resource-hook (buffer mode))
+                           'request-resource-block)))
      (constructor
       :initform
       (lambda (mode)
-        (let ((active-buffer (buffer mode)))
-          (setf (slot-value mode 'previous-blocker) (resource-query-function active-buffer))
-          (setf (resource-query-function active-buffer) #'resource-query-block))))))
+        (hooks:add-hook (request-resource-hook (buffer mode))
+                        (next:make-handler-resource #'request-resource-block))))))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE."
@@ -103,33 +99,28 @@ when disabling the mode.")
     (not (loop for hostlist in (hostlists mode)
                never (member-string host (parse hostlist))))))
 
-(defmethod resource-query-block ((buffer buffer)
-                                 &key url
-                                   cookies
-                                   event-type
-                                   (is-new-window nil)
-                                   (is-known-type t)
-                                   (mouse-button "")
-                                   (modifiers '())
+(defun request-resource-block (buffer
+                               &key url
+                                 cookies
+                                 event-type
+                                 (is-new-window nil)
+                                 (is-known-type t)
+                                 (mouse-button "")
+                                 (modifiers '())
                                  &allow-other-keys)
   "Block resource queries from blacklisted hosts.
-Fall back on `resource-query-default'."
+This is an acceptable handler for `request-resource-hook'."
   ;; TODO: Use quri:uri-domain?
+  (declare (ignore cookies event-type is-new-window is-known-type mouse-button modifiers))
   (let ((mode (find-submode buffer 'blocker-mode)))
     (if (and mode
              (blacklisted-host-p mode
                                  (ignore-errors (quri:uri-host (quri:uri url)))))
         (progn
           (log:info "Dropping ~a" url)
-          nil)
-        (request-resource buffer
-                          :url url
-                          :cookies cookies
-                          :event-type event-type
-                          :is-new-window is-new-window
-                          :is-known-type is-known-type
-                          :mouse-button mouse-button
-                          :modifiers modifiers))))
+          :stop)
+        ;; Fallback on the other handlers from `request-resource-hook'.
+        nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :s-serialization)

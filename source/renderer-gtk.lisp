@@ -367,13 +367,18 @@ See `gtk-browser's `modifier-translator' slot."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (webkit:webkit-uri-request-uri request))
-    (request-resource buffer
-                      :url url
-                      :mouse-button mouse-button
-                      :event-type event-type
-                      :is-new-window is-new-window
-                      :is-known-type is-known-type
-                      :modifiers modifiers)))
+    (if (or (null (hooks:handlers (request-resource-hook buffer)))
+            (eq :forward (hooks:run-hook (request-resource-hook buffer)
+                                         buffer
+                                         :url url
+                                         :mouse-button mouse-button
+                                         :event-type event-type
+                                         :is-new-window is-new-window
+                                         :is-known-type is-known-type
+                                         :modifiers modifiers)))
+        ;; nil means "forward to renderer".
+        nil
+        t)))
 
 (defmethod process-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
