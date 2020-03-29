@@ -217,7 +217,7 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
        (funcall f)))))
 
 (defun listen-socket ()
-  (log:info "Listening on socket ~s" (socket-path *browser*))
+  (ensure-parent-exists (socket-path *browser*))
   ;; TODO: Catch error against race conditions?
   (iolib:with-open-socket (s :address-family :local
                              :connect :passive
@@ -235,7 +235,8 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
                        (log:info "External process pinged Next.")))
                     ;; If we get pinged too early, we not have a current-window yet.
                     (when (current-window)
-                     (ffi-window-to-foreground (current-window)))))))
+                     (ffi-window-to-foreground (current-window))))))
+  (log:info "Listening on socket ~s" (socket-path *browser*)))
 
 (defun bind-socket-or-quit (urls)
   "If another Next is listening on the socket, tell it to open URLS.
