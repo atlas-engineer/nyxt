@@ -53,6 +53,8 @@ MAJOR.MINOR.PATCH, we increment the:
   =cua=, =emacs=, =vi-normal= and =vi-insert= are in the =scheme= package.  Thus
   it's enough to complete over =scheme:= to list them all.
 
+- Turn =resource-query-function= into a hook, =request-resource-hook=.
+
 ** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
 
