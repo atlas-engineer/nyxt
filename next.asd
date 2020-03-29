@@ -53,6 +53,7 @@
                  (:file "conditions")
                  ;; Core Functionality
                  (:file "macro")
+                 (:file "desktop")
                  (:file "global")
                  (:file "browser")
                  (:file "renderer-gtk")

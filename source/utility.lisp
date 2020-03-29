@@ -21,26 +21,6 @@
 SLIME."
   (swank:create-server :port swank-port :dont-close t))
 
-(serapeum:export-always 'xdg-data-home)
-(defun xdg-data-home (&optional (file-name ""))
-  "Return XDG_DATA_HOME as per XDG directory specification.
-FILE-NAME is appended to the result."
-  (merge-pathnames
-   file-name
-   (merge-pathnames
-    (make-pathname :directory '(:relative "next"))
-    (uiop:xdg-data-home))))
-
-(serapeum:export-always 'xdg-config-home)
-(defun xdg-config-home (&optional (file-name ""))
-  "Return XDG_CONFIG_HOME as per XDG directory specification.
-FILE-NAME is appended to the result."
-  (merge-pathnames
-   file-name
-   (merge-pathnames
-    (make-pathname :directory '(:relative "next"))
-    (uiop:xdg-config-home))))
-
 (defun ensure-parent-exists (path)
   "Create parent directories of PATH if they don't exist and return PATH."
   (ensure-directories-exist (directory-namestring path))
