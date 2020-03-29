@@ -23,10 +23,10 @@
     (define-scheme "web"
       scheme:cua
       (list
-       "C-M-f" #'history-forwards-all-query
-       "C-M-b" #'history-all-query
-       "C-f" #'history-forwards-query
-       "C-b" #'history-backwards-query
+       "C-M-right" #'history-forwards-all-query
+       "C-M-left" #'history-all-query
+       "M-shift-right" #'history-forwards-query
+       "M-shift-left" #'history-backwards-query
        "M-right" #'history-forwards
        "M-left" #'history-backwards
        "C-g" #'follow-hint
