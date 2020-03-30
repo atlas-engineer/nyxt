@@ -8,7 +8,7 @@
              (declare (ignore c))
              (format stream "~a" "Unsupported operation for this renderer."))))
 
-(serapeum.exporting:defclass qt-browser (browser)
+(defclass-export qt-browser (browser)
   ((application :accessor application)))
 
 (define-class-type browser)
@@ -28,7 +28,7 @@
 (defmethod kill-interface ((browser qt-browser))
   (qt:application-quit (application browser)))
 
-(serapeum.exporting:defclass qt-window (window)
+(defclass-export qt-window (window)
   ((qt-object :accessor qt-object)
    (box-layout :accessor box-layout)
    (minibuffer-view :accessor minibuffer-view)))
@@ -38,7 +38,7 @@
 (serapeum:export-always '*window-class*)
 (defparameter *window-class* 'qt-window)
 
-(serapeum.exporting:defclass qt-buffer (buffer)
+(defclass-export qt-buffer (buffer)
   ((qt-object :accessor qt-object)))
 
 (define-class-type buffer)
