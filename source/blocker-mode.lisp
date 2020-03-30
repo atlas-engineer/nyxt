@@ -8,7 +8,7 @@
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
-(defclass-export hostlist ()
+(serapeum.exporting:defclass hostlist ()
   ((url :accessor url :initarg :url
         :initform nil
         :type string
