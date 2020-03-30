@@ -2,6 +2,9 @@
 
 (in-package :next)
 
+(defmacro defclass-export (name supers &body (slots . options))
+  `(serapeum.exporting:defclass ,name ,supers ,slots ,@options))
+
 ;; While we don't use this macro yet, it could prove useful if we decide to use
 ;; a `defclass' macro other than serapeum's.
 (defmacro export-class (class-symbol &optional
