@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(serapeum.exporting:defclass buffer-description ()
+(defclass-export buffer-description ()
   ((url :accessor url :initarg :url
         :initform "" :type string)
    (title :accessor title :initarg :title

@@ -66,7 +66,7 @@
     ;; echo area separate from the minibuffer.
     )))
 
-(serapeum.exporting:defclass minibuffer (buffer)
+(defclass-export minibuffer (buffer)
   ((default-modes :initarg :default-modes
                   :initform '(minibuffer-mode))
    (completion-function :initarg :completion-function :accessor completion-function

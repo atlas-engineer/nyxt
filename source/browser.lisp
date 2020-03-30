@@ -15,7 +15,7 @@
 (hooks:define-hook-type resource resource-handler-type)
 (sera:export-always 'make-handler-resource)
 
-(serapeum.exporting:defclass window ()
+(defclass-export window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
@@ -48,7 +48,7 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
     `ffi-window-delete' takes effect.  The handlers take the window as
     argument.")))
 
-(serapeum.exporting:defclass proxy ()
+(defclass-export proxy ()
   ((server-address :accessor server-address :initarg :server-address
                    :initform "socks5://127.0.0.1:9050"
                    :type string
@@ -75,7 +75,7 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
 (defparameter *proxy-class* 'proxy)
 
 ;; TODO: Reimplement certificate whitelist mode
-(serapeum.exporting:defclass certificate-whitelist ()
+(defclass-export certificate-whitelist ()
   ((whitelist :accessor whitelist :initarg :whitelist
               :initform '()
               :type list-of-strings
@@ -89,7 +89,7 @@ This can apply to specific buffers."))
 (serapeum:export-always '*certificate-whitelist-class*)
 (defparameter *certificate-whitelist-class* 'certificate-whitelist)
 
-(serapeum.exporting:defclass buffer ()
+(defclass-export buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
 not associated with a web view) have an empty ID.")
@@ -275,7 +275,7 @@ defined in any package and is unique."
   (dolist (mode (modes buffer))
     (did-finish-navigation mode url)))
 
-(serapeum.exporting:defclass browser ()
+(defclass-export browser ()
   ((socket-thread :accessor socket-thread
                   :initform nil
                   :documentation "Thread that listens on socket.

@@ -39,7 +39,7 @@ The buffer is returned so that mode activation can be chained."
       (setf class-args (append class-args
                                `((:documentation ,docstring)))))
     `(progn
-       (serapeum.exporting:defclass ,@class-args)
+       (defclass-export ,@class-args)
        ;; Class symbol customization:
        (define-class-type ,name)
        (declaim (type (,(intern (format nil "~a-TYPE" name))) ,class-var))

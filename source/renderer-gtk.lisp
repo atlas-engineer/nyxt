@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(serapeum.exporting:defclass gtk-browser (browser)
+(defclass-export gtk-browser (browser)
   (#+darwin
    (modifiers :accessor modifiers
               :initform '()
@@ -48,7 +48,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (defmethod kill-interface ((browser gtk-browser))
   (gtk:leave-gtk-main))
 
-(serapeum.exporting:defclass gtk-window (window)
+(defclass-export gtk-window (window)
   ((gtk-object :accessor gtk-object)
    (box-layout :accessor box-layout)
    (minibuffer-container :accessor minibuffer-container)
@@ -60,7 +60,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (serapeum:export-always '*window-class*)
 (defparameter *window-class* 'gtk-window)
 
-(serapeum.exporting:defclass gtk-buffer (buffer)
+(defclass-export gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)
    (proxy-uri :accessor proxy-uri
               :initarg :proxy-uri
