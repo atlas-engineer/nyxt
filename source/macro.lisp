@@ -2,6 +2,7 @@
 
 (in-package :next)
 
+(serapeum:export-always 'defclass-export)
 (defmacro defclass-export (name supers &body (slots . options))
   `(serapeum.exporting:defclass ,name ,supers ,slots ,@options))
 
