@@ -2,12 +2,6 @@
 
 (in-package :next)
 
-(define-condition unsupported-operation (error)
-  ()
-  (:report (lambda (c stream)
-             (declare (ignore c))
-             (format stream "~a" "Unsupported operation for this renderer."))))
-
 (defclass-export qt-browser (browser)
   ((application :accessor application)))
 
@@ -66,7 +60,6 @@
 (defmethod process-destroy ((window qt-window))
   (window-delete window))
 
-(serapeum:export-always 'ffi-window-delete)
 (defmethod ffi-window-delete ((window qt-window))
   "Delete a window object and remove it from the hash of windows.")
 
@@ -90,30 +83,25 @@
    (lambda ()
      (did-finish-navigation buffer (qt:web-engine-view-url (qt-object buffer))))))
 
-(serapeum:export-always 'ffi-window-make)
 (defmethod ffi-window-make ((browser qt-browser))
   "Make a window."
   (make-instance *window-class*))
 
-(serapeum:export-always 'ffi-window-to-foreground)
 (defmethod ffi-window-to-foreground ((window qt-window))
   "Show window in foreground."
   (qt:window-present (qt-object window)))
 
-(serapeum:export-always 'ffi-window-set-title)
 (defmethod ffi-window-set-title ((window qt-window) title)
   "Set the title for a window."
   (qt:window-set-window-title (qt-object window) title)
   title)
 
-(serapeum:export-always 'ffi-window-active)
 (defmethod ffi-window-active ((browser qt-browser))
   "Return the window object for the currently active window."
   (setf (slot-value browser 'last-active-window)
         (or (find-if #'qt:window-is-active-window (window-list) :key #'qt-object)
             (slot-value browser 'last-active-window))))
 
-(serapeum:export-always 'ffi-window-set-active-buffer)
 (defmethod ffi-window-set-active-buffer ((window qt-window) (buffer qt-buffer))
   "Set BROWSER's WINDOW buffer to BUFFER."
   (qt:widget-set-parent (qt-object (active-buffer window)) (cffi:null-pointer))
@@ -121,47 +109,26 @@
   (qt:widget-show (qt-object buffer))
   (setf (active-buffer window) buffer))
 
-(serapeum:export-always 'ffi-window-set-minibuffer-height)
 (defmethod ffi-window-set-minibuffer-height ((window qt-window) height)
   (qt:widget-set-fixed-height (minibuffer-view window) height))
 
-(serapeum:export-always 'ffi-buffer-make)
 (defmethod ffi-buffer-make ((browser qt-browser) &key title default-modes)
   "Make buffer with title TITLE and modes DEFAULT-MODES."
   (apply #'make-instance *buffer-class*
          (append (when title `(:title ,title))
                  (when default-modes `(:default-modes ,default-modes)))))
 
-(serapeum:export-always 'ffi-buffer-delete)
 (defmethod ffi-buffer-delete ((buffer qt-buffer)))
 
-(serapeum:export-always 'ffi-buffer-load)
 (defmethod ffi-buffer-load ((buffer qt-buffer) uri)
   (qt:web-engine-view-load (qt-object buffer) uri))
 
-(serapeum:export-always 'ffi-buffer-evaluate-javascript)
 (defmethod ffi-buffer-evaluate-javascript ((buffer qt-buffer) javascript &key callback)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript callback))
 
-(serapeum:export-always 'ffi-minibuffer-evaluate-javascript)
 (defmethod ffi-minibuffer-evaluate-javascript ((window qt-window) javascript &key callback)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript callback))
 
-(serapeum:export-always 'ffi-buffer-enable-javascript)
-(defmethod ffi-buffer-enable-javascript ((buffer qt-buffer) value)
-  (declare (ignore buffer))
-  (declare (ignore value))
-  (error 'unsupported-operation))
-
-(serapeum:export-always 'ffi-buffer-set-proxy)
-(defmethod ffi-buffer-set-proxy ((buffer qt-buffer) &optional proxy-uri (ignore-hosts (list nil)))
-  (declare (ignore buffer))
-  (declare (ignore proxy-uri))
-  (declare (ignore ignore-hosts))
-  (error 'unsupported-operation))
-
-(serapeum:export-always 'ffi-generate-input-event)
 (defmethod ffi-generate-input-event ((window qt-window) event))
 
-(serapeum:export-always 'ffi-generated-input-event-p)
 (defmethod ffi-generated-input-event-p ((window qt-window) event))
