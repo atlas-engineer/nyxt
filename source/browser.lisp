@@ -131,7 +131,6 @@ events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
    (last-event :accessor last-event
                :initform nil
-               :type 'gdk:gdk-event
                ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
                :documentation "The last event that was received for the current buffer.")
    (request-resource-hook :accessor request-resource-hook
