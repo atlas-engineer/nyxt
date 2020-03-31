@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(defclass-export gtk-browser (browser)
+(defclass gtk-browser (browser)
   (#+darwin
    (modifiers :accessor modifiers
               :initform '()
