@@ -13,8 +13,6 @@
                :cl-ppcre-unicode
                :cl-prevalence
                :closer-mop
-               :cl-cffi-gtk
-               :cl-webkit2
                :dexador
                :iolib
                :ironclad
@@ -56,7 +54,6 @@
                  (:file "desktop")
                  (:file "global")
                  (:file "browser")
-                 (:file "renderer-gtk")
                  (:file "command")
                  (:file "mode")
                  (:file "utility")
@@ -95,6 +92,20 @@
   :build-operation "program-op"
   :build-pathname "next"
   :entry-point "next:entry-point")
+
+(asdf:defsystem :next/gtk
+  :depends-on (:next
+               :cl-cffi-gtk
+               :cl-webkit2)
+  :pathname "source"
+  :components ((:file "renderer-gtk")))
+
+(asdf:defsystem :next/qt
+  :depends-on (:next
+               :cl-webengine
+               :trivial-main-thread)
+  :pathname "source"
+  :components ((:file "renderer-qt")))
 
 #+sb-core-compression
 (defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
