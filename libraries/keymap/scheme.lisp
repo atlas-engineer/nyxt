@@ -34,7 +34,7 @@ schemes.  See `define-scheme'.")))
   `(and hash-table
         (satisfies scheme-p)))
 
-(declaim (ftype (function (string scheme-name list &rest list) scheme) define-scheme*))
+(declaim (ftype (function (string scheme-name list &rest (or scheme list)) scheme) define-scheme*))
 (defun define-scheme* (name-prefix name bindings &rest more-name+bindings-pairs)
   "Define scheme.
 See `define-scheme' for the user-facing function."
@@ -72,7 +72,7 @@ Example:
     scheme:emacs '(\"M-w\" copy
                    \"M-y\" paste))
 
-In the above, `scheme:cua' is a parent of `scheme:cua'; thus the Emacs keymap
+`scheme:cua' is a parent of `scheme:emacs'; thus, in the above example, the Emacs keymap
 will have the CUA keymap as parent.
 The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
   (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs)))
