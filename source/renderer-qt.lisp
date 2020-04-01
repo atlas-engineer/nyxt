@@ -55,6 +55,12 @@
     (qt:layout-set-spacing box-layout 0)
     (ffi-window-set-minibuffer-height window (status-buffer-height window))
     (qt:widget-resize qt-object 1024 768)
+    (qt:widget-install-key-press-filter
+     (qt-object window)
+     (lambda (event)
+       (print (qt:key-string event))
+       (print (qt:modifiers event))
+       (print (qt:key-code event))))
     (qt:widget-show qt-object)))
 
 (defmethod process-destroy ((window qt-window))
@@ -73,7 +79,6 @@
   (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
   (setf (id buffer) (get-unique-buffer-identifier *browser*))
   (setf (qt-object buffer) (qt:new-q-web-engine-view))
-  (qt:web-engine-view-load (qt-object buffer) "https://www.example.com")
   (qt:load-started-listener-connect
    (qt-object buffer)
    (lambda ()
