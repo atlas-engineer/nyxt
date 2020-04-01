@@ -58,10 +58,19 @@
     (qt:widget-install-key-press-filter
      (qt-object window)
      (lambda (event)
-       (print (qt:key-string event))
-       (print (qt:modifiers event))
-       (print (qt:key-code event))))
+       (process-key-press-event window event)))
     (qt:widget-show qt-object)))
+
+(defmethod process-key-press-event ((sender qt-window) event)
+  (when (qt:key-string event)
+    (alex:appendf (key-stack *browser*)
+                  (list (keymap:make-key :code (qt:key-code event)
+                                         :value (string-downcase (qt:key-string event))
+                                         :modifiers (qt:modifiers event)
+                                         :status :pressed)))
+    (funcall (input-dispatcher sender)
+             event (active-buffer sender)
+             sender (qt:key-string event))))
 
 (defmethod process-destroy ((window qt-window))
   (window-delete window))
