@@ -147,7 +147,7 @@ their names are equal."
          (name fn2)))))
 
 (defclass hook ()
-  ((handler-class :reader handler-class
+  ((handler-class :reader handler-class ; TODO: Is this really needed?
                   :type symbol
                   :initform t
                   :documentation "
@@ -392,7 +392,7 @@ will be automatically encapsulated with make-handler-NAME."
                           :place place
                           :value value))
        (defclass ,hook-class-name (hook)
-         ((handler-class :initform (find-class ',handler-class-name))))
+         ((handler-class :initform ',handler-class-name)))
        (defmethod add-hook ((hook ,hook-class-name) (handler ,handler-class-name) &key append)
          ,(format nil "Add HANDLER to HOOK.
 HOOK must be of type ~a
