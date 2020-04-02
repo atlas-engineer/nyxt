@@ -103,7 +103,7 @@ This should not rely on the minibuffer's content.")
                              matching no candidates.")
    (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input"
                  :type string)
-   (input-buffer :initarg :input-buffer :accessor input-buffer :initform ""
+   (input-buffer :initarg :input-buffer :reader input-buffer :initform ""
                  :type string
                  :documentation "Initial text to place at the prompt, ready to edit.")
    (input-cursor-position :accessor input-cursor-position :initform 0 :type integer)
