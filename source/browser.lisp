@@ -370,8 +370,7 @@ stored.  Nil means use system default.")
                       :documentation "`local-time:timestamp' of when Next was started.")
    (init-time :initform 0.0 :type number
               :documentation "Init time in seconds.")
-   (history-data :accessor history-data
-                 :initform nil
+   (history-data :initform nil
                  :documentation "
 The history data kept in memory.")
    (history-path :initarg :history-path
@@ -392,8 +391,7 @@ The function which stores the global history into `history-path'.")
                              :initform #'restore-sexp-history
                              :documentation "
 The function which restores the global history from `history-path'.")
-   (bookmarks-data :accessor bookmarks-data
-                   :initform nil
+   (bookmarks-data :initform nil
                    :documentation "
 The bookmarks kept in memory.")
    (bookmarks-path :initarg :bookmarks-path
