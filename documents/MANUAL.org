@@ -324,15 +324,18 @@ user. Do you wish to go forwards to ~Ancient Greek~ or to
 
 The standard keybindings for forward-backward navigation are:
 
-1. ~C-f~: Navigate Forward
-2. ~C-b~: Navigate Backward
-3. ~M-f~: Navigate Forward Tree
-4. ~M-b~: Navigate Backward
+1. ~M-right~: Navigate Forward
+2. ~M-left~: Navigate Backward
+3. ~M-s-right~: Navigate Forward Tree
+4. ~M-s-left~: Navigate Backward
 
 By using navigate forward tree you will be prompted for which branch
 you'd like to visit as in the example above. The simple navigate
 forward command will simply visit the first child of the current node
 in the tree.
+
+You can also view a full tree of the history for a given buffer by
+invoking =buffer-history-tree=.
 
 ** Bookmarks
 
