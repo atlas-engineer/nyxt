@@ -18,12 +18,12 @@ which external dependencies we are directly relying on.
 + cl-json
 + cl-cffi-gtk
 + cl-webkit
++ cl-webengine
 + cl-markup
 + cl-ppcre
 + cl-ppcre-unicode
 + cl-prevalence
 + closer-mop
-+ dbus
 + dexador
 + ironclad
 + local-time
