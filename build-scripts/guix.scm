@@ -249,6 +249,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("trivia" ,sbcl-trivia)
          ("trivial-clipboard" ,sbcl-trivial-clipboard)
          ("trivial-features" ,sbcl-trivial-features)
+         ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
          ("unix-opts" ,sbcl-unix-opts)
          ;; WebKitGTK deps
          ("glib-networking" ,glib-networking)
