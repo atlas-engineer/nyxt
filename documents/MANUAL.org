@@ -381,20 +381,10 @@ files, and you can select one with the usual fuzzy completion. You can
 go one directory  up with =M-Left= or =C-l=, and  enter the directory
 at point with =M-Right= or =C-j=.
 
-Next will open itself directories and supported media types (new in
-Next 1.3.5), otherwise it will try to open the file with the system's
-default using =xdg-open=.  See the command help for further details,
-and the customization section to override the default behavior.
-
-/Note: this feature is alpha and is meant to grow in Next 1.4 and onwards./
-
-Next opening a directory:
-
-#+html: <img src="https://user-images.githubusercontent.com/3721004/66169709-9c3cbe00-e641-11e9-9aca-0d4af29d7977.png" align="center"/>
-
-Next opening a video. We can treat it like any other buffer:
-
-#+html: <img src="https://user-images.githubusercontent.com/3721004/66169802-f2116600-e641-11e9-9f5d-3af0724fc9fe.png" align="center" caption="Delgres - Mr President" title="Delgres - Mr President"/>
+Next will open itself directories and supported media types, otherwise
+it will try to open the file with the system's default using
+=xdg-open= or =open=.  See the command help for further details, and
+the customization section to override the default behavior.
 
 ** Clearing the Echo Area
 In the area at the bottom of the screen where the minibuffer resides,
