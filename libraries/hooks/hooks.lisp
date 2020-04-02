@@ -335,10 +335,12 @@ Without HANDLERS, enable all of them."
   "Return a globally-accessible hook.
 The hook can be accessed with `find-hook' at (list NAME OBJECT)."
   (let ((hook
-          (make-instance hook-type
-                         :handlers handlers
-                         :disabled-handlers disabled-handlers
-                         :combination combination)))
+          (apply #'make-instance hook-type
+                 :handlers handlers
+                 :disabled-handlers disabled-handlers
+                 (if combination
+                     (list :combination combination)
+                     '()))))
     (setf (gethash (list name object) %hook-table)
           hook)
     hook))
