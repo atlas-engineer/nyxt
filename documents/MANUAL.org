@@ -202,18 +202,19 @@ returns:
 
 ** Multi-selection
 
-When that makes sense (e.g. for the =delete-buffer= command), multiple entries
-can be marked.  The default bindings are:
+For some commands (e.g. for the =delete-buffer= command), multiple
+entries can be marked.  The default bindings are:
 
 - =C-space= to toggle the mark of an entry.
 - =M-a= to mark all visible entries.
 - =M-u= to unmark all visible entries.
 
-When the input is change and the candidates are re-filtered, the selection is
-not alterered even if the marked elements don't show.
+When the input is changed and the candidates are re-filtered, the
+selection is not alterered even if the marked elements don't show.
 
-Once at least one candidate is marked, only the marked candidates are processed
-upon return.  The candidate under the cursor is not processed if not marked.
+When at least one candidate is marked, only the marked candidates are
+processed upon return.  The candidate under the cursor is not
+processed if not marked.
 
 ** Buffers ("tabs")
 Many browsers implement the concept of multiple views with "tabs".  Tabs are
