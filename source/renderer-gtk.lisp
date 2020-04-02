@@ -494,8 +494,7 @@ See `gtk-browser's `modifier-translator' slot."
              ignore-hosts)))
     (cffi:foreign-free ignore-hosts)
     (webkit:webkit-web-context-set-network-proxy-settings
-     context
-     :webkit-network-proxy-mode-custom settings)))
+     context mode settings)))
 
 (serapeum:export-always 'ffi-buffer-get-proxy)
 (defmethod ffi-buffer-get-proxy ((buffer gtk-buffer))
