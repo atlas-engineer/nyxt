@@ -107,7 +107,7 @@ a URL, ~https~ will be assumed. To visit a site supporting only
 included.
 
 1. ~C-l~: Change URL of current document
-2. ~M-l~: New document-mode tab
+2. ~M-l~: Open a new document and set its URL
 
 ** Searching via search engine
 From the new URL prompt, any input that is not recognized as a URL will be
