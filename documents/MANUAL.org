@@ -210,7 +210,7 @@ entries can be marked.  The default bindings are:
 - =M-u= to unmark all visible entries.
 
 When the input is changed and the candidates are re-filtered, the
-selection is not alterered even if the marked elements don't show.
+selection is not altered even if the marked elements don't show.
 
 When at least one candidate is marked, only the marked candidates are
 processed upon return.  The candidate under the cursor is not
@@ -223,7 +223,7 @@ of them.
 
 In Next, multiple views are implemented as "buffers".  Each buffer can use its
 own set of "modes".  A mode is a collection of settings, key bindings, commands,
-etc.  Regular web pages use the ~document-mode~ by default.
+etc.  Regular web pages use the ~web-mode~ by default.
 
 The standard keybindings for buffer management are:
 
@@ -280,9 +280,9 @@ When opening a link from an external program, or when clicking on a link while
 
 - in a new window if =(open-external-link-in-new-window-p *browser*)= is
   non-nil;
-- in a new buffer otherwise.
+- in a new buffer.
 
-You can change the default behaviour by adding the following to your
+You can change the default behavior by adding the following to your
 configuration file:
 
 #+begin_src lisp
@@ -412,8 +412,8 @@ You can change the default proxy with
  (make-instance 'proxy :server-address  "socks5://your.i.p:port"))
 #+end_src
 
-At the time of writing, there  are differences between the Gtk and the
-Qt port: the Gtk one sets  proxies per-buffer, whereas it is currently
+At the time of writing, there are differences between the GTK and the
+Qt port: the GTK one sets proxies per-buffer, whereas it is currently
 global for the Qt one.
 
 To enable proxy for all buffers by default, add the proxy mode to the default
@@ -492,13 +492,11 @@ Note that the forge name should be a domain, such as github.com.
 The command =M-x download-video= will try to download the video at the
 current URL. For example, it works with any YouTube video.
 
-It will  ask for  a target  repository and will  notify on  success or
+It will ask for a target repository and will notify on success or
 failure.
 
-It  uses by  default  the  program [[http://ytdl-org.github.io/youtube-dl/][youtube-dl]],  that  you must  have
+It uses by default the program [[http://ytdl-org.github.io/youtube-dl/][youtube-dl]], that you must have
 installed first.
-
-/Disclaimer: this feature is meant to grow with Next 1.4 and onwards!/
 
 To customize it, see all the variables and functions in [[https://github.com/atlas-engineer/next/blob/master/source/video-mode.lisp][video-mode]].
 
@@ -528,9 +526,8 @@ expression:
 
 : next --eval '(format t "hello Next!")'
 
-The plateform port is not started. If you want to execute commands
-against a running Next process, see the =start-swank= command and the
-developer setup.
+If you want to execute commands against a running Next process, see
+the =start-swank= command and the developer setup.
 
 ** SLIME with a compiled version of Next
 =SLIME= provides a way of interacting with Next, and with Lisp code in
@@ -584,8 +581,8 @@ When you are done, you can load your changes while Next is running
 with the command =load-init-file=. Or load any file with =load-file=
 (=C-o=).
 
-Next will warn you its best about type mismatches (new in Next 1.3.5). You should be
-confident that "if it loads, it works"©.
+Next will warn you its best about type mismatches (new in Next
+1.3.5). You should be confident that "if it loads, it works"©.
 
 
 ** Keybinding
@@ -660,7 +657,7 @@ other mode.  In your configuration file:
 
 *** Modifier translation
 
-You can customize the behaviour of modifiers in arbitrary ways thanks to the
+You can customize the behavior of modifiers in arbitrary ways thanks to the
 ~modifier-translator~ slot of the ~browser~ class.
 
 For instance, if you want swap ~control~ and ~meta~:
@@ -697,7 +694,7 @@ In /normal mode/, all keys are commands, they won't insert any text anywhere.
 In /insert mode/, all textual keys insert the corresponding text.
 
 Next offers two modes, =vi-normal-mode= and =vi-insert-mode= to simulate this
-behaviour.  For instance, in =vi-normal-mode=, =j= scrolls the page down and =k=
+behavior.  For instance, in =vi-normal-mode=, =j= scrolls the page down and =k=
 scrolls up.
 
 To go from /normal mode/ to /insert mode/, press =i=.
@@ -776,7 +773,7 @@ To quit Next without saving the session, use the command
 The commands =open-file= and =download-open-file= call the function
 =next/file-manager-mode:open-file-function <filename>=.
 
-You can override this behaviour by binding another function to the
+You can override this behavior by binding another function to the
 variable =next:*open-file-function*=, in which you can fallback to the
 default function.
 
@@ -900,14 +897,13 @@ The list can be persisted to the file specified in the =path= slot.
 
 ** Styles
 
-Some actions will draw elements on the HTML page, for instance ~go-anchor~ will
-draw link hints as boxes with indices.
+Some actions will draw elements on the HTML page.
 
 The style of those boxes is defined in the ~box-style~ slot of the ~buffer~
 class.
 
 Like any other slot, you can set the default value from your ~init.lisp~.  For instance,
-to change the style to using upper case, no gradiant, and square boxes:
+to change the style to using upper case, no gradient, and square boxes:
 
 #+begin_src lisp
 (in-package :next-user)
@@ -934,9 +930,9 @@ A /hook/ holds a list of /handlers/.
 Handlers are specialized functions
 
 Hooks can be /run/, that is, their handlers are run according to the
-=combination= slot of the hook.  This combination is a funtion of the handlers.
+=combination= slot of the hook.  This combination is a function of the handlers.
 
-Hooks are exposed to the users so that they can customize the behaviour of
+Hooks are exposed to the users so that they can customize the behavior of
 specific actions in arbitrary ways.
 
 Many hooks are executed at different points in Next, among others:
@@ -1043,9 +1039,9 @@ platform port get terminated.
 - =disable-hook=: This hook is run when disabling the mode.
   - argument: The mode.
 
-** Startup behaviour
+** Startup behavior
 
-Once the platform port has been started, the default action of Next is to run
+The default action of Next is to run
 
 #+begin_src lisp
 (funcall (startup-function *browser*) (or urls *free-args*))
@@ -1058,12 +1054,12 @@ You can assign you own function to ~startup-function~ to change the behaviour of
 Next on startup, such as which URL it should display, if it should restore the
 previous session or not, etc.
 ** Run Next in a security sandbox
-For improved security while you browse the internet, you can run Next
+For improved security while you browse the Internet, you can run Next
 with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
 
 ** Font size on HiDPI displays
 
-On HiDPI displays the font size used for displaying web and next's minibuffer content might be too tiny.
+On HiDPI displays the font size used for displaying web and Next's minibuffer content might be too tiny.
 
 To fix this issue for the GTK port use this
 
