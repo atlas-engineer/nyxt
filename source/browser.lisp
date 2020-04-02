@@ -315,7 +315,7 @@ Most recent messages are first.")
 identifiers in `get-unique-window-identifier'.  We can't rely on the windows
 count since deleting windows may reseult in duplicate identifiers.")
    (last-active-window :initform nil
-                       :type window
+                       :type (or window null)
                        :documentation "Records the last active window.  This is
 useful when no Next window is focused and we still want `ffi-window-active' to
 return something.
