@@ -194,8 +194,8 @@ returns:
 1. ~C-return~: Return Immediate - Return EXACTLY what has been typed into
    the minibuffer, ignoring completions.
 2. ~return~: Return Complete - If completion function provided, return
-   the selected completion candidate. If completion not provided
-   return the EXACT text inputted into the minibuffer. If completion
+   the selected completion candidate. If a completion is not provided,
+   return the EXACT text inputted into the minibuffer. If a completion
    function provided, no completion applicable (selected), and the
    :empty-complete is a truthy value, the function will accept the
    EXACT text inputted into the minibuffer.
