@@ -23,7 +23,9 @@ Install [[https://guix.gnu.org][Guix]] and follow the instructions in [[../build
 If you are developing Next, you might prefer to run Next directly from
 source so that you can skip the compilation step and iterate faster.
 
-It is most convenient to clone the Next repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]). You can then start Next using the command
+It is most convenient to clone the Next repository into
+=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]). You
+can then start Next using the command
 
 #+begin_src sh
 guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next")' --eval '(next:start)'
@@ -37,19 +39,19 @@ guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system
 
 * Generic Developer Installation
 Next is written in Common Lisp. It can be built with any standard
-Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] (≥ 1.4.2) support is tested.
+Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] (≥ 1.4.2) support is
+tested.
 
 It is designed to be cross-platform, cross-engine compatible. Next is
-available in both WebKit and WebEngine flavors (WebEngine flavor is
-currently under re-development). Support for graphics and OS
-integration is provided via:
+available in both WebKit and WebEngine flavors. Support for graphics
+and OS integration is provided via:
 
-+ macOS: GTK
-+ GNU/Linux: GTK
++ macOS: GTK, Qt
++ GNU/Linux: GTK, Qt
 
 ** Installing SBCL
-
-You'll need SBCL ≥ 1.4.2 to compile Next.  (Previous versions require an ASDF update.)
+You'll need SBCL ≥ 1.4.2 to compile Next.  (Previous versions require
+an ASDF update.)
 
 You can obtain SBCL from your package manager or by downloading it
 directly from the SBCL repository.
@@ -60,7 +62,7 @@ instructions can be found here: [[http://www.sbcl.org/getting.html]].
 
 ** Installing Quicklisp (optional)
 Quicklisp is downloaded and installed automatically by the
-Makefile. If you wish to install it manually, system-wide, the
+Makefile. If you wish to install it manually- system-wide- the
 official Quicklisp website can provide updated links to downloads, and
 instructions: https://www.quicklisp.org.
 
@@ -72,9 +74,8 @@ To install Quicklisp:
 - Evaluate in the REPL ~(ql:add-to-init-file)~ to add Quicklisp to your Lisp init file.
 
 ** GNU/Linux specific dependencies
-
 - WebKitGTK+ also known as webkit2gtk (make sure to use the most
-  recent version for security reasons -- /Debian Stable won't do/)
+  recent version for security reasons)
 - SQLite
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
@@ -169,6 +170,7 @@ make all
 - macOS:
 #+BEGIN_SRC sh
 make all
+make app-bundle
 #+END_SRC
 
 Inside the Makefile you'll find many options you can specify. You can
@@ -213,14 +215,14 @@ Then in a shell execute the following:
    supported Common Lisp compiler).
 2. Execute ~(require :asdf)~ if ASDF is not already loaded.
 3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
-   system definition (you can not use relative pathnames).
+   system definition (you must use absolute pathnames).
 4. Execute ~(ql:quickload :next)~ to load the Next system into your
    Lisp image.
 5. Execute ~(next:start)~ to open your first Next window.
 
 The above process is a bit cumbersome and you'll probably want a more
-comfortable workflow from within your favourite editor.  For instance, with
-Emacs and SLIME the process boils down to:
+comfortable workflow from within your favourite editor.  For instance,
+with Emacs and SLIME the process is:
 
 1. =M-x slime RET=
 2. =,load-system RET next RET=
@@ -259,23 +261,23 @@ you have. Feel free to open issues for any task, suggestion or
 conversation you wish to have.
 
 ** Learning Common Lisp
-
 There are a couple of resources out there to learn Common Lisp.
 
-- The [[https://lispcookbook.github.io/cl-cookbook/][Common Lisp Cookbook]] is a modern, community maintained resource covering
-  many aspects of Common Lisp programming and beyond, from editor setup to
-  style.  The front page lists many other resources for learning, such as books
-  (some available for free) and other web sites.  If you already know another
-  Lisp/Scheme, the cookbook can serve as a good crash course.
+- [[http://www.gigamonkeys.com/book/][Practical Common Lisp]] is a popular book available for free.  It
+  assumes you already know programming.  It gives a good coverage of
+  the "core" of the language and goes to the point.
 
-- [[http://www.gigamonkeys.com/book/][Practical Common Lisp]] is a popular book available for free.  It assumes you
-  already know programming.  It gives a good coverage of the "core" of the
-  language and goes to the point.
+- The [[https://lispcookbook.github.io/cl-cookbook/][Common Lisp Cookbook]] is a modern, community maintained resource
+  covering many aspects of Common Lisp programming and beyond, from
+  editor setup to style.  The front page lists many other resources
+  for learning, such as books (some available for free) and other web
+  sites.  If you already know another Lisp/Scheme, the cookbook can
+  serve as a good crash course.
 
 ** Contribution
-To contribute, please find a task within [[file:CHANGELOG.org][CHANGELOG.org]] document that has a TASK
-label affixed. Upon finding a task that you'd like to work on,
-ideally, ensure that it is not already being worked on.
+To contribute, please find a task within [[file:CHANGELOG.org][CHANGELOG.org]] document that
+has a TASK label affixed. Upon finding a task that you'd like to work
+on, ideally, ensure that it is not already being worked on.
 
 After you have found a TASK item that is available:
 
