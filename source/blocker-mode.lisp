@@ -128,4 +128,4 @@ This is an acceptable handler for `request-resource-hook'."
 (defmethod serializable-slots ((object next/blocker-mode::blocker-mode))
   "Discard hostlists which can get pretty big."
   (delete 'next/blocker-mode::hostlists
-          (mapcar #'sb-mop:slot-definition-name (sb-mop:class-slots (class-of object)))))
+          (mapcar #'closer-mop:slot-definition-name (closer-mop:class-slots (class-of object)))))

@@ -254,4 +254,4 @@ If there is no corresponding keymap, return nil."
 (defmethod serializable-slots ((object next::root-mode))
   "Discard keymaps which can be quite verbose."
   (delete 'next::keymap-schemes
-          (mapcar #'sb-mop:slot-definition-name (sb-mop:class-slots (class-of object)))))
+          (mapcar #'closer-mop:slot-definition-name (closer-mop:class-slots (class-of object)))))
