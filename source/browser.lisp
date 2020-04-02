@@ -345,7 +345,7 @@ window or not.")
    (search-engines :accessor search-engines
                    :initform '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
                                ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
-                   :type alist-of-string+2strings
+                   :type trivial-types:association-list ; Value can be 1 or 2 strings.
                    :documentation "A list of the search engines.
 
 The elements are in the form of a 3-tuple of strings (SHORTCUT SEARCH-URL FALLBACK-URL).
