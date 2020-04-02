@@ -91,13 +91,13 @@ Return nil if not found."
   (gethash name scheme))
 
 (declaim (ftype (function (scheme-name keymap &rest list) scheme) make-scheme))
-(defun make-scheme (name keymap &rest more-name+keymaps-pairs)
+(defun make-scheme (name keymap &rest more-name+keymap-pairs)
   "Return a new scheme associating NAME to KEYMAP.
-With MORE-NAME+KEYMAPS-PAIRS, include those names and keymaps as well.  This is
+With MORE-NAME+KEYMAP-PAIRS, include those names and keymaps as well.  This is
 useful in complement to `define-scheme' to make a scheme with pre-existing
 keymaps."
   (let ((scheme (make-hash-table :test #'equal))
-        (name+keymaps-pairs (append (list name keymap) more-name+keymaps-pairs)))
-    (loop :for (name keymaps) :on name+keymaps-pairs :by #'cddr
+        (name+keymap-pairs (append (list name keymap) more-name+keymap-pairs)))
+    (loop :for (name keymap) :on name+keymap-pairs :by #'cddr
           :do (setf (gethash name scheme) keymap))
     scheme))
