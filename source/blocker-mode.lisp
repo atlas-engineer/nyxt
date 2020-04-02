@@ -10,9 +10,9 @@
 
 (defclass-export hostlist ()
   ((url :accessor url :initarg :url
-        :initform nil
+        :initform ""
         :type string
-        :documentation "URL where to download the list from.  If nil, no attempt
+        :documentation "URL where to download the list from.  If empty, no attempt
 will be made at updating it.")
    (path :accessor path :initarg :path
          :initform nil
@@ -41,7 +41,7 @@ this amount of seconds.")))
 (defmethod update ((hostlist hostlist))
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
-  (when (url hostlist)
+  (unless (uiop:emptyp (url hostlist))
     (echo "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
     (let ((hosts (dex:get (url hostlist))))
       (when (path hostlist)
