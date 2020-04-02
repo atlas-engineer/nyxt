@@ -154,11 +154,6 @@ mkdir -p ~/common-lisp
 git clone https://github.com/atlas-engineer/next ~/common-lisp/next
 #+end_src
 ** Compile
-There are two ways to build Next depending on if
-you want to use [[https://github.com/roswell/roswell][Roswell]].
-
-*** Compile image with a Lisp Implementation
-
 The following command will build the Lisp core. On macOS this will produce an
 application bundle which you can copy into your =/Applications= folder.
 
@@ -179,31 +174,8 @@ of Quicklisp, or to automatically download and install a separate
 Quicklisp installation for Next. Run ~make~ to display some
 documentation. Please see the Makefile for more details.
 
-*** Compile with Roswell
-
-Roswell can be used to build the Lisp core. This method uses the existing
-systems installed on your system.
-
-A Roswell script is provided under the =./build-scripts/=. You have to make sure
-that this project can be found by Roswell (Quicklisp). You may create a
-symbolic link of this project in the =~/.roswell/local-projects/= directory to
-do so.
-
-In order to compile the Lisp core, simply run:
-
-#+BEGIN_SRC sh
-ros build build-scripts/next.ros
-#+END_SRC
-
-An executable file named =./build-scripts/next= will be generated under the project root.
-
-You may simply type =make= to display documentation.
-
-Please refer to the next section to make the two parts work together.
-
 ** Run from Source
-
-If you are developing Next, you might prefer to run Next directly from
+If you are developing Next, you may prefer to run Next directly from
 source so that you can skip the compilation step and iterate faster.
 
 Make sure that Quicklisp is set up and up-to-date (see [[Update local Lisp
@@ -231,9 +203,9 @@ with Emacs and SLIME the process is:
 See the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of options for various editors.
 
 ** Update local Lisp libraries
-
-If you use Quicklisp for Common Lisp library management outside the context of
-Next, you may want to reuse your local distribution to build Next.
+If you use Quicklisp for Common Lisp library management outside the
+context of Next, you may want to reuse your local distribution to
+build Next.
 
 To do so, invoke =make= with the following option:
 
@@ -241,16 +213,17 @@ To do so, invoke =make= with the following option:
 make NEXT_INTERNAL_QUICKLISP=false ...
 #+end_src
 
-In this case, you'll have to make sure the Quicklisp distribution is up-to-date
-or else future versions of Next might fail to build.  In a REPL:
+In this case, you'll have to make sure the Quicklisp distribution is
+up-to-date or else future versions of Next might fail to build.  In a
+REPL:
 
 #+begin_src lisp
 (ql:update-dist "quicklisp")
 #+end_src
 
 If you use the internal Quicklisp distribution (i.e. with the default
-=NEXT_INTERNAL_QUICKLISP=true=), the distribution is updated automatically for
-you.
+=NEXT_INTERNAL_QUICKLISP=true=), the distribution is updated
+automatically for you.
 
 You will also need to manually update the [[Lisp specific dependencies]].
 
