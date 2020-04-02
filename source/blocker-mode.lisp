@@ -14,7 +14,7 @@
         :type string
         :documentation "URL where to download the list from.  If empty, no attempt
 will be made at updating it.")
-   (path :accessor path :initarg :path
+   (path :initarg :path
          :initform nil
          :documentation "Where to find the list locally.
 If nil, the list won't be persisted.
