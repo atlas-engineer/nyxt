@@ -72,8 +72,8 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                     collect (second (str:split " " line))))))
   (hosts hostlist))
 
-(serapeum:export-always '*default-host-list*)
-(defparameter *default-host-list*
+(serapeum:export-always '*default-hostlist*)
+(defparameter *default-hostlist*
   (make-instance 'hostlist
                  :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
                  :path "hostlist-stevenblack"))
@@ -81,7 +81,7 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
 (define-mode blocker-mode ()
     "Enable blocking of blacklisted hosts."
     ((hostlists :accessor hostlists :initarg :hostlists
-                :initform (list *default-host-list*))
+                :initform (list *default-hostlist*))
      (destructor
       :initform
       (lambda (mode)

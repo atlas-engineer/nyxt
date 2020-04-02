@@ -895,7 +895,7 @@ For instance, you can add this to your =init.lisp=.
             "m.media-amazon.com")))
 
 (define-mode my-blocker-mode (next/blocker-mode:blocker-mode)
-  ((hostlists :initform (list *my-blocked-hosts* next/blocker-mode:*default-host-list*))))
+  ((hostlists :initform (list *my-blocked-hosts* next/blocker-mode:*default-hostlist*))))
 
 (defclass my-buffer (buffer)
   ((default-modes :initform
