@@ -1,12 +1,11 @@
 * Next Developer Readme                                                 :TOC:
 - [[#developer-installation-with-guix][Developer Installation with Guix]]
   - [[#run-from-source][Run from source]]
-- [[#generic-developer-installation][Generic Developer Installation]]
+- [[#standard-developer-installation][Standard Developer Installation]]
   - [[#installing-sbcl][Installing SBCL]]
   - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
-  - [[#gnulinux-specific-dependencies][GNU/Linux specific dependencies]]
-  - [[#macos-specific-dependencies][macOS specific dependencies]]
-  - [[#lisp-specific-dependencies][Lisp specific dependencies]]
+  - [[#gtk-dependencies][GTK dependencies]]
+  - [[#qt-dependencies][Qt dependencies]]
   - [[#fetch-the-source-code][Fetch the source code]]
   - [[#compile][Compile]]
   - [[#run-from-source-1][Run from Source]]
@@ -37,7 +36,7 @@ You can even start a Swank server immediately at startup using
 guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next")' --eval '(next:start-swank)' --eval '(next:start)'
 #+end_src
 
-* Generic Developer Installation
+* Standard Developer Installation
 Next is written in Common Lisp. It can be built with any standard
 Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] (≥ 1.4.2) support is
 tested.
@@ -46,8 +45,8 @@ It is designed to be cross-platform, cross-engine compatible. Next is
 available in both WebKit and WebEngine flavors. Support for graphics
 and OS integration is provided via:
 
-+ macOS: GTK, Qt
-+ GNU/Linux: GTK, Qt
+- macOS: GTK, Qt
+- GNU/Linux: GTK, Qt
 
 ** Installing SBCL
 You'll need SBCL ≥ 1.4.2 to compile Next.  (Previous versions require
@@ -73,7 +72,17 @@ To install Quicklisp:
 - Evaluate in the REPL ~(quicklisp-quickstart:install)~ to install.
 - Evaluate in the REPL ~(ql:add-to-init-file)~ to add Quicklisp to your Lisp init file.
 
-** GNU/Linux specific dependencies
+** GTK dependencies
+*** Lisp Dependencies
+Next on GTK requires the latest version of the cl-webkit library.
+Clone the cl-webkit repository into =~/common-lisp= or any directory
+listed in ~asdf:*central-registry*~:
+
+#+begin_src sh
+git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
+#+end_src
+
+*** GNU/Linux GTK dependencies
 - WebKitGTK+ also known as webkit2gtk (make sure to use the most
   recent version for security reasons)
 - SQLite
@@ -83,8 +92,6 @@ To install Quicklisp:
 - gstreamer, gst-plugins-* (for HTML audio/video)
 - xclip (for clipboard support)
 - notify-osd (optional)
-
-The full list of dependencies can be installed in a one-liner:
 
 - Debian-based distributions:
   #+begin_src sh
@@ -131,19 +138,37 @@ distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
-** macOS specific dependencies
-+ WebKitGTK+
-+ XQuartz
-+ SQLite (available by default)
+*** macOS specific dependencies
+- GTK 3.24.12+
+- WebKitGTK+
+- XQuartz
+- libfixposix
 
-** Lisp specific dependencies
-Next requires the latest version of the cl-webkit library.
-Clone the cl-webkit repository into =~/common-lisp= or any directory
-listed in ~asdf:*central-registry*~:
+** Qt dependencies
+*** Lisp Dependencies
+Next on Qt requires the latest version of the cl-webengine library.
+Clone the cl-webengine repository into =~/common-lisp= or any
+directory listed in ~asdf:*central-registry*~:
 
 #+begin_src sh
-git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
+git clone git@github.com:atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
 #+end_src
+
+Please follow the instructions in the cl-webengine repository for
+details about how to install it on your system.
+
+*** GNU/Linux dependencies
+- Qt 5
+- Qt 5 WebEngine
+- SQLite
+- libfixposix
+- xclip (for clipboard support)
+- notify-osd (optional)
+
+*** macOS dependencies
+- Qt 5.14.0+
+- Qt WebEngine
+- libfixposix
 
 ** Fetch the source code
 Clone the Next repository into =~/common-lisp= or any directory listed in
@@ -153,7 +178,9 @@ Clone the Next repository into =~/common-lisp= or any directory listed in
 mkdir -p ~/common-lisp
 git clone https://github.com/atlas-engineer/next ~/common-lisp/next
 #+end_src
+
 ** Compile
+*** Using the Makefile
 The following command will build the Lisp core. On macOS this will produce an
 application bundle which you can copy into your =/Applications= folder.
 
@@ -173,6 +200,16 @@ specify to use your Lisp's init file, to use your global installation
 of Quicklisp, or to automatically download and install a separate
 Quicklisp installation for Next. Run ~make~ to display some
 documentation. Please see the Makefile for more details.
+*** Using Lisp
+Start your Lisp and run the following commands:
+
+#+NAME: compile
+#+BEGIN_SRC lisp
+(asdf:make :next)
+#+END_SRC
+
+your Lisp interpreter will have produced an executable in the
+directory where the asd file is located.
 
 ** Run from Source
 If you are developing Next, you may prefer to run Next directly from
