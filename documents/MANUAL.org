@@ -82,18 +82,18 @@ Use the zoom keybindings to make everything on a web page larger or smaller.
 2. ~C-x C--~, ~C-x -~: Decrease size
 3. ~C-x 0~, ~C-x C-0~: Restore defaults
 
-** Jumping to links (link-hints)
+** Jumping to links (element-hints)
 In order to visit a link, one never has to remove their fingers from
 the keyboard. It works like this:
 
-1. Enter in a special key combination ~C-g~
+1. Type the hotkey to show the hints: ~C-g~
 2. Several strings will appear on screen "AZ" "CY", these
-   special strings represent links that you can visit
+   special strings represent elements that you can interact with
 3. Enter in one of these strings into the minibuffer
 4. Press ~return~
 5. Visit the page
 
-The full key-bindings for link-hint based navigate are found below:
+The full key-bindings for link-hint based navigation are found below:
 
 1. ~C-g~: Go to link in current tab
 2. ~M-g~: Create new tab with link, focus on new tab
