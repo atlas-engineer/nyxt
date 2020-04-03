@@ -61,6 +61,13 @@
        (process-key-press-event window event)))
     (qt:widget-show qt-object)))
 
+(defmethod printable-p ((window qt-window) event)
+  "Return the printable value of EVENT."
+  (match (qt:key-string event)
+    (" " "space")
+    ("-" "hyphen")
+    (_ (qt:key-string event))))
+
 (defmethod process-key-press-event ((sender qt-window) event)
   (when (qt:key-string event)
     (alex:appendf (key-stack *browser*)
@@ -70,7 +77,7 @@
                                          :status :pressed)))
     (funcall (input-dispatcher sender)
              event (active-buffer sender)
-             sender (qt:key-string event))))
+             sender (printable-p sender event))))
 
 (defmethod process-destroy ((window qt-window))
   (window-delete window))
