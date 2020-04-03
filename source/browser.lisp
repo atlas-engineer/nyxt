@@ -228,7 +228,7 @@ The handlers take the buffer as argument.")))
 ;; twice before they appear in the list.  We could use a class (we used to have
 ;; a COMMAND class) or intern the symbol into a special package (see `intern'
 ;; documentation).
-(defparameter %%command-list '()
+(defparameter command-list '()
   "The list of known commands, for internal use only.")
 
 (defun mode-list ()
@@ -236,16 +236,16 @@ The handlers take the buffer as argument.")))
   (delete-if (complement (lambda (m)
                            (str:suffixp (list (symbol-name m) "-MODE")
                                         "-MODE")))
-             (mapcar #'sym %%command-list)))
+             (mapcar #'sym command-list)))
 
 (defun mode-command (mode-symbol)
   "Return the mode toggle command.
-We loop over `%%command-list' to find mode command since a mode may be
+We loop over `command-list' to find mode command since a mode may be
 defined in any package and is unique."
   (find-if (lambda (c)
              (eq (find-symbol (string mode-symbol) (pkg c))
                  (sym c)))
-           %%command-list))
+           command-list))
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.

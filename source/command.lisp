@@ -4,7 +4,7 @@
 (in-package :next)
 
 ;; We need a `command' class for multiple reasons:
-;; - Identify commands uniquely (although being a member of `%%command-list' is enough).
+;; - Identify commands uniquely (although being a member of `command-list' is enough).
 ;;
 ;; - Customize minibuffer display value with `object-string'.
 ;;
@@ -55,8 +55,8 @@ Regardless of the hook, the command returns the last expression of BODY."
        (defparameter ,after-hook (hooks:make-hook-void))
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
                                          (eq (pkg c) *package*)))
-                        %%command-list)
-         (push (make-instance 'command :sym ',name :pkg *package* :sexp '(progn ,@body)) %%command-list))
+                        command-list)
+         (push (make-instance 'command :sym ',name :pkg *package* :sexp '(progn ,@body)) command-list))
        (serapeum:export-always ',name)
        ;; We use defun to define the command instead of storing a lambda because we want
        ;; to be able to call the foo command from Lisp with (FOO ...).
@@ -141,8 +141,8 @@ Otherwise list all commands."
                                   mode-symbols)
                           (or (not list-togglers-p)
                               (not (mode-toggler-p c)))))
-                   %%command-list))
-      %%command-list))
+                   command-list))
+      command-list))
 
 (defmethod object-string ((command command))
   (str:downcase (sym command)))
