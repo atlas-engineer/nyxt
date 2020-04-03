@@ -233,7 +233,7 @@ See `gtk-browser's `modifier-translator' slot."
 (defun button-event-modifiers (button-event)
   (gdk-event-button-state button-event))
 
-(defun printable-p (window event)
+(defmethod printable-p ((window gtk-window) event)
   "Return the printable value of EVENT."
   ;; Generate the result of the current keypress into the dummy
   ;; key-string-buffer (a GtkEntry that's never shown on screen) so that we
