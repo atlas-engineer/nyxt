@@ -43,9 +43,6 @@ An object of this type is a subclass of CLASS-SYM."
        (deftype ,type-fun ()
          '(satisfies ,type-pred)))))
 
-;; TODO: The distinction between compile-time script and runtime scripts is confusing.
-;; It's tempting to write legal PS that depends on run-time values while passing no parameters.
-;; Make parenscript always dynamic?
 (serapeum:export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.
