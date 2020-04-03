@@ -56,7 +56,11 @@ Regardless of the hook, the command returns the last expression of BODY."
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
                                          (eq (pkg c) *package*)))
                         command-list)
-         (push (make-instance 'command :sym ',name :pkg *package* :sexp '(progn ,@body)) command-list))
+         (push (make-instance 'command
+                              :sym ',name
+                              :pkg *package*
+                              :sexp '(define-command (,@arglist) ,@body))
+               command-list))
        (serapeum:export-always ',name)
        ;; We use defun to define the command instead of storing a lambda because we want
        ;; to be able to call the foo command from Lisp with (FOO ...).
