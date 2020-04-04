@@ -10,7 +10,7 @@
 (serapeum:export-always '*browser-class*)
 (defparameter *browser-class* 'qt-browser)
 
-(defmethod initialize ((browser qt-browser) urls startup-timestamp)
+(defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
   (setf (application browser)
         (qt:new-q-application 1 (cffi:foreign-alloc :string
