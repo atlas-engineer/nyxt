@@ -45,7 +45,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (finalize browser urls startup-timestamp)
     (gtk:gtk-main)))
 
-(defmethod kill-interface ((browser gtk-browser))
+(defmethod ffi-kill-browser ((browser gtk-browser))
   (gtk:leave-gtk-main))
 
 (defclass-export gtk-window (window)

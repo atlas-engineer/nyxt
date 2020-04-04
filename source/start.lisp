@@ -58,7 +58,7 @@ Warning: any existing file will be overwritten."
   (hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (window-list)
         do (ffi-window-delete window))
-  (kill-interface *browser*)
+  (ffi-kill-browser *browser*)
   (when (socket-thread *browser*)
     (ignore-errors
      (bt:destroy-thread (socket-thread *browser*))))

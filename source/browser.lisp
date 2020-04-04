@@ -845,3 +845,6 @@ sometimes yields the wrong reasult."
 (defmethod ffi-within-renderer-thread ((browser browser) thunk)
   (declare (ignore browser thunk))
   (error 'unsupported-operation))
+(defmethod ffi-kill-browser ((browser browser))
+  (declare (ignore browser))
+  (error 'unsupported-operation))
