@@ -851,3 +851,8 @@ sometimes yields the wrong reasult."
 (defmethod ffi-initialize ((browser browser) urls startup-timestamp)
   (declare (ignore browser urls startup-timestamp))
   (error 'unsupported-operation))
+
+(define-class-type browser)
+(declaim (type (browser-type) *browser-class*))
+(serapeum:export-always '*browser-class*)
+(defparameter *browser-class* 'browser)

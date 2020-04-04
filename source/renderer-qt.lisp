@@ -5,10 +5,7 @@
 (defclass-export qt-browser (browser)
   ((application :accessor application)))
 
-(define-class-type browser)
-(declaim (type (browser-type) *browser-class*))
-(serapeum:export-always '*browser-class*)
-(defparameter *browser-class* 'qt-browser)
+(setf *browser-class* 'qt-browser)
 
 (defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
