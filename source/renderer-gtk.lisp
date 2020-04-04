@@ -494,3 +494,8 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defmethod ffi-generated-input-event-p ((window gtk-window) event)
   (gdk:gdk-event-send-event event))
+
+(defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
+  (declare (ignore browser))
+  (gtk:within-gtk-thread
+   (funcall thunk)))

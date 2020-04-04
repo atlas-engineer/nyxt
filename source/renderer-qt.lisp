@@ -153,3 +153,8 @@
 (defmethod ffi-generate-input-event ((window qt-window) event))
 
 (defmethod ffi-generated-input-event-p ((window qt-window) event))
+
+(defmethod ffi-within-renderer-thread ((browser qt-browser) thunk)
+  (declare (ignore browser))
+  ;; TODO: Test this!
+  (funcall thunk))
