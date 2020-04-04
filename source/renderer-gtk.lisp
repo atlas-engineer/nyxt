@@ -19,10 +19,7 @@ modifiers understood by `keymap:make-key'.  You can customize this slot if you
 want to change the behaviour of modifiers, for instance swap 'control' and
 'meta'.")))
 
-(define-class-type browser)
-(declaim (type (browser-type) *browser-class*))
-(serapeum:export-always '*browser-class*)
-(defparameter *browser-class* 'gtk-browser)
+(setf *browser-class* 'gtk-browser)
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
