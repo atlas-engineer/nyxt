@@ -271,7 +271,7 @@ Otherwise bind socket."
                                    :startup-timestamp startup-timestamp))
     (when (single-instance-p *browser*)
       (bind-socket-or-quit urls))
-    (initialize *browser* urls startup-timestamp)))
+    (ffi-initialize *browser* urls startup-timestamp)))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."

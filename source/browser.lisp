@@ -848,3 +848,6 @@ sometimes yields the wrong reasult."
 (defmethod ffi-kill-browser ((browser browser))
   (declare (ignore browser))
   (error 'unsupported-operation))
+(defmethod ffi-initialize ((browser browser) urls startup-timestamp)
+  (declare (ignore browser urls startup-timestamp))
+  (error 'unsupported-operation))

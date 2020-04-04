@@ -24,7 +24,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (serapeum:export-always '*browser-class*)
 (defparameter *browser-class* 'gtk-browser)
 
-(defmethod initialize ((browser gtk-browser) urls startup-timestamp)
+(defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
    GNU/Linux, Next could hang after 10 minutes if it's not
    used. Conversely, on Darwin, if gtk:within-main-loop is used, no
