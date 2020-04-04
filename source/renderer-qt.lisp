@@ -19,7 +19,7 @@
   (finalize browser urls startup-timestamp)
   (qt:application-exec (application browser)))
 
-(defmethod kill-interface ((browser qt-browser))
+(defmethod ffi-kill-browser ((browser qt-browser))
   (qt:application-quit (application browser)))
 
 (defclass-export qt-window (window)
