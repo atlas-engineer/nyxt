@@ -842,3 +842,6 @@ sometimes yields the wrong reasult."
 (defmethod ffi-generated-input-event-p ((window window) event)
   (declare (ignore window event))
   (error 'unsupported-operation))
+(defmethod ffi-within-renderer-thread ((browser browser) thunk)
+  (declare (ignore browser thunk))
+  (error 'unsupported-operation))

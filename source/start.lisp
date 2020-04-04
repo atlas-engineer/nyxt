@@ -229,8 +229,9 @@ EXPR must contain one single Lisp form. Use `progn' if needed."
                                       :omit-nulls t)
                       ((guard urls urls)
                        (log:info "External process requested URL(s): ~{~a~^, ~}" urls)
-                       ;; TODO: execute within main thread to avoid crashing on Linux
-                       (open-urls urls))
+                       (ffi-within-renderer-thread
+                        *browser*
+                        (lambda () (open-urls urls))))
                       (_
                        (log:info "External process pinged Next.")))
                     ;; If we get pinged too early, we not have a current-window yet.
