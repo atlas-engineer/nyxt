@@ -158,7 +158,7 @@ Please follow the instructions in the cl-webengine repository for
 details about how to install it on your system.
 
 *** GNU/Linux dependencies
-- Qt 5
+- Qt 5 (qtbase, qtwebchannel, qtdeclarative)
 - Qt 5 WebEngine
 - SQLite
 - libfixposix
