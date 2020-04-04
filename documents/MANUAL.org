@@ -1056,3 +1056,14 @@ export GDK_SCALE=2
 export GDK_DPI_SCALE=0.5
 next &
 #+end_src
+
+* Troubleshooting
+** StumpWM mouse scroll
+
+If the mouse scroll does not work for you, see the [[https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to][StumpWM FAQ]] for a
+fix.
+
+
+# Local Variables:
+# before-save-hook: org-make-toc
+# End:
