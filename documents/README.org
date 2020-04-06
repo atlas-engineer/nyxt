@@ -205,11 +205,17 @@ Start your Lisp and run the following commands:
 
 #+NAME: compile
 #+BEGIN_SRC lisp
-(asdf:make :next)
+(asdf:make :next/gtk)
 #+END_SRC
 
 your Lisp interpreter will have produced an executable in the
-directory where the asd file is located.
+directory where the asd file is located. You can also compile the Qt
+version like this:
+
+#+NAME: compile
+#+BEGIN_SRC lisp
+(asdf:make :next/qt)
+#+END_SRC
 
 ** Run from Source
 If you are developing Next, you may prefer to run Next directly from
