@@ -88,24 +88,24 @@
                  ;; Depends on everything else:
                  (:file "about")
                  (:file "session")
-                 (:file "start"))))
-  :build-operation "program-op"
-  :build-pathname "next"
-  :entry-point "next:entry-point")
+                 (:file "start")))))
 
 (asdf:defsystem :next/gtk
   :depends-on (:next
                :cl-cffi-gtk
                :cl-webkit2)
-  :pathname "source"
-  :components ((:file "renderer-gtk")))
+  :components ((:module "source"
+                :components ((:file "renderer-gtk"))))
+  :build-operation "program-op"
+  :build-pathname "next"
+  :entry-point "next:entry-point")
 
 (asdf:defsystem :next/qt
   :depends-on (:next
                :cl-webengine
                :trivial-main-thread)
-  :pathname "source"
-  :components ((:file "renderer-qt")))
+  :components ((:module "source"
+                :components ((:file "renderer-qt")))))
 
 #+sb-core-compression
 (defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
