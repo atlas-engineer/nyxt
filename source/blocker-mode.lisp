@@ -106,12 +106,12 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                                  (is-new-window nil)
                                  (is-known-type t)
                                  (mouse-button "")
-                                 (modifiers '())
+                                 (depressed-modifiers '())
                                  &allow-other-keys)
   "Block resource queries from blacklisted hosts.
 This is an acceptable handler for `request-resource-hook'."
   ;; TODO: Use quri:uri-domain?
-  (declare (ignore cookies event-type is-new-window is-known-type mouse-button modifiers))
+  (declare (ignore cookies event-type is-new-window is-known-type mouse-button depressed-modifiers))
   (let ((mode (find-submode buffer 'blocker-mode)))
     (if (and mode
              (blacklisted-host-p mode
