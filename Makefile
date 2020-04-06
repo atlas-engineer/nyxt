@@ -38,7 +38,7 @@ next: $(lisp_files) clean-fasls quicklisp-update
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
-		--eval '(asdf:make :next)' \
+		--eval '(asdf:make :next/gtk)' \
 		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure the 'xclip' binary and the 'sqlite' files are available on your system." && exit 1)
 
 .PHONY: app-bundle
