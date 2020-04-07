@@ -469,7 +469,9 @@ The handlers take the URL as argument.")
                         :initform (make-hook-download)
                         :type hook-download
                         :documentation "Hook run after a download has completed.
-The handlers take the `download-manager:download' class instance as argument.")))
+The handlers take the `download-manager:download' class instance as argument.")
+   (autofills :accessor autofills
+              :initform (list (make-autofill :key "Name" :fill "My Name")))))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup-function'."
