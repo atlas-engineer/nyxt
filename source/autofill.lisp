@@ -11,7 +11,11 @@
   (autofill-key autofill))
 
 (defmethod object-display ((autofill autofill))
-  (format nil "~a  ~a" (autofill-key autofill) (autofill-fill autofill)))
+  (format nil "~a  ~a" (autofill-key autofill)
+          (cond ((stringp (autofill-fill autofill))
+           (autofill-fill autofill))
+          ((functionp (autofill-fill autofill))
+           "Function"))))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
