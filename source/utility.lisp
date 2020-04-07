@@ -105,3 +105,14 @@ from a binary) then any condition is logged instead of triggering the debugger."
           ;; happens when the minibuffer is up.
           (log:error "Error in ~a: ~a" f c))
       nil)))
+
+(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *browser*))))
+  (let* ((active-element (ps:chain document active-element))
+         (start-position (ps:chain active-element selection-start))
+         (end-position (ps:chain active-element selection-end)))
+    (setf (ps:chain active-element value)
+          (+ (ps:chain active-element value (substring 0 start-position))
+             (ps:lisp input-text)
+             (ps:chain active-element value
+                       (substring end-position
+                                  (ps:chain active-element value length)))))))

@@ -368,17 +368,6 @@ Otherwise go forward to the only child."
   (copy-to-clipboard (title (current-buffer)))
   (echo "~a copied to clipboard." (title (current-buffer))))
 
-(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *browser*))))
-  (let* ((active-element (ps:chain document active-element))
-         (start-position (ps:chain active-element selection-start))
-         (end-position (ps:chain active-element selection-end)))
-    (setf (ps:chain active-element value)
-          (+ (ps:chain active-element value (substring 0 start-position))
-             (ps:lisp input-text)
-             (ps:chain active-element value
-                       (substring end-position
-                                  (ps:chain active-element value length)))))))
-
 (define-command paste ()
   "Paste from clipboard into active-element."
   (%paste))
