@@ -176,8 +176,13 @@ the slot in the browser class:
 #+NAME: autofills
 #+BEGIN_SRC lisp
 (autofills :accessor autofills
-              :initform (list (make-autofill :key "Name" :fill "My Name")))
+              :initform (list (make-autofill :key "Name" :fill "My Name")
+                              (make-autofill :key "Function example" :fill (lambda () (format nil "hello!")))))
 #+END_SRC
+
+As can be seen in the above example, the fill does not need to be a
+string value, it can also be a function, allowing you to provide an
+even smarter autofill.
 
 ** Jumping to Headings
 Jumping to different headings based on fuzzy completion is available
