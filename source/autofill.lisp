@@ -16,9 +16,12 @@
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
   (with-result (selected-fill (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Autofill"
-                         :completion-function
-                         (lambda (input)
-                           (fuzzy-match input (autofills *browser*))))))
-    (%paste :input-text (autofill-fill selected-fill))))
+                               (make-minibuffer
+                                :input-prompt "Autofill"
+                                :completion-function
+                                (lambda (input)
+                                  (fuzzy-match input (autofills *browser*))))))
+    (cond ((stringp (autofill-fill selected-fill))
+           (%paste :input-text (autofill-fill selected-fill)))
+          ((functionp (autofill-fill selected-fill))
+           (%paste :input-text (funcall (autofill-fill selected-fill)))))))
