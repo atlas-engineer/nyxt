@@ -13,6 +13,7 @@ end-user allowing for infinite customization.
   - [[#jumping-to-links-element-hints][Jumping to links (element-hints)]]
   - [[#visiting-urls][Visiting URLs]]
   - [[#searching-via-search-engine][Searching via search engine]]
+  - [[#autofill][Autofill]]
   - [[#jumping-to-headings][Jumping to Headings]]
   - [[#input-minibuffer][Input (Minibuffer)]]
   - [[#multi-selection][Multi-selection]]
@@ -47,6 +48,8 @@ end-user allowing for infinite customization.
   - [[#startup-behavior][Startup behavior]]
   - [[#run-next-in-a-security-sandbox][Run Next in a security sandbox]]
   - [[#font-size-on-hidpi-displays][Font size on HiDPI displays]]
+- [[#troubleshooting][Troubleshooting]]
+  - [[#stumpwm-mouse-scroll][StumpWM mouse scroll]]
 
 * Basics
 ** Navigation
