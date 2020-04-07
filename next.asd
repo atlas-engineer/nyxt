@@ -65,6 +65,7 @@
                  (:file "input")
                  (:file "recent-buffers")
                  ;; Core Packages
+                 (:file "autofill")
                  (:file "password")
                  (:file "bookmark")
                  (:file "zoom")
