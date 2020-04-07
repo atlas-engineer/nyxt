@@ -164,6 +164,18 @@ and to append a search engine to the list, you can do
 (setf *browser-class* 'my-browser)
 #+end_src
 
+** Autofill
+Like other browsers, Next has the ability to do auto filling. You can
+specify any type of key and value to fill in. To autofill run the
+command =autofill=. To customize the autofill values available, use
+the slot in the browser class:
+
+#+NAME: autofills
+#+BEGIN_SRC lisp
+(autofills :accessor autofills
+              :initform (list (make-autofill :key "Name" :fill "My Name")))
+#+END_SRC
+
 ** Jumping to Headings
 Jumping to different headings based on fuzzy completion is available
 via the following keybindings:
