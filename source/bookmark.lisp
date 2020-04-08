@@ -134,6 +134,24 @@ This can be useful to let the user select no tag when returning directly."
     (lambda (input)
       (fuzzy-match input tags))))
 
+(define-command show-bookmarks ()
+  "Show all bookmarks in a new buffer."
+  (let* ((bookmarks-buffer (make-buffer :title "*Bookmarks*"))
+         (bookmark-contents
+           (markup:markup
+            (:h1 "Bookmarks")
+            (:body
+             (loop for bookmark in (bookmarks-data *browser*)
+                   collect (markup:markup (:h4 (:a :href (url bookmark) (title bookmark)))
+                                          (:p "URL: "(url bookmark))
+                                          (:p "Tags: "(format nil " (~{~a~^, ~})" (tags bookmark)))
+                                          (:br ""))))))
+         (insert-contents (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                       (ps:lisp bookmark-contents)))))
+    (ffi-buffer-evaluate-javascript bookmarks-buffer insert-contents)
+    (set-current-buffer bookmarks-buffer)
+    bookmarks-buffer))
+
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
   (if (url buffer)
