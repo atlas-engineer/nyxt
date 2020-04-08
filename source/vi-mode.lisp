@@ -56,7 +56,7 @@
 (define-parenscript %clicked-in-input? ()
   (ps:chain document active-element tag-name))
 
-(declaim (ftype (function (string)) input-tag-p))
+(declaim (ftype (function ((or string null)) boolean) input-tag-p))
 (defun input-tag-p (tag)
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
