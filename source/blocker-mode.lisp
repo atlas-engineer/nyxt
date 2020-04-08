@@ -42,7 +42,7 @@ this amount of seconds.")))
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
-    (echo "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
+    (log:info "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
     (let ((hosts (dex:get (url hostlist))))
       (when (path hostlist)
         ;; TODO: In general, we should do more error checking when writing to disk.
@@ -51,26 +51,42 @@ If HOSTLIST has a `path', persist it locally."
                                            :if-does-not-exist :create))
       hosts)))
 
-(defmethod load-to-memory ((hostlist hostlist))
-  "Load hostlist.
-Auto-update file if older than UPDATE-INTERVAL seconds."
-  (if (and (uiop:file-exists-p (path hostlist))
-           (< (- (get-universal-time) (uiop:safe-file-write-date (path hostlist)))
-              (update-interval hostlist)))
+(defvar update-lock (bt:make-lock))
+
+(defmethod read-hostlist ((hostlist hostlist))
+  "Return hostlist file as a string.
+Return nil if hostlist file is not ready yet.
+Auto-update file if older than UPDATE-INTERVAL seconds.
+
+The hostlist is downloaded in the background.
+The new hostlist will be used as soon as it is available."
+  (when (or (not (uiop:file-exists-p (path hostlist)))
+            (< (update-interval hostlist)
+               (- (get-universal-time) (uiop:safe-file-write-date (path hostlist)))))
+    (bt:make-thread
+     (lambda ()
+       (when (bt:acquire-lock update-lock nil)
+         (update hostlist)
+         (bt:release-lock update-lock)))))
+  (handler-case
       (uiop:read-file-string (path hostlist))
-      (update hostlist)))
+    (error ()
+      (log:warn "Hostlist not found: ~a" (path hostlist))
+      nil)))
 
 (defmethod parse ((hostlist hostlist))
-  "Return the hostlist as a list of strings."
+  "Return the hostlist as a list of strings.
+Return nil if hostlist cannot be parsed."
   ;; We could use a hash table instead, but a simple benchmark shows little difference.
-  (unless (hosts hostlist)
-    (setf (hosts hostlist)
-          (with-input-from-string (stream (load-to-memory hostlist))
-            (loop as line = (read-line stream nil)
-                  while line
-                  unless (or (< (length line) 2) (string= (subseq line 0 1) "#"))
-                    collect (second (str:split " " line))))))
-  (hosts hostlist))
+  (setf (hosts hostlist)
+        (or (hosts hostlist)
+            (let ((hostlist-string (read-hostlist hostlist)))
+              (unless (uiop:emptyp hostlist-string)
+                (with-input-from-string (stream hostlist-string)
+                  (loop as line = (read-line stream nil)
+                        while line
+                        unless (or (< (length line) 2) (string= (subseq line 0 1) "#"))
+                          collect (second (str:split " " line)))))))))
 
 (serapeum:export-always '*default-hostlist*)
 (defparameter *default-hostlist*
@@ -94,7 +110,8 @@ Auto-update file if older than UPDATE-INTERVAL seconds."
                         (next:make-handler-resource #'request-resource-block))))))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
-  "Return non-nil of HOST if found in the hostlists of MODE."
+  "Return non-nil of HOST if found in the hostlists of MODE.
+Return nil if MODE's hostlist cannot be parsed."
   (when host
     (not (loop for hostlist in (hostlists mode)
                never (member-string host (parse hostlist))))))
