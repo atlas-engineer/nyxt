@@ -134,6 +134,7 @@ It is run before the destructor.")
                                 "C-h k" #'describe-key
                                 "C-h b" #'describe-bindings
                                 "C-o" #'load-file
+                                "C-i" #'autofill
                                 "M-x" #'execute-command
                                 "M-:" #'command-evaluate
                                 "C-x 5 2" #'make-window
@@ -163,6 +164,7 @@ It is run before the destructor.")
                                 "C-h k" #'describe-key
                                 "C-h b" #'describe-bindings
                                 "C-o" #'load-file
+                                "C-i" #'autofill
                                 "M-x" #'execute-command
                                 "M-:" #'command-evaluate
                                 "C-x 5 2" #'make-window
