@@ -106,6 +106,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "Error in ~a: ~a" f c))
       nil)))
 
+(sera:export-always '%paste)
 (define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *browser*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
