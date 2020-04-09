@@ -92,7 +92,7 @@
     (remove-search-nodes)
     (setf (ps:chain *nodes* identifier) 0)
     (walk-document (ps:chain document body) matches-from-node)
-    (ps:chain -j-s-o-n (stringify *matches*))))
+    (ps:chain |json| (stringify *matches*))))
 
 (defclass match ()
   ((identifier :accessor identifier :initarg :identifier)

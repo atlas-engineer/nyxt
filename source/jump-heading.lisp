@@ -26,7 +26,7 @@ For example, Wikipedia ones end with '[edit]'. We strip what comes after the fir
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
   (let ((headings (qsa document "h1, h2, h3, h4, h5, h6")))
-    (ps:chain -j-s-o-n (stringify
+    (ps:chain |json| (stringify
                         (loop for heading in headings
                            collect (ps:chain heading inner-text))))))
 
