@@ -57,7 +57,9 @@ identifier for every hinted element."
           ((equal "BUTTON" (ps:@ element tag-name))
            (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element inner-H-T-M-L)))
           ((equal "INPUT" (ps:@ element tag-name))
-           (ps:create "type" "input" "hint" hint "identifier" hint))))
+           (ps:create "type" "input" "hint" hint "identifier" hint))
+          ((equal "TEXTAREA" (ps:@ element tag-name))
+           (ps:create "type" "textarea" "hint" hint "identifier" hint))))
 
   (defun hints-add (elements)
     "Adds hints on elements"
@@ -91,7 +93,7 @@ identifier for every hinted element."
                          (rem n 26)))) ""))
 
   (add-stylesheet)
-  (hints-add (qsa document (list "a" "button" "input"))))
+  (hints-add (qsa document (list "a" "button" "input" "textarea"))))
 
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
@@ -106,11 +108,12 @@ identifier for every hinted element."
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
 
-(define-parenscript focus-input (next-identifier)
+(define-parenscript focus-element (next-identifier)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
-  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (focus) (select)))
+  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (focus))
+  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (select)))
 
 (define-parenscript highlight-selected-hint (link-hint scroll)
   (defun qs (context selector)
@@ -191,6 +194,10 @@ identifier for every hinted element."
                         ((equal "input" object-type)
                          (make-instance 'input-hint
                                         :identifier (cdr (assoc :identifier element))
+                                        :hint (cdr (assoc :hint element))))
+                        ((equal "textarea" object-type)
+                         (make-instance 'textarea-hint
+                                        :identifier (cdr (assoc :identifier element))
                                         :hint (cdr (assoc :hint element))))))))
 
 (defclass hint ()
@@ -205,6 +212,8 @@ identifier for every hinted element."
   ((url :accessor url :initarg :url)))
 
 (defclass input-hint (hint) ())
+
+(defclass textarea-hint (hint) ())
 
 (defmethod object-string ((link-hint link-hint))
   (url link-hint))
@@ -224,6 +233,12 @@ identifier for every hinted element."
 (defmethod object-display ((input-hint input-hint))
   (format nil "~a  Input" (hint input-hint)))
 
+(defmethod object-string ((textarea-hint textarea-hint))
+  (hint textarea-hint))
+
+(defmethod object-display ((textarea-hint textarea-hint))
+  (format nil "~a  Textarea" (hint textarea-hint)))
+
 (defmethod %follow-hint ((link-hint link-hint))
   (set-url (url link-hint) :buffer (current-buffer) :raw-url-p t))
 
@@ -231,7 +246,10 @@ identifier for every hinted element."
   (click-button :buffer (current-buffer) :next-identifier (identifier button-hint)))
 
 (defmethod %follow-hint ((input-hint input-hint))
-  (focus-input :buffer (current-buffer) :next-identifier (identifier input-hint)))
+  (focus-element :buffer (current-buffer) :next-identifier (identifier input-hint)))
+
+(defmethod %follow-hint ((textarea-hint textarea-hint))
+  (focus-element :buffer (current-buffer) :next-identifier (identifier textarea-hint)))
 
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint))
   (let ((new-buffer (make-buffer)))
