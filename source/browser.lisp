@@ -24,7 +24,7 @@
                   :initform (make-minibuffer)
                   :documentation "Buffer for displaying information such as
                   current URL or event messages.")
-   (status-buffer-height :accessor status-buffer-height :initform 24
+   (status-buffer-height :accessor status-buffer-height :initform 26
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
