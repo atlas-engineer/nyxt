@@ -55,7 +55,9 @@ identifier for every hinted element."
     (cond ((equal "A" (ps:@ element tag-name))
            (ps:create "type" "link" "hint" hint "href" (ps:@ element href) "body" (ps:@ element inner-H-T-M-L)))
           ((equal "BUTTON" (ps:@ element tag-name))
-           (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element inner-H-T-M-L)))))
+           (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element inner-H-T-M-L)))
+          ((equal "INPUT" (ps:@ element tag-name))
+           (ps:create "type" "input" "hint" hint "identifier" hint))))
 
   (defun hints-add (elements)
     "Adds hints on elements"
@@ -89,7 +91,7 @@ identifier for every hinted element."
                          (rem n 26)))) ""))
 
   (add-stylesheet)
-  (hints-add (qsa document (list "a" "button"))))
+  (hints-add (qsa document (list "a" "button" "input"))))
 
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
@@ -103,6 +105,12 @@ identifier for every hinted element."
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
+
+(define-parenscript focus-input (next-identifier)
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
+  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (focus) (select)))
 
 (define-parenscript highlight-selected-hint (link-hint scroll)
   (defun qs (context selector)
@@ -179,7 +187,11 @@ identifier for every hinted element."
                          (make-instance 'button-hint
                                         :identifier (cdr (assoc :identifier element))
                                         :hint (cdr (assoc :hint element))
-                                        :body (plump:text (plump:parse (cdr (assoc :body element))))))))))
+                                        :body (plump:text (plump:parse (cdr (assoc :body element))))))
+                        ((equal "input" object-type)
+                         (make-instance 'input-hint
+                                        :identifier (cdr (assoc :identifier element))
+                                        :hint (cdr (assoc :hint element))))))))
 
 (defclass hint ()
   ((hint :accessor hint :initarg :hint)
@@ -192,6 +204,8 @@ identifier for every hinted element."
 (defclass link-hint (hint)
   ((url :accessor url :initarg :url)))
 
+(defclass input-hint (hint) ())
+
 (defmethod object-string ((link-hint link-hint))
   (url link-hint))
 
@@ -203,6 +217,12 @@ identifier for every hinted element."
 
 (defmethod object-display ((button-hint button-hint))
   (format nil "~a  ~a  Button" (hint button-hint) (body button-hint)))
+
+(defmethod object-string ((input-hint input-hint))
+  (hint input-hint))
+
+(defmethod object-display ((input-hint input-hint))
+  (format nil "~a  Input" (hint input-hint)))
 
 (defmethod %follow-hint ((link-hint link-hint))
   (set-url (url link-hint) :buffer (current-buffer) :raw-url-p t))
