@@ -53,9 +53,9 @@ identifier for every hinted element."
 
   (defun object-create (element hint)
     (cond ((equal "A" (ps:@ element tag-name))
-           (ps:create "type" "link" "hint" hint "href" (ps:@ element href) "body" (ps:@ element inner-H-T-M-L)))
+           (ps:create "type" "link" "hint" hint "href" (ps:@ element href) "body" (ps:@ element |innerHTML|)))
           ((equal "BUTTON" (ps:@ element tag-name))
-           (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element inner-H-T-M-L)))
+           (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
           ((equal "INPUT" (ps:@ element tag-name))
            (ps:create "type" "input" "hint" hint "identifier" hint))
           ((equal "TEXTAREA" (ps:@ element tag-name))
@@ -65,7 +65,7 @@ identifier for every hinted element."
     "Adds hints on elements"
     (ps:let* ((elements-length (length elements))
               (hints (hints-generate elements-length)))
-      (ps:chain -j-s-o-n
+      (ps:chain |json|
                 (stringify
                  (loop for i from 0 to (- elements-length 1)
                        do (hint-add (elt elements i) (elt hints i))
