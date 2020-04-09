@@ -210,26 +210,29 @@ identifier for every hinted element."
 (defmethod %follow-hint ((button-hint button-hint))
   (click-button :buffer (current-buffer) :next-identifier (identifier button-hint)))
 
+(defmethod %follow-hint ((input-hint input-hint))
+  (focus-input :buffer (current-buffer) :next-identifier (identifier input-hint)))
+
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint))
   (let ((new-buffer (make-buffer)))
     (set-url (url link-hint) :buffer new-buffer :raw-url-p t)
     (set-current-buffer new-buffer)))
 
-(defmethod %follow-hint-new-buffer-focus ((button-hint button-hint))
-  (echo "Can't open button in new buffer."))
+(defmethod %follow-hint-new-buffer-focus ((hint hint))
+  (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-new-buffer ((link-hint link-hint))
   (let ((new-buffer (make-buffer)))
     (set-url (url link-hint) :buffer new-buffer :raw-url-p t)))
 
-(defmethod %follow-hint-new-buffer ((button-hint button-hint))
-  (echo "Can't open button in new buffer."))
+(defmethod %follow-hint-new-buffer ((hint hint))
+  (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %copy-hint-url ((link-hint link-hint))
   (trivial-clipboard:text (url link-hint)))
 
-(defmethod %copy-hint-url ((button-hint button-hint))
-  (echo "Can't copy URL from button."))
+(defmethod %copy-hint-url ((hint hint))
+  (echo "Unsupported operation for hint: can't copy URL."))
 
 (defun update-selection-highlight-hint (&key completions scroll follow
                                           (minibuffer (current-minibuffer))
