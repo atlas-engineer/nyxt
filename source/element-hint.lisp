@@ -49,6 +49,7 @@
 identifier for every hinted element."
     (ps:chain element (set-attribute "next-identifier" hint))
     (ps:let ((hint-element (hint-create-element element hint)))
+      ;; TODO: filter and add only drawable elements
       (ps:chain document body (append-child hint-element))))
 
   (defun object-create (element hint)
