@@ -11,7 +11,7 @@
   (autofill-key autofill))
 
 (defmethod object-display ((autofill autofill))
-  (format nil "~a  ~a" (autofill-key autofill)
+  (format nil "~a:  ~a" (autofill-key autofill)
           (cond ((stringp (autofill-fill autofill))
            (autofill-fill autofill))
           ((functionp (autofill-fill autofill))
