@@ -117,3 +117,10 @@ from a binary) then any condition is logged instead of triggering the debugger."
              (ps:chain active-element value
                        (substring end-position
                                   (ps:chain active-element value length)))))))
+
+(define-parenscript %print-buffer ()
+  (print))
+
+(define-command print-buffer ()
+  "Print the current buffer."
+  (%print-buffer))
