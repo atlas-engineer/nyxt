@@ -11,6 +11,8 @@ an absolute path.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
+Set NEXT_RENDERER to the renderer of your choice, e.g. "gtk".
+
 If NEXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
 dependencies will be fetched with Quicklisp into the
 QUICKLISP_DIR directory.
