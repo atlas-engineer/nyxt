@@ -402,7 +402,7 @@ Otherwise go forward to the only child."
 ;; Warning: To specialize `did-commit-navigation' we must be in the right package.
 (in-package :next)
 (defmethod did-commit-navigation ((mode next/web-mode::web-mode) url)
-  (echo "Loading: ~a." url))
+  nil)
 
 (defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
   (let* ((buffer (active-buffer (current-window))))

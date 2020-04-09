@@ -378,8 +378,10 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defmethod process-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
-    (cond ((eq load-event :webkit-load-started) nil)
+    (cond ((eq load-event :webkit-load-started)
+           (echo "Loading: ~a." (url buffer)))
           ((eq load-event :webkit-load-redirected) nil)
+          ;; TODO: load-committed is deprecated.  Only use load-status and load-finished.
           ((eq load-event :webkit-load-committed)
            (did-commit-navigation buffer url))
           ((eq load-event :webkit-load-finished)
