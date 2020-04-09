@@ -290,15 +290,6 @@ This can be useful to let the user select no tag when returning directly."
 (defun restore-sexp-bookmarks ()
   "Restore the bookmarks from the browser `bookmarks-path'."
   (let ((path (bookmarks-path *browser*)))
-    (if (not (uiop:file-exists-p path))
-        ;; TODO: Stop importing the SQLite bookmarks after 1.3.3?
-        (dolist (url (import-sqlite-bookmarks))
-          (unless (str:emptyp url)
-            (let ((entry (make-instance 'bookmark-entry
-                                        :url url)))
-              ;; Calling (bookmarks-data *browser*) calls the restore function if
-              ;; empty, so we need to use SLOT-VALUE here.
-              (pushnew entry (slot-value *browser* 'bookmarks-data) :test #'equals)))))
     (handler-case
         (let ((data (with-open-file (file path
                                           :direction :input
@@ -312,23 +303,3 @@ This can be useful to let the user select no tag when returning directly."
             (setf (slot-value *browser* 'bookmarks-data) data)))
       (error (c)
         (echo-warning "Failed to load bookmarks from ~a: ~a" path c)))))
-
-
-;; SQLite importer.
-(defun import-sqlite-bookmarks ()
-  (let ((database-path (cl-ppcre:regex-replace "\\.lisp$"
-                                               (namestring (bookmarks-path *browser*))
-                                               ".db")))
-    (unless (uiop:file-exists-p database-path)
-      ;; Next 1.3.2 default database was named "bookmark.db".
-      (setf database-path (cl-ppcre:regex-replace "s\\.lisp$"
-                                                  (namestring (bookmarks-path *browser*))
-                                                  ".db")))
-    (when (uiop:file-exists-p database-path)
-      (log:info "Importing bookmarks from ~a." database-path)
-      (let* ((db (sqlite:connect database-path))
-             (urls
-               (sqlite:execute-to-list
-                db "select url from bookmarks")))
-        (sqlite:disconnect db)
-        (apply #'append urls)))))

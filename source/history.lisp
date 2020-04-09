@@ -171,20 +171,3 @@ instance of Next."
                (setf (slot-value *browser* 'history-data) new-history)))))
       (error (c)
         (echo-warning "Failed to restore history from ~a: ~a" path c)))))
-
-
-
-
-;; SQLite importer.
-(defun import-sqlite-history ()
-  (let ((database-path (cl-ppcre:regex-replace "\\.lisp$"
-                                               (namestring (history-path *browser*))
-                                               ".db")))
-    (when (uiop:file-exists-p database-path)
-      (log:info "Importing global history from ~a" database-path)
-      (let* ((db (sqlite:connect database-path))
-             (urls
-               (sqlite:execute-to-list
-                db "select url, visits from typed")))
-        (sqlite:disconnect db)
-        urls))))

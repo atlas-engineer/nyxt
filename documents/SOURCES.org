@@ -5,7 +5,6 @@ which external dependencies we are directly relying on.
 + WebkitGTK+ https://webkitgtk.org
 + Qt https://www.qt.io
 + SBCL http://www.sbcl.org
-+ SQLite
 
 * Lisp Dependencies (available via Quicklisp)
 + alexandria
@@ -28,7 +27,6 @@ which external dependencies we are directly relying on.
 + parenscript
 + quri
 + serapeum
-+ sqlite
 + str
 + plump
 + swank

@@ -23,7 +23,6 @@
                :parenscript
                :quri
                :serapeum
-               :sqlite
                :str
                :plump
                :swank

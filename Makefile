@@ -39,7 +39,7 @@ next: $(lisp_files) clean-fasls quicklisp-update
 		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(asdf:make :next/gtk)' \
-		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure the 'xclip' binary and the 'sqlite' files are available on your system." && exit 1)
+		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure 'xclip' and latest cl-webkit are available on your system." && exit 1)
 
 .PHONY: app-bundle
 app-bundle:
