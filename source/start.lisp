@@ -128,8 +128,8 @@ next [options] [urls]")
     (setf *session*
           (if (getf options :no-session)
               ""
-              (derive-session (or (getf options :session)
-                                  *session*))))
+              (or (getf options :session)
+                  *session*)))
     (setf *options* options
           *free-args* free-args)
     (setf *keep-alive* nil)             ; Not a REPL.
@@ -265,6 +265,7 @@ Otherwise bind socket."
    needed. Finally, run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now)))
     (format t "Next version ~a~&" +version+)
+    (setf *session* (derive-session *session*))
     (unless (getf *options* :no-init)
       (load-lisp-file init-file :interactive t))
     (setf *browser* (make-instance *browser-class*
