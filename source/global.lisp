@@ -5,8 +5,6 @@
 
 (defvar *options* '()
   "The list of command line options.")
-(defvar *free-args* '()
-  "The list of positional command line arguments.")
 
 (defvar *keep-alive* t
   "If non-nil, don't terminate the Lisp process when quitting the browser.

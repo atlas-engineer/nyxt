@@ -142,8 +142,7 @@ next [options] [urls]")
               ""
               (or (getf options :session)
                   *session*)))
-    (setf *options* options
-          *free-args* free-args)
+    (setf *options* options)
     (setf *keep-alive* nil)             ; Not a REPL.
     (start :urls free-args)))
 
