@@ -117,7 +117,7 @@ The match is case-sensitive if INPUT contains at least one uppercase character."
       (let* ((input (str:replace-all " " " " input))
              ;; To sort by the display value, we store all the candidates in a
              ;; (display-value real-value) list or pairs.
-             (pairs (mapcar (lambda (c) (list (object-string c) c)) candidates))
+             (pairs (mapcar (lambda (c) (list (object-display c) c)) candidates))
              (pairs (if (str:downcasep input)
                         (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)
                         pairs))
