@@ -49,15 +49,16 @@ Set to '-' to read standard input instead.")
            :short #\s
            :long "session"
            :arg-parser #'identity
-     :description (format nil "The argument can be empty (same effect as --no-session), a file if it contains a
-slash (prefix with ./ to refer to files in current directory) or the basename of
-a file in the sessions directory '~a'.
+           :description (format nil "The argument can be empty (same effect as --no-session),
+a file if it contains a slash (prefix with ./ to refer
+to files in current directory) or the basename of a file
+in the sessions directory '~a'.
 Warning: any existing file will be overwritten."
                           (xdg-data-home "sessions")))
     (:name :no-session
            :short #\S
            :long "no-session"
-     :description "Do not load any session."))
+           :description "Do not load any session."))
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
