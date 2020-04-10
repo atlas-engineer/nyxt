@@ -152,6 +152,27 @@ Otherwise list all commands."
   (str:downcase (sym command)))
 
 (defmethod object-display ((command command))
+  "We dispatch the command display to the memoized `command-display' since it's
+very costly."
+  (command-display command))
+
+(defun command-completion-filter ()
+  (let ((command-list
+         (sort (apply #'list-commands (mapcar (alex:compose #'class-name #'class-of)
+                                              (modes (current-buffer))))
+               (lambda (c1 c2)
+                 (> (access-time c1) (access-time c2))))))
+    (lambda (input)
+      (fuzzy-match input command-list))))
+
+(defmethod command-function ((command command))
+  "Return the function associated to COMMAND.
+This function can be `funcall'ed."
+  (symbol-function (find-symbol
+                    (string (sym command))
+                    (pkg command))))
+
+(defmemo command-display (command)
   ;; Use `(current-window :no-recan)' or else the minibuffer will stutter
   ;; because of the RPC calls.
   (let* ((buffer (active-buffer (current-window :no-rescan)))
@@ -172,20 +193,6 @@ Otherwise list all commands."
               ((or "" "next" "next-user") "")
               (a (format nil " [~a]" a))))))
 
-(defun command-completion-filter (input)
-  (fuzzy-match input
-               (sort (apply #'list-commands (mapcar (alex:compose #'class-name #'class-of)
-                                                    (modes (current-buffer))))
-                     (lambda (c1 c2)
-                       (> (access-time c1) (access-time c2))))))
-
-(defmethod command-function ((command command))
-  "Return the function associated to COMMAND.
-This function can be `funcall'ed."
-  (symbol-function (find-symbol
-                    (string (sym command))
-                    (pkg command))))
-
 (defun function-command (function)
   "Return the command associated to function, if any."
   (find-if (lambda (cmd)
@@ -202,7 +209,7 @@ This function can be `funcall'ed."
   (with-result (command (read-from-minibuffer
                          (make-minibuffer
                           :input-prompt "Execute command"
-                          :completion-function 'command-completion-filter
+                          :completion-function (command-completion-filter)
                           :show-completion-count nil)))
     (setf (access-time command) (get-internal-real-time))
     (run command)))
