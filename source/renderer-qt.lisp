@@ -55,7 +55,7 @@
     (qt:widget-install-key-press-filter
      (qt-object window)
      (lambda (event)
-       (process-key-press-event window event)))
+       (on-signal-key-press-event window event)))
     (qt:widget-show qt-object)))
 
 (defmethod printable-p ((window qt-window) event)
@@ -65,7 +65,7 @@
     ("-" "hyphen")
     (_ (qt:key-string event))))
 
-(defmethod process-key-press-event ((sender qt-window) event)
+(defmethod on-signal-key-press-event ((sender qt-window) event)
   (when (qt:key-string event)
     (alex:appendf (key-stack *browser*)
                   (list (keymap:make-key :code (qt:key-code event)
@@ -76,7 +76,7 @@
              event (active-buffer sender)
              sender (printable-p sender event))))
 
-(defmethod process-destroy ((window qt-window))
+(defmethod on-signal-destroy ((window qt-window))
   (window-delete window))
 
 (defmethod ffi-window-delete ((window qt-window))
