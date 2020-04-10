@@ -104,7 +104,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
      (lambda (widget event) (declare (ignore widget))
        #+darwin
        (push-modifier *browser* event)
-       (process-key-press-event window event)))
+       (on-signal-key-press-event window event)))
     ;; For now we only need to deal with release events for macOS as a
     ;; workaround for the modifier issue.
     #+darwin
@@ -115,9 +115,9 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
-       (process-destroy window)))))
+       (on-signal-destroy window)))))
 
-(defmethod process-destroy ((window gtk-window))
+(defmethod on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (window-delete window))
@@ -247,7 +247,7 @@ See `gtk-browser's `modifier-translator' slot."
           (character character))
       (setf (gtk:gtk-entry-text (key-string-buffer window)) ""))))
 
-(defmethod process-key-press-event ((sender gtk-window) event)
+(defmethod on-signal-key-press-event ((sender gtk-window) event)
   (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
          (keyval (gdk:gdk-event-key-keyval event))
          (keyval-name (gdk:gdk-keyval-name keyval))
@@ -269,7 +269,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                  :status :pressed)))
       (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))))
 
-(defmethod process-button-press-event ((sender gtk-buffer) event)
+(defmethod on-signal-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
          ;; REVIEW: No need to store X and Y?
          ;; (x (gdk:gdk-event-button-x event))
@@ -309,28 +309,28 @@ See `gtk-browser's `modifier-translator' slot."
    (gtk-object buffer) "decide-policy"
    (lambda (web-view response-policy-decision policy-decision-type-response)
      (declare (ignore web-view))
-     (process-decide-policy buffer response-policy-decision policy-decision-type-response)))
+     (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))
   (gobject:g-signal-connect
    (gtk-object buffer) "load-changed"
    (lambda (web-view load-event)
      (declare (ignore web-view))
-     (process-load-changed buffer load-event)))
+     (on-signal-load-changed buffer load-event)))
   (gobject:g-signal-connect
    (gtk-object buffer) "mouse-target-changed"
    (lambda (web-view hit-test-result modifiers)
      (declare (ignore web-view))
-     (process-mouse-target-changed buffer hit-test-result modifiers)))
+     (on-signal-mouse-target-changed buffer hit-test-result modifiers)))
   ;; Mouse events are captured by the web view first, so we must intercept them here.
   (gobject:g-signal-connect
    (gtk-object buffer) "button-press-event"
    (lambda (web-view event) (declare (ignore web-view))
-     (process-button-press-event buffer event)))
+     (on-signal-button-press-event buffer event)))
   ;; TODO: Capture button-release-event?
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after the view has been created.
   (initialize-modes buffer))
 
-(defmethod process-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
+(defmethod on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
   (let ((is-new-window nil) (is-known-type t) (event-type nil)
         (navigation-action nil) (navigation-type nil)
         (mouse-button nil) (modifiers ())
@@ -376,7 +376,7 @@ See `gtk-browser's `modifier-translator' slot."
         nil
         t)))
 
-(defmethod process-load-changed ((buffer gtk-buffer) load-event)
+(defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
     (cond ((eq load-event :webkit-load-started)
            (echo "Loading: ~a." (url buffer)))
@@ -387,7 +387,7 @@ See `gtk-browser's `modifier-translator' slot."
           ((eq load-event :webkit-load-finished)
            (did-finish-navigation buffer url)))))
 
-(defmethod process-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
+(defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
   (cond ((webkit:webkit-hit-test-result-link-uri hit-test-result)
          (push-url-at-point buffer (webkit:webkit-hit-test-result-link-uri hit-test-result)))
