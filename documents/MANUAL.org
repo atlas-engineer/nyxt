@@ -133,7 +133,7 @@ To set the list of search engines, do:
 #+begin_src lisp
 (in-package :next-user)
 
-(defclass my-browser (browser)
+(defclass my-browser (gtk-browser)
   ((search-engines :initform
     '(("default"
        "https://duckduckgo.com/?q=~a"
@@ -153,7 +153,7 @@ and to append a search engine to the list, you can do
 #+begin_src lisp
 (in-package :next-user)
 
-(defclass my-browser ()
+(defclass my-browser (gtk-browser)
   ((search-engines :initform
     (append
      '(("yt"
