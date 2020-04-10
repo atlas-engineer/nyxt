@@ -483,10 +483,11 @@ The handlers take the `download-manager:download' class instance as argument.")
       (hooks:run-hook *after-init-hook*)
     (error (c)
       (log:error "In *after-init-hook*: ~a" c)))
-  (handler-case
+  (if *keep-alive*
       (funcall (startup-function browser) urls)
-    (error (c)
-      (log:error "In startup-function ~a: ~a" (startup-function browser) c)))
+      (handler-case (funcall (startup-function browser) urls)
+        (error (c)
+          (log:error "In startup-function ~a: ~a" (startup-function browser) c))))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
