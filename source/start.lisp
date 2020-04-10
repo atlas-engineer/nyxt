@@ -30,17 +30,21 @@ Set to '-' to read standard input instead.")
     (:name :no-init
            :short #\Q
            :long "no-init"
-     :description "Do not load the user init file.")
+           :description "Do not load the user init file.")
     (:name :eval
            :short #\e
            :long "eval"
            :arg-parser #'identity
-     :description "Eval the Lisp expressions.")
+           :description "Eval the Lisp expressions.")
     (:name :load
            :short #\l
            :long "load"
            :arg-parser #'identity
-     :description "Load the Lisp file.")
+           :description "Load the Lisp file.")
+    (:name :remote
+           :short #\r
+           :long "remote"
+           :description "Send the --eval and --load arguments to the running instance of Next.")
     (:name :session
            :short #\s
            :long "session"
@@ -92,7 +96,7 @@ Warning: any existing file will be overwritten."
     (otherwise
      (log:config :info))))
 
-(defun derive-session (name)
+(defun derive-session (name) ; TODO: Remove *session* and use same technique as `init-file-path'?
   "Derive session file from NAME.
 If NAME has a slash, use the file it refers to.
 Without slash, NAME (with .lisp appended if not already there), store in
@@ -131,10 +135,21 @@ next [options] [urls]")
               (getf options :eval))
       (unless (getf options :no-init)
         (load-lisp-file (init-file-path) :interactive nil))
+      ;; We need a browser instance so that listen-socket-p can know the socket path.
+      ;; TODO: Use (get-default ...) instead?  Ideally, socket could also
+      ;; be a command line parameter so that multiple instances can be started.
+      (setf *browser* (make-instance *browser-class*))
       (loop for (opt value . _) on options
             do (match opt
-                 (:load (load-lisp-file value))
-                 (:eval (eval-expr value))))
+                 (:load (let ((value (uiop:truename* value)))
+                          ;; Absolute path is necessary since remote process may have
+                          ;; a different working directory.
+                          (if (getf options :remote)
+                              (remote-eval (format nil "~s" `(load-lisp-file ,value)))
+                              (load-lisp-file value))))
+                 (:eval (if (getf options :remote)
+                            (remote-eval value)
+                            (eval-expr value)))))
       (uiop:quit))
 
     (setf *session*
@@ -232,6 +247,12 @@ next [options] [urls]")
        (log:info "Restoring session '~a'" *session*)
        (funcall f)))))
 
+(defun open-external-urls (urls)
+  (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
+  (ffi-within-renderer-thread
+   *browser*
+   (lambda () (open-urls urls))))
+
 (defun listen-socket ()
   (ensure-parent-exists (socket-path *browser*))
   ;; TODO: Catch error against race conditions?
@@ -240,39 +261,50 @@ next [options] [urls]")
                              :local-filename (socket-path *browser*))
     (loop as connection = (iolib:accept-connection s)
           while connection
-          do (progn (match (str:split (string #\newline)
-                                      (alex:read-stream-content-into-string connection)
-                                      :omit-nulls t)
-                      ((guard urls urls)
-                       (log:info "External process requested URL(s): ~{~a~^, ~}" urls)
-                       (ffi-within-renderer-thread
-                        *browser*
-                        (lambda () (open-urls urls))))
+          do (progn (match (alex:read-stream-content-into-string connection)
+                      ((guard expr (not (uiop:emptyp expr)))
+                       (log:info "External evaluation request: ~s" expr)
+                       (eval-expr expr))
                       (_
                        (log:info "External process pinged Next.")))
-                    ;; If we get pinged too early, we not have a current-window yet.
+                    ;; If we get pinged too early, we do not have a current-window yet.
                     (when (current-window)
                      (ffi-window-to-foreground (current-window))))))
   (log:info "Listening on socket ~s" (socket-path *browser*)))
 
+(defun listening-socket-p ()
+  (ignore-errors
+   (iolib:with-open-socket (s :address-family :local
+                              :remote-filename (socket-path *browser*))
+     (iolib:socket-connected-p s))))
+
 (defun bind-socket-or-quit (urls)
   "If another Next is listening on the socket, tell it to open URLS.
 Otherwise bind socket."
-  (if (ignore-errors
-       (iolib:with-open-socket (s :address-family :local
-                                  :remote-filename (socket-path *browser*))
-         (iolib:socket-connected-p s)))
+  (if (listening-socket-p)
       (progn
         (if urls
             (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
             (log:info "Next already started." urls))
         (iolib:with-open-socket (s :address-family :local
                                    :remote-filename (socket-path *browser*))
-          (format s "~{~a~%~}" urls))
+          (format s "~s" `(open-external-urls ',urls)))
         (uiop:quit))
       (progn
         (uiop:delete-file-if-exists (socket-path *browser*))
         (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))
+
+(defun remote-eval (expr)
+  "If another Next is listening on the socket, tell it to evaluate EXPR."
+  (if (listening-socket-p)
+      (progn
+        (iolib:with-open-socket (s :address-family :local
+                                   :remote-filename (socket-path *browser*))
+          (write-string expr s))
+        (uiop:quit))
+      (progn
+        (log:info "No instance running.")
+        (uiop:quit))))
 
 (serapeum:export-always 'start)
 (defun start (&key urls (init-file (init-file-path)))
