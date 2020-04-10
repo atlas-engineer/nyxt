@@ -21,14 +21,14 @@
     (:name :version
            :long "version"
            :description "Print version and exit.")
-    (:name :init-file
+    (:name :init
            :short #\i
-           :long "init-file"
+           :long "init"
            :arg-parser #'identity
            :description "Set path to initialization file.
 Set to '-' to read standard input instead.")
     (:name :no-init
-           :short #\Q
+           :short #\I
            :long "no-init"
            :description "Do not load the user init file.")
     (:name :eval
@@ -166,7 +166,7 @@ next [options] [urls]")
    can't be a regular variable or else the value will be hard-coded at
    compile time.  It seems to be hard-coded with (eval-when (:execute)
    ...) as well."
-  (or (getf *options* :init-file)
+  (or (getf *options* :init)
       (xdg-config-home filename)))
 
 (defparameter *load-init-error-message* "Error: we could not load the init file")
