@@ -22,6 +22,7 @@
            :long "version"
            :description "Print version and exit.")
     (:name :eval
+           :short #\e
            :long "eval"
            :arg-parser #'identity
            :description "Eval the Lisp expression.")
