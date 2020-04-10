@@ -21,11 +21,6 @@
     (:name :version
            :long "version"
            :description "Print version and exit.")
-    (:name :eval
-           :short #\e
-           :long "eval"
-           :arg-parser #'identity
-           :description "Eval the Lisp expression.")
     (:name :init-file
            :short #\i
            :long "init-file"
@@ -35,11 +30,17 @@ Set to '-' to read standard input instead.")
     (:name :no-init
            :short #\Q
            :long "no-init"
-           :description "Do not load the user init file.")
-    (:name :no-session
-           :short #\S
-           :long "no-session"
-     :description "Do not load any session.")
+     :description "Do not load the user init file.")
+    (:name :eval
+           :short #\e
+           :long "eval"
+           :arg-parser #'identity
+     :description "Eval the Lisp expressions.")
+    (:name :load
+           :short #\l
+           :long "load"
+           :arg-parser #'identity
+     :description "Load the Lisp file.")
     (:name :session
            :short #\s
            :long "session"
@@ -48,7 +49,11 @@ Set to '-' to read standard input instead.")
 slash (prefix with ./ to refer to files in current directory) or the basename of
 a file in the sessions directory '~a'.
 Warning: any existing file will be overwritten."
-                          (xdg-data-home "sessions"))))
+                          (xdg-data-home "sessions")))
+    (:name :no-session
+           :short #\S
+           :long "no-session"
+     :description "Do not load any session."))
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
@@ -121,11 +126,17 @@ next [options] [urls]")
     (when (getf options :verbose)
       (set-debug-level :debug)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
-    (when (getf options :eval)
+
+    (when (or (getf options :load)
+              (getf options :eval))
       (unless (getf options :no-init)
         (load-lisp-file (init-file-path) :interactive nil))
-      (eval-expr (getf options :eval))
+      (loop for (opt value . _) on options
+            do (match opt
+                 (:load (load-lisp-file value))
+                 (:eval (eval-expr value))))
       (uiop:quit))
+
     (setf *session*
           (if (getf options :no-session)
               ""
@@ -156,12 +167,12 @@ next [options] [urls]")
   (unless (str:emptyp (namestring file))
     (handler-case (if (string= (pathname-name file) "-")
                       (progn
-                        (format t "Loading configuration from standard input...")
+                        (format t "Loading Lisp from standard input...")
                         (loop for object = (read *standard-input* nil :eof)
                               until (eq object :eof)
                               do (eval object)))
                       (when (uiop:file-exists-p file)
-                        (format t "~&Loading configuration from ~s...~&" file)
+                        (format t "~&Loading Lisp file ~s...~&" file)
                         (load file)))
       (error (c)
         ;; TODO: Handle warning from `echo'.
@@ -170,8 +181,8 @@ next [options] [urls]")
                            *load-init-error-message*)))
           (cond
             ((equal interactive :running)
-             (echo-safe "Could not load the init file: ~a" c)
-             (notify "We could not load the init file."))
+             (echo-safe "Could not load the Lisp file: ~a" c)
+             (notify "We could not load the Lisp file."))
             ((null interactive)
              (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
              (uiop:quit 1))
