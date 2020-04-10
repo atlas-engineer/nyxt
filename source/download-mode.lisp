@@ -27,16 +27,19 @@
                                         nil)
                              ;; TODO: Print proxy in use?
                              " ("
-                             (format nil "~a/s, " (sera:file-size-human-readable
+                             (format nil "~a/s, " (sera:format-file-size-human-readable
+                                                   nil
                                                    (download-manager:last-update-speed d)
                                                    :flavor :iec))
-                             (format nil "~a" (sera:file-size-human-readable
-                                               (download-manager:bytes-fetched d)
-                                               :flavor :iec))
+                             (sera:format-file-size-human-readable
+                              nil
+                              (download-manager:bytes-fetched d)
+                              :flavor :iec)
                              (if (= 0 (download-manager:bytes-total d))
                                  ", out of unknown total"
                                  (format nil "/~a, ~a%"
-                                         (sera:file-size-human-readable
+                                         (sera:format-file-size-human-readable
+                                          nil
                                           (download-manager:bytes-total d)
                                           :flavor :iec)
                                          ;; TODO: No need for percentage?
