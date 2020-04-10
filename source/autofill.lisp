@@ -4,6 +4,7 @@
 
 (defstruct autofill
   (id)
+  (name)
   (key)
   (fill))
 
@@ -15,7 +16,7 @@
           (cond ((stringp (autofill-fill autofill))
            (autofill-fill autofill))
           ((functionp (autofill-fill autofill))
-           "Function"))))
+           (or (autofill-name autofill) "Function")))))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
