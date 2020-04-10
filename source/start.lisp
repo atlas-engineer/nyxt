@@ -195,10 +195,15 @@ next [options] [urls]")
   (load-lisp-file init-file :interactive interactive))
 
 (defun eval-expr (expr)
-  "Evaluate the form EXPR (string) and print its result.
-EXPR must contain one single Lisp form. Use `progn' if needed."
+  "Evaluate the form EXPR (string) and print the result of the last expresion."
   (handler-case
-      (print (eval (read-from-string expr)))
+      (with-input-from-string (input expr)
+        (format t "~a~&"
+                (loop with result = nil
+                      for object = (read input nil :eof)
+                      until (eq object :eof)
+                      do (setf result (eval object))
+                      finally (return result))))
     (error (c)
       (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red "Evaluation error:") c)
       (uiop:quit 1))))
