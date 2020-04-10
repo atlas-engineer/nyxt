@@ -473,7 +473,7 @@ The handlers take the URL as argument.")
 The handlers take the `download-manager:download' class instance as argument.")
    (autofills :accessor autofills
               :initform (list (make-autofill :key "Name" :fill "My Name")
-                              (make-autofill :key "Function example" :fill (lambda () (format nil "hello!")))))))
+                              (make-autofill :name "Hello Printer" :key "Function example" :fill (lambda () (format nil "hello!")))))))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup-function'."
