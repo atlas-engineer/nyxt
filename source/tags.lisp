@@ -76,21 +76,17 @@ Example input:
 
   \"+foo -bar (or (and john doe) (not (and tic tac)))\""
   (let* ((non-specs nil)
-         (specs (loop with start = 0
-                      for (object new-start) = (multiple-value-list
-                                                (ignore-errors
-                                                 (read-from-string input nil :eof :start start)))
-                      until (or (typep new-start 'error)
-                                (eq object :eof))
-                      do (setf start new-start)
-                      if (or (not (atom object))
-                             (and (<= 2 (length (symbol-name object)))
-                                  (or
-                                   (str:starts-with? "-" (symbol-name object))
-                                   (str:starts-with? "+" (symbol-name object)))))
-                        collect object
-                      else
-                        do (push object non-specs))))
+         (specs (with-input-from-string (in input)
+                  (loop for object = (read in nil :eof)
+                        until (eq object :eof)
+                        if (or (not (atom object))
+                               (and (<= 2 (length (symbol-name object)))
+                                    (or
+                                     (str:starts-with? "-" (symbol-name object))
+                                     (str:starts-with? "+" (symbol-name object)))))
+                          collect object
+                        else
+                          do (push object non-specs)))))
 
     (values
      (when specs
