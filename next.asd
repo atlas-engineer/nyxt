@@ -77,6 +77,7 @@
                  ;; Core Modes
                  (:file "application-mode")
                  (:file "web-mode")
+                 (:file "certificate-whitelist-mode")
                  (:file "vi-mode")
                  (:file "blocker-mode")
                  (:file "proxy-mode")

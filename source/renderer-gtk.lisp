@@ -337,9 +337,28 @@ Warning: This behaviour may change in the future."
    (lambda (web-view event) (declare (ignore web-view))
      (on-signal-button-press-event buffer event)))
   ;; TODO: Capture button-release-event?
+  ;; TLS certificate handling
+  (gobject:g-signal-connect
+   (gtk-object buffer) "load-failed-with-tls-errors"
+   (lambda (web-view failing-uri certificate errors)
+     (declare (ignore web-view errors))
+     ;; TODO: Add hint on how to accept certificate to the HTML content.
+     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)))
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after the view has been created.
   (initialize-modes buffer))
+
+(defmethod on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
+  "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
+  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+         (host (quri:uri-host (quri:uri url))))
+    (when (member-string host (whitelist (certificate-whitelist buffer)))
+      (webkit:webkit-web-context-allow-tls-certificate-for-host
+       context
+       (gobject:pointer certificate)
+       host)
+      (set-url url :buffer buffer)
+      t)))
 
 (defmethod on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
   (let ((is-new-window nil) (is-known-type t) (event-type nil)
@@ -509,3 +528,18 @@ Warning: This behaviour may change in the future."
   (declare (ignore browser))
   (gtk:within-gtk-thread
    (funcall thunk)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; See https://github.com/Ferada/cl-cffi-gtk/issues/37.
+(in-package :gio)
+(define-g-flags "GTlsCertificateFlags" g-tls-certificate-flags
+  (:export t
+   :type-initializer "g_tls_client_connection_get_validation_flags")
+  (:g-tls-certificate-unknown-ca 1)
+  (:g-tls-certificate-bad-identity 2)
+  (:g-tls-certificate-not-activated 4)
+  (:g-tls-certificate-expired 8)
+  (:g-tls-certificate-revoked 16)
+  (:g-tls-certificate-insecure 32)
+  (:g-tls-certificate-generic-error 64)
+  (:g-tls-certificate-validate-all 128))
