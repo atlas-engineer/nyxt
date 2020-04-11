@@ -35,12 +35,12 @@ Set to '-' to read standard input instead.")
            :short #\e
            :long "eval"
            :arg-parser #'identity
-           :description "Eval the Lisp expressions.")
+           :description "Eval the Lisp expressions.  Can be specified multiple times.")
     (:name :load
            :short #\l
            :long "load"
            :arg-parser #'identity
-           :description "Load the Lisp file.")
+           :description "Load the Lisp file.  Can be specified multiple times.")
     (:name :remote
            :short #\r
            :long "remote"
