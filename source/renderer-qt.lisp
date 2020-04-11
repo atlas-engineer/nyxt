@@ -9,12 +9,19 @@
 
 (defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
-  (setf (application browser)
-        (qt:new-q-application 1 (cffi:foreign-alloc :string
-                                                    :initial-contents (list "Next")
-                                                    :null-terminated-p t)))
-  (finalize browser urls startup-timestamp)
-  (qt:application-exec (application browser)))
+  (flet ((initialize ()
+           (setf (application browser)
+                 (qt:new-q-application 1 (cffi:foreign-alloc :string
+                                                             :initial-contents (list "Next")
+                                                             :null-terminated-p t)))
+           (finalize browser urls startup-timestamp)
+           (qt:application-exec (application browser))))
+    #+sbcl
+    (sb-int:with-float-traps-masked (:invalid :inexact :overflow)
+      (log:debug "SBCL initialization")
+      (initialize))
+    #-sbcl
+    (initialize)))
 
 (defmethod ffi-kill-browser ((browser qt-browser))
   (qt:application-quit (application browser)))
