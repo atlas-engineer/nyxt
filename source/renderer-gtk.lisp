@@ -105,13 +105,12 @@ want to change the behaviour of modifiers, for instance swap 'control' and
        #+darwin
        (push-modifier *browser* event)
        (on-signal-key-press-event window event)))
-    ;; For now we only need to deal with release events for macOS as a
-    ;; workaround for the modifier issue.
-    #+darwin
     (gobject:g-signal-connect
      gtk-object "key_release_event"
      (lambda (widget event) (declare (ignore widget))
-       (pop-modifier *browser* event)))
+       #+darwin
+       (pop-modifier *browser* event)
+       (on-signal-key-release-event window event)))
     (gobject:g-signal-connect
      gtk-object "destroy"
      (lambda (widget) (declare (ignore widget))
@@ -261,13 +260,25 @@ See `gtk-browser's `modifier-translator' slot."
     (if modifiers
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
-    (when key-string
-      (alex:appendf (key-stack *browser*)
-                          (list (keymap:make-key :code keycode
-                                                 :value key-string
-                                                 :modifiers modifiers
-                                                 :status :pressed)))
-      (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))))
+    (if key-string
+        (progn
+          (alex:appendf (key-stack *browser*)
+                        (list (keymap:make-key :code keycode
+                                               :value key-string
+                                               :modifiers modifiers
+                                               :status :pressed)))
+          (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
+        ;; Do not forward modifier-only to renderer.
+        t)))
+
+(defmethod on-signal-key-release-event ((sender gtk-window) event)
+  "We don't handle key release events.
+Warning: This behaviour may change in the future."
+  (if (active-minibuffers sender)
+      ;; Do not forward release event when minibuffer is up.
+      t
+      ;; Forward release event to the web view.
+      nil))
 
 (defmethod on-signal-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
