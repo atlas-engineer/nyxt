@@ -614,13 +614,15 @@ current buffer."
 (declaim (ftype (function (window buffer)) set-window-title))
 (serapeum:export-always 'set-window-title)
 (defun set-window-title (window buffer)
-  "Set current window title to 'Next - TITLE - URL."
+  "Set current window title to 'Next - TITLE - URL.
+If Next was started from a REPL, use 'Next REPL...' instead.
+This is useful to tell REPL instances from binary ones."
   (let ((url (url buffer))
         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
     (setf url (if (str:emptyp url) "<no url/name>" url))
     (ffi-window-set-title window
-                          (concatenate 'string "Next - "
+                          (str:concat "Next" (when *keep-alive* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
                                        url))))
 
