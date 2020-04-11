@@ -631,14 +631,29 @@ The following keys exist as special keys:
 A keymap is a collection of key-to-command bindings.
 
 Modes can define key binding schemes, which are sets of keymaps indexed by a
-scheme name like =:emacs=.
+scheme name like =scheme:emacs=.
 
-The currently active key binding scheme is selected by the ~current-key-scheme~
+The currently active key binding scheme is selected by the ~keymap-scheme-name~
 buffer slot.  When a key is hit, Next looks up the keymaps of the corresponding
 scheme for all active modes in the current buffer.
 
 You can change the default binding scheme for any buffer by setting
-~current-key-scheme~ to the appropriate value.
+~keymap-scheme-name~ to the appropriate value.  Here follows a minimal example
+to switch to the Emacs scheme:
+
+#+begin_src lisp
+(in-package :next)
+(defclass my-buffer (gtk-buffer)
+  ((keymap-scheme-name
+    :accessor keymap-scheme-name
+    :initarg :keymap-scheme-name
+    :initform scheme:emacs
+    :type keymap:scheme
+    :documentation "The keymap scheme that will be used
+for all modes in the current buffer.")))
+
+(setf *buffer-class* 'my-buffer)
+#+end_src
 
 To create a keymap, use the ~make-keymap~ function.
 
