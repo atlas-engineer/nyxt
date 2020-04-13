@@ -22,3 +22,15 @@
         (echo "Highlighted word: ~a, spelled correctly." word)
         (echo "Highlighted word: ~a, spelled incorrectly." word))))
 
+(define-command spell-check-suggest-word ()
+  "Suggest a spelling for a given word."
+  (with-result (selected-word (read-from-minibuffer
+                               (make-minibuffer
+                                :input-prompt "Suggest spelling (3+ characters)"
+                                :completion-function 'enchant-completion)))
+    selected-word))
+
+(defun enchant-completion (input)
+  (when (> (length input) 2)
+    (enchant:with-dict (lang (spell-check-language *browser*))
+      (enchant:dict-suggest lang input))))
