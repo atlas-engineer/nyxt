@@ -474,7 +474,13 @@ The handlers take the URL as argument.")
 The handlers take the `download-manager:download' class instance as argument.")
    (autofills :accessor autofills
               :initform (list (make-autofill :key "Name" :fill "My Name")
-                              (make-autofill :name "Hello Printer" :key "Function example" :fill (lambda () (format nil "hello!")))))))
+                              (make-autofill :name "Hello Printer" :key "Function example" :fill (lambda () (format nil "hello!")))))
+   (spell-check-language :accessor spell-check-language
+                         :initform "en_US"
+                         :documentation "Spell check language used by
+                         Next. For a list of more languages available,
+                         please view the documentation for
+                         cl-enchant (broker-list-dicts).")))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup-function'."
