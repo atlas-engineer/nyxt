@@ -148,7 +148,7 @@ to the currently active buffer."
       (mapcar #'buffer-delete buffers-to-delete))))
 
 ;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.
-(define-parenscript %%buffer-get-title () ; TODO: `did-finish-navigation' should
+(define-parenscript %%buffer-get-title () ; TODO: `on-signal-load-finished' should
                                           ; pass the title so that we don't have
                                           ; to call this.
   (ps:chain document title))

@@ -80,6 +80,6 @@
                          (find-submode (buffer root-mode) 'vi-insert-mode))
                     (vi-normal-mode)))))))
 
-(defmethod did-finish-navigation ((mode vi-insert-mode) url)
+(defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
   (vi-normal-mode))

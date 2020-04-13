@@ -414,9 +414,9 @@ Warning: This behaviour may change in the future."
           ((eq load-event :webkit-load-redirected) nil)
           ;; TODO: load-committed is deprecated.  Only use load-status and load-finished.
           ((eq load-event :webkit-load-committed)
-           (did-commit-navigation buffer url))
+           (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
-           (did-finish-navigation buffer url)))))
+           (on-signal-load-finished buffer url)))))
 
 (defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))

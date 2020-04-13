@@ -244,10 +244,10 @@ If there is no corresponding keymap, return nil."
   (keymap:get-keymap (keymap-scheme-name (buffer mode))
                      (keymap-schemes mode)))
 
-(defmethod did-commit-navigation ((mode root-mode) url)
+(defmethod on-signal-load-committed ((mode root-mode) url)
   url)
 
-(defmethod did-finish-navigation ((mode root-mode) url)
+(defmethod on-signal-load-finished ((mode root-mode) url)
   url)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

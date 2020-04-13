@@ -102,11 +102,11 @@
   (qt:load-started-listener-connect
    (qt-object buffer)
    (lambda ()
-     (did-commit-navigation buffer (qt:web-engine-view-url (qt-object buffer)))))
+     (on-signal-load-committed buffer (qt:web-engine-view-url (qt-object buffer)))))
   (qt:load-finished-listener-connect
    (qt-object buffer)
    (lambda ()
-     (did-finish-navigation buffer (qt:web-engine-view-url (qt-object buffer))))))
+     (on-signal-load-finished buffer (qt:web-engine-view-url (qt-object buffer))))))
 
 (defmethod ffi-window-make ((browser qt-browser))
   "Make a window."

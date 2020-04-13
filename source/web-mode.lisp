@@ -395,12 +395,12 @@ Otherwise go forward to the only child."
     (copy-to-clipboard input)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Warning: To specialize `did-commit-navigation' we must be in the right package.
+;; Warning: To specialize `on-signal-load-committed' we must be in the right package.
 (in-package :next)
-(defmethod did-commit-navigation ((mode next/web-mode::web-mode) url)
+(defmethod on-signal-load-committed ((mode next/web-mode::web-mode) url)
   nil)
 
-(defmethod did-finish-navigation ((mode next/web-mode::web-mode) url)
+(defmethod on-signal-load-finished ((mode next/web-mode::web-mode) url)
   (let* ((buffer (active-buffer (current-window))))
     ;; TODO: Setting the default zoom level works with pure Javascript, but it
     ;; can only be done after the URL has been loaded which is a bit of a

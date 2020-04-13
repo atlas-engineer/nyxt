@@ -264,17 +264,17 @@ defined in any package and is unique."
               ((guard c c) (funcall (sym c) :buffer buffer :activate t))
               (_ (log:warn "Mode command ~a not found." mode-class))))))))
 
-(defmethod did-commit-navigation ((buffer buffer) url)
+(defmethod on-signal-load-committed ((buffer buffer) url)
   nil)
 
-(defmethod did-finish-navigation ((buffer buffer) url)
+(defmethod on-signal-load-finished ((buffer buffer) url)
   (setf (url buffer) url)
   (with-result (title (%%buffer-get-title :buffer buffer))
     (setf (title buffer) title)
-    ;; Warning: We can only dispatch did-commit-navigation after the title has
+    ;; Warning: We can only dispatch on-signal-load-committed after the title has
     ;; been set, lest we get a race condition with the title being set too late.
     (dolist (mode (modes buffer))
-      (did-finish-navigation mode url))))
+      (on-signal-load-finished mode url))))
 
 (defclass-export browser ()
   ((socket-thread :accessor socket-thread
