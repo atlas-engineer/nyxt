@@ -55,7 +55,21 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - Turn =resource-query-function= into a hook, =request-resource-hook=.
 
-- Sessions are now saved in XDG_DATA_HOME/next/sessions/.  Default session is =default.lisp=.
+- Sessions are now saved in XDG_DATA_HOME/next/sessions/.  Default session is
+  =default.lisp=.  The command line option =--session= uses a =sessions= folder
+  by default and does not treat =nil= as a special case anymore.
+
+- Command line options: New =--load= option to load a Lisp file, =--eval= and
+  =--load= can be specified multiple times, the =--remote= option allow
+  evaluating =--eval= and =--load= in a running instance.
+
+- New =autofill= command to insert predefined content in text fields.
+
+- Remove SQLite dependency.
+
+- Fix out-of-sync buffer title.
+
+- New =current-window= function.
 
 ** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
