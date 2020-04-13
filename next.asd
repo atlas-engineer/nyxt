@@ -72,6 +72,7 @@
                  (:file "scroll")
                  (:file "history")
                  (:file "search-buffer")
+                 (:file "spell-check")
                  (:file "jump-heading")
                  (:file "element-hint")
                  (:file "help")
