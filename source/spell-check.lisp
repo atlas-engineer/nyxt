@@ -15,3 +15,10 @@
               (echo "~a spelled correctly." word)
               (echo "~a is incorrect." word)))))
 
+(define-command spell-check-highlighted-word ()
+  "Spell check a highlighted word."
+  (with-result (word (%copy))
+    (if (spell-check-word :word word)
+        (echo "Highlighted word: ~a, spelled correctly." word)
+        (echo "Highlighted word: ~a, spelled incorrectly." word))))
+
