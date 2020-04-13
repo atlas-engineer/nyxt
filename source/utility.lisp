@@ -121,6 +121,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
 (define-parenscript %print-buffer ()
   (print))
 
+(sera:export-always '%print-buffer)
 (define-command print-buffer ()
   "Print the current buffer."
   (%print-buffer))
