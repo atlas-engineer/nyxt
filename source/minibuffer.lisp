@@ -392,7 +392,8 @@ This should not rely on the minibuffer's content.")
 
 (defmethod setup-default ((minibuffer minibuffer))
   (erase-document minibuffer)
-  (setf (input-buffer minibuffer) "")
+  ;; Invoke updating of the minibuffer by setf'ing the input-buffer
+  (setf (input-buffer minibuffer) (input-buffer minibuffer))
   (setf (input-cursor-position minibuffer) 0)
   (setf (content minibuffer)
         (markup:markup
