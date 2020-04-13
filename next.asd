@@ -14,6 +14,7 @@
                :cl-prevalence
                :closer-mop
                :dexador
+               :enchant
                :iolib
                :ironclad
                :local-time
