@@ -723,6 +723,9 @@ Deal with URL with the following rules:
      (log:debug "Forwarding back to platform port: ~a" url)
      :forward)))
 
+(defun javascript-error-handler (condition)
+  (echo-warning "JavaScript error: ~a" condition))
+
 (serapeum:export-always 'current-window)
 (defun current-window (&optional no-rescan)
   ;; TODO: Get rid of the NO-RESCAN option and find a fast way to retrieve

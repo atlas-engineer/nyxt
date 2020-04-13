@@ -471,7 +471,10 @@ Warning: This behaviour may change in the future."
   (webkit:webkit-web-view-load-uri (gtk-object buffer) uri))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
-  (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer) javascript callback))
+  (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
+                                               javascript
+                                               callback
+                                               #'javascript-error-handler))
 
 (defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript &key callback)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript callback))
