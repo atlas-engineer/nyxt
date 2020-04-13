@@ -531,7 +531,14 @@ Warning: This behaviour may change in the future."
 (defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
   (declare (ignore browser))
   (gtk:within-gtk-thread
-   (funcall thunk)))
+    (funcall thunk)))
+
+(defmethod ffi-inspector-show ((buffer gtk-buffer))
+  (setf (webkit:webkit-settings-enable-developer-extras
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+        t)
+  (webkit:webkit-web-inspector-show
+   (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; See https://github.com/Ferada/cl-cffi-gtk/issues/37.

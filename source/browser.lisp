@@ -812,6 +812,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-within-renderer-thread ((browser browser) thunk))
 (define-ffi-method ffi-kill-browser ((browser browser)))
 (define-ffi-method ffi-initialize ((browser browser) urls startup-timestamp))
+(define-ffi-method ffi-inspector-show ((buffer buffer)))
 
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))

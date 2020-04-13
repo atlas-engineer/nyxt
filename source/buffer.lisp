@@ -319,3 +319,7 @@ The current buffer access time is set to be the last."
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
     (enable-mode-for-current-buffer :buffers buffers)))
+
+(define-command open-inspector ()
+  "Open the inspector, a graphical tool to inspect and change the content of the buffer."
+  (ffi-inspector-show (current-buffer)))
