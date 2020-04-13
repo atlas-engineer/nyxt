@@ -125,6 +125,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
   "Print the current buffer."
   (%print-buffer))
 
+(sera:export-always '%copy)
 (define-parenscript %copy ()
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
