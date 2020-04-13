@@ -124,3 +124,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
 (define-command print-buffer ()
   "Print the current buffer."
   (%print-buffer))
+
+(define-parenscript %copy ()
+  "Return selected text from javascript."
+  (ps:chain window (get-selection) (to-string)))

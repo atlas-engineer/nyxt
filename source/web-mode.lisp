@@ -385,10 +385,6 @@ Otherwise go forward to the only child."
                                                   (clipboard-ring *browser*)))))
     (%paste :input-text ring-item)))
 
-(define-parenscript %copy ()
-  "Return selected text from javascript."
-  (ps:chain window (get-selection) (to-string)))
-
 (defun copy-to-clipboard (input)
   "Save INPUT text to clipboard, and ring."
   (ring:insert (clipboard-ring *browser*) (trivial-clipboard:text input)))
