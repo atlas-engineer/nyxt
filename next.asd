@@ -13,6 +13,7 @@
                :cl-ppcre-unicode
                :cl-prevalence
                :closer-mop
+               :moptilities
                :dexador
                :enchant
                :iolib
