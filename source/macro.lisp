@@ -152,9 +152,12 @@ Example usage:
          (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
          (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super))))
          (super-class (find-class super)))
+    (print (mopu:slot-properties super-class 'socket-thread))
     `(progn
        (defclass ,name (,super)
-         ,@slots)
+         ,(loop for slot in (car slots)
+                collect (list* :initform (cadr slot)
+                               (alexandria:remove-from-plist
+                                (mopu:slot-properties super-class (car slot))
+                                :initform))))
        (setf ,configured-class ',name))))
-
-;; (mopu:slot-properties (find-class 'gtk-browser) 'socket-thread)
