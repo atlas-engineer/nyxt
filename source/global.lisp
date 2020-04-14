@@ -3,7 +3,7 @@
 
 (in-package :next)
 
-(defvar *renderer-class* 'gtk-browser
+(defvar *renderer-class* 'gtk
   "The renderer class used when constructing the define-configuration
   macro.")
 
