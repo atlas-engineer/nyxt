@@ -135,7 +135,7 @@ next [options] [urls]")
     (when (or (getf options :load)
               (getf options :eval))
       (unless (getf options :no-init)
-        (load-lisp-file (init-file-path) :interactive nil))
+        (load-lisp (init-file-path) :interactive nil))
       ;; We need a browser instance so that listen-socket-p can know the socket path.
       ;; TODO: Use (get-default ...) instead?  Ideally, socket could also
       ;; be a command line parameter so that multiple instances can be started.
@@ -146,8 +146,8 @@ next [options] [urls]")
                           ;; Absolute path is necessary since remote process may have
                           ;; a different working directory.
                           (if (getf options :remote)
-                              (remote-eval (format nil "~s" `(load-lisp-file ,value)))
-                              (load-lisp-file value))))
+                              (remote-eval (format nil "~s" `(load-lisp ,value)))
+                              (load-lisp value))))
                  (:eval (if (getf options :remote)
                             (remote-eval value)
                             (eval-expr value)))))
@@ -173,8 +173,9 @@ next [options] [urls]")
 (defparameter *load-init-error-message* "Error: we could not load the init file")
 (defparameter *load-init-type-error-message* (str:concat *load-init-error-message* " because of a type error."))
 
-(declaim (ftype (function ((or string stream) &key (:interactive t))) load-lisp-file))
-(defun load-lisp-file (file &key interactive) ; TODO: Rename to `load-lisp'.
+(declaim (ftype (function (trivial-types:pathname-designator &key (:interactive t)))
+                load-lisp))
+(defun load-lisp (file &key interactive)
   "Load the Lisp FILE (or stream).
    If FILE is \"-\", read from the standard input.
    If INTERACTIVE is t, allow the debugger on errors. If :running, show
@@ -185,7 +186,7 @@ next [options] [urls]")
         (when (equal "" file)
           (error "Can't load empty file name."))
         (cond
-          ((and (stringp file) (string= (pathname-name file) "-"))
+          ((and (not (streamp file)) (string= (pathname-name file) "-"))
            (progn
              (format t "Loading Lisp from standard input...")
              (loop for object = (read *standard-input* nil :eof)
@@ -218,14 +219,14 @@ next [options] [urls]")
                                  (make-minibuffer
                                   :input-prompt "Load file"
                                   :show-completion-count nil)))
-    (load-lisp-file file-name-input :interactive interactive)))
+    (load-lisp file-name-input :interactive interactive)))
 
 (define-command load-init-file (&key (init-file (init-file-path))
                                 (interactive :running))
   "Load or reload the init file.
    If INTERACTIVE is t, allow the debugger on errors.
    If :running, show an error but don't quit the Lisp process."
-  (load-lisp-file init-file :interactive interactive))
+  (load-lisp init-file :interactive interactive))
 
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
@@ -323,7 +324,7 @@ Otherwise bind socket."
     (format t "Next version ~a~&" +version+)
     (setf *session* (derive-session *session*))
     (unless (getf *options* :no-init)
-      (load-lisp-file init-file :interactive t))
+      (load-lisp init-file :interactive t))
     (setf *browser* (make-instance *browser-class*
                                    :startup-timestamp startup-timestamp))
     (when (single-instance-p *browser*)
