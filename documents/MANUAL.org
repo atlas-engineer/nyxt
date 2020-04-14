@@ -38,6 +38,11 @@ end-user allowing for infinite customization.
   -  [[#help][Help]]
   -  [[#eval-lisp-forms][Eval Lisp forms]]
   -  [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
+  -  [[#command-line-parameters-and-environment][Command line parameters and environment]]
+    -  [[#environment-variables][Environment variables]]
+    -  [[#multiple-profiles][Multiple profiles]]
+    -  [[#scripts][Scripts]]
+    -  [[#send-code-to-a-running-instance][Send code to a running instance]]
 -  [[#customization][Customization]]
   -  [[#keybinding][Keybinding]]
     -  [[#keymaps-and-key-binding-schemes][Keymaps and key binding schemes]]
@@ -577,6 +582,58 @@ After launching the Swank server in Next, execute the following within Emacs:
 
 To customize the port that Swank starts on, edit the global variable
 ~*swank-port*~ in your init file.
+
+** Command line parameters and environment
+*** Environment variables
+By default Next stores its files in these locations.
+
+- =$XDG_CONFIG_HOME/next/=: For the =init.lisp= user configuration.
+- =$XDG_DATA_HOME/next/=: For all the automatically generated data, like
+  sessions, bookmarks, cookies, etc.
+
+*** Multiple profiles
+It's possible to manage multiple profiles, for example an instance of Next for
+work, another one for private browsing.
+
+For instance, to start a "private", ephemeral session, run
+
+#+begin_src sh
+XDG_DATA_HOME=/tmp/private/ next ; rm -rf /tmp/private/next
+#+end_src
+
+*** Scripts
+
+You can evaluate code from the command line with =--eval= and =--load=.
+
+#+begin_src sh
+$ next --no-init --eval '(in-package :next-user) (format t "~a~&" +version+)' \
+  --load my-lib.lisp --eval '(format t "Hello ~a!~&" (my-lib:my-world))'
+
+1.5.0-0b1541ce
+NIL
+#+end_src
+
+Note that you can evaluate multiple =--eval= and =--load= in a row, they are
+executed in the order they appear.
+
+You can evan make scripts.  Here is an example =foo.lisp=:
+
+#+begin_src lisp
+#!next --script
+(in-package :next-user)
+
+(format t "~a~&" +version+)
+#+end_src
+
+*** Send code to a running instance
+=--eval= and =--load= can be commanded to operate over an existing instance
+instead of a separate instance that exits immediately.
+
+To let know a private instance of Next to load a =foo.lisp= script and run it's
+=foo= function:
+#+begin_src sh
+XDG_DATA_HOME=/tmp/private/ next --remote --load foo.lisp --eval '(foo)'
+#+end_src
 
 * Customization
 All customization begins by creating a =~/.config/next/init.lisp=
