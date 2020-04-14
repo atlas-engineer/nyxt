@@ -136,13 +136,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
   "Set the renderer to the RENDERER if supplied, otherwise, check for
    the existence of classes that define renderers."
   (if renderer
-      (match renderer
-        (:gtk (setf *renderer-class* 'gtk))
-        (:qt (setf *renderer-class* 'qt))
-        (_ (error "Unknown renderer.")))
-      (let ((found-renderer-class
-              (do-all-symbols (symbol)
-                (when (and (find symbol +renderer-browser-classes+)
-                           (find-class symbol nil)) (return symbol)))))
+      (setf *renderer-class* renderer)
+      (let ((found-renderer-class (class-name (first (mopu:subclasses 'browser)))))
         (setf *renderer-class*
               (intern (str:replace-all "-BROWSER" "" (symbol-name found-renderer-class)))))))
