@@ -146,3 +146,15 @@ Example usage:
                      (apply (lambda ,params
                               ,@body)
                               ,args))))))))
+
+(defmacro define-configuration (super &body slots)
+  (let* ((name (intern (str:concat "USER-" (symbol-name super))))
+         (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
+         (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super))))
+         (super-class (find-class super)))
+    `(progn
+       (defclass ,name (,super)
+         ,@slots)
+       (setf ,configured-class ',name))))
+
+;; (mopu:slot-properties (find-class 'gtk-browser) 'socket-thread)
