@@ -3,6 +3,14 @@
 
 (in-package :next)
 
+(defvar +renderer-browser-classes+ '(gtk-browser qt-browser)
+  "List of known browser/renderer classes, used to figure out what the
+  renderers have been loaded.")
+
+(defvar *renderer-class* 'gtk-browser
+  "The renderer class used when constructing the define-configuration
+  macro.")
+
 (defvar *options* '()
   "The list of command line options.")
 
