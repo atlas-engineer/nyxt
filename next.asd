@@ -94,7 +94,7 @@
                  (:file "session")
                  (:file "start")))))
 
-(asdf:defsystem :next-gtk
+(asdf:defsystem :next/gtk
   :depends-on (:next
                :cl-cffi-gtk
                :cl-webkit2)
@@ -104,7 +104,7 @@
   :build-pathname "next"
   :entry-point "next:entry-point")
 
-(asdf:defsystem :next-qt
+(asdf:defsystem :next/qt
   :depends-on (:next
                :cl-webengine
                :trivial-main-thread)

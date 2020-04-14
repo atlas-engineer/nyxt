@@ -39,7 +39,7 @@ next: $(lisp_files) clean-fasls quicklisp-update
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
-		--eval '(asdf:make :next-$(NEXT_RENDERER))' \
+		--eval '(asdf:make :next/$(NEXT_RENDERER))' \
 		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure 'xclip' and latest cl-webkit are available on your system." && exit 1)
 
 .PHONY: app-bundle
@@ -142,7 +142,7 @@ deps: $(QUICKLISP_DIR)/setup.lisp cl-webkit
 		--load $< \
 		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
-		--eval '(ql:quickload :next-$(NEXT_RENDERER))' \
+		--eval '(ql:quickload :next/$(NEXT_RENDERER))' \
 		--eval '(uiop:quit)' || true
 
 ## This rule only updates the internal distribution.
