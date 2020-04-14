@@ -186,6 +186,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("log4cl" ,sbcl-log4cl)
        ("lparallel" ,sbcl-lparallel)
        ("mk-string-metrics" ,sbcl-mk-string-metrics)
+       ("moptilities" ,sbcl-moptilities)
        ("parenscript" ,sbcl-parenscript)
        ("plump" ,sbcl-plump)
        ("quri" ,sbcl-quri)
@@ -196,6 +197,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("trivial-clipboard" ,sbcl-trivial-clipboard)
        ("trivial-features" ,sbcl-trivial-features)
        ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
+       ("trivial-types" ,sbcl-trivial-types)
        ("unix-opts" ,sbcl-unix-opts)
        ;; Local deps
        ("next-download-manager" ,sbcl-next-download-manager)
@@ -205,8 +207,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("next-hooks" ,sbcl-next-hooks)
        ("next-keymap" ,sbcl-next-keymap)))
     (native-inputs
-     `(("trivial-types" ,sbcl-trivial-types)
-       ("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (without renderer)")))
 
 (define-public next
@@ -219,7 +220,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
       (arguments
        `(#:tests? #f                    ; TODO: Enable tests!
          #:asd-file "next.asd"
-         #:asd-system-name "next-gtk"
+         #:asd-system-name "next/gtk"
          #:phases
          (modify-phases %standard-phases
            (add-after 'patch-platform-port-path 'patch-version
@@ -239,9 +240,10 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
              (lambda* (#:key outputs #:allow-other-keys)
                (define lib (assoc-ref outputs "lib"))
                (define actual-fasl (string-append
-                                    lib "/lib/sbcl/next.fasl"))
+                                    lib "/lib/sbcl/next/gtk--system.fasl"))
                (define expected-fasl (string-append
-                                      lib "/lib/sbcl/next-gtk--system.fasl"))
+                                      lib "/lib/sbcl/gtk--system.fasl"))
+               (format #t "Move ~s -> ~s" actual-fasl expected-fasl)
                (copy-file actual-fasl expected-fasl)
                #t))
            (add-after 'create-symlinks 'build-program
@@ -280,17 +282,9 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ;; WebKitGTK deps
          ("glib-networking" ,glib-networking)
          ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-         ;; Local deps
-         ("next-download-manager" ,sbcl-next-download-manager)
-         ("next-ring" ,sbcl-next-ring)
-         ("next-history-tree" ,sbcl-next-history-tree)
-         ("next-password-manager" ,sbcl-next-password-manager)
-         ("next-hooks" ,sbcl-next-hooks)
-         ("next-keymap" ,sbcl-next-keymap)
          ("next" ,sbcl-next)))
       (native-inputs
-       `(("trivial-types" ,sbcl-trivial-types)
-         ("prove-asdf" ,sbcl-prove-asdf)))
+       `(("prove-asdf" ,sbcl-prove-asdf)))
       (synopsis "Extensible web-browser in Common Lisp"))))
 
 next
