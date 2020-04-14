@@ -130,3 +130,19 @@ from a binary) then any condition is logged instead of triggering the debugger."
 (define-parenscript %copy ()
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
+
+(sera:export-always 'set-renderer)
+(defun set-renderer (&optional renderer)
+  "Set the renderer to the RENDERER if supplied, otherwise, check for
+   the existence of classes that define renderers."
+  (if renderer
+      (match renderer
+        (:gtk (setf *renderer-class* 'gtk))
+        (:qt (setf *renderer-class* 'qt))
+        (_ (error "Unknown renderer.")))
+      (let ((found-renderer-class
+              (do-all-symbols (symbol)
+                (when (and (find symbol +renderer-browser-classes+)
+                           (find-class symbol nil)) (return symbol)))))
+        (setf *renderer-class*
+              (intern (str:replace-all "-BROWSER" "" (symbol-name found-renderer-class)))))))
