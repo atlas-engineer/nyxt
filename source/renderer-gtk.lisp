@@ -544,13 +544,13 @@ Warning: This behaviour may change in the future."
 ;; See https://github.com/Ferada/cl-cffi-gtk/issues/37.
 (in-package :gio)
 (define-g-flags "GTlsCertificateFlags" g-tls-certificate-flags
-  (:export t
-   :type-initializer "g_tls_client_connection_get_validation_flags")
-  (:g-tls-certificate-unknown-ca 1)
-  (:g-tls-certificate-bad-identity 2)
-  (:g-tls-certificate-not-activated 4)
-  (:g-tls-certificate-expired 8)
-  (:g-tls-certificate-revoked 16)
-  (:g-tls-certificate-insecure 32)
-  (:g-tls-certificate-generic-error 64)
-  (:g-tls-certificate-validate-all 128))
+   (:export t
+    :type-initializer "g_tls_certificate_flags_get_type")
+   (:unknown-ca 1)
+   (:bad-identity 2)
+   (:not-activated 4)
+   (:expired 8)
+   (:revoked 16)
+   (:insecure 32)
+   (:generic-error 64)
+   (:validate-all 128))
