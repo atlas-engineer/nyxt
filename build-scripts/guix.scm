@@ -156,6 +156,59 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
      `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (keymap)")))
 
+(define sbcl-next
+  (package
+    (inherit sbcl-next-download-manager)
+    (name "sbcl-next")
+    (build-system asdf-build-system/sbcl)
+    (arguments
+     `(#:tests? #t
+       #:asd-file "next.asd"
+       #:asd-system-name "next"))
+    (inputs
+     `(("alexandria" ,sbcl-alexandria)
+       ("bordeaux-threads" ,sbcl-bordeaux-threads)
+       ("cl-annot" ,sbcl-cl-annot)
+       ("cl-ansi-text" ,sbcl-cl-ansi-text)
+       ("cl-css" ,sbcl-cl-css)
+       ("cl-json" ,sbcl-cl-json)
+       ("cl-markup" ,sbcl-cl-markup)
+       ("cl-ppcre" ,sbcl-cl-ppcre)
+       ("cl-ppcre-unicode" ,sbcl-cl-ppcre-unicode)
+       ("cl-prevalence" ,sbcl-cl-prevalence)
+       ("closer-mop" ,sbcl-closer-mop)
+       ("dexador" ,sbcl-dexador)
+       ("enchant" ,sbcl-enchant)
+       ("fset" ,sbcl-fset)
+       ("iolib" ,sbcl-iolib)
+       ("ironclad" ,sbcl-ironclad)
+       ("local-time" ,sbcl-local-time)
+       ("log4cl" ,sbcl-log4cl)
+       ("lparallel" ,sbcl-lparallel)
+       ("mk-string-metrics" ,sbcl-mk-string-metrics)
+       ("parenscript" ,sbcl-parenscript)
+       ("plump" ,sbcl-plump)
+       ("quri" ,sbcl-quri)
+       ("serapeum" ,sbcl-serapeum)
+       ("str" ,sbcl-cl-str)
+       ("swank" ,sbcl-slime-swank)
+       ("trivia" ,sbcl-trivia)
+       ("trivial-clipboard" ,sbcl-trivial-clipboard)
+       ("trivial-features" ,sbcl-trivial-features)
+       ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
+       ("unix-opts" ,sbcl-unix-opts)
+       ;; Local deps
+       ("next-download-manager" ,sbcl-next-download-manager)
+       ("next-ring" ,sbcl-next-ring)
+       ("next-history-tree" ,sbcl-next-history-tree)
+       ("next-password-manager" ,sbcl-next-password-manager)
+       ("next-hooks" ,sbcl-next-hooks)
+       ("next-keymap" ,sbcl-next-keymap)))
+    (native-inputs
+     `(("trivial-types" ,sbcl-trivial-types)
+       ("prove-asdf" ,sbcl-prove-asdf)))
+    (synopsis "Extensible web-browser in Common Lisp (without renderer)")))
+
 (define-public next
   (let ((version (package-version sbcl-next-download-manager)))
     (package
@@ -165,91 +218,65 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
       (outputs '("out" "lib"))
       (arguments
        `(#:tests? #f                    ; TODO: Enable tests!
-         #:asd-system-name "next"
-         #:phases (modify-phases %standard-phases
-                    (add-after 'patch-platform-port-path 'patch-version
-                      ;; When the version is not just dot-separated numerals
-                      ;; (e.g. a git-commit version), Guix modifies the .asd with
-                      ;; an illegal version number, and then Next fails to query
-                      ;; it.  So we hard-code it here.
-                      (lambda* (#:key inputs #:allow-other-keys)
-                        (let ((version (format #f "~a" ,version)))
-                          (substitute* "source/global.lisp"
-                            (("version\\)\\)\\)")
-                             (string-append "version)))
-(setf +version+ \"" version "\")"))))
-                        #t))
-                    (add-before 'cleanup 'move-bundle
-                      (lambda* (#:key outputs #:allow-other-keys)
-                        (define lib (assoc-ref outputs "lib"))
-                        (define actual-fasl (string-append
-                                             lib
-                                             "/lib/sbcl/next.fasl"))
-                        (define expected-fasl (string-append
-                                               lib
-                                               "/lib/sbcl/next--system.fasl"))
-                        (copy-file actual-fasl expected-fasl)
-                        #t))
-                    (add-after 'create-symlinks 'build-program
-                      (lambda* (#:key outputs #:allow-other-keys)
-                        (build-program
-                         (string-append (assoc-ref outputs "out") "/bin/next")
-                         outputs
-                         #:entry-program '((next:entry-point) 0))))
-                    (add-after 'build-program 'wrap-program
-                      (lambda* (#:key inputs outputs #:allow-other-keys)
-                        (let ((bin (string-append (assoc-ref outputs "out") "/bin/next"))
-                              (glib-networking (assoc-ref inputs "glib-networking")))
-                          (wrap-program bin
-                            `("GIO_EXTRA_MODULES" prefix
-                              (,(string-append glib-networking "/lib/gio/modules"))))
-                          #t)))
-                    (add-before 'build 'install-assets
-                      ;; Since the ASDF build system generates a new .asd with a
-                      ;; possibly suffixed and thus illegal version number, assets
-                      ;; should not be installed after the 'build phase or else
-                      ;; the illegal version will result in NIL in the .desktop
-                      ;; file.
-                      (lambda* (#:key outputs #:allow-other-keys)
-                        (with-output-to-file "version"
-                          (lambda _
-                            (format #t "~a" ,(package-version sbcl-next-download-manager))))
-                        (invoke "make" "install-assets"
-                                (string-append "PREFIX="
-                                               (assoc-ref outputs "out"))))))))
+         #:asd-file "next.asd"
+         #:asd-system-name "next-gtk"
+         #:phases
+         (modify-phases %standard-phases
+           (add-after 'patch-platform-port-path 'patch-version
+             ;; When the version is not just dot-separated numerals
+             ;; (e.g. a git-commit version), Guix modifies the .asd with
+             ;; an illegal version number, and then Next fails to query
+             ;; it.  So we hard-code it here.
+             (lambda* (#:key inputs #:allow-other-keys)
+               (let ((version (format #f "~a" ,version)))
+                 (substitute* "source/global.lisp"
+                   (("version\\)\\)\\)")
+                    (string-append "version)))"
+                                   "\n"
+                                   "(setf +version+ \"" version "\")"))))
+               #t))
+           (add-before 'cleanup 'move-bundle
+             (lambda* (#:key outputs #:allow-other-keys)
+               (define lib (assoc-ref outputs "lib"))
+               (define actual-fasl (string-append
+                                    lib "/lib/sbcl/next.fasl"))
+               (define expected-fasl (string-append
+                                      lib "/lib/sbcl/next-gtk--system.fasl"))
+               (copy-file actual-fasl expected-fasl)
+               #t))
+           (add-after 'create-symlinks 'build-program
+             (lambda* (#:key outputs #:allow-other-keys)
+               (build-program
+                (string-append (assoc-ref outputs "out") "/bin/next-gtk")
+                outputs
+                #:entry-program '((next:entry-point) 0))))
+           (add-after 'build-program 'wrap-program
+             (lambda* (#:key inputs outputs #:allow-other-keys)
+               (let* ((final-bin (string-append (assoc-ref outputs "out") "/bin/next"))
+                      (bin (string-append final-bin "-gtk"))
+                      (glib-networking (assoc-ref inputs "glib-networking")))
+                 (wrap-program bin
+                   `("GIO_EXTRA_MODULES" prefix
+                     (,(string-append glib-networking "/lib/gio/modules"))))
+                 (rename-file bin final-bin)
+                 #t)))
+           (add-before 'build 'install-assets
+             ;; Since the ASDF build system generates a new .asd with a
+             ;; possibly suffixed and thus illegal version number, assets
+             ;; should not be installed after the 'build phase or else
+             ;; the illegal version will result in NIL in the .desktop
+             ;; file.
+             (lambda* (#:key outputs #:allow-other-keys)
+               (with-output-to-file "version"
+                 (lambda _
+                   (format #t "~a" ,(package-version sbcl-next-download-manager))))
+               (invoke "make" "install-assets"
+                       (string-append "PREFIX="
+                                      (assoc-ref outputs "out"))))))))
       (inputs
-       `(("alexandria" ,sbcl-alexandria)
-         ("bordeaux-threads" ,sbcl-bordeaux-threads)
-         ("cl-annot" ,sbcl-cl-annot)
-         ("cl-ansi-text" ,sbcl-cl-ansi-text)
-         ("cl-css" ,sbcl-cl-css)
-         ("cl-json" ,sbcl-cl-json)
-         ("cl-markup" ,sbcl-cl-markup)
-         ("cl-ppcre" ,sbcl-cl-ppcre)
-         ("cl-ppcre-unicode" ,sbcl-cl-ppcre-unicode)
-         ("cl-prevalence" ,sbcl-cl-prevalence)
-         ("closer-mop" ,sbcl-closer-mop)
+       `(,@(package-inputs sbcl-next)
          ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
          ("cl-webkit" ,sbcl-cl-webkit)
-         ("dexador" ,sbcl-dexador)
-         ("fset" ,sbcl-fset)
-         ("iolib" ,sbcl-iolib)
-         ("ironclad" ,sbcl-ironclad)
-         ("local-time" ,sbcl-local-time)
-         ("log4cl" ,sbcl-log4cl)
-         ("lparallel" ,sbcl-lparallel)
-         ("mk-string-metrics" ,sbcl-mk-string-metrics)
-         ("parenscript" ,sbcl-parenscript)
-         ("plump" ,sbcl-plump)
-         ("quri" ,sbcl-quri)
-         ("serapeum" ,sbcl-serapeum)
-         ("str" ,sbcl-cl-str)
-         ("swank" ,sbcl-slime-swank)
-         ("trivia" ,sbcl-trivia)
-         ("trivial-clipboard" ,sbcl-trivial-clipboard)
-         ("trivial-features" ,sbcl-trivial-features)
-         ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
-         ("unix-opts" ,sbcl-unix-opts)
          ;; WebKitGTK deps
          ("glib-networking" ,glib-networking)
          ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
@@ -259,13 +286,11 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("next-history-tree" ,sbcl-next-history-tree)
          ("next-password-manager" ,sbcl-next-password-manager)
          ("next-hooks" ,sbcl-next-hooks)
-         ("next-keymap" ,sbcl-next-keymap)))
+         ("next-keymap" ,sbcl-next-keymap)
+         ("next" ,sbcl-next)))
       (native-inputs
        `(("trivial-types" ,sbcl-trivial-types)
          ("prove-asdf" ,sbcl-prove-asdf)))
       (synopsis "Extensible web-browser in Common Lisp"))))
-
-(define-public sbcl-next
-  (deprecated-package "sbcl-next" next))
 
 next
