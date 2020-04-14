@@ -41,6 +41,10 @@ Set to '-' to read standard input instead.")
            :long "load"
            :arg-parser #'identity
            :description "Load the Lisp file.  Can be specified multiple times.")
+    (:name :script
+           :long "script"
+           :arg-parser #'identity
+           :description "Load the Lisp file (skip #! line if any), skip init file, then quit.")
     (:name :remote
            :short #\r
            :long "remote"
@@ -115,6 +119,20 @@ the (xdg-data-home \"sessions \") folder."
          (setf name (str:concat name ".lisp")))
        name))))
 
+;; From sbcl/src/code/load.lisp
+(defun maybe-skip-shebang-line (stream)
+  (let ((p (file-position stream)))
+    (when p
+      (flet ((next () (read-byte stream nil)))
+        (unwind-protect
+             (when (and (eq (next) (char-code #\#))
+                        (eq (next) (char-code #\!)))
+               (setf p nil)
+               (loop for x = (next)
+                     until (or (not x) (eq x (char-code #\newline)))))
+          (when p
+            (file-position stream p)))))))
+
 (serapeum:export-always 'entry-point)
 (defun entry-point ()
   "Read the CLI arguments and start the interface."
@@ -131,6 +149,12 @@ next [options] [urls]")
     (when (getf options :verbose)
       (set-debug-level :debug)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
+
+    (when (getf options :script)
+      (with-open-file (f (getf options :script) :element-type :default)
+        (maybe-skip-shebang-line f)
+        (load-lisp f))
+      (uiop:quit))
 
     (when (or (getf options :load)
               (getf options :eval))
