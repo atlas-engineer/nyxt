@@ -99,17 +99,32 @@
                :cl-cffi-gtk
                :cl-webkit2)
   :components ((:module "source"
-                :components ((:file "renderer-gtk"))))
-  :build-operation "program-op"
-  :build-pathname "next"
-  :entry-point "next:entry-point")
+                :components ((:file "renderer-gtk")))))
 
 (asdf:defsystem :next/qt
   :depends-on (:next
                :cl-webengine
                :trivial-main-thread)
   :components ((:module "source"
-                :components ((:file "renderer-qt"))))
+                :components ((:file "renderer-qt")))))
+
+;; We should not set the build-pathname in systems that have a component.
+;; Indeed, when an external program (like Guix) builds components, it needs to
+;; know the name of the output.  But ASDF/SYSTEM::COMPONENT-BUILD-PATHNAME is
+;; non-exported so the only reliable way to know the build pathname is to use
+;; the default.
+;;
+;; The workaround is to set a new dummy system of which the sole purpose is to
+;; produce the desired binary.
+
+(asdf:defsystem :next/gtk-application
+  :depends-on (:next/gtk)
+  :build-operation "program-op"
+  :build-pathname "next"
+  :entry-point "next:entry-point")
+
+(asdf:defsystem :next/qt-application
+  :depends-on (:next/qt)
   :build-operation "program-op"
   :build-pathname "next-qt"
   :entry-point "next:entry-point")
