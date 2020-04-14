@@ -136,7 +136,9 @@ from a binary) then any condition is logged instead of triggering the debugger."
   "Set the renderer to the RENDERER if supplied, otherwise, check for
    the existence of classes that define renderers."
   (if renderer
-      (setf *renderer-class* renderer)
+      (if (closer-mop:subclassp (find-class renderer) 'browser)
+          (setf *renderer-class* (intern (str:replace-all "-BROWSER" "" (symbol-name renderer))))
+          (error "RENDERER must extend BROWSER class."))
       (let ((found-renderer-class (class-name (first (mopu:subclasses 'browser)))))
         (setf *renderer-class*
               (intern (str:replace-all "-BROWSER" "" (symbol-name found-renderer-class)))))))
