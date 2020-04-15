@@ -143,6 +143,9 @@ Return nil when key must be discarded, e.g. for modifiers."
              nil)
             ((guard s (str:contains? "KP_" s))
              (str:replace-all "KP_" "keypad" s))
+            ;; With a modifier, "-" does not print, so we me must translate it
+            ;; to "hyphen" just like in `printable-p'.
+            ("minus" "hyphen")
             ;; In most cases, return character and not keyval for punctuation.
             ;; For instance, C-[ is not printable but the keyval is "bracketleft".
             ;; ASCII control characters like Escape, Delete or BackSpace have a
