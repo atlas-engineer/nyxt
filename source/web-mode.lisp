@@ -98,15 +98,10 @@
        "button8" #'history-backwards
        "C-p" #'scroll-up
        "C-n" #'scroll-down
-       "C-x C-=" #'zoom-in-page
-       "C-x s-+" #'zoom-in-page
-       "C-x C-s-+" #'zoom-in-page
        "C-x C-+" #'zoom-in-page
-       "C-x +" #'zoom-in-page
+       "C-x C-=" #'zoom-in-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" #'zoom-out-page
-       "C-x hyphen" #'zoom-out-page
        "C-x C-0" #'unzoom-page
-       "C-x 0" #'unzoom-page
        "C-r" #'reload-current-buffer
        "C-R" #'reload-buffer
        "C-m o" #'set-url-from-bookmark
