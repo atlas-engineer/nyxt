@@ -57,9 +57,11 @@ vi-normal-mode.")
     :initform
     (lambda (mode)
       (with-accessors ((buffer buffer)) mode
+        ;; Destroy vi-normal mode before setting previous-keymap-scheme-name, or
+        ;; else we will save the wrong value.
+        (vi-normal-mode :activate nil :buffer buffer)
         (setf (previous-keymap-scheme-name mode)
               (keymap-scheme-name buffer))
-        (vi-normal-mode :activate nil :buffer buffer)
         (setf (keymap-scheme-name buffer) scheme:vi-insert))))))
 
 (define-parenscript %clicked-in-input? ()
