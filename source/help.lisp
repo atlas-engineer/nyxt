@@ -257,6 +257,18 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
   (set-current-buffer help-buffer)
     help-buffer))
 
+(defun error-buffer (title text)
+  "Print some help."
+  (let* ((error-buffer (help-mode :activate t :buffer (make-buffer :title title)))
+         (error-contents
+           (markup:markup
+            (:h1 "Error occured:")
+            (:p text)))
+         (insert-error (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                    (ps:lisp error-contents)))))
+    (ffi-buffer-evaluate-javascript error-buffer insert-error)
+    error-buffer))
+
 (define-command next-version ()
   "Version number of this version of Next.
 The version number is stored in the clipboard."
