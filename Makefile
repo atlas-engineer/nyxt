@@ -37,7 +37,6 @@ next: $(lisp_files) clean-fasls quicklisp-update
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
-		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(asdf:make :next/$(NEXT_RENDERER)-application)' \
 		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure 'xclip' and latest cl-webkit are available on your system." && exit 1)
@@ -72,7 +71,6 @@ version:
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
-		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))' \
 		--eval '(uiop:quit)'
@@ -140,7 +138,6 @@ deps: $(QUICKLISP_DIR)/setup.lisp cl-webkit
 	$(NEXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load $< \
-		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(ql:quickload :next/$(NEXT_RENDERER)-application)' \
 		--eval '(uiop:quit)' || true
@@ -162,7 +159,6 @@ test: $(lisp_files)
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
-		--eval '(ql:quickload :prove-asdf)' \
 		--load next.asd \
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)'
