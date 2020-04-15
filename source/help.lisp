@@ -269,6 +269,12 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
     (ffi-buffer-evaluate-javascript error-buffer insert-error)
     error-buffer))
 
+(defun error-in-new-window (title text)
+  (let* ((window (window-make *browser*))
+         (error-buffer (error-buffer title text)))
+    (window-set-active-buffer window error-buffer)
+    error-buffer))
+
 (define-command next-version ()
   "Version number of this version of Next.
 The version number is stored in the clipboard."
