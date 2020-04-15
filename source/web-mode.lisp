@@ -176,6 +176,9 @@
        "keypadprior" #'scroll-page-up
 
        "C-v" #'paste
+       "+" #'zoom-in-page
+       "hyphen" #'zoom-out-page
+       "0" #'unzoom-page
        "z i" #'zoom-in-page
        "z o" #'zoom-out-page
        "z z" #'unzoom-page
