@@ -102,7 +102,7 @@ not associated with a web view) have an empty ID.")
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
-                  :initform '(web-mode root-mode)
+                  :initform '(certificate-whitelist-mode web-mode root-mode)
                   :type list-of-symbols
                   :documentation "The list of symbols of class to
 instantiate on buffer creation, unless specified.")
