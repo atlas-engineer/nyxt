@@ -122,7 +122,9 @@ for all modes in the current buffer.")
                  :documentation "This keymap is always looked up first, it
 overrides all other bindings.  No libraries should ever touch the override-map,
 this is left for the user to customize to their needs.")
-   (forward-input-events-p :accessor forward-input-events-p :initarg :forward-input-events-p
+   (forward-input-events-p :accessor forward-input-events-p
+                           :initarg :forward-input-events-p
+                           :type boolean
                            :initform t
                            :documentation "When non-nil, keyboard events are
 forwarded to the renderer when no binding is found.  Pointer
