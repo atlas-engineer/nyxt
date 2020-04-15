@@ -153,8 +153,8 @@ quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 
 ## Testing that next loads is a first test.
 ## TODO: Test that Next starts even with broken init file.
-.PHONY: test
-test: $(lisp_files)
+.PHONY: check
+check: $(lisp_files)
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
