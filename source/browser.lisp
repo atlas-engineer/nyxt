@@ -74,20 +74,6 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
 (serapeum:export-always '*proxy-class*)
 (defparameter *proxy-class* 'proxy)
 
-(defclass-export certificate-whitelist ()
-  ((whitelist :accessor whitelist
-              :initarg :whitelist
-              :initform '()
-              :type list-of-strings
-              :documentation "A list of hostnames for which certificate errors shall be ignored."))
-  (:documentation "Enable ignoring of certificate errors.
-This can apply to specific buffers."))
-
-(define-class-type certificate-whitelist)
-(declaim (type (certificate-whitelist-type) *certificate-whitelist-class*))
-(serapeum:export-always '*certificate-whitelist-class*)
-(defparameter *certificate-whitelist-class* 'certificate-whitelist)
-
 (defclass-export buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
@@ -191,9 +177,9 @@ renderers might support this.")
    (proxy :initform nil :type :proxy
           :documentation "Proxy for buffer.")
    (certificate-whitelist :accessor certificate-whitelist
-                          :initform nil
-                          :type :certificate-whitelist
-                          :documentation "Certificate host whitelisting for buffer.")
+                          :initform '()
+                          :type list-of-strings
+                          :documentation  "A list of hostnames for which certificate errors shall be ignored.")
    ;; TODO: Rename `load-hook' to `set-url-hook'?
    (load-hook :accessor load-hook
               :initform (hooks:make-hook-string->string

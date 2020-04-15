@@ -7,16 +7,14 @@
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (sera:export-always '*default-certificate-whitelist*)
-(defparameter *default-certificate-whitelist*
-  (make-instance next:*certificate-whitelist-class*
-                 :whitelist '()))
+(defparameter *default-certificate-whitelist* '())
 
 (define-mode certificate-whitelist-mode ()
   "Enable ignoring of certificate errors.
 This can apply to specific buffers."
   ((certificate-whitelist :initarg :certificate-whitelist
                           :accessor certificate-whitelist
-                          :type certificate-whitelist
+                          :type list-of-strings
                           :initform *default-certificate-whitelist*)
    (destructor
     :initform
@@ -27,16 +25,15 @@ This can apply to specific buffers."
     (lambda (mode)
       (setf (certificate-whitelist (buffer mode)) (certificate-whitelist mode))
       (echo "Certificate host whitelist set to ~a."
-            (whitelist (certificate-whitelist mode)))))))
+            (certificate-whitelist mode))))))
 
 (define-command add-domain-to-certificate-whitelist (&optional (buffer (current-buffer)))
   "Add the current domain to the buffer's certificate whitelist."
-  (if (certificate-whitelist buffer)
+  (if (find-submode buffer 'certificate-whitelist-mode)
       (if (url buffer)
-          (let ((domain (quri:uri-host (quri:uri (url buffer))))
-                (certificate-whitelist (certificate-whitelist buffer)))
-            (pushnew domain (whitelist certificate-whitelist) :test #'string=)
-            (setf (certificate-whitelist buffer) certificate-whitelist))
+          (let ((domain (quri:uri-host (quri:uri (url buffer)))))
+            (log:info domain)
+            (pushnew domain (certificate-whitelist buffer) :test #'string=))
           (echo "Buffer has no URL."))
       (echo "Enable certificate-whitelist-mode first.")))
 
