@@ -90,15 +90,15 @@ specify a key-code binding."
              (setf list1 (delete list2-elt list1 :count 1)))))
     (if (fset:set? strings-or-modifiers)
         strings-or-modifiers
-        (coerce (fset:convert 'fset:set
-                              (let* ((mods (mapcar #'modspec->modifier strings-or-modifiers))
-                                     (no-dups-mods (delete-duplicates mods :test #'modifier=)))
-                                (when (/= (length mods) (length no-dups-mods))
-                                  (warn "Duplicate modifiers: ~a"
-                                        (mapcar #'modifier-string
-                                                (list-difference mods no-dups-mods))))
-                                no-dups-mods))
-                'fset:wb-set))))
+        (the (values fset:wb-set &optional)
+             (fset:convert 'fset:set
+                           (let* ((mods (mapcar #'modspec->modifier strings-or-modifiers))
+                                  (no-dups-mods (delete-duplicates mods :test #'modifier=)))
+                             (when (/= (length mods) (length no-dups-mods))
+                               (warn "Duplicate modifiers: ~a"
+                                     (mapcar #'modifier-string
+                                             (list-difference mods no-dups-mods))))
+                             no-dups-mods))))))
 
 (declaim (ftype (function (&key (:code integer) (:value string)
                                 (:modifiers list) (:status keyword))
@@ -313,8 +313,8 @@ Parents are ordered by priority, the first parent has highest priority.")))
                           (values keymap &optional))
                 make-keymap))
 (defun make-keymap (name &rest parents)
-  ;; We coerce to 'keymap because otherwise SBCL complains "type assertion too
-  ;; complex to check: (VALUES KEYMAP::KEYMAP &REST T)."
+  ;; We use (values keymap &optional) type because of an SBCL limitation.
+  ;; See http://www.sbcl.org/manual/#Implementation-Limitations.
   (the (values keymap &optional)
        (make-instance 'keymap
                       :name name
@@ -532,15 +532,16 @@ For now the status is not encoded in the keyspec, this may change in the future.
                                 :key (if *print-shortcut*
                                          #'modifier-shortcut
                                          #'modifier-string))))
-    (coerce (str:concat (if (str:empty? modifiers) "" (str:concat modifiers "-"))
-                        value)
-            'keyspecs-type)))
+    (the (values keyspecs-type &optional)
+         (str:concat (if (str:empty? modifiers) "" (str:concat modifiers "-"))
+                     value))))
 
 (declaim (ftype (function (list-of-keys) keyspecs-type) keys->keyspecs))
 (defun keys->keyspecs (keys)
   "Return the keyspecs (a list of `keyspec') for KEYS.
 See `key->keyspec' for the details."
-  (coerce (str:join " " (mapcar #'key->keyspec keys)) 'keyspecs-type))
+  (the (values keyspecs-type &optional)
+       (str:join " " (mapcar #'key->keyspec keys))))
 
 (declaim (ftype (function (keymap &optional list-of-keymaps) fset:map) keymap->map*))
 (defun keymap->map* (keymap &optional visited)
@@ -559,10 +560,9 @@ See `key->keyspec' for the details."
                                                           subsym))
                                                 (keymap->map* sym (cons sym visited))))))
                  (fset:with result keyspec sym)))))
-    (coerce
-     (fset:reduce #'fold-keymap (entries keymap)
-                  :initial-value (fset:empty-map))
-     'fset:map)))
+    (the (values fset:map &optional)
+         (fset:reduce #'fold-keymap (entries keymap)
+                      :initial-value (fset:empty-map)))))
 
 (declaim (ftype (function (keymap &rest keymap) hash-table) keymap->map))
 (defun keymap->map (keymap &rest more-keymaps)
@@ -572,11 +572,10 @@ This is convenient if the caller wants to list all the bindings.
 When multiple keymaps are provided, return the union of the `fset:map' of each arguments.
 Keymaps are ordered by precedence, highest precedence comes first."
   (let ((keymaps (reverse (cons keymap more-keymaps))))
-    (coerce
-     (fset:convert 'hash-table
-                   (reduce #'fset:map-union
-                           (mapcar #'keymap->map* keymaps)))
-     'hash-table)))
+    (the (values hash-table &optional)
+         (fset:convert 'hash-table
+                       (reduce #'fset:map-union
+                               (mapcar #'keymap->map* keymaps))))))
 
 (declaim (ftype (function (keymap) hash-table) keymap-with-parents->map))
 (defun keymap-with-parents->map (keymap)
