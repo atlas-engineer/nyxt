@@ -27,12 +27,12 @@ vi-normal-mode.")
    (constructor
     :initform
     (lambda (mode)
-      (let ((active-buffer (buffer mode)))
+      (with-accessors ((buffer buffer)) mode
         (setf (previous-keymap-scheme-name mode)
-              (keymap-scheme-name active-buffer))
-        (vi-insert-mode :activate nil :buffer active-buffer)
-        (setf (keymap-scheme-name active-buffer) scheme:vi-normal)
-        (setf (forward-input-events-p active-buffer) nil))))))
+              (keymap-scheme-name buffer))
+        (vi-insert-mode :activate nil :buffer buffer)
+        (setf (keymap-scheme-name buffer) scheme:vi-normal)
+        (setf (forward-input-events-p buffer) nil))))))
 
 ;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode (vi-normal-mode)
@@ -56,11 +56,11 @@ vi-normal-mode.")
    (constructor
     :initform
     (lambda (mode)
-      (let ((active-buffer (buffer mode)))
+      (with-accessors ((buffer buffer)) mode
         (setf (previous-keymap-scheme-name mode)
-              (keymap-scheme-name active-buffer))
-        (vi-normal-mode :activate nil :buffer active-buffer)
-        (setf (keymap-scheme-name active-buffer) scheme:vi-insert))))))
+              (keymap-scheme-name buffer))
+        (vi-normal-mode :activate nil :buffer buffer)
+        (setf (keymap-scheme-name buffer) scheme:vi-insert))))))
 
 (define-parenscript %clicked-in-input? ()
   (ps:chain document active-element tag-name))
