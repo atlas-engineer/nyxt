@@ -142,3 +142,14 @@ from a binary) then any condition is logged instead of triggering the debugger."
       (let ((found-renderer-class (class-name (first (mopu:subclasses 'browser)))))
         (setf *renderer-class*
               (intern (str:replace-all "-BROWSER" "" (symbol-name found-renderer-class)))))))
+
+(serapeum:export-always 'define-configuration)
+(defmacro define-configuration (super &body slots)
+  (let* ((name (intern (str:concat "USER-" (symbol-name super))))
+         (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
+         (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
+    `(progn
+       (defclass ,name (,super)
+         ,(loop for slot in (car slots)
+                collect (list (car slot) :initform (cadr slot))))
+       (setf ,configured-class ',name))))

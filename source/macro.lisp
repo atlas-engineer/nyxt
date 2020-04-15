@@ -146,14 +146,3 @@ Example usage:
                      (apply (lambda ,params
                               ,@body)
                               ,args))))))))
-
-(serapeum:export-always 'define-configuration)
-(defmacro define-configuration (super &body slots)
-  (let* ((name (intern (str:concat "USER-" (symbol-name super))))
-         (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
-         (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
-    `(progn
-       (defclass ,name (,super)
-         ,(loop for slot in (car slots)
-                collect (list (car slot) :initform (cadr slot))))
-       (setf ,configured-class ',name))))
