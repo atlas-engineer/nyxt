@@ -151,10 +151,13 @@ quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
 		--eval '(uiop:quit)' || true
 
-## Testing that next loads is a first test.
-## TODO: Test that Next starts even with broken init file.
 .PHONY: check
-check: $(lisp_files)
+check: $(lisp_files) check-asdf check-binary
+
+## TODO: Test that Next starts even with broken init file.
+
+.PHONY: check-build
+check-build: $(lisp_files)
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -162,6 +165,20 @@ check: $(lisp_files)
 		--load next.asd \
 		--eval '(ql:quickload :next)' \
 		--eval '(uiop:quit)'
+
+.PHONY: check-asdf
+check-asdf: $(lisp_files)
+	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--load next.asd \
+		--eval '(asdf:test-system :next)' \
+		--eval '(uiop:quit)'
+
+.PHONY: check-binary
+check-binary: next
+	./next -h
 
 .PHONY: clean-deps
 clean-deps:
