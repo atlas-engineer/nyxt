@@ -59,7 +59,7 @@
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system asdf-build-system/sbcl)
     (arguments
-     `(#:tests? #f                      ; Need online access.
+     `(#:tests? #f                      ; Require network.
        #:asd-file "next.asd"
        #:asd-system-name "next/download-manager"))
     (inputs
@@ -69,8 +69,6 @@
        ("lparallel" ,sbcl-lparallel)
        ("quri" ,sbcl-quri)
        ("str" ,sbcl-cl-str)))
-    (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (download manager)")
     (home-page "https://next.atlas.engineer")
     (description "Next is a keyboard-oriented, extensible web-browser
@@ -84,11 +82,10 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
     (name "sbcl-next-ring")
     (build-system asdf-build-system/sbcl)
     (arguments
-     `(#:tests? #t
-       #:asd-file "next.asd"
+     `(#:asd-file "next.asd"
        #:asd-system-name "next/ring"))
     (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove" ,sbcl-prove)))
     (synopsis "Extensible web-browser in Common Lisp (ring)")))
 
 (define sbcl-next-history-tree
@@ -97,11 +94,10 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
     (name "sbcl-next-history-tree")
     (build-system asdf-build-system/sbcl)
     (arguments
-     `(#:tests? #t
-       #:asd-file "next.asd"
+     `(#:asd-file "next.asd"
        #:asd-system-name "next/history-tree"))
     (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove" ,sbcl-prove)))
     (synopsis "Extensible web-browser in Common Lisp (history-tree)")))
 
 (define sbcl-next-password-manager
@@ -110,8 +106,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
     (name "sbcl-next-password-manager")
     (build-system asdf-build-system/sbcl)
     (arguments
-     `(#:tests? #t
-       #:asd-file "next.asd"
+     `(#:asd-file "next.asd"
        #:asd-system-name "next/password-manager"))
     (inputs
      `(("bordeaux-threads" ,sbcl-bordeaux-threads)
@@ -119,8 +114,6 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("cl-ppcre" ,sbcl-cl-ppcre)
        ("str" ,sbcl-cl-str)
        ("trivial-clipboard" ,sbcl-trivial-clipboard)))
-    (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (password manager)")))
 
 (define sbcl-next-hooks
@@ -129,14 +122,13 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
     (name "sbcl-next-hooks")
     (build-system asdf-build-system/sbcl)
     (arguments
-     `(#:tests? #t
-       #:asd-file "next.asd"
+     `(#:asd-file "next.asd"
        #:asd-system-name "next/hooks"))
     (inputs
      `(("alexandria" ,sbcl-alexandria)
        ("serapeum" ,sbcl-serapeum)))
     (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove" ,sbcl-prove)))
     (synopsis "Extensible web-browser in Common Lisp (hooks)")))
 
 (define sbcl-next-keymap
@@ -145,15 +137,14 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
     (name "sbcl-next-keymap")
     (build-system asdf-build-system/sbcl)
     (arguments
-     `(#:tests? #t
-       #:asd-file "next.asd"
+     `(#:asd-file "next.asd"
        #:asd-system-name "next/keymap"))
     (inputs
      `(("alexandria" ,sbcl-alexandria)
        ("fset" ,sbcl-fset)
        ("str" ,sbcl-cl-str)))
     (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
+     `(("prove" ,sbcl-prove)))
     (synopsis "Extensible web-browser in Common Lisp (keymap)")))
 
 (define sbcl-next
@@ -206,8 +197,6 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("next-password-manager" ,sbcl-next-password-manager)
        ("next-hooks" ,sbcl-next-hooks)
        ("next-keymap" ,sbcl-next-keymap)))
-    (native-inputs
-     `(("prove-asdf" ,sbcl-prove-asdf)))
     (synopsis "Extensible web-browser in Common Lisp (without renderer)")))
 
 (define-public next
@@ -283,8 +272,6 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
          ("glib-networking" ,glib-networking)
          ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
          ("next" ,sbcl-next)))
-      (native-inputs
-       `(("prove-asdf" ,sbcl-prove-asdf)))
       (synopsis "Extensible web-browser in Common Lisp"))))
 
 next
