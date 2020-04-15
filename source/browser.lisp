@@ -327,6 +327,7 @@ is run after the renderer has been initialized and after the
    (startup-error-reporter-function :accessor startup-error-reporter-function
                                     :type function
                                     :initarg :startup-error-reporter-function
+                                    :initform nil
                                     :documentation "When supplied,
                                     upon startup, if there are errors,
                                     they will be reported by this
