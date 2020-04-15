@@ -274,6 +274,8 @@ next [options] [urls]")
     (if urls
         (open-urls urls)
         (window-set-active-buffer window buffer)))
+  (when (startup-error-reporter-function *browser*)
+    (funcall (startup-error-reporter-function *browser*)))
   (match (session-restore-function *browser*)
     ((guard f f)
      (when (uiop:file-exists-p *session*)
@@ -348,9 +350,18 @@ Otherwise bind socket."
     (format t "Next version ~a~&" +version+)
     (setf *session* (derive-session *session*))
     (unless (getf *options* :no-init)
-      (load-lisp init-file :interactive t))
-    (setf *browser* (make-instance *browser-class*
-                                   :startup-timestamp startup-timestamp))
+      (handler-case
+          (progn
+            (load-lisp init-file :interactive t)
+            (setf *browser* (make-instance *browser-class*
+                                           :startup-timestamp startup-timestamp)))
+        (error (c)
+          (setf *browser* (make-instance *browser-class*
+                                         :startup-error-reporter-function
+                                         (lambda () (error-in-new-window
+                                                     "Error in init file:"
+                                                     (format nil "~a" c)))
+                                         :startup-timestamp startup-timestamp)))))
     (when (single-instance-p *browser*)
       (bind-socket-or-quit urls))
     (ffi-initialize *browser* urls startup-timestamp)))
