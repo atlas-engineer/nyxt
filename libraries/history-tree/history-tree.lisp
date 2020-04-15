@@ -190,7 +190,8 @@ First child comes first in the resulting list."
 (defmethod children-nodes ((history history-tree))
   "Return a list of all the children of the current node.
 The nodes come in depth-first order."
-  (all-children (current history)))
+  (and (current history)
+       (all-children (current history))))
 
 
 
