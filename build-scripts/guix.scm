@@ -153,8 +153,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
     (name "sbcl-next")
     (build-system asdf-build-system/sbcl)
     (arguments
-     `(#:tests? #t
-       #:asd-file "next.asd"
+     `(#:asd-file "next.asd"
        #:asd-system-name "next"))
     (inputs
      `(("alexandria" ,sbcl-alexandria)
@@ -197,6 +196,8 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("next-password-manager" ,sbcl-next-password-manager)
        ("next-hooks" ,sbcl-next-hooks)
        ("next-keymap" ,sbcl-next-keymap)))
+    (native-inputs
+     `(("prove" ,sbcl-prove)))
     (synopsis "Extensible web-browser in Common Lisp (without renderer)")))
 
 (define-public next
@@ -207,8 +208,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
       (build-system asdf-build-system/sbcl)
       (outputs '("out" "lib"))
       (arguments
-       `(#:tests? #f                    ; TODO: Enable tests!
-         #:asd-file "next.asd"
+       `(#:asd-file "next.asd"
          #:asd-system-name "next/gtk"
          #:phases
          (modify-phases %standard-phases
@@ -229,7 +229,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
              (lambda* (#:key outputs #:allow-other-keys)
                (define lib (assoc-ref outputs "lib"))
                (define actual-fasl (string-append
-                                    lib "/lib/sbcl/next/gtk--system.fasl"))
+                                    lib "/lib/sbcl/source/next/gtk--system.fasl"))
                (define expected-fasl (string-append
                                       lib "/lib/sbcl/gtk--system.fasl"))
                (format #t "Move ~s -> ~s" actual-fasl expected-fasl)
