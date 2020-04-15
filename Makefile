@@ -32,7 +32,11 @@ clean-fasls:
 		--eval '(swank:delete-system-fasls "next")' \
 		--eval '(uiop:quit)' || true
 
-next: $(lisp_files) clean-fasls quicklisp-update
+next: $(lisp_files)
+	$(MAKE) application
+
+.PHONE: application
+application: clean-fasls quicklisp-update
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -152,12 +156,12 @@ quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
 		--eval '(uiop:quit)' || true
 
 .PHONY: check
-check: $(lisp_files) check-asdf check-binary
+check: check-asdf check-binary
 
 ## TODO: Test that Next starts even with broken init file.
 
 .PHONY: check-build
-check-build: $(lisp_files)
+check-build:
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
@@ -167,7 +171,7 @@ check-build: $(lisp_files)
 		--eval '(uiop:quit)'
 
 .PHONY: check-asdf
-check-asdf: $(lisp_files)
+check-asdf:
 	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
