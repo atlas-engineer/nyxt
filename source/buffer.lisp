@@ -224,6 +224,10 @@ complete against a search engine."
                                (make-buffer-focus :url nil)
                                (current-buffer))))))
 
+(define-command set-url-current-buffer-from-current-url ()
+  "Set the URL for the current buffer, pre-filling in the current URL."
+  (set-url-current-buffer :prefill-current-url-p t))
+
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new focused buffer."
   (set-url-current-buffer :new-buffer-p t))
