@@ -200,7 +200,7 @@ complete against a search engine."
       (list
        "tab" #'insert-candidate-or-search-engine)))))
 
-(define-command set-url-current-buffer (&key new-buffer-p)
+(define-command set-url-current-buffer (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
   (let ((history (minibuffer-set-url-history *browser*)))
     (when history
@@ -211,6 +211,7 @@ complete against a search engine."
                                               (if new-buffer-p
                                                   "new"
                                                   "current"))
+                        :input-buffer (if prefill-current-url-p (url (current-buffer)) "")
                         :default-modes '(set-url-mode minibuffer-mode)
                         :completion-function (history-completion-filter)
                         :history history
