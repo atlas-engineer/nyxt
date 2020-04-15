@@ -26,7 +26,7 @@ SLIME."
   (ensure-directories-exist (directory-namestring path))
   path)
 
-(defun find-slot (class slot-name)
+(defun find-slot (class slot-name)      ; TODO: Remove with get-default?
   "CLASS can be a symbol or a class."
   (when (symbolp class)
     (setf class (closer-mop:ensure-finalized (find-class class))))
@@ -36,7 +36,7 @@ SLIME."
            (closer-mop:class-slots class)))
 
 (serapeum:export-always 'get-default)
-(defun get-default (class-name slot-name)
+(defun get-default (class-name slot-name) ; TODO: Unused.  Remove?
   "Get default value of slot SLOT-NAME from class CLASS-NAME.
 The second value is the initfunction."
   (let* ((class (closer-mop:ensure-finalized (find-class class-name)))

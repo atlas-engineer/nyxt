@@ -6,7 +6,12 @@
 
 (define-mode vi-normal-mode ()
   "Enable VI-style modal bindings (normal mode)"
-  ((keymap-schemes
+  ((previous-keymap-scheme-name
+    :accessor previous-keymap-scheme-name
+    :type keymap:scheme
+    :documentation "The previous keymap scheme that will be used when ending
+vi-normal-mode.")
+   (keymap-schemes
     :initform
     (define-scheme "vi"
       scheme:vi-normal
@@ -17,19 +22,20 @@
     :initform
     (lambda (mode)
       (setf (keymap-scheme-name (buffer mode))
-            (get-default 'buffer 'keymap-scheme-name))
-      (setf (forward-input-events-p (buffer mode))
-            (get-default 'buffer 'keymap-scheme-name))))
+            (previous-keymap-scheme-name mode))
+      (setf (forward-input-events-p (buffer mode)) t)))
    (constructor
     :initform
     (lambda (mode)
       (let ((active-buffer (buffer mode)))
+        (setf (previous-keymap-scheme-name mode)
+              (keymap-scheme-name active-buffer))
         (vi-insert-mode :activate nil :buffer active-buffer)
         (setf (keymap-scheme-name active-buffer) scheme:vi-normal)
         (setf (forward-input-events-p active-buffer) nil))))))
 
 ;; TODO: Move ESCAPE binding to the override map?
-(define-mode vi-insert-mode ()
+(define-mode vi-insert-mode (vi-normal-mode)
   "Enable VI-style modal bindings (insert mode)"
   ((keymap-schemes
     :initform
@@ -46,11 +52,13 @@
     :initform
     (lambda (mode)
       (setf (keymap-scheme-name (buffer mode))
-            (get-default 'buffer 'keymap-scheme-name))))
+            (previous-keymap-scheme-name mode))))
    (constructor
     :initform
     (lambda (mode)
       (let ((active-buffer (buffer mode)))
+        (setf (previous-keymap-scheme-name mode)
+              (keymap-scheme-name active-buffer))
         (vi-normal-mode :activate nil :buffer active-buffer)
         (setf (keymap-scheme-name active-buffer) scheme:vi-insert))))))
 
