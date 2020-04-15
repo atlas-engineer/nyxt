@@ -211,6 +211,7 @@ See `gtk-browser's `modifier-translator' slot."
   (gdk:gdk-event-key-state key-event))
 
 ;; REVIEW: Remove after upstream fix is merged in Quicklisp, see https://github.com/crategus/cl-cffi-gtk/issues/74.
+;; Wait for https://github.com/Ferada/cl-cffi-gtk/issues/new.
 (defun gdk-event-button-state (button-event)
   "Return BUTTON-EVENT modifiers as a `gdk-modifier-type', i.e. a list of keywords."
   (let ((state (gdk:gdk-event-button-state button-event)))
