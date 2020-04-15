@@ -90,15 +90,15 @@ specify a key-code binding."
              (setf list1 (delete list2-elt list1 :count 1)))))
     (if (fset:set? strings-or-modifiers)
         strings-or-modifiers
-        (coerce  (fset:convert 'fset:set
-                               (let* ((mods (mapcar #'modspec->modifier strings-or-modifiers))
-                                      (no-dups-mods (delete-duplicates mods :test #'modifier=)))
-                                 (when (/=  (length mods) (length no-dups-mods))
-                                   (warn "Duplicate modifiers: ~a"
-                                         (mapcar #'modifier-string
-                                                 (list-difference mods no-dups-mods))))
-                                 no-dups-mods))
-                 'fset:wb-set))))
+        (coerce (fset:convert 'fset:set
+                              (let* ((mods (mapcar #'modspec->modifier strings-or-modifiers))
+                                     (no-dups-mods (delete-duplicates mods :test #'modifier=)))
+                                (when (/= (length mods) (length no-dups-mods))
+                                  (warn "Duplicate modifiers: ~a"
+                                        (mapcar #'modifier-string
+                                                (list-difference mods no-dups-mods))))
+                                no-dups-mods))
+                'fset:wb-set))))
 
 (declaim (ftype (function (&key (:code integer) (:value string)
                                 (:modifiers list) (:status keyword))
