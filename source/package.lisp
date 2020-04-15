@@ -6,7 +6,8 @@
 ;; exports are spread around.  `uiop:define-package' does not have this problem.
 (uiop:define-package next
   (:use :common-lisp :trivia)
-  (:import-from #:keymap #:define-key #:define-scheme))
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:export-always))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :next)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :next))
