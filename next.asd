@@ -91,7 +91,14 @@
                ;; Depends on everything else:
                (:file "about")
                (:file "session")
-               (:file "start")))
+               (:file "start"))
+  :in-order-to ((test-op (test-op "next/tests"))))
+
+(asdf:defsystem next/tests
+  :depends-on (next prove)
+  :perform (asdf:test-op (op c)
+                         (funcall (read-from-string "prove:run")
+                                  (asdf:system-relative-pathname c "tests/"))))
 
 (asdf:defsystem :next/gtk
   :depends-on (:next
