@@ -701,8 +701,8 @@ Deal with URL with the following rules:
   (cond
     ((or is-new-window
          ;; TODO: Streamline the customization of this binding.
-         (and (or (equal modifiers '("C"))
-                  (equal modifiers '("s")))
+         (and (or (equal modifiers '("control"))
+                  (equal modifiers '("super")))
               (string= mouse-button "button1"))
          (string= mouse-button "button2"))
      (log:debug "Load URL in new buffer: ~a" url)
