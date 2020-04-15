@@ -310,19 +310,18 @@ Type should allow keymaps, so it should probably be in the form
 Parents are ordered by priority, the first parent has highest priority.")))
 
 (declaim (ftype (function (string &rest keymap)
-                          keymap)
+                          (values keymap &optional))
                 make-keymap))
 (defun make-keymap (name &rest parents)
   ;; We coerce to 'keymap because otherwise SBCL complains "type assertion too
   ;; complex to check: (VALUES KEYMAP::KEYMAP &REST T)."
-  (coerce
-   (make-instance 'keymap
-                  :name name
-                  :parents parents
-                  ;; We cannot use the standard (make-hash-table :test #'equalp)
-                  ;; because then (set "a") and (set "A") would be the same thing.
-                  :entries (fset:empty-map))
-   'keymap))
+  (the (values keymap &optional)
+       (make-instance 'keymap
+                      :name name
+                      :parents parents
+                      ;; We cannot use the standard (make-hash-table :test #'equalp)
+                      ;; because then (set "a") and (set "A") would be the same thing.
+                      :entries (fset:empty-map))))
 
 (defun keymap-p (object)
   (typep object 'keymap))
@@ -400,7 +399,8 @@ See `define-key' for the user-facing function."
                 (t (keyspecs->keys keyspecs)))))
     (bind-key keymap keys bound-value)))
 
-(declaim (ftype (function (keymap list-of-keys (or keymap t)) keymap) bind-key))
+(declaim (ftype (function (keymap list-of-keys (or keymap t)) (values keymap &optional))
+                bind-key))
 (defun bind-key (keymap keys bound-value)
   "Recursively bind the KEYS to keymaps starting from KEYMAP.
 The last key is bound to BOUND-VALUE.

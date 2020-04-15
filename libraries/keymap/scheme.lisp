@@ -13,13 +13,13 @@
 keymap parents are automatically set to the keymaps corresponding to the given
 schemes.  See `define-scheme'.")))
 
-(declaim (ftype (function (string &rest scheme-name) scheme-name) make-scheme-name))
+(declaim (ftype (function (string &rest scheme-name) (values scheme-name &optional))
+                make-scheme-name))
 (defun make-scheme-name (name &rest parents)
-  (coerce
-   (make-instance 'scheme-name
-                  :name name
-                  :parents parents)
-   'scheme-name))
+  (the (values scheme-name &optional)
+       (make-instance 'scheme-name
+                      :name name
+                      :parents parents)))
 
 (defun scheme-name-p (name)
   (typep name 'scheme-name))
