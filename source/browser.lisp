@@ -324,6 +324,13 @@ count since deleting windows may reseult in duplicate identifiers.")
 list of URLs (strings) as argument (the command line positional arguments).  It
 is run after the renderer has been initialized and after the
 `*after-init-hook*' has run.")
+   (startup-error-reporter-function :accessor startup-error-reporter-function
+                                    :type function
+                                    :initarg :startup-error-reporter-function
+                                    :documentation "When supplied,
+                                    upon startup, if there are errors,
+                                    they will be reported by this
+                                    function.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
