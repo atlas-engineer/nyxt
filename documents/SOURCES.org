@@ -17,7 +17,9 @@ which external dependencies we are directly relying on.
 + cl-ppcre-unicode
 + cl-prevalence
 + closer-mop
++ moptilities
 + dexador
++ enchant
 + iolib
 + ironclad
 + local-time
