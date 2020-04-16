@@ -18,7 +18,7 @@
             :type htree:history-tree
             :initarg :history
             :initform (htree:make))
-   (keymap-schemes
+   (keymap-scheme
     :initform
     (define-scheme "web"
       scheme:cua

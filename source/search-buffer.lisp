@@ -197,7 +197,7 @@ provided buffers."
                       :history (minibuffer-search-history *browser*)))
          (keymap-scheme (keymap-scheme-name minibuffer))
          (keymap (keymap:get-keymap keymap-scheme
-                                    (keymap-schemes (first (modes minibuffer))))))
+                                    (keymap-scheme (first (modes minibuffer))))))
     (define-key keymap
       "C-s" #'(lambda ()
                 (update-selection-highlight-hint :follow t :scroll t)))

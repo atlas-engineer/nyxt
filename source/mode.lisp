@@ -106,100 +106,100 @@ It is run before the destructor.")
                  :documentation "This hook is run when disabling the mode.
 It takes the mode as argument.
 It is run before the destructor.")
-   (keymap-schemes :accessor keymap-schemes :initarg :keymap-schemes :type keymap:scheme
-                   :initform (define-scheme "root"
-                               scheme:cua
-                               (list
-                                "C-q" #'quit
-                                "C-[" #'switch-buffer-previous
-                                "C-]" #'switch-buffer-next
-                                "C-x b" #'switch-buffer
-                                "C-x k" #'delete-buffer ; Emacs' default behaviour is to query.
-                                "C-x C-k" #'delete-current-buffer
-                                "C-x left" #'switch-buffer-previous
-                                "C-x right" #'switch-buffer-next
-                                "C-pageup" #'switch-buffer-previous
-                                "C-pagedown" #'switch-buffer-next
-                                "C-l" #'set-url-current-buffer
-                                "M-l" #'set-url-new-buffer
-                                "C-m k" #'bookmark-delete
-                                "C-t" #'make-buffer-focus
-                                "C-m u" #'bookmark-url
-                                "f1 v" #'describe-variable
-                                "f1 c" #'describe-command
-                                "f1 k" #'describe-key
-                                "f1 b" #'describe-bindings
-                                "C-h v" #'describe-variable
-                                "C-h c" #'describe-command
-                                "C-h k" #'describe-key
-                                "C-h b" #'describe-bindings
-                                "C-o" #'load-file
-                                "C-i" #'autofill
-                                "M-x" #'execute-command
-                                "M-:" #'command-evaluate
-                                "C-x 5 2" #'make-window
-                                "C-x 5 0" #'delete-current-window
-                                "C-x 5 1" #'delete-window
-                                "C-/" #'reopen-buffer
-                                "C-x C-f" #'open-file)
-                               scheme:emacs
-                               (list
-                                "C-x C-c" #'quit
-                                "C-[" #'switch-buffer-previous
-                                "C-]" #'switch-buffer-next
-                                "C-x b" #'switch-buffer
-                                "C-x k" #'delete-buffer ; Emacs' default behaviour is to query.
-                                "C-x C-k" #'delete-current-buffer
-                                "C-x left" #'switch-buffer-previous
-                                "C-x right" #'switch-buffer-next
-                                "C-pageup" #'switch-buffer-previous
-                                "C-pagedown" #'switch-buffer-next
-                                "C-l" #'set-url-current-buffer
-                                "M-l" #'set-url-new-buffer
-                                "C-m k" #'bookmark-delete
-                                "C-t" #'make-buffer-focus
-                                "C-m u" #'bookmark-url
-                                "C-h v" #'describe-variable
-                                "C-h c" #'describe-command
-                                "C-h k" #'describe-key
-                                "C-h b" #'describe-bindings
-                                "C-o" #'load-file
-                                "C-i" #'autofill
-                                "M-x" #'execute-command
-                                "M-:" #'command-evaluate
-                                "C-x 5 2" #'make-window
-                                "C-x 5 0" #'delete-current-window
-                                "C-x 5 1" #'delete-window
-                                "C-/" #'reopen-buffer
-                                "C-x C-f" #'open-file)
-                               scheme:vi-normal
-                               (list
-                                "Z Z" #'quit
-                                "[" #'switch-buffer-previous
-                                "]" #'switch-buffer-next
-                                "C-pageup" #'switch-buffer-previous
-                                "C-pagedown" #'switch-buffer-next
-                                "g b" #'switch-buffer
-                                "d" #'delete-buffer
-                                "D" #'delete-current-buffer
-                                "B" #'make-buffer-focus
-                                "o" #'set-url-current-buffer
-                                "O" #'set-url-new-buffer
-                                "m u" #'bookmark-url
-                                "m d" #'bookmark-delete
-                                "C-o" #'load-file
-                                "C-h v" #'describe-variable
-                                "C-h c" #'describe-command
-                                "C-h k" #'describe-command
-                                "C-h b" #'describe-bindings
-                                ":" #'execute-command
-                                "M-:" #'command-evaluate
-                                "W" #'make-window
-                                "C-w C-w" #'make-window
-                                "C-w q" #'delete-current-window
-                                "C-w C-q" #'delete-window
-                                "u" #'reopen-buffer
-                                "C-x C-f" #'open-file)))))
+   (keymap-scheme :accessor keymap-scheme :initarg :keymap-scheme :type keymap:scheme
+                  :initform (define-scheme "root"
+                              scheme:cua
+                              (list
+                               "C-q" #'quit
+                               "C-[" #'switch-buffer-previous
+                               "C-]" #'switch-buffer-next
+                               "C-x b" #'switch-buffer
+                               "C-x k" #'delete-buffer ; Emacs' default behaviour is to query.
+                               "C-x C-k" #'delete-current-buffer
+                               "C-x left" #'switch-buffer-previous
+                               "C-x right" #'switch-buffer-next
+                               "C-pageup" #'switch-buffer-previous
+                               "C-pagedown" #'switch-buffer-next
+                               "C-l" #'set-url-current-buffer
+                               "M-l" #'set-url-new-buffer
+                               "C-m k" #'bookmark-delete
+                               "C-t" #'make-buffer-focus
+                               "C-m u" #'bookmark-url
+                               "f1 v" #'describe-variable
+                               "f1 c" #'describe-command
+                               "f1 k" #'describe-key
+                               "f1 b" #'describe-bindings
+                               "C-h v" #'describe-variable
+                               "C-h c" #'describe-command
+                               "C-h k" #'describe-key
+                               "C-h b" #'describe-bindings
+                               "C-o" #'load-file
+                               "C-i" #'autofill
+                               "M-x" #'execute-command
+                               "M-:" #'command-evaluate
+                               "C-x 5 2" #'make-window
+                               "C-x 5 0" #'delete-current-window
+                               "C-x 5 1" #'delete-window
+                               "C-/" #'reopen-buffer
+                               "C-x C-f" #'open-file)
+                              scheme:emacs
+                              (list
+                               "C-x C-c" #'quit
+                               "C-[" #'switch-buffer-previous
+                               "C-]" #'switch-buffer-next
+                               "C-x b" #'switch-buffer
+                               "C-x k" #'delete-buffer ; Emacs' default behaviour is to query.
+                               "C-x C-k" #'delete-current-buffer
+                               "C-x left" #'switch-buffer-previous
+                               "C-x right" #'switch-buffer-next
+                               "C-pageup" #'switch-buffer-previous
+                               "C-pagedown" #'switch-buffer-next
+                               "C-l" #'set-url-current-buffer
+                               "M-l" #'set-url-new-buffer
+                               "C-m k" #'bookmark-delete
+                               "C-t" #'make-buffer-focus
+                               "C-m u" #'bookmark-url
+                               "C-h v" #'describe-variable
+                               "C-h c" #'describe-command
+                               "C-h k" #'describe-key
+                               "C-h b" #'describe-bindings
+                               "C-o" #'load-file
+                               "C-i" #'autofill
+                               "M-x" #'execute-command
+                               "M-:" #'command-evaluate
+                               "C-x 5 2" #'make-window
+                               "C-x 5 0" #'delete-current-window
+                               "C-x 5 1" #'delete-window
+                               "C-/" #'reopen-buffer
+                               "C-x C-f" #'open-file)
+                              scheme:vi-normal
+                              (list
+                               "Z Z" #'quit
+                               "[" #'switch-buffer-previous
+                               "]" #'switch-buffer-next
+                               "C-pageup" #'switch-buffer-previous
+                               "C-pagedown" #'switch-buffer-next
+                               "g b" #'switch-buffer
+                               "d" #'delete-buffer
+                               "D" #'delete-current-buffer
+                               "B" #'make-buffer-focus
+                               "o" #'set-url-current-buffer
+                               "O" #'set-url-new-buffer
+                               "m u" #'bookmark-url
+                               "m d" #'bookmark-delete
+                               "C-o" #'load-file
+                               "C-h v" #'describe-variable
+                               "C-h c" #'describe-command
+                               "C-h k" #'describe-command
+                               "C-h b" #'describe-bindings
+                               ":" #'execute-command
+                               "M-:" #'command-evaluate
+                               "W" #'make-window
+                               "C-w C-w" #'make-window
+                               "C-w q" #'delete-current-window
+                               "C-w C-q" #'delete-window
+                               "u" #'reopen-buffer
+                               "C-x C-f" #'open-file)))))
 
 (defmethod object-string ((mode root-mode))
   (symbol-name (class-name (class-of mode))))
@@ -242,7 +242,7 @@ It may be MODE-SYMBOL itself."
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."
   (keymap:get-keymap (keymap-scheme-name (buffer mode))
-                     (keymap-schemes mode)))
+                     (keymap-scheme mode)))
 
 (defmethod on-signal-load-committed ((mode root-mode) url)
   url)
@@ -255,5 +255,5 @@ If there is no corresponding keymap, return nil."
 
 (defmethod serializable-slots ((object next::root-mode))
   "Discard keymaps which can be quite verbose."
-  (delete 'next::keymap-schemes
+  (delete 'next::keymap-scheme
           (mapcar #'closer-mop:slot-definition-name (closer-mop:class-slots (class-of object)))))

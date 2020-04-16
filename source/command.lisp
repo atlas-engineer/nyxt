@@ -179,7 +179,7 @@ This function can be `funcall'ed."
          (scheme-name (keymap-scheme-name buffer))
          (bindings '()))
     (loop for mode in (modes buffer)
-          for scheme-keymap = (keymap:get-keymap scheme-name (keymap-schemes mode))
+          for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
           when scheme-keymap
             do (setf bindings (keymap:binding-keys (command-function command) scheme-keymap))
           when (not (null bindings))

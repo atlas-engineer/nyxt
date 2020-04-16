@@ -15,7 +15,7 @@
 ;; TODO: Move minibuffer-mode to a separate package?
 (define-mode minibuffer-mode ()
   "Mode for the minibuffer."
-  ((keymap-schemes
+  ((keymap-scheme
     :initform
     (define-scheme "minibuffer"
       scheme:cua

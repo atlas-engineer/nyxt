@@ -190,7 +190,7 @@ complete against a search engine."
 
 (define-mode set-url-mode (minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."
-  ((keymap-schemes
+  ((keymap-scheme
     :initform
     (define-scheme "set-url"
       scheme:emacs

@@ -5,7 +5,7 @@
 ;; TODO: Move to a separate package like other modes?
 (define-mode help-mode ()
   "Mode for displaying documentation."
-  ((keymap-schemes
+  ((keymap-scheme
     :initform
     (define-scheme "help"
       scheme:emacs

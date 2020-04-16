@@ -94,7 +94,7 @@ with the file."
   "Mode to open any file from the filesystem with fuzzy completion
 on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
-  ((keymap-schemes
+  ((keymap-scheme
     :initform
     (define-scheme "file-manager"
       scheme:emacs

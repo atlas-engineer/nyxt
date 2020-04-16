@@ -11,7 +11,7 @@
     :type keymap:scheme-name
     :documentation "The previous keymap scheme that will be used when ending
 vi-normal-mode.")
-   (keymap-schemes
+   (keymap-scheme
     :initform
     (define-scheme "vi"
       scheme:vi-normal
@@ -42,7 +42,7 @@ vi-normal-mode.")
 ;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode (vi-normal-mode)
   "Enable VI-style modal bindings (insert mode)"
-  ((keymap-schemes
+  ((keymap-scheme
     :initform
     (define-scheme "vi"
       scheme:vi-insert
