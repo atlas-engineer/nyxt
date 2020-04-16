@@ -45,7 +45,7 @@
 
   (defun get-substring-indices (query string)
     "Get the indices of all matching substrings."
-    (let ((rgx (ps:new (|RegExp| query "i"))))
+    (let ((rgx (ps:new (|RegExp| query (if (ps:lisp case-insensitive-p) "i" "")))))
       (loop with index = 0
             until (= index -1)
             do (setf index (ps:chain string (search rgx)))
@@ -158,11 +158,11 @@
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
   (remove-search-nodes))
 
-(define-command search-buffer (&key case-insensitive-p)
+(define-command search-buffer (&key (case-insensitive-p t))
   "Start a search on the current buffer."
   (search-over-buffers (list (current-buffer)) :case-insensitive-p case-insensitive-p))
 
-(define-command search-buffers (&key case-insensitive-p)
+(define-command search-buffers (&key (case-insensitive-p t))
   "Show a prompt in the minibuffer that allows to choose
 one or more buffers, and then start a search prompt that
 searches over the selected buffer(s)."
