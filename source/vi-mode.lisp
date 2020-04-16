@@ -8,7 +8,7 @@
   "Enable VI-style modal bindings (normal mode)"
   ((previous-keymap-scheme-name
     :accessor previous-keymap-scheme-name
-    :type keymap:scheme
+    :type keymap:scheme-name
     :documentation "The previous keymap scheme that will be used when ending
 vi-normal-mode.")
    (keymap-schemes
@@ -28,8 +28,13 @@ vi-normal-mode.")
     :initform
     (lambda (mode)
       (with-accessors ((buffer buffer)) mode
-        (setf (previous-keymap-scheme-name mode)
-              (keymap-scheme-name buffer))
+        (let ((vi-insert (find-mode buffer 'vi-insert-mode)))
+          (setf (previous-keymap-scheme-name mode)
+                (if vi-insert
+                    (previous-keymap-scheme-name vi-insert)
+                    (keymap-scheme-name buffer))))
+        ;; Destroy vi-normal mode after setting previous-keymap-scheme-name, or
+        ;; else we can't save the previous keymap scheme.
         (vi-insert-mode :activate nil :buffer buffer)
         (setf (keymap-scheme-name buffer) scheme:vi-normal)
         (setf (forward-input-events-p buffer) nil))))))
@@ -57,11 +62,12 @@ vi-normal-mode.")
     :initform
     (lambda (mode)
       (with-accessors ((buffer buffer)) mode
-        ;; Destroy vi-normal mode before setting previous-keymap-scheme-name, or
-        ;; else we will save the wrong value.
+        (let ((vi-normal (find-mode buffer 'vi-normal-mode)))
+          (setf (previous-keymap-scheme-name mode)
+                (if vi-normal
+                    (previous-keymap-scheme-name vi-normal)
+                    (keymap-scheme-name buffer))))
         (vi-normal-mode :activate nil :buffer buffer)
-        (setf (previous-keymap-scheme-name mode)
-              (keymap-scheme-name buffer))
         (setf (keymap-scheme-name buffer) scheme:vi-insert))))))
 
 (define-parenscript %clicked-in-input? ()
