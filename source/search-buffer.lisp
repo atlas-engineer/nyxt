@@ -45,6 +45,8 @@
 
   (defun create-substring-matches (query node)
     "Return all of substrings that match the search-string."
+    ;; TODO: do not use split with lowercase as it lowercases the
+    ;; element, use indices for splitting.
     (let* ((lowercase-query (ps:chain query (to-lower-case)))
            (substrings
              (if (ps:lisp case-insensitive-p)
@@ -124,8 +126,7 @@
                                :buffer buffer)))
 
 (defun match-completion-function (input &optional (buffers (list (current-buffer))) (case-insensitive-p nil))
-  "Update the completions asynchronously via query-buffer. TODO:
-capture the current-buffer and current-minibuffer in a closure."
+  "Update the completions asynchronously via query-buffer."
   (when (> (length input) 2)
     (let ((input (str:replace-all " " " " input))
           (all-matches nil)
