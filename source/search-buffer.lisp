@@ -55,34 +55,25 @@
 
   (defun create-substring-matches (query node)
     "Return all of substrings that match the search-string."
-    ;; TODO: do not use split with lowercase as it lowercases the
-    ;; element, use indices for splitting.
-    (let* ((lowercase-query (ps:chain query (to-lower-case)))
-           (substrings
-             (if (ps:lisp case-insensitive-p)
-                 (ps:chain (ps:@ node text-content) (to-lower-case) (split lowercase-query))
-                 (ps:chain (ps:@ node text-content) (split query))))
+    (let* ((node-text (ps:@ node text-content))
+           (substring-indices (get-substring-indices query node-text))
            (node-identifier (incf (ps:chain *nodes* identifier)))
            (new-node (ps:chain document (create-element "span"))))
       (setf (ps:@ new-node class-name) "next-search-node")
       (setf (ps:@ new-node id) node-identifier)
       (setf (aref *nodes* node-identifier) node)
-      (when (> (length substrings) 1)
-        (loop for i from 0 to (- (length substrings) 1) by 2
-              do (incf *identifier*)
-                 (ps:chain new-node (append-child
-                                     (ps:chain document (create-text-node (elt substrings i)))))
-                 (ps:chain new-node (append-child
-                                     (create-match-span query *identifier*)))
-                 (unless (= i (- (length substrings) 1))
-                   (ps:chain new-node (append-child
-                                       (ps:chain document (create-text-node (elt substrings (+ i 1)))))))
-              collect (create-match-object 
-                       (get-substring (elt substrings i)
-                                      (elt substrings (+ i 1))
-                                      query)
-                       *identifier*)
-              finally (ps:chain node (replace-with new-node))))))
+      (loop for index in substring-indices
+            with last-index = 0
+            do (incf *identifier*)
+               (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring last-index index))))))
+               (ps:chain new-node (append-child (create-match-span query *identifier*)))
+               (setf last-index (+ (length query) index))
+            collect (create-match-object
+                     (get-substring node-text query index)
+                     *identifier*)
+            finally (progn
+                      (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring (+ (length query) index)))))))
+                      (ps:chain node (replace-with new-node))))))
 
   (defun matches-from-node (node query)
     (when (= (ps:chain (typeof (ps:@ node node-value))) "string")
