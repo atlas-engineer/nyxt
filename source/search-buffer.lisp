@@ -6,6 +6,7 @@
   (defvar *identifier* 0)
   (defvar *matches* (array))
   (defvar *nodes* (ps:new (-Object)))
+  (defvar *node-replacements* (array))
 
   (defun qs (context selector)
     "Alias of document.querySelector"
@@ -63,18 +64,23 @@
         (setf (ps:@ new-node class-name) "next-search-node")
         (setf (ps:@ new-node id) node-identifier)
         (setf (aref *nodes* node-identifier) node)
-        (loop for index in substring-indices
-              with last-index = 0
-              do (incf *identifier*)
-                 (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring last-index index))))))
-                 (ps:chain new-node (append-child (create-match-span query *identifier*)))
-                 (setf last-index (+ (length query) index))
-                 (ps:chain *matches* (push (create-match-object (get-substring node-text query index) *identifier*)))
-              finally (progn
-                        (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring (+ (length query) index)))))))
-                        ;; TODO: Replace new nodes at END
-                        ;; (ps:chain node (replace-with new-node))
-                        )))))
+        (when (> (length substring-indices) 0)
+          (loop for index in substring-indices
+                with last-index = 0
+                do (incf *identifier*)
+                   (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring last-index index))))))
+                   (ps:chain new-node (append-child (create-match-span query *identifier*)))
+                   (setf last-index (+ (length query) index))
+                   (ps:chain *matches* (push (create-match-object (get-substring node-text query index) *identifier*)))
+                finally (progn
+                          (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring (+ (length query) index)))))))
+                          (ps:chain *node-replacements*
+                                    (push (list node new-node)))))))))
+
+  (defun replace-original-nodes ()
+    "Replace original nodes with recreated search nodes"
+    (loop for node-pair in *node-replacements*
+          do (ps:chain (elt node-pair 0) (replace-with (elt node-pair 1)))))
 
   (defun walk-document (node process-node)
     (when (and node (not (ps:chain node first-child)))
@@ -90,11 +96,13 @@
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
 
   (let ((*matches* (array))
+        (*node-replacements* (array))
         (*identifier* 0))
     (add-stylesheet)
     (remove-search-nodes)
     (setf (ps:chain *nodes* identifier) 0)
     (walk-document (ps:chain document body) matches-from-node)
+    (replace-original-nodes)
     (ps:chain |json| (stringify *matches*))))
 
 (defclass match ()
