@@ -35,13 +35,14 @@
       (setf (ps:@ el id) (+ "next-hint-" identifier))
       el))
 
-  (defun get-substring (string-before string-after query)
+  (defun get-substring (string query index)
     "Return the substring and preceding/trailing text for a given
      index."
-    (let* ((character-preview-count 40)
-           (string-before (if string-before (ps:chain string-before (substring (- (length string-before) character-preview-count))) ""))
-           (string-after (if string-after (ps:chain string-after (substring 0 character-preview-count)) "")))
-      (+ string-before query string-after)))
+    (let* ((character-preview-count 40))
+           (ps:chain string
+                     (substring (- index character-preview-count)
+                                (+ index (length query) character-preview-count)))))
+
   (defun get-substring-indices (query string)
     "Get the indices of all matching substrings."
     (let ((rgx (ps:new (|RegExp| query "i"))))
