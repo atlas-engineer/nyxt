@@ -15,7 +15,7 @@ instabilities or feature wishes.
 
 -----
 
-#+html: <div align="center"> <a href="http://next.atlas.engineer/">Homepage</a> | <a href="https://next.atlas.engineer/download">Downloads</a> | <a href="https://next.atlas.engineer/documentation">User Manual</a> | <a href="https://next.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/next">Developer Manual</a> | Freenode IRC: <a href="https://webchat.freenode.net/#next-browser">#next-browser</a> </div>
+#+html: <div align="center"> <a href="http://next.atlas.engineer/">Homepage</a> | <a href="https://next.atlas.engineer/download">Downloads</a> | <a href="https://next.atlas.engineer/documentation">User Manual</a> | <a href="https://next.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org">Developer Manual</a> | Freenode IRC: <a href="https://webchat.freenode.net/#next-browser">#next-browser</a> </div>
 
 -----
 
