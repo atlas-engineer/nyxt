@@ -99,12 +99,18 @@ lot."
                                                    (last-access entry))
                   (* 60 60)))))))
 
-(defun history-completion-filter ()
+(defun history-completion-filter (&key prefix-urls)
+  "Include prefix-urls in front of the history.
+This can be useful to, say, prefix the history with the current URL.  At the
+moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
+it would not be very useful."
   (let ((history (sort (alex:hash-table-values
                         (history-data *browser*))
                        (lambda (x y)
                          (> (score-history-entry x)
                             (score-history-entry y))))))
+    (when prefix-urls
+      (setf history (append prefix-urls history)))
     (lambda (input)
       (fuzzy-match input history))))
 

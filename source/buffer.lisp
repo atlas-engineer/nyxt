@@ -213,7 +213,8 @@ complete against a search engine."
                                                   "current"))
                         :input-buffer (if prefill-current-url-p (url (current-buffer)) "")
                         :default-modes '(set-url-mode minibuffer-mode)
-                        :completion-function (history-completion-filter)
+                        :completion-function (history-completion-filter
+                                              :prefix-urls (list (url (current-buffer))))
                         :history history
                         :empty-complete-immediate t)))
       (when (typep url 'history-entry)
