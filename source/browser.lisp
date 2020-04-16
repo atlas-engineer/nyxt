@@ -96,7 +96,7 @@ instantiate on buffer creation, unless specified.")
     :accessor keymap-scheme-name
     :initarg :keymap-scheme-name
     :initform scheme:cua
-    :type keymap:scheme
+    :type keymap:scheme-name
     :documentation "The keymap scheme that will be used
 for all modes in the current buffer.")
    (override-map :accessor override-map
