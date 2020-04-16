@@ -56,7 +56,6 @@
        "M-s-<" #'scroll-to-top
        "M->" #'scroll-to-bottom
        "M-<" #'scroll-to-top
-       ;; "C-v" #'scroll-page-down
        "M-v" #'scroll-page-up
        "C-w" #'copy-url
        "M-w" #'copy-title
@@ -115,12 +114,12 @@
        "M-s-<" #'scroll-to-top
        "M->" #'scroll-to-bottom
        "M-<" #'scroll-to-top
-       ;; "C-v" #'scroll-page-down
+       "C-v" #'scroll-page-down
        "M-v" #'scroll-page-up
        "C-w" #'copy-url
        "M-w" #'copy-title
-       ;; Leave SPACE unbound so that the paltform port decides wether to
-       ;; insert of scroll.
+       ;; Leave 'space' unbound so that the renderer decides wether to insert of
+       ;; scroll.
        "s-space" #'scroll-page-up
 
        ;; keypad:
