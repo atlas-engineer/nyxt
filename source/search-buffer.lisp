@@ -53,32 +53,28 @@
             when (not (= index -1))
               collect index)))
 
-  (defun create-substring-matches (query node)
-    "Return all of substrings that match the search-string."
-    (let* ((node-text (ps:@ node text-content))
-           (substring-indices (get-substring-indices query node-text))
-           (node-identifier (incf (ps:chain *nodes* identifier)))
-           (new-node (ps:chain document (create-element "span"))))
-      (setf (ps:@ new-node class-name) "next-search-node")
-      (setf (ps:@ new-node id) node-identifier)
-      (setf (aref *nodes* node-identifier) node)
-      (loop for index in substring-indices
-            with last-index = 0
-            do (incf *identifier*)
-               (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring last-index index))))))
-               (ps:chain new-node (append-child (create-match-span query *identifier*)))
-               (setf last-index (+ (length query) index))
-            collect (create-match-object
-                     (get-substring node-text query index)
-                     *identifier*)
-            finally (progn
-                      (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring (+ (length query) index)))))))
-                      (ps:chain node (replace-with new-node))))))
-
   (defun matches-from-node (node query)
+    "Return all of substrings that match the search-string."
     (when (= (ps:chain (typeof (ps:@ node node-value))) "string")
-      (let ((matches (create-substring-matches query node)))
-        (ps:chain *matches* push (apply *matches* matches)))))
+      (let* ((node-text (ps:@ node text-content))
+             (substring-indices (get-substring-indices query node-text))
+             (node-identifier (incf (ps:chain *nodes* identifier)))
+             (new-node (ps:chain document (create-element "span"))))
+        (setf (ps:@ new-node class-name) "next-search-node")
+        (setf (ps:@ new-node id) node-identifier)
+        (setf (aref *nodes* node-identifier) node)
+        (loop for index in substring-indices
+              with last-index = 0
+              do (incf *identifier*)
+                 (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring last-index index))))))
+                 (ps:chain new-node (append-child (create-match-span query *identifier*)))
+                 (setf last-index (+ (length query) index))
+                 (ps:chain *matches* (push (create-match-object (get-substring node-text query index) *identifier*)))
+              finally (progn
+                        (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring (+ (length query) index)))))))
+                        ;; TODO: Replace new nodes at END
+                        ;; (ps:chain node (replace-with new-node))
+                        )))))
 
   (defun walk-document (node process-node)
     (when (and node (not (ps:chain node first-child)))
@@ -114,8 +110,8 @@
   (let* ((id (identifier match))
          (buffer-id (id (buffer match))))
     (if (multi-buffer match)
-        (format nil "~a:~a ...~a...  ~a" buffer-id id (body match) (title (buffer match)))
-        (format nil "~a ...~a..." id (body match)))))
+        (format nil "~a:~a …~a…  ~a" buffer-id id (body match) (title (buffer match)))
+        (format nil "~a …~a…" id (body match)))))
 
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
   (loop for element in (handler-case (cl-json:decode-json-from-string matches-json)
