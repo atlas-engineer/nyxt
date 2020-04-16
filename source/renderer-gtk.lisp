@@ -396,9 +396,12 @@ Warning: This behaviour may change in the future."
             (:webkit-navigation-type-other :other)))
     ;; Get Navigation Parameters from WebKitNavigationAction object
     (when navigation-type
-      (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action response-policy-decision))
+      (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action
+                               response-policy-decision))
       (setf request (webkit:webkit-navigation-action-get-request navigation-action))
-      (setf mouse-button (format nil "button~d" (webkit:webkit-navigation-action-get-mouse-button navigation-action)))
+      (setf mouse-button (format nil "button~d"
+                                 (webkit:webkit-navigation-action-get-mouse-button
+                                  navigation-action)))
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (webkit:webkit-uri-request-uri request))
@@ -406,11 +409,13 @@ Warning: This behaviour may change in the future."
             (eq :forward (hooks:run-hook (request-resource-hook buffer)
                                          buffer
                                          :url url
-                                         :mouse-button mouse-button
+                                         :keys (unless (uiop:emptyp mouse-button)
+                                                 (list (keymap:make-key
+                                                        :value mouse-button
+                                                        :modifiers modifiers)))
                                          :event-type event-type
                                          :is-new-window is-new-window
-                                         :is-known-type is-known-type
-                                         :modifiers modifiers)))
+                                         :is-known-type is-known-type)))
         ;; nil means "forward to renderer".
         nil
         t)))

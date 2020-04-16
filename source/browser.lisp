@@ -120,6 +120,17 @@ forwarded when no binding is found.")
                :initform nil
                ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
                :documentation "The last event that was received for the current buffer.")
+   (request-resource-scheme :accessor request-resource-scheme
+                            :initarg :request-resource-scheme
+                            :initform (define-scheme "request-resource"
+                                        scheme:cua
+                                        (list
+                                         "C-button1" #'request-resource-open-url-focus
+                                         "button2" #'request-resource-open-url-focus
+                                         "C-shift-button1" #'request-resource-open-url))
+                            :documentation "This keymap can be looked up when
+`request-resource-hook' handlers run.
+The functions are expected to take key arguments like `:url'.")
    (request-resource-hook :accessor request-resource-hook
                           :initarg :request-resource-hook
                           :initform (make-hook-resource
@@ -688,36 +699,51 @@ proceeding."
     (error (c)
       (error "Could not make buffer to open ~a: ~a" urls c))))
 
+(defun scheme-keymap (buffer buffer-scheme)
+  "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keymap-scheme-name'.
+If none is found, fall back to `scheme:cua'."
+  (or (keymap:get-keymap (keymap-scheme-name buffer)
+                         buffer-scheme)
+      (keymap:get-keymap scheme:cua
+                         buffer-scheme)))
+
+(defun request-resource-open-url (&key url &allow-other-keys)
+  (open-urls (list url) :no-focus t))
+
+(defun request-resource-open-url-focus (&key url &allow-other-keys)
+  (open-urls (list url) :no-focus nil))
+
 (serapeum:export-always 'request-resource)
-(defun request-resource (buffer &key url event-type
-                                  (is-new-window nil) (is-known-type t) (mouse-button "")
-                                  (modifiers '()) &allow-other-keys)
+(defun request-resource (buffer
+                         &key url event-type
+                           (is-new-window nil) (is-known-type t) (keys '())
+                         &allow-other-keys)
   "Candidate for `request-resource-hook'.
 Deal with URL with the following rules:
 - If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
 - If IS-KNOWN-TYPE is nil, download the file.
 - Otherwise return :FORWARD to let the renderer load the URL."
   (declare (ignore event-type)) ; TODO: Do something with the event type?
-  (cond
-    ((or is-new-window
-         ;; TODO: Streamline the customization of this binding.
-         (and (or (equal modifiers '("control"))
-                  (equal modifiers '("super")))
-              (string= mouse-button "button1"))
-         (string= mouse-button "button2"))
-     (log:debug "Load URL in new buffer: ~a" url)
-     (open-urls (list url) :no-focus (equal modifiers '("s")))
-     t)
-    ((not is-known-type)
-     (log:info "Buffer ~a downloads ~a" buffer url)
-     (download url :proxy-address (proxy-address buffer :downloads-only t)
-                   :cookies "")
-     (unless (find-buffer 'download-mode)
-       (download-list))
-     t)
-    (t
-     (log:debug "Forwarding back to platform port: ~a" url)
-     :forward)))
+  (let* ((keymap (scheme-keymap buffer (request-resource-scheme buffer)))
+         (bound-function (keymap:lookup-key keys keymap)))
+    (cond
+      (bound-function
+       (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
+       (funcall-safely bound-function :url url))
+      (is-new-window
+       (log:debug "Load URL in new buffer: ~a" url)
+       (open-urls (list url))
+       t)
+      ((not is-known-type)
+       (log:info "Buffer ~a downloads ~a" buffer url)
+       (download url :proxy-address (proxy-address buffer :downloads-only t)
+                     :cookies "")
+       (unless (find-buffer 'download-mode)
+         (download-list))
+       t)
+      (t
+       (log:debug "Forwarding back to renderer: ~a" url)
+       :forward))))
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
