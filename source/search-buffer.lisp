@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(define-parenscript query-buffer (query)
+(define-parenscript query-buffer (query (case-insensitive-p nil))
   (defvar *identifier* 0)
   (defvar *matches* (array))
   (defvar *nodes* (ps:new (-Object)))
@@ -45,9 +45,13 @@
 
   (defun create-substring-matches (query node)
     "Return all of substrings that match the search-string."
-    (let ((substrings (ps:chain (ps:@ node text-content) (split query)))
-          (node-identifier (incf (ps:chain *nodes* identifier)))
-          (new-node (ps:chain document (create-element "span"))))
+    (let* ((lowercase-query (ps:chain query (to-lower-case)))
+           (substrings
+             (if (ps:lisp case-insensitive-p)
+                 (ps:chain (ps:@ node text-content) (to-lower-case) (split lowercase-query))
+                 (ps:chain (ps:@ node text-content) (split query))))
+           (node-identifier (incf (ps:chain *nodes* identifier)))
+           (new-node (ps:chain document (create-element "span"))))
       (setf (ps:@ new-node class-name) "next-search-node")
       (setf (ps:@ new-node id) node-identifier)
       (setf (aref *nodes* node-identifier) node)
