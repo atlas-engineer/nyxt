@@ -42,6 +42,15 @@
            (string-before (if string-before (ps:chain string-before (substring (- (length string-before) character-preview-count))) ""))
            (string-after (if string-after (ps:chain string-after (substring 0 character-preview-count)) "")))
       (+ string-before query string-after)))
+  (defun get-substring-indices (query string)
+    "Get the indices of all matching substrings."
+    (let ((rgx (ps:new (|RegExp| query "i"))))
+      (loop with index = 0
+            until (= index -1)
+            do (setf index (ps:chain string (search rgx)))
+               (setf string (ps:chain string (substring (+ index (length query)))))
+            when (not (= index -1))
+              collect index)))
 
   (defun create-substring-matches (query node)
     "Return all of substrings that match the search-string."
