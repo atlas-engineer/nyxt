@@ -123,7 +123,7 @@
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
-(defun match-completion-function (input &optional (buffers (list (current-buffer))))
+(defun match-completion-function (input &optional (buffers (list (current-buffer))) (case-insensitive-p nil))
   "Update the completions asynchronously via query-buffer. TODO:
 capture the current-buffer and current-minibuffer in a closure."
   (when (> (length input) 2)
@@ -135,6 +135,7 @@ capture the current-buffer and current-minibuffer in a closure."
              (query-buffer
               :query input
               :buffer buffer
+              :case-insensitive-p case-insensitive-p
               :callback (lambda (result)
                           (let* ((matches (matches-from-json
                                            result buffer multi-buffer)))
@@ -155,11 +156,11 @@ capture the current-buffer and current-minibuffer in a closure."
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
   (remove-search-nodes))
 
-(define-command search-buffer ()
+(define-command search-buffer (&key case-insensitive-p)
   "Start a search on the current buffer."
-  (search-over-buffers (list (current-buffer))))
+  (search-over-buffers (list (current-buffer)) :case-insensitive-p case-insensitive-p))
 
-(define-command search-buffers ()
+(define-command search-buffers (&key case-insensitive-p)
   "Show a prompt in the minibuffer that allows to choose
 one or more buffers, and then start a search prompt that
 searches over the selected buffer(s)."
@@ -168,25 +169,20 @@ searches over the selected buffer(s)."
                           :input-prompt "Search buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
-    (search-over-buffers buffers)))
+    (search-over-buffers buffers :case-insensitive-p case-insensitive-p)))
 
-(defun search-over-buffers (buffers)
+(defun search-over-buffers (buffers &key case-insensitive-p)
   "Add search boxes for a given search string over the
 provided buffers."
   (let* ((num-buffers (list-length buffers))
          (prompt-text
            (if (> num-buffers 1)
-               (format
-                nil
-                "Search over ~d buffers for (3+ characters)"
-                num-buffers)
+               (format nil "Search over ~d buffers for (3+ characters)" num-buffers)
                "Search for (3+ characters)"))
          (minibuffer (make-minibuffer
                       :input-prompt prompt-text
-                      :completion-function #'(lambda (input)
-                                               (match-completion-function
-                                                input
-                                                buffers))
+                      :completion-function
+                      #'(lambda (input) (match-completion-function input buffers case-insensitive-p))
                       :changed-callback
                       (let ((subsequent-call nil))
                         (lambda ()
