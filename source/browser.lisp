@@ -691,13 +691,13 @@ proceeding."
                                       (set-url url :buffer buffer)
                                       buffer))
                                   urls))))
-        (unless no-focus
+        (when (and first-buffer (not no-focus))
           (if (open-external-link-in-new-window-p *browser*)
               (let ((window (window-make *browser*)))
                 (window-set-active-buffer window first-buffer))
               (set-current-buffer first-buffer))))
     (error (c)
-      (error "Could not make buffer to open ~a: ~a" urls c))))
+      (echo-warning "Could not make buffer to open ~a: ~a" urls c))))
 
 (defun scheme-keymap (buffer buffer-scheme)
   "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keymap-scheme-name'.

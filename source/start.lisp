@@ -283,7 +283,9 @@ next [options] [urls]")
        (funcall f)))))
 
 (defun open-external-urls (urls)
-  (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
+  (if urls
+      (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
+      (log:info "Externally pinged."))
   (ffi-within-renderer-thread
    *browser*
    (lambda () (open-urls urls))))
