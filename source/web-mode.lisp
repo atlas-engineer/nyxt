@@ -34,6 +34,7 @@
        "C-u M-g" #'follow-hint-new-buffer
        "C-x C-w" #'copy-hint-url
        "C-v" #'paste
+       "button2" #'paste
        "C-c" #'copy
        "button9" #'history-forwards
        "button8" #'history-backwards
