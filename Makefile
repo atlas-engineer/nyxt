@@ -43,7 +43,7 @@ application: clean-fasls quicklisp-update
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--load next.asd \
 		--eval '(asdf:make :next/$(NEXT_RENDERER)-application)' \
-		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed." "Make sure 'xclip' and latest cl-webkit are available on your system." && exit 1)
+		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." "Also make sure 'xclip' and latest cl-webkit are available on your system." && exit 1)
 
 .PHONY: app-bundle
 app-bundle:
