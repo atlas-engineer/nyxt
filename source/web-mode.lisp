@@ -60,7 +60,7 @@
        "M-v" #'scroll-page-up
        "C-w" #'copy-url
        "M-w" #'copy-title
-       ;; Leave SPACE unbound so that the paltform port decides wether to
+       ;; Leave SPACE unbound so that the renderer decides wether to
        ;; insert of scroll.
        "s-space" #'scroll-page-up
 
