@@ -69,7 +69,7 @@
                 with last-index = 0
                 do (incf *identifier*)
                    (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring last-index index))))))
-                   (ps:chain new-node (append-child (create-match-span query *identifier*)))
+                   (ps:chain new-node (append-child (create-match-span (ps:chain node-text (substring index (+ index (length query)))) *identifier*)))
                    (setf last-index (+ (length query) index))
                    (ps:chain *matches* (push (create-match-object (get-substring node-text query index) *identifier*)))
                 finally (progn
