@@ -162,11 +162,14 @@
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
   (remove-search-nodes))
 
-(define-command search-buffer (&key (case-insensitive-p t))
+(define-command search-buffer (&key (case-insensitive-p t explicit-case-p))
   "Start a search on the current buffer."
-  (search-over-buffers (list (current-buffer)) :case-insensitive-p case-insensitive-p))
+  (apply #'search-over-buffers (list (current-buffer))
+         (if explicit-case-p
+             `(:case-insensitive-p ,case-insensitive-p)
+             '())))
 
-(define-command search-buffers (&key (case-insensitive-p t))
+(define-command search-buffers (&key (case-insensitive-p t explicit-case-p))
   "Show a prompt in the minibuffer that allows to choose
 one or more buffers, and then start a search prompt that
 searches over the selected buffer(s)."
@@ -175,9 +178,12 @@ searches over the selected buffer(s)."
                           :input-prompt "Search buffer(s)"
                           :multi-selection-p t
                           :completion-function (buffer-completion-filter))))
-    (search-over-buffers buffers :case-insensitive-p case-insensitive-p)))
+    (apply #'search-over-buffers buffers
+           (if explicit-case-p
+               `(:case-insensitive-p ,case-insensitive-p)
+               '()))))
 
-(defun search-over-buffers (buffers &key case-insensitive-p)
+(defun search-over-buffers (buffers &key (case-insensitive-p t explicit-case-p))
   "Add search boxes for a given search string over the
 provided buffers."
   (let* ((num-buffers (list-length buffers))
@@ -188,7 +194,10 @@ provided buffers."
          (minibuffer (make-minibuffer
                       :input-prompt prompt-text
                       :completion-function
-                      #'(lambda (input) (match-completion-function input buffers case-insensitive-p))
+                      #'(lambda (input)
+                          (unless explicit-case-p
+                            (setf case-insensitive-p (str:downcasep input)))
+                          (match-completion-function input buffers case-insensitive-p))
                       :changed-callback
                       (let ((subsequent-call nil))
                         (lambda ()
