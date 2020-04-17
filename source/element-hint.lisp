@@ -82,9 +82,11 @@ identifier for every hinted element."
       (ps:chain |json|
                 (stringify
                  (loop for i from 0 to (- elements-length 1)
-                       when (element-drawable-p (elt elements i))
+                       when (and (element-drawable-p (elt elements i))
+                                 (element-in-view-port-p (elt elements i)))
                        do (hint-add (elt elements i) (elt hints i))
-                       when (element-drawable-p (elt elements i))
+                       when (and (element-drawable-p (elt elements i))
+                                 (element-in-view-port-p (elt elements i)))
                        collect (object-create (elt elements i) (elt hints i)))))))
 
   (defun hints-determine-chars-length (length)
