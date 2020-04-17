@@ -440,15 +440,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         (state-changed (first (active-minibuffers (current-window))))
         (update-display (first (active-minibuffers (current-window)))))
       (progn
-        ;; TODO: We need a mode-line before we can afford to really hide the
-        ;; minibuffer.  Until then, we "blank" it.
-        (echo "")                       ; Or echo-dismiss?
-        (ffi-window-set-minibuffer-height
-         (current-window)
-         ;; TODO: Until we have a mode-line, it's best to keep the
-         ;; closed-height equal to the echo-height to avoid the stuttering,
-         ;; especially when hovering over links.
-         (status-buffer-height (current-window))))))
+        (ffi-window-set-minibuffer-height (current-window) 0))))
 
 (defun insert (characters &optional (minibuffer (current-minibuffer)))
   (setf (input-buffer minibuffer)
@@ -783,8 +775,7 @@ MESSAGE is a cl-markup list."
         (unless (active-minibuffers window)
           (erase-document status-buffer)
           (let ((style (cl-css:css
-                        `((body :border-top "4px solid dimgray"
-                                :margin "0"
+                        `((body :margin "0"
                                 :padding "0 6px")
                           (p :margin "0")))))
             (setf (content status-buffer)
