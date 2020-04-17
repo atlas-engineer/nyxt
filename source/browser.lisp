@@ -40,6 +40,11 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
                                   :documentation "Hook run before
    `window-set-active-buffer' takes effect. The handlers take the
    window and the buffer as argument.")
+   (status-formatter :accessor status-formatter
+                   :initform #'format-status
+                     :type (function (window) string)
+                     :documentation "Function of a window argument that returns
+a string to be printed in the status view.")
    (window-delete-hook :accessor window-delete-hook
                        :initform (make-hook-window)
                        :type hook-window
@@ -747,18 +752,23 @@ Deal with URL with the following rules:
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
 
-(defun print-status ()                  ; TODO: Call when setting modes.
+(defun format-status (window)
+  (declare (ignore window))
   (let ((buffer (current-buffer)))
-    (when (and buffer (current-window))
+    (format nil "[~{~a~^ ~}] ~a — ~a"
+            (mapcar (lambda (m) (str:replace-all "-mode" ""
+                                                 (str:downcase
+                                                  (class-name (class-of m)))))
+                    (modes buffer))
+            (url buffer)
+            (title buffer))))
+
+(defun print-status ()
+  (let ((window (current-window)))
+    (when window
       (ffi-print-status
-       (current-window)
-       (format nil "[~{~a~^ ~}] ~a — ~a"
-               (mapcar (lambda (m) (str:replace-all "-mode" ""
-                                                    (str:downcase
-                                                     (class-name (class-of m)))))
-                       (modes buffer))
-               (url buffer)
-               (title buffer))))))
+       window
+       (funcall (status-formatter window) window)))))
 
 (defun print-message (message)
   (when (current-window)
