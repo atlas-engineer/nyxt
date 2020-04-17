@@ -661,7 +661,7 @@ proceeding."
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
     (set-window-title window buffer)
-    (echo-dismiss)
+    (print-status)
     (setf (active-buffer window) buffer)))
 
 (defun %get-inactive-buffer ()
@@ -748,6 +748,18 @@ Deal with URL with the following rules:
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
+
+(defun print-status ()                  ; TODO: Call when setting modes.
+  (let ((buffer (current-buffer)))
+    (ffi-print-status
+     (current-window)
+     (format nil "[~{~a~^ ~}] ~a — ~a"
+             (mapcar (lambda (m) (str:replace-all "-mode" ""
+                                                  (str:downcase
+                                                   (class-name (class-of m)))))
+                     (modes buffer))
+             (url buffer)
+             (title buffer)))))
 
 (serapeum:export-always 'current-window)
 (defun current-window (&optional no-rescan)
@@ -836,6 +848,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-kill-browser ((browser browser)))
 (define-ffi-method ffi-initialize ((browser browser) urls startup-timestamp))
 (define-ffi-method ffi-inspector-show ((buffer buffer)))
+(define-ffi-method ffi-print-status ((window window) text))
 
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))

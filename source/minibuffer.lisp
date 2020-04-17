@@ -839,21 +839,8 @@ Untrusted content should be given as argument with a format string."
 
 (serapeum:export-always 'echo-dismiss)
 (defmethod echo-dismiss ()
-  ;; TODO: If we erase the document here, it will show a blank widget instead
-  ;; of the minibuffer when we don't fully hide it.  We can only erase the
-  ;; document when we have a mode-line we can fully hide the minibuffer.
-  ;; (erase-document minibuffer)
-  ;; TODO: We should only display this default text until we have a mode-line.
-  (let ((buffer (current-buffer)))
-    (%echo-status (format nil "[~{~a~^ ~}] ~a — ~a"
-                          (mapcar (lambda (m) (str:replace-all "-mode" ""
-                                                               (str:downcase
-                                                                (class-name (class-of m)))))
-                                  (modes buffer))
-                          (url buffer)
-                          (title buffer))
-                  ;; Don't add to the *Messages* buffer:
-                  :message nil)))
+  ;; Don't add to the *Messages* buffer:
+  (%echo-status "" :message nil))
 
 (declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
 (serapeum:export-always 'ring-insert-clipboard)
