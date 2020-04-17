@@ -161,7 +161,7 @@ identifier for every hinted element."
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "next-hint"))))
 
-(defun query-hints (prompt func)
+(defun query-hints (prompt function)
   (let* ((buffer (current-buffer))
          minibuffer)
      (setf minibuffer (make-minibuffer
@@ -187,7 +187,7 @@ identifier for every hinted element."
        (setf (completion-function minibuffer)
              (hint-completion-filter (elements-from-json elements-json)))
        (with-result (result (read-from-minibuffer minibuffer))
-         (funcall func result)))))
+         (funcall function result)))))
 
 (defun hint-completion-filter (hints)
   (lambda (input)
