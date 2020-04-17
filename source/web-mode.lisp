@@ -412,8 +412,9 @@ Otherwise go forward to the only child."
     (match (session-store-function *browser*)
       ((guard f f) (funcall f))))
   (echo "Finished loading: ~a." url)
-  ;; TODO: Wait some time before dismissing the minibuffer.
-  (echo-dismiss))
+  ;; TODO: Wait some time before dismissing the echo?
+  ;; (echo-dismiss)
+  )
 
 (defmethod object-string ((node htree:node))
   (object-string (when node (htree:data node))))

@@ -53,6 +53,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (defun dispatch-input-event (event buffer window printable-p)
   "Dispatch keys in `browser's `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
+  (echo-dismiss) ; Clean up message-view on keypress.
   (with-accessors ((key-stack key-stack)) *browser*
     (labels ((keyspecs (key &optional translated-key)
                (if translated-key
