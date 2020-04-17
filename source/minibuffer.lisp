@@ -2,9 +2,6 @@
 
 (in-package :next)
 
-;; TODO: We need to separate the minibuffer from the echo area.  The
-;; `show'/`hide' functions are not dealing well with `echo'/`echo-dismiss'.
-
 (declaim (type (list-of-characters) *word-separation-characters*))
 (defparameter *word-separation-characters* '(#\: #\/ #\- #\. #\Space #\ )
   "Characters delimiting words (space, colon, slash, dot, etc).")
@@ -62,8 +59,7 @@
        "M-u" #'minibuffer-unmark-all))
     ;; TODO: We could have VI bindings for the minibuffer too.
     ;; But we need to make sure it's optional + to have an indicator
-    ;; for the mode.  This requires either a change of cursor or a
-    ;; echo area separate from the minibuffer.
+    ;; for the mode.
     )))
 
 (defclass-export minibuffer (buffer)
@@ -202,7 +198,7 @@ This should not rely on the minibuffer's content.")
                           (input-prompt nil explicit-input-prompt)
                           (input-buffer nil explicit-input-buffer)
                           (invisible-input-p nil explicit-invisible-input-p)
-                          (show-completion-count t explicit-show-completion-count)
+                          (show-completion-count t explicit-show-completion-count) ; TODO: Rename to hide-completion-count and reverse default value.
                           (history nil explicit-history)
                           (multi-selection-p nil explicit-multi-selection-p))
   "See the `minibuffer' class for the argument documentation."
@@ -785,11 +781,12 @@ Untrusted content should be given as argument with a format string."
         (unless (str:emptyp text)
           (log:info "~s" text)))
     (error ()
-      (log:warn "Failed to echo these args: ~s~&Possible improvements:
-- pass multiple arguments and use format strings for untrusted content. Don't pre-construct a single string that could contain tildes.
-  example: do (echo \"directory is\ ~~a \"~~/Downloads/\")
+      (log:warn "Failed to echo these args: ~s
+Possible improvements:
+- Pass multiple arguments and use format strings for untrusted content. Don't pre-construct a single string that could contain tildes.
+  Example: do (echo \"directory is\ ~~a \"~~/Downloads/\")
            instead of (echo \"directory is ~~/Downloads/\")
-- use echo-safe or use the ~~s directive directly." args))))
+- Use `echo-safe' or use the ~~s directive directly." args))))
 
 (serapeum:export-always 'echo-safe)
 (defun echo-safe (&rest args)
