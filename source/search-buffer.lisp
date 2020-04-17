@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(define-parenscript query-buffer (query (case-insensitive-p nil))
+(define-parenscript query-buffer (query (case-sensitive-p nil))
   (defvar *identifier* 0)
   (defvar *matches* (array))
   (defvar *nodes* (ps:new (-Object)))
@@ -46,7 +46,7 @@
 
   (defun get-substring-indices (query string)
     "Get the indices of all matching substrings."
-    (let ((rgx (ps:new (|RegExp| query (if (ps:lisp case-insensitive-p) "i" "")))))
+    (let ((rgx (ps:new (|RegExp| query (if (ps:lisp case-sensitive-p) "i" "")))))
       (loop with index = 0
             until (= index -1)
             do (setf index (ps:chain string (search rgx)))
@@ -130,7 +130,7 @@
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
-(defun match-completion-function (input &optional (buffers (list (current-buffer))) (case-insensitive-p nil))
+(defun match-completion-function (input &optional (buffers (list (current-buffer))) (case-sensitive-p nil))
   "Update the completions asynchronously via query-buffer."
   (when (> (length input) 2)
     (let ((input (str:replace-all " " " " input))
@@ -141,7 +141,7 @@
              (query-buffer
               :query input
               :buffer buffer
-              :case-insensitive-p case-insensitive-p
+              :case-sensitive-p case-sensitive-p
               :callback (lambda (result)
                           (let* ((matches (matches-from-json
                                            result buffer multi-buffer)))
@@ -162,14 +162,14 @@
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
   (remove-search-nodes))
 
-(define-command search-buffer (&key (case-insensitive-p t explicit-case-p))
+(define-command search-buffer (&key (case-sensitive-p nil explicit-case-p))
   "Start a search on the current buffer."
   (apply #'search-over-buffers (list (current-buffer))
          (if explicit-case-p
-             `(:case-insensitive-p ,case-insensitive-p)
+             `(:case-sensitive-p ,case-sensitive-p)
              '())))
 
-(define-command search-buffers (&key (case-insensitive-p t explicit-case-p))
+(define-command search-buffers (&key (case-sensitive-p nil explicit-case-p))
   "Show a prompt in the minibuffer that allows to choose
 one or more buffers, and then start a search prompt that
 searches over the selected buffer(s)."
@@ -180,10 +180,10 @@ searches over the selected buffer(s)."
                           :completion-function (buffer-completion-filter))))
     (apply #'search-over-buffers buffers
            (if explicit-case-p
-               `(:case-insensitive-p ,case-insensitive-p)
+               `(:case-sensitive-p ,case-sensitive-p)
                '()))))
 
-(defun search-over-buffers (buffers &key (case-insensitive-p t explicit-case-p))
+(defun search-over-buffers (buffers &key (case-sensitive-p nil explicit-case-p))
   "Add search boxes for a given search string over the
 provided buffers."
   (let* ((num-buffers (list-length buffers))
@@ -196,8 +196,8 @@ provided buffers."
                       :completion-function
                       #'(lambda (input)
                           (unless explicit-case-p
-                            (setf case-insensitive-p (str:downcasep input)))
-                          (match-completion-function input buffers case-insensitive-p))
+                            (setf case-sensitive-p (str:downcasep input)))
+                          (match-completion-function input buffers case-sensitive-p))
                       :changed-callback
                       (let ((subsequent-call nil))
                         (lambda ()
