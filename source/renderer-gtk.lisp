@@ -90,7 +90,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                                     :default-height 768))
     (setf box-layout (make-instance 'gtk:gtk-box
                                     :orientation :vertical
-                                    :spacing 0))
+                                    :spacing 4))
     (setf minibuffer-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
@@ -122,7 +122,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
     (gtk:gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
     (setf (gtk:gtk-widget-size-request minibuffer-container)
-          (list -1 (status-buffer-height window)))
+          (list -1 0))
 
     (gtk:gtk-container-add gtk-object box-layout)
     (setf (slot-value *browser* 'last-active-window) window)
