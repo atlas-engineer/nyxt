@@ -50,6 +50,8 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (box-layout :accessor box-layout)
    (minibuffer-container :accessor minibuffer-container)
    (minibuffer-view :accessor minibuffer-view)
+   (status-container :accessor status-container)
+   (status-view :accessor status-view)
    (key-string-buffer :accessor key-string-buffer)))
 
 (define-class-type window)
@@ -74,7 +76,9 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (defparameter *buffer-class* 'gtk-buffer)
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (with-slots (gtk-object box-layout minibuffer-container minibuffer-view active-buffer
+  (with-slots (gtk-object box-layout active-buffer
+               minibuffer-container minibuffer-view
+               status-container status-view
                id key-string-buffer) window
     (setf id (get-unique-window-identifier *browser*))
     (setf gtk-object (make-instance 'gtk:gtk-window
@@ -87,15 +91,27 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (setf minibuffer-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
+    (setf status-container (make-instance 'gtk:gtk-box
+                                          :orientation :vertical
+                                          :spacing 0))
     (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-    (setf minibuffer-view (make-instance 'webkit:webkit-web-view))
     (setf active-buffer (make-instance *buffer-class*))
+
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
+
+    (setf status-view (make-instance 'webkit:webkit-web-view))
+    (gtk:gtk-box-pack-end box-layout status-container :expand nil)
+    (gtk:gtk-box-pack-start status-container status-view :expand t)
+    (setf (gtk:gtk-widget-size-request status-container)
+          (list -1 (status-buffer-height window)))
+
+    (setf minibuffer-view (make-instance 'webkit:webkit-web-view))
     (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
     (gtk:gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
     (setf (gtk:gtk-widget-size-request minibuffer-container)
           (list -1 (status-buffer-height window)))
+
     (gtk:gtk-container-add gtk-object box-layout)
     (setf (slot-value *browser* 'last-active-window) window)
     (gtk:gtk-widget-show-all gtk-object)
@@ -552,6 +568,13 @@ Warning: This behaviour may change in the future."
         t)
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
+
+(defmethod ffi-print-status ((window gtk-window) text)
+  (with-slots (status-view) window
+    (webkit2:webkit-web-view-evaluate-javascript
+     (status-view window)
+     (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
+                  (ps:lisp text))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; See https://github.com/Ferada/cl-cffi-gtk/issues/37.
