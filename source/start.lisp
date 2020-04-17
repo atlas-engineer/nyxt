@@ -195,7 +195,8 @@ next [options] [urls]")
       (xdg-config-home filename)))
 
 (defparameter *load-init-error-message* "Error: we could not load the init file")
-(defparameter *load-init-type-error-message* (str:concat *load-init-error-message* " because of a type error."))
+(defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
+                                                         " because of a type error"))
 
 (declaim (ftype (function (trivial-types:pathname-designator &key (:interactive t)))
                 load-lisp))
@@ -361,7 +362,7 @@ Otherwise bind socket."
           (setf *browser* (make-instance *browser-class*
                                          :startup-error-reporter-function
                                          (lambda () (error-in-new-window
-                                                     "Error in init file:"
+                                                     "*Init file errors*"
                                                      (format nil "~a" c)))
                                          :startup-timestamp startup-timestamp)))))
     (when (single-instance-p *browser*)
