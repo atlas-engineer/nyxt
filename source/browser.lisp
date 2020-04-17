@@ -753,18 +753,20 @@ Deal with URL with the following rules:
 
 (defun print-status ()                  ; TODO: Call when setting modes.
   (let ((buffer (current-buffer)))
-    (ffi-print-status
-     (current-window)
-     (format nil "[~{~a~^ ~}] ~a — ~a"
-             (mapcar (lambda (m) (str:replace-all "-mode" ""
-                                                  (str:downcase
-                                                   (class-name (class-of m)))))
-                     (modes buffer))
-             (url buffer)
-             (title buffer)))))
+    (when (and buffer (current-window))
+      (ffi-print-status
+       (current-window)
+       (format nil "[~{~a~^ ~}] ~a — ~a"
+               (mapcar (lambda (m) (str:replace-all "-mode" ""
+                                                    (str:downcase
+                                                     (class-name (class-of m)))))
+                       (modes buffer))
+               (url buffer)
+               (title buffer))))))
 
 (defun print-message (message)
-  (ffi-print-message (current-window) message))
+  (when (current-window)
+    (ffi-print-message (current-window) message)))
 
 (serapeum:export-always 'current-window)
 (defun current-window (&optional no-rescan)
@@ -777,9 +779,10 @@ Deal with URL with the following rules:
 If NO-RESCAN is non-nil, fetch the window from the `last-active-window' cache
 instead of asking the renderer for the active window.  It is faster but
 sometimes yields the wrong reasult."
-  (if (and no-rescan (slot-value *browser* 'last-active-window))
-      (slot-value *browser* 'last-active-window)
-      (ffi-window-active *browser*)))
+  (when *browser*
+    (if (and no-rescan (slot-value *browser* 'last-active-window))
+        (slot-value *browser* 'last-active-window)
+        (ffi-window-active *browser*))))
 
 (serapeum:export-always 'current-buffer)
 (defun current-buffer ()
