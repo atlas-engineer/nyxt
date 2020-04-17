@@ -68,6 +68,7 @@ The buffer is returned so that mode activation can be chained."
                          (funcall (constructor new-mode) new-mode))
                        (push new-mode (modes buffer))
                        (hooks:run-hook (enable-hook new-mode) new-mode))
+                     (print-status)
                      (log:debug "~a enabled." ',name))
                    (when existing-instance
                      (hooks:run-hook (disable-hook existing-instance) existing-instance)
@@ -75,6 +76,7 @@ The buffer is returned so that mode activation can be chained."
                        (funcall (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
                                                   (modes buffer)))
+                     (print-status)
                      (log:debug "~a disabled." ',name))))
              buffer)))))
 

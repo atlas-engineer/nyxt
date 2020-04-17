@@ -401,6 +401,7 @@ Otherwise go forward to the only child."
     ;; e.g. webkit_web_view_set_zoom_level.
     (unzoom-page :buffer buffer)
     (set-window-title (current-window) buffer)
+    (print-status)
     (htree:add-child (make-instance 'buffer-description
                                     :url url
                                     :title (title buffer))
