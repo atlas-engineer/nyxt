@@ -85,8 +85,10 @@ identifier for every hinted element."
                        when (and (element-drawable-p (elt elements i))
                                  (element-in-view-port-p (elt elements i)))
                        do (hint-add (elt elements i) (elt hints i))
-                       when (and (element-drawable-p (elt elements i))
-                                 (element-in-view-port-p (elt elements i)))
+                       when (or (and (element-drawable-p (elt elements i))
+                                     (ps:lisp annotate-full-document))
+                                (and (element-drawable-p (elt elements i))
+                                     (element-in-view-port-p (elt elements i))))
                        collect (object-create (elt elements i) (elt hints i)))))))
 
   (defun hints-determine-chars-length (length)
@@ -162,11 +164,9 @@ identifier for every hinted element."
       (setf (ps:@ e class-name) "next-hint"))))
 
 (defun query-hints (prompt function &key annotate-full-document)
-  (unless annotate-full-document
-    (print "ANNOTATE"))
   (let* ((buffer (current-buffer))
          minibuffer)
-    (with-result (elements-json (add-element-hints))
+    (with-result (elements-json (add-element-hints :annotate-full-document annotate-full-document))
       (setf minibuffer (make-minibuffer
                         :input-prompt prompt
                         :history nil
