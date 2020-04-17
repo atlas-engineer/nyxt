@@ -49,8 +49,13 @@
 identifier for every hinted element."
     (ps:chain element (set-attribute "next-identifier" hint))
     (ps:let ((hint-element (hint-create-element element hint)))
-      ;; TODO: filter and add only drawable elements
       (ps:chain document body (append-child hint-element))))
+
+  (defun element-drawable-p (element)
+    (if (or (ps:chain element offset-width)
+            (ps:chain element offset-height)
+            (ps:chain element (get-client-rects) length))
+      t nil))
 
   (defun object-create (element hint)
     (cond ((equal "A" (ps:@ element tag-name))
@@ -69,7 +74,9 @@ identifier for every hinted element."
       (ps:chain |json|
                 (stringify
                  (loop for i from 0 to (- elements-length 1)
+                       when (element-drawable-p (elt elements i))
                        do (hint-add (elt elements i) (elt hints i))
+                       when (element-drawable-p (elt elements i))
                        collect (object-create (elt elements i) (elt hints i)))))))
 
   (defun hints-determine-chars-length (length)
