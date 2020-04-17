@@ -20,13 +20,16 @@
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
-   (status-buffer :accessor status-buffer
+   (status-buffer :accessor status-buffer ; TODO: Delete.
                   :initform (make-minibuffer)
                   :documentation "Buffer for displaying information such as
                   current URL or event messages.")
    (status-buffer-height :accessor status-buffer-height :initform 26
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
+   (message-buffer-height :accessor message-buffer-height :initform 26
+                         :type integer
+                         :documentation "The height of the message buffer in pixels.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
                            :type integer
                            :documentation "The height of the minibuffer when open.")
@@ -675,11 +678,10 @@ proceeding."
        (first (sort diff #'local-time:timestamp> :key #'last-access))))))
 
 (defmethod push-url-at-point ((buffer buffer) url)
-  ;; TODO: Use buffer local queue to avoid many/duplicate echo
-  (declare (ignore buffer))
-  (if (str:emptyp url)
-      (echo-dismiss)
-      (echo "→ ~a" url)))
+  (declare (ignore buffer))             ; TODO: Remove buffer argument?
+  (if (uiop:emptyp url)
+      (print-message "")
+      (print-message (str:concat "→ " url))))
 
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
@@ -760,6 +762,9 @@ Deal with URL with the following rules:
                      (modes buffer))
              (url buffer)
              (title buffer)))))
+
+(defun print-message (message)
+  (ffi-print-message (current-window) message))
 
 (serapeum:export-always 'current-window)
 (defun current-window (&optional no-rescan)
@@ -849,6 +854,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-initialize ((browser browser) urls startup-timestamp))
 (define-ffi-method ffi-inspector-show ((buffer buffer)))
 (define-ffi-method ffi-print-status ((window window) text))
+(define-ffi-method ffi-print-message ((window window) message))
 
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))
