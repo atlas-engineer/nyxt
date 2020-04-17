@@ -20,10 +20,6 @@
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
-   (status-buffer :accessor status-buffer ; TODO: Delete.
-                  :initform (make-minibuffer)
-                  :documentation "Buffer for displaying information such as
-                  current URL or event messages.")
    (status-buffer-height :accessor status-buffer-height :initform 26
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
