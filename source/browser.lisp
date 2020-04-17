@@ -729,7 +729,8 @@ Deal with URL with the following rules:
     (cond
       (bound-function
        (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
-       (funcall-safely bound-function :url url))
+       (funcall-safely bound-function :url url)
+       t)
       (is-new-window
        (log:debug "Load URL in new buffer: ~a" url)
        (open-urls (list url))
