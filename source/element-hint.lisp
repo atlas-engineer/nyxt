@@ -164,30 +164,28 @@ identifier for every hinted element."
 (defun query-hints (prompt function)
   (let* ((buffer (current-buffer))
          minibuffer)
-     (setf minibuffer (make-minibuffer
-                       :input-prompt prompt
-                       :history nil
-                       :completion-function
-                       (lambda (input) (declare (ignore input)))
-                       :changed-callback
-                       (let ((subsequent-call nil))
-                         (lambda ()
-                           ;; when the minibuffer initially appears, we don't
-                           ;; want update-selection-highlight-hint to scroll
-                           ;; but on subsequent calls, it should scroll
-                           (update-selection-highlight-hint
-                            :scroll subsequent-call
-                            :buffer buffer
-                            :minibuffer minibuffer)
-                           (setf subsequent-call t)))
-                       :cleanup-function
-                       (lambda ()
-                         (remove-element-hints :buffer buffer))))
-     (with-result (elements-json (add-element-hints))
-       (setf (completion-function minibuffer)
-             (hint-completion-filter (elements-from-json elements-json)))
-       (with-result (result (read-from-minibuffer minibuffer))
-         (funcall function result)))))
+    (with-result (elements-json (add-element-hints))
+      (setf minibuffer (make-minibuffer
+                        :input-prompt prompt
+                        :history nil
+                        :completion-function
+                        (hint-completion-filter (elements-from-json elements-json))
+                        :changed-callback
+                        (let ((subsequent-call nil))
+                          (lambda ()
+                            ;; when the minibuffer initially appears, we don't
+                            ;; want update-selection-highlight-hint to scroll
+                            ;; but on subsequent calls, it should scroll
+                            (update-selection-highlight-hint
+                             :scroll subsequent-call
+                             :buffer buffer
+                             :minibuffer minibuffer)
+                            (setf subsequent-call t)))
+                        :cleanup-function
+                        (lambda ()
+                          (remove-element-hints :buffer buffer))))
+      (with-result (result (read-from-minibuffer minibuffer))
+        (funcall function result)))))
 
 (defun hint-completion-filter (hints)
   (lambda (input)
