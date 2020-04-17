@@ -141,20 +141,16 @@ identifier for every hinted element."
     (ps:chain context (query-selector selector)))
 
   (defun update-hints ()
-    (ps:let* ((new-element
-                (qs document
-                    (ps:lisp (format
-                              nil
-                              "#next-hint-~a"
-                              (identifier link-hint))))))
-      (unless ((ps:@ new-element class-list contains) "next-highlight-hint")
-        (ps:let ((old-elements (qsa document ".next-highlight-hint")))
-          (ps:dolist (e old-elements)
-            (setf (ps:@ e class-name) "next-hint"))))
-      (setf (ps:@ new-element class-name) "next-hint next-highlight-hint")
-      (if (ps:lisp scroll)
-          (ps:chain new-element (scroll-into-view
-                                 (ps:create block "nearest"))))))
+    (ps:let* ((new-element (qs document (ps:lisp (format nil "#next-hint-~a" (identifier link-hint))))))
+      (when new-element
+        (unless ((ps:@ new-element class-list contains) "next-highlight-hint")
+          (ps:let ((old-elements (qsa document ".next-highlight-hint")))
+            (ps:dolist (e old-elements)
+              (setf (ps:@ e class-name) "next-hint"))))
+        (setf (ps:@ new-element class-name) "next-hint next-highlight-hint")
+        (if (ps:lisp scroll)
+            (ps:chain new-element (scroll-into-view
+                                   (ps:create block "nearest")))))))
 
   (update-hints))
 
@@ -186,6 +182,7 @@ identifier for every hinted element."
                         :cleanup-function
                         (lambda ()
                           (remove-element-hints :buffer buffer))))
+      ;; TODO: ADD offscreen hints in background from full document annotation
       (with-result (result (read-from-minibuffer minibuffer))
         (funcall function result)))))
 
@@ -294,8 +291,7 @@ identifier for every hinted element."
                                           (minibuffer (current-minibuffer))
                                           (buffer (current-buffer)))
   (let ((hint (flet ((hintp (hint-candidate)
-                       (if (typep hint-candidate
-                                  '(or link-hint button-hint match))
+                       (if (typep hint-candidate '(or link-hint button-hint match))
                            hint-candidate
                            nil)))
                 (if completions
@@ -311,9 +307,7 @@ identifier for every hinted element."
         (set-current-buffer (buffer hint))
         (setf buffer (buffer hint)))
       (if (or
-           ;; type link or button hint - these are single-buffer
            (not (slot-exists-p hint 'buffer))
-           ;; type match - is multi-buffer
            (and (slot-exists-p hint 'buffer)
                 (equal (buffer hint) buffer)))
           (highlight-selected-hint :buffer buffer
