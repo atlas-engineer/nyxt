@@ -3,7 +3,7 @@
 
 (in-package :next)
 
-(define-parenscript add-element-hints ()
+(define-parenscript add-element-hints (annotate-full-document)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
@@ -161,7 +161,9 @@ identifier for every hinted element."
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "next-hint"))))
 
-(defun query-hints (prompt function)
+(defun query-hints (prompt function &key annotate-full-document)
+  (unless annotate-full-document
+    (print "ANNOTATE"))
   (let* ((buffer (current-buffer))
          minibuffer)
     (with-result (elements-json (add-element-hints))
@@ -319,21 +321,25 @@ identifier for every hinted element."
                                    :scroll scroll)
           (remove-focus)))))
 
-(define-command follow-hint ()
+(define-command follow-hint (&key annotate-full-document)
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
-  (query-hints "Go to element:" '%follow-hint))
+  (query-hints "Go to element:" '%follow-hint
+               :annotate-full-document annotate-full-document))
 
-(define-command follow-hint-new-buffer ()
+(define-command follow-hint-new-buffer (&key annotate-full-document)
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
-  (query-hints "Open element in new buffer:" '%follow-hint-new-buffer))
+  (query-hints "Open element in new buffer:" '%follow-hint-new-buffer
+               :annotate-full-document annotate-full-document))
 
-(define-command follow-hint-new-buffer-focus ()
+(define-command follow-hint-new-buffer-focus (&key annotate-full-document)
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
-  (query-hints "Go to element in new buffer:" '%follow-hint-new-buffer-focus))
+  (query-hints "Go to element in new buffer:" '%follow-hint-new-buffer-focus
+               :annotate-full-document annotate-full-document))
 
-(define-command copy-hint-url ()
+(define-command copy-hint-url (&key annotate-full-document)
   "Show a set of element hints, and copy the URL of the user inputted one."
-  (query-hints "Copy element URL:" '%copy-hint-url)) 
+  (query-hints "Copy element URL:" '%copy-hint-url
+               :annotate-full-document annotate-full-document))
