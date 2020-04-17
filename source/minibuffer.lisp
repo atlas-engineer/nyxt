@@ -752,45 +752,29 @@ if there is one such."
   (update-selection-highlight-hint :follow t :scroll t))
 
 (defun %echo-status (text &key (message (list text))
-                          ;; Need to ignore RPC errors in case platform port is
-                          ;; not available and we use this function before
-                          ;; checking for it.
-                            (window (ignore-errors (when *browser* (current-window))))
-                            (status-buffer (when window (status-buffer window))))
+                            (window (current-window)))
   "Echo TEXT in the status buffer.
+When given, add MESSAGE to the `browser's `message-content' (for the `messages' buffer).
 MESSAGE is a cl-markup list."
-  (if (and status-buffer window)
-      (progn
-        (unless (or (null message)
-                    (equal message '("")))
-          (push `(:p (:i "["
-                         ,(local-time:format-timestring
-                           nil
-                           (local-time:now)
-                           :format local-time:+asctime-format+)
-                         "]")
-                     " "
-                     ,@message)
-                (messages-content *browser*)))
-        (unless (active-minibuffers window)
-          (erase-document status-buffer)
-          (let ((style (cl-css:css
-                        `((body :margin "0"
-                                :padding "0 6px")
-                          (p :margin "0")))))
-            (setf (content status-buffer)
-                  (markup:markup
-                   (:head (:style style)
-                          (:style (minibuffer-line-style status-buffer)))
-                   (:body
-                    (:p text)))))
-          (show :minibuffer status-buffer
-                :height (status-buffer-height window))))
-      (log:warn "Can't echo '~a' without status buffer or interface" text)))
+  (unless (or (null message)
+              (equal message '("")))
+    (push `(:p (:i "["
+                   ,(local-time:format-timestring
+                     nil
+                     (local-time:now)
+                     :format local-time:+asctime-format+)
+                   "]")
+               " "
+               ,@message)
+          (messages-content *browser*)))
+  ;; This function could be called before the renderer up.
+  (if window
+      (print-message text)
+      (log:info text)))
 
 (serapeum:export-always 'echo)
 (defun echo (&rest args)
-  "Echo ARGS in the status buffer.
+  "Echo ARGS in the message view.
 The first argument can be a format string and the following arguments will be
 interpreted by `format'.
 Untrusted content should be given as argument with a format string."
