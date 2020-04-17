@@ -55,7 +55,15 @@ identifier for every hinted element."
     (if (or (ps:chain element offset-width)
             (ps:chain element offset-height)
             (ps:chain element (get-client-rects) length))
-      t nil))
+        t nil))
+
+  (defun element-in-view-port-p (element)
+    (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
+      (if (and (>= (ps:chain rect top) 0)
+                 (>= (ps:chain rect left) 0)
+                 (<= (ps:chain rect right) (ps:chain window inner-width))
+                 (<= (ps:chain rect bottom) (ps:chain window inner-height)))
+        t nil)))
 
   (defun object-create (element hint)
     (cond ((equal "A" (ps:@ element tag-name))
