@@ -789,7 +789,7 @@ sometimes yields the wrong reasult."
   "Get the active buffer for the active window."
   (match (current-window)
     ((guard w w) (active-buffer w))
-    (_ (log:warn "No active window, picking last active buffer.")
+    (_ (log:debug "No active window, picking last active buffer.")
        (last-active-buffer *browser*))))
 
 (declaim (ftype (function (buffer)) set-current-buffer))
