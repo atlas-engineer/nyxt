@@ -46,7 +46,7 @@
 
   (defun get-substring-indices (query string)
     "Get the indices of all matching substrings."
-    (let ((rgx (ps:new (|RegExp| query (if (ps:lisp case-sensitive-p) "i" "")))))
+    (let ((rgx (ps:new (|RegExp| query (if (ps:lisp case-sensitive-p) "" "i")))))
       (loop with index = 0
             until (= index -1)
             do (setf index (ps:chain string (search rgx)))
@@ -196,7 +196,7 @@ provided buffers."
                       :completion-function
                       #'(lambda (input)
                           (unless explicit-case-p
-                            (setf case-sensitive-p (str:downcasep input)))
+                            (setf case-sensitive-p (not (str:downcasep input))))
                           (match-completion-function input buffers case-sensitive-p))
                       :changed-callback
                       (let ((subsequent-call nil))
