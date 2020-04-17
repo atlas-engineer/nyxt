@@ -157,13 +157,13 @@ very costly."
   (command-display command))
 
 (defun command-completion-filter ()
-  (let ((command-list
+  (let ((commands
          (sort (apply #'list-commands (mapcar (alex:compose #'class-name #'class-of)
                                               (modes (current-buffer))))
                (lambda (c1 c2)
                  (> (access-time c1) (access-time c2))))))
     (lambda (input)
-      (fuzzy-match input command-list))))
+      (fuzzy-match input commands))))
 
 (defmethod command-function ((command command))
   "Return the function associated to COMMAND.
