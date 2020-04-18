@@ -40,9 +40,16 @@ vi-normal-mode.")
         (setf (forward-input-events-p buffer) nil))))))
 
 ;; TODO: Move ESCAPE binding to the override map?
-(define-mode vi-insert-mode (vi-normal-mode)
+(define-mode vi-insert-mode ()
   "Enable VI-style modal bindings (insert mode)"
-  ((keymap-scheme
+  ;; We could inherit from vi-normal-mode to save the declaration of this slot
+  ;; but then (find-submode ... 'vi-normal-mode) would match vi-insert-mode.
+  ((previous-keymap-scheme-name
+    :accessor previous-keymap-scheme-name
+    :type keymap:scheme-name
+    :documentation "The previous keymap scheme that will be used when ending
+vi-normal-mode.")
+   (keymap-scheme
     :initform
     (define-scheme "vi"
       scheme:vi-insert
