@@ -108,7 +108,8 @@ it would not be very useful."
                         (history-data *browser*))
                        (lambda (x y)
                          (> (score-history-entry x)
-                            (score-history-entry y))))))
+                            (score-history-entry y)))))
+        (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
       (setf history (append prefix-urls history)))
     (lambda (input)
