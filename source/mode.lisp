@@ -184,9 +184,10 @@ It is run before the destructor.")
                                "m u" #'bookmark-url
                                "m d" #'bookmark-delete
                                "C-o" #'load-file
+                               ;; TODO: Use "f1 *" instead?
                                "C-h v" #'describe-variable
                                "C-h c" #'describe-command
-                               "C-h k" #'describe-command
+                               "C-h k" #'describe-key
                                "C-h b" #'describe-bindings
                                ":" #'execute-command
                                "M-:" #'command-evaluate
