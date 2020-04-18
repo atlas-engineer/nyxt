@@ -129,10 +129,6 @@ It is run before the destructor.")
                                "f1 c" #'describe-command
                                "f1 k" #'describe-key
                                "f1 b" #'describe-bindings
-                               "C-h v" #'describe-variable
-                               "C-h c" #'describe-command
-                               "C-h k" #'describe-key
-                               "C-h b" #'describe-bindings
                                "C-o" #'load-file
                                "C-i" #'autofill
                                "M-x" #'execute-command
