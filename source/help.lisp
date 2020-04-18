@@ -34,7 +34,7 @@
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :completion-function #'variable-completion-filter
-                        :input-prompt "Inspect variable")))
+                        :input-prompt "Describe variable")))
     (let* ((help-buffer (help-mode :activate t
                                    :buffer (make-buffer
                                             :title (str:concat "*Help-"
@@ -89,7 +89,7 @@
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :input-prompt "Inspect command"
+                        :input-prompt "Describe command"
                         :completion-function #'function-completion-filter)))
     (describe-command* input)))
 
