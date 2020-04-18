@@ -28,7 +28,7 @@ vi-normal-mode.")
     :initform
     (lambda (mode)
       (with-accessors ((buffer buffer)) mode
-        (let ((vi-insert (find-mode buffer 'vi-insert-mode)))
+        (let ((vi-insert (find-submode buffer 'vi-insert-mode)))
           (setf (previous-keymap-scheme-name mode)
                 (if vi-insert
                     (previous-keymap-scheme-name vi-insert)
@@ -70,7 +70,7 @@ vi-normal-mode.")
     :initform
     (lambda (mode)
       (with-accessors ((buffer buffer)) mode
-        (let ((vi-normal (find-mode buffer 'vi-normal-mode)))
+        (let ((vi-normal (find-submode buffer 'vi-normal-mode)))
           (setf (previous-keymap-scheme-name mode)
                 (if vi-normal
                     (previous-keymap-scheme-name vi-normal)
