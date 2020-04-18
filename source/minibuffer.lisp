@@ -250,14 +250,9 @@ calls, such as invoking `minibuffer-history'."))
                  `(:multi-selection-p ,multi-selection-p)
                  '()))))
 
-(defmethod (setf input-buffer) (value (minibuffer minibuffer))
-  "Reset the minibuffer state on every input change.
-  This is necessary or else completion cursor / head could be beyond
-  the updated list length."
-  (with-slots (completion-function completions input-buffer
-               empty-complete-immediate completion-cursor completion-head)
+(defmethod update-candidates ((minibuffer minibuffer))
+  (with-slots (completion-function completions input-buffer empty-complete-immediate )
       minibuffer
-    (setf input-buffer value)
     (if completion-function
         (setf completions (funcall completion-function input-buffer))
         (setf completions nil))
@@ -265,7 +260,15 @@ calls, such as invoking `minibuffer-history'."))
                (not (str:emptyp input-buffer)))
       ;; Don't add input-buffer to completions that don't accept arbitrary
       ;; inputs (i.e. empty-complete-immediate is nil).
-      (push input-buffer completions))
+      (push input-buffer completions))))
+
+(defmethod (setf input-buffer) (value (minibuffer minibuffer))
+  "Reset the minibuffer state on every input change.
+  This is necessary or else completion cursor / head could be beyond
+  the updated list length."
+  (with-slots (input-buffer completion-cursor completion-head) minibuffer
+    (setf input-buffer value)
+    (update-candidates minibuffer)
     (setf completion-cursor 0)
     (setf completion-head 0)))
 
@@ -392,8 +395,7 @@ calls, such as invoking `minibuffer-history'."))
 
 (defmethod setup-default ((minibuffer minibuffer))
   (erase-document minibuffer)
-  ;; Invoke updating of the minibuffer by setf'ing the input-buffer
-  (setf (input-buffer minibuffer) (input-buffer minibuffer))
+  (update-candidates minibuffer)
   (setf (input-cursor-position minibuffer) 0)
   (setf (content minibuffer)
         (markup:markup
