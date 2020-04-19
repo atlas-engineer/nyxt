@@ -55,6 +55,7 @@
        "C-v" #'minibuffer-paste
        "C-y" #'minibuffer-paste
        "C-w" #'copy-candidate
+       "C-c" #'copy-candidate
        "tab" #'insert-candidate
        "M-h" #'minibuffer-history
        "C-space" #'minibuffer-toggle-mark
