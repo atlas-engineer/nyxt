@@ -53,10 +53,10 @@
        "C-f" #'search-buffer
        "M-f" #'remove-search-hints
        "C-." #'jump-to-heading
-       "M-s->" #'scroll-to-bottom
-       "M-s-<" #'scroll-to-top
-       "M->" #'scroll-to-bottom
-       "M-<" #'scroll-to-top
+       "end" #'scroll-to-bottom
+       "home" #'scroll-to-top
+       "C-down" #'scroll-to-bottom
+       "C-up" #'scroll-to-top
        "M-v" #'scroll-page-up
        "C-w" #'copy-url
        "M-w" #'copy-title
