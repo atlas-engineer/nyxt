@@ -60,7 +60,26 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
                      :initform #'format-status
                      :type (function (window) string)
                      :documentation "Function of a window argument that returns
-a string to be printed in the status view.")
+a string to be printed in the status view.
+
+Example formatter that prints the buffer indices over the total number of buffers:
+
+\(defun my-format-status (window)
+  (declare (ignore window))
+  (let* ((buffer (current-buffer))
+         (buffer-count (position buffer
+                                 (sort (alexandria:hash-table-values (buffers *browser*))
+                                       #'<
+                                       :key #'id))))
+    (format nil \"[~{~a~^ ~}] (~a/~a) ~a — ~a\"
+            (mapcar (lambda (m) (str:replace-all \"-mode\" \"\"
+                                                 (str:downcase
+                                                  (class-name (class-of m)))))
+                    (modes buffer))
+            buffer-count
+            (hash-table-count (buffers *browser*))
+            (url buffer)
+            (title buffer))))")
    (window-delete-hook :accessor window-delete-hook
                        :initform (make-hook-window)
                        :type hook-window
