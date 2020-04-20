@@ -109,10 +109,16 @@ deprecated and by what in the docstring."
     symbols))
 
 (defun package-variables ()
-  (remove-if (complement #'boundp) (package-defined-symbols)))
+  "Return the list of variable symbols in `:next'."
+  (delete-if (complement #'boundp) (package-defined-symbols)))
 
-(defun package-functions ()             ; TODO: Unused.  Remove?
-  (remove-if (complement #'fboundp) (package-defined-symbols)))
+(defun package-functions ()
+  "Return the list of function symbols in `:next'."
+  (delete-if (complement #'fboundp) (package-defined-symbols)))
+
+(defun package-classes ()
+  "Return the list of class symbols in `:next'."
+  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols)))
 
 (defun package-methods ()               ; TODO: Unused.  Remove?
   (loop for sym in (package-defined-symbols)

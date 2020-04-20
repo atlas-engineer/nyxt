@@ -17,15 +17,25 @@
        "k" #'scroll-up
        "j" #'scroll-down)))))
 
-(defun package-symbols (p)
-  (let (l) (do-symbols (s p l)
-             (push s l))))
+(defun variable-completion-filter ()
+  (let ((variables (package-variables)))
+    (lambda (input)
+      (fuzzy-match input variables))))
 
-(defun variable-completion-filter (input)
-  (fuzzy-match input (package-variables)))
+(defun function-completion-filter ()
+  (let ((functions (package-functions)))
+    (lambda (input)
+      (fuzzy-match input functions))))
 
-(defun function-completion-filter (input)        ; TODO: Use `command-completion-filter'? And show packages?
-  (fuzzy-match input (list-commands)))
+(defun class-completion-filter ()
+  (let ((classes (package-classes)))
+    (lambda (input)
+      (fuzzy-match input classes))))
+
+(defun command-completion-filter ()        ; TODO: Use `command-completion-filter'? And show packages?
+  (let ((commands (list-commands)))
+    (lambda (input)
+      (fuzzy-match input commands))))
 
 ;; TODO: This is barely useful as is since we don't have many globals.  We need to
 ;; augment the latter function so that we can inspect classes like browser.
@@ -33,7 +43,7 @@
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :completion-function #'variable-completion-filter
+                        :completion-function (variable-completion-filter)
                         :input-prompt "Describe variable")))
     (let* ((help-buffer (help-mode :activate t
                                    :buffer (make-buffer
@@ -84,13 +94,39 @@
     (ffi-buffer-evaluate-javascript help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
-;; TODO: Have both "function-inspect" and "describe-command"?
-(define-command describe-command ()
+(define-command describe-function ()    ; TODO: List methods as well.
   "Inspect a function and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
+                        :input-prompt "Describe function"
+                        :completion-function (function-completion-filter))))
+    (let* ((help-buffer (help-mode :activate t
+                                   :buffer (make-buffer
+                                            :title (str:concat "*Help-"
+                                                               (symbol-name input)
+                                                               "*"))))
+           (help-contents (markup:markup
+                           (:h1 (symbol-name input))
+                           (:p (documentation input 'function))
+                           (:h2 "Argument list")
+                           (:p (mopu:function-arglist input))
+                           #+sbcl
+                           (markup:markup
+                            (:h2 "Type")
+                            (:p (format nil "~s" (sb-introspect:function-type input))))))
+           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                     (ps:lisp help-contents)))))
+      (ffi-buffer-evaluate-javascript help-buffer insert-help)
+      (set-current-buffer help-buffer))))
+
+(define-command describe-command ()
+  "Inspect a command and show it in a help buffer.
+A command is a special kind of function that can be called with
+`execute-command' and can be bound to a key."
+  (with-result (input (read-from-minibuffer
+                       (make-minibuffer
                         :input-prompt "Describe command"
-                        :completion-function #'function-completion-filter)))
+                        :completion-function (command-completion-filter))))
     (describe-command* input)))
 
 (define-command describe-bindings ()
