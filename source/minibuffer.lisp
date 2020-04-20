@@ -186,7 +186,10 @@ This should not rely on the minibuffer's content.")
                                            :color "white")
                                   (.selected :background-color "gray"
                                              :color "white")))
-                     :documentation "The CSS applied to a minibuffer when it is set-up.")))
+                     :documentation "The CSS applied to a minibuffer when it is set-up."))
+  (:documentation "The minibuffer is the interface for user interactions.  Each
+prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
+calls, such as invoking `minibuffer-history'."))
 
 (serapeum:export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
