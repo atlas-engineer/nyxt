@@ -254,7 +254,7 @@ calls, such as invoking `minibuffer-history'."))
   (with-slots (completion-function completions input-buffer empty-complete-immediate )
       minibuffer
     (if completion-function
-        (setf completions (funcall completion-function input-buffer))
+        (setf completions (funcall-safely completion-function input-buffer))
         (setf completions nil))
     (when (and empty-complete-immediate
                (not (str:emptyp input-buffer)))
@@ -322,7 +322,7 @@ calls, such as invoking `minibuffer-history'."))
   (handler-case
       (progn
         (match (setup-function minibuffer)
-          ((guard f f) (funcall f minibuffer)))
+          ((guard f f) (funcall-safely f minibuffer)))
         (state-changed minibuffer)
         (update-display minibuffer))
     (error (c)
@@ -352,18 +352,18 @@ calls, such as invoking `minibuffer-history'."))
                                               (str:replace-all " " " " completion)
                                               completion))
                      completions))
-       (funcall callback (if multi-selection-p
-                             completions
-                             (first completions))))
+       (funcall-safely callback (if multi-selection-p
+                                    completions
+                                    (first completions))))
       (nil (when invisible-input-p
-             (funcall callback (str:replace-all " " " " input-buffer))))))
+             (funcall-safely callback (str:replace-all " " " " input-buffer))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
   (with-slots (callback) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (funcall callback normalized-input)))
+      (funcall-safely callback normalized-input)))
   (quit-minibuffer minibuffer))
 
 (defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
@@ -376,7 +376,7 @@ calls, such as invoking `minibuffer-history'."))
 (define-command cancel-input (&optional (minibuffer (current-minibuffer)))
   "Close the minibuffer query without further action."
   (match (cleanup-function minibuffer)
-    ((guard f f) (funcall f)))
+    ((guard f f) (funcall-safely f)))
   (hide minibuffer))
 
 (serapeum:export-always 'erase-input)
@@ -719,7 +719,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (defmethod state-changed ((minibuffer minibuffer))
   (when (changed-callback minibuffer)
-    (funcall (changed-callback minibuffer))))
+    (funcall-safely (changed-callback minibuffer))))
 
 (define-command select-next (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer."

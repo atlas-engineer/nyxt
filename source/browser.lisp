@@ -562,7 +562,7 @@ The handlers take the `download-manager:download' class instance as argument.")
 If empty, the history data is initialized with `history-restore-function'."
   (when (and (null (slot-value browser 'history-data))
              (history-restore-function browser))
-    (funcall (history-restore-function browser)))
+    (funcall-safely (history-restore-function browser)))
   (slot-value browser 'history-data))
 
 (defmethod (setf history-data) (value (browser browser))
@@ -571,14 +571,14 @@ Persist the `history-data' slot from BROWSER to `history-path' with
 `history-store-function'."
   (setf (slot-value browser 'history-data) value)
   (match (history-store-function browser)
-    ((guard f f) (funcall f))))
+    ((guard f f) (funcall-safely f))))
 
 (defmethod bookmarks-data ((browser browser))
   "Return the `bookmarks-data' slot from BROWSER.
 If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
   (when (and (null (slot-value browser 'bookmarks-data))
              (bookmarks-restore-function browser))
-    (funcall (bookmarks-restore-function browser)))
+    (funcall-safely (bookmarks-restore-function browser)))
   (slot-value browser 'bookmarks-data))
 
 (defmethod (setf bookmarks-data) (value (browser browser))
@@ -587,7 +587,7 @@ Persist the `bookmarks-data' slot from BROWSER to `bookmarks-path' with
 `bookmarks-store-function'."
   (setf (slot-value browser 'bookmarks-data) value)
   (match (bookmarks-store-function browser)
-    ((guard f f) (funcall f))))
+    ((guard f f) (funcall-safely f))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
@@ -797,7 +797,7 @@ Deal with URL with the following rules:
     (when window
       (ffi-print-status
        window
-       (funcall (status-formatter window) window)))))
+       (funcall-safely (status-formatter window) window)))))
 
 (defun print-message (message)
   (when (current-window)

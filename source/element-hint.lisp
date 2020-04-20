@@ -184,7 +184,7 @@ identifier for every hinted element."
                           (remove-element-hints :buffer buffer))))
       ;; TODO: ADD offscreen hints in background from full document annotation
       (with-result (result (read-from-minibuffer minibuffer))
-        (funcall function result)))))
+        (funcall-safely function result)))))
 
 (defun hint-completion-filter (hints)
   (lambda (input)

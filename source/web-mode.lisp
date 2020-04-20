@@ -410,7 +410,7 @@ Otherwise go forward to the only child."
     (when url
       (history-add url :title (title buffer)))
     (match (session-store-function *browser*)
-      ((guard f f) (funcall f))))
+      ((guard f f) (funcall-safely f))))
   (echo "Finished loading: ~a." url)
   ;; TODO: Wait some time before dismissing the echo?
   ;; (echo-dismiss)
