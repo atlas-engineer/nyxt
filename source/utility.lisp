@@ -143,13 +143,35 @@ from a binary) then any condition is logged instead of triggering the debugger."
         (setf *renderer-class*
               (intern (str:replace-all "-BROWSER" "" (symbol-name found-renderer-class)))))))
 
+(serapeum:export-always '%slot-default)
 (serapeum:export-always 'define-configuration)
 (defmacro define-configuration (super &body slots)
+  "Helper macro to customize class slots.
+It generates a user-SUPER subclass of SUPER.
+It binds `*SUPER-class*' to this newly generated class.
+
+The `%slot-default' variable is replaced by the slot initform.
+
+Example:
+
+\(define-configuration buffer
+  (default-modes (append '(vi-normal-mode) %slot-default)))"
   (let* ((name (intern (str:concat "USER-" (symbol-name super))))
          (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
          (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
     `(progn
        (defclass ,name (,super)
-         ,(loop for slot in (car slots)
-                collect (list (car slot) :initform (cadr slot))))
+         ,(loop with super-class = (closer-mop:ensure-finalized (find-class super))
+                for slot in (car slots)
+                for known-slot? = (find (car slot) (mopu:slot-names (closer-mop:ensure-finalized (find-class super))))
+                for initform = (and known-slot?
+                                    (getf (mopu:slot-properties super-class (car slot))
+                                          :initform))
+                if known-slot?
+                  collect (list (car slot) :initform `(funcall (lambda (%slot-default)
+                                                                 (declare (ignorable %slot-default))
+                                                                 ,(cadr slot))
+                                                               ,initform))
+                else do
+                  (log:warn "Undefined slot ~a in ~a" (car slot) super)))
        (setf ,configured-class ',name))))
