@@ -5,7 +5,14 @@
 (in-package :next/vi-mode)
 
 (define-mode vi-normal-mode ()
-  "Enable VI-style modal bindings (normal mode)"
+  "Enable VI-style modal bindings (normal mode).
+To enable these bindings by default, add the mode to the list of default modes
+in your configuration file.
+
+Example:
+
+\(define-configuration buffer
+  ((default-modes (append '(vi-normal-mode) %slot-default))))"
   ((previous-keymap-scheme-name
     :accessor previous-keymap-scheme-name
     :type keymap:scheme-name
