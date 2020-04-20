@@ -73,21 +73,18 @@
                                          (list (first pair)
                                                (keymap:name (second pair))))
                                        key-keymap-pairs))
+         (source-file (getf (getf (swank:find-definition-for-thing (command-function command))
+                                  :location)
+                            :file))
          (help-contents (markup:markup
                          (:h1 (symbol-name (sym command)))
-                         (:h2 "Documentation")
                          (:p (write-to-string
                               ;; TODO: This only display the first method, i.e. the first command of one of the modes.
                               ;; Ask for modes instead?
-                              (documentation (command-function command)
-                                             t)))
-                         (:p "Bindings: "
-                             (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-                         (:p "Source file: "
-                             (getf (getf (swank:find-definition-for-thing (command-function command))
-                                         :location)
-                                   :file))
-                         (:h2 "Source:")
+                              (documentation (command-function command) t)))
+                         (:h2 "Bindings: "
+                              (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
+                         (:h2 (format nil "Source (~a): " source-file))
                          (:pre (:code (write-to-string (sexp command))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
