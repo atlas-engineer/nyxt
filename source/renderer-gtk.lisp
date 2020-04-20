@@ -594,11 +594,14 @@ Warning: This behaviour may change in the future."
                     (ps:lisp text)))))))
 
 (defmethod ffi-print-message ((window gtk-window) text)
-  (with-slots (message-view) window
-    (webkit2:webkit-web-view-evaluate-javascript
-     (message-view window)
-     (ps:ps (setf (ps:@ document Body |innerHTML|)
-                  (ps:lisp text))))))
+  (let ((text (markup:markup
+               (:head (:style (message-buffer-style window)))
+               (:body text))))
+    (with-slots (message-view) window
+      (webkit2:webkit-web-view-evaluate-javascript
+       (message-view window)
+       (ps:ps (setf (ps:@ document Body |innerHTML|)
+                    (ps:lisp text)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; See https://github.com/Ferada/cl-cffi-gtk/issues/37.
