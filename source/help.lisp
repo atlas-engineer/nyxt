@@ -83,7 +83,7 @@
                             :file))
          (help-contents (markup:markup
                          (:h1 (symbol-name (sym command)))
-                         (:p (write-to-string
+                         (:p (:pre ; See describe-slot* for why we use :pre.
                               ;; TODO: This only displays the first method,
                               ;; i.e. the first command of one of the modes.
                               ;; Ask for modes instead?
