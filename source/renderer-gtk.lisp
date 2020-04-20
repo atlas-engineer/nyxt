@@ -584,11 +584,14 @@ Warning: This behaviour may change in the future."
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
 (defmethod ffi-print-status ((window gtk-window) text)
-  (with-slots (status-view) window
-    (webkit2:webkit-web-view-evaluate-javascript
-     (status-view window)
-     (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
-                  (ps:lisp text))))))
+  (let ((text (markup:markup
+               (:head (:style (status-buffer-style window)))
+               (:body text))))
+    (with-slots (status-view) window
+      (webkit2:webkit-web-view-evaluate-javascript
+       (status-view window)
+       (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
+                    (ps:lisp text)))))))
 
 (defmethod ffi-print-message ((window gtk-window) text)
   (with-slots (message-view) window
