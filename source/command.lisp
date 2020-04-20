@@ -204,7 +204,7 @@ This function can be `funcall'ed."
                     (pkg command))))
 
 (defmemo command-display (command)
-  ;; Use `(current-window :no-recan)' or else the minibuffer will stutter
+  ;; Use `(current-window :no-rescan)' or else the minibuffer will stutter
   ;; because of the RPC calls.
   (let* ((buffer (active-buffer (current-window :no-rescan)))
          (scheme-name (keymap-scheme-name buffer))

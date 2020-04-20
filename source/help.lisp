@@ -37,7 +37,7 @@
     (lambda (input)
       (fuzzy-match input slots))))
 
-(defun command-completion-filter ()        ; TODO: Use `command-completion-filter'? And show packages?
+(defun command-completion-filter ()
   (let ((commands (list-commands)))
     (lambda (input)
       (fuzzy-match input commands))))
@@ -84,7 +84,8 @@
          (help-contents (markup:markup
                          (:h1 (symbol-name (sym command)))
                          (:p (write-to-string
-                              ;; TODO: This only display the first method, i.e. the first command of one of the modes.
+                              ;; TODO: This only displays the first method,
+                              ;; i.e. the first command of one of the modes.
                               ;; Ask for modes instead?
                               (documentation (command-function command) t)))
                          (:h2 "Bindings: "
@@ -140,7 +141,7 @@ A command is a special kind of function that can be called with
                         :completion-function (command-completion-filter))))
     (describe-command* input)))
 
-(defun describe-slot* (slot class)      ; TODO: Adapt
+(defun describe-slot* (slot class)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
   (let ((props (mopu:slot-properties (find-class class) slot)))
     (markup:markup
      (:ul
