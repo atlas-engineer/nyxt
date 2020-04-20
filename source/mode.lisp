@@ -126,7 +126,9 @@ It is run before the destructor.")
                                "C-t" #'make-buffer-focus
                                "C-m u" #'bookmark-url
                                "f1 v" #'describe-variable
+                               "f1 f" #'describe-function
                                "f1 c" #'describe-command
+                               "f1 C" #'describe-class
                                "f1 k" #'describe-key
                                "f1 b" #'describe-bindings
                                "C-o" #'load-file
@@ -156,7 +158,9 @@ It is run before the destructor.")
                                "C-t" #'make-buffer-focus
                                "C-m u" #'bookmark-url
                                "C-h v" #'describe-variable
+                               "C-h f" #'describe-function
                                "C-h c" #'describe-command
+                               "C-h C" #'describe-class
                                "C-h k" #'describe-key
                                "C-h b" #'describe-bindings
                                "C-o" #'load-file
@@ -186,7 +190,9 @@ It is run before the destructor.")
                                "C-o" #'load-file
                                ;; TODO: Use "f1 *" instead?
                                "C-h v" #'describe-variable
+                               "C-h f" #'describe-function
                                "C-h c" #'describe-command
+                               "C-h C" #'describe-class
                                "C-h k" #'describe-key
                                "C-h b" #'describe-bindings
                                ":" #'execute-command
