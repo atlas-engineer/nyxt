@@ -26,9 +26,11 @@
    (status-buffer-style :accessor status-buffer-style :initform
                         (cl-css:css
                          '((body
-                            :background "rgb(121, 121, 121)"
-                            :color "white"
+                            :background "rgb(224, 224, 224)"
+                            :font-size "12px"
+                            :color "rgb(32, 32, 32)"
                             :padding 0
+                            :padding-left "4px"
                             :margin 0))))
    (message-buffer-height :accessor message-buffer-height :initform 16
                           :type integer
