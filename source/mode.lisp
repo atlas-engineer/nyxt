@@ -131,6 +131,7 @@ It is run before the destructor.")
                                "f1 f" #'describe-function
                                "f1 c" #'describe-command
                                "f1 C" #'describe-class
+                               "f1 s" #'describe-slot
                                "f1 k" #'describe-key
                                "f1 b" #'describe-bindings
                                "C-o" #'load-file
@@ -163,6 +164,7 @@ It is run before the destructor.")
                                "C-h f" #'describe-function
                                "C-h c" #'describe-command
                                "C-h C" #'describe-class
+                               "C-h s" #'describe-slot
                                "C-h k" #'describe-key
                                "C-h b" #'describe-bindings
                                "C-o" #'load-file
@@ -195,6 +197,7 @@ It is run before the destructor.")
                                "C-h f" #'describe-function
                                "C-h c" #'describe-command
                                "C-h C" #'describe-class
+                               "C-h s" #'describe-slot
                                "C-h k" #'describe-key
                                "C-h b" #'describe-bindings
                                ":" #'execute-command
