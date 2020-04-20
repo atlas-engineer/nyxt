@@ -141,12 +141,14 @@ A command is a special kind of function that can be called with
                         :completion-function (command-completion-filter))))
     (describe-command* input)))
 
-(defun describe-slot* (slot class)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
+(defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
   (let ((props (mopu:slot-properties (find-class class) slot)))
     (markup:markup
      (:ul
       (:li slot)
       (:ul
+       (when mention-class-p
+         (list (markup:markup (:li (format nil "Class: ~s" class)))))
        (:li (format nil "Type: ~s" (getf props :type))) ; TODO: Don't print if unspecified.
        (:li (format nil "Documentation: ~a" (getf props :documentation))) ; TODO: Don't print if unspecified.
        (:li "Default value: " (:pre (:code (write-to-string (getf props :initform))))))))))
@@ -187,7 +189,8 @@ A command is a special kind of function that can be called with
                                                                (symbol-name (name input))
                                                                "*"))))
 
-           (help-contents (describe-slot* (name input) (class-sym input)))
+           (help-contents (describe-slot* (name input) (class-sym input)
+                                          :mention-class-p t))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help)
