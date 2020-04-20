@@ -90,7 +90,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                                     :default-height 768))
     (setf box-layout (make-instance 'gtk:gtk-box
                                     :orientation :vertical
-                                    :spacing 4))
+                                    :spacing 0))
     (setf minibuffer-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
