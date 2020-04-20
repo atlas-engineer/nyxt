@@ -158,7 +158,9 @@ A command is a special kind of function that can be called with
                (list (markup:markup (:li "Default value: " (:pre (:code initform-string)))))
                (list (markup:markup (:li "Default value: " (:code initform-string)))))))
        (when (getf props :documentation)
-         (list (markup:markup (:li "Documentation: " (getf props :documentation))))))))))
+         ;; We use :pre for documentation so that code samples get formatted properly.
+         ;; TODO: Parse docstrings and highlight code samples.
+         (list (markup:markup (:li "Documentation: " (:pre (getf props :documentation)))))))))))
 
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
