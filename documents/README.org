@@ -203,7 +203,7 @@ Start your Lisp and run the following commands:
 
 #+NAME: compile
 #+BEGIN_SRC lisp
-(asdf:make :next/gtk)
+(asdf:make :next/gtk-application)
 #+END_SRC
 
 your Lisp interpreter will have produced an executable in the
@@ -212,7 +212,7 @@ version like this:
 
 #+NAME: compile
 #+BEGIN_SRC lisp
-(asdf:make :next/qt)
+(asdf:make :next/qt-application)
 #+END_SRC
 
 ** Run from Source
