@@ -106,17 +106,17 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
 
-    (setf status-view (make-instance 'webkit:webkit-web-view))
-    (gtk:gtk-box-pack-end box-layout status-container :expand nil)
-    (gtk:gtk-box-pack-start status-container status-view :expand t)
-    (setf (gtk:gtk-widget-size-request status-container)
-          (list -1 (status-buffer-height window)))
-
     (setf message-view (make-instance 'webkit:webkit-web-view))
     (gtk:gtk-box-pack-end box-layout message-container :expand nil)
     (gtk:gtk-box-pack-start message-container message-view :expand t)
     (setf (gtk:gtk-widget-size-request message-container)
           (list -1 (message-buffer-height window)))
+
+    (setf status-view (make-instance 'webkit:webkit-web-view))
+    (gtk:gtk-box-pack-end box-layout status-container :expand nil)
+    (gtk:gtk-box-pack-start status-container status-view :expand t)
+    (setf (gtk:gtk-widget-size-request status-container)
+          (list -1 (status-buffer-height window)))
 
     (setf minibuffer-view (make-instance 'webkit:webkit-web-view))
     (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
