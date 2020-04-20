@@ -35,6 +35,13 @@
    (message-buffer-height :accessor message-buffer-height :initform 16
                           :type integer
                           :documentation "The height of the message buffer in pixels.")
+   (message-buffer-style :accessor message-buffer-style :initform
+                         (cl-css:css
+                          '((body
+                             :font-size "12px"
+                             :padding 0
+                             :padding-left "4px"
+                             :margin 0))))
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
                            :type integer
                            :documentation "The height of the minibuffer when open.")
