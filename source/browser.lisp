@@ -328,8 +328,7 @@ Most recent messages are first.")
                    :documentation "A ring that keeps track of deleted buffers.")
    (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p :initform t) ; TODO: Replace this with minibuffer Helm-style actions.
    (windows :accessor windows :initform (make-hash-table :test #'equal))
-   (total-window-count :accessor total-window-count
-                       :initform 0
+   (total-window-count :initform 0
                        :type integer
                        :documentation "This is used to generate unique window
 identifiers in `get-unique-window-identifier'.  We can't rely on the windows
@@ -342,8 +341,7 @@ return something.
 See `current-window' for the user-facing function.")
    (last-active-buffer :accessor last-active-buffer :initform nil)
    (buffers :accessor buffers :initform (make-hash-table :test #'equal))
-   (total-buffer-count :accessor total-buffer-count
-                       :initform 0
+   (total-buffer-count :initform 0
                        :type integer
                        :documentation "This is used to generate unique buffer
 identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
@@ -640,10 +638,10 @@ current buffer."
         nil))))
 
 (defmethod get-unique-window-identifier ((browser browser))
-  (incf (total-window-count browser)))
+  (incf (slot-value browser 'total-window-count)))
 
 (defmethod get-unique-buffer-identifier ((browser browser))
-  (incf (total-buffer-count browser)))
+  (incf (slot-value browser 'total-buffer-count)))
 
 (declaim (ftype (function (window buffer)) set-window-title))
 (serapeum:export-always 'set-window-title)
