@@ -75,8 +75,8 @@
                (:file "spell-check")
                (:file "jump-heading")
                (:file "element-hint")
-               (:file "help")
                ;; Core Modes
+               (:file "help-mode")
                (:file "application-mode")
                (:file "web-mode")
                (:file "certificate-whitelist-mode")
@@ -88,6 +88,8 @@
                (:file "download-mode")
                (:file "vcs-mode")
                (:file "video-mode")
+               ;; Needs web-mode
+               (:file "help")
                ;; Depends on everything else:
                (:file "about")
                (:file "session")
