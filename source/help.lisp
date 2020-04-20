@@ -94,30 +94,39 @@
     (ffi-buffer-evaluate-javascript help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
-(define-command describe-function ()    ; TODO: List methods as well.
-  "Inspect a function and show it in a help buffer."
+(define-command describe-function ()
+  "Inspect a function and show it in a help buffer.
+For generic functions, describe all the methods."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Describe function"
                         :completion-function (function-completion-filter))))
-    (let* ((help-buffer (help-mode :activate t
-                                   :buffer (make-buffer
-                                            :title (str:concat "*Help-"
-                                                               (symbol-name input)
-                                                               "*"))))
-           (help-contents (markup:markup
-                           (:h1 (symbol-name input))
-                           (:p (documentation input 'function))
-                           (:h2 "Argument list")
-                           (:p (mopu:function-arglist input))
-                           #+sbcl
-                           (markup:markup
-                            (:h2 "Type")
-                            (:p (format nil "~s" (sb-introspect:function-type input))))))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript help-buffer insert-help)
-      (set-current-buffer help-buffer))))
+    (flet ((method-desc (method)
+             (markup:markup
+              (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
+              (:p (documentation method 't))
+              (:h2 "Argument list")
+              (:p (write-to-string (closer-mop:method-lambda-list method))))))
+      (let* ((help-buffer (help-mode :activate t
+                                     :buffer (make-buffer
+                                              :title (str:concat "*Help-"
+                                                                 (symbol-name input)
+                                                                 "*"))))
+             (help-contents (if (typep (symbol-function input) 'generic-function)
+                                (apply #'str:concat (mapcar #'method-desc (mopu:generic-function-methods (symbol-function input))))
+                                (markup:markup
+                                 (:h1 (symbol-name input))
+                                 (:p (documentation input 'function))
+                                 (:h2 "Argument list")
+                                 (:p (write-to-string (mopu:function-arglist input)))
+                                 #+sbcl
+                                 (markup:markup
+                                  (:h2 "Type")
+                                  (:p (format nil "~s" (sb-introspect:function-type input)))))))
+             (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                       (ps:lisp help-contents)))))
+        (ffi-buffer-evaluate-javascript help-buffer insert-help)
+        (set-current-buffer help-buffer)))))
 
 (define-command describe-command ()
   "Inspect a command and show it in a help buffer.
