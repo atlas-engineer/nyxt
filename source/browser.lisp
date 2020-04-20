@@ -20,10 +20,10 @@
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
-   (status-buffer-height :accessor status-buffer-height :initform 26
+   (status-buffer-height :accessor status-buffer-height :initform 16
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
-   (message-buffer-height :accessor message-buffer-height :initform 26
+   (message-buffer-height :accessor message-buffer-height :initform 16
                          :type integer
                          :documentation "The height of the message buffer in pixels.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
