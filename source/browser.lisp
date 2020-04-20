@@ -50,7 +50,7 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
    `window-set-active-buffer' takes effect. The handlers take the
    window and the buffer as argument.")
    (status-formatter :accessor status-formatter
-                   :initform #'format-status
+                     :initform #'format-status
                      :type (function (window) string)
                      :documentation "Function of a window argument that returns
 a string to be printed in the status view.")
