@@ -23,9 +23,16 @@
    (status-buffer-height :accessor status-buffer-height :initform 16
                          :type integer
                          :documentation "The height of the status buffer in pixels.")
+   (status-buffer-style :accessor status-buffer-style :initform
+                        (cl-css:css
+                         '((body
+                            :background "rgb(121, 121, 121)"
+                            :color "white"
+                            :padding 0
+                            :margin 0))))
    (message-buffer-height :accessor message-buffer-height :initform 16
-                         :type integer
-                         :documentation "The height of the message buffer in pixels.")
+                          :type integer
+                          :documentation "The height of the message buffer in pixels.")
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
                            :type integer
                            :documentation "The height of the minibuffer when open.")
