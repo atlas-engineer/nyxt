@@ -26,37 +26,6 @@ SLIME."
   (ensure-directories-exist (directory-namestring path))
   path)
 
-(defun find-slot (class slot-name)      ; TODO: Remove with get-default?
-  "CLASS can be a symbol or a class."
-  (when (symbolp class)
-    (setf class (closer-mop:ensure-finalized (find-class class))))
-  (find-if (lambda (slot)
-             (eq (closer-mop:slot-definition-name slot)
-                 slot-name))
-           (closer-mop:class-slots class)))
-
-(serapeum:export-always 'get-default)
-(defun get-default (class-name slot-name) ; TODO: Unused.  Remove?
-  "Get default value of slot SLOT-NAME from class CLASS-NAME.
-The second value is the initfunction."
-  (let* ((class (closer-mop:ensure-finalized (find-class class-name)))
-         (slot (find-slot class slot-name))
-         (value (closer-mop:slot-definition-initform slot)))
-    ;; When querying quoted lists, the return value of slot-definition-initform
-    ;; is quoted.  For lists declared with LIST, the return value is a list starting with symbol LIST.
-    ;; In those cases, we eval it here so that the caller does not have to do it.
-    ;; Besides, when the slot value is updated with SETF, the list is stored
-    ;; unquoted / without LIST.  By evaluating here, we make sure that all calls to GET-DEFAULT
-    ;; have consistent return types.  WARNING: This could be limitating if slot
-    ;; was meant to actually store a quoted list.  Should this happen, we would
-    ;; have to take some provision.
-    (if (and (listp value)
-             (or
-              (eq 'quote (first value))
-              (eq 'list (first value))))
-        (eval value)
-        value)))
-
 (serapeum:export-always 'member-string)
 (defun member-string (string list)
   "Return the tail of LIST beginning whose first element is STRING."
