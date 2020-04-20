@@ -149,9 +149,16 @@ A command is a special kind of function that can be called with
       (:ul
        (when mention-class-p
          (list (markup:markup (:li (format nil "Class: ~s" class)))))
-       (:li (format nil "Type: ~s" (getf props :type))) ; TODO: Don't print if unspecified.
-       (:li (format nil "Documentation: ~a" (getf props :documentation))) ; TODO: Don't print if unspecified.
-       (:li "Default value: " (:pre (:code (write-to-string (getf props :initform))))))))))
+       (when (getf props :type)
+         (list (markup:markup (:li (format nil "Type: ~s" (getf props :type))))))
+       (when (getf props :initform)
+         (let* ((initform-string (write-to-string (getf props :initform)))
+                (multiline-form? (search (string #\newline) initform-string)))
+           (if multiline-form?
+               (list (markup:markup (:li "Default value: " (:pre (:code initform-string)))))
+               (list (markup:markup (:li "Default value: " (:code initform-string)))))))
+       (when (getf props :documentation)
+         (list (markup:markup (:li "Documentation: " (getf props :documentation))))))))))
 
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
