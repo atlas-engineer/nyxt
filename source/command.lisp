@@ -120,6 +120,31 @@ deprecated and by what in the docstring."
   "Return the list of class symbols in `:next'."
   (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols)))
 
+(defclass slot ()
+  ((name :initarg :name
+         :accessor name
+         :type symbol)
+   (class-sym :initarg :class-sym
+              :accessor class-sym
+              :type symbol)))
+
+(defmethod object-string ((slot slot))
+  (write-to-string (name slot)))
+
+(defmethod object-display ((slot slot))
+  (format nil "~s (~s)"
+          (name slot)
+          (class-sym slot)))
+
+(defun package-slots ()
+  "Return the list of all slot symbols in `:next'."
+  (alex:mappend (lambda (class-sym)
+                  (mapcar (lambda (slot) (make-instance 'slot
+                                                        :name slot
+                                                        :class-sym class-sym))
+                          (mopu:slot-names class-sym)))
+                (package-classes)))
+
 (defun package-methods ()               ; TODO: Unused.  Remove?
   (loop for sym in (package-defined-symbols)
         append (ignore-errors

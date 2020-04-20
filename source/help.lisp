@@ -32,6 +32,11 @@
     (lambda (input)
       (fuzzy-match input classes))))
 
+(defun slot-completion-filter ()
+  (let ((slots (package-slots)))
+    (lambda (input)
+      (fuzzy-match input slots))))
+
 (defun command-completion-filter ()        ; TODO: Use `command-completion-filter'? And show packages?
   (let ((commands (list-commands)))
     (lambda (input)
@@ -135,38 +140,57 @@ A command is a special kind of function that can be called with
                         :completion-function (command-completion-filter))))
     (describe-command* input)))
 
+(defun describe-slot* (slot class)      ; TODO: Adapt
+  (let ((props (mopu:slot-properties (find-class class) slot)))
+    (markup:markup
+     (:ul
+      (:li slot)
+      (:ul
+       (:li (format nil "Type: ~s" (getf props :type))) ; TODO: Don't print if unspecified.
+       (:li (format nil "Documentation: ~a" (getf props :documentation))) ; TODO: Don't print if unspecified.
+       (:li "Default value: " (:pre (:code (write-to-string (getf props :initform))))))))))
+
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Describe class"
                         :completion-function (class-completion-filter))))
-    (flet ((slot-desc (slot)
-             (let ((props (mopu:slot-properties (find-class input) slot)))
-               (markup:markup
-                (:ul
-                 (:li slot)
-                 (:ul
-                  (:li (format nil "Type: ~s" (getf props :type))) ; TODO: Don't print if unspecified.
-                  (:li (format nil "Documentation: ~a" (getf props :documentation))) ; TODO: Don't print if unspecified.
-                  (:li "Default value: " (:pre (:code (write-to-string (getf props :initform)))))))))))
-      (let* ((help-buffer (help-mode :activate t
-                                     :buffer (make-buffer
-                                              :title (str:concat "*Help-"
-                                                                 (symbol-name input)
-                                                                 "*"))))
-             (slots (mopu:slot-names (find-class input)))
-             (slot-descs (apply #'str:concat (mapcar #'slot-desc slots)))
-             (help-contents (str:concat
-                             (markup:markup
-                              (:h1 (symbol-name input))
-                              (:p (documentation input 'type))
-                              (:h2 "Slots:"))
-                             slot-descs))
-             (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                       (ps:lisp help-contents)))))
-        (ffi-buffer-evaluate-javascript help-buffer insert-help)
-        (set-current-buffer help-buffer)))))
+    (let* ((help-buffer (help-mode :activate t
+                                   :buffer (make-buffer
+                                            :title (str:concat "*Help-"
+                                                               (symbol-name input)
+                                                               "*"))))
+           (slots (mopu:slot-names (find-class input)))
+           (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots)))
+           (help-contents (str:concat
+                           (markup:markup
+                            (:h1 (symbol-name input))
+                            (:p (documentation input 'type))
+                            (:h2 "Slots:"))
+                           slot-descs))
+           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                     (ps:lisp help-contents)))))
+      (ffi-buffer-evaluate-javascript help-buffer insert-help)
+      (set-current-buffer help-buffer))))
+
+(define-command describe-slot ()
+  "Inspect a slot and show it in a help buffer."
+  (with-result (input (read-from-minibuffer
+                       (make-minibuffer
+                        :input-prompt "Describe slot"
+                        :completion-function (slot-completion-filter))))
+    (let* ((help-buffer (help-mode :activate t
+                                   :buffer (make-buffer
+                                            :title (str:concat "*Help-"
+                                                               (symbol-name (name input))
+                                                               "*"))))
+
+           (help-contents (describe-slot* (name input) (class-sym input)))
+           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                     (ps:lisp help-contents)))))
+      (ffi-buffer-evaluate-javascript help-buffer insert-help)
+      (set-current-buffer help-buffer))))
 
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
