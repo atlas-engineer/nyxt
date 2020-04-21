@@ -159,7 +159,7 @@ next [options] [urls]")
     (when (or (getf options :load)
               (getf options :eval))
       (unless (getf options :no-init)
-        (load-lisp (init-file-path) :interactive nil))
+        (load-lisp (init-file-path) :interactive nil :package (find-package :next-user)))
       ;; We need a browser instance so that listen-socket-p can know the socket path.
       ;; TODO: Use (get-default ...) instead?  Ideally, socket could also
       ;; be a command line parameter so that multiple instances can be started.
