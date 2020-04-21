@@ -246,6 +246,7 @@ It may be MODE-SYMBOL itself."
              (find-mode b mode-symbol))
            (buffer-list)))
 
+(serapeum:export-always 'keymap)
 (defmethod keymap ((mode root-mode))
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."

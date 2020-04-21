@@ -6,15 +6,15 @@
 (declaim (ftype (function (string &rest keymap:keymap)
                           keymap:keymap)
                 make-keymap))
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(make-keymap)))
+(sera:export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
   "Like `keymap:make-keymap' but only allow binding functions."
   (let ((keymap (apply #'keymap:make-keymap name parents)))
     (setf (keymap:bound-type keymap) '(or keymap:keymap function))
     keymap))
 
-(defun current-keymaps (&optional (window (current-window)))
+(sera:export-always 'current-keymaps)
+(defun current-keymaps (&optional (window (current-window))) ; TODO: Take buffer/minibuffer as argument instead?
   "Return the list of `keymap' for the current buffer, ordered by priority."
   (let ((buffer (active-buffer window)))
     (when buffer
@@ -40,7 +40,8 @@ minibuffer keymaps."
   (coerce (str:starts-with? "button" (keymap:key-value key))
           'boolean))
 
-(defun keyspecs-with-optional-keycode (keys)
+(sera:export-always 'keyspecs-with-optional-keycode)
+(defun keyspecs-with-optional-keycode (keys) ; TODO: Remove "optional" from name.
   "Like `keymap:keyspecs' but displayes keys with keycodes like this:
 KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   (let ((no-code-specs (keymap:keys->keyspecs
@@ -50,6 +51,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
         (format nil "~a (~a)" no-code-specs (keymap:keys->keyspecs keys))
         (format nil "~a" no-code-specs))))
 
+(sera:export-always 'dispatch-input-event)
 (defun dispatch-input-event (event buffer window printable-p)
   "Dispatch keys in `browser's `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."

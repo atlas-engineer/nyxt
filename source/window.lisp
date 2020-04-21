@@ -14,6 +14,7 @@
       (fuzzy-match input windows))))
 
 (declaim (ftype (function (browser)) window-make))
+(sera:export-always 'window-make)
 (defun window-make (browser)
   (let* ((window (ffi-window-make browser)))
     (setf (gethash (id window) (windows browser)) window)
