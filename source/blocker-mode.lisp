@@ -95,7 +95,8 @@ Return nil if hostlist cannot be parsed."
 (defparameter *default-hostlist*
   (make-instance 'hostlist
                  :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-                 :path "hostlist-stevenblack"))
+                 :path "hostlist-stevenblack")
+  "Default hostlist for `blocker-mode'.")
 
 (define-mode blocker-mode ()
     "Enable blocking of blacklisted hosts.
