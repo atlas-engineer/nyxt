@@ -100,25 +100,27 @@ deprecated and by what in the docstring."
            (echo-warning "~a is deprecated." ',name)
            ,@body)))))
 
-(defun package-defined-symbols (&optional (package (find-package :next)))
-  "Return the list of all symbols interned in this package."
+(defun package-defined-symbols (package-designator &rest more-package-designators)
+  "Return the list of all symbols interned in PACKAGE-DESIGNATORS."
   (let ((symbols))
-    (do-symbols (s package symbols)
-      (when (eq (symbol-package s) package)
-        (push s symbols)))
+    (dolist (package (mapcar #'find-package (cons package-designator
+                                                  more-package-designators)))
+      (do-symbols (s package symbols)
+        (when (eq (symbol-package s) package)
+          (pushnew s symbols))))
     symbols))
 
 (defun package-variables ()
-  "Return the list of variable symbols in `:next'."
-  (delete-if (complement #'boundp) (package-defined-symbols)))
+  "Return the list of variable symbols in `:next' and `:next-user'."
+  (delete-if (complement #'boundp) (package-defined-symbols :next :next-user)))
 
 (defun package-functions ()
-  "Return the list of function symbols in `:next'."
-  (delete-if (complement #'fboundp) (package-defined-symbols)))
+  "Return the list of function symbols in `:next' and `:next-user'."
+  (delete-if (complement #'fboundp) (package-defined-symbols :next :next-user)))
 
 (defun package-classes ()
-  "Return the list of class symbols in `:next'."
-  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols)))
+  "Return the list of class symbols in `:next' and `:next-user'."
+  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols :next :next-user)))
 
 (defclass slot ()
   ((name :initarg :name
@@ -137,7 +139,7 @@ deprecated and by what in the docstring."
           (class-sym slot)))
 
 (defun package-slots ()
-  "Return the list of all slot symbols in `:next'."
+  "Return the list of all slot symbols in `:next' and `:next-user'."
   (alex:mappend (lambda (class-sym)
                   (mapcar (lambda (slot) (make-instance 'slot
                                                         :name slot
@@ -146,7 +148,7 @@ deprecated and by what in the docstring."
                 (package-classes)))
 
 (defun package-methods ()               ; TODO: Unused.  Remove?
-  (loop for sym in (package-defined-symbols)
+  (loop for sym in (package-defined-symbols :next :next-user)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
