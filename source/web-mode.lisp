@@ -339,7 +339,8 @@ Otherwise go forward to the only child."
     (let* ((buffer-name (format nil "*History-~a*" (id buffer)))
            (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
                                        (buffer-list))
-                              (help-mode :activate t :buffer (make-buffer :title buffer-name))))
+                              (next/help-mode:help-mode
+                               :activate t :buffer (make-buffer :title buffer-name))))
            (history (history (find-submode buffer 'web-mode)))
            (tree `(:ul ,(traverse (htree:root history)
                                   (htree:current history))))
