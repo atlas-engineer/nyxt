@@ -25,7 +25,8 @@ If path is relative, it will be set to (xdg-data-home path).")
    (update-interval :accessor update-interval :initarg :update-interval
                     :initform (* 60 60 24)
                     :documentation "If URL is provided, update the list after
-this amount of seconds.")))
+this amount of seconds."))
+  (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot."))
 
 (serapeum:export-always 'path)
 (defmethod path ((hostlist hostlist))
@@ -36,6 +37,8 @@ this amount of seconds.")))
 
 (serapeum:export-always 'make-hostlist)
 (defun make-hostlist (&rest args)
+  "Return a new `hostlist'.
+See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
 
 (defmethod update ((hostlist hostlist))
@@ -95,7 +98,23 @@ Return nil if hostlist cannot be parsed."
                  :path "hostlist-stevenblack"))
 
 (define-mode blocker-mode ()
-    "Enable blocking of blacklisted hosts."
+    "Enable blocking of blacklisted hosts.
+To customize the list of blocked hosts, set the `hostlists' slot.
+
+Example:
+
+\(defvar *my-blocked-hosts*
+  (next/blocker-mode:make-hostlist
+   :hosts '(\"platform.twitter.com\"
+            \"syndication.twitter.com\"
+            \"m.media-amazon.com\")))
+
+\(define-mode my-blocker-mode (next/blocker-mode:blocker-mode)
+  \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
+  ((next/blocker-mode:hostlists :initform (list *my-blocked-hosts* next/blocker-mode:*default-hostlist*))))
+
+\(define-configuration buffer
+  ((default-modes (append '(my-blocker-mode) %slot-default))))"
     ((hostlists :accessor hostlists :initarg :hostlists
                 :initform (list *default-hostlist*))
      (destructor
