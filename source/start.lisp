@@ -194,7 +194,7 @@ next [options] [urls]")
   (or (getf *options* :init)
       (xdg-config-home filename)))
 
-(defparameter *load-init-error-message* "Error: we could not load the init file")
+(defparameter *load-init-error-message* "Error: Could not load the init file")
 (defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
                                                          " because of a type error"))
 
@@ -229,8 +229,8 @@ next [options] [urls]")
                          *load-init-error-message*)))
         (cond
           ((equal interactive :running)
-           (echo-safe "Could not load the Lisp file: ~a" c)
-           (notify "We could not load the Lisp file."))
+           (echo-safe (format nil "~a: ~a" message c))
+           (notify (str:concat message ".")))
           ((null interactive)
            (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
            (uiop:quit 1))
