@@ -117,11 +117,13 @@
   (body match))
 
 (defmethod object-display ((match match))
+  (let* ((id (identifier match)))
+    (format nil "~a …~a…" id (body match))))
+
+(defmethod object-display ((match multi-buffer-match))
   (let* ((id (identifier match))
          (buffer-id (id (buffer match))))
-    (if (multi-buffer match)
-        (format nil "~a:~a …~a…  ~a" buffer-id id (body match) (title (buffer match)))
-        (format nil "~a …~a…" id (body match)))))
+    (format nil "~a:~a …~a…  ~a" buffer-id id (body match) (title (buffer match)))))
 
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
   (loop for element in (handler-case (cl-json:decode-json-from-string matches-json)
