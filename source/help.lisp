@@ -90,7 +90,7 @@ For generic functions, describe all the methods."
     (flet ((method-desc (method)
              (markup:markup
               (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
-              (:p (documentation method 't))
+              (:pre (documentation method 't))
               (:h2 "Argument list")
               (:p (write-to-string (closer-mop:method-lambda-list method))))))
       (let* ((help-buffer (next/help-mode:help-mode
@@ -101,15 +101,17 @@ For generic functions, describe all the methods."
                                                        "*"))))
              (help-contents (if (typep (symbol-function input) 'generic-function)
                                 (apply #'str:concat (mapcar #'method-desc (mopu:generic-function-methods (symbol-function input))))
-                                (markup:markup
-                                 (:h1 (symbol-name input))
-                                 (:p (documentation input 'function))
-                                 (:h2 "Argument list")
-                                 (:p (write-to-string (mopu:function-arglist input)))
-                                 #+sbcl
+                                (str:concat
                                  (markup:markup
-                                  (:h2 "Type")
-                                  (:p (format nil "~s" (sb-introspect:function-type input)))))))
+                                  (:h1 (symbol-name input) (when (macro-function input) " (macro)"))
+                                  (:pre (documentation input 'function))
+                                  (:h2 "Argument list")
+                                  (:p (write-to-string (mopu:function-arglist input))))
+                                 #+sbcl
+                                 (unless (macro-function input)
+                                   (markup:markup
+                                    (:h2 "Type")
+                                    (:p (format nil "~s" (sb-introspect:function-type input))))))))
              (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                        (ps:lisp help-contents)))))
         (ffi-buffer-evaluate-javascript help-buffer insert-help)
