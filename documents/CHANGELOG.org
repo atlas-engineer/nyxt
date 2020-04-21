@@ -40,6 +40,29 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Add online suggestions from search engines
 
 ** 2.0.0
+- Replace D-Bus-based architecture with an FFI architecture.  As a result, there
+  is only one exectuable needed to run Next and no more need for D-Bus.  This
+  should simplify installation and remove many performance bottlenecks.
+
+- Add status view and message view to display buffer status and messages
+  respectively.
+  The status view can be customized with the =status-formatter= window slot.
+  The =status-buffer= slot has been removed.
+
+- Report user configuration errors in a Next web view.  Users don't have to
+  check the shell output anymore.
+
+- New =set-url-current-buffer-from-current-url= command.
+
+- Add =certificate-whitelist-mode= to the default modes.  In case of certificate
+  error, call =add-domain-to-certificate-whitelist= followed by a reload if you
+  understand the risks and you want to bypass the error.
+
+- Make current URL the first candidate in =set-url-*= commands.
+
+- New =scheme:cua= default binding scheme.  You can still use the former default
+  =scheme:emacs=.
+
 - Change key string specifications: all lowercase without underscore.
   For instance "Page_Up" becomes "pageup".
 
@@ -48,12 +71,16 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - Keymaps must be named, e.g. ~(keymap:make-keymap "my-map")~.
 
-- Modes =keymap-schemes= must now be set with either =keymap:make-scheme= or
-  =define-scheme=.  Schemes are now first-class objects.  Defaults schemes
+- Modes =keymap-scheme= must now be set with either =keymap:make-scheme= or
+  =define-scheme=.  Schemes are now first-class objects.  Default schemes
   =cua=, =emacs=, =vi-normal= and =vi-insert= are in the =scheme= package.  Thus
   it's enough to complete over =scheme:= to list them all.
 
 - Turn =resource-query-function= into a hook, =request-resource-hook=.
+
+- Bindings like =control-button1= to open a link in a new buffer can be
+  customized in the new =request-resource-scheme= keymap scheme of the =buffer=
+  class.
 
 - Sessions are now saved in XDG_DATA_HOME/next/sessions/.  Default session is
   =default.lisp=.  The command line option =--session= uses a =sessions= folder
@@ -62,14 +89,44 @@ MAJOR.MINOR.PATCH, we increment the:
 - Command line options: New =--load= option to load a Lisp file, =--eval= and
   =--load= can be specified multiple times, the =--remote= option allow
   evaluating =--eval= and =--load= in a running instance.
+  New =--script= command line option that can be used in shabang to write "Next scripts."
 
 - New =autofill= command to insert predefined content in text fields.
 
-- Remove SQLite dependency.
+- Remove SQLite importers and dependency.
 
 - Fix out-of-sync buffer title.
 
 - New =current-window= function.
+
+- Rename the =*-inspect= documentation commands to =describe-*=.
+
+- New documentation commands: =describe-function= (works on macros), =describe-slot=,
+  =describe-class=, =describe-key=, =describe-bindings=.
+
+- Documentation commands list only exported symbols from =:next=, but all
+  symbols from =:next-user=.
+
+- New =define-configuration= macro.  See its documentation with
+  =describe-function=.
+
+- Remove the =get-default= kludge.  Use =define-configuration= instead.
+
+- =help-mode= is now part of its own package, =next/help-mode=, like any other mode.
+
+- Remove =total-window-count= and =total-buffer-count= accessors (they were
+  implementation details).
+
+- Improve performance and completeness of element hinting.
+
+- Fix zooming issues.
+
+- New =open-inspector= command to bring up the web inspector.
+
+- =certificate-whitelist-mode=
+
+- New =spell-check-*= commands.  To be continued.
+
 
 ** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
