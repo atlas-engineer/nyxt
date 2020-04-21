@@ -1144,8 +1144,21 @@ You can assign you own function to ~startup-function~ to change the behaviour of
 Next on startup, such as which URL it should display, if it should restore the
 previous session or not, etc.
 ** Run Next in a security sandbox
-For improved security while you browse the Internet, you can run Next
-with [[https://firejail.wordpress.com/][Firejail]] on GNU/Linux.
+For improved security while you browse the Internet, you can run Next in a
+container on GNU/Linux.
+
+- With Guix:
+  #+begin_src sh
+  guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs next -- env DISPLAY="$DISPLAY" next
+  #+end_src
+
+  If you want to load your configuration and use the data files:
+
+  #+begin_src sh
+  guix environment --container --network --expose=/etc/ssl/certs --expose="$HOME/.config/next/" --share="$HOME/.local/share/next"="$HOME/.local/share/next/" --ad-hoc coreutils nss-certs next -- env DISPLAY="$DISPLAY" next
+  #+end_src
+
+- With [[https://firejail.wordpress.com/][Firejail]].
 
 ** Font size on HiDPI displays
 

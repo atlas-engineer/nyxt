@@ -11,7 +11,7 @@
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --container --network --ad-hoc coreutils -l guix.scm -- env DISPLAY="$DISPLAY" next
+;;   guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs -l guix.scm -- env DISPLAY="$DISPLAY" next
 ;;
 ;; Warning: The above may fail to accept TLS certificates.
 ;;
