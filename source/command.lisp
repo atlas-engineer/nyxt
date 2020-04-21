@@ -100,11 +100,14 @@ deprecated and by what in the docstring."
            (echo-warning "~a is deprecated." ',name)
            ,@body)))))
 
-(defun package-defined-symbols (package-designator &rest more-package-designators)
-  "Return the list of all symbols interned in PACKAGE-DESIGNATORS."
+(defun package-defined-symbols (external-package-designators &optional user-package-designators)
+  "Return the list of all external symbols interned in EXTERNAL-PACKAGE-DESIGNATORS
+and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
   (let ((symbols))
-    (dolist (package (mapcar #'find-package (cons package-designator
-                                                  more-package-designators)))
+    (dolist (package (mapcar #'find-package external-package-designators))
+      (do-external-symbols (s package symbols)
+        (pushnew s symbols)))
+    (dolist (package (mapcar #'find-package user-package-designators))
       (do-symbols (s package symbols)
         (when (eq (symbol-package s) package)
           (pushnew s symbols))))
@@ -112,15 +115,15 @@ deprecated and by what in the docstring."
 
 (defun package-variables ()
   "Return the list of variable symbols in `:next' and `:next-user'."
-  (delete-if (complement #'boundp) (package-defined-symbols :next :next-user)))
+  (delete-if (complement #'boundp) (package-defined-symbols '(:next) '(:next-user))))
 
 (defun package-functions ()
   "Return the list of function symbols in `:next' and `:next-user'."
-  (delete-if (complement #'fboundp) (package-defined-symbols :next :next-user)))
+  (delete-if (complement #'fboundp) (package-defined-symbols '(:next) '(:next-user))))
 
 (defun package-classes ()
   "Return the list of class symbols in `:next' and `:next-user'."
-  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols :next :next-user)))
+  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols '(:next) '(:next-user))))
 
 (defclass slot ()
   ((name :initarg :name
@@ -148,7 +151,7 @@ deprecated and by what in the docstring."
                 (package-classes)))
 
 (defun package-methods ()               ; TODO: Unused.  Remove?
-  (loop for sym in (package-defined-symbols :next :next-user)
+  (loop for sym in (package-defined-symbols '(:next) '(:next-user))
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
