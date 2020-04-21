@@ -111,6 +111,8 @@
    (buffer :accessor buffer :initarg :buffer)
    (multi-buffer :accessor multi-buffer :initarg :multi-buffer)))
 
+(defclass multi-buffer-match (match) ())
+
 (defmethod object-string ((match match))
   (body match))
 
