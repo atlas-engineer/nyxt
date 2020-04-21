@@ -356,7 +356,7 @@ Otherwise bind socket."
     (unless (getf *options* :no-init)
       (handler-case
           (progn
-            (load-lisp init-file :interactive t)
+            (load-lisp init-file :interactive t :package (find-package :next-user))
             (setf *browser* (make-instance *browser-class*
                                            :startup-timestamp startup-timestamp)))
         (error (c)
