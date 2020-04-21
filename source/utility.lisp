@@ -121,6 +121,9 @@ from a binary) then any condition is logged instead of triggering the debugger."
 It generates a user-SUPER subclass of SUPER.
 It binds `*SUPER-class*' to this newly generated class.
 
+Classes can be modes or a core class like `browser', `buffer', `minibuffer',
+`window'.
+
 The `%slot-default' variable is replaced by the slot initform.
 
 Example that sets some defaults for all buffers:
@@ -132,16 +135,33 @@ Example that sets some defaults for all buffers:
 In the above, `%slot-default' will be substituted with the default value of
 `default-modes'.
 
-To discover the default value of a slot or for all slots of a class, use the
-`describe-slot' or `describe-class' commands respectively."
+To discover the default value of a slot or all slots of a class, use the
+`describe-slot' or `describe-class' commands respectively.
+
+Since modes are classes with class variables (the `*MODE-class*'), the same applies.
+
+Example to get the `blocker-mode' command to use a new default hostlists:
+
+\(define-configuration next/blocker-mode:blocker-mode
+  ((next/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
+
+Since the above binds `next/blocker-mode:*blocker-mode-class*' to
+`user-blocker-mode', the `blocker-mode' command now toggles the new
+`user-blocker-mode' instead of `blocker-mode'."
+
   (let* ((name (intern (str:concat "USER-" (symbol-name super))))
-         (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
-         (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
-    (unless (find-class super nil)
+         (configured-class)
+         (super-variant (let ((super-variant (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
+                          ;; SUPER may not have a renderer variant, e.g. modes don't.
+                          (if (find-class super-variant nil)
+                              super-variant
+                              super))))
+    (unless (find-class super-variant nil)
       (error "define-configuration argument ~a is not a known class." super))
+    (setf configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*") (symbol-package super-variant)))
     `(progn
-       (defclass ,name (,super)
-         ,(loop with super-class = (closer-mop:ensure-finalized (find-class super))
+       (defclass ,name (,super-variant)
+         ,(loop with super-class = (closer-mop:ensure-finalized (find-class super-variant))
                 for slot in (car slots)
                 for known-slot? = (find (car slot) (mopu:slot-names super-class))
                 for initform = (and known-slot?
@@ -153,5 +173,5 @@ To discover the default value of a slot or for all slots of a class, use the
                                                                  ,(cadr slot))
                                                                ,initform))
                 else do
-                  (log:warn "Undefined slot ~a in ~a" (car slot) super)))
+                  (log:warn "Undefined slot ~a in ~a" (car slot) super-variant)))
        (setf ,configured-class ',name))))
