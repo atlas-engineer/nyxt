@@ -9,6 +9,12 @@
 ;;
 ;;   guix environment -l guix.scm
 ;;
+;; To start in a container, run:
+;;
+;;   guix environment --container --network --ad-hoc coreutils -l guix.scm -- env DISPLAY="$DISPLAY" next
+;;
+;; Warning: The above may fail to accept TLS certificates.
+;;
 ;;; Code:
 
 (use-modules (ice-9 match)
@@ -245,10 +251,29 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
              (lambda* (#:key inputs outputs #:allow-other-keys)
                (let* ((final-bin (string-append (assoc-ref outputs "out") "/bin/next"))
                       (bin (string-append final-bin "-gtk"))
-                      (glib-networking (assoc-ref inputs "glib-networking")))
+                      (glib-networking (assoc-ref inputs "glib-networking"))
+                      (libs '("gsettings-desktop-schemas"))
+                      (path (string-join
+                             (map (lambda (lib)
+                                    (string-append (assoc-ref inputs lib) "/lib"))
+                                  libs)
+                             ":"))
+                      (gi-path (string-join
+                                (map (lambda (lib)
+                                       (string-append (assoc-ref inputs lib) "/lib/girepository-1.0"))
+                                     libs)
+                                ":"))
+                      (xdg-path (string-join
+                                 (map (lambda (lib)
+                                        (string-append (assoc-ref inputs lib) "/share"))
+                                      libs)
+                                 ":")))
                  (wrap-program bin
                    `("GIO_EXTRA_MODULES" prefix
-                     (,(string-append glib-networking "/lib/gio/modules"))))
+                     (,(string-append glib-networking "/lib/gio/modules")))
+                   `("GI_TYPELIB_PATH" prefix (,gi-path))
+                   `("LD_LIBRARY_PATH" ":" prefix (,path))
+                   `("XDG_DATA_DIRS" ":" prefix (,xdg-path)))
                  (rename-file bin final-bin)
                  #t)))
            (add-before 'build 'install-assets
