@@ -155,33 +155,21 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
-(defmethod mode-toggler-p ((command command))
-  "Return non-nil if COMMAND is a mode toggler.
-A mode toggler is a command of the same name as its associated mode."
-  (ignore-errors
-   (closer-mop:subclassp (find-class (sym command) nil)
-                         (find-class 'root-mode))))
-
 (defun list-commands (&rest mode-symbols)
   "List commands.
-
-Commands are instances of the `command' class.  When MODE-SYMBOLS are
-provided, list only the commands that belong to this mode.
-If 'ROOT-MODE is in MODE-SYMBOLS, mode togglers are included.
-
-Otherwise list all commands."
+Commands are instances of the `command' class.
+When MODE-SYMBOLS are provided, list only the commands that belong to the
+corresponding mode packages.  Otherwise list all commands."
   (if mode-symbols
-      (let ((list-togglers-p (member 'root-mode mode-symbols)))
-        (remove-if (lambda (c)
-                     (and (notany (lambda (m)
-                                    (match m
-                                      ('root-mode (eq (pkg c) (find-package :next)))
-                                      (_ (eq (pkg c)
-                                             (pkg (mode-command m))))))
-                                  mode-symbols)
-                          (or (not list-togglers-p)
-                              (not (mode-toggler-p c)))))
-                   *command-list*))
+      (remove-if (lambda (c)
+                   (notany (lambda (m)
+                             (eq (pkg c)
+                                 (match m
+                                   ;; root-mode does not have a mode-command.
+                                   ('root-mode (find-package :next))
+                                   (_ (pkg (mode-command m))))))
+                           mode-symbols))
+                 *command-list*)
       *command-list*))
 
 (defmethod object-string ((command command))
