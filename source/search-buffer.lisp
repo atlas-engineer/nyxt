@@ -127,9 +127,8 @@
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
   (loop for element in (handler-case (cl-json:decode-json-from-string matches-json)
                          (error () nil))
-        collect (make-instance 'match
+        collect (make-instance (if multi-buffer 'multi-buffer-match 'match)
                                :identifier (cdr (assoc :identifier element))
-                               :multi-buffer multi-buffer
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
