@@ -143,7 +143,7 @@ To discover the default value of a slot or for all slots of a class, use the
        (defclass ,name (,super)
          ,(loop with super-class = (closer-mop:ensure-finalized (find-class super))
                 for slot in (car slots)
-                for known-slot? = (find (car slot) (mopu:slot-names (closer-mop:ensure-finalized (find-class super))))
+                for known-slot? = (find (car slot) (mopu:slot-names super-class))
                 for initform = (and known-slot?
                                     (getf (mopu:slot-properties super-class (car slot))
                                           :initform))
