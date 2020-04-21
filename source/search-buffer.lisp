@@ -108,8 +108,7 @@
 (defclass match ()
   ((identifier :accessor identifier :initarg :identifier)
    (body :accessor body :initarg :body)
-   (buffer :accessor buffer :initarg :buffer)
-   (multi-buffer :accessor multi-buffer :initarg :multi-buffer)))
+   (buffer :accessor buffer :initarg :buffer)))
 
 (defclass multi-buffer-match (match) ())
 
