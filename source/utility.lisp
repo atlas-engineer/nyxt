@@ -126,6 +126,8 @@ Example:
   (let* ((name (intern (str:concat "USER-" (symbol-name super))))
          (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
          (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
+    (unless (find-class super nil)
+      (error "define-configuration argument ~a is not a known class." super))
     `(progn
        (defclass ,name (,super)
          ,(loop with super-class = (closer-mop:ensure-finalized (find-class super))
