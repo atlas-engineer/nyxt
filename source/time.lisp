@@ -4,7 +4,7 @@
 (in-package :next)
 
 (declaim (ftype (function (string) local-time:timestamp) asctime->timestamp))
-(serapeum:export-always 'asctime->timestamp)
+(export-always 'asctime->timestamp)
 (defun asctime->timestamp (asc-timestring)
   "Convert ASC-TIMESTRING to a timestamp.
 An ASC-TIMESTRING is in the form of `Tue Oct 1 15:55:09 2019'."

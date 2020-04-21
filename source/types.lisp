@@ -2,13 +2,13 @@
 
 (in-package :next)
 
-(sera:export-always 'resource-handler-return-type)
+(export-always 'resource-handler-return-type)
 (deftype resource-handler-return-type ()
   `(or (eql :forward)
        (eql :stop)
        boolean))
 
-(sera:export-always 'resource-handler-type)
+(export-always 'resource-handler-type)
 (deftype resource-handler-type ()
   `(function (buffer &key &allow-other-keys) resource-handler-return-type))
 
@@ -32,11 +32,11 @@ Example:
        (deftype ,(intern (format nil "LIST-OF-~aS" name)) ()
          '(satisfies ,predicate)))))
 
-(sera:export-always 'list-of-symbols)
+(export-always 'list-of-symbols)
 (define-list-type 'symbol)
-(sera:export-always 'list-of-characters)
+(export-always 'list-of-characters)
 (define-list-type 'character)
-(sera:export-always 'list-of-strings)
+(export-always 'list-of-strings)
 (define-list-type 'string)
 
 (defun alist-of-strings-p (alist)
@@ -49,7 +49,7 @@ Example:
                      (stringp (cdr it))))
               alist)))
 
-(sera:export-always 'alist-of-strings)
+(export-always 'alist-of-strings)
 (deftype alist-of-strings ()
   `(satisfies alist-of-strings-p))
 
@@ -71,7 +71,7 @@ Example:
                  (every #'stringp it)))
               alist)))
 
-(sera:export-always 'alist-of-string+2strings)
+(export-always 'alist-of-string+2strings)
 (deftype alist-of-string+2strings ()
   `(satisfies alist-of-string+2strings-p))
 

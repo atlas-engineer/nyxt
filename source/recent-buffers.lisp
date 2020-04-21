@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(serapeum:export-always 'buffer-match-predicate)
+(export-always 'buffer-match-predicate)
 (defmethod buffer-match-predicate ((buffer buffer))
   (lambda (other-buffer)
     (when other-buffer

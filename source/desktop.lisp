@@ -1,6 +1,6 @@
 (in-package :next)
 
-(serapeum:export-always 'xdg-data-home)
+(export-always 'xdg-data-home)
 (defun xdg-data-home (&optional (file-name ""))
   "Return $XDG_DATA_HOME/next as per XDG directory specification.
 FILE-NAME is appended to the result."
@@ -8,7 +8,7 @@ FILE-NAME is appended to the result."
    file-name
    (uiop:xdg-data-home "next/")))
 
-(serapeum:export-always 'xdg-config-home)
+(export-always 'xdg-config-home)
 (defun xdg-config-home (&optional (file-name ""))
   "Return $XDG_CONFIG_HOME/next as per XDG directory specification.
 FILE-NAME is appended to the result."

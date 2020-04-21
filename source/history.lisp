@@ -45,7 +45,7 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
   (string= (url e1) (url e2)))
 
-(serapeum:export-always 'history-add)
+(export-always 'history-add)
 (defun history-add (url &key title explicit)
   "Add URL to the global history.
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which

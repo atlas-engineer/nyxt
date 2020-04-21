@@ -345,7 +345,7 @@ Otherwise bind socket."
         (log:info "No instance running.")
         (uiop:quit))))
 
-(serapeum:export-always 'start)
+(export-always 'start)
 (defun start (&key urls (init-file (init-file-path)))
   "Start Next and load URLS if any. A new `*browser*' is
    instantiated. The platform port is automatically started if

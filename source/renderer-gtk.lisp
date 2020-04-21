@@ -58,7 +58,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class-type window)
 (declaim (type (window-type) *window-class*))
-(serapeum:export-always '*window-class*)
+(export-always '*window-class*)
 (defparameter *window-class* 'gtk-window)
 
 (defclass-export gtk-buffer (buffer)
@@ -74,7 +74,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class-type buffer)
 (declaim (type (buffer-type) *buffer-class*))
-(serapeum:export-always '*buffer-class*)
+(export-always '*buffer-class*)
 (defparameter *buffer-class* 'gtk-buffer)
 
 (defmethod initialize-instance :after ((window gtk-window) &key)

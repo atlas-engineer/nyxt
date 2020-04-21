@@ -187,9 +187,9 @@ This should not rely on the minibuffer's content.")
 prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
 calls, such as invoking `minibuffer-history'."))
 
-(serapeum:export-always '*minibuffer-class*)
+(export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
-(serapeum:export-always 'make-minibuffer)
+(export-always 'make-minibuffer)
 (defun make-minibuffer (&key
                           (default-modes nil explicit-default-modes)
                           (completion-function nil explicit-completion-function)
@@ -303,7 +303,7 @@ calls, such as invoking `minibuffer-history'."))
   (initialize-modes minibuffer))
 
 (declaim (ftype (function (minibuffer &key (:callback function))) read-from-minibuffer))
-(serapeum:export-always 'read-from-minibuffer)
+(export-always 'read-from-minibuffer)
 (defun read-from-minibuffer (minibuffer &key callback)
   "Open the minibuffer, ready for user input.
    Example use:
@@ -379,7 +379,7 @@ calls, such as invoking `minibuffer-history'."))
     ((guard f f) (funcall-safely f)))
   (hide minibuffer))
 
-(serapeum:export-always 'erase-input)
+(export-always 'erase-input)
 (defmethod erase-input ((minibuffer minibuffer))
   "Clean-up the minibuffer input."
   (setf (input-buffer minibuffer) "")
@@ -679,7 +679,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (state-changed minibuffer)
   (update-display minibuffer))
 
-(serapeum:export-always 'update-display)
+(export-always 'update-display)
 (defmethod update-display ((minibuffer minibuffer))
   (with-slots (input-buffer input-cursor-position
                completions marked-completions completion-cursor)
@@ -774,7 +774,7 @@ MESSAGE is a cl-markup list."
       (print-message text)
       (log:info text)))
 
-(serapeum:export-always 'echo)
+(export-always 'echo)
 (defun echo (&rest args)
   "Echo ARGS in the message view.
 The first argument can be a format string and the following arguments will be
@@ -794,7 +794,7 @@ Possible improvements:
            instead of (echo \"directory is ~~/Downloads/\")
 - Use `echo-safe' or use the ~~s directive directly." args))))
 
-(serapeum:export-always 'echo-safe)
+(export-always 'echo-safe)
 (defun echo-safe (&rest args)
   "Echo strings without expanding format directives unlike other `echo' commands."
   (let ((text (str:join " " args)))
@@ -802,7 +802,7 @@ Possible improvements:
     (unless (str:emptyp text)
       (log:info "~s" text))))
 
-(serapeum:export-always 'echo-warning)
+(export-always 'echo-warning)
 (defun echo-warning (&rest args)
   "Like `echo' but prefix with \"Warning\" and output to the standard error."
   (let ((text (apply #'format nil args)))
@@ -811,13 +811,13 @@ Possible improvements:
     (unless (str:emptyp text)
       (log:warn "~a" text))))
 
-(serapeum:export-always 'echo-dismiss)
+(export-always 'echo-dismiss)
 (defmethod echo-dismiss ()
   ;; Don't add to the *Messages* buffer:
   (%echo-status "" :message nil))
 
 (declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
-(serapeum:export-always 'ring-insert-clipboard)
+(export-always 'ring-insert-clipboard)
 (defun ring-insert-clipboard (ring)
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
@@ -831,7 +831,7 @@ Return most recent entry in RING."
   "Paste clipboard text to input."
   (insert (ring-insert-clipboard (clipboard-ring *browser*)) minibuffer))
 
-(serapeum:export-always 'get-candidate)
+(export-always 'get-candidate)
 (defmethod get-candidate ((minibuffer minibuffer))
   "Return the string for the current candidate in the minibuffer."
   (with-slots (completions completion-cursor)

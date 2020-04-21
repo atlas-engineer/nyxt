@@ -13,7 +13,7 @@
 (hooks:define-hook-type download (function (download-manager:download)))
 (hooks:define-hook-type window-buffer (function (window buffer)))
 (hooks:define-hook-type resource resource-handler-type)
-(sera:export-always 'make-handler-resource)
+(export-always 'make-handler-resource)
 
 (defclass-export window ()
   ((id :accessor id :initarg :id)
@@ -110,7 +110,7 @@ Example formatter that prints the buffer indices over the total number of buffer
 
 (define-class-type proxy)
 (declaim (type (proxy-type) *proxy-class*))
-(serapeum:export-always '*proxy-class*)
+(export-always '*proxy-class*)
 (defparameter *proxy-class* 'proxy)
 
 (defclass-export buffer ()
@@ -659,7 +659,7 @@ current buffer."
   (incf (slot-value browser 'total-buffer-count)))
 
 (declaim (ftype (function (window buffer)) set-window-title))
-(serapeum:export-always 'set-window-title)
+(export-always 'set-window-title)
 (defun set-window-title (window buffer)
   "Set current window title to 'Next - TITLE - URL.
 If Next was started from a REPL, use 'Next REPL...' instead.
@@ -674,7 +674,7 @@ This is useful to tell REPL instances from binary ones."
                                        url))))
 
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
-(serapeum:export-always 'window-set-active-buffer)
+(export-always 'window-set-active-buffer)
 (defun window-set-active-buffer (window buffer) ; TODO: Rename window-set-buffer.
   "Set BROWSER's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
@@ -745,7 +745,7 @@ If none is found, fall back to `scheme:cua'."
 (defun request-resource-open-url-focus (&key url &allow-other-keys)
   (open-urls (list url) :no-focus nil))
 
-(serapeum:export-always 'request-resource)
+(export-always 'request-resource)
 (defun request-resource (buffer
                          &key url event-type
                            (is-new-window nil) (is-known-type t) (keys '())
@@ -803,7 +803,7 @@ Deal with URL with the following rules:
   (when (current-window)
     (ffi-print-message (current-window) message)))
 
-(serapeum:export-always 'current-window)
+(export-always 'current-window)
 (defun current-window (&optional no-rescan)
   ;; TODO: Get rid of the NO-RESCAN option and find a fast way to retrieve
   ;; current window reliably.
@@ -819,7 +819,7 @@ sometimes yields the wrong reasult."
         (slot-value *browser* 'last-active-window)
         (ffi-window-active *browser*))))
 
-(serapeum:export-always 'current-buffer)
+(export-always 'current-buffer)
 (defun current-buffer ()
   "Get the active buffer for the active window."
   (match (current-window)
@@ -832,7 +832,7 @@ sometimes yields the wrong reasult."
 ;; But we can't use "minibuffer" here since it's not declared yet.  It will
 ;; crash Next if we call set-current-buffer before instantiating the first
 ;; minibuffer.
-(serapeum:export-always 'set-current-buffer)
+(export-always 'set-current-buffer)
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
   (unless (eq 'minibuffer (class-name (class-of buffer)))
@@ -841,7 +841,7 @@ sometimes yields the wrong reasult."
         (make-window buffer))
     buffer))
 
-(serapeum:export-always 'current-minibuffer)
+(export-always 'current-minibuffer)
 (defun current-minibuffer ()
   "Return the currently active minibuffer."
   (first (active-minibuffers (current-window))))
@@ -860,7 +860,7 @@ sometimes yields the wrong reasult."
 
 (defmacro define-ffi-method (name arguments)
   `(progn
-     (serapeum:export-always ',name)
+     (export-always ',name)
      (defmethod ,name (,@arguments)
        (declare (ignore ,@(delete-if (lambda (sym) (str:starts-with-p "&" (string sym)))
                                      (mapcar (alex:compose #'first #'uiop:ensure-list)
@@ -896,5 +896,5 @@ sometimes yields the wrong reasult."
 
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))
-(serapeum:export-always '*browser-class*)
+(export-always '*browser-class*)
 (defparameter *browser-class* 'browser)

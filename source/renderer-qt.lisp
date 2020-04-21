@@ -33,7 +33,7 @@
 
 (define-class-type window)
 (declaim (type (window-type) *window-class*))
-(serapeum:export-always '*window-class*)
+(export-always '*window-class*)
 (defparameter *window-class* 'qt-window)
 
 (defclass-export qt-buffer (buffer)
@@ -41,7 +41,7 @@
 
 (define-class-type buffer)
 (declaim (type (buffer-type) *buffer-class*))
-(serapeum:export-always '*buffer-class*)
+(export-always '*buffer-class*)
 (defparameter *buffer-class* 'qt-buffer)
 
 (defmethod initialize-instance :after ((window qt-window) &key)

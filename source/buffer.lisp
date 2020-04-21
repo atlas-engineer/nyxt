@@ -77,7 +77,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       ((guard f f)
        (funcall-safely f)))))
 
-(serapeum:export-always 'buffer-list)
+(export-always 'buffer-list)
 (defun buffer-list (&key sort-by-time)
   (let ((buf-list (alex:hash-table-values (buffers *browser*))))
     (if sort-by-time
@@ -86,7 +86,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
               :key #'last-access)
         buf-list)))
 
-(serapeum:export-always 'window-list)
+(export-always 'window-list)
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
 
@@ -153,7 +153,7 @@ to the currently active buffer."
                                           ; to call this.
   (ps:chain document title))
 
-(serapeum:export-always 'set-url)
+(export-always 'set-url)
 (defun set-url (input-url &key (buffer (current-buffer)) raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'."

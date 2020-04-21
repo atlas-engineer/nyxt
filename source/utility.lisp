@@ -3,7 +3,7 @@
 
 (in-package :next)
 
-(serapeum:export-always 'object-string)
+(export-always 'object-string)
 (defmethod object-string ((object t))
   (princ-to-string object))
 
@@ -30,13 +30,13 @@ understand the security risks associated to this before running this command."
   (ensure-directories-exist (directory-namestring path))
   path)
 
-(serapeum:export-always 'member-string)
+(export-always 'member-string)
 (defun member-string (string list)
   "Return the tail of LIST beginning whose first element is STRING."
   (check-type string string)
   (member string list :test #'string=))
 
-(serapeum:export-always 'notify)
+(export-always 'notify)
 (defun notify (msg)
   "Echo this message and display it with a desktop notification system (notify-send on linux, terminal-notifier on macOs)."
   (echo-safe msg)
@@ -47,7 +47,7 @@ understand the security risks associated to this before running this command."
      #+darwin
      (list "terminal-notifier" "-title" "Next" "-message" msg))))
 
-(serapeum:export-always 'launch-and-notify)
+(export-always 'launch-and-notify)
 (defun launch-and-notify (command &key (success-msg "Command succeded.") (error-msg "Command failed."))
   "Run this program asynchronously and notify when it is finished."
   (bt:make-thread
@@ -77,7 +77,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
-(sera:export-always '%paste)
+(export-always '%paste)
 (define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *browser*))))
   (let* ((active-element (ps:chain document active-element))
          (start-position (ps:chain active-element selection-start))
@@ -92,17 +92,17 @@ from a binary) then any condition is logged instead of triggering the debugger."
 (define-parenscript %print-buffer ()
   (print))
 
-(sera:export-always 'print-buffer)
+(export-always 'print-buffer)
 (define-command print-buffer ()
   "Print the current buffer."
   (%print-buffer))
 
-(sera:export-always '%copy)
+(export-always '%copy)
 (define-parenscript %copy ()
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
 
-(sera:export-always 'set-renderer)
+(export-always 'set-renderer)
 (defun set-renderer (&optional renderer)
   "Set the renderer to the RENDERER if supplied, otherwise, check for
    the existence of classes that define renderers."
@@ -114,8 +114,8 @@ from a binary) then any condition is logged instead of triggering the debugger."
         (setf *renderer-class*
               (intern (str:replace-all "-BROWSER" "" (symbol-name found-renderer-class)))))))
 
-(serapeum:export-always '%slot-default)
-(serapeum:export-always 'define-configuration)
+(export-always '%slot-default)
+(export-always 'define-configuration)
 (defmacro define-configuration (super &body slots)
   "Helper macro to customize class slots.
 It generates a user-SUPER subclass of SUPER.

@@ -2,7 +2,7 @@
 
 (in-package :next)
 
-(serapeum:export-always 'defclass-export)
+(export-always 'defclass-export)
 (defmacro defclass-export (name supers &body (slots . options))
   `(serapeum.exporting:defclass ,name ,supers ,slots ,@options))
 
@@ -43,7 +43,7 @@ An object of this type is a subclass of CLASS-SYM."
        (deftype ,type-fun ()
          '(satisfies ,type-pred)))))
 
-(serapeum:export-always 'define-parenscript)
+(export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.
 SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
@@ -74,7 +74,7 @@ ARGS must be key arguments."
                                                              (format t res))))
      (declare (ignorable res))))
 
-(serapeum:export-always 'with-result)
+(export-always 'with-result)
 (defmacro with-result ((symbol async-form) &body body)
   "Call ASYNC-FORM.
 When ASYNC-FORM returns, its result is bound to SYMBOL and BODY is executed.
@@ -90,7 +90,7 @@ Example:
     ,@(rest async-form)
     :callback (lambda (,symbol) ,@body)))
 
-(serapeum:export-always 'with-result*)
+(export-always 'with-result*)
 (defmacro with-result* (bindings &body body)
   "Like WITH-RESULT but allows for chained asynchronous bindings.
 
