@@ -1158,6 +1158,12 @@ container on GNU/Linux.
   guix environment --container --network --expose=/etc/ssl/certs --expose="$HOME/.config/next/" --share="$HOME/.local/share/next"="$HOME/.local/share/next/" --ad-hoc coreutils nss-certs next -- env DISPLAY="$DISPLAY" next
   #+end_src
 
+  If you get an error like
+
+  : libGL error: failed to open /dev/dri/card0: No such file or directory
+
+  add the =--expose=/dev/dri/card0= option (change the path accordingly).
+
 - With [[https://firejail.wordpress.com/][Firejail]].
 
 ** Font size on HiDPI displays
