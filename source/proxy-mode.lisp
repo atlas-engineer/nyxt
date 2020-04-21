@@ -14,7 +14,13 @@
 
 (define-mode proxy-mode ()
   "Enable forwarding of all network requests to a specific host.
-This can apply to specific buffer."
+As for every mode, it only applies to the current buffer.  If you want to enable
+a proxy for all buffers, add it to the list of default modes.
+
+Example:
+
+\(define-configuration buffer
+  ((default-modes (append '(proxy-mode) %slot-default))))"
   ((proxy :initarg :proxy
           :accessor proxy
           :type proxy
