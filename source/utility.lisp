@@ -70,7 +70,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
       (handler-case
           (apply f args)
         (error (c)
-          (log:error "Error in ~a: ~a" f c)
+          (log:error "In ~a: ~a" f c)
           nil))))
 
 (sera:export-always '%paste)

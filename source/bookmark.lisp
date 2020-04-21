@@ -260,7 +260,7 @@ This can be useful to let the user select no tag when returning directly."
                            entry))
                   entries)))
     (error (c)
-      (log:error "Error during bookmark deserialization: ~a" c)
+      (log:error "During bookmark deserialization: ~a" c)
       nil)))
 
 (defun store-sexp-bookmarks ()
