@@ -32,9 +32,16 @@ This can be used to order the commands.")))
 (export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
-ARGLIST must be a list of optional arguments.
-This macro also define two hooks, NAME-before-hook and NAME-after-hook.
-Regardless of the hook, the command returns the last expression of BODY."
+`define-command' has a syntax similar to `defun'.
+ARGLIST must be a list of optional arguments or key arguments.
+This macro also defines two hooks, NAME-before-hook and NAME-after-hook.
+When run, the command always returns the last expression of BODY.
+
+Example:
+
+\(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
+  \"Play video in the currently open buffer.\"
+  (uiop:run-program (list \"mpv\" (url buffer))))"
   (let ((documentation (if (stringp (first body))
                            (first body)
                            (warn (make-condition

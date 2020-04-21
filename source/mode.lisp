@@ -15,13 +15,21 @@ is the direct-slots list.
 
 A mode toggler command is also defined as NAME.
 Its arguments are passed to the class instantiation.
-Two arguments have a special meaning beside the slot value of the mode:
+Two key arguments have a special meaning beside the slot value of the mode:
 - :BUFFER is used to enable or disable the mode in the corresponding buffer.
   This should always be specified in Lisp code since the active buffer might, if
   any, might not be the right buffer.
 - :ACTIVATE is used to choose whether to enable or disable the mode.
 If :ACTIVATE is omitted, the mode is toggled.
-The buffer is returned so that mode activation can be chained."
+The buffer is returned so that mode toggles can be chained.
+
+Example:
+
+\(define-mode my-mode ()
+  \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
+  ((keymap-schemes :initform (keymap:make-scheme
+                              scheme:emacs *my-keymap*
+                              scheme:vi-normal *my-keymap*))))"
   (let* ((class-var (intern (format nil "*~a-CLASS*" name)))
          (docstring (if (stringp (first body))
                         (first body)
