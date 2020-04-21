@@ -252,7 +252,7 @@ next [options] [urls]")
   "Load or reload the init file.
    If INTERACTIVE is t, allow the debugger on errors.
    If :running, show an error but don't quit the Lisp process."
-  (load-lisp init-file :interactive interactive))
+  (load-lisp init-file :interactive interactive :package (find-package :next-user)))
 
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
