@@ -123,10 +123,17 @@ It binds `*SUPER-class*' to this newly generated class.
 
 The `%slot-default' variable is replaced by the slot initform.
 
-Example:
+Example that sets some defaults for all buffers:
 
 \(define-configuration buffer
-  (default-modes (append '(vi-normal-mode) %slot-default)))"
+  ((status-buffer-height 24)
+   (default-modes (append '(vi-normal-mode) %slot-default))))
+
+In the above, `%slot-default' will be substituted with the default value of
+`default-modes'.
+
+To discover the default value of a slot or for all slots of a class, use the
+`describe-slot' or `describe-class' commands respectively."
   (let* ((name (intern (str:concat "USER-" (symbol-name super))))
          (configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*")))
          (super (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
