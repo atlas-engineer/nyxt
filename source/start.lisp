@@ -350,22 +350,20 @@ Otherwise bind socket."
   "Start Next and load URLS if any. A new `*browser*' is
    instantiated. The platform port is automatically started if
    needed. Finally, run the `*after-init-hook*'."
-  (let ((startup-timestamp (local-time:now)))
+  (let ((startup-timestamp (local-time:now))
+        (startup-error-reporter nil))
     (format t "Next version ~a~&" +version+)
     (setf *session* (derive-session *session*))
     (unless (getf *options* :no-init)
       (handler-case
-          (progn
-            (load-lisp init-file :interactive t :package (find-package :next-user))
-            (setf *browser* (make-instance *browser-class*
-                                           :startup-timestamp startup-timestamp)))
+          (load-lisp init-file :interactive t :package (find-package :next-user))
         (error (c)
-          (setf *browser* (make-instance *browser-class*
-                                         :startup-error-reporter-function
-                                         (lambda () (error-in-new-window
-                                                     "*Init file errors*"
-                                                     (format nil "~a" c)))
-                                         :startup-timestamp startup-timestamp)))))
+          (setf startup-error-reporter
+                (lambda ()
+                  (error-in-new-window "*Init file errors*" (format nil "~a" c)))))))
+    (setf *browser* (make-instance *browser-class*
+                                   :startup-error-reporter-function startup-error-reporter
+                                   :startup-timestamp startup-timestamp))
     (when (single-instance-p *browser*)
       (bind-socket-or-quit urls))
     (ffi-initialize *browser* urls startup-timestamp)))
