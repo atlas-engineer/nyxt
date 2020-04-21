@@ -1,6 +1,3 @@
-;;; command.lisp --- command definition functions
-;;; This file is licensed under license documents/external/LICENSE1.
-
 (in-package :next)
 
 ;; We need a `command' class for multiple reasons:
