@@ -198,43 +198,44 @@ next [options] [urls]")
 (defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
                                                          " because of a type error"))
 
-(declaim (ftype (function (trivial-types:pathname-designator &key (:interactive t)))
+(declaim (ftype (function (trivial-types:pathname-designator &key (:interactive t) (:package (or null package))))
                 load-lisp))
-(defun load-lisp (file &key interactive)
+(defun load-lisp (file &key interactive package)
   "Load the Lisp FILE (or stream).
    If FILE is \"-\", read from the standard input.
    If INTERACTIVE is t, allow the debugger on errors. If :running, show
    an error but don't quit the Lisp process. If nil, quit Lisp (especially
    useful when Next starts up)."
-  (handler-case
-      (progn
-        (when (equal "" file)
-          (error "Can't load empty file name."))
-        (cond
-          ((and (not (streamp file)) (string= (pathname-name file) "-"))
-           (progn
-             (format t "Loading Lisp from standard input...")
-             (loop for object = (read *standard-input* nil :eof)
-                   until (eq object :eof)
-                   do (eval object))))
-          ((streamp file)
-           (load file))
-          ((uiop:file-exists-p file)
-           (format t "~&Loading Lisp file ~s...~&" file)
-           (load file))))
-    (error (c)
-      ;; TODO: Handle warning from `echo'.
-      (let ((message (if (subtypep (type-of c) 'type-error)
-                         *load-init-type-error-message*
-                         *load-init-error-message*)))
-        (cond
-          ((equal interactive :running)
-           (echo-safe (format nil "~a: ~a" message c))
-           (notify (str:concat message ".")))
-          ((null interactive)
-           (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
-           (uiop:quit 1))
-          (t (error "~a:~&~a" message c)))))))
+  (let ((*package* (or (find-package package) *package*)))
+    (handler-case
+        (progn
+          (when (equal "" file)
+            (error "Can't load empty file name."))
+          (cond
+            ((and (not (streamp file)) (string= (pathname-name file) "-"))
+             (progn
+               (format t "Loading Lisp from standard input...")
+               (loop for object = (read *standard-input* nil :eof)
+                     until (eq object :eof)
+                     do (eval object))))
+            ((streamp file)
+             (load file))
+            ((uiop:file-exists-p file)
+             (format t "~&Loading Lisp file ~s...~&" file)
+             (load file))))
+      (error (c)
+        ;; TODO: Handle warning from `echo'.
+        (let ((message (if (subtypep (type-of c) 'type-error)
+                           *load-init-type-error-message*
+                           *load-init-error-message*)))
+          (cond
+            ((equal interactive :running)
+             (echo-safe (format nil "~a: ~a" message c))
+             (notify (str:concat message ".")))
+            ((null interactive)
+             (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
+             (uiop:quit 1))
+            (t (error "~a:~&~a" message c))))))))
 
 (define-command load-file (&key (interactive :running))
   "Load the prompted Lisp file.
