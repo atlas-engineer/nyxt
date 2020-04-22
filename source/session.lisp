@@ -23,14 +23,14 @@ instance of Next."
         (delete-if #'null (mapcar #'buffer-history (web-buffers)))))
 
 (defun store-sexp-session ()
-  "Store the current Next session to the browser `*session*'.
+  "Store the current Next session to the browser `session-path'.
 Currently we store the list of current URLs of all buffers."
   ;; TODO: Should we persist keymaps, constructors, etc.?  For instance, should
   ;; we restore the proxy value?  It may be wiser to let the user configure
   ;; whitelitss / blacklists instead.  It's also easier
-  (unless (uiop:emptyp *session*)
-    (ensure-parent-exists *session*)
-    (with-open-file (file *session*
+  (unless (uiop:emptyp (session-path *browser*))
+    (ensure-parent-exists (session-path *browser*))
+    (with-open-file (file (session-path *browser*)
                           :direction :output
                           :if-does-not-exist :create
                           :if-exists :supersede)
@@ -46,9 +46,9 @@ Currently we store the list of current URLs of all buffers."
                   (read in)))))))
 
 (defun restore-sexp-session ()
-  "Restore the current Next session from the browser `*session*'."
+  "Restore the current Next session from the browser `session-path'."
   (handler-case
-      (match (with-open-file (file *session*
+      (match (with-open-file (file (session-path *browser*)
                                    :direction :input
                                    :if-does-not-exist nil)
                (when file
@@ -82,4 +82,4 @@ Currently we store the list of current URLs of all buffers."
            ;; Or else we could include `access-time' in the buffer class.
            )))
     (error (c)
-      (log:warn "Failed to restore session from ~a: ~a" *session* c))))
+      (log:warn "Failed to restore session from ~a: ~a" (session-path *browser*) c))))

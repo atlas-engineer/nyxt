@@ -450,16 +450,21 @@ The function which stores the bookmarks into `bookmarks-path'.")
                                :initform #'restore-sexp-bookmarks
                                :documentation "
 The function which restores the bookmarks from `bookmarks-path'.")
+   (session-path :initarg :session-path
+                 :accessor session-path
+                 :initform (expand-session-path "default.lisp")
+                 :documentation "
+The path where the system will create/save the session.")
    (session-store-function :accessor session-store-function
                            :type function
                            :initform #'store-sexp-session
                            :documentation "The function which stores the session
-into `*session*'.")
+into `session-path'.")
    (session-restore-function :accessor session-restore-function
                              :type function
                              :initform #'restore-sexp-session
                              :documentation "The function which restores the session
-from `*session*'.")
+from `session-path'.")
    (standard-output-path :accessor standard-output-path
                          :initform (xdg-data-home "standard-out.txt")
                          :documentation "Path where `*standard-output*'

@@ -88,16 +88,17 @@ Warning: any existing file will be overwritten."
   (setf
    (session-store-function *browser*) nil
    (session-restore-function *browser*) nil)
-  (uiop:delete-file-if-exists *session*)
+  (uiop:delete-file-if-exists (session-path *browser*))
   (quit))
 
-(defun derive-session (name) ; TODO: Remove *session* and use same technique as `init-file-path'?
-  "Derive session file from NAME.
+(defun expand-session-path (name)
+  "Derive session file from command line option --session or NAME.
 If NAME has a slash, use the file it refers to.
 Without slash, NAME (with .lisp appended if not already there), store in
 the (xdg-data-home \"sessions \") folder."
+  (setf name (or (getf *options* :session) name))
   (cond
-    ((uiop:emptyp name)
+    ((or (getf *options* :no-session) (uiop:emptyp name))
      "")
     ((search "/" name)
      name)
@@ -225,8 +226,8 @@ use the socket without parsing any init file."
     (funcall-safely (startup-error-reporter-function *browser*)))
   (match (session-restore-function *browser*)
     ((guard f f)
-     (when (uiop:file-exists-p *session*)
-       (log:info "Restoring session '~a'" *session*)
+     (when (uiop:file-exists-p (session-path *browser*))
+       (log:info "Restoring session '~a'" (session-path *browser*))
        (funcall f)))))
 
 (defun open-external-urls (urls)
@@ -361,13 +362,6 @@ Finally,run the `*after-init-hook*'."
           (format t "Arguments parsed: ~a and ~a~&" *options* free-args))
         (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
-    (setf *session*
-          (if (getf *options* :no-session)
-              ""
-              (or (getf *options* :session)
-                  *session*)))
-
-    (setf *session* (derive-session *session*))
     (unless (or (getf *options* :no-init)
                 (not (init-file-path)))
       (handler-case
