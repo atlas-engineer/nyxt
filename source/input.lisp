@@ -8,7 +8,12 @@
                 make-keymap))
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
-  "Like `keymap:make-keymap' but only allow binding functions."
+  "Like `keymap:make-keymap' but only allow binding functions.
+
+Example:
+
+\(defvar *my-keymap* (make-keymap \"my-map\")
+  \"My keymap.\")"
   (let ((keymap (apply #'keymap:make-keymap name parents)))
     (setf (keymap:bound-type keymap) '(or keymap:keymap function))
     keymap))
