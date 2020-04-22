@@ -144,61 +144,49 @@ the (xdg-data-home \"sessions \") folder."
 (defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
                                                          " because of a type error"))
 
-(declaim (ftype (function (trivial-types:pathname-designator &key (:interactive t) (:package (or null package))))
+(declaim (ftype (function (trivial-types:pathname-designator &key (:package (or null package))))
                 load-lisp))
-(defun load-lisp (file &key interactive package) ; TODO: Replace `interactive' with `*keep-alive*'.
+(defun load-lisp (file &key package)
   "Load the Lisp FILE (or stream).
-   If FILE is \"-\", read from the standard input.
-   If INTERACTIVE is t, allow the debugger on errors. If :running, show
-   an error but don't quit the Lisp process. If nil, quit Lisp (especially
-   useful when Next starts up)."
+   If FILE is \"-\", read from the standard input."
   (let ((*package* (or (find-package package) *package*)))
-    (handler-case
-        (progn
-          (when (equal "" file)
-            (error "Can't load empty file name."))
-          (cond
-            ((and (not (streamp file)) (string= (pathname-name file) "-"))
-             (progn
-               (format t "Loading Lisp from standard input...")
-               (loop for object = (read *standard-input* nil :eof)
-                     until (eq object :eof)
-                     do (eval object))))
-            ((streamp file)
-             (load file))
-            ((uiop:file-exists-p file)
-             (format t "~&Loading Lisp file ~s...~&" file)
-             (load file))))
-      (error (c)
-        ;; TODO: Handle warning from `echo'.
-        (let ((message (if (subtypep (type-of c) 'type-error)
-                           *load-init-type-error-message*
-                           *load-init-error-message*)))
-          (cond
-            ((equal interactive :running)
-             (echo-safe (format nil "~a: ~a" message c))
-             (notify (str:concat message ".")))
-            ((null interactive)
-             (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red message) c)
-             (uiop:quit 1))
-            (t (error "~a:~&~a" message c))))))))
+    (flet ((safe-load ()
+             (when (equal "" file)
+               (error "Can't load empty file name."))
+             (cond
+               ((and (not (streamp file)) (string= (pathname-name file) "-"))
+                (progn
+                  (format t "Loading Lisp from standard input...")
+                  (loop for object = (read *standard-input* nil :eof)
+                        until (eq object :eof)
+                        do (eval object))))
+               ((streamp file)
+                (load file))
+               ((uiop:file-exists-p file)
+                (format t "~&Loading Lisp file ~s...~&" file)
+                (load file)))))
+      (if *keep-alive*
+          (safe-load)
+          (handler-case
+              (safe-load)
+            (error (c)
+              (let ((message (if (subtypep (type-of c) 'type-error)
+                                 *load-init-type-error-message*
+                                 *load-init-error-message*)))
+                (echo-warning "~a: ~a" message c)
+                (notify (str:concat message ".")))))))))
 
-(define-command load-file (&key (interactive :running))
-  "Load the prompted Lisp file.
-   If INTERACTIVE is t, allow the debugger on errors.
-   If :running, show an error but don't quit the Lisp process."
+(define-command load-file ()
+  "Load the prompted Lisp file."
   (with-result (file-name-input (read-from-minibuffer
                                  (make-minibuffer
                                   :input-prompt "Load file"
                                   :show-completion-count nil)))
-    (load-lisp file-name-input :interactive interactive)))
+    (load-lisp file-name-input)))
 
-(define-command load-init-file (&key (init-file (init-file-path))
-                                (interactive :running))
-  "Load or reload the init file.
-   If INTERACTIVE is t, allow the debugger on errors.
-   If :running, show an error but don't quit the Lisp process."
-  (load-lisp init-file :interactive interactive :package (find-package :next-user)))
+(define-command load-init-file (&key (init-file (init-file-path)))
+  "Load or reload the init file."
+  (load-lisp init-file :package (find-package :next-user)))
 
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
@@ -335,7 +323,7 @@ next [options] [urls]"))
 The evaluation may happen on its own instance or on an already running instance."
   (unless (or (getf *options* :no-init)
               (not (init-file-path)))
-    (load-lisp (init-file-path) :interactive nil :package (find-package :next-user)))
+    (load-lisp (init-file-path) :package (find-package :next-user)))
   ;; We need a browser instance so that listen-socket-p can know the socket path.
   ;; TODO: Use slot default instead?  Ideally, socket could also
   ;; be a command line parameter so that multiple instances can be started.
@@ -376,7 +364,7 @@ Finally,run the `*after-init-hook*'."
     (unless (or (getf *options* :no-init)
                 (not (init-file-path)))
       (handler-case
-          (load-lisp (init-file-path) :interactive t :package (find-package :next-user))
+          (load-lisp (init-file-path) :package (find-package :next-user))
         (error (c)
           (setf startup-error-reporter
                 (lambda ()
