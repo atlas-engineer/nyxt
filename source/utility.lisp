@@ -17,12 +17,13 @@
       (str:replace-all "next/" "" (str:downcase (package-name package)))))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
-  "Start a Swank server that can be connected to, for instance, in Emacs via
-SLIME.
+  "Start a Swank server that can be connected to, for instance, in
+Emacs via SLIME.
 
-Warning: This allows Next to be controlled remotely, that is, to execute
-aritrary code with the privileges of the user running Next.  Make sure you
-understand the security risks associated to this before running this command."
+Warning: This allows Next to be controlled remotely, that is, to
+execute arbitrary code with the privileges of the user running Next.
+Make sure you understand the security risks associated with this
+before running this command."
   (swank:create-server :port swank-port :dont-close t))
 
 (defun ensure-parent-exists (path)
