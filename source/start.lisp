@@ -135,59 +135,11 @@ the (xdg-data-home \"sessions \") folder."
 
 (serapeum:export-always 'entry-point)
 (defun entry-point ()
-  "Read the CLI arguments and start the interface."
+  "Read the CLI arguments and start the browser."
   (multiple-value-bind (options free-args)
       (parse-cli-args)
-    (when (getf options :help)
-      (opts:describe :prefix "Next command line usage:
-
-next [options] [urls]")
-      (uiop:quit))
-    (when (getf options :version)
-      (format t "Next ~a~&" +version+)
-      (uiop:quit))
-    (when (getf options :verbose)
-      (set-debug-level :debug)
-      (format t "Arguments parsed: ~a and ~a~&" options free-args))
-    (unless (getf options :verbose)
-      (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
-
-    (when (getf options :script)
-      (with-open-file (f (getf options :script) :element-type :default)
-        (maybe-skip-shebang-line f)
-        (load-lisp f))
-      (uiop:quit))
-
-    (when (or (getf options :load)
-              (getf options :eval))
-      (unless (or (getf options :no-init)
-                  (not (init-file-path)))
-        (load-lisp (init-file-path) :interactive nil :package (find-package :next-user)))
-      ;; We need a browser instance so that listen-socket-p can know the socket path.
-      ;; TODO: Use (get-default ...) instead?  Ideally, socket could also
-      ;; be a command line parameter so that multiple instances can be started.
-      (setf *browser* (make-instance *browser-class*))
-      (loop for (opt value . _) on options
-            do (match opt
-                 (:load (let ((value (uiop:truename* value)))
-                          ;; Absolute path is necessary since remote process may have
-                          ;; a different working directory.
-                          (if (getf options :remote)
-                              (remote-eval (format nil "~s" `(load-lisp ,value)))
-                              (load-lisp value))))
-                 (:eval (if (getf options :remote)
-                            (remote-eval value)
-                            (eval-expr value)))))
-      (uiop:quit))
-
-    (setf *session*
-          (if (getf options :no-session)
-              ""
-              (or (getf options :session)
-                  *session*)))
-    (setf *options* options)
     (setf *keep-alive* nil)             ; Not a REPL.
-    (start :urls free-args)))
+    (apply #'start options free-args)))
 
 (defun init-file-path (&key (default-basename "init.lisp"))
   "Return the path of the initialization file."
@@ -350,7 +302,67 @@ Otherwise bind socket."
         (uiop:quit))))
 
 (export-always 'start)
-(defun start (&key urls (init-file (init-file-path)))
+(defun start (&optional options &rest free-args)
+  "Parse options (either from command line or from the REPL) and perform the
+corresponding action.
+With no action, start the browser.
+
+REPL examples:
+
+- Display version and return immediately:
+  (next:start '(:version t))
+
+- Start the browser and open the given URLs.
+  (next:start nil \"https://next.atlas.engineer\" \"https://en.wikipedia.org\")"
+  ;; Options should be accessible anytime, even when run from the REPL.
+  (setf *options* options)
+
+  (cond
+    ((getf options :help)
+     (opts:describe :prefix "Next command line usage:
+
+next [options] [urls]"))
+
+    ((getf options :version)
+     (format t "Next version ~a~&" +version+))
+
+    ((getf options :script)
+     (with-open-file (f (getf options :script) :element-type :default)
+       (maybe-skip-shebang-line f)
+       (load-lisp f)))
+
+    ((or (getf options :load)
+         (getf options :eval))
+     (start-load-or-eval))
+
+    (t
+     (start-browser free-args)))
+
+  (unless *keep-alive* (uiop:quit)))
+
+(defun start-load-or-eval ()
+  "Evaluate Lisp.
+The evaluation may happen on its own instance or on an already running instance."
+  (unless (or (getf *options* :no-init)
+              (not (init-file-path)))
+    (load-lisp (init-file-path) :interactive nil :package (find-package :next-user)))
+  ;; We need a browser instance so that listen-socket-p can know the socket path.
+  ;; TODO: Use slot default instead?  Ideally, socket could also
+  ;; be a command line parameter so that multiple instances can be started.
+  (setf *browser* (make-instance *browser-class*))
+  (loop for (opt value . _) on *options*
+        do (match opt
+             (:load (let ((value (uiop:truename* value)))
+                      ;; Absolute path is necessary since remote process may have
+                      ;; a different working directory.
+                      (if (getf *options* :remote)
+                          (remote-eval (format nil "~s" `(load-lisp ,value)))
+                          (load-lisp value))))
+             (:eval (if (getf *options* :remote)
+                        (remote-eval value)
+                        (eval-expr value))))))
+
+(defun start-browser (free-args)
   "Load INIT-FILE if non-nil.
 Instantiate `*browser*'.
 Start Next and load URLS if any.
@@ -358,11 +370,23 @@ Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (format t "Next version ~a~&" +version+)
+    (if (getf *options* :verbose)
+        (progn
+          (log:config :debug)
+          (format t "Arguments parsed: ~a and ~a~&" *options* free-args))
+        (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
+
+    (setf *session*
+          (if (getf *options* :no-session)
+              ""
+              (or (getf *options* :session)
+                  *session*)))
+
     (setf *session* (derive-session *session*))
     (unless (or (getf *options* :no-init)
-                (not init-file))
+                (not (init-file-path)))
       (handler-case
-          (load-lisp init-file :interactive t :package (find-package :next-user))
+          (load-lisp (init-file-path) :interactive t :package (find-package :next-user))
         (error (c)
           (setf startup-error-reporter
                 (lambda ()
@@ -371,8 +395,8 @@ Finally,run the `*after-init-hook*'."
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
     (when (single-instance-p *browser*)
-      (bind-socket-or-quit urls))
-    (ffi-initialize *browser* urls startup-timestamp)))
+      (bind-socket-or-quit free-args))
+    (ffi-initialize *browser* free-args startup-timestamp)))
 
 (define-command next-init-time ()
   "Return the duration of Next initialization."
