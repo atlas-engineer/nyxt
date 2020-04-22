@@ -31,6 +31,7 @@
             raw-list)))
 
 (defmethod clip-password ((password-interface password-store-interface) password-name &optional service)
+  (declare (ignore service))
   (clip-password-string
    ;; The common way to store secret in password-store is to use the first line
    ;; for the secret; there's no standard for how to encode anything else.
@@ -45,6 +46,7 @@
 
 (defmethod save-password ((password-interface password-store-interface)
                           password-name password &optional service)
+  (declare (ignore service))
   (if (str:emptyp password)
       (uiop:run-program (list *password-store-program* "generate" password-name))
       (with-open-stream (st (make-string-input-stream password))
