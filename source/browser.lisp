@@ -146,7 +146,16 @@ for all modes in the current buffer.")
                              map)
                  :documentation "This keymap is always looked up first, it
 overrides all other bindings.  No libraries should ever touch the override-map,
-this is left for the user to customize to their needs.")
+this is left for the user to customize to their needs.
+
+Example:
+
+\(define-configuration buffer
+  ((override-map (let ((map (make-keymap \"overide-map\")))
+                             (define-key map
+                               \"M-x\" #'execute-command
+                               \"C-q\" #'quit)
+                   map))))")
    (forward-input-events-p :accessor forward-input-events-p
                            :initarg :forward-input-events-p
                            :type boolean
