@@ -142,10 +142,12 @@ This can be useful to let the user select no tag when returning directly."
             (:h1 "Bookmarks")
             (:body
              (loop for bookmark in (bookmarks-data *browser*)
-                   collect (markup:markup (:h4 (:a :href (url bookmark) (title bookmark)))
-                                          (:p "URL: "(url bookmark))
-                                          (:p "Tags: "(format nil " (~{~a~^, ~})" (tags bookmark)))
-                                          (:br ""))))))
+                   collect (markup:markup (:p (:a :href (url bookmark) (url bookmark))
+                                              " "
+                                              ;; The :a tag must be on the URL because a bookmark may have no title.
+                                              (:b (title bookmark))
+                                              (when (tags bookmark)
+                                                (format nil " (~{~a~^, ~})" (tags bookmark)))))))))
          (insert-contents (ps:ps (setf (ps:@ document Body |innerHTML|)
                                        (ps:lisp bookmark-contents)))))
     (ffi-buffer-evaluate-javascript bookmarks-buffer insert-contents)
