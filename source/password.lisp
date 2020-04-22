@@ -11,13 +11,17 @@
       (with-result* ((password-name (read-from-minibuffer
                                      (make-minibuffer
                                       :input-prompt "Name for new password")))
+                     (service (read-from-minibuffer
+                               (make-minibuffer
+                                :input-prompt "Service")))
                      (new-password (read-from-minibuffer
                                     (make-minibuffer
                                      :invisible-input-p t
                                      :input-prompt "New password (leave empty to generate)"))))
         (password:save-password (password-interface *browser*)
                                 :password-name password-name
-                                :password new-password))
+                                :password new-password
+                                :service service))
       (echo-warning "No password manager found.")))
 
 (defmacro with-password (password-interface &body body)
