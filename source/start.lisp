@@ -149,6 +149,8 @@ next [options] [urls]")
     (when (getf options :verbose)
       (set-debug-level :debug)
       (format t "Arguments parsed: ~a and ~a~&" options free-args))
+    (unless (getf options :verbose)
+      (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
     (when (getf options :script)
       (with-open-file (f (getf options :script) :element-type :default)
