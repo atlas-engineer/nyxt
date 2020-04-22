@@ -66,7 +66,7 @@ vi-normal-mode.")
        ;; TODO: Forwarding C-v / button2 crashes cl-webkit.  See
        ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
        "C-v" #'next/web-mode:paste
-       "button2" #'next/web-mode:paste
+       "button2" #'next/web-mode:maybe-paste
        "escape" #'vi-normal-mode
        "button1" #'vi-button1)))
    (destructor
@@ -86,14 +86,6 @@ vi-normal-mode.")
         (vi-normal-mode :activate nil :buffer buffer)
         (setf (keymap-scheme-name buffer) scheme:vi-insert))))))
 
-(define-parenscript %clicked-in-input? ()
-  (ps:chain document active-element tag-name))
-
-(declaim (ftype (function ((or string null)) boolean) input-tag-p))
-(defun input-tag-p (tag)
-  (or (string= tag "INPUT")
-      (string= tag "TEXTAREA")))
-
 (define-command vi-button1 (&optional (buffer (current-buffer)))
   "Enable VI insert mode when focus is on an input element on the web page."
   (let ((root-mode (find-mode buffer 'root-mode)))
@@ -102,13 +94,13 @@ vi-normal-mode.")
     (ffi-generate-input-event
      (current-window)
      (last-event (buffer root-mode)))
-    (%clicked-in-input?
+    (next/web-mode:%clicked-in-input?
      :callback (lambda (response)
                  (cond
-                   ((and (input-tag-p response)
+                   ((and (next/web-mode:input-tag-p response)
                          (find-submode (buffer root-mode) 'vi-normal-mode))
                     (vi-insert-mode))
-                   ((and (not (input-tag-p response))
+                   ((and (not (next/web-mode:input-tag-p response))
                          (find-submode (buffer root-mode) 'vi-insert-mode))
                     (vi-normal-mode)))))))
 
