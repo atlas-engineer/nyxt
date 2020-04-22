@@ -147,7 +147,9 @@ This is an acceptable handler for `request-resource-hook'."
              (blacklisted-host-p mode
                                  (ignore-errors (quri:uri-host (quri:uri url)))))
         (progn
-          (log:info "Dropping ~a" url)
+          (log:debug "Dropping ~a for ~a (~a)" url
+                     buffer
+                     (object-string))
           :stop)
         ;; Fallback on the other handlers from `request-resource-hook'.
         nil)))

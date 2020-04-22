@@ -33,4 +33,7 @@ Example:
     :initform
     (lambda (mode)
       (setf (proxy (buffer mode)) (proxy mode))
-      (echo "Proxy set to ~a (whitelisting ~a)." (server-address (proxy mode)) (whitelist (proxy mode)))))))
+      (echo "Proxy set to ~a (whitelisting ~a) for ~a."
+            (server-address (proxy mode))
+            (whitelist (proxy mode))
+            (buffer mode))))))
