@@ -158,7 +158,8 @@ next [options] [urls]")
 
     (when (or (getf options :load)
               (getf options :eval))
-      (unless (getf options :no-init)
+      (unless (or (getf options :no-init)
+                  (not (init-file-path)))
         (load-lisp (init-file-path) :interactive nil :package (find-package :next-user)))
       ;; We need a browser instance so that listen-socket-p can know the socket path.
       ;; TODO: Use (get-default ...) instead?  Ideally, socket could also
@@ -186,13 +187,14 @@ next [options] [urls]")
     (setf *keep-alive* nil)             ; Not a REPL.
     (start :urls free-args)))
 
-(defun init-file-path (&optional (filename "init.lisp"))
-  "The path where the system will look to load an init file from. This
-   can't be a regular variable or else the value will be hard-coded at
-   compile time.  It seems to be hard-coded with (eval-when (:execute)
-   ...) as well."
-  (or (getf *options* :init)
-      (xdg-config-home filename)))
+(defun init-file-path (&key (default-basename "init.lisp"))
+  "Return the path of the initialization file."
+  ;; This can't be a regular variable or else the value will be hard-coded at
+  ;; compile time, even with (eval-when (:execute) ...
+  (match (getf *options* :init)
+    (nil (xdg-config-home default-basename))
+    ("" nil)
+    (file file)))
 
 (defparameter *load-init-error-message* "Error: Could not load the init file")
 (defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
@@ -200,7 +202,7 @@ next [options] [urls]")
 
 (declaim (ftype (function (trivial-types:pathname-designator &key (:interactive t) (:package (or null package))))
                 load-lisp))
-(defun load-lisp (file &key interactive package)
+(defun load-lisp (file &key interactive package) ; TODO: Replace `interactive' with `*keep-alive*'.
   "Load the Lisp FILE (or stream).
    If FILE is \"-\", read from the standard input.
    If INTERACTIVE is t, allow the debugger on errors. If :running, show
@@ -347,14 +349,16 @@ Otherwise bind socket."
 
 (export-always 'start)
 (defun start (&key urls (init-file (init-file-path)))
-  "Start Next and load URLS if any. A new `*browser*' is
-   instantiated. The platform port is automatically started if
-   needed. Finally, run the `*after-init-hook*'."
+  "Load INIT-FILE if non-nil.
+Instantiate `*browser*'.
+Start Next and load URLS if any.
+Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (format t "Next version ~a~&" +version+)
     (setf *session* (derive-session *session*))
-    (unless (getf *options* :no-init)
+    (unless (or (getf *options* :no-init)
+                (not init-file))
       (handler-case
           (load-lisp init-file :interactive t :package (find-package :next-user))
         (error (c)
