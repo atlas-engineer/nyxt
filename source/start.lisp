@@ -130,6 +130,7 @@ the (xdg-data-home \"sessions \") folder."
   (multiple-value-bind (options free-args)
       (parse-cli-args)
     (setf *keep-alive* nil)             ; Not a REPL.
+    (in-package :next-user)
     (apply #'start options free-args)))
 
 (serapeum:export-always 'init-file-path)
