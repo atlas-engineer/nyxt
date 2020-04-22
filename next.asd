@@ -194,7 +194,8 @@
   :components ((:file "package")
                (:file "password")
                (:file "password-pass")
-               (:file "password-keepassxc")))
+               (:file "password-keepassxc")
+               (:file "password-security")))
 
 (asdf:defsystem next/hooks
   :depends-on (alexandria serapeum)
