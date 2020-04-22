@@ -67,10 +67,11 @@ Example formatter that prints the buffer indices over the total number of buffer
 \(defun my-format-status (window)
   (declare (ignore window))
   (let* ((buffer (current-buffer))
-         (buffer-count (1+ (position buffer
-                                     (sort (alexandria:hash-table-values (buffers *browser*))
-                                           #'<
-                                           :key #'id)))))
+         (buffer-count (1+ (or (position buffer
+                                         (sort (alexandria:hash-table-values (buffers *browser*))
+                                               #'<
+                                               :key #'id))
+                               0)))
     (format nil \"[~{~a~^ ~}] (~a/~a) ~a — ~a\"
             (mapcar (lambda (m) (str:replace-all \"-mode\" \"\"
                                                  (str:downcase
