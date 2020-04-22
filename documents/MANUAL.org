@@ -7,6 +7,7 @@ end-user allowing for infinite customization.
 :PROPERTIES:
 :TOC:      this
 :END:
+-  [[#getting-help][Getting help]]
 -  [[#basics][Basics]]
   -  [[#navigation][Navigation]]
   -  [[#zooming-page][Zooming page]]
@@ -33,7 +34,6 @@ end-user allowing for infinite customization.
   -  [[#password-manager][Password manager]]
 -  [[#advanced-topics][Advanced Topics]]
   -  [[#execute-extended-command][Execute Extended Command]]
-  -  [[#help][Help]]
   -  [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
   -  [[#command-line-parameters-and-environment][Command line parameters and environment]]
     -  [[#environment-variables][Environment variables]]
@@ -62,6 +62,17 @@ end-user allowing for infinite customization.
 -  [[#troubleshooting][Troubleshooting]]
   -  [[#font-size-on-hidpi-displays][Font size on HiDPI displays]]
   -  [[#stumpwm-mouse-scroll][StumpWM mouse scroll]]
+
+* Getting help
+
+Next is "self-documented", which means that you can display the documentation of
+all Next components within the browser itself.
+
+Help is accessed via various "describe" commands.
+
+Press =M-x= (that is, =Alt= plus =x= or =Command= plus =x=) to bring up the list
+of commands, then write =describe=.  You should now see a lits of all help
+commands, such as =describe-command=.
 
 * Basics
 ** Navigation
@@ -470,14 +481,6 @@ it to the clipboard.
 ** Execute Extended Command
 You can execute any command by name by typing =M-x=. This will bring up a list
 of candidates that you can fuzzily complete.
-
-** Help
-The help system allows you to look up variable and function docstrings
-directly within Next. Docstrings will appear in a new help buffer.
-
-1. ~C-h v~: Look up a variable docstring
-2. ~C-h c~: Look up a command docstring
-
 
 ** SLIME with a compiled version of Next
 =SLIME= provides a way of interacting with Next, and with Lisp code in
