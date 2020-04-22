@@ -149,7 +149,7 @@ This is an acceptable handler for `request-resource-hook'."
         (progn
           (log:debug "Dropping ~a for ~a (~a)" url
                      buffer
-                     (object-string))
+                     (object-string buffer))
           :stop)
         ;; Fallback on the other handlers from `request-resource-hook'.
         nil)))
