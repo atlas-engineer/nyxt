@@ -71,8 +71,8 @@
                               ;; i.e. the first command of one of the modes.
                               ;; Ask for modes instead?
                               (documentation (command-function command) t)))
-                         (:h2 "Bindings: "
-                              (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
+                         (:h2 "Bindings")
+                         (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
                          (:h2 (format nil "Source (~a): " source-file))
                          (:pre (:code (write-to-string (sexp command))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
