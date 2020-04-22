@@ -12,12 +12,12 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'clip-password))
-(defgeneric clip-password (password-interface password-name)
+(defgeneric clip-password (password-interface password-name &optional service)
   (:documentation "Retrieve specific password by name."))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'save-password))
-(defgeneric save-password (password-interface password-name password)
+(defgeneric save-password (password-interface password-name password &optional service)
   (:documentation "Save password to database.
 If PASSWORD-NAME is empty, then generate a new password."))
 

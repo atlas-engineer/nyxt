@@ -16,7 +16,7 @@
                                    :input st :output '(:string :stripped t))))
     (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal)))
 
-(defmethod clip-password ((password-interface keepassxc-interface) password-name)
+(defmethod clip-password ((password-interface keepassxc-interface) password-name &optional service)
   (let* ((st (make-string-input-stream (master-password password-interface)))
          (output (uiop:run-program (list *keepassxc-cli-program*
                                          "show" (password-file password-interface)
@@ -25,7 +25,7 @@
     (clip-password-string
      (cl-ppcre:regex-replace "[\\S\\s]*Password: \(.*\)[\\S\\s]*" output "\\1"))))
 
-(defmethod save-password ((password-interface keepassxc-interface) password-name password)
+(defmethod save-password ((password-interface keepassxc-interface) password-name password &optional service)
   (with-input-from-string (st (format nil "~a~C~a"
                                       (master-password password-interface)
                                       #\newline password))
