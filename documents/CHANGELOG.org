@@ -52,7 +52,7 @@ MAJOR.MINOR.PATCH, we increment the:
 - Report user configuration errors in a Next web view.  Users don't have to
   check the shell output anymore.
 
-- New =set-url-current-buffer-from-current-url= command.
+- New =set-url-from-current-url= command.
 
 - Add =certificate-whitelist-mode= to the default modes.  In case of certificate
   error, call =add-domain-to-certificate-whitelist= followed by a reload if you

@@ -200,7 +200,7 @@ complete against a search engine."
       (list
        "tab" #'insert-candidate-or-search-engine)))))
 
-(define-command set-url-current-buffer (&key new-buffer-p prefill-current-url-p)
+(define-command set-url (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
   (let ((history (minibuffer-set-url-history *browser*)))
     (when history
@@ -225,13 +225,13 @@ complete against a search engine."
                                (make-buffer-focus :url nil)
                                (current-buffer))))))
 
-(define-command set-url-current-buffer-from-current-url ()
+(define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
-  (set-url-current-buffer :prefill-current-url-p t))
+  (set-url :prefill-current-url-p t))
 
 (define-command set-url-new-buffer ()
   "Prompt the user for a URL and set it in a new focused buffer."
-  (set-url-current-buffer :new-buffer-p t))
+  (set-url :new-buffer-p t))
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."

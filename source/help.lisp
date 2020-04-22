@@ -379,7 +379,7 @@ The version number is stored in the clipboard."
                           ".")))
                 (:h2 "Quickstart keys")
                 (:ul
-                 (:li (:code (binding-keys #'set-url-current-buffer)) ": Load URL")
+                 (:li (:code (binding-keys #'set-url)) ": Load URL")
                  (:li (:code (binding-keys #'set-url-new-buffer)) ": Load URL in new tab")
                  (:li (:code (binding-keys #'switch-buffer-previous)) ", " (:code (binding-keys #'switch-buffer-next)) ": Switch tab")
                  (:li (:code (binding-keys #'next/web-mode:history-backwards)) ": Backwards history")

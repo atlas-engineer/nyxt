@@ -234,7 +234,7 @@ The standard commands for buffer management are:
 - =switch-buffer-next=, =switch-buffer-previous=
 - =delete-buffer=
 - =delete-current-buffer=
-- =set-url-current-buffer=, =set-url-new-buffer=
+- =set-url=, =set-url-new-buffer=
 
 *** Modes
 A mode is a collection of features, ranging from key bindings to network
@@ -696,7 +696,7 @@ Some default keybindings for ~vi-normal-mode~ are:
 "d": delete-buffer
 "D": delete-current-buffer
 "B": make-visible-new-buffer
-"o": set-url-current-buffer
+"o": set-url
 "O": set-url-new-buffer
 "m u": bookmark-url
 "m d": bookmark-delete

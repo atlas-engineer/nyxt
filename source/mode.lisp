@@ -130,7 +130,7 @@ It is run before the destructor.")
                                "C-tab" #'switch-buffer-next
                                "C-pageup" #'switch-buffer-previous
                                "C-pagedown" #'switch-buffer-next
-                               "C-l" #'set-url-current-buffer
+                               "C-l" #'set-url
                                "M-l" #'set-url-new-buffer
                                "C-m k" #'bookmark-delete
                                "C-t" #'make-buffer-focus
@@ -163,7 +163,7 @@ It is run before the destructor.")
                                "C-x right" #'switch-buffer-next
                                "C-pageup" #'switch-buffer-previous
                                "C-pagedown" #'switch-buffer-next
-                               "C-l" #'set-url-current-buffer
+                               "C-l" #'set-url
                                "M-l" #'set-url-new-buffer
                                "C-m k" #'bookmark-delete
                                "C-t" #'make-buffer-focus
@@ -195,7 +195,7 @@ It is run before the destructor.")
                                "d" #'delete-buffer
                                "D" #'delete-current-buffer
                                "B" #'make-buffer-focus
-                               "o" #'set-url-current-buffer
+                               "o" #'set-url
                                "O" #'set-url-new-buffer
                                "m u" #'bookmark-url
                                "m d" #'bookmark-delete
