@@ -28,6 +28,20 @@
   `(if (password:password-correct-p ,password-interface)
        ,@body))
 
+(define-command copy-password-prompt-details ()
+  "Copy password prompting for all the details without completion."
+  (if (password-interface *browser*)
+      (with-result* ((password-name (read-from-minibuffer
+                                     (make-minibuffer
+                                      :input-prompt "Name of password (account)")))
+                     (service (read-from-minibuffer
+                               (make-minibuffer
+                                :input-prompt "Service"))))
+        (password:clip-password (password-interface *browser*)
+                                :password-name password-name
+                                :service service))
+      (echo-warning "No password manager found.")))
+
 (define-command copy-password ()
   "Copy chosen password from minibuffer."
   (if (password-interface *browser*)
