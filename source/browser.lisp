@@ -320,12 +320,6 @@ defined in any package and is unique."
                   :documentation "Thread that listens on socket.
 See `socket-path'.
 This slot is mostly meant to clean up the thread if necessary.")
-   (socket-path :accessor socket-path
-                :initarg :socket-path
-                :initform (namestring (xdg-data-home "next.socket"))
-                :type string
-                :documentation "Path string of the Unix socket used to communicate
-                between different instances of Next.")
    (single-instance-p :accessor single-instance-p
                       :initarg :single-instance-p
                       :initform t

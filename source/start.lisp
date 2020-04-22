@@ -77,9 +77,9 @@ Warning: any existing file will be overwritten."
   (when (socket-thread *browser*)
     (ignore-errors
      (bt:destroy-thread (socket-thread *browser*))))
-  (when (uiop:file-exists-p (socket-path *browser*))
-    (log:info "Deleting socket ~a" (socket-path *browser*))
-    (uiop:delete-file-if-exists (socket-path *browser*)))
+  (when (uiop:file-exists-p (socket-path))
+    (log:info "Deleting socket ~a" (socket-path))
+    (uiop:delete-file-if-exists (socket-path)))
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
@@ -131,6 +131,7 @@ the (xdg-data-home \"sessions \") folder."
     (setf *keep-alive* nil)             ; Not a REPL.
     (apply #'start options free-args)))
 
+(serapeum:export-always 'init-file-path)
 (defun init-file-path (&key (default-basename "init.lisp"))
   "Return the path of the initialization file."
   ;; This can't be a regular variable or else the value will be hard-coded at
@@ -139,6 +140,16 @@ the (xdg-data-home \"sessions \") folder."
     (nil (xdg-config-home default-basename))
     ("" nil)
     (file file)))
+
+(serapeum:export-always 'socket-path)
+(defun socket-path (&key (default-basename "next.socket"))
+  "Path string of the Unix socket used to communicate between different
+instances of Next.
+
+This path cannot be set from the init file because we want to be able to set and
+use the socket without parsing any init file."
+  ;; This can't be a regular variable, see `init-file-path' for details.
+  (namestring (xdg-data-home default-basename)))
 
 (defparameter *load-init-error-message* "Error: Could not load the init file")
 (defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
@@ -227,11 +238,11 @@ the (xdg-data-home \"sessions \") folder."
    (lambda () (open-urls urls))))
 
 (defun listen-socket ()
-  (ensure-parent-exists (socket-path *browser*))
+  (ensure-parent-exists (socket-path))
   ;; TODO: Catch error against race conditions?
   (iolib:with-open-socket (s :address-family :local
                              :connect :passive
-                             :local-filename (socket-path *browser*))
+                             :local-filename (socket-path))
     (loop as connection = (iolib:accept-connection s)
           while connection
           do (progn (match (alex:read-stream-content-into-string connection)
@@ -243,12 +254,12 @@ the (xdg-data-home \"sessions \") folder."
                     ;; If we get pinged too early, we do not have a current-window yet.
                     (when (current-window)
                      (ffi-window-to-foreground (current-window))))))
-  (log:info "Listening on socket ~s" (socket-path *browser*)))
+  (log:info "Listening on socket ~s" (socket-path)))
 
 (defun listening-socket-p ()
   (ignore-errors
    (iolib:with-open-socket (s :address-family :local
-                              :remote-filename (socket-path *browser*))
+                              :remote-filename (socket-path))
      (iolib:socket-connected-p s))))
 
 (defun bind-socket-or-quit (urls)
@@ -260,11 +271,11 @@ Otherwise bind socket."
             (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
             (log:info "Next already started." urls))
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (socket-path *browser*))
+                                   :remote-filename (socket-path))
           (format s "~s" `(open-external-urls ',urls)))
         (uiop:quit))
       (progn
-        (uiop:delete-file-if-exists (socket-path *browser*))
+        (uiop:delete-file-if-exists (socket-path))
         (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))
 
 (defun remote-eval (expr)
@@ -272,7 +283,7 @@ Otherwise bind socket."
   (if (listening-socket-p)
       (progn
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (socket-path *browser*))
+                                   :remote-filename (socket-path))
           (write-string expr s))
         (uiop:quit))
       (progn
@@ -324,10 +335,6 @@ The evaluation may happen on its own instance or on an already running instance.
   (unless (or (getf *options* :no-init)
               (not (init-file-path)))
     (load-lisp (init-file-path) :package (find-package :next-user)))
-  ;; We need a browser instance so that listen-socket-p can know the socket path.
-  ;; TODO: Use slot default instead?  Ideally, socket could also
-  ;; be a command line parameter so that multiple instances can be started.
-  (setf *browser* (make-instance *browser-class*))
   (loop for (opt value . _) on *options*
         do (match opt
              (:load (let ((value (uiop:truename* value)))
