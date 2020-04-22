@@ -5,20 +5,6 @@
 (defclass password-interface ()
   ())
 
-(defclass password-store-interface (password-interface)
-  ((password-directory :reader password-directory
-                       :initarg :directory
-                       :initform (or (uiop:getenv "PASSWORD_STORE_DIR")
-                                     (namestring (format nil "~a/.password-store"
-                                                         (uiop:getenv "HOME")))))))
-
-(defclass keepassxc-interface (password-interface)
-  ((password-file :accessor password-file
-                  :initarg :file)
-   (master-password :accessor master-password
-                    :initarg :master-password
-                    :initform nil)))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'list-passwords))
 (defgeneric list-passwords (password-interface)

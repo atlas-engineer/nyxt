@@ -2,6 +2,13 @@
 
 (defvar *keepassxc-cli-program* (executable-find "keepassxc-cli"))
 
+(defclass keepassxc-interface (password-interface)
+  ((password-file :accessor password-file
+                  :initarg :file)
+   (master-password :accessor master-password
+                    :initarg :master-password
+                    :initform nil)))
+
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (let* ((st (make-string-input-stream (master-password password-interface)))
          (output (uiop:run-program (list *keepassxc-cli-program*

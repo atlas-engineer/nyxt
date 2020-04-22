@@ -2,6 +2,13 @@
 
 (defvar *password-store-program* (executable-find "pass"))
 
+(defclass password-store-interface (password-interface)
+  ((password-directory :reader password-directory
+                       :initarg :directory
+                       :initform (or (uiop:getenv "PASSWORD_STORE_DIR")
+                                     (namestring (format nil "~a/.password-store"
+                                                         (uiop:getenv "HOME")))))))
+
 (defmethod list-passwords ((password-interface password-store-interface))
   (let ((raw-list (directory
                    (format nil "~a/**/*.gpg"
