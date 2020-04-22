@@ -91,16 +91,6 @@ Warning: any existing file will be overwritten."
   (uiop:delete-file-if-exists *session*)
   (quit))
 
-(defun set-debug-level (level)
-  "Supported values for LEVEL are
-   - `:debug': Debug logging.
-   - `t': Normal logging."
-  (match level
-    (:debug
-     (log:config :debug))
-    (otherwise
-     (log:config :info))))
-
 (defun derive-session (name) ; TODO: Remove *session* and use same technique as `init-file-path'?
   "Derive session file from NAME.
 If NAME has a slash, use the file it refers to.
