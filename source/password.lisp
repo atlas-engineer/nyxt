@@ -16,8 +16,8 @@
                                      :invisible-input-p t
                                      :input-prompt "New password (leave empty to generate)"))))
         (password:save-password (password-interface *browser*)
-                                password-name
-                                new-password))
+                                :password-name password-name
+                                :password new-password))
       (echo-warning "No password manager found.")))
 
 (defmacro with-password (password-interface &body body)
@@ -34,5 +34,5 @@
                         :completion-function
                         (copy-password-completion-filter
                          (password-interface *browser*)))))
-          (password:clip-password (password-interface *browser*) password-name)))
+          (password:clip-password (password-interface *browser*) :password-name password-name)))
       (echo-warning "No password manager found.")))
