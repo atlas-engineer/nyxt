@@ -55,4 +55,6 @@ Return nil if COMMAND is not found anywhere."
          (make-instance 'password-store-interface))
         ((executable-find "keepassxc-cli")
          (make-instance 'keepassxc-interface))
+        ((executable-find "security")
+         (make-instance 'security-interface))
         (t nil)))
