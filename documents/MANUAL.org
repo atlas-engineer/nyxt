@@ -18,7 +18,6 @@ end-user allowing for infinite customization.
   -  [[#input-minibuffer][Input (Minibuffer)]]
   -  [[#multi-selection][Multi-selection]]
   -  [[#buffers-tabs][Buffers ("tabs")]]
-    -  [[#switching-tabs-by-order][Switching Tabs by Order]]
     -  [[#modes][Modes]]
     -  [[#windows-vs-buffers][Windows vs. buffers]]
   -  [[#searching][Searching]]
@@ -26,7 +25,6 @@ end-user allowing for infinite customization.
   -  [[#bookmarks][Bookmarks]]
   -  [[#download-manager][Download manager]]
   -  [[#opening-files][Opening files]]
-  -  [[#clearing-the-echo-area][Clearing the Echo Area]]
   -  [[#exiting][Exiting]]
   -  [[#proxy-and-tor-support][Proxy and Tor support]]
   -  [[#certificate-host-whitelisting][Certificate host whitelisting]]
@@ -36,7 +34,6 @@ end-user allowing for infinite customization.
 -  [[#advanced-topics][Advanced Topics]]
   -  [[#execute-extended-command][Execute Extended Command]]
   -  [[#help][Help]]
-  -  [[#eval-lisp-forms][Eval Lisp forms]]
   -  [[#slime-with-a-compiled-version-of-next][SLIME with a compiled version of Next]]
   -  [[#command-line-parameters-and-environment][Command line parameters and environment]]
     -  [[#environment-variables][Environment variables]]
@@ -52,7 +49,7 @@ end-user allowing for infinite customization.
   -  [[#start-up-options][Start-up options]]
     -  [[#using-the-session][Using the session]]
   -  [[#decide-how-to-open-files][Decide how to open files]]
-  -  [[#loading-files][Loading Files]]
+  -  [[#loading-lisp-files][Loading Lisp files]]
   -  [[#creating-your-own-interactive-commands][Creating your own interactive commands]]
   -  [[#getting-input-from-the-user][Getting input from the user]]
   -  [[#network-resource-dispatch-including-ad-blocking][Network resource dispatch (including ad-blocking)]]
@@ -62,8 +59,8 @@ end-user allowing for infinite customization.
     -  [[#list-of-available-hooks][List of available hooks]]
   -  [[#startup-behavior][Startup behavior]]
   -  [[#run-next-in-a-security-sandbox][Run Next in a security sandbox]]
-  -  [[#font-size-on-hidpi-displays][Font size on HiDPI displays]]
 -  [[#troubleshooting][Troubleshooting]]
+  -  [[#font-size-on-hidpi-displays][Font size on HiDPI displays]]
   -  [[#stumpwm-mouse-scroll][StumpWM mouse scroll]]
 
 * Basics
@@ -127,56 +124,33 @@ For instance, to search "parrot" on Wikipedia:
 
 From a Lisp REPL, you can query the list of search engines with
 #+begin_src lisp
-(get-default 'browser 'search-engines)
+(search-engines *browser*)
 #+end_src
 
 It will return something like
 
 #+begin_src lisp
-  '(("default"
-     "https://duckduckgo.com/?q=~a"
-     "https://duckduckgo.com/")
-    ("wiki"
-     "https://en.wikipedia.org/w/index.php?search=~a"
-     "https://en.wikipedia.org/"))
+'(("default"
+   "https://duckduckgo.com/?q=~a"
+   "https://duckduckgo.com/")
+  ("wiki"
+   "https://en.wikipedia.org/w/index.php?search=~a"
+   "https://en.wikipedia.org/"))
 #+end_src
 
 The =~a= in the search engine URI is a place holder for the search pattern.
 
-To set the list of search engines, do:
+You can set the list of search engines in your init file:
 
 #+begin_src lisp
-(defclass my-browser (gtk-browser)
-  ((search-engines :initform
-    '(("default"
-       "https://duckduckgo.com/?q=~a"
-       "https://duckduckgo.com/")
-      ("yt"
-       "https://www.youtube.com/results?search_query=~a"
-       "https://www.youtube.com/")
-      ("wiki"
-       "https://en.wikipedia.org/w/index.php?search=~a"
-       "https://en.wikipedia.org/")))))
-
-(setf *browser-class* 'my-browser)
+(define-configuration browser
+  ((search-engines (append (list '("yt"
+                                   "https://www.youtube.com/results?search_query=~a"
+                                   "https://www.youtube.com/"))
+                           %slot-default))))
 #+end_src
 
-and to append a search engine to the list, you can do
-
-#+begin_src lisp
-(defclass my-browser (gtk-browser)
-  ((search-engines :initform
-    (append
-     '(("yt"
-        "https://www.youtube.com/results?search_query=~a"
-        "https://www.youtube.com/")
-       ("wiki"
-        "https://en.wikipedia.org/w/index.php?search=~a"
-        "https://en.wikipedia.org/"))
-       (get-default 'browser 'search-engines)))))
-
-(setf *browser-class* 'my-browser)
-#+end_src
+See the documentation of ~define-configuration~ and ~search-engines~.
 
 ** Autofill
 Like other browsers, Next has the ability to do auto filling. You can
@@ -186,9 +160,10 @@ the slot in the browser class:
 
 #+NAME: autofills
 #+BEGIN_SRC lisp
-(autofills :accessor autofills
-              :initform (list (make-autofill :key "Name" :fill "My Name")
-                              (make-autofill :key "Function example" :fill (lambda () (format nil "hello!")))))
+(define-configuration browser
+  ((autofills (list (make-autofill :key "Name" :fill "My Name")
+                    (make-autofill :key "Function example"
+                                   :fill (lambda () (format nil "hello!")))))))
 #+END_SRC
 
 As can be seen in the above example, the fill does not need to be a
@@ -197,9 +172,7 @@ even smarter autofill.
 
 ** Jumping to Headings
 Jumping to different headings based on fuzzy completion is available
-via the following keybindings:
-
-1. ~C-.~: Jump to heading
+via the =jump-to-heading=.
 
 ** Input (Minibuffer)
 All input is handled within a special area called the minibuffer. The
@@ -244,24 +217,13 @@ In Next, multiple views are implemented as "buffers".  Each buffer can use its
 own set of "modes".  A mode is a collection of settings, key bindings, commands,
 etc.  Regular web pages use the ~web-mode~ by default.
 
-The standard keybindings for buffer management are:
+The standard commands for buffer management are:
 
-1. ~C-x b~: Switch buffer
-2. ~C-x Left~: Switch to previous buffer
-3. ~C-x Right~: Switch to next buffer
-4. ~C-x k~: Delete a buffer
-5. ~C-x C-k~: Delete the current buffer
-6. ~M-l~: Open URL in new buffer
-7. ~C-l~: Change URL of current buffer
-8. ~C-t~: Make new empty buffer
-
-*** Switching Tabs by Order
-In addition to switching tabs by selecting the current tab, you can
-cycle through them. This enables you to jump back and forth between
-two tabs that are next to each other.
-
-1. ~C-[~: Switch tab previous
-2. ~C-]~: Switch tab next
+- =switch-buffer=
+- =switch-buffer-next=, =switch-buffer-previous=
+- =delete-buffer=
+- =delete-current-buffer=
+- =set-url-current-buffer=, =set-url-new-buffer=
 
 *** Modes
 A mode is a collection of features, ranging from key bindings to network
@@ -283,11 +245,8 @@ To enable a mode for all buffers by default, add the mode to the list of
 default modes:
 
 #+begin_src lisp
-(defclass my-buffer (buffer)
-  ((default-modes :initform
-     (cons 'vi-normal-mode (get-default 'buffer 'default-modes)))))
-
-(setf *buffer-class* 'my-buffer)
+(define-configuration buffer
+  ((default-modes (append '(vi-normal-mode) %slot-default))))
 #+end_src
 
 *** Windows vs. buffers
@@ -303,19 +262,18 @@ You can change the default behavior by adding the following to your
 configuration file:
 
 #+begin_src lisp
-(defun my-browser ()
-  ((open-external-link-in-new-window-p :initform t)))
-
-(setf *browser-class* 'my-browser)
+(define-configuration browser
+  ((open-external-link-in-new-window-p t)))
 #+end_src
 
 ** Searching
-There are a number of keybindings provided to enable searching within
+There are a number of commands provided to enable searching within
 a buffer.
 
-1. ~C-f~: Search for a given term: This command will place a hint
+- =search-buffer=: Search for a given term. This command will place a hint
    next to every match on a given web-page.
-4. ~M-f~: Clear search: Remove the search hints from the screen.
+- =search-buffers=: Same as above, but search of the selected buffers.
+- =remove-search-hints=: Clear search. Remove the search hints from the screen.
 
 ** History
 History is represented as a tree that you can traverse. More complex
@@ -339,10 +297,14 @@ user. Do you wish to go forwards to ~Ancient Greek~ or to
 
 The standard keybindings for forward-backward navigation are:
 
-1. ~M-right~: Navigate Forward
-2. ~M-left~: Navigate Backward
-3. ~M-s-right~: Navigate Forward Tree
-4. ~M-s-left~: Navigate Backward
+- =history-forwards=, =history-backwards=
+- =history-forwards-query=, =history-backwards-query=: Jump to any of the
+  forward, respectively backward history entries.
+- =history-forwards-maybe-query=: Like =history-forwards= but query when
+  the history forward is branching.
+- =history-forwards-all-query=: Jump to any of the forward history entries
+  across all forward branches.
+- =history-all-query=: Jump to any history entry.
 
 By using navigate forward tree you will be prompted for which branch
 you'd like to visit as in the example above. The simple navigate
@@ -357,11 +319,13 @@ invoking =buffer-history-tree=.
 In order to navigate and manage your bookmarks, a few functions are
 provided:
 
-1. ~C-m s~: Bookmark Current Page
-2. ~C-m u~: Bookmark URL (input URL via minibuffer)
-3. ~C-m o~: Open Bookmark
-4. ~C-m g~: Bookmark Anchor (input URL via link hints)
-5. ~C-m k~: Delete Bookmark
+- =bookmark-current-page=
+- =bookmark-page=: Query the buffer to bookmark.
+- =bookmark-url=: Bookmark input URL via minibuffer
+- =bookmark-hint=
+- =set-url-from-bookmark=
+- =bookmark-delete=
+- =show-bookmarks=
 
 Bookmarks can have tags, a shortcut string, a search-url and a
 timestamp.
@@ -401,32 +365,27 @@ it will try to open the file with the system's default using
 =xdg-open= or =open=.  See the command help for further details, and
 the customization section to override the default behavior.
 
-** Clearing the Echo Area
-In the area at the bottom of the screen where the minibuffer resides,
-Next will occasionally display messages. These can be dismissed by
-using the binding ~C-x q~.
-
 ** Exiting
-To exit Next enter the key-combination ~C-q~ and the program will
-quit. All of your form data will not be persisted (though a list of
-all open buffers will be). The only information saved will be your
-filled in passwords, cookies, and other information within your cache.
+To exit Next use the =quit= command. By default, the list of buffers, the
+cookies (e.g. authetication information) are persisted.
+Form data that was not sent to a web page will *not* be persisted for now, but
+it's a planned feature.
 
 ** Proxy and Tor support
 
 You  can  surf  the  web  behind   a  proxy  by  issuing  the  command
-=proxy-mode=. Its default server address is =socks5://127.0.0.1:9050=,
+=proxy-mode=. Its default server address is =socks5://localhost:9050=,
 meaning it works out of the box for Tor.
 
 You can change the default proxy with
 
 #+begin_src lisp
 (setf next/proxy-mode:*default-proxy*
- (make-instance 'proxy :server-address  "socks5://your.i.p:port"))
+      (make-instance 'proxy :server-address "protocol://your.i.p:port"))
 #+end_src
 
 At the time of writing, there are differences between the GTK and the
-Qt port: the GTK one sets proxies per-buffer, whereas it is currently
+Qt renderers: the GTK one sets proxies per-buffer, whereas it is currently
 global for the Qt one.
 
 To enable proxy for all buffers by default, add the proxy mode to the default
@@ -434,37 +393,29 @@ modes.  See [[Modes]] for details.
 
 ** Certificate host whitelisting
 
-By default the WebKit engine refuses to establish a secure connection to a host with an erroneous
-certificate (e.g. self-signed ones). The buffer mode =certificate-whitelist=
-allows to mitigate this problem by providing a mechanism to specify a list of hosts
-for which certificate errors shall be ignored. A hostname does not contain a protocol
-like HTTP or HTTPS and is basically the domain name of the server serving the web content
-to which a URL refers, e.g. the hostname in the URL https://next.atlas.engineer/
-is =next.atlas.engineer=.
+By default Next refuses to establish a secure connection to a host with an
+erroneous certificate (e.g. self-signed ones).  This could mean that the address
+you are attempting the access is compromised.  If you trust the address
+nonetheless, you can add an exception for the current hostname with
+=add-domain-to-certificate-whitelist=.  The =certificate-whitelist-mode= must be
+active for the current buffer (which is the default).
 
-To enable this mode put the following statements into your =init.lisp= configuration
+You can persist hostname exceptions in your init file.
+Note that the hostname is not a URL, e.g. the hostname in the URL
+https://next.atlas.engineer/ is =next.atlas.engineer=.
 
 #+begin_src lisp
 (setf next/certificate-whitelist-mode:*default-certificate-whitelist*
-      (make-instance 'certificate-whitelist :whitelist '("next.atlas.engineer")))
-
-(defclass my-buffer (buffer)
-  ((default-modes :initform '(web-mode root-mode proxy-mode certificate-whitelist-mode))))
-(setf buffer-class 'my-buffer)
+      '("next.atlas.engineer" "example.org"))
 #+end_src
 
 ** Cloning Git repositories
 
-Use  the  =vcs-clone=  (alias  =git-clone=) command  to  clone  a  Git
-repository to  disk.  It asks  you for  the destination and  then runs
-asynchronously.
+Use the =vcs-clone= (alias =git-clone=) command to clone a Git repository to
+disk.  It asks you for the destination and then runs asynchronously.
 
-/This feature is meant to grow with Next 1.4 and onwards!/.
-
-By  default, the  command  looks into  the  following directories  for
-existing projects:
-
-: "~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects"
+By default, the command looks into the directories specified in
+=next/vcs:*vcs-projects-roots*=.
 
 You can change the list like this:
 
@@ -480,9 +431,9 @@ you are cloning a repository of yours (the user/organization name of
 the cloned repository equals your vcs-username), it will use a git remote
 url instead of https.
 
-Set =next/vcs:*vcs-username*= as a default username.
+Set your default username in =next/vcs:*vcs-username*=.
 
-Change also the =*vcs-username-alist*=:
+You can also change the =*vcs-username-alist*=:
 
 #+begin_src lisp
 (setf next/vcs:*vcs-usernames-alist* '(("github.com" . "")
@@ -493,7 +444,7 @@ Change also the =*vcs-username-alist*=:
 (push '("myforge.com" . "me") next/vcs::*vcs-usernames-alist*)
 #+end_src
 
-Note that the forge name should be a domain, such as github.com.
+Note that the forge name should be a domain, such as =github.com=.
 
 ** Downloading videos
 
@@ -503,8 +454,7 @@ current URL. For example, it works with any YouTube video.
 It will ask for a target repository and will notify on success or
 failure.
 
-It uses by default the program [[http://ytdl-org.github.io/youtube-dl/][youtube-dl]], that you must have
-installed first.
+By default it relies on the external [[http://ytdl-org.github.io/youtube-dl/][youtube-dl]] program.
 
 To customize it, see all the variables and functions in [[https://github.com/atlas-engineer/next/blob/master/source/video-mode.lisp][video-mode]].
 
@@ -528,14 +478,6 @@ directly within Next. Docstrings will appear in a new help buffer.
 1. ~C-h v~: Look up a variable docstring
 2. ~C-h c~: Look up a command docstring
 
-** Eval Lisp forms
-The command line option =--eval EXPR== allows you to execute a Lisp
-expression:
-
-: next --eval '(format t "hello Next!")'
-
-If you want to execute commands against a running Next process, see
-the =start-swank= command and the developer setup.
 
 ** SLIME with a compiled version of Next
 =SLIME= provides a way of interacting with Next, and with Lisp code in
@@ -594,7 +536,7 @@ You can evaluate code from the command line with =--eval= and =--load=.
 $ next --no-init --eval '+version+' \
   --load my-lib.lisp --eval '(format t "Hello ~a!~&" (my-lib:my-world))'
 
-1.5.0-0b1541ce
+2.0.0
 NIL
 #+end_src
 
@@ -630,8 +572,7 @@ When you are done, you can load your changes while Next is running
 with the command =load-init-file=. Or load any file with =load-file=
 (=C-o=).
 
-Next will warn you its best about type mismatches (new in Next
-1.3.5). You should be confident that "if it loads, it works"©.
+Next will do its best to warn you about syntax and type errors in the init file.
 
 
 ** Keybinding
@@ -639,33 +580,26 @@ Keys are defined with the ~define-key~ command.
 
 #+NAME: define key
 #+BEGIN_SRC lisp
-(defvar *my-keymap* (make-keymap)
+(defvar *my-keymap* (make-keymap "my-map")
   "My keymap.")
 
-(define-key :keymap *my-keymap*
+(define-key *my-keymap*
   "C-x o" #'example
   "space" #'scroll-page-down)
-
-;; Bind in current buffer's first mode.  This won't affect other buffers.
-(define-key :keymap (getf (keymap-scheme
-                           (find-mode (current-buffer) 'my-mode))
-                          :emacs)
-  "C-x C-c h" #'hello-local-world)
 #+END_SRC
-
-Read on for an explanation of the meanings of =:keymap=.
 
 In the previous example, the key sequence =C-x o= would invoke the ~example~
 command.
 If later another command is bound to =C-x=, all other bindings starting with
 =C-x= will be overridden.
 
-The following keys exist as special keys:
+/Modifiers/ are keys that can only be used in combination with other keys:
 
-1. ~C~: Control
-2. ~S~: Super (Windows key, Command Key)
-3. ~M~: Meta (Alt key, Option Key)
-4. ~s~: Shift key
+- ~C~: Control
+- ~S~: Super (Windows key, Command Key)
+- ~H~: Hyper key
+- ~M~: Meta (Alt key, Option Key)
+- ~s~: Shift key
 
 *** Keymaps and key binding schemes
 
@@ -683,16 +617,8 @@ You can change the default binding scheme for any buffer by setting
 to switch to the Emacs scheme:
 
 #+begin_src lisp
-(defclass my-buffer (gtk-buffer)
-  ((keymap-scheme-name
-    :accessor keymap-scheme-name
-    :initarg :keymap-scheme-name
-    :initform scheme:emacs
-    :type keymap:scheme
-    :documentation "The keymap scheme that will be used
-for all modes in the current buffer.")))
-
-(setf *buffer-class* 'my-buffer)
+(define-configuration buffer
+  ((keymap-scheme-name scheme:emacs)))
 #+end_src
 
 To create a keymap, use the ~make-keymap~ function.
@@ -706,14 +632,12 @@ other mode.  In your configuration file:
 
 (define-mode my-mode ()
   "Dummy mode for the custom key bindings in `*my-keymap*'."
-  ((keymap-schemes :initform (list :emacs *my-keymap*
-                                   :vi-normal *my-keymap*))))
+  ((keymap-schemes :initform (keymap:make-scheme
+                              scheme:emacs *my-keymap*
+                              scheme:vi-normal *my-keymap*))))
 
-(defclass my-buffer (buffer)
-  ((default-modes :initform
-     (cons 'my-mode (get-default 'buffer 'default-modes)))))
-
-(setf *buffer-class* 'my-buffer)
+(define-configuration buffer
+  ((default-modes (append '(my-mode) %slot-default))))
 #+end_src
 
 *** Modifier translation
@@ -734,10 +658,8 @@ For instance, if you want swap ~control~ and ~meta~:
                  :hyper-mask "hyper")))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
-(defclass my-browser (gtk-browser)
-  ((modifier-translator :initform #'my-translate-modifiers)))
-
-(setf *browser-class* 'my-browser)
+(define-configuration browser
+  ((modifier-translator #'my-translate-modifiers)))
 #+end_src
 
 *** Override map
@@ -761,7 +683,7 @@ scrolls up.
 To go from /normal mode/ to /insert mode/, press =i=.
 To go from /insert mode/ to /normal mode/, press =ESCAPE=.
 
-The default keybindings for ~vi-normal-mode~ are:
+Some default keybindings for ~vi-normal-mode~ are:
 
 #+BEGIN_SRC conf
 "Z Z": kill
@@ -785,30 +707,15 @@ The default keybindings for ~vi-normal-mode~ are:
 The minimal config that sets your Next in vi mode, is:
 
 #+BEGIN_SRC lisp
-; $HOME/.config/next/init.lisp
-
-(defclass my-buffer (buffer)
-  ((default-modes :initform
-     (cons 'vi-normal-mode (get-default 'buffer 'default-modes)))))
-
-(setf *buffer-class* 'my-buffer)
+(define-configuration buffer
+  ((default-modes (append '(vi-normal-mode) %slot-default))))
 #+END_SRC
 
 ** Start-up options
 
 The =next= command accepts URLs as parameters, as well as some options.
 
-The available options are:
-
-#+begin_export ascii
--h, --help               Print this help and exit.
--v, --verbose            Print debugging information to stdout.
---version                Print version and exit.
--i, --init-file ARG      Set path to initialization file.
-                         Set to '-' to read standard input instead.
--Q, --no-init            Do not load the user init file.
--s, --session ARG        With --session nil, don't restore nor store the session.
-#+end_export
+Run =next --help= to list all available options.
 
 *** Using the session
 
@@ -817,12 +724,13 @@ current one to disk.
 
 You can disable this behavior with a command line option:
 
-: next --session nil
+: next --no-session
 
-and a lisp parameter:
+or in your init file:
 
 #+begin_src lisp
-(setf next:*use-session* nil)
+(define-configuration browser
+  ((session-path nil)))
 #+end_src
 
 To quit Next without saving the session, use the command
@@ -841,36 +749,33 @@ For example, below we open directories with =emacsclient= and some music ad
 videos with =mpv=:
 
 #+begin_src lisp
-  (defun my-open-files (filename)
-    "Open music and videos with mpv, open directories with emacsclient."
-    (let ((args)
-          (extension (pathname-type filename)))
-      (cond
-        ((uiop:directory-pathname-p filename)
-         (log:info "Opening ~a with emacsclient." filename)
-         (setf args (list "emacsclient" filename)))
+(defun my-open-files (filename)
+  "Open music and videos with mpv, open directories with emacsclient."
+  (let ((args)
+        (extension (pathname-type filename)))
+    (cond
+      ((uiop:directory-pathname-p filename)
+       (log:info "Opening ~a with emacsclient." filename)
+       (setf args (list "emacsclient" filename)))
 
-        ((member extension '("flv" "mkv" "mp4") :test #'string-equal)
-         (setf args (list "mpv" filename))))
+      ((member extension '("flv" "mkv" "mp4") :test #'string-equal)
+       (setf args (list "mpv" filename))))
 
-      (handler-case (if args
-                        (uiop:launch-program args)
-                        ;; fallback to Next's default.
-                        (next/file-manager-mode:open-file-function filename))
-        (error (c) (log:error "Error opening ~a: ~a" filename c)))))
+    (handler-case (if args
+                      (uiop:launch-program args)
+                      ;; fallback to Next's default.
+                      (next/file-manager-mode:open-file-function filename))
+      (error (c) (log:error "Error opening ~a: ~a" filename c)))))
 
-  (setf next/file-manager-mode:*open-file-function* #'my-open-files)
+(setf next/file-manager-mode:*open-file-function* #'my-open-files)
 #+end_src
 
-** Loading Files
-To load a file again, or reload an init file use the function
-load-file. Within the minibuffer prompt enter the full path to the
-file you wish to load.
+** Loading Lisp files
 
-1. ~C-o~: Load File
+To load a Lisp file use the =load-file= command. Within the minibuffer prompt
+enter the full path to the file you wish to load.
 
-A convenience function for reloading the init file called
-~load-init-file~ can also be keybound.
+For convenience, the ~load-init-file~ command directly reloads your init file.
 
 ** Creating your own interactive commands
 Creating your own invokable commands is the same as creating any other
@@ -881,21 +786,21 @@ An example of a trivial command definition can be seen below.
 
 #+NAME: bookmark-url
 #+BEGIN_SRC lisp
-  (define-command bookmark-url ()
-    "Allow the user to bookmark a URL via minibuffer input."
-    (with-result (url (read-from-minibuffer
-                       (make-instance 'minibuffer
-                                      :input-prompt "Bookmark URL:")))
-      (bookmark-add url)))
+(define-command bookmark-url ()
+  "Allow the user to bookmark a URL via minibuffer input."
+  (with-result (url (read-from-minibuffer
+                     (make-minibuffer
+                      :input-prompt "Bookmark URL")))
+    (bookmark-add url)))
 #+END_SRC
 
 These functions will help you retrieve information:
 
 - =(current-buffer)= returns the current, visible buffer in Next.
-- use the accessors =(url …)= and =(title …)= accessors to get its url
-  and its title.
+- Use the =(url …)= and =(title …)= buffer accessors to get the URL
+  and the title.
 - =(buffers *browser*)= returns a hash-table of all the buffers in
-  the current session. The keys are the buffers id (a string), the
+  the current session. The keys are the buffers =id= (a string), the
   values the buffer object.
 
 ** Getting input from the user
@@ -907,31 +812,33 @@ therefore takes the following look:
 #+NAME: read-from-minibuffer-example
 #+BEGIN_SRC lisp
 (with-result (variable-name-to-bind-minibuffer-input
-              (read-from-minibuffer (minibuffer *browser*)))
-  (print variable-name-to-bind-minibuffer-input))
+              (read-from-minibuffer (make-minibuffer ...)))
+  (do-something-with variable-name-to-bind-minibuffer-input))
 #+END_SRC
 
 ** Network resource dispatch (including ad-blocking)
 
 The dispatching of network queries can be fully customized in the
-=resource-query-function= slot of the =buffer= class.
+=request-resource-hook= slot of the =buffer= class.
 
-See the ~resource-query-default~ function for an example which dispatches
-downloads, new window requests,
+See the ~request-resource~ function for an example which dispatches
+downloads, new window requests, etc.
 
-This function can also serve as an entry point to URL-based resource blocking.
+This hook can also serve as an entry point to URL-based resource blocking.
 
 *** Resource blocking (Ad-blocking)
 
 Next provides the =blocker-mode=.  It filters networks requests (including
-ads)by the host name.  A default filter list is automatically updated from
-https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts.
+ads) by the host name.  There is a default filter list that gets automatically
+updated, =next/blocker-mode:*default-hostlist*=.
 
 Multiple lists of hosts can be added and blocker mode will filter based on all
 the lists.
 
-To add a list, add an instance of the ~hostlist~ class to the ~hostlists~ slot.
-For instance, you can add this to your =init.lisp=.
+To add a list, add an instance of the ~hostlist~ class to the ~hostlists~ slot
+of =blocker-mode=.
+
+Example:
 
 #+begin_src lisp
 (defvar *my-blocked-hosts*
@@ -940,14 +847,11 @@ For instance, you can add this to your =init.lisp=.
             "syndication.twitter.com"
             "m.media-amazon.com")))
 
-(define-mode my-blocker-mode (next/blocker-mode:blocker-mode)
-  ((hostlists :initform (list *my-blocked-hosts* next/blocker-mode:*default-hostlist*))))
+(define-configuration next/blocker-mode:blocker-mode
+  ((next/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
 
-(defclass my-buffer (buffer)
-  ((default-modes :initform
-     (cons 'my-blocker-mode (get-default 'buffer 'default-modes)))))
-
-(setf *buffer-class* 'my-buffer)
+(define-configuration buffer
+  ((default-modes (append '(blocker-mode) %slot-default))))
 #+end_src
 
 The =hostlist= class also support fetching the list from a URL.
@@ -964,20 +868,18 @@ Like any other slot, you can set the default value from your ~init.lisp~.  For i
 to change the style to using upper case, no gradient, and square boxes:
 
 #+begin_src lisp
-(defclass my-buffer (buffer)
+(define-configuration buffer
   ((box-style :initform
-    (cl-css:inline-css
-     '(:background "#C38A22"
-       :color "black"
-       :border "1px #C38A22 solid"
-       :font-weight "bold"
-       :padding "1px 3px 0px 3px"
-       :padding "1px 3px 0px 3px"
-       :position "absolute"
-       :text-align "center"
-       :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)")))))
-
-(setf *buffer-class* 'my-buffer)
+              (cl-css:inline-css
+               '(:background "#C38A22"
+                 :color "black"
+                 :border "1px #C38A22 solid"
+                 :font-weight "bold"
+                 :padding "1px 3px 0px 3px"
+                 :padding "1px 3px 0px 3px"
+                 :position "absolute"
+                 :text-align "center"
+                 :text-shadow "0 3px 7px 0px rgba(0,0,0,0.3)")))))
 #+end_src
 
 ** Hooks
@@ -994,12 +896,12 @@ specific actions in arbitrary ways.
 Many hooks are executed at different points in Next, among others:
 
 - Global hooks, such as ~*after-init-hook*~.
-- Window / buffer related hooks.
+- Window or buffer related hooks.
 - Commands "before" and "after" hooks.
 - Modes "enable" and "disable" hooks.
 
 For instance, if you want to force =old.reddit.com= over =www.reddit.com=, you
-can set a hook like the following in you =~/.config/next/init.lisp=:
+can set a hook like the following in your =~/.config/next/init.lisp=:
 
 #+begin_src lisp
 (defun old-reddit-hook (url)
@@ -1012,12 +914,10 @@ can set a hook like the following in you =~/.config/next/init.lisp=:
             new-url))
         url)))
 
-(defclass my-buffer (buffer)
- ((load-hook :initform (next-hooks:make-hook-string->string
-                         :handlers (list #'old-reddit-handler)
-                         :combination #'next-hooks:combine-composed-hook))))
-
-(setf *buffer-class* 'my-buffer)
+(define-configuration buffer
+  ((load-hook (hooks:make-hook-string->string
+               :handlers (list #'old-reddit-handler)
+               :combination #'hooks:combine-composed-hook))))
 #+end_src
 
 Some hooks like the above example expect a return value, so it's important to
@@ -1026,89 +926,86 @@ for more details.
 
 *** List of available hooks
 
-*Commands* hooks
+- *Commands* hooks
 
-All commands  have an associated  "before" and "after" list  of hooks:
-the =help= command has =help-before-hook= and =help-after-hook=.
+  All commands  have an associated  "before" and "after" list  of hooks:
+  the =help= command has =help-before-hook= and =help-after-hook=.
 
-To add a hook handler, call =add-hook=:
+  To add a hook handler, call =add-hook=:
 
-#+begin_src lisp
-(defun hello-hook ()
-  (log:info "hello"))
+  #+begin_src lisp
+  (defun hello-hook ()
+    (log:info "hello"))
 
-(add-hook help-before-hook
-  (next-hooks:make-handler-void #'hello-hook))
-#+end_src
+  (add-hook help-before-hook
+    (next-hooks:make-handler-void #'hello-hook))
+  #+end_src
 
-Now when you press =M-x help=, you'll see
+  Now when you press =M-x help=, you'll see
 
-: <INFO> [18:15:45] next (hello-hook) - hello
+  : <INFO> [18:15:45] next (hello-hook) - hello
 
-*Initialization and exit* hooks
+- *Initialization and exit* hooks
 
-- =after-init-hook=: Hook run after both the Lisp side and the
-platform port have started.
-  - argument: None.
-- =before-exit-hook=: Hook run before both the Lisp side and the
-platform port get terminated.
-  - argument: None.
+  - =after-init-hook=: Hook run after both the Lisp side and the
+  platform port have started.
+    - argument: None.
+  - =before-exit-hook=: Hook run before both the Lisp side and the
+  platform port get terminated.
+    - argument: None.
 
-*Networking* hooks
+- *Networking* hooks
 
-- =load-hook=: Hook  run after the URL  to be visited was  parsed. The
-  URL isn't loaded yet.
-  - argument: The URL that is going  to be visited.
-  - return: Handlers must return a (possibly new) URL (see example above).
+  - =load-hook=: Hook  run after the URL  to be visited was  parsed. The
+    URL isn't loaded yet.
+    - argument: The URL that is going  to be visited.
+    - return: Handlers must return a (possibly new) URL (see example above).
 
-*Window* hooks
+- *Window* hooks
 
-- =window-make-hook=:  Hook run  after the  window is  created on  the
-  platform port.
-  - argument: The window.
-- =window-delete-hook=: Hook run before the window is deleted.
-  - argument: The window.
-- =window-set-active-buffer-hook=: Hook run before the given buffer is
-  added to the window and marked the active buffer.
-  - arguments: The window and the buffer.
+  - =window-make-hook=:  Hook run  after the  window is  created on  the
+    platform port.
+    - argument: The window.
+  - =window-delete-hook=: Hook run before the window is deleted.
+    - argument: The window.
+  - =window-set-active-buffer-hook=: Hook run before the given buffer is
+    added to the window and marked the active buffer.
+    - arguments: The window and the buffer.
 
-*Buffer* hooks
+- *Buffer* hooks
 
-- =buffer-make-hook=:  Hook run  after the  buffer is  created on  the
-  platform port.
-  - argument: The buffer.
-- =buffer-delete-hook=: This hook is run  before the buffer is deleted
-  on the platform port.
-  - argument: The buffer object.
+  - =buffer-make-hook=:  Hook run  after the  buffer is  created on  the
+    platform port.
+    - argument: The buffer.
+  - =buffer-delete-hook=: This hook is run  before the buffer is deleted
+    on the platform port.
+    - argument: The buffer object.
 
-*Download* hooks
+- *Download* hooks
 
-- =before-download-hook=: hook run before downloading a URL.
-  - argument: The URL.
-- =after-download-hook=: Hook run after a download has completed.
-  - argument: The =download-manager:download= class instance.
+  - =before-download-hook=: hook run before downloading a URL.
+    - argument: The URL.
+  - =after-download-hook=: Hook run after a download has completed.
+    - argument: The =download-manager:download= class instance.
 
-*Mode* hooks
+- *Mode* hooks
 
-- =enable-hook=: This hook is run when enabling the mode.
-  - argument: The mode.
-- =disable-hook=: This hook is run when disabling the mode.
-  - argument: The mode.
+  - =enable-hook=: This hook is run when enabling the mode.
+    - argument: The mode.
+  - =disable-hook=: This hook is run when disabling the mode.
+    - argument: The mode.
 
 ** Startup behavior
 
-The default action of Next is to run
-
-#+begin_src lisp
-(funcall (startup-function *browser*) (or urls *free-args*))
-#+end_src
+The default action of Next is to run =startup-function= of the =browser= class.
 
 ~startup-function~ defaults to ~default-startup~ and takes URLs that are passed
 to Next as command line arguments.
 
-You can assign you own function to ~startup-function~ to change the behaviour of
+You can assign your own function to ~startup-function~ to change the behaviour of
 Next on startup, such as which URL it should display, if it should restore the
 previous session or not, etc.
+
 ** Run Next in a security sandbox
 For improved security while you browse the Internet, you can run Next in a
 container on GNU/Linux.
@@ -1132,6 +1029,8 @@ container on GNU/Linux.
 
 - With [[https://firejail.wordpress.com/][Firejail]].
 
+* Troubleshooting
+
 ** Font size on HiDPI displays
 
 On HiDPI displays the font size used for displaying web and Next's minibuffer content might be too tiny.
@@ -1141,10 +1040,9 @@ To fix this issue for the GTK port use this
 #+begin_src sh
 export GDK_SCALE=2
 export GDK_DPI_SCALE=0.5
-next &
+next
 #+end_src
 
-* Troubleshooting
 ** StumpWM mouse scroll
 
 If the mouse scroll does not work for you, see the [[https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to][StumpWM FAQ]] for a
