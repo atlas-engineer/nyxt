@@ -146,8 +146,6 @@ The =~a= in the search engine URI is a place holder for the search pattern.
 To set the list of search engines, do:
 
 #+begin_src lisp
-(in-package :next-user)
-
 (defclass my-browser (gtk-browser)
   ((search-engines :initform
     '(("default"
@@ -166,8 +164,6 @@ To set the list of search engines, do:
 and to append a search engine to the list, you can do
 
 #+begin_src lisp
-(in-package :next-user)
-
 (defclass my-browser (gtk-browser)
   ((search-engines :initform
     (append
@@ -287,8 +283,6 @@ To enable a mode for all buffers by default, add the mode to the list of
 default modes:
 
 #+begin_src lisp
-(in-package :next-user)
-
 (defclass my-buffer (buffer)
   ((default-modes :initform
      (cons 'vi-normal-mode (get-default 'buffer 'default-modes)))))
@@ -309,8 +303,6 @@ You can change the default behavior by adding the following to your
 configuration file:
 
 #+begin_src lisp
-(in-package :next-user)
-
 (defun my-browser ()
   ((open-external-link-in-new-window-p :initform t)))
 
@@ -429,8 +421,6 @@ meaning it works out of the box for Tor.
 You can change the default proxy with
 
 #+begin_src lisp
-(in-package :next-user)
-
 (setf next/proxy-mode:*default-proxy*
  (make-instance 'proxy :server-address  "socks5://your.i.p:port"))
 #+end_src
@@ -455,8 +445,6 @@ is =next.atlas.engineer=.
 To enable this mode put the following statements into your =init.lisp= configuration
 
 #+begin_src lisp
-(in-package :next-user)
-
 (setf next/certificate-whitelist-mode:*default-certificate-whitelist*
       (make-instance 'certificate-whitelist :whitelist '("next.atlas.engineer")))
 
@@ -481,7 +469,6 @@ existing projects:
 You can change the list like this:
 
 #+begin_src lisp
-(in-package :next-user)
 (setf next/vcs:*vcs-projects-roots* '("~/src" "~/work" "~/my/directory"))
 #+end_src
 
@@ -498,8 +485,6 @@ Set =next/vcs:*vcs-username*= as a default username.
 Change also the =*vcs-username-alist*=:
 
 #+begin_src lisp
-(in-package :next-user)
-
 (setf next/vcs:*vcs-usernames-alist* '(("github.com" . "")
                                        ("gitlab.com" . "")
                                        ("bitbucket.org" . "")))
@@ -606,7 +591,7 @@ XDG_DATA_HOME=/tmp/private/ next ; rm -rf /tmp/private/next
 You can evaluate code from the command line with =--eval= and =--load=.
 
 #+begin_src sh
-$ next --no-init --eval '(in-package :next-user) (format t "~a~&" +version+)' \
+$ next --no-init --eval '+version+' \
   --load my-lib.lisp --eval '(format t "Hello ~a!~&" (my-lib:my-world))'
 
 1.5.0-0b1541ce
@@ -620,8 +605,6 @@ You can evan make scripts.  Here is an example =foo.lisp=:
 
 #+begin_src lisp
 #!next --script
-(in-package :next-user)
-
 (format t "~a~&" +version+)
 #+end_src
 
@@ -641,16 +624,7 @@ file.  Within your init file you can write your own keybindings and
 customizations. If the directory =~/.config/next/= does not already
 exist, you will have to make it.
 
-The first line of an init file should contain the following package
-declaration in order to modify Next-specific variables and functions:
-
-#+NAME: package
-#+BEGIN_SRC lisp
-(in-package :next-user)
-#+END_SRC
-
-Following the package declaration, you can write or override any
-functions and variables.
+You can then write or override any functions and variables.
 
 When you are done, you can load your changes while Next is running
 with the command =load-init-file=. Or load any file with =load-file=
@@ -709,7 +683,6 @@ You can change the default binding scheme for any buffer by setting
 to switch to the Emacs scheme:
 
 #+begin_src lisp
-(in-package :next)
 (defclass my-buffer (gtk-buffer)
   ((keymap-scheme-name
     :accessor keymap-scheme-name
@@ -728,8 +701,6 @@ The user can define key bindings by creating a mode that is loaded before any
 other mode.  In your configuration file:
 
 #+begin_src lisp
-(in-package :next-user)
-
 (defvar *my-keymap* (make-keymap)
   "Keymap for `my-mode'.")
 
@@ -815,7 +786,6 @@ The minimal config that sets your Next in vi mode, is:
 
 #+BEGIN_SRC lisp
 ; $HOME/.config/next/init.lisp
-(in-package :next-user)
 
 (defclass my-buffer (buffer)
   ((default-modes :initform
@@ -964,8 +934,6 @@ To add a list, add an instance of the ~hostlist~ class to the ~hostlists~ slot.
 For instance, you can add this to your =init.lisp=.
 
 #+begin_src lisp
-(in-package :next-user)
-
 (defvar *my-blocked-hosts*
   (next/blocker-mode:make-hostlist
    :hosts '("platform.twitter.com"
@@ -996,8 +964,6 @@ Like any other slot, you can set the default value from your ~init.lisp~.  For i
 to change the style to using upper case, no gradient, and square boxes:
 
 #+begin_src lisp
-(in-package :next-user)
-
 (defclass my-buffer (buffer)
   ((box-style :initform
     (cl-css:inline-css
