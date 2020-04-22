@@ -68,6 +68,7 @@ before running this command."
          (open (error-output-path browser) :direction :output :if-does-not-exist :create
                                              :if-exists :append))))
 
+(export-always 'funcall-safely)
 (defun funcall-safely (f &rest args)
   "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run
 from a binary) then any condition is logged instead of triggering the debugger."
