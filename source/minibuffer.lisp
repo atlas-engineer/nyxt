@@ -770,9 +770,8 @@ MESSAGE is a cl-markup list."
                ,@message)
           (messages-content *browser*)))
   ;; This function could be called before the renderer up.
-  (if window
-      (print-message text)
-      (log:info text)))
+  (when window
+    (print-message text)))
 
 (export-always 'echo)
 (defun echo (&rest args)
