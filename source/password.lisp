@@ -33,13 +33,16 @@
   (if (password-interface *browser*)
       (with-result* ((password-name (read-from-minibuffer
                                      (make-minibuffer
-                                      :input-prompt "Name of password (account)")))
+                                      :input-prompt "Name of password")))
                      (service (read-from-minibuffer
                                (make-minibuffer
                                 :input-prompt "Service"))))
-        (password:clip-password (password-interface *browser*)
-                                :password-name password-name
-                                :service service))
+        (handler-case
+            (password:clip-password (password-interface *browser*)
+                                    :password-name password-name
+                                    :service service)
+          (error (c)
+            (echo-warning "Error retrieving password: ~a" c))))
       (echo-warning "No password manager found.")))
 
 (define-command copy-password ()
