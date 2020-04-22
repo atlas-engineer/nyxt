@@ -24,7 +24,8 @@ Warning: This allows Next to be controlled remotely, that is, to
 execute arbitrary code with the privileges of the user running Next.
 Make sure you understand the security risks associated with this
 before running this command."
-  (swank:create-server :port swank-port :dont-close t))
+  (swank:create-server :port swank-port :dont-close t)
+  (echo "Swank server started at port ~a" swank-port))
 
 (defun ensure-parent-exists (path)
   "Create parent directories of PATH if they don't exist and return PATH."
