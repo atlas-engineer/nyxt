@@ -244,7 +244,7 @@ renderers might support this.")
               :initform (hooks:make-hook-string->string
                          :combination #'hooks:combine-composed-hook)
               :type hooks:hook-string->string
-              :documentation "Hook run in `set-url' after `parse-url' was)))))
+              :documentation "Hook run in `set-url*' after `parse-url' was)))))
 processed.  The handlers take the URL going to be loaded as argument and must
 return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook
@@ -728,7 +728,7 @@ proceeding."
       (let ((first-buffer (first (mapcar
                                   (lambda (url)
                                     (let ((buffer (make-buffer)))
-                                      (set-url url :buffer buffer)
+                                      (set-url* url :buffer buffer)
                                       buffer))
                                   urls))))
         (when (and first-buffer (not no-focus))

@@ -203,7 +203,7 @@
        "pagedown" #'scroll-page-down))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
-  ;; (set-url (default-new-buffer-url (buffer %mode))
+  ;; (set-url* (default-new-buffer-url (buffer %mode))
   ;;                 (buffer %mode))
   )
 
@@ -215,7 +215,7 @@
         (echo "History entry is already the current URL.")
         (progn
           (setf (htree:current history) history-node)
-          (set-url (url (htree:data history-node)))))))
+          (set-url* (url (htree:data history-node)))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
@@ -225,7 +225,7 @@
         (progn
           (htree:back (history mode))
           (match (htree:current (history mode))
-            ((guard n n) (set-url (url (htree:data n)))))))))
+            ((guard n n) (set-url* (url (htree:data n)))))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
@@ -234,7 +234,7 @@
         (progn
           (htree:forward (history mode))
           (match (htree:current (history mode))
-            ((guard n n) (set-url (url (htree:data n))))))
+            ((guard n n) (set-url* (url (htree:data n))))))
         (echo "No forward history."))))
 
 (defun history-backwards-completion-filter (&optional (mode (find-submode

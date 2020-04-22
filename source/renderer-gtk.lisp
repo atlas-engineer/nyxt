@@ -394,7 +394,7 @@ Warning: This behaviour may change in the future."
        context
        (gobject:pointer certificate)
        host)
-      (set-url url :buffer buffer)
+      (set-url* url :buffer buffer)
       t)))
 
 (defmethod on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)

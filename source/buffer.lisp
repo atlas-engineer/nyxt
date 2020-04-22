@@ -37,7 +37,7 @@ If URL is `:default', use `default-new-buffer-url'."
                   (default-new-buffer-url buffer)
                   url)))
     (when url
-      (set-url url :buffer buffer))
+      (set-url* url :buffer buffer))
     buffer))
 
 (declaim (ftype (function (browser &key (:title string) (:default-modes list) (:dead-buffer buffer))) buffer-make))
@@ -153,8 +153,8 @@ to the currently active buffer."
                                           ; to call this.
   (ps:chain document title))
 
-(export-always 'set-url)
-(defun set-url (input-url &key (buffer (current-buffer)) raw-url-p)
+(export-always 'set-url*)
+(defun set-url* (input-url &key (buffer (current-buffer)) raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
   (let* ((url (if raw-url-p
@@ -221,7 +221,7 @@ complete against a search engine."
         ;; In case read-from-minibuffer returned a string upon
         ;; empty-complete-immediate.
         (setf url (url url)))
-      (set-url url :buffer (if new-buffer-p
+      (set-url* url :buffer (if new-buffer-p
                                (make-buffer-focus :url nil)
                                (current-buffer))))))
 
@@ -235,7 +235,7 @@ complete against a search engine."
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."
-  (set-url (url buffer) :buffer buffer))
+  (set-url* (url buffer) :buffer buffer))
 
 (define-command reload-buffer ()
   "Reload queried buffer(s)."

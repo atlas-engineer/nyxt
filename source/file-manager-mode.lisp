@@ -70,10 +70,10 @@ with the file."
       (cond
         ((and (uiop:directory-pathname-p filename)
               (uiop:directory-exists-p filename))
-         (set-url (format nil "file://~a" (uiop:ensure-directory-pathname filename))
+         (set-url* (format nil "file://~a" (uiop:ensure-directory-pathname filename))
                   :buffer (make-buffer-focus :url nil)))
         ((supported-media filename)
-         (set-url (format nil "file://~a" filename)
+         (set-url* (format nil "file://~a" filename)
                   :buffer (make-buffer-focus :url nil)))
         (t
          (uiop:launch-program

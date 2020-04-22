@@ -220,7 +220,7 @@ This can be useful to let the user select no tag when returning directly."
                         :input-prompt "Open bookmark"
                         :completion-function (bookmark-completion-filter))))
     ;; TODO: Add support for multiple bookmarks?
-    (set-url (url entry) :buffer (current-buffer) :raw-url-p t)))
+    (set-url* (url entry) :buffer (current-buffer) :raw-url-p t)))
 
 
 
