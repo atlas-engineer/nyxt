@@ -565,7 +565,11 @@ Warning: This behaviour may change in the future."
 (defmethod ffi-generate-input-event ((window gtk-window) event)
   ;; The "send_event" field is used to mark the event as an "unconsumed"
   ;; keypress.  The distinction allows us to avoid looping indefinitely.
-  (setf (gdk:gdk-event-button-send-event event) t)
+  (etypecase event
+    (gdk:gdk-event-button
+     (setf (gdk:gdk-event-button-send-event event) t))
+    (gdk:gdk-event-key
+     (setf (gdk:gdk-event-key-send-event event) t)))
   (gtk:gtk-main-do-event event))
 
 (defmethod ffi-generated-input-event-p ((window gtk-window) event)
