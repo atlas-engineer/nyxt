@@ -63,7 +63,7 @@ Example:
              ,docstring
              (unless (typep buffer 'buffer)
                (error ,(format nil "Mode command ~a called on empty buffer" name)))
-             (let ((existing-instance (find-mode buffer ',name)))
+             (let ((existing-instance (find-mode buffer ,class-var)))
                (unless explicit?
                  (setf activate (not existing-instance)))
                (if activate
