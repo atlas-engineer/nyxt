@@ -66,7 +66,7 @@ vi-normal-mode.")
        ;; TODO: Forwarding C-v / button2 crashes cl-webkit.  See
        ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
        "C-v" #'next/web-mode:paste
-       "button2" #'next/web-mode:maybe-paste
+       "button2" #'next/web-mode:paste-or-set-url
        "escape" #'vi-normal-mode
        "button1" #'vi-button1)))
    (destructor

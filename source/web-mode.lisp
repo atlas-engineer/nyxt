@@ -35,7 +35,7 @@
        "C-u M-g" #'follow-hint-new-buffer
        "C-x C-w" #'copy-hint-url
        "C-v" #'paste
-       "button2" #'maybe-paste
+       "button2" #'paste-or-set-url
        "C-c" #'copy
        "button9" #'history-forwards
        "button8" #'history-backwards
@@ -218,16 +218,6 @@
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
 
-(defun call-input-command-or-forward (command &key (buffer (current-buffer))
-                                          (window (current-window)))
-  (%clicked-in-input?
-   :callback (lambda (response)
-               (if (input-tag-p response)
-                   (funcall-safely command)
-                   (ffi-generate-input-event
-                    window
-                    (last-event buffer))))))
-
 (defun call-non-input-command-or-forward (command &key (buffer (current-buffer))
                                           (window (current-window)))
   (%clicked-in-input?
@@ -238,13 +228,14 @@
                     (last-event buffer))
                    (funcall-safely command)))))
 
-(define-command maybe-paste (&optional (buffer (current-buffer)))
+(define-command paste-or-set-url (&optional (buffer (current-buffer)))
   "Paste text if active element is an input tag, forward event otherwise."
-  ;; TODO: This does not work properly.
-  ;; If an input element is active and we press button2, it pastes instead of
-  ;; opening the link in a new tab.
-  ;; We should check if the mouse cursor is over a link.
-  (call-input-command-or-forward #'paste :buffer buffer))
+  (%clicked-in-input?
+   :callback (lambda (response)
+               (if (and (input-tag-p response)
+                        (uiop:emptyp (url-at-point buffer)))
+                   (funcall-safely #'paste)
+                   (set-url* (url-at-point buffer) :buffer (make-buffer-focus :url nil))))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."
