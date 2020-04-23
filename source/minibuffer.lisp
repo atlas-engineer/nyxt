@@ -332,7 +332,7 @@ calls, such as invoking `minibuffer-history'."))
   (apply #'show
          (unless (completion-function minibuffer)
            ;; We don't need so much height since there is no candidate to display.
-           (list :height (status-buffer-height (current-window))))))
+           (list :height (minibuffer-open-single-line-height (current-window))))))
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
