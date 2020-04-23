@@ -17,14 +17,16 @@
     (ps:chain -string (from-char-code n)))
 
   (defun add-stylesheet ()
-    (unless (qs document "#next-stylesheet") 
-      (ps:let* ((style-element (ps:chain document (create-element "style")))
-                (box-style (ps:lisp (box-style (current-buffer))))
-                (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
-        (setf (ps:@ style-element id) "next-stylesheet")
-        (ps:chain document head (append-child style-element))
-        (ps:chain style-element sheet (insert-rule box-style 0))
-        (ps:chain style-element sheet (insert-rule highlighted-style 1)))))
+    (unless (qs document "#next-stylesheet")
+      (ps:try
+       (ps:let* ((style-element (ps:chain document (create-element "style")))
+                 (box-style (ps:lisp (box-style (current-buffer))))
+                 (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
+         (setf (ps:@ style-element id) "next-stylesheet")
+         (ps:chain document head (append-child style-element))
+         (ps:chain style-element sheet (insert-rule box-style 0))
+         (ps:chain style-element sheet (insert-rule highlighted-style 1)))
+       (:catch (error)))))
 
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the element"
