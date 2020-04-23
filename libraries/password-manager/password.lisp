@@ -26,14 +26,20 @@ If PASSWORD-NAME is empty, then generate a new password."))
 (defgeneric password-correct-p (password-interface)
   (:documentation "Return T if set password is correct, NIL otherwise."))
 
+(defun safe-clipboard-text ()
+  "Return clipboard content, or nil if the content is not textual."
+  ;; xclip errors out when the clipboard contains non-text:
+  ;; https://github.com/astrand/xclip/issues/38#issuecomment-466625564.
+  (ignore-errors (trivial-clipboard:text)))
+
 ;;; Prerequisite Functions
 (defun clip-password-string (pass)
-  (let ((original-clipboard (trivial-clipboard:text)))
+  (let ((original-clipboard (safe-clipboard-text)))
     (trivial-clipboard:text pass)
     (bt:make-thread
      (lambda ()
        (sleep *sleep-timer*)
-       (when (string= (trivial-clipboard:text) pass)
+       (when (string= (safe-clipboard-text) pass)
          (trivial-clipboard:text original-clipboard))))))
 
 
