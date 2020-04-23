@@ -378,7 +378,7 @@ the customization section to override the default behavior.
 
 ** Exiting
 To exit Next use the =quit= command. By default, the list of buffers, the
-cookies (e.g. authetication information) are persisted.
+cookies (e.g. authentication information) are persisted.
 Form data that was not sent to a web page will *not* be persisted for now, but
 it's a planned feature.
 
