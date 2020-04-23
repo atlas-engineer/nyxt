@@ -45,6 +45,11 @@
    (minibuffer-open-height :accessor minibuffer-open-height :initform 256
                            :type integer
                            :documentation "The height of the minibuffer when open.")
+   (minibuffer-open-single-line-height :accessor minibuffer-open-single-line-height
+                                       :initform 35
+                                       :type integer
+                                       :documentation "The height of
+ the minibuffer when open for a single line of input.")
    (input-dispatcher :accessor input-dispatcher
                      :initform #'dispatch-input-event
                      :type function
