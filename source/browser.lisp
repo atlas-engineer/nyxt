@@ -53,9 +53,8 @@ It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
                                   :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
-                                  :documentation "Hook run before
-   `window-set-active-buffer' takes effect. The handlers take the
-   window and the buffer as argument.")
+                                  :documentation "Hook run before `window-set-active-buffer' takes effect.
+The handlers take the window and the buffer as argument.")
    (status-formatter :accessor status-formatter
                      :initform #'format-status
                      :type (function (window) string)
@@ -84,30 +83,25 @@ Example formatter that prints the buffer indices over the total number of buffer
    (window-delete-hook :accessor window-delete-hook
                        :initform (make-hook-window)
                        :type hook-window
-                       :documentation "Hook run after
-    `ffi-window-delete' takes effect.  The handlers take the window as
-    argument.")))
+                       :documentation "Hook run after `ffi-window-delete' takes effect.
+The handlers take the window as argument.")))
 
 (defclass-export proxy ()
   ((server-address :accessor server-address :initarg :server-address
                    :initform "socks5://127.0.0.1:9050"
                    :type string
                    :documentation "The address of the proxy server.
-                   It's made of three components: protocol, host and port.
-                   Example:
-                   http://192.168.1.254:8080")
+It's made of three components: protocol, host and port.
+Example: \"http://192.168.1.254:8080\".")
    (whitelist :accessor whitelist :initarg :whitelist
               :initform '("localhost" "localhost:8080")
               :type list-of-strings
-              :documentation "A list of URI not to forward to the
-              proxy. It must be a list of strings.")
+              :documentation "A list of URIs not to forward to the proxy.")
    (proxied-downloads-p :accessor proxied-downloads-p :initarg :proxied-downloads-p
                         :initform t
-                        :documentation "Non-nil if downloads should
-                        also use the proxy."))
-  (:documentation "Enable forwarding of all network requests to a
-                   specific host. This can apply to specific
-                   buffer."))
+                        :documentation "Non-nil if downloads should also use the proxy."))
+  (:documentation "Enable forwarding of all network requests to a specific host.
+This can apply to specific buffer."))
 
 (define-class-type proxy)
 (declaim (type (proxy-type) *proxy-class*))

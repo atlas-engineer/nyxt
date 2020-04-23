@@ -161,7 +161,7 @@ use the socket without parsing any init file."
                 load-lisp))
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (or stream).
-   If FILE is \"-\", read from the standard input."
+If FILE is \"-\", read from the standard input."
   (let ((*package* (or (find-package package) *package*)))
     (flet ((safe-load ()
              (when (equal "" file)
@@ -216,8 +216,8 @@ use the socket without parsing any init file."
       (uiop:quit 1))))
 
 (defun default-startup (&optional urls)
-  "Make a window and load URLS in new buffers. This function is
-   suitable as a `browser' `startup-function'."
+  "Make a window and load URLS in new buffers.
+This function is suitable as a `browser' `startup-function'."
   (let ((window (window-make *browser*))
         (buffer (help)))
     (if urls
