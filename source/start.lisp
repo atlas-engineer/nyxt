@@ -225,11 +225,19 @@ This function is suitable as a `browser' `startup-function'."
         (window-set-active-buffer window buffer)))
   (when (startup-error-reporter-function *browser*)
     (funcall-safely (startup-error-reporter-function *browser*)))
-  (match (session-restore-function *browser*)
-    ((guard f f)
-     (when (uiop:file-exists-p (session-path *browser*))
+  (match (session-restore-prompt *browser*)
+    (:always-ask
+     (with-confirm ("Restore previous session?")
+       (when (and (session-restore-function *browser*)
+                  (uiop:file-exists-p (session-path *browser*)))
+         (log:info "Restoring session '~a'" (session-path *browser*))
+         (funcall (session-restore-function *browser*)))))
+    (:always-restore
+     (when (and (session-restore-function *browser*)
+                (uiop:file-exists-p (session-path *browser*)))
        (log:info "Restoring session '~a'" (session-path *browser*))
-       (funcall f)))))
+       (funcall (session-restore-function *browser*))))
+    (:never-restore (log:info "Not restoring session."))))
 
 (defun open-external-urls (urls)
   (if urls
