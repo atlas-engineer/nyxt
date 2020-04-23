@@ -411,14 +411,8 @@ nonetheless, you can add an exception for the current hostname with
 =add-domain-to-certificate-whitelist=.  The =certificate-whitelist-mode= must be
 active for the current buffer (which is the default).
 
-You can persist hostname exceptions in your init file.
-Note that the hostname is not a URL, e.g. the hostname in the URL
-https://next.atlas.engineer/ is =next.atlas.engineer=.
-
-#+begin_src lisp
-(setf next/certificate-whitelist-mode:*default-certificate-whitelist*
-      '("next.atlas.engineer" "example.org"))
-#+end_src
+You can persist hostname exceptions in your init file, see
+=add-domain-to-certificate-whitelist= documentation.
 
 ** Cloning Git repositories
 

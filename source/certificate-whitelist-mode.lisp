@@ -7,11 +7,14 @@
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (sera:export-always '*default-certificate-whitelist*)
-(defparameter *default-certificate-whitelist* '())
+(defparameter *default-certificate-whitelist* '()
+  "List of hostnames for which to ignore certificate errors.
+See the `add-domain-to-certificate-whitelist' command.")
 
 (define-mode certificate-whitelist-mode ()
   "Enable ignoring of certificate errors.
-This can apply to specific buffers."
+This can apply to specific buffers.
+See the `add-domain-to-certificate-whitelist' command."
   ((certificate-whitelist :initarg :certificate-whitelist
                           :accessor certificate-whitelist
                           :type list-of-strings
@@ -29,7 +32,14 @@ This can apply to specific buffers."
             (buffer mode))))))
 
 (define-command add-domain-to-certificate-whitelist (&optional (buffer (current-buffer)))
-  "Add the current domain to the buffer's certificate whitelist."
+  "Add the current hostname to the buffer's certificate whitelist.
+This is only effective if `certificate-whitelist-mode' is enabled.
+
+To make this change permanent, you can customize
+`*default-certificate-whitelist*' in your init file:
+
+\(setf next/certificate-whitelist-mode:*default-certificate-whitelist*
+      '(\"next.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-whitelist-mode)
       (if (url buffer)
           (let ((domain (quri:uri-host (quri:uri (url buffer)))))
