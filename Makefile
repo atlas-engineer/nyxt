@@ -19,7 +19,7 @@ APPLICATIONSDIR = /Applications
 help:
 	@cat INSTALL
 
-lisp_files := next.asd source/*.lisp
+lisp_files := next.asd $(shell find . -type f -name '*.lisp')
 
 .PHONY: clean-fasls
 clean-fasls:
