@@ -114,6 +114,7 @@ This can apply to specific buffer."))
 Dead buffers (i.e. those not associated with a web view) have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (url :accessor url :initarg :url :type string :initform "")
+   (url-at-point :accessor url-at-point :type string :initform "")
    (title :accessor title :initarg :title :type string :initform "")
    (last-access :accessor last-access
                 :initform (local-time:now)
@@ -707,12 +708,6 @@ proceeding."
       ((guard diff diff)
        ;; Display the most recent inactive buffer.
        (first (sort diff #'local-time:timestamp> :key #'last-access))))))
-
-(defmethod push-url-at-point ((buffer buffer) url)
-  (declare (ignore buffer))             ; TODO: Remove buffer argument?
-  (if (uiop:emptyp url)
-      (print-message "")
-      (print-message (str:concat "→ " url))))
 
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.

@@ -461,14 +461,16 @@ Warning: This behaviour may change in the future."
 
 (defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
-  (cond ((webkit:webkit-hit-test-result-link-uri hit-test-result)
-         (push-url-at-point buffer (webkit:webkit-hit-test-result-link-uri hit-test-result)))
-        ((webkit:webkit-hit-test-result-image-uri hit-test-result)
-         (push-url-at-point buffer (webkit:webkit-hit-test-result-image-uri hit-test-result)))
-        ((webkit:webkit-hit-test-result-media-uri hit-test-result)
-         (push-url-at-point buffer (webkit:webkit-hit-test-result-media-uri hit-test-result)))
-        (t
-         (push-url-at-point buffer ""))))
+  (match (cond ((webkit:webkit-hit-test-result-link-uri hit-test-result)
+                (webkit:webkit-hit-test-result-link-uri hit-test-result))
+               ((webkit:webkit-hit-test-result-image-uri hit-test-result)
+                (webkit:webkit-hit-test-result-image-uri hit-test-result))
+               ((webkit:webkit-hit-test-result-media-uri hit-test-result)
+                (webkit:webkit-hit-test-result-media-uri hit-test-result)))
+    (nil (print-message "")
+         (setf (url-at-point buffer) ""))
+    (url (print-message (str:concat "→ " url))
+         (setf (url-at-point buffer) url))))
 
 (defmethod ffi-window-make ((browser gtk-browser))
   "Make a window."
