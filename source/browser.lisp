@@ -468,6 +468,10 @@ into `session-path'.")
                              :initform #'restore-sexp-session
                              :documentation "The function which restores the session
 from `session-path'.")
+   (session-restore-prompt :accessor session-restore-prompt
+                           :initform :always-restore
+                           :documentation "Ask whether to restore the
+session. Possible values are :always-ask :always-restore :never-restore.")
    (standard-output-path :accessor standard-output-path
                          :initform (xdg-data-home "standard-out.txt")
                          :documentation "Path where `*standard-output*'
