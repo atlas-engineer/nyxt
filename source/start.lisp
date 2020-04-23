@@ -124,7 +124,7 @@ the (xdg-data-home \"sessions \") folder."
           (when p
             (file-position stream p)))))))
 
-(serapeum:export-always 'entry-point)
+(export-always 'entry-point)
 (defun entry-point ()
   "Read the CLI arguments and start the browser."
   (multiple-value-bind (options free-args)
@@ -133,7 +133,7 @@ the (xdg-data-home \"sessions \") folder."
     (in-package :next-user)
     (apply #'start options free-args)))
 
-(serapeum:export-always 'init-file-path)
+(export-always 'init-file-path)
 (defun init-file-path (&key (default-basename "init.lisp"))
   "Return the path of the initialization file."
   ;; This can't be a regular variable or else the value will be hard-coded at
@@ -143,7 +143,7 @@ the (xdg-data-home \"sessions \") folder."
     ("" nil)
     (file file)))
 
-(serapeum:export-always 'socket-path)
+(export-always 'socket-path)
 (defun socket-path (&key (default-basename "next.socket"))
   "Path string of the Unix socket used to communicate between different
 instances of Next.
