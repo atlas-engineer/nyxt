@@ -110,8 +110,8 @@ This can apply to specific buffer."))
 
 (defclass-export buffer ()
   ((id :accessor id :initarg :id :initform ""
-       :documentation "Unique identifier for a buffer.  Dead buffers (i.e. those
-not associated with a web view) have an empty ID.")
+       :documentation "Unique identifier for a buffer.
+Dead buffers (i.e. those not associated with a web view) have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (url :accessor url :initarg :url :type string :initform "")
    (title :accessor title :initarg :title :type string :initform "")
@@ -124,24 +124,22 @@ not associated with a web view) have an empty ID.")
    (default-modes :accessor default-modes :initarg :default-modes
                   :initform '(certificate-whitelist-mode web-mode root-mode)
                   :type list-of-symbols
-                  :documentation "The list of symbols of class to
-instantiate on buffer creation, unless specified.")
+                  :documentation "The symbols of the classes to instantiate on buffer creation.")
    (keymap-scheme-name
     :accessor keymap-scheme-name
     :initarg :keymap-scheme-name
     :initform scheme:cua
     :type keymap:scheme-name
-    :documentation "The keymap scheme that will be used
-for all modes in the current buffer.")
+    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
    (override-map :accessor override-map
                  :initarg :override-map
                  :initform (let ((map (make-keymap "overide-map")))
                              (define-key map
                                "M-x" #'execute-command)
                              map)
-                 :documentation "This keymap is always looked up first, it
-overrides all other bindings.  No libraries should ever touch the override-map,
-this is left for the user to customize to their needs.
+                 :documentation "Keymap that overrides all other bindings.
+No libraries should ever touch the override-map, this is left for the user to
+customize to their needs.
 
 Example:
 
