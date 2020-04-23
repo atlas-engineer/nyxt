@@ -86,10 +86,18 @@ Return nil if hostlist cannot be parsed."
             (let ((hostlist-string (read-hostlist hostlist)))
               (unless (uiop:emptyp hostlist-string)
                 (with-input-from-string (stream hostlist-string)
-                  (loop as line = (read-line stream nil)
-                        while line
-                        unless (or (< (length line) 2) (string= (subseq line 0 1) "#"))
-                          collect (second (str:split " " line)))))))))
+                  (flet ((empty-line? (line)
+                           (< (length line) 2))
+                         (comment? (line)
+                           (string= (subseq line 0 1) "#"))
+                         (custom-hosts? (line)
+                           (not (str:starts-with? "0.0.0.0" line))))
+                    (loop as line = (read-line stream nil)
+                          while line
+                          unless (or (empty-line? line)
+                                     (comment? line)
+                                     (custom-hosts? line))
+                            collect (second (str:split " " line))))))))))
 
 (serapeum:export-always '*default-hostlist*)
 (defparameter *default-hostlist*
