@@ -592,7 +592,7 @@ Warning: This behaviour may change in the future."
 (defmethod ffi-print-status ((window gtk-window) text)
   (let ((text (markup:markup
                (:head (:style (status-buffer-style window)))
-               (:body text))))
+               (:body (markup:raw text)))))
     (with-slots (status-view) window
       (webkit2:webkit-web-view-evaluate-javascript
        (status-view window)
@@ -602,7 +602,7 @@ Warning: This behaviour may change in the future."
 (defmethod ffi-print-message ((window gtk-window) text)
   (let ((text (markup:markup
                (:head (:style (message-buffer-style window)))
-               (:body text))))
+               (:body (markup:raw text)))))
     (with-slots (message-view) window
       (webkit2:webkit-web-view-evaluate-javascript
        (message-view window)
