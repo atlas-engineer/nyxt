@@ -872,8 +872,7 @@ to change the style to using upper case, no gradient, and square boxes:
 
 #+begin_src lisp
 (define-configuration buffer
-  ((box-style :initform
-              (cl-css:inline-css
+  ((box-style (cl-css:inline-css
                '(:background "#C38A22"
                  :color "black"
                  :border "1px #C38A22 solid"
