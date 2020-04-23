@@ -1,6 +1,6 @@
 (in-package :next)
 
-(defun copy-password-completion-filter (password-instance)
+(defun password-completion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance)))
     (lambda (input)
       (fuzzy-match input password-list))))
@@ -53,7 +53,7 @@
                       (read-from-minibuffer
                        (make-minibuffer
                         :completion-function
-                        (copy-password-completion-filter
+                        (password-completion-filter
                          (password-interface *browser*)))))
           (password:clip-password (password-interface *browser*) :password-name password-name)))
       (echo-warning "No password manager found.")))
