@@ -440,35 +440,27 @@ Otherwise go forward to the only child."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Warning: To specialize `on-signal-load-finished' we must be in the right package.
 (in-package :next)
+
+(defmethod on-signal-notify-uri ((mode next/web-mode::web-mode) url)
+  (unless (find-if (alex:rcurry #'str:starts-with? url)
+                   (next/web-mode:history-blacklist mode))
+    (htree:add-child (make-instance 'buffer-description
+                                    :url url
+                                    :title (title (buffer mode)))
+                     (next/web-mode::history mode)
+                     :test #'equals)
+    (when url
+      (history-add url :title (title (buffer mode)))))
+
+  (match (session-store-function *browser*)
+    ((guard f f) (funcall-safely f)))
+  url)
+
 (defmethod on-signal-load-committed ((mode next/web-mode::web-mode) url)
   nil)
 
 (defmethod on-signal-load-finished ((mode next/web-mode::web-mode) url)
-  (let* ((buffer (active-buffer (current-window))))
-    ;; TODO: Setting the default zoom level works with pure Javascript, but it
-    ;; can only be done after the URL has been loaded which is a bit of a
-    ;; kludge.  Instead we could add an RPC endpoint,
-    ;; e.g. webkit_web_view_set_zoom_level.
-    (unzoom-page :buffer buffer)
-    (set-window-title (current-window) buffer)
-    (print-status)
-
-    (unless (find-if (alex:rcurry #'str:starts-with? url)
-                     (next/web-mode:history-blacklist mode))
-      (htree:add-child (make-instance 'buffer-description
-                                      :url url
-                                      :title (title buffer))
-                       (next/web-mode::history mode)
-                       :test #'equals)
-      (when url
-        (history-add url :title (title buffer))))
-
-    (match (session-store-function *browser*)
-      ((guard f f) (funcall-safely f))))
-  (echo "Finished loading: ~a." url)
-  ;; TODO: Wait some time before dismissing the echo?
-  ;; (echo-dismiss)
-  )
+  nil)
 
 (defmethod object-string ((node htree:node))
   (object-string (when node (htree:data node))))

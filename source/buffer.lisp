@@ -167,10 +167,7 @@ URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
             (setf url new-url)))
       (error (c)
         (log:error "In `set-url-hook': ~a" c)))
-    (ffi-buffer-load buffer url)
-    ;; Set buffer's URL after the FFI call so that the call has access to the
-    ;; old buffer URL.
-    (setf (url buffer) url)))
+    (ffi-buffer-load buffer url)))
 
 (define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text or to input.

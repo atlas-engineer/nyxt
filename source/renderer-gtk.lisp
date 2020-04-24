@@ -380,9 +380,17 @@ Warning: This behaviour may change in the future."
      (declare (ignore web-view errors))
      ;; TODO: Add hint on how to accept certificate to the HTML content.
      (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "notify::uri"
+   (lambda (web-view param-spec)
+     (declare (ignore web-view param-spec))
+     (on-signal-notify-uri buffer nil)))
   ;; Modes might require that buffer exists, so we need to initialize them
   ;; after the view has been created.
   (initialize-modes buffer))
+
+(defmethod ffi-buffer-uri ((buffer gtk-buffer))
+  (webkit:webkit-web-view-uri (gtk-object buffer)))
 
 (defmethod on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
@@ -459,6 +467,7 @@ Warning: This behaviour may change in the future."
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
+           (echo "Finished loading: ~a." (url buffer))
            (on-signal-load-finished buffer url)))))
 
 (defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)

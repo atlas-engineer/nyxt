@@ -261,10 +261,20 @@ If there is no corresponding keymap, return nil."
   (keymap:get-keymap (keymap-scheme-name (buffer mode))
                      (keymap-scheme mode)))
 
+(defmethod on-signal-notify-uri ((mode root-mode) url)
+  (set-window-title (current-window) (buffer mode))
+  (print-status)
+  url)
+
 (defmethod on-signal-load-committed ((mode root-mode) url)
   url)
 
 (defmethod on-signal-load-finished ((mode root-mode) url)
+  ;; TODO: Setting the default zoom level works with pure Javascript, but it
+  ;; can only be done after the URL has been loaded which is a bit of a
+  ;; kludge.  Instead we could add an FFI endpoint,
+  ;; e.g. webkit_web_view_set_zoom_level.
+  (unzoom-page :buffer (buffer mode))
   url)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

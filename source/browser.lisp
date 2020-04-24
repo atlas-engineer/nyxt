@@ -309,11 +309,18 @@ defined in any package and is unique."
               ((guard c c) (funcall (sym c) :buffer buffer :activate t))
               (_ (log:warn "Mode command ~a not found." mode-class))))))))
 
+(defmethod on-signal-notify-uri ((buffer buffer) no-uri)
+  "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
+BUFFER's modes."
+  (declare (ignore no-uri))
+  (setf (url buffer) (ffi-buffer-uri buffer))
+  (dolist (mode (modes buffer))
+    (on-signal-notify-uri mode (url buffer))))
+
 (defmethod on-signal-load-committed ((buffer buffer) url)
   nil)
 
 (defmethod on-signal-load-finished ((buffer buffer) url)
-  (setf (url buffer) url)
   (with-result (title (%%buffer-get-title :buffer buffer))
     (setf (title buffer) title)
     ;; Warning: We can only dispatch `on-signal-load-finished' after the title has
@@ -881,6 +888,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-window-delete ((window window)))
 (define-ffi-method ffi-window-fullscreen ((window window)))
 (define-ffi-method ffi-window-unfullscreen ((window window)))
+(define-ffi-method ffi-buffer-uri ((buffer buffer)))
 (define-ffi-method ffi-window-make ((browser browser)))
 (define-ffi-method ffi-window-to-foreground ((window window)))
 (define-ffi-method ffi-window-set-title ((window window) title))
