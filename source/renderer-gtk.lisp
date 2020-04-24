@@ -515,7 +515,21 @@ Warning: This behaviour may change in the future."
   (gtk:gtk-widget-destroy (gtk-object buffer)))
 
 (defmethod ffi-buffer-load ((buffer gtk-buffer) uri)
-  (webkit:webkit-web-view-load-uri (gtk-object buffer) uri))
+  "Load URI in BUFFER.
+An optimization technique is to make use of the renderer history cache.
+For WebKit, if the URL matches an entry in the webkit-history then we fetch the
+page from the cache.
+
+We don't use the cache if URI matches BUFFER's URL since this means the user
+requested a reload."
+  (let* ((history (webkit-history buffer))
+         (entry (or (find uri history :test #'string= :key #'webkit-history-entry-uri)
+                    (find uri history :test #'string= :key #'webkit-history-entry-original-uri))))
+    (if (and entry (not (string= uri (url buffer))))
+        (progn
+          (log:debug "Load URL from history entry ~a" entry)
+          (load-webkit-history-entry buffer entry))
+        (webkit:webkit-web-view-load-uri (gtk-object buffer) uri))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
   (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
@@ -610,6 +624,48 @@ Warning: This behaviour may change in the future."
        (message-view window)
        (ps:ps (setf (ps:@ document Body |innerHTML|)
                     (ps:lisp text)))))))
+
+(defstruct webkit-history-entry
+  title
+  uri
+  original-uri
+  gtk-object)
+
+(defmethod webkit-history ((buffer gtk-buffer))
+  "Return a list of `webkit-history-entry's for the current buffer.
+Oldest entries come last.
+
+This represents the history as remembered by WebKit.  Note that it is linear so
+it does not map 1:1 with Next's history tree.  Nonetheless it allows us to make
+use of the WebKit history case for the current branch.  See `ffi-buffer-load'.
+
+As a second value, return the current buffer index starting from 0."
+  (let* ((bf-list (webkit:webkit-web-view-get-back-forward-list (gtk-object buffer)))
+         (length (webkit:webkit-back-forward-list-get-length bf-list))
+         (current (webkit:webkit-back-forward-list-get-current-item bf-list))
+         (history-list nil)
+         (current-index 0))
+    ;; The back-forward list is both negatively and positibely indexed.  Seems
+    ;; that we can't easily know the first index nor the last one.  So let's
+    ;; iterate over the length backwards and forwards to make sure we get all
+    ;; elements in order.
+    (loop for i from (- length) to length
+          for item = (webkit:webkit-back-forward-list-get-nth-item bf-list i)
+          when (eq item current)
+            do (setf current-index (- length (length history-list))) ; Index from 0.
+          when item
+            do (push (make-webkit-history-entry
+                      :title (webkit:webkit-back-forward-list-item-get-title item)
+                      :uri (webkit:webkit-back-forward-list-item-get-uri item)
+                      :original-uri (webkit:webkit-back-forward-list-item-get-original-uri item)
+                      :gtk-object item)
+                     history-list))
+    (values history-list current-index)))
+
+(defmethod load-webkit-history-entry ((buffer gtk-buffer) history-entry)
+  (webkit:webkit-web-view-go-to-back-forward-list-item
+   (gtk-object buffer)
+   (webkit-history-entry-gtk-object history-entry)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; See https://github.com/Ferada/cl-cffi-gtk/issues/37.
