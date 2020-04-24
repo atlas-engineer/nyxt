@@ -802,12 +802,13 @@ Deal with URL with the following rules:
             (url buffer)
             (title buffer))))
 
-(defun print-status ()
-  (let ((window (current-window)))
+(defun print-status (&optional status window)
+  (let ((window (or window (current-window))))
     (when window
       (ffi-print-status
        window
-       (funcall-safely (status-formatter window) window)))))
+       (or status
+           (funcall-safely (status-formatter window) window))))))
 
 (defun print-message (message)
   (when (current-window)
