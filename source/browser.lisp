@@ -537,6 +537,11 @@ The handlers take the `download-manager:download' class instance as argument.")
                          please view the documentation for
                          cl-enchant (broker-list-dicts).")))
 
+(defmethod get-containing-window-for-buffer ((buffer buffer)
+                                             (browser browser))
+  "Get the window containing a buffer."
+  (find buffer (alex:hash-table-values (windows browser))))
+
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup-function'."
   ;; `messages-appender' requires `*browser*' to be initialized.
