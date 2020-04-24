@@ -810,9 +810,10 @@ Deal with URL with the following rules:
        (or status
            (funcall-safely (status-formatter window) window))))))
 
-(defun print-message (message)
-  (when (current-window)
-    (ffi-print-message (current-window) message)))
+(defun print-message (message &optional window)
+  (let ((window (or window (current-window))))
+    (when window
+      (ffi-print-message window message))))
 
 (export-always 'current-window)
 (defun current-window (&optional no-rescan)
