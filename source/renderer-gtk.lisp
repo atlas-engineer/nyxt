@@ -451,7 +451,9 @@ Warning: This behaviour may change in the future."
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
     (cond ((eq load-event :webkit-load-started)
-           (echo "Loading: ~a." (url buffer)))
+           (echo "Loading: ~a." (url buffer))
+           (print-status (format nil "Loading: ~a" (url buffer))
+                         (get-containing-window-for-buffer buffer *browser*)))
           ((eq load-event :webkit-load-redirected) nil)
           ;; TODO: load-committed is deprecated.  Only use load-status and load-finished.
           ((eq load-event :webkit-load-committed)
