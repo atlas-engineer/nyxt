@@ -1,4 +1,4 @@
-;;; urls.lisp --- utility classes and functions for hanlding urls.
+;;; urls.lisp --- utility classes and functions for handling urls.
 
 (in-package :next)
 
