@@ -911,7 +911,7 @@ can set a hook like the following in your =~/.config/next/init.lisp=:
         url)))
 
 (define-configuration buffer
-  ((load-hook (hooks:make-hook-string->string
+  ((set-url-hook (hooks:make-hook-string->string
                :handlers (list #'old-reddit-handler)
                :combination #'hooks:combine-composed-hook))))
 #+end_src
@@ -952,7 +952,7 @@ for more details.
 
 - *Networking* hooks
 
-  - =load-hook=: Hook  run after the URL  to be visited was  parsed. The
+  - =set-url-hook=: Hook  run after the URL  to be visited was  parsed. The
     URL isn't loaded yet.
     - argument: The URL that is going  to be visited.
     - return: Handlers must return a (possibly new) URL (see example above).

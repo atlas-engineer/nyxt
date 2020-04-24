@@ -156,17 +156,17 @@ to the currently active buffer."
 (export-always 'set-url*)
 (defun set-url* (input-url &key (buffer (current-buffer)) raw-url-p)
   "Load INPUT-URL in BUFFER.
-URL is first transformed by `parse-url', then by BUFFER's `load-hook'."
+URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
   (let* ((url (if raw-url-p
                   input-url
                   (parse-url input-url))))
     (handler-case
         (progn
-          (let ((new-url (hooks:run-hook (load-hook buffer) url)))
+          (let ((new-url (hooks:run-hook (set-url-hook buffer) url)))
             (check-type new-url string)
             (setf url new-url)))
       (error (c)
-        (log:error "In `load-hook': ~a" c)))
+        (log:error "In `set-url-hook': ~a" c)))
     (setf (url buffer) url)
     (ffi-buffer-load buffer url)))
 
