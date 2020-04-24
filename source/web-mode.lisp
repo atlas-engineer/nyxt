@@ -19,6 +19,17 @@
             :type htree:history-tree
             :initarg :history
             :initform (htree:make))
+   (history-blacklist :accessor history-blacklist
+                      :type list-of-strings
+                      :initarg :history-blacklist
+                      ;; TODO: Find a more automated way to do it.  WebKitGTK
+                      ;; automatically removes such redirections from its
+                      ;; history.  How?
+                      :initform '("https://duckduckgo.com/l/")
+                      :documentation "URI prefixes to not save in history.
+Example: DuckDuckGo redirections should be ignored or else going backward in
+history after consulting a result reloads the result, not the duckduckgo
+search.")
    (keymap-scheme
     :initform
     (define-scheme "web"
@@ -427,7 +438,7 @@ Otherwise go forward to the only child."
     (copy-to-clipboard input)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Warning: To specialize `on-signal-load-committed' we must be in the right package.
+;; Warning: To specialize `on-signal-load-finished' we must be in the right package.
 (in-package :next)
 (defmethod on-signal-load-committed ((mode next/web-mode::web-mode) url)
   nil)
@@ -441,13 +452,17 @@ Otherwise go forward to the only child."
     (unzoom-page :buffer buffer)
     (set-window-title (current-window) buffer)
     (print-status)
-    (htree:add-child (make-instance 'buffer-description
-                                    :url url
-                                    :title (title buffer))
-                     (next/web-mode::history mode)
-                     :test #'equals)
-    (when url
-      (history-add url :title (title buffer)))
+
+    (unless (find-if (alex:rcurry #'str:starts-with? url)
+                     (next/web-mode:history-blacklist mode))
+      (htree:add-child (make-instance 'buffer-description
+                                      :url url
+                                      :title (title buffer))
+                       (next/web-mode::history mode)
+                       :test #'equals)
+      (when url
+        (history-add url :title (title buffer))))
+
     (match (session-store-function *browser*)
       ((guard f f) (funcall-safely f))))
   (echo "Finished loading: ~a." url)
