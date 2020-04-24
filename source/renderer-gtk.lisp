@@ -455,7 +455,7 @@ Warning: This behaviour may change in the future."
            (print-status (format nil "Loading: ~a" (url buffer))
                          (get-containing-window-for-buffer buffer *browser*)))
           ((eq load-event :webkit-load-redirected) nil)
-          ;; TODO: load-committed is deprecated.  Only use load-status and load-finished.
+          ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)

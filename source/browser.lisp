@@ -316,7 +316,7 @@ defined in any package and is unique."
   (setf (url buffer) url)
   (with-result (title (%%buffer-get-title :buffer buffer))
     (setf (title buffer) title)
-    ;; Warning: We can only dispatch on-signal-load-committed after the title has
+    ;; Warning: We can only dispatch `on-signal-load-finished' after the title has
     ;; been set, lest we get a race condition with the title being set too late.
     (dolist (mode (modes buffer))
       (on-signal-load-finished mode url))))
