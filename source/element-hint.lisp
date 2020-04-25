@@ -161,13 +161,14 @@ identifier for every hinted element."
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "next-hint"))))
 
-(defun query-hints (prompt function &key annotate-full-document)
+(defun query-hints (prompt function &key multi-selection-p annotate-full-document)
   (let* ((buffer (current-buffer))
          minibuffer)
     (with-result (elements-json (add-element-hints :annotate-full-document annotate-full-document))
       (setf minibuffer (make-minibuffer
                         :input-prompt prompt
                         :history nil
+                        :multi-selection-p multi-selection-p
                         :completion-function
                         (hint-completion-filter (elements-from-json elements-json))
                         :changed-callback
