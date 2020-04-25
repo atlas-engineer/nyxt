@@ -327,7 +327,8 @@ currently active buffer."
 (define-command follow-hint-new-buffer (&key annotate-full-document)
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
-  (query-hints "Open element in new buffer:" '%follow-hint-new-buffer
+  (query-hints "Open element in new buffer:" (lambda (result) (mapcar #'%follow-hint-new-buffer result))
+               :multi-selection-p t
                :annotate-full-document annotate-full-document))
 
 (define-command follow-hint-new-buffer-focus (&key annotate-full-document)
