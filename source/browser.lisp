@@ -239,12 +239,12 @@ renderers might support this.")
                           :type list-of-strings
                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
    (set-url-hook :accessor set-url-hook
-              :initform (hooks:make-hook-string->string
-                         :combination #'hooks:combine-composed-hook)
-              :type hooks:hook-string->string
-              :documentation "Hook run in `set-url*' after `parse-url' was)))))
-processed.  The handlers take the URL going to be loaded as argument and must
-return a (possibly new) URL.")
+                 :initform (hooks:make-hook-string->string
+                            :combination #'hooks:combine-composed-hook)
+                 :type hooks:hook-string->string
+                 :documentation "Hook run in `set-url*' after `parse-url' was processed.
+The handlers take the URL going to be loaded as argument and must return a
+(possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook
                        :initform (make-hook-buffer)
                        :type hook-buffer
