@@ -459,15 +459,16 @@ Warning: This behaviour may change in the future."
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
     (cond ((eq load-event :webkit-load-started)
-           (echo "Loading: ~a." (url buffer))
-           (print-status (format nil "Loading: ~a" (url buffer))
-                         (get-containing-window-for-buffer buffer *browser*)))
+           (let ((message (format nil "Loading: ~a." (quri:url-decode (url buffer)))))
+             (echo message)
+             (print-status message
+                           (get-containing-window-for-buffer buffer *browser*))))
           ((eq load-event :webkit-load-redirected) nil)
           ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
-           (echo "Finished loading: ~a." (url buffer))
+           (echo "Finished loading: ~a." (quri:url-decode (url buffer)))
            (on-signal-load-finished buffer url)))))
 
 (defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
@@ -480,7 +481,7 @@ Warning: This behaviour may change in the future."
                 (webkit:webkit-hit-test-result-media-uri hit-test-result)))
     (nil (print-message "")
          (setf (url-at-point buffer) ""))
-    (url (print-message (str:concat "→ " url))
+    (url (print-message (str:concat "→ " (quri:url-decode url)))
          (setf (url-at-point buffer) url))))
 
 (defmethod ffi-window-make ((browser gtk-browser))

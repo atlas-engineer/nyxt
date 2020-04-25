@@ -40,7 +40,7 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
   (url entry))
 
 (defmethod object-display ((entry history-entry))
-  (format nil "~a  ~a" (url entry) (title entry)))
+  (format nil "~a  ~a" (quri:url-decode (url entry)) (title entry)))
 
 (defmethod equals ((e1 history-entry) (e2 history-entry))
   (string= (url e1) (url e2)))
@@ -111,7 +111,7 @@ it would not be very useful."
                             (score-history-entry y)))))
         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
-      (setf history (append prefix-urls history)))
+      (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
     (lambda (input)
       (fuzzy-match input history))))
 

@@ -852,11 +852,16 @@ Return most recent entry in RING."
       (trivial-clipboard:text candidate))))
 
 (define-command insert-candidate (&optional (minibuffer (current-minibuffer)))
-  "Paste clipboard text to input."
+  "Paste selected candidate to input.
+As a special case, if the inserted candidate is a URI, we decode it to make it
+readable."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
       (kill-whole-line minibuffer)
-      (insert candidate minibuffer))))
+      (insert (if (valid-url-p candidate)
+                  (quri:url-decode candidate)
+                  candidate)
+              minibuffer))))
 
 (declaim (ftype (function (ring:ring)) minibuffer-history-completion-filter))
 (defun minibuffer-history-completion-filter (history)

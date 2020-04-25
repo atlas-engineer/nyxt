@@ -693,7 +693,7 @@ This is useful to tell REPL instances from binary ones."
     (ffi-window-set-title window
                           (str:concat "Next" (when *keep-alive* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
-                                       url))))
+                                       (quri:url-decode url)))))
 
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 (export-always 'window-set-active-buffer)
@@ -805,7 +805,7 @@ Deal with URL with the following rules:
                                                  (str:downcase
                                                   (class-name (class-of m)))))
                     (modes buffer))
-            (url buffer)
+            (quri:url-decode (url buffer))
             (title buffer))))
 
 (defun print-status (&optional status window)

@@ -12,7 +12,9 @@
   (url buffer-description))
 
 (defmethod object-display ((buffer-description buffer-description))
-  (format nil "~a  ~a" (title buffer-description) (url buffer-description)))
+  (format nil "~a  ~a"
+          (title buffer-description)
+          (quri:url-decode (url buffer-description))))
 
 (defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
   "Comparison function for buffer history entries.
@@ -24,7 +26,7 @@ title into accound as it may vary from one load to the next."
   (url buffer))
 
 (defmethod object-display ((buffer buffer))
-  (format nil "~a  ~a" (title buffer) (url buffer)))
+  (format nil "~a  ~a" (title buffer) (quri:url-decode (url buffer))))
 
 (define-command make-buffer (&key (title "default")
                              modes
@@ -170,22 +172,19 @@ URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
     (ffi-buffer-load buffer url)))
 
 (define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
-  "Paste clipboard text or to input.
+  "Paste selected candidate or search engine to input.
 If minibuffer input is not empty and the selection is on first position,
 complete against a search engine."
-  (let ((candidate (get-candidate minibuffer)))
-    (cond
-      ;; Complete a search engine name.
-      ((and (not (str:emptyp (input-buffer minibuffer)))
-            (zerop (completion-cursor minibuffer)))
-       (let ((name (search-engine-starting-with candidate)))
-         (when name
-           (kill-whole-line minibuffer)
-           (insert (str:concat name " ")))))
-      (t
-       (when candidate
+  (cond
+    ;; Complete a search engine name.
+    ((and (not (str:emptyp (input-buffer minibuffer)))
+          (zerop (completion-cursor minibuffer)))
+     (let ((name (search-engine-starting-with (get-candidate minibuffer))))
+       (when name
          (kill-whole-line minibuffer)
-         (insert candidate minibuffer))))))
+         (insert (str:concat name " ")))))
+    (t
+     (insert-candidate minibuffer))))
 
 (define-mode set-url-mode (minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."

@@ -172,7 +172,7 @@ This can be useful to let the user select no tag when returning directly."
         (bookmark-add (url buffer)
                        :title (title buffer)
                        :tags tags)
-        (echo "Bookmarked ~a." (url buffer)))
+        (echo "Bookmarked ~a." (quri:url-decode (url buffer))))
       (echo "Buffer has no URL.")))
 
 (define-command bookmark-page ()
