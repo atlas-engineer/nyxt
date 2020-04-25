@@ -22,6 +22,18 @@
                                      (str:emptyp (shortcut b))))
                      bookmarks)))
 
+(defun valid-url-p (url)
+  (let ((uri (ignore-errors (quri:uri url))))
+    (and uri
+         (quri:uri-p uri)
+         ;; E.g. "http://foo" has an empty domain, so it's probably
+         ;; not a URI query.
+         (quri:uri-domain uri)
+         ;; E.g. "http://algo" have the same tld and domain, which is
+         ;; probably not a URI query.
+         (not (string= (quri:uri-domain uri)
+                       (quri:uri-tld uri))))))
+
 (defun parse-url (input-url)
   "From user input, return the full url to visit.
 
@@ -62,17 +74,7 @@ Otherwise, build a search query with the default search engine."
                  input-url
                  (format nil "file://~a"
                          (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*))))
-            ((let ((uri (ignore-errors
-                         (quri:uri (str:concat "https://" input-url)))))
-               (and uri
-                    (quri:uri-p uri)
-                    ;; E.g. "http://foo" has an empty domain, so it's probably
-                    ;; not a URI query.
-                    (quri:uri-domain uri)
-                    ;; E.g. "http://algo" have the same tld and domain, which is
-                    ;; probably not a URI query.
-                    (not (string= (quri:uri-domain uri)
-                                  (quri:uri-tld uri)))))
+            ((valid-url-p (str:concat "https://" input-url))
              (str:concat "https://" input-url))
             (t (generate-search-query input-url
                                       (if (atom (rest default))
