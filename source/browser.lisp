@@ -121,6 +121,12 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
    (url :accessor url :initarg :url :type string :initform "")
    (url-at-point :accessor url-at-point :type string :initform "")
    (title :accessor title :initarg :title :type string :initform "")
+   (load-status ;; :accessor load-status ; TODO: Need to decide if we want progress / errors before exposing to the user.
+                :initarg :load-status
+                :type (or (eql :loading)
+                          (eql :finished))
+                :initform :finished
+                :documentation "Whether the buffer is loading or finished loading.")
    (last-access :accessor last-access
                 :initform (local-time:now)
                 :type number
@@ -805,11 +811,14 @@ Deal with URL with the following rules:
 (defun format-status (window)
   (declare (ignore window))
   (let ((buffer (current-buffer)))
-    (format nil "[~{~a~^ ~}] ~a — ~a"
+    (format nil "[~{~a~^ ~}] ~a~a — ~a"
             (mapcar (lambda (m) (str:replace-all "-mode" ""
                                                  (str:downcase
                                                   (class-name (class-of m)))))
                     (modes buffer))
+            (if (eq (slot-value buffer 'load-status) :loading)
+                "(Loading) "
+                "")
             (quri:url-decode (url buffer))
             (title buffer))))
 
