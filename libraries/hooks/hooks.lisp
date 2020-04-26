@@ -228,6 +228,7 @@ This is an acceptable `combination' for `hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-hook-internal (hook handler &key append)
   "Add HANDLER to HOOK if not already in it.
+Return HOOK.
 HANDLER is also not added if in the `disabled-handlers'.
 If APPEND is non-nil, HANDLER is added at the end."
   (serapeum:synchronized (hook)
@@ -235,7 +236,8 @@ If APPEND is non-nil, HANDLER is added at the end."
                 (member handler (disabled-handlers hook) :test #'equals))
       (if append
           (alexandria:appendf (symbol-value hook) (list handler))
-          (pushnew handler (handlers hook) :test #'equals)))))
+          (pushnew handler (handlers hook) :test #'equals)))
+    hook))
 
 (declaim (ftype (function ((or handler symbol) list) (or handler boolean)) find-handler))
 (defun find-handler (handler-or-name handlers)
@@ -394,7 +396,7 @@ will be automatically encapsulated with make-handler-NAME."
        (defclass ,hook-class-name (hook)
          ((handler-class :initform ',handler-class-name)))
        (defmethod add-hook ((hook ,hook-class-name) (handler ,handler-class-name) &key append)
-         ,(format nil "Add HANDLER to HOOK.
+         ,(format nil "Add HANDLER to HOOK.  Return HOOK.
 HOOK must be of type ~a
 HANDLER must be of type ~a."
                   hook-class-name
