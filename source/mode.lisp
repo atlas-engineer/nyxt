@@ -262,7 +262,7 @@ If there is no corresponding keymap, return nil."
                      (keymap-scheme mode)))
 
 (defmethod on-signal-notify-uri ((mode root-mode) url)
-  (set-window-title (current-window) (buffer mode))
+  (set-window-title)
   (print-status)
   url)
 
