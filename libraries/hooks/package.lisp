@@ -24,6 +24,7 @@
    ;; Handler class:
    #:handler
    #:name
+   #:fn
    #:description
    #:handler-type
    #:place
