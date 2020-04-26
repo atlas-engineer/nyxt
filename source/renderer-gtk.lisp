@@ -59,7 +59,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (define-class-type window)
 (declaim (type (window-type) *window-class*))
 (export-always '*window-class*)
-(defparameter *window-class* 'gtk-window)
+(defvar *window-class* 'gtk-window)
 
 (defclass-export gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)
@@ -75,7 +75,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (define-class-type buffer)
 (declaim (type (buffer-type) *buffer-class*))
 (export-always '*buffer-class*)
-(defparameter *buffer-class* 'gtk-buffer)
+(defvar *buffer-class* 'gtk-buffer)
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout active-buffer

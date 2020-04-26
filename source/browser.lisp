@@ -111,7 +111,7 @@ This can apply to specific buffer."))
 (define-class-type proxy)
 (declaim (type (proxy-type) *proxy-class*))
 (export-always '*proxy-class*)
-(defparameter *proxy-class* 'proxy)
+(defvar *proxy-class* 'proxy)
 
 (defclass-export buffer ()
   ((id :accessor id :initarg :id :initform ""
@@ -273,7 +273,7 @@ The handlers take the buffer as argument.")))
 ;; twice before they appear in the list.  We could use a class (we used to have
 ;; a COMMAND class) or intern the symbol into a special package (see `intern'
 ;; documentation).
-(defparameter *command-list* '()
+(defvar *command-list* '()
   "The list of known commands, for internal use only.")
 
 (defun mode-list ()
@@ -916,4 +916,4 @@ sometimes yields the wrong reasult."
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))
 (export-always '*browser-class*)
-(defparameter *browser-class* 'browser)
+(defvar *browser-class* 'browser)
