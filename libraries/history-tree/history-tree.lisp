@@ -183,7 +183,8 @@ First child comes first in the resulting list."
              (when node
                (cons node
                      (traverse (first (children node)))))))
-    (traverse (first (children (current history))))))
+    (and (current history)
+         (traverse (first (children (current history)))))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'children-nodes))
