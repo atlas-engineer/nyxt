@@ -16,7 +16,7 @@
                                            (values request-data
                                                    &optional (or (eql :stop)
                                                                  (eql :forward)))))
-(export-always 'make-handler-resource)
+(export-always '(make-hook-resource make-handler-resource))
 
 (defclass-export window ()
   ((id :accessor id :initarg :id)
@@ -116,6 +116,7 @@ This can apply to specific buffer."))
 (export-always '*proxy-class*)
 (defparameter *proxy-class* 'proxy)
 
+(export-always 'combine-composed-hook-until-non-nil-second-value)
 (defmethod combine-composed-hook-until-non-nil-second-value ((hook hooks:hook) &rest args)
   "Return the result of the composition of the HOOK handlers on ARGS, from
 oldest to youngest.  Stop processsing when a handler returns a non-nil second value.
