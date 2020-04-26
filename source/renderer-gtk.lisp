@@ -397,20 +397,31 @@ Warning: This behaviour may change in the future."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (webkit:webkit-uri-request-uri request))
-    (if (or (null (hooks:handlers (request-resource-hook buffer)))
-            (eq :forward (hooks:run-hook (request-resource-hook buffer)
-                                         buffer
-                                         :url url
-                                         :keys (unless (uiop:emptyp mouse-button)
-                                                 (list (keymap:make-key
-                                                        :value mouse-button
-                                                        :modifiers modifiers)))
-                                         :event-type event-type
-                                         :is-new-window is-new-window
-                                         :is-known-type is-known-type)))
-        ;; nil means "forward to renderer".
-        nil
-        t)))
+    (if (null (hooks:handlers (request-resource-hook buffer)))
+        nil ; Forward to renderer.
+        (multiple-value-bind (request-data status)
+            (hooks:run-hook (request-resource-hook buffer)
+                            (make-instance 'request-data
+                                           :buffer buffer
+                                           :url url
+                                           :keys (unless (uiop:emptyp mouse-button)
+                                                   (list (keymap:make-key
+                                                          :value mouse-button
+                                                          :modifiers modifiers)))
+                                           :event-type event-type
+                                           :new-window-p is-new-window
+                                           :known-type-p is-known-type))
+          (match status
+            ((or :forward nil)
+             (if (or (null request-data) (string= url (url request-data)))
+                 nil ; Forward to renderer.
+                 (progn
+                   (setf (webkit:webkit-uri-request-uri request) (url request-data))
+                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)
+                   ;; Don't forward to renderer:
+                   t)))
+            ;; Don't forward to renderer.
+            (_ t))))))
 
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
