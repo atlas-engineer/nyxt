@@ -128,7 +128,7 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
    (default-modes :accessor default-modes :initarg :default-modes
-                  :initform '(certificate-whitelist-mode web-mode root-mode)
+                  :initform '(certificate-whitelist-mode web-mode fundamental-mode)
                   :type list-of-symbols
                   :documentation "The symbols of the classes to instantiate on buffer creation.")
    (keymap-scheme-name
