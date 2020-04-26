@@ -687,7 +687,7 @@ current buffer."
 
 (declaim (ftype (function (window buffer)) set-window-title))
 (export-always 'set-window-title)
-(defun set-window-title (window buffer)
+(defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
   "Set current window title to 'Next - TITLE - URL.
 If Next was started from a REPL, use 'Next REPL...' instead.
 This is useful to tell REPL instances from binary ones."
