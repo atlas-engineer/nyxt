@@ -208,7 +208,15 @@ second value.
 Newest hook is run first.
 If :FORWARD is returned, the resource loading of the returned `request-data' is
 deferred to the renderer.
-If :STOP is returned, stop the the hook.")
+If :STOP is returned, stop the the hook.
+
+Example:
+
+\(define-configuration buffer
+  ((request-resource-hook
+    (reduce #'hooks:add-hook
+            (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
+            :initial-value %slot-default))))")
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
                            :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
