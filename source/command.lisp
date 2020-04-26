@@ -145,13 +145,22 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
           (name slot)
           (class-sym slot)))
 
+(defun class-public-slots (class-sym)
+  "Return list of slot symbol that have at least a reader or a writer."
+  (delete-if
+   (lambda (slot-name)
+     (let ((props (mopu:slot-properties (find-class class-sym) slot-name)))
+       (and (not (getf props :writers))
+            (not (getf props :readers)))))
+   (mopu:slot-names class-sym)))
+
 (defun package-slots ()
   "Return the list of all slot symbols in `:next' and `:next-user'."
   (alex:mappend (lambda (class-sym)
                   (mapcar (lambda (slot) (make-instance 'slot
                                                         :name slot
                                                         :class-sym class-sym))
-                          (mopu:slot-names class-sym)))
+                          (class-public-slots class-sym)))
                 (package-classes)))
 
 (defun package-methods ()               ; TODO: Unused.  Remove?

@@ -160,7 +160,7 @@ A command is a special kind of function that can be called with
                                   :title (str:concat "*Help-"
                                                      (symbol-name input)
                                                      "*"))))
-           (slots (mopu:slot-names (find-class input)))
+           (slots (class-public-slots input))
            (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots)))
            (help-contents (str:concat
                            (markup:markup
