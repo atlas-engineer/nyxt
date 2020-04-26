@@ -314,8 +314,12 @@ defined in any package and is unique."
 BUFFER's modes."
   (declare (ignore no-uri))
   (setf (url buffer) (ffi-buffer-uri buffer))
-  (dolist (mode (modes buffer))
-    (on-signal-notify-uri mode (url buffer))))
+  (with-result (title (%%buffer-get-title :buffer buffer))
+    (setf (title buffer) title)
+    ;; Warning: We can only dispatch `on-signal-notify-uri' after the title has
+    ;; been set, lest we get a race condition with the title being set too late.
+    (dolist (mode (modes buffer))
+      (on-signal-notify-uri mode (url buffer)))))
 
 (defmethod on-signal-load-committed ((buffer buffer) url)
   nil)
@@ -323,8 +327,9 @@ BUFFER's modes."
 (defmethod on-signal-load-finished ((buffer buffer) url)
   (with-result (title (%%buffer-get-title :buffer buffer))
     (setf (title buffer) title)
-    ;; Warning: We can only dispatch `on-signal-load-finished' after the title has
-    ;; been set, lest we get a race condition with the title being set too late.
+    ;; Warning: We need to set the title both here and in `on-signal-notify-uri'
+    ;; because the title may change in both cases but not necessarily together
+    ;; (e.g. clicking on an anchor versus loading a page).
     (dolist (mode (modes buffer))
       (on-signal-load-finished mode url))))
 
