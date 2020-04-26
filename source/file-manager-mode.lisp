@@ -1,10 +1,6 @@
 (uiop:define-package :next/file-manager-mode
   (:use :common-lisp :trivia :next)
   (:import-from #:keymap #:define-key #:define-scheme)
-  (:export
-   :open-file-function
-   :*open-file-function*
-   :open-file-from-directory-completion-filter)
   (:documentation "Manage files.
 
 Open any file from within Next, with the usual fuzzy completion.
