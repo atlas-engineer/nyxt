@@ -129,7 +129,8 @@ instance of Next."
                         :if-does-not-exist :create
                         :if-exists :supersede)
     ;; We READ the output of serialize-sexp to make it more human-readable.
-    (let ((*package* *package*))
+    (let ((*package* *package*)
+          (*print-length* nil))
       ;; We need to make sure current package is :next so that
       ;; symbols a printed with consistent namespaces.
       (in-package :next)
