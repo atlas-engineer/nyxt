@@ -12,7 +12,10 @@
 (hooks:define-hook-type minibuffer (function (minibuffer)))
 (hooks:define-hook-type download (function (download-manager:download)))
 (hooks:define-hook-type window-buffer (function (window buffer)))
-(hooks:define-hook-type resource resource-handler-type)
+(hooks:define-hook-type resource (function (request-data)
+                                           (values request-data
+                                                   &optional (or (eql :stop)
+                                                                 (eql :forward)))))
 (export-always 'make-handler-resource)
 
 (defclass-export window ()
@@ -113,6 +116,21 @@ This can apply to specific buffer."))
 (export-always '*proxy-class*)
 (defparameter *proxy-class* 'proxy)
 
+(defmethod combine-composed-hook-until-non-nil-second-value ((hook hooks:hook) &rest args)
+  "Return the result of the composition of the HOOK handlers on ARGS, from
+oldest to youngest.  Stop processsing when a handler returns a non-nil second value.
+Without handler, return ARGS as values.  This is an acceptable `combination' for
+`hook'."
+  (labels ((compose-handlers (handlers result)
+             (if handlers
+                 (multiple-value-bind (new-result second-value)
+                     (apply (first handlers) result)
+                   (if second-value
+                       (values new-result second-value)
+                       (compose-handlers (rest handlers) (list new-result))))
+                 (values-list result))))
+    (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) args)))
+
 (defclass-export buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.
@@ -181,13 +199,15 @@ The functions are expected to take key arguments like `:url'.")
    (request-resource-hook :accessor request-resource-hook
                           :initarg :request-resource-hook
                           :initform (make-hook-resource
-                                     :combination #'hooks:combine-hook-until-success
+                                     :combination #'combine-composed-hook-until-non-nil-second-value
                                      :handlers (list (make-handler-resource #'request-resource)))
                           :documentation "Hook run on every resource load.
-The handlers are run sequentially until one returns non-nil.
+The handlers are composed, passing a `request-data' until one returns a non-nil
+second value.
 Newest hook is run first.
-If :FORWARD is returned, the resource loading is deferred to the renderer.
-If :STOP (or T) is returned, stop the the hook.")
+If :FORWARD is returned, the resource loading of the returned `request-data' is
+deferred to the renderer.
+If :STOP is returned, stop the the hook.")
    (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
                            :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
@@ -761,38 +781,70 @@ If none is found, fall back to `scheme:cua'."
 (defun request-resource-open-url-focus (&key url &allow-other-keys)
   (open-urls (list url) :no-focus nil))
 
+(defclass-export request-data ()
+  ((buffer :initarg :buffer
+           :accessor buffer
+           :type buffer
+           :initform (current-buffer)
+           :documentation "Buffer targetted by the request.")
+   (url :initarg :url
+        :accessor url
+        :type string
+        :initform ""
+        :documentation "URL of the request")
+   (event-type :initarg :event-type
+               ;; :accessor event-type ; TODO: No public accessor for now, we first need a use case.
+               :type keyword
+               :initform :other
+               :documentation "The type of request, e.g. `:link-click'.")
+   (new-window-p :initarg :new-window-p
+                 :accessor new-window-p
+                 :type boolean
+                 :initform nil
+                 :documentation "Whether the request wants to happen in a new window.")
+   (known-type-p :initarg :known-type-p
+                 :accessor known-type-p
+                 :type boolean
+                 :initform nil
+                 :documentation "Whether the request is for a contented with
+supported MIME-type (e.g. a picture that can be displayed in
+the web view.")
+   (keys :initarg :keys
+         :accessor keys
+         :type list
+         :initform '()
+         :documentation "The key sequence that was pressed to generate the request.")))
+
 (export-always 'request-resource)
-(defun request-resource (buffer
-                         &key url event-type
-                           (is-new-window nil) (is-known-type t) (keys '())
-                         &allow-other-keys)
+(defun request-resource (request-data)
   "Candidate for `request-resource-hook'.
-Deal with URL with the following rules:
-- If IS-NEW-WINDOW is non-nil or if C-button1 was pressed, load in new buffer.
-- If IS-KNOWN-TYPE is nil, download the file.
-- Otherwise return :FORWARD to let the renderer load the URL."
-  (declare (ignore event-type)) ; TODO: Do something with the event type?
-  (let* ((keymap (scheme-keymap buffer (request-resource-scheme buffer)))
-         (bound-function (keymap:lookup-key keys keymap)))
-    (cond
-      (bound-function
-       (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
-       (funcall-safely bound-function :url url)
-       t)
-      (is-new-window
-       (log:debug "Load URL in new buffer: ~a" url)
-       (open-urls (list url))
-       t)
-      ((not is-known-type)
-       (log:info "Buffer ~a downloads ~a" buffer url)
-       (download url :proxy-address (proxy-address buffer :downloads-only t)
-                     :cookies "")
-       (unless (find-buffer 'download-mode)
-         (download-list))
-       t)
-      (t
-       (log:debug "Forwarding back to renderer: ~a" url)
-       :forward))))
+Deal with REQUEST-DATA with the following rules:
+- If a binding matches KEYS in `request-resource-scheme', run the bound function.
+- If `new-window-p' is non-nil, load in new buffer.
+- If `known-type-p' is nil, download the file.
+- Otherwise let the renderer load the request."
+  (with-slots (url buffer keys) request-data
+    (let* ((keymap (scheme-keymap buffer (request-resource-scheme buffer)))
+           (bound-function (keymap:lookup-key keys keymap)))
+      (cond
+        (bound-function
+         (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
+         (funcall-safely bound-function :url url)
+         (values request-data :stop))
+        ((new-window-p request-data)
+         (log:debug "Load URL in new buffer: ~a" url)
+         (open-urls (list url))
+         (values request-data :stop))
+        ((not (known-type-p request-data))
+         (log:info "Buffer ~a downloads ~a" buffer url)
+         (download url :proxy-address (proxy-address buffer :downloads-only t)
+                       :cookies "")
+         (unless (find-buffer 'download-mode)
+           (download-list))
+         (values request-data :stop))
+        (t
+         (log:debug "Forwarding: ~a" url)
+         request-data)))))
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))

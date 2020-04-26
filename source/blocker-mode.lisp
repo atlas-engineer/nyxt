@@ -144,23 +144,22 @@ Return nil if MODE's hostlist cannot be parsed."
     (not (loop for hostlist in (hostlists mode)
                never (member-string host (parse hostlist))))))
 
-(defun request-resource-block (buffer
-                               &key url
-                                 &allow-other-keys)
+(defun request-resource-block (request-data)
   "Block resource queries from blacklisted hosts.
 This is an acceptable handler for `request-resource-hook'."
   ;; TODO: Use quri:uri-domain?
-  (let ((mode (find-submode buffer 'blocker-mode)))
+  (let ((mode (find-submode (buffer request-data) 'blocker-mode)))
     (if (and mode
-             (blacklisted-host-p mode
-                                 (ignore-errors (quri:uri-host (quri:uri url)))))
+             (blacklisted-host-p
+              mode
+              (ignore-errors (quri:uri-host (quri:uri (url request-data))))))
         (progn
-          (log:debug "Dropping ~a for ~a (~a)" url
-                     buffer
-                     (object-string buffer))
-          :stop)
-        ;; Fallback on the other handlers from `request-resource-hook'.
-        nil)))
+          (log:debug "Dropping ~a for ~a (~a)" (url request-data)
+                     (buffer request-data)
+                     (object-string (buffer request-data)))
+          (values request-data :stop))
+        ;; Pass request to the other handlers.
+        request-data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :s-serialization)
