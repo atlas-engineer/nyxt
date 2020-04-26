@@ -635,7 +635,7 @@ This function is meant to be run in the background."
              ;; to be updated already.
              ;; TODO: Disable when out of focus?  Maybe need hook for that.
              (when buffer
-               (download-refresh)))))
+               (ffi-within-renderer-thread *browser* #'download-refresh)))))
 
 (defun proxy-address (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
