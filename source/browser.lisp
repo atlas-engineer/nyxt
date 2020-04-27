@@ -691,7 +691,7 @@ current buffer."
 (defmethod get-unique-buffer-identifier ((browser browser))
   (incf (slot-value browser 'total-buffer-count)))
 
-(declaim (ftype (function (window buffer)) set-window-title))
+(declaim (ftype (function (&optional window buffer)) set-window-title))
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
   "Set current window title to 'Next - TITLE - URL.
