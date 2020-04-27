@@ -20,27 +20,31 @@ instabilities or feature wishes.
 -----
 
 ** Fast tab switching
-Switch easily between your open tabs by fuzzy search. If you are
+Switch easily between your open tabs via fuzzy search. If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 ~epl~, or any other matching series of letters.
 
-#+html: <img src="assets/next-switch-buffer.png" align="center"/>
+#+html: <img src="https://next.atlas.engineer/static/image/switch-buffer.png" align="center"/>
+
+** Multiple selection
+Commands can accept multiple input, allowing you to quickly perform an
+operation against multiple tabs.
+
+#+html: <img src="https://next.atlas.engineer/static/image/multi-select.png" align="center"/>
+
+** Powerful Bookmarks
+Bookmark a page with tags. Search bookmarks with compound
+queries. Capture more data about your bookmarks, and group and wrangle
+them in any way you like.
+
+#+html: <img src="https://next.atlas.engineer/static/image/bookmark.png" align="center"/>
 
 ** History as a tree
 History is represented as a tree that you can traverse. smarter than
 the "forwards-backwards" abstraction found in other browsers, the tree
 makes sure  you never lose  track of where  you've been.
 
-** Multiple selection
-Commands can accept multiple input, allowing you to quickly perform an
-operation against multiple tabs.
-
-#+html: <img src="assets/next-multiple-selection.png" align="center"/>
-
-** Powerful Bookmarks
-Bookmark a page with tags. Search bookmarks with compound
-queries. Capture more data about your bookmarks, and group and wrangle
-them in any way you like.
+#+html: <img src="https://next.atlas.engineer/static/image/history.png" align="center"/>
 
 * Getting started
 ** Install Next
