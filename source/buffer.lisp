@@ -47,8 +47,16 @@ If URL is `:default', use `default-new-buffer-url'."
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  (declare (ignore dead-buffer)) ;; TODO: Dead Buffer
-  (let* ((buffer (ffi-buffer-make browser :title title :default-modes default-modes)))
+  ;; TODO: dead-buffer implementation is not ideal. We only reopen a
+  ;; buffer with the same URL, we do not actually maintain history,
+  ;; etc. We make a new buffer object and just set the URL to be the
+  ;; same. Ideally we would have an ffi-buffer-restore function which
+  ;; restores the view for a buffer object.
+  (let* ((buffer (if dead-buffer
+                     (ffi-buffer-make browser :title (title dead-buffer) :default-modes (default-modes dead-buffer))
+                     (ffi-buffer-make browser :title title :default-modes default-modes))))
+    (when dead-buffer
+      (setf (url buffer) (url dead-buffer)))
     (unless (str:emptyp (namestring (cookies-path buffer)))
       (ensure-parent-exists (cookies-path buffer)))
     (setf (gethash (id buffer) (buffers browser)) buffer)
