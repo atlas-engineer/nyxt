@@ -41,6 +41,14 @@ them in any way you like.
 
 #+html: <img src="https://next.atlas.engineer/static/image/bookmark.png" align="center"/>
 
+** Multi tab search
+Search multiple tabs at the same time, and view all the results in a
+single window. Jump quickly through your open tabs to find what you
+need.
+
+#+html: <img src="https://next.atlas.engineer/static/image/multi-search.png" align="center"/>
+
+
 ** History as a tree
 History is represented as a tree that you can traverse. smarter than
 the "forwards-backwards" abstraction found in other browsers, the tree
