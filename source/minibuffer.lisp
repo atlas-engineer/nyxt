@@ -142,7 +142,7 @@ This should not rely on the minibuffer's content.")
    (minibuffer-font-size :initarg :minibuffer-font-size
                          :accessor minibuffer-font-size
                          :type string
-                         :initform "1em"
+                         :initform "14px"
                          :documentation "CSS font size for the
                          minibuffer.  Value is a string, e.g. '1em'.
                          You might want to configure the value on
@@ -150,7 +150,7 @@ This should not rely on the minibuffer's content.")
    (minibuffer-line-height :initarg :minibuffer-line-height
                            :accessor minibuffer-line-height
                            :type string
-                           :initform ""
+                           :initform "18px"
                            :documentation "CSS line height for the
                            minibuffer.  Value is a string, e.g. '1em'.
                            You might want to configure the value on
