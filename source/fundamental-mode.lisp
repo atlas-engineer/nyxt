@@ -34,6 +34,7 @@
                                "f1 s" #'describe-slot
                                "f1 k" #'describe-key
                                "f1 b" #'describe-bindings
+                               "f11" #'fullscreen-current-window
                                "C-o" #'load-file
                                "C-i" #'autofill
                                "M-x" #'execute-command
