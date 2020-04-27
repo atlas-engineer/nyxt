@@ -11,6 +11,8 @@
                     (:ul
                      (:li "Adom Hartell (@4t0m)")
                      (:li "Solomon Bloch (@noogie13)"))
+                    (:h1 "Supporters")
+                    (:p "Thank you to NLnet for supporting Next!")
                     (:h1 "Crowdfunding backers")
                     (:p "Thank you to all who have supported and made Next possible!")
                     (:h2 "2018-11 campaign: *NIX Support")
