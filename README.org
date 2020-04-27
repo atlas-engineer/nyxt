@@ -27,8 +27,10 @@ looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 #+html: <img src="https://next.atlas.engineer/static/image/switch-buffer.png" align="center"/>
 
 ** Multiple selection
-Commands can accept multiple input, allowing you to quickly perform an
-operation against multiple tabs.
+Commands can accept multiple inputs, allowing you to quickly perform
+an operation against multiple objects. In the example below we search
+for penguins, and only open up links that have the text "animal"
+within them.
 
 #+html: <img src="https://next.atlas.engineer/static/image/multi-select.png" align="center"/>
 
@@ -45,6 +47,8 @@ the "forwards-backwards" abstraction found in other browsers, the tree
 makes sure  you never lose  track of where  you've been.
 
 #+html: <img src="https://next.atlas.engineer/static/image/history.png" align="center"/>
+
+For a complete list of features, please see the manual.
 
 * Getting started
 ** Install Next
