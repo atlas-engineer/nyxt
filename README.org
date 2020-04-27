@@ -3,9 +3,9 @@
 * Next web browser
 
 Next is a keyboard-oriented, extensible web-browser designed for power
-users. It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]]), is fully configurable
-and extensible in Lisp, and has powerful features for productive
-professionals.
+users. It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully
+configurable and extensible in Lisp, and has powerful features for
+productive professionals.
 
 If you like Next and if you want to help future development, please
 support us on [[https://www.patreon.com/next_browser][Patreon]] or give us a star, thank you!
