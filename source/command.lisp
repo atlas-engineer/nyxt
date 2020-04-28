@@ -168,24 +168,39 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
+(defmethod mode-toggler-p ((command command))
+  "Return non-nil if COMMAND is a mode toggler.
+A mode toggler is a command of the same name as its associated mode."
+  (ignore-errors
+   (closer-mop:subclassp (find-class (sym command) nil)
+                         (find-class 'root-mode))))
+
 (defun list-commands (&rest mode-symbols)
   "List commands.
-Commands are instances of the `command' class.
-When MODE-SYMBOLS are provided, list only the commands that belong to the
-corresponding mode packages.  Otherwise list all commands."
-  (if mode-symbols
-      (remove-if (lambda (c)
-                   (notany (lambda (m)
-                             (eq (pkg c)
-                                 (match m
-                                   ;; root-mode does not have a mode-command.
-                                   ('root-mode (find-package :next))
-                                   (_ (match (mode-command m)
-                                        (nil (find-package :next))
-                                        (mc (pkg mc)))))))
-                           mode-symbols))
-                 *command-list*)
-      *command-list*))
+Commands are instances of the `command' class.  When MODE-SYMBOLS are provided,
+list only the commands that belong to the corresponding mode packages or of a
+parent mode packages.  Otherwise list all commands.
+
+If 'FUNDAMENTAL-MODE is in MODE-SYMBOLS, mode togglers are included.  This is
+useful since mode togglers are usually part of their own mode / package and
+would not be listed otherwise."
+  ;; TODO: Make sure we list commands of inherited modes.
+  (let ((list-togglers-p (member 'fundamental-mode mode-symbols)))
+    (if mode-symbols
+        (remove-if (lambda (c)
+                     (and (notany (lambda (m)
+                                    (eq (pkg c)
+                                        (match m
+                                          ;; root-mode does not have a mode-command.
+                                          ('root-mode nil)
+                                          (_ (match (mode-command m)
+                                               (nil nil)
+                                               (mc (pkg mc)))))))
+                                  mode-symbols)
+                          (or (not list-togglers-p)
+                              (not (mode-toggler-p c)))))
+                   *command-list*)
+        *command-list*)))
 
 (defmethod object-string ((command command))
   (str:downcase (sym command)))
