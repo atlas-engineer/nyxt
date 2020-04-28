@@ -645,10 +645,13 @@ Comparison against BINDING is done with TEST.
 For instance, to list all keymaps that have a binding, call
 
   (mapcar #'second (nth-value 1 (binding-keys ...)))"
+  ;; TODO: This can be slow since it explodes the number of function calls
+  ;; (particularly `keymap->map*' and then `key->keyspec').  Memoize?  Add
+  ;; lookup table?
   (let ((alist (alex:mappend (lambda (keymap)
-                          (let ((hit (binding-keys* bound-value keymap :test test)))
-                            (when hit
-                              (mapcar (alex:rcurry #'list keymap) hit))))
+                               (let ((hit (binding-keys* bound-value keymap :test test)))
+                                 (when hit
+                                   (mapcar (alex:rcurry #'list keymap) hit))))
                              (uiop:ensure-list keymap-or-keymaps))))
     (values
      (sort (delete-duplicates (mapcar #'first alist) :test #'string=) #'string<)
