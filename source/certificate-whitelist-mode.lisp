@@ -26,10 +26,7 @@ See the `add-domain-to-certificate-whitelist' command."
    (constructor
     :initform
     (lambda (mode)
-      (setf (certificate-whitelist (buffer mode)) (certificate-whitelist mode))
-      (echo "Certificate host whitelist set to ~a for ~a."
-            (certificate-whitelist mode)
-            (buffer mode))))))
+      (setf (certificate-whitelist (buffer mode)) (certificate-whitelist mode))))))
 
 (define-command add-domain-to-certificate-whitelist (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate whitelist.
