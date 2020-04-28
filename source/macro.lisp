@@ -132,17 +132,3 @@ Example usage:
                           :show-completion-count nil)))
      (when (confirmed-p answer)
        ,@body)))
-
-(defmacro defmemo (name params &body body)
-  "From Serapeum's example."
-  (alex:with-gensyms (memo-table args result result?)
-    `(let ((,memo-table (make-hash-table :test 'equal)))
-       (defun ,name (&rest ,args)
-         (multiple-value-bind (,result ,result?)
-             (gethash ,args ,memo-table)
-           (if ,result?
-               ,result
-               (setf (gethash ,args ,memo-table)
-                     (apply (lambda ,params
-                              ,@body)
-                              ,args))))))))
