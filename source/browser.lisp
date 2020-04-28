@@ -292,11 +292,17 @@ The handlers take the buffer as argument.")))
 (defun mode-command (mode-symbol)
   "Return the mode toggle command.
 We loop over `*command-list*' to find the mode command since a mode may be
-defined in any package and is unique."
-  (find-if (lambda (c)
-             (eq (find-symbol (string mode-symbol) (pkg c))
-                 (sym c)))
-           *command-list*))
+defined in any package and is unique.
+
+If MODE-SYMBOL is a mode that inherits from another without defining a its own
+toggle command, return the toggle command of the parent."
+  (or (find-if (lambda (c)
+                 (eq (find-symbol (string mode-symbol) (pkg c))
+                     (sym c)))
+               *command-list*)
+      (match (find-class mode-symbol nil)
+        (nil nil)
+        (c (mode-command (class-name (first (mopu:direct-superclasses c))))))))
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
