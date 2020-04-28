@@ -20,11 +20,6 @@
     (lambda (input)
       (fuzzy-match input slots))))
 
-(defun command-completion-filter ()
-  (let ((commands (list-commands)))
-    (lambda (input)
-      (fuzzy-match input commands))))
-
 (define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer

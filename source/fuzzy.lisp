@@ -108,33 +108,37 @@ then all candidates that are not exactly matched by at least one substring are r
         candidate-pairs)))
 
 (export-always 'fuzzy-match)
-(defun fuzzy-match (input candidates)   ; TODO: Make score functions customizable, e.g. for global history.
+(defun fuzzy-match (input candidates &key candidates-display) ; TODO: Make score functions customizable, e.g. for global history.
   "From the user input and a list of candidates, return a filtered list of
 candidates that have all the input words in them, and sort this list to have the
 'most relevant' first.
-The match is case-sensitive if INPUT contains at least one uppercase character."
-  (if (not (str:empty? input))
-      (let* ((input (str:replace-all " " " " input))
-             ;; To sort by the display value, we store all the candidates in a
-             ;; (display-value real-value) list or pairs.
-             (pairs (mapcar (lambda (c) (list (object-display c) c)) candidates))
-             (pairs (if (str:downcasep input)
-                        (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)
-                        pairs))
-             (pairs (keep-exact-matches-in-candidates input pairs))
-             (pairs (sort-candidates input pairs)))
-        (log:debug "~a"
-                   (let ((limit 100)
-                         (pairs (mapcar (lambda (c)
-                                          (list (first c)
-                                                (score-candidate (to-unicode input) (first c))))
-                                        pairs)))
-                     ;; Don't display more than 100 elements to avoid flooding stdout.
-                     (if (< (length pairs) limit)
-                         pairs
-                         (nconc (subseq pairs 0 limit) (list "...")))))
-        (mapcar #'second pairs))
-      candidates))
+The match is case-sensitive if INPUT contains at least one uppercase character.
+CANDIDATES-DISPLAY can be used to pass the pre-computed display strings of the
+candidates; otherwise `object-display' is used."
+  ;; To sort by the display value, we store all the candidates in a
+  ;; (display-value real-value) list or pairs.
+  (let ((pairs (if candidates-display
+                   (mapcar #'list candidates-display candidates)
+                   (mapcar (lambda (c) (list (object-display c) c)) candidates))))
+    (if (not (str:empty? input))
+        (let* ((input (str:replace-all " " " " input))
+               (pairs (if (str:downcasep input)
+                          (mapcar (lambda (p) (list (string-downcase (first p)) (second p))) pairs)
+                          pairs))
+               (pairs (keep-exact-matches-in-candidates input pairs))
+               (pairs (sort-candidates input pairs)))
+          (log:debug "~a"
+                     (let ((limit 100)
+                           (pairs (mapcar (lambda (c)
+                                            (list (first c)
+                                                  (score-candidate (to-unicode input) (first c))))
+                                          pairs)))
+                       ;; Don't display more than 100 elements to avoid flooding stdout.
+                       (if (< (length pairs) limit)
+                           pairs
+                           (nconc (subseq pairs 0 limit) (list "...")))))
+          (mapcar #'second pairs))
+        candidates)))
 
 (export-always 'file-completion-function)
 (defun file-completion-function (input files)

@@ -180,7 +180,9 @@ corresponding mode packages.  Otherwise list all commands."
                                  (match m
                                    ;; root-mode does not have a mode-command.
                                    ('root-mode (find-package :next))
-                                   (_ (pkg (mode-command m))))))
+                                   (_ (match (mode-command m)
+                                        (nil (find-package :next))
+                                        (mc (pkg mc)))))))
                            mode-symbols))
                  *command-list*)
       *command-list*))
@@ -193,14 +195,14 @@ corresponding mode packages.  Otherwise list all commands."
 very costly."
   (command-display command))
 
-(defun command-completion-filter ()
-  (let ((commands
-         (sort (apply #'list-commands (mapcar (alex:compose #'class-name #'class-of)
-                                              (modes (current-buffer))))
-               (lambda (c1 c2)
-                 (> (access-time c1) (access-time c2))))))
+(defun command-completion-filter (&optional mode-symbols)
+  (let* ((commands
+           (sort (apply #'list-commands mode-symbols)
+                 (lambda (c1 c2)
+                   (> (access-time c1) (access-time c2)))))
+         (pretty-commands (mapcar #'command-display commands)))
     (lambda (input)
-      (fuzzy-match input commands))))
+      (fuzzy-match input commands :candidates-display pretty-commands))))
 
 (defmethod command-function ((command command))
   "Return the function associated to COMMAND.
@@ -209,7 +211,7 @@ This function can be `funcall'ed."
                     (string (sym command))
                     (pkg command))))
 
-(defmemo command-display (command)
+(defun command-display (command)
   ;; Use `(current-window :no-rescan)' or else the minibuffer will stutter
   ;; because of the RPC calls.
   (let* ((buffer (active-buffer (current-window :no-rescan)))
@@ -246,7 +248,9 @@ This function can be `funcall'ed."
   (with-result (command (read-from-minibuffer
                          (make-minibuffer
                           :input-prompt "Execute command"
-                          :completion-function (command-completion-filter)
+                          :completion-function (command-completion-filter
+                                                (mapcar (alex:compose #'class-name #'class-of)
+                                                        (modes (current-buffer))))
                           :show-completion-count nil)))
     (setf (access-time command) (get-internal-real-time))
     (run command)))
