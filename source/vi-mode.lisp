@@ -88,21 +88,20 @@ vi-normal-mode.")
 
 (define-command vi-button1 (&optional (buffer (current-buffer)))
   "Enable VI insert mode when focus is on an input element on the web page."
-  (let ((root-mode (find-mode buffer 'root-mode)))
-    ;; First we generate a button1 event so that the web view element is clicked
-    ;; (e.g. a text field gets focus).
-    (ffi-generate-input-event
-     (current-window)
-     (last-event (buffer root-mode)))
-    (next/web-mode:%clicked-in-input?
-     :callback (lambda (response)
-                 (cond
-                   ((and (next/web-mode:input-tag-p response)
-                         (find-submode (buffer root-mode) 'vi-normal-mode))
-                    (vi-insert-mode))
-                   ((and (not (next/web-mode:input-tag-p response))
-                         (find-submode (buffer root-mode) 'vi-insert-mode))
-                    (vi-normal-mode)))))))
+  ;; First we generate a button1 event so that the web view element is clicked
+  ;; (e.g. a text field gets focus).
+  (ffi-generate-input-event
+   (current-window)
+   (last-event buffer))
+  (next/web-mode:%clicked-in-input?
+   :callback (lambda (response)
+               (cond
+                 ((and (next/web-mode:input-tag-p response)
+                       (find-submode buffer 'vi-normal-mode))
+                  (vi-insert-mode))
+                 ((and (not (next/web-mode:input-tag-p response))
+                       (find-submode buffer 'vi-insert-mode))
+                  (vi-normal-mode))))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
