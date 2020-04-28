@@ -42,19 +42,26 @@ If URL is `:default', use `default-new-buffer-url'."
       (set-url* url :buffer buffer))
     buffer))
 
+(define-class-type buffer)
+(declaim (type (buffer-type) *buffer-class*))
+(export-always '*buffer-class*)
+(defvar *buffer-class* 'buffer)
+
 (declaim (ftype (function (browser &key (:title string) (:default-modes list) (:dead-buffer buffer))) buffer-make))
 (defun buffer-make (browser &key title default-modes dead-buffer)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  ;; TODO: dead-buffer implementation is not ideal. We only reopen a
-  ;; buffer with the same URL, we do not actually maintain history,
-  ;; etc. We make a new buffer object and just set the URL to be the
-  ;; same. Ideally we would have an ffi-buffer-restore function which
-  ;; restores the view for a buffer object.
   (let* ((buffer (if dead-buffer
-                     (ffi-buffer-make browser :title (title dead-buffer) :default-modes (default-modes dead-buffer))
-                     (ffi-buffer-make browser :title title :default-modes default-modes))))
+                     (ffi-buffer-make dead-buffer)
+                     (apply #'make-instance *buffer-class*
+                            (append (when title `(:title ,title))
+                                    (when default-modes `(:default-modes ,default-modes)))))))
+    (setf (id buffer) (get-unique-buffer-identifier *browser*))
+    (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
+    ;; Modes might require that buffer exists, so we need to initialize them
+    ;; after the view has been created.
+    (initialize-modes buffer)
     (when dead-buffer
       (setf (url buffer) (url dead-buffer)))
     (unless (str:emptyp (namestring (cookies-path buffer)))

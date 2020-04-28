@@ -72,10 +72,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                         :type list
                         :initform '())))
 
-(define-class-type buffer)
-(declaim (type (buffer-type) *buffer-class*))
-(export-always '*buffer-class*)
-(defvar *buffer-class* 'gtk-buffer)
+(setf *buffer-class* 'gtk-buffer)
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout active-buffer
@@ -346,48 +343,7 @@ Warning: This behaviour may change in the future."
     context))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
-  (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
-  (setf (id buffer) (get-unique-buffer-identifier *browser*))
-  (setf (gtk-object buffer)
-        (make-instance 'webkit:webkit-web-view
-                       ;; TODO: Should be :web-context, shouldn't it?
-                       :context (make-context buffer)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "decide-policy"
-   (lambda (web-view response-policy-decision policy-decision-type-response)
-     (declare (ignore web-view))
-     (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "load-changed"
-   (lambda (web-view load-event)
-     (declare (ignore web-view))
-     (on-signal-load-changed buffer load-event)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "mouse-target-changed"
-   (lambda (web-view hit-test-result modifiers)
-     (declare (ignore web-view))
-     (on-signal-mouse-target-changed buffer hit-test-result modifiers)))
-  ;; Mouse events are captured by the web view first, so we must intercept them here.
-  (gobject:g-signal-connect
-   (gtk-object buffer) "button-press-event"
-   (lambda (web-view event) (declare (ignore web-view))
-     (on-signal-button-press-event buffer event)))
-  ;; TODO: Capture button-release-event?
-  ;; TLS certificate handling
-  (gobject:g-signal-connect
-   (gtk-object buffer) "load-failed-with-tls-errors"
-   (lambda (web-view failing-uri certificate errors)
-     (declare (ignore web-view errors))
-     ;; TODO: Add hint on how to accept certificate to the HTML content.
-     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "notify::uri"
-   (lambda (web-view param-spec)
-     (declare (ignore web-view param-spec))
-     (on-signal-notify-uri buffer nil)))
-  ;; Modes might require that buffer exists, so we need to initialize them
-  ;; after the view has been created.
-  (initialize-modes buffer))
+  (ffi-buffer-make buffer))
 
 (defmethod ffi-buffer-uri ((buffer gtk-buffer))
   (webkit:webkit-web-view-uri (gtk-object buffer)))
@@ -516,11 +472,46 @@ Warning: This behaviour may change in the future."
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
-(defmethod ffi-buffer-make ((browser gtk-browser) &key title default-modes)
-  "Make buffer with title TITLE and modes DEFAULT-MODES."
-  (apply #'make-instance *buffer-class*
-         (append (when title `(:title ,title))
-                 (when default-modes `(:default-modes ,default-modes)))))
+(defmethod ffi-buffer-make ((buffer gtk-buffer))
+  "Initialize BUFFER's GTK web view."
+  (setf (gtk-object buffer)
+        (make-instance 'webkit:webkit-web-view
+                       ;; TODO: Should be :web-context, shouldn't it?
+                       :context (make-context buffer)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "decide-policy"
+   (lambda (web-view response-policy-decision policy-decision-type-response)
+     (declare (ignore web-view))
+     (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "load-changed"
+   (lambda (web-view load-event)
+     (declare (ignore web-view))
+     (on-signal-load-changed buffer load-event)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "mouse-target-changed"
+   (lambda (web-view hit-test-result modifiers)
+     (declare (ignore web-view))
+     (on-signal-mouse-target-changed buffer hit-test-result modifiers)))
+  ;; Mouse events are captured by the web view first, so we must intercept them here.
+  (gobject:g-signal-connect
+   (gtk-object buffer) "button-press-event"
+   (lambda (web-view event) (declare (ignore web-view))
+     (on-signal-button-press-event buffer event)))
+  ;; TODO: Capture button-release-event?
+  ;; TLS certificate handling
+  (gobject:g-signal-connect
+   (gtk-object buffer) "load-failed-with-tls-errors"
+   (lambda (web-view failing-uri certificate errors)
+     (declare (ignore web-view errors))
+     ;; TODO: Add hint on how to accept certificate to the HTML content.
+     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "notify::uri"
+   (lambda (web-view param-spec)
+     (declare (ignore web-view param-spec))
+     (on-signal-notify-uri buffer nil)))
+  buffer)
 
 (defmethod ffi-buffer-delete ((buffer gtk-buffer))
   (gtk:gtk-widget-destroy (gtk-object buffer)))

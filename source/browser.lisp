@@ -915,7 +915,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-window-active ((browser browser)))
 (define-ffi-method ffi-window-set-active-buffer ((window window) (buffer buffer)))
 (define-ffi-method ffi-window-set-minibuffer-height ((window window) height))
-(define-ffi-method ffi-buffer-make ((browser browser) &key title default-modes))
+(define-ffi-method ffi-buffer-make ((browser browser)))
 (define-ffi-method ffi-buffer-delete ((buffer buffer)))
 (define-ffi-method ffi-buffer-load ((buffer buffer) uri))
 (define-ffi-method ffi-buffer-evaluate-javascript ((buffer buffer) javascript &key callback))
