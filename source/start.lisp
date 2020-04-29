@@ -144,6 +144,10 @@ If FILE is \"-\", read from the standard input."
                                   :show-completion-count nil)))
     (load-lisp file-name-input)))
 
+(defmethod expand-data-path ((path (eql *init-file-path*)) (profile data-profile))
+  "Return path of the init-fil."
+  (expand-default-path path :root (uiop:xdg-config-home +data-root+)))
+
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
   (load-lisp init-file :package (find-package :next-user)))
