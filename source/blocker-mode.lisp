@@ -42,14 +42,15 @@ See the `hostlist' class documentation."
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
-    (log:info "Updating hostlist ~a from ~a" (expand-path (path hostlist)) (url hostlist))
-    (let ((hosts (dex:get (url hostlist))))
-      (when (expand-path (path hostlist))
-        ;; TODO: In general, we should do more error checking when writing to disk.
-        (alex:write-string-into-file hosts (expand-path (path hostlist))
-                                           :if-exists :overwrite
-                                           :if-does-not-exist :create))
-      hosts)))
+    (let ((path (expand-path (path hostlist))))
+      (log:info "Updating hostlist ~a from ~a" path (url hostlist))
+      (let ((hosts (dex:get (url hostlist))))
+        (when path
+          ;; TODO: In general, we should do more error checking when writing to disk.
+          (alex:write-string-into-file hosts path
+                                       :if-exists :overwrite
+                                       :if-does-not-exist :create))
+        hosts))))
 
 (defvar update-lock (bt:make-lock))
 
