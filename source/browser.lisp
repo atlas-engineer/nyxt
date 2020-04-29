@@ -563,7 +563,7 @@ The handlers take the `download-manager:download' class instance as argument.")
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
   "Get the window containing a buffer."
-  (find buffer (alex:hash-table-values (windows browser))))
+  (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup-function'."
