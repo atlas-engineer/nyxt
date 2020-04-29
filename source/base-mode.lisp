@@ -17,16 +17,18 @@
                                "C-]" #'switch-buffer-next
                                "C-x b" #'switch-buffer
                                "C-x k" #'delete-buffer
+                               "C-w" #'delete-current-buffer
                                "C-x C-k" #'delete-current-buffer
                                "C-shift-tab" #'switch-buffer-previous
                                "C-tab" #'switch-buffer-next
                                "C-pageup" #'switch-buffer-previous
                                "C-pagedown" #'switch-buffer-next
-                               "C-l" #'set-url
+                               "C-l" #'set-url-from-current-url
                                "M-l" #'set-url-new-buffer
                                "C-m k" #'bookmark-delete
                                "C-t" #'make-buffer-focus
                                "C-m u" #'bookmark-url
+                               "C-b" #'show-bookmarks
                                "f1 v" #'describe-variable
                                "f1 f" #'describe-function
                                "f1 c" #'describe-command
@@ -37,12 +39,17 @@
                                "f11" #'fullscreen-current-window
                                "C-o" #'load-file
                                "C-i" #'autofill
+                               "C-j" #'download-list
                                "C-space" #'execute-command
                                "M-:" #'command-evaluate
                                "C-n" #'make-window
-                               "C-w" #'delete-current-window
+                               "C-shift-W" #'delete-current-window
+                               "C-W" #'delete-current-window
                                "M-w" #'delete-window
                                "C-/" #'reopen-buffer
+                               "C-shift-t" #'reopen-buffer
+                               "C-T" #'reopen-buffer
+                               "C-p" #'print-buffer
                                "C-x C-f" #'open-file)
                               scheme:emacs
                               (list

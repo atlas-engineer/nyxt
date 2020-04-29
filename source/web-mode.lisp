@@ -37,10 +37,14 @@ search.")
       (list
        "C-M-right" #'history-forwards-all-query
        "C-M-left" #'history-all-query
+       "C-shift-h" #'history-all-query
+       "C-shift-H" #'history-all-query
        "M-shift-right" #'history-forwards-query
        "M-shift-left" #'history-backwards-query
        "M-right" #'history-forwards
        "M-left" #'history-backwards
+       "M-]" #'history-forwards
+       "M-[" #'history-backwards
        "C-g" #'follow-hint
        "M-g" #'follow-hint-new-buffer-focus
        "C-u M-g" #'follow-hint-new-buffer
@@ -56,21 +60,25 @@ search.")
        "C-=" #'zoom-in-page             ; Because + shifted = on QWERTY.
        "C-hyphen" #'zoom-out-page
        "C-0" #'unzoom-page
+       "f5" #'reload-current-buffer
        "C-r" #'reload-current-buffer
        "C-R" #'reload-buffer
        "C-m o" #'set-url-from-bookmark
        "C-m s" #'bookmark-current-page
+       "C-d" #'bookmark-current-page
        "C-m C-s" #'bookmark-page
+       "C-M-c" #'open-inspector
        "C-m g" #'bookmark-hint
        "C-f" #'search-buffer
+       "f3" #'search-buffer
        "M-f" #'remove-search-hints
        "C-." #'jump-to-heading
        "end" #'maybe-scroll-to-bottom
        "home" #'maybe-scroll-to-top
        "C-down" #'scroll-to-bottom
        "C-up" #'scroll-to-top
-       "C-c l" #'copy-url
-       "C-c t" #'copy-title
+       "M-c l" #'copy-url
+       "M-c t" #'copy-title
        ;; Leave SPACE unbound so that the renderer decides wether to
        ;; insert of scroll.
        "s-space" #'scroll-page-up
