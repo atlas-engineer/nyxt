@@ -175,16 +175,15 @@ OPTIONS are as for `open'.
 Parent directories are created if necessary."
   `(let ((path (expand-path ,data-path)))
      (when path
-       (let ((gpg? (str:ends-with? ".gpg" path :ignore-case t)))
-         (if gpg?
-             (with-gpg-file (,stream path ,@options)
-               ,@body)
-             (progn
-               ,(when (and (match (getf options :direction)
-                             ((or :io :output) t))
-                           (match (nth-value 2 (get-properties options '(:if-does-not-exist)))
-                             (nil t)
-                             ((guard l (eq (getf l :if-does-not-exist) :create)) t)))
-                  `(ensure-parent-exists path))
-               (with-open-file (,stream path ,@options)
-                 ,@body)))))))
+       (if (str:ends-with? ".gpg" path :ignore-case t)
+           (with-gpg-file (,stream path ,@options)
+             ,@body)
+           (progn
+             ,(when (and (match (getf options :direction)
+                           ((or :io :output) t))
+                         (match (nth-value 2 (get-properties options '(:if-does-not-exist)))
+                           (nil t)
+                           ((guard l (eq (getf l :if-does-not-exist) :create)) t)))
+                `(ensure-parent-exists path))
+             (with-open-file (,stream path ,@options)
+               ,@body))))))
