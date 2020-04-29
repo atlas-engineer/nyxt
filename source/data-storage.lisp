@@ -27,10 +27,6 @@ It can be appended with an extension if necessary.
 When appended with a slash (/), it designates a folder."))
   (:documentation ""))
 
-;; TODO: These 2 are global, no need for a separate class then, only need for an eql specializer.
-(defclass socket-data-path (data-path) ())
-(defclass init-file-data-path (data-path) ())
-
 (defclass session-data-path (data-path) ())
 (defclass cookies-data-path (data-path) ())
 (defclass bookmarks-data-path (data-path) ())
@@ -68,10 +64,8 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
-(defmethod expand-data-path ((path init-file-data-path) (profile data-profile))
-  "Return finalized path.
-Return NIL when path must not be used.  This makes it possible to use the
-function result as a boolean in conditions."
+(defmethod expand-data-path ((path (eql *init-file-data-path*)) (profile data-profile))
+  "Return path of the init-fil."
   (expand-default-path path :root (uiop:xdg-config-home +data-root+)))
 
 (defmethod expand-data-path ((path session-data-path) (profile data-profile))

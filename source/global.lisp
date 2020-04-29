@@ -25,12 +25,12 @@ It can be initialized with
 It's possible to run multiple interfaces of Next at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
-(export-always 'init-file-path)
-(defvar *init-file-path* (make-instance 'init-file-data-path :basename "init")
+(export-always '*init-file-path*)
+(defvar *init-file-path* (make-instance 'data-path :basename "init")
   "The path of the initialization file.")
 
 (export-always '*socket-path*)
-(defvar *socket-path* (make-instance 'socket-data-path :basename "next.socket")
+(defvar *socket-path* (make-instance 'data-path :basename "next.socket")
   "Path string of the Unix socket used to communicate between different
 instances of Next.
 
