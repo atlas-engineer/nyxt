@@ -1,15 +1,15 @@
 (in-package :next)
 
-;; (uiop:define-package :next/fundamental-mode
+;; (uiop:define-package :next/base-mode
 ;;   (:use :common-lisp :trivia :next)
 ;;   (:import-from #:keymap #:define-key #:define-scheme)
 ;;   (:documentation "Mode for general-purpose bindings"))
-;; (in-package :next/fundamental-mode)
+;; (in-package :next/base-mode)
 
-(define-mode fundamental-mode ()        ; TODO: Move to separate package?
+(define-mode base-mode ()        ; TODO: Move to separate package?
   "Mode that does nothing but bind the general-purpose key bindings."
   ((keymap-scheme :accessor keymap-scheme :initarg :keymap-scheme :type keymap:scheme
-                  :initform (define-scheme "fundamental"
+                  :initform (define-scheme "base"
                               scheme:cua
                               (list
                                "C-q" #'quit

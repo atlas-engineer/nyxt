@@ -181,11 +181,11 @@ Commands are instances of the `command' class.  When MODE-SYMBOLS are provided,
 list only the commands that belong to the corresponding mode packages or of a
 parent mode packages.  Otherwise list all commands.
 
-If 'FUNDAMENTAL-MODE is in MODE-SYMBOLS, mode togglers are included.  This is
+If 'BASE-MODE is in MODE-SYMBOLS, mode togglers are included.  This is
 useful since mode togglers are usually part of their own mode / package and
 would not be listed otherwise."
   ;; TODO: Make sure we list commands of inherited modes.
-  (let ((list-togglers-p (member 'fundamental-mode mode-symbols)))
+  (let ((list-togglers-p (member 'base-mode mode-symbols)))
     (if mode-symbols
         (remove-if (lambda (c)
                      (and (notany (lambda (m)

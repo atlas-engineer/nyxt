@@ -76,7 +76,7 @@
                (:file "jump-heading")
                (:file "element-hint")
                ;; Core Modes
-               (:file "fundamental-mode")
+               (:file "base-mode")
                (:file "help-mode")
                (:file "application-mode")
                (:file "web-mode")
