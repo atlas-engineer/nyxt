@@ -387,7 +387,7 @@ The version number is stored in the clipboard."
                (:li (:code (binding-keys #'describe-bindings)) ": List all bindings for the current tab"))
               (:p "Legend:")
               (:ul
-               (:li (:code "contol") " (" (:code "C") "): Control key")
+               (:li (:code "control") " (" (:code "C") "): Control key")
                (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
                (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
                (:li (:code "shift") " (" (:code "s") "): Shift key"))
