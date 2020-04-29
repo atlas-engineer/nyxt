@@ -61,7 +61,7 @@ MAJOR.MINOR.PATCH, we increment the:
 - Make current URL the first candidate in =set-url-*= commands.
 
 - New =scheme:cua= default binding scheme.  You can still use the former default
-  =scheme:emacs=.
+  =scheme:emacs= with =emacs-mode=.
 
 - Change key string specifications: all lowercase without underscore.
   For instance "Page_Up" becomes "pageup".
@@ -76,7 +76,8 @@ MAJOR.MINOR.PATCH, we increment the:
   =cua=, =emacs=, =vi-normal= and =vi-insert= are in the =scheme= package.  Thus
   it's enough to complete over =scheme:= to list them all.
 
-- Turn =resource-query-function= into a hook, =request-resource-hook=.
+- Turn =resource-query-function= into a composable hook,
+  =request-resource-hook=, which supports changing the URI of the request.
 
 - Bindings like =control-button1= to open a link in a new buffer can be
   customized in the new =request-resource-scheme= keymap scheme of the =buffer=
@@ -127,6 +128,7 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - New =spell-check-*= commands.  To be continued.
 
+- Add =base-mode= and move all base key bindings from =root-mode= to =base-mode=.
 
 ** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
