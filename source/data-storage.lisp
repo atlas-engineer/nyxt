@@ -129,7 +129,7 @@ As third value the name."
 `expand-data-path' is dispatched against `data-path' and `*browser*'s
 `data-profile' if `*browser*' is instantiated, `+default-data-profile+'
 otherwise.
-This function can be used on browser-less globals like `init-file-path'."
+This function can be used on browser-less globals like `*init-file-path*'."
   (the (values (or string null) &optional)
        (if *browser*
            (expand-data-path data-path (data-profile *browser*))

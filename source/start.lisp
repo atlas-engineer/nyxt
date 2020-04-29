@@ -2,18 +2,6 @@
 
 (in-package :next)
 
-(export-always 'init-file-path)
-(defvar init-file-path (make-instance 'init-file-data-path :basename "init") ; TODO: Rename with ear-mufs to global.
-  "The path of the initialization file.")
-
-(export-always 'socket-path)
-(defvar socket-path (make-instance 'socket-data-path :basename "next.socket") ; TODO: Rename with ear mufs to global.
-  "Path string of the Unix socket used to communicate between different
-instances of Next.
-
-This path cannot be set from the init file because we want to be able to set and
-use the socket without parsing any init file.")
-
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
@@ -75,9 +63,9 @@ Set to '-' to read standard input instead.")
   (when (socket-thread *browser*)
     (ignore-errors
      (bt:destroy-thread (socket-thread *browser*))))
-  (when (uiop:file-exists-p (expand-path socket-path))
-    (log:info "Deleting socket ~a" (expand-path socket-path))
-    (uiop:delete-file-if-exists (expand-path socket-path)))
+  (when (uiop:file-exists-p (expand-path *socket-path*))
+    (log:info "Deleting socket ~a" (expand-path *socket-path*))
+    (uiop:delete-file-if-exists (expand-path *socket-path*)))
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
@@ -156,7 +144,7 @@ If FILE is \"-\", read from the standard input."
                                   :show-completion-count nil)))
     (load-lisp file-name-input)))
 
-(define-command load-init-file (&key (init-file (expand-path init-file-path)))
+(define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
   (load-lisp init-file :package (find-package :next-user)))
 
@@ -207,11 +195,11 @@ This function is suitable as a `browser' `startup-function'."
    (lambda () (open-urls urls))))
 
 (defun listen-socket ()
-  (ensure-parent-exists (expand-path socket-path))
+  (ensure-parent-exists (expand-path *socket-path*))
   ;; TODO: Catch error against race conditions?
   (iolib:with-open-socket (s :address-family :local
                              :connect :passive
-                             :local-filename (expand-path socket-path))
+                             :local-filename (expand-path *socket-path*))
     (loop as connection = (iolib:accept-connection s)
           while connection
           do (progn (match (alex:read-stream-content-into-string connection)
@@ -223,12 +211,12 @@ This function is suitable as a `browser' `startup-function'."
                     ;; If we get pinged too early, we do not have a current-window yet.
                     (when (current-window)
                      (ffi-window-to-foreground (current-window))))))
-  (log:info "Listening on socket ~s" (expand-path socket-path)))
+  (log:info "Listening on socket ~s" (expand-path *socket-path*)))
 
 (defun listening-socket-p ()
   (ignore-errors
    (iolib:with-open-socket (s :address-family :local
-                              :remote-filename (expand-path socket-path))
+                              :remote-filename (expand-path *socket-path*))
      (iolib:socket-connected-p s))))
 
 (defun bind-socket-or-quit (urls)
@@ -240,11 +228,11 @@ Otherwise bind socket."
             (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
             (log:info "Next already started." urls))
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (expand-path socket-path))
+                                   :remote-filename (expand-path *socket-path*))
           (format s "~s" `(open-external-urls ',urls)))
         (uiop:quit))
       (progn
-        (uiop:delete-file-if-exists (expand-path socket-path))
+        (uiop:delete-file-if-exists (expand-path *socket-path*))
         (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))
 
 (defun remote-eval (expr)
@@ -252,7 +240,7 @@ Otherwise bind socket."
   (if (listening-socket-p)
       (progn
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (expand-path socket-path))
+                                   :remote-filename (expand-path *socket-path*))
           (write-string expr s))
         (uiop:quit))
       (progn
@@ -302,8 +290,8 @@ next [options] [urls]"))
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
   (unless (or (getf *options* :no-init)
-              (not (expand-path init-file-path)))
-    (load-lisp (expand-path init-file-path) :package (find-package :next-user)))
+              (not (expand-path *init-file-path*)))
+    (load-lisp (expand-path *init-file-path*) :package (find-package :next-user)))
   (loop for (opt value . _) on *options*
         do (match opt
              (:load (let ((value (uiop:truename* value)))
@@ -331,9 +319,9 @@ Finally,run the `*after-init-hook*'."
         (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
     (unless (or (getf *options* :no-init)
-                (not (expand-path init-file-path)))
+                (not (expand-path *init-file-path*)))
       (handler-case
-          (load-lisp (expand-path init-file-path) :package (find-package :next-user))
+          (load-lisp (expand-path *init-file-path*) :package (find-package :next-user))
         (error (c)
           (setf startup-error-reporter
                 (lambda ()

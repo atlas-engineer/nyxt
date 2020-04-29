@@ -384,7 +384,7 @@ See the `data-path' class and the `expand-path' function.")
    (socket-thread :accessor socket-thread
                   :initform nil
                   :documentation "Thread that listens on socket.
-See `socket-path'.
+See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
    (single-instance-p :accessor single-instance-p
                       :initarg :single-instance-p
