@@ -267,7 +267,7 @@ This can be useful to let the user select no tag when returning directly."
 
 (defun store-sexp-bookmarks ()
   "Store the bookmarks to the browser `bookmarks-path'."
-  (with-open-file (file (bookmarks-path *browser*)
+  (with-data-file (file (bookmarks-path *browser*)
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
@@ -291,17 +291,16 @@ This can be useful to let the user select no tag when returning directly."
 
 (defun restore-sexp-bookmarks ()
   "Restore the bookmarks from the browser `bookmarks-path'."
-  (let ((path (bookmarks-path *browser*)))
-    (handler-case
-        (let ((data (with-open-file (file path
-                                          :direction :input
-                                          :if-does-not-exist nil)
-                      (when file
-                        (deserialize-bookmarks file)))))
-          (when data
-            (echo "Loading ~a bookmarks from ~a."
-                  (length data)
-                  (bookmarks-path *browser*))
-            (setf (slot-value *browser* 'bookmarks-data) data)))
-      (error (c)
-        (echo-warning "Failed to load bookmarks from ~a: ~a" path c)))))
+  (handler-case
+      (let ((data (with-data-file (file (bookmarks-path *browser*)
+                                        :direction :input
+                                        :if-does-not-exist nil)
+                    (when file
+                      (deserialize-bookmarks file)))))
+        (when data
+          (echo "Loading ~a bookmarks from ~a."
+                (length data)
+                (expand-path (bookmarks-path *browser*)))
+          (setf (slot-value *browser* 'bookmarks-data) data)))
+    (error (c)
+      (echo-warning "Failed to load bookmarks from ~a: ~a" (expand-path (bookmarks-path *browser*)) c))))

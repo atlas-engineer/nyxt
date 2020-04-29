@@ -247,7 +247,7 @@ distance scroll-left or scroll-right will scroll.")
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
    (cookies-path :accessor cookies-path
-                 :initform (xdg-data-home "cookies.txt")
+                 :initform (make-instance 'cookies-data-path :basename "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
 renderers might support this.")
    (box-style :accessor box-style
@@ -375,7 +375,13 @@ BUFFER's modes."
       (on-signal-load-finished mode url))))
 
 (defclass-export browser ()
-  ((socket-thread :accessor socket-thread
+  ((data-profile :accessor data-profile
+                 :initarg data-profile
+                 :type data-profile
+                 :initform +default-data-profile+
+                 :documentation "Profile to use for all persisted files.
+See the `data-path' class and the `expand-path' function.")
+   (socket-thread :accessor socket-thread
                   :initform nil
                   :documentation "Thread that listens on socket.
 See `socket-path'.
@@ -460,7 +466,9 @@ keyword is not recognized.")
               :documentation "List of downloads.")
    (download-watcher :accessor download-watcher :initform nil
                      :documentation "List of downloads.")
-   (download-directory :accessor download-directory :initform nil
+   (download-directory :accessor download-directory
+                       :type data-path
+                       :initform (make-instance 'download-data-path :basename "Downloads/")
                        :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.")
    (startup-timestamp :initarg :startup-timestamp :accessor startup-timestamp
@@ -474,8 +482,8 @@ stored.  Nil means use system default.")
 The history data kept in memory.")
    (history-path :initarg :history-path
                  :accessor history-path
-                 :type pathname
-                 :initform (xdg-data-home "history.lisp")
+                 :type data-path
+                 :initform (make-instance 'history-data-path :basename "history")
                  :documentation "
 The path where the system will create/save the global history.")
    (history-store-function :initarg :history-store-function
@@ -495,7 +503,8 @@ The function which restores the global history from `history-path'.")
 The bookmarks kept in memory.")
    (bookmarks-path :initarg :bookmarks-path
                    :accessor bookmarks-path
-                   :initform (xdg-data-home "bookmarks.lisp")
+                   :type data-path
+                   :initform (make-instance 'bookmarks-data-path :basename "bookmarks")
                    :documentation "
 The path where the system will create/save the bookmarks.")
    (bookmarks-store-function :initarg :bookmarks-store-function
@@ -512,7 +521,8 @@ The function which stores the bookmarks into `bookmarks-path'.")
 The function which restores the bookmarks from `bookmarks-path'.")
    (session-path :initarg :session-path
                  :accessor session-path
-                 :initform (expand-session-path "default.lisp")
+                 :type data-path
+                 :initform (make-instance 'session-data-path :basename "default")
                  :documentation "
 The path where the system will create/save the session.")
    (session-store-function :accessor session-store-function
@@ -530,11 +540,12 @@ from `session-path'.")
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
    (standard-output-path :accessor standard-output-path
-                         :initform (xdg-data-home "standard-out.txt")
-                         :documentation "Path where `*standard-output*'
-                         can be written to.")
+                         :type data-path
+                         :initform (make-instance 'data-path :basename "standard-out.txt")
+                         :documentation "Path where `*standard-output*' can be written to.")
    (error-output-path :accessor error-output-path
-                      :initform (xdg-data-home "standard-error.txt")
+                      :type data-path
+                      :initform (make-instance 'data-path :basename "standard-error.txt")
                       :documentation "Path where `*error-output*' can be
                       written to.")
    ;; Hooks follow:
@@ -711,7 +722,7 @@ current buffer."
         (progn
           (setf download (download-manager:resolve
                           url
-                          :directory (download-directory *browser*)
+                          :directory (expand-path (download-directory *browser*))
                           :cookies cookies
                           :proxy proxy-address))
           (push download (downloads *browser*))

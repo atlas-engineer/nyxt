@@ -2,6 +2,18 @@
 
 (in-package :next)
 
+(export-always 'init-file-path)
+(defvar init-file-path (make-instance 'init-file-data-path :basename "init") ; TODO: Rename with ear-mufs to global.
+  "The path of the initialization file.")
+
+(export-always 'socket-path)
+(defvar socket-path (make-instance 'socket-data-path :basename "next.socket") ; TODO: Rename with ear mufs to global.
+  "Path string of the Unix socket used to communicate between different
+instances of Next.
+
+This path cannot be set from the init file because we want to be able to set and
+use the socket without parsing any init file.")
+
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
@@ -48,21 +60,7 @@ Set to '-' to read standard input instead.")
     (:name :remote
            :short #\r
            :long "remote"
-           :description "Send the --eval and --load arguments to the running instance of Next.")
-    (:name :session
-           :short #\s
-           :long "session"
-           :arg-parser #'identity
-           :description (format nil "The argument can be empty (same effect as --no-session),
-a file if it contains a slash (prefix with ./ to refer
-to files in current directory) or the basename of a file
-in the sessions directory '~a'.
-Warning: any existing file will be overwritten."
-                          (xdg-data-home "sessions")))
-    (:name :no-session
-           :short #\S
-           :long "no-session"
-           :description "Do not load any session."))
+           :description "Send the --eval and --load arguments to the running instance of Next."))
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
@@ -77,9 +75,9 @@ Warning: any existing file will be overwritten."
   (when (socket-thread *browser*)
     (ignore-errors
      (bt:destroy-thread (socket-thread *browser*))))
-  (when (uiop:file-exists-p (socket-path))
-    (log:info "Deleting socket ~a" (socket-path))
-    (uiop:delete-file-if-exists (socket-path)))
+  (when (uiop:file-exists-p (expand-path socket-path))
+    (log:info "Deleting socket ~a" (expand-path socket-path))
+    (uiop:delete-file-if-exists (expand-path socket-path)))
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
@@ -88,27 +86,8 @@ Warning: any existing file will be overwritten."
   (setf
    (session-store-function *browser*) nil
    (session-restore-function *browser*) nil)
-  (uiop:delete-file-if-exists (session-path *browser*))
+  (uiop:delete-file-if-exists (expand-path (session-path *browser*)))
   (quit))
-
-(defun expand-session-path (name)
-  "Derive session file from command line option --session or NAME.
-If NAME has a slash, use the file it refers to.
-Without slash, NAME (with .lisp appended if not already there), store in
-the (xdg-data-home \"sessions \") folder."
-  (setf name (or (getf *options* :session) name))
-  (cond
-    ((or (getf *options* :no-session) (uiop:emptyp name))
-     "")
-    ((search "/" name)
-     name)
-    (t
-     (let ((name (format nil "~a/~a"
-                         (xdg-data-home "sessions")
-                         name)))
-       (unless (str:ends-with? ".lisp" name :ignore-case t)
-         (setf name (str:concat name ".lisp")))
-       name))))
 
 ;; From sbcl/src/code/load.lisp
 (defun maybe-skip-shebang-line (stream)
@@ -132,26 +111,6 @@ the (xdg-data-home \"sessions \") folder."
     (setf *keep-alive* nil)             ; Not a REPL.
     (in-package :next-user)
     (apply #'start options free-args)))
-
-(export-always 'init-file-path)
-(defun init-file-path (&key (default-basename "init.lisp"))
-  "Return the path of the initialization file."
-  ;; This can't be a regular variable or else the value will be hard-coded at
-  ;; compile time, even with (eval-when (:execute) ...
-  (match (getf *options* :init)
-    (nil (xdg-config-home default-basename))
-    ("" nil)
-    (file file)))
-
-(export-always 'socket-path)
-(defun socket-path (&key (default-basename "next.socket"))
-  "Path string of the Unix socket used to communicate between different
-instances of Next.
-
-This path cannot be set from the init file because we want to be able to set and
-use the socket without parsing any init file."
-  ;; This can't be a regular variable, see `init-file-path' for details.
-  (namestring (xdg-data-home default-basename)))
 
 (defparameter *load-init-error-message* "Error: Could not load the init file")
 (defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
@@ -197,7 +156,7 @@ If FILE is \"-\", read from the standard input."
                                   :show-completion-count nil)))
     (load-lisp file-name-input)))
 
-(define-command load-init-file (&key (init-file (init-file-path)))
+(define-command load-init-file (&key (init-file (expand-path init-file-path)))
   "Load or reload the init file."
   (load-lisp init-file :package (find-package :next-user)))
 
@@ -225,20 +184,19 @@ This function is suitable as a `browser' `startup-function'."
         (window-set-active-buffer window buffer)))
   (when (startup-error-reporter-function *browser*)
     (funcall-safely (startup-error-reporter-function *browser*)))
-  (unless (getf *options* :no-session)
-    (match (session-restore-prompt *browser*)
-      (:always-ask
-       (with-confirm ("Restore previous session?")
-         (when (and (session-restore-function *browser*)
-                    (uiop:file-exists-p (session-path *browser*)))
-           (log:info "Restoring session '~a'" (session-path *browser*))
-           (funcall (session-restore-function *browser*)))))
-      (:always-restore
-       (when (and (session-restore-function *browser*)
-                  (uiop:file-exists-p (session-path *browser*)))
-         (log:info "Restoring session '~a'" (session-path *browser*))
-         (funcall (session-restore-function *browser*))))
-      (:never-restore (log:info "Not restoring session.")))))
+  (unless (expand-path (session-path *browser*))
+    (flet ((restore-session ()
+             (when (and (session-restore-function *browser*)
+                        (uiop:file-exists-p (expand-path (session-path *browser*))))
+               (log:info "Restoring session '~a'" (expand-path (session-path *browser*)))
+               (funcall (session-restore-function *browser*)))))
+      (match (session-restore-prompt *browser*)
+        (:always-ask
+         (with-confirm ("Restore previous session?")
+           (restore-session)))
+        (:always-restore
+         (restore-session))
+        (:never-restore (log:info "Not restoring session."))))))
 
 (defun open-external-urls (urls)
   (if urls
@@ -249,11 +207,11 @@ This function is suitable as a `browser' `startup-function'."
    (lambda () (open-urls urls))))
 
 (defun listen-socket ()
-  (ensure-parent-exists (socket-path))
+  (ensure-parent-exists (expand-path socket-path))
   ;; TODO: Catch error against race conditions?
   (iolib:with-open-socket (s :address-family :local
                              :connect :passive
-                             :local-filename (socket-path))
+                             :local-filename (expand-path socket-path))
     (loop as connection = (iolib:accept-connection s)
           while connection
           do (progn (match (alex:read-stream-content-into-string connection)
@@ -265,12 +223,12 @@ This function is suitable as a `browser' `startup-function'."
                     ;; If we get pinged too early, we do not have a current-window yet.
                     (when (current-window)
                      (ffi-window-to-foreground (current-window))))))
-  (log:info "Listening on socket ~s" (socket-path)))
+  (log:info "Listening on socket ~s" (expand-path socket-path)))
 
 (defun listening-socket-p ()
   (ignore-errors
    (iolib:with-open-socket (s :address-family :local
-                              :remote-filename (socket-path))
+                              :remote-filename (expand-path socket-path))
      (iolib:socket-connected-p s))))
 
 (defun bind-socket-or-quit (urls)
@@ -282,11 +240,11 @@ Otherwise bind socket."
             (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
             (log:info "Next already started." urls))
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (socket-path))
+                                   :remote-filename (expand-path socket-path))
           (format s "~s" `(open-external-urls ',urls)))
         (uiop:quit))
       (progn
-        (uiop:delete-file-if-exists (socket-path))
+        (uiop:delete-file-if-exists (expand-path socket-path))
         (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))
 
 (defun remote-eval (expr)
@@ -294,7 +252,7 @@ Otherwise bind socket."
   (if (listening-socket-p)
       (progn
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (socket-path))
+                                   :remote-filename (expand-path socket-path))
           (write-string expr s))
         (uiop:quit))
       (progn
@@ -344,8 +302,8 @@ next [options] [urls]"))
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
   (unless (or (getf *options* :no-init)
-              (not (init-file-path)))
-    (load-lisp (init-file-path) :package (find-package :next-user)))
+              (not (expand-path init-file-path)))
+    (load-lisp (expand-path init-file-path) :package (find-package :next-user)))
   (loop for (opt value . _) on *options*
         do (match opt
              (:load (let ((value (uiop:truename* value)))
@@ -373,9 +331,9 @@ Finally,run the `*after-init-hook*'."
         (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
     (unless (or (getf *options* :no-init)
-                (not (init-file-path)))
+                (not (expand-path init-file-path)))
       (handler-case
-          (load-lisp (init-file-path) :package (find-package :next-user))
+          (load-lisp (expand-path init-file-path) :package (find-package :next-user))
         (error (c)
           (setf startup-error-reporter
                 (lambda ()

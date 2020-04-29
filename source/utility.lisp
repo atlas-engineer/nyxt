@@ -27,11 +27,6 @@ before running this command."
   (swank:create-server :port swank-port :dont-close t)
   (echo "Swank server started at port ~a" swank-port))
 
-(defun ensure-parent-exists (path)
-  "Create parent directories of PATH if they don't exist and return PATH."
-  (ensure-directories-exist (directory-namestring path))
-  path)
-
 (export-always 'member-string)
 (defun member-string (string list)
   "Return the tail of LIST beginning whose first element is STRING."
@@ -62,11 +57,15 @@ before running this command."
   "Set the *standard-output* and *error-output* to write to a log file."
   (values
    (setf *standard-output*
-         (open (standard-output-path browser) :direction :output
-                                                :if-does-not-exist :create :if-exists :append))
+         (open (expand-path (standard-output-path browser))
+               :direction :output
+               :if-does-not-exist :create
+               :if-exists :append))
    (setf *error-output*
-         (open (error-output-path browser) :direction :output :if-does-not-exist :create
-                                             :if-exists :append))))
+         (open (expand-path (error-output-path browser))
+               :direction :output
+               :if-does-not-exist :create
+               :if-exists :append))))
 
 (export-always 'funcall-safely)
 (defun funcall-safely (f &rest args)

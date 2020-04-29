@@ -124,7 +124,7 @@ instance of Next."
 
 (defun store-sexp-history ()            ; TODO: Factor with `store-sexp-session'.
   "Store the global history to the browser `history-path'."
-  (with-open-file (file (history-path *browser*)
+  (with-data-file (file (history-path *browser*)
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
@@ -144,38 +144,37 @@ instance of Next."
 
 (defun restore-sexp-history ()
   "Restore the global history from the browser `history-path'."
-  (let ((path (history-path *browser*)))
-    (handler-case
-        (let ((data (with-open-file (file path
-                                          :direction :input
-                                          :if-does-not-exist nil)
-                      (when file
-                        ;; We need to make sure current package is :next so that
-                        ;; symbols a printed with consistent namespaces.
-                        (let ((*package* *package*))
-                          (in-package :next)
-                          (s-serialization:deserialize-sexp file))))))
-          (match data
-            ((guard (list version history)
-               (hash-table-p history))
-             (unless (string= version +version+)
-               (log:warn "Session version ~s differs from current version ~s"
-                         version +version+))
-             (echo "Loading global history of ~a URLs."
-                   (hash-table-count history))
-             (setf (slot-value *browser* 'history-data) history))
+  (handler-case
+      (let ((data (with-data-file (file (history-path *browser*)
+                                        :direction :input
+                                        :if-does-not-exist nil)
+                    (when file
+                      ;; We need to make sure current package is :next so that
+                      ;; symbols a printed with consistent namespaces.
+                      (let ((*package* *package*))
+                        (in-package :next)
+                        (s-serialization:deserialize-sexp file))))))
+        (match data
+          ((guard (list version history)
+                  (hash-table-p history))
+           (unless (string= version +version+)
+             (log:warn "Session version ~s differs from current version ~s"
+                       version +version+))
+           (echo "Loading global history of ~a URLs."
+                 (hash-table-count history))
+           (setf (slot-value *browser* 'history-data) history))
 
-            ((guard history (listp history))
-             (let ((new-history (make-hash-table :test #'equal)))
-               (dolist (e history)
-                 (if (nth-value 1 (gethash (url e) new-history))
-                     (incf (implicit-visits (gethash (url e) new-history)) (implicit-visits e))
-                     (setf (gethash (url e) new-history) e)))
-               (log:info "Imported 1.3.4 history from ~a entries to ~a entries (~a duplicates)."
-                         (length history)
-                         (hash-table-count new-history)
-                         (- (length history)
-                            (hash-table-count new-history)))
-               (setf (slot-value *browser* 'history-data) new-history)))))
-      (error (c)
-        (echo-warning "Failed to restore history from ~a: ~a" path c)))))
+          ((guard history (listp history)) ; TODO: Remove this since it's Next 1.x stuff.
+           (let ((new-history (make-hash-table :test #'equal)))
+             (dolist (e history)
+               (if (nth-value 1 (gethash (url e) new-history))
+                   (incf (implicit-visits (gethash (url e) new-history)) (implicit-visits e))
+                   (setf (gethash (url e) new-history) e)))
+             (log:info "Imported 1.3.4 history from ~a entries to ~a entries (~a duplicates)."
+                       (length history)
+                       (hash-table-count new-history)
+                       (- (length history)
+                          (hash-table-count new-history)))
+             (setf (slot-value *browser* 'history-data) new-history)))))
+    (error (c)
+      (echo-warning "Failed to restore history from ~a: ~a" (expand-path (history-path *browser*)) c))))
