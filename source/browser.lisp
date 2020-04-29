@@ -18,6 +18,30 @@
                                                                  (eql :forward)))))
 (export-always '(make-hook-resource make-handler-resource))
 
+(export-always 'expand-path)
+(declaim (ftype (function (data-path) (or string null)) expand-path))
+(defun expand-path (data-path)
+  "Return the expanded path of DATA-PATH.
+`expand-data-path' is dispatched against `data-path' and `*browser*'s
+`data-profile' if `*browser*' is instantiated, `+default-data-profile+'
+otherwise.
+This function can be used on browser-less globals like `*init-file-path*'."
+  (the (values (or string null) &optional)
+       (if *browser*
+           (expand-data-path data-path (data-profile *browser*))
+           (expand-data-path data-path +default-data-profile+))))
+
+(defmacro with-data-file ((stream data-path &rest options) &body body)
+  "Evaluate BODY with STREAM bound to DATA-PATH.
+DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
+If DATA-PATH expands to NIL or the empty string, do nothing.
+OPTIONS are as for `open'.
+Parent directories are created if necessary."
+  `(let ((path (expand-path ,data-path)))
+     (when path
+       (with-maybe-gpg-file (,stream path ,@options)
+         ,@body))))
+
 (defclass-export window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)

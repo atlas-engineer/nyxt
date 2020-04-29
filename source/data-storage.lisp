@@ -64,10 +64,6 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
-(defmethod expand-data-path ((path (eql *init-file-data-path*)) (profile data-profile))
-  "Return path of the init-fil."
-  (expand-default-path path :root (uiop:xdg-config-home +data-root+)))
-
 (defmethod expand-data-path ((path session-data-path) (profile data-profile))
   (expand-default-path path :root (uiop:xdg-data-home +data-root+ "sessions")))
 
@@ -116,19 +112,6 @@ As third value the name."
           (values key mail name)))
       *gpg-default-recipient*))
 
-(export-always 'expand-path)
-(declaim (ftype (function (data-path) (or string null)) expand-path))
-(defun expand-path (data-path)
-  "Return the expanded path of DATA-PATH.
-`expand-data-path' is dispatched against `data-path' and `*browser*'s
-`data-profile' if `*browser*' is instantiated, `+default-data-profile+'
-otherwise.
-This function can be used on browser-less globals like `*init-file-path*'."
-  (the (values (or string null) &optional)
-       (if *browser*
-           (expand-data-path data-path (data-profile *browser*))
-           (expand-data-path data-path +default-data-profile+))))
-
 (defmacro with-gpg-file ((stream gpg-file &rest options) &body body)
   "Like `with-open-file' but use
 OPTIONS are as for `open''s `:direction'.
@@ -161,23 +144,21 @@ nothing is done if file is missing."
                                                     ,@body)))
                      (gpg-write ,in))))))))
 
-(defmacro with-data-file ((stream data-path &rest options) &body body)
+(defmacro with-maybe-gpg-file ((stream filespec &rest options) &body body)
   "Evaluate BODY with STREAM bound to DATA-PATH.
 DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
 If DATA-PATH expands to NIL or the empty string, do nothing.
 OPTIONS are as for `open'.
 Parent directories are created if necessary."
-  `(let ((path (expand-path ,data-path)))
-     (when path
-       (if (str:ends-with? ".gpg" path :ignore-case t)
-           (with-gpg-file (,stream path ,@options)
-             ,@body)
-           (progn
-             ,(when (and (match (getf options :direction)
-                           ((or :io :output) t))
-                         (match (nth-value 2 (get-properties options '(:if-does-not-exist)))
-                           (nil t)
-                           ((guard l (eq (getf l :if-does-not-exist) :create)) t)))
-                `(ensure-parent-exists path))
-             (with-open-file (,stream path ,@options)
-               ,@body))))))
+  `(if (str:ends-with? ".gpg" ,filespec :ignore-case t)
+       (with-gpg-file (,stream ,filespec ,@options)
+         ,@body)
+       (progn
+         ,(when (and (match (getf options :direction)
+                       ((or :io :output) t))
+                     (match (nth-value 2 (get-properties options '(:if-does-not-exist)))
+                       (nil t)
+                       ((guard l (eq (getf l :if-does-not-exist) :create)) t)))
+            `(ensure-parent-exists ,filespec))
+         (with-open-file (,stream ,filespec ,@options)
+           ,@body))))
