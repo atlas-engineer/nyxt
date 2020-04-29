@@ -16,7 +16,7 @@
                                "C-[" #'switch-buffer-previous
                                "C-]" #'switch-buffer-next
                                "C-x b" #'switch-buffer
-                               "C-x k" #'delete-buffer ; Emacs' default behaviour is to query.
+                               "C-x k" #'delete-buffer
                                "C-x C-k" #'delete-current-buffer
                                "C-shift-tab" #'switch-buffer-previous
                                "C-tab" #'switch-buffer-next
@@ -37,11 +37,11 @@
                                "f11" #'fullscreen-current-window
                                "C-o" #'load-file
                                "C-i" #'autofill
-                               "M-x" #'execute-command
+                               "C-space" #'execute-command
                                "M-:" #'command-evaluate
-                               "C-x 5 2" #'make-window
-                               "C-x 5 0" #'delete-current-window
-                               "C-x 5 1" #'delete-window
+                               "C-n" #'make-window
+                               "C-w" #'delete-current-window
+                               "M-w" #'delete-window
                                "C-/" #'reopen-buffer
                                "C-x C-f" #'open-file)
                               scheme:emacs

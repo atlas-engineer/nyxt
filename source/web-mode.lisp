@@ -50,8 +50,8 @@ search.")
        "C-c" #'copy
        "button9" #'history-forwards
        "button8" #'history-backwards
-       "C-p" #'scroll-up
-       "C-n" #'scroll-down
+       "up" #'scroll-up
+       "down" #'scroll-down
        "C-+" #'zoom-in-page
        "C-=" #'zoom-in-page             ; Because + shifted = on QWERTY.
        "C-hyphen" #'zoom-out-page
@@ -69,9 +69,8 @@ search.")
        "home" #'maybe-scroll-to-top
        "C-down" #'scroll-to-bottom
        "C-up" #'scroll-to-top
-       "M-v" #'scroll-page-up
-       "C-w" #'copy-url
-       "M-w" #'copy-title
+       "C-c l" #'copy-url
+       "C-c t" #'copy-title
        ;; Leave SPACE unbound so that the renderer decides wether to
        ;; insert of scroll.
        "s-space" #'scroll-page-up
