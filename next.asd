@@ -51,8 +51,8 @@
                (:file "conditions")
                ;; Core Functionality
                (:file "macro")
-               (:file "global")
                (:file "data-storage")
+               (:file "global")
                (:file "browser")
                (:file "mode")
                (:file "command")
