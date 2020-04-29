@@ -273,7 +273,7 @@ renderers might support this.")
                           :initform '()
                           :type list-of-strings
                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
-   (set-url-hook :accessor set-url-hook
+   (set-url-hook ;; :accessor set-url-hook ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
                  :initform (hooks:make-hook-string->string
                             :combination #'hooks:combine-composed-hook)
                  :type hooks:hook-string->string

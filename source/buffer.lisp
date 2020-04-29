@@ -179,7 +179,7 @@ URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
                   (parse-url input-url))))
     (handler-case
         (progn
-          (let ((new-url (hooks:run-hook (set-url-hook buffer) url)))
+          (let ((new-url (hooks:run-hook (slot-value buffer 'set-url-hook) url)))
             (check-type new-url string)
             (setf url new-url)))
       (error (c)
