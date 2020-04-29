@@ -8,6 +8,8 @@
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
+(defclass hostlist-data-path (next:data-path) ())
+
 (defclass-export hostlist ()
   ((url :accessor url :initarg :url
         :initform ""
@@ -15,7 +17,9 @@
         :documentation "URL where to download the list from.  If empty, no attempt
 will be made at updating it.")
    (path :initarg :path
-         :initform nil
+         :accessor path
+         :type hostlist-data-path
+         :initform (make-instance 'hostlist-data-path)
          :documentation "Where to find the list locally.
 If nil, the list won't be persisted.
 If path is relative, it will be set to (xdg-data-home path).")
@@ -28,13 +32,6 @@ If path is relative, it will be set to (xdg-data-home path).")
 this amount of seconds."))
   (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot."))
 
-(serapeum:export-always 'path)
-(defmethod path ((hostlist hostlist))
-  (with-slots (path) hostlist
-    (if (uiop:absolute-pathname-p path)
-        path
-        (xdg-data-home path))))
-
 (serapeum:export-always 'make-hostlist)
 (defun make-hostlist (&rest args)
   "Return a new `hostlist'.
@@ -45,11 +42,11 @@ See the `hostlist' class documentation."
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
-    (log:info "Updating hostlist ~a from ~a" (path hostlist) (url hostlist))
+    (log:info "Updating hostlist ~a from ~a" (expand-path (path hostlist)) (url hostlist))
     (let ((hosts (dex:get (url hostlist))))
-      (when (path hostlist)
+      (when (expand-path (path hostlist))
         ;; TODO: In general, we should do more error checking when writing to disk.
-        (alex:write-string-into-file hosts (path hostlist)
+        (alex:write-string-into-file hosts (expand-path (path hostlist))
                                            :if-exists :overwrite
                                            :if-does-not-exist :create))
       hosts)))
@@ -63,18 +60,18 @@ Auto-update file if older than UPDATE-INTERVAL seconds.
 
 The hostlist is downloaded in the background.
 The new hostlist will be used as soon as it is available."
-  (when (or (not (uiop:file-exists-p (path hostlist)))
+  (when (or (not (uiop:file-exists-p (expand-path (path hostlist))))
             (< (update-interval hostlist)
-               (- (get-universal-time) (uiop:safe-file-write-date (path hostlist)))))
+               (- (get-universal-time) (uiop:safe-file-write-date (expand-path (path hostlist))))))
     (bt:make-thread
      (lambda ()
        (when (bt:acquire-lock update-lock nil)
          (update hostlist)
          (bt:release-lock update-lock)))))
   (handler-case
-      (uiop:read-file-string (path hostlist))
+      (uiop:read-file-string (expand-path (path hostlist)))
     (error ()
-      (log:warn "Hostlist not found: ~a" (path hostlist))
+      (log:warn "Hostlist not found: ~a" (expand-path (path hostlist)))
       nil)))
 
 (defmethod parse ((hostlist hostlist))
@@ -103,7 +100,7 @@ Return nil if hostlist cannot be parsed."
 (defparameter *default-hostlist*
   (make-instance 'hostlist
                  :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-                 :path "hostlist-stevenblack")
+                 :path (make-instance 'hostlist-data-path :basename "hostlist-stevenblack.txt"))
   "Default hostlist for `blocker-mode'.")
 
 (define-mode blocker-mode ()

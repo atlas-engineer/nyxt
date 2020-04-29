@@ -28,36 +28,33 @@ Currently we store the list of current URLs of all buffers."
   ;; TODO: Should we persist keymaps, constructors, etc.?  For instance, should
   ;; we restore the proxy value?  It may be wiser to let the user configure
   ;; whitelitss / blacklists instead.  It's also easier
-  (unless (uiop:emptyp (session-path *browser*))
-    (ensure-parent-exists (session-path *browser*))
-    (with-open-file (file (session-path *browser*)
-                          :direction :output
-                          :if-does-not-exist :create
-                          :if-exists :supersede)
-      ;; We READ the output of serialize-sexp to make it more human-readable.
-      (let ((*package* *package*))
-        ;; We need to make sure current package is :next so that
-        ;; symbols a printed with consistent namespaces.
-        (in-package :next)
-        (format file
-                "~s"
-                (with-input-from-string (in (with-output-to-string (out)
-                                              (s-serialization:serialize-sexp (session-data) out)))
-                  (read in)))))))
+  (with-data-file (file (session-path *browser*)
+                        :direction :output
+                        :if-does-not-exist :create
+                        :if-exists :supersede)
+    ;; We READ the output of serialize-sexp to make it more human-readable.
+    (let ((*package* *package*))
+      ;; We need to make sure current package is :next so that
+      ;; symbols a printed with consistent namespaces.
+      (in-package :next)
+      (format file
+              "~s"
+              (with-input-from-string (in (with-output-to-string (out)
+                                            (s-serialization:serialize-sexp (session-data) out)))
+                (read in))))))
 
 (defun restore-sexp-session ()
   "Restore the current Next session from the browser `session-path'."
   (handler-case
-      (match (with-open-file (file (session-path *browser*)
-                                   :direction :input
-                                   :if-does-not-exist nil)
-               (when file
+      (match (with-data-file (input (session-path *browser*)
+                                    :direction :input
+                                    :if-does-not-exist nil)
+               (when input
                  ;; We need to make sure current package is :next so that
-                 ;; symbols a printed with consistent namespaces.
+                 ;; symbols are printed with consistent namespaces.
                  (let ((*package* *package*))
                    (in-package :next)
-                   (s-serialization:deserialize-sexp
-                    file))))
+                   (s-serialization:deserialize-sexp input))))
         ((list version buffer-histories)
          (unless (string= version +version+)
            (log:warn "Session version ~s differs from current version ~s" version +version+))

@@ -64,8 +64,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (initialize-modes buffer)
     (when dead-buffer
       (setf (url buffer) (url dead-buffer)))
-    (unless (str:emptyp (namestring (cookies-path buffer)))
-      (ensure-parent-exists (cookies-path buffer)))
+    (when (expand-path (cookies-path buffer))
+      (ensure-parent-exists (expand-path (cookies-path buffer))))
     (setf (gethash (id buffer) (buffers browser)) buffer)
     (unless (last-active-buffer browser)
       ;; When starting from a REPL, it's possible that the window is spawned in

@@ -335,10 +335,10 @@ Warning: This behaviour may change in the future."
 (defun make-context (&optional buffer)
   (let* ((context (webkit:webkit-web-context-get-default))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (when (and buffer (not (str:emptyp (namestring (cookies-path buffer)))))
+    (when (and buffer (expand-path (cookies-path buffer)))
       (webkit:webkit-cookie-manager-set-persistent-storage
        cookie-manager
-       (namestring (cookies-path buffer))
+       (expand-path (cookies-path buffer))
        :webkit-cookie-persistent-storage-text))
     context))
 
