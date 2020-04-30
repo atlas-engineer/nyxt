@@ -29,6 +29,18 @@ use the socket without parsing any init file.")
                                               :basename new-path
                                               :dirname (directory path))))))))
 
+(defmethod expand-data-path ((path (eql *socket-path*)) (profile data-profile))
+  "Return path of the socket."
+  (cond
+    ((getf *options* :no-socket)
+     nil)
+    (t (match (getf *options* :socket)
+         (nil (expand-default-path path))
+         (new-path
+          (expand-default-path (make-instance 'socket-data-path
+                                              :basename new-path
+                                              :dirname (directory path))))))))
+
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
@@ -58,6 +70,15 @@ Set to '-' to read standard input instead.")
            :short #\I
            :long "no-init"
            :description "Do not load the user init file.")
+    (:name :socket
+           :short #\s
+           :long "socket"
+           :arg-parser #'identity
+           :description "Set path to socket of a remote instance or start in single-instance mode.")
+    (:name :no-socket
+           :short #\S
+           :long "no-socket"
+           :description "Do not use any socket and start in multi-instance mode.")
     (:name :eval
            :short #\e
            :long "eval"
@@ -230,23 +251,24 @@ This function is suitable as a `browser' `startup-function'."
 
 (defun listen-socket ()
   (let ((socket-path (expand-path *socket-path*)))
-    (ensure-parent-exists socket-path)
-    ;; TODO: Catch error against race conditions?
-    (iolib:with-open-socket (s :address-family :local
-                               :connect :passive
-                               :local-filename socket-path)
-      (loop as connection = (iolib:accept-connection s)
-            while connection
-            do (progn (match (alex:read-stream-content-into-string connection)
-                        ((guard expr (not (uiop:emptyp expr)))
-                         (log:info "External evaluation request: ~s" expr)
-                         (eval-expr expr))
-                        (_
-                         (log:info "External process pinged Next.")))
-                      ;; If we get pinged too early, we do not have a current-window yet.
-                      (when (current-window)
-                        (ffi-window-to-foreground (current-window))))))
-    (log:info "Listening on socket ~s" socket-path)))
+    (when socket-path
+      (ensure-parent-exists socket-path)
+      ;; TODO: Catch error against race conditions?
+      (iolib:with-open-socket (s :address-family :local
+                                 :connect :passive
+                                 :local-filename socket-path)
+        (loop as connection = (iolib:accept-connection s)
+              while connection
+              do (progn (match (alex:read-stream-content-into-string connection)
+                          ((guard expr (not (uiop:emptyp expr)))
+                           (log:info "External evaluation request: ~s" expr)
+                           (eval-expr expr))
+                          (_
+                           (log:info "External process pinged Next.")))
+                        ;; If we get pinged too early, we do not have a current-window yet.
+                        (when (current-window)
+                          (ffi-window-to-foreground (current-window))))))
+      (log:info "Listening on socket ~s" socket-path))))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -365,7 +387,7 @@ Finally,run the `*after-init-hook*'."
     (setf *browser* (make-instance *browser-class*
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
-    (when (single-instance-p *browser*)
+    (when (expand-path *socket-path*)
       (bind-socket-or-quit free-args))
     (ffi-initialize *browser* free-args startup-timestamp)))
 

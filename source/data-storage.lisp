@@ -4,7 +4,6 @@
 ;; TODO: Download manager directory.
 ;; TODO: Video-mode dir.  file-manager-mode.
 ;; TODO: Add CLI arguments --profile, --list-profiles.
-;; TODO: When :socket is implemented, allow multi instance when :socket is nil.
 ;; TODO: Read file from stdin.
 
 (defvar *gpg-program* "gpg")
