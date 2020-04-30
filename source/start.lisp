@@ -270,6 +270,9 @@ This function is suitable as a `browser' `startup-function'."
       (iolib:with-open-socket (s :address-family :local
                                  :connect :passive
                                  :local-filename socket-path)
+        ;; We don't want group members or others to flood the socket or, worse,
+        ;; execute code.
+        (setf (osicat:file-permissions socket-path) '(:user-read :user-write))
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn (match (alex:read-stream-content-into-string connection)
