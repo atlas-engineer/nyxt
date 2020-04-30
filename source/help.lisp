@@ -213,6 +213,27 @@ A command is a special kind of function that can be called with
     (ffi-buffer-evaluate-javascript help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
+(defun tls-help (buffer url)
+  "This function is invoked upon TLS certificate errors to give users
+help on how to proceed."
+  (let* ((help-contents
+           (markup:markup
+            (:h1 (format nil "TLS Certificate Error: ~a" url))
+            (:p "The address you are trying to visit has an invalid
+certificate. By default Next refuses to establish a secure connection
+to a host with an erroneous certificate (e.g. self-signed ones). This
+could mean that the address you are attempting the access is
+compromised.")
+            (:p "If you trust the address
+nonetheless, you can add an exception for the current hostname with
+=add-domain-to-certificate-whitelist=.  The =certificate-whitelist-mode= must be
+active for the current buffer (which is the default).")
+            (:p "You can persist hostname exceptions in your init
+file, see the =add-domain-to-certificate-whitelist= documentation.")))
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+    (ffi-buffer-evaluate-javascript buffer insert-help)))
+
 (defun describe-key-dispatch-input (event buffer window printable-p)
   "Display bound value documentation.
 Cancel with 'escape escape'.
