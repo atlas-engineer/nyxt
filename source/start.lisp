@@ -23,23 +23,22 @@ use the socket without parsing any init file.")
      nil)
     (t (match (getf *options* :init)
          ("-" "-")
-         (nil (expand-default-path path))
          (new-path
-          (expand-default-path (make-instance 'init-file-data-path
-                                              :basename new-path
-                                              :dirname (directory path))))))))
+          (expand-default-path (make-instance 'data-path
+                                              :basename (or new-path (basename path))
+                                              :dirname (uiop:xdg-config-home +data-root+))))))))
 
 (defmethod expand-data-path ((path (eql *socket-path*)) (profile data-profile))
   "Return path of the socket."
   (cond
     ((getf *options* :no-socket)
      nil)
-    (t (match (getf *options* :socket)
-         (nil (expand-default-path path))
-         (new-path
-          (expand-default-path (make-instance 'socket-data-path
-                                              :basename new-path
-                                              :dirname (directory path))))))))
+    (t (expand-default-path
+        (make-instance 'data-path
+                       :basename (or (getf *options* :socket) (getf *options* :socket))
+                       ;; Recompute `dirname' since default value is evaluated
+                       ;; at compile-time.
+                       :dirname (uiop:xdg-data-home +data-root+))))))
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
