@@ -58,6 +58,8 @@ MAJOR.MINOR.PATCH, we increment the:
   error, call =add-domain-to-certificate-whitelist= followed by a reload if you
   understand the risks and you want to bypass the error.
 
+  The =certificate-whitelist= slot is now a list of strings.
+
 - Make current URL the first candidate in =set-url-*= commands.
 
 - New =scheme:cua= default binding scheme.  You can still use the former default
@@ -84,12 +86,13 @@ MAJOR.MINOR.PATCH, we increment the:
   class.
 
 - Sessions are now saved in XDG_DATA_HOME/next/sessions/.  Default session is
-  =default.lisp=.  The command line option =--session= uses a =sessions= folder
-  by default and does not treat =nil= as a special case anymore.
+  =default.lisp=.  The command line option =--session= has been replaced by the
+  more general =--with-path= (e.g. ~--with-path session=/path/to/session~).
 
 - Command line options: New =--load= option to load a Lisp file, =--eval= and
-  =--load= can be specified multiple times, the =--remote= option allow
-  evaluating =--eval= and =--load= in a running instance.
+  =--load= can be specified multiple times, the =--remote= option allows
+  evaluating =--eval= and =--load= in a running instance (if
+  =remote-execution-p= is non-nil).
   New =--script= command line option that can be used in shabang to write "Next scripts."
 
 - New =autofill= command to insert predefined content in text fields.
@@ -124,11 +127,20 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - New =open-inspector= command to bring up the web inspector.
 
-- =certificate-whitelist-mode=
-
 - New =spell-check-*= commands.  To be continued.
 
 - Add =base-mode= and move all base key bindings from =root-mode= to =base-mode=.
+
+- Transparent GPG-encrypted file persistence when files have a =.gpg= extension.
+  This makes it possible to keep bookmarks, history, session, etc. in encrypted files.
+
+- Default package is =:next-user= in configuration but also in command line
+  evaluation and in scripts.
+
+- Support =data-profiles=.  A =data-profile= can be used to specify a group of
+  settings for data paths by specializing the =expand-data-path= method.
+
+  Add =--data-profile= and =--list-data-profiles= command line options.
 
 ** DONE 1.5.0
 - Add =certificate-whitelist-mode=.  (Thanks to Alexander Egorenkov.)
