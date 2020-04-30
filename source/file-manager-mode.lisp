@@ -31,12 +31,6 @@ Open any file from within Next, with the usual fuzzy completion.
 ;;; - lazy loading for large directories
 ;;; - many things...
 
-;; TODO: a global isn't satisfactory. Two separate instances of open-file will interfere with this global variable.
-;; - store it as a class slot ?
-;; see also: uiop:with-current-directory, uiop:getcwd
-(defvar *current-directory* download-manager::*default-download-directory*
-  "Default directory to open files from. Defaults to the downloads directory.")
-
 (defparameter *open-file-in-new-buffer* t
   "If non-t, don't open files and directories in a new buffer.")
 
@@ -106,8 +100,8 @@ command `open-file'."
        "M-left" #'display-parent-directory)))))
 
 (serapeum:export-always 'open-file-from-directory-completion-filter)
-(defun open-file-from-directory-completion-filter (input &optional (directory *current-directory*))
-  "Fuzzy-match files and directories from `*current-directory*'."
+(defun open-file-from-directory-completion-filter (input &optional (directory (uiop:getcwd)))
+  "Fuzzy-match files and directories from DIRECTORY."
   (let ((filenames (uiop:directory-files directory))
         (dirnames (uiop:subdirectories directory)))
     (fuzzy-match input (append filenames dirnames))))
@@ -116,7 +110,7 @@ command `open-file'."
   "Get the parent directory and update the minibuffer.
 
 Default keybindings: `M-Left' and `C-l'."
-  (setf *current-directory* (uiop:pathname-parent-directory-pathname *current-directory*))
+  (uiop:chdir "..")
   (erase-input minibuffer)
   (update-display minibuffer))
 
@@ -127,7 +121,7 @@ Default keybindings: `M-Right' and `C-j'. "
   (let ((filename (get-candidate minibuffer)))
     (when (and (uiop:directory-pathname-p filename)
                (uiop:directory-exists-p filename))
-      (setf *current-directory* filename)
+      (uiop:chdir filename)
       (erase-input minibuffer)
       (update-display minibuffer))))
 
@@ -152,12 +146,13 @@ name) as parameter.
 The default keybinding is `C-x C-f'.
 
 Note: this feature is alpha, get in touch for more!"
-  (let ((directory next/file-manager-mode::*current-directory*))
+  ;; TODO: How do we set the current directory permanently?
+  (uiop:with-current-directory ((uiop:getcwd))
     ;; Allow the current minibuffer to recognize our keybindings.
     (with-result (filename (read-from-minibuffer
                             (make-minibuffer
                              :default-modes '(next/file-manager-mode::file-manager-mode minibuffer-mode)
-                             :input-prompt (file-namestring directory)
+                             :input-prompt (file-namestring (uiop:getcwd))
                              :completion-function #'next/file-manager-mode::open-file-from-directory-completion-filter)))
 
       (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
