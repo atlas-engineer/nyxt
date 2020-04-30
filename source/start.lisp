@@ -98,16 +98,16 @@ Unless evaluating remotely (see --remote), Next starts in single-instance mode a
            :long "remote"
            :description "Send the --eval and --load arguments to the running instance of Next.
 The remote instance must be listening on a socket which you can specify with --socket.")
-    (:name :profile
+    (:name :data-profile
            :short #\p
-           :long "profile"
+           :long "data-profile"
            :arg-parser #'identity
-           :description "Use the given data profile.
-A profile is an exported variable that evaluate to a subclass of `data-profile'.")
-    (:name :list-profiles
-           :long "list-profiles"
+           :description "Use the given data profile. ")
+    (:name :list-data-profiles
+           :long "list-data-profiles"
            :description "List the known data profiles and exit.
-A profile is an exported variable that evaluate to a subclass of `data-profile'.")
+Known profiles are found among global variables that are a subclass of
+`data-profile'.")
     (:name :with-path
            :long "with-path"
            :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
@@ -356,7 +356,7 @@ next [options] [urls]"))
     ((getf options :version)
      (format t "Next version ~a~&" +version+))
 
-    ((getf options :list-profiles)
+    ((getf options :list-data-profiles)
      (unless (or (getf *options* :no-init)
                  (not (expand-path *init-file-path*)))
        (load-lisp (expand-path *init-file-path*) :package (find-package :next-user)))

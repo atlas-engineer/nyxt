@@ -34,7 +34,7 @@
                            (package-variables)))
         #'string< :key #'second))
 
-(defun find-profile (name)
+(defun find-data-profile (name)
   "Return profile matching NAME.
 Return NIL on no match."
   (first (find name (package-data-profiles) :test #'string= :key #'second)))
