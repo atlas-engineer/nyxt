@@ -71,7 +71,7 @@ all Next components within the browser itself.
 Help is accessed via various "describe" commands.
 
 Press =M-x= (that is, =Alt= plus =x= or =Command= plus =x=) to bring up the list
-of commands, then write =describe=.  You should now see a lits of all help
+of commands, then write =describe=.  You should now see a list of all help
 commands, such as =describe-command=.
 
 * Basics
