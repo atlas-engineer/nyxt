@@ -430,14 +430,18 @@ Warning: This behaviour may change in the future."
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (host (host url)))
-    (when (and (certificate-whitelist buffer)
-               (member-string host (certificate-whitelist buffer)))
-      (webkit:webkit-web-context-allow-tls-certificate-for-host
-       context
-       (gobject:pointer certificate)
-       host)
-      (set-url* url :buffer buffer)
-      t)))
+    (if (and (certificate-whitelist buffer)
+             (member-string host (certificate-whitelist buffer)))
+        (progn
+          (webkit:webkit-web-context-allow-tls-certificate-for-host
+           context
+           (gobject:pointer certificate)
+           host)
+          (set-url* url :buffer buffer)
+          t)
+        (progn
+          (tls-help buffer url)
+          t))))
 
 (defmethod on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
   (let ((is-new-window nil) (is-known-type t) (event-type :other)
@@ -611,8 +615,7 @@ Warning: This behaviour may change in the future."
    (gtk-object buffer) "load-failed-with-tls-errors"
    (lambda (web-view failing-uri certificate errors)
      (declare (ignore web-view errors))
-     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)
-     (tls-help buffer failing-uri)))
+     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)))
   (gobject:g-signal-connect
    (gtk-object buffer) "notify::uri"
    (lambda (web-view param-spec)

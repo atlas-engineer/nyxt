@@ -252,11 +252,7 @@ A command is a special kind of function that can be called with
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
-  (declare (ignore buffer))             ; TODO: Display tls-help in buffer with TLS error.
-  (let* ((help-buffer (nyxt/help-mode:help-mode
-                       :activate t
-                       :buffer (make-buffer :title "TLS Error")))
-         (help-contents
+  (let* ((help-contents
            (markup:markup
             (:h1 (format nil "TLS Certificate Error: ~a" url))
             (:p "The address you are trying to visit has an invalid
@@ -264,16 +260,23 @@ certificate. By default Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
 could mean that the address you are attempting the access is
 compromised.")
-            (:p "If you trust the address
-nonetheless, you can add an exception for the current hostname with
-=add-domain-to-certificate-whitelist=.  The =certificate-whitelist-mode= must be
-active for the current buffer (which is the default).")
-            (:p "You can persist hostname exceptions in your init
-file, see the =add-domain-to-certificate-whitelist= documentation.")))
+            (:p "If you trust the address nonetheless, you can add an exception
+for the current hostname with the "
+                (:code "add-domain-to-certificate-whitelist")
+                " command.  The "
+                (:code "certificate-whitelist-mode")
+                " must be active for the current buffer (which is the
+default).")
+            (:p "To persist hostname exceptions in your initialization
+file, see the "
+                (:code "add-domain-to-certificate-whitelist")
+                " documentation.")))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript help-buffer insert-help)
-    (set-current-buffer help-buffer)))
+    ;; Set (url buffer) so that the user can simply reload the page after
+    ;; allowing the exception:
+    (setf (url buffer) url)
+    (ffi-buffer-evaluate-javascript buffer insert-help)))
 
 (defun describe-key-dispatch-input (event buffer window printable-p)
   "Display documentation of the value bound to the keys pressed by the user.
