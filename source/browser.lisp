@@ -21,15 +21,17 @@
 (export-always 'expand-path)
 (declaim (ftype (function (data-path) (or string null)) expand-path))
 (defun expand-path (data-path)
-  "Return the expanded path of DATA-PATH.
+  "Return the expanded path of DATA-PATH or nil if there is none.
 `expand-data-path' is dispatched against `data-path' and `*browser*'s
 `data-profile' if `*browser*' is instantiated, `+default-data-profile+'
 otherwise.
 This function can be used on browser-less globals like `*init-file-path*'."
   (the (values (or string null) &optional)
-       (if *browser*
-           (expand-data-path data-path (data-profile *browser*))
-           (expand-data-path data-path +default-data-profile+))))
+       (match (if *browser*
+                  (expand-data-path data-path (data-profile *browser*))
+                  (expand-data-path data-path +default-data-profile+))
+         ("" nil)
+         (m m))))
 
 (defmacro with-data-file ((stream data-path &rest options) &body body)
   "Evaluate BODY with STREAM bound to DATA-PATH.
