@@ -230,6 +230,16 @@ If FILE is \"-\", read from the standard input."
       (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red "Evaluation error:") c)
       (uiop:quit 1))))
 
+(defun parse-urls (expr)
+  "Do _not_ evaluate EXPR and try to open URLs that were send to it.
+EXPR is expected to be as per the expression sent in `bind-socket-or-quit'."
+  (let ((urls (ignore-errors (second (second (read-from-string expr nil))))))
+    (if (and urls (every #'stringp urls))
+        (open-external-urls urls)
+        (progn
+          (log:warn "Could not extract URLs from ~s." expr)
+          nil))))
+
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers.
 This function is suitable as a `browser' `startup-function'."
@@ -255,12 +265,16 @@ This function is suitable as a `browser' `startup-function'."
         (:never-restore (log:info "Not restoring session."))))))
 
 (defun open-external-urls (urls)
+  "Open URLs on the renderer thread and return URLs.
+This is a convenience wrapper to make remote code execution to open URLs as
+short as possible."
   (if urls
       (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
       (log:info "Externally pinged."))
   (ffi-within-renderer-thread
    *browser*
-   (lambda () (open-urls urls))))
+   (lambda () (open-urls urls)))
+  urls)
 
 (defun listen-socket ()
   (let ((socket-path (expand-path *socket-path*)))
@@ -275,15 +289,17 @@ This function is suitable as a `browser' `startup-function'."
         (setf (osicat:file-permissions socket-path) '(:user-read :user-write))
         (loop as connection = (iolib:accept-connection s)
               while connection
-              do (progn (match (alex:read-stream-content-into-string connection)
-                          ((guard expr (not (uiop:emptyp expr)))
-                           (log:info "External evaluation request: ~s" expr)
-                           (eval-expr expr))
-                          (_
-                           (log:info "External process pinged Next.")))
-                        ;; If we get pinged too early, we do not have a current-window yet.
-                        (when (current-window)
-                          (ffi-window-to-foreground (current-window))))))
+              do (progn
+                   (match (alex:read-stream-content-into-string connection)
+                     ((guard expr (not (uiop:emptyp expr)))
+                      (if (remote-execution-p *browser*)
+                          (progn
+                            (log:info "External evaluation request: ~s" expr)
+                            (eval-expr expr))
+                          (parse-urls expr))))
+                   ;; If we get pinged too early, we do not have a current-window yet.
+                   (when (current-window)
+                     (ffi-window-to-foreground (current-window))))))
       (log:info "Listening on socket ~s" socket-path))))
 
 (defun listening-socket-p ()

@@ -402,8 +402,16 @@ BUFFER's modes."
       (on-signal-load-finished mode url))))
 
 (defclass-export browser ()
-  ((data-profile :accessor data-profile
-                 :initarg data-profile
+  ((remote-execution-p :accessor remote-execution-p
+                       :initarg remote-execution-p
+                       :type boolean
+                       :initform nil
+                       :documentation "When non-nil, execute Lisp code that is sent to the socket.
+You must understand the risks before enabling this: a privliged user with access
+to your system can then take control of the browser and execute arbitrary code
+under your user profile.")
+   (data-profile :accessor data-profile
+                 :initarg :data-profile
                  :type data-profile
                  :initform (or (find-data-profile (getf *options* :data-profile))
                                +default-data-profile+)
