@@ -164,17 +164,6 @@ instance of Next."
                  (hash-table-count history))
            (setf (slot-value *browser* 'history-data) history))
 
-          ((guard history (listp history)) ; TODO: Remove this since it's Next 1.x stuff.
-           (let ((new-history (make-hash-table :test #'equal)))
-             (dolist (e history)
-               (if (nth-value 1 (gethash (url e) new-history))
-                   (incf (implicit-visits (gethash (url e) new-history)) (implicit-visits e))
-                   (setf (gethash (url e) new-history) e)))
-             (log:info "Imported 1.3.4 history from ~a entries to ~a entries (~a duplicates)."
-                       (length history)
-                       (hash-table-count new-history)
-                       (- (length history)
-                          (hash-table-count new-history)))
-             (setf (slot-value *browser* 'history-data) new-history)))))
+          (_ (error "Expected (list version history) structure."))))
     (error (c)
       (echo-warning "Failed to restore history from ~a: ~a" (expand-path (history-path *browser*)) c))))
