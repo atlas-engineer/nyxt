@@ -264,6 +264,7 @@ This function is suitable as a `browser' `startup-function'."
          (restore-session))
         (:never-restore (log:info "Not restoring session."))))))
 
+(export-always 'open-external-urls)
 (defun open-external-urls (urls)
   "Open URLs on the renderer thread and return URLs.
 This is a convenience wrapper to make remote code execution to open URLs as
@@ -287,6 +288,9 @@ short as possible."
         ;; We don't want group members or others to flood the socket or, worse,
         ;; execute code.
         (setf (osicat:file-permissions socket-path) '(:user-read :user-write))
+        ;; Since we are in a separate thread, we need to set the default package
+        ;; for remote execution.
+        (in-package :next-user)
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
