@@ -412,14 +412,6 @@ See the `data-path' class and the `expand-path' function.")
                   :documentation "Thread that listens on socket.
 See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
-   (single-instance-p :accessor single-instance-p
-                      :initarg :single-instance-p
-                      :initform t
-                      :type boolean
-                      :documentation "If non-nil, executing Next when a first
-                      instance is already running will bring that instance to
-                      the foreground and query it to load the URLs passed as
-                      command line arguments.")
    (password-interface :accessor password-interface
                        :initform (password:make))
    (messages-content :accessor messages-content :initform nil :type :list
