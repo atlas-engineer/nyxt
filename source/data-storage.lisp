@@ -5,12 +5,14 @@
 ;; DONE: Dir support. TEST!
 ;; TODO: Download manager directory.
 ;; TODO: Video-mode dir.  file-manager-mode.
-;; TODO: Add CLI arguments --profile, --list-profiles, --with-path.
-;; TODO: Move root to `data-path' class?
+;; TODO: Add CLI arguments --profile, --list-profiles.
+;; TODO: Move root to `data-path' class?  Probably more flexible.
+;; TODO: When :socket is implemented, allow multi instance when :socket is nil.
+;; TODO: Read file from stdin.
 
 (defvar *gpg-program* "gpg")
 
-(defclass data-profile ()
+(defclass-export data-profile ()
   ()                                    ; TODO: Add description for the CLI --help?  Or is variable documentation enough?
   (:documentation ""))
 
@@ -24,39 +26,60 @@
              :initform ""
              :documentation "The basename of data-path.
 It can be appended with an extension if necessary.
-When appended with a slash (/), it designates a folder."))
-  (:documentation ""))
+When appended with a slash (/), it designates a folder.")
+   (ref :initarg :ref
+        :accessor ref
+        :type string
+        :initform ""
+        :documentation "The reference name of the data-path.
+This can be used to set the path from command line.  See
+`expand-default-path'.")))
 
-(defclass session-data-path (data-path) ())
-(defclass cookies-data-path (data-path) ())
-(defclass bookmarks-data-path (data-path) ())
-(defclass history-data-path (data-path) ())
-(defclass download-data-path (data-path) ())
+(defclass-export session-data-path (data-path)
+  ((ref :initform "session")))
+(defclass-export cookies-data-path (data-path)
+  ((ref :initform "cookies")))
+(defclass-export bookmarks-data-path (data-path)
+  ((ref :initform "bookmarks")))
+(defclass-export history-data-path (data-path)
+  ((ref :initform "history")))
+(defclass-export download-data-path (data-path) ; TODO: Rename to downloads-data-path?
+  ((ref :initform "download")))
 
 (defvar +data-root+ "next")
+
+(defun find-ref-path (ref)
+  (second
+   (assoc ref
+          (loop for (opt value . _) on *options*
+                when (eq opt :with-path)
+                  collect value)
+          :test #'string=)))
 
 (declaim (ftype (function (data-path &key (:root trivial-types:pathname-designator))
                           (or string null))
                 expand-default-path))
 (defun expand-default-path (path &key (root (uiop:xdg-data-home +data-root+)))
   "Derive file from command line option or NAME.
+If PATH `ref' is specified in the `:with-path' command line option, use it in
+place of PATH `basename'.
 When PATH has no basename, return ROOT.  This is useful to refer to directories.
 If NAME has a slash, return NAME.
 Without slash, NAME is expanded to 'ROOT/NAME.lisp' or 'ROOT/NAME' is NAME
 already contains a period."
-  ;; TODO: Get command line option.
-  ;; (setf name (or (getf *options* :with-path ...) name))
-  (with-slots (basename) path
+  (let ((name (match (find-ref-path (ref path))
+                (nil (basename path))
+                (m m))))
     (cond
-      ((uiop:emptyp basename)
+      ((uiop:emptyp name)
        root)
-      ((search "/" basename)
-       basename)
+      ((search "/" name)
+       name)
       (t
-       (let ((name (str:concat (namestring root) "/" basename)))
-         (unless (search "." basename)
-           (setf name (str:concat name ".lisp")))
-         name)))))
+       (let ((fullname (str:concat (namestring root) "/" name)))
+         (unless (search "." name)
+           (setf fullname (str:concat fullname ".lisp")))
+         fullname)))))
 
 (defmethod expand-data-path ((path data-path) (profile data-profile))
   "Return finalized path.
