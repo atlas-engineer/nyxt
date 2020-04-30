@@ -492,9 +492,10 @@ keyword is not recognized.")
               :documentation "List of downloads.")
    (download-watcher :accessor download-watcher :initform nil
                      :documentation "List of downloads.")
-   (download-directory :accessor download-directory
+   (download-directory :accessor download-directory ; TODO: Rename to downloads-path?
                        :type data-path
-                       :initform (make-instance 'download-data-path :basename "Downloads/")
+                       :initform (make-instance 'download-data-path
+                                                :dirname (xdg-download-dir))
                        :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.")
    (startup-timestamp :initarg :startup-timestamp :accessor startup-timestamp
@@ -548,7 +549,9 @@ The function which restores the bookmarks from `bookmarks-path'.")
    (session-path :initarg :session-path
                  :accessor session-path
                  :type data-path
-                 :initform (make-instance 'session-data-path :basename "default")
+                 :initform (make-instance 'session-data-path
+                                          :basename "default"
+                                          :dirname (uiop:xdg-data-home +data-root+ "sessions"))
                  :documentation "
 The path where the system will create/save the session.")
    (session-store-function :accessor session-store-function

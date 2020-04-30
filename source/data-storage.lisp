@@ -1,12 +1,9 @@
 (in-package :next)
 
 ;; TODO: Make this a separate library?
-;; DONE: Test order of combinations with (sub-data-path, sub-profile) when only cross methods exist.  Left-most specific specializer has precedence.
-;; DONE: Dir support. TEST!
 ;; TODO: Download manager directory.
 ;; TODO: Video-mode dir.  file-manager-mode.
 ;; TODO: Add CLI arguments --profile, --list-profiles.
-;; TODO: Move root to `data-path' class?  Probably more flexible.
 ;; TODO: When :socket is implemented, allow multi instance when :socket is nil.
 ;; TODO: Read file from stdin.
 
@@ -20,13 +17,18 @@
 (defvar +private-data-profile+ (make-instance 'data-profile))
 
 (defclass-export data-path ()
-  ((basename :initarg :basename
+  ((dirname :initarg :dirname
+            :accessor dirname
+            :type string
+            :initform (uiop:xdg-data-home +data-root+)
+            :documentation "The directory of `basename'.")
+   (basename :initarg :basename
              :accessor basename
              :type string
              :initform ""
              :documentation "The basename of data-path.
 It can be appended with an extension if necessary.
-When appended with a slash (/), it designates a folder.")
+When omitted, data-path designates a directory.")
    (ref :initarg :ref
         :accessor ref
         :type string
@@ -56,27 +58,26 @@ This can be used to set the path from command line.  See
                   collect value)
           :test #'string=)))
 
-(declaim (ftype (function (data-path &key (:root trivial-types:pathname-designator))
-                          (or string null))
-                expand-default-path))
-(defun expand-default-path (path &key (root (uiop:xdg-data-home +data-root+)))
-  "Derive file from command line option or NAME.
+(declaim (ftype (function (data-path) (or string null)) expand-default-path))
+(defun expand-default-path (path)
+  "Derive file from command line option or PATH.
 If PATH `ref' is specified in the `:with-path' command line option, use it in
 place of PATH `basename'.
-When PATH has no basename, return ROOT.  This is useful to refer to directories.
-If NAME has a slash, return NAME.
-Without slash, NAME is expanded to 'ROOT/NAME.lisp' or 'ROOT/NAME' is NAME
-already contains a period."
+- When PATH has no basename, return its directory.  This is useful to refer to
+  directories.
+- If basename has a slash, return basename.
+- Otherwise expand to 'directory/basname.lisp' or 'directory/basname.lisp' is
+  basename already contains a period."
   (let ((name (match (find-ref-path (ref path))
                 (nil (basename path))
                 (m m))))
     (cond
       ((uiop:emptyp name)
-       root)
+       (namestring (dirname path)))
       ((search "/" name)
-       name)
+       (namestring name))
       (t
-       (let ((fullname (str:concat (namestring root) "/" name)))
+       (let ((fullname (str:concat (namestring (dirname path)) "/" (namestring name))))
          (unless (search "." name)
            (setf fullname (str:concat fullname ".lisp")))
          fullname)))))
@@ -87,9 +88,6 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
-(defmethod expand-data-path ((path session-data-path) (profile data-profile))
-  (expand-default-path path :root (uiop:xdg-data-home +data-root+ "sessions")))
-
 (defun xdg-download-dir ()
   (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")
                                               :output '(:string :stripped t)))))
@@ -98,13 +96,8 @@ function result as a boolean in conditions."
     (unless dir
       (setf dir (str:concat (uiop:getenv "HOME") "/Downloads/")))))
 
-(defmethod expand-data-path ((path download-data-path) (profile data-profile))
-  ;; TODO: Move default-download-directory to here?
-  (expand-default-path path :root (xdg-download-dir)))
-
 (defmethod expand-data-path ((path data-path) (profile (eql +private-data-profile+)))
   "Don't persist anything in private mode."
-  ;; (eql (bookmarks-path *browser*)) won't work because *browser* is not instantiated.
   nil)
 
 (declaim (ftype (function (trivial-types:pathname-designator) trivial-types:pathname-designator)

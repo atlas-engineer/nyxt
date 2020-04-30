@@ -3,7 +3,9 @@
 (in-package :next)
 
 (export-always '*init-file-path*)
-(defvar *init-file-path* (make-instance 'data-path :basename "init")
+(defvar *init-file-path* (make-instance 'data-path
+                                        :basename "init"
+                                        :dirname (uiop:xdg-config-home +data-root+))
   "The path of the initialization file.")
 
 (export-always '*socket-path*)
@@ -15,18 +17,17 @@ This path cannot be set from the init file because we want to be able to set and
 use the socket without parsing any init file.")
 
 (defmethod expand-data-path ((path (eql *init-file-path*)) (profile data-profile))
-  "Return path of the init-fil."
+  "Return path of the init file."
   (cond
     ((getf *options* :no-init)
      nil)
     (t (match (getf *options* :init)
          ("-" "-")
-         (nil
-          (expand-default-path path
-                               :root (uiop:xdg-config-home +data-root+)))
-         (path
-          (expand-default-path (make-instance 'init-file-data-path :basename path)
-                               :root (uiop:xdg-config-home +data-root+)))))))
+         (nil (expand-default-path path))
+         (new-path
+          (expand-default-path (make-instance 'init-file-data-path
+                                              :basename new-path
+                                              :dirname (directory path))))))))
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
