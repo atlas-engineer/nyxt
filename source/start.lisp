@@ -294,9 +294,6 @@ This function is suitable as a `browser' `startup-function'."
 Otherwise bind socket."
   (let ((socket-path (expand-path *socket-path*)))
     (cond
-      ((and (uiop:file-exists-p socket-path)
-            (not (eq :socket (osicat:file-kind socket-path))))
-       (log:error "Could not bind socket ~a, non-socket file exists." socket-path))
       ((listening-socket-p)
        (progn
          (if urls
@@ -306,6 +303,9 @@ Otherwise bind socket."
                                     :remote-filename socket-path)
            (format s "~s" `(open-external-urls ',urls)))
          (uiop:quit)))
+      ((and (uiop:file-exists-p socket-path)
+            (not (eq :socket (osicat:file-kind socket-path))))
+       (log:error "Could not bind socket ~a, non-socket file exists." socket-path))
       (t (progn
            (log:info "Listening to socket ~s." socket-path)
            (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
