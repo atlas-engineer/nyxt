@@ -404,7 +404,8 @@ BUFFER's modes."
   ((data-profile :accessor data-profile
                  :initarg data-profile
                  :type data-profile
-                 :initform +default-data-profile+
+                 :initform (or (find-profile (getf *options* :profile))
+                               +default-data-profile+)
                  :documentation "Profile to use for all persisted files.
 See the `data-path' class and the `expand-path' function.")
    (socket-thread :accessor socket-thread
