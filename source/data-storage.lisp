@@ -1,9 +1,6 @@
 (in-package :next)
 
 ;; TODO: Make this a separate library?
-;; TODO: Download manager directory.
-;; TODO: Video-mode dir.  file-manager-mode.
-;; TODO: Read file from stdin.
 
 (defvar +data-root+ "next")
 
