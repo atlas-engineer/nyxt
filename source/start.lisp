@@ -63,9 +63,10 @@ Set to '-' to read standard input instead.")
   (when (socket-thread *browser*)
     (ignore-errors
      (bt:destroy-thread (socket-thread *browser*))))
-  (when (uiop:file-exists-p (expand-path *socket-path*))
-    (log:info "Deleting socket ~a" (expand-path *socket-path*))
-    (uiop:delete-file-if-exists (expand-path *socket-path*)))
+  (let ((socket-path (expand-path *socket-path*)))
+    (when (uiop:file-exists-p )
+      (log:info "Deleting socket ~a" socket-path)
+      (uiop:delete-file-if-exists socket-path)))
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
@@ -199,23 +200,24 @@ This function is suitable as a `browser' `startup-function'."
    (lambda () (open-urls urls))))
 
 (defun listen-socket ()
-  (ensure-parent-exists (expand-path *socket-path*))
-  ;; TODO: Catch error against race conditions?
-  (iolib:with-open-socket (s :address-family :local
-                             :connect :passive
-                             :local-filename (expand-path *socket-path*))
-    (loop as connection = (iolib:accept-connection s)
-          while connection
-          do (progn (match (alex:read-stream-content-into-string connection)
-                      ((guard expr (not (uiop:emptyp expr)))
-                       (log:info "External evaluation request: ~s" expr)
-                       (eval-expr expr))
-                      (_
-                       (log:info "External process pinged Next.")))
-                    ;; If we get pinged too early, we do not have a current-window yet.
-                    (when (current-window)
-                     (ffi-window-to-foreground (current-window))))))
-  (log:info "Listening on socket ~s" (expand-path *socket-path*)))
+  (let ((socket-path (expand-path *socket-path*)))
+    (ensure-parent-exists socket-path)
+    ;; TODO: Catch error against race conditions?
+    (iolib:with-open-socket (s :address-family :local
+                               :connect :passive
+                               :local-filename socket-path)
+      (loop as connection = (iolib:accept-connection s)
+            while connection
+            do (progn (match (alex:read-stream-content-into-string connection)
+                        ((guard expr (not (uiop:emptyp expr)))
+                         (log:info "External evaluation request: ~s" expr)
+                         (eval-expr expr))
+                        (_
+                         (log:info "External process pinged Next.")))
+                      ;; If we get pinged too early, we do not have a current-window yet.
+                      (when (current-window)
+                        (ffi-window-to-foreground (current-window))))))
+    (log:info "Listening on socket ~s" socket-path)))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -226,18 +228,19 @@ This function is suitable as a `browser' `startup-function'."
 (defun bind-socket-or-quit (urls)
   "If another Next is listening on the socket, tell it to open URLS.
 Otherwise bind socket."
-  (if (listening-socket-p)
-      (progn
-        (if urls
-            (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
-            (log:info "Next already started." urls))
-        (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (expand-path *socket-path*))
-          (format s "~s" `(open-external-urls ',urls)))
-        (uiop:quit))
-      (progn
-        (uiop:delete-file-if-exists (expand-path *socket-path*))
-        (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))
+  (let ((socket-path (expand-path *socket-path*)))
+    (if (listening-socket-p)
+        (progn
+          (if urls
+              (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
+              (log:info "Next already started." urls))
+          (iolib:with-open-socket (s :address-family :local
+                                     :remote-filename socket-path)
+            (format s "~s" `(open-external-urls ',urls)))
+          (uiop:quit))
+        (progn
+          (uiop:delete-file-if-exists socket-path)
+          (setf (socket-thread *browser*) (bt:make-thread #'listen-socket))))))
 
 (defun remote-eval (expr)
   "If another Next is listening on the socket, tell it to evaluate EXPR."
