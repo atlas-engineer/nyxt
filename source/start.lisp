@@ -249,7 +249,7 @@ This function is suitable as a `browser' `startup-function'."
         (window-set-active-buffer window buffer)))
   (when (startup-error-reporter-function *browser*)
     (funcall-safely (startup-error-reporter-function *browser*)))
-  (unless (expand-path (session-path *browser*))
+  (when (expand-path (session-path *browser*))
     (flet ((restore-session ()
              (when (and (session-restore-function *browser*)
                         (uiop:file-exists-p (expand-path (session-path *browser*))))
