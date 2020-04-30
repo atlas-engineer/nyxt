@@ -104,11 +104,12 @@ lot."
 This can be useful to, say, prefix the history with the current URL.  At the
 moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
-  (let ((history (sort (alex:hash-table-values
-                        (history-data *browser*))
-                       (lambda (x y)
-                         (> (score-history-entry x)
-                            (score-history-entry y)))))
+  (let ((history (when (history-data *browser*)
+                   (sort (alex:hash-table-values
+                          (history-data *browser*))
+                         (lambda (x y)
+                           (> (score-history-entry x)
+                              (score-history-entry y))))))
         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
       (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
@@ -155,6 +156,7 @@ instance of Next."
                         (in-package :next)
                         (s-serialization:deserialize-sexp file))))))
         (match data
+          (nil nil)
           ((guard (list version history)
                   (hash-table-p history))
            (unless (string= version +version+)
@@ -163,7 +165,6 @@ instance of Next."
            (echo "Loading global history of ~a URLs."
                  (hash-table-count history))
            (setf (slot-value *browser* 'history-data) history))
-
           (_ (error "Expected (list version history) structure."))))
     (error (c)
       (echo-warning "Failed to restore history from ~a: ~a" (expand-path (history-path *browser*)) c))))
