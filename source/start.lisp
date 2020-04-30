@@ -183,14 +183,14 @@ If FILE is \"-\", read from the standard input."
              (cond
                ((and (not (streamp file)) (string= (pathname-name file) "-"))
                 (progn
-                  (format t "Loading Lisp from standard input...")
+                  (log:info "Loading Lisp from standard input.")
                   (loop for object = (read *standard-input* nil :eof)
                         until (eq object :eof)
                         do (eval object))))
                ((streamp file)
                 (load file))
                ((uiop:file-exists-p file)
-                (format t "~&Loading Lisp file ~s...~&" file)
+                (log:info "Loading Lisp file ~s." file)
                 (load file)))))
       (if *keep-alive*
           (safe-load)
@@ -328,10 +328,18 @@ REPL examples:
 - Display version and return immediately:
   (next:start '(:version t))
 
-- Start the browser and open the given URLs.
-  (next:start nil \"https://next.atlas.engineer\" \"https://en.wikipedia.org\")"
+- Start the browser with increased verbosity, a different history data path and
+  open the given URLs.
+  (next:start '(:verbose t :with-path (\"history\" \"/tmp/next/history.lisp\"))
+              \"https://next.atlas.engineer\" \"https://en.wikipedia.org\")"
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
+
+  (if (getf *options* :verbose)
+      (progn
+        (log:config :debug)
+        (format t "Arguments parsed: ~a and ~a~&" *options* free-args))
+      (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
   (cond
     ((getf options :help)
@@ -390,11 +398,6 @@ Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (format t "Next version ~a~&" +version+)
-    (if (getf *options* :verbose)
-        (progn
-          (log:config :debug)
-          (format t "Arguments parsed: ~a and ~a~&" *options* free-args))
-        (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
     (unless (or (getf *options* :no-init)
                 (not (expand-path *init-file-path*)))
@@ -407,6 +410,7 @@ Finally,run the `*after-init-hook*'."
     (setf *browser* (make-instance *browser-class*
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
+    (log:info "Using profile ~s." (name (data-profile *browser*)))
     (when (expand-path *socket-path*)
       (bind-socket-or-quit free-args))
     (ffi-initialize *browser* free-args startup-timestamp)))
