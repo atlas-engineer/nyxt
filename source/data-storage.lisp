@@ -162,30 +162,32 @@ Other options are not supported.  File is overwritten if it exists, while
 nothing is done if file is missing."
   ;; TODO: Support all of `open' options.
   (alex:with-gensyms (recipient in s clear-data)
-    `(let ((,recipient (gpg-recipient ,gpg-file)))
-       (flet ((gpg-write (,s)
-                (uiop:run-program
-                 (list *gpg-program* "--output" ',gpg-file "--recipient" ,recipient
-                       "--encrypt")
-                 :input ,s)))
-         (if ,recipient
-             ;; TODO: Ask for recipient manually.
-             (warn "Please set `*gpg-default-recipient*'.")
-             ,(if (match (getf options :direction)
-                    ((or :io :input nil) t))
-                  `(when (uiop:file-exists-p ,gpg-file)
-                     (let ((,clear-data (with-output-to-string (out)
-                                          (uiop:run-program
-                                           (list *gpg-program* "--decrypt" ,gpg-file)
-                                           :output out))))
-                       (with-input-from-string (,stream ,clear-data)
-                         ,@body
-                         ,(unless (eq (getf options :direction) :io)
-                            `(gpg-write ,stream)))))
-                  `(with-input-from-string (,in (with-output-to-string (,stream)
-                                                  (progn
-                                                    ,@body)))
-                     (gpg-write ,in))))))))
+    `(flet ((gpg-write (,s)
+              (let ((,recipient (gpg-recipient ,gpg-file)))
+                (if ,recipient
+                    (uiop:run-program
+                     (list *gpg-program* "--output" ',gpg-file "--recipient" ,recipient
+                           "--batch" "--yes" "--encrypt")
+                     :input ,s)
+                    ;; TODO: Ask for recipient manually.
+                    (warn "Please set `*gpg-default-recipient*'.")))))
+       ,(if (match (getf options :direction)
+              ((or :io :input nil) t))
+            `(when (uiop:file-exists-p ,gpg-file)
+               (let ((,clear-data (with-output-to-string (out)
+                                    (uiop:run-program
+                                     (list *gpg-program* "--decrypt" ,gpg-file)
+                                     :output out))))
+                 (with-input-from-string (,stream ,clear-data)
+                   (prog1
+                       (progn
+                         ,@body)
+                     ,(when (eq (getf options :direction) :io)
+                        `(gpg-write ,stream))))))
+            `(with-input-from-string (,in (with-output-to-string (,stream)
+                                            (progn
+                                              ,@body)))
+               (gpg-write ,in))))))
 
 (defmacro with-maybe-gpg-file ((stream filespec &rest options) &body body)
   "Evaluate BODY with STREAM bound to DATA-PATH.
