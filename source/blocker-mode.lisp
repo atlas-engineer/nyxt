@@ -8,7 +8,7 @@
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
-(defclass hostlist-data-path (next:data-path) ())
+(defclass hostlist-data-path (data-path) ())
 
 (defclass-export hostlist ()
   ((url :accessor url :initarg :url
