@@ -118,7 +118,10 @@ function result as a boolean in conditions."
     (when (or (null dir) (string= dir (uiop:getenv "HOME")))
       (setf dir (uiop:getenv "XDG_DOWNLOAD_DIR")))
     (unless dir
-      (setf dir (str:concat (uiop:getenv "HOME") "/Downloads/")))))
+      (setf dir (str:concat (uiop:getenv "HOME") "/Downloads/")))
+    (unless (str:ends-with? "/" dir)
+      (setf dir (str:concat dir "/")))
+    dir))
 
 (defmethod expand-data-path ((path data-path) (profile (eql +private-data-profile+)))
   "Don't persist anything in private mode."
