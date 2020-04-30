@@ -35,7 +35,7 @@ use the socket without parsing any init file.")
      nil)
     (t (expand-default-path
         (make-instance 'data-path
-                       :basename (or (getf *options* :socket) (getf *options* :socket))
+                       :basename (or (getf *options* :socket) (basename path))
                        ;; Recompute `dirname' since default value is evaluated
                        ;; at compile-time.
                        :dirname (uiop:xdg-data-home +data-root+))))))
@@ -127,11 +127,13 @@ Example: --with-path bookmarks=/path/to/bookmarks"))
   (ffi-kill-browser *browser*)
   (when (socket-thread *browser*)
     (ignore-errors
-     (bt:destroy-thread (socket-thread *browser*))))
-  (let ((socket-path (expand-path *socket-path*)))
-    (when (uiop:file-exists-p socket-path)
-      (log:info "Deleting socket ~a" socket-path)
-      (uiop:delete-file-if-exists socket-path)))
+     (bt:destroy-thread (socket-thread *browser*)))
+    ;; Warning: Don't attempt to remove socket-path if socket-thread was not
+    ;; running or we risk remove an unrelated file.
+    (let ((socket-path (expand-path *socket-path*)))
+      (when (uiop:file-exists-p socket-path)
+        (log:info "Deleting socket ~a" socket-path)
+        (uiop:delete-file-if-exists socket-path))))
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
@@ -291,18 +293,23 @@ This function is suitable as a `browser' `startup-function'."
   "If another Next is listening on the socket, tell it to open URLS.
 Otherwise bind socket."
   (let ((socket-path (expand-path *socket-path*)))
-    (if (listening-socket-p)
-        (progn
-          (if urls
-              (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
-              (log:info "Next already started." urls))
-          (iolib:with-open-socket (s :address-family :local
-                                     :remote-filename socket-path)
-            (format s "~s" `(open-external-urls ',urls)))
-          (uiop:quit))
-        (progn
-          (uiop:delete-file-if-exists socket-path)
-          (setf (socket-thread *browser*) (bt:make-thread #'listen-socket))))))
+    (cond
+      ((and (uiop:file-exists-p socket-path)
+            (not (eq :socket (osicat:file-kind socket-path))))
+       (log:error "Could not bind socket ~a, non-socket file exists." socket-path))
+      ((listening-socket-p)
+       (progn
+         (if urls
+             (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
+             (log:info "Next already started."))
+         (iolib:with-open-socket (s :address-family :local
+                                    :remote-filename socket-path)
+           (format s "~s" `(open-external-urls ',urls)))
+         (uiop:quit)))
+      (t (progn
+           (log:info "Listening to socket ~s." socket-path)
+           (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
+           (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))))
 
 (defun remote-eval (expr)
   "If another Next is listening on the socket, tell it to evaluate EXPR."

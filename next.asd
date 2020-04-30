@@ -22,6 +22,7 @@
                :log4cl
                :lparallel
                :mk-string-metrics
+               :osicat
                :parenscript
                :quri
                :serapeum
