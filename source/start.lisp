@@ -227,8 +227,7 @@ If FILE is \"-\", read from the standard input."
                       do (setf result (eval object))
                       finally (return result))))
     (error (c)
-      (format *error-output* "~%~a~&~a~&" (cl-ansi-text:red "Evaluation error:") c)
-      (uiop:quit 1))))
+      (log:error "Evaluation error:~&~a" c))))
 
 (defun parse-urls (expr)
   "Do _not_ evaluate EXPR and try to open URLs that were send to it.

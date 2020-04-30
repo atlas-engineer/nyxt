@@ -5,7 +5,6 @@
   :serial t
   :depends-on (:alexandria
                :bordeaux-threads
-               :cl-ansi-text
                :cl-css
                :cl-json
                :cl-markup
