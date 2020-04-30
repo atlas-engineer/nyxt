@@ -184,10 +184,11 @@ nothing is done if file is missing."
                          ,@body)
                      ,(when (eq (getf options :direction) :io)
                         `(gpg-write ,stream))))))
-            `(with-input-from-string (,in (with-output-to-string (,stream)
-                                            (progn
-                                              ,@body)))
-               (gpg-write ,in))))))
+            `(let ((result nil))
+               (with-input-from-string (,in (with-output-to-string (,stream)
+                                              (setf result (progn ,@body))))
+                 (gpg-write ,in))
+               result)))))
 
 (defmacro with-maybe-gpg-file ((stream filespec &rest options) &body body)
   "Evaluate BODY with STREAM bound to DATA-PATH.
