@@ -16,7 +16,6 @@
                :dexador
                :enchant
                :iolib
-               :ironclad
                :local-time
                :log4cl
                :lparallel
