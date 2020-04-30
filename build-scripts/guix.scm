@@ -13,8 +13,6 @@
 ;;
 ;;   guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs -l guix.scm -- env DISPLAY="$DISPLAY" next
 ;;
-;; Warning: The above may fail to accept TLS certificates.
-;;
 ;;; Code:
 
 (use-modules (ice-9 match)
@@ -183,6 +181,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("lparallel" ,sbcl-lparallel)
        ("mk-string-metrics" ,sbcl-mk-string-metrics)
        ("moptilities" ,sbcl-moptilities)
+       ("osicat" ,next-osicat)
        ("parenscript" ,sbcl-parenscript)
        ("plump" ,sbcl-plump)
        ("quri" ,sbcl-quri)
