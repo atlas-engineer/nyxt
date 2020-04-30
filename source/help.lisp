@@ -216,7 +216,10 @@ A command is a special kind of function that can be called with
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
-  (let* ((help-contents
+  (let* ((help-buffer (next/help-mode:help-mode
+                       :activate t
+                       :buffer (make-buffer :title "TLS Error")))
+         (help-contents
            (markup:markup
             (:h1 (format nil "TLS Certificate Error: ~a" url))
             (:p "The address you are trying to visit has an invalid
@@ -232,7 +235,8 @@ active for the current buffer (which is the default).")
 file, see the =add-domain-to-certificate-whitelist= documentation.")))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript buffer insert-help)))
+    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (set-current-buffer help-buffer)))
 
 (defun describe-key-dispatch-input (event buffer window printable-p)
   "Display bound value documentation.
