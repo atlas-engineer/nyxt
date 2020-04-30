@@ -9,24 +9,26 @@
 
 (defvar *gpg-program* "gpg")
 
-(defclass-export data-profile () ())
+(defclass-export data-profile ()
+  ((name :initarg :name
+         :accessor name
+         :type string
+         :initform ""
+         :documentation "The name of the profile to refer it with.")))
 
 (export-always '+default-data-profile+)
-(defvar +default-data-profile+ (make-instance 'data-profile)
+(defvar +default-data-profile+ (make-instance 'data-profile :name "default")
   "With the default profile all data is persisted to the standard locations.")
 
 (export-always '+private-data-profile+)
-(defvar +private-data-profile+ (make-instance 'data-profile)
+(defvar +private-data-profile+ (make-instance 'data-profile :name "private")
   "With the private profile no data should be persisted to disk.")
 
 (defun package-data-profiles ()
-  "Return the list of data profiles a (VARIABLE NAME DOCSTRING) tuples.
-The NAME is the the variable trimmed of '+' and '-data-profile'."
+  "Return the list of data profiles a (DATA-PROFILE NAME DOCSTRING) tuples."
   (sort (mapcar (lambda (profile)
                   (list (symbol-value profile)
-                        (string-downcase
-                         (str:replace-all "-DATA-PROFILE" ""
-                                          (str:replace-all "+" "" (string profile))))
+                        (name (symbol-value profile))
                         (documentation profile 'variable)))
                 (delete-if (lambda (sym)
                              (not (ignore-errors
