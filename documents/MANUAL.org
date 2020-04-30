@@ -306,7 +306,7 @@ erasing your history, Next offers smart navigation and prompts the
 user. Do you wish to go forwards to ~Ancient Greek~ or to
 ~Classical Athens~?
 
-The standard keybindings for forward-backward navigation are:
+The standard commands for forward-backward navigation are:
 
 - =history-forwards=, =history-backwards=
 - =history-forwards-query=, =history-backwards-query=: Jump to any of the
@@ -327,7 +327,7 @@ invoking =buffer-history-tree=.
 
 ** Bookmarks
 
-In order to navigate and manage your bookmarks, a few functions are
+In order to navigate and manage your bookmarks, a few commands are
 provided:
 
 - =bookmark-current-page=
