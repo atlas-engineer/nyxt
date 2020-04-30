@@ -160,10 +160,11 @@ instance of Next."
           ((guard (list version history)
                   (hash-table-p history))
            (unless (string= version +version+)
-             (log:warn "Session version ~s differs from current version ~s"
+             (log:warn "History version ~s differs from current version ~s"
                        version +version+))
-           (echo "Loading global history of ~a URLs."
-                 (hash-table-count history))
+           (echo "Loading global history of ~a URLs from ~s."
+                 (hash-table-count history)
+                 (expand-path (history-path *browser*)))
            (setf (slot-value *browser* 'history-data) history))
           (_ (error "Expected (list version history) structure."))))
     (error (c)

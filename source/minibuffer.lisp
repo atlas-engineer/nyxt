@@ -784,7 +784,7 @@ Untrusted content should be given as argument with a format string."
         ;; We might still want to echo the empty string to clear the echo area.
         (%echo-status text)
         (unless (str:emptyp text)
-          (log:info "~s" text)))
+          (log:info "~a" text)))
     (error ()
       (log:warn "Failed to echo these args: ~s
 Possible improvements:

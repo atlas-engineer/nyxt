@@ -253,7 +253,7 @@ This function is suitable as a `browser' `startup-function'."
     (flet ((restore-session ()
              (when (and (session-restore-function *browser*)
                         (uiop:file-exists-p (expand-path (session-path *browser*))))
-               (log:info "Restoring session '~a'" (expand-path (session-path *browser*)))
+               (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
                (funcall (session-restore-function *browser*)))))
       (match (session-restore-prompt *browser*)
         (:always-ask
@@ -438,7 +438,7 @@ Finally,run the `*after-init-hook*'."
     (setf *browser* (make-instance *browser-class*
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
-    (log:info "Using profile ~s." (name (data-profile *browser*)))
+    (log:info "Using data profile ~s." (name (data-profile *browser*)))
     (when (expand-path *socket-path*)
       (bind-socket-or-quit free-args))
     (ffi-initialize *browser* free-args startup-timestamp)))

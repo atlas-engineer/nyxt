@@ -32,6 +32,7 @@ Currently we store the list of current URLs of all buffers."
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
+    (log:info "Saving session to ~s." (expand-path (session-path *browser*)))
     ;; We READ the output of serialize-sexp to make it more human-readable.
     (let ((*package* *package*))
       ;; We need to make sure current package is :next so that
@@ -57,10 +58,10 @@ Currently we store the list of current URLs of all buffers."
                    (s-serialization:deserialize-sexp input))))
         ((list version buffer-histories)
          (unless (string= version +version+)
-           (log:warn "Session version ~s differs from current version ~s" version +version+))
+           (log:warn "Session version ~s differs from current version ~s." version +version+))
          (setf buffer-histories (delete-if-not #'htree:current buffer-histories))
          (when buffer-histories
-           (log:info "Restoring ~a"
+           (log:info "Restoring ~a."
                      (mapcar #'object-string (mapcar (alex:compose #'htree:data #'htree:current)
                                                      buffer-histories)))
            ;; Delete the old buffers?

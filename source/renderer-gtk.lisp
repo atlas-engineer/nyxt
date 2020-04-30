@@ -428,7 +428,7 @@ Warning: This behaviour may change in the future."
     (cond ((eq load-event :webkit-load-started)
            (setf (slot-value buffer 'load-status) :loading)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Loading: ~a." (quri:url-decode (url buffer))))
+           (echo "Loading ~s." (quri:url-decode (url buffer))))
           ((eq load-event :webkit-load-redirected) nil)
           ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
@@ -437,7 +437,7 @@ Warning: This behaviour may change in the future."
            (setf (slot-value buffer 'load-status) :finished)
            (on-signal-load-finished buffer url)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Finished loading: ~a." (quri:url-decode (url buffer)))))))
+           (echo "Finished loading ~s." (quri:url-decode (url buffer)))))))
 
 (defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
