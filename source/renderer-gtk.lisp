@@ -516,7 +516,8 @@ Warning: This behaviour may change in the future."
    (lambda (web-view failing-uri certificate errors)
      (declare (ignore web-view errors))
      ;; TODO: Add hint on how to accept certificate to the HTML content.
-     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)))
+     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)
+     (tls-help buffer failing-uri)))
   (gobject:g-signal-connect
    (gtk-object buffer) "notify::uri"
    (lambda (web-view param-spec)
