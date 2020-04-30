@@ -2,6 +2,32 @@
 
 (in-package :next)
 
+(export-always '*init-file-path*)
+(defvar *init-file-path* (make-instance 'data-path :basename "init")
+  "The path of the initialization file.")
+
+(export-always '*socket-path*)
+(defvar *socket-path* (make-instance 'data-path :basename "next.socket")
+  "Path string of the Unix socket used to communicate between different
+instances of Next.
+
+This path cannot be set from the init file because we want to be able to set and
+use the socket without parsing any init file.")
+
+(defmethod expand-data-path ((path (eql *init-file-path*)) (profile data-profile))
+  "Return path of the init-fil."
+  (cond
+    ((getf *options* :no-init)
+     nil)
+    (t (match (getf *options* :init)
+         ("-" "-")
+         (nil
+          (expand-default-path path
+                               :root (uiop:xdg-config-home +data-root+)))
+         (path
+          (expand-default-path (make-instance 'init-file-data-path :basename path)
+                               :root (uiop:xdg-config-home +data-root+)))))))
+
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
@@ -48,7 +74,13 @@ Set to '-' to read standard input instead.")
     (:name :remote
            :short #\r
            :long "remote"
-           :description "Send the --eval and --load arguments to the running instance of Next."))
+           :description "Send the --eval and --load arguments to the running instance of Next.")
+    (:name :with-path
+           :long "with-path"
+           :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
+           :description "Set data path reference to the given path.
+Can be specified multiple times.
+Example: --with-path bookmarks=/path/to/bookmarks"))
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
@@ -144,10 +176,6 @@ If FILE is \"-\", read from the standard input."
                                   :input-prompt "Load file"
                                   :show-completion-count nil)))
     (load-lisp file-name-input)))
-
-(defmethod expand-data-path ((path (eql *init-file-path*)) (profile data-profile))
-  "Return path of the init-fil."
-  (expand-default-path path :root (uiop:xdg-config-home +data-root+)))
 
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
