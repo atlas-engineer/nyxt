@@ -74,11 +74,12 @@ Set to '-' to read standard input instead.")
            :short #\s
            :long "socket"
            :arg-parser #'identity
-           :description "Set path to socket of a remote instance or start in single-instance mode.")
+           :description "Set path to socket.
+Unless evaluating remotely (see --remote), Next starts in single-instance mode a socket is set.")
     (:name :no-socket
            :short #\S
            :long "no-socket"
-           :description "Do not use any socket and start in multi-instance mode.")
+           :description "Do not use any socket.")
     (:name :eval
            :short #\e
            :long "eval"
@@ -92,11 +93,22 @@ Set to '-' to read standard input instead.")
     (:name :script
            :long "script"
            :arg-parser #'identity
-           :description "Load the Lisp file (skip #! line if any), skip init file, then quit.")
+           :description "Load the Lisp file (skip #! line if any), skip init file, then exit.")
     (:name :remote
            :short #\r
            :long "remote"
-           :description "Send the --eval and --load arguments to the running instance of Next.")
+           :description "Send the --eval and --load arguments to the running instance of Next.
+The remote instance must be listening on a socket which you can specify with --socket.")
+    (:name :profile
+           :short #\p
+           :long "profile"
+           :arg-parser #'identity
+           :description "Use the given data profile.
+A profile is an exported variable that evaluate to a subclass of `data-profile'.")
+    (:name :list-profiles
+           :long "list-profiles"
+           :description "List the known data profiles and exit.
+A profile is an exported variable that evaluate to a subclass of `data-profile'.")
     (:name :with-path
            :long "with-path"
            :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
@@ -329,6 +341,14 @@ next [options] [urls]"))
 
     ((getf options :version)
      (format t "Next version ~a~&" +version+))
+
+    ((getf options :list-profiles)
+     (unless (or (getf *options* :no-init)
+                 (not (expand-path *init-file-path*)))
+       (load-lisp (expand-path *init-file-path*) :package (find-package :next-user)))
+     (mapcar (lambda (pair)
+               (format t "~a~10t~a~&" (first pair) (second pair)))
+             (mapcar #'rest (package-data-profiles))))
 
     ((getf options :script)
      (with-open-file (f (getf options :script) :element-type :default)

@@ -3,17 +3,42 @@
 ;; TODO: Make this a separate library?
 ;; TODO: Download manager directory.
 ;; TODO: Video-mode dir.  file-manager-mode.
-;; TODO: Add CLI arguments --profile, --list-profiles.
 ;; TODO: Read file from stdin.
+
+(defvar +data-root+ "next")
 
 (defvar *gpg-program* "gpg")
 
-(defclass-export data-profile ()
-  ()                                    ; TODO: Add description for the CLI --help?  Or is variable documentation enough?
-  (:documentation ""))
+(defclass-export data-profile () ())
 
-(defvar +default-data-profile+ (make-instance 'data-profile))
-(defvar +private-data-profile+ (make-instance 'data-profile))
+(export-always '+default-data-profile+)
+(defvar +default-data-profile+ (make-instance 'data-profile)
+  "With the default profile all data is persisted to the standard locations.")
+
+(export-always '+private-data-profile+)
+(defvar +private-data-profile+ (make-instance 'data-profile)
+  "With the private profile no data should be persisted to disk.")
+
+(defun package-data-profiles ()
+  "Return the list of data profiles a (VARIABLE NAME DOCSTRING) tuples.
+The NAME is the the variable trimmed of '+' and '-data-profile'."
+  (sort (mapcar (lambda (profile)
+                  (list (symbol-value profile)
+                        (string-downcase
+                         (str:replace-all "-DATA-PROFILE" ""
+                                          (str:replace-all "+" "" (string profile))))
+                        (documentation profile 'variable)))
+                (delete-if (lambda (sym)
+                             (not (ignore-errors
+                                   (mopu:subclassp (class-of (symbol-value sym))
+                                                   'data-profile))))
+                           (package-variables)))
+        #'string< :key #'second))
+
+(defun find-profile (name)
+  "Return profile matching NAME.
+Return NIL on no match."
+  (first (find name (package-data-profiles) :test #'string= :key #'second)))
 
 (defclass-export data-path ()
   ((dirname :initarg :dirname
@@ -46,8 +71,6 @@ This can be used to set the path from command line.  See
   ((ref :initform "history")))
 (defclass-export download-data-path (data-path) ; TODO: Rename to downloads-data-path?
   ((ref :initform "download")))
-
-(defvar +data-root+ "next")
 
 (defun find-ref-path (ref)
   (second
