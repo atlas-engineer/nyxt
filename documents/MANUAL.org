@@ -351,8 +351,7 @@ For example:
 : +foo -bar (or (and john doe) (not (and tic tac)))
 
 Bookmarks are stored in a plain text format, so than you can read and
-manipulate them easily with any other program.
-
+manipulate them easily with any other program. The bookmarks file is called =bookmarks.lisp= and is stored in Next's data directory (see [[#environment-variables][environment variables]]).
 
 ** Download manager
 
@@ -515,6 +514,7 @@ By default Next stores its files in these locations.
 - =$XDG_DATA_HOME/next/=: For all the automatically generated data, like
   sessions, bookmarks, cookies, etc.
 
+If $XDG_CONFIG_HOME= is not set, it defaults to =$HOME/.config=. The default for =$XDG_DATA_HOME= is =$HOME/.local/share=.
 *** Multiple profiles
 It's possible to manage multiple profiles, for example an instance of Next for
 work, another one for private browsing.
