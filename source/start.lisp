@@ -130,7 +130,7 @@ Example: --with-path bookmarks=/path/to/bookmarks"))
     (ignore-errors
      (bt:destroy-thread (socket-thread *browser*))))
   (let ((socket-path (expand-path *socket-path*)))
-    (when (uiop:file-exists-p )
+    (when (uiop:file-exists-p socket-path)
       (log:info "Deleting socket ~a" socket-path)
       (uiop:delete-file-if-exists socket-path)))
   (unless *keep-alive*
