@@ -109,6 +109,7 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
+(export-always 'xdg-download-dir)
 (defun xdg-download-dir ()
   (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")
                                               :output '(:string :stripped t)))))
