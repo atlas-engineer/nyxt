@@ -76,7 +76,7 @@ commands, such as =describe-command=.
 
 * Basics
 ** Navigation
-Within a tab, all navigation is possible using only the keyboard. To
+Within a buffer, all navigation is possible using only the keyboard. To
 navigate up and down on a web page, the following keybindings are
 provided.
 
@@ -109,9 +109,9 @@ the keyboard. It works like this:
 
 The full key-bindings for link-hint based navigation are found below:
 
-1. ~C-g~: Go to link in current tab
-2. ~M-g~: Create new tab with link, focus on new tab
-3. ~C-u M-g~: Create new tab with link, keep focus on current tab
+1. ~C-g~: Go to link in current buffer
+2. ~M-g~: Create new buffer with link, focus on new buffer
+3. ~C-u M-g~: Create new buffer with link, keep focus on current buffer
 
 ** Visiting URLs
 When ambiguous URLs are inputted, Next will attempt the best guess
@@ -120,8 +120,8 @@ a URL, ~https~ will be assumed. To visit a site supporting only
 ~http~, the user must explicitly type the full URL with ~http~
 included.
 
-1. ~C-l~: Change URL of current document
-2. ~M-l~: Open a new document and set its URL
+1. ~C-l~: Change URL of current buffer
+2. ~M-l~: Open a new buffer and set its URL
 
 ** Searching via search engine
 From the new URL prompt, any input that is not recognized as a URL will be
