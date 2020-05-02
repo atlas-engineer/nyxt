@@ -79,6 +79,7 @@ This can be used to set the path from command line.  See
                   collect value)
           :test #'string=)))
 
+(export-always 'expand-default-path)
 (declaim (ftype (function (data-path) (or string null)) expand-default-path))
 (defun expand-default-path (path)
   "Derive file from command line option or PATH.
@@ -103,6 +104,7 @@ place of PATH `basename'.
            (setf fullname (str:concat fullname ".lisp")))
          fullname)))))
 
+(export-always 'expand-data-path)
 (defmethod expand-data-path ((path data-path) (profile data-profile))
   "Return finalized path.
 Return NIL when path must not be used.  This makes it possible to use the

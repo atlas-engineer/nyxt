@@ -7,6 +7,7 @@
   "The renderer class used when constructing the define-configuration
   macro.")
 
+(export-always '*options*)
 (defvar *options* '()
   "The list of command line options.")
 
