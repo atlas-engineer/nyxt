@@ -759,6 +759,7 @@ if there is one such."
 When given, add MESSAGE to the `browser's `message-content' (for the `messages' buffer).
 MESSAGE is a cl-markup list."
   (unless (or (null message)
+              (null *browser*)
               (equal message '("")))
     (push `(:p (:i "["
                    ,(local-time:format-timestring
