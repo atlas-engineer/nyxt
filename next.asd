@@ -162,6 +162,7 @@
                                   (asdf:system-relative-pathname c "libraries/download-manager/tests/"))))
 
 (asdf:defsystem next/text-analysis
+  :depends-on (str)
   :pathname "libraries/text-analysis//"
   :components ((:file "package")
                (:file "text-analysis")))
