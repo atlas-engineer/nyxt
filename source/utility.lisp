@@ -190,6 +190,6 @@ Initialization file use case:
   (defun function-if-foo-is-found () ...))"
   (ignore-errors
    #+quicklisp
-   (ql:quickload system)
+   (ql:quickload system :silent t)
    #-quicklisp
    (asdf:load-system system)))
