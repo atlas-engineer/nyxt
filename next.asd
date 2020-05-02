@@ -161,6 +161,11 @@
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/download-manager/tests/"))))
 
+(asdf:defsystem next/text-analysis
+  :pathname "libraries/text-analysis//"
+  :components ((:file "package")
+               (:file "text-analysis")))
+
 (asdf:defsystem next/ring
   :pathname "libraries/ring/"
   :components ((:file "package")
