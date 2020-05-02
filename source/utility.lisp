@@ -177,3 +177,19 @@ Since the above binds `next/blocker-mode:*blocker-mode-class*' to
                 else do
                   (log:warn "Undefined slot ~a in ~a" (car slot) super-variant)))
        (setf ,configured-class ',name))))
+
+(export-always 'load-system)
+(defun load-system (system)
+  "Load Common Lisp SYSTEM.
+Use Quicklisp if possible.
+Return NIL if system could not be loaded and return the condition as a second value.
+
+Initialization file use case:
+
+(when (load-system :foo)
+  (defun function-if-foo-is-found () ...))"
+  (ignore-errors
+   #+quicklisp
+   (ql:quickload system)
+   #-quicklisp
+   (asdf:load-system system)))
