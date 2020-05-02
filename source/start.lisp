@@ -3,9 +3,7 @@
 (in-package :next)
 
 (export-always '*init-file-path*)
-(defvar *init-file-path* (make-instance 'data-path
-                                        :basename "init"
-                                        :dirname (uiop:xdg-config-home +data-root+))
+(defvar *init-file-path* (make-instance 'data-path :basename "init")
   "The path of the initialization file.")
 
 (export-always '*socket-path*)
