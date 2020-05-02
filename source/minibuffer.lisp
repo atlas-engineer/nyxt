@@ -753,9 +753,9 @@ if there is one such."
   (select-previous minibuffer)
   (update-selection-highlight-hint :follow t :scroll t))
 
-(defun %echo-status (text &key (message (list text))
-                            (window (current-window)))
-  "Echo TEXT in the status buffer.
+(defun %echo (text &key (message (list text))
+                     (window (current-window)))
+  "Echo TEXT in the message buffer.
 When given, add MESSAGE to the `browser's `message-content' (for the `messages' buffer).
 MESSAGE is a cl-markup list."
   (unless (or (null message)
@@ -783,7 +783,7 @@ Untrusted content should be given as argument with a format string."
   (handler-case
       (let ((text (apply #'format nil args)))
         ;; We might still want to echo the empty string to clear the echo area.
-        (%echo-status text)
+        (%echo text)
         (unless (str:emptyp text)
           (log:info "~a" text)))
     (error ()
@@ -798,7 +798,7 @@ Possible improvements:
 (defun echo-safe (&rest args)
   "Echo strings without expanding format directives unlike other `echo' commands."
   (let ((text (str:join " " args)))
-    (%echo-status text)
+    (%echo text)
     (unless (str:emptyp text)
       (log:info "~s" text))))
 
@@ -806,7 +806,7 @@ Possible improvements:
 (defun echo-warning (&rest args)
   "Like `echo' but prefix with \"Warning\" and output to the standard error."
   (let ((text (apply #'format nil args)))
-    (%echo-status text
+    (%echo text
                   :message `((:b "Warning:") " " ,text))
     (unless (str:emptyp text)
       (log:warn "~a" text))))
@@ -814,7 +814,7 @@ Possible improvements:
 (export-always 'echo-dismiss)
 (defmethod echo-dismiss ()
   ;; Don't add to the *Messages* buffer:
-  (%echo-status "" :message nil))
+  (%echo "" :message nil))
 
 (declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
 (export-always 'ring-insert-clipboard)
