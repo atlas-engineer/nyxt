@@ -61,8 +61,7 @@ use the socket without parsing any init file.")
            :short #\i
            :long "init"
            :arg-parser #'identity
-           :description "Set path to initialization file.
-Set to '-' to read standard input instead.")
+           :description "Set path to initialization file.")
     (:name :no-init
            :short #\I
            :long "no-init"
@@ -90,7 +89,8 @@ Unless evaluating remotely (see --remote), Next starts in single-instance mode a
     (:name :script
            :long "script"
            :arg-parser #'identity
-           :description "Load the Lisp file (skip #! line if any), skip init file, then exit.")
+           :description "Load the Lisp file (skip #! line if any), skip init file, then exit.
+Set to '-' to read standard input instead.")
     (:name :remote
            :short #\r
            :long "remote"
@@ -170,19 +170,12 @@ Example: --with-path bookmarks=/path/to/bookmarks"))
                 load-lisp))
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (or stream).
-If FILE is \"-\", read from the standard input.
 Return the short error message and the full error message as second value."
   (let ((*package* (or (find-package package) *package*)))
     (flet ((unsafe-load ()
              (when (equal "" file)
                (error "Can't load empty file name."))
              (cond
-               ((and (not (streamp file)) (string= (pathname-name file) "-"))
-                (progn
-                  (log:info "Loading Lisp from standard input.")
-                  (loop for object = (read *standard-input* nil :eof)
-                        until (eq object :eof)
-                        do (eval object))))
                ((streamp file)
                 (load file))
                ((uiop:file-exists-p file)
@@ -388,9 +381,13 @@ next [options] [urls]"))
              (mapcar #'rest (package-data-profiles))))
 
     ((getf options :script)
-     (with-open-file (f (getf options :script) :element-type :default)
-       (maybe-skip-shebang-line f)
-       (load-lisp f)))
+     (flet ((run-script (stream)
+              (maybe-skip-shebang-line stream)
+              (load-lisp stream)))
+       (match (getf options :script)
+         ("-" (run-script *standard-input*))
+         (file (with-open-file (f file :element-type :default)
+                 (run-script f))))))
 
     ((or (getf options :load)
          (getf options :eval))
