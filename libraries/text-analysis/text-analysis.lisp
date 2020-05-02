@@ -24,4 +24,12 @@
 (defmethod term-frequency ((document document) term)
   (/ (gethash term (word-count document) 0) (token-count document)))
 
-(defclass document-collection () ())
+(defclass document-collection ()
+  ((documents :initform () :initarg :documents :accessor documents)))
+
+(defmethod add-document ((document-collection document-collection) document)
+  (push document (documents document-collection)))
+
+(defmethod document-frequency ((document-collection document-collection) term)
+  (/ (count-if (lambda (document) (> (term-frequency document term) 0)) (documents document-collection))
+     (length (documents document-collection))))
