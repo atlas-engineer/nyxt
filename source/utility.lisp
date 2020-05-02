@@ -36,7 +36,7 @@ before running this command."
 (export-always 'notify)
 (defun notify (msg)
   "Echo this message and display it with a desktop notification system (notify-send on linux, terminal-notifier on macOs)."
-  (echo-safe msg)
+  (echo-warning msg)
   (ignore-errors
     (uiop:launch-program
      #+linux

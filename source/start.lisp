@@ -166,17 +166,14 @@ Example: --with-path bookmarks=/path/to/bookmarks"))
     (in-package :next-user)
     (apply #'start options free-args)))
 
-(defparameter *load-init-error-message* "Error: Could not load the init file")
-(defparameter *load-init-type-error-message* (str:concat *load-init-error-message*
-                                                         " because of a type error"))
-
 (declaim (ftype (function (trivial-types:pathname-designator &key (:package (or null package))))
                 load-lisp))
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (or stream).
-If FILE is \"-\", read from the standard input."
+If FILE is \"-\", read from the standard input.
+Return the short error message and the full error message as second value."
   (let ((*package* (or (find-package package) *package*)))
-    (flet ((safe-load ()
+    (flet ((unsafe-load ()
              (when (equal "" file)
                (error "Can't load empty file name."))
              (cond
@@ -190,17 +187,23 @@ If FILE is \"-\", read from the standard input."
                 (load file))
                ((uiop:file-exists-p file)
                 (log:info "Loading Lisp file ~s." file)
-                (load file)))))
+                (load file)))
+             nil))
       (if *keep-alive*
-          (safe-load)
+          (unsafe-load)
           (handler-case
-              (safe-load)
+              (unsafe-load)
             (error (c)
-              (let ((message (if (subtypep (type-of c) 'type-error)
-                                 *load-init-type-error-message*
-                                 *load-init-error-message*)))
-                (echo-warning "~a: ~a" message c)
-                (notify (str:concat message ".")))))))))
+              (let* ((error-message "Could not load the init file")
+                     (type-error-message (str:concat error-message
+                                                     " because of a type error"))
+                     (message (if (subtypep (type-of c) 'type-error)
+                                  type-error-message
+                                  error-message))
+                     (full-message (format nil "~a: ~a" message c)))
+                (if *browser*
+                    (error-in-new-window "*Init file errors*" full-message)
+                    (values message full-message)))))))))
 
 (define-command load-file ()
   "Load the prompted Lisp file."
@@ -427,12 +430,14 @@ Finally,run the `*after-init-hook*'."
 
     (unless (or (getf *options* :no-init)
                 (not (expand-path *init-file-path*)))
-      (handler-case
-          (load-lisp (expand-path *init-file-path*) :package (find-package :next-user))
-        (error (c)
-          (setf startup-error-reporter
-                (lambda ()
-                  (error-in-new-window "*Init file errors*" (format nil "~a" c)))))))
+      (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
+                                             :package (find-package :next-user)))
+        (nil nil)
+        ((list message full-message)
+         (setf startup-error-reporter
+               (lambda ()
+                 (notify (str:concat message "."))
+                 (error-in-new-window "*Init file errors*" full-message))))))
     (setf *browser* (make-instance *browser-class*
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
