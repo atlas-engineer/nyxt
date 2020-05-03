@@ -43,7 +43,7 @@ See the `hostlist' class documentation."
 If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
     (let ((path (expand-path (path hostlist))))
-      (log:info "Updating hostlist ~a from ~a" path (url hostlist))
+      (log:info "Updating hostlist ~s from ~s." path (url hostlist))
       (let ((hosts (dex:get (url hostlist))))
         (when path
           ;; TODO: In general, we should do more error checking when writing to disk.
