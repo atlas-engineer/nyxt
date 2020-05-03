@@ -97,7 +97,7 @@ Set to '-' to read standard input instead.")
            :description "Send the --eval and --load arguments to the running instance of Next.
 The remote instance must be listening on a socket which you can specify with --socket.")
     (:name :data-profile
-           :short #\p
+           :short #\d
            :long "data-profile"
            :arg-parser #'identity
            :description "Use the given data profile. ")
