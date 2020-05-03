@@ -2,10 +2,12 @@
 
 (in-package :text-analysis)
 
-(defparameter *stop-words* nil "List of stop words to use during tokenization.")
-
-(defun tokenize-string (string)
-  (str:split " " string))
+(defun tokenize-string (string &key (remove-stop-words t))
+  (let* ((tokens (str:split " " string))
+         (tokens (if remove-stop-words
+                     (delete-if (lambda (x) (gethash x (stop-words-lookup *language-data*))) tokens)
+                     tokens)))
+    tokens))
 
 (defclass document ()
   ((string-contents :initarg :string-contents :accessor string-contents)
