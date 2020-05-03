@@ -42,3 +42,8 @@
 (defmethod inverse-document-frequency ((document-collection document-collection) term)
   (log (/ (length (documents document-collection))
           (count-if (lambda (document) (termp document term)) (documents document-collection)))))
+(defmethod term-frequency-inverse-document-frequency ((document document)
+                                                      (document-collection document-collection)
+                                                      term)
+  (* (term-frequency document term) (inverse-document-frequency document-collection term)))
+
