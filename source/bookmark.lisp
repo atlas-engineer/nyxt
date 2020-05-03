@@ -300,9 +300,9 @@ This can be useful to let the user select no tag when returning directly."
                     (when file
                       (deserialize-bookmarks file)))))
         (when data
-          (echo "Loading ~a bookmarks from ~a."
+          (echo "Loading ~a bookmarks from ~s."
                 (length data)
                 (expand-path (bookmarks-path *browser*)))
           (setf (slot-value *browser* 'bookmarks-data) data)))
     (error (c)
-      (echo-warning "Failed to load bookmarks from ~a: ~a" (expand-path (bookmarks-path *browser*)) c))))
+      (echo-warning "Failed to load bookmarks from ~s: ~a" (expand-path (bookmarks-path *browser*)) c))))
