@@ -136,6 +136,62 @@ function result as a boolean in conditions."
 
 (defvar *gpg-default-recipient* nil)
 
+(defstruct gpg-uid
+  validity
+  user-id)
+
+(defstruct gpg-key
+  length
+  algorithm                             ; See https://tools.ietf.org/html/rfc4880#page-62 for the meaning of the algorithm ID.
+  key-id
+  creation-date
+  expiry-date
+  uids
+  fingerprint
+  keygrip)
+
+(defun gpg-private-keys ()
+  "Return list of private `gpg-key's."
+  (let* ((entries (delete ""
+                          (ppcre:split "\\bsec"
+                                       (with-output-to-string (s)
+                                         (uiop:run-program (list *gpg-program* "--list-secret-keys" "--with-colons")
+                                                           :output s)))
+                          :test #'string=))
+         (entries (mapcar (lambda (s) (str:concat "sec" s)) entries))
+         (entries (mapcar (lambda (s) (str:split (string #\newline) s :omit-nulls t)) entries))
+         (entries (mapcar (lambda (entry) (mapcar (lambda (s) (str:split ":" s)) entry)) entries)))
+    (mapcar (lambda (entry)
+              (let ((key (first entry))
+                    (uids (remove-if (lambda (e) (not (string= "uid" (first e)))) entry)))
+                (make-gpg-key
+                 :length (parse-integer (third key) :junk-allowed t)
+                 :algorithm (fourth key)
+                 :key-id (fifth key)
+                 :creation-date (ignore-errors (local-time:unix-to-timestamp (parse-integer (sixth key))))
+                 :expiry-date (ignore-errors (local-time:unix-to-timestamp (parse-integer (seventh key))))
+                 :uids (mapcar (lambda (uid-entry)
+                                 (make-gpg-uid
+                                  :validity (second uid-entry)
+                                  :user-id (nth 9 uid-entry)))
+                               uids)
+                 :fingerprint (nth 9 (assoc "fpr" entry :test #'string=))
+                 :keygrip (nth 9 (assoc "grp" entry :test #'string=)))))
+            entries)))
+
+(defun gpg-key-completion-filter ()
+  (let ((keys (gpg-private-keys)))
+    (lambda (input)
+      (fuzzy-match input keys))))
+
+(defmethod object-string ((gpg-key gpg-key))
+  (gpg-key-key-id gpg-key))
+
+(defmethod object-display ((gpg-key gpg-key))
+  (format nil "~a (~a)"
+          (gpg-key-key-id gpg-key)
+          (str:join ", " (mapcar #'gpg-uid-user-id (gpg-key-uids gpg-key)))))
+
 (defun gpg-recipient (file)             ; TODO: Find a proper way to do this.
   "Return the key of FILE's recipient if any, `*gpg-recipient*' otherwise.
 As second value the email.
@@ -158,16 +214,16 @@ As third value the name."
         (values key mail name))
       *gpg-default-recipient*))
 
-(defun gpg-write (stream gpg-file)
-  "Write STREAM to GPG-FILE."
-  (let ((recipient (gpg-recipient gpg-file)))
-    (if recipient
-        (uiop:run-program
-         (list *gpg-program* "--output" gpg-file "--recipient" recipient
-               "--batch" "--yes" "--encrypt")
-         :input stream)
-        ;; TODO: Ask for recipient manually.
-        (warn "Please set `*gpg-default-recipient*'."))))
+(defun gpg-write (stream gpg-file recipient)
+  "Write STREAM to GPG-FILE using RECIPIENT key."
+  (if recipient
+      ;; TODO: Handle GPG errors.
+      (uiop:run-program
+       (list *gpg-program* "--output" gpg-file "--recipient" recipient
+             "--batch" "--yes" "--encrypt")
+       :input stream)
+      ;; TODO: Ask for recipient manually.
+      (echo-warning "Set `*gpg-default-recipient*' to save ~s." gpg-file)))
 
 (defmacro with-gpg-file ((stream gpg-file &rest options) &body body)
   "Like `with-open-file' but use
@@ -175,7 +231,7 @@ OPTIONS are as for `open''s `:direction'.
 Other options are not supported.  File is overwritten if it exists, while
 nothing is done if file is missing."
   ;; TODO: Support all of `open' options.
-  (alex:with-gensyms (in clear-data result)
+  (alex:with-gensyms (in clear-data result recipient)
     (if (match (getf options :direction)
           ((or :io :input nil) t))
         `(when (uiop:file-exists-p ,gpg-file)
@@ -184,15 +240,27 @@ nothing is done if file is missing."
                                  (list *gpg-program* "--decrypt" ,gpg-file)
                                  :output out))))
              (with-input-from-string (,stream ,clear-data)
-               (prog1
+               (prog1             ; TODO: Shouldn't we `unwind-protect' instead?
                    (progn
                      ,@body)
                  ,(when (eq (getf options :direction) :io)
-                    `(gpg-write ,stream ,gpg-file))))))
-        `(let ((,result nil))
-           (with-input-from-string (,in (with-output-to-string (,stream)
-                                          (setf ,result (progn ,@body))))
-             (gpg-write ,in ,gpg-file))
+                    ;; TODO: Need to handle error when gpg-file key is not avilable.
+                    `(gpg-write ,stream ,gpg-file (gpg-recipient ,gpg-file)))))))
+        `(let ((,result nil)
+               (,recipient (gpg-recipient ,gpg-file)))
+           (if ,recipient
+               (with-input-from-string (,in (with-output-to-string (,stream)
+                                              (setf ,result (progn ,@body))))
+                 (gpg-write ,in ,gpg-file ,recipient))
+               (with-result (,recipient (read-from-minibuffer
+                                        (make-minibuffer
+                                         :input-prompt "Recipient:"
+                                         :completion-function (gpg-key-completion-filter)
+                                         :empty-complete-immediate t)))
+                 (with-input-from-string (,in (with-output-to-string (,stream)
+                                                (setf ,result (progn ,@body))))
+                   (gpg-write ,in ,gpg-file (gpg-key-key-id ,recipient)))))
+           ;; TODO: We need synchronous minibuffer prompts to return value for result.
            ,result))))
 
 (defmacro with-maybe-gpg-file ((stream filespec &rest options) &body body)
