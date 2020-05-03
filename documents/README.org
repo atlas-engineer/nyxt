@@ -1,19 +1,30 @@
 * Next Developer Readme                                                 :TOC:
-- [[#developer-installation-with-guix][Developer Installation with Guix]]
-  - [[#run-from-source][Run from source]]
-- [[#standard-developer-installation][Standard Developer Installation]]
-  - [[#installing-sbcl][Installing SBCL]]
-  - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
-  - [[#gtk-dependencies][GTK dependencies]]
-  - [[#qt-dependencies][Qt dependencies]]
-  - [[#fetch-the-source-code][Fetch the source code]]
-  - [[#compile][Compile]]
-  - [[#run-from-source-1][Run from Source]]
-  - [[#update-local-lisp-libraries][Update local Lisp libraries]]
-- [[#help--community][Help & Community]]
-  - [[#learning-common-lisp][Learning Common Lisp]]
-  - [[#contribution][Contribution]]
-  - [[#irc-channel][IRC Channel]]
+:PROPERTIES:
+:TOC:      this
+:END:
+-  [[#developer-installation-with-guix][Developer Installation with Guix]]
+  -  [[#run-from-source][Run from source]]
+-  [[#standard-developer-installation][Standard Developer Installation]]
+  -  [[#installing-sbcl][Installing SBCL]]
+  -  [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
+  -  [[#gtk-dependencies][GTK dependencies]]
+    -  [[#lisp-dependencies][Lisp Dependencies]]
+    -  [[#gnulinux-gtk-dependencies][GNU/Linux GTK dependencies]]
+    -  [[#macos-specific-dependencies][macOS specific dependencies]]
+  -  [[#qt-dependencies][Qt dependencies]]
+    -  [[#lisp-dependencies][Lisp Dependencies]]
+    -  [[#gnulinux-dependencies][GNU/Linux dependencies]]
+    -  [[#macos-dependencies][macOS dependencies]]
+  -  [[#fetch-the-source-code][Fetch the source code]]
+  -  [[#compile][Compile]]
+    -  [[#using-the-makefile][Using the Makefile]]
+    -  [[#using-lisp][Using Lisp]]
+  -  [[#run-from-source][Run from Source]]
+  -  [[#update-local-lisp-libraries][Update local Lisp libraries]]
+-  [[#help--community][Help & Community]]
+  -  [[#learning-common-lisp][Learning Common Lisp]]
+  -  [[#contribution][Contribution]]
+  -  [[#irc-channel][IRC Channel]]
 
 * Developer Installation with Guix
 Install [[https://guix.gnu.org][Guix]] and follow the instructions in [[../build-scripts/guix.scm]].
@@ -301,3 +312,8 @@ After you have found a TASK item that is available:
 
 ** IRC Channel
 You can find Next on Freenode IRC at =#next-browser=.
+
+
+# Local Variables:
+# before-save-hook: org-make-toc
+# End:
