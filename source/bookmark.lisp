@@ -14,7 +14,7 @@
 ;; - Un-explicitly-set class slots are exported if they have an initform;
 ;;   removing the initform forces us to put lots of (slot-boundp ...).
 
-(defclass bookmark-entry ()
+(defclass-export bookmark-entry ()
   ((url :initarg :url
         :accessor url
         :type string
