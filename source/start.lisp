@@ -23,19 +23,10 @@ use the socket without parsing any init file.")
          (new-path
           (expand-default-path (make-instance 'data-path
                                               :basename (or new-path (basename path))
+                                              ;; Compute `dirname' here since
+                                              ;; default value is evaluated at
+                                              ;; compile-time.
                                               :dirname (uiop:xdg-config-home +data-root+))))))))
-
-(defmethod expand-data-path ((profile data-profile) (path (eql *socket-path*)))
-  "Return path of the socket."
-  (cond
-    ((getf *options* :no-socket)
-     nil)
-    (t (expand-default-path
-        (make-instance 'data-path
-                       :basename (or (getf *options* :socket) (basename path))
-                       ;; Recompute `dirname' since default value is evaluated
-                       ;; at compile-time.
-                       :dirname (uiop:xdg-data-home +data-root+))))))
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
@@ -355,6 +346,16 @@ REPL examples:
               \"https://next.atlas.engineer\" \"https://en.wikipedia.org\")"
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
+
+  ;; Preset socket here, we want --no-socket to work regardless of the user
+  ;; config data-profile.
+  ;; We also want to expand xdg-data-home dynamically.
+  (setf *socket-path*
+        (if (getf *options* :no-socket)
+            nil
+            (make-instance 'data-path
+                           :basename (or (getf *options* :socket) (basename *socket-path*))
+                           :dirname (uiop:xdg-data-home +data-root+))))
 
   (if (getf *options* :verbose)
       (progn
