@@ -84,6 +84,7 @@
                (:file "vi-mode")
                (:file "blocker-mode")
                (:file "proxy-mode")
+               (:file "noimage-mode")
                (:file "noscript-mode")
                (:file "file-manager-mode")
                (:file "download-mode")
