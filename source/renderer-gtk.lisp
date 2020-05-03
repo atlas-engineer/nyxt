@@ -563,6 +563,27 @@ requested a reload."
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
+(defmethod ffi-buffer-enable-smooth-scrolling ((buffer gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-smooth-scrolling
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+        value))
+
+#+webkit2-media
+(defmethod ffi-buffer-enable-media ((buffer gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-media
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+        value))
+
+(defmethod ffi-buffer-auto-load-image ((buffer gtk-buffer) value)
+  (setf (webkit:webkit-settings-auto-load-images
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+        value))
+
+(defmethod ffi-buffer-user-agent ((buffer gtk-buffer) value)
+  (setf (webkit:webkit-settings-user-agent
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+        value))
+
 (defmethod ffi-buffer-set-proxy ((buffer gtk-buffer) &optional proxy-uri (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
    Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
