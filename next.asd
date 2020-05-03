@@ -165,6 +165,7 @@
   :depends-on (str)
   :pathname "libraries/text-analysis//"
   :components ((:file "package")
+               (:file "text-data")
                (:file "text-analysis")))
 
 (asdf:defsystem next/ring
