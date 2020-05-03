@@ -34,6 +34,7 @@ This function can be used on browser-less globals like `*init-file-path*'."
            ("" nil)
            (m m)))))
 
+(export-always 'with-data-file)
 (defmacro with-data-file ((stream data-path &rest options) &body body)
   "Evaluate BODY with STREAM bound to DATA-PATH.
 DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
