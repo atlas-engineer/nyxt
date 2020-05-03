@@ -32,7 +32,7 @@ This function can be used on browser-less globals like `*init-file-path*'."
                     (expand-data-path (data-profile *browser*) data-path)
                     (expand-data-path +default-data-profile+ data-path))
            ("" nil)
-           (m m)))))
+           (m (uiop:native-namestring m))))))
 
 (export-always 'with-data-file)
 (defmacro with-data-file ((stream data-path &rest options) &body body)
