@@ -20,7 +20,6 @@ use the socket without parsing any init file.")
     ((getf *options* :no-init)
      nil)
     (t (match (getf *options* :init)
-         ("-" "-")
          (new-path
           (expand-default-path (make-instance 'data-path
                                               :basename (or new-path (basename path))
