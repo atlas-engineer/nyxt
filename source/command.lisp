@@ -181,14 +181,20 @@ Commands are instances of the `command' class.  When MODE-SYMBOLS are provided,
 list only the commands that belong to the corresponding mode packages or of a
 parent mode packages.  Otherwise list all commands.
 
-If 'BASE-MODE is in MODE-SYMBOLS, mode togglers are included.  This is
-useful since mode togglers are usually part of their own mode / package and
-would not be listed otherwise."
+If 'BASE-MODE is in MODE-SYMBOLS, mode togglers and commands from the
+`next-user' package are included.  This is useful since mode togglers are
+usually part of their own mode / package and would not be listed otherwise.
+For `next-user' commands, users expect them to be listed out of the box without
+extra fiddling."
   ;; TODO: Make sure we list commands of inherited modes.
   (let ((list-togglers-p (member 'base-mode mode-symbols)))
     (if mode-symbols
         (remove-if (lambda (c)
-                     (and (notany (lambda (m)
+                     (and (or (not list-togglers-p)
+                              (and (not (mode-toggler-p c))
+                                   (not (eq (find-package 'next-user)
+                                            (symbol-package (sym c))))))
+                          (notany (lambda (m)
                                     (eq (pkg c)
                                         (match m
                                           ;; root-mode does not have a mode-command.
@@ -196,9 +202,7 @@ would not be listed otherwise."
                                           (_ (match (mode-command m)
                                                (nil nil)
                                                (mc (pkg mc)))))))
-                                  mode-symbols)
-                          (or (not list-togglers-p)
-                              (not (mode-toggler-p c)))))
+                                  mode-symbols)))
                    *command-list*)
         *command-list*)))
 
