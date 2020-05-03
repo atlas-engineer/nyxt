@@ -489,6 +489,7 @@ Warning: This behaviour may change in the future."
         (make-instance 'webkit:webkit-web-view
                        ;; TODO: Should be :web-context, shouldn't it?
                        :context (make-context buffer)))
+  (ffi-buffer-enable-smooth-scrolling buffer t)
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
    (lambda (web-view response-policy-decision policy-decision-type-response)
