@@ -14,7 +14,7 @@ instances of Next.
 This path cannot be set from the init file because we want to be able to set and
 use the socket without parsing any init file.")
 
-(defmethod expand-data-path ((path (eql *init-file-path*)) (profile data-profile))
+(defmethod expand-data-path ((profile data-profile) (path (eql *init-file-path*)))
   "Return path of the init file."
   (cond
     ((getf *options* :no-init)
@@ -26,7 +26,7 @@ use the socket without parsing any init file.")
                                               :basename (or new-path (basename path))
                                               :dirname (uiop:xdg-config-home +data-root+))))))))
 
-(defmethod expand-data-path ((path (eql *socket-path*)) (profile data-profile))
+(defmethod expand-data-path ((profile data-profile) (path (eql *socket-path*)))
   "Return path of the socket."
   (cond
     ((getf *options* :no-socket)

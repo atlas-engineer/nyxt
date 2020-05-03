@@ -105,7 +105,7 @@ place of PATH `basename'.
          fullname)))))
 
 (export-always 'expand-data-path)
-(defmethod expand-data-path ((path data-path) (profile data-profile))
+(defmethod expand-data-path ((profile data-profile) (path data-path))
   "Return finalized path.
 Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
@@ -123,7 +123,7 @@ function result as a boolean in conditions."
       (setf dir (str:concat dir "/")))
     dir))
 
-(defmethod expand-data-path ((path data-path) (profile (eql +private-data-profile+)))
+(defmethod expand-data-path ((profile (eql +private-data-profile+)) (path data-path))
   "Don't persist anything in private mode."
   nil)
 

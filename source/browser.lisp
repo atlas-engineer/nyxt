@@ -29,8 +29,8 @@ This function can be used on browser-less globals like `*init-file-path*'."
   (when data-path
     (the (values (or string null) &optional)
          (match (if *browser*
-                    (expand-data-path data-path (data-profile *browser*))
-                    (expand-data-path data-path +default-data-profile+))
+                    (expand-data-path (data-profile *browser*) data-path)
+                    (expand-data-path +default-data-profile+ data-path))
            ("" nil)
            (m m)))))
 
