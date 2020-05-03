@@ -284,9 +284,9 @@ This can be useful to let the user select no tag when returning directly."
       (serialize-object entry file))
     (write-char #\newline file)
     (write-string ")" file)
-    (echo "Saved ~a bookmarks to ~a."
+    (echo "Saved ~a bookmarks to ~s."
           (length (slot-value *browser* 'bookmarks-data))
-          (bookmarks-path *browser*)))
+          (expand-path (bookmarks-path *browser*))))
   t)
 
 (defun restore-sexp-bookmarks ()
