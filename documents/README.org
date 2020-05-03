@@ -38,13 +38,13 @@ It is most convenient to clone the Next repository into
 can then start Next using the command
 
 #+begin_src sh
-guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next")' --eval '(next:start)'
+guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next/gtk")' --eval '(next:start)'
 #+end_src
 
 You can even start a Swank server immediately at startup using
 
 #+begin_src sh
-guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next")' --eval '(next:start-swank)' --eval '(next:start)'
+guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next/gtk")' --eval '(next:start-swank)' --eval '(next:start)'
 #+end_src
 
 * Standard Developer Installation
@@ -240,7 +240,7 @@ Then in a shell execute the following:
 2. Execute ~(require :asdf)~ if ASDF is not already loaded.
 3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
    system definition (you must use absolute pathnames).
-4. Execute ~(ql:quickload :next)~ to load the Next system into your
+4. Execute ~(ql:quickload :next/gtk)~ to load the Next system into your
    Lisp image.
 5. Execute ~(next:start)~ to open your first Next window.
 
