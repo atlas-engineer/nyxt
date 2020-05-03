@@ -9,11 +9,11 @@ The main types are:
   modifiers (the order is to avoid inequality on permutation) and possibly more
   in the future.
 
+  Whitespaces are the only reserved characters.  Anything else can be store in
+  the =key= value.
+
 - A =keyspec= is a string representation of a =key=.  A =keyspecs= is a
   space-separate string representation of a sequence of =key='s.
-
-  Reserved characters are =-= and = = (space).  Anything else can be store in
-  the =key= value.
 
 - A =keymap= is contains a hash-table where the keys are a keyspec and the values
   either a keymap or anything else.  As a special case, a =nil= value signifies
@@ -49,6 +49,6 @@ Non-goals:
 - Dead key support:  The input system must handle it.
 - Fallback function when binding is not found: The caller of =lookup-key= gets
   =nil= when a unbound, thus it can decide of a default behaviour.
-- Provide a self-insert Function: the caller must handle it.
+- Provide a self-insert function: the caller must handle it.
 - Global or local bindings: it's up to the calling application to manage the
   locality of their keymaps.
