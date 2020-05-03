@@ -35,5 +35,9 @@
   (push document (documents document-collection)))
 
 (defmethod document-frequency ((document-collection document-collection) term)
-  (/ (count-if (lambda (document) (> (term-frequency document term) 0)) (documents document-collection))
+  (/ (count-if (lambda (document) (termp document term)) (documents document-collection))
      (length (documents document-collection))))
+
+(defmethod inverse-document-frequency ((document-collection document-collection) term)
+  (/ (length (documents document-collection))
+     (count-if (lambda (document) (termp document term)) (documents document-collection))))
