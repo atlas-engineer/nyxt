@@ -89,12 +89,11 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (defun bookmark-add (url &key title tags)
   (unless (or (str:emptyp url)
               (string= "about:blank" url))
-    (let ((entry nil))
-      (setf (bookmarks-data *browser*)
-            (delete-if (lambda (b)
-                         (when (equal-url (url b) url)
-                           (setf entry b)))
-                       (bookmarks-data *browser*)))
+    (let* ((entry nil)
+           (bookmarks-without-url (remove-if (lambda (b)
+                                               (when (equal-url (url b) url)
+                                                 (setf entry b)))
+                                             (bookmarks-data *browser*))))
       (unless entry
         (setf entry (make-instance 'bookmark-entry
                                    :url url)))
@@ -103,7 +102,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (setf tags (delete-duplicates (append (tags entry) tags)
                                     :test #'string=))
       (setf (tags entry) (sort tags #'string<))
-      (push entry (bookmarks-data *browser*)))))
+      (push entry bookmarks-without-url)
+      ;; Warning: Make sure to set bookmarks-data only once here since it is
+      ;; persisted each time.
+      (setf (bookmarks-data *browser*) bookmarks-without-url))))
 
 (defun bookmark-completion-filter ()
   (lambda (input)

@@ -222,7 +222,6 @@ As third value the name."
        (list *gpg-program* "--output" gpg-file "--recipient" recipient
              "--batch" "--yes" "--encrypt")
        :input stream)
-      ;; TODO: Ask for recipient manually.
       (echo-warning "Set `*gpg-default-recipient*' to save ~s." gpg-file)))
 
 (defmacro with-gpg-file ((stream gpg-file &rest options) &body body)
@@ -244,7 +243,7 @@ nothing is done if file is missing."
                    (progn
                      ,@body)
                  ,(when (eq (getf options :direction) :io)
-                    ;; TODO: Need to handle error when gpg-file key is not avilable.
+                    ;; TODO: Need to handle error when gpg-file key is not available.
                     `(gpg-write ,stream ,gpg-file (gpg-recipient ,gpg-file)))))))
         `(let ((,result nil)
                (,recipient (gpg-recipient ,gpg-file)))
