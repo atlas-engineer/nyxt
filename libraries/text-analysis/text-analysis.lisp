@@ -9,8 +9,9 @@
 
 (defclass document ()
   ((string-contents :initarg :string-contents :accessor string-contents)
-   (word-count :initform (make-hash-table :test #'equal) :accessor
-   word-count :documentation "Contains a mapping of word -> amount of
+   (word-count :initform (make-hash-table :test #'equal)
+               :accessor word-count
+               :documentation "Contains a mapping of word -> amount of
    times word appears in the document.")
    (tokens :accessor tokens)
    (token-count :accessor token-count)))
