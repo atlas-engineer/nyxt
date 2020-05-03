@@ -24,6 +24,10 @@
 (defmethod term-frequency ((document document) term)
   (/ (gethash term (word-count document) 0) (token-count document)))
 
+(defmethod termp ((document document) term)
+  "Does the term exist in the document?"
+  (> (term-frequency document term) 0))
+
 (defclass document-collection ()
   ((documents :initform () :initarg :documents :accessor documents)))
 
