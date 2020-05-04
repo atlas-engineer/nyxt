@@ -34,6 +34,7 @@
                :trivial-types
                :unix-opts
                ;; Local systems:
+               :next/text-analysis
                :next/download-manager
                :next/ring
                :next/history-tree
