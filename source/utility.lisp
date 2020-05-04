@@ -91,8 +91,8 @@ from a binary) then any condition is logged instead of triggering the debugger."
                        (substring end-position
                                   (ps:chain active-element value length)))))))
 
-(define-parenscript document-get-body ()
-  (ps:chain document body |innerHTML|))
+(define-parenscript document-get-body ((limit 100000))
+  (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
 
 (define-parenscript %print-buffer ()
   (print))
