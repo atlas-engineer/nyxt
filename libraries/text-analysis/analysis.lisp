@@ -60,3 +60,7 @@
   (sort (loop for word being the hash-keys of (word-count document)
               collect (cons word (term-frequency-inverse-document-frequency
                                   document document-collection word))) #'> :key #'cdr))
+
+(defmethod document-keywords ((document document))
+  (sort (loop for word being the hash-keys of (word-count document)
+              collect (cons word (term-frequency document word))) #'> :key #'cdr))
