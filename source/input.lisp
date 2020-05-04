@@ -21,12 +21,16 @@ Example:
 (export-always 'current-keymaps)
 (defun current-keymaps (&optional (window (current-window))) ; TODO: Take buffer/minibuffer as argument instead?
   "Return the list of `keymap' for the current buffer, ordered by priority."
-  (let ((buffer (active-buffer window)))
-    (when buffer
-      (cons (override-map buffer)
-            (delete nil (mapcar #'keymap (modes (if (active-minibuffers window)
-                                                    (current-minibuffer)
-                                                    buffer))))))))
+  (let* ((buffer (active-buffer window))
+         (keymaps
+           (when buffer
+             (cons (override-map buffer)
+                   (delete nil (mapcar #'keymap (modes (if (active-minibuffers window)
+                                                           (current-minibuffer)
+                                                           buffer))))))))
+    (if (current-keymaps-hook buffer)
+        (hooks:run-hook (current-keymaps-hook buffer) keymaps buffer)
+        keymaps)))
 
 (defun all-keymaps (&optional (window (current-window)))
   "Return all keymaps for WINDOW, including the buffer keymaps and the

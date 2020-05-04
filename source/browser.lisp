@@ -12,6 +12,10 @@
 (hooks:define-hook-type minibuffer (function (minibuffer)))
 (hooks:define-hook-type download (function (download-manager:download)))
 (hooks:define-hook-type window-buffer (function (window buffer)))
+
+(hooks:define-hook-type keymaps-buffer (function (list-of-keymaps buffer)
+                                                 (values &optional list-of-keymaps buffer)))
+(export-always '(make-hook-keymaps-buffer make-handler-keymaps-buffer))
 (hooks:define-hook-type resource (function (request-data)
                                            (values request-data
                                                    &optional (or (eql :stop)
@@ -189,6 +193,13 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
     :initarg :keymap-scheme-name
     :initform scheme:cua
     :type keymap:scheme-name
+    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+   (current-keymaps-hook
+    :accessor current-keymaps-hook
+    :initarg :current-keymaps-hook
+    :type hook-keymaps-buffer
+    :initform (make-hook-keymaps-buffer
+               :combination #'hooks:combine-composed-hook)
     :documentation "The keymap scheme that will be used for all modes in the current buffer.")
    (override-map :accessor override-map
                  :initarg :override-map
