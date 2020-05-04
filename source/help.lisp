@@ -450,3 +450,12 @@ The version number is stored in the clipboard."
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help))
     help-buffer))
+
+(define-command copy-system-information ()
+  "Command to dump the system information and copy it to the clipboard"
+  (let* ((*print-length* nil)
+         (next-information (format nil "Next Version: ~a ~%Lisp Implementation: ~a ~%Lisp Version: ~a ~%Operating System: ~a ~a ~%Features: ~a"
+                                   +version+ (lisp-implementation-type) (lisp-implementation-version)
+                                   (software-type) (software-version) *features*)))
+    (copy-to-clipboard next-information)
+    (log:info next-information)))
