@@ -458,4 +458,5 @@ The version number is stored in the clipboard."
                                    +version+ (lisp-implementation-type) (lisp-implementation-version)
                                    (software-type) (software-version) *features*)))
     (copy-to-clipboard next-information)
-    (log:info next-information)))
+    (log:info next-information)
+    (echo "System information copied to clipboard.")))
