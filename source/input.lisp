@@ -8,14 +8,14 @@
                 make-keymap))
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
-  "Like `keymap:make-keymap' but only allow binding functions.
+  "Like `keymap:make-keymap' but only allow binding function symbols.
 
 Example:
 
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
   (let ((keymap (apply #'keymap:make-keymap name parents)))
-    (setf (keymap:bound-type keymap) '(or keymap:keymap function))
+    (setf (keymap:bound-type keymap) '(or keymap:keymap function-symbol))
     keymap))
 
 (export-always 'current-keymaps)
@@ -87,7 +87,7 @@ Return nil to forward to renderer or non-nil otherwise."
               (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
               t)
 
-             ((functionp bound-function)
+             ((typep bound-function 'function-symbol)
               (log:debug "Key sequence ~a" (keyspecs key-stack translated-key))
               (funcall-safely bound-function)
               (setf key-stack nil)

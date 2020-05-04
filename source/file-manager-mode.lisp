@@ -89,15 +89,15 @@ command `open-file'."
     (define-scheme "file-manager"
       scheme:emacs
       (list
-       "M-left" #'display-parent-directory
-       "C-l" #'display-parent-directory
-       "C-j" #'enter-directory
-       "M-right" #'enter-directory)
+       "M-left" 'display-parent-directory
+       "C-l" 'display-parent-directory
+       "C-j" 'enter-directory
+       "M-right" 'enter-directory)
 
       scheme:vi-normal
       (list
-       "M-right" #'enter-directory
-       "M-left" #'display-parent-directory)))))
+       "M-right" 'enter-directory
+       "M-left" 'display-parent-directory)))))
 
 (serapeum:export-always 'open-file-from-directory-completion-filter)
 (defun open-file-from-directory-completion-filter (input &optional (directory (uiop:getcwd)))

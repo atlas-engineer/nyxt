@@ -221,10 +221,10 @@ complete against a search engine."
     (define-scheme "set-url"
       scheme:emacs
       (list
-       "tab" #'insert-candidate-or-search-engine)
+       "tab" 'insert-candidate-or-search-engine)
       scheme:vi-normal
       (list
-       "tab" #'insert-candidate-or-search-engine)))))
+       "tab" 'insert-candidate-or-search-engine)))))
 
 (define-command set-url (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."

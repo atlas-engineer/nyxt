@@ -23,8 +23,8 @@ vi-normal-mode.")
     (define-scheme "vi"
       scheme:vi-normal
       (list
-        "i" #'vi-insert-mode
-        "button1" #'vi-button1)))
+        "i" 'vi-insert-mode
+        "button1" 'vi-button1)))
    (destructor
     :initform
     (lambda (mode)
@@ -62,13 +62,13 @@ vi-normal-mode.")
     (define-scheme "vi"
       scheme:vi-insert
       (list
-       "C-i" #'autofill
+       "C-i" 'autofill
        ;; TODO: Forwarding C-v / button2 crashes cl-webkit.  See
-       ;; https://github.com/atlas-engineer/next/issues/593#issuecomment-599051350
-       "C-v" #'next/web-mode:paste
-       "button2" #'next/web-mode:paste-or-set-url
-       "escape" #'vi-normal-mode
-       "button1" #'vi-button1)))
+       ;; https://github.com/atlas-engineer/next/issues/593issuecomment-599051350
+       "C-v" 'next/web-mode:paste
+       "button2" 'next/web-mode:paste-or-set-url
+       "escape" 'vi-normal-mode
+       "button1" 'vi-button1)))
    (destructor
     :initform
     (lambda (mode)

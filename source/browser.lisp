@@ -203,7 +203,7 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
                  :initarg :override-map
                  :initform (let ((map (make-keymap "overide-map")))
                              (define-key map
-                               "C-space" #'execute-command)
+                               "C-space" 'execute-command)
                              map)
                  :documentation "Keymap that overrides all other bindings.
 No libraries should ever touch the override-map, this is left for the user to
@@ -214,8 +214,8 @@ Example:
 \(define-configuration buffer
   ((override-map (let ((map (make-keymap \"overide-map\")))
                              (define-key map
-                               \"M-x\" #'execute-command
-                               \"C-q\" #'quit)
+                               \"M-x\" 'execute-command
+                               \"C-q\" 'quit)
                    map))))")
    (forward-input-events-p :accessor forward-input-events-p
                            :initarg :forward-input-events-p
@@ -234,9 +234,9 @@ forwarded when no binding is found.")
                             :initform (define-scheme "request-resource"
                                         scheme:cua
                                         (list
-                                         "C-button1" #'request-resource-open-url-focus
-                                         "button2" #'request-resource-open-url-focus
-                                         "C-shift-button1" #'request-resource-open-url))
+                                         "C-button1" 'request-resource-open-url-focus
+                                         "button2" 'request-resource-open-url-focus
+                                         "C-shift-button1" 'request-resource-open-url))
                             :documentation "This keymap can be looked up when
 `request-resource-hook' handlers run.
 The functions are expected to take key arguments like `:url'.")

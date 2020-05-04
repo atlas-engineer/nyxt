@@ -11,9 +11,9 @@
     (define-scheme "help"
       scheme:emacs
       (list
-       "C-p" #'scroll-up
-       "C-n" #'scroll-down)
+       "C-p" 'scroll-up
+       "C-n" 'scroll-down)
       scheme:vi-normal
       (list
-       "k" #'scroll-up
-       "j" #'scroll-down)))))
+       "k" 'scroll-up
+       "j" 'scroll-down)))))
