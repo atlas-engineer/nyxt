@@ -35,6 +35,7 @@
                :trivial-types
                :unix-opts
                ;; Local systems:
+               :next/text-analysis
                :next/download-manager
                :next/history-tree
                :next/password-manager
@@ -161,6 +162,14 @@
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/download-manager/tests/"))))
+
+(asdf:defsystem next/text-analysis
+  :depends-on (str)
+  :pathname "libraries/text-analysis//"
+  :components ((:file "package")
+               (:file "data")
+               (:file "stem")
+               (:file "analysis")))
 
 (asdf:defsystem next/history-tree
   :pathname "libraries/history-tree/"

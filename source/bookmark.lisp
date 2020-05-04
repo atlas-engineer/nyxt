@@ -158,24 +158,34 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
-  (if (url buffer)
-      (with-result (tags (read-from-minibuffer
-                          (make-minibuffer
-                           :input-prompt "Space-separated tag(s)"
-                           :multi-selection-p t
-                           :completion-function (tag-completion-filter :with-empty-tag t)
-                           :empty-complete-immediate t)))
-        (when tags
-          ;; Turn tags with spaces into multiple tags.
-          (setf tags (alex:flatten
-                      (mapcar (lambda (tag)
-                                (str:split " " tag :omit-nulls t))
-                              tags))))
-        (bookmark-add (url buffer)
-                       :title (title buffer)
-                       :tags tags)
-        (echo "Bookmarked ~a." (quri:url-decode (url buffer))))
-      (echo "Buffer has no URL.")))
+  (flet ((extract-keywords (html limit)
+           (format nil "~{~a~^ ~}"
+                   (loop for el in (mapcar #'car
+                                           (text-analysis:document-keywords
+                                            (make-instance 
+                                             'text-analysis:document 
+                                             :string-contents (plump:text (plump:parse html)))))
+                         repeat limit collect el))))
+    (if (url buffer)
+        (with-result* ((body (document-get-body :buffer buffer))
+                       (tags (read-from-minibuffer
+                              (make-minibuffer
+                               :input-prompt "Space-separated tag(s)"
+                               :input-buffer (extract-keywords body 5)
+                               :multi-selection-p t
+                               :completion-function (tag-completion-filter :with-empty-tag t)
+                               :empty-complete-immediate t))))
+          (when tags
+            ;; Turn tags with spaces into multiple tags.
+            (setf tags (alex:flatten
+                        (mapcar (lambda (tag)
+                                  (str:split " " tag :omit-nulls t))
+                                tags))))
+          (bookmark-add (url buffer)
+                        :title (title buffer)
+                        :tags tags)
+          (echo "Bookmarked ~a." (quri:url-decode (url buffer))))
+        (echo "Buffer has no URL."))))
 
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."
