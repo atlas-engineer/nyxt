@@ -433,10 +433,6 @@ Otherwise go forward to the only child."
                                                   (clipboard-ring *browser*)))))
     (%paste :input-text ring-item)))
 
-(defun copy-to-clipboard (input)
-  "Save INPUT text to clipboard, and ring."
-  (containers:insert-item (clipboard-ring *browser*) (trivial-clipboard:text input)))
-
 (define-command copy ()
   "Copy selected text to clipboard."
   (with-result (input (%copy))

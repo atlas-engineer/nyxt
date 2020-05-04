@@ -200,3 +200,8 @@ Initialization file use case:
 (defun make-ring (&key (size 1000))
   "Return a new ring buffer."
   (containers:make-ring-buffer size :last-in-first-out))
+
+(export-always 'copy-to-clipboard)
+(defun copy-to-clipboard (input)
+  "Save INPUT text to clipboard, and ring."
+  (containers:insert-item (clipboard-ring *browser*) (trivial-clipboard:text input)))
