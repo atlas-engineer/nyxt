@@ -3,7 +3,7 @@
 (in-package :text-analysis)
 
 (defun tokenize-string (string &key (remove-stop-words t) (stem nil) (down-case t))
-  (let* ((tokens (str:split " " string))
+  (let* ((tokens (str:split " " (str:collapse-whitespaces string)))
          (tokens (if remove-stop-words
                      (delete-if (lambda (x) (gethash (string-downcase  x) (stop-words-lookup *language-data*))) tokens)
                      tokens))
