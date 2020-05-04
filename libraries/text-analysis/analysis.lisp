@@ -2,13 +2,16 @@
 
 (in-package :text-analysis)
 
-(defun tokenize-string (string &key (remove-stop-words t) (stem t))
+(defun tokenize-string (string &key (remove-stop-words t) (stem t) (down-case t))
   (let* ((tokens (str:split " " string))
          (tokens (if remove-stop-words
                      (delete-if (lambda (x) (gethash x (stop-words-lookup *language-data*))) tokens)
                      tokens))
          (tokens (if stem
                      (mapcar #'stem tokens)
+                     tokens))
+         (tokens (if down-case
+                     (mapcar #'string-downcase tokens)
                      tokens)))
     tokens))
 
