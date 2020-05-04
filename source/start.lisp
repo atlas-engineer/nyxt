@@ -61,7 +61,7 @@ use the socket without parsing any init file.")
            :long "socket"
            :arg-parser #'identity
            :description "Set path to socket.
-Unless evaluating remotely (see --remote), Next starts in single-instance mode a socket is set.")
+Unless evaluating remotely (see --remote), Next starts in single-instance mode when a socket is set.")
     (:name :no-socket
            :short #\S
            :long "no-socket"
@@ -76,6 +76,10 @@ Unless evaluating remotely (see --remote), Next starts in single-instance mode a
            :long "load"
            :arg-parser #'identity
            :description "Load the Lisp file.  Can be specified multiple times.")
+    (:name :quit
+           :short #\q
+           :long "quit"
+           :description "Quit after --load or --eval.")
     (:name :script
            :long "script"
            :arg-parser #'identity
@@ -85,6 +89,7 @@ Set to '-' to read standard input instead.")
            :short #\r
            :long "remote"
            :description "Send the --eval and --load arguments to the running instance of Next.
+Implies --quit.
 The remote instance must be listening on a socket which you can specify with --socket.")
     (:name :data-profile
            :short #\d
@@ -365,9 +370,7 @@ REPL examples:
 
   (cond
     ((getf options :help)
-     (opts:describe :prefix "Next command line usage:
-
-next [options] [urls]"))
+     (opts:describe :prefix "next [options] [URLs]"))
 
     ((getf options :version)
      (format t "Next version ~a~&" +version+))
@@ -389,8 +392,10 @@ next [options] [urls]"))
          (file (with-open-file (f file :element-type :default)
                  (run-script f))))))
 
-    ((or (getf options :load)
-         (getf options :eval))
+    ((and (or (getf options :load)
+              (getf options :eval))
+          (or (getf options :quit)
+              (getf options :remote)))
      (start-load-or-eval))
 
     (t
@@ -398,23 +403,26 @@ next [options] [urls]"))
 
   (unless *keep-alive* (uiop:quit)))
 
+(defun load-or-eval (&key remote)
+  (loop for (opt value . _) on *options*
+        do (match opt
+             (:load (let ((value (uiop:truename* value)))
+                      ;; Absolute path is necessary since remote process may have
+                      ;; a different working directory.
+                      (if remote
+                          (remote-eval (format nil "~s" `(load-lisp ,value)))
+                          (load-lisp value))))
+             (:eval (if remote
+                        (remote-eval value)
+                        (eval-expr value))))))
+
 (defun start-load-or-eval ()
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
   (unless (or (getf *options* :no-init)
               (not (expand-path *init-file-path*)))
     (load-lisp (expand-path *init-file-path*) :package (find-package :next-user)))
-  (loop for (opt value . _) on *options*
-        do (match opt
-             (:load (let ((value (uiop:truename* value)))
-                      ;; Absolute path is necessary since remote process may have
-                      ;; a different working directory.
-                      (if (getf *options* :remote)
-                          (remote-eval (format nil "~s" `(load-lisp ,value)))
-                          (load-lisp value))))
-             (:eval (if (getf *options* :remote)
-                        (remote-eval value)
-                        (eval-expr value))))))
+  (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (free-args)
   "Load INIT-FILE if non-nil.
@@ -435,6 +443,7 @@ Finally,run the `*after-init-hook*'."
                (lambda ()
                  (notify (str:concat message "."))
                  (error-in-new-window "*Init file errors*" full-message))))))
+    (load-or-eval :remote nil)
     (setf *browser* (make-instance *browser-class*
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
