@@ -58,6 +58,8 @@ search.")
        "C-=" #'zoom-in-page             ; Because + shifted = on QWERTY.
        "C-hyphen" #'zoom-out-page
        "C-0" #'unzoom-page
+       "C-button4" #'zoom-in-page
+       "C-button5" #'zoom-out-page
        "f5" #'reload-current-buffer
        "C-r" #'reload-current-buffer
        "C-R" #'reload-buffer
