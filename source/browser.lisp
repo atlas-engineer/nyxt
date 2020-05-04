@@ -1053,6 +1053,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-inspector-show ((buffer buffer)))
 (define-ffi-method ffi-print-status ((window window) text))
 (define-ffi-method ffi-print-message ((window window) message))
+(define-ffi-method ffi-buffer-cookie-policy ((buffer buffer) value))
 
 (define-class-type browser)
 (declaim (type (browser-type) *browser-class*))

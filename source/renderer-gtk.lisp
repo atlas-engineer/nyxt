@@ -724,6 +724,18 @@ requested a reload."
        (ps:ps (setf (ps:@ document Body |innerHTML|)
                     (ps:lisp text)))))))
 
+(defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer) value)
+  "VALUE is one of`:always', `:never' or `:no-third-party'."
+  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+    (webkit:webkit-cookie-manager-set-accept-policy
+     cookie-manager
+     (match value
+       (:accept :webkit-cookie-policy-accept-always)
+       (:never :webkit-cookie-policy-accept-never)
+       (:no-third-party :webkit-cookie-policy-accept-no-third-party)))
+    buffer))
+
 (defstruct webkit-history-entry
   title
   uri
