@@ -378,6 +378,9 @@ Warning: This behaviour may change in the future."
        cookie-manager
        (expand-path (cookies-path buffer))
        :webkit-cookie-persistent-storage-text))
+    (webkit:webkit-cookie-manager-set-accept-policy
+     cookie-manager
+     :webkit-cookie-policy-accept-no-third-party)
     context))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
