@@ -565,6 +565,24 @@ Warning: This behaviour may change in the future."
    (lambda (web-view param-spec)
      (declare (ignore web-view param-spec))
      (on-signal-notify-uri buffer nil)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "context-menu"
+   (lambda (web-view context-menu event hit-test-result)
+     (declare (ignore web-view event hit-test-result))
+     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
+       (dolist (i (alex:iota length))
+         (let* ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
+           ;; TODO: Remove "Download Linked File" item.
+           (match (webkit:webkit-context-menu-item-get-stock-action item)
+             ((or :webkit-context-menu-action-open-link-in-new-window
+                  :webkit-context-menu-action-download-link-to-disk
+                  :webkit-context-menu-action-download-image-to-disk
+                  :webkit-context-menu-action-download-video-to-disk
+                  :webkit-context-menu-action-download-audio-to-disk
+                  :webkit-context-menu-action-paste)
+              (webkit:webkit-context-menu-remove context-menu item))))))
+     ;; Return t to prevent the context menu from showing.
+     nil))
   buffer)
 
 (defmethod ffi-buffer-delete ((buffer gtk-buffer))
