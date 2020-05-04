@@ -2,8 +2,9 @@
 
 (in-package :text-analysis)
 
-(defun tokenize-string (string &key (remove-stop-words t) (stem nil) (down-case t))
-  (let* ((tokens (str:split " " (str:collapse-whitespaces string)))
+(defun tokenize-string (string &key (remove-stop-words t) (stem nil) (down-case t) (alphabeticp t))
+  (let* ((alpha-scanner (cl-ppcre:create-scanner "[A-Za-z_]"))
+         (tokens (str:split " " (str:collapse-whitespaces string)))
          (tokens (if remove-stop-words
                      (delete-if (lambda (x) (gethash (string-downcase  x) (stop-words-lookup *language-data*))) tokens)
                      tokens))
@@ -12,6 +13,9 @@
                      tokens))
          (tokens (if down-case
                      (mapcar #'string-downcase tokens)
+                     tokens))
+         (tokens (if alphabeticp
+                     (delete-if-not (lambda (x) (cl-ppcre:scan alpha-scanner x)) tokens)
                      tokens)))
     tokens))
 
