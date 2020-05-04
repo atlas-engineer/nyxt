@@ -371,7 +371,7 @@ Warning: This behaviour may change in the future."
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
-  (let* ((context (webkit:webkit-web-context-get-default))
+  (let* ((context (make-instance 'webkit:webkit-web-context))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (when (and buffer (expand-path (cookies-path buffer)))
       (webkit:webkit-cookie-manager-set-persistent-storage
@@ -525,8 +525,7 @@ Warning: This behaviour may change in the future."
   "Initialize BUFFER's GTK web view."
   (setf (gtk-object buffer)
         (make-instance 'webkit:webkit-web-view
-                       ;; TODO: Should be :web-context, shouldn't it?
-                       :context (make-context buffer)))
+                       :web-context (make-context buffer)))
   (ffi-buffer-enable-smooth-scrolling buffer t)
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
