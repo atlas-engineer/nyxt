@@ -137,7 +137,7 @@ Example:
                             (make-handler-resource #'request-resource-block))
             (make-hook-resource
              :combination #'combine-composed-hook-until-non-nil-second-value
-             :handlers (list (make-handler-resource #'request-resource-block))))))))
+             :handlers (list #'request-resource-block)))))))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.

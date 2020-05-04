@@ -235,7 +235,7 @@ The functions are expected to take key arguments like `:url'.")
                           :initarg :request-resource-hook
                           :initform (make-hook-resource
                                      :combination #'combine-composed-hook-until-non-nil-second-value
-                                     :handlers (list (make-handler-resource #'request-resource)))
+                                     :handlers (list #'request-resource))
                           :documentation "Hook run on every resource load.
 The handlers are composed, passing a `request-data' until one returns a non-nil
 second value.
