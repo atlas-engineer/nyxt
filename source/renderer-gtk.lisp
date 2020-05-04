@@ -262,6 +262,15 @@ See `gtk-browser's `modifier-translator' slot."
 (defun button-event-modifiers (button-event)
   (gdk-event-button-state button-event))
 
+#+darwin
+(defun scroll-event-modifiers (scroll-event)
+  (declare (ignore scroll-event))
+  (modifiers *browser*))
+
+#-darwin
+(defun scroll-event-modifiers (scroll-event)
+  (gdk:gdk-event-scroll-state scroll-event))
+
 (defmethod printable-p ((window gtk-window) event)
   "Return the printable value of EVENT."
   ;; Generate the result of the current keypress into the dummy
@@ -325,10 +334,39 @@ Warning: This behaviour may change in the future."
                              event)))
     (when key-string
       (alex:appendf (key-stack *browser*)
-                          (list (keymap:make-key
-                                 :value key-string
-                                 :modifiers modifiers
-                                 :status :pressed)))
+                    (list (keymap:make-key
+                           :value key-string
+                           :modifiers modifiers
+                           :status :pressed)))
+      (funcall (input-dispatcher window) event sender window nil))))
+
+(defmethod on-signal-scroll-event ((sender gtk-buffer) event)
+  (let* ((button (match (gdk:gdk-event-scroll-direction event)
+                   (:up 4)
+                   (:down 5)
+                   (:left 6)
+                   (:right 7)
+                   (:smooth
+                    (cond
+                      ((>= 0 (gdk:gdk-event-scroll-delta-y event))
+                       4)
+                      ((< 0 (gdk:gdk-event-scroll-delta-y event))
+                       5)
+                      ((>= 0 (gdk:gdk-event-scroll-delta-x event))
+                       6)
+                      ((< 0 (gdk:gdk-event-scroll-delta-x event))
+                       7)))))
+         (window (find sender (window-list) :key #'active-buffer))
+         (key-string (format nil "button~s" button))
+         (modifiers (funcall (modifier-translator *browser*)
+                             (scroll-event-modifiers event)
+                             event)))
+    (when key-string
+      (alex:appendf (key-stack *browser*)
+                    (list (keymap:make-key
+                           :value key-string
+                           :modifiers modifiers
+                           :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
 (declaim (ftype (function (&optional buffer)) make-context))
@@ -510,6 +548,10 @@ Warning: This behaviour may change in the future."
    (gtk-object buffer) "button-press-event"
    (lambda (web-view event) (declare (ignore web-view))
      (on-signal-button-press-event buffer event)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "scroll-event"
+   (lambda (web-view event) (declare (ignore web-view))
+     (on-signal-scroll-event buffer event)))
   ;; TODO: Capture button-release-event?
   ;; TLS certificate handling
   (gobject:g-signal-connect
@@ -622,7 +664,9 @@ requested a reload."
     (gdk:gdk-event-button
      (setf (gdk:gdk-event-button-send-event event) t))
     (gdk:gdk-event-key
-     (setf (gdk:gdk-event-key-send-event event) t)))
+     (setf (gdk:gdk-event-key-send-event event) t))
+    (gdk:gdk-event-scroll
+     (setf (gdk:gdk-event-scroll-send-event event) t)))
   (gtk:gtk-main-do-event event))
 
 (defmethod ffi-generated-input-event-p ((window gtk-window) event)
