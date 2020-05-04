@@ -217,7 +217,7 @@ complete against a search engine."
   "Set the URL for the current buffer, completing with history."
   (let ((history (minibuffer-set-url-history *browser*)))
     (when history
-      (ring:insert history (url (current-buffer))))
+      (containers:insert-item history (url (current-buffer))))
     (with-result (url (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt (format nil "Open URL in ~A buffer"

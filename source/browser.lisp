@@ -428,11 +428,11 @@ This slot is mostly meant to clean up the thread if necessary.")
    (messages-content :accessor messages-content :initform nil :type :list
                      :documentation "A cl-markup plist of all echoed messages.
 Most recent messages are first.")
-   (clipboard-ring :accessor clipboard-ring :initform (ring:make))
-   (minibuffer-generic-history :accessor minibuffer-generic-history :initform (ring:make))
-   (minibuffer-search-history :accessor minibuffer-search-history :initform (ring:make))
-   (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (ring:make))
-   (recent-buffers :accessor recent-buffers :initform (ring:make :size 50)
+   (clipboard-ring :accessor clipboard-ring :initform (make-ring))
+   (minibuffer-generic-history :accessor minibuffer-generic-history :initform (make-ring))
+   (minibuffer-search-history :accessor minibuffer-search-history :initform (make-ring))
+   (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (make-ring))
+   (recent-buffers :accessor recent-buffers :initform (make-ring :size 50)
                    :documentation "A ring that keeps track of deleted buffers.")
    (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p :initform t) ; TODO: Replace this with minibuffer Helm-style actions.
    (windows :accessor windows :initform (make-hash-table :test #'equal))
@@ -705,8 +705,8 @@ Persist the `bookmarks-data' slot from BROWSER to `bookmarks-path' with
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
   ;; Make sure it's a dead buffer:
   (setf (id buffer) "")
-  (ring:delete-match (recent-buffers *browser*) (buffer-match-predicate buffer))
-  (ring:insert (recent-buffers *browser*) buffer))
+  (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
+  (containers:insert-item (recent-buffers *browser*) buffer))
 
 (defun download-watch ()
   "Update the download-list buffer.

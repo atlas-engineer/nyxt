@@ -80,18 +80,6 @@ designed for power users.  The application has familiar Emacs and VI
 key-bindings and is fully configurable and extensible in Common Lisp.")
     (license bsd-3)))
 
-(define sbcl-next-ring
-  (package
-    (inherit sbcl-next-download-manager)
-    (name "sbcl-next-ring")
-    (build-system asdf-build-system/sbcl)
-    (arguments
-     `(#:asd-file "next.asd"
-       #:asd-system-name "next/ring"))
-    (native-inputs
-     `(("prove" ,sbcl-prove)))
-    (synopsis "Extensible web-browser in Common Lisp (ring)")))
-
 (define sbcl-next-history-tree
   (package
     (inherit sbcl-next-download-manager)
@@ -168,6 +156,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("cl-ppcre-unicode" ,sbcl-cl-ppcre-unicode)
        ("cl-prevalence" ,sbcl-cl-prevalence)
        ("closer-mop" ,sbcl-closer-mop)
+       ("cl-containers" ,sbcl-cl-containers)
        ("dexador" ,sbcl-dexador)
        ("enchant" ,sbcl-enchant)
        ("fset" ,sbcl-fset)
@@ -192,7 +181,6 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("unix-opts" ,sbcl-unix-opts)
        ;; Local deps
        ("next-download-manager" ,sbcl-next-download-manager)
-       ("next-ring" ,sbcl-next-ring)
        ("next-history-tree" ,sbcl-next-history-tree)
        ("next-password-manager" ,sbcl-next-password-manager)
        ("next-hooks" ,sbcl-next-hooks)

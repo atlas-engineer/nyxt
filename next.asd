@@ -12,6 +12,7 @@
                :cl-ppcre-unicode
                :cl-prevalence
                :closer-mop
+               :cl-containers
                :moptilities
                :dexador
                :enchant
@@ -35,7 +36,6 @@
                :unix-opts
                ;; Local systems:
                :next/download-manager
-               :next/ring
                :next/history-tree
                :next/password-manager
                :next/hooks
@@ -161,18 +161,6 @@
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/download-manager/tests/"))))
-
-(asdf:defsystem next/ring
-  :pathname "libraries/ring/"
-  :components ((:file "package")
-               (:file "ring"))
-  :in-order-to ((test-op (test-op "next/ring/tests"))))
-
-(asdf:defsystem next/ring/tests
-  :depends-on (next/ring prove)
-  :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "libraries/ring/tests/"))))
 
 (asdf:defsystem next/history-tree
   :pathname "libraries/history-tree/"

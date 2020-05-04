@@ -10,7 +10,7 @@
            (string= (title buffer) (title other-buffer))))))
 
 (defun recent-buffer-completion-filter ()
-  (let ((buffers (ring:recent-list (recent-buffers *browser*))))
+  (let ((buffers (containers:container->list (recent-buffers *browser*))))
     (lambda (input)
       (fuzzy-match input buffers))))
 
@@ -22,7 +22,7 @@
                           :multi-selection-p t
                           :completion-function (recent-buffer-completion-filter))))
     (dolist (buffer buffers)
-      (ring:delete-match (recent-buffers *browser*) (buffer-match-predicate buffer))
+      (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
       (reload-current-buffer (buffer-make *browser* :dead-buffer buffer))
       (when (and (eq buffer (first buffers))
                  (focus-on-reopened-buffer-p *browser*))
@@ -30,9 +30,10 @@
 
 (define-command reopen-last-buffer ()
   "Open a new buffer with the URL of the most recently deleted buffer."
-  (if (plusp (ring:item-count (recent-buffers *browser*)))
-      (let ((buffer (buffer-make *browser*
-                     :dead-buffer (ring:pop-most-recent (recent-buffers *browser*)))))
+  (if (plusp (containers:size (recent-buffers *browser*)))
+      (let ((buffer (buffer-make
+                     *browser*
+                     :dead-buffer (containers:delete-first (recent-buffers *browser*)))))
         (reload-current-buffer buffer)
         (when (focus-on-reopened-buffer-p *browser*)
           (set-current-buffer buffer)))

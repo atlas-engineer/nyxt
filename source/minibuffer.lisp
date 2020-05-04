@@ -111,7 +111,7 @@ This should not rely on the minibuffer's content.")
                       conceal passwords.")
    (history :initarg :history :accessor history
             :initform (minibuffer-generic-history *browser*)
-            :type ring:ring
+            :type containers:ring-buffer-reverse
             :documentation "History of inputs for the minibuffer. If
             nil, no history is used.")
    (multi-selection-p :initarg :multi-selection-p :accessor multi-selection-p
@@ -370,7 +370,7 @@ calls, such as invoking `minibuffer-history'."))
   (unless (or (null (history minibuffer))
               (str:empty? (input-buffer minibuffer)))
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (ring:insert (history minibuffer) normalized-input)))
+      (containers:insert-item (history minibuffer) normalized-input)))
   (cancel-input minibuffer))
 
 (define-command cancel-input (&optional (minibuffer (current-minibuffer)))
@@ -816,16 +816,16 @@ Possible improvements:
   ;; Don't add to the *Messages* buffer:
   (%echo "" :message nil))
 
-(declaim (ftype (function (ring:ring) string) ring-insert-clipboard))
+(declaim (ftype (function (containers:ring-buffer-reverse) string) ring-insert-clipboard))
 (export-always 'ring-insert-clipboard)
 (defun ring-insert-clipboard (ring)
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
 Return most recent entry in RING."
   (let ((clipboard-content (trivial-clipboard:text)))
-    (unless (string= clipboard-content (ring:ref ring 0))
-      (ring:insert ring clipboard-content)))
-  (string (ring:ref ring 0)))
+    (unless (string= clipboard-content (containers:first-item ring))
+      (containers:insert-item ring clipboard-content)))
+  (string (containers:first-item ring)))
 
 (define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
@@ -864,11 +864,12 @@ readable."
                   candidate)
               minibuffer))))
 
-(declaim (ftype (function (ring:ring)) minibuffer-history-completion-filter))
+(declaim (ftype (function (containers:ring-buffer-reverse))
+                minibuffer-history-completion-filter))
 (defun minibuffer-history-completion-filter (history)
   (when history
     (lambda (input)
-      (fuzzy-match input (delete-duplicates (ring:recent-list history)
+      (fuzzy-match input (delete-duplicates (containers:container->list history)
                                             :test #'equal)))))
 
 (define-command minibuffer-history (&optional (minibuffer (current-minibuffer)))

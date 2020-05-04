@@ -423,7 +423,7 @@ Otherwise go forward to the only child."
   (%paste))
 
 (defun ring-completion-filter (ring)
-  (let ((ring-items (ring:recent-list ring)))
+  (let ((ring-items (containers:container->list ring)))
     (lambda (input)
       (fuzzy-match input ring-items))))
 
@@ -437,7 +437,7 @@ Otherwise go forward to the only child."
 
 (defun copy-to-clipboard (input)
   "Save INPUT text to clipboard, and ring."
-  (ring:insert (clipboard-ring *browser*) (trivial-clipboard:text input)))
+  (containers:insert-item (clipboard-ring *browser*) (trivial-clipboard:text input)))
 
 (define-command copy ()
   "Copy selected text to clipboard."

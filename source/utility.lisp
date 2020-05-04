@@ -193,3 +193,7 @@ Initialization file use case:
    (ql:quickload system :silent t)
    #-quicklisp
    (asdf:load-system system)))
+
+(defun make-ring (&key (size 1000))
+  "Return a new ring buffer."
+  (containers:make-ring-buffer size :last-in-first-out))
