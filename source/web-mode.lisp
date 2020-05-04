@@ -54,8 +54,6 @@ search.")
        "C-c" #'copy
        "button9" #'history-forwards
        "button8" #'history-backwards
-       "up" #'scroll-up
-       "down" #'scroll-down
        "C-+" #'zoom-in-page
        "C-=" #'zoom-in-page             ; Because + shifted = on QWERTY.
        "C-hyphen" #'zoom-out-page
@@ -81,7 +79,6 @@ search.")
        "M-c t" #'copy-title
        ;; Leave SPACE unbound so that the renderer decides wether to
        ;; insert of scroll.
-       "s-space" #'scroll-page-up
 
        ;; keypad:
        "pageup" #'scroll-page-up
@@ -140,7 +137,6 @@ search.")
        "M-w" #'copy-title
        ;; Leave 'space' unbound so that the renderer decides wether to insert of
        ;; scroll.
-       "s-space" #'scroll-page-up
 
        ;; keypad:
        "pageup" #'scroll-page-up
