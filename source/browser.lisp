@@ -1,5 +1,3 @@
-;;; interface.lisp --- interface state
-
 (in-package :next)
 
 ;; Create necessary hook types. We must forward-declare the class
