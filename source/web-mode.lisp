@@ -35,189 +35,189 @@ search.")
     (define-scheme "web"
       scheme:cua
       (list
-       "C-M-right" #'history-forwards-all-query
-       "C-M-left" #'history-all-query
-       "C-shift-h" #'history-all-query
-       "C-shift-H" #'history-all-query
-       "M-shift-right" #'history-forwards-query
-       "M-shift-left" #'history-backwards-query
-       "M-right" #'history-forwards
-       "M-left" #'history-backwards
-       "M-]" #'history-forwards
-       "M-[" #'history-backwards
-       "C-g" #'follow-hint
-       "M-g" #'follow-hint-new-buffer-focus
-       "C-u M-g" #'follow-hint-new-buffer
-       "C-x C-w" #'copy-hint-url
-       "C-v" #'paste
-       "button2" #'paste-or-set-url
-       "C-c" #'copy
-       "button9" #'history-forwards
-       "button8" #'history-backwards
-       "C-+" #'zoom-in-page
-       "C-=" #'zoom-in-page             ; Because + shifted = on QWERTY.
-       "C-hyphen" #'zoom-out-page
-       "C-0" #'unzoom-page
-       "C-button4" #'zoom-in-page
-       "C-button5" #'zoom-out-page
-       "f5" #'reload-current-buffer
-       "C-r" #'reload-current-buffer
-       "C-R" #'reload-buffer
-       "C-m o" #'set-url-from-bookmark
-       "C-m s" #'bookmark-current-page
-       "C-d" #'bookmark-current-page
-       "C-m C-s" #'bookmark-page
-       "C-M-c" #'open-inspector
-       "C-m g" #'bookmark-hint
-       "C-f" #'search-buffer
-       "f3" #'search-buffer
-       "M-f" #'remove-search-hints
-       "C-." #'jump-to-heading
-       "end" #'maybe-scroll-to-bottom
-       "home" #'maybe-scroll-to-top
-       "C-down" #'scroll-to-bottom
-       "C-up" #'scroll-to-top
-       "M-c l" #'copy-url
-       "M-c t" #'copy-title
+       "C-M-right" 'history-forwards-all-query
+       "C-M-left" 'history-all-query
+       "C-shift-h" 'history-all-query
+       "C-shift-H" 'history-all-query
+       "M-shift-right" 'history-forwards-query
+       "M-shift-left" 'history-backwards-query
+       "M-right" 'history-forwards
+       "M-left" 'history-backwards
+       "M-]" 'history-forwards
+       "M-[" 'history-backwards
+       "C-g" 'follow-hint
+       "M-g" 'follow-hint-new-buffer-focus
+       "C-u M-g" 'follow-hint-new-buffer
+       "C-x C-w" 'copy-hint-url
+       "C-v" 'paste
+       "button2" 'paste-or-set-url
+       "C-c" 'copy
+       "button9" 'history-forwards
+       "button8" 'history-backwards
+       "C-+" 'zoom-in-page
+       "C-=" 'zoom-in-page             ; Because + shifted = on QWERTY.
+       "C-hyphen" 'zoom-out-page
+       "C-0" 'unzoom-page
+       "C-button4" 'zoom-in-page
+       "C-button5" 'zoom-out-page
+       "f5" 'reload-current-buffer
+       "C-r" 'reload-current-buffer
+       "C-R" 'reload-buffer
+       "C-m o" 'set-url-from-bookmark
+       "C-m s" 'bookmark-current-page
+       "C-d" 'bookmark-current-page
+       "C-m C-s" 'bookmark-page
+       "C-M-c" 'open-inspector
+       "C-m g" 'bookmark-hint
+       "C-f" 'search-buffer
+       "f3" 'search-buffer
+       "M-f" 'remove-search-hints
+       "C-." 'jump-to-heading
+       "end" 'maybe-scroll-to-bottom
+       "home" 'maybe-scroll-to-top
+       "C-down" 'scroll-to-bottom
+       "C-up" 'scroll-to-top
+       "M-c l" 'copy-url
+       "M-c t" 'copy-title
        ;; Leave SPACE unbound so that the renderer decides wether to
        ;; insert of scroll.
 
        ;; keypad:
-       "pageup" #'scroll-page-up
-       "pagedown" #'scroll-page-down
-       "pageend" #'scroll-to-bottom
-       "pagehome" #'scroll-to-top
+       "pageup" 'scroll-page-up
+       "pagedown" 'scroll-page-down
+       "pageend" 'scroll-to-bottom
+       "pagehome" 'scroll-to-top
        ;; keypad, gtk:
-       "keypadleft" #'scroll-left
-       "keypaddown" #'scroll-down
-       "keypadup" #'scroll-up
-       "keypadright" #'scroll-right
-       "keypadend" #'scroll-to-bottom
-       "keypadhome" #'scroll-to-top
-       "keypadnext" #'scroll-page-down
-       "keypadpageup" #'scroll-page-up
-       "keypadprior" #'scroll-page-up)
+       "keypadleft" 'scroll-left
+       "keypaddown" 'scroll-down
+       "keypadup" 'scroll-up
+       "keypadright" 'scroll-right
+       "keypadend" 'scroll-to-bottom
+       "keypadhome" 'scroll-to-top
+       "keypadnext" 'scroll-page-down
+       "keypadpageup" 'scroll-page-up
+       "keypadprior" 'scroll-page-up)
 
       scheme:emacs
       (list
-       "C-M-f" #'history-forwards-all-query
-       "C-M-b" #'history-all-query
-       "M-f" #'history-forwards-query
-       "M-b" #'history-backwards-query
-       "C-f" #'history-forwards
-       "C-b" #'history-backwards
-       "C-g" #'follow-hint
-       "M-g" #'follow-hint-new-buffer-focus
-       "C-u M-g" #'follow-hint-new-buffer
-       "C-x C-w" #'copy-hint-url
-       "M-y" #'paste
-       "C-y" #'copy
-       "button9" #'history-forwards
-       "button8" #'history-backwards
-       "C-p" #'scroll-up
-       "C-n" #'scroll-down
-       "C-x C-+" #'zoom-in-page
-       "C-x C-=" #'zoom-in-page ; Because + shifted = on QWERTY.
-       "C-x C-hyphen" #'zoom-out-page
-       "C-x C-0" #'unzoom-page
-       "C-r" #'reload-current-buffer
-       "C-R" #'reload-buffer
-       "C-m o" #'set-url-from-bookmark
-       "C-m s" #'bookmark-current-page
-       "C-m C-s" #'bookmark-page
-       "C-m g" #'bookmark-hint
-       "C-s s" #'search-buffer
-       "C-s k" #'remove-search-hints
-       "C-." #'jump-to-heading
-       "M-s->" #'scroll-to-bottom
-       "M-s-<" #'scroll-to-top
-       "M->" #'scroll-to-bottom
-       "M-<" #'scroll-to-top
-       "C-v" #'scroll-page-down
-       "M-v" #'scroll-page-up
-       "C-w" #'copy-url
-       "M-w" #'copy-title
+       "C-M-f" 'history-forwards-all-query
+       "C-M-b" 'history-all-query
+       "M-f" 'history-forwards-query
+       "M-b" 'history-backwards-query
+       "C-f" 'history-forwards
+       "C-b" 'history-backwards
+       "C-g" 'follow-hint
+       "M-g" 'follow-hint-new-buffer-focus
+       "C-u M-g" 'follow-hint-new-buffer
+       "C-x C-w" 'copy-hint-url
+       "M-y" 'paste
+       "C-y" 'copy
+       "button9" 'history-forwards
+       "button8" 'history-backwards
+       "C-p" 'scroll-up
+       "C-n" 'scroll-down
+       "C-x C-+" 'zoom-in-page
+       "C-x C-=" 'zoom-in-page ; Because + shifted = on QWERTY.
+       "C-x C-hyphen" 'zoom-out-page
+       "C-x C-0" 'unzoom-page
+       "C-r" 'reload-current-buffer
+       "C-R" 'reload-buffer
+       "C-m o" 'set-url-from-bookmark
+       "C-m s" 'bookmark-current-page
+       "C-m C-s" 'bookmark-page
+       "C-m g" 'bookmark-hint
+       "C-s s" 'search-buffer
+       "C-s k" 'remove-search-hints
+       "C-." 'jump-to-heading
+       "M-s->" 'scroll-to-bottom
+       "M-s-<" 'scroll-to-top
+       "M->" 'scroll-to-bottom
+       "M-<" 'scroll-to-top
+       "C-v" 'scroll-page-down
+       "M-v" 'scroll-page-up
+       "C-w" 'copy-url
+       "M-w" 'copy-title
        ;; Leave 'space' unbound so that the renderer decides wether to insert of
        ;; scroll.
 
        ;; keypad:
-       "pageup" #'scroll-page-up
-       "pagedown" #'scroll-page-down
-       "pageend" #'scroll-to-bottom
-       "pagehome" #'scroll-to-top
+       "pageup" 'scroll-page-up
+       "pagedown" 'scroll-page-down
+       "pageend" 'scroll-to-bottom
+       "pagehome" 'scroll-to-top
        ;; keypad, gtk:
-       "keypadleft" #'scroll-left
-       "keypaddown" #'scroll-down
-       "keypadup" #'scroll-up
-       "keypadright" #'scroll-right
-       "keypadend" #'scroll-to-bottom
-       "keypadhome" #'scroll-to-top
-       "keypadnext" #'scroll-page-down
-       "keypadpageup" #'scroll-page-up
-       "keypadprior" #'scroll-page-up)
+       "keypadleft" 'scroll-left
+       "keypaddown" 'scroll-down
+       "keypadup" 'scroll-up
+       "keypadright" 'scroll-right
+       "keypadend" 'scroll-to-bottom
+       "keypadhome" 'scroll-to-top
+       "keypadnext" 'scroll-page-down
+       "keypadpageup" 'scroll-page-up
+       "keypadprior" 'scroll-page-up)
 
       scheme:vi-normal
       (list
-       "H" #'history-backwards
-       "L" #'history-forwards
-       "M-h" #'history-backwards-query
-       "M-l" #'history-forwards-query
-       "M-H" #'history-all-query
-       "M-L" #'history-forwards-all-query
-       "f" #'follow-hint
-       "F" #'follow-hint-new-buffer-focus
-       "; f" #'follow-hint-new-buffer
-       "button9" #'history-forwards
-       "button8" #'history-backwards
+       "H" 'history-backwards
+       "L" 'history-forwards
+       "M-h" 'history-backwards-query
+       "M-l" 'history-forwards-query
+       "M-H" 'history-all-query
+       "M-L" 'history-forwards-all-query
+       "f" 'follow-hint
+       "F" 'follow-hint-new-buffer-focus
+       "; f" 'follow-hint-new-buffer
+       "button9" 'history-forwards
+       "button8" 'history-backwards
 
-       "h" #'scroll-left
-       "j" #'scroll-down
-       "k" #'scroll-up
-       "l" #'scroll-right
-       "left" #'scroll-left
-       "down" #'scroll-down
-       "up" #'scroll-up
-       "right" #'scroll-right
+       "h" 'scroll-left
+       "j" 'scroll-down
+       "k" 'scroll-up
+       "l" 'scroll-right
+       "left" 'scroll-left
+       "down" 'scroll-down
+       "up" 'scroll-up
+       "right" 'scroll-right
        ;; keypad:
-       "pageend" #'scroll-to-bottom
-       "pagehome" #'scroll-to-top
+       "pageend" 'scroll-to-bottom
+       "pagehome" 'scroll-to-top
        ;; keypad, gtk:
-       "keypadleft" #'scroll-left
-       "keypaddown" #'scroll-down
-       "keypadup" #'scroll-up
-       "keypadright" #'scroll-right
-       "keypadend" #'scroll-to-bottom
-       "keypadhome" #'scroll-to-top
-       "keypadnext" #'scroll-page-down
-       "keypadpageup" #'scroll-page-up
-       "keypadprior" #'scroll-page-up
+       "keypadleft" 'scroll-left
+       "keypaddown" 'scroll-down
+       "keypadup" 'scroll-up
+       "keypadright" 'scroll-right
+       "keypadend" 'scroll-to-bottom
+       "keypadhome" 'scroll-to-top
+       "keypadnext" 'scroll-page-down
+       "keypadpageup" 'scroll-page-up
+       "keypadprior" 'scroll-page-up
 
-       "C-v" #'paste
-       "+" #'zoom-in-page
-       "hyphen" #'zoom-out-page
-       "0" #'unzoom-page
-       "z i" #'zoom-in-page
-       "z o" #'zoom-out-page
-       "z z" #'unzoom-page
-       "R" #'reload-current-buffer
-       "r" #'reload-buffer
-       "m o" #'set-url-from-bookmark
-       "m m" #'bookmark-page
-       "m M" #'bookmark-current-page
-       "m f" #'bookmark-hint
-       "y u" #'copy-url
-       "y t" #'copy-title
-       "g h" #'jump-to-heading ; REVIEW: VI binding?  "gh" is probably good enough.
-       "/" #'search-buffer
-       "?" #'remove-search-hints
-       "G" #'scroll-to-bottom
-       "g g" #'scroll-to-top
-       "C-f" #'scroll-page-down
-       "C-b" #'scroll-page-up
-       "space" #'scroll-page-down
-       "s-space" #'scroll-page-up
-       "pageup" #'scroll-page-up
-       "pagedown" #'scroll-page-down))))
+       "C-v" 'paste
+       "+" 'zoom-in-page
+       "hyphen" 'zoom-out-page
+       "0" 'unzoom-page
+       "z i" 'zoom-in-page
+       "z o" 'zoom-out-page
+       "z z" 'unzoom-page
+       "R" 'reload-current-buffer
+       "r" 'reload-buffer
+       "m o" 'set-url-from-bookmark
+       "m m" 'bookmark-page
+       "m M" 'bookmark-current-page
+       "m f" 'bookmark-hint
+       "y u" 'copy-url
+       "y t" 'copy-title
+       "g h" 'jump-to-heading ; REVIEW: VI binding?  "gh" is probably good enough.
+       "/" 'search-buffer
+       "?" 'remove-search-hints
+       "G" 'scroll-to-bottom
+       "g g" 'scroll-to-top
+       "C-f" 'scroll-page-down
+       "C-b" 'scroll-page-up
+       "space" 'scroll-page-down
+       "s-space" 'scroll-page-up
+       "pageup" 'scroll-page-up
+       "pagedown" 'scroll-page-down))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
   ;; (set-url* (default-new-buffer-url (buffer %mode))

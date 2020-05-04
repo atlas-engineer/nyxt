@@ -4,6 +4,9 @@
 
 ;; trivial-types:proper-list doesn't check its element type.
 
+(deftype function-symbol ()
+  `(and symbol (satisfies fboundp)))
+
 (defun list-of-type-p (list typep)
   "Return non-ni if LIST contains only elements of the given TYPEP predicate."
   (and (listp list)
