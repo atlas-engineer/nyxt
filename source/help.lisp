@@ -198,7 +198,7 @@ A command is a special kind of function that can be called with
                         (markup:markup
                          (:h1 "Bindings")
                          (:p
-                          (loop for keymap in (current-keymaps)
+                          (loop for keymap in (current-keymaps (current-buffer))
                                 collect (markup:markup
                                          (:p (keymap:name keymap))
                                          (:table
@@ -239,7 +239,7 @@ file, see the =add-domain-to-certificate-whitelist= documentation.")))
     (set-current-buffer help-buffer)))
 
 (defun describe-key-dispatch-input (event buffer window printable-p)
-  "Display bound value documentation.
+  "Display documentation of the value bound to the keys pressed by the user.
 Cancel with 'escape escape'.
 Input is not forwarded.
 This function can be used as a `window' `input-dispatcher'."
@@ -249,7 +249,8 @@ This function can be used as a `window' `input-dispatcher'."
         (with-accessors ((key-stack key-stack)) *browser*
           (log:debug "Intercepted key ~a" (first (last key-stack)))
           (let ((escape-key (keymap:make-key :value "escape"))
-                (bound-value (keymap:lookup-key key-stack (current-keymaps))))
+                (bound-value (keymap:lookup-key key-stack
+                                                (current-keymaps (current-buffer)))))
             (cond
               ((and bound-value (not (keymap:keymap-p bound-value)))
                ;; TODO: Highlight hit bindings and display translation if any.
