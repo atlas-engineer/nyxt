@@ -80,6 +80,10 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (setf *buffer-class* 'gtk-buffer)
 
+(defun make-web-view (&optional buffer)
+  (make-instance 'webkit:webkit-web-view
+                 :web-context (make-context buffer)))
+
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout active-buffer
                minibuffer-container minibuffer-view
@@ -109,19 +113,19 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
 
-    (setf message-view (make-instance 'webkit:webkit-web-view))
+    (setf message-view (make-web-view))
     (gtk:gtk-box-pack-end box-layout message-container :expand nil)
     (gtk:gtk-box-pack-start message-container message-view :expand t)
     (setf (gtk:gtk-widget-size-request message-container)
           (list -1 (message-buffer-height window)))
 
-    (setf status-view (make-instance 'webkit:webkit-web-view))
+    (setf status-view (make-web-view))
     (gtk:gtk-box-pack-end box-layout status-container :expand nil)
     (gtk:gtk-box-pack-start status-container status-view :expand t)
     (setf (gtk:gtk-widget-size-request status-container)
           (list -1 (status-buffer-height window)))
 
-    (setf minibuffer-view (make-instance 'webkit:webkit-web-view))
+    (setf minibuffer-view (make-web-view))
     (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
     (gtk:gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
     (setf (gtk:gtk-widget-size-request minibuffer-container)
@@ -383,8 +387,8 @@ Warning: This behaviour may change in the future."
       (webkit:webkit-cookie-manager-set-persistent-storage
        cookie-manager
        (expand-path (cookies-path buffer))
-       :webkit-cookie-persistent-storage-text))
-    (set-cookie-policy cookie-manager (default-cookie-policy buffer))
+       :webkit-cookie-persistent-storage-text)
+      (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
     context))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
@@ -530,9 +534,7 @@ Warning: This behaviour may change in the future."
 
 (defmethod ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
-  (setf (gtk-object buffer)
-        (make-instance 'webkit:webkit-web-view
-                       :web-context (make-context buffer)))
+  (setf (gtk-object buffer) (make-web-view buffer))
   (ffi-buffer-enable-smooth-scrolling buffer t)
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
