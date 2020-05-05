@@ -382,7 +382,7 @@ The version number is stored in the clipboard."
         "<NONE>")))
 
 (define-command help ()
-  "Print some help."
+  "Print help information."
   (let ((help-buffer (next/help-mode:help-mode :activate t
                                                :buffer (make-buffer :title "*Help*"))))
     (set-current-buffer help-buffer)
