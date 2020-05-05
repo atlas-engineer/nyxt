@@ -264,15 +264,16 @@ This function can be `funcall'ed."
 
 (define-command execute-command ()
   "Execute a command by name."
-  (with-result (command (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Execute command"
-                          :completion-function (command-completion-filter
-                                                (mapcar (alex:compose #'class-name #'class-of)
-                                                        (modes (current-buffer))))
-                          :show-completion-count nil)))
-    (setf (access-time command) (get-internal-real-time))
-    (run command)))
+  (unless (active-minibuffers (current-window))
+    (with-result (command (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Execute command"
+                            :completion-function (command-completion-filter
+                                                  (mapcar (alex:compose #'class-name #'class-of)
+                                                          (modes (current-buffer))))
+                            :show-completion-count nil)))
+      (setf (access-time command) (get-internal-real-time))
+      (run command))))
 
 (defclass hook-description ()
   ((name :accessor name :initarg :name
