@@ -43,7 +43,7 @@ Return NIL on no match."
   ((dirname :initarg :dirname
             :accessor dirname
             :type string
-            :initform (uiop:xdg-data-home +data-root+)
+            :initform nil
             :documentation "The directory of `basename'.")
    (basename :initarg :basename
              :accessor basename
@@ -81,25 +81,26 @@ This can be used to set the path from command line.  See
 
 (export-always 'expand-default-path)
 (declaim (ftype (function (data-path) (or string null)) expand-default-path))
-(defun expand-default-path (path)
+(defun expand-default-path (path &key (root (namestring (or (dirname path)
+                                                            (uiop:xdg-data-home +data-root+)))))
   "Derive file from command line option or PATH.
 If PATH `ref' is specified in the `:with-path' command line option, use it in
 place of PATH `basename'.
-- When PATH has no basename, return its directory.  This is useful to refer to
+- When PATH has no basename, return ROOT.  This is useful to refer to
   directories.
 - If basename has a slash, return basename.
-- Otherwise expand to 'directory/basname.lisp' or 'directory/basname.lisp' is
-  basename already contains a period."
+- Otherwise expand to 'ROOT/basename.lisp' or 'ROOT/basname' if the basename
+  already contains a period."
   (let ((name (match (find-ref-path (ref path))
                 (nil (basename path))
                 (m m))))
     (cond
       ((uiop:emptyp name)
-       (namestring (dirname path)))
+       root)
       ((search "/" name)
        (namestring name))
       (t
-       (let ((fullname (str:concat (namestring (dirname path)) "/" (namestring name))))
+       (let ((fullname (str:concat root "/" (namestring name))))
          (unless (search "." name)
            (setf fullname (str:concat fullname ".lisp")))
          fullname)))))
