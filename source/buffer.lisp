@@ -95,20 +95,22 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
        (funcall-safely f)))))
 
 (export-always 'buffer-list)
-(defun buffer-list (&key sort-by-time)
-  (let ((buf-list (alex:hash-table-values (buffers *browser*))))
-    (if sort-by-time
-        (sort buf-list
-              #'local-time:timestamp>
-              :key #'last-access)
-        buf-list)))
+(defun buffer-list (&key sort-by-time domain)
+  (let* ((buffer-list (alex:hash-table-values (buffers *browser*)))
+         (buffer-list (if sort-by-time (sort
+                                        buffer-list #'local-time:timestamp> :key #'last-access)
+                          buffer-list))
+         (buffer-list (if domain (remove-if-not
+                                  (lambda (i) (equal domain (quri:uri-domain (quri:uri (url i))))) buffer-list)
+                          buffer-list)))
+    buffer-list))
 
 (export-always 'window-list)
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
 
-(defun buffer-completion-filter (&key current-is-last-p)
-  (let ((buffers (buffer-list :sort-by-time t)))
+(defun buffer-completion-filter (&key current-is-last-p domain)
+  (let ((buffers (buffer-list :sort-by-time t :domain domain)))
     (when current-is-last-p
       (setf buffers (alex:rotate buffers -1)))
     (lambda (input)
