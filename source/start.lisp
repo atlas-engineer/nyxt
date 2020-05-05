@@ -16,17 +16,15 @@ use the socket without parsing any init file.")
 
 (defmethod expand-data-path ((profile data-profile) (path (eql *init-file-path*)))
   "Return path of the init file."
-  (cond
-    ((getf *options* :no-init)
-     nil)
-    (t (match (getf *options* :init)
-         (new-path
-          (expand-default-path (make-instance 'data-path
-                                              :basename (or new-path (basename path))
-                                              ;; Compute `dirname' here since
-                                              ;; default value is evaluated at
-                                              ;; compile-time.
-                                              :dirname (uiop:xdg-config-home +data-root+))))))))
+  (unless (getf *options* :no-init)
+    (match (getf *options* :init)
+      (new-path
+       (expand-default-path (make-instance 'data-path
+                                           :basename (or new-path (basename path))
+                                           ;; Specify `dirname' here since
+                                           ;; *init-file-path* is evaluated
+                                           ;; at compile-time.
+                                           :dirname (uiop:xdg-config-home +data-root+)))))))
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
