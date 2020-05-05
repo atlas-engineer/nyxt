@@ -30,6 +30,8 @@ Example:
 (define-list-type 'string)
 (export-always 'list-of-keymaps)
 (define-list-type 'keymap:keymap)
+(export-always 'list-of-tags)
+(define-list-type 'tag)
 
 (defun alist-of-strings-p (alist)
   "Return t if ALIST is an alist whose keys and values are strings."

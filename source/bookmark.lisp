@@ -122,15 +122,35 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                    bookmarks)))
       (fuzzy-match non-tags bookmarks))))
 
-(defun tag-completion-filter (&key with-empty-tag)
+(defstruct tag
+  name
+  description)
+
+(defmethod object-string ((tag tag))
+  (tag-name tag))
+
+(defmethod object-display ((tag tag))
+  (if (tag-description tag)
+      (format nil "~a (~a)"
+              (tag-name tag)
+              (tag-description tag))
+      (object-string tag)))
+
+(declaim (ftype (function (&key (:with-empty-tag boolean)
+                                (:extra-tags list-of-tags)))
+                tag-completion-filter))
+(defun tag-completion-filter (&key with-empty-tag extra-tags)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
 This can be useful to let the user select no tag when returning directly."
-  (let ((tags (sort (delete-duplicates
-                     (apply #'append
-                            (mapcar (lambda (b) (tags b))
-                                    (bookmarks-data *browser*)))
-                     :test #'string-equal)
-                    #'string-lessp)))
+  (let ((tags (sort (append extra-tags
+                            (mapcar (lambda (name) (make-tag :name name))
+                                    (delete-duplicates
+                                     (apply #'append
+                                            (mapcar (lambda (b) (tags b))
+                                                    (bookmarks-data *browser*)))
+                                     :test #'string-equal)))
+                    #'string-lessp
+                    :key #'tag-name)))
     (when with-empty-tag
       (push "" tags))
     (lambda (input)
@@ -159,21 +179,24 @@ This can be useful to let the user select no tag when returning directly."
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
   (flet ((extract-keywords (html limit)
-           (format nil "~{~a~^ ~}"
-                   (loop for el in (mapcar #'car
-                                           (text-analysis:document-keywords
-                                            (make-instance 
-                                             'text-analysis:document 
-                                             :string-contents (plump:text (plump:parse html)))))
-                         repeat limit collect el))))
+           (sera:take limit (delete "" (mapcar #'first
+                                               (text-analysis:document-keywords
+                                                (make-instance
+                                                 'text-analysis:document
+                                                 :string-contents (plump:text (plump:parse html)))))
+                                    :test #'string=)))
+         (make-tags (name-list)
+           (mapcar (lambda (name) (make-tag :name name :description "suggestion"))
+                   name-list)))
     (if (url buffer)
         (with-result* ((body (document-get-body :buffer buffer))
                        (tags (read-from-minibuffer
                               (make-minibuffer
                                :input-prompt "Space-separated tag(s)"
-                               :input-buffer (extract-keywords body 5)
                                :multi-selection-p t
-                               :completion-function (tag-completion-filter :with-empty-tag t)
+                               :completion-function (tag-completion-filter
+                                                     :with-empty-tag t
+                                                     :extra-tags (make-tags (extract-keywords body 5)))
                                :empty-complete-immediate t))))
           (when tags
             ;; Turn tags with spaces into multiple tags.
