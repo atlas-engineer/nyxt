@@ -44,6 +44,10 @@ MAJOR.MINOR.PATCH, we increment the:
   is only one exectuable needed to run Next and no more need for D-Bus.  This
   should simplify installation and remove many performance bottlenecks.
 
+- Keybindings bind to function /symbols/ and not functions (i.e. ='foo= and not
+  =#'foo=).
+  Use =next:make-keymap= if you want type-checking.
+
 - Add status view and message view to display buffer status and messages
   respectively.
   The status view can be customized with the =status-formatter= window slot.
