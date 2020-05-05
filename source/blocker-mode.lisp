@@ -46,10 +46,12 @@ If HOSTLIST has a `path', persist it locally."
       (log:info "Updating hostlist ~s from ~s." path (url hostlist))
       (let ((hosts (dex:get (url hostlist))))
         (when path
-          ;; TODO: In general, we should do more error checking when writing to disk.
-          (alex:write-string-into-file hosts path
-                                       :if-exists :overwrite
-                                       :if-does-not-exist :create))
+          (handler-case
+              (alex:write-string-into-file hosts (ensure-parent-exists path)
+                                           :if-exists :overwrite
+                                           :if-does-not-exist :create)
+            (error (c)
+              (log:error "Could not persist hostlist ~s: ~a" path c))))
         hosts))))
 
 (defvar update-lock (bt:make-lock))
