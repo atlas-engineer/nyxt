@@ -81,8 +81,10 @@ from a binary) then any condition is logged instead of triggering the debugger."
 
 (export-always '%paste)
 (define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *browser*))))
-  (let ((active-element (ps:chain document active-element)))
-    (when (ps:chain active-element value)
+  (let ((active-element (ps:chain document active-element))
+        (tag (ps:chain document active-element tag-name)))
+    (when (or (string= tag "INPUT")
+              (string= tag "TEXTAREA"))
       (let ((start-position (ps:chain active-element selection-start))
             (end-position (ps:chain active-element selection-end)))
         (setf (ps:chain active-element value)
