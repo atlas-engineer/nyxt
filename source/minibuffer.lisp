@@ -56,6 +56,8 @@
        "tab" #'insert-candidate
        "M-h" #'minibuffer-history
        "C-space" #'minibuffer-toggle-mark
+       "shift-space" #'minibuffer-toggle-mark
+       "M-space" #'minibuffer-toggle-mark
        "M-a" #'minibuffer-mark-all
        "M-u" #'minibuffer-unmark-all))
     ;; TODO: We could have VI bindings for the minibuffer too.
