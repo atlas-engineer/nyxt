@@ -138,6 +138,18 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
      `(("prove" ,sbcl-prove)))
     (synopsis "Extensible web-browser in Common Lisp (keymap)")))
 
+(define sbcl-next-text-analysis
+  (package
+    (inherit sbcl-next-download-manager)
+    (name "sbcl-next-text-analysis")
+    (build-system asdf-build-system/sbcl)
+    (arguments
+     `(#:asd-file "next.asd"
+       #:asd-system-name "next/text-analysis"))
+    (inputs
+     `(("str" ,sbcl-cl-str)))
+    (synopsis "Extensible web-browser in Common Lisp (text-analysis)")))
+
 (define sbcl-next
   (package
     (inherit sbcl-next-download-manager)
@@ -181,6 +193,7 @@ key-bindings and is fully configurable and extensible in Common Lisp.")
        ("unix-opts" ,sbcl-unix-opts)
        ;; Local deps
        ("next-download-manager" ,sbcl-next-download-manager)
+       ("next-text-analys" ,sbcl-next-text-analysis)
        ("next-history-tree" ,sbcl-next-history-tree)
        ("next-password-manager" ,sbcl-next-password-manager)
        ("next-hooks" ,sbcl-next-hooks)
