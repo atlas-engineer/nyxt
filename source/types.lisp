@@ -80,3 +80,8 @@ Example:
   (assert (not (typep '(("default" "two" "three")
                         ("wiki" :foo "https://en.wikipedia.org/"))
                       'alist-of-string+2strings))))
+
+(deftype cookie-policy ()
+  `(or (eql :always)
+       (eql :never)
+       (eql :no-third-party)))

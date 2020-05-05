@@ -321,7 +321,14 @@ The handlers take the URL going to be loaded as argument and must return a
                        :initform (make-hook-buffer)
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
-The handlers take the buffer as argument.")))
+The handlers take the buffer as argument.")
+   (default-cookie-policy :accessor default-cookie-policy
+                          :initarg :default-cookie-policy
+                          :type cookie-policy
+                          :initform :no-third-party
+                          :documentation "Cookie policy of new buffers.
+Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
+`:no-third-party' (accept cookies for current website only).")))
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))

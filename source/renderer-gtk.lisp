@@ -378,9 +378,7 @@ Warning: This behaviour may change in the future."
        cookie-manager
        (expand-path (cookies-path buffer))
        :webkit-cookie-persistent-storage-text))
-    (webkit:webkit-cookie-manager-set-accept-policy
-     cookie-manager
-     :webkit-cookie-policy-accept-no-third-party)
+    (set-cookie-policy cookie-manager (default-cookie-policy buffer))
     context))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
@@ -727,16 +725,20 @@ requested a reload."
        (ps:ps (setf (ps:@ document Body |innerHTML|)
                     (ps:lisp text)))))))
 
+(declaim (ftype (function (webkit:webkit-cookie-manager cookie-policy)) set-cookie-policy))
+(defun set-cookie-policy (cookie-manager cookie-policy)
+  (webkit:webkit-cookie-manager-set-accept-policy
+   cookie-manager
+   (match cookie-policy
+     (:accept :webkit-cookie-policy-accept-always)
+     (:never :webkit-cookie-policy-accept-never)
+     (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
+
 (defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer) value)
   "VALUE is one of`:always', `:never' or `:no-third-party'."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (webkit:webkit-cookie-manager-set-accept-policy
-     cookie-manager
-     (match value
-       (:accept :webkit-cookie-policy-accept-always)
-       (:never :webkit-cookie-policy-accept-never)
-       (:no-third-party :webkit-cookie-policy-accept-no-third-party)))
+    (set-cookie-policy cookie-manager value)
     buffer))
 
 (defstruct webkit-history-entry
