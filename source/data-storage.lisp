@@ -128,6 +128,7 @@ function result as a boolean in conditions."
   "Don't persist anything in private mode."
   nil)
 
+(export-always 'ensure-parent-exists)
 (declaim (ftype (function (trivial-types:pathname-designator) trivial-types:pathname-designator)
                 ensure-parent-exists))
 (defun ensure-parent-exists (path)
