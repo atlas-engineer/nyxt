@@ -65,7 +65,7 @@
                               ;; TODO: This only displays the first method,
                               ;; i.e. the first command of one of the modes.
                               ;; Ask for modes instead?
-                              (documentation (command-function command) t)))
+                                   (documentation (command-function command) t)))
                          (:h2 "Bindings")
                          (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
                          (:h2 (format nil "Source (~a): " source-file))
@@ -195,19 +195,19 @@ A command is a special kind of function that can be called with
                        :activate t
                        :buffer (make-buffer :title title)))
          (help-contents
-                        (markup:markup
-                         (:h1 "Bindings")
-                         (:p
-                          (loop for keymap in (current-keymaps (current-buffer))
-                                collect (markup:markup
-                                         (:p (keymap:name keymap))
-                                         (:table
-                                          (loop for keyspec being the hash-keys in (keymap:keymap-with-parents->map keymap)
-                                                  using (hash-value bound-value)
-                                                collect (markup:markup
-                                                         (:tr
-                                                          (:td keyspec)
-                                                          (:td (string-downcase (sym (function-command bound-value)))))))))))))
+           (markup:markup
+            (:h1 "Bindings")
+            (:p
+             (loop for keymap in (current-keymaps (current-buffer))
+                   collect (markup:markup
+                            (:p (keymap:name keymap))
+                            (:table
+                             (loop for keyspec being the hash-keys in (keymap:keymap-with-parents->map keymap)
+                                     using (hash-value bound-value)
+                                   collect (markup:markup
+                                            (:tr
+                                             (:td keyspec)
+                                             (:td (string-downcase (sym (function-command bound-value)))))))))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
     (ffi-buffer-evaluate-javascript help-buffer insert-help)
@@ -270,7 +270,7 @@ This function can be used as a `window' `input-dispatcher'."
                (setf (input-dispatcher window) #'dispatch-input-event))
               (t
                (echo "Press a key sequence to describe (cancel with 'escape escape'): ~a"
-                      (keyspecs-with-optional-keycode key-stack)))))))
+                     (keyspecs-with-optional-keycode key-stack)))))))
     (error (c)
       (declare (ignore c))
       (setf (key-stack *browser*) nil)
