@@ -21,9 +21,9 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (web-context :initform nil
                 :documentation "Single instantiation of our custom web context.")))
 
-(defmethod web-context ((browser gtk-browser))
-  (or (slot-value *browser* 'web-context)
-      (setf (slot-value *browser* 'web-context) (make-instance 'webkit:webkit-web-context))))
+(defmethod initialize-instance :after ((browser gtk-browser) &key)
+  (setf (slot-value *browser* 'web-context)
+        (make-instance 'webkit:webkit-web-context)))
 
 (setf *browser-class* 'gtk-browser)
 
@@ -381,7 +381,7 @@ Warning: This behaviour may change in the future."
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
-  (let* ((context (web-context *browser*))
+  (let* ((context (slot-value *browser* web-context))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (when (and buffer (expand-path (cookies-path buffer)))
       (webkit:webkit-cookie-manager-set-persistent-storage
