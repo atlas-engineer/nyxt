@@ -29,6 +29,8 @@
                                "C-t" 'make-buffer-focus
                                "C-m u" 'bookmark-url
                                "C-b" 'show-bookmarks
+                               "f1 f1" 'help
+                               "f1 t" 'tutorial
                                "f1 v" 'describe-variable
                                "f1 f" 'describe-function
                                "f1 c" 'describe-command
@@ -68,6 +70,9 @@
                                "C-m k" 'bookmark-delete
                                "C-t" 'make-buffer-focus
                                "C-m u" 'bookmark-url
+                               "C-h C-h" 'help
+                               "C-h h" 'help
+                               "C-h t" 'tutorial
                                "C-h v" 'describe-variable
                                "C-h f" 'describe-function
                                "C-h c" 'describe-command
@@ -101,6 +106,9 @@
                                "m d" 'bookmark-delete
                                "C-o" 'load-file
                                ;; TODO: Use "f1 *" instead?
+                               "C-h C-h" 'help
+                               "C-h h" 'help
+                               "C-h t" 'tutorial
                                "C-h v" 'describe-variable
                                "C-h f" 'describe-function
                                "C-h c" 'describe-command
