@@ -80,7 +80,7 @@ This can be used to set the path from command line.  See
           :test #'string=)))
 
 (export-always 'expand-default-path)
-(declaim (ftype (function (data-path) (or string null)) expand-default-path))
+(declaim (ftype (function (data-path &key (:root string)) (or string null)) expand-default-path))
 (defun expand-default-path (path &key (root (namestring (or (dirname path)
                                                             (uiop:xdg-data-home +data-root+)))))
   "Derive file from command line option or PATH.
