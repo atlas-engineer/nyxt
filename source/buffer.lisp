@@ -125,6 +125,17 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                          :completion-function (buffer-completion-filter :current-is-last-p t))))
     (set-current-buffer buffer)))
 
+(define-command switch-buffer-domain (&optional (buffer (current-buffer)))
+  "Switch the active buffer in the current window from the current domain."
+  (let ((domain (quri:uri-domain (quri:uri (url buffer)))))
+    (with-result (buffer (read-from-minibuffer
+                          (make-minibuffer
+                           :input-prompt "Switch to buffer in current domain:"
+                           :completion-function (buffer-completion-filter
+                                                 :domain domain
+                                                 :current-is-last-p t))))
+      (set-current-buffer buffer))))
+
 (define-command make-buffer-focus (&key (url :default))
   "Switch to a new buffer.
 See `make-buffer'."
