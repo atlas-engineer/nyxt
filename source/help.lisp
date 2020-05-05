@@ -50,7 +50,7 @@
                        :activate t
                        :buffer (make-buffer :title title)))
          (key-keymap-pairs (nth-value 1 (keymap:binding-keys
-                                         (command-function command)
+                                         (sym command)
                                          (all-keymaps))))
          (key-keymapname-pairs (mapcar (lambda (pair)
                                          (list (first pair)
@@ -374,6 +374,7 @@ The version number is stored in the clipboard."
   (setf (messages-content *browser*) '())
   (echo "Messages cleared."))
 
+(declaim (ftype (function (function-symbol)) binding-keys))
 (defun binding-keys (fn)
   (let* ((buffer (current-buffer))
          (keymaps (cons (override-map buffer)
@@ -405,16 +406,16 @@ The version number is stored in the clipboard."
                         ".")))
               (:h2 "Quickstart keys")
               (:ul
-               (:li (:code (binding-keys #'set-url)) ": Load URL")
-               (:li (:code (binding-keys #'set-url-new-buffer)) ": Load URL in new tab")
-               (:li (:code (binding-keys #'switch-buffer-previous)) ", " (:code (binding-keys #'switch-buffer-next)) ": Switch tab")
-               (:li (:code (binding-keys #'next/web-mode:history-backwards)) ": Backwards history")
-               (:li (:code (binding-keys #'next/web-mode:history-forwards)) ": Forwards history")
-               (:li (:code (binding-keys #'follow-hint)) ": Follow link in current buffer")
-               (:li (:code (binding-keys #'follow-hint-new-buffer)) ": Follow link in new buffer")
-               (:li (:code (binding-keys #'quit)) ": Quit")
-               (:li (:code (binding-keys #'execute-command)) ": Run a command by name")
-               (:li (:code (binding-keys #'describe-bindings)) ": List all bindings for the current tab"))
+               (:li (:code (binding-keys 'set-url)) ": Load URL")
+               (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new tab")
+               (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch tab")
+               (:li (:code (binding-keys 'next/web-mode:history-backwards)) ": Backwards history")
+               (:li (:code (binding-keys 'next/web-mode:history-forwards)) ": Forwards history")
+               (:li (:code (binding-keys 'follow-hint)) ": Follow link in current buffer")
+               (:li (:code (binding-keys 'follow-hint-new-buffer)) ": Follow link in new buffer")
+               (:li (:code (binding-keys 'quit)) ": Quit")
+               (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
+               (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current tab"))
               (:p "Legend:")
               (:ul
                (:li (:code "control") " (" (:code "C") "): Control key")
@@ -425,8 +426,8 @@ The version number is stored in the clipboard."
               (:p "Next proposes several " (:i "binding schemes") ", for instance CUA, Emacs, VI."
                   " For instance, call the " (:code "vi-normal-mode") " command to switch to VI bindings."
                   " To enable it by default, see the command documentation with "
-                  (:code (binding-keys #'execute-command) " describe-command") " (bound to "
-                  (:code (binding-keys #'describe-command)) ").")
+                  (:code (binding-keys 'execute-command) " describe-command") " (bound to "
+                  (:code (binding-keys 'describe-command)) ").")
 
               (:h2 "Customize and extend Next")
               (:p "Customization is possible through the creation of a "
@@ -439,7 +440,7 @@ The version number is stored in the clipboard."
                   ".")
               (:h2 "Documentation")
               (:p "The " (:i "minibuffer") " lets you fuzzy-search all commands."
-                  " Press " (:code (binding-keys #'execute-command))
+                  " Press " (:code (binding-keys 'execute-command))
                   " then type " (:code "describe") " to list all documentation-related commands."
                   " These commands can display the documentation of all Next components.")
               (:p "For full documentation about Next, how it works, and how to extend it please see the "
@@ -533,10 +534,10 @@ The version number is stored in the clipboard."
               (:h3 "Moving within a buffer")
               (:p "To Move within a buffer, several commands are provided:")
               (:ul
-               (:li (:code (binding-keys #'scroll-down)) ": Move down")
-               (:li (:code (binding-keys #'scroll-up)) ": Move up")
-               (:li (:code (binding-keys #'scroll-to-bottom)) ": Jump to bottom of page")
-               (:li (:code (binding-keys #'scroll-to-top)) ": Jump to top of page"))
+               (:li (:code (binding-keys 'scroll-down)) ": Move down")
+               (:li (:code (binding-keys 'scroll-up)) ": Move up")
+               (:li (:code (binding-keys 'scroll-to-bottom)) ": Jump to bottom of page")
+               (:li (:code (binding-keys 'scroll-to-top)) ": Jump to top of page"))
               (:h3 "Setting the URL")
               (:p "When ambiguous URLs are inputted, Next will attempt
                    the best guess it can. If the you do not supply a
@@ -545,18 +546,18 @@ The version number is stored in the clipboard."
                    explicitly type the full URL with 'http'
                    included.")
               (:ul
-               (:li (:code (binding-keys #'set-url)) ": Set URL of current buffer")
-               (:li (:code (binding-keys #'set-url-new-buffer)) ": Open a new buffer and set its URL")
-               (:li (:code (binding-keys #'make-buffer-focus)) ": Make a new buffer"))
+               (:li (:code (binding-keys 'set-url)) ": Set URL of current buffer")
+               (:li (:code (binding-keys 'set-url-new-buffer)) ": Open a new buffer and set its URL")
+               (:li (:code (binding-keys 'make-buffer-focus)) ": Make a new buffer"))
               (:h3 "Switching buffers")
               (:p "You can switch buffers using the 'switch-buffer'
                    command which provides fuzzy completion. This
                    allows you to quickly find whatever buffer you are
                    looking for.")
               (:ul
-               (:li (:code (binding-keys #'switch-buffer)) ": Switch buffer")
-               (:li (:code (binding-keys #'switch-buffer-next)) ": Go to next buffer")
-               (:li (:code (binding-keys #'switch-buffer-previous)) ": Go to previous buffer"))
+               (:li (:code (binding-keys 'switch-buffer)) ": Switch buffer")
+               (:li (:code (binding-keys 'switch-buffer-next)) ": Go to next buffer")
+               (:li (:code (binding-keys 'switch-buffer-previous)) ": Go to previous buffer"))
               (:h3 "Link Navigation")
               (:p "Next provides a feature called link-hinting to
                    allow you to visit URLs on a page without using the
@@ -566,9 +567,9 @@ The version number is stored in the clipboard."
                    you can interact with enter in one of the hint
                    strings into the minibuffer to invoke it.")
               (:ul
-               (:li (:code (binding-keys #'follow-hint)) ": Go to link in current buffer")
-               (:li (:code (binding-keys #'follow-hint-new-buffer-focus)) ": Create new buffer with link, focus on new buffer")
-               (:li (:code (binding-keys #'follow-hint-new-buffer)) ": Create new buffer with link, keep focus on current buffer"))
+               (:li (:code (binding-keys 'follow-hint)) ": Go to link in current buffer")
+               (:li (:code (binding-keys 'follow-hint-new-buffer-focus)) ": Create new buffer with link, focus on new buffer")
+               (:li (:code (binding-keys 'follow-hint-new-buffer)) ": Create new buffer with link, keep focus on current buffer"))
               (:h3 "Using the buffer history")
               (:p "History is represented as a tree that you can
                    traverse. More complex than the
@@ -576,11 +577,11 @@ The version number is stored in the clipboard."
                    browsers, the tree makes sure you never lose track
                    of where you've been.")
               (:ul
-               (:li (:code (binding-keys #'next/web-mode:history-forwards)) ": History forwards")
-               (:li (:code (binding-keys #'next/web-mode:history-backwards)) ": History backwards")
-               (:li (:code (binding-keys #'next/web-mode:history-forwards-query)) ": History forwards query, forward to any forward location")
-               (:li (:code (binding-keys #'next/web-mode:history-backwards-query)) ": History backwards query, backward to any backward location")
-               (:li (:code (binding-keys #'next/web-mode:history-all-query)) ": History all query, Jump to any history entry."))
+               (:li (:code (binding-keys 'next/web-mode:history-forwards)) ": History forwards")
+               (:li (:code (binding-keys 'next/web-mode:history-backwards)) ": History backwards")
+               (:li (:code (binding-keys 'next/web-mode:history-forwards-query)) ": History forwards query, forward to any forward location")
+               (:li (:code (binding-keys 'next/web-mode:history-backwards-query)) ": History backwards query, backward to any backward location")
+               (:li (:code (binding-keys 'next/web-mode:history-all-query)) ": History all query, Jump to any history entry."))
               (:p "You can also view a full tree of the history for a given buffer by
                    invoking the command 'buffer-history-tree'.")
               (:h3 "Searching")
@@ -590,30 +591,30 @@ The version number is stored in the clipboard."
                    minibuffer in one place rather than having to jump
                    around on a buffer (or multiple buffers).")
               (:ul
-               (:li (:code (binding-keys #'search-buffer)) ": Search buffer")
-               (:li (:code (binding-keys #'search-buffers)) ": Search buffers"))
+               (:li (:code (binding-keys 'search-buffer)) ": Search buffer")
+               (:li (:code (binding-keys 'search-buffers)) ": Search buffers"))
               (:h3 "Exiting Next")
-              (:p "To quit Next, enter the command " (:code (binding-keys #'quit)))
+              (:p "To quit Next, enter the command " (:code (binding-keys 'quit)))
               (:h2 "The Next Help System")
               (:p "Next provides introspective and help
                    capabilities. You can view and modify Next's source
                    code during runtime. A few help commands are
                    described below:")
               (:ul
-               (:li (:code (binding-keys #'help)) ": The command 'help' opens up a small help buffer.")
-               (:li (:code (binding-keys #'tutorial)) ": The command 'tutorial' opens up this tutorial.")
-               (:li (:code (binding-keys #'describe-key)) ": The command 'describe-key' allows you to input a
+               (:li (:code (binding-keys 'help)) ": The command 'help' opens up a small help buffer.")
+               (:li (:code (binding-keys 'tutorial)) ": The command 'tutorial' opens up this tutorial.")
+               (:li (:code (binding-keys 'describe-key)) ": The command 'describe-key' allows you to input a
                      key binding and see what command it is bound
                      to.")
-               (:li (:code (binding-keys #'describe-slot)) ": The command 'describe-slot' allows you to find
+               (:li (:code (binding-keys 'describe-slot)) ": The command 'describe-slot' allows you to find
                      out the value of a particular class slot and view
                      its documentation.")
-               (:li (:code (binding-keys #'describe-command)) ": The commmand 'describe-command' allows you to
+               (:li (:code (binding-keys 'describe-command)) ": The commmand 'describe-command' allows you to
                      find out about a particular command (including
                      showing its source).")
-               (:li (:code (binding-keys #'describe-bindings)) ": The command 'describe-bindings' to view all of
+               (:li (:code (binding-keys 'describe-bindings)) ": The command 'describe-bindings' to view all of
                      your currently set bindings in your buffer.")
-               (:li (:code (binding-keys #'describe-variable)) ": The command 'describe-variable' allows you to
+               (:li (:code (binding-keys 'describe-variable)) ": The command 'describe-variable' allows you to
                      view the value and documentation of a
                      variable."))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)

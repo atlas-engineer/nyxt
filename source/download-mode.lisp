@@ -47,7 +47,7 @@
                              (:u (quri:render-uri (download-manager:resolved-uri d)))
                              " as "
                              (:b (file-namestring (download-manager:file d)))))))
-                    (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys #'execute-command))) "."))))
+                    (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys 'execute-command))) "."))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
     (ffi-buffer-evaluate-javascript download-buffer insert-content)

@@ -239,7 +239,7 @@ This function can be `funcall'ed."
     (loop for mode in (modes buffer)
           for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
           when scheme-keymap
-            do (setf bindings (keymap:binding-keys (command-function command) scheme-keymap))
+            do (setf bindings (keymap:binding-keys (sym command) scheme-keymap))
           when (not (null bindings))
             return bindings)
     (format nil "~a~a~a"
