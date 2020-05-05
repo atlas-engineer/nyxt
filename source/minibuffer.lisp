@@ -308,28 +308,29 @@ calls, such as invoking `minibuffer-history'."))
 (export-always 'read-from-minibuffer)
 (defun read-from-minibuffer (minibuffer &key callback)
   "Open the minibuffer, ready for user input.
-   Example use:
+Example use:
 
-   (read-from-minibuffer
-    (make-minibuffer
-     :completion-function #'my-completion-filter))
+\(read-from-minibuffer
+ (make-minibuffer
+  :completion-function #'my-completion-filter))
 
-   See the documentation of `minibuffer' to know more about the minibuffer options."
+See the documentation of `minibuffer' to know more about the minibuffer options."
   (when callback
     ;; We need a :callback key argument so that `read-from-minibuffer' can be
     ;; called in `with-result'.
     (setf (callback minibuffer) callback))
   ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
   (setf (callback-buffer minibuffer) (current-buffer))
-  (handler-case
-      (progn
-        (match (setup-function minibuffer)
-          ((guard f f) (funcall-safely f minibuffer)))
-        (state-changed minibuffer)
-        (update-display minibuffer))
-    (error (c)
-      (echo "~a" c)
-      (return-from read-from-minibuffer)))
+  (if *keep-alive*
+      (match (setup-function minibuffer)
+        ((guard f f) (funcall f minibuffer)))
+      (handler-case (match (setup-function minibuffer)
+                      ((guard f f) (funcall f minibuffer)))
+        (error (c)
+          (echo-warning "Minibuffer error: ~a" c)
+          (return-from read-from-minibuffer))))
+  (state-changed minibuffer)
+  (update-display minibuffer)
   (push minibuffer (active-minibuffers (current-window)))
   (apply #'show
          (unless (completion-function minibuffer)
