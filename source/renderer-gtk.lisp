@@ -381,7 +381,7 @@ Warning: This behaviour may change in the future."
 
 (declaim (ftype (function (&optional buffer)) make-context))
 (defun make-context (&optional buffer)
-  (let* ((context (slot-value *browser* 'web-context))
+  (let* ((context (slot-value *browser* web-context))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (when (and buffer (expand-path (cookies-path buffer)))
       (webkit:webkit-cookie-manager-set-persistent-storage
