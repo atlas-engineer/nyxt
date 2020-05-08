@@ -142,7 +142,9 @@
 
 #+sb-core-compression
 (defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
-  (uiop:dump-image (asdf:output-file o c) :executable t :compression t))
+  (uiop:dump-image (asdf:output-file o c)
+                   :executable t
+                   :compression (not (null (uiop:getenv "NEXT_COMPRESS")))))
 
 (asdf:defsystem next/download-manager
   :depends-on (cl-ppcre

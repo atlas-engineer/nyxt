@@ -13,6 +13,11 @@ Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
 Set NEXT_RENDERER to the renderer of your choice, e.g. "gtk".
 
+Set NEXT_COMPRESS to generate a compressed executable.  This
+greatly reduces the file size at the expense of a slightly
+increased startup time.  It's recommended to leave this off
+on file systems with compression.
+
 If NEXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
 dependencies will be fetched with Quicklisp into the
 QUICKLISP_DIR directory.
