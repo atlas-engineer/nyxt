@@ -23,7 +23,7 @@ lisp_files := next.asd $(shell find . -type f -name '*.lisp')
 
 .PHONY: clean-fasls
 clean-fasls:
-	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+	$(NEXT_INTERNAL_QUICKLISP) && \
 	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
