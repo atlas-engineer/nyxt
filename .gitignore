@@ -1,7 +1,6 @@
 # Ignore build artifacts
 build/
 version
-ports/gtk-webkit/next-gtk-webkit
 next
 Next.app
 
