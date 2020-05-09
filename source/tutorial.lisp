@@ -30,10 +30,11 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
 
    (:h3 "Buffers")
-   (:p "Next uses the concept of a buffer instead of tabs. Beyond tabs, buffers
-provide additional functionality. For example, a buffer can have a unique
-keybinding scheme. That is, example Buffer A and Buffer B can have a completely
-different set of keybindings.")
+   (:p "Next uses the concept of buffers instead of the \"tabs\" used by many
+applications. Beyond tabs, buffers provide additional functionality. For
+example, two buffers can have a completely different set of keybindings. Unlike
+tabs, the buffer display scales, that is to say, it's just as convenient to
+navigate 2 or 100 buffers.")
    (:h3 "Modes")
    (:p "Buffers have a set of modes. A mode is a set of functions, hooks,
 keybindings and/or other facilities that modify the behavior of a buffer.")
