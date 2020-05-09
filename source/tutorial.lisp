@@ -11,9 +11,9 @@
    (:h2 "Core Concepts")
    (:h3 "Keybindings and Commands")
    (:p "Commands in Next are invoked by pressing specific keys or from
-the " (:code "execute-command") " menu (" (:code (binding-keys
-'execute-command)) ") which will prompt you for a list of commands which you can
-then select from.")
+the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
+") which will prompt you for a list of commands which you can then select
+from.")
    (:p "In Next, keybindings are represented as in 'control-space' or
 equivalently 'C-space'. In this example, 'C' is a shortcut for the modifier
 'control', and 'space' represents the character ' '.  A modifier is a key that
@@ -58,8 +58,8 @@ the current buffer.")
    (:h3 "Moving within a buffer")
    (:p "To Move within a buffer, several commands are provided:")
    (:ul
-    (:li (command-markup 'scroll-down) "): Move down")
-    (:li (command-markup 'scroll-up) "): Move up")
+    (:li (command-markup 'scroll-down) ": Move down")
+    (:li (command-markup 'scroll-up) ": Move up")
     (:li (command-markup 'scroll-to-bottom) ": Jump to bottom of page")
     (:li (command-markup 'scroll-to-top) ": Jump to top of page"))
    (:h3 "Setting the URL")
