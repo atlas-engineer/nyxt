@@ -111,26 +111,21 @@ place rather than having to jump around on a buffer (or multiple buffers).")
    (:p (command-markup 'quit) ": Close all Next windows and quit.")
 
    (:h2 "The Next Help System")
-   (:p "Next provides introspective and help capabilities. You can view and
-modify Next's source code during runtime. A few help commands are described
-below:")
+   (:p "Next provides introspective and help capabilities.  All commands,
+classes, slots, variables, functions and bindings can be inspected for
+definition and documentation.")
    (:ul
-    (:li (:code (binding-keys 'help) " help")
-         ": The command 'help' opens up a small help buffer.")
-    (:li (:code (binding-keys 'tutorial) " tutorial")
-         ": The command 'tutorial' opens up this tutorial.")
-    (:li (:code (binding-keys 'describe-key) " describe-key")
-         ": The command 'describe-key' allows you to input a key binding and see
-what command it is bound to.")
-    (:li (:code (binding-keys 'describe-slot) " describe-slot")
-         ": The command 'describe-slot' allows you to find out the value of a
-particular class slot and view its documentation.")
-    (:li (:code (binding-keys 'describe-command) " describe-command")
-         ": The commmand 'describe-command' allows you to find out about a
-particular command (including showing its source).")
-    (:li (:code (binding-keys 'describe-bindings) " describe-bindings")
-         ": The command 'describe-bindings' to view all of your currently set
-bindings in your buffer.")
-    (:li (:code (binding-keys 'describe-variable) " describe-variable")
-         ": The command 'describe-variable' allows you to view the value and
-documentation of a variable."))))
+    (:li (command-markup 'help) ": Open up a small help buffer")
+    (:li (command-markup 'tutorial) ": Open up this tutorial")
+    (:li (command-markup 'describe-key) ": Lets you to input a key binding and
+see what command it is bound to.")
+    (:li (command-markup 'describe-bindings) ": View all of your currently set
+bindings in the current buffer.")
+    (:li (command-markup 'describe-command) ": Find out about a particular
+command (including showing its source).")
+    (:li (command-markup 'describe-function) ": Find out about a particular
+function")
+    (:li (command-markup 'describe-variable) ": View the value and documentation
+of a variable")
+    (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots")
+    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation"))))
