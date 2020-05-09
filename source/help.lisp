@@ -443,6 +443,8 @@ The version number is stored in the clipboard."
                   " Press " (:code (binding-keys 'execute-command))
                   " then type " (:code "describe") " to list all documentation-related commands."
                   " These commands can display the documentation of all Next components.")
+              (:p "An introduction to Next core concepts can be consulted with the "
+                  (:code "tutorial") " command (" (:code (binding-keys 'tutorial)) ").")
               (:p "For full documentation about Next, how it works, and how to extend it please see the "
                   (:a :href "https://next.atlas.engineer/documentation"
                       "user manual")
