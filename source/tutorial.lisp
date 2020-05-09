@@ -48,8 +48,8 @@ suggestions for you when using it.  The list of suggestions will automatically
 narrow down to those matching your input as you type.")
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
-window) where Next will output messages back to you. To view the history of all
-things printed in the messages area, invoke the command 'messages'")
+window) where Next outputs messages back to you. To view the history of all
+messages, invoke the command 'messages'.")
    (:h3 "Status Area")
    (:p "The status area represents a space below each buffer where information
 about the state of that buffer is printed. In a typical installation this
