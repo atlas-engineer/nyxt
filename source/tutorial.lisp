@@ -44,8 +44,21 @@ noscript-mode disables JavaScript.")
    (:p "The minibuffer is a menu that will appear when a command requests user
 input. For example, when invoking the " (:code "set-url") " command, you must
 supply the URL you would like to navigate to. The minibuffer can provide
-suggestions for you when using it.  The list of suggestions will automatically
-narrow down to those matching your input as you type.")
+suggestions.  The list of suggestions will automatically narrow down to those
+matching your input as you type.")
+   (:p " Some commands support multiple selections, for
+instance " (:code "delete-buffer") " can delete all selected buffers at once.")
+   (:ul
+    (:li (command-markup 'minibuffer-toggle-mark
+                         :modes (list (make-instance 'minibuffer-mode)))
+         ": Select or deselect the
+current suggestion.")
+    (:li (command-markup 'minibuffer-mark-all
+                         :modes (list (make-instance 'minibuffer-mode)))
+         ": Select all currently-displayed suggestions")
+    (:li (command-markup 'minibuffer-unmark-all
+                         :modes (list (make-instance 'minibuffer-mode)))
+         ": Deselect all currently-displayed suggestions"))
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Next outputs messages back to you. To view the history of all
