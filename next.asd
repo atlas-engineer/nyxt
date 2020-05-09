@@ -92,6 +92,7 @@
                (:file "vcs-mode")
                (:file "video-mode")
                ;; Needs web-mode
+               (:file "tutorial")
                (:file "help")
                ;; Depends on everything else:
                (:file "about")
