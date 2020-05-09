@@ -289,7 +289,7 @@ This function can be `funcall'ed."
 (defmethod object-string ((handler hooks:handler))
   (str:downcase (hooks:name handler)))
 
-(defun hook-completion-filter (input)
+(defun hook-completion-filter ()
   (flet ((list-hooks (object)
            (mapcar (lambda (hook)
                      (make-instance 'hook-description
@@ -297,17 +297,18 @@ This function can be `funcall'ed."
                                     :value (funcall (symbol-function (closer-mop:slot-definition-name hook))
                                                     object)))
                    (delete-if-not (lambda (s)
-                                    (str:ends-with-p "-hook"
-                                                     (str:downcase (closer-mop:slot-definition-name s))))
+                                    (let ((name (closer-mop:slot-definition-name s)))
+                                      (and (str:ends-with-p "-hook" (string name) :ignore-case t)
+                                           (fboundp name))))
                                   (closer-mop:class-slots (class-of object))))))
-    (let ((window-hooks
-            (list-hooks (current-window)))
+    (let ((window-hooks (list-hooks (current-window)))
           (buffer-hooks (list-hooks (current-buffer)))
           (browser-hooks (list-hooks *browser*)))
-      (fuzzy-match input
-                   (append window-hooks
-                           buffer-hooks
-                           browser-hooks)))))
+      (lambda (input)
+        (fuzzy-match input
+                     (append window-hooks
+                             buffer-hooks
+                             browser-hooks))))))
 
 (defun handler-completion-filter (hook)
   (lambda (input)
@@ -324,7 +325,7 @@ This function can be `funcall'ed."
   (with-result (hook-desc (read-from-minibuffer
                            (make-minibuffer
                             :input-prompt "Hook where to disable handler"
-                            :completion-function 'hook-completion-filter)))
+                            :completion-function (hook-completion-filter))))
     (with-result (handler
                   (read-from-minibuffer
                    (make-minibuffer
@@ -337,7 +338,7 @@ This function can be `funcall'ed."
   (with-result (hook-desc (read-from-minibuffer
                            (make-minibuffer
                             :input-prompt "Hook where to enable handler"
-                            :completion-function 'hook-completion-filter)))
+                            :completion-function (hook-completion-filter))))
     (with-result (handler
                   (read-from-minibuffer
                    (make-minibuffer
