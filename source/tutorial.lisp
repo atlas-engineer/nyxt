@@ -160,6 +160,8 @@ of a variable")
    (:p "Next is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
+   (:p "The following section assumes that you know some basic Common Lisp or a
+similar programming language.")
    (:p "Next configuration can be persisted in the user
 file " (:code (expand-path *init-file-path*)) " (create the parent folders if
 necessary).")
@@ -205,7 +207,7 @@ have priorities over the other modes key bindings.")
 
    (:h3 "Custom commands")
    (:p "Creating your own invokable commands is similar to creating a Common
-Lisp function except the form is " (:code "define-command")  "instead of "
+Lisp function except the form is " (:code "define-command") " instead of "
        (:code "defun") ".")
    (:p "Example:")
    (:pre (:code
@@ -214,4 +216,48 @@ Lisp function except the form is " (:code "define-command")  "instead of "
   (with-result (url (read-from-minibuffer
                      (make-minibuffer
                       :input-prompt \"Bookmark URL\")))
-    (bookmark-add url)))"))))
+    (bookmark-add url)))"))
+
+   (:h3 "Hooks")
+   (:p "Hooks provide a powerful mechanism to tweak the behaviour various events
+that occur in the context of windows, buffers, modes, etc.
+")
+   (:p "A hook holds a list of " (:i "handlers") ".  Handlers are named and
+typed functions.")
+   (:p
+    "Hooks can be 'run', that is, their handlers are run according to
+the " (:code "combination") " slot of the hook.  This combination is a function
+of the handlers.  Depending on the combination, a hook can run the handlers
+either in parallel, or in order until one fails, or even " (:i "compose")
+    " them (pass the result of one to the input of the next).")
+   (:p "Many hooks are executed at different points in Next, among others:
+")
+   (:ul
+    (:li "Global hooks, such as " (:code "*after-init-hook*") ".")
+    (:li "Window- or buffer-related hooks.")
+    (:li "Commands 'before' and 'after' hooks.")
+    (:li "Modes 'enable' and 'disable' hooks."))
+   (:p "For instance, if you want to force 'old.reddit.com' over 'www.reddit.com', you
+can set a hook like the following in your configuration file:")
+   (:pre (:code "
+\(defun old-reddit-handler (request-data)
+  (let* ((url (url request-data))
+         (uri (quri:uri url)))
+    (setf (url request-data)
+          (if (search \"reddit.com\" (quri:uri-host uri))
+              (progn
+                (setf (quri:uri-host uri) \"old.reddit.com\")
+                (let ((new-url (quri:render-uri uri)))
+                  (log:info \"Switching to old Reddit: ~a\" new-url)
+                  new-url))
+              url)))
+  request-data)
+
+\(define-configuration buffer
+  ((request-resource-hook
+    (reduce #'hooks:add-hook
+            (mapcar #'make-handler-resource (list #'old-reddit-handler))
+            :initial-value %slot-default))))"))
+   (:p "Some hooks like the above example expect a return value, so it's
+important to make sure we return " (:code "url") " here.  See the documentation
+of the respective hooks for more details.")))
