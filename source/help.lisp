@@ -469,31 +469,29 @@ The version number is stored in the clipboard."
                (:li "How to use the help system to learn more about Next"))
               (:h2 "Core Concepts")
               (:h3 "Keybindings and Commands")
-              (:p "Commands in Next are invoked by pressing any
-                   key. Typically, commands are paired with a modifier
-                   key. A modifier key is a key that does not produce
-                   its own output, but rather modifies the output of
-                   whatever key you depress with it. Examples of
-                   modifier keys include: control, option, alt, shift,
-                   command, or the windows key.")
-              (:p "Modifier Keys Legend:")
+              (:p "Commands in Next are invoked by pressing any key or
+                   from the " (:code "execute-command") "
+                   menu. Typically, are paired with a modifier key. A
+                   modifier key is a key that does not produce its own
+                   output, but rather modifies the output of whatever
+                   key you depress with it. Examples of modifier keys
+                   include: control, option, alt, shift, command, or
+                   the windows key.")
+              (:p "Modifier keys legend:")
               (:ul
                (:li (:code "control") " (" (:code "C") "): Control key")
                (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
                (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
                (:li (:code "shift") " (" (:code "s") "): Shift key"))
-              (:p "Throughout this tutorial, command keybindings will
-                   be represented in the following format 'C-x'. In
-                   this example, 'C' represents the modifier Control,
-                   and 'x' represents the character 'x'. Therefore, to
-                   input this example keybinding ('C-x') you would
-                   have to press Control and X at the same
-                   time. Keybindings can be more complex than a single
-                   key chord (a key chord is a simultaneous depression
-                   of a set of keys), for example: 'C-x M-s'. In this
-                   case, you would have to press 'C-x', let go of all
-                   keys, and then press 'M-s' to successfully input
-                   this keybinding.")
+              (:p "Throughout this tutorial, keybindings will be
+                   represented as in 'control-x' or equivalently
+                   'C-x'. In this example, 'C' if a shortcut for the
+                   modifier 'control', and 'x' represents the
+                   character 'x'. Therefore, to input the 'C-x'
+                   keybinding you would have to keep Control pressed
+                   and they hit 'x'.  Multiple key presses can be
+                   chained: in 'C-x M-s',  you would have to press 'C-x',
+                   let go of all keys, and then press 'M-s'.")
               (:p "You can also invoke commands by name using
               the " (:code "execute-command") " command which will
               prompt you for a list of commands which you can then
