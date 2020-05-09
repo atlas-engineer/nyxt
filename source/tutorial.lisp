@@ -40,6 +40,8 @@ navigate 2 or 100 buffers.")
 hooks, keybindings and other facilities that modify the behavior of a buffer.
 For example, 'blocker-mode' can be used for domain-based adblocking while
 noscript-mode disables JavaScript.")
+   (:p "Each mode has an associated " (:i "mode toggler") " which is a command
+of the same name the toggles the mode for the current buffer.")
    (:h3 "Minibuffer")
    (:p "The minibuffer is a menu that will appear when a command requests user
 input. For example, when invoking the " (:code "set-url") " command, you must
