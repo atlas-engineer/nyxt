@@ -68,62 +68,62 @@ upon return.  The candidate under the cursor is not processed if not marked.")
          ": Select or deselect the current suggestion.")
     (:li (command-markup 'minibuffer-mark-all
                          :modes (list (make-instance 'minibuffer-mode)))
-         ": Select all currently-displayed suggestions")
+         ": Select all currently-displayed suggestions.")
     (:li (command-markup 'minibuffer-unmark-all
                          :modes (list (make-instance 'minibuffer-mode)))
-         ": Deselect all currently-displayed suggestions"))
+         ": Deselect all currently-displayed suggestions."))
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Next outputs messages back to you. To view the history of all
-messages, invoke the command 'messages'.")
+messages, invoke the command " (:code "messages") ".")
    (:h3 "Status Area")
    (:p "The status area is where information about the state of that buffer is
 printed. By default this includes the active modes, the URL, and the title of
 the current buffer.")
    (:h2 "Basic controls")
    (:h3 "Moving within a buffer")
-   (:p "To Move within a buffer, several commands are provided:")
+   (:p "To move within a buffer, several commands are provided:")
    (:ul
-    (:li (command-markup 'scroll-down) ": Move down")
-    (:li (command-markup 'scroll-up) ": Move up")
-    (:li (command-markup 'scroll-to-bottom) ": Jump to bottom of page")
-    (:li (command-markup 'scroll-to-top) ": Jump to top of page"))
+    (:li (command-markup 'scroll-down) ": Move down.")
+    (:li (command-markup 'scroll-up) ": Move up.")
+    (:li (command-markup 'scroll-to-bottom) ": Jump to bottom of page.")
+    (:li (command-markup 'scroll-to-top) ": Jump to top of page."))
    (:h3 "Setting the URL")
    (:p "When ambiguous URLs are inputted, Next will attempt the best guess it
 can. If the you do not supply a protocol in a URL, HTTPS will be assumed. To
 visit a site supporting only the less secure HTTP, you must explicitly type the
 full URL including the 'http://' prefix.")
    (:ul
-    (:li (command-markup 'set-url) ": Set URL of current buffer")
-    (:li (command-markup 'set-url-new-buffer) ": Open a new buffer and set its URL")
-    (:li (command-markup 'make-buffer-focus) ": Make a new empty buffer"))
+    (:li (command-markup 'set-url) ": Set URL of current buffer.")
+    (:li (command-markup 'set-url-new-buffer) ": Open a new buffer and set its URL.")
+    (:li (command-markup 'make-buffer-focus) ": Make a new empty buffer."))
    (:h3 "Switching buffers")
    (:ul
     (:li (command-markup 'switch-buffer) ": Switch buffer using fuzzy completion
-to quickly find whatever buffer you are looking for")
-    (:li (command-markup 'switch-buffer-next) ": Go to next buffer")
-    (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer"))
-   (:h3 "Link Navigation")
+to quickly find whatever buffer you are looking for.")
+    (:li (command-markup 'switch-buffer-next) ": Go to next buffer.")
+    (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer."))
+   (:h3 "Link navigation")
    (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
 Invoke one of the commands below: several hints will appear on screen and all
 links one the page will be listed in the minibuffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
-    (:li (command-markup 'follow-hint) ": Go to link in current buffer")
-    (:li (command-markup 'follow-hint-new-buffer-focus) ": Create new buffer with link, focus on new buffer")
-    (:li (command-markup 'follow-hint-new-buffer) ": Create new buffer with link, keep focus on current buffer"))
+    (:li (command-markup 'follow-hint) ": Go to link in current buffer.")
+    (:li (command-markup 'follow-hint-new-buffer-focus) ": Create new buffer with link, focus on new buffer.")
+    (:li (command-markup 'follow-hint-new-buffer) ": Create new buffer with link, keep focus on current buffer."))
    (:h3 "Using the buffer history")
    (:p "History is represented as a tree that you can traverse: when you go back
 in history, then follow a new URL, it effectively creates a new branch without
 deleting the old path. The tree makes sure you never lose track of where you've
 been.")
    (:ul
-    (:li (command-markup 'next/web-mode:history-forwards) ": History forwards")
-    (:li (command-markup 'next/web-mode:history-backwards) ": History backwards")
-    (:li (command-markup 'next/web-mode:history-forwards-query) ": History forwards query to any following location on the branch")
-    (:li (command-markup 'next/web-mode:history-backwards-query) ": History backwards query to any previous location")
-    (:li (command-markup 'next/web-mode:history-forwards-all-query) ": History forwards query to any following location on all branches")
-    (:li (command-markup 'next/web-mode:history-all-query) ": History all query, jump to any history entry"))
+    (:li (command-markup 'next/web-mode:history-forwards) ": History forwards.")
+    (:li (command-markup 'next/web-mode:history-backwards) ": History backwards.")
+    (:li (command-markup 'next/web-mode:history-forwards-query) ": History forwards query to any following location on the branch.")
+    (:li (command-markup 'next/web-mode:history-backwards-query) ": History backwards query to any previous location.")
+    (:li (command-markup 'next/web-mode:history-forwards-all-query) ": History forwards query to any following location on all branches.")
+    (:li (command-markup 'next/web-mode:history-all-query) ": History all query, jump to any history entry."))
    (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'.")
    (:h3 "Searching")
@@ -131,8 +131,8 @@ invoking the command 'buffer-history-tree'.")
    (:p "You can view candidates for search results in the minibuffer in one
 place rather than having to jump around on a buffer (or multiple buffers).")
    (:ul
-    (:li (command-markup 'search-buffer) ": Search buffer")
-    (:li (command-markup 'search-buffers) ": Search multiple buffers"))
+    (:li (command-markup 'search-buffer) ": Search buffer.")
+    (:li (command-markup 'search-buffers) ": Search multiple buffers."))
    (:h3 "Miscellaneous")
    (:p (command-markup 'quit) ": Close all Next windows and quit.")
 
@@ -141,8 +141,8 @@ place rather than having to jump around on a buffer (or multiple buffers).")
 classes, slots, variables, functions and bindings can be inspected for
 definition and documentation.")
    (:ul
-    (:li (command-markup 'help) ": Open up a small help buffer")
-    (:li (command-markup 'tutorial) ": Open up this tutorial")
+    (:li (command-markup 'help) ": Open up a small help buffer.")
+    (:li (command-markup 'tutorial) ": Open up this tutorial.")
     (:li (command-markup 'describe-key) ": Lets you to input a key binding and
 see what command it is bound to.")
     (:li (command-markup 'describe-bindings) ": View all of your currently set
@@ -150,11 +150,11 @@ bindings in the current buffer.")
     (:li (command-markup 'describe-command) ": Find out about a particular
 command (including showing its source).")
     (:li (command-markup 'describe-function) ": Find out about a particular
-function")
+function.")
     (:li (command-markup 'describe-variable) ": View the value and documentation
-of a variable")
-    (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots")
-    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation"))
+of a variable.")
+    (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots.")
+    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation."))
 
    (:h2 "Configuration")
    (:p "Next is written in the Common Lisp programming language which offers a
