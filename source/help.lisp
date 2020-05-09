@@ -216,6 +216,7 @@ A command is a special kind of function that can be called with
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
+  (declare (ignore buffer))             ; TODO: Display tls-help in buffer with TLS error.
   (let* ((help-buffer (next/help-mode:help-mode
                        :activate t
                        :buffer (make-buffer :title "TLS Error")))
