@@ -2,8 +2,8 @@
 
 (defun password-completion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance)))
-    (lambda (input)
-      (fuzzy-match input password-list))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) password-list))))
 
 (define-command save-new-password ()
   "Save password to password interface."

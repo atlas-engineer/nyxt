@@ -119,9 +119,9 @@ Create BASE if it doesn't exist."
   ;; ./~/my/foo instead of /home/user/my/foo.
   (namestring (merge-pathnames (uiop:truename* base) dir)))
 
-(defun projects-roots-completion-filter (input)
+(defun projects-roots-completion-filter (minibuffer)
   "Fuzzy-match local project roots."
-  (fuzzy-match input *vcs-projects-roots*))
+  (fuzzy-match (input-buffer minibuffer) *vcs-projects-roots*))
 
 (defun choose-clone-url (root-name project-name clone-uri)
   "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."

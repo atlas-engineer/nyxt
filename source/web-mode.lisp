@@ -296,9 +296,9 @@ search.")
                                                              'web-mode)))
   "Completion function over all parent URLs."
   (let ((parents (htree:parent-nodes (history mode))))
-    (lambda (input)
+    (lambda (minibuffer)
       (if parents
-          (fuzzy-match input parents)
+          (fuzzy-match (input-buffer minibuffer) parents)
           (error "Cannot navigate backwards.")))))
 
 (define-command history-backwards-query ()
@@ -315,9 +315,9 @@ search.")
                                                             'web-mode)))
   "Completion function over forward-children URL."
   (let ((children (htree:forward-children-nodes (history mode))))
-    (lambda (input)
+    (lambda (minibuffer)
       (if children
-          (fuzzy-match input children)
+          (fuzzy-match (input-buffer minibuffer) children)
           (error "Cannot navigate forwards.")))))
 
 (define-command history-forwards-query ()
@@ -343,9 +343,9 @@ Otherwise go forward to the only child."
                                                                 'web-mode)))
   "Completion function over children URL from all branches."
   (let ((children (htree:children-nodes (history mode))))
-    (lambda (input)
+    (lambda (minibuffer)
       (if children
-          (fuzzy-match input children)
+          (fuzzy-match (input-buffer minibuffer) children)
           (error "Cannot navigate forwards.")))))
 
 (define-command history-forwards-all-query ()
@@ -362,9 +362,9 @@ Otherwise go forward to the only child."
                                                        'web-mode)))
   "Completion function over all history URLs."
   (let ((urls (htree:all-nodes (history mode))))
-    (lambda (input)
+    (lambda (minibuffer)
       (if urls
-          (fuzzy-match input urls)
+          (fuzzy-match (input-buffer minibuffer) urls)
           (error "No history.")))))
 
 (define-command history-all-query ()
@@ -422,8 +422,8 @@ Otherwise go forward to the only child."
 
 (defun ring-completion-filter (ring)
   (let ((ring-items (containers:container->list ring)))
-    (lambda (input)
-      (fuzzy-match input ring-items))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) ring-items))))
 
 (define-command paste-from-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."

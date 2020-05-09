@@ -78,8 +78,8 @@
 
 (defun downloaded-files-completion-filter ()
   (let ((filenames (get-downloaded-filenames)))
-    (lambda (input)
-      (fuzzy-match input filenames))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) filenames))))
 
 (define-command download-open-file ()
   "Open a downloaded file.

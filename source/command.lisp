@@ -220,8 +220,8 @@ very costly."
                  (lambda (c1 c2)
                    (> (access-time c1) (access-time c2)))))
          (pretty-commands (mapcar #'command-display commands)))
-    (lambda (input)
-      (fuzzy-match input commands :candidates-display pretty-commands))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) commands :candidates-display pretty-commands))))
 
 (defmethod command-function ((command command))
   "Return the function associated to COMMAND.
@@ -304,20 +304,20 @@ This function can be `funcall'ed."
     (let ((window-hooks (list-hooks (current-window)))
           (buffer-hooks (list-hooks (current-buffer)))
           (browser-hooks (list-hooks *browser*)))
-      (lambda (input)
-        (fuzzy-match input
+      (lambda (minibuffer)
+        (fuzzy-match (input-buffer minibuffer)
                      (append window-hooks
                              buffer-hooks
                              browser-hooks))))))
 
 (defun handler-completion-filter (hook)
-  (lambda (input)
-    (fuzzy-match input
+  (lambda (minibuffer)
+    (fuzzy-match (input-buffer minibuffer)
                  (hooks:handlers hook))))
 
 (defun disabled-handler-completion-filter (hook)
-  (lambda (input)
-    (fuzzy-match input
+  (lambda (minibuffer)
+    (fuzzy-match (input-buffer minibuffer)
                  (hooks:disabled-handlers hook))))
 
 (define-command disable-hook-handler ()
