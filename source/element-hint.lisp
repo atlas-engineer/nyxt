@@ -190,10 +190,11 @@ identifier for every hinted element."
         (funcall-safely function result)))))
 
 (defun hint-completion-filter (hints)
-  (lambda (input)
-    (let* ((matched-hints (remove-if-not (lambda (x) (str:starts-with-p input (hint x) :ignore-case t)) hints))
-           (fuzzy-matched-hints (fuzzy-match input (set-difference hints matched-hints))))
-      (append matched-hints fuzzy-matched-hints))))
+  (lambda (minibuffer)
+    (with-slots (input-buffer) minibuffer
+      (let* ((matched-hints (remove-if-not (lambda (x) (str:starts-with-p input-buffer (hint x) :ignore-case t)) hints))
+             (fuzzy-matched-hints (fuzzy-match input-buffer (set-difference hints matched-hints))))
+        (append matched-hints fuzzy-matched-hints)))))
 
 (defun elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)

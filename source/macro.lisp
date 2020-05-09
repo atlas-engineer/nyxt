@@ -110,8 +110,8 @@ Example:
 (defparameter *yes-no-choices* '("yes" "no"))
 
 (defun yes-no-completion-filter ()
-  (lambda (input)
-    (fuzzy-match input *yes-no-choices*)))
+  (lambda (minibuffer)
+    (fuzzy-match (input-buffer minibuffer) *yes-no-choices*)))
 
 (defun confirmed-p (answer)
   (string-equal answer "yes"))

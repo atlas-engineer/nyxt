@@ -256,7 +256,7 @@ calls, such as invoking `minibuffer-history'."))
   (with-slots (completion-function completions input-buffer empty-complete-immediate )
       minibuffer
     (if completion-function
-        (setf completions (funcall-safely completion-function input-buffer))
+        (setf completions (funcall-safely completion-function minibuffer))
         (setf completions nil))
     (when (and empty-complete-immediate
                (not (str:emptyp input-buffer)))
@@ -872,9 +872,10 @@ readable."
                 minibuffer-history-completion-filter))
 (defun minibuffer-history-completion-filter (history)
   (when history
-    (lambda (input)
-      (fuzzy-match input (delete-duplicates (containers:container->list history)
-                                            :test #'equal)))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer)
+                   (delete-duplicates (containers:container->list history)
+                                      :test #'equal)))))
 
 (define-command minibuffer-history (&optional (minibuffer (current-minibuffer)))
   "Choose a minibuffer input history entry to insert as input."

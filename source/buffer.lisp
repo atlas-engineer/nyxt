@@ -113,8 +113,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let ((buffers (buffer-list :sort-by-time t :domain domain)))
     (when current-is-last-p
       (setf buffers (alex:rotate buffers -1)))
-    (lambda (input)
-      (fuzzy-match input buffers))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) buffers))))
 
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
@@ -292,8 +292,8 @@ The current buffer access time is set to be the last."
   (let ((modes (delete-duplicates (mapcar (lambda (m)
                                             (class-name (class-of m)))
                                           (apply #'append (mapcar #'modes buffers))))))
-    (lambda (input)
-      (fuzzy-match input modes))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) modes))))
 
 (defun inactive-mode-completion-filter (buffers)
   "Return the list of all modes minus those present in all BUFFERS."
@@ -307,8 +307,8 @@ The current buffer access time is set to be the last."
                                         (mapcar (lambda (m) (class-name (class-of m)))
                                                 (modes b)))
                                       buffers))))
-    (lambda (input)
-      (fuzzy-match input (set-difference all-non-minibuffer-modes common-modes)))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) (set-difference all-non-minibuffer-modes common-modes)))))
 
 (define-command disable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
   "Disable queried mode(s)."

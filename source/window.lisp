@@ -10,8 +10,8 @@
 
 (defun window-completion-filter ()
   (let ((windows (window-list)))
-    (lambda (input)
-      (fuzzy-match input windows))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) windows))))
 
 (declaim (ftype (function (browser)) window-make))
 (export-always 'window-make)

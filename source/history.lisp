@@ -113,8 +113,8 @@ it would not be very useful."
         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
       (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
-    (lambda (input)
-      (fuzzy-match input history))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) history))))
 
 (defun history-stored-data ()
   "Return the history data that needs to be serialized.

@@ -100,11 +100,11 @@ command `open-file'."
        "M-left" 'display-parent-directory)))))
 
 (serapeum:export-always 'open-file-from-directory-completion-filter)
-(defun open-file-from-directory-completion-filter (input &optional (directory (uiop:getcwd)))
+(defun open-file-from-directory-completion-filter (minibuffer &optional (directory (uiop:getcwd)))
   "Fuzzy-match files and directories from DIRECTORY."
   (let ((filenames (uiop:directory-files directory))
         (dirnames (uiop:subdirectories directory)))
-    (fuzzy-match input (append filenames dirnames))))
+    (fuzzy-match (input-buffer minibuffer) (append filenames dirnames))))
 
 (define-command display-parent-directory (&optional (minibuffer (current-minibuffer)))
   "Get the parent directory and update the minibuffer.

@@ -184,8 +184,8 @@ function result as a boolean in conditions."
 
 (defun gpg-key-completion-filter ()
   (let ((keys (gpg-private-keys)))
-    (lambda (input)
-      (fuzzy-match input keys))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) keys))))
 
 (defmethod object-string ((gpg-key gpg-key))
   (gpg-key-key-id gpg-key))

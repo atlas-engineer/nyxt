@@ -2,23 +2,23 @@
 
 (defun variable-completion-filter ()
   (let ((variables (package-variables)))
-    (lambda (input)
-      (fuzzy-match input variables))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) variables))))
 
 (defun function-completion-filter ()
   (let ((functions (package-functions)))
-    (lambda (input)
-      (fuzzy-match input functions))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) functions))))
 
 (defun class-completion-filter ()
   (let ((classes (package-classes)))
-    (lambda (input)
-      (fuzzy-match input classes))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) classes))))
 
 (defun slot-completion-filter ()
   (let ((slots (package-slots)))
-    (lambda (input)
-      (fuzzy-match input slots))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) slots))))
 
 (define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."

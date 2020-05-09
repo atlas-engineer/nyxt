@@ -130,9 +130,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (setf (bookmarks-data *browser*) bookmarks-without-url))))
 
 (defun bookmark-completion-filter ()
-  (lambda (input)
-    (let* ((input-specs (multiple-value-list (parse-tag-specification
-                                              (str:replace-all " " " " input))))
+  (lambda (minibuffer)
+    (let* ((input-specs (multiple-value-list
+                         (parse-tag-specification
+                          (str:replace-all " " " " (input-buffer minibuffer)))))
            (tag-specs (nth 0 input-specs))
            (non-tags (str:downcase (str:join " " (nth 1 input-specs))))
            (validator (ignore-errors (tag-specification-validator tag-specs)))
@@ -161,8 +162,8 @@ This can be useful to let the user select no tag when returning directly."
                     :key #'tag-name)))
     (when with-empty-tag
       (push "" tags))
-    (lambda (input)
-      (fuzzy-match input tags))))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) tags))))
 
 (define-command show-bookmarks ()
   "Show all bookmarks in a new buffer."
