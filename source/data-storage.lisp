@@ -34,6 +34,7 @@
                            (package-variables)))
         #'string< :key #'second))
 
+(export-always 'find-data-profile)
 (defun find-data-profile (name)
   "Return profile matching NAME.
 Return NIL on no match."
