@@ -141,4 +141,51 @@ function")
     (:li (command-markup 'describe-variable) ": View the value and documentation
 of a variable")
     (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots")
-    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation"))))
+    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation"))
+
+   (:h2 "Configuration")
+   (:p "Next is written in the Common Lisp programming language which offers a
+great perk: everything in the browser can be customized by the user, even while
+it's running!")
+   (:p "Next configuration can be persisted in the user
+file " (:code (expand-path *init-file-path*)) " (create the parent folders if
+necessary).")
+   (:p "Example:")
+   (:pre (:code "
+\(define-configuration buffer
+  ((default-modes (append '(vi-normal-mode) %slot-default))))"))
+   (:p "The above turns on the 'vi-normal-mode' (VI bindings) by default for
+every buffer.")
+   (:p "The " (:code "define-configuration") " macro can be used to customize
+the slots of the classes like the browser, buffers, windows, etc.  Refer to the
+class and slot documentation for the individual details.")
+   (:p "To find out about all modes known to Next,
+run " (:code "describe-command") " and type 'mode' to list them all.")
+
+   (:h3 "Keybinding configuration")
+   (:p "The " (:code "override-map") " is a keymap which has priority over
+everything.  By default, it has only very few bindings like the one
+for " (:code "execute-command") ".  You can use it to set keys globally:")
+   (:pre (:code "
+\(define-configuration buffer
+  ((override-map (let ((map (make-keymap \"overide-map\")))
+                   (define-key map
+                     \"M-x\" 'execute-command)))))"))
+   (:p "A more flexibly way is to create your own mode with you custom
+keybindings.  When this mode is added first to the buffer mode list, its keys
+have priorities over the other modes key bindings.")
+   (:pre (:code "
+\(defvar *my-keymap* (make-keymap \"
+\(define-key *my-keymap*
+  \"C-f\" 'history-forwards
+  \"C-b\" 'history-backwards)
+
+\(define-mode my-mode ()
+  \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
+  ((keymap-scheme :initform (keymap:make-scheme
+                             scheme:cua *my-keymap*
+                             scheme:emacs *my-keymap*
+                             scheme:vi-normal *my-keymap*))))
+
+\(define-configuration buffer
+  ((default-modes (append '(my-mode) %slot-default))))"))))
