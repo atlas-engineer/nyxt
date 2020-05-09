@@ -86,6 +86,20 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (equal-url (url e1) (url e2)))
 
+(defstruct tag
+  name
+  description)
+
+(defmethod object-string ((tag tag))
+  (tag-name tag))
+
+(defmethod object-display ((tag tag))
+  (if (tag-description tag)
+      (format nil "~a (~a)"
+              (tag-name tag)
+              (tag-description tag))
+      (object-string tag)))
+
 (defun bookmark-add (url &key title tags)
   (unless (or (str:emptyp url)
               (string= "about:blank" url))
@@ -99,6 +113,14 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                    :url url)))
       (unless (str:emptyp title)
         (setf (title entry) title))
+      (setf tags (alex:flatten
+                  (mapcar (lambda (tag)
+                            (if (tag-p tag)
+                                (tag-name tag)
+                                ;; If TAG is the minibuffer input, it may be a
+                                ;; space-separated string.
+                                (str:split " " tag :omit-nulls t)))
+                          tags)))
       (setf tags (delete-duplicates (append (tags entry) tags)
                                     :test #'string=))
       (setf (tags entry) (sort tags #'string<))
@@ -121,20 +143,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                    (tags bookmark))))
                                    bookmarks)))
       (fuzzy-match non-tags bookmarks))))
-
-(defstruct tag
-  name
-  description)
-
-(defmethod object-string ((tag tag))
-  (tag-name tag))
-
-(defmethod object-display ((tag tag))
-  (if (tag-description tag)
-      (format nil "~a (~a)"
-              (tag-name tag)
-              (tag-description tag))
-      (object-string tag)))
 
 (declaim (ftype (function (&key (:with-empty-tag boolean)
                                 (:extra-tags list-of-tags)))
@@ -198,12 +206,6 @@ This can be useful to let the user select no tag when returning directly."
                                                      :with-empty-tag t
                                                      :extra-tags (make-tags (extract-keywords body 5)))
                                :empty-complete-immediate t))))
-          (when tags
-            ;; Turn tags with spaces into multiple tags.
-            (setf tags (alex:flatten
-                        (mapcar (lambda (tag)
-                                  (str:split " " tag :omit-nulls t))
-                                tags))))
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
@@ -221,10 +223,18 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer
-                     (make-minibuffer
-                      :input-prompt "Bookmark URL")))
-    (bookmark-add url)))
+  (with-result* ((url (read-from-minibuffer
+                       (make-minibuffer
+                        :input-prompt "Bookmark URL")))
+                 (tags (read-from-minibuffer
+                        (make-minibuffer
+                         :input-prompt "Space-separated tag(s)"
+                         :multi-selection-p t
+                         :completion-function (tag-completion-filter
+                                               :with-empty-tag t)
+                         :empty-complete-immediate t))))
+
+    (bookmark-add url :tags tags)))
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
@@ -238,15 +248,25 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
-  (with-result* ((links-json (add-element-hints))
-                 (selected-hint (read-from-minibuffer
-                                 (make-minibuffer
-                                  :input-prompt "Bookmark hint"
-                                  :cleanup-function #'remove-element-hints))))
-    (let* ((link-hints (cl-json:decode-json-from-string links-json))
-           (selected-link (cadr (assoc selected-hint link-hints :test #'equalp))))
-      (when selected-link
-        (bookmark-add selected-link)))))
+  (with-result* ((elements-json (add-element-hints))
+                 (result (read-from-minibuffer
+                          (make-minibuffer
+                           :input-prompt "Bookmark hint"
+                           :history nil
+                           :completion-function
+                           (hint-completion-filter (elements-from-json elements-json))
+                           :cleanup-function
+                           (lambda ()
+                             (remove-element-hints :buffer (current-buffer))))))
+                 (tags (read-from-minibuffer
+                        (make-minibuffer
+                         :input-prompt "Space-separated tag(s)"
+                         :multi-selection-p t
+                         :completion-function (tag-completion-filter
+                                               :with-empty-tag t)
+                         :empty-complete-immediate t))))
+    (when result
+      (bookmark-add (url result) :tags tags))))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark."
