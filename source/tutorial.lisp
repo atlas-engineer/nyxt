@@ -36,8 +36,10 @@ example, two buffers can have a completely different set of keybindings. Unlike
 tabs, the buffer display scales, that is to say, it's just as convenient to
 navigate 2 or 100 buffers.")
    (:h3 "Modes")
-   (:p "Buffers have a set of modes. A mode is a set of functions, hooks,
-keybindings and/or other facilities that modify the behavior of a buffer.")
+   (:p "Each buffer has its own set of modes. A mode is a set of functions,
+hooks, keybindings and other facilities that modify the behavior of a buffer.
+For example, 'blocker-mode' can be used for domain-based adblocking while
+noscript-mode disables JavaScript.")
    (:h3 "Minibuffer")
    (:p "The minibuffer is a input area where you can provide input to
 commands. By default, the minibuffer will appear at the bottom of a window when
