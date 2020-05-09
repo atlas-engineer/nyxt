@@ -260,4 +260,36 @@ can set a hook like the following in your configuration file:")
             :initial-value %slot-default))))"))
    (:p "Some hooks like the above example expect a return value, so it's
 important to make sure we return " (:code "url") " here.  See the documentation
-of the respective hooks for more details.")))
+of the respective hooks for more details.")
+
+   (:h3 "Data paths and data profiles")
+   (:p "Next provides a uniform configuration interface for all data files
+persisted to disk (bookmarks, cookies, etc.).  To each file corresponds
+a " (:code "data-path") " object. A " (:code "data-profile") " is a unique but
+customizable object that helps define general rules for data storage.  Both
+data-paths and data-profiles compose, so it's possible to define general rules
+for all data-paths (even for those not known in advance) while it's also
+possible to specialize some data-paths given a data-profile.")
+   (:p "The data-profile can be set from command line and from the configuration file.")
+   (:p "The data-paths can be passed a hint from command line, but each
+data-path and data-profile rules are free to ignore it.")
+   (:p "Example to create a development data-profile that stores all data in "
+       (:code "/tmp/next") ":")
+   (:pre (:code "
+\(defvar +dev-data-profile+ (make-instance 'data-profile :name \"dev\")
+  \"Development profile.\")
+
+\(defmethod next:expand-data-path ((profile (eql +dev-data-profile+)) (path data-path))
+  \"Persist data to /tmp/next/.\"
+  (expand-default-path (make-instance (class-name (class-of path))
+                                      :basename (basename path)
+                                      :dirname \"/tmp/next/\")))
+
+(defmethod next:expand-data-path ((profile (eql +dev-data-profile+)) (path session-data-path))
+  \"Persist session to default location.\"
+  (expand-data-path +default-data-profile+ path))
+
+;; Make new profile the default:
+\(define-configuration browser
+  ((data-profile (or (find-data-profile (getf *options* :data-profile))
+                     +dev-data-profile+))))"))))
