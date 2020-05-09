@@ -41,13 +41,11 @@ hooks, keybindings and other facilities that modify the behavior of a buffer.
 For example, 'blocker-mode' can be used for domain-based adblocking while
 noscript-mode disables JavaScript.")
    (:h3 "Minibuffer")
-   (:p "The minibuffer is a input area where you can provide input to
-commands. By default, the minibuffer will appear at the bottom of a window when
-you are required to input additional information to a command. For example, when
-invoking the 'set-url' command, you must supply the URL you would like to
-navigate to. The minibuffer will also frequently provide
-completions (suggestions) for you when using it, simply type some characters to
-see what the minibuffer suggests.")
+   (:p "The minibuffer is a menu that will appear when a command requests user
+input. For example, when invoking the " (:code "set-url") " command, you must
+supply the URL you would like to navigate to. The minibuffer can provide
+suggestions for you when using it.  The list of suggestions will automatically
+narrow down to those matching your input as you type.")
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Next will output messages back to you. To view the history of all
