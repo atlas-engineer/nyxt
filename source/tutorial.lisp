@@ -64,41 +64,40 @@ the current buffer.")
     (:li (command-markup 'scroll-to-top) ": Jump to top of page"))
    (:h3 "Setting the URL")
    (:p "When ambiguous URLs are inputted, Next will attempt the best guess it
-can. If the you do not supply a protocol in a URL, 'https' will be assumed. To
-visit a site supporting only 'http', you must explicitly type the full URL with
-'http' included.")
+can. If the you do not supply a protocol in a URL, HTTPS will be assumed. To
+visit a site supporting only the less secure HTTP, you must explicitly type the
+full URL including the 'http://' prefix.")
    (:ul
     (:li (command-markup 'set-url) ": Set URL of current buffer")
     (:li (command-markup 'set-url-new-buffer) ": Open a new buffer and set its URL")
-    (:li (command-markup 'make-buffer-focus) ": Make a new buffer"))
+    (:li (command-markup 'make-buffer-focus) ": Make a new empty buffer"))
    (:h3 "Switching buffers")
-   (:p "You can switch buffers using the 'switch-buffer' command which provides
-fuzzy completion. This allows you to quickly find whatever buffer you are
-looking for.")
    (:ul
-    (:li (command-markup 'switch-buffer) ": Switch buffer")
+    (:li (command-markup 'switch-buffer) ": Switch buffer using fuzzy completion
+to quickly find whatever buffer you are looking for")
     (:li (command-markup 'switch-buffer-next) ": Go to next buffer")
     (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer"))
    (:h3 "Link Navigation")
-   (:p "Next provides a feature called link-hinting to allow you to visit URLs
-on a page without using the mouse. To use it, type invoke the 'follow-hint'
-command. Several hints will appear on screen and in the minibuffer, these hints
-represent elements that you can interact with enter in one of the hint strings
-into the minibuffer to invoke it.")
+   (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
+Invoke one of the commands below: several hints will appear on screen and all
+links one the page will be listed in the minibuffer.  You can select the hints
+by matching against the hint, the URL or the title.")
    (:ul
     (:li (command-markup 'follow-hint) ": Go to link in current buffer")
     (:li (command-markup 'follow-hint-new-buffer-focus) ": Create new buffer with link, focus on new buffer")
     (:li (command-markup 'follow-hint-new-buffer) ": Create new buffer with link, keep focus on current buffer"))
    (:h3 "Using the buffer history")
-   (:p "History is represented as a tree that you can traverse. More complex
-than the 'forwards-backwards' abstraction found in other browsers, the tree
-makes sure you never lose track of where you've been.")
+   (:p "History is represented as a tree that you can traverse: when you go back
+in history, then follow a new URL, it effectively creates a new branch without
+deleting the old path. The tree makes sure you never lose track of where you've
+been.")
    (:ul
     (:li (command-markup 'next/web-mode:history-forwards) ": History forwards")
     (:li (command-markup 'next/web-mode:history-backwards) ": History backwards")
-    (:li (command-markup 'next/web-mode:history-forwards-query) ": History forwards query, forward to any forward location")
-    (:li (command-markup 'next/web-mode:history-backwards-query) ": History backwards query, backward to any backward location")
-    (:li (command-markup 'next/web-mode:history-all-query) ": History all query, Jump to any history entry."))
+    (:li (command-markup 'next/web-mode:history-forwards-query) ": History forwards query to any following location on the branch")
+    (:li (command-markup 'next/web-mode:history-backwards-query) ": History backwards query to any previous location")
+    (:li (command-markup 'next/web-mode:history-forwards-all-query) ": History forwards query to any following location on all branches")
+    (:li (command-markup 'next/web-mode:history-all-query) ": History all query, jump to any history entry"))
    (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'.")
    (:h3 "Searching")
