@@ -10,26 +10,25 @@
     (:li "How to use the help system to learn more about Next"))
    (:h2 "Core Concepts")
    (:h3 "Keybindings and Commands")
-   (:p "Commands in Next are invoked by pressing any key or from
-the " (:code "execute-command") " menu. Typically, are paired with a modifier
-key. A modifier key is a key that does not produce its own output, but rather
-modifies the output of whatever key you depress with it. Examples of modifier
-keys include: control, option, alt, shift, command, or the windows key.")
+   (:p "Commands in Next are invoked by pressing specific keys or from
+the " (:code "execute-command") " menu (" (:code (binding-keys
+'execute-command)) ") which will prompt you for a list of commands which you can
+then select from.")
+   (:p "In Next, keybindings are represented as in 'control-space' or
+equivalently 'C-space'. In this example, 'C' is a shortcut for the modifier
+'control', and 'space' represents the character ' '.  A modifier is a key that
+does not do anything on its own, its purpose is to alter the meaning of a
+non-modifier key when pressed together.  Therefore, to input the 'C-x'
+keybinding you would have to keep 'control' pressed and they hit 'x'.  Multiple
+key presses can be chained: in 'C-x C-M-left', you would have to press 'C-x',
+let go of all keys, and then press 'control', 'meta' and 'left'.")
    (:p "Modifier keys legend:")
    (:ul
     (:li (:code "control") " (" (:code "C") "): Control key")
     (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
     (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
-   (:p "Throughout this tutorial, keybindings will be represented as in
-'control-x' or equivalently 'C-x'. In this example, 'C' if a shortcut for the
-modifier 'control', and 'x' represents the character 'x'. Therefore, to input
-the 'C-x' keybinding you would have to keep Control pressed and they hit 'x'.
-Multiple key presses can be chained: in 'C-x M-s', you would have to press
-'C-x', let go of all keys, and then press 'M-s'.")
-   (:p "You can also invoke commands by name using
-the " (:code "execute-command") " command which will prompt you for a list of
-commands which you can then select from.")
+
    (:h3 "Buffers")
    (:p "Next uses the concept of a buffer instead of tabs. Beyond tabs, buffers
 provide additional functionality. For example, a buffer can have a unique
