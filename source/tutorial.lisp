@@ -46,13 +46,24 @@ input. For example, when invoking the " (:code "set-url") " command, you must
 supply the URL you would like to navigate to. The minibuffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
+   (:ul
+    (:li (command-markup 'return-input
+                         :modes (list (make-instance 'minibuffer-mode)))
+         ": Validate the selected suggestion(s) or the current input if there is
+no suggestion.")
+    (:li (command-markup 'return-immediate
+                         :modes (list (make-instance 'minibuffer-mode)))
+         ": Validate the current input, ignoring any suggestion."))
    (:p " Some commands support multiple selections, for
-instance " (:code "delete-buffer") " can delete all selected buffers at once.")
+instance " (:code "delete-buffer") " can delete all selected buffers at once.
+When the input is changed and the candidates are re-filtered, the selection is
+not altered even if the marked elements don't show.")
+   (:p "When at least one candidate is marked, only the marked candidates are processed
+upon return.  The candidate under the cursor is not processed if not marked.")
    (:ul
     (:li (command-markup 'minibuffer-toggle-mark
                          :modes (list (make-instance 'minibuffer-mode)))
-         ": Select or deselect the
-current suggestion.")
+         ": Select or deselect the current suggestion.")
     (:li (command-markup 'minibuffer-mark-all
                          :modes (list (make-instance 'minibuffer-mode)))
          ": Select all currently-displayed suggestions")
