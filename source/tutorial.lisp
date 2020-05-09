@@ -188,4 +188,17 @@ have priorities over the other modes key bindings.")
                              scheme:vi-normal *my-keymap*))))
 
 \(define-configuration buffer
-  ((default-modes (append '(my-mode) %slot-default))))"))))
+  ((default-modes (append '(my-mode) %slot-default))))"))
+
+   (:h3 "Custom commands")
+   (:p "Creating your own invokable commands is similar to creating a Common
+Lisp function except the form is " (:code "define-command")  "instead of "
+       (:code "defun") ".")
+   (:p "Example:")
+   (:pre (:code
+          "(define-command bookmark-url ()
+  \"Allow the user to bookmark a URL via minibuffer input.\"
+  (with-result (url (read-from-minibuffer
+                     (make-minibuffer
+                      :input-prompt \"Bookmark URL\")))
+    (bookmark-add url)))"))))
