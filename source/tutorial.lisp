@@ -51,9 +51,9 @@ narrow down to those matching your input as you type.")
 window) where Next outputs messages back to you. To view the history of all
 messages, invoke the command 'messages'.")
    (:h3 "Status Area")
-   (:p "The status area represents a space below each buffer where information
-about the state of that buffer is printed. In a typical installation this
-includes the active modes, the URL, and the title of the current buffer.")
+   (:p "The status area is where information about the state of that buffer is
+printed. By default this includes the active modes, the URL, and the title of
+the current buffer.")
    (:h2 "Basic Keybindings")
    (:h3 "Moving within a buffer")
    (:p "To Move within a buffer, several commands are provided:")
