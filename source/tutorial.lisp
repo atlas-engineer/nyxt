@@ -183,7 +183,7 @@ everything.  By default, it has only very few bindings like the one
 for " (:code "execute-command") ".  You can use it to set keys globally:")
    (:pre (:code "
 \(define-configuration buffer
-  ((override-map (let ((map (make-keymap \"overide-map\")))
+  ((override-map (let ((map (make-keymap \"override-map\")))
                    (define-key map
                      \"M-x\" 'execute-command)))))"))
    (:p "A more flexibly way is to create your own mode with you custom
