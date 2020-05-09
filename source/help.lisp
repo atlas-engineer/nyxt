@@ -374,13 +374,12 @@ The version number is stored in the clipboard."
   (setf (messages-content *browser*) '())
   (echo "Messages cleared."))
 
-(declaim (ftype (function (function-symbol)) binding-keys))
-(defun binding-keys (fn)
-  (let* ((buffer (current-buffer))
-         (keymaps (cons (override-map buffer)
-                        (delete nil (mapcar #'keymap (modes buffer))))))
+(declaim (ftype (function (function-symbol &key (:modes list))) binding-keys))
+(defun binding-keys (fn &key (modes (modes (current-buffer))))
+  (let ((keymaps (cons (override-map (current-buffer))
+                       (delete nil (mapcar #'keymap modes)))))
     (or (first (keymap:binding-keys fn keymaps))
-        "<NONE>")))
+        "NO-KEY")))
 
 (define-command help ()
   "Print help information."

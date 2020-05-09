@@ -203,8 +203,7 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
                  :initarg :override-map
                  :initform (let ((map (make-keymap "overide-map")))
                              (define-key map
-                               "C-space" 'execute-command)
-                             map)
+                               "C-space" 'execute-command))
                  :documentation "Keymap that overrides all other bindings.
 No libraries should ever touch the override-map, this is left for the user to
 customize to their needs.

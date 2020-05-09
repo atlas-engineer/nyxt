@@ -94,7 +94,10 @@ Example:
 
 (define-mode root-mode (t)
   "The root of all modes."
-  ((buffer :accessor buffer :initarg :buffer)
+  ((buffer :accessor buffer
+           :initarg :buffer
+           :initform nil
+           :type buffer)
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
    (constructor :accessor constructor :initarg :constructor :type :function :initform nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :documentation
@@ -162,7 +165,9 @@ It may be MODE-SYMBOL itself."
 (defmethod keymap ((mode root-mode))
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."
-  (keymap:get-keymap (keymap-scheme-name (buffer mode))
+  (keymap:get-keymap (if (buffer mode)
+                         (keymap-scheme-name (buffer mode))
+                         scheme:cua)
                      (keymap-scheme mode)))
 
 (defmethod on-signal-notify-uri ((mode root-mode) url)
