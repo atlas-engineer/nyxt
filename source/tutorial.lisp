@@ -54,31 +54,31 @@ messages, invoke the command 'messages'.")
    (:p "The status area is where information about the state of that buffer is
 printed. By default this includes the active modes, the URL, and the title of
 the current buffer.")
-   (:h2 "Basic Keybindings")
+   (:h2 "Basic controls")
    (:h3 "Moving within a buffer")
    (:p "To Move within a buffer, several commands are provided:")
    (:ul
-    (:li (:code (binding-keys 'scroll-down) " scroll-down") ": Move down")
-    (:li (:code (binding-keys 'scroll-up) " scroll-up") ": Move up")
-    (:li (:code (binding-keys 'scroll-to-bottom) " scroll-to-bottom") ": Jump to bottom of page")
-    (:li (:code (binding-keys 'scroll-to-top) " scroll-to-top") ": Jump to top of page"))
+    (:li (command-markup 'scroll-down) "): Move down")
+    (:li (command-markup 'scroll-up) "): Move up")
+    (:li (command-markup 'scroll-to-bottom) ": Jump to bottom of page")
+    (:li (command-markup 'scroll-to-top) ": Jump to top of page"))
    (:h3 "Setting the URL")
    (:p "When ambiguous URLs are inputted, Next will attempt the best guess it
 can. If the you do not supply a protocol in a URL, 'https' will be assumed. To
 visit a site supporting only 'http', you must explicitly type the full URL with
 'http' included.")
    (:ul
-    (:li (:code (binding-keys 'set-url) " set-url") ": Set URL of current buffer")
-    (:li (:code (binding-keys 'set-url-new-buffer) " set-url-new-buffer") ": Open a new buffer and set its URL")
-    (:li (:code (binding-keys 'make-buffer-focus) " make-buffer-focus") ": Make a new buffer"))
+    (:li (command-markup 'set-url) ": Set URL of current buffer")
+    (:li (command-markup 'set-url-new-buffer) ": Open a new buffer and set its URL")
+    (:li (command-markup 'make-buffer-focus) ": Make a new buffer"))
    (:h3 "Switching buffers")
    (:p "You can switch buffers using the 'switch-buffer' command which provides
 fuzzy completion. This allows you to quickly find whatever buffer you are
 looking for.")
    (:ul
-    (:li (:code (binding-keys 'switch-buffer) " switch-buffer") ": Switch buffer")
-    (:li (:code (binding-keys 'switch-buffer-next) " switch-buffer-next") ": Go to next buffer")
-    (:li (:code (binding-keys 'switch-buffer-previous) " switch-buffer-previous") ": Go to previous buffer"))
+    (:li (command-markup 'switch-buffer) ": Switch buffer")
+    (:li (command-markup 'switch-buffer-next) ": Go to next buffer")
+    (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer"))
    (:h3 "Link Navigation")
    (:p "Next provides a feature called link-hinting to allow you to visit URLs
 on a page without using the mouse. To use it, type invoke the 'follow-hint'
@@ -86,19 +86,19 @@ command. Several hints will appear on screen and in the minibuffer, these hints
 represent elements that you can interact with enter in one of the hint strings
 into the minibuffer to invoke it.")
    (:ul
-    (:li (:code (binding-keys 'follow-hint) " follow-hint") ": Go to link in current buffer")
-    (:li (:code (binding-keys 'follow-hint-new-buffer-focus) " follow-hint-new-buffer-focus") ": Create new buffer with link, focus on new buffer")
-    (:li (:code (binding-keys 'follow-hint-new-buffer) " follow-hint-new-buffer") ": Create new buffer with link, keep focus on current buffer"))
+    (:li (command-markup 'follow-hint) ": Go to link in current buffer")
+    (:li (command-markup 'follow-hint-new-buffer-focus) ": Create new buffer with link, focus on new buffer")
+    (:li (command-markup 'follow-hint-new-buffer) ": Create new buffer with link, keep focus on current buffer"))
    (:h3 "Using the buffer history")
    (:p "History is represented as a tree that you can traverse. More complex
 than the 'forwards-backwards' abstraction found in other browsers, the tree
 makes sure you never lose track of where you've been.")
    (:ul
-    (:li (:code (binding-keys 'next/web-mode:history-forwards) " history-forwards") ": History forwards")
-    (:li (:code (binding-keys 'next/web-mode:history-backwards) " history-backwards") ": History backwards")
-    (:li (:code (binding-keys 'next/web-mode:history-forwards-query) " history-forwards-query") ": History forwards query, forward to any forward location")
-    (:li (:code (binding-keys 'next/web-mode:history-backwards-query) " history-backwards-query") ": History backwards query, backward to any backward location")
-    (:li (:code (binding-keys 'next/web-mode:history-all-query) " history-all-query") ": History all query, Jump to any history entry."))
+    (:li (command-markup 'next/web-mode:history-forwards) ": History forwards")
+    (:li (command-markup 'next/web-mode:history-backwards) ": History backwards")
+    (:li (command-markup 'next/web-mode:history-forwards-query) ": History forwards query, forward to any forward location")
+    (:li (command-markup 'next/web-mode:history-backwards-query) ": History backwards query, backward to any backward location")
+    (:li (command-markup 'next/web-mode:history-all-query) ": History all query, Jump to any history entry."))
    (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'.")
    (:h3 "Searching")
@@ -106,10 +106,11 @@ invoking the command 'buffer-history-tree'.")
    (:p "You can view candidates for search results in the minibuffer in one
 place rather than having to jump around on a buffer (or multiple buffers).")
    (:ul
-    (:li (:code (binding-keys 'search-buffer) " search-buffer") ": Search buffer")
-    (:li (:code (binding-keys 'search-buffers) " search-buffers") ": Search buffers"))
-   (:h3 "Exiting Next")
-   (:p "To quit Next, enter the command " (:code (binding-keys 'quit)))
+    (:li (command-markup 'search-buffer) ": Search buffer")
+    (:li (command-markup 'search-buffers) ": Search multiple buffers"))
+   (:h3 "Miscellaneous")
+   (:p (command-markup 'quit) ": Close all Next windows and quit.")
+
    (:h2 "The Next Help System")
    (:p "Next provides introspective and help capabilities. You can view and
 modify Next's source code during runtime. A few help commands are described

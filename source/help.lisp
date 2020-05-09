@@ -382,6 +382,16 @@ The version number is stored in the clipboard."
     (or (first (keymap:binding-keys fn keymaps))
         "<NONE>")))
 
+(defmacro command-markup (fn)
+  "Print FN in HTML followed its bindings in parentheses."
+  `(markup:raw
+    (markup:markup
+     (:span
+      (:code (string-downcase (symbol-name ,fn)))
+      " ("
+      (:code (binding-keys ,fn))
+      ")"))))
+
 (define-command help ()
   "Print help information."
   (let ((help-buffer (next/help-mode:help-mode :activate t
