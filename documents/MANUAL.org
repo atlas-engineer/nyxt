@@ -940,20 +940,24 @@ For instance, if you want to force =old.reddit.com= over =www.reddit.com=, you
 can set a hook like the following in your =~/.config/next/init.lisp=:
 
 #+begin_src lisp
-(defun old-reddit-hook (url)
-  (let* ((uri (quri:uri url)))
-    (if (search "www.reddit" (quri:uri-host uri))
-        (progn
-          (setf (quri:uri-host uri) "old.reddit.com")
-          (let ((new-url (quri:render-uri uri)))
-            (log:info "Switching to old Reddit: ~a" new-url)
-            new-url))
-        url)))
+(defun old-reddit-handler (request-data)
+  (let* ((url (url request-data))
+         (uri (quri:uri url)))
+    (setf (url request-data)
+          (if (search "reddit.com" (quri:uri-host uri))
+              (progn
+                (setf (quri:uri-host uri) "old.reddit.com")
+                (let ((new-url (quri:render-uri uri)))
+                  (log:info "Switching to old Reddit: ~a" new-url)
+                  new-url))
+              url)))
+  request-data)
 
-(define-configuration buffer
-  ((set-url-hook (hooks:make-hook-string->string
-               :handlers (list #'old-reddit-handler)
-               :combination #'hooks:combine-composed-hook))))
+ (define-configuration buffer
+  ((request-resource-hook
+    (reduce #'hooks:add-hook
+            (mapcar #'make-handler-resource (list #'old-reddit-handler))
+            :initial-value %slot-default))))
 #+end_src
 
 Some hooks like the above example expect a return value, so it's important to
