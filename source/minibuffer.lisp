@@ -448,11 +448,13 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         (ffi-window-set-minibuffer-height (current-window) 0))))
 
 (defun insert (characters &optional (minibuffer (current-minibuffer)))
-  (setf (input-buffer minibuffer)
-        (str:insert characters
-                    (input-cursor-position minibuffer)
-                    (input-buffer minibuffer)))
-  (incf (input-cursor-position minibuffer) (length characters))
+  ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
+  (let ((old-cursor-position (input-cursor-position minibuffer)))
+    (incf (input-cursor-position minibuffer) (length characters))
+    (setf (input-buffer minibuffer)
+          (str:insert characters
+                      old-cursor-position
+                      (input-buffer minibuffer))))
   (state-changed minibuffer)
   (update-display minibuffer))
 
@@ -485,11 +487,14 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Delete character before cursor."
   (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
     (unless (= cursor 0)
-      (setf buffer
-            (concatenate 'string
-                         (subseq buffer 0 (- cursor 1))
-                         (subseq buffer cursor (length buffer))))
-      (decf cursor)))
+      (let ((old-cursor cursor))
+        ;; Change cursor before buffer or else we could have a cursor that's
+        ;; beyond the buffer length.
+        (decf cursor)
+        (setf buffer
+              (concatenate 'string
+                           (subseq buffer 0 (- old-cursor 1))
+                           (subseq buffer old-cursor (length buffer)))))))
   (state-changed minibuffer)
   (update-display minibuffer))
 
@@ -585,12 +590,12 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
     (let* ((current-cursor-position cursor)
            (new-cursor-position (cursor-forwards-word minibuffer))
-           (transpose-distance (- new-cursor-position current-cursor-position)))
-      (setf buffer
-            (concatenate 'string
+           (transpose-distance (- new-cursor-position current-cursor-position))
+           (new-buffer (concatenate 'string
                          (subseq buffer 0 current-cursor-position)
-                         (subseq buffer new-cursor-position (length buffer))))
-      (setf cursor (- cursor transpose-distance))))
+                         (subseq buffer new-cursor-position (length buffer)))))
+      (setf cursor (- cursor transpose-distance))
+      (setf buffer new-buffer)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
@@ -607,8 +612,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Delete characters from cursor position until the beginning of the word at point."
   (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
     (multiple-value-bind (new-string new-position) (%delete-backwards-word buffer cursor)
-      (setf buffer new-string
-            cursor new-position)))
+      ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
+      (setf cursor new-position
+            buffer new-string)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
@@ -622,8 +628,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 (define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters in the input."
   (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
-    (setf buffer ""
-          cursor 0))
+    ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
+    (setf cursor 0
+          buffer ""))
   (state-changed minibuffer)
   (update-display minibuffer))
 
