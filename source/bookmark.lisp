@@ -163,7 +163,7 @@ This can be useful to let the user select no tag when returning directly."
     (when with-empty-tag
       (push "" tags))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) tags))))
+      (fuzzy-match (word-at-cursor minibuffer) tags))))
 
 (define-command show-bookmarks ()
   "Show all bookmarks in a new buffer."

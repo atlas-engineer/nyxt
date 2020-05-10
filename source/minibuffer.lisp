@@ -576,6 +576,37 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         (incf position)
         position)))
 
+(defvar +white-spaces+ '(#\space #\no-break_space))
+
+(defun word-start (s position)
+  "Return the index of the beginning word at POSITION in string S."
+  (apply #'max
+         (mapcar (lambda (char)
+                   (let ((pos (position char s
+                                        :end position
+                                        :from-end t)))
+                     (if pos
+                         (1+ pos)
+                         0)))
+                 +white-spaces+)))
+
+(defun word-end (s position)
+  "Return the index of the end of the word at POSITION in string S."
+  (apply #'min
+         (mapcar (lambda (char)
+                   (or (position char s :start position)
+                       (length s)))
+                 +white-spaces+)))
+
+(defun word-at-cursor (minibuffer)
+  "Return word at cursor.
+If cursor is between two words, return the first one."
+  (with-accessors ((input-buffer input-buffer) (input-cursor-position input-cursor-position)) minibuffer
+    (let ((white-spaces '(#\space #\no-break_space)))
+      (subseq input-buffer
+              (word-start input-buffer input-cursor-position)
+              (word-end input-buffer input-cursor-position)))))
+
 ;; TODO: Re-use cursor-forwards-word
 (define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the word at point."
