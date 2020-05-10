@@ -165,6 +165,24 @@ This can be useful to let the user select no tag when returning directly."
     (lambda (minibuffer)
       (fuzzy-match (word-at-cursor minibuffer) tags))))
 
+(define-command insert-tag (&optional (minibuffer (current-minibuffer)))
+  "Replace current work with selected tag."
+  (let ((selection (get-candidate minibuffer)))
+    (unless (uiop:emptyp selection)
+      (with-accessors ((cursor input-cursor-position) (buffer input-buffer)) minibuffer
+        (let ((before (subseq buffer 0 (word-start buffer cursor)))
+              (after (subseq buffer (word-end buffer cursor))))
+          (kill-whole-line minibuffer)
+          (insert (str:concat before selection after)))))))
+
+(define-mode set-tag-mode (minibuffer-mode)
+  "Minibuffer mode for setting the tag of a bookmark."
+  ((keymap-scheme
+    :initform
+    (define-scheme "set-tag"
+      scheme:cua
+      (list "tab" 'insert-tag)))))
+
 (define-command show-bookmarks ()
   "Show all bookmarks in a new buffer."
   (let* ((bookmarks-buffer (make-buffer :title "*Bookmarks*"))
@@ -202,7 +220,7 @@ This can be useful to let the user select no tag when returning directly."
                        (tags (read-from-minibuffer
                               (make-minibuffer
                                :input-prompt "Space-separated tag(s)"
-                               :multi-selection-p t
+                               :default-modes '(set-tag-mode minibuffer-mode)
                                :completion-function (tag-completion-filter
                                                      :with-empty-tag t
                                                      :extra-tags (make-tags (extract-keywords body 5)))
@@ -230,7 +248,7 @@ This can be useful to let the user select no tag when returning directly."
                  (tags (read-from-minibuffer
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
-                         :multi-selection-p t
+                         :default-modes '(set-tag-mode minibuffer-mode)
                          :completion-function (tag-completion-filter
                                                :with-empty-tag t)
                          :empty-complete-immediate t))))
@@ -262,7 +280,7 @@ This can be useful to let the user select no tag when returning directly."
                  (tags (read-from-minibuffer
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
-                         :multi-selection-p t
+                         :default-modes '(set-tag-mode minibuffer-mode)
                          :completion-function (tag-completion-filter
                                                :with-empty-tag t)
                          :empty-complete-immediate t))))
