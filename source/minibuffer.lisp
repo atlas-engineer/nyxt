@@ -448,13 +448,13 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         (ffi-window-set-minibuffer-height (current-window) 0))))
 
 (defun insert (characters &optional (minibuffer (current-minibuffer)))
-  ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
-  (let ((old-cursor-position (input-cursor-position minibuffer)))
-    (incf (input-cursor-position minibuffer) (length characters))
-    (setf (input-buffer minibuffer)
-          (str:insert characters
-                      old-cursor-position
-                      (input-buffer minibuffer))))
+  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
+    ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
+    (let ((old-cursor-position cursor))
+      (incf cursor (length characters))
+      (setf buffer (str:insert characters
+                               old-cursor-position
+                               buffer))))
   (state-changed minibuffer)
   (update-display minibuffer))
 
