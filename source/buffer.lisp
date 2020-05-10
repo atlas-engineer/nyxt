@@ -207,10 +207,26 @@ complete against a search engine."
     ;; Complete a search engine name.
     ((and (not (str:emptyp (input-buffer minibuffer)))
           (zerop (completion-cursor minibuffer)))
-     (let ((name (search-engine-starting-with (get-candidate minibuffer))))
-       (when name
-         (kill-whole-line minibuffer)
-         (insert (str:concat name " ")))))
+     (let* ((engines (mapcar #'first (search-engines *browser*)))
+            (matching-engines
+              (remove-if (complement (alex:curry #'str:starts-with-p (input-buffer minibuffer)))
+                        engines)))
+       (match (length matching-engines)
+         (1
+          (kill-whole-line minibuffer)
+          (insert (str:concat (first matching-engines) " ")))
+         (match-count
+          (with-result (engine (read-from-minibuffer
+                                (make-minibuffer
+                                 :input-prompt "Search engine"
+                                 :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
+                                 :completion-function (lambda (minibuffer)
+                                                        (fuzzy-match (input-buffer minibuffer)
+                                                                     engines))
+                                 :empty-complete-immediate t)))
+            (unless (uiop:emptyp engine)
+              (kill-whole-line minibuffer)
+              (insert (str:concat engine " ") minibuffer)))))))
     (t
      (insert-candidate minibuffer))))
 
@@ -219,10 +235,7 @@ complete against a search engine."
   ((keymap-scheme
     :initform
     (define-scheme "set-url"
-      scheme:emacs
-      (list
-       "tab" 'insert-candidate-or-search-engine)
-      scheme:vi-normal
+      scheme:cua
       (list
        "tab" 'insert-candidate-or-search-engine)))))
 

@@ -671,18 +671,6 @@ The handlers take the `download-manager:download' class instance as argument.")
   (when (null browser)
     (error "There is no current *browser*. Is Next started?")))
 
-(defun search-engines-names (&optional (browser *browser*))
-  "Return a list of search engines names."
-  (mapcar (lambda (tuple)
-            (car tuple))
-          (search-engines browser)))
-
-(defun search-engine-starting-with (prefix)
-  "Return the first search engine name that starts with PREFIX."
-  (loop for name in (search-engines-names)
-     when (str:starts-with-p prefix name)
-     return name))
-
 (defmethod history-data ((browser browser))
   "Return the `history-data' slot from BROWSER.
 If empty, the history data is initialized with `history-restore-function'."
