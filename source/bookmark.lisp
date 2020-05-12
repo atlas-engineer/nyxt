@@ -107,7 +107,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
            (bookmarks-without-url (remove-if (lambda (b)
                                                (when (equal-url (url b) url)
                                                  (setf entry b)))
-                                             (bookmarks-data *browser*))))
+                                             (bookmarks-data *browser*)))
+           (tags (if (stringp tags) (str:split " " tags) tags)))
       (unless entry
         (setf entry (make-instance 'bookmark-entry
                                    :url url)))
