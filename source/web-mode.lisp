@@ -110,8 +110,8 @@ search.")
        "M-g" 'follow-hint-new-buffer-focus
        "C-u M-g" 'follow-hint-new-buffer
        "C-x C-w" 'copy-hint-url
-       "M-y" 'paste
-       "C-y" 'copy
+       "C-y" 'paste
+       "M-w" 'copy
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-p" 'scroll-up
@@ -135,8 +135,8 @@ search.")
        "M-<" 'scroll-to-top
        "C-v" 'scroll-page-down
        "M-v" 'scroll-page-up
-       "C-w" 'copy-url
-       "M-w" 'copy-title
+       "C-M-l" 'copy-url
+       "C-M-i" 'copy-title
        ;; Leave 'space' unbound so that the renderer decides wether to insert of
        ;; scroll.
 
