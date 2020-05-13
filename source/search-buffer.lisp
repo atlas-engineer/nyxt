@@ -198,10 +198,10 @@ provided buffers."
          (minibuffer (make-minibuffer
                       :input-prompt prompt-text
                       :completion-function
-                      #'(lambda (input)
+                      #'(lambda (minibuffer)
                           (unless explicit-case-p
-                            (setf case-sensitive-p (not (str:downcasep input))))
-                          (match-completion-function input buffers case-sensitive-p))
+                            (setf case-sensitive-p (not (str:downcasep (input-buffer minibuffer)))))
+                          (match-completion-function (input-buffer minibuffer) buffers case-sensitive-p))
                       :changed-callback
                       (let ((subsequent-call nil))
                         (lambda ()
