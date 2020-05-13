@@ -1,7 +1,11 @@
 (in-package :next)
 
 (defun password-completion-filter (password-instance)
-  (let ((password-list (password:list-passwords password-instance)))
+  (let ((password-list (password:list-passwords password-instance))
+        (domain (domain (url (current-buffer)))))
+    (when domain
+      (let ((closest-match (find-if (alex:curry #'str:containsp domain) password-list)))
+        (setf password-list (cons closest-match (delete closest-match password-list)))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) password-list))))
 
@@ -10,7 +14,9 @@
   (if (password-interface *browser*)
       (with-result* ((password-name (read-from-minibuffer
                                      (make-minibuffer
-                                      :input-prompt "Name for new password")))
+                                      :input-prompt "Name for new password"
+                                      :input-buffer (or (domain (url (current-buffer)))
+                                                        ""))))
                      (service (read-from-minibuffer
                                (make-minibuffer
                                 :input-prompt "Service")))
