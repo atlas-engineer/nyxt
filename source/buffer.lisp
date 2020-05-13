@@ -207,14 +207,15 @@ complete against a search engine."
     ;; Complete a search engine name.
     ((and (not (str:emptyp (input-buffer minibuffer)))
           (zerop (completion-cursor minibuffer)))
-     (let* ((engines (mapcar #'first (search-engines *browser*)))
+     (let* ((engines (search-engines *browser*))
             (matching-engines
               (remove-if (complement (alex:curry #'str:starts-with-p (input-buffer minibuffer)))
-                        engines)))
+                         engines
+                         :key #'shortcut)))
        (match (length matching-engines)
          (1
           (kill-whole-line minibuffer)
-          (insert (str:concat (first matching-engines) " ")))
+          (insert (str:concat (shortcut (first matching-engines)) " ")))
          (match-count
           (with-result (engine (read-from-minibuffer
                                 (make-minibuffer
@@ -222,11 +223,10 @@ complete against a search engine."
                                  :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
                                  :completion-function (lambda (minibuffer)
                                                         (fuzzy-match (input-buffer minibuffer)
-                                                                     engines))
-                                 :empty-complete-immediate t)))
-            (unless (uiop:emptyp engine)
+                                                                     engines)))))
+            (when engine
               (kill-whole-line minibuffer)
-              (insert (str:concat engine " ") minibuffer)))))))
+              (insert (str:concat (shortcut engine) " ") minibuffer)))))))
     (t
      (insert-candidate minibuffer))))
 
