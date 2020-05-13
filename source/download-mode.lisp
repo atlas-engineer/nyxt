@@ -13,7 +13,7 @@
                                              :buffer (make-buffer :title "*Downloads*"))))
          (contents (markup:markup
                     (:h1 "Downloads")
-                    (:p (:b "Directory: ") (ensure-parent-exists (download-directory *browser*)))
+                    (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-directory *browser*))))
                     (:span              ; TODO: Do we need this span?  We need something because of the loop.
                      (loop for d in (downloads *browser*)
                            collect
