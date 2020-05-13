@@ -35,6 +35,8 @@ Example:
 (define-list-type 'keymap:keymap)
 (export-always 'list-of-tags)
 (define-list-type 'tag)
+(export-always 'list-of-search-engines)
+(define-list-type 'search-engine)
 
 (defun alist-of-strings-p (alist)
   "Return t if ALIST is an alist whose keys and values are strings."
@@ -58,33 +60,6 @@ Example:
   (assert (typep '(("rst" . "rst")) 'alist-of-strings))
   (assert (not (typep '() 'alist-of-strings)))
   (assert (not (typep nil 'alist-of-strings))))
-
-(defun alist-of-string+2strings-p (alist)
-  "Return t if ALIST is an association list composed of 3-tuples, made only of strings."
-  (and (trivial-types:association-list-p alist)
-       (every (lambda (it)
-                (and
-                 (= 3 (length it))
-                 (every #'stringp it)))
-              alist)))
-
-(export-always 'alist-of-string+2strings)
-(deftype alist-of-string+2strings ()
-  `(satisfies alist-of-string+2strings-p))
-
-#+doctest
-(progn
-  (assert (typep '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
-                   ("wiki" "https://en.wikipedia.org/w/index.php?search=~a"
-                    "https://en.wikipedia.org/"))
-                 'alist-of-string+2strings))
-  (assert (not (typep '(("default" "two" "three" "four")
-                        ("wiki" "https://en.wikipedia.org/w/index.php?search=~a"
-                         "https://en.wikipedia.org/"))
-                      'alist-of-string+2strings)))
-  (assert (not (typep '(("default" "two" "three")
-                        ("wiki" :foo "https://en.wikipedia.org/"))
-                      'alist-of-string+2strings))))
 
 (deftype cookie-policy ()
   `(or (eql :always)

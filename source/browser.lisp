@@ -417,6 +417,35 @@ BUFFER's modes."
     (dolist (mode (modes buffer))
       (on-signal-load-finished mode url))))
 
+(defclass-export search-engine ()
+  ((shortcut :initarg :shortcut
+             :accessor shortcut
+             :type string
+             :initform ""
+             :documentation "The word used to refer to the search engine, for
+instance from the `set-url' commands.")
+   (search-url :initarg :search-url
+               :accessor search-url
+               :type string
+               :initform ""
+               :documentation "The URL containing a '~a' which will be replaced with the search query.")
+   (fallback-url :initarg :fallback-url
+                 :accessor fallback-url
+                 :type string
+                 :initform ""
+                 :documentation "The URL to fall back to when given an empty
+query.  This is optional: if empty, use `search-url' instead with ~a expanded to
+the empty string.")))
+
+(defmethod object-string ((engine search-engine))
+  (shortcut engine))
+
+(defmethod object-display ((engine search-engine))
+  (format nil "~a~a ~a"
+          (shortcut engine)
+          (make-string (max 0 (- 10 (length (shortcut engine)))) :initial-element #\no-break_space)
+          (search-url engine)))
+
 (defclass-export browser ()
   ((remote-execution-p :accessor remote-execution-p
                        :initarg remote-execution-p
@@ -492,18 +521,23 @@ is run after the renderer has been initialized and after the
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
    (search-engines :accessor search-engines
-                   :initform '(("default" "https://duckduckgo.com/?q=~a" "https://duckduckgo.com/")
-                               ("wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/"))
-                   :type trivial-types:association-list ; Value can be 1 or 2 strings.
+                   :initform (list (make-instance 'search-engine
+                                                  :shortcut "default"
+                                                  :search-url "https://duckduckgo.com/?q=~a"
+                                                  :fallback-url "https://duckduckgo.com/")
+                                   (make-instance 'search-engine
+                                                  :shortcut "wiki"
+                                                  :search-url "https://en.wikipedia.org/w/index.php?search=~a"
+                                                  :fallback-url "https://en.wikipedia.org/"))
+                   :type list-of-search-engines
                    :documentation "A list of the search engines.
-
-The elements are in the form of a 3-tuple of strings (SHORTCUT SEARCH-URL FALLBACK-URL).
 You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
 If the query is empty, FALLBACK-URL is loaded instead.  If
 FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
-The 'default' engine is used when the query is not a valid URL, or the first
-keyword is not recognized.")
+The engine with the \"default\" shortcut (or the first engine if there is no
+\"default\") is used when the query is not a valid URL, or the first keyword is
+not recognized.")
    (key-stack :accessor key-stack :initform '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
    (downloads :accessor downloads :initform '()
