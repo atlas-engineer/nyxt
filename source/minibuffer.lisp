@@ -602,10 +602,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Return word at cursor.
 If cursor is between two words, return the first one."
   (with-accessors ((input-buffer input-buffer) (input-cursor-position input-cursor-position)) minibuffer
-    (let ((white-spaces '(#\space #\no-break_space)))
-      (subseq input-buffer
-              (word-start input-buffer input-cursor-position)
-              (word-end input-buffer input-cursor-position)))))
+    (subseq input-buffer
+            (word-start input-buffer input-cursor-position)
+            (word-end input-buffer input-cursor-position))))
 
 ;; TODO: Re-use cursor-forwards-word
 (define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
