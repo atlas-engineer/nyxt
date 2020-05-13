@@ -17,9 +17,15 @@
                                       :input-prompt "Name for new password"
                                       :input-buffer (or (domain (url (current-buffer)))
                                                         ""))))
-                     (service (read-from-minibuffer
-                               (make-minibuffer
-                                :input-prompt "Service")))
+                     (service (funcall (lambda (&key callback)
+                                         (if (closer-mop:subclassp
+                                              (class-of (password-interface *browser*))
+                                              'password::security-interface)
+                                             (read-from-minibuffer
+                                              (make-minibuffer
+                                               :input-prompt "Service"
+                                               :callback callback))
+                                             (funcall-safely callback nil)))))
                      (new-password (read-from-minibuffer
                                     (make-minibuffer
                                      :invisible-input-p t
