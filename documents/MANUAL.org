@@ -642,7 +642,7 @@ The user can define key bindings by creating a mode that is loaded before any
 other mode.  In your configuration file:
 
 #+begin_src lisp
-(defvar *my-keymap* (make-keymap "my-map")
+(defvar *my-keymap* (make-keymap "my-map"))
 (define-key *my-keymap*
   "C-f" 'history-forwards
   "C-b" 'history-backwards)
