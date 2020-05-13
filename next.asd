@@ -92,12 +92,12 @@
                (:file "vcs-mode")
                (:file "video-mode")
                ;; Needs web-mode
-               (:file "tutorial")
                (:file "help")
                ;; Depends on everything else:
                (:file "about")
                (:file "session")
-               (:file "start"))
+               (:file "start")
+               (:file "tutorial"))
   :in-order-to ((test-op (test-op "next/tests"))))
 
 (asdf:defsystem next/tests
