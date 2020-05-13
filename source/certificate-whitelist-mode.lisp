@@ -39,9 +39,9 @@ To make this change permanent, you can customize
       '(\"next.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-whitelist-mode)
       (if (url buffer)
-          (let ((domain (quri:uri-host (quri:uri (url buffer)))))
-            (log:info domain)
-            (pushnew domain (certificate-whitelist buffer) :test #'string=))
+          (let ((host (host (url buffer))))
+            (log:info host)
+            (pushnew host (certificate-whitelist buffer) :test #'string=))
           (echo "Buffer has no URL."))
       (echo "Enable certificate-whitelist-mode first.")))
 

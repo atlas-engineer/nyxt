@@ -156,7 +156,7 @@ This is an acceptable handler for `request-resource-hook'."
     (if (and mode
              (blacklisted-host-p
               mode
-              (ignore-errors (quri:uri-host (quri:uri (url request-data))))))
+              (host (url request-data))))
         (progn
           (log:debug "Dropping ~a for ~a (~a)" (url request-data)
                      (buffer request-data)
