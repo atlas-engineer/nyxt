@@ -199,6 +199,17 @@ URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
         (log:error "In `set-url-hook': ~a" c)))
     (ffi-buffer-load buffer url)))
 
+(defun search-engine-completion-filter (minibuffer)
+  (with-slots (input-buffer) minibuffer
+    (let* ((matched-engines
+             (remove-if-not
+              (lambda (engine)
+                (str:starts-with-p input-buffer (shortcut engine) :ignore-case t))
+              (search-engines *browser*)))
+           (fuzzy-matched-engines (fuzzy-match input-buffer
+                                             (set-difference (search-engines *browser*) matched-engines))))
+      (append matched-engines fuzzy-matched-engines))))
+
 (define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
   "Paste selected candidate or search engine to input.
 If minibuffer input is not empty and the selection is on first position,
@@ -221,9 +232,7 @@ complete against a search engine."
                                 (make-minibuffer
                                  :input-prompt "Search engine"
                                  :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
-                                 :completion-function (lambda (minibuffer)
-                                                        (fuzzy-match (input-buffer minibuffer)
-                                                                     engines)))))
+                                 :completion-function #'search-engine-completion-filter)))
             (when engine
               (kill-whole-line minibuffer)
               (insert (str:concat (shortcut engine) " ") minibuffer)))))))
