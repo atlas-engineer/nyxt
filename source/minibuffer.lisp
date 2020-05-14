@@ -96,7 +96,8 @@ This should not rely on the minibuffer's content.")
                      :accessor changed-callback
                      :initform nil
                      :documentation "Function to call whenever a change happens.")
-   (empty-complete-immediate :initarg :empty-complete-immediate :accessor empty-complete-immediate ; TODO: Rename?
+   (empty-complete-immediate :initarg :empty-complete-immediate ; TODO: Rename?
+                             :accessor empty-complete-immediate
                              :initform nil
                              :documentation "If non-nil, allow input
                              matching no candidates.")

@@ -109,22 +109,13 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                (when (equal-url (url b) url)
                                                  (setf entry b)))
                                              (bookmarks-data *browser*)))
-           (tags (if (stringp tags) (str:split " " tags) tags)))
+           (tags (if (stringp tags) (str:split " " tags :omit-nulls t) tags)))
       (unless entry
         (setf entry (make-instance 'bookmark-entry
                                    :url url)))
       (unless (str:emptyp title)
         (setf (title entry) title))
-      (setf tags (alex:flatten
-                  (mapcar (lambda (tag)
-                            (if (tag-p tag)
-                                (tag-name tag)
-                                ;; If TAG is the minibuffer input, it may be a
-                                ;; space-separated string.
-                                (str:split " " tag :omit-nulls t)))
-                          tags)))
-      (setf tags (delete-duplicates (append (tags entry) tags)
-                                    :test #'string=))
+      (setf tags (delete-duplicates tags :test #'string=))
       (setf (tags entry) (sort tags #'string<))
       (push entry bookmarks-without-url)
       ;; Warning: Make sure to set bookmarks-data only once here since it is
@@ -183,7 +174,8 @@ This can be useful to let the user select no tag when returning directly."
     :initform
     (define-scheme "set-tag"
       scheme:cua
-      (list "tab" 'insert-tag)))))
+      (list "tab" 'insert-tag
+            "return" 'return-immediate)))))
 
 (define-command show-bookmarks ()
   "Show all bookmarks in a new buffer."
@@ -205,6 +197,17 @@ This can be useful to let the user select no tag when returning directly."
     (set-current-buffer bookmarks-buffer)
     bookmarks-buffer))
 
+(defun url-bookmark-tags (url)
+  "Return the space-separated string of tags of the bookmark corresponding to
+URL."
+  (let ((existing-bm (find url
+                           (bookmarks-data *browser*)
+                           :key #'url
+                           :test #'equal-url)))
+    (if existing-bm
+        (str:join " " (tags existing-bm))
+        "")))
+
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
   (flet ((extract-keywords (html limit)
@@ -223,6 +226,7 @@ This can be useful to let the user select no tag when returning directly."
                               (make-minibuffer
                                :input-prompt "Space-separated tag(s)"
                                :default-modes '(set-tag-mode minibuffer-mode)
+                               :input-buffer (url-bookmark-tags (url buffer))
                                :completion-function (tag-completion-filter
                                                      :with-empty-tag t
                                                      :extra-tags (make-tags (extract-keywords body 5)))
@@ -251,6 +255,7 @@ This can be useful to let the user select no tag when returning directly."
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
+                         :input-buffer (url-bookmark-tags (url buffer))
                          :completion-function (tag-completion-filter
                                                :with-empty-tag t)
                          :empty-complete-immediate t))))
@@ -283,6 +288,7 @@ This can be useful to let the user select no tag when returning directly."
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
+                         :input-buffer (url-bookmark-tags (url buffer))
                          :completion-function (tag-completion-filter
                                                :with-empty-tag t)
                          :empty-complete-immediate t))))
