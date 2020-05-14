@@ -228,9 +228,7 @@ URL."
                                :default-modes '(set-tag-mode minibuffer-mode)
                                :input-buffer (url-bookmark-tags (url buffer))
                                :completion-function (tag-completion-filter
-                                                     :with-empty-tag t
-                                                     :extra-tags (make-tags (extract-keywords body 5)))
-                               :empty-complete-immediate t))))
+                                                     :extra-tags (make-tags (extract-keywords body 5)))))))
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
@@ -256,9 +254,7 @@ URL."
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
                          :input-buffer (url-bookmark-tags url)
-                         :completion-function (tag-completion-filter
-                                               :with-empty-tag t)
-                         :empty-complete-immediate t))))
+                         :completion-function (tag-completion-filter)))))
 
     (bookmark-add url :tags tags)))
 
@@ -289,9 +285,7 @@ URL."
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
                          :input-buffer (url-bookmark-tags (url result))
-                         :completion-function (tag-completion-filter
-                                               :with-empty-tag t)
-                         :empty-complete-immediate t))))
+                         :completion-function (tag-completion-filter)))))
     (when result
       (bookmark-add (url result) :tags tags))))
 
