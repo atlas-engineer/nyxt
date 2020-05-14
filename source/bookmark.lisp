@@ -255,7 +255,7 @@ URL."
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
-                         :input-buffer (url-bookmark-tags (url buffer))
+                         :input-buffer (url-bookmark-tags url)
                          :completion-function (tag-completion-filter
                                                :with-empty-tag t)
                          :empty-complete-immediate t))))
@@ -288,7 +288,7 @@ URL."
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
-                         :input-buffer (url-bookmark-tags (url buffer))
+                         :input-buffer (url-bookmark-tags (url result))
                          :completion-function (tag-completion-filter
                                                :with-empty-tag t)
                          :empty-complete-immediate t))))
