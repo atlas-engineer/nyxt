@@ -72,9 +72,10 @@ appended to the URL.")))
               "")))
 
 (defun url-sans-protocol (url)
-  (let ((uri (quri:uri url)))
-    (str:concat (quri:uri-host uri)
-                (quri:uri-path uri))))
+  (apply #'str:concat
+         (mapcar (alex:curry #'format nil "~a")
+                 (delete nil
+                         (rest (multiple-value-list (quri:parse-uri url)))))))
 
 (defun equal-url (url1 url2)
   "URLs are equal if the hosts and the paths are equal.
