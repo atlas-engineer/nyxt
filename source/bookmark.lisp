@@ -232,7 +232,7 @@ URL."
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
-          (echo "Bookmarked ~a." (quri:url-decode (url buffer))))
+          (echo "Bookmarked ~a." (url-display (url buffer))))
         (echo "Buffer has no URL."))))
 
 (define-command bookmark-page ()

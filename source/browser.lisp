@@ -821,7 +821,7 @@ This is useful to tell REPL instances from binary ones."
     (ffi-window-set-title window
                           (str:concat "Next" (when *keep-alive* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
-                                       (quri:url-decode url)))))
+                                       (url-display url)))))
 
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 (export-always 'window-set-active-buffer)
@@ -968,7 +968,7 @@ Deal with REQUEST-DATA with the following rules:
             (if (eq (slot-value buffer 'load-status) :loading)
                 "(Loading) "
                 "")
-            (quri:url-decode (url buffer))
+            (url-display (url buffer))
             (title buffer))))
 
 (defun print-status (&optional status window)

@@ -902,7 +902,7 @@ readable."
     (when candidate
       (kill-whole-line minibuffer)
       (insert (if (valid-url-p candidate)
-                  (quri:url-decode candidate)
+                  (url-display candidate)
                   candidate)
               minibuffer))))
 

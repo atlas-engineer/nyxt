@@ -16,6 +16,12 @@ Return NIL on error."
 Return NIL on error."
   (ignore-errors (the (values string &optional) (quri:uri-domain (quri:uri url)))))
 
+(defun url-display (url)
+  "Return decoded URL.
+If the URL contains hexadecimal-encoded characters, return their unicode counterpart.
+On errors, return URL."
+  (or (ignore-errors (quri:url-decode url)) url))
+
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
            ;; We need to encode the search string to escape special characters.

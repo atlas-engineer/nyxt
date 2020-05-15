@@ -477,7 +477,7 @@ Warning: This behaviour may change in the future."
     (cond ((eq load-event :webkit-load-started)
            (setf (slot-value buffer 'load-status) :loading)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Loading ~s." (quri:url-decode (url buffer))))
+           (echo "Loading ~s." (url-display (url buffer) )))
           ((eq load-event :webkit-load-redirected) nil)
           ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
@@ -486,7 +486,7 @@ Warning: This behaviour may change in the future."
            (setf (slot-value buffer 'load-status) :finished)
            (on-signal-load-finished buffer url)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Finished loading ~s." (quri:url-decode (url buffer)))))))
+           (echo "Finished loading ~s." (url-display (url buffer)))))))
 
 (defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
@@ -498,7 +498,7 @@ Warning: This behaviour may change in the future."
                 (webkit:webkit-hit-test-result-media-uri hit-test-result)))
     (nil (print-message "")
          (setf (url-at-point buffer) ""))
-    (url (print-message (str:concat "→ " (quri:url-decode url)))
+    (url (print-message (str:concat "→ " (url-display url)))
          (setf (url-at-point buffer) url))))
 
 (defmethod ffi-window-make ((browser gtk-browser))
