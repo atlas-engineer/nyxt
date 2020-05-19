@@ -398,24 +398,25 @@ toggle command, return the toggle command of the parent."
 BUFFER's modes."
   (declare (ignore no-uri))
   (setf (url buffer) (ffi-buffer-uri buffer))
-  (with-result (title (%%buffer-get-title :buffer buffer))
-    (setf (title buffer) title)
-    ;; Warning: We can only dispatch `on-signal-notify-uri' after the title has
-    ;; been set, lest we get a race condition with the title being set too late.
-    (dolist (mode (modes buffer))
-      (on-signal-notify-uri mode (url buffer)))))
+  (dolist (mode (modes buffer))
+    (on-signal-notify-uri mode (url buffer)))
+  (url buffer))
+
+(defmethod on-signal-notify-title ((buffer buffer) no-title)
+  "Set BUFFER's `title' slot, then dispatch `on-signal-notify-title' over the
+BUFFER's modes."
+  (declare (ignore no-title))
+  (setf (title buffer) (ffi-buffer-title buffer))
+  (dolist (mode (modes buffer))
+    (on-signal-notify-title mode (url buffer)))
+  (title buffer))
 
 (defmethod on-signal-load-committed ((buffer buffer) url)
   nil)
 
 (defmethod on-signal-load-finished ((buffer buffer) url)
-  (with-result (title (%%buffer-get-title :buffer buffer))
-    (setf (title buffer) title)
-    ;; Warning: We need to set the title both here and in `on-signal-notify-uri'
-    ;; because the title may change in both cases but not necessarily together
-    ;; (e.g. clicking on an anchor versus loading a page).
-    (dolist (mode (modes buffer))
-      (on-signal-load-finished mode url))))
+  (dolist (mode (modes buffer))
+    (on-signal-load-finished mode url)))
 
 (defclass-export search-engine ()
   ((shortcut :initarg :shortcut
@@ -1059,6 +1060,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-window-fullscreen ((window window)))
 (define-ffi-method ffi-window-unfullscreen ((window window)))
 (define-ffi-method ffi-buffer-uri ((buffer buffer)))
+(define-ffi-method ffi-buffer-title ((buffer buffer)))
 (define-ffi-method ffi-window-make ((browser browser)))
 (define-ffi-method ffi-window-to-foreground ((window window)))
 (define-ffi-method ffi-window-set-title ((window window) title))

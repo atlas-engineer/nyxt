@@ -175,6 +175,10 @@ If there is no corresponding keymap, return nil."
   (print-status)
   url)
 
+(defmethod on-signal-notify-title ((mode root-mode) title)
+  (on-signal-notify-uri mode (url (buffer mode)))
+  title)
+
 (defmethod on-signal-load-committed ((mode root-mode) url)
   url)
 

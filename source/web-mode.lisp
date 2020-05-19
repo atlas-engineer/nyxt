@@ -457,6 +457,12 @@ Otherwise go forward to the only child."
     ((guard f f) (funcall-safely f)))
   url)
 
+(defmethod on-signal-notify-title ((mode next/web-mode::web-mode) title)
+  ;; Title may be updated after the URI, so we need to set the history entry again
+  ;; with `on-signal-notify-uri'.
+  (on-signal-notify-uri mode (url (buffer mode)))
+  title)
+
 (defmethod on-signal-load-committed ((mode next/web-mode::web-mode) url)
   nil)
 

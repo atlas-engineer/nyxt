@@ -63,8 +63,8 @@ The history is sorted by last access."
           (incf (explicit-visits entry))
           (incf (implicit-visits entry)))
       (setf (last-access entry) (local-time:now))
-      (unless (str:emptyp title)
-        (setf (title entry) title))
+      ;; Always update the title since it may have changed since last visit.
+      (setf (title entry) title)
       (setf (gethash url (history-data *browser*)) entry)
       ;; Use accessor to ensure store function is called.
       (setf (history-data *browser*) (history-data *browser*)))))

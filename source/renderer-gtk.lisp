@@ -397,6 +397,9 @@ Warning: This behaviour may change in the future."
 (defmethod ffi-buffer-uri ((buffer gtk-buffer))
   (webkit:webkit-web-view-uri (gtk-object buffer)))
 
+(defmethod ffi-buffer-title ((buffer gtk-buffer))
+  (or (webkit:webkit-web-view-title (gtk-object buffer)) ""))
+
 (defmethod on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
@@ -573,6 +576,11 @@ Warning: This behaviour may change in the future."
    (lambda (web-view param-spec)
      (declare (ignore web-view param-spec))
      (on-signal-notify-uri buffer nil)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "notify::title"
+   (lambda (web-view param-spec)
+     (declare (ignore web-view param-spec))
+     (on-signal-notify-title buffer nil)))
   (gobject:g-signal-connect
    (gtk-object buffer) "context-menu"
    (lambda (web-view context-menu event hit-test-result)
