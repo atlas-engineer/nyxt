@@ -113,6 +113,16 @@ Return nil to forward to renderer or non-nil otherwise."
               (setf key-stack nil)
               t)
 
+             #-darwin
+             ((or (keymap:key= (first (last key-stack))
+                               (keymap:make-key :value "v" :modifiers '("C")))
+                  (string= (keymap:key-value (first (last key-stack)))
+                           "button2"))
+              ;; TODO: Forwarding C-v / button2 hangs cl-webkit.  See
+              ;; https://github.com/atlas-engineer/next/issues/593issuecomment-599051350
+              (log:debug "Ignore C-v / button2 to avoid crashes")
+              t)
+
              ((or (and buffer (forward-input-events-p buffer))
                   (pointer-event-p (first (last key-stack))))
               (log:debug "Forward key ~s" (keyspecs key-stack))
