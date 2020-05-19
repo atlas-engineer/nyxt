@@ -135,18 +135,14 @@ For instance, to search "parrot" on Wikipedia:
 
 From a Lisp REPL, you can query the list of search engines with
 #+begin_src lisp
-(search-engines *browser*)
+(mapcar #'search-url (search-engines *browser*))
 #+end_src
 
 It will return something like
 
 #+begin_src lisp
-'(("default"
-   "https://duckduckgo.com/?q=~a"
-   "https://duckduckgo.com/")
-  ("wiki"
-   "https://en.wikipedia.org/w/index.php?search=~a"
-   "https://en.wikipedia.org/"))
+'("https://duckduckgo.com/?q=~a"
+  "https://en.wikipedia.org/w/index.php?search=~a")
 #+end_src
 
 The =~a= in the search engine URI is a place holder for the search pattern.
@@ -155,10 +151,13 @@ You can set the list of search engines in your init file:
 
 #+begin_src lisp
 (define-configuration browser
-  ((search-engines (append (list '("yt"
-                                   "https://www.youtube.com/results?search_query=~a"
-                                   "https://www.youtube.com/"))
-                           %slot-default))))
+  ((search-engines
+    (append
+     (list
+      (make-search-engine "quickdocs" "http://quickdocs.org/search?q=~a" "http://quickdocs.org/")
+      (make-search-engine "wiki" "https://en.wikipedia.org/w/index.php?search=~a" "https://en.wikipedia.org/")
+      (make-search-engine "yt" "https://www.youtube.com/results?search_query=~a" "https://www.youtube.com/"))
+     %slot-default))))
 #+end_src
 
 See the documentation of ~define-configuration~ and ~search-engines~.
