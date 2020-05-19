@@ -81,7 +81,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (when parent-window
-      (let ((replacement-buffer (or (first (%get-inactive-buffers))
+      (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (buffer-make *browser*))))
         (window-set-active-buffer parent-window
                                   replacement-buffer)))

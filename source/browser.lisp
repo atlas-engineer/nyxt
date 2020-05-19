@@ -842,7 +842,7 @@ proceeding."
           (buffer-delete temp-buffer))
         (ffi-window-set-active-buffer window buffer))
     (let ((inactive-replacement-buffers (delete-if (complement #'str:emptyp)
-                                                   (%get-inactive-buffers)
+                                                   (get-inactive-buffers)
                                                    :key #'url)))
       (mapc #'buffer-delete inactive-replacement-buffers))
     (setf (last-access buffer) (local-time:now))
@@ -851,7 +851,7 @@ proceeding."
     (print-status)
     (setf (active-buffer window) buffer)))
 
-(defun %get-inactive-buffers ()
+(defun get-inactive-buffers ()
   "Return inactive buffers sorted by last-access timestamp, or NIL if none."
   (let ((active-buffers
           (mapcar #'active-buffer (window-list)))
