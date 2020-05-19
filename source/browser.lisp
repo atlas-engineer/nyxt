@@ -438,6 +438,13 @@ instance from the `set-url' commands.")
 query.  This is optional: if empty, use `search-url' instead with ~a expanded to
 the empty string.")))
 
+(export-always 'make-search-engine)
+(defun make-search-engine (shortcut search-url &optional (fallback-url ""))
+  (make-instance 'search-engine
+                 :shortcut shortcut
+                 :search-url search-url
+                 :fallback-url fallback-url))
+
 (defmethod object-string ((engine search-engine))
   (shortcut engine))
 
