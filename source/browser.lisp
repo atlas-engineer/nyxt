@@ -841,9 +841,7 @@ proceeding."
           (ffi-window-set-active-buffer window-with-same-buffer buffer-swap)
           (buffer-delete temp-buffer))
         (ffi-window-set-active-buffer window buffer))
-    (let ((inactive-replacement-buffers (delete-if (lambda (b)
-                                                     (not (and (str:emptyp (url b))
-                                                               (str:emptyp (title b)))))
+    (let ((inactive-replacement-buffers (delete-if (complement #'replacement-buffer-p)
                                                    (get-inactive-buffers))))
       (mapc #'buffer-delete inactive-replacement-buffers))
     (setf (last-access buffer) (local-time:now))
@@ -851,6 +849,10 @@ proceeding."
     (set-window-title window buffer)
     (print-status)
     (setf (active-buffer window) buffer)))
+
+(defun replacement-buffer-p (buffer)
+  (and (str:emptyp (url buffer))
+       (str:emptyp (title buffer))))
 
 (defun get-inactive-buffers ()
   "Return inactive buffers sorted by last-access timestamp, or NIL if none."
