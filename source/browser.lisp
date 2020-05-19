@@ -847,15 +847,15 @@ proceeding."
     (print-status)
     (setf (active-buffer window) buffer)))
 
-(defun %get-inactive-buffer ()
-  "Return inactive buffer or NIL if none."
+(defun %get-inactive-buffers ()
+  "Return inactive buffers sorted by last-access timestamp, or NIL if none."
   (let ((active-buffers
           (mapcar #'active-buffer (window-list)))
         (buffers (buffer-list)))
     (match (set-difference buffers active-buffers)
       ((guard diff diff)
        ;; Display the most recent inactive buffer.
-       (first (sort diff #'local-time:timestamp> :key #'last-access))))))
+       (sort diff #'local-time:timestamp> :key #'last-access)))))
 
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
