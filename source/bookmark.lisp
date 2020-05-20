@@ -358,8 +358,7 @@ URL."
     (dolist (entry (slot-value *browser* 'bookmarks-data))
       (write-char #\newline file)
       (serialize-object entry file))
-    (write-char #\newline file)
-    (write-string ")" file)
+    (format file "~%)~%")
     (echo "Saved ~a bookmarks to ~s."
           (length (slot-value *browser* 'bookmarks-data))
           (expand-path (bookmarks-path *browser*))))
