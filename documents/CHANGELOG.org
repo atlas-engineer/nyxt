@@ -44,6 +44,8 @@ MAJOR.MINOR.PATCH, we increment the:
   is only one exectuable needed to run Next and no more need for D-Bus.  This
   should simplify installation and remove many performance bottlenecks.
 
+- New =tutorial= command.
+
 - Keybindings bind to function /symbols/ and not functions (i.e. ='foo= and not
   =#'foo=).
   Use =next:make-keymap= if you want type-checking.
@@ -137,6 +139,17 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - Transparent GPG-encrypted file persistence when files have a =.gpg= extension.
   This makes it possible to keep bookmarks, history, session, etc. in encrypted files.
+
+- Change completion function for bookmark tags.  Press =tab= to complete the
+  tag at point.  Re-bookmarking an existing entry allows for changing the
+  existing tags.
+
+- Search engines can be =tab=-completed when there is only one word in the
+  =set-url= minibuffer input and the first suggestion is selected.
+
+- Search engines are now class objects constructed with =make-search=engine=.
+
+- Password manager commands default to current domain.
 
 - Default package is =:next-user= in configuration but also in command line
   evaluation and in scripts.
