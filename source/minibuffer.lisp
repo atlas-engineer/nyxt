@@ -847,8 +847,7 @@ Possible improvements:
 (defun echo-warning (&rest args)
   "Like `echo' but prefix with \"Warning\" and output to the standard error."
   (let ((text (apply #'format nil args)))
-    (%echo text
-                  :message `((:b "Warning:") " " ,text))
+    (%echo text :message `((:b "Warning:") " " ,text))
     (unless (str:emptyp text)
       (log:warn "~a" text))))
 

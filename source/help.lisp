@@ -250,13 +250,14 @@ This function can be used as a `window' `input-dispatcher'."
         (with-accessors ((key-stack key-stack)) *browser*
           (log:debug "Intercepted key ~a" (first (last key-stack)))
           (let ((escape-key (keymap:make-key :value "escape"))
-                (bound-value (keymap:lookup-key key-stack
-                                                (current-keymaps (current-buffer)))))
+                (bound-value (the (or symbol keymap:keymap null)
+                                  (keymap:lookup-key key-stack
+                                                     (current-keymaps (current-buffer))))))
             (cond
               ((and bound-value (not (keymap:keymap-p bound-value)))
                ;; TODO: Highlight hit bindings and display translation if any.
                ;; For this, we probably need to call `lookup-key' on key-stack.
-               (describe-command* (function-command bound-value))
+               (describe-command* (function-command (symbol-function bound-value)))
                (setf key-stack nil)
                (setf (input-dispatcher window) #'dispatch-input-event))
               ((not bound-value)
@@ -273,7 +274,7 @@ This function can be used as a `window' `input-dispatcher'."
                (echo "Press a key sequence to describe (cancel with 'escape escape'): ~a"
                      (keyspecs-with-optional-keycode key-stack)))))))
     (error (c)
-      (declare (ignore c))
+      (echo-warning "~a" c)
       (setf (key-stack *browser*) nil)
       (setf (input-dispatcher window) #'dispatch-input-event)))
   ;; Never forward events.

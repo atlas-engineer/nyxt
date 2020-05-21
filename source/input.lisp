@@ -91,7 +91,8 @@ Return nil to forward to renderer or non-nil otherwise."
 
         (t
          (multiple-value-bind (bound-function matching-keymap translated-key)
-             (keymap:lookup-key key-stack (current-keymaps))
+             (the (or symbol keymap:keymap null)
+                  (keymap:lookup-key key-stack (current-keymaps)))
            (declare (ignore matching-keymap))
            (cond
              ((keymap:keymap-p bound-function)

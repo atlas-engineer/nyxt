@@ -251,8 +251,9 @@ This function can be `funcall'ed."
               ((or "" "next" "next-user") "")
               (a (format nil " [~a]" a))))))
 
+(declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)
-  "Return the command associated to function, if any."
+  "Return the command associated to FUNCTION, if any."
   (find-if (lambda (cmd)
              (eq function (command-function cmd)))
            (list-commands)))

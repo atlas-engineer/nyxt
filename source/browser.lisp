@@ -948,7 +948,8 @@ Deal with REQUEST-DATA with the following rules:
 - Otherwise let the renderer load the request."
   (with-slots (url buffer keys) request-data
     (let* ((keymap (scheme-keymap buffer (request-resource-scheme buffer)))
-           (bound-function (keymap:lookup-key keys keymap)))
+           (bound-function (the (or symbol keymap:keymap null)
+                                (keymap:lookup-key keys keymap))))
       (cond
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
