@@ -582,14 +582,16 @@ Keymaps are ordered by precedence, highest precedence comes first."
   "List bindings in KEYMAP and all its parents.
 See `keymap->map'."
   (labels ((list-keymaps (keymap visited)
-             (if (find keymap visited)
-                 (progn
-                   (warn "Cycle detected in parent keymap ~a" keymap)
-                   '())
-                 (progn
-                   (cons keymap
-                         (alex:mappend (alex:rcurry #'list-keymaps (cons keymap visited))
-                                       (parents keymap)))))))
+             (cond
+               ((null keymap)
+                '())
+               ((find keymap visited)
+                (warn "Cycle detected in parent keymap ~a" keymap)
+                '())
+               (t
+                (cons keymap
+                      (alex:mappend (alex:rcurry #'list-keymaps (cons keymap visited))
+                                    (parents keymap)))))))
     (apply #'keymap->map (list-keymaps keymap '()))))
 
 (declaim (ftype (function (keymap &rest keymap) (or keymap null)) compose))
