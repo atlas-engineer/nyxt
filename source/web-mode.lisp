@@ -106,9 +106,11 @@ search.")
        "M-b" 'history-backwards-query
        "C-f" 'history-forwards
        "C-b" 'history-backwards
-       "C-g" 'follow-hint
-       "M-g" 'follow-hint-new-buffer-focus
-       "C-u M-g" 'follow-hint-new-buffer
+       "C-g" 'noop                      ; Emacs users may hit C-g out of habit.
+       "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
+       "M-g g" 'follow-hint-new-buffer-focus
+       "C-u M-g M-g" 'follow-hint-new-buffer
+       "C-u M-g g" 'follow-hint-new-buffer
        "C-x C-w" 'copy-hint-url
        "C-y" 'paste
        "M-w" 'copy

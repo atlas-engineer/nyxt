@@ -275,6 +275,11 @@ This function can be `funcall'ed."
       (setf (access-time command) (get-internal-real-time))
       (run command))))
 
+(define-command noop ()
+  "A command that does nothing.
+This is useful to override bindings to do nothing."
+  (values))
+
 (defclass hook-description ()
   ((name :accessor name :initarg :name
          :initform ""
