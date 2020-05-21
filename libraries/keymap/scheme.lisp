@@ -45,8 +45,9 @@ See `define-scheme' for the user-facing function."
     ;; Set parents now that all keymaps exist.
     (maphash (lambda (name keymap)
                (setf (parents keymap)
-                     (mapcar (lambda (parent-name) (gethash parent-name scheme))
-                             (parents name))))
+                     (delete nil
+                             (mapcar (lambda (parent-name) (gethash parent-name scheme))
+                                     (parents name)))))
              scheme)
     ;; Set bindings.
     (loop :for (name bindings . rest) :on name+bindings-pairs :by #'cddr
