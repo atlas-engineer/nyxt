@@ -200,14 +200,14 @@ A command is a special kind of function that can be called with
             (:p
              (loop for keymap in (current-keymaps (current-buffer))
                    collect (markup:markup
-                            (:p (keymap:name keymap))
+                            (:h3 (keymap:name keymap))
                             (:table
                              (loop for keyspec being the hash-keys in (keymap:keymap-with-parents->map keymap)
                                      using (hash-value bound-value)
                                    collect (markup:markup
                                             (:tr
                                              (:td keyspec)
-                                             (:td (string-downcase (sym (function-command bound-value)))))))))))))
+                                             (:td (string-downcase bound-value)))))))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
     (ffi-buffer-evaluate-javascript help-buffer insert-help)
