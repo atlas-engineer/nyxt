@@ -190,7 +190,7 @@ for " (:code "execute-command") ".  You can use it to set keys globally:")
 keybindings.  When this mode is added first to the buffer mode list, its keys
 have priorities over the other modes key bindings.")
    (:pre (:code "
-\(defvar *my-keymap* (make-keymap \"
+\(defvar *my-keymap* (make-keymap \"my-map\"))
 \(define-key *my-keymap*
   \"C-f\" 'history-forwards
   \"C-b\" 'history-backwards)
