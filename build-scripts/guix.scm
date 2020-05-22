@@ -1,17 +1,17 @@
 ;;; Commentary:
 ;;
 ;; GNU Guix development package.  To build and install, clone this repository,
-;; switch directory to it and run:
+;; switch directory to here and run:
 ;;
-;;   guix package -f guix.scm
+;;   guix package --install-from-file=guix.scm
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix environment -l guix.scm
+;;   guix environment --load=guix.scm
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs -l guix.scm -- env DISPLAY="$DISPLAY" next
+;;   guix environment --load=guix.scm --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs -- next
 ;;
 ;;; Code:
 
