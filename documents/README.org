@@ -135,8 +135,8 @@ Install the WebKitGTK+ package of your distribution that provides
 ~libwebkit2gtk-4.0.so~ (the shared library for WebKitGTK+).
 
 - For most Debian-based systems (including Ubuntu) this package is
-  ~libwebkit2gtk-4.0-dev~.  /Debian Stable is not supported/.  Debian users are
-  advised to use more up-to-date packages from Debian Testing at least.
+  ~libwebkit2gtk-4.0-dev~.  Debian stable users are advised to make sure they
+  use a recent-enough version, otherwise consider Debian Testing at least.
 - For Arch Linux this package is [[https://www.archlinux.org/packages/extra/x86_64/webkit2gtk/][webkit2gtk]].
 
 #+begin_quote
