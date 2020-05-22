@@ -74,24 +74,34 @@ form \"(OPERATOR TAG-SPECIFICATION)\", where
 
 Example input:
 
-  \"+foo -bar (or (and john doe) (not (and tic tac)))\""
+  \"+foo -bar (or (and john doe) (not (and tic tac)))\"
+
+Example input that contains non-symbols:
+
+  \"+foo http://foo -bar\""
   (let* ((non-specs nil)
          (specs (loop with start = 0
-                      for (object new-start) = (multiple-value-list
-                                                (ignore-errors
-                                                 (read-from-string input nil :eof :start start)))
+                      for (object new-start) = (or (ignore-errors
+                                                    (multiple-value-list
+                                                     (read-from-string input nil :eof :start start)))
+                                                   ;; Invalid symbols, e.g. "http://example.org", must be parsed too:
+                                                   (ignore-errors
+                                                    (list (subseq input
+                                                                  (word-start input start)
+                                                                  (word-end input start))
+                                                          (word-end input start))))
                       until (or (typep new-start 'error)
                                 (eq object :eof))
                       do (setf start new-start)
                       if (or (not (atom object))
-                             (and (<= 2 (length (symbol-name object)))
+                             (and (symbolp object)
+                                  (<= 2 (length (symbol-name object)))
                                   (or
                                    (str:starts-with? "-" (symbol-name object))
                                    (str:starts-with? "+" (symbol-name object)))))
                         collect object
                       else
                         do (push object non-specs))))
-
     (values
      (when specs
        (cons 'and specs))
