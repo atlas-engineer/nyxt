@@ -33,7 +33,8 @@ pull up a prompt of suggestions."
                                 :completion-function 'enchant-completion)))
     (trivial-clipboard:text selected-word)))
 
-(defun enchant-completion (input)
-  (when (> (length input) 2)
-    (enchant:with-dict (lang (spell-check-language *browser*))
-      (enchant:dict-suggest lang input))))
+(defun enchant-completion (minibuffer)
+  (let ((input (input-buffer minibuffer)))
+    (when (> (length input) 2)
+      (enchant:with-dict (lang (spell-check-language *browser*))
+        (enchant:dict-suggest lang input)))))
