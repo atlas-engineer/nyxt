@@ -127,8 +127,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (let* ((input-specs (multiple-value-list
                          (parse-tag-specification
                           (str:replace-all " " " " (input-buffer minibuffer)))))
-           (tag-specs (nth 0 input-specs))
-           (non-tags (str:downcase (str:join " " (nth 1 input-specs))))
+           (tag-specs (first input-specs))
+           (non-tags (str:downcase (str:join " " (second input-specs))))
            (validator (ignore-errors (tag-specification-validator tag-specs)))
            (bookmarks (bookmarks-data *browser*)))
       (when validator
@@ -264,6 +264,7 @@ URL."
                          (make-minibuffer
                           :input-prompt "Delete bookmark(s)"
                           :multi-selection-p t
+                          :default-modes '(minibuffer-tag-mode minibuffer-mode)
                           :completion-function (bookmark-completion-filter))))
     (setf (bookmarks-data *browser*)
           (set-difference (bookmarks-data *browser*) entries :test #'equals))))
@@ -289,11 +290,54 @@ URL."
     (when result
       (bookmark-add (url result) :tags tags))))
 
+(define-command insert-candidate-or-tag (&optional (minibuffer (current-minibuffer)))
+  "Paste selected candidate or tag in input.
+If character before cursor is '+' or '-' complete against tag."
+  (cond
+    ;; Complete a tag.
+    ((and (not (str:emptyp (input-buffer minibuffer)))
+          (let ((current-word (word-at-cursor minibuffer)))
+            (or (str:starts-with? "-" current-word)
+                (str:starts-with? "+" current-word))))
+     (with-result (tag (read-from-minibuffer
+                        (make-minibuffer
+                         :input-prompt "Tag"
+                         :input-buffer (subseq (word-at-cursor minibuffer) 1)
+                         :completion-function (tag-completion-filter))))
+       (when tag
+         (let ((before (subseq (input-buffer minibuffer)
+                               0
+                               (word-start (input-buffer minibuffer)
+                                           (input-cursor-position minibuffer))))
+               (after (subseq (input-buffer minibuffer)
+                              (word-end (input-buffer minibuffer)
+                                        (input-cursor-position minibuffer))))
+               (prefix (elt (word-at-cursor minibuffer) 0)))
+           (log:info (input-buffer minibuffer) before after)
+           (kill-whole-line minibuffer)
+           (insert (str:concat
+                    before
+                    (string prefix) (tag-name tag) " "
+                    after)
+                   minibuffer)))))
+    (t
+     (insert-candidate minibuffer))))
+
+(define-mode minibuffer-tag-mode (minibuffer-mode)
+  "Minibuffer mode for setting the bookmark and their tags."
+  ((keymap-scheme
+    :initform
+    (define-scheme "minibuffer-tag"
+      scheme:cua
+      (list
+       "tab" 'insert-candidate-or-tag)))))
+
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark."
   (with-result (entry (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Open bookmark"
+                        :default-modes '(minibuffer-tag-mode minibuffer-mode)
                         :completion-function (bookmark-completion-filter))))
     ;; TODO: Add support for multiple bookmarks?
     (set-url* (url entry) :buffer (current-buffer) :raw-url-p t)))
