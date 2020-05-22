@@ -27,25 +27,11 @@
   -  [[#irc-channel][IRC Channel]]
 
 * Developer Installation with Guix
-Install [[https://guix.gnu.org][Guix]] and follow the instructions in [[../build-scripts/guix.scm]].
+First, clone the Next repository.  It is most convenient to clone the Next
+repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).
 
-** Run from source
-If you are developing Next, you might prefer to run Next directly from
-source so that you can skip the compilation step and iterate faster.
-
-It is most convenient to clone the Next repository into
-=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]). You
-can then start Next using the command
-
-#+begin_src sh
-guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next/gtk")' --eval '(next:start)'
-#+end_src
-
-You can even start a Swank server immediately at startup using
-
-#+begin_src sh
-guix environment next -- sbcl --eval '(require :asdf)' --eval '(asdf:load-system "next/gtk")' --eval '(next:start-swank)' --eval '(next:start)'
-#+end_src
+Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
+[[../build-scripts/guix.scm]] file of the Next repository.
 
 * Standard Developer Installation
 Next is written in Common Lisp. It can be built with any standard
