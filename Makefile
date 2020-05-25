@@ -126,16 +126,7 @@ $(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
 # remove this special rule.
 .PHONY: cl-webkit
 cl-webkit: $(QUICKLISP_DIR)/setup.lisp
-	if $(NEXT_INTERNAL_QUICKLISP); then \
-			[ -e "$(QUICKLISP_DIR)"/local-projects/cl-webkit ] && \
-				git -C "$(QUICKLISP_DIR)"/local-projects/cl-webkit pull || \
-				git clone https://github.com/joachifm/cl-webkit "$(QUICKLISP_DIR)"/local-projects/cl-webkit ; \
-		else \
-			mkdir -p ~/common-lisp && \
-			[ -e ~/common-lisp/cl-webkit ] && \
-				git -C ~/common-lisp/cl-webkit pull || \
-				git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit ; \
-		fi
+	$(NEXT_INTERNAL_QUICKLISP) && git submodule update --init || true
 
 .PHONY: deps
 deps: $(QUICKLISP_DIR)/setup.lisp cl-webkit

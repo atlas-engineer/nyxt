@@ -26,4 +26,5 @@ to, use your local install of Quicklisp.  For example:
 make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
 
 WARNING: Make sure your Quicklisp distribution is up-to-date when using
-NEXT_INTERNAL_QUICKLISP=false.
+NEXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
+libraries that should follow master.

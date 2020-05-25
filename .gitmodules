@@ -1,0 +1,3 @@
+[submodule "quicklisp/local-projects/cl-webkit"]
+	path = quicklisp/local-projects/cl-webkit
+	url = https://github.com/joachifm/cl-webkit
