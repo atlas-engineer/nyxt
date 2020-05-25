@@ -763,18 +763,19 @@ Persist the `bookmarks-data' slot from BROWSER to `bookmarks-path' with
 This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
-  (loop for d = (lparallel:receive-result download-manager:*notifications*)
-        while d
-        when (download-manager:finished-p d)
-          do (hooks:run-hook (after-download-hook *browser*))
-        do (let ((buffer (find-buffer 'download-mode)))
-             ;; Only update if buffer exists.  We update even when out of focus
-             ;; because if we switch to the buffer after all downloads are
-             ;; completed, we won't receive notifications so the content needs
-             ;; to be updated already.
-             ;; TODO: Disable when out of focus?  Maybe need hook for that.
-             (when buffer
-               (ffi-within-renderer-thread *browser* #'download-refresh)))))
+  (when download-manager:*notifications*
+    (loop for d = (lparallel:receive-result download-manager:*notifications*)
+          while d
+          when (download-manager:finished-p d)
+            do (hooks:run-hook (after-download-hook *browser*))
+          do (let ((buffer (find-buffer 'download-mode)))
+               ;; Only update if buffer exists.  We update even when out of focus
+               ;; because if we switch to the buffer after all downloads are
+               ;; completed, we won't receive notifications so the content needs
+               ;; to be updated already.
+               ;; TODO: Disable when out of focus?  Maybe need hook for that.
+               (when buffer
+                 (ffi-within-renderer-thread *browser* #'download-refresh))))))
 
 (defun proxy-address (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
