@@ -185,7 +185,11 @@ This should not rely on the minibuffer's content.")
                                            :color "white")
                                   (.selected :background-color "gray"
                                              :color "white")))
-                     :documentation "The CSS applied to a minibuffer when it is set-up."))
+                     :documentation "The CSS applied to a minibuffer when it is set-up.")
+   (override-map :accessor override-map
+                 :initform (let ((map (make-keymap "overide-map")))
+                             (define-key map
+                               "escape" 'cancel-input))))
   (:documentation "The minibuffer is the interface for user interactions.  Each
 prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
 calls, such as invoking `minibuffer-history'."))
@@ -377,7 +381,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
       (containers:insert-item (history minibuffer) normalized-input)))
   (cancel-input minibuffer))
 
-(define-command cancel-input (&optional (minibuffer (current-minibuffer)))
+(define-command cancel-input (&optional (minibuffer (current-minibuffer))) ; TODO: Rename to minibuffer-cancel?
   "Close the minibuffer query without further action."
   (match (cleanup-function minibuffer)
     ((guard f f) (funcall-safely f)))
