@@ -1,5 +1,7 @@
 (in-package :password)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '*sleep-timer*))
 (defvar *sleep-timer* 15)
 
 (defclass password-interface ()

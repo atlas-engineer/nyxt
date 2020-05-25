@@ -3,6 +3,8 @@
 ;;; Provide an interface to the command line "security" program used
 ;;; on BSD and Darwin systems to interface with the system keychain
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '*security-cli-program*))
 (defvar *security-cli-program* (executable-find "security"))
 
 (defclass security-interface (password-interface) ())

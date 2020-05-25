@@ -1,5 +1,7 @@
 (in-package :password)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '*password-store-program*))
 (defvar *password-store-program* (executable-find "pass"))
 
 (defclass password-store-interface (password-interface)

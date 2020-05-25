@@ -1,5 +1,7 @@
 (in-package :password)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '*keepassxc-cli-program*))
 (defvar *keepassxc-cli-program* (executable-find "keepassxc-cli"))
 
 (defclass keepassxc-interface (password-interface)
