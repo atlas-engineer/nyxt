@@ -210,8 +210,6 @@ extra fiddling."
   (str:downcase (sym command)))
 
 (defmethod object-display ((command command))
-  "We dispatch the command display to the memoized `command-display' since it's
-very costly."
   (command-display command))
 
 (defun command-completion-filter (&optional mode-symbols)
