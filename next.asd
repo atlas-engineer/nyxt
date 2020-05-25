@@ -130,6 +130,17 @@
 ;; The workaround is to set a new dummy system of which the sole purpose is to
 ;; produce the desired binary.
 
+;; The following system is only used to create standalone (portable)
+;; application bundles for Darwin with all dependencies included
+;; (intended for distribution)- otherwise- the Makefile may be
+;; utilized by package managers and others compiling from source
+(asdf:defsystem :next/darwin/gtk-application
+  :defsystem-depends-on (:deploy)
+  :depends-on (:next/gtk)
+  :build-operation "osx-app-deploy-op"
+  :build-pathname "Next"
+  :entry-point "next:entry-point")
+
 (asdf:defsystem :next/gtk-application
   :depends-on (:next/gtk)
   :build-operation "program-op"
