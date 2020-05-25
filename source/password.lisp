@@ -9,8 +9,19 @@
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) password-list))))
 
+(defun password-debug-info ()
+  (log:debug "Password interface ~a uses executable ~s."
+             (when (password-interface *browser*)
+               (class-name (class-of (password-interface *browser*))))
+             (match (symbol-name (class-name (class-of (password-interface *browser*))))
+               ;; With `symbol-name' we remove the package prefix.
+               ("KEEPASSXC-INTERFACE" password:*keepassxc-cli-program*)
+               ("SECURITY-INTERFACE" password:*security-cli-program*)
+               ("PASSWORD-STORE-INTERFACE" password:*password-store-program*))))
+
 (define-command save-new-password ()
   "Save password to password interface."
+  (password-debug-info)
   (if (password-interface *browser*)
       (with-result* ((password-name (read-from-minibuffer
                                      (make-minibuffer
@@ -42,6 +53,7 @@
 
 (define-command copy-password-prompt-details ()
   "Copy password prompting for all the details without completion."
+  (password-debug-info)
   (if (password-interface *browser*)
       (with-result* ((password-name (read-from-minibuffer
                                      (make-minibuffer
@@ -59,6 +71,7 @@
 
 (define-command copy-password ()
   "Copy chosen password from minibuffer."
+  (password-debug-info)
   (if (password-interface *browser*)
       (with-password (password-interface *browser*)
         (with-result (password-name
@@ -67,5 +80,6 @@
                         :completion-function
                         (password-completion-filter
                          (password-interface *browser*)))))
-          (password:clip-password (password-interface *browser*) :password-name password-name)))
+          (password:clip-password (password-interface *browser*) :password-name password-name)
+          (echo "Password saved to clipboard for ~a seconds." password:*sleep-timer*)))
       (echo-warning "No password manager found.")))
