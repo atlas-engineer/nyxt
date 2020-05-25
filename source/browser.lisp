@@ -482,8 +482,10 @@ See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
    (password-interface :accessor password-interface
                        :initform (password:make))
-   (messages-content :accessor messages-content :initform nil :type :list
-                     :documentation "A cl-markup plist of all echoed messages.
+   (messages-content :accessor messages-content
+                     :initform '()
+                     :type list
+                     :documentation "A list of all echoed messages.
 Most recent messages are first.")
    (clipboard-ring :accessor clipboard-ring :initform (make-ring))
    (minibuffer-generic-history :accessor minibuffer-generic-history :initform (make-ring))
@@ -702,7 +704,7 @@ The handlers take the `download-manager:download' class instance as argument.")
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup-function'."
   ;; `messages-appender' requires `*browser*' to be initialized.
-  (log4cl-impl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))
+  (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))
   (handler-case
       (hooks:run-hook *after-init-hook*)
     (error (c)
@@ -966,7 +968,7 @@ Deal with REQUEST-DATA with the following rules:
          (open-urls (list url))
          (values request-data :stop))
         ((not (known-type-p request-data))
-         (log:info "Buffer ~a initiated download of ~s." (id buffer) url)
+         (log:debug "Buffer ~a initiated download of ~s." (id buffer) url)
          (download url :proxy-address (proxy-address buffer :downloads-only t)
                        :cookies "")
          (unless (find-buffer 'download-mode)

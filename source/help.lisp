@@ -354,7 +354,9 @@ The version number is stored in the clipboard."
     (let* ((content
              (apply #'markup:markup*
                     '(:h1 "Messages")
-                    (reverse (messages-content *browser*))))
+                    (mapcar (lambda (message)
+                              (list :p message))
+                            (reverse (messages-content *browser*)))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript buffer insert-content))
