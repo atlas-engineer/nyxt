@@ -56,7 +56,7 @@
        "tab" 'insert-candidate
        "M-h" 'minibuffer-history
        "C-space" 'minibuffer-toggle-mark
-       "shift-space" 'minibuffer-toggle-mark
+       "shift-space" 'minibuffer-toggle-mark-backwards
        "M-space" 'minibuffer-toggle-mark
        "M-a" 'minibuffer-mark-all
        "M-u" 'minibuffer-unmark-all))
@@ -928,9 +928,12 @@ readable."
         (setf (input-cursor-position minibuffer) 0)
         (insert input minibuffer)))))
 
-(define-command minibuffer-toggle-mark (&optional (minibuffer (current-minibuffer)))
+(define-command minibuffer-toggle-mark (&key
+                                        (minibuffer (current-minibuffer))
+                                        (direction :next))
   "Toggle candidate.
-Only available if minibuffer `multi-selection-p' is non-nil."
+Only available if minibuffer `multi-selection-p' is non-nil.  DIRECTION can be
+:next or :previous and specifies which candidate to select once done."
   (when (multi-selection-p minibuffer)
     (with-slots (completions completion-cursor marked-completions) minibuffer
       (let ((candidate (nth completion-cursor completions)))
@@ -939,7 +942,14 @@ Only available if minibuffer `multi-selection-p' is non-nil."
           (_ (push candidate marked-completions)))))
     (state-changed minibuffer)
     (update-display minibuffer)
-    (select-next minibuffer)))
+    (match direction
+      (:next (select-next minibuffer))
+      (:previous (select-previous minibuffer)))))
+
+(define-command minibuffer-toggle-mark-backwards (&key (minibuffer (current-minibuffer)))
+  "Toggle candidate and select previous candidate.
+See `minibuffer-toggle-mark'. "
+  (minibuffer-toggle-mark :minibuffer minibuffer :direction :previous))
 
 (define-command minibuffer-mark-all (&optional (minibuffer (current-minibuffer)))
   "Mark all visible candidates.
