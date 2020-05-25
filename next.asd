@@ -62,6 +62,7 @@
                (:file "buffer")
                (:file "window")
                (:file "minibuffer")
+               (:file "message")
                (:file "input")
                (:file "recent-buffers")
                ;; Core Packages
