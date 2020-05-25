@@ -1,8 +1,5 @@
 Usage:
 
-   make next                Create Next.
-   make install-next        Install Next.
-
    make all                 Create Next.
    make install             Install Next.
 
@@ -27,3 +24,6 @@ on your system.  You may have to accomodate the LISP_FLAGS
 to, use your local install of Quicklisp.  For example:
 
 make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+
+WARNING: Make sure your Quicklisp distribution is up-to-date when using
+NEXT_INTERNAL_QUICKLISP=false.
