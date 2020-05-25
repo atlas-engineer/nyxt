@@ -2,7 +2,7 @@
 (in-package :download-manager)
 
 (defmethod cache ((type (eql :uri)) uri &rest args)
-  (log:info uri args)
+  (log:debug uri args)
   (apply #'locally-cache uri args))
 
 (defun parse-cookie-jar-string (cookie-jar-string host path)
