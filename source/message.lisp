@@ -49,15 +49,7 @@ Possible improvements:
 - Pass multiple arguments and use format strings for untrusted content. Don't pre-construct a single string that could contain tildes.
   Example: do (echo \"directory is\ ~~a \"~~/Downloads/\")
            instead of (echo \"directory is ~~/Downloads/\")
-- Use `echo-safe' or use the ~~s directive directly." args))))
-
-(export-always 'echo-safe)
-(defun echo-safe (&rest args)
-  "Echo strings without expanding format directives unlike other `echo' commands."
-  (let ((text (str:join " " args)))
-    (%echo text)
-    (unless (str:emptyp text)
-      (log:info "~s" text))))
+- Use the ~~s directive." args))))
 
 (export-always 'echo-warning)
 (defun echo-warning (&rest args)
