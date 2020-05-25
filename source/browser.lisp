@@ -966,7 +966,7 @@ Deal with REQUEST-DATA with the following rules:
          (open-urls (list url))
          (values request-data :stop))
         ((not (known-type-p request-data))
-         (log:info "Buffer ~a downloads ~a" buffer url)
+         (log:info "Buffer ~a initiated download of ~s." (id buffer) url)
          (download url :proxy-address (proxy-address buffer :downloads-only t)
                        :cookies "")
          (unless (find-buffer 'download-mode)
