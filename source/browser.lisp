@@ -259,7 +259,12 @@ Example:
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default))))")
-   (default-new-buffer-url :accessor default-new-buffer-url :initform "https://next.atlas.engineer/start"
+   (default-new-buffer-url :accessor default-new-buffer-url
+                           :initform (let ((default (default-search-engine (all-search-engines))))
+                                       (if default
+                                           (or (fallback-url default)
+                                               (search-url default))
+                                           "about:blank"))
                            :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
                     :documentation "The distance scroll-down or scroll-up will scroll.")
@@ -432,10 +437,10 @@ instance from the `set-url' commands.")
                :documentation "The URL containing a '~a' which will be replaced with the search query.")
    (fallback-url :initarg :fallback-url
                  :accessor fallback-url
-                 :type string
-                 :initform ""
+                 :type (or string null)
+                 :initform nil
                  :documentation "The URL to fall back to when given an empty
-query.  This is optional: if empty, use `search-url' instead with ~a expanded to
+query.  This is optional: if nil, use `search-url' instead with ~a expanded to
 the empty string.")))
 
 (export-always 'make-search-engine)

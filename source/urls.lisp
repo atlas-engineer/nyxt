@@ -54,6 +54,19 @@ On errors, return URL."
          (not (string= (quri:uri-domain uri)
                        (quri:uri-tld uri))))))
 
+(defun all-search-engines ()
+  "Return the `search-engines' from the `browser' instance plus those in
+bookmarks."
+  (append (search-engines *browser*)
+          (bookmark-search-engines)))
+
+(defun default-search-engine (&optional (search-engines (all-search-engines)))
+  "Return the search engine with the 'default' shortcut, or the first one if
+there is none."
+  (or (find "default"
+            search-engines :test #'string= :key #'shortcut)
+      (first search-engines)))
+
 (defun parse-url (input-url)
   "From user input, return the full url to visit.
 
@@ -62,14 +75,10 @@ If the input starts with an uri scheme, open it as is.
 If the input is actually a file path, open it.
 Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid uri, go to it.
 Otherwise, build a search query with the default search engine."
-  (let* ((search-engines (append (search-engines *browser*)
-                                 (bookmark-search-engines)))
+  (let* ((search-engines (all-search-engines))
          (terms (str:split " " input-url :omit-nulls t))
          (engine (find (first terms)
-                       search-engines :test #'string= :key #'shortcut))
-         (default (or (find "default"
-                            search-engines :test #'string= :key #'shortcut)
-                      (first search-engines))))
+                       search-engines :test #'string= :key #'shortcut)))
     (if engine
         (let ((new-input (str:join " " (rest terms))))
           (if (and (not (str:emptyp (fallback-url engine)))
@@ -94,4 +103,6 @@ Otherwise, build a search query with the default search engine."
                          (uiop:ensure-absolute-pathname input-url *default-pathname-defaults*))))
             ((valid-url-p (str:concat "https://" input-url))
              (str:concat "https://" input-url))
-            (t (generate-search-query input-url (search-url default))))))))
+            (t (match (default-search-engine search-engines)
+                 (nil input-url)
+                 (default (generate-search-query input-url (search-url default))))))))))
