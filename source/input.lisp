@@ -101,8 +101,11 @@ Return nil to forward to renderer or non-nil otherwise."
 
              ((typep bound-function 'function-symbol)
               (log:debug "Key sequence ~a" (keyspecs key-stack translated-key))
-              (funcall-safely bound-function)
-              (setf key-stack nil)
+              (unwind-protect
+                   (funcall-safely bound-function)
+                ;; We must reset the key-stack on errors or else all subsequent
+                ;; keypresses will keep triggering the same erroring command.
+                (setf key-stack nil))
               t)
 
              ((active-minibuffers window)
