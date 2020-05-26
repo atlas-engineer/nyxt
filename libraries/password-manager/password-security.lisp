@@ -5,7 +5,8 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '*security-cli-program*))
-(defvar *security-cli-program* (executable-find "security"))
+(defvar *security-cli-program* nil
+  "The path to the executable.")
 
 (defclass security-interface (password-interface) ())
 

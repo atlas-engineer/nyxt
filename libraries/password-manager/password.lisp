@@ -60,10 +60,16 @@ Return nil if COMMAND is not found anywhere."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make))
 (defun make ()
-  (cond ((executable-find "pass")
+  (unless *password-store-program*
+    (setf *password-store-program* (executable-find "pass")))
+  (unless *keepassxc-cli-program*
+    (setf *keepassxc-cli-program* (executable-find "keepassxc-cli")))
+  (unless *security-cli-program*
+    (setf *security-cli-program* (executable-find "security")))
+  (cond (*password-store-program*
          (make-instance 'password-store-interface))
-        ((executable-find "keepassxc-cli")
+        (*keepassxc-cli-program*
          (make-instance 'keepassxc-interface))
-        ((executable-find "security")
+        (*security-cli-program*
          (make-instance 'security-interface))
         (t nil)))

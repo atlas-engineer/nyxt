@@ -2,7 +2,8 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '*keepassxc-cli-program*))
-(defvar *keepassxc-cli-program* (executable-find "keepassxc-cli"))
+(defvar *keepassxc-cli-program* nil
+  "The path to the executable.")
 
 (defclass keepassxc-interface (password-interface)
   ((password-file :accessor password-file

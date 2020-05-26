@@ -2,7 +2,8 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '*password-store-program*))
-(defvar *password-store-program* (executable-find "pass"))
+(defvar *password-store-program* nil
+  "The path to the executable.")
 
 (defclass password-store-interface (password-interface)
   ((password-directory :reader password-directory
