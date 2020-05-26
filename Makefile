@@ -126,7 +126,7 @@ $(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
 # remove this special rule.
 .PHONY: cl-webkit
 cl-webkit: $(QUICKLISP_DIR)/setup.lisp
-	$(NEXT_INTERNAL_QUICKLISP) && git submodule update --init || true
+	$(NEXT_INTERNAL_QUICKLISP) && git submodule update --init --remote || true
 
 .PHONY: deps
 deps: $(QUICKLISP_DIR)/setup.lisp cl-webkit
