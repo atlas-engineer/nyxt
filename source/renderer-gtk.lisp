@@ -452,6 +452,7 @@ Warning: This behaviour may change in the future."
     (if (null (hooks:handlers (request-resource-hook buffer)))
         (progn
           (log:debug "Forward to renderer (no request-resource-hook handlers).")
+          (webkit:webkit-policy-decision-use response-policy-decision)
           nil)
         (multiple-value-bind (request-data status)
             (hooks:run-hook (request-resource-hook buffer)
@@ -473,16 +474,19 @@ Warning: This behaviour may change in the future."
                               (if (null request-data)
                                   "empty hook result"
                                   "unchanged URL"))
+                   (webkit:webkit-policy-decision-use response-policy-decision)
                    nil)
                  (progn
                    (setf (webkit:webkit-uri-request-uri request) (url request-data))
                    (webkit:webkit-web-view-load-request (gtk-object buffer) request)
                    (log:debug "Don't forward to renderer (resource request replaced with ~a)."
                               (url request-data))
-                   (webkit:webkit-policy-decision-ignore response-policy-decision))))
+                   (webkit:webkit-policy-decision-ignore response-policy-decision)
+                   nil)))
             (_
              (log:debug "Don't forward to renderer (handler stop).")
-             (webkit:webkit-policy-decision-ignore response-policy-decision)))))))
+             (webkit:webkit-policy-decision-ignore response-policy-decision)
+             nil))))))
 
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
