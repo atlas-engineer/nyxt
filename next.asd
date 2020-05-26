@@ -136,10 +136,13 @@
 ;; utilized by package managers and others compiling from source
 (asdf:defsystem :next/darwin/gtk-application
   :defsystem-depends-on (:deploy)
-  :depends-on (:next/gtk)
+  :depends-on (:next/gtk
+               :osicat)
   :build-operation "osx-app-deploy-op"
   :build-pathname "Next"
-  :entry-point "next:entry-point")
+  :entry-point "next:entry-point"
+  :pathname "source/"
+  :components ((:file "darwin-gtk")))
 
 (asdf:defsystem :next/gtk-application
   :depends-on (:next/gtk)
