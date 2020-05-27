@@ -71,16 +71,24 @@ appended to the URL.")))
               (format nil " (~{~a~^, ~})" (tags entry))
               "")))
 
-(defun url-sans-protocol (url)
+(defun url-sans-scheme (url)
   (apply #'str:concat
          (mapcar (alex:curry #'format nil "~a")
                  (delete nil
                          (rest (multiple-value-list (quri:parse-uri url)))))))
 
 (defun equal-url (url1 url2)
-  "URLs are equal if the hosts and the paths are equal.
-In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
-  (string= (url-sans-protocol url1) (url-sans-protocol url2)))
+  "URLs are equal if the URIs are equal, scheme excluded.
+Empty paths are also excluded from the comparison.
+For instance, these are equal:
+- http://example.org
+- https://example.org/"
+  (flet ((normalize-path (uri)
+           (if (nth-value 4 (quri:parse-uri uri))
+               uri
+               (str:concat uri "/"))))
+    (string= (url-sans-scheme (normalize-path url1))
+             (url-sans-scheme (normalize-path url2)))))
 
 (defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
   "Entries are equal if the hosts and the paths are equal.
@@ -396,8 +404,8 @@ If character before cursor is '+' or '-' complete against tag."
     (setf (slot-value *browser* 'bookmarks-data)
           (sort (slot-value *browser* 'bookmarks-data)
                 (lambda (e1 e2)
-                  (string< (url-sans-protocol (url e1))
-                           (url-sans-protocol (url e2))))))
+                  (string< (url-sans-scheme (url e1))
+                           (url-sans-scheme (url e2))))))
     (write-string "(" file)
     (dolist (entry (slot-value *browser* 'bookmarks-data))
       (write-char #\newline file)
