@@ -275,7 +275,7 @@ complete against a search engine."
   (set-url :prefill-current-url-p t))
 
 (define-command set-url-new-buffer ()
-  "Prompt the user for a URL and set it in a new focused buffer."
+  "Prompt for a URL and set it in a new focused buffer."
   (set-url :new-buffer-p t))
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))

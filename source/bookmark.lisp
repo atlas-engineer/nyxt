@@ -350,7 +350,14 @@ If character before cursor is '+' or '-' complete against tag."
     ;; TODO: Add support for multiple bookmarks?
     (set-url* (url entry) :buffer (current-buffer) :raw-url-p t)))
 
-
+(define-command set-url-from-bookmark-new-buffer ()
+  "Open selected bookmark in a new buffer."
+  (with-result (entry (read-from-minibuffer
+                       (make-minibuffer
+                        :input-prompt "Open bookmark in a new buffer"
+                        :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                        :completion-function (bookmark-completion-filter))))
+    (set-url* (url entry) :buffer (make-buffer-focus :url nil) :raw-url-p t)))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (str:emptyp (url entry))

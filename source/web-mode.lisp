@@ -64,6 +64,7 @@ search.")
        "C-r" 'reload-current-buffer
        "C-R" 'reload-buffer
        "C-m o" 'set-url-from-bookmark
+       "C-m C-o" 'set-url-from-bookmark-new-buffer
        "C-m s" 'bookmark-current-page
        "C-d" 'bookmark-current-page
        "C-m C-s" 'bookmark-page
@@ -125,6 +126,7 @@ search.")
        "C-r" 'reload-current-buffer
        "C-R" 'reload-buffer
        "C-m o" 'set-url-from-bookmark
+       "C-m C-o" 'set-url-from-bookmark-new-buffer
        "C-m s" 'bookmark-current-page
        "C-m C-s" 'bookmark-page
        "C-m g" 'bookmark-hint
@@ -204,6 +206,7 @@ search.")
        "R" 'reload-current-buffer
        "r" 'reload-buffer
        "m o" 'set-url-from-bookmark
+       "m O" 'set-url-from-bookmark-new-buffer
        "m m" 'bookmark-page
        "m M" 'bookmark-current-page
        "m f" 'bookmark-hint
