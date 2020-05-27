@@ -521,7 +521,7 @@ before running this command."
       (echo "Slynk server started at port ~a" slynk-port)))
 #+end_src
 
-Use like for =SLIME=, substituting =start-slynk= for =start-slime= in Next, and =sly-connect= for =slime-connect= in Emacs.
+Use like for =SLIME=, substituting =start-slynk= for =start-swank= in Next, and =sly-connect= for =slime-connect= in Emacs.
 
 ** Command line parameters and environment
 *** Environment variables
