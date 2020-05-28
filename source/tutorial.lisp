@@ -8,6 +8,7 @@
     (:li "Core concepts")
     (:li "Basic keybindings")
     (:li "How to use the help system to learn more about Next"))
+
    (:h2 "Core Concepts")
    (:h3 "Keybindings and Commands")
    (:p "Commands in Next are invoked by pressing specific keys or from
@@ -30,11 +31,11 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
 
    (:h3 "Buffers")
-   (:p "Next uses the concept of buffers instead of the \"tabs\" used by many
-applications. Beyond tabs, buffers provide additional functionality. For
-example, two buffers can have a completely different set of keybindings. Unlike
-tabs, the buffer display scales, that is to say, it's just as convenient to
-navigate 2 or 100 buffers.")
+   (:p "Next uses the concept of buffers instead of the more limited \"tabs\"
+used by many applications. Unlike tabs, the buffer display scales, that is to
+say, it's just as convenient to navigate 2 or 100 buffers.  The buffer states
+are fully separated, for instance two buffers can have different set of
+keybindings.")
    (:h3 "Modes")
    (:p "Each buffer has its own set of modes. A mode is a set of functions,
 hooks, keybindings and other facilities that modify the behavior of a buffer.
@@ -80,6 +81,7 @@ messages, invoke the command " (:code "messages") ".")
    (:p "The status area is where information about the state of that buffer is
 printed. By default this includes the active modes, the URL, and the title of
 the current buffer.")
+
    (:h2 "Basic controls")
    (:h3 "Moving within a buffer")
    (:p "To move within a buffer, several commands are provided:")
@@ -307,6 +309,7 @@ See its documentation for more details.")
 \(define-configuration browser
   ((data-profile (or (find-data-profile (getf *options* :data-profile))
                      +dev-data-profile+))))"))
+
    (:h2 "Troubleshooting")
    (:h3 "Playing videos")
    (:p "Next delegates video support to third party plugins.")
