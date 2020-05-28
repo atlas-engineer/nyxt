@@ -179,6 +179,9 @@ class and slot documentation for the individual details.")
    (:p "To find out about all modes known to Next,
 run " (:code "describe-command") " and type 'mode' to list them all.")
 
+   (:h3 "Search engines")
+   (:p "See the " (:code "search-engines") " browser slot documentation.")
+
    (:h3 "Keybinding configuration")
    (:p "Next supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
        (:code "emacs-mode") ".  To make the change persistent across sessions,
