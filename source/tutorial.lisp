@@ -230,13 +230,14 @@ Lisp function except the form is " (:code "define-command") " instead of "
    (:p "Hooks provide a powerful mechanism to tweak the behaviour of various
 events that occur in the context of windows, buffers, modes, etc.")
    (:p "A hook holds a list of " (:i "handlers") ".  Handlers are named and
-typed functions.")
+typed functions.  Each hook has a dedicated handler constructor.")
    (:p
     "Hooks can be 'run', that is, their handlers are run according to
 the " (:code "combination") " slot of the hook.  This combination is a function
 of the handlers.  Depending on the combination, a hook can run the handlers
 either in parallel, or in order until one fails, or even " (:i "compose")
-    " them (pass the result of one to the input of the next).")
+    " them (pass the result of one as the input of the next).  The handler types
+specify which input and output values are expected.")
    (:p "Many hooks are executed at different points in Next, among others:
 ")
    (:ul
