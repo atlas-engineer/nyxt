@@ -74,6 +74,10 @@ search.")
        "f3" 'search-buffer
        "M-f" 'remove-search-hints
        "C-." 'jump-to-heading
+       "left" 'scroll-left
+       "down" 'scroll-down
+       "up" 'scroll-up
+       "right" 'scroll-right
        "end" 'maybe-scroll-to-bottom
        "home" 'maybe-scroll-to-top
        "C-down" 'scroll-to-bottom
@@ -82,8 +86,6 @@ search.")
        "M-c t" 'copy-title
        ;; Leave SPACE unbound so that the renderer decides wether to
        ;; insert of scroll.
-
-       ;; keypad:
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down
        "pageend" 'scroll-to-bottom
@@ -140,25 +142,7 @@ search.")
        "C-v" 'scroll-page-down
        "M-v" 'scroll-page-up
        "C-M-l" 'copy-url
-       "C-M-i" 'copy-title
-       ;; Leave 'space' unbound so that the renderer decides wether to insert of
-       ;; scroll.
-
-       ;; keypad:
-       "pageup" 'scroll-page-up
-       "pagedown" 'scroll-page-down
-       "pageend" 'scroll-to-bottom
-       "pagehome" 'scroll-to-top
-       ;; keypad, gtk:
-       "keypadleft" 'scroll-left
-       "keypaddown" 'scroll-down
-       "keypadup" 'scroll-up
-       "keypadright" 'scroll-right
-       "keypadend" 'scroll-to-bottom
-       "keypadhome" 'scroll-to-top
-       "keypadnext" 'scroll-page-down
-       "keypadpageup" 'scroll-page-up
-       "keypadprior" 'scroll-page-up)
+       "C-M-i" 'copy-title)
 
       scheme:vi-normal
       (list
@@ -173,29 +157,6 @@ search.")
        "; f" 'follow-hint-new-buffer
        "button9" 'history-forwards
        "button8" 'history-backwards
-
-       "h" 'scroll-left
-       "j" 'scroll-down
-       "k" 'scroll-up
-       "l" 'scroll-right
-       "left" 'scroll-left
-       "down" 'scroll-down
-       "up" 'scroll-up
-       "right" 'scroll-right
-       ;; keypad:
-       "pageend" 'scroll-to-bottom
-       "pagehome" 'scroll-to-top
-       ;; keypad, gtk:
-       "keypadleft" 'scroll-left
-       "keypaddown" 'scroll-down
-       "keypadup" 'scroll-up
-       "keypadright" 'scroll-right
-       "keypadend" 'scroll-to-bottom
-       "keypadhome" 'scroll-to-top
-       "keypadnext" 'scroll-page-down
-       "keypadpageup" 'scroll-page-up
-       "keypadprior" 'scroll-page-up
-
        "C-v" 'paste
        "+" 'zoom-in-page
        "hyphen" 'zoom-out-page
@@ -215,6 +176,10 @@ search.")
        "g h" 'jump-to-heading ; REVIEW: VI binding?  "gh" is probably good enough.
        "/" 'search-buffer
        "?" 'remove-search-hints
+       "h" 'scroll-left
+       "j" 'scroll-down
+       "k" 'scroll-up
+       "l" 'scroll-right
        "G" 'scroll-to-bottom
        "g g" 'scroll-to-top
        "C-f" 'scroll-page-down
