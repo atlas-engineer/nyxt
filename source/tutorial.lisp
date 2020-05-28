@@ -138,6 +138,35 @@ place rather than having to jump around on a buffer (or multiple buffers).")
    (:ul
     (:li (command-markup 'search-buffer) ": Search buffer.")
     (:li (command-markup 'search-buffers) ": Search multiple buffers."))
+   (:h3 "Bookmarks")
+   (:p "The bookmark file is made to be human readable and editable.
+Bookmarks can have the following settings:")
+   (:ul
+    (:li (:code ":url") ": The URL of the bookmark.")
+    (:li (:code ":title") ": The title of the bookmark.")
+    (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks.")
+    (:li (:code ":shortcut") ": A single-word string.  Directly opens the
+bookmark when inputted in one of the 'set-url' commands."))
+   (:p "Bookmark-related commands")
+   (:ul
+    (:li (command-markup 'bookmark-current-page) ": Bookmark current page.
+Prompt for tags.  The input defaults to the existing tags: if some tags are
+removed from the input, they are also removed from the existing bookmark.")
+    (:li (command-markup 'bookmark-page) ": Same as above but prompt for a buffer first.")
+    (:li (command-markup 'bookmark-url) ": Same as above but prompt for a URL first.")
+    (:li (command-markup 'bookmark-hint) ": Same as above but prompt for a hinted URL first.")
+    (:li (command-markup 'set-url-from-bookmark) ": Open bookmark in current buffer.")
+    (:li (command-markup 'set-url-from-bookmark-new-buffer) ": Open bookmark in new buffer.")
+    (:li (command-markup 'bookmark-delete) ": Delete queried bookmarks.")
+    (:li (command-markup 'show-bookmarks) ": Display a new buffer containing the
+list of all bookmarks."))
+   (:p "You can filter them with selectors: use '+', '-' or write a compound
+query inside parenthesis in which you can use 'and', 'or' and 'not'. Examples:")
+   (:ul
+    (:li "+lisp -blog ")
+    (:li "+blog (or lisp emacs) ")
+    (:li "+foo -bar (or (and john doe) (not (and tic tac toe)))"))
+
    (:h3 "Miscellaneous")
    (:p (command-markup 'quit) ": Close all Next windows and quit.")
 
@@ -217,7 +246,8 @@ have priorities over the other modes key bindings.")
   ((default-modes (append '(my-mode) %slot-default))))"))
 
    (:h3 "Search engines")
-   (:p "See the " (:code "search-engines") " browser slot documentation.")
+   (:p "See the " (:code "search-engines") " browser slot documentation.
+Bookmarks can also be used as search engines, see the corresponding section.")
 
    (:h3 "Downloads")
    (:p "See the " (:code "download-list") " command and the "
