@@ -220,6 +220,9 @@ have priorities over the other modes key bindings.")
    (:p "See the " (:code "download-list") " command and the "
        (:code "download-path") " browser slot documentation.")
 
+   (:h3 "Proxy and Tor")
+   (:p "See the " (:code "proxy-mode") " documentation.")
+
    (:h3 "Custom commands")
    (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function except the form is " (:code "define-command") " instead of "
