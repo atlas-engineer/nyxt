@@ -17,9 +17,9 @@ from.")
    (:p "In Next, keybindings are represented as in 'control-space' or
 equivalently 'C-space'. In this example, 'C' is a shortcut for the modifier
 'control', and 'space' represents the character ' '.  A modifier is a key that
-does not do anything on its own, its purpose is to alter the meaning of a
+does nothing on its own, its purpose is to alter the meaning of a
 non-modifier key when pressed together.  Therefore, to input the 'C-x'
-keybinding you would have to keep 'control' pressed and they hit 'x'.  Multiple
+keybinding you would keep 'control' pressed and then hit 'x'.  Multiple
 key presses can be chained: in 'C-x C-M-left', you would have to press 'C-x',
 let go of all keys, and then press 'control', 'meta' and 'left'.")
    (:p "Modifier keys legend:")
