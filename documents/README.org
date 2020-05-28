@@ -84,7 +84,6 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
   recent version for security reasons)
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
-- gstreamer, gst-plugins-* (for HTML audio/video)
 - libfixposix
 - xclip (for clipboard support)
 - notify-osd (optional)
@@ -92,12 +91,12 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 
 - Debian-based distributions:
   #+begin_src sh
-  sudo apt install sbcl libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas libfixposix-dev libgstreamer1.0-0 gir1.2-gst-plugins-base-1.0 xclip notify-osd enchant
+  sudo apt install sbcl libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas libfixposix-dev xclip notify-osd enchant
   #+end_src
 
 - Fedora:
   #+begin_src sh
-  sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel gstreamer1-devel gstreamer1-plugins-base xclip enchant
+  sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant
   #+end_src
 
 If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you

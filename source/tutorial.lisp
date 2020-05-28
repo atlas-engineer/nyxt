@@ -285,11 +285,33 @@ data-path and data-profile rules are free to ignore it.")
                                       :basename (basename path)
                                       :dirname \"/tmp/next/\")))
 
-(defmethod next:expand-data-path ((profile (eql +dev-data-profile+)) (path session-data-path))
+\(defmethod next:expand-data-path ((profile (eql +dev-data-profile+)) (path session-data-path))
   \"Persist session to default location.\"
   (expand-data-path +default-data-profile+ path))
 
 ;; Make new profile the default:
 \(define-configuration browser
   ((data-profile (or (find-data-profile (getf *options* :data-profile))
-                     +dev-data-profile+))))"))))
+                     +dev-data-profile+))))"))
+   (:h2 "Troubleshooting")
+   (:h3 "Playing videos")
+   (:p "Next delegates video support to third party plugins.")
+   (:p "When using the WebKitGTK backends, GStreamer and its plugins are
+leveraged.  Depending on the video you will need to install some of the
+following packages:")
+   (:ul
+    (:li "gst-libav")
+    (:li "gst-plugins-bad")
+    (:li "gst-plugins-base")
+    (:li "gst-plugins-good")
+    (:li "gst-plugins-ugly"))
+   (:p "On Debian-based systems, you might be looking for (adapt the version numbers):")
+   (:ul
+    (:li "libgstreamer1.0-0")
+    (:li "gir1.2-gst-plugins-base-1.0"))
+   (:p "For systems from the Fedora family:")
+   (:ul
+    (:li "gstreamer1-devel")
+    (:li "gstreamer1-plugins-base"))
+   (:p "After the desired plugins have been installed, clear the GStreamer cache at "
+       (:code "~/.cache/gstreamer-1.0") " and restart Next.")))
