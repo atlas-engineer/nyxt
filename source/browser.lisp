@@ -545,14 +545,25 @@ window or not.")
                                                   :search-url "https://en.wikipedia.org/w/index.php?search=~a"
                                                   :fallback-url "https://en.wikipedia.org/"))
                    :type list-of-search-engines
-                   :documentation "A list of the search engines.
+                   :documentation "A list of the `search-engine' objects.
 You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
 If the query is empty, FALLBACK-URL is loaded instead.  If
 FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
 The engine with the \"default\" shortcut (or the first engine if there is no
 \"default\") is used when the query is not a valid URL, or the first keyword is
-not recognized.")
+not recognized.
+
+Example value:
+
+\(list (make-instance 'search-engine
+                      :shortcut \"default\"
+                      :search-url \"https://duckduckgo.com/?q=~a\"
+                      :fallback-url \"https://duckduckgo.com/\")
+       (make-instance 'search-engine
+                      :shortcut \"wiki\"
+                      :search-url \"https://en.wikipedia.org/w/index.php?search=~a\"
+                      :fallback-url \"https://en.wikipedia.org/\"))")
    (key-stack :accessor key-stack :initform '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
    (downloads :accessor downloads :initform '()
