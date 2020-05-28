@@ -37,10 +37,13 @@ say, it's just as convenient to navigate 2 or 100 buffers.  The buffer states
 are fully separated, for instance two buffers can have different set of
 keybindings.")
    (:h3 "Modes")
-   (:p "Each buffer has its own set of modes. A mode is a set of functions,
-hooks, keybindings and other facilities that modify the behavior of a buffer.
-For example, 'blocker-mode' can be used for domain-based adblocking while
-noscript-mode disables JavaScript.")
+   (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
+set of functions, hooks, keybindings and other facilities that modify the
+behavior of a buffer.  For example, 'blocker-mode' can be used for domain-based
+adblocking while noscript-mode disables JavaScript.")
+   (:p "Each buffer has separate instance of modes, which means that altering
+the settings of a mode in a buffer does not impact the other buffers.  Mode
+functions are only available when the mode is enabled for the current buffer.")
    (:p "Each mode has an associated " (:i "mode toggler") " which is a command
 of the same name the toggles the mode for the current buffer.")
    (:h3 "Minibuffer")
