@@ -88,7 +88,8 @@ Set to '-' to read standard input instead.")
            :long "remote"
            :description "Send the --eval and --load arguments to the running instance of Next.
 Implies --quit.
-The remote instance must be listening on a socket which you can specify with --socket.")
+The remote instance must be listening on a socket which you can specify with --socket
+and have the `remote-execution-p' browser slot to non-nil.")
     (:name :data-profile
            :short #\d
            :long "data-profile"
@@ -103,8 +104,9 @@ Known profiles are found among global variables that are a subclass of
            :long "with-path"
            :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
            :description "Set data path reference to the given path.
-Can be specified multiple times.
-Example: --with-path bookmarks=/path/to/bookmarks"))
+Can be specified multiple times.  An empty path means it won't be used.
+Example: --with-path bookmarks=/path/to/bookmarks
+         --with-path session="))
   (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                  (opts:missing-arg #'handle-malformed-cli-arg)
                  (opts:arg-parser-failed #'handle-malformed-cli-arg))
