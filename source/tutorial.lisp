@@ -300,8 +300,11 @@ possible to specialize some data-paths given a data-profile.")
 data-profile rules are free to ignore it. The " (:code "expand-default-path") "
 helper function uses the --with-path value first, then fallback to a default.
 See its documentation for more details.")
+   (:p "When the data path ends with the " (:code ".gpg") " extension, your
+GnuPG key is used to decrypt and encrypt the file transparently.  Refer to the
+GnuPG documentation for how to set it up.")
    (:p "Example to create a development data-profile that stores all data in "
-       (:code "/tmp/next") ":")
+       (:code "/tmp/next") " and stores bookmark in an encrypted file:")
    (:pre (:code "
 \(defvar +dev-data-profile+ (make-instance 'data-profile :name \"dev\")
   \"Development profile.\")
@@ -319,7 +322,9 @@ See its documentation for more details.")
 ;; Make new profile the default:
 \(define-configuration browser
   ((data-profile (or (find-data-profile (getf *options* :data-profile))
-                     +dev-data-profile+))))"))
+                     +dev-data-profile+))
+   (bookmarks-path (make-instance 'bookmarks-data-path
+                                  :basename \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
 
    (:h2 "Troubleshooting")
    (:h3 "Playing videos")
