@@ -106,7 +106,7 @@ to quickly find whatever buffer you are looking for.")
    (:h3 "Link navigation")
    (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
 Invoke one of the commands below: several hints will appear on screen and all
-links one the page will be listed in the minibuffer.  You can select the hints
+links on the page will be listed in the minibuffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
     (:li (command-markup 'follow-hint) ": Go to link in current buffer.")
@@ -208,7 +208,7 @@ have priorities over the other modes key bindings.")
    (:h3 "Custom commands")
    (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function except the form is " (:code "define-command") " instead of "
-       (:code "defun") ".")
+(:code "defun") ".")
    (:p "Example:")
    (:pre (:code
           "(define-command bookmark-url ()
@@ -219,9 +219,8 @@ Lisp function except the form is " (:code "define-command") " instead of "
     (bookmark-add url)))"))
 
    (:h3 "Hooks")
-   (:p "Hooks provide a powerful mechanism to tweak the behaviour various events
-that occur in the context of windows, buffers, modes, etc.
-")
+   (:p "Hooks provide a powerful mechanism to tweak the behaviour of various
+events that occur in the context of windows, buffers, modes, etc.")
    (:p "A hook holds a list of " (:i "handlers") ".  Handlers are named and
 typed functions.")
    (:p
@@ -255,12 +254,18 @@ can set a hook like the following in your configuration file:")
 
 \(define-configuration buffer
   ((request-resource-hook
+    (add-hook %slot-default (make-handler-resource #'old-reddit-handler)))))"))
+   (:p "Or, if you want to set multiple handlers at once,")
+   (:pre (:code "
+\(define-configuration buffer
+  ((request-resource-hook
     (reduce #'hooks:add-hook
-            (mapcar #'make-handler-resource (list #'old-reddit-handler))
+            (mapcar #'make-handler-resource (list #'old-reddit-handler
+                                                  #'my-other-handler))
             :initial-value %slot-default))))"))
    (:p "Some hooks like the above example expect a return value, so it's
-important to make sure we return " (:code "url") " here.  See the documentation
-of the respective hooks for more details.")
+important to make sure we return " (:code "request-data") " here.  See the
+documentation of the respective hooks for more details.")
 
    (:h3 "Data paths and data profiles")
    (:p "Next provides a uniform configuration interface for all data files
@@ -271,7 +276,8 @@ data-paths and data-profiles compose, so it's possible to define general rules
 for all data-paths (even for those not known in advance) while it's also
 possible to specialize some data-paths given a data-profile.")
    (:p "The data-profile can be set from command line and from the configuration file.")
-   (:p "The data-paths can be passed a hint from command line, but each
+   (:p "The data-paths can be passed a hint from the "
+       (:code "--with-path") " command line option, but each
 data-path and data-profile rules are free to ignore it.")
    (:p "Example to create a development data-profile that stores all data in "
        (:code "/tmp/next") ":")
