@@ -7,7 +7,7 @@
 
 (serapeum:export-always '*default-proxy*)
 (defparameter *default-proxy*
-  (make-instance next::*proxy-class*
+  (make-instance *proxy-class*
                  :server-address "socks5://localhost:9050"
                  :whitelist '("localhost" "localhost:8080")
                  :proxied-downloads-p t))
@@ -17,7 +17,13 @@
 As for every mode, it only applies to the current buffer.  If you want to enable
 a proxy for all buffers, add it to the list of default modes.
 
-Example:
+Example to use Tor as a proxy both for browsing and downloading:
+
+(setf next/proxy-mode:*default-proxy*
+  (make-instance *proxy-class*
+                 :server-address \"socks5://localhost:9050\"
+                 :whitelist '(\"localhost\" \"localhost:8080\")
+                 :proxied-downloads-p t))
 
 \(define-configuration buffer
   ((default-modes (append '(proxy-mode) %slot-default))))"
