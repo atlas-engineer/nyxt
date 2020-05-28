@@ -40,7 +40,7 @@ notifications, choose videos, etc.
 (defparameter *download-args* nil
   "Default arguments for the download command as a list of strings. See also `download-arguments' which adds more.")
 
-;; TODO: Make browser's download-directory a list.
+;; TODO: Make browser's download-path a list.
 (declaim (type (or null list) *preferred-download-directories*))
 (defparameter *preferred-download-directories* (list (next:xdg-download-dir))
   "List of favorite directories to save videos to. If it contains more than one entry, we are asked for the destination.")

@@ -570,11 +570,11 @@ Example value:
               :documentation "List of downloads.")
    (download-watcher :accessor download-watcher :initform nil
                      :documentation "List of downloads.")
-   (download-directory :accessor download-directory ; TODO: Rename to downloads-path?
-                       :type data-path
-                       :initform (make-instance 'download-data-path
-                                                :dirname (xdg-download-dir))
-                       :documentation "Path of directory where downloads will be
+   (download-path :accessor download-path
+                  :type data-path
+                  :initform (make-instance 'download-data-path
+                                           :dirname (xdg-download-dir))
+                  :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.")
    (startup-timestamp :initarg :startup-timestamp :accessor startup-timestamp
                       :type local-time:timestamp
@@ -813,7 +813,7 @@ current buffer."
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
-  (let ((download-dir (expand-path (download-directory *browser*))))
+  (let ((download-dir (expand-path (download-path *browser*))))
     (when download-dir
       (let* ((download nil))
         (handler-case
