@@ -350,4 +350,14 @@ following packages:")
     (:li "gstreamer1-devel")
     (:li "gstreamer1-plugins-base"))
    (:p "After the desired plugins have been installed, clear the GStreamer cache at "
-       (:code "~/.cache/gstreamer-1.0") " and restart Next.")))
+       (:code "~/.cache/gstreamer-1.0") " and restart Next.")
+   (:h3 "Font size on HiDPI displays")
+   (:p "On HiDPI displays the font size used for displaying web and Next's
+minibuffer content might be too tiny.")
+   (:p "To fix this issue when using the WebKitGTK render, export the following
+environment variable before starting Next:")
+   (:pre (:code "
+export GDK_SCALE=2
+export GDK_DPI_SCALE=0.5
+next
+"))))
