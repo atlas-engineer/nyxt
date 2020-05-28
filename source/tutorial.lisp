@@ -360,4 +360,10 @@ environment variable before starting Next:")
 export GDK_SCALE=2
 export GDK_DPI_SCALE=0.5
 next
-"))))
+"))
+   (:h3 "StumpWM mouse scroll")
+   (:p "If the mouse scroll does not work for you, see the "
+       (:a
+        :href "https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to"
+        "StumpWM FAQ")
+       " for a fix.")))
