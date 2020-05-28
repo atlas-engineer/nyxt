@@ -168,8 +168,8 @@ necessary).")
    (:p "Example:")
    (:pre (:code "
 \(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default))))"))
-   (:p "The above turns on the 'vi-normal-mode' (VI bindings) by default for
+  ((default-modes (append '(noscript-mode) %slot-default))))"))
+   (:p "The above turns on the 'noscript-mode' (disables JavaScript) by default for
 every buffer.")
    (:p "The " (:code "define-configuration") " macro can be used to customize
 the slots of the classes like the browser, buffers, windows, etc.  Refer to the
@@ -178,6 +178,12 @@ class and slot documentation for the individual details.")
 run " (:code "describe-command") " and type 'mode' to list them all.")
 
    (:h3 "Keybinding configuration")
+   (:p "Next supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
+       (:code "emacs-mode") ".  To make the change persistent across sessions,
+add the following to you configuration (for VI bindings):")
+(:pre (:code "
+\(define-configuration buffer
+  ((default-modes (append '(vi-normal-mode) %slot-default))))"))
    (:p "The " (:code "override-map") " is a keymap which has priority over
 everything.  By default, it has only very few bindings like the one
 for " (:code "execute-command") ".  You can use it to set keys globally:")
