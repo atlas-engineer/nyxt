@@ -277,8 +277,10 @@ for all data-paths (even for those not known in advance) while it's also
 possible to specialize some data-paths given a data-profile.")
    (:p "The data-profile can be set from command line and from the configuration file.")
    (:p "The data-paths can be passed a hint from the "
-       (:code "--with-path") " command line option, but each
-data-path and data-profile rules are free to ignore it.")
+       (:code "--with-path") " command line option, but each data-path and
+data-profile rules are free to ignore it. The " (:code "expand-default-path") "
+helper function uses the --with-path value first, then fallback to a default.
+See its documentation for more details.")
    (:p "Example to create a development data-profile that stores all data in "
        (:code "/tmp/next") ":")
    (:pre (:code "
