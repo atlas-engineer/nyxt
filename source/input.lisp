@@ -67,8 +67,8 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
                         (mapcar (lambda (key) (keymap:copy-key key :code 0))
                                 keys))))
     (if (find-if (complement #'zerop) keys :key #'keymap:key-code)
-        (format nil "~a (~a)" no-code-specs (keymap:keys->keyspecs keys))
-        (format nil "~a" no-code-specs))))
+        (format nil "~s [~a]" no-code-specs (keymap:keys->keyspecs keys))
+        (format nil "~s" no-code-specs))))
 
 (export-always 'dispatch-input-event)
 (defun dispatch-input-event (event buffer window printable-p)
@@ -78,9 +78,13 @@ Return nil to forward to renderer or non-nil otherwise."
   (with-accessors ((key-stack key-stack)) *browser*
     (labels ((keyspecs (key &optional translated-key)
                (if translated-key
-                   (format nil "~a (translated from ~a)"
-                           (keyspecs translated-key)
-                           (keyspecs key))
+                   (let ((specs (keyspecs key))
+                         (translated-specs (keyspecs translated-key)))
+                     (if (string= specs translated-specs)
+                         (format nil "~a" specs)
+                         (format nil "~a (translated from ~a)"
+                                 translated-specs
+                                 specs)))
                    (keyspecs-with-optional-keycode key))))
       (when buffer
         (setf (last-event buffer) event))
@@ -100,7 +104,7 @@ Return nil to forward to renderer or non-nil otherwise."
               t)
 
              ((typep bound-function 'function-symbol)
-              (log:debug "Key sequence ~a" (keyspecs key-stack translated-key))
+              (log:debug "Found key binding ~a" (keyspecs key-stack translated-key))
               (unwind-protect
                    (funcall-safely bound-function)
                 ;; We must reset the key-stack on errors or else all subsequent
