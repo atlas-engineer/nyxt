@@ -179,14 +179,11 @@ class and slot documentation for the individual details.")
    (:p "To find out about all modes known to Next,
 run " (:code "describe-command") " and type 'mode' to list them all.")
 
-   (:h3 "Search engines")
-   (:p "See the " (:code "search-engines") " browser slot documentation.")
-
    (:h3 "Keybinding configuration")
    (:p "Next supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
        (:code "emacs-mode") ".  To make the change persistent across sessions,
 add the following to you configuration (for VI bindings):")
-(:pre (:code "
+   (:pre (:code "
 \(define-configuration buffer
   ((default-modes (append '(vi-normal-mode) %slot-default))))"))
    (:p "The " (:code "override-map") " is a keymap which has priority over
@@ -216,10 +213,17 @@ have priorities over the other modes key bindings.")
 \(define-configuration buffer
   ((default-modes (append '(my-mode) %slot-default))))"))
 
+   (:h3 "Search engines")
+   (:p "See the " (:code "search-engines") " browser slot documentation.")
+
+   (:h3 "Downloads")
+   (:p "See the " (:code "download-list") " command and the "
+       (:code "download-path") " browser slot documentation.")
+
    (:h3 "Custom commands")
    (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function except the form is " (:code "define-command") " instead of "
-(:code "defun") ".")
+       (:code "defun") ".")
    (:p "Example:")
    (:pre (:code
           "(define-command bookmark-url ()
