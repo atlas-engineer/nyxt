@@ -135,6 +135,17 @@
   :build-pathname "next"
   :entry-point "next:entry-point")
 
+(asdf:defsystem :next/build-rpm
+  :depends-on (:cffi-toolchain :cl-ppcre :next)
+  :pathname "build-scripts/"
+  :components ((:file "build-rpm")))
+
+(asdf:defsystem :next/gtk-application-rpm
+  :depends-on (:next/build-rpm :next/gtk)
+  :build-operation "build-rpm"
+  :build-pathname "next"
+  :entry-point "next:entry-point")
+
 (asdf:defsystem :next/qt-application
   :depends-on (:next/qt)
   :build-operation "program-op"
