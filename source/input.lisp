@@ -59,13 +59,16 @@ minibuffer keymaps."
   (coerce (str:starts-with? "button" (keymap:key-value key))
           'boolean))
 
+(defun keyspecs-without-keycode (keys)
+  (keymap:keys->keyspecs
+   (mapcar (lambda (key) (keymap:copy-key key :code 0))
+           keys)))
+
 (export-always 'keyspecs-with-optional-keycode)
 (defun keyspecs-with-optional-keycode (keys) ; TODO: Remove "optional" from name.
   "Like `keymap:keyspecs' but displayes keys with keycodes like this:
 KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
-  (let ((no-code-specs (keymap:keys->keyspecs
-                        (mapcar (lambda (key) (keymap:copy-key key :code 0))
-                                keys))))
+  (let ((no-code-specs (keyspecs-without-keycode keys)))
     (if (find-if (complement #'zerop) keys :key #'keymap:key-code)
         (format nil "~s [~a]" no-code-specs (keymap:keys->keyspecs keys))
         (format nil "~s" no-code-specs))))
@@ -100,6 +103,7 @@ Return nil to forward to renderer or non-nil otherwise."
            (declare (ignore matching-keymap))
            (cond
              ((keymap:keymap-p bound-function)
+              (echo "Pressed keys: ~a" (keyspecs-without-keycode key-stack))
               (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
               t)
 
