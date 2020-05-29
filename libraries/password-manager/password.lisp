@@ -58,18 +58,13 @@ Return nil if COMMAND is not found anywhere."
     path))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'interface-list))
+(defvar interface-list '()
+  "List of interface intializing functions.
+`make' returns the first non-nil value which is returned by an invocation of one
+of the functions.")
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make))
 (defun make ()
-  (unless *password-store-program*
-    (setf *password-store-program* (executable-find "pass")))
-  (unless *keepassxc-cli-program*
-    (setf *keepassxc-cli-program* (executable-find "keepassxc-cli")))
-  (unless *security-cli-program*
-    (setf *security-cli-program* (executable-find "security")))
-  (cond (*password-store-program*
-         (make-instance 'password-store-interface))
-        (*keepassxc-cli-program*
-         (make-instance 'keepassxc-interface))
-        (*security-cli-program*
-         (make-instance 'security-interface))
-        (t nil)))
+  (some #'funcall interface-list))

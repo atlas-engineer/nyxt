@@ -12,6 +12,15 @@
                                      (namestring (format nil "~a/.password-store"
                                                          (uiop:getenv "HOME")))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'make-password-store-interface))
+(defun make-password-store-interface ()
+  (unless *password-store-program*
+    (setf *password-store-program* (executable-find "pass")))
+  (when *password-store-program*
+    (make-instance 'password-store-interface)))
+(push #'make-password-store-interface interface-list)
+
 (defmethod list-passwords ((password-interface password-store-interface))
   (let ((raw-list (directory
                    (format nil "~a/**/*.gpg"

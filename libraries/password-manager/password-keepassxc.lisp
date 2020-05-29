@@ -12,6 +12,15 @@
                     :initarg :master-password
                     :initform nil)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'make-keepassxc-interface))
+(defun make-keepassxc-interface ()
+  (unless *keepassxc-cli-program*
+    (setf *keepassxc-cli-program* (executable-find "keepassxc-cli")))
+  (when *keepassxc-cli-program*
+    (make-instance 'keepassxc-interface)))
+(push #'make-keepassxc-interface interface-list)
+
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (let* ((st (make-string-input-stream (master-password password-interface)))
          (output (uiop:run-program (list *keepassxc-cli-program*

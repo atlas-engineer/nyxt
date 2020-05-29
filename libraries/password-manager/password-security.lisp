@@ -10,6 +10,15 @@
 
 (defclass security-interface (password-interface) ())
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'make-security-interface))
+(defun make-security-interface ()
+  (unless *security-cli-program*
+    (setf *security-cli-program* (executable-find "security")))
+  (when *security-cli-program*
+    (make-instance 'security-interface)))
+(push #'make-security-interface interface-list)
+
 (defmethod list-passwords ((password-interface security-interface))
   (error "Listing passwords not supported by security interface."))
 
