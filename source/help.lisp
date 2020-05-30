@@ -373,7 +373,7 @@ The version number is stored in the clipboard."
   (let ((keymaps (cons (override-map (current-buffer))
                        (delete nil (mapcar #'keymap modes)))))
     (or (first (keymap:binding-keys fn keymaps))
-        "NO-KEY")))
+        "UNBOUND")))
 
 (define-command help ()
   "Print help information."
