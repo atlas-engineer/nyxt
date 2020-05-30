@@ -43,27 +43,21 @@ An object of this type is a subclass of CLASS-SYM."
        (deftype ,type-fun ()
          '(satisfies ,type-pred)))))
 
-;; TODO: Remove implicit %buffer and %callback parameter.
 (export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.
 SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
 Any Lisp expression must be wrapped in (PS:LISP ...).
 
-The returned function is called over 3 key arguments beside ARGS:
-- %CALLBACK: a function to call when the script returns.  Defaults to nil.
-- %BUFFER: The buffer used to execute the script.  Defaults to the current buffer.
-
-Those variables can be used from the SCRIPT-BODY (the parenscript code).
-
-ARGS must be key arguments."
-  `(progn
-     (defun ,script-name ,(append '(&key ((:callback %callback) nil)
-                                    ((:buffer %buffer) (current-buffer)))
-                           args)
-       (ffi-buffer-evaluate-javascript %buffer
-                                       (ps:ps ,@script-body)
-                                       :callback %callback))))
+The returned function is called with the ARGS key arguments over the current
+buffer."
+  (alex:with-gensyms (callback)
+    `(progn
+       (defun ,script-name ,(append `(&key ((:callback ,callback) nil))
+                             args)
+         (ffi-buffer-evaluate-javascript (current-buffer)
+                                         (ps:ps ,@script-body)
+                                         :callback ,callback)))))
 
 (defmacro with-ps (&body body)
   "Execute the parenscript body against the current buffer."

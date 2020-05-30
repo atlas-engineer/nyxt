@@ -142,15 +142,15 @@
           (multi-buffer (if (> (list-length buffers) 1) t nil)))
       (map nil
            (lambda (buffer)
-             (query-buffer
-              :query input
-              :buffer buffer
-              :case-sensitive-p case-sensitive-p
-              :callback (lambda (result)
-                          (let* ((matches (matches-from-json
-                                           result buffer multi-buffer)))
-                            (setf all-matches (append all-matches matches))
-                            (next::set-completions (current-minibuffer) all-matches)))))
+             (with-current-buffer buffer
+               (query-buffer
+                :query input
+                :case-sensitive-p case-sensitive-p
+                :callback (lambda (result)
+                            (let* ((matches (matches-from-json
+                                             result buffer multi-buffer)))
+                              (setf all-matches (append all-matches matches))
+                              (next::set-completions (current-minibuffer) all-matches))))))
            buffers)))
   ;; return NIL, the completions will be updated asynchronously by the
   ;; callback from query-buffer

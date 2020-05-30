@@ -1040,13 +1040,25 @@ sometimes yields the wrong reasult."
         (slot-value *browser* 'last-active-window)
         (ffi-window-active *browser*))))
 
+(defparameter %buffer nil)
+
 (export-always 'current-buffer)
 (defun current-buffer ()
   "Get the active buffer for the active window."
-  (match (current-window)
-    ((guard w w) (active-buffer w))
-    (_ (log:debug "No active window, picking last active buffer.")
-       (last-active-buffer *browser*))))
+  (or %buffer
+      (match (current-window)
+        ((guard w w) (active-buffer w))
+        (_ (log:debug "No active window, picking last active buffer.")
+           (last-active-buffer *browser*)))))
+
+(export-always 'with-current-buffer)
+(defmacro with-current-buffer (buffer &body body)
+  "Execute BODY in a context in which `current-buffer' returns BUFFER."
+  `(unwind-protect
+        (progn
+          (setf %buffer ,buffer)
+          ,@body)
+     (setf %buffer nil)))
 
 (declaim (ftype (function (buffer)) set-current-buffer))
 ;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.

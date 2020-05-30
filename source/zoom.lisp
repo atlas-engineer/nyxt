@@ -9,27 +9,30 @@
     (setf (current-zoom-ratio buffer) ratio)))
 
 (define-parenscript %zoom-in-page ()
-  (ps:lisp (ensure-zoom-ratio-range #'+ next::%buffer))
+  (ps:lisp (ensure-zoom-ratio-range #'+ (current-buffer)))
   (ps:let ((style (ps:chain document body style)))
-    (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio next::%buffer)))))
+    (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio (current-buffer))))))
 
 (define-parenscript %zoom-out-page ()
-  (ps:lisp (ensure-zoom-ratio-range #'- next::%buffer))
+  (ps:lisp (ensure-zoom-ratio-range #'- (current-buffer)))
   (ps:let ((style (ps:chain document body style)))
-    (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio next::%buffer)))))
+    (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio (current-buffer))))))
 
 (define-parenscript %unzoom-page ()
-  (ps:lisp (setf (current-zoom-ratio next::%buffer) (zoom-ratio-default next::%buffer)))
-  (setf (ps:chain document body style zoom) (ps:lisp (zoom-ratio-default next::%buffer))))
+  (ps:lisp (setf (current-zoom-ratio (current-buffer)) (zoom-ratio-default (current-buffer))))
+  (setf (ps:chain document body style zoom) (ps:lisp (zoom-ratio-default (current-buffer)))))
 
 (define-command zoom-in-page (&key (buffer (current-buffer)))
   "Zoom in the current page."
-  (%zoom-in-page :buffer buffer))
+  (with-current-buffer buffer
+    (%zoom-in-page)))
 
 (define-command zoom-out-page (&key (buffer (current-buffer)))
   "Zoom out the current page."
-  (%zoom-out-page :buffer buffer))
+  (with-current-buffer buffer
+    (%zoom-out-page)))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
   "Unzoom the page."
-  (%unzoom-page :buffer buffer))
+  (with-current-buffer buffer
+    (%unzoom-page)))

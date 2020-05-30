@@ -232,7 +232,8 @@ URL."
            (mapcar (lambda (name) (make-tag :name name :description "suggestion"))
                    name-list)))
     (if (url buffer)
-        (with-result* ((body (document-get-body :buffer buffer))
+        (with-result* ((body (with-current-buffer buffer
+                               (document-get-body)))
                        (tags (read-from-minibuffer
                               (make-minibuffer
                                :input-prompt "Space-separated tag(s)"

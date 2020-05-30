@@ -184,7 +184,8 @@ identifier for every hinted element."
                             (setf subsequent-call t)))
                         :cleanup-function
                         (lambda ()
-                          (remove-element-hints :buffer buffer))))
+                          (with-current-buffer buffer
+                            (remove-element-hints)))))
       ;; TODO: ADD offscreen hints in background from full document annotation
       (with-result (result (read-from-minibuffer minibuffer))
         (funcall-safely function result)))))
@@ -262,13 +263,13 @@ identifier for every hinted element."
   (set-url* (url link-hint) :buffer (current-buffer) :raw-url-p t))
 
 (defmethod %follow-hint ((button-hint button-hint))
-  (click-button :buffer (current-buffer) :next-identifier (identifier button-hint)))
+  (click-button :next-identifier (identifier button-hint)))
 
 (defmethod %follow-hint ((input-hint input-hint))
-  (focus-element :buffer (current-buffer) :next-identifier (identifier input-hint)))
+  (focus-element :next-identifier (identifier input-hint)))
 
 (defmethod %follow-hint ((textarea-hint textarea-hint))
-  (focus-element :buffer (current-buffer) :next-identifier (identifier textarea-hint)))
+  (focus-element :next-identifier (identifier textarea-hint)))
 
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint))
   (let ((new-buffer (make-buffer)))
@@ -314,9 +315,9 @@ identifier for every hinted element."
            (not (slot-exists-p hint 'buffer))
            (and (slot-exists-p hint 'buffer)
                 (equal (buffer hint) buffer)))
-          (highlight-selected-hint :buffer buffer
-                                   :link-hint hint
-                                   :scroll scroll)
+          (with-current-buffer buffer
+            (highlight-selected-hint :link-hint hint
+                                     :scroll scroll))
           (remove-focus)))))
 
 (define-command follow-hint (&key annotate-full-document)
@@ -359,7 +360,7 @@ visible active buffer."
                            (hint-completion-filter (elements-from-json elements-json))
                            :cleanup-function
                            (lambda ()
-                             (remove-element-hints :buffer (current-buffer))))))
+                             (remove-element-hints)))))
                  (tags (read-from-minibuffer
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
