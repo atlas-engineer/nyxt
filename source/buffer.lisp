@@ -16,6 +16,7 @@
           (title buffer-description)
           (quri:url-decode (url buffer-description))))
 
+(export-always 'equals)
 (defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
   "Comparison function for buffer history entries.
 An entry is uniquely identified from its URL.  Not that we should not take the

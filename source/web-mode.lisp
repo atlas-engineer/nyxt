@@ -396,17 +396,13 @@ Otherwise go forward to the only child."
           ((functionp (autofill-fill selected-fill))
            (%paste :input-text (funcall (autofill-fill selected-fill)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Warning: To specialize `on-signal-load-finished' we must be in the right package.
-(in-package :next)
-
-(defmethod on-signal-notify-uri ((mode next/web-mode::web-mode) url)
+(defmethod next:on-signal-notify-uri ((mode web-mode) url)
   (unless (find-if (alex:rcurry #'str:starts-with? url)
-                   (next/web-mode:history-blacklist mode))
+                   (history-blacklist mode))
     (htree:add-child (make-instance 'buffer-description
                                     :url url
                                     :title (title (buffer mode)))
-                     (next/web-mode::history mode)
+                     (history mode)
                      :test #'equals)
     (when url
       (history-add url :title (title (buffer mode)))))
@@ -415,22 +411,22 @@ Otherwise go forward to the only child."
     ((guard f f) (funcall-safely f)))
   url)
 
-(defmethod on-signal-notify-title ((mode next/web-mode::web-mode) title)
+(defmethod next:on-signal-notify-title ((mode web-mode) title)
   ;; Title may be updated after the URI, so we need to set the history entry again
   ;; with `on-signal-notify-uri'.
   (on-signal-notify-uri mode (url (buffer mode)))
   title)
 
-(defmethod on-signal-load-committed ((mode next/web-mode::web-mode) url)
+(defmethod next:on-signal-load-committed ((mode web-mode) url)
   nil)
 
-(defmethod on-signal-load-finished ((mode next/web-mode::web-mode) url)
+(defmethod next:on-signal-load-finished ((mode web-mode) url)
   ;; TODO: Setting the default zoom level works with pure Javascript, but it
   ;; can only be done after the URL has been loaded which is a bit of a
   ;; kludge.  Instead we could add an FFI endpoint,
   ;; e.g. webkit_web_view_set_zoom_level.
-  (next/web-mode::unzoom-page :buffer (buffer mode))
+  (unzoom-page :buffer (buffer mode))
   url)
 
-(defmethod object-string ((node htree:node))
+(defmethod next:object-string ((node htree:node))
   (object-string (when node (htree:data node))))

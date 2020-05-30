@@ -398,6 +398,7 @@ toggle command, return the toggle command of the parent."
               ((guard c c) (funcall (sym c) :buffer buffer :activate t))
               (_ (log:warn "Mode command ~a not found." mode-class))))))))
 
+(export-always 'on-signal-notify-uri)
 (defmethod on-signal-notify-uri ((buffer buffer) no-uri)
   "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
 BUFFER's modes."
@@ -407,6 +408,7 @@ BUFFER's modes."
     (on-signal-notify-uri mode (url buffer)))
   (url buffer))
 
+(export-always 'on-signal-notify-title)
 (defmethod on-signal-notify-title ((buffer buffer) no-title)
   "Set BUFFER's `title' slot, then dispatch `on-signal-notify-title' over the
 BUFFER's modes."
@@ -416,9 +418,11 @@ BUFFER's modes."
     (on-signal-notify-title mode (url buffer)))
   (title buffer))
 
+(export-always 'on-signal-load-committed)
 (defmethod on-signal-load-committed ((buffer buffer) url)
   nil)
 
+(export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
   (dolist (mode (modes buffer))
     (on-signal-load-finished mode url)))
