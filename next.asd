@@ -49,7 +49,7 @@
                (:file "time")
                (:file "types")
                (:file "conditions")
-               ;; Core Functionality
+               ;; Core functionality
                (:file "macro")
                (:file "global")
                (:file "data-storage")
@@ -65,17 +65,10 @@
                (:file "message")
                (:file "input")
                (:file "recent-buffers")
-               ;; Core Packages
-               (:file "autofill")
                (:file "password")
                (:file "bookmark")
-               (:file "zoom")
-               (:file "scroll")
                (:file "history")
-               (:file "search-buffer")
-               (:file "spell-check")
-               (:file "jump-heading")
-               (:file "element-hint")
+               (:file "autofill")
                ;; Core Modes
                (:file "base-mode")
                (:file "help-mode")
@@ -92,6 +85,13 @@
                (:file "download-mode")
                (:file "vcs-mode")
                (:file "video-mode")
+               ;; Web-mode commands
+               (:file "element-hint")
+               (:file "jump-heading")
+               (:file "scroll")
+               (:file "search-buffer")
+               (:file "spell-check")
+               (:file "zoom")
                ;; Needs web-mode
                (:file "help")
                ;; Depends on everything else:

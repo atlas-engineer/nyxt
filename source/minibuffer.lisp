@@ -776,12 +776,6 @@ If cursor is between two words, return the first one."
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                                       (scroll-into-view false))))))
 
-(define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
-  "Select next entry in minibuffer and focus the referencing hint/match
-if there is one such."
-  (select-next minibuffer)
-  (update-selection-highlight-hint :follow t :scroll t))
-
 (define-command select-previous (&optional (minibuffer (current-minibuffer)))
   "Select previous entry in minibuffer."
   (when (> (completion-cursor minibuffer) 0)
@@ -791,12 +785,6 @@ if there is one such."
     (evaluate-script minibuffer
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "head"))
                                       (scroll-into-view false))))))
-
-(define-command select-previous-follow (&optional (minibuffer (current-minibuffer)))
-  "Select previous entry in minibuffer and focus the referencing hint/match
-if there is one such."
-  (select-previous minibuffer)
-  (update-selection-highlight-hint :follow t :scroll t))
 
 (declaim (ftype (function (containers:ring-buffer-reverse) string) ring-insert-clipboard))
 (export-always 'ring-insert-clipboard)

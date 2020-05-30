@@ -109,6 +109,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
               (tag-description tag))
       (object-string tag)))
 
+(export-always 'bookmark-add)
 (defun bookmark-add (url &key title tags)
   (unless (or (str:emptyp url)
               (string= "about:blank" url))
@@ -146,6 +147,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                    bookmarks)))
       (fuzzy-match non-tags bookmarks))))
 
+(export-always 'tag-completion-filter)
 (declaim (ftype (function (&key (:with-empty-tag boolean)
                                 (:extra-tags list-of-tags)))
                 tag-completion-filter))
@@ -205,6 +207,7 @@ This can be useful to let the user select no tag when returning directly."
     (set-current-buffer bookmarks-buffer)
     bookmarks-buffer))
 
+(export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
   "Return the space-separated string of tags of the bookmark corresponding to
 URL."
@@ -276,27 +279,6 @@ URL."
                           :completion-function (bookmark-completion-filter))))
     (setf (bookmarks-data *browser*)
           (set-difference (bookmarks-data *browser*) entries :test #'equals))))
-
-(define-command bookmark-hint ()
-  "Show link hints on screen, and allow the user to bookmark one"
-  (with-result* ((elements-json (add-element-hints))
-                 (result (read-from-minibuffer
-                          (make-minibuffer
-                           :input-prompt "Bookmark hint"
-                           :history nil
-                           :completion-function
-                           (hint-completion-filter (elements-from-json elements-json))
-                           :cleanup-function
-                           (lambda ()
-                             (remove-element-hints :buffer (current-buffer))))))
-                 (tags (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Space-separated tag(s)"
-                         :default-modes '(set-tag-mode minibuffer-mode)
-                         :input-buffer (url-bookmark-tags (url result))
-                         :completion-function (tag-completion-filter)))))
-    (when result
-      (bookmark-add (url result) :tags tags))))
 
 (define-command insert-candidate-or-tag (&optional (minibuffer (current-minibuffer)))
   "Paste selected candidate or tag in input.

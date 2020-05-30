@@ -55,19 +55,11 @@ search.")
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-+" 'zoom-in-page
-       "C-=" 'zoom-in-page             ; Because + shifted = on QWERTY.
+       "C-=" 'zoom-in-page              ; Because + shifted = on QWERTY.
        "C-hyphen" 'zoom-out-page
        "C-0" 'unzoom-page
        "C-button4" 'zoom-in-page
        "C-button5" 'zoom-out-page
-       "f5" 'reload-current-buffer
-       "C-r" 'reload-current-buffer
-       "C-R" 'reload-buffer
-       "C-m o" 'set-url-from-bookmark
-       "C-m C-o" 'set-url-from-bookmark-new-buffer
-       "C-m s" 'bookmark-current-page
-       "C-d" 'bookmark-current-page
-       "C-m C-s" 'bookmark-page
        "C-M-c" 'open-inspector
        "C-m g" 'bookmark-hint
        "C-f" 'search-buffer
@@ -82,8 +74,7 @@ search.")
        "home" 'maybe-scroll-to-top
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
-       "M-c l" 'copy-url
-       "M-c t" 'copy-title
+       "C-i" 'autofill
        ;; Leave SPACE unbound so that the renderer decides wether to
        ;; insert of scroll.
        "pageup" 'scroll-page-up
@@ -125,12 +116,6 @@ search.")
        "C-x C-=" 'zoom-in-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" 'zoom-out-page
        "C-x C-0" 'unzoom-page
-       "C-r" 'reload-current-buffer
-       "C-R" 'reload-buffer
-       "C-m o" 'set-url-from-bookmark
-       "C-m C-o" 'set-url-from-bookmark-new-buffer
-       "C-m s" 'bookmark-current-page
-       "C-m C-s" 'bookmark-page
        "C-m g" 'bookmark-hint
        "C-s s" 'search-buffer
        "C-s k" 'remove-search-hints
@@ -140,9 +125,7 @@ search.")
        "M->" 'scroll-to-bottom
        "M-<" 'scroll-to-top
        "C-v" 'scroll-page-down
-       "M-v" 'scroll-page-up
-       "C-M-l" 'copy-url
-       "C-M-i" 'copy-title)
+       "M-v" 'scroll-page-up)
 
       scheme:vi-normal
       (list
@@ -164,18 +147,10 @@ search.")
        "z i" 'zoom-in-page
        "z o" 'zoom-out-page
        "z z" 'unzoom-page
-       "R" 'reload-current-buffer
-       "r" 'reload-buffer
-       "m o" 'set-url-from-bookmark
-       "m O" 'set-url-from-bookmark-new-buffer
-       "m m" 'bookmark-page
-       "m M" 'bookmark-current-page
-       "m f" 'bookmark-hint
-       "y u" 'copy-url
-       "y t" 'copy-title
        "g h" 'jump-to-heading ; REVIEW: VI binding?  "gh" is probably good enough.
        "/" 'search-buffer
        "?" 'remove-search-hints
+       "m f" 'bookmark-hint
        "h" 'scroll-left
        "j" 'scroll-down
        "k" 'scroll-up
@@ -408,6 +383,19 @@ Otherwise go forward to the only child."
   (with-result (input (%copy))
     (copy-to-clipboard input)))
 
+(define-command autofill ()
+  "Fill in a field with a value from a saved list."
+  (with-result (selected-fill (read-from-minibuffer
+                               (make-minibuffer
+                                :input-prompt "Autofill"
+                                :completion-function
+                                (lambda (input)
+                                  (fuzzy-match input (autofills *browser*))))))
+    (cond ((stringp (autofill-fill selected-fill))
+           (%paste :input-text (autofill-fill selected-fill)))
+          ((functionp (autofill-fill selected-fill))
+           (%paste :input-text (funcall (autofill-fill selected-fill)))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Warning: To specialize `on-signal-load-finished' we must be in the right package.
 (in-package :next)
@@ -437,7 +425,12 @@ Otherwise go forward to the only child."
   nil)
 
 (defmethod on-signal-load-finished ((mode next/web-mode::web-mode) url)
-  nil)
+  ;; TODO: Setting the default zoom level works with pure Javascript, but it
+  ;; can only be done after the URL has been loaded which is a bit of a
+  ;; kludge.  Instead we could add an FFI endpoint,
+  ;; e.g. webkit_web_view_set_zoom_level.
+  (next/web-mode::unzoom-page :buffer (buffer mode))
+  url)
 
 (defmethod object-string ((node htree:node))
   (object-string (when node (htree:data node))))

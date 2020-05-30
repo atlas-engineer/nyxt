@@ -6,14 +6,4 @@
 
 (define-mode help-mode ()
   "Mode for displaying documentation."
-  ((keymap-scheme
-    :initform
-    (define-scheme "help"
-      scheme:emacs
-      (list
-       "C-p" 'scroll-up
-       "C-n" 'scroll-down)
-      scheme:vi-normal
-      (list
-       "k" 'scroll-up
-       "j" 'scroll-down)))))
+  ())

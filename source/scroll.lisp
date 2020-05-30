@@ -1,6 +1,6 @@
 ;;; scroll.lisp --- scrolling functions
 
-(in-package :next)
+(in-package :next/web-mode)
 
 (define-parenscript %scroll-to-top ()
   (ps:chain window (scroll-by 0 (- (ps:chain document body scroll-height)))))
@@ -8,16 +8,16 @@
 (define-parenscript %scroll-to-bottom ()
   (ps:chain window (scroll-by 0 (ps:chain document body scroll-height))))
 
-(define-parenscript %scroll-down ((scroll-distance (scroll-distance %buffer)))
+(define-parenscript %scroll-down ((scroll-distance (scroll-distance next::%buffer)))
   (ps:chain window (scroll-by 0 (ps:lisp scroll-distance))))
 
-(define-parenscript %scroll-up ((scroll-distance (scroll-distance %buffer)))
+(define-parenscript %scroll-up ((scroll-distance (scroll-distance next::%buffer)))
   (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance)))))
 
-(define-parenscript %scroll-left ((horizontal-scroll-distance (horizontal-scroll-distance %buffer)))
+(define-parenscript %scroll-left ((horizontal-scroll-distance (horizontal-scroll-distance next::%buffer)))
   (ps:chain window (scroll-by (ps:lisp (- horizontal-scroll-distance)) 0)))
 
-(define-parenscript %scroll-right ((horizontal-scroll-distance (horizontal-scroll-distance %buffer)))
+(define-parenscript %scroll-right ((horizontal-scroll-distance (horizontal-scroll-distance next::%buffer)))
   (ps:chain window (scroll-by (ps:lisp horizontal-scroll-distance) 0)))
 
 (define-command scroll-to-top ()
@@ -49,11 +49,11 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   (%scroll-right))
 
 (define-parenscript %scroll-page-down ()
-  (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio %buffer))
+  (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio next::%buffer))
                                    (ps:@ window inner-height)))))
 
 (define-parenscript %scroll-page-up ()
-  (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio %buffer))
+  (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio next::%buffer))
                                    (- (ps:@ window inner-height))))))
 
 (define-command scroll-page-down ()

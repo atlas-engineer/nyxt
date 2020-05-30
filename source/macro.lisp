@@ -43,6 +43,7 @@ An object of this type is a subclass of CLASS-SYM."
        (deftype ,type-fun ()
          '(satisfies ,type-pred)))))
 
+;; TODO: Remove implicit %buffer and %callback parameter.
 (export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.

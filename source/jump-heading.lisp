@@ -1,6 +1,6 @@
 ;;; jump-heading.lisp --- functions to enable efficient heading traversal
 
-(in-package :next)
+(in-package :next/web-mode)
 
 (defclass heading ()
   ((inner-text :accessor inner-text

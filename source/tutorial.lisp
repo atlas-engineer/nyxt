@@ -89,10 +89,10 @@ the current buffer.")
    (:h3 "Moving within a buffer")
    (:p "To move within a buffer, several commands are provided:")
    (:ul
-    (:li (command-markup 'scroll-down) ": Move down.")
-    (:li (command-markup 'scroll-up) ": Move up.")
-    (:li (command-markup 'scroll-to-bottom) ": Jump to bottom of page.")
-    (:li (command-markup 'scroll-to-top) ": Jump to top of page."))
+    (:li (command-markup 'next/web-mode:scroll-down) ": Move down.")
+    (:li (command-markup 'next/web-mode:scroll-up) ": Move up.")
+    (:li (command-markup 'next/web-mode:scroll-to-bottom) ": Jump to bottom of page.")
+    (:li (command-markup 'next/web-mode:scroll-to-top) ": Jump to top of page."))
    (:h3 "Setting the URL")
    (:p "When ambiguous URLs are inputted, Next will attempt the best guess it
 can. If the you do not supply a protocol in a URL, HTTPS will be assumed. To
@@ -114,9 +114,9 @@ Invoke one of the commands below: several hints will appear on screen and all
 links on the page will be listed in the minibuffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
-    (:li (command-markup 'follow-hint) ": Go to link in current buffer.")
-    (:li (command-markup 'follow-hint-new-buffer-focus) ": Create new buffer with link, focus on new buffer.")
-    (:li (command-markup 'follow-hint-new-buffer) ": Create new buffer with link, keep focus on current buffer."))
+    (:li (command-markup 'next/web-mode:follow-hint) ": Go to link in current buffer.")
+    (:li (command-markup 'next/web-mode:follow-hint-new-buffer-focus) ": Create new buffer with link, focus on new buffer.")
+    (:li (command-markup 'next/web-mode:follow-hint-new-buffer) ": Create new buffer with link, keep focus on current buffer."))
    (:h3 "Using the buffer history")
    (:p "History is represented as a tree that you can traverse: when you go back
 in history, then follow a new URL, it effectively creates a new branch without
@@ -136,8 +136,8 @@ invoking the command 'buffer-history-tree'.")
    (:p "You can view candidates for search results in the minibuffer in one
 place rather than having to jump around on a buffer (or multiple buffers).")
    (:ul
-    (:li (command-markup 'search-buffer) ": Search buffer.")
-    (:li (command-markup 'search-buffers) ": Search multiple buffers."))
+    (:li (command-markup 'next/web-mode:search-buffer) ": Search buffer.")
+    (:li (command-markup 'next/web-mode:search-buffers) ": Search multiple buffers."))
    (:h3 "Bookmarks")
    (:p "The bookmark file is made to be human readable and editable.
 Bookmarks can have the following settings:")
@@ -154,7 +154,7 @@ Prompt for tags.  The input defaults to the existing tags: if some tags are
 removed from the input, they are also removed from the existing bookmark.")
     (:li (command-markup 'bookmark-page) ": Same as above but prompt for a buffer first.")
     (:li (command-markup 'bookmark-url) ": Same as above but prompt for a URL first.")
-    (:li (command-markup 'bookmark-hint) ": Same as above but prompt for a hinted URL first.")
+    (:li (command-markup 'next/web-mode:bookmark-hint) ": Same as above but prompt for a hinted URL first.")
     (:li (command-markup 'set-url-from-bookmark) ": Open bookmark in current buffer.")
     (:li (command-markup 'set-url-from-bookmark-new-buffer) ": Open bookmark in new buffer.")
     (:li (command-markup 'bookmark-delete) ": Delete queried bookmarks.")

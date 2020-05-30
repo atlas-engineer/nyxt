@@ -106,6 +106,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
 
+(export-always 'buffer-completion-filter)
 (defun buffer-completion-filter (&key current-is-last-p domain)
   (let ((buffers (buffer-list :sort-by-time t :domain domain)))
     (when current-is-last-p

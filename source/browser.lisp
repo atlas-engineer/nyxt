@@ -803,6 +803,7 @@ when `proxied-downloads-p' is true."
 ;; TODO: To download any URL at any moment and not just in resource-query, we
 ;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
 ;; query cookies.
+(export-always 'download)
 (defun download (url &key
                      cookies
                      (proxy-address :auto))

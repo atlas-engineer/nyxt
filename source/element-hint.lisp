@@ -1,7 +1,7 @@
 ;;; element-hint.lisp --- functions to enable link hinting and
 ;;; navigation.
 
-(in-package :next)
+(in-package :next/web-mode)
 
 (define-parenscript add-element-hints (annotate-full-document)
   (defun qs (context selector)
@@ -347,3 +347,45 @@ visible active buffer."
   "Show a set of element hints, and copy the URL of the user inputted one."
   (query-hints "Copy element URL:" '%copy-hint-url
                :annotate-full-document annotate-full-document))
+
+(define-command bookmark-hint ()
+  "Show link hints on screen, and allow the user to bookmark one"
+  (with-result* ((elements-json (add-element-hints))
+                 (result (read-from-minibuffer
+                          (make-minibuffer
+                           :input-prompt "Bookmark hint"
+                           :history nil
+                           :completion-function
+                           (hint-completion-filter (elements-from-json elements-json))
+                           :cleanup-function
+                           (lambda ()
+                             (remove-element-hints :buffer (current-buffer))))))
+                 (tags (read-from-minibuffer
+                        (make-minibuffer
+                         :input-prompt "Space-separated tag(s)"
+                         :default-modes '(set-tag-mode minibuffer-mode)
+                         :input-buffer (url-bookmark-tags (url result))
+                         :completion-function (tag-completion-filter)))))
+    (when result
+      (bookmark-add (url result) :tags tags))))
+
+(define-command download-hint-url ()
+  "Download the file under the URL hinted by the user."
+  (query-hints "Download link URL:" (lambda (selected-link)
+                                      (download selected-link)
+                                      (unless (find-buffer 'download-mode)
+                                        (download-list)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(in-package :next)
+(define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
+  "Select next entry in minibuffer and focus the referencing hint/match
+if there is one such."
+  (select-next minibuffer)
+  (next/web-mode::update-selection-highlight-hint :follow t :scroll t))
+
+(define-command select-previous-follow (&optional (minibuffer (current-minibuffer)))
+  "Select previous entry in minibuffer and focus the referencing hint/match
+if there is one such."
+  (select-previous minibuffer)
+  (next/web-mode::update-selection-highlight-hint :follow t :scroll t))

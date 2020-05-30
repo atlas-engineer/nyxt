@@ -25,10 +25,20 @@
                                "C-pagedown" 'switch-buffer-next
                                "C-l" 'set-url-from-current-url
                                "M-l" 'set-url-new-buffer
+                               "f5" 'reload-current-buffer
+                               "C-r" 'reload-current-buffer
+                               "C-R" 'reload-buffer
+                               "C-m o" 'set-url-from-bookmark
+                               "C-m C-o" 'set-url-from-bookmark-new-buffer
+                               "C-m s" 'bookmark-current-page
+                               "C-d" 'bookmark-current-page
+                               "C-m C-s" 'bookmark-page
                                "C-m k" 'bookmark-delete
                                "C-t" 'make-buffer-focus
                                "C-m u" 'bookmark-url
                                "C-b" 'show-bookmarks
+                               "M-c l" 'copy-url
+                               "M-c t" 'copy-title
                                "f1 f1" 'help
                                "f1 t" 'tutorial
                                "f1 v" 'describe-variable
@@ -40,7 +50,6 @@
                                "f1 b" 'describe-bindings
                                "f11" 'fullscreen-current-window
                                "C-o" 'load-file
-                               "C-i" 'autofill
                                "C-j" 'download-list
                                "C-space" 'execute-command
                                "M-:" 'command-evaluate
@@ -53,6 +62,7 @@
                                "C-T" 'reopen-buffer
                                "C-p" 'print-buffer
                                "C-x C-f" 'open-file)
+
                               scheme:emacs
                               (list
                                "C-x C-c" 'quit
@@ -67,9 +77,17 @@
                                "C-pagedown" 'switch-buffer-next
                                "C-l" 'set-url
                                "M-l" 'set-url-new-buffer
-                               "C-m k" 'bookmark-delete
                                "C-t" 'make-buffer-focus
+                               "C-r" 'reload-current-buffer
+                               "C-R" 'reload-buffer
+                               "C-m o" 'set-url-from-bookmark
+                               "C-m C-o" 'set-url-from-bookmark-new-buffer
+                               "C-m s" 'bookmark-current-page
+                               "C-m C-s" 'bookmark-page
+                               "C-m k" 'bookmark-delete
                                "C-m u" 'bookmark-url
+                               "C-M-l" 'copy-url
+                               "C-M-i" 'copy-title
                                "C-h C-h" 'help
                                "C-h h" 'help
                                "C-h t" 'tutorial
@@ -81,7 +99,6 @@
                                "C-h k" 'describe-key
                                "C-h b" 'describe-bindings
                                "C-o" 'load-file
-                               "C-i" 'autofill
                                "M-x" 'execute-command
                                "M-:" 'command-evaluate
                                "C-x 5 2" 'make-window
@@ -89,6 +106,7 @@
                                "C-x 5 1" 'delete-window
                                "C-/" 'reopen-buffer
                                "C-x C-f" 'open-file)
+
                               scheme:vi-normal
                               (list
                                "Z Z" 'quit
@@ -104,7 +122,14 @@
                                "O" 'set-url-new-buffer
                                "m u" 'bookmark-url
                                "m d" 'bookmark-delete
-                               "C-o" 'load-file
+                               "R" 'reload-current-buffer
+                               "r" 'reload-buffer
+                               "m o" 'set-url-from-bookmark
+                               "m O" 'set-url-from-bookmark-new-buffer
+                               "m m" 'bookmark-page
+                               "m M" 'bookmark-current-page
+                               "y u" 'copy-url
+                               "y t" 'copy-title
                                ;; TODO: Use "f1 *" instead?
                                "C-h C-h" 'help
                                "C-h h" 'help
@@ -116,6 +141,7 @@
                                "C-h s" 'describe-slot
                                "C-h k" 'describe-key
                                "C-h b" 'describe-bindings
+                               "C-o" 'load-file
                                ":" 'execute-command
                                "M-:" 'command-evaluate
                                "W" 'make-window

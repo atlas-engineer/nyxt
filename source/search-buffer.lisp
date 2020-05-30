@@ -1,6 +1,6 @@
 ;;; search-buffer.lisp --- functions to enable searching within a buffer
 
-(in-package :next)
+(in-package :next/web-mode)
 
 (define-parenscript query-buffer (query (case-sensitive-p nil))
   (defvar *identifier* 0)
@@ -150,7 +150,7 @@
                           (let* ((matches (matches-from-json
                                            result buffer multi-buffer)))
                             (setf all-matches (append all-matches matches))
-                            (set-completions (current-minibuffer) all-matches)))))
+                            (next::set-completions (current-minibuffer) all-matches)))))
            buffers)))
   ;; return NIL, the completions will be updated asynchronously by the
   ;; callback from query-buffer
