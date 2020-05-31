@@ -67,4 +67,5 @@ of the functions.")
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make))
 (defun make ()
+  "Initalize the first interface in `interface-list' that returns non-nil."
   (some #'funcall interface-list))
