@@ -1,7 +1,5 @@
-;;; global.lisp --- global variable and parameter declarations
-;; Packagers are welcome to customize the `defparameter's to suit the host system.
-
 (in-package :next)
+;; Packagers are welcome to customize the `defparameter's to suit the host system.
 
 (defvar *renderer-class* 'gtk
   "The renderer class used when constructing the define-configuration

@@ -1,5 +1,3 @@
-;; download-mode.lisp -- Display list of downloads.
-
 (in-package :next)
 
 (define-mode download-mode ()           ; TODO: Move to separate package?

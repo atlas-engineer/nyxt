@@ -1,6 +1,3 @@
-;;; mode.lisp --- Definition of the mode class and root-mode.
-;;; All modes inherit from the root-mode.
-
 (in-package :next)
 
 (export-always 'define-mode)
@@ -93,7 +90,7 @@ Example:
 (hooks:define-hook-type mode (function (root-mode)))
 
 (define-mode root-mode (t)
-  "The root of all modes."
+  "All modes inherit from `root-mode'."
   ((buffer :accessor buffer
            :initarg :buffer
            :initform nil

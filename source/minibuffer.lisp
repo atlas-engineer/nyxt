@@ -1,5 +1,3 @@
-;;; minibuffer.lisp --- major mode for input
-
 (in-package :next)
 
 (declaim (type (list-of-characters) *word-separation-characters*))

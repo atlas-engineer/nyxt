@@ -1,5 +1,3 @@
-;;; zoom.lisp --- functions for zooming in and out of the page
-
 (in-package :next/web-mode)
 
 (defun ensure-zoom-ratio-range (zoom &optional (buffer (current-buffer)))

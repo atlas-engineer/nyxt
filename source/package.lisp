@@ -1,5 +1,3 @@
-;;; package.lisp --- Definition of packages used by Next.
-
 (in-package :cl-user)
 
 ;; Some compilers (e.g. SBCL) fail to reload the system with `defpackage' when

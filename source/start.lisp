@@ -1,5 +1,3 @@
-;;; start.lisp --- main entry point into Next
-
 (in-package :next)
 
 (export-always '*init-file-path*)

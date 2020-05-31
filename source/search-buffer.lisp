@@ -1,5 +1,3 @@
-;;; search-buffer.lisp --- functions to enable searching within a buffer
-
 (in-package :next/web-mode)
 
 (define-parenscript query-buffer (&key query (case-sensitive-p nil))

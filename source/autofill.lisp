@@ -1,5 +1,3 @@
-;;; autofill.lisp --- functions to enable auto filling of input fields
-
 (in-package :next)
 
 (export-always '(autofill-id

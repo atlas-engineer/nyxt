@@ -1,5 +1,3 @@
-;;; scroll.lisp --- scrolling functions
-
 (in-package :next/web-mode)
 
 (define-parenscript %scroll-to-top ()

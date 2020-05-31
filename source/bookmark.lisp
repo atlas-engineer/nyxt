@@ -1,5 +1,3 @@
-;;; bookmark.lisp --- manage and create bookmarks
-
 (in-package :next)
 
 ;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:

@@ -1,6 +1,3 @@
-;;; element-hint.lisp --- functions to enable link hinting and
-;;; navigation.
-
 (in-package :next/web-mode)
 
 (define-parenscript add-element-hints (&key annotate-full-document)

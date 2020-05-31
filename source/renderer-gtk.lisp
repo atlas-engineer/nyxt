@@ -1,5 +1,3 @@
-;;; renderer-gtk.lisp --- functions for creating GTK interface onscreen
-
 (in-package :next)
 
 (defclass-export gtk-browser (browser)

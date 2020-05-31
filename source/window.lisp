@@ -1,5 +1,3 @@
-;;; window.lisp --- commands for managing windows
-
 (in-package :next)
 
 (defmethod object-string ((window window))

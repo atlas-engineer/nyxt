@@ -1,5 +1,3 @@
-;;; renderer-qt.lisp --- functions for creating Qt interface onscreen
-
 (in-package :next)
 
 (defclass-export qt-browser (browser)

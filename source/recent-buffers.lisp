@@ -1,5 +1,3 @@
-;;; recent-buffers.lisp --- Manage list of recent buffers.
-
 (in-package :next)
 
 (export-always 'buffer-match-predicate)

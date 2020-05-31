@@ -1,5 +1,3 @@
-;;; history.lisp --- manage and create bookmarks
-
 (in-package :next)
 
 (defclass history-entry ()

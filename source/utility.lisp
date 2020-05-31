@@ -1,7 +1,6 @@
-;;; utility.lisp --- utility classes and functions
-;; Split this file into smaller ones when it becomes relevant.
-
 (in-package :next)
+
+;; TODO: Split this file into smaller ones when it becomes relevant.
 
 (export-always 'object-string)
 (defmethod object-string ((object t))

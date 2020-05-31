@@ -1,5 +1,3 @@
-;;; spell-check.lisp --- functions to enable spell checking
-
 (in-package :next/web-mode)
 
 (define-command spell-check-word (&key (word nil word-supplied-p))

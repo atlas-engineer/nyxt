@@ -1,5 +1,3 @@
-;;; buffer.lisp --- lisp subroutines for creating / managing buffers
-
 (in-package :next)
 
 (defclass-export buffer-description ()

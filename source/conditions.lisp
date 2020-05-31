@@ -1,5 +1,3 @@
-;;; conditions.lisp --- conditions used in Next
-
 (in-package :next)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

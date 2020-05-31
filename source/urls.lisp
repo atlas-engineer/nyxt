@@ -1,5 +1,3 @@
-;;; urls.lisp --- utility classes and functions for handling urls.
-
 (in-package :next)
 
 (export-always 'host)

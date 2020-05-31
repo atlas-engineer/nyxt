@@ -1,7 +1,4 @@
-;;; utility.lisp --- fuzzy matching utilities.
-
 (in-package :next)
-
 
 (defun substring-norm (substrings string &key (substring-length 2))
   "Return the norm of SUBSTRINGS with regard to STRING.

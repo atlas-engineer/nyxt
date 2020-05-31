@@ -1,5 +1,3 @@
-;;; types.lisp --- types used in Next
-
 (in-package :next)
 
 ;; trivial-types:proper-list doesn't check its element type.

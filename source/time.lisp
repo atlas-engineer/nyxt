@@ -1,7 +1,7 @@
+(in-package :next)
+
 ;; Convenience function for time manipulation.
 ;; This can be useful for user configs.
-
-(in-package :next)
 
 (declaim (ftype (function (string) local-time:timestamp) asctime->timestamp))
 (export-always 'asctime->timestamp)

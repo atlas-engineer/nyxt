@@ -1,5 +1,3 @@
-;;; macro.lisp --- macros used in Next
-
 (in-package :next)
 
 (export-always 'defclass-export)

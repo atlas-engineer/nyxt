@@ -1,7 +1,6 @@
+(in-package :next)
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
-
-(in-package :next)
 
 (defmacro command-markup (fn &key (modes nil explicit-modes-p))
   "Print FN in HTML followed its bindings in parentheses."
