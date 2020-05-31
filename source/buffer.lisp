@@ -115,6 +115,16 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) buffers))))
 
+(define-command copy-url ()
+  "Save current URL to clipboard."
+  (copy-to-clipboard (url (current-buffer)))
+  (echo "~a copied to clipboard." (url (current-buffer))))
+
+(define-command copy-title ()
+  "Save current page title to clipboard."
+  (copy-to-clipboard (title (current-buffer)))
+  (echo "~a copied to clipboard." (title (current-buffer))))
+
 (define-command switch-buffer ()
   "Switch the active buffer in the current window."
   (with-result (buffer (read-from-minibuffer

@@ -351,16 +351,6 @@ Otherwise go forward to the only child."
       (ffi-buffer-evaluate-javascript output-buffer insert-content)
       (set-current-buffer output-buffer))))
 
-(define-command copy-url ()
-  "Save current URL to clipboard."
-  (copy-to-clipboard (url (current-buffer)))
-  (echo "~a copied to clipboard." (url (current-buffer))))
-
-(define-command copy-title ()
-  "Save current page title to clipboard."
-  (copy-to-clipboard (title (current-buffer)))
-  (echo "~a copied to clipboard." (title (current-buffer))))
-
 (define-command paste ()
   "Paste from clipboard into active-element."
   (%paste))
