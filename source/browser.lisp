@@ -1040,7 +1040,7 @@ sometimes yields the wrong reasult."
         (slot-value *browser* 'last-active-window)
         (ffi-window-active *browser*))))
 
-(defparameter %buffer nil)
+(defparameter %buffer nil)              ; TODO: Make a monad?
 
 (export-always 'current-buffer)
 (defun current-buffer ()
@@ -1114,8 +1114,8 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-buffer-make ((browser browser)))
 (define-ffi-method ffi-buffer-delete ((buffer buffer)))
 (define-ffi-method ffi-buffer-load ((buffer buffer) uri))
-(define-ffi-method ffi-buffer-evaluate-javascript ((buffer buffer) javascript &key callback))
-(define-ffi-method ffi-minibuffer-evaluate-javascript ((window window) javascript &key callback))
+(define-ffi-method ffi-buffer-evaluate-javascript ((buffer buffer) javascript))
+(define-ffi-method ffi-minibuffer-evaluate-javascript ((window window) javascript))
 (define-ffi-method ffi-buffer-enable-javascript ((buffer buffer) value))
 (define-ffi-method ffi-buffer-enable-javascript-markup ((buffer buffer) value))
 (define-ffi-method ffi-buffer-enable-smooth-scrolling ((buffer buffer) value))

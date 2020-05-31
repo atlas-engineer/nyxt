@@ -91,15 +91,14 @@ vi-normal-mode.")
   (ffi-generate-input-event
    (current-window)
    (last-event buffer))
-  (next/web-mode:%clicked-in-input?
-   :callback (lambda (response)
-               (cond
-                 ((and (next/web-mode:input-tag-p response)
-                       (find-submode buffer 'vi-normal-mode))
-                  (vi-insert-mode))
-                 ((and (not (next/web-mode:input-tag-p response))
-                       (find-submode buffer 'vi-insert-mode))
-                  (vi-normal-mode))))))
+  (with-result (response (next/web-mode:%clicked-in-input?))
+    (cond
+      ((and (next/web-mode:input-tag-p response)
+            (find-submode buffer 'vi-normal-mode))
+       (vi-insert-mode))
+      ((and (not (next/web-mode:input-tag-p response))
+            (find-submode buffer 'vi-insert-mode))
+       (vi-normal-mode)))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))

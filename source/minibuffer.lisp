@@ -309,9 +309,9 @@ calls, such as invoking `minibuffer-history'."))
             (empty-complete-immediate minibuffer)))
   (initialize-modes minibuffer))
 
-(declaim (ftype (function (minibuffer &key (:callback function))) read-from-minibuffer))
+(declaim (ftype (function (minibuffer)) read-from-minibuffer))
 (export-always 'read-from-minibuffer)
-(defun read-from-minibuffer (minibuffer &key callback)
+(defun read-from-minibuffer (minibuffer) ; TODO: Rename minibuffer-read?
   "Open the minibuffer, ready for user input.
 Example use:
 
@@ -320,10 +320,8 @@ Example use:
   :completion-function #'my-completion-filter))
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
-  (when callback
-    ;; We need a :callback key argument so that `read-from-minibuffer' can be
-    ;; called in `with-result'.
-    (setf (callback minibuffer) callback))
+  (when %callback
+    (setf (callback minibuffer) %callback))
   ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
   (setf (callback-buffer minibuffer) (current-buffer))
   (if *keep-alive*
@@ -785,18 +783,6 @@ If cursor is between two words, return the first one."
     (evaluate-script minibuffer
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "head"))
                                       (scroll-into-view false))))))
-
-(declaim (ftype (function (containers:ring-buffer-reverse) string) ring-insert-clipboard))
-(export-always 'ring-insert-clipboard)
-(defun ring-insert-clipboard (ring)
-  "Check if clipboard-content is most recent entry in RING.
-If not, insert clipboard-content into RING.
-Return most recent entry in RING."
-  (let ((clipboard-content (trivial-clipboard:text)))
-    (unless (string= clipboard-content (unless (containers:empty-p ring)
-                                         (containers:first-item ring)))
-      (containers:insert-item ring clipboard-content)))
-  (string (containers:first-item ring)))
 
 (define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."

@@ -30,7 +30,7 @@ For example, Wikipedia ones end with '[edit]'. We strip what comes after the fir
                         (loop for heading in headings
                            collect (ps:chain heading inner-text))))))
 
-(define-parenscript paren-jump-to-heading (heading-inner-text)
+(define-parenscript paren-jump-to-heading (&key heading-inner-text)
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))

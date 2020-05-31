@@ -79,8 +79,20 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
+(declaim (ftype (function (containers:ring-buffer-reverse) string) ring-insert-clipboard))
+(export-always 'ring-insert-clipboard)
+(defun ring-insert-clipboard (ring)
+  "Check if clipboard-content is most recent entry in RING.
+If not, insert clipboard-content into RING.
+Return most recent entry in RING."
+  (let ((clipboard-content (trivial-clipboard:text)))
+    (unless (string= clipboard-content (unless (containers:empty-p ring)
+                                         (containers:first-item ring)))
+      (containers:insert-item ring clipboard-content)))
+  (string (containers:first-item ring)))
+
 (export-always '%paste)
-(define-parenscript %paste ((input-text (ring-insert-clipboard (clipboard-ring *browser*))))
+(define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
   (let ((active-element (ps:chain document active-element))
         (tag (ps:chain document active-element tag-name)))
     (when (or (string= tag "INPUT")
@@ -94,7 +106,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
                            (substring end-position
                                       (ps:chain active-element value length)))))))))
 
-(define-parenscript document-get-body ((limit 100000))
+(define-parenscript document-get-body (&key (limit 100000))
   (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
 
 (define-parenscript %print-buffer ()

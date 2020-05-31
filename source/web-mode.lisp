@@ -180,23 +180,21 @@ search.")
       (string= tag "TEXTAREA")))
 
 (defun call-non-input-command-or-forward (command &key (buffer (current-buffer))
-                                          (window (current-window)))
-  (%clicked-in-input?
-   :callback (lambda (response)
-               (if (input-tag-p response)
-                   (ffi-generate-input-event
-                    window
-                    (last-event buffer))
-                   (funcall-safely command)))))
+                                                    (window (current-window)))
+  (with-result (response (%clicked-in-input?))
+    (if (input-tag-p response)
+        (ffi-generate-input-event
+         window
+         (last-event buffer))
+        (funcall-safely command))))
 
 (define-command paste-or-set-url (&optional (buffer (current-buffer)))
   "Paste text if active element is an input tag, forward event otherwise."
-  (%clicked-in-input?
-   :callback (lambda (response)
-               (if (and (input-tag-p response)
-                        (uiop:emptyp (url-at-point buffer)))
-                   (funcall-safely #'paste)
-                   (set-url* (url-at-point buffer) :buffer (make-buffer-focus :url nil))))))
+  (with-result (response (%clicked-in-input?))
+    (if (and (input-tag-p response)
+             (uiop:emptyp (url-at-point buffer)))
+        (funcall-safely #'paste)
+        (set-url* (url-at-point buffer) :buffer (make-buffer-focus :url nil)))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."

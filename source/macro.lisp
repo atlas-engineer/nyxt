@@ -43,37 +43,32 @@ An object of this type is a subclass of CLASS-SYM."
        (deftype ,type-fun ()
          '(satisfies ,type-pred)))))
 
+(defparameter %callback nil)            ; TODO: Make a monad?
+
 (export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.
 SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
 Any Lisp expression must be wrapped in (PS:LISP ...).
 
-The returned function is called with the ARGS key arguments over the current
+The returned function is called with the ARGS lambda-list over the current
 buffer."
-  (alex:with-gensyms (callback)
-    `(progn
-       (defun ,script-name ,(append `(&key ((:callback ,callback) nil))
-                             args)
-         (ffi-buffer-evaluate-javascript (current-buffer)
-                                         (ps:ps ,@script-body)
-                                         :callback ,callback)))))
+  `(progn
+     (defun ,script-name ,args
+       (ffi-buffer-evaluate-javascript (current-buffer)
+                                       (ps:ps ,@script-body)))))
 
-(defmacro with-ps (&body body)
-  "Execute the parenscript body against the current buffer."
-  ;XXX: we might as well do it synchronously.
-  `(with-result (res
-                 (ffi-buffer-evaluate-javascript (current-buffer)
-                                                 (ps:ps ,@body)
-                                                 :callback (lambda (res)
-                                                             (format t res))))
-     (declare (ignorable res))))
+(export-always 'use-empty-result)
+(defun use-empty-result ()
+  (funcall-safely %callback nil))
 
 (export-always 'with-result)
 (defmacro with-result ((symbol async-form) &body body)
-  "Call ASYNC-FORM.
-When ASYNC-FORM returns, its result is bound to SYMBOL and BODY is executed.
-ASYNC-FORM is a function that has at least a :CALLBACK key argument.
+  "Call ASYNC-FORM and lexically bind `%callback' to BODY.
+SYMBOL is bound to the result of ASYNC-FORM in the lexical context of BODY.
+
+If ASYNC-FORM does not funcall `%callback', BODY won't be called.
+Call `use-empty-result' without argument in ASYNC-FORM to force a call to BODY.
 
 Example:
 
@@ -81,9 +76,8 @@ Example:
                      (make-minibuffer
                       :input-prompt \"Bookmark URL\"))
     (bookmark-add url))"
-  `(,(first async-form)
-    ,@(rest async-form)
-    :callback (lambda (,symbol) ,@body)))
+  `(let ((%callback (lambda (,symbol) ,@body)))
+     ,async-form))
 
 (export-always 'with-result*)
 (defmacro with-result* (bindings &body body)

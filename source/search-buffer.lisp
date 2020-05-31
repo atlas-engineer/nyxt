@@ -2,7 +2,7 @@
 
 (in-package :next/web-mode)
 
-(define-parenscript query-buffer (query (case-sensitive-p nil))
+(define-parenscript query-buffer (&key query (case-sensitive-p nil))
   (defvar *identifier* 0)
   (defvar *matches* (array))
   (defvar *nodes* (ps:new (-Object)))
@@ -143,14 +143,13 @@
       (map nil
            (lambda (buffer)
              (with-current-buffer buffer
-               (query-buffer
-                :query input
-                :case-sensitive-p case-sensitive-p
-                :callback (lambda (result)
-                            (let* ((matches (matches-from-json
-                                             result buffer multi-buffer)))
-                              (setf all-matches (append all-matches matches))
-                              (next::set-completions (current-minibuffer) all-matches))))))
+               (with-result (result (query-buffer
+                                     :query input
+                                     :case-sensitive-p case-sensitive-p))
+                 (let* ((matches (matches-from-json
+                                  result buffer multi-buffer)))
+                   (setf all-matches (append all-matches matches))
+                   (next::set-completions (current-minibuffer) all-matches)))))
            buffers)))
   ;; return NIL, the completions will be updated asynchronously by the
   ;; callback from query-buffer

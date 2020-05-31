@@ -3,7 +3,7 @@
 
 (in-package :next/web-mode)
 
-(define-parenscript add-element-hints (annotate-full-document)
+(define-parenscript add-element-hints (&key annotate-full-document)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
@@ -124,20 +124,20 @@ identifier for every hinted element."
       (ps:chain element (remove))))
   (hints-remove-all))
 
-(define-parenscript click-button (next-identifier)
+(define-parenscript click-button (&key next-identifier)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
 
-(define-parenscript focus-element (next-identifier)
+(define-parenscript focus-element (&key next-identifier)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (focus))
   (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (select)))
 
-(define-parenscript highlight-selected-hint (link-hint scroll)
+(define-parenscript highlight-selected-hint (&key link-hint scroll)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))

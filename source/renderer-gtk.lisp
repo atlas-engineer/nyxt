@@ -637,14 +637,14 @@ requested a reload."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) uri))))
 
-(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &key callback)
+(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
                                                javascript
-                                               callback
+                                               %callback
                                                #'javascript-error-handler))
 
-(defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript &key callback)
-  (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript callback))
+(defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
+  (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
 
 (defmethod ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript

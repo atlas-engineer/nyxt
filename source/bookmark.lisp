@@ -231,7 +231,8 @@ URL."
          (make-tags (name-list)
            (mapcar (lambda (name) (make-tag :name name :description "suggestion"))
                    name-list)))
-    (if (url buffer)
+    (if (uiop:emptyp (url buffer))
+        (echo "Buffer has no URL.")
         (with-result* ((body (with-current-buffer buffer
                                (document-get-body)))
                        (tags (read-from-minibuffer
@@ -244,8 +245,7 @@ URL."
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
-          (echo "Bookmarked ~a." (url-display (url buffer))))
-        (echo "Buffer has no URL."))))
+          (echo "Bookmarked ~a." (url-display (url buffer)))))))
 
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."
