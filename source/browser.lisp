@@ -1054,11 +1054,8 @@ sometimes yields the wrong reasult."
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)
   "Execute BODY in a context in which `current-buffer' returns BUFFER."
-  `(unwind-protect
-        (progn
-          (setf %buffer ,buffer)
-          ,@body)
-     (setf %buffer nil)))
+  `(let ((%buffer ,buffer))
+     ,@body))
 
 (declaim (ftype (function (buffer)) set-current-buffer))
 ;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.
