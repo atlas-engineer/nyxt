@@ -94,13 +94,19 @@ Example:
   ((buffer :accessor buffer
            :initarg :buffer
            :initform nil
-           :type buffer)
+           :type (or buffer null))
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
-   (constructor :accessor constructor :initarg :constructor :type :function :initform nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
+   (constructor :accessor constructor
+                :initarg :constructor
+                :type (or function null)
+                :initform nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :documentation
                 "A lambda function which initializes the mode upon activation.
 It takes the mode as argument.")
-   (destructor :accessor destructor :initarg :destructor :type :function :initform nil ; TODO: Better name?
+   (destructor :accessor destructor
+               :initarg :destructor
+               :type (or function null)
+               :initform nil ; TODO: Better name?
                :documentation
                "A lambda function which tears down the mode upon deactivation.
 It takes the mode as argument.")

@@ -87,7 +87,8 @@ Parent directories are created if necessary."
                      :initform #'dispatch-input-event
                      :type function
                      :documentation "Function to process input events.
-It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.")
+It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
+Cannot be null.")
    (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
                                   :initform (make-hook-window-buffer)
                                   :type hook-window-buffer
@@ -98,6 +99,7 @@ The handlers take the window and the buffer as argument.")
                      :type (function (window) string)
                      :documentation "Function of a window argument that returns
 a string to be printed in the status view.
+Cannot be null.
 
 Example formatter that prints the buffer indices over the total number of buffers:
 
@@ -518,15 +520,15 @@ See `current-window' for the user-facing function.")
 identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
 count since deleting windows may reseult in duplicate identifiers.")
    (startup-function :accessor startup-function
-                     :type function
+                     :type (or function null)
                      :initform #'default-startup
                      :documentation "The function run on startup.  It takes a
 list of URLs (strings) as argument (the command line positional arguments).  It
 is run after the renderer has been initialized and after the
 `*after-init-hook*' has run.")
    (startup-error-reporter-function :accessor startup-error-reporter-function
-                                    :type function
                                     :initarg :startup-error-reporter-function
+                                    :type (or function null)
                                     :initform nil
                                     :documentation "When supplied,
                                     upon startup, if there are errors,
@@ -597,13 +599,13 @@ The history data kept in memory.")
 The path where the system will create/save the global history.")
    (history-store-function :initarg :history-store-function
                            :accessor history-store-function
-                           :type function
+                           :type (or function null)
                            :initform #'store-sexp-history
                            :documentation "
 The function which stores the global history into `history-path'.")
    (history-restore-function :initarg :history-restore-function
                              :accessor history-restore-function
-                             :type function
+                             :type (or function null)
                              :initform #'restore-sexp-history
                              :documentation "
 The function which restores the global history from `history-path'.")
@@ -618,13 +620,13 @@ The bookmarks kept in memory.")
 The path where the system will create/save the bookmarks.")
    (bookmarks-store-function :initarg :bookmarks-store-function
                              :accessor bookmarks-store-function
-                             :type function
+                             :type (or function null)
                              :initform #'store-sexp-bookmarks
                              :documentation "
 The function which stores the bookmarks into `bookmarks-path'.")
    (bookmarks-restore-function :initarg :bookmarks-restore-function
                                :accessor bookmarks-restore-function
-                               :type function
+                               :type (or function null)
                                :initform #'restore-sexp-bookmarks
                                :documentation "
 The function which restores the bookmarks from `bookmarks-path'.")
@@ -637,12 +639,12 @@ The function which restores the bookmarks from `bookmarks-path'.")
                  :documentation "
 The path where the system will create/save the session.")
    (session-store-function :accessor session-store-function
-                           :type function
+                           :type (or function null)
                            :initform #'store-sexp-session
                            :documentation "The function which stores the session
 into `session-path'.")
    (session-restore-function :accessor session-restore-function
-                             :type function
+                             :type (or function null)
                              :initform #'restore-sexp-session
                              :documentation "The function which restores the session
 from `session-path'.")

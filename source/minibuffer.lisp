@@ -112,9 +112,9 @@ This should not rely on the minibuffer's content.")
                       conceal passwords.")
    (history :initarg :history :accessor history
             :initform (minibuffer-generic-history *browser*)
-            :type containers:ring-buffer-reverse
-            :documentation "History of inputs for the minibuffer. If
-            nil, no history is used.")
+            :type (or containers:ring-buffer-reverse null)
+            :documentation "History of inputs for the minibuffer.
+If nil, no history is used.")
    (multi-selection-p :initarg :multi-selection-p :accessor multi-selection-p
                       :initform nil
                       :type boolean
