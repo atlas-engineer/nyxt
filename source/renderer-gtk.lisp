@@ -25,6 +25,15 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (defvar *browser-class* 'gtk-browser)
 
+(defvar gtk-running-p nil
+  "Non-nil if the GTK main loop is running.
+See `ffi-initialize' and `ffi-kill-browser'.
+
+Restarting GTK within the same Lisp image breaks WebKitGTK.
+As a workaround, we never leave the GTK main loop when running from a REPL.
+
+See https://github.com/atlas-engineer/next/issues/740")
+
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
    GNU/Linux, Next could hang after 10 minutes if it's not
@@ -33,21 +42,29 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    the main thread, which the GTK main loop is not guaranteed to be
    on."
   (log:debug "Initializing GTK Interface")
-  #-darwin
-  (progn
-    (gtk:within-main-loop
-      (gdk:gdk-set-program-class "next")
-      (finalize browser urls startup-timestamp))
-    (unless *keep-alive*
-      (gtk:join-gtk-main)))
-  #+darwin
-  (progn
-    (gdk:gdk-set-program-class "next")
-    (finalize browser urls startup-timestamp)
-    (gtk:gtk-main)))
+  (if gtk-running-p
+      (ffi-within-renderer-thread
+       browser
+       (lambda ()
+         (finalize browser urls startup-timestamp)))
+      #-darwin
+      (progn
+        (setf gtk-running-p t)
+        (gtk:within-main-loop
+          (gdk:gdk-set-program-class "next")
+          (finalize browser urls startup-timestamp))
+        (unless *keep-alive*
+          (gtk:join-gtk-main)))
+      #+darwin
+      (progn
+        (setf gtk-running-p t)
+        (gdk:gdk-set-program-class "next")
+        (finalize browser urls startup-timestamp)
+        (gtk:gtk-main))))
 
 (defmethod ffi-kill-browser ((browser gtk-browser))
-  (gtk:leave-gtk-main))
+  (unless *keep-alive*
+    (gtk:leave-gtk-main)))
 
 (defclass-export gtk-window (window)
   ((gtk-object :accessor gtk-object)
