@@ -34,7 +34,7 @@ schemes.  See `define-scheme'.")))
   `(and hash-table
         (satisfies scheme-p)))
 
-(declaim (ftype (function (string scheme-name list &rest (or scheme list)) scheme) define-scheme*))
+(declaim (ftype (function (string scheme-name list &rest (or scheme-name list)) scheme) define-scheme*))
 (defun define-scheme* (name-prefix name bindings &rest more-name+bindings-pairs)
   "Define scheme.
 See `define-scheme' for the user-facing function."
