@@ -23,7 +23,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   (or (slot-value *browser* 'web-context)
       (setf (slot-value *browser* 'web-context) (make-instance 'webkit:webkit-web-context))))
 
-(setf *browser-class* 'gtk-browser)
+(defvar *browser-class* 'gtk-browser)
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
@@ -60,9 +60,6 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (message-view :accessor message-view)
    (key-string-buffer :accessor key-string-buffer)))
 
-(define-class-type window)
-(declaim (type (window-type) *window-class*))
-(export-always '*window-class*)
 (defvar *window-class* 'gtk-window)
 
 (defclass-export gtk-buffer (buffer)
@@ -76,7 +73,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                         :type list
                         :initform '())))
 
-(setf *buffer-class* 'gtk-buffer)
+(defvar *buffer-class* 'gtk-buffer)
 
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
