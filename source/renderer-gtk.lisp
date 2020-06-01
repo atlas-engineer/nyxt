@@ -23,7 +23,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   (or (slot-value *browser* 'web-context)
       (setf (slot-value *browser* 'web-context) (make-instance 'webkit:webkit-web-context))))
 
-(defvar *browser-class* 'gtk-browser)
+(setf *browser-class* 'gtk-browser)
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -77,6 +77,9 @@ See https://github.com/atlas-engineer/next/issues/740")
    (message-view :accessor message-view)
    (key-string-buffer :accessor key-string-buffer)))
 
+(define-class-type window)
+(declaim (type (window-type) *window-class*))
+(export-always '*window-class*)
 (defvar *window-class* 'gtk-window)
 
 (defclass-export gtk-buffer (buffer)
@@ -90,7 +93,7 @@ See https://github.com/atlas-engineer/next/issues/740")
                         :type list
                         :initform '())))
 
-(defvar *buffer-class* 'gtk-buffer)
+(setf *buffer-class* 'gtk-buffer)
 
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
