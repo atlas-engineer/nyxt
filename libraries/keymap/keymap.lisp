@@ -329,7 +329,7 @@ Parents are ordered by priority, the first parent has highest priority.")))
 ;; "keyspec" is better then "keydesc" since the strings are well specified,
 ;; while a "description" could be anything.
 (deftype keyspecs-type ()
-  `(satisfies keyspecs->keys))
+  `(and string (satisfies keyspecs->keys)))
 
 ;; We need a macro to check that bindings are valid at compile time.
 ;; This is because most Common Lisp implementations are not capable of checking
