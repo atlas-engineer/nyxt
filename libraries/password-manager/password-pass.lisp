@@ -22,20 +22,17 @@
 (push #'make-password-store-interface interface-list)
 
 (defmethod list-passwords ((password-interface password-store-interface))
-  (let ((raw-list (directory
-                   (format nil "~a/**/*.gpg"
-                           (password-directory password-interface))
+  ;; Special care must be taken for symlinks. Say `~/.password-store/work`
+  ;; points to `~/work/pass`, would we follow symlinks, we would not be able to
+  ;; truncate `~/.password-store/` in `~/work/pass/some/password.gpg`.  Because
+  ;; of this, we don't follow symlinks.
+  (let ((raw-list (uiop:directory*
                    ;; We truncate the root directory so that the password list
                    ;; resembles the output from `pass list`. To do so, we
                    ;; truncate `~/.password-store/` in the pathname strings of
                    ;; the passwords.
-                   ;;
-                   ;; Special care must be taken for symlinks. Say
-                   ;; `~/.password-store/work` points to `~/work/pass`, would we
-                   ;; follow symlinks, we would not be able to truncate
-                   ;; `~/.password-store/` in `~/work/pass/some/password.gpg`.
-                   ;; Because of this, we don't follow symlinks.
-                   :resolve-symlinks nil))
+                   (format nil "~a/**/*.gpg"
+                           (password-directory password-interface))))
         (dir-length (length (namestring
                              (truename (password-directory password-interface))))))
     (mapcar #'(lambda (x)
