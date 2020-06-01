@@ -422,6 +422,7 @@ BUFFER's modes."
 
 (export-always 'on-signal-load-committed)
 (defmethod on-signal-load-committed ((buffer buffer) url)
+  (declare (ignore buffer url))
   nil)
 
 (export-always 'on-signal-load-finished)

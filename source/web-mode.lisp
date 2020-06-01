@@ -406,6 +406,7 @@ Otherwise go forward to the only child."
   title)
 
 (defmethod next:on-signal-load-committed ((mode web-mode) url)
+  (declare (ignore mode url))
   nil)
 
 (defmethod next:on-signal-load-finished ((mode web-mode) url)
