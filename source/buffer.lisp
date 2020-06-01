@@ -26,8 +26,7 @@ title into accound as it may vary from one load to the next."
 
 (defmethod object-display ((buffer buffer))
   (format nil "~a  ~a" (title buffer) (url-display (url buffer))))
-
-(define-command make-buffer (&key title modes url)
+(define-command make-buffer (&key (title "") modes (url ""))
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
@@ -35,7 +34,7 @@ If URL is `:default', use `default-new-buffer-url'."
          (url (if (eq url :default)
                   (default-new-buffer-url buffer)
                   url)))
-    (when url
+    (unless (str:emptyp url)
       (set-url* url :buffer buffer))
     buffer))
 
