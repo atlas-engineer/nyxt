@@ -152,7 +152,9 @@ Example: --with-path bookmarks=/path/to/bookmarks
 
 (export-always 'entry-point)
 (defun entry-point ()
-  "Read the CLI arguments and start the browser."
+  "Read the CLI arguments and start the browser.
+This is the entry point of the binary program.
+Don't run this from a REPL, prefer `start' instead."
   (multiple-value-bind (options free-args)
       (parse-cli-args)
     (setf *keep-alive* nil)             ; Not a REPL.
