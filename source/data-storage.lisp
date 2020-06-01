@@ -79,7 +79,7 @@ Example: when passed command line option --with-path foo=bar,
 \(find-ref-path \"foo\") return \"bar\"."
   (second
    (assoc ref
-          (loop for (opt value . _) on *options*
+          (loop for (opt value . nil) on *options*
                 when (eq opt :with-path)
                   collect value)
           :test #'string=)))

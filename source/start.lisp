@@ -403,7 +403,7 @@ REPL examples:
   (unless *keep-alive* (uiop:quit)))
 
 (defun load-or-eval (&key remote)
-  (loop for (opt value . _) on *options*
+  (loop for (opt value . nil) on *options*
         do (match opt
              (:load (let ((value (uiop:truename* value)))
                       ;; Absolute path is necessary since remote process may have
