@@ -71,8 +71,8 @@ search.")
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        "C-i" 'autofill
-       ;; Leave SPACE unbound so that the renderer decides wether to
-       ;; insert of scroll.
+       ;; Leave SPACE and arrow keys unbound so that the renderer decides wether to
+       ;; navigate textboxes (arrows), insert or scroll (space).
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down
        "pageend" 'scroll-to-bottom
