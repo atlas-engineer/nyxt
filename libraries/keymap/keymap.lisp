@@ -372,10 +372,10 @@ Remapping keys:
   (define-key foo-map `(:remap foo-a ,bar-map) 'new-value)"
   ;; The type checking of KEYMAP is done by `define-key*'.
   (let ((keyspecs-value-pairs (append (list keyspecs bound-value) more-keyspecs-value-pairs)))
-    (loop :for (keyspecs bound-value . rest) :on keyspecs-value-pairs :by #'cddr
+    (loop :for (keyspecs nil . nil) :on keyspecs-value-pairs :by #'cddr
           :do (check-type keyspecs (or keyspecs-type list)))
     `(progn
-       ,@(loop :for (keyspecs bound-value . rest) :on keyspecs-value-pairs :by #'cddr
+       ,@(loop :for (keyspecs bound-value . nil) :on keyspecs-value-pairs :by #'cddr
                :collect (list 'define-key* keymap keyspecs bound-value))
        ,keymap)))
 

@@ -40,7 +40,7 @@ schemes.  See `define-scheme'.")))
 See `define-scheme' for the user-facing function."
   (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs))
         (scheme (make-hash-table :test #'equal)))
-    (loop :for (name _ . rest) :on name+bindings-pairs :by #'cddr
+    (loop :for (name nil . nil) :on name+bindings-pairs :by #'cddr
           :do (setf (gethash name scheme) (make-keymap (format nil "~a-~a-map" name-prefix (name name)))))
     ;; Set parents now that all keymaps exist.
     (maphash (lambda (name keymap)
@@ -50,9 +50,9 @@ See `define-scheme' for the user-facing function."
                                      (parents name)))))
              scheme)
     ;; Set bindings.
-    (loop :for (name bindings . rest) :on name+bindings-pairs :by #'cddr
+    (loop :for (name bindings . nil) :on name+bindings-pairs :by #'cddr
           :for keymap = (gethash name scheme)
-          :do (loop :for (keyspecs bound-value . rest) :on bindings :by #'cddr
+          :do (loop :for (keyspecs bound-value . nil) :on bindings :by #'cddr
                     :do (define-key* keymap keyspecs bound-value))) ; TODO: Can we use define-key?
     scheme))
 
@@ -77,11 +77,11 @@ Example:
 will have the CUA keymap as parent.
 The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
   (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs)))
-    (loop :for (_ quoted-bindings . rest) :on name+bindings-pairs :by #'cddr
+    (loop :for (nil quoted-bindings . nil) :on name+bindings-pairs :by #'cddr
           :for bindings = (rest quoted-bindings)
           :do (check-type bindings list)
-          :do (loop :for (keyspecs _ . rest) :on bindings :by #'cddr
-                    :do (check-type keyspecs (or keyspecs-type list))))
+          :do (loop :for (keyspecs nil . nil) :on bindings :by #'cddr
+                   :do (check-type keyspecs (or keyspecs-type list))))
     `(progn
        (define-scheme* ,name-prefix ,name ,bindings ,@more-name+bindings-pairs))))
 
