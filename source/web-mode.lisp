@@ -66,10 +66,6 @@ search.")
        "f3" 'search-buffer
        "M-f" 'remove-search-hints
        "C-." 'jump-to-heading
-       "left" 'scroll-left
-       "down" 'scroll-down
-       "up" 'scroll-up
-       "right" 'scroll-right
        "end" 'maybe-scroll-to-bottom
        "home" 'maybe-scroll-to-top
        "C-down" 'scroll-to-bottom
