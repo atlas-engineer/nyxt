@@ -311,7 +311,8 @@ Otherwise bind socket."
          (iolib:with-open-socket (s :address-family :local
                                     :remote-filename socket-path)
            (format s "~s" `(open-external-urls ',urls)))
-         (uiop:quit)))
+         (unless *keep-alive*
+           (uiop:quit))))
       ((and (uiop:file-exists-p socket-path)
             (not (eq :socket (osicat:file-kind socket-path))))
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path))
