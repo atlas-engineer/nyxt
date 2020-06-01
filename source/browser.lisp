@@ -180,7 +180,7 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
                 :documentation "Whether the buffer is loading or finished loading.")
    (last-access :accessor last-access
                 :initform (local-time:now)
-                :type number
+                :type local-time:timestamp
                 :documentation "Timestamp when the buffer was last switched to.")
    (modes :accessor modes :initarg :modes :initform '()
           :documentation "The list of mode instances.")
