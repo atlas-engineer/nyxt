@@ -28,12 +28,12 @@
 (defclass history-tree ()
   ((root :accessor root
          :initarg :root
-         :type node
+         :type (or null node)
          :initform nil
          :documentation "The root node.
 It only changes when deleted.")
    (current :accessor current
-            :type node
+            :type (or null node)
             :initform nil
             :documentation "The current node.
 It changes every time a node is added or deleted."))
