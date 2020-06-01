@@ -43,12 +43,12 @@ Return NIL on no match."
 (defclass-export data-path ()
   ((dirname :initarg :dirname
             :accessor dirname
-            :type string
-            :initform nil
+            :type (or string pathname)
+            :initform ""
             :documentation "The directory of `basename'.")
    (basename :initarg :basename
              :accessor basename
-             :type string
+             :type (or string pathname)
              :initform ""
              :documentation "The basename of data-path.
 It can be appended with an extension if necessary.
@@ -72,7 +72,11 @@ This can be used to set the path from command line.  See
 (defclass-export download-data-path (data-path) ; TODO: Rename to downloads-data-path?
   ((ref :initform "download")))
 
+(declaim (ftype (function (string) (or string null)) find-ref-path))
 (defun find-ref-path (ref)
+  "Return the value of the REF found in `*options*'s `:with-path'.
+Example: when passed command line option --with-path foo=bar,
+\(find-ref-path \"foo\") return \"bar\"."
   (second
    (assoc ref
           (loop for (opt value . _) on *options*
@@ -82,8 +86,9 @@ This can be used to set the path from command line.  See
 
 (export-always 'expand-default-path)
 (declaim (ftype (function (data-path &key (:root string)) (or string null)) expand-default-path))
-(defun expand-default-path (path &key (root (namestring (or (dirname path)
-                                                            (uiop:xdg-data-home +data-root+)))))
+(defun expand-default-path (path &key (root (namestring (if (str:emptyp (namestring (dirname path)))
+                                                            (uiop:xdg-data-home +data-root+)
+                                                            (dirname path)))))
   "Derive file from command line option or PATH.
 If PATH `ref' is specified in the `:with-path' command line option, use it in
 place of PATH `basename'.
@@ -93,15 +98,15 @@ place of PATH `basename'.
 - Otherwise expand to 'ROOT/basename.lisp' or 'ROOT/basname' if the basename
   already contains a period."
   (let ((name (match (find-ref-path (ref path))
-                (nil (basename path))
+                (nil (namestring (basename path)))
                 (m m))))
     (cond
       ((uiop:emptyp name)
        root)
       ((search "/" name)
-       (namestring name))
+       name)
       (t
-       (let ((fullname (str:concat root "/" (namestring name))))
+       (let ((fullname (str:concat root "/" name)))
          (unless (search "." name)
            (setf fullname (str:concat fullname ".lisp")))
          fullname)))))
