@@ -76,7 +76,7 @@ Description of the handler.  This is purely informative.")
 The handler function.  It can be an anonymous function.")
    (handler-type :initarg :handler-type
                  :accessor handler-type
-                 :type list
+                 :type t
                  :initform nil
                  :documentation "The function type of FN.
 This is purely informative.")
