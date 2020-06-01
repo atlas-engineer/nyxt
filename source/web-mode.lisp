@@ -365,7 +365,8 @@ Otherwise go forward to the only child."
 (define-command copy ()
   "Copy selected text to clipboard."
   (with-result (input (%copy))
-    (copy-to-clipboard input)))
+    (copy-to-clipboard input)
+    (echo "Text copied.")))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
