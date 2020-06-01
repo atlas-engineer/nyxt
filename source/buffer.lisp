@@ -17,7 +17,7 @@
 (export-always 'equals)
 (defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
   "Comparison function for buffer history entries.
-An entry is uniquely identified from its URL.  Not that we should not take the
+An entry is uniquely identified from its URL.  We do not take the
 title into accound as it may vary from one load to the next."
   (string= (url bd1) (url bd2)))
 
