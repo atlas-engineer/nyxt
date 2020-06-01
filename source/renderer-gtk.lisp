@@ -321,6 +321,7 @@ See `gtk-browser's `modifier-translator' slot."
 (defmethod on-signal-key-release-event ((sender gtk-window) event)
   "We don't handle key release events.
 Warning: This behaviour may change in the future."
+  (declare (ignore event))
   (if (active-minibuffers sender)
       ;; Do not forward release event when minibuffer is up.
       t
