@@ -377,7 +377,7 @@ Warning: This behaviour may change in the future."
                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
-(declaim (ftype (function (&optional buffer)) make-context))
+(declaim (ftype (function (&optional (or buffer null))) make-context))
 (defun make-context (&optional buffer)
   (let* ((context (web-context *browser*))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
