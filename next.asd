@@ -69,6 +69,7 @@
                (:file "bookmark")
                (:file "history")
                (:file "autofill")
+               (:file "external-editor")
                ;; Core Modes
                (:file "base-mode")
                (:file "help-mode")
