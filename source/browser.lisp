@@ -714,7 +714,7 @@ The handlers take the `download-manager:download' class instance as argument.")
                          please view the documentation for
                          cl-enchant (broker-list-dicts).")
    (visual-editor :accessor visual-editor
-                  (or string null)
+                  :type (or string null)
                   :initform nil
                   :documentation "The external editor to use for editing files.")))
 
