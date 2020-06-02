@@ -712,7 +712,10 @@ The handlers take the `download-manager:download' class instance as argument.")
                          :documentation "Spell check language used by
                          Next. For a list of more languages available,
                          please view the documentation for
-                         cl-enchant (broker-list-dicts).")))
+                         cl-enchant (broker-list-dicts).")
+   (visual-editor :accessor visual-editor
+                  :initform nil
+                  :documentation "The external editor to use for editing files.")))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
