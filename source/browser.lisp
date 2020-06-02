@@ -716,7 +716,9 @@ The handlers take the `download-manager:download' class instance as argument.")
    (visual-editor :accessor visual-editor
                   :type (or string null)
                   :initform nil
-                  :documentation "The external editor to use for editing files.")))
+                  :documentation "The external editor to use for
+editing files. It should be specified as a complete string path to the
+editor executable.")))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
