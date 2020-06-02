@@ -359,6 +359,19 @@ GnuPG documentation for how to set it up.")
    (bookmarks-path (make-instance 'bookmarks-data-path
                                   :basename \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
 
+   (:h3 "Password management")
+   (:p "Next provides a uniform interface to some password managers including "
+       (:a :href "https://keepassxc.org/" "KeepassXC")
+       " and " (:a :href "https://www.passwordstore.org/" "Password Store") ". "
+       "The installed password manager is automatically detected.  If you want
+to force, say, KeepassXC, add the following to your configuration file:")
+   (:pre (:code
+          "(push #'password:make-keepassxc-interface password:interface-list)"))
+   (:p "See the " (:code "password:interface-list") " for the list of registered
+password manager interfaces.")
+   (:ul
+    (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
+    (:li (command-markup 'copy-password) ": Copy selected password to the clipboard."))
    (:h2 "Troubleshooting")
    (:h3 "Playing videos")
    (:p "Next delegates video support to third party plugins.")

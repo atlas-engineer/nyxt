@@ -197,9 +197,10 @@
   :pathname "libraries/password-manager/"
   :components ((:file "package")
                (:file "password")
-               (:file "password-pass")
                (:file "password-keepassxc")
-               (:file "password-security")))
+               (:file "password-security")
+               ;; Keep password-store last so that it has higher priority.
+               (:file "password-pass")))
 
 (asdf:defsystem next/hooks
   :depends-on (alexandria serapeum)
