@@ -154,13 +154,19 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
                            (name slot)
                            (class-sym slot))))
 
+(defun exported-p (sym)
+  (eq :external
+      (nth-value 1 (find-symbol (string sym)
+                                (symbol-package sym)))))
+
 (defun class-public-slots (class-sym)
-  "Return list of slot symbol that have at least a reader or a writer."
+  "Return list of slot symbols that have at least a reader or a writer."
   (delete-if
    (lambda (slot-name)
      (let ((props (mopu:slot-properties (find-class class-sym) slot-name)))
-       (and (not (getf props :writers))
-            (not (getf props :readers)))))
+       (or (and (not (getf props :writers))
+                (not (getf props :readers)))
+           (not (exported-p slot-name)))))
    (mopu:slot-names class-sym)))
 
 (defun package-slots ()
