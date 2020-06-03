@@ -34,11 +34,11 @@ notifications, choose videos, etc.
 
 (declaim (type (or null string) *download-program*))
 (defparameter *download-program* "youtube-dl"
-  "The external program to download videos with. Defaults to youtube-dl.")
+  "The external program to download videos with.")
 
 (declaim (type (or null list-of-strings) *download-args*))
 (defparameter *download-args* nil
-  "Default arguments for the download command as a list of strings. See also `download-arguments' which adds more.")
+  "Default arguments for the download command as a list of strings. See also the `download-arguments' function which extends the arguments.")
 
 ;; TODO: Make browser's download-path a list.
 (declaim (type (or null list) *preferred-download-directories*))
@@ -49,7 +49,7 @@ notifications, choose videos, etc.
 (defun download-arguments (url target-dir)
   "Return a list of arguments for the download command.
 
-Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube-dl)."
+Uses `*download-args*' and sets the output file path."
   (declare (ignorable url))
   (append *download-args* (list "-o" (format nil "~a/%(title)s.%(ext)s" target-dir))))
 
@@ -88,7 +88,11 @@ Appends `*download-args' and -o /target/directory/%(title)s.%(ext)s (for youtube
 (in-package :next)
 
 (define-command download-video ()
-  "Download the video of the current URL with an external program."
+  "Download the video of the current URL with an external
+program (`*download-program*').
+
+See `*download-args*' for the program arguments that are passed.
+See `*preferred-download-directories*' for the output directory."
   (let* ((url (url (current-buffer))))
     (cond
       ((null next/video::*preferred-download-directories*)
