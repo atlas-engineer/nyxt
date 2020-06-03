@@ -279,7 +279,7 @@ This function can be `funcall'ed."
                             :completion-function (command-completion-filter
                                                   (mapcar (alex:compose #'class-name #'class-of)
                                                           (modes (current-buffer))))
-                            :show-completion-count nil)))
+                            :show-completion-count-p nil)))
       (setf (access-time command) (get-internal-real-time))
       (run command))))
 

@@ -116,6 +116,6 @@ Example usage:
                          (make-minibuffer
                           :input-prompt (format nil ,@prompt)
                           :completion-function (yes-no-completion-filter)
-                          :show-completion-count nil)))
+                          :show-completion-count-p nil)))
      (when (confirmed-p answer)
        ,@body)))

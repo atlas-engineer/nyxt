@@ -263,7 +263,7 @@ nothing is done if file is missing."
                                         (make-minibuffer
                                          :input-prompt "Recipient:"
                                          :completion-function (gpg-key-completion-filter)
-                                         :empty-complete-immediate t)))
+                                         :must-match-p nil)))
                  (with-input-from-string (,in (with-output-to-string (,stream)
                                                 (setf ,result (progn ,@body))))
                    (gpg-write ,in ,gpg-file (gpg-key-key-id ,recipient)))))

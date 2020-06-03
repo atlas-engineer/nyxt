@@ -36,11 +36,11 @@ This should not rely on the minibuffer's content.")
                      :initform nil
                      :type (or function null)
                      :documentation "Called whenever a change happens.")
-   (empty-complete-immediate :initarg :empty-complete-immediate ; TODO: Rename?
-                             :accessor empty-complete-immediate
-                             :initform nil
+   (must-match-p :initarg :must-match-p
+                             :accessor must-match-p
+                             :initform t
                              :type boolean
-                             :documentation "If non-nil, allow input matching no candidates.")
+                             :documentation "If nil, allow input matching no candidates.")
    (input-prompt :initarg :input-prompt
                  :accessor input-prompt
                  :initform "Input"
@@ -72,8 +72,8 @@ If nil, no history is used.")
                       :documentation "If non-nil, allow for selecting multiple candidates.")
    (completions :accessor completions :initform nil)               ; TODO: Unexport.
    (marked-completions :accessor marked-completions :initform nil) ; TODO: Unexport.
-   (show-completion-count :accessor show-completion-count          ; TODO: Rename
-                          :initarg :show-completion-count
+   (show-completion-count-p :accessor show-completion-count-p
+                          :initarg :show-completion-count-p
                           :initform t
                           :type boolean
                           :documentation "Show the number of chosen candidates
@@ -156,11 +156,11 @@ calls, such as invoking `minibuffer-history'."))
                           (setup-function nil explicit-setup-function)
                           (cleanup-function nil explicit-cleanup-function)
                           (changed-callback nil explicit-changed-callback)
-                          (empty-complete-immediate nil explicit-empty-complete-immediate)
+                          (must-match-p t explicit-must-match-p)
                           (input-prompt nil explicit-input-prompt)
                           (input-buffer nil explicit-input-buffer)
                           (invisible-input-p nil explicit-invisible-input-p)
-                          (show-completion-count t explicit-show-completion-count) ; TODO: Rename to hide-completion-count and reverse default value.
+                          (show-completion-count-p t explicit-show-completion-count-p) ; TODO: Rename to hide-completion-count and reverse default value.
                           (history nil explicit-history)
                           (multi-selection-p nil explicit-multi-selection-p))
   "See the `minibuffer' class for the argument documentation."
@@ -183,8 +183,8 @@ calls, such as invoking `minibuffer-history'."))
            ,@(if explicit-changed-callback
                 `(:changed-callback ,changed-callback)
                 '())
-           ,@(if explicit-empty-complete-immediate
-                 `(:empty-complete-immediate ,empty-complete-immediate)
+           ,@(if explicit-must-match-p
+                 `(:must-match-p ,must-match-p)
                  '())
            ,@(if explicit-input-prompt
                  `(:input-prompt ,input-prompt)
@@ -195,8 +195,8 @@ calls, such as invoking `minibuffer-history'."))
            ,@(if explicit-invisible-input-p
                  `(:invisible-input-p ,invisible-input-p)
                  '())
-           ,@(if explicit-show-completion-count
-                 `(:show-completion-count ,show-completion-count)
+           ,@(if explicit-show-completion-count-p
+                 `(:show-completion-count-p ,show-completion-count-p)
                  '())
            ,@(if explicit-history
                  `(:history ,history)
@@ -206,15 +206,15 @@ calls, such as invoking `minibuffer-history'."))
                  '()))))
 
 (defmethod update-candidates ((minibuffer minibuffer))
-  (with-slots (completion-function completions input-buffer empty-complete-immediate )
+  (with-slots (completion-function completions input-buffer must-match-p )
       minibuffer
     (if completion-function
         (setf completions (funcall-safely completion-function minibuffer))
         (setf completions nil))
-    (when (and empty-complete-immediate
+    (when (and (not must-match-p)
                (not (str:emptyp input-buffer)))
       ;; Don't add input-buffer to completions that don't accept arbitrary
-      ;; inputs (i.e. empty-complete-immediate is nil).
+      ;; inputs (i.e. must-match-p is t).
       (push input-buffer completions))))
 
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
@@ -250,11 +250,11 @@ calls, such as invoking `minibuffer-history'."))
   (unless (completion-function minibuffer)
     ;; If we have no completion function, then we have no candidates beside
     ;; immediate input, so we must allow them as valid completion.
-    (setf (empty-complete-immediate minibuffer) t))
-  (setf (empty-complete-immediate minibuffer)
+    (setf (must-match-p minibuffer) nil))
+  (setf (must-match-p minibuffer)
         (if (invisible-input-p minibuffer)
-            nil
-            (empty-complete-immediate minibuffer)))
+            t ; This way the minibuffer won't display the input as a candidate.
+            (must-match-p minibuffer)))
   (initialize-modes minibuffer))
 
 (declaim (ftype (function (minibuffer)) read-from-minibuffer))
@@ -473,7 +473,7 @@ If cursor is between two words, return the first one."
                                         (cond
                                           ((not completions)
                                            "")
-                                          ((not (show-completion-count minibuffer))
+                                          ((not (show-completion-count-p minibuffer))
                                            "")
                                           (marked-completions
                                            (format nil " [~a/~a]"

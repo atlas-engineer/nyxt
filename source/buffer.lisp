@@ -270,10 +270,10 @@ complete against a search engine."
                         :completion-function (history-completion-filter
                                               :prefix-urls (list (url (current-buffer))))
                         :history history
-                        :empty-complete-immediate t)))
+                        :must-match-p nil)))
       (when (typep url 'history-entry)
         ;; In case read-from-minibuffer returned a string upon
-        ;; empty-complete-immediate.
+        ;; must-match-p.
         (setf url (url url)))
       (set-url* url :buffer (if new-buffer-p
                                (make-buffer-focus :url nil)

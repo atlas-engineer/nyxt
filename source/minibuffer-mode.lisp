@@ -72,14 +72,14 @@
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
-  (with-slots (callback empty-complete-immediate completions completion-cursor
+  (with-slots (callback must-match-p completions completion-cursor
                invisible-input-p
                multi-selection-p marked-completions input-buffer)
       minibuffer
     (match (or marked-completions
                (and completions
                     (list (nth completion-cursor completions)))
-               (and empty-complete-immediate
+               (and (not must-match-p)
                     (list input-buffer)))
       ((guard completions completions)
        ;; Note that "immediate input" is also in completions, so it's caught here.
