@@ -15,7 +15,20 @@ See `push-modifiers', `pop-modifiers' and `key-event-modifiers'.")
                         :documentation "Function that returns a list of
 modifiers understood by `keymap:make-key'.  You can customize this slot if you
 want to change the behaviour of modifiers, for instance swap 'control' and
-'meta'.")
+'meta':
+
+\(defun my-translate-modifiers (modifier-state &optional event)
+  \"Swap control and meta.\"
+  (declare (ignore event))
+  (let ((plist '(:control-mask \"meta\"
+                 :mod1-mask \"control\"
+                 :shift-mask \"shift\"
+                 :super-mask \"super\"
+                 :hyper-mask \"hyper\")))
+    (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
+
+\(define-configuration browser
+  ((modifier-translator #'my-translate-modifiers)))")
    (web-context :initform nil
                 :documentation "Single instantiation of our custom web context.")))
 

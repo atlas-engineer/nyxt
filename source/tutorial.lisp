@@ -29,6 +29,8 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
     (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
+   (:p "Modifiers can be remapped, see the `modifier-translator' slot of the
+`gtk-browser' class.")
 
    (:h3 "Buffers")
    (:p "Next uses the concept of buffers instead of the more limited \"tabs\"
