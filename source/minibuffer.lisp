@@ -140,7 +140,6 @@ calls, such as invoking `minibuffer-history'."))
 (defun make-minibuffer (&key
                           (default-modes nil explicit-default-modes)
                           (completion-function nil explicit-completion-function)
-                          (callback nil explicit-callback)
                           (callback-buffer nil explicit-callback-buffer)
                           (setup-function nil explicit-setup-function)
                           (cleanup-function nil explicit-cleanup-function)
@@ -159,9 +158,6 @@ calls, such as invoking `minibuffer-history'."))
                  '())
            ,@(if explicit-completion-function
                  `(:completion-function ,completion-function)
-                 '())
-           ,@(if explicit-callback
-                 `(:callback ,callback)
                  '())
            ,@(if explicit-callback-buffer
                  `(:callback-buffer ,callback-buffer)
