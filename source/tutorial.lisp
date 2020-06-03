@@ -139,7 +139,9 @@ place rather than having to jump around on a buffer (or multiple buffers).")
     (:li (command-markup 'next/web-mode:search-buffer) ": Search buffer.")
     (:li (command-markup 'next/web-mode:search-buffers) ": Search multiple buffers."))
    (:h3 "Bookmarks")
-   (:p "The bookmark file is made to be human readable and editable.
+   (:p "The bookmark file "
+       (:code (expand-path (bookmarks-path *browser*)))
+       " is made to be human readable and editable.
 Bookmarks can have the following settings:")
    (:ul
     (:li (:code ":url") ": The URL of the bookmark.")
