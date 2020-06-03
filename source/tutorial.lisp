@@ -137,7 +137,8 @@ invoking the command 'buffer-history-tree'.")
 place rather than having to jump around on a buffer (or multiple buffers).")
    (:ul
     (:li (command-markup 'next/web-mode:search-buffer) ": Search buffer.")
-    (:li (command-markup 'next/web-mode:search-buffers) ": Search multiple buffers."))
+    (:li (command-markup 'next/web-mode:search-buffers) ": Search multiple buffers.")
+    (:li (command-markup 'next/web-mode:remove-search-hints) ": Remove the highlighting around the search hits."))
    (:h3 "Bookmarks")
    (:p "The bookmark file "
        (:code (expand-path (bookmarks-path *browser*)))
@@ -170,7 +171,19 @@ query inside parenthesis in which you can use 'and', 'or' and 'not'. Examples:")
     (:li "+foo -bar (or (and john doe) (not (and tic tac toe)))"))
 
    (:h3 "Miscellaneous")
-   (:p (command-markup 'quit) ": Close all Next windows and quit.")
+   (:ul
+    (:li (command-markup 'next/web-mode:zoom-in-page)
+         ", " (command-markup 'next/web-mode:zoom-out-page)
+         ", " (command-markup 'next/web-mode:unzoom-page)
+         ": Control the page zoom.")
+    (:li (command-markup 'next/web-mode:jump-to-heading) ": Query a heading (a
+section) of the current page and jump to it.")
+    (:li (command-markup 'next/web-mode:autofill) ": See the "
+         (:code "autofills") " browser slot.")
+    (:li (command-markup 'vcs-clone) ": Clone version control repository
+matching current URL.")
+    (:li (command-markup 'download-video) ": Download video at current URL.")
+    (:li (command-markup 'quit) ": Close all Next windows and quit."))
 
    (:h2 "The Next Help System")
    (:p "Next provides introspective and help capabilities.  All commands,
@@ -191,6 +204,9 @@ function.")
 of a variable.")
     (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots.")
     (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation."))
+   (:p "A good starting point is to study the documentation of the classes "
+       (:code "browser") ", " (:code "window") ", " (:code "buffer") " and "
+       (:code "minibuffer") ".")
 
    (:h2 "Configuration")
    (:p "Next is written in the Common Lisp programming language which offers a
@@ -270,6 +286,8 @@ Lisp function except the form is " (:code "define-command") " instead of "
                      (make-minibuffer
                       :input-prompt \"Bookmark URL\")))
     (bookmark-add url)))"))
+   (:p "See the " (:code "minibuffer") " class documentation for how to write
+write custom minibuffers.")
 
    (:h3 "Hooks")
    (:p "Hooks provide a powerful mechanism to tweak the behaviour of various
