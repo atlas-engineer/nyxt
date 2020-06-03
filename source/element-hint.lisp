@@ -299,8 +299,8 @@ identifier for every hinted element."
                 (if completions
                     (hintp (first completions))
                     (when minibuffer
-                      (let ((hint-candidate (nth (completion-cursor minibuffer)
-                                                 (completions minibuffer))))
+                      (let ((hint-candidate (nth (next::completion-cursor minibuffer)
+                                                 (next::completions minibuffer))))
                         (hintp hint-candidate)))))))
     (when hint
       (when (and follow

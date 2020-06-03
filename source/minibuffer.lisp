@@ -10,8 +10,7 @@
                         :documentation "Take the input
 string and returns a list of candidate strings.
 Example: `buffer-completion-filter'.")
-   (callback :accessor callback ; TODO: Unexport.
-             :initform nil
+   (callback :initform nil
              :documentation "Function to call over the selected candidate.")
    (callback-buffer :initarg :callback-buffer
                     :accessor callback-buffer
@@ -51,7 +50,7 @@ This should not rely on the minibuffer's content.")
                  :initform ""
                  :type string
                  :documentation "Initial text to place at the prompt, ready to edit.")
-   (input-cursor-position :accessor input-cursor-position ; TODO: Unexport.
+   (input-cursor-position :accessor input-cursor-position
                           :initform 0
                           :type integer)
    (invisible-input-p :initarg :invisible-input-p
@@ -70,18 +69,22 @@ If nil, no history is used.")
                       :initform nil
                       :type boolean
                       :documentation "If non-nil, allow for selecting multiple candidates.")
-   (completions :accessor completions :initform nil)               ; TODO: Unexport.
-   (marked-completions :accessor marked-completions :initform nil) ; TODO: Unexport.
+   (completions :accessor completions :initform nil)
+   (marked-completions :accessor marked-completions :initform nil)
    (show-completion-count-p :accessor show-completion-count-p
                           :initarg :show-completion-count-p
                           :initform t
                           :type boolean
                           :documentation "Show the number of chosen candidates
 inside brackets. It can be useful to disable, for instance for a yes/no question.")
-   (completion-head :accessor completion-head :initform 0) ; TODO: Unexport.
-   (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Unexport.
+   (completion-head :accessor completion-head
+                    :initform 0
+                    :type integer)
+   (completion-cursor :accessor completion-cursor
+                      :initform 0
+                      :type integer)
    (content :initform "" :type string
-            :documentation "The HTML content of the minibuffer.") ; TODO: Unexport.
+            :documentation "The HTML content of the minibuffer.")
    (max-lines :initarg :max-lines
               :accessor max-lines
               :type integer
@@ -145,6 +148,14 @@ screen.")
   (:documentation "The minibuffer is the interface for user interactions.  Each
 prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
 calls, such as invoking `minibuffer-history'."))
+;; Unexport non-public slots that may have accessors.
+(unexport
+ '(input-cursor-position
+   completions
+   marked-completions
+   completion-head
+   completion-cursor
+   content))
 
 (export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
@@ -269,7 +280,7 @@ Example use:
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
   (when %callback
-    (setf (callback minibuffer) %callback))
+    (setf (slot-value minibuffer 'callback) %callback))
   ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
   (setf (callback-buffer minibuffer) (current-buffer))
   (if *keep-alive*

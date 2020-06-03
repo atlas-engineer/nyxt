@@ -72,13 +72,13 @@
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
-  (with-slots (callback must-match-p completions completion-cursor
+  (with-slots (next::callback must-match-p next::completions next::completion-cursor
                invisible-input-p
-               multi-selection-p marked-completions input-buffer)
+               multi-selection-p next::marked-completions input-buffer)
       minibuffer
-    (match (or marked-completions
-               (and completions
-                    (list (nth completion-cursor completions)))
+    (match (or next::marked-completions
+               (and next::completions
+                    (list (nth next::completion-cursor next::completions)))
                (and (not must-match-p)
                     (list input-buffer)))
       ((guard completions completions)
@@ -88,18 +88,18 @@
                                               (str:replace-all " " " " completion)
                                               completion))
                      completions))
-       (funcall-safely callback (if multi-selection-p
+       (funcall-safely next::callback (if multi-selection-p
                                     completions
                                     (first completions))))
       (nil (when invisible-input-p
-             (funcall-safely callback (str:replace-all " " " " input-buffer))))))
+             (funcall-safely next::callback (str:replace-all " " " " input-buffer))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
-  (with-slots (callback) minibuffer
+  (with-slots (next::callback) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (funcall-safely callback normalized-input)))
+      (funcall-safely next::callback normalized-input)))
   (quit-minibuffer minibuffer))
 
 (defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
@@ -129,7 +129,7 @@
 
 (define-command delete-forwards (&optional (minibuffer (current-minibuffer)))
   "Delete character after cursor."
-  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
     (unless (= cursor (length buffer))
       (setf buffer
             (concatenate 'string
@@ -142,7 +142,7 @@
 
 (define-command delete-backwards (&optional (minibuffer (current-minibuffer)))
   "Delete character before cursor."
-  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
     (unless (= cursor 0)
       (let ((old-cursor cursor))
         ;; Change cursor before buffer or else we could have a cursor that's
@@ -157,39 +157,39 @@
 
 (define-command cursor-forwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor forward by one."
-  (with-slots (input-buffer input-cursor-position) minibuffer
-    (when (< input-cursor-position (length input-buffer))
-      (incf input-cursor-position)))
+  (with-slots (input-buffer next::input-cursor-position) minibuffer
+    (when (< next::input-cursor-position (length input-buffer))
+      (incf next::input-cursor-position)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-backwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor backwards by one."
-  (with-slots (input-cursor-position) minibuffer
-    (when (> input-cursor-position 0)
-      (decf input-cursor-position)))
+  (with-slots (next::input-cursor-position) minibuffer
+    (when (> next::input-cursor-position 0)
+      (decf next::input-cursor-position)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-beginning (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the input area."
-  (with-slots (input-cursor-position) minibuffer
-    (setf input-cursor-position 0))
+  (with-slots (next::input-cursor-position) minibuffer
+    (setf next::input-cursor-position 0))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-end (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the input area."
-  (with-slots (input-buffer input-cursor-position) minibuffer
-    (setf input-cursor-position (length input-buffer)))
+  (with-slots (input-buffer next::input-cursor-position) minibuffer
+    (setf next::input-cursor-position (length input-buffer)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (defun char-at-cursor (&optional (minibuffer (current-minibuffer)))
   "Return the character the cursor it at in the minibuffer."
-  (with-slots (input-buffer input-cursor-position) minibuffer
-    (if (< input-cursor-position (length input-buffer))
-        (char (input-buffer minibuffer) (input-cursor-position minibuffer)))))
+  (with-slots (input-buffer next::input-cursor-position) minibuffer
+    (if (< next::input-cursor-position (length input-buffer))
+        (char (input-buffer minibuffer) (next::input-cursor-position minibuffer)))))
 
 (defun char-at-position (input position)
   "Return the character at `position' in `input', or nil."
@@ -198,19 +198,19 @@
 
 (define-command cursor-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the word at point."
-  (with-slots (input-buffer input-cursor-position) minibuffer
+  (with-slots (input-buffer next::input-cursor-position) minibuffer
     (if (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
         (loop while (and
                      (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
-                     (< input-cursor-position (length input-buffer)))
-              do (incf input-cursor-position))
+                     (< next::input-cursor-position (length input-buffer)))
+              do (incf next::input-cursor-position))
         (loop while (and
                      (not (intersection *word-separation-characters* (list (char-at-cursor minibuffer))))
-                     (< input-cursor-position (length input-buffer)))
-              do (incf input-cursor-position))))
+                     (< next::input-cursor-position (length input-buffer)))
+              do (incf next::input-cursor-position))))
   (state-changed minibuffer)
   (update-display minibuffer)
-  (input-cursor-position minibuffer))
+  (next::input-cursor-position minibuffer))
 
 (defun backwards-word-position (input position)
   "Return the cursor position to move one word backwards."
@@ -236,15 +236,15 @@
 ;; TODO: Re-use cursor-forwards-word
 (define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the word at point."
-  (with-slots (input-buffer input-cursor-position) minibuffer
-    (setf input-cursor-position (backwards-word-position input-buffer input-cursor-position)))
+  (with-slots (input-buffer next::input-cursor-position) minibuffer
+    (setf next::input-cursor-position (backwards-word-position input-buffer next::input-cursor-position)))
   (state-changed minibuffer)
   (update-display minibuffer)
-  (input-cursor-position minibuffer))
+  (next::input-cursor-position minibuffer))
 
 (define-command delete-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the end of the word at point."
-  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
     (let* ((current-cursor-position cursor)
            (new-cursor-position (cursor-forwards-word minibuffer))
            (transpose-distance (- new-cursor-position current-cursor-position))
@@ -267,7 +267,7 @@
 
 (define-command delete-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the beginning of the word at point."
-  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
     (multiple-value-bind (new-string new-position) (%delete-backwards-word buffer cursor)
       ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
       (setf cursor new-position
@@ -277,14 +277,14 @@
 
 (define-command kill-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters from cursor position until the end of the line."
-  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
     (setf buffer (subseq buffer 0 cursor)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters in the input."
-  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
     ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
     (setf cursor 0
           buffer ""))
@@ -293,8 +293,8 @@
 
 (define-command select-next (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer."
-  (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
-    (incf (completion-cursor minibuffer))
+  (when (< (next::completion-cursor minibuffer) (- (length (next::completions minibuffer)) 1))
+    (incf (next::completion-cursor minibuffer))
     (state-changed minibuffer)
     (update-display minibuffer)
     (evaluate-script minibuffer
@@ -303,8 +303,8 @@
 
 (define-command select-previous (&optional (minibuffer (current-minibuffer)))
   "Select previous entry in minibuffer."
-  (when (> (completion-cursor minibuffer) 0)
-    (decf (completion-cursor minibuffer))
+  (when (> (next::completion-cursor minibuffer) 0)
+    (decf (next::completion-cursor minibuffer))
     (state-changed minibuffer)
     (update-display minibuffer)
     (evaluate-script minibuffer
@@ -318,7 +318,7 @@
 (define-command copy-candidate (&optional (minibuffer (current-minibuffer)))
   "Copy candidate to clipboard."
   (let ((candidate (if (and (multi-selection-p minibuffer)
-                            (not (null (marked-completions minibuffer))))
+                            (not (null (next::marked-completions minibuffer))))
                        (str:join (string #\newline) (get-marked-candidates minibuffer))
                        (get-candidate minibuffer))))
     (unless (str:emptyp candidate)
@@ -356,7 +356,7 @@ readable."
       (unless (str:empty? input)
         (log:debug input minibuffer)
         (setf (input-buffer minibuffer) "")
-        (setf (input-cursor-position minibuffer) 0)
+        (setf (next::input-cursor-position minibuffer) 0)
         (insert input minibuffer)))))
 
 (define-command minibuffer-toggle-mark (&key
@@ -366,11 +366,11 @@ readable."
 Only available if minibuffer `multi-selection-p' is non-nil.  DIRECTION can be
 :next or :previous and specifies which candidate to select once done."
   (when (multi-selection-p minibuffer)
-    (with-slots (completions completion-cursor marked-completions) minibuffer
-      (let ((candidate (nth completion-cursor completions)))
-        (match (member candidate marked-completions)
-          ((guard n n) (setf marked-completions (delete candidate marked-completions)))
-          (_ (push candidate marked-completions)))))
+    (with-slots (next::completions next::completion-cursor next::marked-completions) minibuffer
+      (let ((candidate (nth next::completion-cursor next::completions)))
+        (match (member candidate next::marked-completions)
+          ((guard n n) (setf next::marked-completions (delete candidate next::marked-completions)))
+          (_ (push candidate next::marked-completions)))))
     (state-changed minibuffer)
     (update-display minibuffer)
     (match direction
@@ -386,8 +386,8 @@ See `minibuffer-toggle-mark'. "
   "Mark all visible candidates.
 Only available if minibuffer `multi-selection-p' is non-nil."
   (when (multi-selection-p minibuffer)
-    (with-slots (completions marked-completions) minibuffer
-      (setf marked-completions (union completions marked-completions)))
+    (with-slots (next::completions next::marked-completions) minibuffer
+      (setf next::marked-completions (union next::completions next::marked-completions)))
     (state-changed minibuffer)
     (update-display minibuffer)))
 
@@ -395,7 +395,7 @@ Only available if minibuffer `multi-selection-p' is non-nil."
   "Unmark all visible candidates.
 Only available if minibuffer `multi-selection-p' is non-nil."
   (when (multi-selection-p minibuffer)
-    (with-slots (completions marked-completions) minibuffer
-      (setf marked-completions (set-difference marked-completions completions)))
+    (with-slots (next::completions next::marked-completions) minibuffer
+      (setf next::marked-completions (set-difference next::marked-completions next::completions)))
     (state-changed minibuffer)
     (update-display minibuffer)))
