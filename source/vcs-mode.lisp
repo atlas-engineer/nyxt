@@ -41,8 +41,9 @@ changes, browse files in a text editor, use hooks...
 (defvar *vcs-usernames-alist* '(("github.com" . "")
                                 ("gitlab.com" . "")
                                 ("bitbucket.org" . ""))
-  "Your VCS usernames on different forges. Helps some commands to do things right, such as cloning with a git remote url instead of https.
-The forge name should be a domain, such as github.com.")
+  "Your VCS usernames on different forges.  It helps some commands to do things
+right, such as cloning over SSH instead of HTTPS.  The forge name should be a
+domain, such as 'github.com'.")
 
 (declaim (type (or null string) *vcs-username*))
 (sera:export-always '*vcs-username*)
@@ -161,8 +162,9 @@ CLONE-URI: quri:uri object."
 (in-package :next)
 
 (define-command vcs-clone ()
-  "Clone the repository of the current url to disk (if any). Git only at the moment.
-Ask for which directory to clone to, expect if there is one single choice."
+  "Clone the repository of the current URL to disk.  Only Git is supported at
+the moment.  Set the list of preferred destinations in the `*vcs-projects-roots*' variable.
+The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
   (let* ((uri (quri:uri (url (current-buffer))))
          (root-name (first (str:split "/" (quri:uri-path uri) :omit-nulls t)))
          (project-name (second (str:split "/" (quri:uri-path uri) :omit-nulls t)))
