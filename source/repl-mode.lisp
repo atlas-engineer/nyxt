@@ -57,3 +57,11 @@
                                           (write (ps:lisp content))))))
     (ffi-buffer-evaluate-javascript (buffer repl) insert-content))
   (print "hello world"))
+
+(in-package :next)
+
+(define-command lisp-repl ()
+  "Show Lisp REPL."
+  (let* ((repl-buffer (make-buffer :title "*Lisp REPL*" :modes '(base-mode next/repl-mode:repl-mode))))
+    (set-current-buffer repl-buffer)
+    repl-buffer))
