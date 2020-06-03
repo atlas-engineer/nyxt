@@ -3,51 +3,65 @@
 (defclass-export minibuffer (buffer)
   ((default-modes :initarg :default-modes
                   :initform '(minibuffer-mode))
-   (completion-function :initarg :completion-function :accessor completion-function
+   (completion-function :initarg :completion-function
+                        :accessor completion-function
                         :initform nil
-                        :documentation "Function that takes the user
-                        input string and returns a list of candidate
-                        strings")
-   (callback :initarg :callback :accessor callback
+                        :type (or function null)
+                        :documentation "Take the input
+string and returns a list of candidate strings.
+Example: `buffer-completion-filter'.")
+   (callback :accessor callback ; TODO: Unexport.
              :initform nil
              :documentation "Function to call over the selected candidate.")
    (callback-buffer :initarg :callback-buffer
                     :accessor callback-buffer
                     :initform (when *browser* (current-buffer))
-                    :documentation "The active buffer when the
-                    minibuffer was brought up.  This can be useful to
-                    know which was the original buffer in the
-                    `callback' in case the buffer was changed.")
+                    :documentation "The active buffer when the minibuffer was
+brought up.
+This can be useful to know which was the original buffer in the `callback' in
+case the buffer was changed.")
    (setup-function :initarg :setup-function :accessor setup-function
                    :initform #'setup-default
-                   :documentation "Function of no argument that fills
-                   the `content' on when the minibuffer is created.
-                   Called only once.")
-   (cleanup-function :initarg :cleanup-function :accessor cleanup-function
+                   :type (or function null)
+                   :documentation "Fills the `content' on when the minibuffer is created.
+Takes no argument.  Called only once.")
+   (cleanup-function :initarg :cleanup-function
+                     :accessor cleanup-function
                      :initform nil
-                     :documentation "Function run after a completion has been selected.
+                     :type (or function null)
+                     :documentation "Run after a completion has been selected.
 This should not rely on the minibuffer's content.")
    (changed-callback :initarg :changed-callback
                      :accessor changed-callback
                      :initform nil
-                     :documentation "Function to call whenever a change happens.")
+                     :type (or function null)
+                     :documentation "Called whenever a change happens.")
    (empty-complete-immediate :initarg :empty-complete-immediate ; TODO: Rename?
                              :accessor empty-complete-immediate
                              :initform nil
-                             :documentation "If non-nil, allow input
-                             matching no candidates.")
-   (input-prompt :initarg :input-prompt :accessor input-prompt :initform "Input"
-                 :type string)
-   (input-buffer :initarg :input-buffer :reader input-buffer :initform ""
+                             :type boolean
+                             :documentation "If non-nil, allow input matching no candidates.")
+   (input-prompt :initarg :input-prompt
+                 :accessor input-prompt
+                 :initform "Input"
+                 :type string
+                 :documentation "Text to prompt to the user, before `input-buffer'.")
+   (input-buffer :initarg :input-buffer
+                 :reader input-buffer
+                 :initform ""
                  :type string
                  :documentation "Initial text to place at the prompt, ready to edit.")
-   (input-cursor-position :accessor input-cursor-position :initform 0 :type integer)
-   (invisible-input-p :initarg :invisible-input-p :accessor invisible-input-p
+   (input-cursor-position :accessor input-cursor-position ; TODO: Unexport.
+                          :initform 0
+                          :type integer)
+   (invisible-input-p :initarg :invisible-input-p
+                      :accessor invisible-input-p
+                      :type boolean
                       :initform nil
-                      :documentation "If non-nil, input is replaced by
-                      placeholder character.  This is useful to
-                      conceal passwords.")
-   (history :initarg :history :accessor history
+                      :documentation "If non-nil, input is replaced by placeholder character.
+This is useful to conceal passwords.")
+   (history :initarg :history
+            :accessor history
             :initform (minibuffer-generic-history *browser*)
             :type (or containers:ring-buffer-reverse null)
             :documentation "History of inputs for the minibuffer.
@@ -55,44 +69,40 @@ If nil, no history is used.")
    (multi-selection-p :initarg :multi-selection-p :accessor multi-selection-p
                       :initform nil
                       :type boolean
-                      :documentation "If non-nil, allow for selecting
-                      multiple candidates.")
-   (completions :accessor completions :initform nil)
-   (marked-completions :accessor marked-completions :initform nil)
-   (show-completion-count :accessor show-completion-count
-                          :initarg :show-completion-count :initform t
+                      :documentation "If non-nil, allow for selecting multiple candidates.")
+   (completions :accessor completions :initform nil)               ; TODO: Unexport.
+   (marked-completions :accessor marked-completions :initform nil) ; TODO: Unexport.
+   (show-completion-count :accessor show-completion-count          ; TODO: Rename
+                          :initarg :show-completion-count
+                          :initform t
                           :type boolean
-                          :documentation "Show the number of chosen
-                          candidates inside brackets. In the case of
-                          yes/no questions, there is no need for it.")
-   (completion-head :accessor completion-head :initform 0)
-   (completion-cursor :accessor completion-cursor :initform 0)
+                          :documentation "Show the number of chosen candidates
+inside brackets. It can be useful to disable, for instance for a yes/no question.")
+   (completion-head :accessor completion-head :initform 0) ; TODO: Unexport.
+   (completion-cursor :accessor completion-cursor :initform 0) ; TODO: Unexport.
    (content :initform "" :type string
-            :documentation "The HTML content of the minibuffer.")
+            :documentation "The HTML content of the minibuffer.") ; TODO: Unexport.
    (max-lines :initarg :max-lines
               :accessor max-lines
               :type integer
               :initform 10
-              :documentation "Max number of candidate lines to show.
-              You will want edit this to match the changes done to
-              `minibuffer-font-size', `minibuffer-line-height' and
-              `minibuffer-open-height'.")
+              :documentation "Max number of candidate lines to show.  You will
+want edit this to match the changes done to `minibuffer-font-size',
+`minibuffer-line-height' and `minibuffer-open-height'.")
    (minibuffer-font-size :initarg :minibuffer-font-size
                          :accessor minibuffer-font-size
                          :type string
                          :initform "14px"
-                         :documentation "CSS font size for the
-                         minibuffer.  Value is a string, e.g. '1em'.
-                         You might want to configure the value on
-                         HiDPI screen.")
+                         :documentation "CSS font size for the minibuffer.
+Value is a string, e.g. '1em'.  You might want to adapt the value on HiDPI
+screen.")
    (minibuffer-line-height :initarg :minibuffer-line-height
                            :accessor minibuffer-line-height
                            :type string
                            :initform "18px"
-                           :documentation "CSS line height for the
-                           minibuffer.  Value is a string, e.g. '1em'.
-                           You might want to configure the value on
-                           HiDPI screen.")
+                           :documentation "CSS line height for the minibuffer.
+Value is a string, e.g. '1em'.  You might want to adapt the value on HiDPI
+screen.")
    (minibuffer-style :accessor minibuffer-style
                      :initform (cl-css:css
                                 '((* :font-family "monospace,monospace")
@@ -129,7 +139,9 @@ If nil, no history is used.")
                                ;; next/minibuffer-mode does not exist at
                                ;; compile-time since it's loaded afterwards.
                                (find-symbol (string 'cancel-input)
-                                            (find-package 'next/minibuffer-mode))))))
+                                            (find-package 'next/minibuffer-mode))))
+                 :type keymap:keymap
+                 :documentation "Keymap that takes precedence over all modes' keymaps."))
   (:documentation "The minibuffer is the interface for user interactions.  Each
 prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
 calls, such as invoking `minibuffer-history'."))
