@@ -166,7 +166,8 @@ A command is a special kind of function that can be called with
        (when (getf props :type)
          (list (markup:markup (:li (format nil "Type: ~s" (getf props :type))))))
        (when (getf props :initform)
-         (let* ((initform-string (write-to-string (getf props :initform)))
+         (let* ((initform-string (let ((*print-case* :downcase ))
+                                   (write-to-string (getf props :initform))))
                 (multiline-form? (search (string #\newline) initform-string)))
            (if multiline-form?
                (list (markup:markup (:li "Default value: " (:pre (:code initform-string)))))
