@@ -46,11 +46,14 @@
       (initialize-display mode)))))
 
 (defmethod initialize-display ((repl repl-mode))
-  (markup:markup
-   (:head (:style (style repl)))
-   (:body
-    (:div :id "container"
-          (:div :id "history" "")
-          (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
-          (:div :id "completions" ""))))
+  (let* ((content (markup:markup
+                   (:head (:style (style repl)))
+                   (:body
+                    (:div :id "container"
+                          (:div :id "history" "")
+                          (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
+                          (:div :id "completions" "")))))
+         (insert-content (ps:ps (ps:chain document
+                                          (write (ps:lisp content))))))
+    (ffi-buffer-evaluate-javascript (buffer repl) insert-content))
   (print "hello world"))
