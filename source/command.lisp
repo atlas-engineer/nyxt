@@ -104,7 +104,16 @@ deprecated and by what in the docstring."
            (echo-warning "~a is deprecated." ',name)
            ,@body)))))
 
-(defun package-defined-symbols (external-package-designators &optional user-package-designators)
+(defun next-packages ()
+  "Return all package designators that start with 'next'."
+  (mapcar #'package-name
+          (delete-if
+           (lambda (p)
+             (not (str:starts-with-p "NEXT" (package-name p))))
+           (list-all-packages))))
+
+(defun package-defined-symbols (&optional (external-package-designators (next-packages))
+                                  (user-package-designators '(:next-user)))
   "Return the list of all external symbols interned in EXTERNAL-PACKAGE-DESIGNATORS
 and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
   (let ((symbols))
@@ -118,16 +127,16 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
     symbols))
 
 (defun package-variables ()
-  "Return the list of variable symbols in `:next' and `:next-user'."
-  (delete-if (complement #'boundp) (package-defined-symbols '(:next) '(:next-user))))
+  "Return the list of variable symbols in Next-related-packages."
+  (delete-if (complement #'boundp) (package-defined-symbols)))
 
 (defun package-functions ()
-  "Return the list of function symbols in `:next' and `:next-user'."
-  (delete-if (complement #'fboundp) (package-defined-symbols '(:next) '(:next-user))))
+  "Return the list of function symbols in Next-related packages."
+  (delete-if (complement #'fboundp) (package-defined-symbols)))
 
 (defun package-classes ()
-  "Return the list of class symbols in `:next' and `:next-user'."
-  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols '(:next) '(:next-user))))
+  "Return the list of class symbols in Next-related-packages."
+  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols)))
 
 (defclass slot ()
   ((name :initarg :name
@@ -164,7 +173,7 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
                 (package-classes)))
 
 (defun package-methods ()               ; TODO: Unused.  Remove?
-  (loop for sym in (package-defined-symbols '(:next) '(:next-user))
+  (loop for sym in (package-defined-symbols)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
