@@ -495,13 +495,21 @@ This slot is mostly meant to clean up the thread if necessary.")
                      :documentation "A list of all echoed messages.
 Most recent messages are first.")
    (clipboard-ring :accessor clipboard-ring :initform (make-ring))
-   (minibuffer-generic-history :accessor minibuffer-generic-history :initform (make-ring))
-   (minibuffer-search-history :accessor minibuffer-search-history :initform (make-ring))
+   (minibuffer-generic-history :accessor minibuffer-generic-history
+                               :initform (make-ring))
+   (minibuffer-search-history :accessor minibuffer-search-history
+                              :initform (make-ring))
    (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (make-ring))
    (recent-buffers :accessor recent-buffers :initform (make-ring :size 50)
                    :documentation "A ring that keeps track of deleted buffers.")
-   (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p :initform t) ; TODO: Replace this with minibuffer Helm-style actions.
-   (windows :accessor windows :initform (make-hash-table :test #'equal))
+   (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p ; TODO: Replace this with minibuffer Helm-style actions.
+                               :initform t
+                               :documentation "When reopening a closed buffer,
+focus on it instead of opening it in the background.
+
+Warning: This setting may be deprecated in a future release, don't rely on it.")
+   (windows :accessor windows
+            :initform (make-hash-table :test #'equal))
    (total-window-count :initform 0
                        :type integer
                        :documentation "This is used to generate unique window
@@ -531,10 +539,8 @@ is run after the renderer has been initialized and after the
                                     :initarg :startup-error-reporter-function
                                     :type (or function null)
                                     :initform nil
-                                    :documentation "When supplied,
-                                    upon startup, if there are errors,
-                                    they will be reported by this
-                                    function.")
+                                    :documentation "When supplied, upon startup,
+if there are errors, they will be reported by this function.")
    (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
                    :documentation "The URL of the first buffer opened by Next when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
@@ -649,8 +655,7 @@ session. Possible values are :always-ask :always-restore :never-restore.")
    (error-output-path :accessor error-output-path
                       :type data-path
                       :initform (make-instance 'data-path :basename "standard-error.txt")
-                      :documentation "Path where `*error-output*' can be
-                      written to.")
+                      :documentation "Path where `*error-output*' can be written to.")
    ;; Hooks follow:
    (before-exit-hook :accessor before-exit-hook
                      :initform (hooks:make-hook-void)
@@ -706,16 +711,31 @@ provide content dynamic to the context.")
 
    (spell-check-language :accessor spell-check-language
                          :initform "en_US"
-                         :documentation "Spell check language used by
-                         Next. For a list of more languages available,
-                         please view the documentation for
-                         cl-enchant (broker-list-dicts).")
+                         :documentation "Spell check language used by Next. For
+a list of more languages available, please view the documentation for
+cl-enchant (broker-list-dicts).")
    (external-editor-program :accessor external-editor-program
                   :type (or string null)
                   :initform nil
                   :documentation "The external editor to use for
 editing files. It should be specified as a complete string path to the
 editor executable.")))
+(unexport
+ '(password-interface
+   messages-content
+   clipboard-ring
+   minibuffer-generic-history
+   minibuffer-search-history
+   minibuffer-set-url-history
+   recent-buffers
+   windows
+   last-active-buffer
+   buffers
+   startup-error-reporter-function
+   key-stack
+   downloads
+   download-watcher
+   startup-timestamp))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))

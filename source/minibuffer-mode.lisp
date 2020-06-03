@@ -117,7 +117,7 @@
 
 (define-command self-insert ()
   "Insert first key from `*browser*' `key-stack' in the minibuffer."
-  (let ((key-string (keymap:key-value (first (key-stack *browser*))))
+  (let ((key-string (keymap:key-value (first (next::key-stack *browser*))))
         (translation-table '(("hyphen" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking
@@ -313,7 +313,7 @@
 
 (define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
-  (insert (ring-insert-clipboard (clipboard-ring *browser*)) minibuffer))
+  (insert (ring-insert-clipboard (next::clipboard-ring *browser*)) minibuffer))
 
 (define-command copy-candidate (&optional (minibuffer (current-minibuffer)))
   "Copy candidate to clipboard."

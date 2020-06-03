@@ -359,7 +359,7 @@ Otherwise go forward to the only child."
   (with-result (ring-item (read-from-minibuffer
                            (make-minibuffer
                             :completion-function (ring-completion-filter
-                                                  (clipboard-ring *browser*)))))
+                                                  (next::clipboard-ring *browser*)))))
     (%paste :input-text ring-item)))
 
 (define-command copy ()
