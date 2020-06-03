@@ -74,6 +74,7 @@
                (:file "external-editor")
                ;; Core Modes
                (:file "base-mode")
+               (:file "repl-mode")
                (:file "help-mode")
                (:file "application-mode")
                (:file "web-mode")
