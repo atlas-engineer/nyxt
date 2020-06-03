@@ -80,7 +80,7 @@ with the file."
 (defparameter *open-file-function* #'open-file-function
   "Function triggered to open files.")
 
-(define-mode file-manager-mode (minibuffer-mode)
+(define-mode file-manager-mode (next/minibuffer-mode:minibuffer-mode)
   "Mode to open any file from the filesystem with fuzzy completion
 on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."

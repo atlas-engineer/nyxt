@@ -375,7 +375,7 @@ visible active buffer."
                                         (download-list)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :next)
+(in-package :next/minibuffer-mode)
 (define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer and focus the referencing hint/match
 if there is one such."
