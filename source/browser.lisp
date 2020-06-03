@@ -559,18 +559,7 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
 The engine with the \"default\" shortcut (or the first engine if there is no
 \"default\") is used when the query is not a valid URL, or the first keyword is
-not recognized.
-
-Example value:
-
-\(list (make-instance 'search-engine
-                      :shortcut \"default\"
-                      :search-url \"https://duckduckgo.com/?q=~a\"
-                      :fallback-url \"https://duckduckgo.com/\")
-       (make-instance 'search-engine
-                      :shortcut \"wiki\"
-                      :search-url \"https://en.wikipedia.org/w/index.php?search=~a\"
-                      :fallback-url \"https://en.wikipedia.org/\"))")
+not recognized.")
    (key-stack :accessor key-stack :initform '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
    (downloads :accessor downloads :initform '()
