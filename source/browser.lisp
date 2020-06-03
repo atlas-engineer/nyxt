@@ -713,7 +713,7 @@ The handlers take the `download-manager:download' class instance as argument.")
                          Next. For a list of more languages available,
                          please view the documentation for
                          cl-enchant (broker-list-dicts).")
-   (visual-editor :accessor visual-editor
+   (external-editor-program :accessor external-editor-program
                   :type (or string null)
                   :initform nil
                   :documentation "The external editor to use for
