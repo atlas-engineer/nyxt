@@ -147,12 +147,12 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
               :type symbol)))
 
 (defmethod object-string ((slot slot))
-  (write-to-string (name slot)))
+  (string-downcase (write-to-string (name slot))))
 
 (defmethod object-display ((slot slot))
-  (format nil "~s (~s)"
-          (name slot)
-          (class-sym slot)))
+  (string-downcase (format nil "~s (~s)"
+                           (name slot)
+                           (class-sym slot))))
 
 (defun class-public-slots (class-sym)
   "Return list of slot symbol that have at least a reader or a writer."

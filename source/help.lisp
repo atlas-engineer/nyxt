@@ -1,17 +1,41 @@
 (in-package :next)
 
+(defstruct variable-candidate
+  (name))
+(defmethod object-string ((variable variable-candidate))
+  (string-downcase (format nil "~s" (variable-candidate-name variable))))
+(defmethod object-display ((variable variable-candidate))
+  (object-string variable))
+
+(defstruct function-candidate
+  (name))
+(defmethod object-string ((fun function-candidate))
+  (string-downcase (format nil "~s" (function-candidate-name fun))))
+(defmethod object-display ((fun function-candidate))
+  (object-string fun))
+
+(defstruct class-candidate
+  (name))
+(defmethod object-string ((class class-candidate))
+  (string-downcase (format nil "~s" (class-candidate-name class))))
+(defmethod object-display ((class class-candidate))
+  (object-string class))
+
 (defun variable-completion-filter ()
-  (let ((variables (package-variables)))
+  (let* ((variables (mapcar (lambda (v) (make-variable-candidate :name v))
+                            (package-variables))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) variables))))
 
 (defun function-completion-filter ()
-  (let ((functions (package-functions)))
+  (let ((functions (mapcar (lambda (v) (make-function-candidate :name v))
+                           (package-functions))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) functions))))
 
 (defun class-completion-filter ()
-  (let ((classes (package-classes)))
+  (let ((classes (mapcar (lambda (v) (make-class-candidate :name v))
+                         (package-classes))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) classes))))
 
@@ -26,14 +50,15 @@
                        (make-minibuffer
                         :completion-function (variable-completion-filter)
                         :input-prompt "Describe variable")))
-    (let* ((help-buffer (next/help-mode:help-mode
+    (let* ((input (variable-candidate-name input))
+           (help-buffer (next/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer
                                   :title (str:concat "*Help-"
                                                      (symbol-name input)
                                                      "*"))))
            (help-contents (markup:markup
-                           (:h1 (symbol-name input))
+                           (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
                            (:p (documentation input 'variable))
                            (:h2 "Current Value:")
                            (:p (write-to-string (symbol-value input)))))
@@ -60,7 +85,11 @@
                                   :location)
                             :file))
          (help-contents (markup:markup
-                         (:h1 (symbol-name (sym command)))
+                         (:h1 (symbol-name (sym command))
+                              (unless (eq (find-package :next)
+                                          (symbol-package (sym command)))
+                                (format nil " (~a)"
+                                        (package-name (symbol-package (sym command))))))
                          (:p (:pre ; See describe-slot* for why we use :pre.
                               ;; TODO: This only displays the first method,
                               ;; i.e. the first command of one of the modes.
@@ -82,6 +111,7 @@ For generic functions, describe all the methods."
                        (make-minibuffer
                         :input-prompt "Describe function"
                         :completion-function (function-completion-filter))))
+    (setf input (function-candidate-name input))
     (flet ((method-desc (method)
              (markup:markup
               (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
@@ -95,10 +125,13 @@ For generic functions, describe all the methods."
                                                        (symbol-name input)
                                                        "*"))))
              (help-contents (if (typep (symbol-function input) 'generic-function)
-                                (apply #'str:concat (mapcar #'method-desc (mopu:generic-function-methods (symbol-function input))))
+                                (apply #'str:concat (mapcar #'method-desc
+                                                            (mopu:generic-function-methods
+                                                             (symbol-function input))))
                                 (str:concat
                                  (markup:markup
-                                  (:h1 (symbol-name input) (when (macro-function input) " (macro)"))
+                                  (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                                       (when (macro-function input) " (macro)"))
                                   (:pre (documentation input 'function))
                                   (:h2 "Argument list")
                                   (:p (write-to-string (mopu:function-arglist input))))
@@ -149,7 +182,8 @@ A command is a special kind of function that can be called with
                        (make-minibuffer
                         :input-prompt "Describe class"
                         :completion-function (class-completion-filter))))
-    (let* ((help-buffer (next/help-mode:help-mode
+    (let* ((input (class-candidate-name input))
+           (help-buffer (next/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer
                                   :title (str:concat "*Help-"
