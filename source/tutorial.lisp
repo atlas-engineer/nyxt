@@ -378,6 +378,8 @@ GnuPG documentation for how to set it up.")
                      +dev-data-profile+))
    (bookmarks-path (make-instance 'bookmarks-data-path
                                   :basename \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
+   (:p "Then you can start an instance of Next using this profile
+with " (:code "next --data-profile dev") ".")
 
    (:h3 "Password management")
    (:p "Next provides a uniform interface to some password managers including "
@@ -392,6 +394,25 @@ password manager interfaces.")
    (:ul
     (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
     (:li (command-markup 'copy-password) ": Copy selected password to the clipboard."))
+
+   (:h3 "Scripting")
+   (:p "You can evaluate code from the command line with "
+       (:code "--eval") " and " (:code "--load") ".  From a shell:")
+   (:pre (:code "$ next --no-init --eval '+version+' \
+  --load my-lib.lisp --eval '(format t \"Hello ~a!~&\" (my-lib:my-world))'"))
+   (:p "You can evaluate multiple --eval and --load in a row, they are
+executed in the order they appear.")
+   (:p "You can evan make scripts.  Here is an example =foo.lisp=:")
+   (:pre (:code "#!next --script
+\(format t \"~a~&\" +version+)"))
+   (:p "--eval and --load can be commanded to operate over an
+existing instance instead of a separate instance that exits immediately.")
+   (:p "The `remote-execution-p' slot of the `browser' class of the remote
+instance must be non-nil.")
+   (:p "To let know a private instance of Next to load a foo.lisp script and run it's
+`foo' function:")
+   (:pre (:code "next --data-profile private --remote --load foo.lisp --eval '(foo)'"))
+
    (:h2 "Troubleshooting")
    (:h3 "Playing videos")
    (:p "Next delegates video support to third party plugins.")
