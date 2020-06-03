@@ -195,7 +195,7 @@ A command is a special kind of function that can be called with
            (help-contents (str:concat
                            (markup:markup
                             (:h1 (symbol-name input))
-                            (:p (documentation input 'type))
+                            (:p (:pre (documentation input 'type)))
                             (:h2 "Slots:"))
                            slot-descs))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)

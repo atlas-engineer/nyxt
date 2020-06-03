@@ -147,7 +147,18 @@ screen.")
                  :documentation "Keymap that takes precedence over all modes' keymaps."))
   (:documentation "The minibuffer is the interface for user interactions.  Each
 prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
-calls, such as invoking `minibuffer-history'."))
+calls, such as invoking `minibuffer-history'.
+
+A minibuffer query is typically done as follows:
+
+\(with-result (tags (read-from-minibuffer
+                    (make-minibuffer
+                     :input-prompt \"Space-separated tag (s) \"
+                     :default-modes '(set-tag-mode minibuffer-mode)
+                     :completion-function (tag-completion-filter))))
+  ;; Write form here in which `tags' is bound to the resulting element(s).
+  )"))
+
 ;; Unexport non-public slots that may have accessors.
 (unexport
  '(input-cursor-position
