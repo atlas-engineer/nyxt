@@ -6,6 +6,7 @@
 (defmethod object-string ((object t))
   (princ-to-string object))
 
+(export-always 'object-display)
 (defmethod object-display ((object t))
   "Text shown by completion candidates in the minibuffer."
   (object-string object))
