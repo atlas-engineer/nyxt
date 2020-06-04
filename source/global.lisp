@@ -33,7 +33,7 @@ The hook takes no argument.
 This hook is run after the `*browser*' is instantiated and before the
 `startup-function' is run.
 
-Add a handler can be added with
+Add a handler can be added with:
 
   (hooks:add-hook *after-init-hook*
     (hooks:make-handler-void #'my-foo-function))")
