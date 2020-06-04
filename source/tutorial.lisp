@@ -184,6 +184,8 @@ section) of the current page and jump to it.")
          (:code "autofills") " browser slot.")
     (:li (command-markup 'vcs-clone) ": Clone version control repository
 matching current URL.")
+    (:li (command-markup 'open-file) ", " (command-markup 'download-open-file)
+         ": Open file in Next or externally.  See `*open-file-function*'.")
     (:li (command-markup 'download-video) ": Download video at current URL.")
     (:li (command-markup 'quit) ": Close all Next windows and quit."))
 

@@ -74,7 +74,6 @@
 
 (define-command download-open-file ()
   "Open a downloaded file.
-Ask the user to choose one of the downloaded files of the current session.
 See also `open-file'."
   (with-result (filename (read-from-minibuffer
                           (make-minibuffer

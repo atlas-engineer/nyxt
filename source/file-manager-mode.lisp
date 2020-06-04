@@ -32,7 +32,7 @@ Open any file from within Next, with the usual fuzzy completion.
 ;;; - many things...
 
 (defparameter *open-file-in-new-buffer* t
-  "If non-t, don't open files and directories in a new buffer.")
+  "If nil, don't open files and directories in a new buffer.")
 
 (defparameter *supported-media-types* '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
   ;XXX: either trully read supported MIME types, either try to open
@@ -40,7 +40,8 @@ Open any file from within Next, with the usual fuzzy completion.
   "Supported media types.")
 
 (defun supported-media (filename)
-  "Return t if this filename's extension is a media that Next can open."
+  "Return T if this filename's extension is a media that Next can open.
+See `*supported-media-types*'."
   (when (uiop:file-pathname-p filename)
     (let ((extension (str:downcase (pathname-type filename))))
       (find extension *supported-media-types* :test #'string-equal))))
@@ -49,13 +50,13 @@ Open any file from within Next, with the usual fuzzy completion.
 (serapeum:export-always 'open-file-function)
 (defun open-file-function (filename &key ;; (new-buffer-p *open-file-in-new-buffer*)
                                       )
-  "Open FILENAME.
-FILENAME is the full path of the file (or directory), as a string, with no tilde
-\(it would be expanded before).
-By default, try to open the filename with the system's default external program,
-using `xdg-open'.
-The user can set `*open-file-function*' to another function to decide what to do
-with the file."
+  "Open FILENAME in Next if supported, or externally otherwise.
+FILENAME is the full path of the file (or directory).
+
+See `*supported-media-types*' to customize the file types that are opened in
+Next and those that are opened externally.
+
+Can be used as a `*open-file-function*'."
   (handler-case
       (cond
         ((and (uiop:directory-pathname-p filename)
@@ -78,7 +79,30 @@ with the file."
 ;; the user is encouraged to override this in her init file.
 (serapeum:export-always '*open-file-function*)
 (defparameter *open-file-function* #'open-file-function
-  "Function triggered to open files.")
+  "Function triggered to open files.
+
+Example to open directories with =emacsclient= and some music ad
+videos with =mpv=:
+
+\(defun my-open-files (filename)
+  \"Open music and videos with mpv, open directories with emacsclient.\"
+  (let ((args)
+        (extension (pathname-type filename)))
+    (cond
+      ((uiop:directory-pathname-p filename)
+       (log:info \"Opening ~a with emacsclient.\" filename)
+       (setf args (list \"emacsclient\" filename)))
+
+      ((member extension '(\"flv\" \"mkv\" \"mp4\") :test #'string-equal)
+       (setf args (list \"mpv\" filename))))
+
+    (handler-case (if args
+                      (uiop:launch-program args)
+                      ;; fallback to Next's default.
+                      (next/file-manager-mode:open-file-function filename))
+      (error (c) (log:error \"Error opening ~a: ~a\" filename c)))))
+
+\(setf next/file-manager-mode:*open-file-function* #'my-open-files)")
 
 (define-mode file-manager-mode (next/minibuffer-mode:minibuffer-mode)
   "Mode to open any file from the filesystem with fuzzy completion
