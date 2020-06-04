@@ -61,7 +61,7 @@
                            (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
                            (:p (documentation input 'variable))
                            (:h2 "Current Value:")
-                           (:p (write-to-string (symbol-value input)))))
+                           (:pre (object-display (symbol-value input)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help)
