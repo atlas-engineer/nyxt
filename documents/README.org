@@ -1,30 +1,34 @@
 * Next Developer Readme                                                 :TOC:
 :PROPERTIES:
-:TOC:      this
+:TOC:      :include all
 :END:
--  [[#developer-installation-with-guix][Developer Installation with Guix]]
-  -  [[#run-from-source][Run from source]]
--  [[#standard-developer-installation][Standard Developer Installation]]
-  -  [[#installing-sbcl][Installing SBCL]]
-  -  [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
-  -  [[#gtk-dependencies][GTK dependencies]]
-    -  [[#lisp-dependencies][Lisp Dependencies]]
-    -  [[#gnulinux-gtk-dependencies][GNU/Linux GTK dependencies]]
-    -  [[#macos-specific-dependencies][macOS specific dependencies]]
-  -  [[#qt-dependencies][Qt dependencies]]
-    -  [[#lisp-dependencies][Lisp Dependencies]]
-    -  [[#gnulinux-dependencies][GNU/Linux dependencies]]
-    -  [[#macos-dependencies][macOS dependencies]]
-  -  [[#fetch-the-source-code][Fetch the source code]]
-  -  [[#compile][Compile]]
-    -  [[#using-the-makefile][Using the Makefile]]
-    -  [[#using-lisp][Using Lisp]]
-  -  [[#run-from-source][Run from Source]]
-  -  [[#update-local-lisp-libraries][Update local Lisp libraries]]
--  [[#help--community][Help & Community]]
-  -  [[#learning-common-lisp][Learning Common Lisp]]
-  -  [[#contribution][Contribution]]
-  -  [[#irc-channel][IRC Channel]]
+:CONTENTS:
+- [[#next-developer-readme][Next Developer Readme]]
+- [[#developer-installation-with-guix][Developer Installation with Guix]]
+- [[#standard-developer-installation][Standard Developer Installation]]
+  - [[#installing-sbcl][Installing SBCL]]
+  - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
+  - [[#gtk-dependencies][GTK dependencies]]
+    - [[#lisp-dependencies][Lisp Dependencies]]
+    - [[#gnulinux-gtk-dependencies][GNU/Linux GTK dependencies]]
+    - [[#macos-specific-dependencies][macOS specific dependencies]]
+  - [[#qt-dependencies][Qt dependencies]]
+    - [[#lisp-dependencies][Lisp Dependencies]]
+    - [[#gnulinux-dependencies][GNU/Linux dependencies]]
+    - [[#macos-dependencies][macOS dependencies]]
+  - [[#fetch-the-source-code][Fetch the source code]]
+  - [[#compile][Compile]]
+    - [[#using-the-makefile][Using the Makefile]]
+    - [[#using-lisp][Using Lisp]]
+  - [[#run-from-source][Run from Source]]
+  - [[#update-local-lisp-libraries][Update local Lisp libraries]]
+- [[#hacking][Hacking]]
+  - [[#slime-or-sly-with-a-compiled-version-of-next][SLIME (or SLY) with a compiled version of Next]]
+- [[#help--community][Help & Community]]
+  - [[#learning-common-lisp][Learning Common Lisp]]
+  - [[#contribution][Contribution]]
+  - [[#irc-channel][IRC Channel]]
+:END:
 
 * Developer Installation with Guix
 First, clone the Next repository.  It is most convenient to clone the Next
@@ -265,6 +269,56 @@ If you use the internal Quicklisp distribution (i.e. with the default
 automatically for you.
 
 You will also need to manually update the [[Lisp specific dependencies]].
+
+* Hacking
+** SLIME (or SLY) with a compiled version of Next
+=SLIME= provides a way of interacting with Next, and with Lisp code in
+general (e.g. in a [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][REPL]]). =SLY= is a fork of =SLIME= with additional functionality.
+
+From the SLIME manual:
+#+begin_quote
+SLIME extends Emacs with support for interactive programming in Common
+Lisp. The features are centered around slime-mode, an Emacs minor-mode
+that complements the standard lisp-mode. While lisp-mode supports
+editing Lisp source files, slime-mode adds support for interacting
+with a running Common Lisp process for compilation, debugging,
+documentation lookup, and so on.
+#+end_quote
+
+To use SLIME with a compiled version of Next run the command
+=start-swank= launch a Swank server. SLIME will connect to the Swank
+server and give you completion, debugging, documentation, etc. The
+port for Swank is define in ~*swank-port*~ and its default value is
+different from that of Swank on Emacs to avoid collisions with an
+Emacs ~*inferior-lisp*~ process.
+
+After launching the Swank server in Next, execute the following within Emacs:
+
+1. ~M-x~
+2. ~slime-connect~
+3. Enter ~127.0.0.1~ for the host
+4. Enter the port number set in the Next variable ~*swank-port*~ (e.g. ~4006~)
+
+To customize the port that Swank starts on, edit the global variable
+~*swank-port*~ in your init file.
+
+To use =SLY= instead of =SLIME=, you have to add the function =start-slynk= in your =init.lisp=:
+#+begin_src lisp
+(load-system :slynk)
+(when (load-system :slynk)
+  (define-command start-slynk (&optional (slynk-port *swank-port*))
+    "Start a Slynk server that can be connected to, for instance, in
+Emacs via SLY.
+
+Warning: This allows Next to be controlled remotely, that is, to
+execute arbitrary code with the privileges of the user running Next.
+Make sure you understand the security risks associated with this
+before running this command."
+      (slynk:create-server :port slynk-port :dont-close t)
+      (echo "Slynk server started at port ~a" slynk-port)))
+#+end_src
+
+Use like for =SLIME=, substituting =start-slynk= for =start-swank= in Next, and =sly-connect= for =slime-connect= in Emacs.
 
 * Help & Community
 There are several ways to ask for help from the community. The first
