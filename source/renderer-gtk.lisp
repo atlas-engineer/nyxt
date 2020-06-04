@@ -443,7 +443,7 @@ Warning: This behaviour may change in the future."
       t)))
 
 (defmethod on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
-  (let ((is-new-window nil) (is-known-type t) (event-type nil)
+  (let ((is-new-window nil) (is-known-type t) (event-type :other)
         (navigation-action nil) (navigation-type nil)
         (mouse-button nil) (modifiers ())
         (url nil) (request nil))
@@ -466,7 +466,7 @@ Warning: This behaviour may change in the future."
             (:webkit-navigation-type-back-forward :backward-or-forward)
             (:webkit-navigation-type-reload :reload)
             (:webkit-navigation-type-form-resubmitted :form-resubmission)
-            (:webkit-navigation-type-other :other)))
+            (_ :other)))
     ;; Get Navigation Parameters from WebKitNavigationAction object
     (when navigation-type
       (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action
