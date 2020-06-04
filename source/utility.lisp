@@ -9,8 +9,13 @@
 (export-always 'object-display)
 (defmethod object-display ((object t))
   "Text shown by completion candidates in the minibuffer."
-  (if (mopu:slot-names (class-of object))
-      (format-object object)
+  (if (and (mopu:slot-names (class-of object))
+           (find (package-name (symbol-package (class-name (class-of object))))
+                 (next-packages)
+                 :test #'string=))
+      (format nil "~a:~%~%~a"
+              object
+              (format-object object))
       (object-string object)))
 
 (defmethod object-string ((package package))
@@ -33,7 +38,11 @@
           (mapcar (lambda (pair)
                     (format nil "~a: ~a"
                             (first pair)
-                            (object-display (second pair))))
+                            ;; TODO: We could call object-display and recurse
+                            ;; here, but this would require us to implement some
+                            ;; form of indentation, lest it becomes unreadable.
+                            ;; Better: Make it clickable just like the SLIME inspector.
+                            (object-string (second pair))))
                   (slot-definitions object))))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
@@ -243,6 +252,10 @@ Initialization file use case:
 
 (export-always 'trim-list)
 (defun trim-list (list &optional (limit 100))
-  (if (< limit (length list))
-      (nconc (sera:nsubseq list 0 (1- limit)) (list "…"))
-      list))
+  (handler-case
+      (if (< limit (length list))
+          (nconc (sera:nsubseq list 0 (1- limit)) (list "…"))
+          list)
+    (error ()
+      ;; Improper list.
+      list)))
