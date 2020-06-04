@@ -30,13 +30,24 @@ If path is relative, it will be set to (xdg-data-home path).")
                     :initform (* 60 60 24)
                     :documentation "If URL is provided, update the list after
 this amount of seconds."))
-  (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot."))
+  (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot.
+See `*default-hostlist*' for an example."))
 
 (serapeum:export-always 'make-hostlist)
 (defun make-hostlist (&rest args)
   "Return a new `hostlist'.
 See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
+
+(defmethod object-string ((hostlist hostlist))
+  (format nil "~s" (trim-list (hosts hostlist))))
+
+(defmethod object-display ((hostlist hostlist))
+  (format nil "URL: ~s~&Path: ~s~&Update interval: ~as~&Hosts: ~s"
+          (url hostlist)
+          (expand-path (path hostlist))
+          (update-interval hostlist)
+          (trim-list (hosts hostlist))))
 
 (defmethod update ((hostlist hostlist))
   "Fetch HOSTLIST and return it.
@@ -109,6 +120,7 @@ Return nil if hostlist cannot be parsed."
 (define-mode blocker-mode ()
     "Enable blocking of blacklisted hosts.
 To customize the list of blocked hosts, set the `hostlists' slot.
+See the `hostlist' class documentation.
 
 Example:
 
