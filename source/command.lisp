@@ -104,7 +104,7 @@ deprecated and by what in the docstring."
            (echo-warning "~a is deprecated." ',name)
            ,@body)))))
 
-(defun next-packages ()
+(defun next-packages ()                 ; TODO: Export a customizable *next-packages* instead?
   "Return all package designators that start with 'next' plus Next own libraries."
   (mapcar #'package-name
           (append (delete-if

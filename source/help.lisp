@@ -329,7 +329,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
           until (eq object :eof)
           collect (eval object))))
 
-(define-command command-evaluate ()
+(define-command command-evaluate ()     ; TODO: Rename to `evaluate-lisp'?
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
@@ -339,16 +339,16 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                            :buffer (make-buffer
                                     ;; TODO: Reuse buffer / create REPL mode.
                                     :title "*List Evaluation*")))
-           (results (handler-case
-                        (mapcar #'write-to-string (evaluate input))
+           (results (handler-case (evaluate input)
                       (error (c) (list (format nil "Error: ~a" c)))))
            (result-contents (apply #'concatenate 'string
                                    (markup:markup
                                     (:h1 "Form")
-                                    (:p input)
+                                    (:pre (:code input))
                                     (:h1 "Result"))
                                    (loop for result in results
-                                         collect (markup:markup (:p result)))))
+                                         collect (markup:markup
+                                                  (:pre (:code (object-display result)))))))
            (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp result-contents)))))
       (ffi-buffer-evaluate-javascript result-buffer insert-results)
