@@ -21,6 +21,7 @@
     - [[#using-the-makefile][Using the Makefile]]
     - [[#using-lisp][Using Lisp]]
   - [[#update-local-lisp-libraries][Update local Lisp libraries]]
+- [[#run-next-in-a-security-sandbox][Run Next in a security sandbox]]
 - [[#hacking][Hacking]]
   - [[#run-from-source][Run from Source]]
   - [[#slime-or-sly-with-a-compiled-version-of-next][SLIME (or SLY) with a compiled version of Next]]
@@ -241,6 +242,29 @@ If you use the internal Quicklisp distribution (i.e. with the default
 automatically for you.
 
 You will also need to manually update the [[Lisp specific dependencies]].
+
+* Run Next in a security sandbox
+For improved security while you browse the Internet, you can run Next in a
+container on GNU/Linux.
+
+- With Guix:
+  #+begin_src sh
+  guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs next -- env DISPLAY="$DISPLAY" next
+  #+end_src
+
+  If you want to load your configuration and use the data files:
+
+  #+begin_src sh
+  guix environment --container --network --expose=/etc/ssl/certs --expose="$HOME/.config/next/" --share="$HOME/.local/share/next"="$HOME/.local/share/next/" --ad-hoc coreutils nss-certs next -- env DISPLAY="$DISPLAY" next
+  #+end_src
+
+  If you get an error like
+
+  : libGL error: failed to open /dev/dri/card0: No such file or directory
+
+  add the =--expose=/dev/dri/card0= option (change the path accordingly).
+
+- With [[https://firejail.wordpress.com/][Firejail]].
 
 * Hacking
 
