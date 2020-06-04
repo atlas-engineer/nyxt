@@ -59,7 +59,7 @@
                                                      "*"))))
            (help-contents (markup:markup
                            (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
-                           (:p (documentation input 'variable))
+                           (:pre (documentation input 'variable))
                            (:h2 "Current Value:")
                            (:pre (object-display (symbol-value input)))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
