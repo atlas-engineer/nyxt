@@ -1,5 +1,10 @@
 (in-package :next)
 
+(define-class-type window)
+(declaim (type (window-type) *window-class*))
+(export-always '*window-class*)
+(defvar *window-class* 'window)
+
 (defmethod object-string ((window window))
   (match (active-buffer window)
     ((guard b b)

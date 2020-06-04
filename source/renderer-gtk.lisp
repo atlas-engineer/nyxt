@@ -90,10 +90,7 @@ See https://github.com/atlas-engineer/next/issues/740")
    (message-view :accessor message-view)
    (key-string-buffer :accessor key-string-buffer)))
 
-(define-class-type window)
-(declaim (type (window-type) *window-class*))
-(export-always '*window-class*)
-(defvar *window-class* 'gtk-window)
+(setf *window-class* 'gtk-window)
 
 (defclass-export gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)
