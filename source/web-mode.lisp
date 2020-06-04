@@ -181,7 +181,7 @@ search.")
     (if (input-tag-p response)
         (ffi-generate-input-event
          window
-         (last-event buffer))
+         (next::last-event buffer))
         (funcall-safely command))))
 
 (define-command paste-or-set-url (&optional (buffer (current-buffer)))

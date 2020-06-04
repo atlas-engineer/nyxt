@@ -90,7 +90,7 @@ vi-normal-mode.")
   ;; (e.g. a text field gets focus).
   (ffi-generate-input-event
    (current-window)
-   (last-event buffer))
+   (next::last-event buffer))
   (with-result (response (next/web-mode:%clicked-in-input?))
     (cond
       ((and (next/web-mode:input-tag-p response)
