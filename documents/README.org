@@ -20,9 +20,9 @@
   - [[#compile][Compile]]
     - [[#using-the-makefile][Using the Makefile]]
     - [[#using-lisp][Using Lisp]]
-  - [[#run-from-source][Run from Source]]
   - [[#update-local-lisp-libraries][Update local Lisp libraries]]
 - [[#hacking][Hacking]]
+  - [[#run-from-source][Run from Source]]
   - [[#slime-or-sly-with-a-compiled-version-of-next][SLIME (or SLY) with a compiled version of Next]]
 - [[#help--community][Help & Community]]
   - [[#learning-common-lisp][Learning Common Lisp]]
@@ -217,34 +217,6 @@ version like this:
 (asdf:make :next/qt-application)
 #+END_SRC
 
-** Run from Source
-If you are developing Next, you may prefer to run Next directly from
-source so that you can skip the compilation step and iterate faster.
-
-Make sure that Quicklisp is set up and up-to-date (see [[Update local Lisp
-libraries]]) as explained in the Quicklisp section.
-
-Then in a shell execute the following:
-
-1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
-   supported Common Lisp compiler).
-2. Execute ~(require :asdf)~ if ASDF is not already loaded.
-3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
-   system definition (you must use absolute pathnames).
-4. Execute ~(ql:quickload :next/gtk)~ to load the Next system into your
-   Lisp image.
-5. Execute ~(next:start)~ to open your first Next window.
-
-The above process is a bit cumbersome and you'll probably want a more
-comfortable workflow from within your favourite editor.  For instance,
-with Emacs and SLIME the process is:
-
-1. =M-x slime RET=
-2. =,load-system RET next RET=
-3. =(next:start) RET=
-
-See the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of options for various editors.
-
 ** Update local Lisp libraries
 If you use Quicklisp for Common Lisp library management outside the
 context of Next, you may want to reuse your local distribution to
@@ -271,6 +243,30 @@ automatically for you.
 You will also need to manually update the [[Lisp specific dependencies]].
 
 * Hacking
+
+** Run from Source
+If you are developing Next, you may prefer to run Next directly from
+source so that you can skip the compilation step and iterate faster.
+
+Make sure that Quicklisp is set up and up-to-date (see [[Update local Lisp
+libraries]]) as explained in the Quicklisp section.
+
+Then in a shell execute the following:
+
+1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
+   supported Common Lisp compiler).
+2. Execute ~(require :asdf)~ if ASDF is not already loaded.
+3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
+   system definition (you must use absolute pathnames).
+4. Execute ~(ql:quickload :next/gtk)~ to load the Next system into your
+   Lisp image.
+5. Execute ~(next:start)~ to open your first Next window.
+
+The above process is a bit cumbersome and you'll probably want a more
+comfortable workflow from within your favourite editor.  See the section about
+Emacs and SLIME, or see the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of options for
+various editors.
+
 ** SLIME (or SLY) with a compiled version of Next
 =SLIME= provides a way of interacting with Next, and with Lisp code in
 general (e.g. in a [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][REPL]]). =SLY= is a fork of =SLIME= with additional functionality.
