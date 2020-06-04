@@ -220,3 +220,9 @@ Initialization file use case:
 (defun copy-to-clipboard (input)
   "Save INPUT text to clipboard, and ring."
   (containers:insert-item (clipboard-ring *browser*) (trivial-clipboard:text input)))
+
+(export-always 'trim-list)
+(defun trim-list (list &optional (limit 100))
+  (if (< limit (length list))
+      (nconc (sera:nsubseq list 0 (1- limit)) (list "…"))
+      list))
