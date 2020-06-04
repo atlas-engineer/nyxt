@@ -105,12 +105,20 @@ deprecated and by what in the docstring."
            ,@body)))))
 
 (defun next-packages ()
-  "Return all package designators that start with 'next'."
+  "Return all package designators that start with 'next' plus Next own libraries."
   (mapcar #'package-name
-          (delete-if
-           (lambda (p)
-             (not (str:starts-with-p "NEXT" (package-name p))))
-           (list-all-packages))))
+          (append (delete-if
+                   (lambda (p)
+                     (not (str:starts-with-p "NEXT" (package-name p))))
+                   (list-all-packages))
+                  (mapcar #'find-package
+                          '(download-manager
+                            history-tree
+                            hooks
+                            keymap
+                            scheme
+                            password
+                            text-analysis)))))
 
 (defun package-defined-symbols (&optional (external-package-designators (next-packages))
                                   (user-package-designators '(:next-user)))

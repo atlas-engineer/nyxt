@@ -9,12 +9,32 @@
 (export-always 'object-display)
 (defmethod object-display ((object t))
   "Text shown by completion candidates in the minibuffer."
-  (object-string object))
+  (if (mopu:slot-names (class-of object))
+      (format-object object)
+      (object-string object)))
 
 (defmethod object-string ((package package))
   (if (eq (package-name package) (find-package :next))
       ""
       (str:replace-all "next/" "" (str:downcase (package-name package)))))
+
+(defun slot-definitions (object)
+  (mapcar (lambda (slot-name)
+            (list
+             slot-name
+             (let ((value (slot-value object slot-name)))
+               (if (listp value)
+                   (trim-list value)
+                   value))))
+          (mopu:slot-names object)))
+
+(defun format-object (object)
+  (format nil "~{~a~^~%~}"
+          (mapcar (lambda (pair)
+                    (format nil "~a: ~a"
+                            (first pair)
+                            (object-display (second pair))))
+                  (slot-definitions object))))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
   "Start a Swank server that can be connected to, for instance, in
