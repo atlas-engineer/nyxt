@@ -91,7 +91,7 @@ The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
 Return nil if not found."
   (gethash name scheme))
 
-(declaim (ftype (function (scheme-name keymap &rest list) scheme) make-scheme))
+(declaim (ftype (function (scheme-name keymap &rest (or scheme-name keymap)) scheme) make-scheme))
 (defun make-scheme (name keymap &rest more-name+keymap-pairs)
   "Return a new scheme associating NAME to KEYMAP.
 With MORE-NAME+KEYMAP-PAIRS, include those names and keymaps as well.  This is
