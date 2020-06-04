@@ -32,7 +32,8 @@ Example:
 (defun current-keymaps (&optional (buffer (if (active-minibuffers (current-window))
                                               (current-minibuffer)
                                               (current-buffer))))
-  "Return the list of `keymap' for the current buffer, ordered by priority."
+  "Return the list of `keymap' for the current buffer, ordered by priority.
+If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
           (when buffer
             (cons (override-map buffer)

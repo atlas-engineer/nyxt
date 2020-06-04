@@ -125,6 +125,9 @@ Example formatter that prints the buffer indices over the total number of buffer
                        :type hook-window
                        :documentation "Hook run after `ffi-window-delete' takes effect.
 The handlers take the window as argument.")))
+(unexport
+ '(active-buffer
+   active-minibuffers))
 
 (defclass-export proxy ()
   ((server-address :accessor server-address :initarg :server-address
@@ -200,7 +203,7 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
     :type hook-keymaps-buffer
     :initform (make-hook-keymaps-buffer
                :combination #'hooks:combine-composed-hook)
-    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+    :documentation "Hook run as a return value of `current-keymaps'.")
    (override-map :accessor override-map
                  :initarg :override-map
                  :initform (let ((map (make-keymap "overide-map")))
@@ -335,6 +338,9 @@ The handlers take the buffer as argument.")
                           :documentation "Cookie policy of new buffers.
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only).")))
+(unexport
+ '(last-access
+   last-event))
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
