@@ -42,7 +42,7 @@ keybindings.")
    (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
 set of functions, hooks, keybindings and other facilities that modify the
 behavior of a buffer.  For example, 'blocker-mode' can be used for domain-based
-adblocking while noscript-mode disables JavaScript.")
+adblocking while 'noscript-mode' disables JavaScript.")
    (:p "Each buffer has separate instance of modes, which means that altering
 the settings of a mode in a buffer does not impact the other buffers.  Mode
 functions are only available when the mode is enabled for the current buffer.")
@@ -406,6 +406,9 @@ password manager interfaces.")
   --load my-lib.lisp --eval '(format t \"Hello ~a!~&\" (my-lib:my-world))'"))
    (:p "You can evaluate multiple --eval and --load in a row, they are
 executed in the order they appear.")
+   (:p "You can also evaluate a Lisp file from the Next interface with
+the " (:code "load-file") " command.  For
+convenience, " (:code "load-init-file") " (re)loads your initialization file.")
    (:p "You can evan make scripts.  Here is an example =foo.lisp=:")
    (:pre (:code "#!next --script
 \(format t \"~a~&\" +version+)"))
