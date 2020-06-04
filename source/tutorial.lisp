@@ -399,6 +399,11 @@ password manager interfaces.")
     (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
     (:li (command-markup 'copy-password) ": Copy selected password to the clipboard."))
 
+   (:h3 "Appearance")
+   (:p "Much of the visual style can be configured by the user.  Search the
+class slots for 'style'.  To customize the status area, see
+the " (:code "status-formatter") " window slot.")
+
    (:h3 "Scripting")
    (:p "You can evaluate code from the command line with "
        (:code "--eval") " and " (:code "--load") ".  From a shell:")
