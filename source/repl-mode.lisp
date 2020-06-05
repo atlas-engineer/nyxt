@@ -40,6 +40,8 @@
                            :margin "0")
                        (li :padding "2px")))
           :documentation "The CSS applied to a REPL when it is set-up.")
+   (input-buffer :accessor input-buffer
+                 :initform "Hello World")
    (evaluation-history :accessor evaluation-history
                        :initform (list))
    (constructor
@@ -48,7 +50,8 @@
       (initialize-display mode)
       (add-object-to-evaluation-history mode "goldfish")
       (add-object-to-evaluation-history mode "sunfish")
-      (update-evaluation-history-display mode)))))
+      (update-evaluation-history-display mode)
+      (update-input-buffer-display mode)))))
 
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup
@@ -60,8 +63,7 @@
                           (:div :id "completions" "")))))
          (insert-content (ps:ps (ps:chain document
                                           (write (ps:lisp content))))))
-    (ffi-buffer-evaluate-javascript (buffer repl) insert-content))
-  (print "hello world"))
+    (ffi-buffer-evaluate-javascript (buffer repl) insert-content)))
 
 (defmethod add-object-to-evaluation-history ((repl repl-mode) item)
   (push item (evaluation-history repl)))
@@ -74,8 +76,17 @@
                                 (:li item)))))))
     (ffi-buffer-evaluate-javascript 
      (buffer repl)
-     (ps:ps (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+     (ps:ps (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
                   (ps:lisp (generate-evaluation-history-html repl)))))))
+
+(defmethod update-input-buffer-display ((repl repl-mode))
+  (flet ((generate-input-buffer-html (repl)
+           (markup:markup
+            (:span (input-buffer repl)))))
+    (ffi-buffer-evaluate-javascript
+     (buffer repl)
+     (ps:ps (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+                  (ps:lisp (generate-input-buffer-html repl)))))))
 
 (in-package :next)
 
