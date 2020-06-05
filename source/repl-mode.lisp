@@ -28,7 +28,7 @@
                                      :height "100%")
                        ("#input" :padding "6px 0"
                                  :border-bottom "solid 1px lightgray")
-                       ("#completions" :flex-grow "1"
+                       ("#evaluation-history" :flex-grow "1"
                                        :overflow-y "auto"
                                        :overflow-x "auto")
                        ("#cursor" :background-color "gray"
@@ -40,23 +40,42 @@
                            :margin "0")
                        (li :padding "2px")))
           :documentation "The CSS applied to a REPL when it is set-up.")
+   (evaluation-history :accessor evaluation-history
+                       :initform (list))
    (constructor
     :initform
     (lambda (mode)
-      (initialize-display mode)))))
+      (initialize-display mode)
+      (add-object-to-evaluation-history mode "goldfish")
+      (add-object-to-evaluation-history mode "sunfish")
+      (update-evaluation-history-display mode)))))
 
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup
                    (:head (:style (style repl)))
                    (:body
                     (:div :id "container"
-                          (:div :id "history" "")
+                          (:div :id "evaluation-history" "")
                           (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
                           (:div :id "completions" "")))))
          (insert-content (ps:ps (ps:chain document
                                           (write (ps:lisp content))))))
     (ffi-buffer-evaluate-javascript (buffer repl) insert-content))
   (print "hello world"))
+
+(defmethod add-object-to-evaluation-history ((repl repl-mode) item)
+  (push item (evaluation-history repl)))
+
+(defmethod update-evaluation-history-display ((repl repl-mode))
+  (flet ((generate-evaluation-history-html (repl)
+           (markup:markup 
+            (:ul (loop for item in (evaluation-history repl)
+                       collect (markup:markup
+                                (:li item)))))))
+    (ffi-buffer-evaluate-javascript 
+     (buffer repl)
+     (ps:ps (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+                  (ps:lisp (generate-evaluation-history-html repl)))))))
 
 (in-package :next)
 
