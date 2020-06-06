@@ -265,11 +265,7 @@ Example:
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default))))")
    (default-new-buffer-url :accessor default-new-buffer-url
-                           :initform (let ((default (default-search-engine (all-search-engines))))
-                                       (if default
-                                           (or (fallback-url default)
-                                               (search-url default))
-                                           "about:blank"))
+                           :initform "https://nyxt.atlas.engineer/start"
                            :documentation "The URL set to a new blank buffer opened by Next.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
                     :documentation "The distance scroll-down or scroll-up will scroll.")
