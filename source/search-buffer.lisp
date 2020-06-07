@@ -184,6 +184,23 @@ searches over the selected buffer(s)."
                `(:case-sensitive-p ,case-sensitive-p)
                '()))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(in-package :next/minibuffer-mode)
+(define-command search-next ()
+  "Select next search entry in minibuffer."
+  (next/web-mode::update-selection-highlight-hint :follow t :scroll t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(in-package :next/web-mode)
+
+(define-mode minibuffer-search-mode (next/minibuffer-mode:minibuffer-mode)
+  "Minibuffer mode for searching."
+  ((keymap-scheme
+    :initform
+    (define-scheme "search"
+      scheme:cua
+      (list "C-s" 'next/minibuffer-mode:search-next)))))
+
 (defun search-over-buffers (buffers &key (case-sensitive-p nil explicit-case-p))
   "Add search boxes for a given search string over the
 provided buffers."
@@ -194,6 +211,7 @@ provided buffers."
                "Search for (3+ characters)"))
          (minibuffer (make-minibuffer
                       :input-prompt prompt-text
+                      :default-modes '(minibuffer-search-mode minibuffer-mode)
                       :completion-function
                       #'(lambda (minibuffer)
                           (unless explicit-case-p
@@ -209,13 +227,7 @@ provided buffers."
                            :scroll subsequent-call)
                           (setf subsequent-call t)))
                       :cleanup-function (lambda () (remove-focus))
-                      :history (next::minibuffer-search-history *browser*)))
-         (keymap-scheme (keymap-scheme-name minibuffer))
-         (keymap (keymap:get-keymap keymap-scheme
-                                    (keymap-scheme (first (modes minibuffer))))))
-    (define-key keymap
-      "C-s" #'(lambda ()
-                (update-selection-highlight-hint :follow t :scroll t)))
+                      :history (next::minibuffer-search-history *browser*))))
     (with-result (match (read-from-minibuffer minibuffer))
       (declare (ignore match))
       (update-selection-highlight-hint :follow t :scroll t))))
