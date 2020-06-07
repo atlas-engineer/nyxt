@@ -183,7 +183,7 @@ This can be useful to let the user select no tag when returning directly."
     (define-scheme "set-tag"
       scheme:cua
       (list "tab" 'insert-tag
-            "return" 'return-immediate)))))
+            "return" 'next/minibuffer-mode:return-immediate)))))
 
 (define-command show-bookmarks ()
   "Show all bookmarks in a new buffer."
