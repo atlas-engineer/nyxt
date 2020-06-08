@@ -11,6 +11,7 @@
     (define-scheme "repl"
       scheme:cua
       (list
+       "a" 'self-insert-repl
        "C-up" 'scroll-to-top)
       scheme:emacs
       (list
@@ -87,6 +88,16 @@
      (buffer repl)
      (ps:ps (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                   (ps:lisp (generate-input-buffer-html repl)))))))
+
+(defmethod insert ((repl repl-mode) characters)
+  (setf (input-buffer repl) (concatenate 'string (input-buffer repl) characters))
+  (update-input-buffer-display repl))
+
+(defun self-insert-repl ()
+  (next/minibuffer-mode:self-insert
+   (find-if (lambda (i) (eq (class-of i)
+                            (find-class 'next/repl-mode:repl-mode)))
+            (next:modes (next:current-buffer)))))
 
 (in-package :next)
 
