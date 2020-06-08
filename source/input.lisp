@@ -25,7 +25,7 @@ Example:
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
   (let ((keymap (apply #'keymap:make-keymap name parents)))
-    (setf (keymap:bound-type keymap) '(or keymap:keymap function-symbol))
+    (setf (keymap:bound-type keymap) '(or keymap:keymap function-symbol lambda))
     keymap))
 
 (export-always 'current-keymaps)
@@ -121,7 +121,7 @@ Return nil to forward to renderer or non-nil otherwise."
                 (dolist (key key-stack)
                   (let ((value (keymap:key-value key)))
                     (log:debug "Insert ~s in minibuffer" value)
-                    (insert value))))
+                    (insert (next:current-minibuffer) value))))
               (setf key-stack nil)
               t)
 

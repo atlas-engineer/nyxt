@@ -15,8 +15,8 @@
     (define-scheme "minibuffer"
       scheme:cua
       (list
-       "hyphen" 'self-insert
-       "space" 'self-insert
+       "hyphen" 'self-insert-minibuffer
+       "space" 'self-insert-minibuffer
        "C-f" 'cursor-forwards
        "M-f" 'cursor-forwards-word
        "C-right" 'cursor-forwards-word
@@ -115,7 +115,11 @@
     ((guard f f) (funcall-safely f)))
   (hide minibuffer))
 
-(define-command self-insert ()
+(defun self-insert-minibuffer ()
+  "Self insert with the current minibuffer."
+  (self-insert (next:current-minibuffer)))
+
+(define-command self-insert (receiver)
   "Insert first key from `*browser*' `key-stack' in the minibuffer."
   (let ((key-string (keymap:key-value (first (nyxt::key-stack *browser*))))
         (translation-table '(("hyphen" "-")
@@ -125,7 +129,7 @@
                              ("space" " "))))
     (setf key-string (or (cadr (assoc key-string translation-table :test #'string=))
                          key-string))
-    (insert key-string)))
+    (insert receiver key-string)))
 
 (define-command delete-forwards (&optional (minibuffer (current-minibuffer)))
   "Delete character after cursor."
@@ -313,7 +317,7 @@
 
 (define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
-  (insert (ring-insert-clipboard (nyxt::clipboard-ring *browser*)) minibuffer))
+  (insert minibuffer (ring-insert-clipboard (nyxt::clipboard-ring *browser*))))
 
 (define-command copy-candidate (&optional (minibuffer (current-minibuffer)))
   "Copy candidate to clipboard."
@@ -331,10 +335,10 @@ readable."
   (let ((candidate (get-candidate minibuffer)))
     (when candidate
       (kill-whole-line minibuffer)
-      (insert (if (valid-url-p candidate)
+      (insert minibuffer
+              (if (valid-url-p candidate)
                   (url-display candidate)
-                  candidate)
-              minibuffer))))
+                  candidate)))))
 
 (declaim (ftype (function (containers:ring-buffer-reverse))
                 minibuffer-history-completion-filter))
@@ -357,7 +361,7 @@ readable."
         (log:debug input minibuffer)
         (setf (input-buffer minibuffer) "")
         (setf (nyxt::input-cursor-position minibuffer) 0)
-        (insert input minibuffer)))))
+        (insert minibuffer input)))))
 
 (define-command minibuffer-toggle-mark (&key
                                         (minibuffer (current-minibuffer))

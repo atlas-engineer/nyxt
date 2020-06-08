@@ -232,7 +232,7 @@ complete against a search engine."
        (match (length matching-engines)
          (1
           (nyxt/minibuffer-mode:kill-whole-line minibuffer)
-          (insert (str:concat (shortcut (first matching-engines)) " ")))
+          (insert minibuffer (str:concat (shortcut (first matching-engines)) " "))))
          (match-count
           (with-result (engine (read-from-minibuffer
                                 (make-minibuffer
@@ -241,7 +241,7 @@ complete against a search engine."
                                  :completion-function #'search-engine-completion-filter)))
             (when engine
               (nyxt/minibuffer-mode:kill-whole-line minibuffer)
-              (insert (str:concat (shortcut engine) " ") minibuffer)))))))
+              (insert minibuffer (str:concat (shortcut engine) " "))))))))
     (t
      (nyxt/minibuffer-mode:insert-candidate minibuffer))))
 

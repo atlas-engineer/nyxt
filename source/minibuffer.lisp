@@ -389,7 +389,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
         (ffi-window-set-minibuffer-height (current-window) 0))))
 
 (export-always 'insert)
-(defun insert (characters &optional (minibuffer (current-minibuffer)))
+(defmethod insert ((minibuffer minibuffer) characters)
   (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
     ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
     (let ((old-cursor-position cursor))
