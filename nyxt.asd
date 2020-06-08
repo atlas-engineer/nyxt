@@ -35,6 +35,7 @@
                :trivial-types
                :unix-opts
                ;; Local systems:
+               :nyxt/text-buffer
                :nyxt/text-analysis
                :nyxt/download-manager
                :nyxt/history-tree
@@ -173,11 +174,17 @@
 
 (asdf:defsystem nyxt/text-analysis
   :depends-on (str)
-  :pathname "libraries/text-analysis//"
+  :pathname "libraries/text-analysis/"
   :components ((:file "package")
                (:file "data")
                (:file "stem")
                (:file "analysis")))
+
+(asdf:defsystem nyxt/text-buffer
+  :depends-on (:cluffer)
+  :pathname "libraries/text-buffer/"
+  :components ((:file "package")
+               (:file "text-buffer")))
 
 (asdf:defsystem nyxt/history-tree
   :pathname "libraries/history-tree/"
