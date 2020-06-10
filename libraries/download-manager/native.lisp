@@ -44,8 +44,10 @@
                      &key (buffer-size 16)) ; Small for testing.
   "Return the number of bytes fetched."
   (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
-         (temp-file (temp-file download)))
-    (with-open-file (output temp-file   ; TODO: This fails with temp-file has wild cards.
+         ;; Without `uiop:parse-native-namestring' `with-open-file' would fail
+         ;; if `temp-file' had a wildcard.
+         (temp-file (uiop:parse-native-namestring (temp-file download))))
+    (with-open-file (output temp-file
                             :direction :output
                             :if-exists :supersede
                             :element-type '(unsigned-byte 8))
