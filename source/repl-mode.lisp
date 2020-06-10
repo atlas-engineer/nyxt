@@ -12,15 +12,30 @@
       scheme:cua
       (list
        "a" 'self-insert-repl
+       "hyphen" 'self-insert-repl
        "space" 'self-insert-repl
        "C-f" 'cursor-forwards
+       "M-f" 'cursor-forwards-word
+       "C-right" 'cursor-forwards-word
        "C-b" 'cursor-backwards
+       "M-b" 'cursor-backwards-word
+       "C-left" 'cursor-backwards-word
+       "M-d" 'delete-forwards-word
+       "M-backspace" 'delete-backwards-word
+       "right" 'cursor-forwards
+       "left" 'cursor-backwards
        "C-d" 'delete-forwards
        "delete" 'delete-forwards
-       "backspace" 'delete-backwards)
+       "backspace" 'delete-backwards
+       "C-a" 'cursor-beginning
+       "home" 'cursor-beginning
+       "C-e" 'cursor-end
+       "end" 'cursor-end
+       "C-k" 'kill-line
+       ;"return" 'return-input
+       )
       scheme:emacs
-      (list
-       "M-f" 'history-forwards-query)))
+      (list)))
    (style :accessor style
           :initform (cl-css:css
                      '((* :font-family "monospace,monospace")
@@ -68,12 +83,12 @@
 
 (define-command cursor-forwards (&optional (repl (current-repl)))
   "Move cursor forward by one element."
-  (cluffer:forward-item (input-cursor repl))
+  (text-buffer::safe-forward (input-cursor repl))
   (update-input-buffer-display repl))
 
 (define-command cursor-backwards (&optional (repl (current-repl)))
   "Move cursor backwards by one element."
-  (cluffer:backward-item (input-cursor repl))
+  (text-buffer::safe-backward (input-cursor repl))
   (update-input-buffer-display repl))
 
 (define-command delete-forwards (&optional (repl (current-repl)))
@@ -83,7 +98,42 @@
 
 (define-command delete-backwards (&optional (repl (current-repl)))
   "Delete character before cursor."
-  (text-buffer::delete-item-backwards (input-cursor repl))
+  (text-buffer::delete-item-backward (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command cursor-beginning (&optional (repl (current-repl)))
+  "Move cursor to the beginning of the buffer."
+  (cluffer:beginning-of-line (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command cursor-end (&optional (repl (current-repl)))
+  "Move cursor to the end of the buffer."
+  (cluffer:end-of-line (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command cursor-forwards-word (&optional (repl (current-repl)))
+  "Move cursor forwards a word."
+  (text-buffer::move-forward-word (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command cursor-backwards-word (&optional (repl (current-repl)))
+  "Move cursor backwards a word."
+  (text-buffer::move-backward-word (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command delete-backwards-word (&optional (repl (current-repl)))
+  "Delete backwards a word."
+  (text-buffer::delete-backward-word (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command delete-forwards-word (&optional (repl (current-repl)))
+  "Delete forwards a word."
+  (text-buffer::delete-forward-word (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command kill-line (&optional (repl (current-repl)))
+  "Delete forwards a word."
+  (text-buffer::kill-forward-line (input-cursor repl))
   (update-input-buffer-display repl))
 
 (defmethod initialize-display ((repl repl-mode))
