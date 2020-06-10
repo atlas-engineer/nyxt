@@ -164,12 +164,16 @@ See https://github.com/atlas-engineer/next/issues/740")
      (lambda (widget event) (declare (ignore widget))
        #+darwin
        (push-modifier *browser* event)
+       #-darwin
+       (flush-clipboard)
        (on-signal-key-press-event window event)))
     (gobject:g-signal-connect
      gtk-object "key_release_event"
      (lambda (widget event) (declare (ignore widget))
        #+darwin
        (pop-modifier *browser* event)
+       #-darwin
+       (flush-clipboard)
        (on-signal-key-release-event window event)))
     (gobject:g-signal-connect
      gtk-object "destroy"
@@ -597,6 +601,8 @@ Warning: This behaviour may change in the future."
   (gobject:g-signal-connect
    (gtk-object buffer) "button-press-event"
    (lambda (web-view event) (declare (ignore web-view))
+     #-darwin
+     (flush-clipboard)
      (on-signal-button-press-event buffer event)))
   (gobject:g-signal-connect
    (gtk-object buffer) "scroll-event"
@@ -624,6 +630,8 @@ Warning: This behaviour may change in the future."
    (gtk-object buffer) "context-menu"
    (lambda (web-view context-menu event hit-test-result)
      (declare (ignore web-view event hit-test-result))
+     #-darwin
+     (flush-clipboard)
      (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
        (dolist (i (alex:iota length))
          (let* ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
@@ -642,6 +650,21 @@ Warning: This behaviour may change in the future."
      ;; Return t to prevent the context menu from showing.
      nil))
   buffer)
+
+#-darwin
+(defun flush-clipboard ()
+  "Flush clipboard.
+On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
+copy something from the context menu 'Copy' action, upon pasting we will
+retrieved the text from the GTK thread.  This is prone to create
+dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
+
+To avoid this, we can 'flush' the clipboard on every user action to ensure that
+the copied text is present the clipboard and need not be retrieved from the GTK
+thread."
+  (bt:make-thread
+   (lambda ()
+     (trivial-clipboard:text (trivial-clipboard:text)))))
 
 (defmethod ffi-buffer-delete ((buffer gtk-buffer))
   (gtk:gtk-widget-destroy (gtk-object buffer)))
