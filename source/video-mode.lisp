@@ -1,6 +1,7 @@
+;; TODO: Deprecate for 2.0 since it will be replaced by an improved download-mode.
 (uiop:define-package :next/video        ; TODO: Rename file to video.lisp since there is no mode?
     (:use :common-lisp :next)
-  (:export :download
+  (:export :download-and-notify
            :download-arguments
            :*download-program*
            :*download-args*
@@ -8,14 +9,14 @@
            :*preferred-download-directories*)
   (:documentation "Download videos on the Web.
 
-Command defined in this package: `download-video'.
+Command defined in this package: `download-and-notify'.
 
 It tries by default to use the program `youtube-dl', that you must
 have in your path.
 
 You can also write a new function that takes a URL as parameter, and
 bind it to `next/video:*download-function*'.  In doing so, you can
-rely on the `next/video:download' function, that does error handling
+rely on the `next/video:download-and-notify' function, that does error handling
 and process management.
 
 ***********************************************************************
@@ -66,7 +67,7 @@ Uses `*download-args*' and sets the output file path."
                   url)
             (download-arguments url target-dir))))
 
-(defun download (url &optional target-dir)
+(defun download-and-notify (url &optional target-dir)
   "Download asynchronously and notify on success or failure."
   (handler-case
       (progn
@@ -81,7 +82,7 @@ Uses `*download-args*' and sets the output file path."
     (error (c)
       (log:warn "Error downloading ~a to ~a: ~a" url target-dir c))))
 
-(defparameter *download-function* #'download
+(defparameter *download-function* #'download-and-notify
   "Default download function.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
