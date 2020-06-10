@@ -15,3 +15,7 @@
     (map nil (lambda (string)
                (write-string string out))
          (cluffer:items buffer))))
+
+(defmethod delete-item-backwards ((cursor cursor))
+  (cluffer:backward-item cursor)
+  (cluffer:delete-item cursor))

@@ -12,13 +12,15 @@
       scheme:cua
       (list
        "a" 'self-insert-repl
-       "space" 'self-insert-repl)
+       "space" 'self-insert-repl
+       "C-f" 'cursor-forwards
+       "C-b" 'cursor-backwards
+       "C-d" 'delete-forwards
+       "delete" 'delete-forwards
+       "backspace" 'delete-backwards)
       scheme:emacs
       (list
-       "M-f" 'history-forwards-query)
-      scheme:vi-normal
-      (list
-       "H" 'history-backwards)))
+       "M-f" 'history-forwards-query)))
    (style :accessor style
           :initform (cl-css:css
                      '((* :font-family "monospace,monospace")
@@ -58,6 +60,31 @@
       (cluffer:attach-cursor (input-cursor mode) (input-buffer mode))
       (update-evaluation-history-display mode)
       (update-input-buffer-display mode)))))
+
+(defun current-repl ()
+  (find-if (lambda (i) (eq (class-of i)
+                           (find-class 'next/repl-mode:repl-mode)))
+           (next:modes (next:current-buffer))))
+
+(define-command cursor-forwards (&optional (repl (current-repl)))
+  "Move cursor forward by one element."
+  (cluffer:forward-item (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command cursor-backwards (&optional (repl (current-repl)))
+  "Move cursor backwards by one element."
+  (cluffer:backward-item (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command delete-forwards (&optional (repl (current-repl)))
+  "Delete character after cursor."
+  (cluffer:delete-item (input-cursor repl))
+  (update-input-buffer-display repl))
+
+(define-command delete-backwards (&optional (repl (current-repl)))
+  "Delete character before cursor."
+  (text-buffer::delete-item-backwards (input-cursor repl))
+  (update-input-buffer-display repl))
 
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup
@@ -105,15 +132,12 @@
   (update-input-buffer-display repl))
 
 (defun self-insert-repl ()
-  (next/minibuffer-mode:self-insert
-   (find-if (lambda (i) (eq (class-of i)
-                            (find-class 'next/repl-mode:repl-mode)))
-            (next:modes (next:current-buffer)))))
+  (next/minibuffer-mode:self-insert (current-repl)))
 
 (in-package :next)
 
 (define-command lisp-repl ()
   "Show Lisp REPL."
-  (let* ((repl-buffer (make-buffer :title "*Lisp REPL*" :modes '(base-mode next/repl-mode:repl-mode))))
+  (let* ((repl-buffer (make-buffer :title "*Lisp REPL*" :modes '(next/repl-mode:repl-mode base-mode))))
     (set-current-buffer repl-buffer)
     repl-buffer))
