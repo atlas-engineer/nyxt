@@ -12,7 +12,7 @@
       scheme:cua
       (list
        "a" 'self-insert-repl
-       "C-up" 'scroll-to-top)
+       "space" 'self-insert-repl)
       scheme:emacs
       (list
        "M-f" 'history-forwards-query)
