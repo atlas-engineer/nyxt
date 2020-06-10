@@ -705,11 +705,11 @@ requested a reload."
 
 (defmethod ffi-buffer-set-proxy ((buffer gtk-buffer) &optional proxy-uri (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
-   Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
-   For the user-level interface, see `proxy-mode'.
+Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
+For the user-level interface, see `proxy-mode'.
 
-   Note: WebKit supports three proxy 'modes': default (the system proxy),
-   custom (the specified proxy) and none."
+Note: WebKit supports three proxy 'modes': default (the system proxy),
+custom (the specified proxy) and none."
   (setf (proxy-uri buffer) proxy-uri)
   (setf (proxy-ignored-hosts buffer) ignore-hosts)
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
@@ -718,7 +718,7 @@ requested a reload."
          (ignore-hosts (cffi:foreign-alloc :string
                                            :initial-contents ignore-hosts
                                            :null-terminated-p t)))
-    (when proxy-uri
+    (unless (str:emptyp proxy-uri)
       (setf mode :webkit-network-proxy-mode-custom)
       (setf settings
             (webkit:webkit-network-proxy-settings-new

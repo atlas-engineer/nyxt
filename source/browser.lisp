@@ -309,7 +309,8 @@ renderers might support this.")
                                         :background "#fcff9e")))
 
                           :documentation "The style of highlighted boxes, e.g. link hints.")
-   (proxy :initform nil :type :proxy
+   (proxy :initform nil
+          :type (or proxy null)
           :documentation "Proxy for buffer.")
    (certificate-whitelist :accessor certificate-whitelist
                           :initform '()
