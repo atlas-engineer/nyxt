@@ -45,7 +45,7 @@
   "Return the number of bytes fetched."
   (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
          (temp-file (temp-file download)))
-    (with-open-file (output temp-file
+    (with-open-file (output temp-file   ; TODO: This fails with temp-file has wild cards.
                             :direction :output
                             :if-exists :supersede
                             :element-type '(unsigned-byte 8))
@@ -91,7 +91,8 @@ Return NIL if filename is not a string or a pathname."
                       (parse-http-header
                        (gethash "content-disposition" headers))
                       :test #'string=)))
-      (let ((basename (file-namestring uri)))
-        (if (string= "" basename)
+      (let ((basename
+              (ignore-errors (file-namestring (quri:uri-path (quri:uri uri))))))
+        (if (or (null basename) (string= "" basename))
             "index.html"
             basename))))
