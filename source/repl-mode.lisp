@@ -42,7 +42,11 @@
                        (li :padding "2px")))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (input-buffer :accessor input-buffer
-                 :initform "Hello World")
+                 :initform (make-instance 'text-buffer:text-buffer)
+                 :documentation "Buffer used to capture keyboard input.")
+   (input-cursor :accessor input-cursor
+                 :initform (make-instance 'text-buffer:cursor)
+                 :documentation "Cursor used in conjunction with the input-buffer.")
    (evaluation-history :accessor evaluation-history
                        :initform (list))
    (constructor
@@ -51,6 +55,7 @@
       (initialize-display mode)
       (add-object-to-evaluation-history mode "goldfish")
       (add-object-to-evaluation-history mode "sunfish")
+      (cluffer:attach-cursor (input-cursor mode) (input-buffer mode))
       (update-evaluation-history-display mode)
       (update-input-buffer-display mode)))))
 
@@ -82,15 +87,21 @@
 
 (defmethod update-input-buffer-display ((repl repl-mode))
   (flet ((generate-input-buffer-html (repl)
-           (markup:markup
-            (:span (input-buffer repl)))))
+           (cond ((eql 0 (cluffer:item-count (input-buffer repl)))
+                  (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
+                 ((eql (cluffer:cursor-position (input-cursor repl)) (cluffer:item-count (input-buffer repl)))
+                  (markup:markup (:span (text-buffer::string-representation (input-buffer repl)))
+                                 (:span :id "cursor" (markup:raw "&nbsp;"))))
+                 (t (markup:markup (:span (subseq (text-buffer::string-representation (input-buffer repl)) 0 (cluffer:cursor-position (input-cursor repl))))
+                                   (:span :id "cursor" (subseq (text-buffer::string-representation (input-buffer repl)) (cluffer:cursor-position (input-cursor repl)) (+ 1 (cluffer:cursor-position (input-cursor repl)))))
+                                   (:span (subseq (text-buffer::string-representation (input-buffer repl)) (+ 1  (cluffer:cursor-position (input-cursor repl))))))))))
     (ffi-buffer-evaluate-javascript
      (buffer repl)
      (ps:ps (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                   (ps:lisp (generate-input-buffer-html repl)))))))
 
 (defmethod insert ((repl repl-mode) characters)
-  (setf (input-buffer repl) (concatenate 'string (input-buffer repl) characters))
+  (cluffer:insert-item (input-cursor repl) characters)
   (update-input-buffer-display repl))
 
 (defun self-insert-repl ()
