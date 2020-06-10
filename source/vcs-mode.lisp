@@ -98,7 +98,7 @@ If EXIT-RECURSIVE-SCAN is non-nil, avoid recursive scan of local projects. By de
     ;; Avoid false positives: check the directory exists.
     ;; It could have been deleted.
     (unless (or exit-recursive-scan
-                (and result (probe-file result)))
+                (uiop:file-exists-p result))
       (setf *git-projects* (parse-projects))
       (setf result (find-project-directory name :exit-recursive-scan t)))
     result))
