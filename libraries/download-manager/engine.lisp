@@ -23,7 +23,7 @@ Create it if it does not exist."
   "Return FILE if unique or suffix it with a number otherwise."
   (loop with original-name = file
         with suffix = 1
-        while (probe-file file)
+        while (uiop:file-exists-p file)
         do (setf file (format nil  "~a.~a" original-name suffix) )
         do (incf suffix))
   file)
