@@ -78,8 +78,8 @@ To perform an installation from source, please see the [[https://github.com/atla
 
 ** Documentation
 
-For full documentation about Next, how it works, and how to extend it
-please see the [[file:documents/MANUAL.org][MANUAL.org]].
+For full documentation about Next, how it works, and how to extend it please see
+the embedded help.  To get started, run the =help= command (=C-space help=).
 
 If you want to help with development or build Next from scratch, read
 the developer's documentation at [[https://github.com/atlas-engineer/next/blob/master/documents/README.org][documents/README.org]].
@@ -87,8 +87,7 @@ the developer's documentation at [[https://github.com/atlas-engineer/next/blob/m
 *** Customize and extend Next
 
 Complete customization is possible through the creation of a
-=~/.config/next/init.lisp= file. For more information please see:
-"Customizing Next" within the [[file:documents/MANUAL.org][MANUAL.org]].
+=~/.config/next/init.lisp= file. For more information, see the manual.
 
 Additionally, a document provided in the documents directory named
 [[file:documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
