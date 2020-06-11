@@ -361,9 +361,9 @@ There are a couple of resources out there to learn Common Lisp.
   serve as a good crash course.
 
 ** Contribution
-To contribute, please find a task within [[file:CHANGELOG.org][CHANGELOG.org]] document that
-has a TASK label affixed. Upon finding a task that you'd like to work
-on, ideally, ensure that it is not already being worked on.
+To contribute, please find a task [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] or within [[file:CHANGELOG.org][CHANGELOG.org]]
+document that has a TASK label affixed. Upon finding a task that you'd like to
+work on, ideally, ensure that it is not already being worked on.
 
 After you have found a TASK item that is available:
 
