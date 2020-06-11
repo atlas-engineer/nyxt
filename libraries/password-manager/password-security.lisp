@@ -31,7 +31,6 @@
                                                             :error-output '(:string :stripped t)))))))
 
 (defmethod save-password ((password-interface security-interface) &key password-name password service)
-  (uiop:run-program (list *security-cli-program* "add-internet-password"
-                          "-a" password-name "-s" service "-w" password)))
+  (error "Securely saving passwords not currently supported by security interface."))
 
 (defmethod password-correct-p ((password-interface security-interface)) t)
