@@ -1,4 +1,4 @@
-(asdf:defsystem :next
+(asdf:defsystem :nyxt
   :version "1.5.0"
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
@@ -35,12 +35,12 @@
                :trivial-types
                :unix-opts
                ;; Local systems:
-               :next/text-analysis
-               :next/download-manager
-               :next/history-tree
-               :next/password-manager
-               :next/hooks
-               :next/keymap)
+               :nyxt/text-analysis
+               :nyxt/download-manager
+               :nyxt/history-tree
+               :nyxt/password-manager
+               :nyxt/hooks
+               :nyxt/keymap)
   :pathname "source/"
   :components ((:file "patches/patch-serialization")
                (:file "package")
@@ -102,23 +102,23 @@
                (:file "start")
                (:file "tutorial")
                (:file "manual"))
-  :in-order-to ((test-op (test-op "next/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/tests"))))
 
-(asdf:defsystem next/tests
-  :depends-on (next prove)
+(asdf:defsystem nyxt/tests
+  :depends-on (nyxt prove)
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "tests/"))))
 
-(asdf:defsystem :next/gtk
-  :depends-on (:next
+(asdf:defsystem :nyxt/gtk
+  :depends-on (:nyxt
                :cl-cffi-gtk
                :cl-webkit2)
   :pathname "source/"
   :components ((:file "renderer-gtk")))
 
-(asdf:defsystem :next/qt
-  :depends-on (:next
+(asdf:defsystem :nyxt/qt
+  :depends-on (:nyxt
                :cl-webengine
                :trivial-main-thread)
   :pathname "source/"
@@ -133,25 +133,25 @@
 ;; The workaround is to set a new dummy system of which the sole purpose is to
 ;; produce the desired binary.
 
-(asdf:defsystem :next/gtk-application
-  :depends-on (:next/gtk)
+(asdf:defsystem :nyxt/gtk-application
+  :depends-on (:nyxt/gtk)
   :build-operation "program-op"
-  :build-pathname "next"
-  :entry-point "next:entry-point")
+  :build-pathname "nyxt"
+  :entry-point "nyxt:entry-point")
 
-(asdf:defsystem :next/qt-application
-  :depends-on (:next/qt)
+(asdf:defsystem :nyxt/qt-application
+  :depends-on (:nyxt/qt)
   :build-operation "program-op"
-  :build-pathname "next-qt"
-  :entry-point "next:entry-point")
+  :build-pathname "nyxt-qt"
+  :entry-point "nyxt:entry-point")
 
 #+sb-core-compression
 (defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
   (uiop:dump-image (asdf:output-file o c)
                    :executable t
-                   :compression (not (null (uiop:getenv "NEXT_COMPRESS")))))
+                   :compression (not (null (uiop:getenv "NYXT_COMPRESS")))))
 
-(asdf:defsystem next/download-manager
+(asdf:defsystem nyxt/download-manager
   :depends-on (cl-ppcre
                dexador
                log4cl
@@ -162,15 +162,15 @@
   :components ((:file "package")
                (:file "engine")
                (:file "native"))
-  :in-order-to ((test-op (test-op "next/download-manager/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/download-manager/tests"))))
 
-(asdf:defsystem next/download-manager/tests
-  :depends-on (next/download-manager prove)
+(asdf:defsystem nyxt/download-manager/tests
+  :depends-on (nyxt/download-manager prove)
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/download-manager/tests/"))))
 
-(asdf:defsystem next/text-analysis
+(asdf:defsystem nyxt/text-analysis
   :depends-on (str)
   :pathname "libraries/text-analysis//"
   :components ((:file "package")
@@ -178,19 +178,19 @@
                (:file "stem")
                (:file "analysis")))
 
-(asdf:defsystem next/history-tree
+(asdf:defsystem nyxt/history-tree
   :pathname "libraries/history-tree/"
   :components ((:file "package")
                (:file "history-tree"))
-  :in-order-to ((test-op (test-op "next/history-tree/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
 
-(asdf:defsystem next/history-tree/tests
-  :depends-on (next/history-tree prove)
+(asdf:defsystem nyxt/history-tree/tests
+  :depends-on (nyxt/history-tree prove)
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/history-tree/tests/"))))
 
-(asdf:defsystem next/password-manager
+(asdf:defsystem nyxt/password-manager
   :depends-on (bordeaux-threads
                cl-ppcre
                str
@@ -204,20 +204,20 @@
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
 
-(asdf:defsystem next/hooks
+(asdf:defsystem nyxt/hooks
   :depends-on (alexandria serapeum)
   :pathname "libraries/hooks/"
   :components ((:file "package")
                (:file "hooks"))
-  :in-order-to ((test-op (test-op "next/hooks/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/hooks/tests"))))
 
-(asdf:defsystem next/hooks/tests
-  :depends-on (next/hooks prove)
+(asdf:defsystem nyxt/hooks/tests
+  :depends-on (nyxt/hooks prove)
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/hooks/tests/"))))
 
-(asdf:defsystem next/keymap
+(asdf:defsystem nyxt/keymap
   :depends-on (alexandria fset str)
   :pathname "libraries/keymap/"
   :components ((:file "package")
@@ -226,10 +226,10 @@
                              (:file "keymap")
                              (:file "scheme")
                              (:file "scheme-names"))
-  :in-order-to ((test-op (test-op "next/keymap/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/keymap/tests"))))
 
-(asdf:defsystem next/keymap/tests
-  :depends-on (alexandria fset next/keymap prove)
+(asdf:defsystem nyxt/keymap/tests
+  :depends-on (alexandria fset nyxt/keymap prove)
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/keymap/tests/"))))
