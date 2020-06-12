@@ -348,7 +348,17 @@ Otherwise go forward to the only child."
 
 (define-command paste ()
   "Paste from clipboard into active-element."
-  (%paste))
+  ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
+  ;; copy something from the context menu 'Copy' action, upon pasting we will
+  ;; retrieved the text from the GTK thread.  This is prone to create
+  ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
+  ;;
+  ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
+  ;; is present the clipboard and need not be retrieved from the GTK thread.
+  (bt:make-thread
+   (lambda ()
+     (trivial-clipboard:text (trivial-clipboard:text))
+     (ffi-within-renderer-thread *browser* #'%paste))))
 
 (defun ring-completion-filter (ring)
   (let ((ring-items (containers:container->list ring)))
