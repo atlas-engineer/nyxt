@@ -1,16 +1,16 @@
-(defpackage :next.tests
+(defpackage :nyxt.tests
   (:use :common-lisp
-        :next
+        :nyxt
         :prove))
 
-(in-package :next.tests)
+(in-package :nyxt.tests)
 
 (plan nil)
 
 (setf *browser* (make-instance *browser-class*))
 
 (subtest "parse-url"
-  (is "https://duckduckgo.com/?q=%2Aspurious%2A" (next::parse-url "*spurious*")
+  (is "https://duckduckgo.com/?q=%2Aspurious%2A" (nyxt::parse-url "*spurious*")
       "ignore wildcards"))
 
 (finalize)
