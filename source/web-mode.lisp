@@ -71,6 +71,7 @@ search.")
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        "C-i" 'autofill
+       "C-c '" 'fill-input-from-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides wether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        "pageup" 'scroll-page-up
