@@ -44,6 +44,12 @@ MAJOR.MINOR.PATCH, we increment the:
   This name is more "searchable" on the Web.  It's also reasonable
   "backward-compatible" with "Next".
 
+  Note that the persisted files have changed location.  You might have to move
+  the configuration file and the local files according.  By default:
+
+  - ~/.config/next -> ~/.config/nyxt
+  - ~/.local/share/next -> ~/.local/share/nyxt
+
 - Replace D-Bus-based architecture with an FFI architecture.  As a result, there
   is only one exectuable needed to run Next and no more need for D-Bus.  This
   should simplify installation and remove many performance bottlenecks.
