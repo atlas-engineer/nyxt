@@ -63,13 +63,6 @@
     ;; for the mode.
     )))
 
-(declaim (type (list-of-characters) *word-separation-characters*))
-(defparameter *word-separation-characters* '(#\: #\/ #\- #\. #\Space #\ )
-  "Characters delimiting words (space, colon, slash, dot, etc).")
-
-(defun word-separation-character-p (char)
-  (intersection *word-separation-characters* (list char)))
-
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
   (with-slots (nyxt::callback must-match-p nyxt::completions nyxt::completion-cursor
@@ -133,165 +126,75 @@
 
 (define-command delete-forwards (&optional (minibuffer (current-minibuffer)))
   "Delete character after cursor."
-  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
-    (unless (= cursor (length buffer))
-      (setf buffer
-            (concatenate 'string
-                         (subseq buffer 0 cursor)
-                         (subseq buffer
-                                 (+ 1 cursor)
-                                 (length buffer))))))
+  (cluffer:delete-item (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command delete-backwards (&optional (minibuffer (current-minibuffer)))
   "Delete character before cursor."
-  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
-    (unless (= cursor 0)
-      (let ((old-cursor cursor))
-        ;; Change cursor before buffer or else we could have a cursor that's
-        ;; beyond the buffer length.
-        (decf cursor)
-        (setf buffer
-              (concatenate 'string
-                           (subseq buffer 0 (- old-cursor 1))
-                           (subseq buffer old-cursor (length buffer)))))))
+  (text-buffer::delete-item-backward (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-forwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor forward by one."
-  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
-    (when (< nyxt::input-cursor-position (length input-buffer))
-      (incf nyxt::input-cursor-position)))
+  (text-buffer::safe-forward (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-backwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor backwards by one."
-  (with-slots (nyxt::input-cursor-position) minibuffer
-    (when (> nyxt::input-cursor-position 0)
-      (decf nyxt::input-cursor-position)))
+  (text-buffer::safe-backward (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-beginning (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the input area."
-  (with-slots (nyxt::input-cursor-position) minibuffer
-    (setf nyxt::input-cursor-position 0))
+  (cluffer:beginning-of-line (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-end (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the input area."
-  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
-    (setf nyxt::input-cursor-position (length input-buffer)))
+  (cluffer:end-of-line (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
-
-(defun char-at-cursor (&optional (minibuffer (current-minibuffer)))
-  "Return the character the cursor it at in the minibuffer."
-  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
-    (if (< nyxt::input-cursor-position (length input-buffer))
-        (char (input-buffer minibuffer) (nyxt::input-cursor-position minibuffer)))))
-
-(defun char-at-position (input position)
-  "Return the character at `position' in `input', or nil."
-  (if (< position (length input))
-      (char input position)))
 
 (define-command cursor-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the word at point."
-  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
-    (if (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
-        (loop while (and
-                     (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
-                     (< nyxt::input-cursor-position (length input-buffer)))
-              do (incf nyxt::input-cursor-position))
-        (loop while (and
-                     (not (intersection *word-separation-characters* (list (char-at-cursor minibuffer))))
-                     (< nyxt::input-cursor-position (length input-buffer)))
-              do (incf nyxt::input-cursor-position))))
+  (text-buffer::move-forward-word (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer)
-  (nyxt::input-cursor-position minibuffer))
+  (cluffer:cursor-position (input-cursor minibuffer)))
 
-(defun backwards-word-position (input position)
-  "Return the cursor position to move one word backwards."
-  (flet ((on-delimiter-p (input position)
-           (word-separation-character-p (char-at-position input position)))
-         (ahead-delimiter-p (input position)
-           ;; In the minibuffer, the cursor is actually one position *after* the last char.
-           (word-separation-character-p (char-at-position input
-                                                          (max 0 (1- position))))))
-    ;; Move past all delimiters at the end of input.
-    (loop while (and (ahead-delimiter-p input position)
-                     (plusp position))
-       do (decf position))
-    ;; Move past one word.
-    (loop while (and (not (ahead-delimiter-p input position))
-                     (plusp position))
-       do (decf position))
-    ;; Don't erase the last delimiter.
-    (if (on-delimiter-p input position)
-        (incf position)
-        position)))
-
-;; TODO: Re-use cursor-forwards-word
 (define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the word at point."
-  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
-    (setf nyxt::input-cursor-position (backwards-word-position input-buffer nyxt::input-cursor-position)))
+  (text-buffer::move-backward-word (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer)
-  (nyxt::input-cursor-position minibuffer))
+  (cluffer:cursor-position (input-cursor minibuffer)))
 
 (define-command delete-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the end of the word at point."
-  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
-    (let* ((current-cursor-position cursor)
-           (new-cursor-position (cursor-forwards-word minibuffer))
-           (transpose-distance (- new-cursor-position current-cursor-position))
-           (new-buffer (concatenate 'string
-                         (subseq buffer 0 current-cursor-position)
-                         (subseq buffer new-cursor-position (length buffer)))))
-      (setf cursor (- cursor transpose-distance))
-      (setf buffer new-buffer)))
+  (text-buffer::delete-forward-word (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
-(defun %delete-backwards-word (input position)
-  "Delete one word backwards, starting from `position' in `input'.
-  Return two values: the new string and the new cursor position."
-  (let ((new-position (backwards-word-position input position)))
-    (values (concatenate 'string
-                         (str:substring 0 new-position input)
-                         (str:substring position nil input))
-            new-position)))
-
 (define-command delete-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the beginning of the word at point."
-  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
-    (multiple-value-bind (new-string new-position) (%delete-backwards-word buffer cursor)
-      ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
-      (setf cursor new-position
-            buffer new-string)))
+  (text-buffer::delete-backward-word (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters from cursor position until the end of the line."
-  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
-    (setf buffer (subseq buffer 0 cursor)))
+  (text-buffer::kill-forward-line (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters in the input."
-  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
-    ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
-    (setf cursor 0
-          buffer ""))
+  (text-buffer::kill-line (input-cursor minibuffer))
   (state-changed minibuffer)
   (update-display minibuffer))
 

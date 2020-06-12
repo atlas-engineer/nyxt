@@ -65,14 +65,12 @@ This should not rely on the minibuffer's content.")
                  :initform "Input"
                  :type string
                  :documentation "Text to prompt to the user, before `input-buffer'.")
-   (input-buffer :initarg :input-buffer
-                 :reader input-buffer
-                 :initform ""
-                 :type string
-                 :documentation "Initial text to place at the prompt, ready to edit.")
-   (input-cursor-position :accessor input-cursor-position
-                          :initform 0
-                          :type integer)
+   (input-buffer :accessor input-buffer
+                 :initform (make-instance 'text-buffer:text-buffer)
+                 :documentation "Buffer used to capture keyboard input.")
+   (input-cursor :accessor input-cursor
+                 :initform (make-instance 'text-buffer:cursor)
+                 :documentation "Cursor used in conjunction with the input-buffer.")
    (invisible-input-p :initarg :invisible-input-p
                       :accessor invisible-input-p
                       :type boolean
@@ -182,20 +180,21 @@ A minibuffer query is typically done as follows:
 (export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
 (export-always 'make-minibuffer)
-(defun make-minibuffer (&key
-                          (default-modes nil explicit-default-modes)
-                          (completion-function nil explicit-completion-function)
-                          (callback-buffer nil explicit-callback-buffer)
-                          (setup-function nil explicit-setup-function)
-                          (cleanup-function nil explicit-cleanup-function)
-                          (changed-callback nil explicit-changed-callback)
-                          (must-match-p t explicit-must-match-p)
-                          (input-prompt nil explicit-input-prompt)
-                          (input-buffer nil explicit-input-buffer)
-                          (invisible-input-p nil explicit-invisible-input-p)
-                          (show-completion-count-p t explicit-show-completion-count-p) ; TODO: Rename to hide-completion-count and reverse default value.
-                          (history nil explicit-history)
-                          (multi-selection-p nil explicit-multi-selection-p))
+(defun make-minibuffer
+    (&key
+       (default-modes nil explicit-default-modes)
+       (completion-function nil explicit-completion-function)
+       (callback-buffer nil explicit-callback-buffer)
+       (setup-function nil explicit-setup-function)
+       (cleanup-function nil explicit-cleanup-function)
+       (changed-callback nil explicit-changed-callback)
+       (must-match-p t explicit-must-match-p)
+       (input-prompt nil explicit-input-prompt)
+       (input-buffer nil explicit-input-buffer)
+       (invisible-input-p nil explicit-invisible-input-p)
+       (show-completion-count-p t explicit-show-completion-count-p) ; TODO: Rename to hide-completion-count and reverse default value.
+       (history nil explicit-history)
+       (multi-selection-p nil explicit-multi-selection-p))
   "See the `minibuffer' class for the argument documentation."
   (apply #'make-instance *minibuffer-class*
          `(,@(if explicit-default-modes
@@ -211,11 +210,11 @@ A minibuffer query is typically done as follows:
                  `(:setup-function ,setup-function)
                  '())
            ,@(if explicit-cleanup-function
-                `(:cleanup-function ,cleanup-function)
-                '())
+                 `(:cleanup-function ,cleanup-function)
+                 '())
            ,@(if explicit-changed-callback
-                `(:changed-callback ,changed-callback)
-                '())
+                 `(:changed-callback ,changed-callback)
+                 '())
            ,@(if explicit-must-match-p
                  `(:must-match-p ,must-match-p)
                  '())
@@ -323,22 +322,18 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
 
 (export-always 'erase-input)
 (defmethod erase-input ((minibuffer minibuffer))
-  "Clean-up the minibuffer input."
-  (setf (input-buffer minibuffer) "")
-  (setf (input-cursor-position minibuffer) 0)
-  (setf (content minibuffer) ""))
+  "Erase the minibuffer input."
+  (cluffer:beginning-of-line (input-cursor minibuffer))
+  (text-buffer::kill-forward-line (input-cursor minibuffer)))
 
-;; TODO: Move `erase-document' into the `show' function?
 (defmethod erase-document ((minibuffer minibuffer))
-  (evaluate-script minibuffer
-                   (ps:ps
-                     (ps:chain document (open))
-                     (ps:chain document (close)))))
+  (evaluate-script minibuffer (ps:ps
+                                (ps:chain document (open))
+                                (ps:chain document (close)))))
 
 (defmethod setup-default ((minibuffer minibuffer))
   (erase-document minibuffer)
   (update-candidates minibuffer)
-  (setf (input-cursor-position minibuffer) 0)
   (setf (content minibuffer)
         (markup:markup
          (:head (:style (minibuffer-style minibuffer))
@@ -353,19 +348,13 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
   (when minibuffer
-    (with-result (new-content (ffi-minibuffer-evaluate-javascript
-                               (current-window)
-                               (str:concat
-                                script
-                                ;; Return the new HTML body.
-                                (ps:ps (ps:chain document body |outerHTML|)))))
-      ;; Since the script may have changed the content on the platform port,
-      ;; we need to update the slot's value.
+    (with-result (new-content
+                  (ffi-minibuffer-evaluate-javascript
+                   (current-window)
+                   (str:concat script (ps:ps (ps:chain document body |outerHTML|)))))
       (setf (slot-value minibuffer 'content) new-content))))
 
-(defun show (&key
-               (minibuffer (first (active-minibuffers (current-window))))
-               height)
+(defun show (&key (minibuffer (first (active-minibuffers (current-window)))) height)
   "Show the last active minibuffer, if any."
   (when minibuffer
     (ffi-window-set-minibuffer-height
@@ -390,66 +379,24 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (export-always 'insert)
 (defmethod insert ((minibuffer minibuffer) characters)
-  (with-accessors ((buffer input-buffer) (cursor input-cursor-position)) minibuffer
-    ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
-    (let ((old-cursor-position cursor))
-      (incf cursor (length characters))
-      (setf buffer (str:insert characters
-                               old-cursor-position
-                               buffer))))
+  (text-buffer::insert-string (input-cursor minibuffer) characters)
   (state-changed minibuffer)
   (update-display minibuffer))
 
-(defvar +white-spaces+ '(#\space #\no-break_space))
-
-(export-always 'word-start)
-(defun word-start (s position)
-  "Return the index of the beginning word at POSITION in string S."
-  (apply #'max
-         (mapcar (lambda (char)
-                   (let ((pos (position char s
-                                        :end position
-                                        :from-end t)))
-                     (if pos
-                         (1+ pos)
-                         0)))
-                 +white-spaces+)))
-
-(export-always 'word-end)
-(defun word-end (s position)
-  "Return the index of the end of the word at POSITION in string S."
-  (apply #'min
-         (mapcar (lambda (char)
-                   (or (position char s :start position)
-                       (length s)))
-                 +white-spaces+)))
-
-(export-always 'word-at-cursor)
-(defun word-at-cursor (minibuffer)
-  "Return word at cursor.
-If cursor is between two words, return the first one."
-  (with-accessors ((input-buffer input-buffer) (input-cursor-position input-cursor-position)) minibuffer
-    (subseq input-buffer
-            (word-start input-buffer input-cursor-position)
-            (word-end input-buffer input-cursor-position))))
-
-(defun generate-input-html (input-buffer cursor-index)
-  (cond ((equal "" input-buffer) (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
-        ((eql cursor-index (length input-buffer)) (markup:markup (:span input-buffer)
-                                                                    (:span :id "cursor" (markup:raw "&nbsp;"))))
-        (t (markup:markup (:span (subseq input-buffer 0 cursor-index))
-                             (:span :id "cursor" (subseq input-buffer cursor-index (+ 1 cursor-index)))
-                             (:span (subseq input-buffer (+ 1  cursor-index)))))))
-
-(defun generate-input-html-invisible (input-buffer cursor-index)
-  (let ((input-buffer-password (make-string (length input-buffer) :initial-element #\*)))
-    (cond ((equal "" input-buffer-password) (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
-          ((eql cursor-index (length input-buffer-password))
-           (markup:markup (:span input-buffer-password)
-                             (:span :id "cursor" (markup:raw "&nbsp;"))))
-          (t (markup:markup (:span (subseq input-buffer-password 0 cursor-index))
-                               (:span :id "cursor" (subseq input-buffer-password cursor-index (+ 1 cursor-index)))
-                               (:span (subseq input-buffer-password (+ 1  cursor-index))))))))
+(defmethod generate-input-html ((minibuffer minibuffer))
+  (let ((buffer-string-representation (if (invisible-input-p minibuffer)
+                                          (text-buffer::invisible-string-representation (input-buffer minibuffer))
+                                          (text-buffer::string-representation (input-buffer minibuffer)))))
+    (cond ((eql 0 (cluffer:item-count (input-buffer minibuffer)))
+           (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
+          ((eql (cluffer:cursor-position (input-cursor minibuffer)) (cluffer:item-count (input-buffer minibuffer)))
+           (markup:markup (:span buffer-string-representation)
+                          (:span :id "cursor" (markup:raw "&nbsp;"))))
+          (t (markup:markup (:span (subseq buffer-string-representation 0 (cluffer:cursor-position (input-cursor minibuffer))))
+                            (:span :id "cursor" (subseq buffer-string-representation 
+                                                        (cluffer:cursor-position (input-cursor minibuffer))
+                                                        (+ 1 (cluffer:cursor-position (input-cursor minibuffer)))))
+                            (:span (subseq buffer-string-representation (+ 1  (cluffer:cursor-position (input-cursor minibuffer))))))))))
 
 (defun generate-completion-html (completions cursor-index minibuffer)
   (let ((lines (max-lines minibuffer))) ; TODO: Compute lines dynamically.
@@ -464,23 +411,23 @@ If cursor is between two words, return the first one."
              (- (completion-head minibuffer) 1)
              0)))
     (markup:markup (:ul (loop repeat lines
-                                 for i from (completion-head minibuffer)
-                                 for completion in (nthcdr i completions)
-                                 collect
-                                 (markup:markup
-                                  (:li :class (let ((selected-p (= i cursor-index))
-                                                    (marked-p (member completion (marked-completions minibuffer)))
-                                                    (head-p (= i (completion-head minibuffer))))
-                                                (str:join " " (delete-if #'null (list (and marked-p "marked")
-                                                                                      (and selected-p "selected")
-                                                                                      (and head-p "head")))))
-                                       :id (cond ; TODO: Unused?
-                                             ((= i cursor-index) "selected")
-                                             ((member completion (marked-completions minibuffer)) "marked")
-                                             ((= i (completion-head minibuffer)) "head"))
-                                       (match (object-display completion)
-                                         ((guard s (not (str:emptyp s))) s)
-                                         (_ " ")))))))))
+                              for i from (completion-head minibuffer)
+                              for completion in (nthcdr i completions)
+                              collect
+                              (markup:markup
+                               (:li :class (let ((selected-p (= i cursor-index))
+                                                 (marked-p (member completion (marked-completions minibuffer)))
+                                                 (head-p (= i (completion-head minibuffer))))
+                                             (str:join " " (delete-if #'null (list (and marked-p "marked")
+                                                                                   (and selected-p "selected")
+                                                                                   (and head-p "head")))))
+                                    :id (cond ; TODO: Unused?
+                                          ((= i cursor-index) "selected")
+                                          ((member completion (marked-completions minibuffer)) "marked")
+                                          ((= i (completion-head minibuffer)) "head"))
+                                    (match (object-display completion)
+                                      ((guard s (not (str:emptyp s))) s)
+                                      (_ " ")))))))))
 
 (defmethod set-completions ((minibuffer minibuffer) completions)
   "Set the completions and update the display."
@@ -490,12 +437,8 @@ If cursor is between two words, return the first one."
 
 (export-always 'update-display)
 (defmethod update-display ((minibuffer minibuffer))
-  (with-slots (input-buffer input-cursor-position
-               completions marked-completions completion-cursor)
-      minibuffer
-    (let ((input-text (if (invisible-input-p minibuffer)
-                          (generate-input-html-invisible input-buffer input-cursor-position)
-                          (generate-input-html input-buffer input-cursor-position)))
+  (with-slots (completions marked-completions completion-cursor) minibuffer
+    (let ((input-text (generate-input-html minibuffer))
           (completion-html (generate-completion-html completions completion-cursor minibuffer)))
       (evaluate-script minibuffer
                        (ps:ps
@@ -543,3 +486,7 @@ If cursor is between two words, return the first one."
 (defmethod get-marked-candidates ((minibuffer minibuffer))
   "Return the list of strings for the marked candidate in the minibuffer."
   (mapcar #'object-string (marked-completions minibuffer)))
+
+(defmethod input ((minibuffer minibuffer))
+  "Return the string representation of the minibuffers input-buffer."
+  (text-buffer::string-representation (input-buffer minibuffer)))

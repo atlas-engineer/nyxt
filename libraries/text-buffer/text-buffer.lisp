@@ -104,3 +104,8 @@
 (defmethod word-at-cursor ((cursor cursor))
     "Return word at cursor.
 If cursor is between two words, return the first one.")
+
+(defmethod kill-line ((cursor cursor))
+  "Kill the complete line."
+  (cluffer:beginning-of-line cursor)
+  (kill-forward-line cursor))
