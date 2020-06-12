@@ -80,7 +80,7 @@ Example:
                    (progn
                      ,@body)
                  (hooks:run-hook ,after-hook)))
-           (next-condition (c)
+           (nyxt-condition (c)
              (format t "~s" c)))))))
 
 ;; TODO: Update define-deprecated-command
