@@ -19,31 +19,37 @@
                ("SECURITY-INTERFACE" password:*security-cli-program*)
                ("PASSWORD-STORE-INTERFACE" password:*password-store-program*))))
 
+(defun has-method-p (object generic-function)
+  "Return non-nil if OBJECT is a specializer of a method of GENERIC-FUNCTION."
+  (find (class-of object)
+        (alex:mappend #'closer-mop:method-specializers
+                      (closer-mop:generic-function-methods generic-function))))
+
 (define-command save-new-password ()
   "Save password to password interface."
   (password-debug-info)
-  (if (password-interface *browser*)
-      (with-result* ((password-name (read-from-minibuffer
-                                     (make-minibuffer
-                                      :input-prompt "Name for new password"
-                                      :input-buffer (or (domain (url (current-buffer)))
-                                                        ""))))
-                     (service (if (closer-mop:subclassp
-                                   (class-of (password-interface *browser*))
-                                   'password::security-interface)
-                                  (read-from-minibuffer
-                                   (make-minibuffer
-                                    :input-prompt "Service"))
-                                  (use-empty-result)))
-                     (new-password (read-from-minibuffer
+  (cond
+    ((and (password-interface *browser*)
+          (has-method-p (password-interface *browser*)
+                        #'password:save-password))
+     (with-result* ((password-name (read-from-minibuffer
                                     (make-minibuffer
-                                     :invisible-input-p t
-                                     :input-prompt "New password (leave empty to generate)"))))
-        (password:save-password (password-interface *browser*)
-                                :password-name password-name
-                                :password new-password
-                                :service service))
-      (echo-warning "No password manager found.")))
+                                     :input-prompt "Name for new password"
+                                     :input-buffer (or (domain (url (current-buffer)))
+                                                       ""))))
+                    (new-password (read-from-minibuffer
+                                   (make-minibuffer
+                                    :invisible-input-p t
+                                    :input-prompt "New password (leave empty to generate)"))))
+       (password:save-password (password-interface *browser*)
+                               :password-name password-name
+                               :password new-password
+                               :service service)))
+    ((null (password-interface *browser*))
+     (echo-warning "No password manager found."))
+    (t (echo-warning "Password manager ~s does not support saving passwords."
+                     (string-downcase
+                      (class-name (class-of (password-interface *browser*))))))))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)

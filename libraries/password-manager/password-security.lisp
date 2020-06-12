@@ -25,12 +25,13 @@
 (defmethod clip-password ((password-interface security-interface) &key password-name service)
   (clip-password-string
    (str:replace-all
-    "\"" "" (str:replace-first
-             "password: " "" (nth-value 1 (uiop:run-program (list *security-cli-program* "find-internet-password"
-                                                                  "-a" password-name "-s" service "-g")
-                                                            :error-output '(:string :stripped t)))))))
-
-(defmethod save-password ((password-interface security-interface) &key password-name password service)
-  (error "Securely saving passwords not currently supported by security interface."))
+    "\"" ""
+    (str:replace-first
+     "password: " ""
+     (nth-value 1
+                (uiop:run-program
+                 (list *security-cli-program* "find-internet-password"
+                       "-a" password-name "-s" service "-g")
+                 :error-output '(:string :stripped t)))))))
 
 (defmethod password-correct-p ((password-interface security-interface)) t)
