@@ -1,9 +1,9 @@
 (defpackage :next.tests
   (:use :common-lisp
-        :next
+        :nyxt
         :prove))
 
-(in-package :next.tests)
+(in-package :nyxt.tests)
 
 (plan nil)
 
@@ -13,12 +13,12 @@
                              "DID-FINISH-NAVIGATION" "HISTORY-FORWARDS"
                              "HISTORY-FORWARDS-QUERY" "COPY-TITLE" "DID-COMMIT-NAVIGATION"
                              "COPY-URL" "ADD-OR-TRAVERSE-HISTORY" "SET-URL-NEW-BUFFER"
-                             "NOSCRIPT-MODE" "HELP" "JUMP-TO-HEADING" "NEXT-SEARCH-HINT"
+                             "NOSCRIPT-MODE" "HELP" "JUMP-TO-HEADING" "NYXT-SEARCH-HINT"
                              "BOOKMARK-CURRENT-PAGE" "NEW-BUFFER" "COMMAND-INSPECT"
                              "ADD-SEARCH-HINTS" "KILL" "REMOVE-SEARCH-HINTS" "LOAD-FILE"
-                             "KEYMAP" "NEXT-VERSION" "NAME" "SCROLL-LEFT" "ACTIVATE"
+                             "KEYMAP" "NYXT-VERSION" "NAME" "SCROLL-LEFT" "ACTIVATE"
                              "SCROLL-PAGE-DOWN" "SCROLL-RIGHT" "DESTRUCTOR"
-                             "SCROLL-TO-BOTTOM" "SWITCH-BUFFER-NEXT" "COMMAND-EVALUATE"
+                             "SCROLL-TO-BOTTOM" "SWITCH-BUFFER-NYXT" "COMMAND-EVALUATE"
                              "DID-FINISH-NAVIGATION" "BOOKMARK-ANCHOR" "SCROLL-DOWN"
                              "SCROLL-UP" "VI-BUTTON1" "RELOAD-CURRENT-BUFFER"
                              "COPY-ANCHOR-URL" "BOOKMARK-DELETE" "GO-ANCHOR-NEW-BUFFER"
@@ -35,80 +35,80 @@
                              "DOWNLOAD-LIST" "DOWNLOAD-MODE" "SET-URL-CURRENT-BUFFER"
                              "ABOUT" "VARIABLE-INSPECT" "GO-ANCHOR" "PREVIOUS-SEARCH-HINT"
                              "GO-ANCHOR-NEW-BUFFER-FOCUS")
-  "Existing Next commands.")
+  "Existing Nyxt commands.")
 
 (subtest "Fuzzy match"
-  (is (first (next::fuzzy-match "hel"
+  (is (first (nyxt::fuzzy-match "hel"
                                 '("help-mode" "help" "foo-help" "help-foo-bar")))
       "help")
-  (is (first (next::fuzzy-match "hel"
+  (is (first (nyxt::fuzzy-match "hel"
                                 *candidates*))
       "HELP"
       "match 'help' with real candidates list")
-  (is (first (next::fuzzy-match "swit buf"
-                                '("about" "switch-buffer-next" "switch-buffer"
+  (is (first (nyxt::fuzzy-match "swit buf"
+                                '("about" "switch-buffer-nyxt" "switch-buffer"
                                   "delete-buffer")))
       "switch-buffer"
       "match 'swit buf' (small list)")
-  (is (first (next::fuzzy-match "swit buf"
+  (is (first (nyxt::fuzzy-match "swit buf"
                                 *candidates*))
       "SWITCH-BUFFER"
       "match 'swit buf' with real candidates list")
   ;; TODO: Fix reverse fuzzy matching.
-  ;; (is (first (next::fuzzy-match "buf swit"
-  ;;                               '("about" "switch-buffer-next" "switch-buffer"
+  ;; (is (first (nyxt::fuzzy-match "buf swit"
+  ;;                               '("about" "switch-buffer-nyxt" "switch-buffer"
   ;;                                 "delete-buffer")))
   ;;     "switch-buffer"
   ;;     "reverse match 'buf swit' (small list)")
-  ;; (is (first (next::fuzzy-match "buf swit"
+  ;; (is (first (nyxt::fuzzy-match "buf swit"
   ;;                               *candidates*))
   ;;     "SWITCH-BUFFER"
   ;;     "reverse match 'buf swit' with real candidates list")
 
-  (is (first (next::fuzzy-match "de"
+  (is (first (nyxt::fuzzy-match "de"
                                 '("some-mode" "delete-foo")))
       "delete-foo"
       "candidates beginning with the first word appear first")
 
-  (is (first (next::fuzzy-match "foobar"
+  (is (first (nyxt::fuzzy-match "foobar"
                                 '("foo-dash-bar" "foo-bar")))
       "foo-bar"
       "search without a space. All characters count (small list).")
-  (is (first (next::fuzzy-match "sbf"
+  (is (first (nyxt::fuzzy-match "sbf"
                                 *candidates*))
       "SWITCH-BUFFER"
       "search without a space. All characters count, real list.")
-  (is (first (next::fuzzy-match "FOO"
+  (is (first (nyxt::fuzzy-match "FOO"
                                 '("foo-dash-bar" "FOO-BAR")))
       "FOO-BAR"
       "input is uppercase (small list)."))
 
 (subtest "Parse URL"
-  (is (next::parse-url "https://next.atlas.engineer")
-      "https://next.atlas.engineer"
+  (is (nyxt::parse-url "https://nyxt.atlas.engineer")
+      "https://nyxt.atlas.engineer"
       "full URL")
-  (is (next::parse-url "next.atlas.engineer")
-      "https://next.atlas.engineer"
+  (is (nyxt::parse-url "nyxt.atlas.engineer")
+      "https://nyxt.atlas.engineer"
       "URL without protocol")
-  (is (next::parse-url "wiki wikipedia")
+  (is (nyxt::parse-url "wiki wikipedia")
       "https://en.wikipedia.org/w/index.php?search=wikipedia"
       "search engine")
-  (is (next::parse-url "next browser")
-      "https://duckduckgo.com/?q=next+browser"
+  (is (nyxt::parse-url "nyxt browser")
+      "https://duckduckgo.com/?q=nyxt+browser"
       "default search engine")
-  (is (next::parse-url "wiki wikipedia")
+  (is (nyxt::parse-url "wiki wikipedia")
       "https://en.wikipedia.org/w/index.php?search=wikipedia"
       "wiki search engine")
-  (is (next::parse-url "file:///readme.org")
+  (is (nyxt::parse-url "file:///readme.org")
       "file:///readme.org"
       "local file")
-  (is (next::parse-url "foo")
+  (is (nyxt::parse-url "foo")
       "https://duckduckgo.com/?q=foo"
       "empty domain")
-  (is (next::parse-url "algo")
+  (is (nyxt::parse-url "algo")
       "https://duckduckgo.com/?q=algo"
       "same domain and TLD")
-  (is (first (next::fuzzy-match "[" '("test1"
+  (is (first (nyxt::fuzzy-match "[" '("test1"
                                       "http://[1:0:0:2::3:0.]/"
                                       "test2")))
       "http://[1:0:0:2::3:0.]/"
