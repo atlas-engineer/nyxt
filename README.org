@@ -1,21 +1,23 @@
-#+html: <img src="https://next.atlas.engineer/static/image/next_256x256.png" align="right"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/nyxt_256x256.png" align="right"/>
 
-* Next web browser
+* Nyxt web browser
 
-Next is a keyboard-oriented, extensible web-browser designed for power
+(Formerly Next.)
+
+Nyxt is a keyboard-oriented, extensible web-browser designed for power
 users. It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully
 configurable and extensible in Lisp, and has powerful features for
 productive professionals.
 
-If you like Next and if you want to help future development, please
+If you like Nyxt and if you want to help future development, please
 support us on [[https://www.patreon.com/next_browser][Patreon]] or give us a star, thank you!
 
-*Warning:* Next is under active development. Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
+*Warning:* Nyxt is under active development. Feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]] bugs,
 instabilities or feature wishes.
 
 -----
 
-#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/next/blob/master/documents/README.org">Developer Manual</a> | Freenode IRC: <a href="https://webchat.freenode.net/#nyxt">#nyxt</a> </div>
+#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer Manual</a> | Freenode IRC: <a href="https://webchat.freenode.net/#nyxt">#nyxt</a> </div>
 
 -----
 
@@ -59,35 +61,37 @@ makes sure  you never lose  track of where  you've been.
 For a complete list of features, please see the manual.
 
 * Getting started
-** Install Next
+** Install Nyxt
 
-Next supports GNU/Linux, macOS, and Guix with engine support for
+Nyxt supports GNU/Linux, macOS, and Guix with engine support for
 WebKit and WebEngine/Blink.
 
-Please see the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating
-systems provide packages for Next:
+Please see the [[https://nyxt.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating
+systems provide packages for Nyxt:
 
 - Alpine
 - Debian and derivatives (Ubuntu, LinuxMint), for Debian >= 10 (Buster).
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/next-browser/][Arch Linux AUR]] (and the [[https://aur.archlinux.org/packages/next-browser-git/][-git PKGBUILD]])
-- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.
-- [[https://guix.gnu.org][Guix]]: Install with =guix install next=.
+- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.  (Replace =next= with =nyxt= when
+  the package gets updated to 2.0.)
+- [[https://guix.gnu.org][Guix]]: Install with =guix install next=.  (Replace =next= with =nyxt= when
+  the package gets updated to 2.0.)
 
-To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
+To perform an installation from source, please see the [[https://github.com/atlas-engineer/nyxt/tree/master/documents][developer readme]].
 
 ** Documentation
 
-For full documentation about Next, how it works, and how to extend it please see
+For full documentation about Nyxt, how it works, and how to extend it please see
 the embedded help.  To get started, run the =help= command (=C-space help=).
 
-If you want to help with development or build Next from scratch, read
-the developer's documentation at [[https://github.com/atlas-engineer/next/blob/master/documents/README.org][documents/README.org]].
+If you want to help with development or build Nyxt from scratch, read
+the developer's documentation at [[https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org][documents/README.org]].
 
-*** Customize and extend Next
+*** Customize and extend Nyxt
 
 Complete customization is possible through the creation of a
-=~/.config/next/init.lisp= file. For more information, see the manual.
+=~/.config/nyxt/init.lisp= file. For more information, see the manual.
 
 Additionally, a document provided in the documents directory named
 [[file:documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
