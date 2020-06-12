@@ -1,21 +1,21 @@
 Usage:
 
-   make all                 Create Next.
-   make install             Install Next.
+   make all                 Create Nyxt.
+   make install             Install Nyxt.
 
 Set DESTDIR to change the target destinatation.  It should be
 an absolute path.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
-Set NEXT_RENDERER to the renderer of your choice, e.g. "gtk".
+Set NYXT_RENDERER to the renderer of your choice, e.g. "gtk".
 
-Set NEXT_COMPRESS to generate a compressed executable.  This
+Set NYXT_COMPRESS to generate a compressed executable.  This
 greatly reduces the file size at the expense of a slightly
 increased startup time.  It's recommended to leave this off
 on file systems with compression.
 
-If NEXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
+If NYXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
 dependencies will be fetched with Quicklisp into the
 QUICKLISP_DIR directory.
 
@@ -23,8 +23,8 @@ Otherwise, the dependencies will have to be locally installed
 on your system.  You may have to accomodate the LISP_FLAGS
 to, use your local install of Quicklisp.  For example:
 
-make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+make nyxt NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
 
 WARNING: Make sure your Quicklisp distribution is up-to-date when using
-NEXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
+NYXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
 libraries that should follow master.
