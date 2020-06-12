@@ -48,7 +48,21 @@ Parent directories are created if necessary."
        (with-maybe-gpg-file (,stream path ,@options)
          ,@body))))
 
-(defclass-export window ()
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'window)
+  (export
+   '(id
+     status-buffer-height
+     status-buffer-style
+     message-buffer-height
+     message-buffer-style
+     minibuffer-open-height
+     minibuffer-open-single-line-height
+     input-dispatcher
+     window-set-active-buffer-hook
+     status-formatter
+     window-delete-hook)))
+(defclass window ()
   ((id :accessor id :initarg :id)
    (active-buffer :accessor active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
@@ -167,7 +181,40 @@ Without handler, return ARGS as values.  This is an acceptable `combination' for
                  (values-list result))))
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) args)))
 
-(defclass-export buffer ()
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'buffer)
+  (export
+   '(id
+     url
+     url-at-point
+     title
+     load-status
+     modes
+     default-modes
+     keymap-scheme-name
+     current-keymaps-hook
+     override-map
+     forward-input-events-p
+     request-resource-scheme
+     request-resource-hook
+     default-new-buffer-url
+     scroll-distance
+     horizontal-scroll-distance
+     current-zoom-ratio
+     zoom-ratio-step
+     zoom-ratio-min
+     zoom-ratio-max
+     zoom-ratio-default
+     page-scroll-ratio
+     cookies-path
+     box-style
+     highlighted-box-style
+     proxy
+     certificate-whitelist
+     set-url-hook
+     buffer-delete-hook
+     default-cookie-policy)))
+(defclass buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.
 Dead buffers (i.e. those not associated with a web view) have an empty ID.")
@@ -469,6 +516,40 @@ the empty string.")))
           (make-string (max 0 (- 10 (length (shortcut engine)))) :initial-element #\no-break_space)
           (search-url engine)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'browser)
+  (export '(remote-execution-p
+            data-profile
+            socket-thread
+            focus-on-reopened-buffer-p
+            startup-function
+            start-page-url
+            open-external-link-in-new-window-p
+            search-engines
+            download-path
+            history-path
+            history-store-function
+            history-restore-function
+            bookmarks-data
+            bookmarks-path
+            bookmarks-store-function
+            bookmarks-restore-function
+            session-path
+            session-store-function
+            session-restore-function
+            session-restore-prompt
+            standard-output-path
+            error-output-path
+            before-exit-hook
+            window-make-hook
+            buffer-make-hook
+            buffer-before-make-hook
+            minibuffer-make-hook
+            before-download-hook
+            after-download-hook
+            autofills
+            spell-check-language
+            external-editor-program)))
 (defclass-export browser ()
   ((remote-execution-p :accessor remote-execution-p
                        :initarg remote-execution-p
@@ -723,22 +804,6 @@ cl-enchant (broker-list-dicts).")
                   :documentation "The external editor to use for
 editing files. It should be specified as a complete string path to the
 editor executable.")))
-(unexport
- '(password-interface
-   messages-content
-   clipboard-ring
-   minibuffer-generic-history
-   minibuffer-search-history
-   minibuffer-set-url-history
-   recent-buffers
-   windows
-   last-active-buffer
-   buffers
-   startup-error-reporter-function
-   key-stack
-   downloads
-   download-watcher
-   startup-timestamp))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))

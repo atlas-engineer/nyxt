@@ -1,6 +1,26 @@
 (in-package :nyxt)
 
-(defclass-export minibuffer (buffer)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'minibuffer)
+  (export
+   '(default-modes
+     completion-function
+     setup-function
+     cleanup-function
+     changed-callback
+     must-match-p
+     input-prompt
+     input-buffer
+     invisible-input-p
+     history
+     multi-selection-p
+     show-completion-count-p
+     max-lines
+     minibuffer-font-size
+     minibuffer-line-height
+     minibuffer-style
+     override-map)))
+(defclass minibuffer (buffer)
   ((default-modes :initarg :default-modes
                   :initform '(minibuffer-mode))
    (completion-function :initarg :completion-function
@@ -158,15 +178,6 @@ A minibuffer query is typically done as follows:
                      :completion-function (tag-completion-filter))))
   ;; Write form here in which `tags' is bound to the resulting element(s).
   )"))
-
-;; Unexport non-public slots that may have accessors.
-(unexport
- '(input-cursor-position
-   completions
-   marked-completions
-   completion-head
-   completion-cursor
-   content))
 
 (export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
