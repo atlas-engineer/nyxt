@@ -24,6 +24,6 @@ What we need from hooks:
 
 Links:
 - https://github.com/ruricolist/serapeum/issues/41
-- https://github.com/atlas-engineer/next/issues/419
+- https://github.com/atlas-engineer/nyxt/issues/419
 - https://github.com/scymtym/architecture.hooks/issues/2
 - https://github.com/scymtym/architecture.hooks/issues/3
