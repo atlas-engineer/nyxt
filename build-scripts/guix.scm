@@ -11,7 +11,7 @@
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --load=guix.scm --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs -- next
+;;   guix environment --load=guix.scm --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs -- nyxt
 ;;
 ;;; Code:
 
@@ -56,14 +56,14 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
-(define-public next
+(define-public nyxt
   (package
-    (name "next")
+    (name "nyxt")
     (version "0.0.0")
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system gnu-build-system)
     (arguments
-     `(#:make-flags (list "next" "NEXT_INTERNAL_QUICKLISP=false"
+     `(#:make-flags (list "nyxt" "NYXT_INTERNAL_QUICKLISP=false"
                           (string-append "DESTDIR=" (assoc-ref %outputs "out"))
                           "PREFIX=")
        #:strip-binaries? #f             ; Stripping breaks SBCL binaries.
@@ -91,7 +91,7 @@
              #t))
          (add-after 'install 'wrap-program
            (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((bin (string-append (assoc-ref outputs "out") "/bin/next"))
+             (let* ((bin (string-append (assoc-ref outputs "out") "/bin/nyxt"))
                     (glib-networking (assoc-ref inputs "glib-networking"))
                     (libs '("gsettings-desktop-schemas"))
                     (path (string-join
@@ -121,9 +121,9 @@
        ("sbcl" ,sbcl)))
     (inputs
      ;; We need to avoid sbcl-* inputs (sbcl-cl-cffi-gtk in particular) as they
-     ;; seem to cause Next to hang into a hogging process in about 10 minutes.
+     ;; seem to cause Nyxt to hang into a hogging process in about 10 minutes.
      ;; Probably an issue between CFFI and how we build SBCL packages.
-     ;; See https://github.com/atlas-engineer/next/issues/680.
+     ;; See https://github.com/atlas-engineer/nyxt/issues/680.
      `(("alexandria" ,cl-alexandria)
        ("bordeaux-threads" ,cl-bordeaux-threads)
        ("cl-css" ,cl-css)
@@ -161,10 +161,10 @@
        ("glib-networking" ,glib-networking)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)))
     (synopsis "Extensible web-browser in Common Lisp")
-    (home-page "https://next.atlas.engineer")
-    (description "Next is a keyboard-oriented, extensible web-browser
+    (home-page "https://nyxt.atlas.engineer")
+    (description "Nyxt is a keyboard-oriented, extensible web-browser
 designed for power users.  The application has familiar Emacs and VI
 key-bindings and is fully configurable and extensible in Common Lisp.")
     (license bsd-3)))
 
-next
+nyxt
