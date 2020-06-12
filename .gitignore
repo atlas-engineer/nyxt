@@ -1,8 +1,8 @@
 # Ignore build artifacts
 build/
 version
-next
-Next.app
+nyxt
+Nyxt.app
 
 # Automatically fetched dependencies
 quicklisp/
