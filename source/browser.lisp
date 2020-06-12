@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 ;; Create necessary hook types. We must forward-declare the class
 ;; since the hook take the type of the class that hosts them.
@@ -266,7 +266,7 @@ Example:
             :initial-value %slot-default))))")
    (default-new-buffer-url :accessor default-new-buffer-url
                            :initform "https://nyxt.atlas.engineer/start"
-                           :documentation "The URL set to a new blank buffer opened by Next.")
+                           :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
                     :documentation "The distance scroll-down or scroll-up will scroll.")
    (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50 :type number
@@ -294,7 +294,7 @@ down.")
 renderers might support this.")
    (box-style :accessor box-style
               :initform (cl-css:css
-                         '((".next-hint"
+                         '((".nyxt-hint"
                             :background "linear-gradient(#fcff9e, #efcc00)"
                             :color "black"
                             :border "1px black solid"
@@ -304,7 +304,7 @@ renderers might support this.")
               :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style :accessor highlighted-box-style
                           :initform (cl-css:css
-                                     '((".next-hint.next-highlight-hint"
+                                     '((".nyxt-hint.nyxt-highlight-hint"
                                         :font-weight "500"
                                         :background "#fcff9e")))
 
@@ -521,7 +521,7 @@ count since deleting windows may reseult in duplicate identifiers.")
    (last-active-window :initform nil
                        :type (or window null)
                        :documentation "Records the last active window.  This is
-useful when no Next window is focused and we still want `ffi-window-active' to
+useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (last-active-buffer :accessor last-active-buffer :initform nil)
@@ -544,8 +544,8 @@ is run after the renderer has been initialized and after the
                                     :initform nil
                                     :documentation "When supplied, upon startup,
 if there are errors, they will be reported by this function.")
-   (start-page-url :accessor start-page-url :initform "https://next.atlas.engineer/quickstart"
-                   :documentation "The URL of the first buffer opened by Next when started.")
+   (start-page-url :accessor start-page-url :initform "https://nyxt.atlas.engineer/quickstart"
+                   :documentation "The URL of the first buffer opened by Nyxt when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
                                        :initform nil
                                        :documentation "When open links from an external program, or
@@ -584,7 +584,7 @@ stored.  Nil means use system default.")
    (startup-timestamp :initarg :startup-timestamp :accessor startup-timestamp
                       :type local-time:timestamp
                       :initform nil
-                      :documentation "`local-time:timestamp' of when Next was started.")
+                      :documentation "`local-time:timestamp' of when Nyxt was started.")
    (init-time :initform 0.0 :type number
               :documentation "Init time in seconds.")
    (history-data :initform nil
@@ -714,7 +714,7 @@ provide content dynamic to the context.")
 
    (spell-check-language :accessor spell-check-language
                          :initform "en_US"
-                         :documentation "Spell check language used by Next. For
+                         :documentation "Spell check language used by Nyxt. For
 a list of more languages available, please view the documentation for
 cl-enchant (broker-list-dicts).")
    (external-editor-program :accessor external-editor-program
@@ -762,7 +762,7 @@ editor executable.")))
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
   (when (null browser)
-    (error "There is no current *browser*. Is Next started?")))
+    (error "There is no current *browser*. Is Nyxt started?")))
 
 (defmethod history-data ((browser browser))
   "Return the `history-data' slot from BROWSER.
@@ -872,15 +872,15 @@ current buffer."
 (declaim (ftype (function (&optional window buffer)) set-window-title))
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
-  "Set current window title to 'Next - TITLE - URL.
-If Next was started from a REPL, use 'Next REPL...' instead.
+  "Set current window title to 'Nyxt - TITLE - URL.
+If Nyxt was started from a REPL, use 'Nyxt REPL...' instead.
 This is useful to tell REPL instances from binary ones."
   (let ((url (url buffer))
         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
     (setf url (if (str:emptyp url) "<no url/name>" url))
     (ffi-window-set-title window
-                          (str:concat "Next" (when *keep-alive* " REPL") " - "
+                          (str:concat "Nyxt" (when *keep-alive* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
                                        (url-display url)))))
 
@@ -1089,7 +1089,7 @@ sometimes yields the wrong reasult."
 (declaim (ftype (function (buffer)) set-current-buffer))
 ;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.
 ;; But we can't use "minibuffer" here since it's not declared yet.  It will
-;; crash Next if we call set-current-buffer before instantiating the first
+;; crash Nyxt if we call set-current-buffer before instantiating the first
 ;; minibuffer.
 (export-always 'set-current-buffer)
 (defun set-current-buffer (buffer)

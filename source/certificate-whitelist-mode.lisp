@@ -1,7 +1,7 @@
-(uiop:define-package :next/certificate-whitelist-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/certificate-whitelist-mode
+  (:use :common-lisp :trivia :nyxt)
   (:documentation "Certificate whitelist mode"))
-(in-package :next/certificate-whitelist-mode)
+(in-package :nyxt/certificate-whitelist-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
@@ -35,8 +35,8 @@ This is only effective if `certificate-whitelist-mode' is enabled.
 To make this change permanent, you can customize
 `*default-certificate-whitelist*' in your init file:
 
-\(setf next/certificate-whitelist-mode:*default-certificate-whitelist*
-      '(\"next.atlas.engineer\" \"example.org\"))"
+\(setf nyxt/certificate-whitelist-mode:*default-certificate-whitelist*
+      '(\"nyxt.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-whitelist-mode)
       (if (url buffer)
           (let ((host (host (url buffer))))

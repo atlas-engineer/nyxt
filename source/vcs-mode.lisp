@@ -1,5 +1,5 @@
-(uiop:define-package :next/vcs
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/vcs
+  (:use :common-lisp :trivia :nyxt)
   (:documentation "Interact with Git repositories.
 
 New command: vcs-clone (alias git-clone), to clone a VCS repository on
@@ -14,7 +14,7 @@ One can set their username for GitHub and other forges.  It helps the
 clone command in doing The Right Thing©, such as using a Git remote
 URL instead of HTTPS.
 
-See `next/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
+See `nyxt/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
 
 
 ***********************************************************************
@@ -24,7 +24,7 @@ See `next/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
 We could clone on GitHub/GitLab, be notified if we have unpushed
 changes, browse files in a text editor, use hooks...
 "))
-(in-package :next/vcs)
+(in-package :nyxt/vcs)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
@@ -126,7 +126,7 @@ Create BASE if it doesn't exist."
 
 (defun choose-clone-url (root-name project-name clone-uri)
   "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."
-  (let ((username (next/vcs::vcs-username (quri:uri-domain clone-uri))))
+  (let ((username (nyxt/vcs::vcs-username (quri:uri-domain clone-uri))))
     (if (and username
              (string= root-name username))
         (progn
@@ -152,14 +152,14 @@ CLONE-URI: quri:uri object."
                   (launch-and-notify
                    (list "git" "clone"
                          (choose-clone-url root-name project-name clone-uri)
-                         (next/vcs::concat-filenames target-dir project-name))
+                         (nyxt/vcs::concat-filenames target-dir project-name))
                    :success-msg (format nil "Repository ~a cloned." project-name)
                    :error-msg (format nil "Repository ~a was NOT cloned." project-name)))
     (error (c)
       (echo-warning "Error cloning ~a: ~a" project-name c))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :next)
+(in-package :nyxt)
 
 (define-command vcs-clone ()
   "Clone the repository of the current URL to disk.  Only Git is supported at
@@ -169,21 +169,21 @@ The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
          (root-name (first (str:split "/" (quri:uri-path uri) :omit-nulls t)))
          (project-name (second (str:split "/" (quri:uri-path uri) :omit-nulls t)))
          (clone-uri (quri:copy-uri uri))
-         (existing-repo (next/vcs::find-project-directory project-name))
+         (existing-repo (nyxt/vcs::find-project-directory project-name))
          target-dir)
     (cond
       ((not project-name)
        (echo "Could not find the project name."))
       (existing-repo
        (echo "This repository exists in ~a" existing-repo))
-      ((= 1 (length next/vcs::*vcs-projects-roots*))
-       (setf target-dir (first next/vcs::*vcs-projects-roots*))
-       (next/vcs::clone project-name root-name target-dir clone-uri))
+      ((= 1 (length nyxt/vcs::*vcs-projects-roots*))
+       (setf target-dir (first nyxt/vcs::*vcs-projects-roots*))
+       (nyxt/vcs::clone project-name root-name target-dir clone-uri))
       (t (with-result (target-dir (read-from-minibuffer
                                    (make-minibuffer
                                     :input-prompt "Target directory"
-                                    :completion-function #'next/vcs::projects-roots-completion-filter)))
-           (next/vcs::clone project-name root-name target-dir clone-uri))))))
+                                    :completion-function #'nyxt/vcs::projects-roots-completion-filter)))
+           (nyxt/vcs::clone project-name root-name target-dir clone-uri))))))
 
 (define-command git-clone ()
   "Alias of `vcs-clone'."
@@ -191,5 +191,5 @@ The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
 
 (define-command vcs-update-local-projects ()
   "Scan the project roots and update the list of existing repositories."
-  (setf next/vcs::*git-projects* (next/vcs::parse-projects))
+  (setf nyxt/vcs::*git-projects* (nyxt/vcs::parse-projects))
   (echo "VCS projects updated."))

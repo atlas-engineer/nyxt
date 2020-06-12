@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defclass-export buffer-description ()
   ((url :accessor url :initarg :url
@@ -231,7 +231,7 @@ complete against a search engine."
                          :key #'shortcut)))
        (match (length matching-engines)
          (1
-          (next/minibuffer-mode:kill-whole-line minibuffer)
+          (nyxt/minibuffer-mode:kill-whole-line minibuffer)
           (insert (str:concat (shortcut (first matching-engines)) " ")))
          (match-count
           (with-result (engine (read-from-minibuffer
@@ -240,12 +240,12 @@ complete against a search engine."
                                  :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
                                  :completion-function #'search-engine-completion-filter)))
             (when engine
-              (next/minibuffer-mode:kill-whole-line minibuffer)
+              (nyxt/minibuffer-mode:kill-whole-line minibuffer)
               (insert (str:concat (shortcut engine) " ") minibuffer)))))))
     (t
-     (next/minibuffer-mode:insert-candidate minibuffer))))
+     (nyxt/minibuffer-mode:insert-candidate minibuffer))))
 
-(define-mode set-url-mode (next/minibuffer-mode:minibuffer-mode)
+(define-mode set-url-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."
   ((keymap-scheme
     :initform

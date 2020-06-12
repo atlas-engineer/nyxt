@@ -1,7 +1,7 @@
-(uiop:define-package :next/blocker-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/blocker-mode
+  (:use :common-lisp :trivia :nyxt)
   (:documentation "Block resource queries blacklisted hosts."))
-(in-package :next/blocker-mode)
+(in-package :nyxt/blocker-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
@@ -125,14 +125,14 @@ See the `hostlist' class documentation.
 Example:
 
 \(defvar *my-blocked-hosts*
-  (next/blocker-mode:make-hostlist
+  (nyxt/blocker-mode:make-hostlist
    :hosts '(\"platform.twitter.com\"
             \"syndication.twitter.com\"
             \"m.media-amazon.com\")))
 
-\(define-mode my-blocker-mode (next/blocker-mode:blocker-mode)
+\(define-mode my-blocker-mode (nyxt/blocker-mode:blocker-mode)
   \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
-  ((next/blocker-mode:hostlists :initform (list *my-blocked-hosts* next/blocker-mode:*default-hostlist*))))
+  ((nyxt/blocker-mode:hostlists :initform (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
 
 \(define-configuration buffer
   ((default-modes (append '(my-blocker-mode) %slot-default))))"
@@ -180,7 +180,7 @@ This is an acceptable handler for `request-resource-hook'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :s-serialization)
 
-(defmethod serializable-slots ((object next/blocker-mode::blocker-mode))
+(defmethod serializable-slots ((object nyxt/blocker-mode::blocker-mode))
   "Discard hostlists which can get pretty big."
-  (delete 'next/blocker-mode::hostlists
+  (delete 'nyxt/blocker-mode::hostlists
           (mapcar #'closer-mop:slot-definition-name (closer-mop:class-slots (class-of object)))))

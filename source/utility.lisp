@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 ;; TODO: Split this file into smaller ones when it becomes relevant.
 
@@ -11,7 +11,7 @@
   "Text shown by completion candidates in the minibuffer."
   (if (and (mopu:slot-names (class-of object))
            (find (package-name (symbol-package (class-name (class-of object))))
-                 (next-packages)
+                 (nyxt-packages)
                  :test #'string=))
       (format nil "~a:~%~%~a"
               object
@@ -19,9 +19,9 @@
       (object-string object)))
 
 (defmethod object-string ((package package))
-  (if (eq (package-name package) (find-package :next))
+  (if (eq (package-name package) (find-package :nyxt))
       ""
-      (str:replace-all "next/" "" (str:downcase (package-name package)))))
+      (str:replace-all "nyxt/" "" (str:downcase (package-name package)))))
 
 (defun slot-definitions (object)
   (mapcar (lambda (slot-name)
@@ -49,8 +49,8 @@
   "Start a Swank server that can be connected to, for instance, in
 Emacs via SLIME.
 
-Warning: This allows Next to be controlled remotely, that is, to
-execute arbitrary code with the privileges of the user running Next.
+Warning: This allows Nyxt to be controlled remotely, that is, to
+execute arbitrary code with the privileges of the user running Nyxt.
 Make sure you understand the security risks associated with this
 before running this command."
   (swank:create-server :port swank-port :dont-close t)
@@ -71,7 +71,7 @@ before running this command."
      #+linux
      (list "notify-send" msg)
      #+darwin
-     (list "terminal-notifier" "-title" "Next" "-message" msg))))
+     (list "terminal-notifier" "-title" "Nyxt" "-message" msg))))
 
 (export-always 'launch-and-notify)
 (defun launch-and-notify (command &key (success-msg "Command succeded.") (error-msg "Command failed."))
@@ -191,10 +191,10 @@ Since modes are classes with class variables (the `*MODE-class*'), the same appl
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
-\(define-configuration next/blocker-mode:blocker-mode
-  ((next/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
+\(define-configuration nyxt/blocker-mode:blocker-mode
+  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
 
-Since the above binds `next/blocker-mode:*blocker-mode-class*' to
+Since the above binds `nyxt/blocker-mode:*blocker-mode-class*' to
 `user-blocker-mode', the `blocker-mode' command now toggles the new
 `user-blocker-mode' instead of `blocker-mode'."
 

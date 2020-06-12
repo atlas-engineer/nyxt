@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (define-class-type window)
 (declaim (type (window-type) *window-class*))

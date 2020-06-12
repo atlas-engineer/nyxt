@@ -1,8 +1,8 @@
-(uiop:define-package :next/web-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/web-mode
+  (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Mode for web pages"))
-(in-package :next/web-mode)
+(in-package :nyxt/web-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
@@ -182,7 +182,7 @@ search.")
     (if (input-tag-p response)
         (ffi-generate-input-event
          window
-         (next::last-event buffer))
+         (nyxt::last-event buffer))
         (funcall-safely command))))
 
 (define-command paste-or-set-url (&optional (buffer (current-buffer)))
@@ -333,7 +333,7 @@ Otherwise go forward to the only child."
     (let* ((buffer-name (format nil "*History-~a*" (id buffer)))
            (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
                                        (buffer-list))
-                              (next/help-mode:help-mode
+                              (nyxt/help-mode:help-mode
                                :activate t :buffer (make-buffer :title buffer-name))))
            (history (history (find-submode buffer 'web-mode)))
            (tree `(:ul ,(traverse (htree:root history)
@@ -370,7 +370,7 @@ Otherwise go forward to the only child."
   (with-result (ring-item (read-from-minibuffer
                            (make-minibuffer
                             :completion-function (ring-completion-filter
-                                                  (next::clipboard-ring *browser*)))))
+                                                  (nyxt::clipboard-ring *browser*)))))
     (%paste :input-text ring-item)))
 
 (define-command copy ()
@@ -392,7 +392,7 @@ Otherwise go forward to the only child."
           ((functionp (autofill-fill selected-fill))
            (%paste :input-text (funcall (autofill-fill selected-fill)))))))
 
-(defmethod next:on-signal-notify-uri ((mode web-mode) url)
+(defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (unless (find-if (alex:rcurry #'str:starts-with? url)
                    (history-blacklist mode))
     (htree:add-child (make-instance 'buffer-description
@@ -407,17 +407,17 @@ Otherwise go forward to the only child."
     ((guard f f) (funcall-safely f)))
   url)
 
-(defmethod next:on-signal-notify-title ((mode web-mode) title)
+(defmethod nyxt:on-signal-notify-title ((mode web-mode) title)
   ;; Title may be updated after the URI, so we need to set the history entry again
   ;; with `on-signal-notify-uri'.
   (on-signal-notify-uri mode (url (buffer mode)))
   title)
 
-(defmethod next:on-signal-load-committed ((mode web-mode) url)
+(defmethod nyxt:on-signal-load-committed ((mode web-mode) url)
   (declare (ignore mode url))
   nil)
 
-(defmethod next:on-signal-load-finished ((mode web-mode) url)
+(defmethod nyxt:on-signal-load-finished ((mode web-mode) url)
   ;; TODO: Setting the default zoom level works with pure Javascript, but it
   ;; can only be done after the URL has been loaded which is a bit of a
   ;; kludge.  Instead we could add an FFI endpoint,
@@ -425,7 +425,7 @@ Otherwise go forward to the only child."
   (unzoom-page :buffer (buffer mode))
   url)
 
-(defmethod next:object-string ((node htree:node))
+(defmethod nyxt:object-string ((node htree:node))
   (object-string (when node (htree:data node))))
-(defmethod next:object-display ((node htree:node))
+(defmethod nyxt:object-display ((node htree:node))
   (object-display (when node (htree:data node))))

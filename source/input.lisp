@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
 
@@ -131,7 +131,7 @@ Return nil to forward to renderer or non-nil otherwise."
                   (string= (keymap:key-value (first (last key-stack)))
                            "button2"))
               ;; TODO: Forwarding C-v / button2 hangs cl-webkit.  See
-              ;; https://github.com/atlas-engineer/next/issues/593issuecomment-599051350
+              ;; https://github.com/atlas-engineer/nyxt/issues/593issuecomment-599051350
               (log:debug "Ignore C-v / button2 to avoid crashes")
               t)
 

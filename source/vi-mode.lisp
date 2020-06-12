@@ -1,8 +1,8 @@
-(uiop:define-package :next/vi-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/vi-mode
+  (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "VI-style bindings."))
-(in-package :next/vi-mode)
+(in-package :nyxt/vi-mode)
 
 (define-mode vi-normal-mode ()
   "Enable VI-style modal bindings (normal mode).
@@ -63,8 +63,8 @@ vi-normal-mode.")
       scheme:vi-insert
       (list
        "C-i" 'autofill
-       "C-v" 'next/web-mode:paste
-       "button2" 'next/web-mode:paste-or-set-url
+       "C-v" 'nyxt/web-mode:paste
+       "button2" 'nyxt/web-mode:paste-or-set-url
        "escape" 'vi-normal-mode
        "button1" 'vi-button1)))
    (destructor
@@ -90,13 +90,13 @@ vi-normal-mode.")
   ;; (e.g. a text field gets focus).
   (ffi-generate-input-event
    (current-window)
-   (next::last-event buffer))
-  (with-result (response (next/web-mode:%clicked-in-input?))
+   (nyxt::last-event buffer))
+  (with-result (response (nyxt/web-mode:%clicked-in-input?))
     (cond
-      ((and (next/web-mode:input-tag-p response)
+      ((and (nyxt/web-mode:input-tag-p response)
             (find-submode buffer 'vi-normal-mode))
        (vi-insert-mode))
-      ((and (not (next/web-mode:input-tag-p response))
+      ((and (not (nyxt/web-mode:input-tag-p response))
             (find-submode buffer 'vi-insert-mode))
        (vi-normal-mode)))))
 

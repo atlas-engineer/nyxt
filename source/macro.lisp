@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (export-always 'defclass-export)
 (defmacro defclass-export (name supers &body (slots . options))

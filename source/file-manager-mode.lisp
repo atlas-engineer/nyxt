@@ -1,9 +1,9 @@
-(uiop:define-package :next/file-manager-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/file-manager-mode
+  (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Manage files.
 
-Open any file from within Next, with the usual fuzzy completion.
+Open any file from within Nyxt, with the usual fuzzy completion.
 
 `M-x open-file (C-x C-f)'
 
@@ -13,7 +13,7 @@ Open any file from within Next, with the usual fuzzy completion.
 - enter a directory (C-j)
 - open files. By default, with xdg-open. See `open-file-function'.
 "))
-(in-package :next/file-manager-mode)
+(in-package :nyxt/file-manager-mode)
 (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
 
 ;;; ***********************************************************************
@@ -26,7 +26,7 @@ Open any file from within Next, with the usual fuzzy completion.
 ;;; - sort by last access, etc
 ;;; - multi-selection
 ;;; - bookmarks
-;;; - open files in Next
+;;; - open files in Nyxt
 ;;; - a UI to list files
 ;;; - lazy loading for large directories
 ;;; - many things...
@@ -40,7 +40,7 @@ Open any file from within Next, with the usual fuzzy completion.
   "Supported media types.")
 
 (defun supported-media (filename)
-  "Return T if this filename's extension is a media that Next can open.
+  "Return T if this filename's extension is a media that Nyxt can open.
 See `*supported-media-types*'."
   (when (uiop:file-pathname-p filename)
     (let ((extension (str:downcase (pathname-type filename))))
@@ -50,11 +50,11 @@ See `*supported-media-types*'."
 (serapeum:export-always 'open-file-function)
 (defun open-file-function (filename &key ;; (new-buffer-p *open-file-in-new-buffer*)
                                       )
-  "Open FILENAME in Next if supported, or externally otherwise.
+  "Open FILENAME in Nyxt if supported, or externally otherwise.
 FILENAME is the full path of the file (or directory).
 
 See `*supported-media-types*' to customize the file types that are opened in
-Next and those that are opened externally.
+Nyxt and those that are opened externally.
 
 Can be used as a `*open-file-function*'."
   (handler-case
@@ -98,13 +98,13 @@ videos with =mpv=:
 
     (handler-case (if args
                       (uiop:launch-program args)
-                      ;; fallback to Next's default.
-                      (next/file-manager-mode:open-file-function filename))
+                      ;; fallback to Nyxt's default.
+                      (nyxt/file-manager-mode:open-file-function filename))
       (error (c) (log:error \"Error opening ~a: ~a\" filename c)))))
 
-\(setf next/file-manager-mode:*open-file-function* #'my-open-files)")
+\(setf nyxt/file-manager-mode:*open-file-function* #'my-open-files)")
 
-(define-mode file-manager-mode (next/minibuffer-mode:minibuffer-mode)
+(define-mode file-manager-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Mode to open any file from the filesystem with fuzzy completion
 on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
@@ -150,7 +150,7 @@ Default keybindings: `M-Right' and `C-j'. "
       (update-display minibuffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :next)
+(in-package :nyxt)
 (define-command open-file ()
   "Open a file from the filesystem.
 
@@ -164,7 +164,7 @@ Press `Enter' to visit a file, `M-Left' or `C-l' to go one directory
 up, `M-Right' or `C-j' to browse the directory at point.
 
 By default, it uses the `xdg-open' command. The user can override the
-`next:open-file-function' function, which takes the filename (or directory
+`nyxt:open-file-function' function, which takes the filename (or directory
 name) as parameter.
 
 The default keybinding is `C-x C-f'.
@@ -175,8 +175,8 @@ Note: this feature is alpha, get in touch for more!"
     ;; Allow the current minibuffer to recognize our keybindings.
     (with-result (filename (read-from-minibuffer
                             (make-minibuffer
-                             :default-modes '(next/file-manager-mode::file-manager-mode minibuffer-mode)
+                             :default-modes '(nyxt/file-manager-mode::file-manager-mode minibuffer-mode)
                              :input-prompt (file-namestring (uiop:getcwd))
-                             :completion-function #'next/file-manager-mode::open-file-from-directory-completion-filter)))
+                             :completion-function #'nyxt/file-manager-mode::open-file-from-directory-completion-filter)))
 
-      (funcall next/file-manager-mode::*open-file-function* (namestring filename)))))
+      (funcall nyxt/file-manager-mode::*open-file-function* (namestring filename)))))

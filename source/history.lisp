@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defclass history-entry ()
   ((url :initarg :url
@@ -117,7 +117,7 @@ it would not be very useful."
 (defun history-stored-data ()
   "Return the history data that needs to be serialized.
 This data can be used to restore the session later, e.g. when starting a new
-instance of Next."
+instance of Nyxt."
   (list +version+
         (history-data *browser*)))
 
@@ -130,9 +130,9 @@ instance of Next."
     ;; We READ the output of serialize-sexp to make it more human-readable.
     (let ((*package* *package*)
           (*print-length* nil))
-      ;; We need to make sure current package is :next so that
+      ;; We need to make sure current package is :nyxt so that
       ;; symbols a printed with consistent namespaces.
-      (in-package :next)
+      (in-package :nyxt)
       (format file
               "~s"
               (with-input-from-string (in (with-output-to-string (out)
@@ -148,10 +148,10 @@ instance of Next."
                                         :direction :input
                                         :if-does-not-exist nil)
                     (when file
-                      ;; We need to make sure current package is :next so that
+                      ;; We need to make sure current package is :nyxt so that
                       ;; symbols a printed with consistent namespaces.
                       (let ((*package* *package*))
-                        (in-package :next)
+                        (in-package :nyxt)
                         (s-serialization:deserialize-sexp file))))))
         (match data
           (nil nil)

@@ -1,10 +1,10 @@
-(in-package :next)
+(in-package :nyxt)
 
-;; (uiop:define-package :next/base-mode
-;;   (:use :common-lisp :trivia :next)
+;; (uiop:define-package :nyxt/base-mode
+;;   (:use :common-lisp :trivia :nyxt)
 ;;   (:import-from #:keymap #:define-key #:define-scheme)
 ;;   (:documentation "Mode for general-purpose bindings"))
-;; (in-package :next/base-mode)
+;; (in-package :nyxt/base-mode)
 
 (define-mode base-mode ()        ; TODO: Move to separate package?
   "Mode that does nothing but bind the general-purpose key bindings."

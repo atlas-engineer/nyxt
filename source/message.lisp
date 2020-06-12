@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defclass messages-appender (log4cl-impl:appender)
   ())

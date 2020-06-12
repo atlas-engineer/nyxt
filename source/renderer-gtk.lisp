@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defclass-export gtk-browser (browser)
   (#+darwin
@@ -45,11 +45,11 @@ See `ffi-initialize' and `ffi-kill-browser'.
 Restarting GTK within the same Lisp image breaks WebKitGTK.
 As a workaround, we never leave the GTK main loop when running from a REPL.
 
-See https://github.com/atlas-engineer/next/issues/740")
+See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
-   GNU/Linux, Next could hang after 10 minutes if it's not
+   GNU/Linux, Nyxt could hang after 10 minutes if it's not
    used. Conversely, on Darwin, if gtk:within-main-loop is used, no
    drawing happens. Drawing operations on Darwin MUST originate from
    the main thread, which the GTK main loop is not guaranteed to be
@@ -64,14 +64,14 @@ See https://github.com/atlas-engineer/next/issues/740")
       (progn
         (setf gtk-running-p t)
         (gtk:within-main-loop
-          (gdk:gdk-set-program-class "next")
+          (gdk:gdk-set-program-class "nyxt")
           (finalize browser urls startup-timestamp))
         (unless *keep-alive*
           (gtk:join-gtk-main)))
       #+darwin
       (progn
         (setf gtk-running-p t)
-        (gdk:gdk-set-program-class "next")
+        (gdk:gdk-set-program-class "nyxt")
         (finalize browser urls startup-timestamp)
         (gtk:gtk-main))))
 
@@ -635,7 +635,7 @@ Warning: This behaviour may change in the future."
                   :webkit-context-menu-action-download-video-to-disk
                   :webkit-context-menu-action-download-audio-to-disk
                   ;; TODO: Restore paste on GNU/Linux when fixed.
-                  ;; https://github.com/atlas-engineer/next/issues/593
+                  ;; https://github.com/atlas-engineer/nyxt/issues/593
                   #-darwin
                   :webkit-context-menu-action-paste)
               (webkit:webkit-context-menu-remove context-menu item))))))
@@ -807,7 +807,7 @@ custom (the specified proxy) and none."
 Oldest entries come last.
 
 This represents the history as remembered by WebKit.  Note that it is linear so
-it does not map 1:1 with Next's history tree.  Nonetheless it allows us to make
+it does not map 1:1 with Nyxt's history tree.  Nonetheless it allows us to make
 use of the WebKit history case for the current branch.  See `ffi-buffer-load'.
 
 As a second value, return the current buffer index starting from 0."

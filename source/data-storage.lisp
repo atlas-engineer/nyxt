@@ -1,8 +1,8 @@
-(in-package :next)
+(in-package :nyxt)
 
 ;; TODO: Make this a separate library?
 
-(defvar +data-root+ "next")
+(defvar +data-root+ "nyxt")
 
 (defvar *gpg-program* "gpg")
 

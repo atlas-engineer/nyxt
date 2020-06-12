@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defstruct variable-candidate
   (name))
@@ -51,7 +51,7 @@
                         :completion-function (variable-completion-filter)
                         :input-prompt "Describe variable")))
     (let* ((input (variable-candidate-name input))
-           (help-buffer (next/help-mode:help-mode
+           (help-buffer (nyxt/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer
                                   :title (str:concat "*Help-"
@@ -71,7 +71,7 @@
 (defun describe-command* (command)
   "Display NAME command documentation in a new focused buffer."
   (let* ((title (str:concat "*Help-" (symbol-name (sym command)) "*"))
-         (help-buffer (next/help-mode:help-mode
+         (help-buffer (nyxt/help-mode:help-mode
                        :activate t
                        :buffer (make-buffer :title title)))
          (key-keymap-pairs (nth-value 1 (keymap:binding-keys
@@ -86,7 +86,7 @@
                             :file))
          (help-contents (markup:markup
                          (:h1 (symbol-name (sym command))
-                              (unless (eq (find-package :next)
+                              (unless (eq (find-package :nyxt)
                                           (symbol-package (sym command)))
                                 (format nil " (~a)"
                                         (package-name (symbol-package (sym command))))))
@@ -119,7 +119,7 @@ For generic functions, describe all the methods."
               (:pre (documentation method 't))
               (:h2 "Argument list")
               (:p (write-to-string (closer-mop:method-lambda-list method))))))
-      (let* ((help-buffer (next/help-mode:help-mode
+      (let* ((help-buffer (nyxt/help-mode:help-mode
                            :activate t
                            :buffer (make-buffer
                                     :title (str:concat "*Help-"
@@ -185,7 +185,7 @@ A command is a special kind of function that can be called with
                         :input-prompt "Describe class"
                         :completion-function (class-completion-filter))))
     (let* ((input (class-candidate-name input))
-           (help-buffer (next/help-mode:help-mode
+           (help-buffer (nyxt/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer
                                   :title (str:concat "*Help-"
@@ -210,7 +210,7 @@ A command is a special kind of function that can be called with
                        (make-minibuffer
                         :input-prompt "Describe slot"
                         :completion-function (slot-completion-filter))))
-    (let* ((help-buffer (next/help-mode:help-mode
+    (let* ((help-buffer (nyxt/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer
                                   :title (str:concat "*Help-"
@@ -227,7 +227,7 @@ A command is a special kind of function that can be called with
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
   (let* ((title (str:concat "*Help-bindings"))
-         (help-buffer (next/help-mode:help-mode
+         (help-buffer (nyxt/help-mode:help-mode
                        :activate t
                        :buffer (make-buffer :title title)))
          (help-contents
@@ -253,14 +253,14 @@ A command is a special kind of function that can be called with
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
   (declare (ignore buffer))             ; TODO: Display tls-help in buffer with TLS error.
-  (let* ((help-buffer (next/help-mode:help-mode
+  (let* ((help-buffer (nyxt/help-mode:help-mode
                        :activate t
                        :buffer (make-buffer :title "TLS Error")))
          (help-contents
            (markup:markup
             (:h1 (format nil "TLS Certificate Error: ~a" url))
             (:p "The address you are trying to visit has an invalid
-certificate. By default Next refuses to establish a secure connection
+certificate. By default Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
 could mean that the address you are attempting the access is
 compromised.")
@@ -334,7 +334,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Evaluate Lisp")))
-    (let* ((result-buffer (next/help-mode:help-mode
+    (let* ((result-buffer (nyxt/help-mode:help-mode
                            :activate t
                            :buffer (make-buffer
                                     ;; TODO: Reuse buffer / create REPL mode.
@@ -356,7 +356,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 
 (defun error-buffer (title text)
   "Print some help."
-  (let* ((error-buffer (next/help-mode:help-mode :activate t
+  (let* ((error-buffer (nyxt/help-mode:help-mode :activate t
                                                  :buffer (make-buffer :title title)))
          (error-contents
            (markup:markup
@@ -373,8 +373,8 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
     (window-set-active-buffer window error-buffer)
     error-buffer))
 
-(define-command next-version ()
-  "Version number of this version of Next.
+(define-command nyxt-version ()
+  "Version number of this version of Nyxt.
 The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
@@ -385,7 +385,7 @@ The version number is stored in the clipboard."
                            (string= "*Messages*" (title b)))
                          (buffer-list))))
     (unless buffer
-      (setf buffer (next/help-mode:help-mode :activate t
+      (setf buffer (nyxt/help-mode:help-mode :activate t
                                              :buffer (make-buffer :title "*Messages*"))))
     (let* ((content
              (apply #'markup:markup*
@@ -413,24 +413,24 @@ The version number is stored in the clipboard."
 
 (define-command help ()
   "Print help information."
-  (let ((help-buffer (next/help-mode:help-mode :activate t
+  (let ((help-buffer (nyxt/help-mode:help-mode :activate t
                                                :buffer (make-buffer :title "*Help*"))))
     (set-current-buffer help-buffer)
     (let* ((help-contents
              (markup:markup
               (:h1 "Getting started")
-              (:p (:b "Warning: ") "Next is under active development. Feel free to "
-                  (:a :href "https://github.com/atlas-engineer/next/issues"
+              (:p (:b "Warning: ") "Nyxt is under active development. Feel free to "
+                  (:a :href "https://github.com/atlas-engineer/nyxt/issues"
                       "report")
                   " bugs, instabilities or feature wishes.")
-              (:p "You can help with Next development by supporting us in various ways:"
+              (:p "You can help with Nyxt development by supporting us in various ways:"
                   (:ul
                    (:li "Support continuous development on "
                         (:a :href "https://www.patreon.com/next_browser"
                             "Patreon")
                         ".")
                    (:li "Spread the word on social media and "
-                        (:a :href "https://github.com/atlas-engineer/next"
+                        (:a :href "https://github.com/atlas-engineer/nyxt"
                             "star the project on GitHub")
                         ".")))
               (:h2 "Quickstart keys")
@@ -438,10 +438,10 @@ The version number is stored in the clipboard."
                (:li (:code (binding-keys 'set-url)) ": Load URL")
                (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new tab")
                (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch tab")
-               (:li (:code (binding-keys 'next/web-mode:history-backwards)) ": Backwards history")
-               (:li (:code (binding-keys 'next/web-mode:history-forwards)) ": Forwards history")
-               (:li (:code (binding-keys 'next/web-mode:follow-hint)) ": Follow link in current buffer")
-               (:li (:code (binding-keys 'next/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
+               (:li (:code (binding-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
+               (:li (:code (binding-keys 'nyxt/web-mode:history-forwards)) ": Forwards history")
+               (:li (:code (binding-keys 'nyxt/web-mode:follow-hint)) ": Follow link in current buffer")
+               (:li (:code (binding-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
                (:li (:code (binding-keys 'quit)) ": Quit")
                (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
                (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current tab"))
@@ -452,30 +452,30 @@ The version number is stored in the clipboard."
                (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
                (:li (:code "shift") " (" (:code "s") "): Shift key"))
 
-              (:p "Next proposes several " (:i "binding schemes") ", for instance CUA, Emacs, VI."
+              (:p "Nyxt proposes several " (:i "binding schemes") ", for instance CUA, Emacs, VI."
                   " For instance, call the " (:code "vi-normal-mode") " command to switch to VI bindings."
                   " To enable it by default, see the command documentation with "
                   (:code (binding-keys 'execute-command) " describe-command") " (bound to "
                   (:code (binding-keys 'describe-command)) ").")
 
-              (:h2 "Customize and extend Next")
+              (:h2 "Customize and extend Nyxt")
               (:p "Customization is possible through the creation of a "
-                  (:code "~/.config/next/init.lisp")
+                  (:code "~/.config/nyxt/init.lisp")
                   " file. From here you can override and redefine any of the functions by defining your init file as part of the "
-                  (:code ":next")
+                  (:code ":nyxt")
                   " package. For more information please see: "
-                  (:a :href "https://next.atlas.engineer/documentation#customization"
-                      "customizing Next")
+                  (:a :href "https://nyxt.atlas.engineer/documentation#customization"
+                      "customizing Nyxt")
                   ".")
               (:h2 "Documentation")
               (:p "The " (:i "minibuffer") " lets you fuzzy-search all commands."
                   " Press " (:code (binding-keys 'execute-command))
                   " then type " (:code "describe") " to list all documentation-related commands."
-                  " These commands can display the documentation of all Next components.")
-              (:p "An introduction to Next core concepts can be consulted with the "
+                  " These commands can display the documentation of all Nyxt components.")
+              (:p "An introduction to Nyxt core concepts can be consulted with the "
                   (:code "tutorial") " command (" (:code (binding-keys 'tutorial)) ").")
-              (:p "For full documentation about Next, how it works, and how to extend it please see the "
-                  (:a :href "https://next.atlas.engineer/documentation"
+              (:p "For full documentation about Nyxt, how it works, and how to extend it please see the "
+                  (:a :href "https://nyxt.atlas.engineer/documentation"
                       "user manual")
                   ".")))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
@@ -485,14 +485,14 @@ The version number is stored in the clipboard."
 
 (define-command tutorial ()
   "Show the tutorial."
-  (let ((help-buffer (next/help-mode:help-mode
+  (let ((help-buffer (nyxt/help-mode:help-mode
                       :activate t
                       :buffer (make-buffer :title "*Tutorial*"))))
     (set-current-buffer help-buffer)
     (let* ((help-contents
              (str:concat
               (markup:markup
-               (:h1 "Next tutorial")
+               (:h1 "Nyxt tutorial")
                (:p "The following tutorial introduces the core concepts and the
 basic usage.  For more details, especially regarding the configuration, see
 the "
@@ -505,7 +505,7 @@ the "
 
 (define-command manual ()
   "Show the manual."
-  (let ((help-buffer (next/help-mode:help-mode
+  (let ((help-buffer (nyxt/help-mode:help-mode
                       :activate t
                       :buffer (make-buffer :title "*Manual*"))))
     (set-current-buffer help-buffer)
@@ -518,9 +518,9 @@ the "
 (define-command copy-system-information ()
   "Command to dump the system information and copy it to the clipboard"
   (let* ((*print-length* nil)
-         (next-information (format nil "Next Version: ~a ~%Lisp Implementation: ~a ~%Lisp Version: ~a ~%Operating System: ~a ~a ~%Features: ~a"
+         (nyxt-information (format nil "Nyxt Version: ~a ~%Lisp Implementation: ~a ~%Lisp Version: ~a ~%Operating System: ~a ~a ~%Features: ~a"
                                    +version+ (lisp-implementation-type) (lisp-implementation-version)
                                    (software-type) (software-version) *features*)))
-    (copy-to-clipboard next-information)
-    (log:info next-information)
+    (copy-to-clipboard nyxt-information)
+    (log:info nyxt-information)
     (echo "System information copied to clipboard.")))

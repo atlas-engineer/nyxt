@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 ;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:
 ;; - It's too verbose, e.g. a list is
@@ -173,17 +173,17 @@ This can be useful to let the user select no tag when returning directly."
       (with-accessors ((cursor input-cursor-position) (buffer input-buffer)) minibuffer
         (let ((before (subseq buffer 0 (word-start buffer cursor)))
               (after (subseq buffer (word-end buffer cursor))))
-          (next/minibuffer-mode:kill-whole-line minibuffer)
+          (nyxt/minibuffer-mode:kill-whole-line minibuffer)
           (insert (str:concat before selection after)))))))
 
-(define-mode set-tag-mode (next/minibuffer-mode:minibuffer-mode)
+(define-mode set-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the tag of a bookmark."
   ((keymap-scheme
     :initform
     (define-scheme "set-tag"
       scheme:cua
       (list "tab" 'insert-tag
-            "return" 'next/minibuffer-mode:return-immediate)))))
+            "return" 'nyxt/minibuffer-mode:return-immediate)))))
 
 (define-command show-bookmarks ()
   "Show all bookmarks in a new buffer."
@@ -303,16 +303,16 @@ If character before cursor is '+' or '-' complete against tag."
                                         (input-cursor-position minibuffer))))
                (prefix (elt (word-at-cursor minibuffer) 0)))
            (log:info (input-buffer minibuffer) before after)
-           (next/minibuffer-mode:kill-whole-line minibuffer)
+           (nyxt/minibuffer-mode:kill-whole-line minibuffer)
            (insert (str:concat
                     before
                     (string prefix) (tag-name tag) " "
                     after)
                    minibuffer)))))
     (t
-     (next/minibuffer-mode:insert-candidate minibuffer))))
+     (nyxt/minibuffer-mode:insert-candidate minibuffer))))
 
-(define-mode minibuffer-tag-mode (next/minibuffer-mode:minibuffer-mode)
+(define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the bookmark and their tags."
   ((keymap-scheme
     :initform

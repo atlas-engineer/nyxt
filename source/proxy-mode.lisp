@@ -1,7 +1,7 @@
-(uiop:define-package :next/proxy-mode
-    (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/proxy-mode
+    (:use :common-lisp :trivia :nyxt)
   (:documentation "Proxy mode (e.g. Tor et al.)"))
-(in-package :next/proxy-mode)
+(in-package :nyxt/proxy-mode)
 
 (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
 
@@ -19,7 +19,7 @@ a proxy for all buffers, add it to the list of default modes.
 
 Example to use Tor as a proxy both for browsing and downloading:
 
-(setf next/proxy-mode:*default-proxy*
+(setf nyxt/proxy-mode:*default-proxy*
   (make-instance *proxy-class*
                  :server-address \"socks5://localhost:9050\"
                  :whitelist '(\"localhost\" \"localhost:8080\")

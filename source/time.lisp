@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 ;; Convenience function for time manipulation.
 ;; This can be useful for user configs.

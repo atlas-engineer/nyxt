@@ -1,4 +1,4 @@
-(in-package :next/web-mode)
+(in-package :nyxt/web-mode)
 
 (defclass heading ()
   ((inner-text :accessor inner-text

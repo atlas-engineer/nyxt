@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (export-always '(autofill-id
                  autofill-name

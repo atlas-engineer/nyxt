@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 
 (deploy:define-hook (:deploy copy-webkit-executables) (directory)

@@ -1,4 +1,4 @@
-(in-package :next/web-mode)
+(in-package :nyxt/web-mode)
 
 (define-parenscript add-element-hints (&key annotate-full-document)
   (defun qs (context selector)
@@ -14,12 +14,12 @@
     (ps:chain -string (from-char-code n)))
 
   (defun add-stylesheet ()
-    (unless (qs document "#next-stylesheet")
+    (unless (qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
                  (box-style (ps:lisp (box-style (current-buffer))))
                  (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
-         (setf (ps:@ style-element id) "next-stylesheet")
+         (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (ps:chain style-element sheet (insert-rule box-style 0))
          (ps:chain style-element sheet (insert-rule highlighted-style 1)))
@@ -35,18 +35,18 @@
     (ps:let* ((rect (ps:chain element (get-bounding-client-rect)))
               (position (hint-determine-position rect))
               (element (ps:chain document (create-element "span"))))
-      (setf (ps:@ element class-name) "next-hint")
+      (setf (ps:@ element class-name) "nyxt-hint")
       (setf (ps:@ element style position) "absolute")
       (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
       (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
-      (setf (ps:@ element id) (+ "next-hint-" hint))
+      (setf (ps:@ element id) (+ "nyxt-hint-" hint))
       (setf (ps:@ element text-content) hint)
       element))
 
   (defun hint-add (element hint)
     "Adds a hint on a single element. Additionally sets a unique
 identifier for every hinted element."
-    (ps:chain element (set-attribute "next-identifier" hint))
+    (ps:chain element (set-attribute "nyxt-identifier" hint))
     (ps:let ((hint-element (hint-create-element element hint)))
       (ps:chain document body (append-child hint-element))))
 
@@ -117,22 +117,22 @@ identifier for every hinted element."
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
     "Removes all the elements"
-    (ps:dolist (element (qsa document ".next-hint"))
+    (ps:dolist (element (qsa document ".nyxt-hint"))
       (ps:chain element (remove))))
   (hints-remove-all))
 
-(define-parenscript click-button (&key next-identifier)
+(define-parenscript click-button (&key nyxt-identifier)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
-  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (click)))
+  (ps:chain (qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (click)))
 
-(define-parenscript focus-element (&key next-identifier)
+(define-parenscript focus-element (&key nyxt-identifier)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
-  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (focus))
-  (ps:chain (qs document (ps:lisp (format nil "[next-identifier=\"~a\"]" next-identifier))) (select)))
+  (ps:chain (qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
+  (ps:chain (qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
 
 (define-parenscript highlight-selected-hint (&key link-hint scroll)
   (defun qs (context selector)
@@ -140,13 +140,13 @@ identifier for every hinted element."
     (ps:chain context (query-selector selector)))
 
   (defun update-hints ()
-    (ps:let* ((new-element (qs document (ps:lisp (format nil "#next-hint-~a" (identifier link-hint))))))
+    (ps:let* ((new-element (qs document (ps:lisp (format nil "#nyxt-hint-~a" (identifier link-hint))))))
       (when new-element
-        (unless ((ps:@ new-element class-list contains) "next-highlight-hint")
-          (ps:let ((old-elements (qsa document ".next-highlight-hint")))
+        (unless ((ps:@ new-element class-list contains) "nyxt-highlight-hint")
+          (ps:let ((old-elements (qsa document ".nyxt-highlight-hint")))
             (ps:dolist (e old-elements)
-              (setf (ps:@ e class-name) "next-hint"))))
-        (setf (ps:@ new-element class-name) "next-hint next-highlight-hint")
+              (setf (ps:@ e class-name) "nyxt-hint"))))
+        (setf (ps:@ new-element class-name) "nyxt-hint nyxt-highlight-hint")
         (if (ps:lisp scroll)
             (ps:chain new-element (scroll-into-view
                                    (ps:create block "nearest")))))))
@@ -154,9 +154,9 @@ identifier for every hinted element."
   (update-hints))
 
 (define-parenscript remove-focus ()
-  (ps:let ((old-elements (qsa document ".next-highlight-hint")))
+  (ps:let ((old-elements (qsa document ".nyxt-highlight-hint")))
     (ps:dolist (e old-elements)
-      (setf (ps:@ e class-name) "next-hint"))))
+      (setf (ps:@ e class-name) "nyxt-hint"))))
 
 (defun query-hints (prompt function &key multi-selection-p annotate-full-document)
   (let* ((buffer (current-buffer))
@@ -260,13 +260,13 @@ identifier for every hinted element."
   (set-url* (url link-hint) :buffer (current-buffer) :raw-url-p t))
 
 (defmethod %follow-hint ((button-hint button-hint))
-  (click-button :next-identifier (identifier button-hint)))
+  (click-button :nyxt-identifier (identifier button-hint)))
 
 (defmethod %follow-hint ((input-hint input-hint))
-  (focus-element :next-identifier (identifier input-hint)))
+  (focus-element :nyxt-identifier (identifier input-hint)))
 
 (defmethod %follow-hint ((textarea-hint textarea-hint))
-  (focus-element :next-identifier (identifier textarea-hint)))
+  (focus-element :nyxt-identifier (identifier textarea-hint)))
 
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint))
   (let ((new-buffer (make-buffer)))
@@ -299,8 +299,8 @@ identifier for every hinted element."
                 (if completions
                     (hintp (first completions))
                     (when minibuffer
-                      (let ((hint-candidate (nth (next::completion-cursor minibuffer)
-                                                 (next::completions minibuffer))))
+                      (let ((hint-candidate (nth (nyxt::completion-cursor minibuffer)
+                                                 (nyxt::completions minibuffer))))
                         (hintp hint-candidate)))))))
     (when hint
       (when (and follow
@@ -375,15 +375,15 @@ visible active buffer."
                                         (download-list)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :next/minibuffer-mode)
+(in-package :nyxt/minibuffer-mode)
 (define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer and focus the referencing hint/match
 if there is one such."
   (select-next minibuffer)
-  (next/web-mode::update-selection-highlight-hint :follow t :scroll t))
+  (nyxt/web-mode::update-selection-highlight-hint :follow t :scroll t))
 
 (define-command select-previous-follow (&optional (minibuffer (current-minibuffer)))
   "Select previous entry in minibuffer and focus the referencing hint/match
 if there is one such."
   (select-previous minibuffer)
-  (next/web-mode::update-selection-highlight-hint :follow t :scroll t))
+  (nyxt/web-mode::update-selection-highlight-hint :follow t :scroll t))

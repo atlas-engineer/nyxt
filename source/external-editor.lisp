@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defun get-text-from-external-editor ()
   "Open an external editor to capture text. Please note, this function

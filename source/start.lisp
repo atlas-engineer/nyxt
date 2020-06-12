@@ -1,13 +1,13 @@
-(in-package :next)
+(in-package :nyxt)
 
 (export-always '*init-file-path*)
 (defvar *init-file-path* (make-instance 'data-path :basename "init")
   "The path of the initialization file.")
 
 (export-always '*socket-path*)
-(defvar *socket-path* (make-instance 'data-path :basename "next.socket")
+(defvar *socket-path* (make-instance 'data-path :basename "nyxt.socket")
   "Path string of the Unix socket used to communicate between different
-instances of Next.
+instances of Nyxt.
 
 This path cannot be set from the init file because we want to be able to set and
 use the socket without parsing any init file.")
@@ -57,7 +57,7 @@ use the socket without parsing any init file.")
            :long "socket"
            :arg-parser #'identity
            :description "Set path to socket.
-Unless evaluating remotely (see --remote), Next starts in single-instance mode when a socket is set.")
+Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.")
     (:name :no-socket
            :short #\S
            :long "no-socket"
@@ -84,7 +84,7 @@ Set to '-' to read standard input instead.")
     (:name :remote
            :short #\r
            :long "remote"
-           :description "Send the --eval and --load arguments to the running instance of Next.
+           :description "Send the --eval and --load arguments to the running instance of Nyxt.
 Implies --quit.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
@@ -111,7 +111,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
     (opts:get-opts)))
 
 (define-command quit ()
-  "Quit Next."
+  "Quit Nyxt."
   (hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (window-list)
         do (ffi-window-delete window))
@@ -129,7 +129,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
     (uiop:quit 0 nil)))
 
 (define-command quit-after-clearing-session ()
-  "Clear session then quit Next."
+  "Clear session then quit Nyxt."
   (setf
    (session-store-function *browser*) nil
    (session-restore-function *browser*) nil)
@@ -158,7 +158,7 @@ Don't run this from a REPL, prefer `start' instead."
   (multiple-value-bind (options free-args)
       (parse-cli-args)
     (setf *keep-alive* nil)             ; Not a REPL.
-    (in-package :next-user)
+    (in-package :nyxt-user)
     (apply #'start options free-args)))
 
 (declaim (ftype (function (trivial-types:pathname-designator &key (:package (or null package))))
@@ -203,7 +203,7 @@ Return the short error message and the full error message as second value."
 
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
-  (load-lisp init-file :package (find-package :next-user)))
+  (load-lisp init-file :package (find-package :nyxt-user)))
 
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
@@ -278,7 +278,7 @@ short as possible."
         (setf (osicat:file-permissions socket-path) '(:user-read :user-write))
         ;; Since we are in a separate thread, we need to set the default package
         ;; for remote execution.
-        (in-package :next-user)
+        (in-package :nyxt-user)
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
@@ -301,15 +301,15 @@ short as possible."
      (iolib:socket-connected-p s))))
 
 (defun bind-socket-or-quit (urls)
-  "If another Next is listening on the socket, tell it to open URLS.
+  "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket."
   (let ((socket-path (expand-path *socket-path*)))
     (cond
       ((listening-socket-p)
        (progn
          (if urls
-             (log:info "Next already started, requesting to open URL(s): ~{~a~^, ~}" urls)
-             (log:info "Next already started."))
+             (log:info "Nyxt already started, requesting to open URL(s): ~{~a~^, ~}" urls)
+             (log:info "Nyxt already started."))
          (iolib:with-open-socket (s :address-family :local
                                     :remote-filename socket-path)
            (format s "~s" `(open-external-urls ',urls)))
@@ -324,7 +324,7 @@ Otherwise bind socket."
            (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))))
 
 (defun remote-eval (expr)
-  "If another Next is listening on the socket, tell it to evaluate EXPR."
+  "If another Nyxt is listening on the socket, tell it to evaluate EXPR."
   (if (listening-socket-p)
       (progn
         (iolib:with-open-socket (s :address-family :local
@@ -344,12 +344,12 @@ With no action, start the browser.
 REPL examples:
 
 - Display version and return immediately:
-  (next:start '(:version t))
+  (nyxt:start '(:version t))
 
 - Start the browser with increased verbosity, a different history data path and
   open the given URLs.
-  (next:start '(:verbose t :with-path (\"history\" \"/tmp/next/history.lisp\"))
-              \"https://next.atlas.engineer\" \"https://en.wikipedia.org\")"
+  (nyxt:start '(:verbose t :with-path (\"history\" \"/tmp/nyxt/history.lisp\"))
+              \"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")"
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
 
@@ -371,15 +371,15 @@ REPL examples:
 
   (cond
     ((getf options :help)
-     (opts:describe :prefix "next [options] [URLs]"))
+     (opts:describe :prefix "nyxt [options] [URLs]"))
 
     ((getf options :version)
-     (format t "Next version ~a~&" +version+))
+     (format t "Nyxt version ~a~&" +version+))
 
     ((getf options :list-data-profiles)
      (unless (or (getf *options* :no-init)
                  (not (expand-path *init-file-path*)))
-       (load-lisp (expand-path *init-file-path*) :package (find-package :next-user)))
+       (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
      (mapcar (lambda (pair)
                (format t "~a~10t~a~&" (first pair) (second pair)))
              (mapcar #'rest (package-data-profiles))))
@@ -422,22 +422,22 @@ REPL examples:
 The evaluation may happen on its own instance or on an already running instance."
   (unless (or (getf *options* :no-init)
               (not (expand-path *init-file-path*)))
-    (load-lisp (expand-path *init-file-path*) :package (find-package :next-user)))
+    (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
   (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (free-args)
   "Load INIT-FILE if non-nil.
 Instantiate `*browser*'.
-Start Next and load URLS if any.
+Start Nyxt and load URLS if any.
 Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
-    (format t "Next version ~a~&" +version+)
+    (format t "Nyxt version ~a~&" +version+)
 
     (unless (or (getf *options* :no-init)
                 (not (expand-path *init-file-path*)))
       (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
-                                             :package (find-package :next-user)))
+                                             :package (find-package :nyxt-user)))
         (nil nil)
         ((list message full-message)
          (setf startup-error-reporter
@@ -453,6 +453,6 @@ Finally,run the `*after-init-hook*'."
       (bind-socket-or-quit free-args))
     (ffi-initialize *browser* free-args startup-timestamp)))
 
-(define-command next-init-time ()
-  "Return the duration of Next initialization."
+(define-command nyxt-init-time ()
+  "Return the duration of Nyxt initialization."
   (echo "~,2f seconds" (slot-value *browser* 'init-time)))

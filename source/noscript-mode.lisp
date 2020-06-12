@@ -1,7 +1,7 @@
-(uiop:define-package :next/noscript-mode
-    (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/noscript-mode
+    (:use :common-lisp :trivia :nyxt)
   (:documentation "Disable Javascript."))
-(in-package :next/noscript-mode)
+(in-package :nyxt/noscript-mode)
 
 (define-mode noscript-mode ()
     "Disable Javascript in current buffer."
