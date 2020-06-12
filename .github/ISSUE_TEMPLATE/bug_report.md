@@ -15,12 +15,12 @@ assignees: ''
 - OS name+version:
 - Graphics card and driver:
 - Desktop environment / Window manager name+version:
-- How you installed Next (Guix pack, package manager, build from source):
+- How you installed Nyxt (Guix pack, package manager, build from source):
 - Desktop environment / Window manager name+version:
 - Information from command copy-system-information:
 
   If you can't run copy-system-information, please provide the following:
-  - Next version (from =M-x next-version= or =next --version=):
+  - Nyxt version (from =M-x nyxt-version= or =nyxt --version=):
   - Lisp implementation/version (if built from source):
   - Kernel name+version:
   - WebKitGTK+ | QtWebEngine version:
