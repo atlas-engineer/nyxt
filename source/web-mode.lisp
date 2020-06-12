@@ -417,3 +417,5 @@ Otherwise go forward to the only child."
 
 (defmethod next:object-string ((node htree:node))
   (object-string (when node (htree:data node))))
+(defmethod next:object-display ((node htree:node))
+  (object-display (when node (htree:data node))))
