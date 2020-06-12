@@ -312,8 +312,12 @@ This is useful to override bindings to do nothing."
 
 (defmethod object-string ((hook-desc hook-description))
   (name hook-desc))
+(defmethod object-display ((hook-desc hook-description))
+  (name hook-desc))
 
 (defmethod object-string ((handler hooks:handler))
+  (str:downcase (hooks:name handler)))
+(defmethod object-display ((handler hooks:handler))
   (str:downcase (hooks:name handler)))
 
 (defun hook-completion-filter ()
