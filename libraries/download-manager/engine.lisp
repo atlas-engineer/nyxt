@@ -36,7 +36,7 @@ The channel return value is a `download'.")
   "Initialize the download manager.
 This is called automatically from `resolve', but it can also be called manually
 beforehand in order to specify different initialization argument."
-  (setf lparallel:*kernel* (lparallel:make-kernel worker-count :name "next-kernel"))
+  (setf lparallel:*kernel* (lparallel:make-kernel worker-count :name "download-manager-kernel"))
   (setf *notifications* (lparallel:make-channel)))
 
 (defun kill-kernel ()
