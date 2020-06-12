@@ -1,4 +1,4 @@
-(defpackage :next.tests
+(defpackage :nyxt.tests
   (:use :common-lisp
         :nyxt
         :prove))
