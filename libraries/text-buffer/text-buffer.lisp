@@ -13,6 +13,9 @@
                (write-string string out))
          (cluffer:items buffer))))
 
+(defmethod invisible-string-representation ((buffer text-buffer))
+  (make-string (cluffer:item-count buffer) :initial-element #\*))
+
 (defmethod safe-forward ((cursor cursor))
   (unless (cluffer:end-of-line-p cursor)
     (cluffer:forward-item cursor)
@@ -81,3 +84,23 @@
 (defmethod insert-string ((cursor cursor) string)
   (loop for char across string do
         (cluffer:insert-item cursor (string char))))
+
+(defmethod word-start ((cursor cursor) position)
+  "Return the index of the beginning word at POSITION."
+  (let* ((cursor-position (cluffer:cursor-position cursor))
+         (word-beginning (progn (setf (cluffer:cursor-position cursor) position)
+                                (move-backward-word cursor))))
+    (setf (cluffer:cursor-position cursor) cursor-position)
+    word-beginning))
+
+(defmethod word-end ((cursor cursor) position)
+  "Return the index of the end word at POSITION."
+  (let* ((cursor-position (cluffer:cursor-position cursor))
+         (word-end (progn (setf (cluffer:cursor-position cursor) position)
+                          (move-forward-word cursor))))
+    (setf (cluffer:cursor-position cursor) cursor-position)
+    word-end))
+
+(defmethod word-at-cursor ((cursor cursor))
+    "Return word at cursor.
+If cursor is between two words, return the first one.")
