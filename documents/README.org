@@ -1,9 +1,9 @@
-* Next Developer Readme                                                 :TOC:
+* Nyxt Developer Readme                                                 :TOC:
 :PROPERTIES:
 :TOC:      :include all
 :END:
 :CONTENTS:
-- [[#next-developer-readme][Next Developer Readme]]
+- [[#nyxt-developer-readme][Nyxt Developer Readme]]
 - [[#developer-installation-with-guix][Developer Installation with Guix]]
 - [[#standard-developer-installation][Standard Developer Installation]]
   - [[#installing-sbcl][Installing SBCL]]
@@ -21,10 +21,10 @@
     - [[#using-the-makefile][Using the Makefile]]
     - [[#using-lisp][Using Lisp]]
   - [[#update-local-lisp-libraries][Update local Lisp libraries]]
-- [[#run-next-in-a-security-sandbox][Run Next in a security sandbox]]
+- [[#run-nyxt-in-a-security-sandbox][Run Nyxt in a security sandbox]]
 - [[#hacking][Hacking]]
   - [[#run-from-source][Run from Source]]
-  - [[#slime-or-sly-with-a-compiled-version-of-next][SLIME (or SLY) with a compiled version of Next]]
+  - [[#slime-or-sly-with-a-compiled-version-of-nyxt][SLIME (or SLY) with a compiled version of Nyxt]]
 - [[#help--community][Help & Community]]
   - [[#learning-common-lisp][Learning Common Lisp]]
   - [[#contribution][Contribution]]
@@ -32,18 +32,18 @@
 :END:
 
 * Developer Installation with Guix
-First, clone the Next repository.  It is most convenient to clone the Next
+First, clone the Nyxt repository.  It is most convenient to clone the Nyxt
 repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).
 
 Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
-[[../build-scripts/guix.scm]] file of the Next repository.
+[[../build-scripts/guix.scm]] file of the Nyxt repository.
 
 * Standard Developer Installation
-Next is written in Common Lisp. It can be built with any standard
+Nyxt is written in Common Lisp. It can be built with any standard
 Common Lisp implementation. Currently, only [[http://www.sbcl.org/][SBCL]] (≥ 1.4.2) support is
 tested.
 
-It is designed to be cross-platform, cross-engine compatible. Next is
+It is designed to be cross-platform, cross-engine compatible. Nyxt is
 available in both WebKit and WebEngine flavors. Support for graphics
 and OS integration is provided via:
 
@@ -51,7 +51,7 @@ and OS integration is provided via:
 - GNU/Linux: GTK, Qt
 
 ** Installing SBCL
-You'll need SBCL ≥ 1.4.2 to compile Next.  (Previous versions require
+You'll need SBCL ≥ 1.4.2 to compile Nyxt.  (Previous versions require
 an ASDF update.)
 
 You can obtain SBCL from your package manager or by downloading it
@@ -76,7 +76,7 @@ To install Quicklisp:
 
 ** GTK dependencies
 *** Lisp Dependencies
-Next on GTK requires the latest version of the cl-webkit library.
+Nyxt on GTK requires the latest version of the cl-webkit library.
 Clone the cl-webkit repository into =~/common-lisp= or any directory
 listed in ~asdf:*central-registry*~:
 
@@ -147,7 +147,7 @@ these fixes.
 
 ** Qt dependencies
 *** Lisp Dependencies
-Next on Qt requires the latest version of the cl-webengine library.
+Nyxt on Qt requires the latest version of the cl-webengine library.
 Clone the cl-webengine repository into =~/common-lisp= or any
 directory listed in ~asdf:*central-registry*~:
 
@@ -172,12 +172,12 @@ details about how to install it on your system.
 - libfixposix
 
 ** Fetch the source code
-Clone the Next repository into =~/common-lisp= or any directory listed in
+Clone the Nyxt repository into =~/common-lisp= or any directory listed in
 ~asdf:*central-registry*~:
 
 #+begin_src sh
 mkdir -p ~/common-lisp
-git clone https://github.com/atlas-engineer/next ~/common-lisp/next
+git clone https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
 #+end_src
 
 ** Compile
@@ -199,14 +199,14 @@ make app-bundle
 Inside the Makefile you'll find many options you can specify. You can
 specify to use your Lisp's init file, to use your global installation
 of Quicklisp, or to automatically download and install a separate
-Quicklisp installation for Next. Run ~make~ to display some
+Quicklisp installation for Nyxt. Run ~make~ to display some
 documentation. Please see the Makefile for more details.
 *** Using Lisp
 Start your Lisp and run the following commands:
 
 #+NAME: compile
 #+BEGIN_SRC lisp
-(asdf:make :next/gtk-application)
+(asdf:make :nyxt/gtk-application)
 #+END_SRC
 
 your Lisp interpreter will have produced an executable in the
@@ -215,22 +215,22 @@ version like this:
 
 #+NAME: compile
 #+BEGIN_SRC lisp
-(asdf:make :next/qt-application)
+(asdf:make :nyxt/qt-application)
 #+END_SRC
 
 ** Update local Lisp libraries
 If you use Quicklisp for Common Lisp library management outside the
-context of Next, you may want to reuse your local distribution to
-build Next.
+context of Nyxt, you may want to reuse your local distribution to
+build Nyxt.
 
 To do so, invoke =make= with the following option:
 
 #+begin_src sh
-make NEXT_INTERNAL_QUICKLISP=false ...
+make NYXT_INTERNAL_QUICKLISP=false ...
 #+end_src
 
 In this case, you'll have to make sure the Quicklisp distribution is
-up-to-date or else future versions of Next might fail to build.  In a
+up-to-date or else future versions of Nyxt might fail to build.  In a
 REPL:
 
 #+begin_src lisp
@@ -238,24 +238,24 @@ REPL:
 #+end_src
 
 If you use the internal Quicklisp distribution (i.e. with the default
-=NEXT_INTERNAL_QUICKLISP=true=), the distribution is updated
+=NYXT_INTERNAL_QUICKLISP=true=), the distribution is updated
 automatically for you.
 
 You will also need to manually update the [[Lisp specific dependencies]].
 
-* Run Next in a security sandbox
-For improved security while you browse the Internet, you can run Next in a
+* Run Nyxt in a security sandbox
+For improved security while you browse the Internet, you can run Nyxt in a
 container on GNU/Linux.
 
 - With Guix:
   #+begin_src sh
-  guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs next -- env DISPLAY="$DISPLAY" next
+  guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs nyxt -- env DISPLAY="$DISPLAY" nyxt
   #+end_src
 
   If you want to load your configuration and use the data files:
 
   #+begin_src sh
-  guix environment --container --network --expose=/etc/ssl/certs --expose="$HOME/.config/next/" --share="$HOME/.local/share/next"="$HOME/.local/share/next/" --ad-hoc coreutils nss-certs next -- env DISPLAY="$DISPLAY" next
+  guix environment --container --network --expose=/etc/ssl/certs --expose="$HOME/.config/nyxt/" --share="$HOME/.local/share/nyxt"="$HOME/.local/share/nyxt/" --ad-hoc coreutils nss-certs nyxt -- env DISPLAY="$DISPLAY" nyxt
   #+end_src
 
   If you get an error like
@@ -269,7 +269,7 @@ container on GNU/Linux.
 * Hacking
 
 ** Run from Source
-If you are developing Next, you may prefer to run Next directly from
+If you are developing Nyxt, you may prefer to run Nyxt directly from
 source so that you can skip the compilation step and iterate faster.
 
 Make sure that Quicklisp is set up and up-to-date (see [[Update local Lisp
@@ -280,19 +280,19 @@ Then in a shell execute the following:
 1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
    supported Common Lisp compiler).
 2. Execute ~(require :asdf)~ if ASDF is not already loaded.
-3. Execute ~(asdf:load-asd "/full/path/to/next.asd")~ to load the Next
+3. Execute ~(asdf:load-asd "/full/path/to/nyxt.asd")~ to load the Nyxt
    system definition (you must use absolute pathnames).
-4. Execute ~(ql:quickload :next/gtk)~ to load the Next system into your
+4. Execute ~(ql:quickload :nyxt/gtk)~ to load the Nyxt system into your
    Lisp image.
-5. Execute ~(next:start)~ to open your first Next window.
+5. Execute ~(nyxt:start)~ to open your first Nyxt window.
 
 The above process is a bit cumbersome and you'll probably want a more
 comfortable workflow from within your favourite editor.  See the section about
 Emacs and SLIME, or see the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of options for
 various editors.
 
-** SLIME (or SLY) with a compiled version of Next
-=SLIME= provides a way of interacting with Next, and with Lisp code in
+** SLIME (or SLY) with a compiled version of Nyxt
+=SLIME= provides a way of interacting with Nyxt, and with Lisp code in
 general (e.g. in a [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][REPL]]). =SLY= is a fork of =SLIME= with additional functionality.
 
 From the SLIME manual:
@@ -305,19 +305,19 @@ with a running Common Lisp process for compilation, debugging,
 documentation lookup, and so on.
 #+end_quote
 
-To use SLIME with a compiled version of Next run the command
+To use SLIME with a compiled version of Nyxt run the command
 =start-swank= launch a Swank server. SLIME will connect to the Swank
 server and give you completion, debugging, documentation, etc. The
 port for Swank is define in ~*swank-port*~ and its default value is
 different from that of Swank on Emacs to avoid collisions with an
 Emacs ~*inferior-lisp*~ process.
 
-After launching the Swank server in Next, execute the following within Emacs:
+After launching the Swank server in Nyxt, execute the following within Emacs:
 
 1. ~M-x~
 2. ~slime-connect~
 3. Enter ~127.0.0.1~ for the host
-4. Enter the port number set in the Next variable ~*swank-port*~ (e.g. ~4006~)
+4. Enter the port number set in the Nyxt variable ~*swank-port*~ (e.g. ~4006~)
 
 To customize the port that Swank starts on, edit the global variable
 ~*swank-port*~ in your init file.
@@ -330,15 +330,15 @@ To use =SLY= instead of =SLIME=, you have to add the function =start-slynk= in y
     "Start a Slynk server that can be connected to, for instance, in
 Emacs via SLY.
 
-Warning: This allows Next to be controlled remotely, that is, to
-execute arbitrary code with the privileges of the user running Next.
+Warning: This allows Nyxt to be controlled remotely, that is, to
+execute arbitrary code with the privileges of the user running Nyxt.
 Make sure you understand the security risks associated with this
 before running this command."
       (slynk:create-server :port slynk-port :dont-close t)
       (echo "Slynk server started at port ~a" slynk-port)))
 #+end_src
 
-Use like for =SLIME=, substituting =start-slynk= for =start-swank= in Next, and =sly-connect= for =slime-connect= in Emacs.
+Use like for =SLIME=, substituting =start-slynk= for =start-swank= in Nyxt, and =sly-connect= for =slime-connect= in Emacs.
 
 * Help & Community
 There are several ways to ask for help from the community. The first
@@ -372,7 +372,7 @@ After you have found a TASK item that is available:
 - make a pull request.
 
 ** IRC Channel
-You can find Next on Freenode IRC at =#next-browser=.
+You can find Nyxt on Freenode IRC at =#nyxt-browser=.
 
 
 # Local Variables:
