@@ -3,19 +3,19 @@
 <plist version="1.0">
   <dict>
     <key>NSPrincipalClass</key>
-    <string>NextApplication</string>
+    <string>Nyxt</string>
     <key>CFBundleIconFile</key>
-    <string>next.icns</string>
+    <string>nyxt.icns</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleGetInfoString</key>
-    <string>Next</string>
+    <string>Nyxt</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleExecutable</key>
-    <string>next</string>
+    <string>nyxt</string>
     <key>CFBundleIdentifier</key>
-    <string>engineer.Atlas.Next</string>
+    <string>engineer.Atlas.Nyxt</string>
     <key>NSAppTransportSecurity</key>
     <dict>
       <key>NSAllowsLocalNetworking</key>
