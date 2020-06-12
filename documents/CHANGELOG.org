@@ -231,6 +231,9 @@ See the manual for examples.
 
 - VCS: More checks and notifications.
 
+- Deprecate video-mode and move it to its own repository
+  (https://github.com/atlas-engineer/nx-video).
+
 - Complete search-engine names with Tab.
 
 - Display package in =execute-command= candidate list.

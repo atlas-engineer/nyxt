@@ -87,7 +87,6 @@
                (:file "file-manager-mode")
                (:file "download-mode")
                (:file "vcs-mode")
-               (:file "video-mode")
                ;; Web-mode commands
                (:file "element-hint")
                (:file "jump-heading")
