@@ -100,7 +100,8 @@
                (:file "about")
                (:file "session")
                (:file "start")
-               (:file "tutorial"))
+               (:file "tutorial")
+               (:file "manual"))
   :in-order-to ((test-op (test-op "next/tests"))))
 
 (asdf:defsystem next/tests

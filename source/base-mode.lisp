@@ -41,6 +41,7 @@
                                "M-c t" 'copy-title
                                "f1 f1" 'help
                                "f1 t" 'tutorial
+                               "f1 r" 'manual
                                "f1 v" 'describe-variable
                                "f1 f" 'describe-function
                                "f1 c" 'describe-command
@@ -91,6 +92,7 @@
                                "C-h C-h" 'help
                                "C-h h" 'help
                                "C-h t" 'tutorial
+                               "C-h r" 'manual
                                "C-h v" 'describe-variable
                                "C-h f" 'describe-function
                                "C-h c" 'describe-command
@@ -134,6 +136,7 @@
                                "C-h C-h" 'help
                                "C-h h" 'help
                                "C-h t" 'tutorial
+                               "C-h r" 'manual
                                "C-h v" 'describe-variable
                                "C-h f" 'describe-function
                                "C-h c" 'describe-command

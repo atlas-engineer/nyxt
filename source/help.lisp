@@ -484,11 +484,32 @@ The version number is stored in the clipboard."
     help-buffer))
 
 (define-command tutorial ()
-  "Print a tutorial."
-  (let ((help-buffer (next/help-mode:help-mode :activate t
-                                               :buffer (make-buffer :title "*Help*"))))
+  "Show the tutorial."
+  (let ((help-buffer (next/help-mode:help-mode
+                      :activate t
+                      :buffer (make-buffer :title "*Tutorial*"))))
     (set-current-buffer help-buffer)
-    (let* ((help-contents (tutorial-content))
+    (let* ((help-contents
+             (str:concat
+              (markup:markup
+               (:h1 "Next tutorial")
+               (:p "The following tutorial introduces the core concepts and the
+basic usage.  For more details, especially regarding the configuration, see
+the "
+                   (:code (command-markup 'manual)) "."))
+              (tutorial-content)))
+           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                     (ps:lisp help-contents)))))
+      (ffi-buffer-evaluate-javascript help-buffer insert-help))
+    help-buffer))
+
+(define-command manual ()
+  "Show the manual."
+  (let ((help-buffer (next/help-mode:help-mode
+                      :activate t
+                      :buffer (make-buffer :title "*Manual*"))))
+    (set-current-buffer help-buffer)
+    (let* ((help-contents (manual-content))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help))
