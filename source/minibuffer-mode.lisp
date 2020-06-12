@@ -81,16 +81,16 @@
                     (list (nth nyxt::completion-cursor nyxt::completions)))
                (and (not must-match-p)
                     (list input-buffer)))
-      ((guard completions completions)
+      ((guard nyxt::completions nyxt::completions)
        ;; Note that "immediate input" is also in completions, so it's caught here.
-       (setf completions
+       (setf nyxt::completions
              (mapcar (lambda (completion) (if (stringp completion)
                                               (str:replace-all " " " " completion)
                                               completion))
-                     completions))
+                     nyxt::completions))
        (funcall-safely nyxt::callback (if multi-selection-p
-                                    completions
-                                    (first completions))))
+                                    nyxt::completions
+                                    (first nyxt::completions))))
       (nil (when invisible-input-p
              (funcall-safely nyxt::callback (str:replace-all " " " " input-buffer))))))
   (quit-minibuffer minibuffer))
