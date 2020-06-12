@@ -43,8 +43,7 @@
                                     :input-prompt "New password (leave empty to generate)"))))
        (password:save-password (password-interface *browser*)
                                :password-name password-name
-                               :password new-password
-                               :service service)))
+                               :password new-password)))
     ((null (password-interface *browser*))
      (echo-warning "No password manager found."))
     (t (echo-warning "Password manager ~s does not support saving passwords."
