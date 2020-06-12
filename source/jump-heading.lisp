@@ -7,11 +7,15 @@
   (:documentation "A heading. The inner-text must not be modified, so
   than we can jump to the anchor of the same name."))
 
-(defmethod object-string ((heading heading))
+(defmethod nyxt:object-string ((heading heading))
   "Cleaned-up text of this heading, to show the user in the minibuffer.
 For example, Wikipedia ones end with '[edit]'. We strip what comes after the first bracket."
   (with-slots (inner-text) heading
     (subseq inner-text 0 (position #\[ inner-text))))
+
+(defmethod nyxt:object-display ((heading heading))
+  "Same as `nyxt:object-string'."
+  (nyxt:object-string heading))
 
 (defun make-headings (list/str)
   "Make a list `heading's from a list of strings."
