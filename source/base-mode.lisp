@@ -1,12 +1,6 @@
 (in-package :nyxt)
 
-;; (uiop:define-package :nyxt/base-mode
-;;   (:use :common-lisp :trivia :nyxt)
-;;   (:import-from #:keymap #:define-key #:define-scheme)
-;;   (:documentation "Mode for general-purpose bindings"))
-;; (in-package :nyxt/base-mode)
-
-(define-mode base-mode ()        ; TODO: Move to separate package?
+(define-mode base-mode ()
   "Mode that does nothing but bind the general-purpose key bindings."
   ((keymap-scheme :accessor keymap-scheme :initarg :keymap-scheme :type keymap:scheme
                   :initform (define-scheme "base"
