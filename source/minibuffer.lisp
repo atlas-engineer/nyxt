@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defclass-export minibuffer (buffer)
   ((default-modes :initarg :default-modes
@@ -139,10 +139,10 @@ screen.")
                              (define-key map
                                "escape"
                                ;; We compute symbol at runtime because
-                               ;; next/minibuffer-mode does not exist at
+                               ;; nyxt/minibuffer-mode does not exist at
                                ;; compile-time since it's loaded afterwards.
                                (find-symbol (string 'cancel-input)
-                                            (find-package 'next/minibuffer-mode))))
+                                            (find-package 'nyxt/minibuffer-mode))))
                  :type keymap:keymap
                  :documentation "Keymap that takes precedence over all modes' keymaps."))
   (:documentation "The minibuffer is the interface for user interactions.  Each

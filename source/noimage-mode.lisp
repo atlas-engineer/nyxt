@@ -1,7 +1,7 @@
-(uiop:define-package :next/noimage-mode
-    (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/noimage-mode
+    (:use :common-lisp :trivia :nyxt)
   (:documentation "Disable images."))
-(in-package :next/noimage-mode)
+(in-package :nyxt/noimage-mode)
 
 (define-mode noimage-mode ()
     "Disable images in current buffer."

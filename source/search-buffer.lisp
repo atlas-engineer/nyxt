@@ -1,4 +1,4 @@
-(in-package :next/web-mode)
+(in-package :nyxt/web-mode)
 
 (define-parenscript query-buffer (&key query (case-sensitive-p nil))
   (defvar *identifier* 0)
@@ -15,12 +15,12 @@
     (ps:chain context (query-selector-all selector)))
 
   (defun add-stylesheet ()
-    (unless (qs document "#next-stylesheet")
+    (unless (qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
                  (box-style (ps:lisp (box-style (current-buffer))))
                  (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
-         (setf (ps:@ style-element id) "next-stylesheet")
+         (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (ps:chain style-element sheet (insert-rule box-style 0))
          (ps:chain style-element sheet (insert-rule highlighted-style 1)))
@@ -31,9 +31,9 @@
 
   (defun create-match-span (body identifier)
     (ps:let* ((el (ps:chain document (create-element "span"))))
-      (setf (ps:@ el class-name) "next-hint")
+      (setf (ps:@ el class-name) "nyxt-hint")
       (setf (ps:@ el text-content) body)
-      (setf (ps:@ el id) (+ "next-hint-" identifier))
+      (setf (ps:@ el id) (+ "nyxt-hint-" identifier))
       el))
 
   (defun get-substring (string query index)
@@ -61,7 +61,7 @@
              (substring-indices (get-substring-indices query node-text))
              (node-identifier (incf (ps:chain *nodes* identifier)))
              (new-node (ps:chain document (create-element "span"))))
-        (setf (ps:@ new-node class-name) "next-search-node")
+        (setf (ps:@ new-node class-name) "nyxt-search-node")
         (setf (ps:@ new-node id) node-identifier)
         (setf (aref *nodes* node-identifier) node)
         (when (> (length substring-indices) 0)
@@ -88,11 +88,11 @@
     (setf node (ps:chain node first-child))
     (loop while node
           do (walk-document node process-node)
-          do (setf node (ps:chain node next-sibling))))
+          do (setf node (ps:chain node nyxt-sibling))))
 
   (defun remove-search-nodes ()
     "Removes all the search elements"
-    (ps:dolist (node (qsa document ".next-search-node"))
+    (ps:dolist (node (qsa document ".nyxt-search-node"))
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
 
   (let ((*matches* (array))
@@ -147,7 +147,7 @@
                  (let* ((matches (matches-from-json
                                   result buffer multi-buffer)))
                    (setf all-matches (append all-matches matches))
-                   (next::set-completions (current-minibuffer) all-matches)))))
+                   (nyxt::set-completions (current-minibuffer) all-matches)))))
            buffers)))
   ;; return NIL, the completions will be updated asynchronously by the
   ;; callback from query-buffer
@@ -159,7 +159,7 @@
     (ps:chain context (query-selector-all selector)))
   (defun remove-search-nodes ()
     "Removes all the search elements"
-    (ps:dolist (node (qsa document ".next-search-node"))
+    (ps:dolist (node (qsa document ".nyxt-search-node"))
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
   (remove-search-nodes))
 
@@ -209,7 +209,7 @@ provided buffers."
                            :scroll subsequent-call)
                           (setf subsequent-call t)))
                       :cleanup-function (lambda () (remove-focus))
-                      :history (next::minibuffer-search-history *browser*))))
+                      :history (nyxt::minibuffer-search-history *browser*))))
     (with-result (match (read-from-minibuffer minibuffer))
       (declare (ignore match))
       (update-selection-highlight-hint :follow t :scroll t))))

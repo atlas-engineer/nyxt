@@ -1,8 +1,8 @@
-(uiop:define-package :next/help-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/help-mode
+  (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Mode for help pages"))
-(in-package :next/help-mode)
+(in-package :nyxt/help-mode)
 
 (define-mode help-mode ()
   "Mode for displaying documentation."

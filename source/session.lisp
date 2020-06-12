@@ -1,9 +1,9 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defun buffer-history (buffer)
   "Return the buffer history of BUFFER."
   (match (find-submode buffer 'web-mode)
-    ((guard m m) (next/web-mode:history m))))
+    ((guard m m) (nyxt/web-mode:history m))))
 
 (defun web-buffers ()
   "Return list of web buffers.
@@ -14,7 +14,7 @@ I.e. non-special buffers, those with a non-empty URL slot."
 (defun session-data ()
   "Return the data that needs to be serialized.
 This data can be used to restore the session later, e.g. when starting a new
-instance of Next."
+instance of Nyxt."
   ;; TODO: What should the session root be?  A hash-table?  A plist?
   ;; For now, it's just a simple list where the first element is the version.
   ;; Maybe not future-proof, but it's unclear that session structure will ever
@@ -23,7 +23,7 @@ instance of Next."
         (delete-if #'null (mapcar #'buffer-history (web-buffers)))))
 
 (defun store-sexp-session ()
-  "Store the current Next session to the browser `session-path'.
+  "Store the current Nyxt session to the browser `session-path'.
 Currently we store the list of current URLs of all buffers."
   ;; TODO: Should we persist keymaps, constructors, etc.?  For instance, should
   ;; we restore the proxy value?  It may be wiser to let the user configure
@@ -35,9 +35,9 @@ Currently we store the list of current URLs of all buffers."
     (log:info "Saving session to ~s." (expand-path (session-path *browser*)))
     ;; We READ the output of serialize-sexp to make it more human-readable.
     (let ((*package* *package*))
-      ;; We need to make sure current package is :next so that
+      ;; We need to make sure current package is :nyxt so that
       ;; symbols a printed with consistent namespaces.
-      (in-package :next)
+      (in-package :nyxt)
       (format file
               "~s"
               (with-input-from-string (in (with-output-to-string (out)
@@ -45,16 +45,16 @@ Currently we store the list of current URLs of all buffers."
                 (read in))))))
 
 (defun restore-sexp-session ()
-  "Restore the current Next session from the browser `session-path'."
+  "Restore the current Nyxt session from the browser `session-path'."
   (handler-case
       (match (with-data-file (input (session-path *browser*)
                                     :direction :input
                                     :if-does-not-exist nil)
                (when input
-                 ;; We need to make sure current package is :next so that
+                 ;; We need to make sure current package is :nyxt so that
                  ;; symbols are printed with consistent namespaces.
                  (let ((*package* *package*))
-                   (in-package :next)
+                   (in-package :nyxt)
                    (s-serialization:deserialize-sexp input))))
         ((list version buffer-histories)
          (unless (string= version +version+)
@@ -75,7 +75,7 @@ Currently we store the list of current URLs of all buffers."
                  for buffer = (make-buffer)
                  for mode = (find-submode buffer 'web-mode)
                  do (set-url* (url (htree:data (htree:current history))) :buffer buffer)
-                 do (setf (next/web-mode:history mode) history))
+                 do (setf (nyxt/web-mode:history mode) history))
            ;; TODO: Switch to the last active buffer.  We probably need to serialize *browser*.
            ;; Or else we could include `access-time' in the buffer class.
            )))

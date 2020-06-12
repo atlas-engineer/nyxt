@@ -1,4 +1,4 @@
-(in-package :next/web-mode)
+(in-package :nyxt/web-mode)
 
 (define-parenscript %scroll-to-top ()
   (ps:chain window (scroll-by 0 (- (ps:chain document body scroll-height)))))

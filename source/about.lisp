@@ -1,20 +1,20 @@
-(in-package :next)
+(in-package :nyxt)
 
 (define-command about ()
   "Show the list of contributors."
-  (let* ((buffer (next/help-mode:help-mode :activate t
+  (let* ((buffer (nyxt/help-mode:help-mode :activate t
                                            :buffer (make-buffer :title "*About*")))
          (contents (markup:markup
                     (:h1 "Contributors")
                     (:p "Let us know if you've contributed to the development of
-                    Next and would like to be included on this list.")
+                    Nyxt and would like to be included on this list.")
                     (:ul
                      (:li "Adom Hartell (@4t0m)")
                      (:li "Solomon Bloch (@noogie13)"))
                     (:h1 "Supporters")
-                    (:p "Thank you to NLnet for supporting Next!")
+                    (:p "Thank you to NLnet for supporting Nyxt!")
                     (:h1 "Crowdfunding backers")
-                    (:p "Thank you to all who have supported and made Next possible!")
+                    (:p "Thank you to all who have supported and made Nyxt possible!")
                     (:h2 "2018-11 campaign: *NIX Support")
                     (:h3 "Digital Omnipresence")
                     (:ul

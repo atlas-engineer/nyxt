@@ -1,4 +1,4 @@
-(in-package :next/web-mode)
+(in-package :nyxt/web-mode)
 
 (defun ensure-zoom-ratio-range (zoom &optional (buffer (current-buffer)))
   (let* ((ratio (funcall zoom (current-zoom-ratio buffer) (zoom-ratio-step buffer))))

@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defun tag-specification-validator (s-exp)
   "Return a predicate validating the S-EXP tag specification for its argument.

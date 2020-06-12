@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defclass-export qt-browser (browser)
   ((application :accessor application)))
@@ -10,7 +10,7 @@
   (flet ((initialize ()
            (setf (application browser)
                  (qt:new-q-application 1 (cffi:foreign-alloc :string
-                                                             :initial-contents (list "Next")
+                                                             :initial-contents (list "Nyxt")
                                                              :null-terminated-p t)))
            (finalize browser urls startup-timestamp)
            (qt:application-exec (application browser))))

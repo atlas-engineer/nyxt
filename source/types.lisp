@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 ;; trivial-types:proper-list doesn't check its element type.
 

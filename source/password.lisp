@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defun password-completion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance))

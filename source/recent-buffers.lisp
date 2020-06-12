@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (export-always 'buffer-match-predicate)
 (defmethod buffer-match-predicate ((buffer buffer))

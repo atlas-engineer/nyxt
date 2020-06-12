@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (define-mode download-mode ()           ; TODO: Move to separate package?
   "Display list of downloads."
@@ -79,4 +79,4 @@ See also `open-file'."
                           (make-minibuffer
                            :input-prompt "Open file"
                            :completion-function (downloaded-files-completion-filter))))
-    (next/file-manager-mode:open-file-function filename)))
+    (nyxt/file-manager-mode:open-file-function filename)))

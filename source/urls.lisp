@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (export-always 'host)
 (declaim (ftype (function (string) (or string null)) host))

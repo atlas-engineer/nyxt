@@ -1,4 +1,4 @@
-(in-package :next/web-mode)
+(in-package :nyxt/web-mode)
 
 (define-command spell-check-word (&key (word nil word-supplied-p))
   "Spell check a word."

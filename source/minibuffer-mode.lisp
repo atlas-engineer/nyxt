@@ -1,9 +1,9 @@
-(uiop:define-package :next/minibuffer-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/minibuffer-mode
+  (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:serapeum #:export-always)
   (:documentation "Mode for minibuffer"))
-(in-package :next/minibuffer-mode)
+(in-package :nyxt/minibuffer-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
@@ -72,13 +72,13 @@
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
-  (with-slots (next::callback must-match-p next::completions next::completion-cursor
+  (with-slots (nyxt::callback must-match-p nyxt::completions nyxt::completion-cursor
                invisible-input-p
-               multi-selection-p next::marked-completions input-buffer)
+               multi-selection-p nyxt::marked-completions input-buffer)
       minibuffer
-    (match (or next::marked-completions
-               (and next::completions
-                    (list (nth next::completion-cursor next::completions)))
+    (match (or nyxt::marked-completions
+               (and nyxt::completions
+                    (list (nth nyxt::completion-cursor nyxt::completions)))
                (and (not must-match-p)
                     (list input-buffer)))
       ((guard completions completions)
@@ -88,18 +88,18 @@
                                               (str:replace-all " " " " completion)
                                               completion))
                      completions))
-       (funcall-safely next::callback (if multi-selection-p
+       (funcall-safely nyxt::callback (if multi-selection-p
                                     completions
                                     (first completions))))
       (nil (when invisible-input-p
-             (funcall-safely next::callback (str:replace-all " " " " input-buffer))))))
+             (funcall-safely nyxt::callback (str:replace-all " " " " input-buffer))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
-  (with-slots (next::callback) minibuffer
+  (with-slots (nyxt::callback) minibuffer
     (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (funcall-safely next::callback normalized-input)))
+      (funcall-safely nyxt::callback normalized-input)))
   (quit-minibuffer minibuffer))
 
 (defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
@@ -117,7 +117,7 @@
 
 (define-command self-insert ()
   "Insert first key from `*browser*' `key-stack' in the minibuffer."
-  (let ((key-string (keymap:key-value (first (next::key-stack *browser*))))
+  (let ((key-string (keymap:key-value (first (nyxt::key-stack *browser*))))
         (translation-table '(("hyphen" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking
@@ -129,7 +129,7 @@
 
 (define-command delete-forwards (&optional (minibuffer (current-minibuffer)))
   "Delete character after cursor."
-  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
     (unless (= cursor (length buffer))
       (setf buffer
             (concatenate 'string
@@ -142,7 +142,7 @@
 
 (define-command delete-backwards (&optional (minibuffer (current-minibuffer)))
   "Delete character before cursor."
-  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
     (unless (= cursor 0)
       (let ((old-cursor cursor))
         ;; Change cursor before buffer or else we could have a cursor that's
@@ -157,39 +157,39 @@
 
 (define-command cursor-forwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor forward by one."
-  (with-slots (input-buffer next::input-cursor-position) minibuffer
-    (when (< next::input-cursor-position (length input-buffer))
-      (incf next::input-cursor-position)))
+  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
+    (when (< nyxt::input-cursor-position (length input-buffer))
+      (incf nyxt::input-cursor-position)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-backwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor backwards by one."
-  (with-slots (next::input-cursor-position) minibuffer
-    (when (> next::input-cursor-position 0)
-      (decf next::input-cursor-position)))
+  (with-slots (nyxt::input-cursor-position) minibuffer
+    (when (> nyxt::input-cursor-position 0)
+      (decf nyxt::input-cursor-position)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-beginning (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the input area."
-  (with-slots (next::input-cursor-position) minibuffer
-    (setf next::input-cursor-position 0))
+  (with-slots (nyxt::input-cursor-position) minibuffer
+    (setf nyxt::input-cursor-position 0))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command cursor-end (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the input area."
-  (with-slots (input-buffer next::input-cursor-position) minibuffer
-    (setf next::input-cursor-position (length input-buffer)))
+  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
+    (setf nyxt::input-cursor-position (length input-buffer)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (defun char-at-cursor (&optional (minibuffer (current-minibuffer)))
   "Return the character the cursor it at in the minibuffer."
-  (with-slots (input-buffer next::input-cursor-position) minibuffer
-    (if (< next::input-cursor-position (length input-buffer))
-        (char (input-buffer minibuffer) (next::input-cursor-position minibuffer)))))
+  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
+    (if (< nyxt::input-cursor-position (length input-buffer))
+        (char (input-buffer minibuffer) (nyxt::input-cursor-position minibuffer)))))
 
 (defun char-at-position (input position)
   "Return the character at `position' in `input', or nil."
@@ -198,19 +198,19 @@
 
 (define-command cursor-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the word at point."
-  (with-slots (input-buffer next::input-cursor-position) minibuffer
+  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
     (if (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
         (loop while (and
                      (intersection *word-separation-characters* (list (char-at-cursor minibuffer)))
-                     (< next::input-cursor-position (length input-buffer)))
-              do (incf next::input-cursor-position))
+                     (< nyxt::input-cursor-position (length input-buffer)))
+              do (incf nyxt::input-cursor-position))
         (loop while (and
                      (not (intersection *word-separation-characters* (list (char-at-cursor minibuffer))))
-                     (< next::input-cursor-position (length input-buffer)))
-              do (incf next::input-cursor-position))))
+                     (< nyxt::input-cursor-position (length input-buffer)))
+              do (incf nyxt::input-cursor-position))))
   (state-changed minibuffer)
   (update-display minibuffer)
-  (next::input-cursor-position minibuffer))
+  (nyxt::input-cursor-position minibuffer))
 
 (defun backwards-word-position (input position)
   "Return the cursor position to move one word backwards."
@@ -236,15 +236,15 @@
 ;; TODO: Re-use cursor-forwards-word
 (define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the word at point."
-  (with-slots (input-buffer next::input-cursor-position) minibuffer
-    (setf next::input-cursor-position (backwards-word-position input-buffer next::input-cursor-position)))
+  (with-slots (input-buffer nyxt::input-cursor-position) minibuffer
+    (setf nyxt::input-cursor-position (backwards-word-position input-buffer nyxt::input-cursor-position)))
   (state-changed minibuffer)
   (update-display minibuffer)
-  (next::input-cursor-position minibuffer))
+  (nyxt::input-cursor-position minibuffer))
 
 (define-command delete-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the end of the word at point."
-  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
     (let* ((current-cursor-position cursor)
            (new-cursor-position (cursor-forwards-word minibuffer))
            (transpose-distance (- new-cursor-position current-cursor-position))
@@ -267,7 +267,7 @@
 
 (define-command delete-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the beginning of the word at point."
-  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
     (multiple-value-bind (new-string new-position) (%delete-backwards-word buffer cursor)
       ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
       (setf cursor new-position
@@ -277,14 +277,14 @@
 
 (define-command kill-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters from cursor position until the end of the line."
-  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
     (setf buffer (subseq buffer 0 cursor)))
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters in the input."
-  (with-accessors ((buffer input-buffer) (cursor next::input-cursor-position)) minibuffer
+  (with-accessors ((buffer input-buffer) (cursor nyxt::input-cursor-position)) minibuffer
     ;; Set cursor before buffer to ensure cursor is never higher than buffer length.
     (setf cursor 0
           buffer ""))
@@ -293,8 +293,8 @@
 
 (define-command select-next (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer."
-  (when (< (next::completion-cursor minibuffer) (- (length (next::completions minibuffer)) 1))
-    (incf (next::completion-cursor minibuffer))
+  (when (< (nyxt::completion-cursor minibuffer) (- (length (nyxt::completions minibuffer)) 1))
+    (incf (nyxt::completion-cursor minibuffer))
     (state-changed minibuffer)
     (update-display minibuffer)
     (evaluate-script minibuffer
@@ -303,8 +303,8 @@
 
 (define-command select-previous (&optional (minibuffer (current-minibuffer)))
   "Select previous entry in minibuffer."
-  (when (> (next::completion-cursor minibuffer) 0)
-    (decf (next::completion-cursor minibuffer))
+  (when (> (nyxt::completion-cursor minibuffer) 0)
+    (decf (nyxt::completion-cursor minibuffer))
     (state-changed minibuffer)
     (update-display minibuffer)
     (evaluate-script minibuffer
@@ -313,12 +313,12 @@
 
 (define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
-  (insert (ring-insert-clipboard (next::clipboard-ring *browser*)) minibuffer))
+  (insert (ring-insert-clipboard (nyxt::clipboard-ring *browser*)) minibuffer))
 
 (define-command copy-candidate (&optional (minibuffer (current-minibuffer)))
   "Copy candidate to clipboard."
   (let ((candidate (if (and (multi-selection-p minibuffer)
-                            (not (null (next::marked-completions minibuffer))))
+                            (not (null (nyxt::marked-completions minibuffer))))
                        (str:join (string #\newline) (get-marked-candidates minibuffer))
                        (get-candidate minibuffer))))
     (unless (str:emptyp candidate)
@@ -356,7 +356,7 @@ readable."
       (unless (str:empty? input)
         (log:debug input minibuffer)
         (setf (input-buffer minibuffer) "")
-        (setf (next::input-cursor-position minibuffer) 0)
+        (setf (nyxt::input-cursor-position minibuffer) 0)
         (insert input minibuffer)))))
 
 (define-command minibuffer-toggle-mark (&key
@@ -366,11 +366,11 @@ readable."
 Only available if minibuffer `multi-selection-p' is non-nil.  DIRECTION can be
 :next or :previous and specifies which candidate to select once done."
   (when (multi-selection-p minibuffer)
-    (with-slots (next::completions next::completion-cursor next::marked-completions) minibuffer
-      (let ((candidate (nth next::completion-cursor next::completions)))
-        (match (member candidate next::marked-completions)
-          ((guard n n) (setf next::marked-completions (delete candidate next::marked-completions)))
-          (_ (push candidate next::marked-completions)))))
+    (with-slots (nyxt::completions nyxt::completion-cursor nyxt::marked-completions) minibuffer
+      (let ((candidate (nth nyxt::completion-cursor nyxt::completions)))
+        (match (member candidate nyxt::marked-completions)
+          ((guard n n) (setf nyxt::marked-completions (delete candidate nyxt::marked-completions)))
+          (_ (push candidate nyxt::marked-completions)))))
     (state-changed minibuffer)
     (update-display minibuffer)
     (match direction
@@ -386,8 +386,8 @@ See `minibuffer-toggle-mark'. "
   "Mark all visible candidates.
 Only available if minibuffer `multi-selection-p' is non-nil."
   (when (multi-selection-p minibuffer)
-    (with-slots (next::completions next::marked-completions) minibuffer
-      (setf next::marked-completions (union next::completions next::marked-completions)))
+    (with-slots (nyxt::completions nyxt::marked-completions) minibuffer
+      (setf nyxt::marked-completions (union nyxt::completions nyxt::marked-completions)))
     (state-changed minibuffer)
     (update-display minibuffer)))
 
@@ -395,7 +395,7 @@ Only available if minibuffer `multi-selection-p' is non-nil."
   "Unmark all visible candidates.
 Only available if minibuffer `multi-selection-p' is non-nil."
   (when (multi-selection-p minibuffer)
-    (with-slots (next::completions next::marked-completions) minibuffer
-      (setf next::marked-completions (set-difference next::marked-completions next::completions)))
+    (with-slots (nyxt::completions nyxt::marked-completions) minibuffer
+      (setf nyxt::marked-completions (set-difference nyxt::marked-completions nyxt::completions)))
     (state-changed minibuffer)
     (update-display minibuffer)))

@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (export-always 'define-mode)
 (defmacro define-mode (name direct-superclasses &body body)
@@ -134,7 +134,7 @@ It is run before the destructor.")
 (defmethod find-mode ((buffer buffer) mode-symbol)
   "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
 Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
-can be 'web-mode as well as 'next/web-mode:web-mode."
+can be 'web-mode as well as 'nyxt/web-mode:web-mode."
   (let ((mode-full-symbol (if (find-class mode-symbol nil)
                               mode-symbol
                               (match (mode-command mode-symbol)
@@ -191,7 +191,7 @@ If there is no corresponding keymap, return nil."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :s-serialization)
 
-(defmethod serializable-slots ((object next::root-mode))
+(defmethod serializable-slots ((object nyxt::root-mode))
   "Discard keymaps which can be quite verbose."
-  (delete 'next::keymap-scheme
+  (delete 'nyxt::keymap-scheme
           (mapcar #'closer-mop:slot-definition-name (closer-mop:class-slots (class-of object)))))

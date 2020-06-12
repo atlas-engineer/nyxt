@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 ;; We need a `command' class for multiple reasons:
 ;; - Identify commands uniquely (although being a member of `*command-list*' is enough).
@@ -104,12 +104,12 @@ deprecated and by what in the docstring."
            (echo-warning "~a is deprecated." ',name)
            ,@body)))))
 
-(defun next-packages ()                 ; TODO: Export a customizable *next-packages* instead?
-  "Return all package designators that start with 'next' plus Next own libraries."
+(defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
+  "Return all package designators that start with 'nyxt' plus Nyxt own libraries."
   (mapcar #'package-name
           (append (delete-if
                    (lambda (p)
-                     (not (str:starts-with-p "NEXT" (package-name p))))
+                     (not (str:starts-with-p "NYXT" (package-name p))))
                    (list-all-packages))
                   (mapcar #'find-package
                           '(download-manager
@@ -120,8 +120,8 @@ deprecated and by what in the docstring."
                             password
                             text-analysis)))))
 
-(defun package-defined-symbols (&optional (external-package-designators (next-packages))
-                                  (user-package-designators '(:next-user)))
+(defun package-defined-symbols (&optional (external-package-designators (nyxt-packages))
+                                  (user-package-designators '(:nyxt-user)))
   "Return the list of all external symbols interned in EXTERNAL-PACKAGE-DESIGNATORS
 and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
   (let ((symbols))
@@ -135,15 +135,15 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
     symbols))
 
 (defun package-variables ()
-  "Return the list of variable symbols in Next-related-packages."
+  "Return the list of variable symbols in Nyxt-related-packages."
   (delete-if (complement #'boundp) (package-defined-symbols)))
 
 (defun package-functions ()
-  "Return the list of function symbols in Next-related packages."
+  "Return the list of function symbols in Nyxt-related packages."
   (delete-if (complement #'fboundp) (package-defined-symbols)))
 
 (defun package-classes ()
-  "Return the list of class symbols in Next-related-packages."
+  "Return the list of class symbols in Nyxt-related-packages."
   (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols)))
 
 (defclass slot ()
@@ -178,7 +178,7 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
    (mopu:slot-names class-sym)))
 
 (defun package-slots ()
-  "Return the list of all slot symbols in `:next' and `:next-user'."
+  "Return the list of all slot symbols in `:nyxt' and `:nyxt-user'."
   (alex:mappend (lambda (class-sym)
                   (mapcar (lambda (slot) (make-instance 'slot
                                                         :name slot
@@ -205,9 +205,9 @@ list only the commands that belong to the corresponding mode packages or of a
 parent mode packages.  Otherwise list all commands.
 
 If 'BASE-MODE is in MODE-SYMBOLS, mode togglers and commands from the
-`next-user' package are included.  This is useful since mode togglers are
+`nyxt-user' package are included.  This is useful since mode togglers are
 usually part of their own mode / package and would not be listed otherwise.
-For `next-user' commands, users expect them to be listed out of the box without
+For `nyxt-user' commands, users expect them to be listed out of the box without
 extra fiddling."
   ;; TODO: Make sure we list commands of inherited modes.
   (let ((list-togglers-p (member 'base-mode mode-symbols)))
@@ -215,7 +215,7 @@ extra fiddling."
         (remove-if (lambda (c)
                      (and (or (not list-togglers-p)
                               (and (not (mode-toggler-p c))
-                                   (not (eq (find-package 'next-user)
+                                   (not (eq (find-package 'nyxt-user)
                                             (symbol-package (sym c))))))
                           (notany (lambda (m)
                                     (eq (pkg c)
@@ -269,7 +269,7 @@ This function can be `funcall'ed."
                 (format nil " (~{~a~^, ~})" bindings)
                 "")
             (match (object-string (pkg command))
-              ((or "" "next" "next-user") "")
+              ((or "" "nyxt" "nyxt-user") "")
               (a (format nil " [~a]" a))))))
 
 (declaim (ftype (function (function) (or null command)) function-command))

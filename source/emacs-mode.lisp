@@ -1,8 +1,8 @@
-(uiop:define-package :next/emacs-mode
-  (:use :common-lisp :trivia :next)
+(uiop:define-package :nyxt/emacs-mode
+  (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Emacs-style bindings."))
-(in-package :next/emacs-mode)
+(in-package :nyxt/emacs-mode)
 
 (define-mode emacs-mode ()
   "Enable Emacs-style bindings.

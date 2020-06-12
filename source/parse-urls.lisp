@@ -1,4 +1,4 @@
-(in-package :next)
+(in-package :nyxt)
 
 (defun parse-url (input-url)
   "From user input, return the full url to visit.
@@ -24,7 +24,7 @@ Otherwise, build a search query with the default search engine."
              (log:debug "Open magnet link with external application.")
              (ignore-errors
               (uiop:launch-program (list "xdg-open" input-url))
-              (next/minibuffer-mode:cancel-input)))
+              (nyxt/minibuffer-mode:cancel-input)))
             ((and recognized-scheme
                   (not (string= "file" recognized-scheme)))
              input-url)

@@ -1,7 +1,7 @@
-(uiop:define-package :next/application-mode
-    (:use :common-lisp :next)
+(uiop:define-package :nyxt/application-mode
+    (:use :common-lisp :nyxt)
   (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
-(in-package :next/application-mode)
+(in-package :nyxt/application-mode)
 
 ;; Moving modes out of the `modes' slot is a bad idea: too many parts rely on
 ;; the presence of the `modes' slot.
@@ -26,6 +26,6 @@
 (declaim (ftype (function (list-of-keymaps buffer) (values list-of-keymaps buffer))
                 keep-override-map))
 (defun keep-override-map (keymaps buffer)
-  (if (next::active-minibuffers (current-window))
+  (if (nyxt::active-minibuffers (current-window))
       (values keymaps buffer)
       (values (list (override-map buffer)) buffer)))
