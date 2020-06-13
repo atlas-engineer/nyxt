@@ -51,21 +51,22 @@ MAJOR.MINOR.PATCH, we increment the:
   - ~/.local/share/next -> ~/.local/share/nyxt
 
 - Replace D-Bus-based architecture with an FFI architecture.  As a result, there
-  is only one exectuable needed to run Next and no more need for D-Bus.  This
-  should simplify installation and remove many performance bottlenecks.
+  is only one exectuable needed to run Nyxt and no more need for D-Bus.  This
+  should simplify installation, remove many performance bottlenecks and fix the
+  mouse and keyboard issues.
 
-- New =tutorial= command.
+- New =tutorial= and =manual= commands.
 
 - Keybindings bind to function /symbols/ and not functions (i.e. ='foo= and not
   =#'foo=).
-  Use =next:make-keymap= if you want type-checking.
+  Make sure to use =nyxt:make-keymap= if you want type-checking on binding creation.
 
 - Add status view and message view to display buffer status and messages
   respectively.
   The status view can be customized with the =status-formatter= window slot.
   The =status-buffer= slot has been removed.
 
-- Report user configuration errors in a Next web view.  Users don't have to
+- Report user configuration errors in a Nyxt web view.  Users don't have to
   check the shell output anymore.
 
 - New =fill-input-from-external-editor= command.
@@ -87,7 +88,7 @@ MAJOR.MINOR.PATCH, we increment the:
   For instance "Page_Up" becomes "pageup".
 
 - Keycode bindings: Use the "#N" syntax to bind the N keycode to a command.
-  Example: ~(define-key *my-keymap* "C-#10" #'next/web-mode::copy-url)~.
+  Example: ~(define-key *my-keymap* "C-#10" #'nyxt/web-mode::copy-url)~.
 
 - Keymaps must be named, e.g. ~(keymap:make-keymap "my-map")~.
 
@@ -103,7 +104,7 @@ MAJOR.MINOR.PATCH, we increment the:
   customized in the new =request-resource-scheme= keymap scheme of the =buffer=
   class.
 
-- Sessions are now saved in XDG_DATA_HOME/next/sessions/.  Default session is
+- Sessions are now saved in XDG_DATA_HOME/nyxt/sessions/.  Default session is
   =default.lisp=.  The command line option =--session= has been replaced by the
   more general =--with-path= (e.g. ~--with-path session=/path/to/session~).
 
@@ -111,7 +112,7 @@ MAJOR.MINOR.PATCH, we increment the:
   =--load= can be specified multiple times, the =--remote= option allows
   evaluating =--eval= and =--load= in a running instance (if
   =remote-execution-p= is non-nil).
-  New =--script= command line option that can be used in shabang to write "Next scripts."
+  New =--script= command line option that can be used in shabang to write "Nyxt scripts."
 
 - New =autofill= command to insert predefined content in text fields.
 
@@ -126,8 +127,8 @@ MAJOR.MINOR.PATCH, we increment the:
 - New documentation commands: =describe-function= (works on macros), =describe-slot=,
   =describe-class=, =describe-key=, =describe-bindings=.
 
-- Documentation commands list only exported symbols from =:next=, but all
-  symbols from =:next-user=.
+- Documentation commands list only exported symbols from =:nyxt=, but all
+  symbols from =:nyxt-user=.
 
 - New =define-configuration= macro.  See its documentation with
   =describe-function=.
@@ -137,7 +138,7 @@ MAJOR.MINOR.PATCH, we increment the:
 - =define-parenscript= now takes any lambda-list and does not take the implicit
   =%callback= argument anymore.
 
-- =help-mode= is now part of its own package, =next/help-mode=, like any other mode.
+- =help-mode= is now part of its own package, =nyxt/help-mode=, like any other mode.
 
 - Remove =total-window-count= and =total-buffer-count= accessors (they were
   implementation details).
@@ -153,8 +154,8 @@ MAJOR.MINOR.PATCH, we increment the:
 - Add =base-mode= and move all base key bindings from =root-mode= to =base-mode=.
 
 - Ensure that all commands belong to their appropriate namespace.  In
-  particular, all webview-related commands now belong to =next/web-mode= (zooming,
-  searching, hinting, etc.) and minibuffer commands belong to =next/minibuffer-mode=.
+  particular, all webview-related commands now belong to =nyxt/web-mode= (zooming,
+  searching, hinting, etc.) and minibuffer commands belong to =nyxt/minibuffer-mode=.
 
 - Transparent GPG-encrypted file persistence when files have a =.gpg= extension.
   This makes it possible to keep bookmarks, history, session, etc. in encrypted files.
@@ -170,7 +171,7 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - Password manager commands default to current domain.
 
-- Default package is =:next-user= in configuration but also in command line
+- Default package is =:nyxt-user= in configuration but also in command line
   evaluation and in scripts.
 
 - Support =data-profiles=.  A =data-profile= can be used to specify a group of
