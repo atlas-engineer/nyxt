@@ -458,15 +458,6 @@ The version number is stored in the clipboard."
                   (:code (binding-keys 'execute-command) " describe-command") " (bound to "
                   (:code (binding-keys 'describe-command)) ").")
 
-              (:h2 "Customize and extend Nyxt")
-              (:p "Customization is possible through the creation of a "
-                  (:code "~/.config/nyxt/init.lisp")
-                  " file. From here you can override and redefine any of the functions by defining your init file as part of the "
-                  (:code ":nyxt")
-                  " package. For more information please see: "
-                  (:a :href "https://nyxt.atlas.engineer/documentation#customization"
-                      "customizing Nyxt")
-                  ".")
               (:h2 "Documentation")
               (:p "The " (:i "minibuffer") " lets you fuzzy-search all commands."
                   " Press " (:code (binding-keys 'execute-command))
@@ -474,8 +465,11 @@ The version number is stored in the clipboard."
                   " These commands can display the documentation of all Nyxt components.")
               (:p "An introduction to Nyxt core concepts can be consulted with the "
                   (:code "tutorial") " command (" (:code (binding-keys 'tutorial)) ").")
-              (:p "For full documentation about Nyxt, how it works, and how to extend it please see the "
-                  (:code "manual") " command (" (:code (binding-keys 'manual)) ").")))
+              (:p "For full documentation about Nyxt, how it works and how to configure it please see the "
+                  (:code "manual") " command (" (:code (binding-keys 'manual)) ").")
+              (:p "The manual covers the extensibility capabilities of Nyxt,
+from the inspection of the internals to the the creation of new modes and
+commands.")))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help))
