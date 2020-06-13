@@ -475,9 +475,7 @@ The version number is stored in the clipboard."
               (:p "An introduction to Nyxt core concepts can be consulted with the "
                   (:code "tutorial") " command (" (:code (binding-keys 'tutorial)) ").")
               (:p "For full documentation about Nyxt, how it works, and how to extend it please see the "
-                  (:a :href "https://nyxt.atlas.engineer/documentation"
-                      "user manual")
-                  ".")))
+                  (:code "manual") " command (" (:code (binding-keys 'manual)) ").")))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help))
