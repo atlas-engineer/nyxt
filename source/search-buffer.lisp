@@ -88,7 +88,7 @@
     (setf node (ps:chain node first-child))
     (loop while node
           do (walk-document node process-node)
-          do (setf node (ps:chain node nyxt-sibling))))
+          do (setf node (ps:chain node next-sibling))))
 
   (defun remove-search-nodes ()
     "Removes all the search elements"
