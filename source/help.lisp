@@ -426,7 +426,7 @@ The version number is stored in the clipboard."
               (:p "You can help with Nyxt development by supporting us in various ways:"
                   (:ul
                    (:li "Support continuous development on "
-                        (:a :href "https://www.patreon.com/next_browser"
+                        (:a :href "https://www.patreon.com/nyxt"
                             "Patreon")
                         ".")
                    (:li "Spread the word on social media and "
