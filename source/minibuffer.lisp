@@ -66,9 +66,11 @@ This should not rely on the minibuffer's content.")
                  :type string
                  :documentation "Text to prompt to the user, before `input-buffer'.")
    (input-buffer :accessor input-buffer
+                 :initarg :input-buffer
                  :initform (make-instance 'text-buffer:text-buffer)
                  :documentation "Buffer used to capture keyboard input.")
    (input-cursor :accessor input-cursor
+                 :initarg :input-cursor
                  :initform (make-instance 'text-buffer:cursor)
                  :documentation "Cursor used in conjunction with the input-buffer.")
    (invisible-input-p :initarg :invisible-input-p
@@ -181,8 +183,7 @@ A minibuffer query is typically done as follows:
 (defparameter *minibuffer-class* 'minibuffer)
 (export-always 'make-minibuffer)
 (defun make-minibuffer
-    (&key
-       (default-modes nil explicit-default-modes)
+    (&key (default-modes nil explicit-default-modes)
        (completion-function nil explicit-completion-function)
        (callback-buffer nil explicit-callback-buffer)
        (setup-function nil explicit-setup-function)
@@ -196,46 +197,48 @@ A minibuffer query is typically done as follows:
        (history nil explicit-history)
        (multi-selection-p nil explicit-multi-selection-p))
   "See the `minibuffer' class for the argument documentation."
-  (apply #'make-instance *minibuffer-class*
-         `(,@(if explicit-default-modes
-                 `(:default-modes ,default-modes)
-                 '())
-           ,@(if explicit-completion-function
-                 `(:completion-function ,completion-function)
-                 '())
-           ,@(if explicit-callback-buffer
-                 `(:callback-buffer ,callback-buffer)
-                 '())
-           ,@(if explicit-setup-function
-                 `(:setup-function ,setup-function)
-                 '())
-           ,@(if explicit-cleanup-function
-                 `(:cleanup-function ,cleanup-function)
-                 '())
-           ,@(if explicit-changed-callback
-                 `(:changed-callback ,changed-callback)
-                 '())
-           ,@(if explicit-must-match-p
-                 `(:must-match-p ,must-match-p)
-                 '())
-           ,@(if explicit-input-prompt
-                 `(:input-prompt ,input-prompt)
-                 '())
-           ,@(if explicit-input-buffer
-                 `(:input-buffer ,input-buffer)
-                 '())
-           ,@(if explicit-invisible-input-p
-                 `(:invisible-input-p ,invisible-input-p)
-                 '())
-           ,@(if explicit-show-completion-count-p
-                 `(:show-completion-count-p ,show-completion-count-p)
-                 '())
-           ,@(if explicit-history
-                 `(:history ,history)
-                 '())
-           ,@(if explicit-multi-selection-p
-                 `(:multi-selection-p ,multi-selection-p)
-                 '()))))
+  (let ((tmp-input-buffer (make-instance 'text-buffer:text-buffer))
+        (tmp-input-cursor (make-instance 'text-buffer:cursor)))
+    (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
+    (apply #'make-instance *minibuffer-class*
+           `(:input-buffer ,tmp-input-buffer
+             :input-cursor ,tmp-input-cursor
+             ,@(if explicit-default-modes
+                   `(:default-modes ,default-modes)
+                   '())
+             ,@(if explicit-completion-function
+                   `(:completion-function ,completion-function)
+                   '())
+             ,@(if explicit-callback-buffer
+                   `(:callback-buffer ,callback-buffer)
+                   '())
+             ,@(if explicit-setup-function
+                   `(:setup-function ,setup-function)
+                   '())
+             ,@(if explicit-cleanup-function
+                   `(:cleanup-function ,cleanup-function)
+                   '())
+             ,@(if explicit-changed-callback
+                   `(:changed-callback ,changed-callback)
+                   '())
+             ,@(if explicit-must-match-p
+                   `(:must-match-p ,must-match-p)
+                   '())
+             ,@(if explicit-input-prompt
+                   `(:input-prompt ,input-prompt)
+                   '())
+             ,@(if explicit-invisible-input-p
+                   `(:invisible-input-p ,invisible-input-p)
+                   '())
+             ,@(if explicit-show-completion-count-p
+                   `(:show-completion-count-p ,show-completion-count-p)
+                   '())
+             ,@(if explicit-history
+                   `(:history ,history)
+                   '())
+             ,@(if explicit-multi-selection-p
+                   `(:multi-selection-p ,multi-selection-p)
+                   '())))))
 
 (defmethod update-candidates ((minibuffer minibuffer))
   (with-slots (completion-function completions input-buffer must-match-p )
@@ -277,6 +280,8 @@ A minibuffer query is typically done as follows:
                     (write (ps:lisp (content minibuffer)))))))
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key)
+  (unless (cluffer:cursor-attached-p (input-cursor minibuffer))
+    (cluffer:attach-cursor (input-cursor minibuffer) (input-buffer minibuffer)))
   (hooks:run-hook (minibuffer-make-hook *browser*) minibuffer)
   ;; We don't want to show the input in the candidate list when invisible.
   (unless (completion-function minibuffer)
