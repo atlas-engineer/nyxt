@@ -98,7 +98,7 @@ Example:
 
 (defun yes-no-completion-filter ()
   (lambda (minibuffer)
-    (fuzzy-match (input-buffer minibuffer) *yes-no-choices*)))
+    (fuzzy-match (input minibuffer) *yes-no-choices*)))
 
 (defun confirmed-p (answer)
   (string-equal answer "yes"))

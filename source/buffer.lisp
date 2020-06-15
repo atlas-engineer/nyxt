@@ -243,7 +243,7 @@ complete against a search engine."
               (nyxt/minibuffer-mode:kill-whole-line minibuffer)
               (insert minibuffer (str:concat (shortcut engine) " "))))))))
     (t
-     (nyxt/minibuffer-mode:insert-candidate minibuffer))))
+     (nyxt/minibuffer-mode:insert-candidate minibuffer)))
 
 (define-mode set-url-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."
