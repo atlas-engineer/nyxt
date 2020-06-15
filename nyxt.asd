@@ -87,6 +87,7 @@
                (:file "file-manager-mode")
                (:file "download-mode")
                (:file "vcs-mode")
+               (:file "force-https-mode")
                ;; Web-mode commands
                (:file "element-hint")
                (:file "jump-heading")
