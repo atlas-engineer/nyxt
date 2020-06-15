@@ -1,8 +1,8 @@
-(uiop:define-package :next/repl-mode
-    (:use :common-lisp :next)
+(uiop:define-package :nyxt/repl-mode
+    (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-scheme)
   (:export :repl-mode))
-(in-package :next/repl-mode)
+(in-package :nyxt/repl-mode)
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -78,8 +78,8 @@
 
 (defun current-repl ()
   (find-if (lambda (i) (eq (class-of i)
-                           (find-class 'next/repl-mode:repl-mode)))
-           (next:modes (next:current-buffer))))
+                           (find-class 'nyxt/repl-mode:repl-mode)))
+           (nyxt:modes (nyxt:current-buffer))))
 
 (define-command cursor-forwards (&optional (repl (current-repl)))
   "Move cursor forward by one element."
@@ -182,12 +182,12 @@
   (update-input-buffer-display repl))
 
 (defun self-insert-repl ()
-  (next/minibuffer-mode:self-insert (current-repl)))
+  (nyxt/minibuffer-mode:self-insert (current-repl)))
 
-(in-package :next)
+(in-package :nyxt)
 
 (define-command lisp-repl ()
   "Show Lisp REPL."
-  (let* ((repl-buffer (make-buffer :title "*Lisp REPL*" :modes '(next/repl-mode:repl-mode base-mode))))
+  (let* ((repl-buffer (make-buffer :title "*Lisp REPL*" :modes '(nyxt/repl-mode:repl-mode base-mode))))
     (set-current-buffer repl-buffer)
     repl-buffer))
