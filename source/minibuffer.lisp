@@ -10,7 +10,9 @@
      changed-callback
      must-match-p
      input-prompt
+     input
      input-buffer
+     input-cursor
      invisible-input-p
      history
      multi-selection-p
