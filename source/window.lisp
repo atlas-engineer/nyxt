@@ -14,7 +14,7 @@
 (defun window-completion-filter ()
   (let ((windows (window-list)))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) windows))))
+      (fuzzy-match (input minibuffer) windows))))
 
 (declaim (ftype (function (browser)) window-make))
 (export-always 'window-make)

@@ -238,7 +238,7 @@ search.")
   (let ((parents (htree:parent-nodes (history mode))))
     (lambda (minibuffer)
       (if parents
-          (fuzzy-match (input-buffer minibuffer) parents)
+          (fuzzy-match (input minibuffer) parents)
           (error "Cannot navigate backwards.")))))
 
 (define-command history-backwards-query ()
@@ -257,7 +257,7 @@ search.")
   (let ((children (htree:forward-children-nodes (history mode))))
     (lambda (minibuffer)
       (if children
-          (fuzzy-match (input-buffer minibuffer) children)
+          (fuzzy-match (input minibuffer) children)
           (error "Cannot navigate forwards.")))))
 
 (define-command history-forwards-query ()
@@ -285,7 +285,7 @@ Otherwise go forward to the only child."
   (let ((children (htree:children-nodes (history mode))))
     (lambda (minibuffer)
       (if children
-          (fuzzy-match (input-buffer minibuffer) children)
+          (fuzzy-match (input minibuffer) children)
           (error "Cannot navigate forwards.")))))
 
 (define-command history-forwards-all-query ()
@@ -304,7 +304,7 @@ Otherwise go forward to the only child."
   (let ((urls (htree:all-nodes (history mode))))
     (lambda (minibuffer)
       (if urls
-          (fuzzy-match (input-buffer minibuffer) urls)
+          (fuzzy-match (input minibuffer) urls)
           (error "No history.")))))
 
 (define-command history-all-query ()
@@ -363,7 +363,7 @@ Otherwise go forward to the only child."
 (defun ring-completion-filter (ring)
   (let ((ring-items (containers:container->list ring)))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) ring-items))))
+      (fuzzy-match (input minibuffer) ring-items))))
 
 (define-command paste-from-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."

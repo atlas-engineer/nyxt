@@ -7,7 +7,7 @@
       (let ((closest-match (find-if (alex:curry #'str:containsp domain) password-list)))
         (setf password-list (cons closest-match (delete closest-match password-list)))))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) password-list))))
+      (fuzzy-match (input minibuffer) password-list))))
 
 (defun password-debug-info ()
   (log:debug "Password interface ~a uses executable ~s."

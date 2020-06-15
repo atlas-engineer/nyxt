@@ -122,7 +122,7 @@ Create BASE if it doesn't exist."
 
 (defun projects-roots-completion-filter (minibuffer)
   "Fuzzy-match local project roots."
-  (fuzzy-match (input-buffer minibuffer) *vcs-projects-roots*))
+  (fuzzy-match (input minibuffer) *vcs-projects-roots*))
 
 (defun choose-clone-url (root-name project-name clone-uri)
   "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."

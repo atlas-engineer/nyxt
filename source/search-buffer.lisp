@@ -197,8 +197,8 @@ provided buffers."
                       :completion-function
                       #'(lambda (minibuffer)
                           (unless explicit-case-p
-                            (setf case-sensitive-p (not (str:downcasep (input-buffer minibuffer)))))
-                          (match-completion-function (input-buffer minibuffer) buffers case-sensitive-p))
+                            (setf case-sensitive-p (not (str:downcasep (input minibuffer)))))
+                          (match-completion-function (input minibuffer) buffers case-sensitive-p))
                       :changed-callback
                       (let ((subsequent-call nil))
                         (lambda ()

@@ -133,7 +133,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (lambda (minibuffer)
     (let* ((input-specs (multiple-value-list
                          (parse-tag-specification
-                          (str:replace-all " " " " (input-buffer minibuffer)))))
+                          (input minibuffer))))
            (tag-specs (first input-specs))
            (non-tags (str:downcase (str:join " " (second input-specs))))
            (validator (ignore-errors (tag-specification-validator tag-specs)))
@@ -170,7 +170,7 @@ This can be useful to let the user select no tag when returning directly."
   "Replace current work with selected tag."
   (let ((selection (get-candidate minibuffer)))
     (unless (uiop:emptyp selection)
-      (with-accessors ((cursor input-cursor-position) (buffer input-buffer)) minibuffer
+      (with-accessors ((cursor input-cursor-position) (buffer input)) minibuffer
         (let ((before (subseq buffer 0 (word-start buffer cursor)))
               (after (subseq buffer (word-end buffer cursor))))
           (nyxt/minibuffer-mode:kill-whole-line minibuffer)
@@ -284,7 +284,7 @@ URL."
 If character before cursor is '+' or '-' complete against tag."
   (cond
     ;; Complete a tag.
-    ((and (not (str:emptyp (input-buffer minibuffer)))
+    ((and (not (str:emptyp (input minibuffer)))
           (let ((current-word (word-at-cursor minibuffer)))
             (or (str:starts-with? "-" current-word)
                 (str:starts-with? "+" current-word))))
@@ -302,7 +302,7 @@ If character before cursor is '+' or '-' complete against tag."
                               (word-end (input-buffer minibuffer)
                                         (input-cursor-position minibuffer))))
                (prefix (elt (word-at-cursor minibuffer) 0)))
-           (log:info (input-buffer minibuffer) before after)
+           (log:info (input minibuffer) before after)
            (nyxt/minibuffer-mode:kill-whole-line minibuffer)
            (insert (str:concat
                     before

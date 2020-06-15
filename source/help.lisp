@@ -25,24 +25,24 @@
   (let* ((variables (mapcar (lambda (v) (make-variable-candidate :name v))
                             (package-variables))))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) variables))))
+      (fuzzy-match (input minibuffer) variables))))
 
 (defun function-completion-filter ()
   (let ((functions (mapcar (lambda (v) (make-function-candidate :name v))
                            (package-functions))))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) functions))))
+      (fuzzy-match (input minibuffer) functions))))
 
 (defun class-completion-filter ()
   (let ((classes (mapcar (lambda (v) (make-class-candidate :name v))
                          (package-classes))))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) classes))))
+      (fuzzy-match (input minibuffer) classes))))
 
 (defun slot-completion-filter ()
   (let ((slots (package-slots)))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) slots))))
+      (fuzzy-match (input minibuffer) slots))))
 
 (define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."
