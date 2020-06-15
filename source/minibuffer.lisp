@@ -241,16 +241,16 @@ A minibuffer query is typically done as follows:
                    '())))))
 
 (defmethod update-candidates ((minibuffer minibuffer))
-  (with-slots (completion-function completions input-buffer must-match-p )
+  (with-slots (completion-function completions must-match-p )
       minibuffer
     (if completion-function
         (setf completions (funcall-safely completion-function minibuffer))
         (setf completions nil))
     (when (and (not must-match-p)
-               (not (str:emptyp input-buffer)))
-      ;; Don't add input-buffer to completions that don't accept arbitrary
+               (not (str:emptyp (input minibuffer))))
+      ;; Don't add input to completions that don't accept arbitrary
       ;; inputs (i.e. must-match-p is t).
-      (push input-buffer completions))))
+      (push (input minibuffer) completions))))
 
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
   "Reset the minibuffer state on every input change.
