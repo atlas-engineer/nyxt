@@ -487,6 +487,9 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   "Return the list of strings for the marked candidate in the minibuffer."
   (mapcar #'object-string (marked-completions minibuffer)))
 
-(defmethod input ((minibuffer minibuffer))
+(export-always 'input)
+(defmethod input ((minibuffer minibuffer) &optional normalized)
   "Return the string representation of the minibuffers input-buffer."
-  (text-buffer::string-representation (input-buffer minibuffer)))
+  (if normalized
+      (str:replace-all " " " " (text-buffer::string-representation (input-buffer minibuffer)))
+      (text-buffer::string-representation (input-buffer minibuffer))))

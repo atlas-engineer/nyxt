@@ -67,13 +67,13 @@
   "Return with minibuffer selection."
   (with-slots (nyxt::callback must-match-p nyxt::completions nyxt::completion-cursor
                invisible-input-p
-               multi-selection-p nyxt::marked-completions input-buffer)
+               multi-selection-p nyxt::marked-completions)
       minibuffer
     (match (or nyxt::marked-completions
                (and nyxt::completions
                     (list (nth nyxt::completion-cursor nyxt::completions)))
                (and (not must-match-p)
-                    (list input-buffer)))
+                    (list (input minibuffer))))
       ((guard nyxt::completions nyxt::completions)
        ;; Note that "immediate input" is also in completions, so it's caught here.
        (setf nyxt::completions
@@ -85,24 +85,22 @@
                                     nyxt::completions
                                     (first nyxt::completions))))
       (nil (when invisible-input-p
-             (funcall-safely nyxt::callback (str:replace-all " " " " input-buffer))))))
+             (funcall-safely nyxt::callback (input minibuffer))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
   (with-slots (nyxt::callback) minibuffer
-    (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (funcall-safely nyxt::callback normalized-input)))
+    (funcall-safely nyxt::callback (input minibuffer)))
   (quit-minibuffer minibuffer))
 
 (defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
   (unless (or (null (history minibuffer))
-              (str:empty? (input-buffer minibuffer)))
-    (let ((normalized-input (str:replace-all " " " " (input-buffer minibuffer))))
-      (containers:insert-item (history minibuffer) normalized-input)))
+              (str:empty? (input minibuffer)))
+    (containers:insert-item (history minibuffer) (input minibuffer)))
   (cancel-input minibuffer))
 
-(define-command cancel-input (&optional (minibuffer (current-minibuffer))) ; TODO: Rename to minibuffer-cancel?
+(define-command cancel-input (&optional (minibuffer (current-minibuffer)))
   "Close the minibuffer query without further action."
   (match (cleanup-function minibuffer)
     ((guard f f) (funcall-safely f)))
@@ -248,7 +246,7 @@ readable."
 (defun minibuffer-history-completion-filter (history)
   (when history
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer)
+      (fuzzy-match (input minibuffer)
                    (delete-duplicates (containers:container->list history)
                                       :test #'equal)))))
 
@@ -262,7 +260,7 @@ readable."
                           :completion-function (minibuffer-history-completion-filter (history minibuffer)))))
       (unless (str:empty? input)
         (log:debug input minibuffer)
-        (setf (input-buffer minibuffer) "")
+        (text-buffer::kill-line (input-cursor minibuffer))
         (setf (nyxt::input-cursor-position minibuffer) 0)
         (insert minibuffer input)))))
 
