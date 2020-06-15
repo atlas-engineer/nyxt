@@ -108,7 +108,7 @@
 
 (defun self-insert-minibuffer ()
   "Self insert with the current minibuffer."
-  (self-insert (next:current-minibuffer)))
+  (self-insert (nyxt:current-minibuffer)))
 
 (define-command self-insert (receiver)
   "Insert first key from `*browser*' `key-stack' in the minibuffer."

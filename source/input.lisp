@@ -121,7 +121,7 @@ Return nil to forward to renderer or non-nil otherwise."
                 (dolist (key key-stack)
                   (let ((value (keymap:key-value key)))
                     (log:debug "Insert ~s in minibuffer" value)
-                    (insert (next:current-minibuffer) value))))
+                    (insert (nyxt:current-minibuffer) value))))
               (setf key-stack nil)
               t)
 
