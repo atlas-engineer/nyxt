@@ -67,8 +67,7 @@ This should not rely on the minibuffer's content.")
                  :initform "Input"
                  :type string
                  :documentation "Text to prompt to the user, before `input-buffer'.")
-   (input-buffer :accessor input-buffer
-                 :initarg :input-buffer
+   (input-buffer :initarg :input-buffer
                  :initform (make-instance 'text-buffer:text-buffer)
                  :documentation "Buffer used to capture keyboard input.")
    (input-cursor :accessor input-cursor
@@ -180,6 +179,9 @@ A minibuffer query is typically done as follows:
                      :completion-function (tag-completion-filter))))
   ;; Write form here in which `tags' is bound to the resulting element(s).
   )"))
+
+(defmethod input-buffer ((minibuffer minibuffer))
+  (input minibuffer))
 
 (export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
@@ -392,11 +394,11 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 
 (defmethod generate-input-html ((minibuffer minibuffer))
   (let ((buffer-string-representation (if (invisible-input-p minibuffer)
-                                          (text-buffer::invisible-string-representation (input-buffer minibuffer))
-                                          (text-buffer::string-representation (input-buffer minibuffer)))))
-    (cond ((eql 0 (cluffer:item-count (input-buffer minibuffer)))
+                                          (text-buffer::invisible-string-representation (slot-value minibuffer 'input-buffer))
+                                          (text-buffer::string-representation (slot-value minibuffer 'input-buffer)))))
+    (cond ((eql 0 (cluffer:item-count (slot-value minibuffer 'input-buffer)))
            (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
-          ((eql (cluffer:cursor-position (input-cursor minibuffer)) (cluffer:item-count (input-buffer minibuffer)))
+          ((eql (cluffer:cursor-position (input-cursor minibuffer)) (cluffer:item-count (slot-value minibuffer 'input-buffer)))
            (markup:markup (:span buffer-string-representation)
                           (:span :id "cursor" (markup:raw "&nbsp;"))))
           (t (markup:markup (:span (subseq buffer-string-representation 0 (cluffer:cursor-position (input-cursor minibuffer))))
@@ -498,5 +500,5 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 (defmethod input ((minibuffer minibuffer) &optional normalized)
   "Return the string representation of the minibuffers input-buffer."
   (if normalized
-      (str:replace-all " " " " (text-buffer::string-representation (input-buffer minibuffer)))
-      (text-buffer::string-representation (input-buffer minibuffer))))
+      (str:replace-all " " " " (text-buffer::string-representation (slot-value minibuffer 'input-buffer)))
+      (text-buffer::string-representation (slot-value minibuffer 'input-buffer))))
