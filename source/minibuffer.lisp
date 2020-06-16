@@ -18,6 +18,7 @@
      show-completion-count-p
      max-lines
      minibuffer-style
+     user-style
      override-map)))
 
 (defclass minibuffer (buffer)
@@ -141,6 +142,12 @@ want edit this to match the changes done to `minibuffer-style'.")
                  (.selected :background-color "gray"
                             :color "white")))
     :documentation "The CSS applied to a minibuffer when it is set-up.")
+   (user-style
+    :accessor user-style
+    :initform ""
+    :documentation "User CSS that is applied after the
+minibuffer-style. This can be used to override any styles in the
+minibuffer-style.")
    (override-map :accessor override-map
                  :initform (let ((map (make-keymap "overide-map")))
                              (define-key map
@@ -329,7 +336,8 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   (update-candidates minibuffer)
   (setf (content minibuffer)
         (markup:markup
-         (:head (:style (minibuffer-style minibuffer)))
+         (:head (:style (minibuffer-style minibuffer))
+                (:style (user-style minibuffer)))
          (:body
           (:div :id "container"
                 (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
