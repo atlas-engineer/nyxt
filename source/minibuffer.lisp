@@ -402,36 +402,60 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
                                                         (+ 1 (cluffer:cursor-position (input-cursor minibuffer)))))
                             (:span (subseq buffer-string-representation (+ 1  (cluffer:cursor-position (input-cursor minibuffer))))))))))
 
-(defun generate-suggestion-html (suggestions cursor-index minibuffer)
-  (let ((lines (max-lines minibuffer))) ; TODO: Compute lines dynamically.
-    (when (>= (- cursor-index (suggestion-head minibuffer)) lines)
-      (setf (suggestion-head minibuffer)
-            (min
-             (+ (suggestion-head minibuffer) 1)
-             (length suggestions))))
-    (when (< (- cursor-index (suggestion-head minibuffer)) 0)
-      (setf (suggestion-head minibuffer)
-            (max
-             (- (suggestion-head minibuffer) 1)
-             0)))
-    (markup:markup (:ul (loop repeat lines
-                              for i from (suggestion-head minibuffer)
-                              for suggestion in (nthcdr i suggestions)
-                              collect
-                              (markup:markup
-                               (:li :class (let ((selected-p (= i cursor-index))
-                                                 (marked-p (member suggestion (marked-suggestions minibuffer)))
-                                                 (head-p (= i (suggestion-head minibuffer))))
-                                             (str:join " " (delete-if #'null (list (and marked-p "marked")
-                                                                                   (and selected-p "selected")
-                                                                                   (and head-p "head")))))
-                                    :id (cond ; TODO: Unused?
-                                          ((= i cursor-index) "selected")
-                                          ((member suggestion (marked-suggestions minibuffer)) "marked")
-                                          ((= i (suggestion-head minibuffer)) "head"))
-                                    (match (object-display suggestion)
-                                      ((guard s (not (str:emptyp s))) s)
-                                      (_ " ")))))))))
+(defmethod generate-suggestion-html ((minibuffer minibuffer))
+  (with-slots (suggestions suggestion-cursor) minibuffer
+    (let ((lines (max-lines minibuffer))) ; TODO: Compute lines dynamically.
+      (when (>= (- suggestion-cursor (suggestion-head minibuffer)) lines)
+        (setf (suggestion-head minibuffer)
+              (min
+               (+ (suggestion-head minibuffer) 1)
+               (length suggestions))))
+      (when (< (- suggestion-cursor (suggestion-head minibuffer)) 0)
+        (setf (suggestion-head minibuffer)
+              (max
+               (- (suggestion-head minibuffer) 1)
+               0)))
+      (markup:markup (:ul (loop repeat lines
+                                for i from (suggestion-head minibuffer)
+                                for suggestion in (nthcdr i suggestions)
+                                collect
+                                (markup:markup
+                                 (:li :class (let ((selected-p (= i suggestion-cursor))
+                                                   (marked-p (member suggestion (marked-suggestions minibuffer)))
+                                                   (head-p (= i (suggestion-head minibuffer))))
+                                               (str:join " " (delete-if #'null (list (and marked-p "marked")
+                                                                                     (and selected-p "selected")
+                                                                                     (and head-p "head")))))
+                                      :id (cond ; TODO: Unused?
+                                            ((= i suggestion-cursor) "selected")
+                                            ((member suggestion (marked-suggestions minibuffer)) "marked")
+                                            ((= i (suggestion-head minibuffer)) "head"))
+                                      (match (object-display suggestion)
+                                        ((guard s (not (str:emptyp s))) s)
+                                        (_ " "))))))))))
+
+(defmethod generate-prompt-html ((minibuffer minibuffer))
+  (with-slots (suggestions marked-suggestions) minibuffer
+    (format nil "~a~a:"
+            (input-prompt minibuffer)
+            (cond
+              ((not suggestions)
+               "")
+              ((not (show-suggestion-count-p minibuffer))
+               "")
+              (marked-suggestions
+               (format nil " [~a/~a]"
+                       (length marked-suggestions)
+                       (length suggestions)))
+              ((and (not marked-suggestions)
+                    (multi-selection-p minibuffer))
+               (format nil " [0/~a]"
+                       (length suggestions)))
+              ((not marked-suggestions)
+               (format nil " [~a]"
+                       (length suggestions)))
+              (t
+               "[?]")))))
 
 (defmethod set-suggestions ((minibuffer minibuffer) suggestions)
   "Set the suggestions and update the display."
@@ -439,39 +463,31 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (state-changed minibuffer)
   (update-display minibuffer))
 
+(defmethod update-input-buffer-display ((minibuffer minibuffer))
+  "Update the display for the input buffer including the prompt and
+completion count."
+  (with-slots (suggestions marked-suggestions) minibuffer
+    (let ((input-text (generate-input-html minibuffer))
+          (prompt-text (generate-prompt-html minibuffer)))
+      (evaluate-script
+       minibuffer
+       (ps:ps
+         (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+               (ps:lisp prompt-text))
+         (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
+               (ps:lisp input-text)))))))
+
+(defmethod update-suggestions-display ((minibuffer minibuffer))
+  (let ((suggestion-html (generate-suggestion-html minibuffer)))
+    (evaluate-script minibuffer
+                     (ps:ps
+                       (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
+                             (ps:lisp suggestion-html))))))
+
 (export-always 'update-display)
 (defmethod update-display ((minibuffer minibuffer))
-  (with-slots (suggestions marked-suggestions suggestion-cursor) minibuffer
-    (let ((input-text (generate-input-html minibuffer))
-          (suggestion-html (generate-suggestion-html suggestions suggestion-cursor minibuffer)))
-      (evaluate-script minibuffer
-                       (ps:ps
-                         (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
-                               (ps:lisp
-                                (format nil "~a~a:"
-                                        (input-prompt minibuffer)
-                                        (cond
-                                          ((not suggestions)
-                                           "")
-                                          ((not (show-suggestion-count-p minibuffer))
-                                           "")
-                                          (marked-suggestions
-                                           (format nil " [~a/~a]"
-                                                   (length marked-suggestions)
-                                                   (length suggestions)))
-                                          ((and (not marked-suggestions)
-                                                (multi-selection-p minibuffer))
-                                           (format nil " [0/~a]"
-                                                   (length suggestions)))
-                                          ((not marked-suggestions)
-                                           (format nil " [~a]"
-                                                   (length suggestions)))
-                                          (t
-                                           "[?]")))))
-                         (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
-                               (ps:lisp input-text))
-                         (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
-                               (ps:lisp suggestion-html)))))))
+  (update-input-buffer-display minibuffer)
+  (update-suggestions-display minibuffer))
 
 (export-always 'state-changed)
 (defmethod state-changed ((minibuffer minibuffer))
