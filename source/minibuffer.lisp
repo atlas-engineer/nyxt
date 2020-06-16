@@ -300,7 +300,7 @@ A minibuffer query is typically done as follows:
 
 (declaim (ftype (function (minibuffer)) read-from-minibuffer))
 (export-always 'read-from-minibuffer)
-(defun read-from-minibuffer (minibuffer) ; TODO: Rename minibuffer-read?
+(defun read-from-minibuffer (minibuffer)
   "Open the minibuffer, ready for user input.
 Example use:
 
