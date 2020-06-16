@@ -16,6 +16,7 @@
      history
      multi-selection-p
      show-completion-count-p
+     reset-completion-state
      max-lines
      minibuffer-style
      user-style
@@ -255,9 +256,11 @@ A minibuffer query is typically done as follows:
   the updated list length."
   (text-buffer::kill-line (input-cursor minibuffer))
   (insert minibuffer value)
-  (reset-completions))
+  (reset-completion-state))
 
-(defmethod reset-completions ((minibuffer minibuffer))
+(defmethod reset-completion-state ((minibuffer minibuffer))
+  "Update the candidates and move the completion cursor to the
+beginning."
   (update-candidates minibuffer)
   (setf completion-cursor 0)
   (setf completion-head 0))
@@ -380,6 +383,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 (export-always 'insert)
 (defmethod insert ((minibuffer minibuffer) characters)
   (text-buffer::insert-string (input-cursor minibuffer) characters)
+  (reset-completion-state minibuffer)
   (state-changed minibuffer)
   (update-display minibuffer))
 

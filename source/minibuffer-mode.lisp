@@ -111,7 +111,7 @@
   (self-insert (nyxt:current-minibuffer)))
 
 (define-command self-insert (receiver)
-  "Insert first key from `*browser*' `key-stack' in the minibuffer."
+  "Insert first key from `*browser*' `key-stack' to the receiver."
   (let ((key-string (keymap:key-value (first (nyxt::key-stack *browser*))))
         (translation-table '(("hyphen" "-")
                              ;; Regular spaces are concatenated into a single
@@ -125,12 +125,14 @@
 (define-command delete-forwards (&optional (minibuffer (current-minibuffer)))
   "Delete character after cursor."
   (cluffer:delete-item (input-cursor minibuffer))
+  (reset-completion-state minibuffer)
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command delete-backwards (&optional (minibuffer (current-minibuffer)))
   "Delete character before cursor."
   (text-buffer::delete-item-backward (input-cursor minibuffer))
+  (reset-completion-state minibuffer)
   (state-changed minibuffer)
   (update-display minibuffer))
 
@@ -175,24 +177,28 @@
 (define-command delete-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the end of the word at point."
   (text-buffer::delete-forward-word (input-cursor minibuffer))
+  (reset-completion-state minibuffer)
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command delete-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Delete characters from cursor position until the beginning of the word at point."
   (text-buffer::delete-backward-word (input-cursor minibuffer))
+  (reset-completion-state minibuffer)
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters from cursor position until the end of the line."
   (text-buffer::kill-forward-line (input-cursor minibuffer))
+  (reset-completion-state minibuffer)
   (state-changed minibuffer)
   (update-display minibuffer))
 
 (define-command kill-whole-line (&optional (minibuffer (current-minibuffer)))
   "Delete all characters in the input."
   (text-buffer::kill-line (input-cursor minibuffer))
+  (reset-completion-state minibuffer)
   (state-changed minibuffer)
   (update-display minibuffer))
 
