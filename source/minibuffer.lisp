@@ -10,7 +10,6 @@
      changed-callback
      must-match-p
      input-prompt
-     input
      input-buffer
      input-cursor
      invisible-input-p
@@ -18,10 +17,9 @@
      multi-selection-p
      show-completion-count-p
      max-lines
-     minibuffer-font-size
-     minibuffer-line-height
      minibuffer-style
      override-map)))
+
 (defclass minibuffer (buffer)
   ((default-modes :initarg :default-modes
                   :initform '(minibuffer-mode))
@@ -111,26 +109,13 @@ inside brackets. It can be useful to disable, for instance for a yes/no question
               :type integer
               :initform 10
               :documentation "Max number of candidate lines to show.  You will
-want edit this to match the changes done to `minibuffer-font-size',
-`minibuffer-line-height' and `minibuffer-open-height'.")
-   (minibuffer-font-size :initarg :minibuffer-font-size
-                         :accessor minibuffer-font-size
-                         :type string
-                         :initform "14px"
-                         :documentation "CSS font size for the minibuffer.
-Value is a string, e.g. '1em'.  You might want to adapt the value on HiDPI
-screen.")
-   (minibuffer-line-height :initarg :minibuffer-line-height
-                           :accessor minibuffer-line-height
-                           :type string
-                           :initform "18px"
-                           :documentation "CSS line height for the minibuffer.
-Value is a string, e.g. '1em'.  You might want to adapt the value on HiDPI
-screen.")
+want edit this to match the changes done to `minibuffer-style'.")
    (minibuffer-style
     :accessor minibuffer-style
     :initform (cl-css:css
-               '((* :font-family "monospace,monospace")
+               '((* :font-family "monospace,monospace"
+                    :font-size "14px"
+                    :line-height "18px")
                  (body :border-top "4px solid dimgray"
                        :margin "0"
                        :padding "0 6px")
@@ -263,7 +248,7 @@ A minibuffer query is typically done as follows:
   the updated list length."
   (text-buffer::kill-line (input-cursor minibuffer))
   (insert minibuffer value)
-  (reset-completion-cursor))
+  (reset-completions))
 
 (defmethod reset-completions ((minibuffer minibuffer))
   (update-candidates minibuffer)
@@ -272,11 +257,6 @@ A minibuffer query is typically done as follows:
 
 (defmethod content ((minibuffer minibuffer))
   (slot-value minibuffer 'content))
-
-(defmethod minibuffer-line-style ((minibuffer minibuffer))
-  (cl-css:css
-   `((* :font-size ,(minibuffer-font-size minibuffer)
-        :line-height ,(minibuffer-line-height minibuffer)))))
 
 (defmethod (setf content) (html-content minibuffer)
   "Set the `content' of the MINIBUFFER to HTML-CONTENT.
@@ -349,8 +329,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   (update-candidates minibuffer)
   (setf (content minibuffer)
         (markup:markup
-         (:head (:style (minibuffer-style minibuffer))
-                (:style (minibuffer-line-style minibuffer)))
+         (:head (:style (minibuffer-style minibuffer)))
          (:body
           (:div :id "container"
                 (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
