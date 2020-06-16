@@ -140,38 +140,38 @@
   "Move cursor forward by one."
   (text-buffer::safe-forward (input-cursor minibuffer))
   (state-changed minibuffer)
-  (update-display minibuffer))
+  (update-input-buffer-display minibuffer))
 
 (define-command cursor-backwards (&optional (minibuffer (current-minibuffer)))
   "Move cursor backwards by one."
   (text-buffer::safe-backward (input-cursor minibuffer))
   (state-changed minibuffer)
-  (update-display minibuffer))
+  (update-input-buffer-display minibuffer))
 
 (define-command cursor-beginning (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the input area."
   (cluffer:beginning-of-line (input-cursor minibuffer))
   (state-changed minibuffer)
-  (update-display minibuffer))
+  (update-input-buffer-display minibuffer))
 
 (define-command cursor-end (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the input area."
   (cluffer:end-of-line (input-cursor minibuffer))
   (state-changed minibuffer)
-  (update-display minibuffer))
+  (update-input-buffer-display minibuffer))
 
 (define-command cursor-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the word at point."
   (text-buffer::move-forward-word (input-cursor minibuffer))
   (state-changed minibuffer)
-  (update-display minibuffer)
+  (update-input-buffer-display minibuffer)
   (cluffer:cursor-position (input-cursor minibuffer)))
 
 (define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the word at point."
   (text-buffer::move-backward-word (input-cursor minibuffer))
   (state-changed minibuffer)
-  (update-display minibuffer)
+  (update-input-buffer-display minibuffer)
   (cluffer:cursor-position (input-cursor minibuffer)))
 
 (define-command delete-forwards-word (&optional (minibuffer (current-minibuffer)))
@@ -207,7 +207,7 @@
   (when (< (nyxt::suggestion-cursor minibuffer) (- (length (nyxt::suggestions minibuffer)) 1))
     (incf (nyxt::suggestion-cursor minibuffer))
     (state-changed minibuffer)
-    (update-display minibuffer)
+    (update-suggestions-display minibuffer)
     (evaluate-script minibuffer
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
                                       (scroll-into-view false))))))
@@ -217,7 +217,7 @@
   (when (> (nyxt::suggestion-cursor minibuffer) 0)
     (decf (nyxt::suggestion-cursor minibuffer))
     (state-changed minibuffer)
-    (update-display minibuffer)
+    (update-suggestions-display minibuffer)
     (evaluate-script minibuffer
                      (ps:ps (ps:chain (ps:chain document (get-element-by-id "head"))
                                       (scroll-into-view false))))))

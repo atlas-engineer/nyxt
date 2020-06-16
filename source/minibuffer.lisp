@@ -463,6 +463,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
   (state-changed minibuffer)
   (update-display minibuffer))
 
+(export-always 'update-input-buffer-display)
 (defmethod update-input-buffer-display ((minibuffer minibuffer))
   "Update the display for the input buffer including the prompt and
 completion count."
@@ -477,6 +478,7 @@ completion count."
          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                (ps:lisp input-text)))))))
 
+(export-always 'update-suggestions-display)
 (defmethod update-suggestions-display ((minibuffer minibuffer))
   (let ((suggestion-html (generate-suggestion-html minibuffer)))
     (evaluate-script minibuffer
