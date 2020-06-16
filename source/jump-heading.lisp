@@ -49,6 +49,6 @@ For example, Wikipedia ones end with '[edit]'. We strip what comes after the fir
                             :input-prompt "Jump to heading"
                             :completion-function (lambda (minibuffer)
                                                    (fuzzy-match
-                                                    (input minibuffer)
+                                                    (input-buffer minibuffer)
                                                     (make-headings (cl-json:decode-json-from-string headings))))))))
     (paren-jump-to-heading :heading-inner-text (inner-text heading))))

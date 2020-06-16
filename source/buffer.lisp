@@ -110,7 +110,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (when current-is-last-p
       (setf buffers (alex:rotate buffers -1)))
     (lambda (minibuffer)
-      (fuzzy-match (input minibuffer) buffers))))
+      (fuzzy-match (input-buffer minibuffer) buffers))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -222,11 +222,11 @@ If minibuffer input is not empty and the selection is on first position,
 complete against a search engine."
   (cond
     ;; Complete a search engine name.
-    ((and (not (str:emptyp (input minibuffer)))
+    ((and (not (str:emptyp (input-buffer minibuffer)))
           (zerop (completion-cursor minibuffer)))
      (let* ((engines (search-engines *browser*))
             (matching-engines
-              (remove-if (complement (alex:curry #'str:starts-with-p (input minibuffer)))
+              (remove-if (complement (alex:curry #'str:starts-with-p (input-buffer minibuffer)))
                          engines
                          :key #'shortcut)))
        (match (length matching-engines)
@@ -237,7 +237,7 @@ complete against a search engine."
           (with-result (engine (read-from-minibuffer
                                 (make-minibuffer
                                  :input-prompt "Search engine"
-                                 :input-buffer (if (zerop match-count) "" (input minibuffer))
+                                 :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
                                  :completion-function #'search-engine-completion-filter)))
             (when engine
               (nyxt/minibuffer-mode:kill-whole-line minibuffer)
@@ -321,7 +321,7 @@ The current buffer access time is set to be the last."
                                             (class-name (class-of m)))
                                           (apply #'append (mapcar #'modes buffers))))))
     (lambda (minibuffer)
-      (fuzzy-match (input minibuffer) modes))))
+      (fuzzy-match (input-buffer minibuffer) modes))))
 
 (defun inactive-mode-completion-filter (buffers)
   "Return the list of all modes minus those present in all BUFFERS."
@@ -336,7 +336,7 @@ The current buffer access time is set to be the last."
                                                 (modes b)))
                                       buffers))))
     (lambda (minibuffer)
-      (fuzzy-match (input minibuffer) (set-difference all-non-minibuffer-modes common-modes)))))
+      (fuzzy-match (input-buffer minibuffer) (set-difference all-non-minibuffer-modes common-modes)))))
 
 (define-command disable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
   "Disable queried mode(s)."

@@ -10,7 +10,7 @@
 (defun recent-buffer-completion-filter ()
   (let ((buffers (containers:container->list (recent-buffers *browser*))))
     (lambda (minibuffer)
-      (fuzzy-match (input minibuffer) buffers))))
+      (fuzzy-match (input-buffer minibuffer) buffers))))
 
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."
