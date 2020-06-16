@@ -3,18 +3,10 @@
   (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
 (in-package :nyxt/force-https-mode)
 
-(serapeum:export-always '*http-only-urls*)
-(defparameter *http-only-urls* '()
-  "A list of the URLs to be ignored by force-https-mode.")
-
 (defun force-https-handler (resource)
   "Imposes HTTPS on any link with HTTP scheme."
   (let ((uri (quri:uri (url resource))))
-    (if (and (string= (quri:uri-scheme uri) "http")
-             (not (member-if #'(lambda (url)
-                                 (search (quri:uri-host uri)
-                                         (quri:uri-host (quri:uri url))))
-                             *http-only-urls*)))
+    (if (string= (quri:uri-scheme uri) "http")
         (progn (log:info "HTTPS enforced on ~a" (quri:render-uri uri))
                ;; FIXME: http-only websites are displayed as "https://foo.bar"
                ;; FIXME: some websites (e.g., go.com) simply time-out
@@ -31,10 +23,6 @@ and websites that still don't have HTTPS version (shame on them!).
 To escape \"Unacceptable TLS Certificate\" error:
 \(setf nyxt/certificate-whitelist-mode:*default-certificate-whitelist*
        '(\"your.unacceptable.cert.website\"))
-
-To escape lags and inaccessibility of some stubborn non-HTTPS websites:
-\(setf nyxt/force-https-mode:*http-only-urls*
-       '(\"stubborn.website\"))
 
 Example:
 
