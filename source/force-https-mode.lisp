@@ -18,9 +18,6 @@
         (progn (log:info "HTTPS enforced on ~a" (quri:render-uri uri))
                ;; FIXME: http-only websites are displayed as "https://foo.bar"
                ;; FIXME: some websites (e.g., go.com) simply time-out
-               ;; FIXME: the URL string in "Loading ~s." (renderer-gtk.lisp)
-               ;;        is empty (old-reddit-handler causes the same effect,
-               ;;        I guess the problem is in the request hook)
                (setf (quri:uri-scheme uri) "https"
                      (quri:uri-port uri) (quri.port:scheme-default-port "https")
                      (url resource) (quri:render-uri uri)))))
