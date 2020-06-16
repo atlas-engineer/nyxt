@@ -11,7 +11,7 @@
      (object-string b))
     (_ (format nil "<#WINDOW ~a>" (id window)))))
 
-(defun window-completion-filter ()
+(defun window-suggestion-filter ()
   (let ((windows (window-list)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) windows))))
@@ -41,7 +41,7 @@
                          (make-minibuffer
                           :input-prompt "Delete window(s)"
                           :multi-selection-p t
-                          :completion-function (window-completion-filter))))
+                          :suggestion-function (window-suggestion-filter))))
     (mapcar #'delete-current-window windows)))
 
 (define-command delete-current-window (&optional (window (current-window)))

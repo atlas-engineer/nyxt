@@ -28,10 +28,10 @@ pull up a prompt of suggestions."
                                (make-minibuffer
                                 :input-buffer word
                                 :input-prompt "Suggest spelling (3+ characters)"
-                                :completion-function 'enchant-completion)))
+                                :suggestion-function 'enchant-suggestion)))
     (trivial-clipboard:text selected-word)))
 
-(defun enchant-completion (minibuffer)
+(defun enchant-suggestion (minibuffer)
   (let ((input (input-buffer minibuffer)))
     (when (> (length input) 2)
       (enchant:with-dict (lang (spell-check-language *browser*))

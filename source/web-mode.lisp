@@ -231,10 +231,10 @@ search.")
             ((guard n n) (set-url* (url (htree:data n))))))
         (echo "No forward history."))))
 
-(defun history-backwards-completion-filter (&optional (mode (find-submode
+(defun history-backwards-suggestion-filter (&optional (mode (find-submode
                                                              (current-buffer)
                                                              'web-mode)))
-  "Completion function over all parent URLs."
+  "Suggestion function over all parent URLs."
   (let ((parents (htree:parent-nodes (history mode))))
     (lambda (minibuffer)
       (if parents
@@ -246,14 +246,14 @@ search.")
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Navigate backwards to"
-                        :completion-function (history-backwards-completion-filter))))
+                        :suggestion-function (history-backwards-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
-(defun history-forwards-completion-filter (&optional (mode (find-submode
+(defun history-forwards-suggestion-filter (&optional (mode (find-submode
                                                             (current-buffer)
                                                             'web-mode)))
-  "Completion function over forward-children URL."
+  "Suggestion function over forward-children URL."
   (let ((children (htree:forward-children-nodes (history mode))))
     (lambda (minibuffer)
       (if children
@@ -265,7 +265,7 @@ search.")
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Navigate forwards to"
-                        :completion-function (history-forwards-completion-filter))))
+                        :suggestion-function (history-forwards-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -278,10 +278,10 @@ Otherwise go forward to the only child."
       (history-forwards-all-query)
       (history-forwards)))
 
-(defun history-forwards-all-completion-filter (&optional (mode (find-submode
+(defun history-forwards-all-suggestion-filter (&optional (mode (find-submode
                                                                 (current-buffer)
                                                                 'web-mode)))
-  "Completion function over children URL from all branches."
+  "Suggestion function over children URL from all branches."
   (let ((children (htree:children-nodes (history mode))))
     (lambda (minibuffer)
       (if children
@@ -293,14 +293,14 @@ Otherwise go forward to the only child."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Navigate forwards to (all branches)"
-                        :completion-function (history-forwards-all-completion-filter))))
+                        :suggestion-function (history-forwards-all-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
-(defun history-all-completion-filter (&optional (mode (find-submode
+(defun history-all-suggestion-filter (&optional (mode (find-submode
                                                        (current-buffer)
                                                        'web-mode)))
-  "Completion function over all history URLs."
+  "Suggestion function over all history URLs."
   (let ((urls (htree:all-nodes (history mode))))
     (lambda (minibuffer)
       (if urls
@@ -312,7 +312,7 @@ Otherwise go forward to the only child."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Navigate to"
-                        :completion-function (history-all-completion-filter))))
+                        :suggestion-function (history-all-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -360,7 +360,7 @@ Otherwise go forward to the only child."
      (trivial-clipboard:text (trivial-clipboard:text))
      (ffi-within-renderer-thread *browser* #'%paste))))
 
-(defun ring-completion-filter (ring)
+(defun ring-suggestion-filter (ring)
   (let ((ring-items (containers:container->list ring)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) ring-items))))
@@ -369,7 +369,7 @@ Otherwise go forward to the only child."
   "Show `*browser*' clipboard ring and paste selected entry."
   (with-result (ring-item (read-from-minibuffer
                            (make-minibuffer
-                            :completion-function (ring-completion-filter
+                            :suggestion-function (ring-suggestion-filter
                                                   (nyxt::clipboard-ring *browser*)))))
     (%paste :input-text ring-item)))
 
@@ -384,7 +384,7 @@ Otherwise go forward to the only child."
   (with-result (selected-fill (read-from-minibuffer
                                (make-minibuffer
                                 :input-prompt "Autofill"
-                                :completion-function
+                                :suggestion-function
                                 (lambda (input)
                                   (fuzzy-match input (autofills *browser*))))))
     (cond ((stringp (autofill-fill selected-fill))

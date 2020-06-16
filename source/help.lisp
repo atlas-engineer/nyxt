@@ -1,45 +1,45 @@
 (in-package :nyxt)
 
-(defstruct variable-candidate
+(defstruct variable-suggestion
   (name))
-(defmethod object-string ((variable variable-candidate))
-  (string-downcase (format nil "~s" (variable-candidate-name variable))))
-(defmethod object-display ((variable variable-candidate))
+(defmethod object-string ((variable variable-suggestion))
+  (string-downcase (format nil "~s" (variable-suggestion-name variable))))
+(defmethod object-display ((variable variable-suggestion))
   (object-string variable))
 
-(defstruct function-candidate
+(defstruct function-suggestion
   (name))
-(defmethod object-string ((fun function-candidate))
-  (string-downcase (format nil "~s" (function-candidate-name fun))))
-(defmethod object-display ((fun function-candidate))
+(defmethod object-string ((fun function-suggestion))
+  (string-downcase (format nil "~s" (function-suggestion-name fun))))
+(defmethod object-display ((fun function-suggestion))
   (object-string fun))
 
-(defstruct class-candidate
+(defstruct class-suggestion
   (name))
-(defmethod object-string ((class class-candidate))
-  (string-downcase (format nil "~s" (class-candidate-name class))))
-(defmethod object-display ((class class-candidate))
+(defmethod object-string ((class class-suggestion))
+  (string-downcase (format nil "~s" (class-suggestion-name class))))
+(defmethod object-display ((class class-suggestion))
   (object-string class))
 
-(defun variable-completion-filter ()
-  (let* ((variables (mapcar (lambda (v) (make-variable-candidate :name v))
+(defun variable-suggestion-filter ()
+  (let* ((variables (mapcar (lambda (v) (make-variable-suggestion :name v))
                             (package-variables))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) variables))))
 
-(defun function-completion-filter ()
-  (let ((functions (mapcar (lambda (v) (make-function-candidate :name v))
+(defun function-suggestion-filter ()
+  (let ((functions (mapcar (lambda (v) (make-function-suggestion :name v))
                            (package-functions))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) functions))))
 
-(defun class-completion-filter ()
-  (let ((classes (mapcar (lambda (v) (make-class-candidate :name v))
+(defun class-suggestion-filter ()
+  (let ((classes (mapcar (lambda (v) (make-class-suggestion :name v))
                          (package-classes))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) classes))))
 
-(defun slot-completion-filter ()
+(defun slot-suggestion-filter ()
   (let ((slots (package-slots)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) slots))))
@@ -48,9 +48,9 @@
   "Inspect a variable and show it in a help buffer."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
-                        :completion-function (variable-completion-filter)
+                        :suggestion-function (variable-suggestion-filter)
                         :input-prompt "Describe variable")))
-    (let* ((input (variable-candidate-name input))
+    (let* ((input (variable-suggestion-name input))
            (help-buffer (nyxt/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer
@@ -111,8 +111,8 @@ For generic functions, describe all the methods."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Describe function"
-                        :completion-function (function-completion-filter))))
-    (setf input (function-candidate-name input))
+                        :suggestion-function (function-suggestion-filter))))
+    (setf input (function-suggestion-name input))
     (flet ((method-desc (method)
              (markup:markup
               (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
@@ -153,7 +153,7 @@ A command is a special kind of function that can be called with
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Describe command"
-                        :completion-function (command-completion-filter))))
+                        :suggestion-function (command-suggestion-filter))))
     (describe-command* input)))
 
 (defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
@@ -183,8 +183,8 @@ A command is a special kind of function that can be called with
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Describe class"
-                        :completion-function (class-completion-filter))))
-    (let* ((input (class-candidate-name input))
+                        :suggestion-function (class-suggestion-filter))))
+    (let* ((input (class-suggestion-name input))
            (help-buffer (nyxt/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer
@@ -209,7 +209,7 @@ A command is a special kind of function that can be called with
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt "Describe slot"
-                        :completion-function (slot-completion-filter))))
+                        :suggestion-function (slot-suggestion-filter))))
     (let* ((help-buffer (nyxt/help-mode:help-mode
                          :activate t
                          :buffer (make-buffer

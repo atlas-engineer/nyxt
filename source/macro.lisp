@@ -96,7 +96,7 @@ Example:
 
 (defparameter *yes-no-choices* '("yes" "no"))
 
-(defun yes-no-completion-filter ()
+(defun yes-no-suggestion-filter ()
   (lambda (minibuffer)
     (fuzzy-match (input-buffer minibuffer) *yes-no-choices*)))
 
@@ -115,7 +115,7 @@ Example usage:
   `(with-result (answer (read-from-minibuffer
                          (make-minibuffer
                           :input-prompt (format nil ,@prompt)
-                          :completion-function (yes-no-completion-filter)
-                          :show-completion-count-p nil)))
+                          :suggestion-function (yes-no-suggestion-filter)
+                          :show-suggestion-count-p nil)))
      (when (confirmed-p answer)
        ,@body)))

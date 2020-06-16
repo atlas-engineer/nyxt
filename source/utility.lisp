@@ -8,7 +8,7 @@
 
 (export-always 'object-display)
 (defmethod object-display ((object t))
-  "Text shown by completion candidates in the minibuffer."
+  "Text shown by suggestions in the minibuffer."
   (if (and (mopu:slot-names (class-of object))
            (find (package-name (symbol-package (class-name (class-of object))))
                  (nyxt-packages)

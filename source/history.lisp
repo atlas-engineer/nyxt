@@ -72,7 +72,7 @@ The history is sorted by last access."
   (with-result (entries (read-from-minibuffer
                          (make-minibuffer
                           :input-prompt "Delete entries"
-                          :completion-function (history-completion-filter)
+                          :suggestion-function (history-suggestion-filter)
                           :history (minibuffer-set-url-history *browser*)
                           :multi-selection-p t)))
     (dolist (entry entries)
@@ -97,7 +97,7 @@ lot."
                                                    (last-access entry))
                   (* 60 60)))))))
 
-(defun history-completion-filter (&key prefix-urls)
+(defun history-suggestion-filter (&key prefix-urls)
   "Include prefix-urls in front of the history.
 This can be useful to, say, prefix the history with the current URL.  At the
 moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since

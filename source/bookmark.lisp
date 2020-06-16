@@ -129,7 +129,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       ;; persisted each time.
       (setf (bookmarks-data *browser*) bookmarks-without-url))))
 
-(defun bookmark-completion-filter ()
+(defun bookmark-suggestion-filter ()
   (lambda (minibuffer)
     (let* ((input-specs (multiple-value-list
                          (parse-tag-specification
@@ -145,11 +145,11 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                    bookmarks)))
       (fuzzy-match non-tags bookmarks))))
 
-(export-always 'tag-completion-filter)
+(export-always 'tag-suggestion-filter)
 (declaim (ftype (function (&key (:with-empty-tag boolean)
                                 (:extra-tags list-of-tags)))
-                tag-completion-filter))
-(defun tag-completion-filter (&key with-empty-tag extra-tags)
+                tag-suggestion-filter))
+(defun tag-suggestion-filter (&key with-empty-tag extra-tags)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
 This can be useful to let the user select no tag when returning directly."
   (let ((tags (sort (append extra-tags
@@ -168,7 +168,7 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command insert-tag (&optional (minibuffer (current-minibuffer)))
   "Replace current work with selected tag."
-  (let ((selection (get-candidate minibuffer)))
+  (let ((selection (get-suggestion minibuffer)))
     (unless (uiop:emptyp selection)
       (with-accessors ((cursor input-cursor-position) (buffer input-buffer)) minibuffer
         (let ((before (subseq buffer 0 (word-start buffer cursor)))
@@ -238,7 +238,7 @@ URL."
                                :input-prompt "Space-separated tag(s)"
                                :default-modes '(set-tag-mode minibuffer-mode)
                                :input-buffer (url-bookmark-tags (url buffer))
-                               :completion-function (tag-completion-filter
+                               :suggestion-function (tag-suggestion-filter
                                                      :extra-tags (make-tags (extract-keywords body 5)))))))
           (bookmark-add (url buffer)
                         :title (title buffer)
@@ -251,7 +251,7 @@ URL."
                          (make-minibuffer
                           :input-prompt "Bookmark URL from buffer(s)"
                           :multi-selection-p t
-                          :completion-function (buffer-completion-filter))))
+                          :suggestion-function (buffer-suggestion-filter))))
     (mapcar #'bookmark-current-page buffers)))
 
 (define-command bookmark-url ()
@@ -264,7 +264,7 @@ URL."
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
                          :input-buffer (url-bookmark-tags url)
-                         :completion-function (tag-completion-filter)))))
+                         :suggestion-function (tag-suggestion-filter)))))
 
     (bookmark-add url :tags tags)))
 
@@ -275,12 +275,12 @@ URL."
                           :input-prompt "Delete bookmark(s)"
                           :multi-selection-p t
                           :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                          :completion-function (bookmark-completion-filter))))
+                          :suggestion-function (bookmark-suggestion-filter))))
     (setf (bookmarks-data *browser*)
           (set-difference (bookmarks-data *browser*) entries :test #'equals))))
 
-(define-command insert-candidate-or-tag (&optional (minibuffer (current-minibuffer)))
-  "Paste selected candidate or tag in input.
+(define-command insert-suggestion-or-tag (&optional (minibuffer (current-minibuffer)))
+  "Paste selected suggestion or tag in input.
 If character before cursor is '+' or '-' complete against tag."
   (cond
     ;; Complete a tag.
@@ -292,7 +292,7 @@ If character before cursor is '+' or '-' complete against tag."
                         (make-minibuffer
                          :input-prompt "Tag"
                          :input-buffer (subseq (word-at-cursor minibuffer) 1)
-                         :completion-function (tag-completion-filter))))
+                         :suggestion-function (tag-suggestion-filter))))
        (when tag
          (let ((before (subseq (input-buffer minibuffer)
                                0
@@ -310,7 +310,7 @@ If character before cursor is '+' or '-' complete against tag."
                     after)
                    minibuffer)))))
     (t
-     (nyxt/minibuffer-mode:insert-candidate minibuffer))))
+     (nyxt/minibuffer-mode:insert-suggestion minibuffer))))
 
 (define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the bookmark and their tags."
@@ -319,7 +319,7 @@ If character before cursor is '+' or '-' complete against tag."
     (define-scheme "minibuffer-tag"
       scheme:cua
       (list
-       "tab" 'insert-candidate-or-tag)))))
+       "tab" 'insert-suggestion-or-tag)))))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark."
@@ -327,7 +327,7 @@ If character before cursor is '+' or '-' complete against tag."
                        (make-minibuffer
                         :input-prompt "Open bookmark"
                         :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                        :completion-function (bookmark-completion-filter))))
+                        :suggestion-function (bookmark-suggestion-filter))))
     ;; TODO: Add support for multiple bookmarks?
     (set-url* (url entry) :buffer (current-buffer) :raw-url-p t)))
 
@@ -337,7 +337,7 @@ If character before cursor is '+' or '-' complete against tag."
                        (make-minibuffer
                         :input-prompt "Open bookmark in a new buffer"
                         :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                        :completion-function (bookmark-completion-filter))))
+                        :suggestion-function (bookmark-suggestion-filter))))
     (set-url* (url entry) :buffer (make-buffer-focus :url nil) :raw-url-p t)))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)

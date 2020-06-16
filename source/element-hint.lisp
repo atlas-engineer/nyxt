@@ -166,8 +166,8 @@ identifier for every hinted element."
                         :input-prompt prompt
                         :history nil
                         :multi-selection-p multi-selection-p
-                        :completion-function
-                        (hint-completion-filter (elements-from-json elements-json))
+                        :suggestion-function
+                        (hint-suggestion-filter (elements-from-json elements-json))
                         :changed-callback
                         (let ((subsequent-call nil))
                           (lambda ()
@@ -187,7 +187,7 @@ identifier for every hinted element."
       (with-result (result (read-from-minibuffer minibuffer))
         (funcall-safely function result)))))
 
-(defun hint-completion-filter (hints)
+(defun hint-suggestion-filter (hints)
   (lambda (minibuffer)
     (let* ((matched-hints (remove-if-not (lambda (x) (str:starts-with-p (input-buffer minibuffer) (hint x) :ignore-case t)) hints))
            (fuzzy-matched-hints (fuzzy-match (input-buffer minibuffer) (set-difference hints matched-hints))))
@@ -288,19 +288,19 @@ identifier for every hinted element."
 (defmethod %copy-hint-url ((hint hint))
   (echo "Unsupported operation for hint: can't copy URL."))
 
-(defun update-selection-highlight-hint (&key completions scroll follow
+(defun update-selection-highlight-hint (&key suggestions scroll follow
                                           (minibuffer (current-minibuffer))
                                           (buffer (current-buffer)))
-  (let ((hint (flet ((hintp (hint-candidate)
-                       (if (typep hint-candidate '(or link-hint button-hint match))
-                           hint-candidate
+  (let ((hint (flet ((hintp (hint-suggestion)
+                       (if (typep hint-suggestion '(or link-hint button-hint match))
+                           hint-suggestion
                            nil)))
-                (if completions
-                    (hintp (first completions))
+                (if suggestions
+                    (hintp (first suggestions))
                     (when minibuffer
-                      (let ((hint-candidate (nth (nyxt::completion-cursor minibuffer)
-                                                 (nyxt::completions minibuffer))))
-                        (hintp hint-candidate)))))))
+                      (let ((hint-suggestion (nth (nyxt::suggestion-cursor minibuffer)
+                                                 (nyxt::suggestions minibuffer))))
+                        (hintp hint-suggestion)))))))
     (when hint
       (when (and follow
                  (slot-exists-p hint 'buffer)
@@ -352,8 +352,8 @@ visible active buffer."
                           (make-minibuffer
                            :input-prompt "Bookmark hint"
                            :history nil
-                           :completion-function
-                           (hint-completion-filter (elements-from-json elements-json))
+                           :suggestion-function
+                           (hint-suggestion-filter (elements-from-json elements-json))
                            :cleanup-function
                            (lambda ()
                              (remove-element-hints)))))
@@ -362,7 +362,7 @@ visible active buffer."
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
                          :input-buffer (url-bookmark-tags (url result))
-                         :completion-function (tag-completion-filter)))))
+                         :suggestion-function (tag-suggestion-filter)))))
     (when result
       (bookmark-add (url result) :tags tags))))
 

@@ -57,10 +57,10 @@ no suggestion.")
          ": Validate the current input, ignoring any suggestion."))
    (:p " Some commands support multiple selections, for
 instance " (:code "delete-buffer") " can delete all selected buffers at once.
-When the input is changed and the candidates are re-filtered, the selection is
+When the input is changed and the suggestions are re-filtered, the selection is
 not altered even if the marked elements don't show.")
-   (:p "When at least one candidate is marked, only the marked candidates are processed
-upon return.  The candidate under the cursor is not processed if not marked.")
+   (:p "When at least one suggestion is marked, only the marked suggestions are processed
+upon return.  The suggestion under the cursor is not processed if not marked.")
    (:ul
     (:li (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark
                          :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
@@ -128,7 +128,7 @@ been.")
 invoking the command 'buffer-history-tree'.")
    (:h3 "Searching")
    (:p "Nyxt can search a single buffer or multiple buffers at the same time.")
-   (:p "You can view candidates for search results in the minibuffer in one
+   (:p "You can view suggestions for search results in the minibuffer in one
 place rather than having to jump around on a buffer (or multiple buffers).")
    (:ul
     (:li (command-markup 'nyxt/web-mode:search-buffer) ": Search buffer.")

@@ -104,8 +104,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
 
-(export-always 'buffer-completion-filter)
-(defun buffer-completion-filter (&key current-is-last-p domain)
+(export-always 'buffer-suggestion-filter)
+(defun buffer-suggestion-filter (&key current-is-last-p domain)
   (let ((buffers (buffer-list :sort-by-time t :domain domain)))
     (when current-is-last-p
       (setf buffers (alex:rotate buffers -1)))
@@ -128,7 +128,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                         (make-minibuffer
                          :input-prompt "Switch to buffer"
                          ;; For commodity, the current buffer shouldn't be the first one on the list.
-                         :completion-function (buffer-completion-filter :current-is-last-p t))))
+                         :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
     (set-current-buffer buffer)))
 
 (define-command switch-buffer-domain (&optional (buffer (current-buffer)))
@@ -137,7 +137,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (with-result (buffer (read-from-minibuffer
                           (make-minibuffer
                            :input-prompt "Switch to buffer in current domain:"
-                           :completion-function (buffer-completion-filter
+                           :suggestion-function (buffer-suggestion-filter
                                                  :domain domain
                                                  :current-is-last-p t))))
       (set-current-buffer buffer))))
@@ -155,7 +155,7 @@ See `make-buffer'."
                          (make-minibuffer
                           :input-prompt "Delete buffer(s)"
                           :multi-selection-p t
-                          :completion-function (buffer-completion-filter))))
+                          :suggestion-function (buffer-suggestion-filter))))
     (mapcar #'buffer-delete buffers)))
 
 (defun delete-buffers ()
@@ -205,7 +205,7 @@ URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
         (log:error "In `set-url-hook': ~a" c)))
     (ffi-buffer-load buffer url)))
 
-(defun search-engine-completion-filter (minibuffer)
+(defun search-engine-suggestion-filter (minibuffer)
   (with-slots (input-buffer) minibuffer
     (let* ((matched-engines
              (remove-if-not
@@ -216,14 +216,14 @@ URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
                                              (set-difference (search-engines *browser*) matched-engines))))
       (append matched-engines fuzzy-matched-engines))))
 
-(define-command insert-candidate-or-search-engine (&optional (minibuffer (current-minibuffer)))
-  "Paste selected candidate or search engine to input.
+(define-command insert-suggestion-or-search-engine (&optional (minibuffer (current-minibuffer)))
+  "Paste selected suggestion or search engine to input.
 If minibuffer input is not empty and the selection is on first position,
 complete against a search engine."
   (cond
     ;; Complete a search engine name.
     ((and (not (str:emptyp (input-buffer minibuffer)))
-          (zerop (completion-cursor minibuffer)))
+          (zerop (suggestion-cursor minibuffer)))
      (let* ((engines (search-engines *browser*))
             (matching-engines
               (remove-if (complement (alex:curry #'str:starts-with-p (input-buffer minibuffer)))
@@ -238,12 +238,12 @@ complete against a search engine."
                                 (make-minibuffer
                                  :input-prompt "Search engine"
                                  :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
-                                 :completion-function #'search-engine-completion-filter)))
+                                 :suggestion-function #'search-engine-suggestion-filter)))
             (when engine
               (nyxt/minibuffer-mode:kill-whole-line minibuffer)
               (insert minibuffer (str:concat (shortcut engine) " "))))))))
     (t
-     (nyxt/minibuffer-mode:insert-candidate minibuffer)))
+     (nyxt/minibuffer-mode:insert-suggestion minibuffer)))
 
 (define-mode set-url-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."
@@ -252,7 +252,7 @@ complete against a search engine."
     (define-scheme "set-url"
       scheme:cua
       (list
-       "tab" 'insert-candidate-or-search-engine)))))
+       "tab" 'insert-suggestion-or-search-engine)))))
 
 (define-command set-url (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
@@ -267,7 +267,7 @@ complete against a search engine."
                                                   "current"))
                         :input-buffer (if prefill-current-url-p (url (current-buffer)) "")
                         :default-modes '(set-url-mode minibuffer-mode)
-                        :completion-function (history-completion-filter
+                        :suggestion-function (history-suggestion-filter
                                               :prefix-urls (list (url (current-buffer))))
                         :history history
                         :must-match-p nil)))
@@ -297,7 +297,7 @@ complete against a search engine."
                          (make-minibuffer
                           :input-prompt "Reload buffer(s)"
                           :multi-selection-p t
-                          :completion-function (buffer-completion-filter))))
+                          :suggestion-function (buffer-suggestion-filter))))
     (mapcar #'reload-current-buffer buffers)))
 
 (define-command switch-buffer-previous ()
@@ -315,7 +315,7 @@ The current buffer access time is set to be the last."
   "Switch to the oldest buffer in the list of buffers."
   (set-current-buffer (alex:last-elt (buffer-list :sort-by-time t))))
 
-(defun active-mode-completion-filter (buffers)
+(defun active-mode-suggestion-filter (buffers)
   "Return the union of the active modes in BUFFERS."
   (let ((modes (delete-duplicates (mapcar (lambda (m)
                                             (class-name (class-of m)))
@@ -323,7 +323,7 @@ The current buffer access time is set to be the last."
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) modes))))
 
-(defun inactive-mode-completion-filter (buffers)
+(defun inactive-mode-suggestion-filter (buffers)
   "Return the list of all modes minus those present in all BUFFERS."
   (let ((all-non-minibuffer-modes
          (delete-if (lambda (m)
@@ -344,7 +344,7 @@ The current buffer access time is set to be the last."
                        (make-minibuffer
                         :input-prompt "Disable mode(s)"
                         :multi-selection-p t
-                        :completion-function (active-mode-completion-filter buffers))))
+                        :suggestion-function (active-mode-suggestion-filter buffers))))
     (dolist (buffer buffers)
       (dolist (mode modes)
         (funcall (sym (mode-command mode))
@@ -356,7 +356,7 @@ The current buffer access time is set to be the last."
                          (make-minibuffer
                           :input-prompt "Disable mode(s) for buffer(s)"
                           :multi-selection-p t
-                          :completion-function (buffer-completion-filter))))
+                          :suggestion-function (buffer-suggestion-filter))))
     (disable-mode-for-current-buffer :buffers buffers)))
 
 (define-command enable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
@@ -365,7 +365,7 @@ The current buffer access time is set to be the last."
                        (make-minibuffer
                         :input-prompt "Enable mode(s)"
                         :multi-selection-p t
-                        :completion-function (inactive-mode-completion-filter buffers))))
+                        :suggestion-function (inactive-mode-suggestion-filter buffers))))
     (dolist (buffer buffers)
       (dolist (mode modes)
         (funcall (sym (mode-command mode))
@@ -377,7 +377,7 @@ The current buffer access time is set to be the last."
                          (make-minibuffer
                           :input-prompt "Enable mode(s) for buffer(s)"
                           :multi-selection-p t
-                          :completion-function (buffer-completion-filter))))
+                          :suggestion-function (buffer-suggestion-filter))))
     (enable-mode-for-current-buffer :buffers buffers)))
 
 (define-command open-inspector ()

@@ -1,6 +1,6 @@
 (in-package :nyxt)
 
-(defun password-completion-filter (password-instance)
+(defun password-suggestion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance))
         (domain (domain (url (current-buffer)))))
     (when domain
@@ -55,7 +55,7 @@
        ,@body))
 
 (define-command copy-password-prompt-details ()
-  "Copy password prompting for all the details without completion."
+  "Copy password prompting for all the details without suggestion."
   (password-debug-info)
   (if (password-interface *browser*)
       (with-result* ((password-name (read-from-minibuffer
@@ -80,8 +80,8 @@
         (with-result (password-name
                       (read-from-minibuffer
                        (make-minibuffer
-                        :completion-function
-                        (password-completion-filter
+                        :suggestion-function
+                        (password-suggestion-filter
                          (password-interface *browser*)))))
           (password:clip-password (password-interface *browser*) :password-name password-name)
           (echo "Password saved to clipboard for ~a seconds." password:*sleep-timer*)))

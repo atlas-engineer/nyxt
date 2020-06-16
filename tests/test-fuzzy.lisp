@@ -9,7 +9,7 @@
 
 (setf *browser* (make-instance *browser-class*))
 
-(defparameter *candidates* '("LINK-HINTS" "ACTIVE-HISTORY-NODE" "HISTORY-BACKWARDS"
+(defparameter *suggestions* '("LINK-HINTS" "ACTIVE-HISTORY-NODE" "HISTORY-BACKWARDS"
                              "DID-FINISH-NAVIGATION" "HISTORY-FORWARDS"
                              "HISTORY-FORWARDS-QUERY" "COPY-TITLE" "DID-COMMIT-NAVIGATION"
                              "COPY-URL" "ADD-OR-TRAVERSE-HISTORY" "SET-URL-NEW-BUFFER"
@@ -42,18 +42,18 @@
                                 '("help-mode" "help" "foo-help" "help-foo-bar")))
       "help")
   (is (first (nyxt::fuzzy-match "hel"
-                                *candidates*))
+                                *suggestions*))
       "HELP"
-      "match 'help' with real candidates list")
+      "match 'help' with real suggestions list")
   (is (first (nyxt::fuzzy-match "swit buf"
                                 '("about" "switch-buffer-nyxt" "switch-buffer"
                                   "delete-buffer")))
       "switch-buffer"
       "match 'swit buf' (small list)")
   (is (first (nyxt::fuzzy-match "swit buf"
-                                *candidates*))
+                                *suggestions*))
       "SWITCH-BUFFER"
-      "match 'swit buf' with real candidates list")
+      "match 'swit buf' with real suggestions list")
   ;; TODO: Fix reverse fuzzy matching.
   ;; (is (first (nyxt::fuzzy-match "buf swit"
   ;;                               '("about" "switch-buffer-nyxt" "switch-buffer"
@@ -61,21 +61,21 @@
   ;;     "switch-buffer"
   ;;     "reverse match 'buf swit' (small list)")
   ;; (is (first (nyxt::fuzzy-match "buf swit"
-  ;;                               *candidates*))
+  ;;                               *suggestions*))
   ;;     "SWITCH-BUFFER"
-  ;;     "reverse match 'buf swit' with real candidates list")
+  ;;     "reverse match 'buf swit' with real suggestions list")
 
   (is (first (nyxt::fuzzy-match "de"
                                 '("some-mode" "delete-foo")))
       "delete-foo"
-      "candidates beginning with the first word appear first")
+      "suggestions beginning with the first word appear first")
 
   (is (first (nyxt::fuzzy-match "foobar"
                                 '("foo-dash-bar" "foo-bar")))
       "foo-bar"
       "search without a space. All characters count (small list).")
   (is (first (nyxt::fuzzy-match "sbf"
-                                *candidates*))
+                                *suggestions*))
       "SWITCH-BUFFER"
       "search without a space. All characters count, real list.")
   (is (first (nyxt::fuzzy-match "FOO"

@@ -3,12 +3,12 @@
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Manage files.
 
-Open any file from within Nyxt, with the usual fuzzy completion.
+Open any file from within Nyxt, with the usual fuzzy suggestion.
 
 `M-x open-file (C-x C-f)'
 
 \"file manager\" is a bit excessive for now. Currently, we can:
-- browse files, with fuzzy-completion
+- browse files, with fuzzy-suggestion
 - go one directory up (C-l)
 - enter a directory (C-j)
 - open files. By default, with xdg-open. See `open-file-function'.
@@ -105,7 +105,7 @@ videos with =mpv=:
 \(setf nyxt/file-manager-mode:*open-file-function* #'my-open-files)")
 
 (define-mode file-manager-mode (nyxt/minibuffer-mode:minibuffer-mode)
-  "Mode to open any file from the filesystem with fuzzy completion
+  "Mode to open any file from the filesystem with fuzzy suggestion
 on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
   ((keymap-scheme
@@ -123,8 +123,8 @@ command `open-file'."
        "M-right" 'enter-directory
        "M-left" 'display-parent-directory)))))
 
-(serapeum:export-always 'open-file-from-directory-completion-filter)
-(defun open-file-from-directory-completion-filter (minibuffer &optional (directory (uiop:getcwd)))
+(serapeum:export-always 'open-file-from-directory-suggestion-filter)
+(defun open-file-from-directory-suggestion-filter (minibuffer &optional (directory (uiop:getcwd)))
   "Fuzzy-match files and directories from DIRECTORY."
   (let ((filenames (uiop:directory-files directory))
         (dirnames (uiop:subdirectories directory)))
@@ -139,10 +139,10 @@ Default keybindings: `M-Left' and `C-l'."
   (update-display minibuffer))
 
 (define-command enter-directory (&optional (minibuffer (current-minibuffer)))
-  "If the candidate at point is a directory, refresh the minibuffer candidates with its list of files.
+  "If the suggestion at point is a directory, refresh the minibuffer suggestions with its list of files.
 
 Default keybindings: `M-Right' and `C-j'. "
-  (let ((filename (get-candidate minibuffer)))
+  (let ((filename (get-suggestion minibuffer)))
     (when (and (uiop:directory-pathname-p filename)
                (uiop:directory-exists-p filename))
       (uiop:chdir filename)
@@ -155,7 +155,7 @@ Default keybindings: `M-Right' and `C-j'. "
   "Open a file from the filesystem.
 
 The user is prompted with the minibuffer, files are browsable with
-fuzzy completion.
+fuzzy suggestion.
 
 The default directory is the one computed by
 `download-manager:default-download-directory' (usually `~/Downloads').
@@ -177,6 +177,6 @@ Note: this feature is alpha, get in touch for more!"
                             (make-minibuffer
                              :default-modes '(nyxt/file-manager-mode::file-manager-mode minibuffer-mode)
                              :input-prompt (file-namestring (uiop:getcwd))
-                             :completion-function #'nyxt/file-manager-mode::open-file-from-directory-completion-filter)))
+                             :suggestion-function #'nyxt/file-manager-mode::open-file-from-directory-suggestion-filter)))
 
       (funcall nyxt/file-manager-mode::*open-file-function* (namestring filename)))))

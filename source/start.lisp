@@ -198,7 +198,7 @@ Return the short error message and the full error message as second value."
   (with-result (file-name-input (read-from-minibuffer
                                  (make-minibuffer
                                   :input-prompt "Load file"
-                                  :show-completion-count-p nil)))
+                                  :show-suggestion-count-p nil)))
     (load-lisp file-name-input)))
 
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))

@@ -187,7 +187,7 @@ function result as a boolean in conditions."
                  :keygrip (nth 9 (assoc "grp" entry :test #'string=)))))
             entries)))
 
-(defun gpg-key-completion-filter ()
+(defun gpg-key-suggestion-filter ()
   (let ((keys (gpg-private-keys)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) keys))))
@@ -262,7 +262,7 @@ nothing is done if file is missing."
                (with-result (,recipient (read-from-minibuffer
                                         (make-minibuffer
                                          :input-prompt "Recipient:"
-                                         :completion-function (gpg-key-completion-filter)
+                                         :suggestion-function (gpg-key-suggestion-filter)
                                          :must-match-p nil)))
                  (with-input-from-string (,in (with-output-to-string (,stream)
                                                 (setf ,result (progn ,@body))))

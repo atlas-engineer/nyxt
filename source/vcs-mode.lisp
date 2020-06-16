@@ -120,7 +120,7 @@ Create BASE if it doesn't exist."
   ;; ./~/my/foo instead of /home/user/my/foo.
   (namestring (merge-pathnames (uiop:truename* base) dir)))
 
-(defun projects-roots-completion-filter (minibuffer)
+(defun projects-roots-suggestion-filter (minibuffer)
   "Fuzzy-match local project roots."
   (fuzzy-match (input-buffer minibuffer) *vcs-projects-roots*))
 
@@ -182,7 +182,7 @@ The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
       (t (with-result (target-dir (read-from-minibuffer
                                    (make-minibuffer
                                     :input-prompt "Target directory"
-                                    :completion-function #'nyxt/vcs::projects-roots-completion-filter)))
+                                    :suggestion-function #'nyxt/vcs::projects-roots-suggestion-filter)))
            (nyxt/vcs::clone project-name root-name target-dir clone-uri))))))
 
 (define-command git-clone ()

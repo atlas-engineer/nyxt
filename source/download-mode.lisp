@@ -67,7 +67,7 @@
   "Return the list of downloaded filenames of the current session, as strings."
   (mapcar #'download-manager:filename (downloads *browser*)))
 
-(defun downloaded-files-completion-filter ()
+(defun downloaded-files-suggestion-filter ()
   (let ((filenames (get-downloaded-filenames)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) filenames))))
@@ -78,5 +78,5 @@ See also `open-file'."
   (with-result (filename (read-from-minibuffer
                           (make-minibuffer
                            :input-prompt "Open file"
-                           :completion-function (downloaded-files-completion-filter))))
+                           :suggestion-function (downloaded-files-suggestion-filter))))
     (nyxt/file-manager-mode:open-file-function filename)))

@@ -132,8 +132,8 @@
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
-(defun match-completion-function (input &optional (buffers (list (current-buffer))) (case-sensitive-p nil))
-  "Update the completions asynchronously via query-buffer."
+(defun match-suggestion-function (input &optional (buffers (list (current-buffer))) (case-sensitive-p nil))
+  "Update the suggestions asynchronously via query-buffer."
   (when (> (length input) 2)
     (let ((input (str:replace-all " " " " input))
           (all-matches nil)
@@ -147,9 +147,9 @@
                  (let* ((matches (matches-from-json
                                   result buffer multi-buffer)))
                    (setf all-matches (append all-matches matches))
-                   (nyxt::set-completions (current-minibuffer) all-matches)))))
+                   (nyxt::set-suggestions (current-minibuffer) all-matches)))))
            buffers)))
-  ;; return NIL, the completions will be updated asynchronously by the
+  ;; return NIL, the suggestions will be updated asynchronously by the
   ;; callback from query-buffer
   ())
 
@@ -178,7 +178,7 @@ searches over the selected buffer(s)."
                          (make-minibuffer
                           :input-prompt "Search buffer(s)"
                           :multi-selection-p t
-                          :completion-function (buffer-completion-filter))))
+                          :suggestion-function (buffer-suggestion-filter))))
     (apply #'search-over-buffers buffers
            (if explicit-case-p
                `(:case-sensitive-p ,case-sensitive-p)
@@ -194,11 +194,11 @@ provided buffers."
                "Search for (3+ characters)"))
          (minibuffer (make-minibuffer
                       :input-prompt prompt-text
-                      :completion-function
+                      :suggestion-function
                       #'(lambda (minibuffer)
                           (unless explicit-case-p
                             (setf case-sensitive-p (not (str:downcasep (input-buffer minibuffer)))))
-                          (match-completion-function (input-buffer minibuffer) buffers case-sensitive-p))
+                          (match-suggestion-function (input-buffer minibuffer) buffers case-sensitive-p))
                       :changed-callback
                       (let ((subsequent-call nil))
                         (lambda ()

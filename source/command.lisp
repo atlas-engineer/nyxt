@@ -235,14 +235,14 @@ extra fiddling."
 (defmethod object-display ((command command))
   (command-display command))
 
-(defun command-completion-filter (&optional mode-symbols)
+(defun command-suggestion-filter (&optional mode-symbols)
   (let* ((commands
            (sort (apply #'list-commands mode-symbols)
                  (lambda (c1 c2)
                    (> (access-time c1) (access-time c2)))))
          (pretty-commands (mapcar #'command-display commands)))
     (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) commands :candidates-display pretty-commands))))
+      (fuzzy-match (input-buffer minibuffer) commands :suggestions-display pretty-commands))))
 
 (defmethod command-function ((command command))
   "Return the function associated to COMMAND.
@@ -290,10 +290,10 @@ This function can be `funcall'ed."
     (with-result (command (read-from-minibuffer
                            (make-minibuffer
                             :input-prompt "Execute command"
-                            :completion-function (command-completion-filter
+                            :suggestion-function (command-suggestion-filter
                                                   (mapcar (alex:compose #'class-name #'class-of)
                                                           (modes (current-buffer))))
-                            :show-completion-count-p nil)))
+                            :show-suggestion-count-p nil)))
       (setf (access-time command) (get-internal-real-time))
       (run command))))
 
@@ -320,7 +320,7 @@ This is useful to override bindings to do nothing."
 (defmethod object-display ((handler hooks:handler))
   (str:downcase (hooks:name handler)))
 
-(defun hook-completion-filter ()
+(defun hook-suggestion-filter ()
   (flet ((list-hooks (object)
            (mapcar (lambda (hook)
                      (make-instance 'hook-description
@@ -341,12 +341,12 @@ This is useful to override bindings to do nothing."
                              buffer-hooks
                              browser-hooks))))))
 
-(defun handler-completion-filter (hook)
+(defun handler-suggestion-filter (hook)
   (lambda (minibuffer)
     (fuzzy-match (input-buffer minibuffer)
                  (hooks:handlers hook))))
 
-(defun disabled-handler-completion-filter (hook)
+(defun disabled-handler-suggestion-filter (hook)
   (lambda (minibuffer)
     (fuzzy-match (input-buffer minibuffer)
                  (hooks:disabled-handlers hook))))
@@ -356,12 +356,12 @@ This is useful to override bindings to do nothing."
   (with-result (hook-desc (read-from-minibuffer
                            (make-minibuffer
                             :input-prompt "Hook where to disable handler"
-                            :completion-function (hook-completion-filter))))
+                            :suggestion-function (hook-suggestion-filter))))
     (with-result (handler
                   (read-from-minibuffer
                    (make-minibuffer
                     :input-prompt (format nil "Disable handler from ~a" (name hook-desc))
-                    :completion-function (handler-completion-filter (value hook-desc)))))
+                    :suggestion-function (handler-suggestion-filter (value hook-desc)))))
       (hooks:disable-hook (value hook-desc) handler))))
 
 (define-command enable-hook-handler ()
@@ -369,10 +369,10 @@ This is useful to override bindings to do nothing."
   (with-result (hook-desc (read-from-minibuffer
                            (make-minibuffer
                             :input-prompt "Hook where to enable handler"
-                            :completion-function (hook-completion-filter))))
+                            :suggestion-function (hook-suggestion-filter))))
     (with-result (handler
                   (read-from-minibuffer
                    (make-minibuffer
                     :input-prompt (format nil "Enable handler from ~a" (name hook-desc))
-                    :completion-function (disabled-handler-completion-filter (value hook-desc)))))
+                    :suggestion-function (disabled-handler-suggestion-filter (value hook-desc)))))
       (hooks:enable-hook (value hook-desc) handler))))
