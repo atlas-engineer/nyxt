@@ -112,7 +112,7 @@ it would not be very useful."
     (when prefix-urls
       (setf history (append (mapcar #'url-display prefix-urls) history)))
     (lambda (minibuffer)
-      (fuzzy-match (input minibuffer) history))))
+      (fuzzy-match (input-buffer minibuffer) history))))
 
 (defun history-stored-data ()
   "Return the history data that needs to be serialized.

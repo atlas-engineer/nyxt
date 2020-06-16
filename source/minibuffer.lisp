@@ -180,9 +180,6 @@ A minibuffer query is typically done as follows:
   ;; Write form here in which `tags' is bound to the resulting element(s).
   )"))
 
-(defmethod input-buffer ((minibuffer minibuffer))
-  (input minibuffer))
-
 (export-always '*minibuffer-class*)
 (defparameter *minibuffer-class* 'minibuffer)
 (export-always 'make-minibuffer)
@@ -244,6 +241,9 @@ A minibuffer query is typically done as follows:
                    `(:multi-selection-p ,multi-selection-p)
                    '())))))
 
+(defmethod input-buffer ((minibuffer minibuffer))
+  (str:replace-all " " " " (text-buffer::string-representation (slot-value minibuffer 'input-buffer))))
+
 (defmethod update-candidates ((minibuffer minibuffer))
   (with-slots (completion-function completions must-match-p )
       minibuffer
@@ -251,10 +251,10 @@ A minibuffer query is typically done as follows:
         (setf completions (funcall-safely completion-function minibuffer))
         (setf completions nil))
     (when (and (not must-match-p)
-               (not (str:emptyp (input minibuffer))))
+               (not (str:emptyp (input-buffer minibuffer))))
       ;; Don't add input to completions that don't accept arbitrary
       ;; inputs (i.e. must-match-p is t).
-      (push (input minibuffer) completions))))
+      (push (input-buffer minibuffer) completions))))
 
 (defmethod (setf input-buffer) (value (minibuffer minibuffer))
   "Reset the minibuffer state on every input change.
@@ -495,10 +495,3 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
 (defmethod get-marked-candidates ((minibuffer minibuffer))
   "Return the list of strings for the marked candidate in the minibuffer."
   (mapcar #'object-string (marked-completions minibuffer)))
-
-(export-always 'input)
-(defmethod input ((minibuffer minibuffer) &optional normalized)
-  "Return the string representation of the minibuffers input-buffer."
-  (if normalized
-      (str:replace-all " " " " (text-buffer::string-representation (slot-value minibuffer 'input-buffer)))
-      (text-buffer::string-representation (slot-value minibuffer 'input-buffer))))

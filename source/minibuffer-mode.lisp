@@ -73,7 +73,7 @@
                (and nyxt::completions
                     (list (nth nyxt::completion-cursor nyxt::completions)))
                (and (not must-match-p)
-                    (list (input minibuffer))))
+                    (list (input-buffer minibuffer))))
       ((guard nyxt::completions nyxt::completions)
        ;; Note that "immediate input" is also in completions, so it's caught here.
        (setf nyxt::completions
@@ -85,19 +85,19 @@
                                     nyxt::completions
                                     (first nyxt::completions))))
       (nil (when invisible-input-p
-             (funcall-safely nyxt::callback (input minibuffer))))))
+             (funcall-safely nyxt::callback (input-buffer minibuffer))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
   (with-slots (nyxt::callback) minibuffer
-    (funcall-safely nyxt::callback (input minibuffer)))
+    (funcall-safely nyxt::callback (input-buffer minibuffer)))
   (quit-minibuffer minibuffer))
 
 (defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
   (unless (or (null (history minibuffer))
-              (str:empty? (input minibuffer)))
-    (containers:insert-item (history minibuffer) (input minibuffer)))
+              (str:empty? (input-buffer minibuffer)))
+    (containers:insert-item (history minibuffer) (input-buffer minibuffer)))
   (cancel-input minibuffer))
 
 (define-command cancel-input (&optional (minibuffer (current-minibuffer)))
@@ -246,7 +246,7 @@ readable."
 (defun minibuffer-history-completion-filter (history)
   (when history
     (lambda (minibuffer)
-      (fuzzy-match (input minibuffer)
+      (fuzzy-match (input-buffer minibuffer)
                    (delete-duplicates (containers:container->list history)
                                       :test #'equal)))))
 
