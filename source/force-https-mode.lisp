@@ -25,8 +25,8 @@
 
 (define-mode force-https-mode ()
   "Impose HTTPS on any link being set. Use at your own risk --
-can break websites whose certificates are not included in nss-certs
-and websites that still don't have an HTTPS version (shame on them)!
+can break websites whose certificates are not known
+and websites that still don't have HTTPS version (shame on them!).
 
 To escape \"Unacceptable TLS Certificate\" error:
 \(setf nyxt/certificate-whitelist-mode:*default-certificate-whitelist*
