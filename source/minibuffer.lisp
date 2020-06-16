@@ -260,11 +260,14 @@ A minibuffer query is typically done as follows:
   "Reset the minibuffer state on every input change.
   This is necessary or else completion cursor / head could be beyond
   the updated list length."
-  (with-slots (input-buffer completion-cursor completion-head) minibuffer
-    (setf input-buffer value)
-    (update-candidates minibuffer)
-    (setf completion-cursor 0)
-    (setf completion-head 0)))
+  (text-buffer::kill-line (input-cursor minibuffer))
+  (insert minibuffer value)
+  (reset-completion-cursor))
+
+(defmethod reset-completion-cursor ((minibuffer minibuffer))
+  (update-candidates minibuffer)
+  (setf completion-cursor 0)
+  (setf completion-head 0))
 
 (defmethod content ((minibuffer minibuffer))
   (slot-value minibuffer 'content))
