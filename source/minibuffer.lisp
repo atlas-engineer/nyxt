@@ -58,10 +58,10 @@ This should not rely on the minibuffer's content.")
                      :type (or function null)
                      :documentation "Called whenever a change happens.")
    (must-match-p :initarg :must-match-p
-                             :accessor must-match-p
-                             :initform t
-                             :type boolean
-                             :documentation "If nil, allow input matching no candidates.")
+                 :accessor must-match-p
+                 :initform t
+                 :type boolean
+                 :documentation "If nil, allow input matching no candidates.")
    (input-prompt :initarg :input-prompt
                  :accessor input-prompt
                  :initform "Input"
@@ -93,10 +93,10 @@ If nil, no history is used.")
    (completions :accessor completions :initform nil)
    (marked-completions :accessor marked-completions :initform nil)
    (show-completion-count-p :accessor show-completion-count-p
-                          :initarg :show-completion-count-p
-                          :initform t
-                          :type boolean
-                          :documentation "Show the number of chosen candidates
+                            :initarg :show-completion-count-p
+                            :initform t
+                            :type boolean
+                            :documentation "Show the number of chosen candidates
 inside brackets. It can be useful to disable, for instance for a yes/no question.")
    (completion-head :accessor completion-head
                     :initform 0
@@ -127,34 +127,35 @@ screen.")
                            :documentation "CSS line height for the minibuffer.
 Value is a string, e.g. '1em'.  You might want to adapt the value on HiDPI
 screen.")
-   (minibuffer-style :accessor minibuffer-style
-                     :initform (cl-css:css
-                                '((* :font-family "monospace,monospace")
-                                  (body :border-top "4px solid dimgray"
-                                        :margin "0"
-                                        :padding "0 6px")
-                                  ("#container" :display "flex"
-                                                :flex-flow "column"
-                                                :height "100%")
-                                  ("#input" :padding "6px 0"
-                                            :border-bottom "solid 1px lightgray")
-                                  ("#completions" :flex-grow "1"
-                                                  :overflow-y "auto"
-                                                  :overflow-x "auto")
-                                  ("#cursor" :background-color "gray"
-                                             :color "white")
-                                  ("#prompt" :padding-right "4px"
-                                             :color "dimgray")
-                                  (ul :list-style "none"
-                                      :padding "0"
-                                      :margin "0")
-                                  (li :padding "2px")
-                                  (.marked :background-color "darkgray"
-                                           :font-weight "bold"
-                                           :color "white")
-                                  (.selected :background-color "gray"
-                                             :color "white")))
-                     :documentation "The CSS applied to a minibuffer when it is set-up.")
+   (minibuffer-style
+    :accessor minibuffer-style
+    :initform (cl-css:css
+               '((* :font-family "monospace,monospace")
+                 (body :border-top "4px solid dimgray"
+                       :margin "0"
+                       :padding "0 6px")
+                 ("#container" :display "flex"
+                               :flex-flow "column"
+                               :height "100%")
+                 ("#input" :padding "6px 0"
+                           :border-bottom "solid 1px lightgray")
+                 ("#completions" :flex-grow "1"
+                                 :overflow-y "auto"
+                                 :overflow-x "auto")
+                 ("#cursor" :background-color "gray"
+                            :color "white")
+                 ("#prompt" :padding-right "4px"
+                            :color "dimgray")
+                 (ul :list-style "none"
+                     :padding "0"
+                     :margin "0")
+                 (li :padding "2px")
+                 (.marked :background-color "darkgray"
+                          :font-weight "bold"
+                          :color "white")
+                 (.selected :background-color "gray"
+                            :color "white")))
+    :documentation "The CSS applied to a minibuffer when it is set-up.")
    (override-map :accessor override-map
                  :initform (let ((map (make-keymap "overide-map")))
                              (define-key map
@@ -264,7 +265,7 @@ A minibuffer query is typically done as follows:
   (insert minibuffer value)
   (reset-completion-cursor))
 
-(defmethod reset-completion-cursor ((minibuffer minibuffer))
+(defmethod reset-completions ((minibuffer minibuffer))
   (update-candidates minibuffer)
   (setf completion-cursor 0)
   (setf completion-head 0))
