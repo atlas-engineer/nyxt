@@ -235,7 +235,10 @@ identifier for every hinted element."
   (url link-hint))
 
 (defmethod object-display ((link-hint link-hint))
-  (format nil "~a  ~a  ~a" (hint link-hint) (body link-hint) (url link-hint)))
+  (format nil "~a  ~a  ~a"
+          (hint link-hint)
+          (body link-hint)
+          (url-display (url link-hint))))
 
 (defmethod object-string ((button-hint button-hint))
   (body button-hint))
