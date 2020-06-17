@@ -15,7 +15,7 @@
      invisible-input-p
      history
      multi-selection-p
-     show-suggestion-count-p
+     hide-suggestion-count-p
      reset-suggestion-state
      max-lines
      minibuffer-style
@@ -92,9 +92,9 @@ If nil, no history is used.")
                       :documentation "If non-nil, allow for selecting multiple suggestions.")
    (suggestions :accessor suggestions :initform nil)
    (marked-suggestions :accessor marked-suggestions :initform nil)
-   (show-suggestion-count-p :accessor show-suggestion-count-p
-                            :initarg :show-suggestion-count-p
-                            :initform t
+   (hide-suggestion-count-p :accessor hide-suggestion-count-p
+                            :initarg :hide-suggestion-count-p
+                            :initform nil
                             :type boolean
                             :documentation "Show the number of chosen suggestions
 inside brackets. It can be useful to disable, for instance for a yes/no question.")
@@ -188,7 +188,7 @@ A minibuffer query is typically done as follows:
        (input-prompt nil explicit-input-prompt)
        (input-buffer nil explicit-input-buffer)
        (invisible-input-p nil explicit-invisible-input-p)
-       (show-suggestion-count-p t explicit-show-suggestion-count-p) ; TODO: Rename to hide-suggestion-count and reverse default value.
+       (hide-suggestion-count-p nil explicit-hide-suggestion-count-p)
        (history nil explicit-history)
        (multi-selection-p nil explicit-multi-selection-p))
   "See the `minibuffer' class for the argument documentation."
@@ -225,8 +225,8 @@ A minibuffer query is typically done as follows:
              ,@(if explicit-invisible-input-p
                    `(:invisible-input-p ,invisible-input-p)
                    '())
-             ,@(if explicit-show-suggestion-count-p
-                   `(:show-suggestion-count-p ,show-suggestion-count-p)
+             ,@(if explicit-hide-suggestion-count-p
+                   `(:hide-suggestion-count-p ,hide-suggestion-count-p)
                    '())
              ,@(if explicit-history
                    `(:history ,history)
@@ -438,7 +438,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
             (cond
               ((not suggestions)
                "")
-              ((not (show-suggestion-count-p minibuffer))
+              ((hide-suggestion-count-p minibuffer)
                "")
               (marked-suggestions
                (format nil " [~a/~a]"

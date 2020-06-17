@@ -116,6 +116,6 @@ Example usage:
                          (make-minibuffer
                           :input-prompt (format nil ,@prompt)
                           :suggestion-function (yes-no-suggestion-filter)
-                          :show-suggestion-count-p nil)))
+                          :hide-suggestion-count-p t)))
      (when (confirmed-p answer)
        ,@body)))
