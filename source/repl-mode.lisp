@@ -7,7 +7,6 @@
     (define-scheme "repl"
       scheme:cua
       (list
-       "a" 'self-insert-repl
        "hyphen" 'self-insert-repl
        "space" 'self-insert-repl
        "C-f" 'cursor-forwards
