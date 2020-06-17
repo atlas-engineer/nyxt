@@ -6,13 +6,13 @@
 (defun force-https-handler (resource)
   "Impose HTTPS on any link with HTTP scheme."
   (let ((uri (quri:uri (url resource))))
-    (if (string= (quri:uri-scheme uri) "http")
-        (progn (log:info "HTTPS enforced on ~a" (quri:render-uri uri))
-               ;; FIXME: http-only websites are displayed as "https://foo.bar"
-               ;; FIXME: some websites (e.g., go.com) simply time-out
-               (setf (quri:uri-scheme uri) "https"
-                     (quri:uri-port uri) (quri.port:scheme-default-port "https")
-                     (url resource) (quri:render-uri uri)))))
+    (when (string= (quri:uri-scheme uri) "http")
+      (log:info "HTTPS enforced on ~a" (quri:render-uri uri))
+      ;; FIXME: http-only websites are displayed as "https://foo.bar"
+      ;; FIXME: some websites (e.g., go.com) simply time-out
+      (setf (quri:uri-scheme uri) "https"
+            (quri:uri-port uri) (quri.port:scheme-default-port "https")
+            (url resource) (quri:render-uri uri))))
   (values resource :forward))
 
 (define-mode force-https-mode ()
