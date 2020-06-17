@@ -73,6 +73,13 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - New =set-url-from-current-url= command.
 
+- New =force-https-mode= to enforce HTTPS everywhere.  Websites that don't have
+  a certificate will fail to load (this is by design, since those websites are
+  deemed insecure).
+
+- New =lisp-repl= command to evaluate Lisp, introspect and modify Nyxt while
+  it's running, from the browser itself!
+
 - Add =certificate-whitelist-mode= to the default modes.  In case of certificate
   error, call =add-domain-to-certificate-whitelist= followed by a reload if you
   understand the risks and you want to bypass the error.
