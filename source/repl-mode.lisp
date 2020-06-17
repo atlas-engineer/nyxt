@@ -147,7 +147,7 @@
                    (:body
                     (:div :id "container"
                           (:div :id "evaluation-history" "")
-                          (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
+                          (:div :id "input" (:span :id "prompt" ">") (:span :id "input-buffer" ""))
                           (:div :id "suggestions" "")))))
          (insert-content (ps:ps (ps:chain document
                                           (write (ps:lisp content))))))
@@ -179,7 +179,7 @@
                                    (:span (subseq (text-buffer::string-representation (input-buffer repl)) (+ 1  (cluffer:cursor-position (input-cursor repl))))))))))
     (ffi-buffer-evaluate-javascript
      (buffer repl)
-     (ps:ps (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+     (ps:ps (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                   (ps:lisp (generate-input-buffer-html repl)))))))
 
 (defmethod update-display ((repl repl-mode))
