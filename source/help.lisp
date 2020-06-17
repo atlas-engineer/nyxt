@@ -337,7 +337,6 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
     (let* ((result-buffer (nyxt/help-mode:help-mode
                            :activate t
                            :buffer (make-buffer
-                                    ;; TODO: Reuse buffer / create REPL mode.
                                     :title "*List Evaluation*")))
            (results (handler-case (evaluate input)
                       (error (c) (list (format nil "Error: ~a" c)))))
