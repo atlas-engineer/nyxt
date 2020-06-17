@@ -138,8 +138,8 @@
 (define-command return-input (&optional (repl (current-repl)))
   "Return inputted text."
   (let ((input (text-buffer::string-representation (input-buffer repl))))
-    (add-object-to-evaluation-history repl input))
-  (update-display repl))
+    (add-object-to-evaluation-history repl (format nil "> ~a" input))
+    (add-object-to-evaluation-history repl (nyxt::evaluate input))))
 
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup
