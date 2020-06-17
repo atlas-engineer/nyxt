@@ -32,8 +32,7 @@
        "C-e" 'cursor-end
        "end" 'cursor-end
        "C-k" 'kill-line
-       ;"return" 'return-input
-       )
+       "return" 'return-input)
       scheme:emacs
       (list)))
    (style :accessor style
@@ -45,7 +44,7 @@
                                      :flex-flow "column"
                                      :height "100%")
                        ("#input" :padding "6px 0"
-                                 :border-bottom "solid 1px lightgray")
+                                 :border-top "solid 1px lightgray")
                        ("#evaluation-history" :flex-grow "1"
                                        :overflow-y "auto"
                                        :overflow-x "auto")
@@ -136,6 +135,12 @@
   (text-buffer::kill-forward-line (input-cursor repl))
   (update-input-buffer-display repl))
 
+(define-command return-input (&optional (repl (current-repl)))
+  "Return inputted text."
+  (let ((input (text-buffer::string-representation (input-buffer repl))))
+    (add-object-to-evaluation-history repl input))
+  (update-display repl))
+
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup
                    (:head (:style (style repl)))
@@ -154,7 +159,7 @@
 (defmethod update-evaluation-history-display ((repl repl-mode))
   (flet ((generate-evaluation-history-html (repl)
            (markup:markup 
-            (:ul (loop for item in (evaluation-history repl)
+            (:ul (loop for item in (reverse (evaluation-history repl))
                        collect (markup:markup
                                 (:li item)))))))
     (ffi-buffer-evaluate-javascript 
@@ -176,6 +181,10 @@
      (buffer repl)
      (ps:ps (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
                   (ps:lisp (generate-input-buffer-html repl)))))))
+
+(defmethod update-display ((repl repl-mode))
+  (update-evaluation-history-display repl)
+  (update-input-buffer-display repl))
 
 (defmethod insert ((repl repl-mode) characters)
   (cluffer:insert-item (input-cursor repl) characters)
