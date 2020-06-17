@@ -4,7 +4,7 @@
 (in-package :nyxt/force-https-mode)
 
 (defun force-https-handler (resource)
-  "Imposes HTTPS on any link with HTTP scheme."
+  "Impose HTTPS on any link with HTTP scheme."
   (let ((uri (quri:uri (url resource))))
     (if (string= (quri:uri-scheme uri) "http")
         (progn (log:info "HTTPS enforced on ~a" (quri:render-uri uri))
@@ -16,11 +16,11 @@
   (values resource :forward))
 
 (define-mode force-https-mode ()
-  "Impose HTTPS on any link being set. Use at your own risk --
-can break websites whose certificates are not known
+  "Impose HTTPS on every queried URI.
+Use at your own risk -- it can break websites whose certificates are not known
 and websites that still don't have HTTPS version (shame on them!).
 
-To escape \"Unacceptable TLS Certificate\" error:
+To permanently bypass the \"Unacceptable TLS Certificate\" error:
 \(setf nyxt/certificate-whitelist-mode:*default-certificate-whitelist*
        '(\"your.unacceptable.cert.website\"))
 
