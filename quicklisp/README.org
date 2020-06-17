@@ -1,0 +1,8 @@
+This directory contains projects that we need to reference from their
+repository directly.
+
+Potential reasons:
+
++ Version on Quicklisp out of date
++ Not available on Quicklisp
++ ...
