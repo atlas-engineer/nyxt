@@ -224,7 +224,14 @@
 
 (define-command minibuffer-paste (&optional (minibuffer (current-minibuffer)))
   "Paste clipboard text to input."
-  (insert minibuffer (ring-insert-clipboard (nyxt::clipboard-ring *browser*))))
+  ;; See `paste' comment on why we use a new thread here.
+  (bt:make-thread
+   (lambda ()
+     (trivial-clipboard:text (trivial-clipboard:text))
+     (ffi-within-renderer-thread
+      *browser*
+      (lambda ()
+        (insert minibuffer (ring-insert-clipboard (nyxt::clipboard-ring *browser*))))))))
 
 (define-command copy-suggestion (&optional (minibuffer (current-minibuffer)))
   "Copy suggestion to clipboard."
