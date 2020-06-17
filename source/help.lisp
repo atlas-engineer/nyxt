@@ -329,7 +329,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
           until (eq object :eof)
           collect (eval object))))
 
-(define-command command-evaluate ()     ; TODO: Rename to `evaluate-lisp'?
+(define-command evaluate-lisp ()
   "Evaluate a form."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
