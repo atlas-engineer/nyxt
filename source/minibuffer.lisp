@@ -415,24 +415,21 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
               (max
                (- (suggestion-head minibuffer) 1)
                0)))
-      (markup:markup (:ul (loop repeat lines
-                                for i from (suggestion-head minibuffer)
-                                for suggestion in (nthcdr i suggestions)
-                                collect
-                                (markup:markup
-                                 (:li :class (let ((selected-p (= i suggestion-cursor))
-                                                   (marked-p (member suggestion (marked-suggestions minibuffer)))
-                                                   (head-p (= i (suggestion-head minibuffer))))
-                                               (str:join " " (delete-if #'null (list (and marked-p "marked")
-                                                                                     (and selected-p "selected")
-                                                                                     (and head-p "head")))))
-                                      :id (cond ; TODO: Unused?
-                                            ((= i suggestion-cursor) "selected")
-                                            ((member suggestion (marked-suggestions minibuffer)) "marked")
-                                            ((= i (suggestion-head minibuffer)) "head"))
-                                      (match (object-display suggestion)
-                                        ((guard s (not (str:emptyp s))) s)
-                                        (_ " "))))))))))
+      (markup:markup
+       (:ul (loop repeat lines
+                  for i from (suggestion-head minibuffer)
+                  for suggestion in (nthcdr i suggestions)
+                  collect
+                  (markup:markup
+                   (:li :class (let ((selected-p (= i suggestion-cursor))
+                                     (marked-p (member suggestion (marked-suggestions minibuffer)))
+                                     (head-p (= i (suggestion-head minibuffer))))
+                                 (str:join " " (delete-if #'null (list (and marked-p "marked")
+                                                                       (and selected-p "selected")
+                                                                       (and head-p "head")))))
+                        (match (object-display suggestion)
+                          ((guard s (not (str:emptyp s))) s)
+                          (_ " "))))))))))
 
 (defmethod generate-prompt-html ((minibuffer minibuffer))
   (with-slots (suggestions marked-suggestions) minibuffer
