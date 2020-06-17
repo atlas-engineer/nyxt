@@ -65,8 +65,6 @@
     :initform
     (lambda (mode)
       (initialize-display mode)
-      (add-object-to-evaluation-history mode "goldfish")
-      (add-object-to-evaluation-history mode "sunfish")
       (cluffer:attach-cursor (input-cursor mode) (input-buffer mode))
       (update-evaluation-history-display mode)
       (update-input-buffer-display mode)))))
@@ -128,9 +126,11 @@
 
 (define-command return-input (&optional (repl (current-repl)))
   "Return inputted text."
-  (let ((input (text-buffer::string-representation (input-buffer repl))))
+  (let ((input (str:replace-all " " " " (text-buffer::string-representation (input-buffer repl)))))
     (add-object-to-evaluation-history repl (format nil "> ~a" input))
-    (add-object-to-evaluation-history repl (nyxt::evaluate input))))
+    (add-object-to-evaluation-history repl (nyxt::evaluate input))
+    (text-buffer::kill-line (input-cursor repl))
+    (update-display repl)))
 
 (defun current-repl ()
   (find-if (lambda (i) (eq (class-of i)
