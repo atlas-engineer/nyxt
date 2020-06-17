@@ -8,7 +8,7 @@
 ;; - Access-time: This is useful to sort command by the time they were last
 ;;   called.  The only way to do this is to persist the command instances.
 (defclass command ()
-  ((sym :accessor sym :initarg :sym :type symbol :initform nil) ; TODO: Make constructor?
+  ((sym :accessor sym :initarg :sym :type symbol :initform nil)
    (pkg :accessor pkg :initarg :pkg :type package :initform nil)
    (sexp :accessor sexp :initarg :sexp :type sexp :initform nil)
    (access-time :accessor access-time :type integer :initform 0
