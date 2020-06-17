@@ -1,7 +1,3 @@
-(uiop:define-package :nyxt/repl-mode
-    (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-scheme)
-  (:export :repl-mode))
 (in-package :nyxt/repl-mode)
 
 (define-mode repl-mode ()
@@ -75,11 +71,6 @@
       (update-evaluation-history-display mode)
       (update-input-buffer-display mode)))))
 
-(defun current-repl ()
-  (find-if (lambda (i) (eq (class-of i)
-                           (find-class 'nyxt/repl-mode:repl-mode)))
-           (nyxt:modes (nyxt:current-buffer))))
-
 (define-command cursor-forwards (&optional (repl (current-repl)))
   "Move cursor forward by one element."
   (text-buffer::safe-forward (input-cursor repl))
@@ -140,6 +131,16 @@
   (let ((input (text-buffer::string-representation (input-buffer repl))))
     (add-object-to-evaluation-history repl (format nil "> ~a" input))
     (add-object-to-evaluation-history repl (nyxt::evaluate input))))
+
+(defun current-repl ()
+  (find-if (lambda (i) (eq (class-of i)
+                           (find-class 'nyxt/repl-mode:repl-mode)))
+           (nyxt:modes (nyxt::current-buffer))))
+
+(defmethod active-repl-p ((window nyxt:window))
+  (find-if (lambda (i) (eq (class-of i)
+                           (find-class 'nyxt/repl-mode:repl-mode)))
+           (nyxt:modes (nyxt::active-buffer window))))
 
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup

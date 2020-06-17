@@ -125,6 +125,15 @@ Return nil to forward to renderer or non-nil otherwise."
               (setf key-stack nil)
               t)
 
+             ((nyxt/repl-mode::active-repl-p window)
+              (when printable-p
+                (dolist (key key-stack)
+                  (let ((value (keymap:key-value key)))
+                    (log:debug "Insert ~s in REPL" value)
+                    (insert (nyxt/repl-mode::current-repl) value))))
+              (setf key-stack nil)
+              t)
+
              #-darwin
              ((or (keymap:key= (first (last key-stack))
                                (keymap:make-key :value "v" :modifiers '("C")))

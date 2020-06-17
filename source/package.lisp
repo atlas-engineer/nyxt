@@ -10,6 +10,11 @@
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt))
 
+(uiop:define-package :nyxt/repl-mode
+    (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-scheme)
+  (:export :repl-mode))
+
 (uiop:define-package nyxt-user
   (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
