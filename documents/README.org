@@ -249,13 +249,13 @@ container on GNU/Linux.
 
 - With Guix:
   #+begin_src sh
-  guix environment --container --network --expose=/etc/ssl/certs --ad-hoc coreutils nss-certs nyxt -- env DISPLAY="$DISPLAY" nyxt
+  guix environment --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs nyxt -- nyxt
   #+end_src
 
   If you want to load your configuration and use the data files:
 
   #+begin_src sh
-  guix environment --container --network --expose=/etc/ssl/certs --expose="$HOME/.config/nyxt/" --share="$HOME/.local/share/nyxt"="$HOME/.local/share/nyxt/" --ad-hoc coreutils nss-certs nyxt -- env DISPLAY="$DISPLAY" nyxt
+  guix environment --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --expose="$HOME/.config/nyxt/" --share="$HOME/.local/share/nyxt"="$HOME/.local/share/nyxt/" --ad-hoc nss-certs nyxt -- nyxt
   #+end_src
 
   If you get an error like
