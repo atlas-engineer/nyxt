@@ -6,31 +6,28 @@
     (setf ratio (min ratio (zoom-ratio-max buffer)))
     (setf (current-zoom-ratio buffer) ratio)))
 
-(define-parenscript %zoom-in-page ()
-  (ps:lisp (ensure-zoom-ratio-range #'+ (current-buffer)))
-  (ps:let ((style (ps:chain document body style)))
-    (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio (current-buffer))))))
-
-(define-parenscript %zoom-out-page ()
-  (ps:lisp (ensure-zoom-ratio-range #'- (current-buffer)))
-  (ps:let ((style (ps:chain document body style)))
-    (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio (current-buffer))))))
-
-(define-parenscript %unzoom-page ()
-  (ps:lisp (setf (current-zoom-ratio (current-buffer)) (zoom-ratio-default (current-buffer))))
-  (setf (ps:chain document body style zoom) (ps:lisp (zoom-ratio-default (current-buffer)))))
-
 (define-command zoom-in-page (&key (buffer (current-buffer)))
   "Zoom in the current page."
-  (with-current-buffer buffer
-    (%zoom-in-page)))
+  (pflet ((zoom ()
+            (ps:lisp (ensure-zoom-ratio-range #'+ (current-buffer)))
+            (ps:let ((style (ps:chain document body style)))
+              (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio (current-buffer)))))))
+    (with-current-buffer buffer
+      (zoom))))
 
 (define-command zoom-out-page (&key (buffer (current-buffer)))
   "Zoom out the current page."
-  (with-current-buffer buffer
-    (%zoom-out-page)))
+  (pflet ((zoom-out ()
+            (ps:lisp (ensure-zoom-ratio-range #'- (current-buffer)))
+            (ps:let ((style (ps:chain document body style)))
+              (setf (ps:@ style zoom) (ps:lisp (current-zoom-ratio (current-buffer)))))))
+    (with-current-buffer buffer
+      (zoom-out))))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
   "Unzoom the page."
-  (with-current-buffer buffer
-    (%unzoom-page)))
+  (pflet ((unzoom ()
+            (ps:lisp (setf (current-zoom-ratio (current-buffer)) (zoom-ratio-default (current-buffer))))
+            (setf (ps:chain document body style zoom) (ps:lisp (zoom-ratio-default (current-buffer))))))
+    (with-current-buffer buffer
+      (unzoom))))
