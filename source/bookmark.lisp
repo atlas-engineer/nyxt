@@ -171,10 +171,10 @@ This can be useful to let the user select no tag when returning directly."
   (let ((selection (get-suggestion minibuffer)))
     (unless (uiop:emptyp selection)
       (with-accessors ((cursor input-cursor-position) (buffer input-buffer)) minibuffer
-        (let ((before (subseq buffer 0 (word-start buffer cursor)))
-              (after (subseq buffer (word-end buffer cursor))))
+        (let ((before (subseq buffer 0 (text-buffer::word-start buffer cursor)))
+              (after (subseq buffer (text-buffer::word-end buffer cursor))))
           (nyxt/minibuffer-mode:kill-whole-line minibuffer)
-          (insert (str:concat before selection after)))))))
+          (insert minibuffer (str:concat before selection after)))))))
 
 (define-mode set-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the tag of a bookmark."
