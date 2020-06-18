@@ -329,30 +329,6 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
           until (eq object :eof)
           collect (eval object))))
 
-(define-command evaluate-lisp ()
-  "Evaluate a form."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Evaluate Lisp")))
-    (let* ((result-buffer (nyxt/help-mode:help-mode
-                           :activate t
-                           :buffer (make-buffer
-                                    :title "*List Evaluation*")))
-           (results (handler-case (evaluate input)
-                      (error (c) (list (format nil "Error: ~a" c)))))
-           (result-contents (apply #'concatenate 'string
-                                   (markup:markup
-                                    (:h1 "Form")
-                                    (:pre (:code input))
-                                    (:h1 "Result"))
-                                   (loop for result in results
-                                         collect (markup:markup
-                                                  (:pre (:code (object-display result)))))))
-           (insert-results (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                        (ps:lisp result-contents)))))
-      (ffi-buffer-evaluate-javascript result-buffer insert-results)
-      (set-current-buffer result-buffer))))
-
 (defun error-buffer (title text)
   "Print some help."
   (let* ((error-buffer (nyxt/help-mode:help-mode :activate t

@@ -47,7 +47,6 @@
                                "C-o" 'load-file
                                "C-j" 'download-list
                                "C-space" 'execute-command
-                               "M-:" 'evaluate-lisp
                                "C-n" 'make-window
                                "C-shift-W" 'delete-current-window
                                "C-W" 'delete-current-window
@@ -96,7 +95,6 @@
                                "C-h b" 'describe-bindings
                                "C-o" 'load-file
                                "M-x" 'execute-command
-                               "M-:" 'evaluate-lisp
                                "C-x 5 2" 'make-window
                                "C-x 5 0" 'delete-current-window
                                "C-x 5 1" 'delete-window
@@ -140,7 +138,6 @@
                                "C-h b" 'describe-bindings
                                "C-o" 'load-file
                                ":" 'execute-command
-                               "M-:" 'evaluate-lisp
                                "W" 'make-window
                                "C-w C-w" 'make-window
                                "C-w q" 'delete-current-window
