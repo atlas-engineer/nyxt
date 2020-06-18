@@ -11,7 +11,14 @@
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --load=guix.scm --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs -- nyxt
+;;   guix environment --load=guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs
+;;
+;; Replace '/PATH/TO/YOUR/NYXT/CHECKOUT' as appropriate.
+;; Then in the container environment:
+;;
+;;   cd /nyxt
+;;   make nyxt NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+;;   ./nyxt
 ;;
 ;;; Code:
 
