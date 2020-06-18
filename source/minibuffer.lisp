@@ -195,6 +195,8 @@ A minibuffer query is typically done as follows:
   (let ((tmp-input-buffer (make-instance 'text-buffer:text-buffer))
         (tmp-input-cursor (make-instance 'text-buffer:cursor)))
     (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
+    (when explicit-input-buffer
+      (text-buffer::insert-string tmp-input-cursor input-buffer))
     (apply #'make-instance *minibuffer-class*
            `(:input-buffer ,tmp-input-buffer
              :input-cursor ,tmp-input-cursor
