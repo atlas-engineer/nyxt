@@ -98,6 +98,11 @@ If cursor is between two words, return the first one."
       (setf (cluffer:cursor-position cursor) cursor-position)
       word-at-cursor)))
 
+(defmethod replace-word-at-cursor ((cursor cursor) string)
+  (move-backward-word cursor)
+  (delete-forward-word cursor)
+  (insert-string cursor string))
+
 (defmethod kill-line ((cursor cursor))
   "Kill the complete line."
   (cluffer:beginning-of-line cursor)
