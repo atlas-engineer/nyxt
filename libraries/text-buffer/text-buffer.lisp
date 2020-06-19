@@ -75,11 +75,11 @@
      (cluffer:cursor-position cursor))))
 
 (defmethod delete-backward-word ((cursor cursor))
-  (dotimes (i (- (cluffer:cursor-position cursor) (nth-value 1 (move-backward-word cursor))))
+  (dotimes (i (- (cluffer:cursor-position cursor) (or (nth-value 1 (move-backward-word cursor)) 0)))
     (cluffer:delete-item cursor)))
 
 (defmethod delete-forward-word ((cursor cursor))
-  (dotimes (i (abs (- (cluffer:cursor-position cursor) (nth-value 1 (move-forward-word cursor)))))
+  (dotimes (i (abs (- (cluffer:cursor-position cursor) (or (nth-value 1 (move-forward-word cursor)) 0))))
     (delete-item-backward cursor)))
 
 (defmethod kill-forward-line ((cursor cursor))
