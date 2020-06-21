@@ -67,7 +67,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
           (gdk:gdk-set-program-class "nyxt")
           (finalize browser urls startup-timestamp))
         (unless *keep-alive*
-          (gtk:join-gtk-main)))
+          (#-freebsd gtk:join-gtk-main #+freebsd gtk:gtk-main)))
       #+darwin
       (progn
         (setf gtk-running-p t)
