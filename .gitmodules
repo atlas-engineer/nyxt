@@ -4,3 +4,6 @@
 [submodule "quicklisp/local-projects/cluffer"]
 	path = quicklisp-libraries/cluffer
 	url = git@github.com:robert-strandh/Cluffer.git
+[submodule "quicklisp-client"]
+	path = quicklisp-client
+	url = https://github.com/quicklisp/quicklisp-client
