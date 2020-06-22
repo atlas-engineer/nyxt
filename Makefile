@@ -5,6 +5,8 @@ UNAME := $(shell uname)
 LISP ?= sbcl
 ## We use --non-interactive with SBCL so that errors don't interrupt the CI.
 LISP_FLAGS ?= --no-userinit --non-interactive
+QUICKLISP_DIR=quicklisp-client
+QUICKLISP_LIBRARIES=quicklisp-libraries
 
 NYXT_INTERNAL_QUICKLISP = true
 NYXT_RENDERER = gtk
@@ -105,28 +107,12 @@ ifeq ($(UNAME), Darwin)
 install: install-app-bundle
 endif
 
-QUICKLISP_URL = https://beta.quicklisp.org/quicklisp.lisp
-DOWNLOAD_AGENT = curl
-DOWNLOAD_AGENT_FLAGS = --output
-QUICKLISP_DIR = quicklisp
-
-quicklisp.lisp:
-	$(NYXT_INTERNAL_QUICKLISP) && $(DOWNLOAD_AGENT) $(DOWNLOAD_AGENT_FLAGS) $@ $(QUICKLISP_URL) || true
-
-$(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
-	$(NYXT_INTERNAL_QUICKLISP) && rm -rf $(QUICKLISP_DIR) || true
-	mkdir -p $(QUICKLISP_DIR)
-	$(NYXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--load $< \
-		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")' \
-		--eval '(uiop:quit)' || true
-
 # TODO: This updated package is not on Quicklisp yet, but once it is we can
 # remove this special rule.
 .PHONY: cl-webkit
 cl-webkit: $(QUICKLISP_DIR)/setup.lisp
 	$(NYXT_INTERNAL_QUICKLISP) && git submodule update --init --remote || true
+	for i in $(QUICKLISP_LIBRARIES)/local-projects/*; do ln -sf "$$i" "$(QUICKLISP_DIR)/local-projects/$$(basename "$$i")"; done
 
 .PHONY: deps
 deps: $(QUICKLISP_DIR)/setup.lisp cl-webkit
@@ -177,7 +163,6 @@ check-binary: nyxt
 
 .PHONY: clean-deps
 clean-deps:
-	rm -rf quicklisp.lisp
 	rm -rf $(QUICKLISP_DIR)
 
 .PHONY: clean
