@@ -4,10 +4,6 @@ version
 nyxt
 Nyxt.app
 
-# Automatically fetched dependencies
-quicklisp/
-quicklisp.lisp
-
 # Ignore PNG and XCF
 *.png
 *.xcf
