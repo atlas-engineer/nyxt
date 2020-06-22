@@ -76,9 +76,13 @@ To install Quicklisp:
 
 ** GTK dependencies
 *** Lisp Dependencies
-Nyxt on GTK requires the latest version of the cl-webkit library.
-Clone the cl-webkit repository into =~/common-lisp= or any directory
-listed in ~asdf:*central-registry*~:
+Nyxt on GTK requires the latest version of the =cl-webkit= and =cluffer= libraries.
+
+They are included as a submodule of this repository, so if you use the Makefile
+there is nothing to be done.
+
+Otherwise clone each repository into =~/common-lisp= or any directory
+listed in ~asdf:*central-registry*~.  For instance:
 
 #+begin_src sh
 git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
