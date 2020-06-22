@@ -504,10 +504,10 @@ Warning: This behaviour may change in the future."
                    nil)
                  (progn
                    (setf (webkit:webkit-uri-request-uri request) (url request-data))
-                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)
-                   (log:debug "Don't forward to renderer (resource request replaced with ~a)."
+                   (log:debug "Don't forward to renderer (resource request replaced with ~s)."
                               (url request-data))
                    (webkit:webkit-policy-decision-ignore response-policy-decision)
+                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)
                    nil)))
             (_
              (log:debug "Don't forward to renderer (handler stop).")
