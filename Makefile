@@ -45,7 +45,7 @@ application: clean-fasls quicklisp-update
 		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
 		--load nyxt.asd \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
-		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." "Also make sure 'xclip' and latest cl-webkit are available on your system." && exit 1)
+		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
 .PHONY: app-bundle
 app-bundle:
@@ -107,15 +107,13 @@ ifeq ($(UNAME), Darwin)
 install: install-app-bundle
 endif
 
-# TODO: This updated package is not on Quicklisp yet, but once it is we can
-# remove this special rule.
-.PHONY: cl-webkit
-cl-webkit: $(QUICKLISP_DIR)/setup.lisp
+.PHONY: quicklisp-extra-libs
+quicklisp-extra-libs: $(QUICKLISP_DIR)/setup.lisp
 	$(NYXT_INTERNAL_QUICKLISP) && git submodule update --init --remote || true
 	for i in $(QUICKLISP_LIBRARIES)/local-projects/*; do ln -sf "$$i" "$(QUICKLISP_DIR)/local-projects/$$(basename "$$i")"; done
 
 .PHONY: deps
-deps: $(QUICKLISP_DIR)/setup.lisp cl-webkit
+deps: $(QUICKLISP_DIR)/setup.lisp quicklisp-extra-libs
 	$(NYXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load $< \
