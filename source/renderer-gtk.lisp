@@ -506,6 +506,9 @@ Warning: This behaviour may change in the future."
                    (setf (webkit:webkit-uri-request-uri request) (url request-data))
                    (log:debug "Don't forward to renderer (resource request replaced with ~s)."
                               (url request-data))
+                   ;; Warning: We must ignore the policy decision _before_ we
+                   ;; start the new load request, or else WebKit will be
+                   ;; confused about which URL to load.
                    (webkit:webkit-policy-decision-ignore response-policy-decision)
                    (webkit:webkit-web-view-load-request (gtk-object buffer) request)
                    nil)))
