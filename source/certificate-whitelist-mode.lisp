@@ -28,6 +28,18 @@ See the `add-domain-to-certificate-whitelist' command."
     (lambda (mode)
       (setf (certificate-whitelist (buffer mode)) (certificate-whitelist mode))))))
 
+(defun previous-history-urls-suggestion-filter (&optional (mode (find-submode
+                                                            (current-buffer)
+                                                            'web-mode)))
+  "Suggestion function over all parent URLs."
+  (let ((parents (htree:parent-nodes (history mode))))
+    (push (htree:current (history mode)) parents)
+    (setf parents (remove-if #'str:emptyp parents :key (alex:compose  #'url #'htree:data)))
+    (lambda (minibuffer)
+      (if parents
+          (fuzzy-match (input-buffer minibuffer) parents)
+          (error "Cannot navigate backwards.")))))
+
 (define-command add-domain-to-certificate-whitelist (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate whitelist.
 This is only effective if `certificate-whitelist-mode' is enabled.
@@ -38,11 +50,14 @@ To make this change permanent, you can customize
 \(setf nyxt/certificate-whitelist-mode:*default-certificate-whitelist*
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-whitelist-mode)
-      (if (url buffer)
-          (let ((host (host (url buffer))))
-            (log:info host)
-            (pushnew host (certificate-whitelist buffer) :test #'string=))
-          (echo "Buffer has no URL."))
+      (with-result (input (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "URL host to whitelist:"
+                            :suggestion-function (previous-history-urls-suggestion-filter))))
+        (unless (str:emptyp (url (htree:data input)))
+          (let ((host (host (url (htree:data input)))))
+            (echo "Whitelisted ~s." host)
+            (pushnew host (certificate-whitelist buffer) :test #'string=))))
       (echo "Enable certificate-whitelist-mode first.")))
 
 ;; TODO: Implement command remove-domain-from-certificate-whitelist.
