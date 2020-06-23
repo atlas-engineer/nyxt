@@ -327,7 +327,7 @@ This is useful to override bindings to do nothing."
                                     :name (str:downcase (closer-mop:slot-definition-name hook))
                                     :value (funcall (symbol-function (closer-mop:slot-definition-name hook))
                                                     object)))
-                   (delete-if-not (lambda (s)
+                   (remove-if-not (lambda (s)
                                     (let ((name (closer-mop:slot-definition-name s)))
                                       (and (str:ends-with-p "-hook" (string name) :ignore-case t)
                                            (fboundp name))))
