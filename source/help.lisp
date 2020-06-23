@@ -427,7 +427,7 @@ The version number is stored in the clipboard."
                (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
                (:li (:code "shift") " (" (:code "s") "): Shift key"))
 
-              (:p "Nyxt proposes several " (:i "binding schemes") ", for instance CUA, Emacs, VI."
+              (:p "Nyxt proposes several " (:i "binding schemes") ", including CUA, Emacs and VI."
                   " For instance, call the " (:code "vi-normal-mode") " command to switch to VI bindings."
                   " To enable it by default, see the command documentation with "
                   (:code (binding-keys 'execute-command) " describe-command") " (bound to "
