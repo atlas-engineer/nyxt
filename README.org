@@ -1,4 +1,4 @@
-#+html: <img src="https://nyxt.atlas.engineer/static/image/nyxt_256x256.png" align="right"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/nyxt_128x128.png" align="right"/>
 
 * Nyxt web browser
 
