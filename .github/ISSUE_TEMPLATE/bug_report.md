@@ -16,7 +16,6 @@ assignees: ''
 - Graphics card and driver:
 - Desktop environment / Window manager name+version:
 - How you installed Nyxt (Guix pack, package manager, build from source):
-- Desktop environment / Window manager name+version:
 - Information from command copy-system-information:
 
   If you can't run copy-system-information, please provide the following:
