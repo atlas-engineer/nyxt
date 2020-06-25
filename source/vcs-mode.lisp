@@ -165,7 +165,7 @@ CLONE-URI: quri:uri object."
   "Clone the repository of the current URL to disk.  Only Git is supported at
 the moment.  Set the list of preferred destinations in the `*vcs-projects-roots*' variable.
 The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
-  (let* ((uri (quri:uri (url (current-buffer))))
+  (let* ((uri (url (current-buffer)))
          (root-name (first (str:split "/" (quri:uri-path uri) :omit-nulls t)))
          (project-name (second (str:split "/" (quri:uri-path uri) :omit-nulls t)))
          (clone-uri (quri:copy-uri uri))

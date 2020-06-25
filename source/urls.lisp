@@ -1,25 +1,16 @@
 (in-package :nyxt)
 
-(export-always 'host)
-(declaim (ftype (function (string) (or string null)) host))
-(defun host (url)
-  "Return URL's host.
-Return NIL on error."
-  (ignore-errors (quri:uri-host (quri:uri url))))
+(export-always 'object-string)
+(defmethod object-string ((uri quri:uri))
+  (the (values string &optional) (quri:render-uri uri)))
 
-(export-always 'domain)
-(declaim (ftype (function (string) (or string null)) domain))
-(defun domain (url)
-  "Return URL's domain.
-Return NIL on error."
-  (ignore-errors (the (values string &optional) (quri:uri-domain (quri:uri url)))))
-
-(export-always 'url-display)
-(defun url-display (url)
-  "Return decoded URL.
+(export-always 'object-display)
+(defmethod object-display ((uri quri:uri))
+    "Return decoded URL.
 If the URL contains hexadecimal-encoded characters, return their unicode counterpart.
 On errors, return URL."
-  (or (ignore-errors (quri:url-decode url)) url))
+    (the (values (or string null) &optional)
+         (or (ignore-errors (quri:url-decode (quri:render-uri uri))) (quri:render-uri uri))))
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
@@ -35,8 +26,8 @@ On errors, return URL."
                            :shortcut (shortcut b)
                            :search-url (if (quri:uri-scheme (quri:uri (search-url b)))
                                            (search-url b)
-                                           (str:concat (url b) (search-url b)))
-                           :fallback-url (url b)))
+                                           (str:concat (object-display (url b)) (search-url b)))
+                           :fallback-url (object-string (url b))))
           (remove-if (lambda (b) (or (str:emptyp (search-url b))
                                      (str:emptyp (shortcut b))))
                      bookmarks)))
@@ -53,6 +44,12 @@ On errors, return URL."
          ;; probably not a URI query.
          (not (string= (quri:uri-domain uri)
                        (quri:uri-tld uri))))))
+
+(declaim (ftype (function (quri:uri) boolean) empty-url-p))
+(export-always 'url-empty-p)
+(defun url-empty-p (url)
+  "Small convenience function to check whether the given URL is empty."
+  (uiop:emptyp (object-string url)))
 
 (defun all-search-engines ()
   "Return the `search-engines' from the `browser' instance plus those in

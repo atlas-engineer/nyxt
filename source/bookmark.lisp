@@ -15,8 +15,8 @@
 (defclass-export bookmark-entry ()
   ((url :initarg :url
         :accessor url
-        :type string
-        :initform "")
+        :type quri:uri
+        :initform (quri:uri ""))
    (title :initarg :title
           :accessor title
           :type string
@@ -54,14 +54,14 @@ SEARCH-URL maybe either be a full URL or a path.  If the latter, the path is
 appended to the URL.")))
 
 (defmethod object-string ((entry bookmark-entry))
-  (url entry))
+  (object-string (url entry)))
 
 (defmethod object-display ((entry bookmark-entry))
   (format nil "~a~a  ~a~a"
           (if (str:emptyp (shortcut entry))
               ""
               (str:concat "[" (shortcut entry) "] "))
-          (url entry)
+          (object-display (url entry))
           (if (str:emptyp (title entry))
               ""
               (title entry))
@@ -69,24 +69,27 @@ appended to the URL.")))
               (format nil " (~{~a~^, ~})" (tags entry))
               "")))
 
-(defun url-sans-scheme (url)
-  (apply #'str:concat
-         (mapcar (alex:curry #'format nil "~a")
-                 (delete nil
-                         (rest (multiple-value-list (quri:parse-uri url)))))))
 
+(declaim (ftype (function (quri:uri quri:uri) boolean) schemeless-uri=))
+(defun schemeless-uri= (uri1 uri2)
+  "Like `quri:uri=' but ignore scheme in comparison.
+Authority is compared case-insensitively (RFC 3986)."
+ (and (equal  (or (quri:uri-path uri1) "/") (or (quri:uri-path uri2) "/"))
+      (equal  (quri:uri-query uri1)     (quri:uri-query uri2))
+      (equal  (quri:uri-fragment uri1)  (quri:uri-fragment uri2))
+      (equalp (quri:uri-authority uri1) (quri:uri-authority uri2))))
+
+(declaim (ftype (function (quri:uri quri:uri) boolean) equal-url))
 (defun equal-url (url1 url2)
   "URLs are equal if the URIs are equal, scheme excluded.
 Empty paths are also excluded from the comparison.
 For instance, these are equal:
 - http://example.org
 - https://example.org/"
-  (flet ((normalize-path (uri)
-           (if (nth-value 4 (quri:parse-uri uri))
-               uri
-               (str:concat uri "/"))))
-    (string= (url-sans-scheme (normalize-path url1))
-             (url-sans-scheme (normalize-path url2)))))
+  (if (and (quri:uri-http-p url1)
+           (quri:uri-http-p url2))
+      (schemeless-uri= url1 url2)
+      (the (values boolean &optional) (quri:uri= url1 url2))))
 
 (defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
   "Entries are equal if the hosts and the paths are equal.
@@ -107,10 +110,11 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
               (tag-description tag))
       (object-string tag)))
 
+(declaim (ftype (function (quri:uri &key (:title string) (:tags t)) t) bookmark-add))
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key title tags)
-  (unless (or (str:emptyp url)
-              (string= "about:blank" url))
+  (unless (or (url-empty-p url)
+              (string= "about:blank" (object-string url)))
     (let* ((entry nil)
            (bookmarks-without-url (remove-if (lambda (b)
                                                (when (equal-url (url b) url)
@@ -190,7 +194,8 @@ This can be useful to let the user select no tag when returning directly."
             (:h1 "Bookmarks")
             (:body
              (loop for bookmark in (bookmarks-data *browser*)
-                   collect (markup:markup (:p (:a :href (url bookmark) (url bookmark))
+                   collect (markup:markup (:p (:a :href (object-string (url bookmark))
+                                                  (object-display (url bookmark)))
                                               " "
                                               ;; The :a tag must be on the URL because a bookmark may have no title.
                                               (:b (title bookmark))
@@ -202,17 +207,19 @@ This can be useful to let the user select no tag when returning directly."
     (set-current-buffer bookmarks-buffer)
     bookmarks-buffer))
 
+(declaim (ftype (function (quri:uri) string) url-bookmark-tags))
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
   "Return the space-separated string of tags of the bookmark corresponding to
 URL."
-  (let ((existing-bm (find url
-                           (bookmarks-data *browser*)
-                           :key #'url
-                           :test #'equal-url)))
-    (if existing-bm
-        (str:join " " (tags existing-bm))
-        "")))
+  (the (values string &optional)
+       (let ((existing-bm (find url
+                                (bookmarks-data *browser*)
+                                :key #'url
+                                :test #'equal-url)))
+         (if existing-bm
+             (str:join " " (tags existing-bm))
+             ""))))
 
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
@@ -226,7 +233,7 @@ URL."
          (make-tags (name-list)
            (mapcar (lambda (name) (make-tag :name name :description "suggestion"))
                    name-list)))
-    (if (uiop:emptyp (url buffer))
+    (if (url-empty-p (url buffer))
         (echo "Buffer has no URL.")
         (with-result* ((body (with-current-buffer buffer
                                (document-get-body)))
@@ -240,7 +247,7 @@ URL."
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
-          (echo "Bookmarked ~a." (url-display (url buffer)))))))
+          (echo "Bookmarked ~a." (object-display (url buffer)))))))
 
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."
@@ -253,9 +260,10 @@ URL."
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result* ((url (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Bookmark URL")))
+  (with-result* ((url (quri:uri
+                       (read-from-minibuffer
+                        (make-minibuffer
+                         :input-prompt "Bookmark URL"))))
                  (tags (read-from-minibuffer
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
@@ -310,7 +318,7 @@ If character before cursor is '+' or '-' complete against tag."
                         :default-modes '(minibuffer-tag-mode minibuffer-mode)
                         :suggestion-function (bookmark-suggestion-filter))))
     ;; TODO: Add support for multiple bookmarks?
-    (set-url* (url entry) :buffer (current-buffer) :raw-url-p t)))
+    (set-url* (object-string (url entry)) :buffer (current-buffer) :raw-url-p t)))
 
 (define-command set-url-from-bookmark-new-buffer ()
   "Open selected bookmark in a new buffer."
@@ -319,10 +327,10 @@ If character before cursor is '+' or '-' complete against tag."
                         :input-prompt "Open bookmark in a new buffer"
                         :default-modes '(minibuffer-tag-mode minibuffer-mode)
                         :suggestion-function (bookmark-suggestion-filter))))
-    (set-url* (url entry) :buffer (make-buffer-focus :url nil) :raw-url-p t)))
+    (set-url* (object-string (url entry)) :buffer (make-buffer-focus :url nil) :raw-url-p t)))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
-  (unless (str:emptyp (url entry))
+  (unless (url-empty-p (url entry))
     (flet ((write-slot (slot)
              (unless (str:emptyp (funcall slot entry))
                (format t " :~a ~s"
@@ -330,7 +338,7 @@ If character before cursor is '+' or '-' complete against tag."
                        (funcall slot entry)))))
       (let ((*standard-output* stream))
         (write-string "(:url ")
-        (format t "~s" (url entry))
+        (format t "~s" (object-string (url entry)))
         (write-slot 'title)
         (write-slot 'annotation)
         (when (date entry)
@@ -352,6 +360,9 @@ If character before cursor is '+' or '-' complete against tag."
       (let ((*standard-input* stream))
         (let ((entries (read stream)))
           (mapcar (lambda (entry)
+                    (when (getf entry :url)
+                      (setf (getf entry :url)
+                            (quri:uri (getf entry :url))))
                     (when (getf entry :date)
                       (setf (getf entry :date)
                             (local-time:parse-timestring (getf entry :date))))
@@ -373,8 +384,8 @@ If character before cursor is '+' or '-' complete against tag."
     (setf (slot-value *browser* 'bookmarks-data)
           (sort (slot-value *browser* 'bookmarks-data)
                 (lambda (e1 e2)
-                  (string< (url-sans-scheme (url e1))
-                           (url-sans-scheme (url e2))))))
+                  (string< (object-display (quri:copy-uri (url e1) :scheme nil))
+                           (object-display (quri:copy-uri (url e2) :scheme nil))))))
     (write-string "(" file)
     (dolist (entry (slot-value *browser* 'bookmarks-data))
       (write-char #\newline file)

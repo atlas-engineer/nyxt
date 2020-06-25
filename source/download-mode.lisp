@@ -42,7 +42,7 @@
                                          ;; TODO: No need for percentage?
                                          (floor (* 100 (download-manager:progress d)))))
                              ") "
-                             (:u (quri:render-uri (download-manager:resolved-uri d)))
+                             (:u (object-display (download-manager:resolved-uri d)))
                              " as "
                              (:b (file-namestring (download-manager:file d)))))))
                     (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys 'execute-command))) "."))))

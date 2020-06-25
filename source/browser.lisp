@@ -19,6 +19,7 @@
                                                    &optional (or (eql :stop)
                                                                  (eql :forward)))))
 (export-always '(make-hook-resource make-handler-resource))
+(hooks:define-hook-type uri->uri (function (quri:uri) quri:uri))
 
 (export-always 'expand-path)
 (declaim (ftype (function ((or null data-path)) (or string null)) expand-path))
@@ -149,8 +150,8 @@ The handlers take the window as argument.")))
 
 (defclass-export proxy ()
   ((server-address :accessor server-address :initarg :server-address
-                   :initform "socks5://127.0.0.1:9050"
-                   :type string
+                   :initform (quri:uri "socks5://127.0.0.1:9050")
+                   :type quri:uri
                    :documentation "The address of the proxy server.
 It's made of three components: protocol, host and port.
 Example: \"http://192.168.1.254:8080\".")
@@ -223,8 +224,8 @@ Without handler, return ARGS as values.  This is an acceptable `combination' for
        :documentation "Unique identifier for a buffer.
 Dead buffers (i.e. those not associated with a web view) have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
-   (url :accessor url :initarg :url :type string :initform "")
-   (url-at-point :accessor url-at-point :type string :initform "")
+   (url :accessor url :initarg :url :type quri:uri :initform (quri:uri ""))
+   (url-at-point :accessor url-at-point :type quri:uri :initform (quri:uri ""))
    (title :accessor title :initarg :title :type string :initform "")
    (load-status ;; :accessor load-status ; TODO: Need to decide if we want progress / errors before exposing to the user.
                 :initarg :load-status
@@ -316,7 +317,7 @@ Example:
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default))))")
    (default-new-buffer-url :accessor default-new-buffer-url
-                           :initform "https://nyxt.atlas.engineer/start"
+                           :initform (quri:uri "https://nyxt.atlas.engineer/start")
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance :accessor scroll-distance :initform 50 :type number
                     :documentation "The distance scroll-down or scroll-up will scroll.")
@@ -368,12 +369,12 @@ renderers might support this.")
                           :type list-of-strings
                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
    (set-url-hook ;; :accessor set-url-hook ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
-                 :initform (hooks:make-hook-string->string
+                 :initform (make-hook-uri->uri
                             :combination #'hooks:combine-composed-hook)
-                 :type hooks:hook-string->string
+                 :type hook-uri->uri
                  :documentation "Hook run in `set-url*' after `parse-url' was processed.
-The handlers take the URL going to be loaded as argument and must return a
-(possibly new) URL.")
+The handlers take the URL going to be loaded as argument
+and must return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook
                        :initform (make-hook-buffer)
                        :type hook-buffer
@@ -400,7 +401,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                             (server-address proxy)
                             (whitelist proxy))
       (ffi-buffer-set-proxy buffer
-                            ""
+                            (quri:uri "")
                             nil)))
 
 ;; TODO: Find a better way to uniquely identify commands from mode methods.
@@ -629,7 +630,8 @@ is run after the renderer has been initialized and after the
                                     :initform nil
                                     :documentation "When supplied, upon startup,
 if there are errors, they will be reported by this function.")
-   (start-page-url :accessor start-page-url :initform "https://nyxt.atlas.engineer/quickstart"
+   (start-page-url :accessor start-page-url :type quri:uri
+                   :initform (quri:uri "https://nyxt.atlas.engineer/quickstart")
                    :documentation "The URL of the first buffer opened by Nyxt when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
                                        :initform nil
@@ -892,6 +894,7 @@ This function is meant to be run in the background."
                (when buffer
                  (ffi-within-renderer-thread *browser* #'download-refresh))))))
 
+(declaim (ftype (function (buffer &key (:downloads-only boolean))) proxy-adress))
 (defun proxy-address (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
 If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
@@ -905,11 +908,16 @@ when `proxied-downloads-p' is true."
 ;; TODO: To download any URL at any moment and not just in resource-query, we
 ;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
 ;; query cookies.
+(declaim (ftype (function (quri:uri &key
+                                    (:cookies (or string null))
+                                    (:proxy-address t))
+                          (values (or null download-manager:download) &rest t))
+                download))
 (export-always 'download)
 (defun download (url &key
                      cookies
                      (proxy-address :auto))
-  "Download URI.
+  "Download URL.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
   (hooks:run-hook (before-download-hook *browser*) url)
@@ -917,6 +925,7 @@ current buffer."
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
   (let ((download-dir (expand-path (download-path *browser*))))
+    (declare (type (or quri:uri null) proxy-address))
     (when download-dir
       (let* ((download nil))
         (handler-case
@@ -947,11 +956,11 @@ This is useful to tell REPL instances from binary ones."
   (let ((url (url buffer))
         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
-    (setf url (if (str:emptyp url) "<no url/name>" url))
+    (setf url (if (url-empty-p url) "<no url/name>" (object-display url)))
     (ffi-window-set-title window
                           (str:concat "Nyxt" (when *keep-alive* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
-                                       (url-display url)))))
+                                       url))))
 
 (declaim (ftype (function (window buffer)) window-set-active-buffer))
 (export-always 'window-set-active-buffer)
@@ -980,7 +989,7 @@ proceeding."
     (set-window-title window buffer)))
 
 (defun replacement-buffer-p (buffer)
-  (and (str:emptyp (url buffer))
+  (and (url-empty-p (url buffer))
        (str:emptyp (title buffer))))
 
 (defun get-inactive-buffers ()
@@ -993,6 +1002,7 @@ proceeding."
        ;; Display the most recent inactive buffer.
        (sort diff #'local-time:timestamp> :key #'last-access)))))
 
+(declaim (ftype (function (list-of-strings &key (:no-focus boolean)))))
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
    First URL is focused if NO-FOCUS is nil."
@@ -1033,8 +1043,8 @@ If none is found, fall back to `scheme:cua'."
            :documentation "Buffer targetted by the request.")
    (url :initarg :url
         :accessor url
-        :type string
-        :initform ""
+        :type quri:uri
+        :initform (quri:uri "")
         :documentation "URL of the request")
    (event-type :initarg :event-type
                ;; :accessor event-type ; TODO: No public accessor for now, we first need a use case.
@@ -1071,24 +1081,25 @@ Deal with REQUEST-DATA with the following rules:
     (let* ((keymap (scheme-keymap buffer (request-resource-scheme buffer)))
            (bound-function (the (or symbol keymap:keymap null)
                                 (keymap:lookup-key keys keymap))))
+      (declare (type quri:uri url))
       (cond
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
          (funcall-safely bound-function :url url)
          (values request-data :stop))
         ((new-window-p request-data)
-         (log:debug "Load URL in new buffer: ~a" url)
-         (open-urls (list url))
+         (log:debug "Load URL in new buffer: ~a" (object-display url))
+         (open-urls (list (object-string url)))
          (values request-data :stop))
         ((not (known-type-p request-data))
-         (log:debug "Buffer ~a initiated download of ~s." (id buffer) url)
+         (log:debug "Buffer ~a initiated download of ~s." (id buffer) (object-display url))
          (download url :proxy-address (proxy-address buffer :downloads-only t)
                        :cookies "")
          (unless (find-buffer 'download-mode)
            (download-list))
          (values request-data :stop))
         (t
-         (log:debug "Forwarding: ~a" url)
+         (log:debug "Forwarding: ~a" (object-display url))
          request-data)))))
 
 (defun javascript-error-handler (condition)
@@ -1105,7 +1116,7 @@ Deal with REQUEST-DATA with the following rules:
             (if (eq (slot-value buffer 'load-status) :loading)
                 "(Loading) "
                 "")
-            (url-display (url buffer))
+            (object-display (url buffer))
             (title buffer))))
 
 (defun print-status (&optional status window)

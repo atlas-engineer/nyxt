@@ -54,8 +54,8 @@ To make this change permanent, you can customize
                            (make-minibuffer
                             :input-prompt "URL host to whitelist:"
                             :suggestion-function (previous-history-urls-suggestion-filter))))
-        (unless (str:emptyp (url (htree:data input)))
-          (let ((host (host (url (htree:data input)))))
+        (unless (url-empty-p (url (htree:data input)))
+          (let ((host (quri:uri-host (url (htree:data input)))))
             (echo "Whitelisted ~s." host)
             (pushnew host (certificate-whitelist buffer) :test #'string=))))
       (echo "Enable certificate-whitelist-mode first.")))

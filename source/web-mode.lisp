@@ -189,9 +189,9 @@ search.")
   "Paste text if active element is an input tag, forward event otherwise."
   (with-result (response (%clicked-in-input?))
     (if (and (input-tag-p response)
-             (uiop:emptyp (url-at-point buffer)))
+             (url-empty-p (url-at-point buffer)))
         (funcall-safely #'paste)
-        (set-url* (url-at-point buffer) :buffer (make-buffer-focus :url nil)))))
+        (set-url* (object-string (url-at-point buffer)) :buffer (make-buffer-focus :url nil)))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."
@@ -209,7 +209,7 @@ search.")
         (echo "History entry is already the current URL.")
         (progn
           (setf (htree:current history) history-node)
-          (set-url* (url (htree:data history-node)))))))
+          (set-url* (object-string (url (htree:data history-node))))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
@@ -219,7 +219,7 @@ search.")
         (progn
           (htree:back (history mode))
           (match (htree:current (history mode))
-            ((guard n n) (set-url* (url (htree:data n)))))))))
+            ((guard n n) (set-url* (object-string (url (htree:data n))))))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
@@ -228,7 +228,7 @@ search.")
         (progn
           (htree:forward (history mode))
           (match (htree:current (history mode))
-            ((guard n n) (set-url* (url (htree:data n))))))
+            ((guard n n) (set-url* (object-string (url (htree:data n)))))))
         (echo "No forward history."))))
 
 (defun history-backwards-suggestion-filter (&optional (mode (find-submode
@@ -320,10 +320,10 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history tree."
   (labels ((traverse (node current)
              (when node
-               `(:li (:a :href ,(url (htree:data node))
+               `(:li (:a :href ,(object-string (url (htree:data node)))
                          ,(let ((title (or (match (title (htree:data node))
                                              ((guard e (not (str:emptyp e))) e))
-                                           (url (htree:data node)))))
+                                           (object-display (url (htree:data node))))))
                             (if (eq node current)
                                 `(:b ,title)
                                 title)))
@@ -393,10 +393,10 @@ Otherwise go forward to the only child."
            (%paste :input-text (funcall (autofill-fill selected-fill)))))))
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
-  (unless (find-if (alex:rcurry #'str:starts-with? url)
+  (unless (find-if (alex:rcurry #'str:starts-with? (object-string url))
                    (history-blacklist mode))
     (htree:add-child (make-instance 'buffer-description
-                                    :url url
+                                    :url (object-string url)
                                     :title (title (buffer mode)))
                      (history mode)
                      :test #'equals)

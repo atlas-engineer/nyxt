@@ -16,23 +16,24 @@
                       &key
                       (directory (download-directory))
                       cookies
-                      proxy)
-  (let* ((uri (quri:uri requested-uri))
-         (cookies-jar
+                        proxy)
+  (let* ((cookies-jar
            (unless (str:emptyp cookies)
-             (parse-cookie-jar-string cookies (quri:uri-host uri) (quri:uri-path uri)))))
+             (parse-cookie-jar-string cookies (quri:uri-host requested-uri)
+                                      (quri:uri-path requested-uri)))))
     (handler-case
         (multiple-value-bind (stream status response-headers resolved-uri)
-            (dex:get requested-uri :want-stream t :force-binary t :keep-alive nil
-                                   :proxy proxy
-                                   :cookie-jar cookies-jar)
+            (dex:get (quri:render-uri requested-uri)
+                     :want-stream t :force-binary t :keep-alive nil
+                     :proxy (quri:render-uri proxy) :cookie-jar cookies-jar)
           ;; TODO: Allow caller to set the target filename?
-          (let* ((file (merge-pathnames directory (extract-filename requested-uri
-                                                                    response-headers))))
+          (let* ((file (merge-pathnames
+                        directory (extract-filename requested-uri
+                                                    response-headers))))
             ;; TODO: Touch file now to ensure uniqueness when actually downloading?
             (make-instance 'download
                            :requested-uri requested-uri
-                           :resolved-uri resolved-uri
+                           :resolved-uri (quri:uri resolved-uri)
                            :header response-headers
                            :file file
                            :status status
@@ -52,7 +53,7 @@
                             :if-exists :supersede
                             :element-type '(unsigned-byte 8))
       (log:info "Downloading~%  ~a~%to~%  '~a'.~%"
-                (resolved-uri download) (file download))
+                (quri:url-decode (resolved-uri download)) (file download))
       (loop :for byte-position = (read-sequence buffer (downstream download))
 
             :do (update download)
@@ -94,7 +95,7 @@ Return NIL if filename is not a string or a pathname."
                        (gethash "content-disposition" headers))
                       :test #'string=)))
       (let ((basename
-              (ignore-errors (file-namestring (quri:uri-path (quri:uri uri))))))
+              (ignore-errors (file-namestring (quri:uri-path uri)))))
         (if (or (null basename) (string= "" basename))
             "index.html"
             basename))))
