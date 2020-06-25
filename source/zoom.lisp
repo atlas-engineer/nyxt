@@ -24,10 +24,11 @@
     (with-current-buffer buffer
       (zoom-out))))
 
-(define-command unzoom-page (&key (buffer (current-buffer)))
+(define-command unzoom-page (&key (buffer (current-buffer))
+                             (ratio (zoom-ratio-default (current-buffer))))
   "Unzoom the page."
   (pflet ((unzoom ()
-            (ps:lisp (setf (current-zoom-ratio (current-buffer)) (zoom-ratio-default (current-buffer))))
-            (setf (ps:chain document body style zoom) (ps:lisp (zoom-ratio-default (current-buffer))))))
+            (ps:lisp (setf (current-zoom-ratio (current-buffer)) ratio))
+            (setf (ps:chain document body style zoom) (ps:lisp ratio))))
     (with-current-buffer buffer
       (unzoom))))
