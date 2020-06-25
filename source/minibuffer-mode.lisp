@@ -274,7 +274,6 @@ readable."
       (unless (str:empty? input)
         (log:debug input minibuffer)
         (text-buffer::kill-line (input-cursor minibuffer))
-        (setf (nyxt::input-cursor-position minibuffer) 0)
         (insert minibuffer input)))))
 
 (define-command minibuffer-toggle-mark (&key
