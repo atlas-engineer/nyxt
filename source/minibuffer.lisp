@@ -258,14 +258,14 @@ A minibuffer query is typically done as follows:
   the updated list length."
   (text-buffer::kill-line (input-cursor minibuffer))
   (insert minibuffer value)
-  (reset-suggestion-state))
+  (reset-suggestion-state minibuffer))
 
 (defmethod reset-suggestion-state ((minibuffer minibuffer))
   "Update the suggestions and move the suggestion cursor to the
 beginning."
   (update-suggestions minibuffer)
-  (setf suggestion-cursor 0)
-  (setf suggestion-head 0))
+  (setf (suggestion-cursor minibuffer) 0)
+  (setf (suggestion-head minibuffer) 0))
 
 (defmethod content ((minibuffer minibuffer))
   (slot-value minibuffer 'content))
