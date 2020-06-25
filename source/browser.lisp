@@ -143,6 +143,10 @@ The handlers take the window as argument.")))
  '(active-buffer
    active-minibuffers))
 
+(defmethod (setf active-buffer) (buffer (window window))
+  (setf (slot-value window 'active-buffer) buffer)
+  (print-status))
+
 (defclass-export proxy ()
   ((server-address :accessor server-address :initarg :server-address
                    :initform "socks5://127.0.0.1:9050"
@@ -967,14 +971,13 @@ proceeding."
           (ffi-window-set-active-buffer window-with-same-buffer buffer-swap)
           (buffer-delete temp-buffer))
         (ffi-window-set-active-buffer window buffer))
+    (setf (active-buffer window) buffer)
     (let ((inactive-replacement-buffers (delete-if (complement #'replacement-buffer-p)
                                                    (get-inactive-buffers))))
       (mapc #'buffer-delete inactive-replacement-buffers))
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
-    (set-window-title window buffer)
-    (print-status)
-    (setf (active-buffer window) buffer)))
+    (set-window-title window buffer)))
 
 (defun replacement-buffer-p (buffer)
   (and (str:emptyp (url buffer))
