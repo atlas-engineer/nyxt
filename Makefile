@@ -26,9 +26,10 @@ lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
 .PHONY: clean-fasls
 clean-fasls:
 	$(NYXT_INTERNAL_QUICKLISP) && \
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--eval '(load "$(QUICKLISP_DIR)/setup.lisp")' \
+		--load $(QUICKLISP_DIR)/setup.lisp \
+		--load nyxt.asd \
 		--eval '(ql:quickload :swank)' \
 		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
 		--eval '(swank:delete-system-fasls "nyxt")' \
@@ -38,7 +39,7 @@ nyxt: $(lisp_files)
 	$(MAKE) application
 
 .PHONE: application
-application: clean-fasls deps
+application: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
@@ -59,10 +60,7 @@ install-app-bundle:
 	cp -r Nyxt.app $(DESTDIR)/Applications
 
 .PHONY: all
-all:
-ifeq ($(UNAME), Linux)
 all: nyxt
-endif
 ifeq ($(UNAME), Darwin)
 all: nyxt app-bundle
 endif
@@ -123,7 +121,7 @@ quicklisp-update:
 build-deps: quicklisp-extra-libs
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--load $< \
+		--load $(QUICKLISP_DIR)/setup.lisp \
 		--load nyxt.asd \
 		--eval '(ql:quickload :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(uiop:quit)' || true
