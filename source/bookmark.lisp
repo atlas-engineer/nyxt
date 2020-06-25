@@ -279,35 +279,19 @@ URL."
 (define-command insert-suggestion-or-tag (&optional (minibuffer (current-minibuffer)))
   "Paste selected suggestion or tag in input.
 If character before cursor is '+' or '-' complete against tag."
-  (cond
-    ;; Complete a tag.
-    ((and (not (str:emptyp (input-buffer minibuffer)))
-          (let ((current-word (word-at-cursor minibuffer)))
-            (or (str:starts-with? "-" current-word)
-                (str:starts-with? "+" current-word))))
-     (with-result (tag (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Tag"
-                         :input-buffer (subseq (word-at-cursor minibuffer) 1)
-                         :suggestion-function (tag-suggestion-filter))))
-       (when tag
-         (let ((before (subseq (input-buffer minibuffer)
-                               0
-                               (word-start (input-buffer minibuffer)
-                                           (input-cursor-position minibuffer))))
-               (after (subseq (input-buffer minibuffer)
-                              (word-end (input-buffer minibuffer)
-                                        (input-cursor-position minibuffer))))
-               (prefix (elt (word-at-cursor minibuffer) 0)))
-           (log:info (input-buffer minibuffer) before after)
-           (nyxt/minibuffer-mode:kill-whole-line minibuffer)
-           (insert (str:concat
-                    before
-                    (string prefix) (tag-name tag) " "
-                    after)
-                   minibuffer)))))
-    (t
-     (nyxt/minibuffer-mode:insert-suggestion minibuffer))))
+  (let* ((current-word (text-buffer::word-at-cursor (input-cursor minibuffer)))
+         (operand? (unless (str:emptyp current-word) (subseq current-word 0 1))))
+    (if (or (equal "-"  operand?)
+            (equal "+" operand?))
+        (with-result (tag (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Tag"
+                            :suggestion-function (tag-suggestion-filter))))
+          (when tag
+            (text-buffer::replace-word-at-cursor 
+             (input-cursor minibuffer)
+             (concatenate 'string operand? (tag-name tag)))))
+        (nyxt/minibuffer-mode:insert-suggestion minibuffer))))
 
 (define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the bookmark and their tags."

@@ -5,7 +5,7 @@
 (defclass cursor (cluffer-simple-line::right-sticky-cursor)
   ((word-separation-characters
     :accessor word-separation-characters
-    :initform '(":" "/" "-" "." " " " "))))
+    :initform '(":" "/" "." " " " "))))
 
 (defmethod string-representation ((buffer text-buffer))
   (with-output-to-string (out)
