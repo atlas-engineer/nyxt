@@ -48,7 +48,7 @@
 
 (define git-file?
   (let* ((pipe (with-directory-excursion %source-dir
-                 (open-pipe* OPEN_READ "git" "ls-files")))
+                 (open-pipe* OPEN_READ "git" "ls-files" "--recurse-submodules")))
          (files (let loop ((lines '()))
                   (match (read-line pipe)
                     ((? eof-object?)
