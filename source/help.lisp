@@ -486,11 +486,17 @@ the "
     help-buffer))
 
 (define-command copy-system-information ()
-  "Command to dump the system information and copy it to the clipboard"
+  "Save system information into the clipboard."
   (let* ((*print-length* nil)
-         (nyxt-information (format nil "Nyxt Version: ~a ~%Lisp Implementation: ~a ~%Lisp Version: ~a ~%Operating System: ~a ~a ~%Features: ~a"
-                                   +version+ (lisp-implementation-type) (lisp-implementation-version)
-                                   (software-type) (software-version) *features*)))
+         (nyxt-information (format nil
+                                   (str:concat "Nyxt version: ~a ~%"
+                                               "Operating system kernel: ~a ~a~%"
+                                               "Lisp implementation: ~a ~a~%"
+                                               "Features: ~a~%")
+                                   +version+
+                                   (software-type) (software-version)
+                                   (lisp-implementation-type) (lisp-implementation-version)
+                                   *features*)))
     (copy-to-clipboard nyxt-information)
     (log:info nyxt-information)
     (echo "System information copied to clipboard.")))
