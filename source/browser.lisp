@@ -121,7 +121,7 @@ Example formatter that prints the buffer indices over the total number of buffer
   (declare (ignore window))
   (let* ((buffer (current-buffer))
          (buffer-count (1+ (or (position buffer
-                                         (sort (alexandria:hash-table-values (buffers *browser*))
+                                         (sort (buffer-list)
                                                #'<
                                                :key #'id))
                                0)))
@@ -131,7 +131,7 @@ Example formatter that prints the buffer indices over the total number of buffer
                                                   (class-name (class-of m)))))
                     (modes buffer))
             buffer-count
-            (hash-table-count (buffers *browser*))
+            (length (buffer-list))
             (url buffer)
             (title buffer))))")
    (window-delete-hook :accessor window-delete-hook
