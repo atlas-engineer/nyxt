@@ -12,8 +12,8 @@
 
 (defclass-export hostlist ()
   ((url :accessor url :initarg :url
-        :initform ""
-        :type string
+        :initform (quri:uri "")
+        :type quri:uri
         :documentation "URL where to download the list from.  If empty, no attempt
 will be made at updating it.")
    (path :initarg :path
@@ -44,7 +44,7 @@ See the `hostlist' class documentation."
 
 (defmethod object-display ((hostlist hostlist))
   (format nil "URL: ~s~&Path: ~s~&Update interval: ~as~&Hosts: ~s"
-          (url hostlist)
+          (object-display (url hostlist))
           (expand-path (path hostlist))
           (update-interval hostlist)
           (trim-list (hosts hostlist))))
@@ -54,8 +54,9 @@ See the `hostlist' class documentation."
 If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
     (let ((path (expand-path (path hostlist))))
-      (log:info "Updating hostlist ~s from ~s." path (url hostlist))
-      (let ((hosts (dex:get (url hostlist))))
+      (log:info "Updating hostlist ~s from ~s." path
+                (object-display (url hostlist)))
+      (let ((hosts (dex:get (object-string (url hostlist)))))
         (when path
           (handler-case
               (alex:write-string-into-file hosts (ensure-parent-exists path)
@@ -113,7 +114,7 @@ Return nil if hostlist cannot be parsed."
 (serapeum:export-always '*default-hostlist*)
 (defparameter *default-hostlist*
   (make-instance 'hostlist
-                 :url "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+                 :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")
                  :path (make-instance 'hostlist-data-path :basename "hostlist-stevenblack.txt"))
   "Default hostlist for `blocker-mode'.")
 
@@ -163,14 +164,14 @@ Return nil if MODE's hostlist cannot be parsed."
 (defun request-resource-block (request-data)
   "Block resource queries from blacklisted hosts.
 This is an acceptable handler for `request-resource-hook'."
-  ;; TODO: Use quri:uri-domain?
   (let ((mode (find-submode (buffer request-data) 'blocker-mode)))
     (if (and mode
              (blacklisted-host-p
               mode
-              (host (url request-data))))
+              (quri:uri-host (url request-data))))
         (progn
-          (log:debug "Dropping ~a for ~a (~a)" (url request-data)
+          (log:debug "Dropping ~a for ~a (~a)"
+                     (object-display (url request-data))
                      (buffer request-data)
                      (object-string (buffer request-data)))
           (values request-data :stop))

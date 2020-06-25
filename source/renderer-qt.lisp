@@ -100,11 +100,11 @@
   (qt:load-started-listener-connect
    (qt-object buffer)
    (lambda ()
-     (on-signal-load-committed buffer (qt:web-engine-view-url (qt-object buffer)))))
+     (on-signal-load-committed buffer (quri:uri (qt:web-engine-view-url (qt-object buffer))))))
   (qt:load-finished-listener-connect
    (qt-object buffer)
    (lambda ()
-     (on-signal-load-finished buffer (qt:web-engine-view-url (qt-object buffer))))))
+     (on-signal-load-finished buffer (quri:uri (qt:web-engine-view-url (qt-object buffer)))))))
 
 (defmethod ffi-window-make ((browser qt-browser))
   "Make a window."
@@ -144,7 +144,7 @@
 (defmethod ffi-buffer-delete ((buffer qt-buffer)))
 
 (defmethod ffi-buffer-load ((buffer qt-buffer) uri)
-  (qt:web-engine-view-load (qt-object buffer) uri))
+  (qt:web-engine-view-load (qt-object buffer) (object-string uri)))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer qt-buffer) javascript &key callback)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript callback))

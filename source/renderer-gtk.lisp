@@ -96,8 +96,8 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   ((gtk-object :accessor gtk-object)
    (proxy-uri :accessor proxy-uri
               :initarg :proxy-uri
-              :type string
-              :initform "")
+              :type quri:uri
+              :initform (quri:uri ""))
    (proxy-ignored-hosts :accessor proxy-ignored-hosts
                         :initarg :proxy-ignored-hosts
                         :type list
@@ -421,7 +421,7 @@ Warning: This behaviour may change in the future."
   (ffi-buffer-make buffer))
 
 (defmethod ffi-buffer-uri ((buffer gtk-buffer))
-  (webkit:webkit-web-view-uri (gtk-object buffer)))
+  (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer))))
 
 (defmethod ffi-buffer-title ((buffer gtk-buffer))
   (or (webkit:webkit-web-view-title (gtk-object buffer)) ""))
@@ -429,7 +429,7 @@ Warning: This behaviour may change in the future."
 (defmethod on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
-         (host (host url)))
+         (host (quri:uri-host url)))
     (if (and (certificate-whitelist buffer)
              (member-string host (certificate-whitelist buffer)))
         (progn
@@ -437,7 +437,7 @@ Warning: This behaviour may change in the future."
            context
            (gobject:pointer certificate)
            host)
-          (set-url* url :buffer buffer)
+          (set-url* (object-string url) :buffer buffer)
           t)
         (progn
           (tls-help buffer url)
@@ -478,7 +478,7 @@ Warning: This behaviour may change in the future."
                                   navigation-action)))
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
-    (setf url (webkit:webkit-uri-request-uri request))
+    (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
     (if (null (hooks:handlers (request-resource-hook buffer)))
         (progn
           (log:debug "Forward to renderer (no request-resource-hook handlers).")
@@ -498,7 +498,7 @@ Warning: This behaviour may change in the future."
                                            :known-type-p is-known-type))
           (match status
             ((or :forward nil)
-             (if (or (null request-data) (string= url (url request-data)))
+             (if (or (null request-data) (quri:uri= url (url request-data)))
                  (progn
                    (log:debug "Forward to renderer (~a)."
                               (if (null request-data)
@@ -507,9 +507,9 @@ Warning: This behaviour may change in the future."
                    (webkit:webkit-policy-decision-use response-policy-decision)
                    nil)
                  (progn
-                   (setf (webkit:webkit-uri-request-uri request) (url request-data))
+                   (setf (webkit:webkit-uri-request-uri request) (object-string (url request-data)))
                    (log:debug "Don't forward to renderer (resource request replaced with ~s)."
-                              (url request-data))
+                              (object-display (url request-data)))
                    ;; Warning: We must ignore the policy decision _before_ we
                    ;; start the new load request, or else WebKit will be
                    ;; confused about which URL to load.
@@ -522,11 +522,11 @@ Warning: This behaviour may change in the future."
              nil))))))
 
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
-  (let ((url (webkit:webkit-web-view-uri (gtk-object buffer))))
+  (let ((url (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer)))))
     (cond ((eq load-event :webkit-load-started)
            (setf (slot-value buffer 'load-status) :loading)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Loading ~s." (url-display url)))
+           (echo "Loading ~s." (object-display url)))
           ((eq load-event :webkit-load-redirected) nil)
           ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
@@ -535,7 +535,7 @@ Warning: This behaviour may change in the future."
            (setf (slot-value buffer 'load-status) :finished)
            (on-signal-load-finished buffer url)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Finished loading ~s." (url-display url))))))
+           (echo "Finished loading ~s." (object-display url))))))
 
 (defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
@@ -546,9 +546,9 @@ Warning: This behaviour may change in the future."
                ((webkit:webkit-hit-test-result-media-uri hit-test-result)
                 (webkit:webkit-hit-test-result-media-uri hit-test-result)))
     (nil (print-message "")
-         (setf (url-at-point buffer) ""))
-    (url (print-message (str:concat "→ " (url-display url)))
-         (setf (url-at-point buffer) url))))
+         (setf (url-at-point buffer) (quri:uri "")))
+    (url (print-message (str:concat "→ " (quri:url-decode url)))
+         (setf (url-at-point buffer) (quri:uri url)))))
 
 (defmethod ffi-window-make ((browser gtk-browser))
   "Make a window."
@@ -614,7 +614,7 @@ Warning: This behaviour may change in the future."
    (gtk-object buffer) "load-failed-with-tls-errors"
    (lambda (web-view failing-uri certificate errors)
      (declare (ignore web-view errors))
-     (on-signal-load-failed-with-tls-errors buffer certificate failing-uri)))
+     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-uri))))
   (gobject:g-signal-connect
    (gtk-object buffer) "notify::uri"
    (lambda (web-view param-spec)
@@ -659,14 +659,15 @@ page from the cache.
 
 We don't use the cache if URI matches BUFFER's URL since this means the user
 requested a reload."
+  (declare (type quri:uri uri))
   (let* ((history (webkit-history buffer))
-         (entry (or (find uri history :test #'string= :key #'webkit-history-entry-uri)
-                    (find uri history :test #'string= :key #'webkit-history-entry-original-uri))))
-    (if (and entry (not (string= uri (url buffer))))
+         (entry (or (find uri history :test #'quri:uri= :key #'webkit-history-entry-uri)
+                    (find uri history :test #'quri:uri= :key #'webkit-history-entry-original-uri))))
+    (if (and entry (not (quri:uri= uri (url buffer))))
         (progn
           (log:debug "Load URL from history entry ~a" entry)
           (load-webkit-history-entry buffer entry))
-        (webkit:webkit-web-view-load-uri (gtk-object buffer) uri))))
+        (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
@@ -708,13 +709,16 @@ requested a reload."
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
-(defmethod ffi-buffer-set-proxy ((buffer gtk-buffer) &optional proxy-uri (ignore-hosts (list nil)))
+(defmethod ffi-buffer-set-proxy ((buffer gtk-buffer)
+                                 &optional (proxy-uri (quri:uri ""))
+                                   (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
 Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
 For the user-level interface, see `proxy-mode'.
 
 Note: WebKit supports three proxy 'modes': default (the system proxy),
 custom (the specified proxy) and none."
+  (declare (type quri:uri proxy-uri))
   (setf (proxy-uri buffer) proxy-uri)
   (setf (proxy-ignored-hosts buffer) ignore-hosts)
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
@@ -723,11 +727,11 @@ custom (the specified proxy) and none."
          (ignore-hosts (cffi:foreign-alloc :string
                                            :initial-contents ignore-hosts
                                            :null-terminated-p t)))
-    (unless (str:emptyp proxy-uri)
+    (unless (url-empty-p proxy-uri)
       (setf mode :webkit-network-proxy-mode-custom)
       (setf settings
             (webkit:webkit-network-proxy-settings-new
-             proxy-uri
+             (quri:render-uri proxy-uri)
              ignore-hosts)))
     (cffi:foreign-free ignore-hosts)
     (webkit:webkit-web-context-set-network-proxy-settings
@@ -735,8 +739,9 @@ custom (the specified proxy) and none."
 
 (defmethod ffi-buffer-get-proxy ((buffer gtk-buffer))
   "Return the proxy URI and list of ignored hosts (a list of strings) as second value."
-  (values (proxy-uri buffer)
-          (proxy-ignored-hosts buffer)))
+  (the (values (or quri:uri null) list-of-strings)
+       (values (proxy-uri buffer)
+               (proxy-ignored-hosts buffer))))
 
 (defmethod ffi-generate-input-event ((window gtk-window) event)
   ;; The "send_event" field is used to mark the event as an "unconsumed"
@@ -832,8 +837,8 @@ As a second value, return the current buffer index starting from 0."
           when item
             do (push (make-webkit-history-entry
                       :title (webkit:webkit-back-forward-list-item-get-title item)
-                      :uri (webkit:webkit-back-forward-list-item-get-uri item)
-                      :original-uri (webkit:webkit-back-forward-list-item-get-original-uri item)
+                      :uri (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
+                      :original-uri (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
                       :gtk-object item)
                      history-list))
     (values history-list current-index)))

@@ -22,10 +22,10 @@ title into accound as it may vary from one load to the next."
   (string= (url bd1) (url bd2)))
 
 (defmethod object-string ((buffer buffer))
-  (url buffer))
+  (object-string (url buffer)))
 
 (defmethod object-display ((buffer buffer))
-  (format nil "~a  ~a" (title buffer) (url-display (url buffer))))
+  (format nil "~a  ~a" (title buffer) (object-display (url buffer))))
 
 (define-command make-buffer (&key (title "") modes (url ""))
   "Create a new buffer.
@@ -33,7 +33,7 @@ MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
   (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
          (url (if (eq url :default)
-                  (default-new-buffer-url buffer)
+                  (object-string (default-new-buffer-url buffer))
                   url)))
     (unless (str:emptyp url)
       (set-url* url :buffer buffer))
@@ -97,7 +97,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                                         buffer-list #'local-time:timestamp> :key #'last-access)
                           buffer-list))
          (buffer-list (if domain (remove-if-not
-                                  (lambda (i) (equal domain (quri:uri-domain (quri:uri (url i))))) buffer-list)
+                                  (lambda (i) (equal domain (quri:uri-domain (url i)))) buffer-list)
                           buffer-list)))
     buffer-list))
 
@@ -115,8 +115,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 
 (define-command copy-url ()
   "Save current URL to clipboard."
-  (copy-to-clipboard (url (current-buffer)))
-  (echo "~a copied to clipboard." (url (current-buffer))))
+  (copy-to-clipboard (object-string (url (current-buffer))))
+  (echo "~a copied to clipboard." (object-string (url (current-buffer)))))
 
 (define-command copy-title ()
   "Save current page title to clipboard."
@@ -134,7 +134,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 
 (define-command switch-buffer-domain (&optional (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
-  (let ((domain (quri:uri-domain (quri:uri (url buffer)))))
+  (let ((domain (quri:uri-domain (url buffer))))
     (with-result (buffer (read-from-minibuffer
                           (make-minibuffer
                            :input-prompt "Switch to buffer in current domain:"
@@ -191,16 +191,17 @@ to the currently active buffer."
   (ps:chain document title))
 
 (export-always 'set-url*)
+(declaim (ftype (function (string &key (:buffer buffer) (:raw-url-p boolean)) t) set-url*))
 (defun set-url* (input-url &key (buffer (current-buffer)) raw-url-p)
   "Load INPUT-URL in BUFFER.
 URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
   (let* ((url (if raw-url-p
-                  input-url
+                  (quri:uri input-url)
                   (parse-url input-url))))
     (handler-case
         (progn
           (let ((new-url (hooks:run-hook (slot-value buffer 'set-url-hook) url)))
-            (check-type new-url string)
+            (check-type new-url quri:uri)
             (setf url new-url)))
       (error (c)
         (log:error "In `set-url-hook': ~a" c)))
@@ -236,7 +237,7 @@ complete against a search engine."
        (match (length matching-engines)
          (1
           (nyxt/minibuffer-mode:kill-whole-line minibuffer)
-          (insert minibuffer (str:concat (shortcut (first matching-engines)) " "))))
+          (insert minibuffer (str:concat (shortcut (first matching-engines)) " ")))
          (match-count
           (with-result (engine (read-from-minibuffer
                                 (make-minibuffer
@@ -247,7 +248,7 @@ complete against a search engine."
               (nyxt/minibuffer-mode:kill-whole-line minibuffer)
               (insert minibuffer (str:concat (shortcut engine) " "))))))))
     (t
-     (nyxt/minibuffer-mode:insert-suggestion minibuffer)))
+     (nyxt/minibuffer-mode:insert-suggestion minibuffer))))
 
 (define-mode set-url-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."
@@ -269,19 +270,21 @@ complete against a search engine."
                                               (if new-buffer-p
                                                   "new"
                                                   "current"))
-                        :input-buffer (if prefill-current-url-p (url (current-buffer)) "")
+                        :input-buffer (if prefill-current-url-p
+                                          (object-string (url (current-buffer))) "")
                         :default-modes '(set-url-mode minibuffer-mode)
                         :suggestion-function (history-suggestion-filter
-                                              :prefix-urls (list (url (current-buffer))))
+                                              :prefix-urls (list (object-string
+                                                                  (url (current-buffer)))))
                         :history history
                         :must-match-p nil)))
       (when (typep url 'history-entry)
         ;; In case read-from-minibuffer returned a string upon
         ;; must-match-p.
         (setf url (url url)))
-      (set-url* url :buffer (if new-buffer-p
-                               (make-buffer-focus :url nil)
-                               (current-buffer))))))
+      (set-url* (object-string url) :buffer (if new-buffer-p
+                                                (make-buffer-focus :url nil)
+                                                (current-buffer))))))
 
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
@@ -293,7 +296,7 @@ complete against a search engine."
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."
-  (set-url* (url buffer) :buffer buffer))
+  (set-url* (object-string (url buffer)) :buffer buffer))
 
 (define-command reload-buffer ()
   "Reload queried buffer(s)."

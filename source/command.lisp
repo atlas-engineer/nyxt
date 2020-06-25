@@ -41,7 +41,7 @@ Example:
 
 \(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
   \"Play video in the currently open buffer.\"
-  (uiop:run-program (list \"mpv\" (url buffer))))"
+  (uiop:run-program (list \"mpv\" (object-string (url buffer)))))"
   (let ((documentation (if (stringp (first body))
                            (first body)
                            (warn (make-condition

@@ -238,7 +238,7 @@ identifier for every hinted element."
   (format nil "~a  ~a  ~a"
           (hint link-hint)
           (body link-hint)
-          (url-display (url link-hint))))
+          (quri:url-decode (url link-hint))))
 
 (defmethod object-string ((button-hint button-hint))
   (body button-hint))
@@ -364,15 +364,15 @@ visible active buffer."
                         (make-minibuffer
                          :input-prompt "Space-separated tag(s)"
                          :default-modes '(set-tag-mode minibuffer-mode)
-                         :input-buffer (url-bookmark-tags (url result))
+                         :input-buffer (url-bookmark-tags (quri:uri (url result)))
                          :suggestion-function (tag-suggestion-filter)))))
     (when result
-      (bookmark-add (url result) :tags tags))))
+      (bookmark-add (quri:uri (url result)) :tags tags))))
 
 (define-command download-hint-url ()
   "Download the file under the URL hinted by the user."
   (query-hints "Download link URL:" (lambda (selected-link)
-                                      (download selected-link)
+                                      (download (quri:uri selected-link))
                                       (unless (find-buffer 'download-mode)
                                         (download-list)))))
 

@@ -254,7 +254,7 @@ A command is a special kind of function that can be called with
 help on how to proceed."
   (let* ((help-contents
            (markup:markup
-            (:h1 (format nil "TLS Certificate Error: ~a" url))
+            (:h1 (format nil "TLS Certificate Error: ~a" (object-display url)))
             (:p "The address you are trying to visit has an invalid
 certificate. By default Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This

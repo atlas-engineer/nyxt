@@ -2,7 +2,7 @@
 
 (defun password-suggestion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance))
-        (domain (domain (url (current-buffer)))))
+        (domain (quri:uri-domain (url (current-buffer)))))
     (when domain
       (let ((closest-match (find-if (alex:curry #'str:containsp domain) password-list)))
         (setf password-list (cons closest-match (delete closest-match password-list)))))
@@ -35,7 +35,7 @@
      (with-result* ((password-name (read-from-minibuffer
                                     (make-minibuffer
                                      :input-prompt "Name for new password"
-                                     :input-buffer (or (domain (url (current-buffer)))
+                                     :input-buffer (or (quri:uri-domain (url (current-buffer)))
                                                        ""))))
                     (new-password (read-from-minibuffer
                                    (make-minibuffer

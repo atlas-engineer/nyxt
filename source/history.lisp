@@ -3,8 +3,8 @@
 (defclass history-entry ()
   ((url :initarg :url
         :accessor url
-        :type string
-        :initform "")
+        :type quri:uri
+        :initform (quri:uri ""))
    (title :initarg :title
           :accessor title
           :type string
@@ -35,21 +35,22 @@ Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
 
 (defmethod object-string ((entry history-entry))
-  (url entry))
+  (object-string (url entry)))
 
 (defmethod object-display ((entry history-entry))
-  (format nil "~a  ~a" (url-display (url entry)) (title entry)))
+  (format nil "~a  ~a" (object-display (url entry)) (title entry)))
 
 (defmethod equals ((e1 history-entry) (e2 history-entry))
-  (string= (url e1) (url e2)))
+  (quri:uri= (url e1) (url e2)))
 
+(declaim (ftype (function (quri:uri &key (:title string) (:explicit t)) t) history-add))
 (export-always 'history-add)
 (defun history-add (url &key title explicit)
   "Add URL to the global history.
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
-  (unless (str:emptyp url)
+  (unless (url-empty-p url)
     (unless (history-data *browser*)
       (setf (slot-value *browser* 'history-data)
             (make-hash-table :test #'equal)))
@@ -110,7 +111,7 @@ it would not be very useful."
                               (score-history-entry y))))))
         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
-      (setf history (append (mapcar #'url-display prefix-urls) history)))
+      (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) history))))
 

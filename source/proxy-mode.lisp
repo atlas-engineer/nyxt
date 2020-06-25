@@ -8,7 +8,7 @@
 (serapeum:export-always '*default-proxy*)
 (defparameter *default-proxy*
   (make-instance *proxy-class*
-                 :server-address "socks5://localhost:9050"
+                 :server-address (quri:uri "socks5://localhost:9050")
                  :whitelist '("localhost" "localhost:8080")
                  :proxied-downloads-p t))
 
@@ -19,9 +19,9 @@ a proxy for all buffers, add it to the list of default modes.
 
 Example to use Tor as a proxy both for browsing and downloading:
 
-(setf nyxt/proxy-mode:*default-proxy*
+\(setf nyxt/proxy-mode:*default-proxy*
   (make-instance *proxy-class*
-                 :server-address \"socks5://localhost:9050\"
+                 :server-address (quri:uri \"socks5://localhost:9050\")
                  :whitelist '(\"localhost\" \"localhost:8080\")
                  :proxied-downloads-p t))
 
@@ -40,6 +40,6 @@ Example to use Tor as a proxy both for browsing and downloading:
     (lambda (mode)
       (setf (proxy (buffer mode)) (proxy mode))
       (echo "Proxy set to ~a (whitelisting ~a) for ~a."
-            (server-address (proxy mode))
+            (object-display (server-address (proxy mode)))
             (whitelist (proxy mode))
             (buffer mode))))))

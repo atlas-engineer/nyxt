@@ -4,7 +4,7 @@
 (defmethod buffer-match-predicate ((buffer buffer))
   (lambda (other-buffer)
     (when other-buffer
-      (and (string= (url buffer) (url other-buffer))
+      (and (quri:uri= (url buffer) (url other-buffer))
            (string= (title buffer) (title other-buffer))))))
 
 (defun recent-buffer-suggestion-filter ()

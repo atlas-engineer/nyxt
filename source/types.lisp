@@ -6,7 +6,7 @@
   `(and symbol (satisfies fboundp)))
 
 (defun list-of-type-p (list typep)
-  "Return non-ni if LIST contains only elements of the given TYPEP predicate."
+  "Return non-nil if LIST contains only elements of the given TYPEP predicate."
   (and (listp list)
        (every (lambda (x) (typep x typep)) list)))
 
