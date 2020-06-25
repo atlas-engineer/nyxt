@@ -16,6 +16,7 @@
                :moptilities
                :dexador
                :enchant
+               :fset
                :iolib
                :local-time
                :log4cl

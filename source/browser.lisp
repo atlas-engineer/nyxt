@@ -610,7 +610,10 @@ useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (last-active-buffer :accessor last-active-buffer :initform nil)
-   (buffers :accessor buffers :initform (make-hash-table :test #'equal))
+   (buffers :accessor buffers :initform (fset:empty-map)
+            :documentation "Hash table of (ID LIVE-BUFFER).
+We leverage the Fset library to enforce the call to (setf (buffers *browser*) ...)
+so that we can customize the setf method for this slot.")
    (total-buffer-count :initform 0
                        :type integer
                        :documentation "This is used to generate unique buffer
@@ -808,6 +811,10 @@ cl-enchant (broker-list-dicts).")
                   :documentation "The external editor to use for
 editing files. It should be specified as a complete string path to the
 editor executable.")))
+
+(defmethod (setf buffers) (value (browser browser))
+  (setf (slot-value browser 'buffers) value)
+  (print-status))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
