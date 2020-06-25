@@ -28,7 +28,7 @@ clean-fasls:
 	$(NYXT_INTERNAL_QUICKLISP) && \
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--eval '(load "$(QUICKLISP_DIR)/setup.lisp")' \
 		--eval '(ql:quickload :swank)' \
 		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
 		--eval '(swank:delete-system-fasls "nyxt")' \
@@ -38,8 +38,7 @@ nyxt: $(lisp_files)
 	$(MAKE) application
 
 .PHONE: application
-application: clean-fasls quicklisp-update
-	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+application: clean-fasls deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
@@ -72,8 +71,7 @@ endif
 ## right version number.  Since "version" is a file target, third-party
 ## packaging systems can choose to generate "version" in advance before calling
 ## "make install-assets", so that they won't need to rely on Quicklisp.
-version:
-	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+version: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
@@ -108,27 +106,32 @@ install: install-app-bundle
 endif
 
 .PHONY: quicklisp-extra-libs
-quicklisp-extra-libs: $(QUICKLISP_DIR)/setup.lisp
+quicklisp-extra-libs:
 	$(NYXT_INTERNAL_QUICKLISP) && git submodule update --init --remote || true
 	for i in $(QUICKLISP_LIBRARIES)/local-projects/*; do ln -sf "$$i" "$(QUICKLISP_DIR)/local-projects/$$(basename "$$i")"; done
 
-.PHONY: deps
-deps: $(QUICKLISP_DIR)/setup.lisp quicklisp-extra-libs
-	$(NYXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--load $< \
-		--load nyxt.asd \
-		--eval '(ql:quickload :nyxt/$(NYXT_RENDERER)-application)' \
-		--eval '(uiop:quit)' || true
-
 ## This rule only updates the internal distribution.
 .PHONY: quicklisp-update
-quicklisp-update: $(QUICKLISP_DIR)/setup.lisp
+quicklisp-update:
 	$(NYXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
 		--load $(QUICKLISP_DIR)/setup.lisp \
 		--eval '(require "asdf")' \
 		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
 		--eval '(uiop:quit)' || true
+
+.PHONY: build-deps
+build-deps: quicklisp-extra-libs
+	$(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--load $< \
+		--load nyxt.asd \
+		--eval '(ql:quickload :nyxt/$(NYXT_RENDERER)-application)' \
+		--eval '(uiop:quit)' || true
+	$(MAKE) quicklisp-update
+
+.PHONY: deps
+deps:
+	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) build-deps || true
 
 .PHONY: check
 check: check-asdf check-binary
@@ -136,8 +139,7 @@ check: check-asdf check-binary
 ## TODO: Test that Nyxt starts even with broken init file.
 
 .PHONY: check-build
-check-build:
-	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+check-build: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
@@ -146,8 +148,7 @@ check-build:
 		--eval '(uiop:quit)'
 
 .PHONY: check-asdf
-check-asdf:
-	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
+check-asdf: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
