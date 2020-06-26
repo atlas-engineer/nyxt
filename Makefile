@@ -106,7 +106,8 @@ endif
 .PHONY: quicklisp-extra-libs
 quicklisp-extra-libs:
 	$(NYXT_INTERNAL_QUICKLISP) && git submodule update --init --remote || true
-	for i in $(QUICKLISP_LIBRARIES)/local-projects/*; do ln -sf "$$i" "$(QUICKLISP_DIR)/local-projects/$$(basename "$$i")"; done
+	mkdir -p "$(QUICKLISP_DIR)/local-projects"
+	for i in $(QUICKLISP_LIBRARIES)/*; do ln -sf "$$(readlink -f "$$i")" "$(QUICKLISP_DIR)/local-projects/$$(basename "$$i")"; done
 
 ## This rule only updates the internal distribution.
 .PHONY: quicklisp-update
