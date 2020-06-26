@@ -87,9 +87,9 @@ Example input that contains non-symbols:
                                                    ;; Invalid symbols, e.g. "http://example.org", must be parsed too:
                                                    (ignore-errors
                                                     (list (subseq input
-                                                                  (word-start input start)
-                                                                  (word-end input start))
-                                                          (word-end input start))))
+                                                                  (text-buffer::word-start input start)
+                                                                  (text-buffer::word-end input start))
+                                                          (text-buffer::word-end input start))))
                       until (or (typep new-start 'error)
                                 (eq object :eof))
                       do (setf start new-start)
