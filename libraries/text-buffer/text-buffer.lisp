@@ -107,3 +107,24 @@ If cursor is between two words, return the first one."
   "Kill the complete line."
   (cluffer:beginning-of-line cursor)
   (kill-forward-line cursor))
+
+(defun word-start (s position &optional (white-spaces '(#\space #\no-break_space)))
+  "Return the index of the beginning word at POSITION in string S."
+  (apply #'max
+         (mapcar (lambda (char)
+                   (let ((pos (position char s
+                                        :end position
+                                        :from-end t)))
+                     (if pos
+                         (1+ pos)
+                         0)))
+                 white-spaces)))
+
+(defun word-end (s position &optional (white-spaces '(#\space #\no-break_space)))
+  "Return the index of the end of the word at POSITION in string S."
+  (apply #'min
+         (mapcar (lambda (char)
+                   (or (position char s :start position)
+                       (length s)))
+                 white-spaces)))
+
