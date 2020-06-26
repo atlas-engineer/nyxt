@@ -281,16 +281,16 @@ URL."
 If character before cursor is '+' or '-' complete against tag."
   (let* ((current-word (text-buffer::word-at-cursor (input-cursor minibuffer)))
          (operand? (unless (str:emptyp current-word) (subseq current-word 0 1))))
-    (if (or (equal "-"  operand?)
+    (if (or (equal "-" operand?)
             (equal "+" operand?))
         (with-result (tag (read-from-minibuffer
                            (make-minibuffer
-                            :input-prompt "Tag"
+                            :input-prompt "Tags"
                             :suggestion-function (tag-suggestion-filter))))
           (when tag
-            (text-buffer::replace-word-at-cursor 
+            (text-buffer::replace-word-at-cursor
              (input-cursor minibuffer)
-             (concatenate 'string operand? (tag-name tag)))))
+             (str:concat operand? (tag-name tag)))))
         (nyxt/minibuffer-mode:insert-suggestion minibuffer))))
 
 (define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
