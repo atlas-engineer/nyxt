@@ -133,7 +133,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (lambda (minibuffer)
     (let* ((input-specs (multiple-value-list
                          (parse-tag-specification
-                          (str:replace-all " " " " (input-buffer minibuffer)))))
+                          (input-buffer minibuffer))))
            (tag-specs (first input-specs))
            (non-tags (str:downcase (str:join " " (second input-specs))))
            (validator (ignore-errors (tag-specification-validator tag-specs)))
