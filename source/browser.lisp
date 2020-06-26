@@ -64,7 +64,7 @@ Parent directories are created if necessary."
      window-delete-hook)))
 (defclass window ()
   ((id :accessor id :initarg :id)
-   (active-buffer :accessor active-buffer :initform nil)
+   (active-buffer :reader active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
    (status-buffer-height :accessor status-buffer-height :initform 16
