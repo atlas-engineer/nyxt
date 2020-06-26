@@ -211,10 +211,13 @@ URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
     (let* ((matched-engines
              (remove-if-not
               (lambda (engine)
-                (str:starts-with-p input-buffer (shortcut engine) :ignore-case t))
+                (str:starts-with-p (text-buffer::string-representation input-buffer)
+                                   (shortcut engine)
+                                   :ignore-case t))
               (search-engines *browser*)))
-           (fuzzy-matched-engines (fuzzy-match input-buffer
-                                             (set-difference (search-engines *browser*) matched-engines))))
+           (fuzzy-matched-engines
+            (fuzzy-match (input-buffer minibuffer)
+                         (set-difference (search-engines *browser*) matched-engines))))
       (append matched-engines fuzzy-matched-engines))))
 
 (define-command insert-suggestion-or-search-engine (&optional (minibuffer (current-minibuffer)))
