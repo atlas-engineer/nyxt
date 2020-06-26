@@ -285,7 +285,7 @@ If character before cursor is '+' or '-' complete against tag."
             (equal "+" operand?))
         (with-result (tag (read-from-minibuffer
                            (make-minibuffer
-                            :input-prompt "Tags"
+                            :input-prompt "Tag"
                             :suggestion-function (tag-suggestion-filter))))
           (when tag
             (text-buffer::replace-word-at-cursor
