@@ -73,6 +73,7 @@
                (:file "history")
                (:file "autofill")
                (:file "external-editor")
+               (:file "url-group")
                ;; Core Modes
                (:file "base-mode")
                (:file "repl-mode")
