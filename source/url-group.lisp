@@ -16,5 +16,4 @@ shortcuts to open up a group of URLs in a set of new buffers."
        (loop for url in ,urls do
                 (make-buffer :url url)))))
 
-(define-url-group xyz (list "news.ycombinator.com" "wikipedia.com"))
 
