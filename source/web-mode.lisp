@@ -385,8 +385,9 @@ Otherwise go forward to the only child."
                                (make-minibuffer
                                 :input-prompt "Autofill"
                                 :suggestion-function
-                                (lambda (input)
-                                  (fuzzy-match input (autofills *browser*))))))
+                                (lambda (minibuffer)
+                                  (fuzzy-match (input-buffer minibuffer)
+                                               (autofills *browser*))))))
     (cond ((stringp (autofill-fill selected-fill))
            (%paste :input-text (autofill-fill selected-fill)))
           ((functionp (autofill-fill selected-fill))
