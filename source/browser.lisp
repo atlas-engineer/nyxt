@@ -133,7 +133,7 @@ Example formatter that prints the buffer indices over the total number of buffer
                     (modes buffer))
             buffer-count
             (length (buffer-list))
-            (url buffer)
+            (object-display (url buffer))
             (title buffer))))")
    (window-delete-hook :accessor window-delete-hook
                        :initform (make-hook-window)
