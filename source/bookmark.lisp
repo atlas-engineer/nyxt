@@ -133,21 +133,27 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       ;; persisted each time.
       (setf (bookmarks-data *browser*) bookmarks-without-url))))
 
+(export-always 'match-bookmarks)
+(defun match-bookmarks (specification &optional (as-url-list-p t))
+  (let* ((input-specs (multiple-value-list
+                       (parse-tag-specification
+                        specification)))
+         (tag-specs (first input-specs))
+         (non-tags (str:downcase (str:join " " (second input-specs))))
+         (validator (ignore-errors (tag-specification-validator tag-specs)))
+         (bookmarks (bookmarks-data *browser*)))
+    (when validator
+      (setf bookmarks (remove-if (lambda (bookmark)
+                                   (not (funcall validator
+                                                 (tags bookmark))))
+                                 bookmarks)))
+    (if as-url-list-p
+        (mapcar #'url (fuzzy-match non-tags bookmarks))
+        (fuzzy-match non-tags bookmarks))))
+
 (defun bookmark-suggestion-filter ()
   (lambda (minibuffer)
-    (let* ((input-specs (multiple-value-list
-                         (parse-tag-specification
-                          (input-buffer minibuffer))))
-           (tag-specs (first input-specs))
-           (non-tags (str:downcase (str:join " " (second input-specs))))
-           (validator (ignore-errors (tag-specification-validator tag-specs)))
-           (bookmarks (bookmarks-data *browser*)))
-      (when validator
-        (setf bookmarks (remove-if (lambda (bookmark)
-                                     (not (funcall validator
-                                                   (tags bookmark))))
-                                   bookmarks)))
-      (fuzzy-match non-tags bookmarks))))
+    (match-bookmarks (input-buffer minibuffer) nil)))
 
 (export-always 'tag-suggestion-filter)
 (declaim (ftype (function (&key (:with-empty-tag boolean)
