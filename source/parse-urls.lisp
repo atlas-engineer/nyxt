@@ -21,11 +21,6 @@ Otherwise, build a search query with the default search engine."
               (quri:uri (generate-search-query new-input (search-url engine)))))
         (let ((recognized-scheme (ignore-errors (quri:uri-scheme (quri:uri input-url)))))
           (cond
-            ((str:starts-with? "magnet:" input-url)
-             (log:debug "Open magnet link with external application.")
-             (ignore-errors
-              (uiop:launch-program (list "xdg-open" input-url))
-              (nyxt/minibuffer-mode:cancel-input)))
             ((and recognized-scheme
                   (not (string= "file" recognized-scheme)))
              (quri:uri input-url))
