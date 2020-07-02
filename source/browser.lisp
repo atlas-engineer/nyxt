@@ -307,7 +307,7 @@ second value.
 Newest hook is run first.
 If :FORWARD is returned, the resource loading of the returned `request-data' is
 deferred to the renderer.
-If :STOP is returned, stop the the hook.
+If :STOP is returned, stop the the hook and cancel the resource load.
 
 Example:
 
