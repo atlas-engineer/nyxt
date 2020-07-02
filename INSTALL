@@ -23,7 +23,7 @@ Otherwise, the dependencies will have to be locally installed
 on your system.  You may have to accomodate the LISP_FLAGS
 to, use your local install of Quicklisp.  For example:
 
-make nyxt NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+make all NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
 
 WARNING: Make sure your Quicklisp distribution is up-to-date when using
 NYXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
