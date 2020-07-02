@@ -54,8 +54,9 @@ On errors, return URL."
 (defun all-search-engines ()
   "Return the `search-engines' from the `browser' instance plus those in
 bookmarks."
-  (append (search-engines *browser*)
-          (bookmark-search-engines)))
+  (when *browser*
+    (append (search-engines *browser*)
+            (bookmark-search-engines))))
 
 (defun default-search-engine (&optional (search-engines (all-search-engines)))
   "Return the search engine with the 'default' shortcut, or the first one if
