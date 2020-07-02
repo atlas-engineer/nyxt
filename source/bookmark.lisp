@@ -166,8 +166,7 @@ This can be useful to let the user select no tag when returning directly."
                             (mapcar (lambda (name) (make-tag :name name))
                                     (delete-duplicates
                                      (apply #'append
-                                            (mapcar (lambda (b) (tags b))
-                                                    (bookmarks-data *browser*)))
+                                            (mapcar #'tags (bookmarks-data *browser*)))
                                      :test #'string-equal)))
                     #'string-lessp
                     :key #'tag-name)))
