@@ -61,6 +61,13 @@
                                                       term)
   (* (term-frequency document term) (inverse-document-frequency document-collection term)))
 
+(defmethod dictionary ((document-collection document-collection))
+  "Return a list of all of the words that appear in a document collection."
+  (let ((words (list)))
+    (loop for document in (documents document-collection)
+          do (setf words (append words (tokens document))))
+    (remove-duplicates words :test #'equalp)))
+
 (defmethod keywords ((document document) (document-collection document-collection))
   (sort (loop for word being the hash-keys of (word-count document)
               collect (cons word (term-frequency-inverse-document-frequency
