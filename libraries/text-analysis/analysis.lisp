@@ -1,6 +1,6 @@
-;;; text-analysis.lisp -- functions for facilitating text analysis
-
 (in-package :text-analysis)
+
+;;; text-analysis.lisp -- functions for facilitating text analysis
 
 (defun tokenize-string (string &key (remove-stop-words t) (stem nil) (down-case t) (alphabeticp t))
   (let* ((alpha-scanner (cl-ppcre:create-scanner "^[A-Za-z]*$"))
