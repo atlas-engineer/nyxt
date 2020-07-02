@@ -186,12 +186,14 @@
                                   (asdf:system-relative-pathname c "libraries/download-manager/tests/"))))
 
 (asdf:defsystem nyxt/text-analysis
-  :depends-on (str)
+  :depends-on (:str
+               :cl-ppcre)
   :pathname "libraries/text-analysis/"
   :components ((:file "package")
                (:file "data")
                (:file "stem")
-               (:file "analysis")))
+               (:file "analysis")
+               (:file "text-rank")))
 
 (asdf:defsystem nyxt/text-buffer
   :depends-on (:cluffer)
