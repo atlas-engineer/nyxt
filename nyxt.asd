@@ -143,6 +143,17 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
+(asdf:defsystem :nyxt/build-rpm
+  :depends-on (:cffi-toolchain :cl-ppcre :nyxt)
+  :pathname "build-scripts/"
+  :components ((:file "build-rpm")))
+
+(asdf:defsystem :nyxt/gtk-application-rpm
+  :depends-on (:nyxt/build-rpm :nyxt/gtk)
+  :build-operation "build-rpm"
+  :build-pathname "nyxt"
+  :entry-point "nyxt:entry-point")
+
 (asdf:defsystem :nyxt/qt-application
   :depends-on (:nyxt/qt)
   :build-operation "program-op"
