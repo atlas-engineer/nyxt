@@ -2,7 +2,8 @@
 
 ;;; text-analysis.lisp -- functions for facilitating text analysis
 
-(defun tokenize-string (string &key (remove-stop-words t) (stem nil) (down-case t) (alphabeticp t))
+(defun word-tokenize (string &key (remove-stop-words t) (stem nil) (down-case t) (alphabeticp t))
+  "Split a string into a list of words."
   (let* ((alpha-scanner (cl-ppcre:create-scanner "^[A-Za-z]*$"))
          (tokens (str:split " " (str:collapse-whitespaces string)))
          (tokens (if remove-stop-words
@@ -29,7 +30,7 @@
    (token-count :accessor token-count)))
 
 (defmethod initialize-instance :after ((document document) &key)
-  (setf (tokens document) (tokenize-string (string-contents document)))
+  (setf (tokens document) (word-tokenize (string-contents document)))
   (setf (token-count document) (length (tokens document)))
   (loop for token in (tokens document) do
     (incf (gethash token (word-count document) 0))))
