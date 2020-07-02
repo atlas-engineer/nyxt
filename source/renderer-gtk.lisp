@@ -488,7 +488,7 @@ Warning: This behaviour may change in the future."
             (hooks:run-hook (request-resource-hook buffer)
                             (make-instance 'request-data
                                            :buffer buffer
-                                           :url url
+                                           :url (quri:copy-uri url)
                                            :keys (unless (uiop:emptyp mouse-button)
                                                    (list (keymap:make-key
                                                           :value mouse-button

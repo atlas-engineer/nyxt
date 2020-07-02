@@ -1041,7 +1041,7 @@ If none is found, fall back to `scheme:cua'."
            :type buffer
            :initform (current-buffer)
            :documentation "Buffer targetted by the request.")
-   (url :initarg :url
+   (url :initarg :url ; TODO: Rename to URI since it's a quri:uri and not a string.
         :accessor url
         :type quri:uri
         :initform (quri:uri "")
