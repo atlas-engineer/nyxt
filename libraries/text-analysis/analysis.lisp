@@ -26,6 +26,8 @@
                :accessor word-count
                :documentation "Contains a mapping of word -> amount of
    times word appears in the document.")
+   (vector-form :accessor vector-form
+                :documentation "Vector representation of the document.")
    (tokens :accessor tokens)
    (token-count :accessor token-count)))
 
