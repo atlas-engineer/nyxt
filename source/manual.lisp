@@ -211,7 +211,7 @@ executed in the order they appear.")
     (:p "You can also evaluate a Lisp file from the Nyxt interface with
 the " (:code "load-file") " command.  For
 convenience, " (:code "load-init-file") " (re)loads your initialization file.")
-    (:p "You can evan make scripts.  Here is an example =foo.lisp=:")
+    (:p "You can evan make scripts.  Here is an example foo.lisp:")
     (:pre (:code "#!nyxt --script
 \(format t \"~a~&\" +version+)"))
     (:p "--eval and --load can be commanded to operate over an
