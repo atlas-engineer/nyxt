@@ -12,22 +12,24 @@
 
 (defmethod word-count-vectorize ((sentence sentence) dictionary)
   "Transform a sentence into a vector using word counts."
-  (setf (vector-form sentence)
-        (loop for word in dictionary collect
-                 (term-count sentence word))))
+  (let ((vector-form (make-array (length dictionary) :initial-element 0)))
+    (loop for word in dictionary
+          for index from 0 below (length vector-form)
+          do (setf (aref vector-form index) (term-count sentence word)))
+    (setf (vector-form sentence) vector-form)))
 
-(defmethod vectorize ((document-collection document-collection))
+(defmethod word-count-vectorize-documents ((document-collection document-collection))
   (let ((dictionary (dictionary document-collection)))
     (loop for document in (documents document-collection)
           do (word-count-vectorize document dictionary))))
 
 (defmethod cosine-similarity ((sentence-a sentence) (sentence-b sentence))
   (flet ((vector-product (sentence-a sentence-b)
-           (loop for a in (vector-form sentence-a)
-                 for b in (vector-form sentence-b)
+           (loop for a across (vector-form sentence-a)
+                 for b across (vector-form sentence-b)
                  sum (* a b)))
          (vector-sum-root (sentence)
-           (sqrt (loop for i in (vector-form sentence)
+           (sqrt (loop for i across (vector-form sentence)
                        sum (* i i)))))
     (/ (vector-product sentence-a sentence-b)
        (* (vector-sum-root sentence-a) (vector-sum-root sentence-b)))))
