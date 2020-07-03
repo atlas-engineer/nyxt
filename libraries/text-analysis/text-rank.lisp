@@ -6,6 +6,13 @@
   "Split a string into a list of sentences."
   (mapcar #'str:trim (cl-ppcre:split "\\.|\\?|\\!" string)))
 
+(defclass document-graph (document-collection)
+  ((document-matrix :accessor matrix
+                    :documentation "Matrix showing the vector
+    relationships between each document."))
+  (:documentation "A graph with vector and matrix representation used
+  to rank the most important documents in a collection."))
+
 (defmethod word-count-vectorize ((document document) dictionary)
   "Transform a document into a vector using word counts."
   (let ((vector-form (make-array (length dictionary) :initial-element 0)))
@@ -29,3 +36,15 @@
                        sum (* i i)))))
     (/ (vector-product document-a document-b)
        (* (vector-sum-root document-a) (vector-sum-root document-b)))))
+
+(defmethod generate-document-similarity-matrix ((collection document-graph))
+  (setf (matrix collection)
+        (make-array (list (length (documents collection))
+                          (length (documents collection)))
+                    :initial-element 0))
+  (loop for x in (documents collection)
+        for ix from 0 below (length (documents collection)) do
+           (loop for y in (documents collection)
+                 for iy from 0 below (length (documents collection)) do
+                    (setf (aref (matrix collection) ix iy)
+                          (cosine-similarity x y)))))
