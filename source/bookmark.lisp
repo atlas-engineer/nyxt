@@ -69,16 +69,6 @@ appended to the URL.")))
               (format nil " (~{~a~^, ~})" (tags entry))
               "")))
 
-
-(declaim (ftype (function (quri:uri quri:uri) boolean) schemeless-uri=))
-(defun schemeless-uri= (uri1 uri2)
-  "Like `quri:uri=' but ignore scheme in comparison.
-Authority is compared case-insensitively (RFC 3986)."
- (and (equal  (or (quri:uri-path uri1) "/") (or (quri:uri-path uri2) "/"))
-      (equal  (quri:uri-query uri1)     (quri:uri-query uri2))
-      (equal  (quri:uri-fragment uri1)  (quri:uri-fragment uri2))
-      (equalp (quri:uri-authority uri1) (quri:uri-authority uri2))))
-
 (declaim (ftype (function (quri:uri quri:uri) boolean) equal-url))
 (defun equal-url (url1 url2)
   "URLs are equal if the URIs are equal, scheme excluded.
