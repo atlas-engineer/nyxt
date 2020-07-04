@@ -151,7 +151,7 @@ Example:
             (hooks:add-hook (request-resource-hook (buffer mode))
                             (make-handler-resource #'request-resource-block))
             (make-hook-resource
-             :combination #'combine-composed-hook-until-non-nil-second-value
+             :combination #'combine-composed-hook-until-nil
              :handlers (list #'request-resource-block)))))))
 
 (defmethod blacklisted-host-p ((mode blocker-mode) host)
@@ -174,7 +174,7 @@ This is an acceptable handler for `request-resource-hook'."
                      (object-display (url request-data))
                      (buffer request-data)
                      (object-string (buffer request-data)))
-          (values request-data :stop))
+          nil)
         ;; Pass request to the other handlers.
         request-data)))
 

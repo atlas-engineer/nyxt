@@ -14,10 +14,7 @@
 (hooks:define-hook-type keymaps-buffer (function (list-of-keymaps buffer)
                                                  (values &optional list-of-keymaps buffer)))
 (export-always '(make-hook-keymaps-buffer make-handler-keymaps-buffer))
-(hooks:define-hook-type resource (function (request-data)
-                                           (values request-data
-                                                   &optional (or (eql :stop)
-                                                                 (eql :forward)))))
+(hooks:define-hook-type resource (function (request-data) (or request-data null)))
 (export-always '(make-hook-resource make-handler-resource))
 (hooks:define-hook-type uri->uri (function (quri:uri) quri:uri))
 
@@ -170,21 +167,19 @@ This can apply to specific buffer."))
 (export-always '*proxy-class*)
 (defvar *proxy-class* 'proxy)
 
-(export-always 'combine-composed-hook-until-non-nil-second-value)
-(defmethod combine-composed-hook-until-non-nil-second-value ((hook hooks:hook) &rest args)
+(export-always 'combine-composed-hook-until-nil)
+(defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
   "Return the result of the composition of the HOOK handlers on ARGS, from
-oldest to youngest.  Stop processsing when a handler returns a non-nil second value.
-Without handler, return ARGS as values.  This is an acceptable `combination' for
+oldest to youngest.  Stop processsing when a handler returns nil.
+Without handler, return ARGS.  This is an acceptable `combination' for
 `hook'."
   (labels ((compose-handlers (handlers result)
              (if handlers
-                 (multiple-value-bind (new-result second-value)
-                     (apply (first handlers) result)
-                   (if second-value
-                       (values new-result second-value)
-                       (compose-handlers (rest handlers) (list new-result))))
-                 (values-list result))))
-    (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) args)))
+                 (let ((new-result (funcall (first handlers) result)))
+                   (when new-result
+                     (compose-handlers (rest handlers) new-result)))
+                 result)))
+    (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'buffer)
@@ -299,15 +294,18 @@ The functions are expected to take key arguments like `:url'.")
    (request-resource-hook :accessor request-resource-hook
                           :initarg :request-resource-hook
                           :initform (make-hook-resource
-                                     :combination #'combine-composed-hook-until-non-nil-second-value
+                                     :combination #'combine-composed-hook-until-nil
                                      :handlers (list #'request-resource))
                           :documentation "Hook run on every resource load.
-The handlers are composed, passing a `request-data' until one returns a non-nil
-second value.
+The handlers are composed, passing a `request-data'
+until one of them returns nil or all handlers apply successfully.
+
 Newest hook is run first.
-If :FORWARD is returned, the resource loading of the returned `request-data' is
-deferred to the renderer.
-If :STOP is returned, stop the the hook and cancel the resource load.
+If a `request-data' object is returned, it gets passed to other handlers
+or right to the renderer if there are no more handlers.
+If nil is returned, stop the hook and cancel the resource load.
+
+There's no more ability to pass the results to the renderer with :FORWARD.
 
 Example:
 
@@ -1086,18 +1084,18 @@ Deal with REQUEST-DATA with the following rules:
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
          (funcall-safely bound-function :url url)
-         (values request-data :stop))
+         nil)
         ((new-window-p request-data)
          (log:debug "Load URL in new buffer: ~a" (object-display url))
          (open-urls (list (object-string url)))
-         (values request-data :stop))
+         nil)
         ((not (known-type-p request-data))
          (log:debug "Buffer ~a initiated download of ~s." (id buffer) (object-display url))
          (download url :proxy-address (proxy-address buffer :downloads-only t)
                        :cookies "")
          (unless (find-buffer 'download-mode)
            (download-list))
-         (values request-data :stop))
+         nil)
         (t
          (log:debug "Forwarding: ~a" (object-display url))
          request-data)))))

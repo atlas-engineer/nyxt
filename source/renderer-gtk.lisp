@@ -484,41 +484,36 @@ Warning: This behaviour may change in the future."
           (log:debug "Forward to renderer (no request-resource-hook handlers).")
           (webkit:webkit-policy-decision-use response-policy-decision)
           nil)
-        (multiple-value-bind (request-data status)
-            (hooks:run-hook (request-resource-hook buffer)
-                            (make-instance 'request-data
-                                           :buffer buffer
-                                           :url (quri:copy-uri url)
-                                           :keys (unless (uiop:emptyp mouse-button)
-                                                   (list (keymap:make-key
-                                                          :value mouse-button
-                                                          :modifiers modifiers)))
-                                           :event-type event-type
-                                           :new-window-p is-new-window
-                                           :known-type-p is-known-type))
-          (match status
-            ((or :forward nil)
-             (if (or (null request-data) (quri:uri= url (url request-data)))
-                 (progn
-                   (log:debug "Forward to renderer (~a)."
-                              (if (null request-data)
-                                  "empty hook result"
-                                  "unchanged URL"))
-                   (webkit:webkit-policy-decision-use response-policy-decision)
-                   nil)
-                 (progn
-                   (setf (webkit:webkit-uri-request-uri request) (object-string (url request-data)))
-                   (log:debug "Don't forward to renderer (resource request replaced with ~s)."
-                              (object-display (url request-data)))
-                   ;; Warning: We must ignore the policy decision _before_ we
-                   ;; start the new load request, or else WebKit will be
-                   ;; confused about which URL to load.
-                   (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)
-                   nil)))
-            (_
+        (let ((request-data
+                (hooks:run-hook (request-resource-hook buffer)
+                                (make-instance 'request-data
+                                               :buffer buffer
+                                               :url (quri:copy-uri url)
+                                               :keys (unless (uiop:emptyp mouse-button)
+                                                       (list (keymap:make-key
+                                                              :value mouse-button
+                                                              :modifiers modifiers)))
+                                               :event-type event-type
+                                               :new-window-p is-new-window
+                                               :known-type-p is-known-type))))
+          (cond
+            ((null request-data)
              (log:debug "Don't forward to renderer (handler stop).")
              (webkit:webkit-policy-decision-ignore response-policy-decision)
+             nil)
+            ((and request-data (quri:uri= url (url request-data)))
+             (log:debug "Forward to renderer (unchanged URL).")
+             (webkit:webkit-policy-decision-use response-policy-decision)
+             nil)
+            (t
+             (setf (webkit:webkit-uri-request-uri request) (object-string (url request-data)))
+             (log:debug "Don't forward to renderer (resource request replaced with ~s)."
+                        (object-display (url request-data)))
+             ;; Warning: We must ignore the policy decision _before_ we
+             ;; start the new load request, or else WebKit will be
+             ;; confused about which URL to load.
+             (webkit:webkit-policy-decision-ignore response-policy-decision)
+             (webkit:webkit-web-view-load-request (gtk-object buffer) request)
              nil))))))
 
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)

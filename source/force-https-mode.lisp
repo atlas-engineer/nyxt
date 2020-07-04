@@ -3,17 +3,17 @@
   (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
 (in-package :nyxt/force-https-mode)
 
-(defun force-https-handler (resource)
+(defun force-https-handler (request-data)
   "Impose HTTPS on any link with HTTP scheme."
-  (let ((uri (url resource)))
+  (let ((uri (url request-data)))
     (when (string= (quri:uri-scheme uri) "http")
       (log:info "HTTPS enforced on \"~a\"" (object-display uri))
       ;; FIXME: http-only websites are displayed as "https://foo.bar"
       ;; FIXME: some websites (e.g., go.com) simply time-out
       (setf (quri:uri-scheme uri) "https"
             (quri:uri-port uri) (quri.port:scheme-default-port "https")
-            (url resource) uri)))
-  (values resource :forward))
+            (url request-data) uri)))
+  request-data)
 
 (define-mode force-https-mode ()
   "Impose HTTPS on every queried URI.
