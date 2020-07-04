@@ -60,6 +60,25 @@ Authority is compared case-insensitively (RFC 3986)."
       (equal  (quri:uri-fragment uri1)  (quri:uri-fragment uri2))
       (equalp (quri:uri-authority uri1) (quri:uri-authority uri2))))
 
+(declaim (ftype (function (quri:uri) string) schemeless-url))
+(defun schemeless-url (uri)             ; Inspired by `quri:render-uri'.
+  "Return URL without its scheme (e.g. it removes 'https://')."
+  ;; Warning: We can't just set `quri:uri-scheme' to nil because that would
+  ;; change the port (e.g. HTTP defaults to 80, HTTPS to 443).
+  (format nil
+          "~@[~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
+          (quri:uri-authority uri)
+          (quri:uri-path uri)
+          (quri:uri-query uri)
+          (quri:uri-fragment uri)))
+
+(declaim (ftype (function (quri:uri quri:uri) boolean) url<))
+(defun uri< (uri1 uri2)
+  "Like `string<' but ignore the URI scheme.
+This way, HTTPS and HTTP is ignored when comparing URIs."
+  (string< (schemeless-url uri1)
+           (schemeless-url uri2)))
+
 (defun all-search-engines ()
   "Return the `search-engines' from the `browser' instance plus those in
 bookmarks."

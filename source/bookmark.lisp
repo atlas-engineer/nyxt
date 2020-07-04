@@ -378,9 +378,7 @@ If character before cursor is '+' or '-' complete against tag."
     ;; already a customizable function.
     (setf (slot-value *browser* 'bookmarks-data)
           (sort (slot-value *browser* 'bookmarks-data)
-                (lambda (e1 e2)
-                  (string< (object-display (quri:copy-uri (url e1) :scheme nil))
-                           (object-display (quri:copy-uri (url e2) :scheme nil))))))
+                #'uri< :key #'url))
     (write-string "(" file)
     (dolist (entry (slot-value *browser* 'bookmarks-data))
       (write-char #\newline file)
