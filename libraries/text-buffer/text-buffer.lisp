@@ -99,8 +99,9 @@ If cursor is between two words, return the first one."
       word-at-cursor)))
 
 (defmethod replace-word-at-cursor ((cursor cursor) string)
-  (move-backward-word cursor)
-  (delete-forward-word cursor)
+  (unless (uiop:emptyp (word-at-cursor cursor))
+    (move-backward-word cursor)
+    (delete-forward-word cursor))
   (insert-string cursor string))
 
 (defmethod kill-line ((cursor cursor))
