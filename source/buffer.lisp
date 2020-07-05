@@ -59,8 +59,11 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
     (initialize-modes buffer)
-    (when dead-buffer
-      (setf (url buffer) (url dead-buffer)))
+    (if dead-buffer
+        (progn
+          (setf (url buffer) (url dead-buffer))
+          (setf (slot-value buffer 'load-status) :unloaded))
+        (setf (slot-value buffer 'load-status) :void))
     (when (expand-path (cookies-path buffer))
       (ensure-parent-exists (expand-path (cookies-path buffer))))
     (setf (gethash (id buffer) (buffers browser)) buffer)

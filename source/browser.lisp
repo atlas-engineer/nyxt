@@ -230,9 +230,13 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
    (load-status ;; :accessor load-status ; TODO: Need to decide if we want progress / errors before exposing to the user.
                 :initarg :load-status
                 :type (or (eql :loading)
-                          (eql :finished))
-                :initform :finished
-                :documentation "Whether the buffer is loading or finished loading.")
+                          (eql :finished)
+                          (eql :unloaded)
+                          (eql :void))
+                :initform :void
+                :documentation "Whether the buffer is loading or finished loading.
+`:unloaded' is for buffers that have not been loaded yet, like session-restored
+buffers.")
    (last-access :accessor last-access
                 :initform (local-time:now)
                 :type local-time:timestamp
@@ -986,11 +990,13 @@ proceeding."
       (mapc #'buffer-delete inactive-replacement-buffers))
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
-    (set-window-title window buffer)))
+    (set-window-title window buffer)
+    (when (eq (slot-value buffer 'load-status) :unloaded)
+      (reload-current-buffer buffer))))
 
 (defun replacement-buffer-p (buffer)
-  (and (url-empty-p (url buffer))
-       (str:emptyp (title buffer))))
+  (eq (slot-value buffer 'load-status)
+      :void))
 
 (defun get-inactive-buffers ()
   "Return inactive buffers sorted by last-access timestamp, or NIL if none."
