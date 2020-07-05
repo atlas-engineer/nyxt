@@ -45,26 +45,25 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 
 (declaim (ftype (function (quri:uri &key (:title string) (:explicit t)) t) history-add))
 (export-always 'history-add)
-(defun history-add (url &key title explicit)
+(defun history-add (uri &key title explicit)
   "Add URL to the global history.
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
-  (unless (url-empty-p url)
+  (unless (url-empty-p uri)
     (unless (history-data *browser*)
       (setf (slot-value *browser* 'history-data)
             (make-hash-table :test #'equal)))
-    (let ((entry (gethash url (history-data *browser*))))
+    (let ((entry (gethash (object-string uri) (history-data *browser*))))
       (unless entry
-        (setf entry (make-instance 'history-entry
-                                   :url url)))
+        (setf entry (make-instance 'history-entry :url uri)))
       (if explicit
           (incf (explicit-visits entry))
           (incf (implicit-visits entry)))
       (setf (last-access entry) (local-time:now))
       ;; Always update the title since it may have changed since last visit.
       (setf (title entry) title)
-      (setf (gethash url (history-data *browser*)) entry)
+      (setf (gethash (object-string uri) (history-data *browser*)) entry)
       ;; Use accessor to ensure store function is called.
       (setf (history-data *browser*) (history-data *browser*)))))
 
@@ -77,7 +76,7 @@ The history is sorted by last access."
                           :history (minibuffer-set-url-history *browser*)
                           :multi-selection-p t)))
     (dolist (entry entries)
-      (remhash (url entry) (history-data *browser*)))
+      (remhash (object-string (url entry)) (history-data *browser*)))
     ;; Use accessor to ensure store function is called.
     (setf (history-data *browser*) (history-data *browser*))))
 
