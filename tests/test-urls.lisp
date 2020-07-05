@@ -47,4 +47,50 @@
       :test #'quri:uri=
       "ignore wildcards"))
 
+(subtest "URL processing"
+  (is (valid-url-p "http://foo")
+      nil
+      "Invalid URL (empty domain)")
+  (is (valid-url-p "http://algo")
+      nil
+      "Invalid URL (TLD == domain)")
+  (is (valid-url-p "http://example.org/foo/bar?query=baz#qux")
+      t
+      "Valid URL")
+  (is (nyxt::schemeless-uri= (quri:uri "http://example.org")
+                             (quri:uri "https://example.org/"))
+      t
+      "same schemeless URIs")
+  (is (nyxt::schemeless-uri= (quri:uri "https://example.org")
+                             (quri:uri "https://example.org/foo"))
+      nil
+      "different schemeless URIs")
+  (is (nyxt::schemeless-url (quri:uri "http://example.org/foo/bar?query=baz#qux"))
+      "example.org/foo/bar?query=baz#qux"
+      "schemeless URL")
+  (is (nyxt::uri< (quri:uri "http://example.org")
+                  (quri:uri "http://example.org"))
+      nil
+      "comparing same URL")
+  (is (nyxt::uri< (quri:uri "http://example.org")
+                  (quri:uri "http://example.org/"))
+      nil
+      "comparing same URL but for trailing slash")
+  (is (nyxt::uri< (quri:uri "https://example.org")
+                  (quri:uri "http://example.org"))
+      nil
+      "comparing same URL but for scheme")
+  (is (nyxt::uri< (quri:uri "https://example.org")
+                  (quri:uri "http://example.org/"))
+      nil
+      "comparing same URL but for scheme and trailing slash")
+  (is (null (nyxt::uri< (quri:uri "https://example.org/a")
+                        (quri:uri "http://example.org/b")))
+      nil
+      "comparing different URLs (HTTPS first)")
+  (is (null (nyxt::uri< (quri:uri "http://example.org/a")
+                        (quri:uri "https://example.org/b")))
+      nil
+      "comparing different URLs (HTTP first)"))
+
 (finalize)
