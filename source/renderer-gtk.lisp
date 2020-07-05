@@ -498,7 +498,7 @@ Warning: This behaviour may change in the future."
                                                :known-type-p is-known-type))))
           (cond
             ((null request-data)
-             (log:debug "Don't forward to renderer (handler stop).")
+             (log:debug "Don't forward to renderer (null request data).")
              (webkit:webkit-policy-decision-ignore response-policy-decision)
              nil)
             ((and request-data (quri:uri= url (url request-data)))
