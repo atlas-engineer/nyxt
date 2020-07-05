@@ -135,22 +135,19 @@
 (defmethod ffi-window-set-minibuffer-height ((window qt-window) height)
   (qt:widget-set-fixed-height (minibuffer-view window) height))
 
-(defmethod ffi-buffer-make ((browser qt-browser) &key title default-modes)
-  "Make buffer with title TITLE and modes DEFAULT-MODES."
-  (apply #'make-instance *buffer-class*
-         (append (when title `(:title ,title))
-                 (when default-modes `(:default-modes ,default-modes)))))
+(defmethod ffi-buffer-make ((browser qt-browser))
+  (make-instance *buffer-class*))
 
 (defmethod ffi-buffer-delete ((buffer qt-buffer)))
 
 (defmethod ffi-buffer-load ((buffer qt-buffer) uri)
   (qt:web-engine-view-load (qt-object buffer) (object-string uri)))
 
-(defmethod ffi-buffer-evaluate-javascript ((buffer qt-buffer) javascript &key callback)
-  (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript callback))
+(defmethod ffi-buffer-evaluate-javascript ((buffer qt-buffer) javascript)
+  (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript %callback))
 
-(defmethod ffi-minibuffer-evaluate-javascript ((window qt-window) javascript &key callback)
-  (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript callback))
+(defmethod ffi-minibuffer-evaluate-javascript ((window qt-window) javascript)
+  (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript %callback))
 
 (defmethod ffi-generate-input-event ((window qt-window) event))
 
