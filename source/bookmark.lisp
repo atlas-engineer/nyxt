@@ -166,7 +166,7 @@ This can be useful to let the user select no tag when returning directly."
       (fuzzy-match (text-buffer::word-at-cursor (input-cursor minibuffer)) tags))))
 
 (define-command insert-tag (&optional (minibuffer (current-minibuffer)))
-  "Replace current work with selected tag."
+  "Replace current word with selected tag."
   (let ((selection (get-suggestion minibuffer)))
     (unless (uiop:emptyp selection)
       (text-buffer::replace-word-at-cursor (input-cursor minibuffer) selection)
