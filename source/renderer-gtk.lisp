@@ -567,6 +567,7 @@ Warning: This behaviour may change in the future."
   "Return the window object for the currently active window."
   (setf (slot-value browser 'last-active-window)
         (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
+            (first (window-list))
             (slot-value browser 'last-active-window))))
 
 (defmethod ffi-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
