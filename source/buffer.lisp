@@ -63,7 +63,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       (setf (url buffer) (url dead-buffer)))
     (when (expand-path (cookies-path buffer))
       (ensure-parent-exists (expand-path (cookies-path buffer))))
-    (setf (gethash (id buffer) (buffers browser)) buffer)
+    (buffers-set (id buffer) buffer)
     (unless (last-active-buffer browser)
       ;; When starting from a REPL, it's possible that the window is spawned in
       ;; the background and current-buffer would then return nil.
@@ -83,7 +83,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
         (window-set-active-buffer parent-window
                                   replacement-buffer)))
     (ffi-buffer-delete buffer)
-    (remhash (id buffer) (buffers *browser*))
+    (buffers-delete (id buffer))
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
     (match (session-store-function *browser*)
@@ -92,7 +92,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 
 (export-always 'buffer-list)
 (defun buffer-list (&key sort-by-time domain)
-  (let* ((buffer-list (alex:hash-table-values (buffers *browser*)))
+  (let* ((buffer-list (alex:hash-table-values (slot-value *browser* 'buffers)))
          (buffer-list (if sort-by-time (sort
                                         buffer-list #'local-time:timestamp> :key #'last-access)
                           buffer-list))
@@ -100,6 +100,17 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                                   (lambda (i) (equal domain (quri:uri-domain (url i)))) buffer-list)
                           buffer-list)))
     buffer-list))
+
+(defun buffers-get (id)
+  (gethash id (slot-value *browser* 'buffers)))
+
+(defun buffers-set (id buffer)
+  (setf (gethash id (slot-value *browser* 'buffers)) buffer)
+  (print-status))
+
+(defun buffers-delete (id)
+  (remhash id (slot-value *browser* 'buffers))
+  (print-status))
 
 (export-always 'window-list)
 (defun window-list ()
@@ -165,7 +176,7 @@ See `make-buffer'."
 
 (define-command delete-all-buffers ()
   "Delete all buffers, with confirmation."
-  (let ((count (hash-table-count (buffers *browser*))))
+  (let ((count (length (buffer-list))))
     (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
       (delete-buffers))))
 

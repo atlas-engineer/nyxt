@@ -609,7 +609,9 @@ useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (last-active-buffer :accessor last-active-buffer :initform nil)
-   (buffers :accessor buffers :initform (make-hash-table :test #'equal))
+   (buffers :initform (make-hash-table :test #'equal)
+            :documentation "To manipulate the list of buffers,
+see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
    (total-buffer-count :initform 0
                        :type integer
                        :documentation "This is used to generate unique buffer
