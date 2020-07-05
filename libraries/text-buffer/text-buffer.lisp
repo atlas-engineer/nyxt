@@ -51,8 +51,8 @@
                                         (list (cluffer:item-after-cursor cursor))
                                         :test #'equal))
                do (cluffer:forward-item cursor)
-               until (cluffer:end-of-line-p cursor)
-               collect (cluffer:item-before-cursor cursor)))
+               collect (cluffer:item-before-cursor cursor)
+               until (cluffer:end-of-line-p cursor)))
      (cluffer:cursor-position cursor))))
 
 (defmethod move-backward-word ((cursor cursor))
