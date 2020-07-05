@@ -169,9 +169,9 @@ This can apply to specific buffer."))
 
 (export-always 'combine-composed-hook-until-nil)
 (defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
-  "Return the result of the composition of the HOOK handlers on ARGS, from
+  "Return the result of the composition of the HOOK handlers on ARG, from
 oldest to youngest.  Stop processsing when a handler returns nil.
-Without handler, return ARGS.  This is an acceptable `combination' for
+Without handler, return ARG.  This is an acceptable `combination' for
 `hook'."
   (labels ((compose-handlers (handlers result)
              (if handlers
