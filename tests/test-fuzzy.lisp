@@ -81,33 +81,7 @@
   (is (first (nyxt::fuzzy-match "FOO"
                                 '("foo-dash-bar" "FOO-BAR")))
       "FOO-BAR"
-      "input is uppercase (small list)."))
-
-(subtest "Parse URL"
-  (is (nyxt::parse-url "https://nyxt.atlas.engineer")
-      "https://nyxt.atlas.engineer"
-      "full URL")
-  (is (nyxt::parse-url "nyxt.atlas.engineer")
-      "https://nyxt.atlas.engineer"
-      "URL without protocol")
-  (is (nyxt::parse-url "wiki wikipedia")
-      "https://en.wikipedia.org/w/index.php?search=wikipedia"
-      "search engine")
-  (is (nyxt::parse-url "nyxt browser")
-      "https://duckduckgo.com/?q=nyxt+browser"
-      "default search engine")
-  (is (nyxt::parse-url "wiki wikipedia")
-      "https://en.wikipedia.org/w/index.php?search=wikipedia"
-      "wiki search engine")
-  (is (nyxt::parse-url "file:///readme.org")
-      "file:///readme.org"
-      "local file")
-  (is (nyxt::parse-url "foo")
-      "https://duckduckgo.com/?q=foo"
-      "empty domain")
-  (is (nyxt::parse-url "algo")
-      "https://duckduckgo.com/?q=algo"
-      "same domain and TLD")
+      "input is uppercase (small list).")
   (is (first (nyxt::fuzzy-match "[" '("test1"
                                       "http://[1:0:0:2::3:0.]/"
                                       "test2")))
