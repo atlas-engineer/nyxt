@@ -68,7 +68,7 @@ Authority is compared case-insensitively (RFC 3986)."
   (format nil
           "~@[~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
           (quri:uri-authority uri)
-          (quri:uri-path uri)
+          (or (quri:uri-path uri) "/")
           (quri:uri-query uri)
           (quri:uri-fragment uri)))
 
