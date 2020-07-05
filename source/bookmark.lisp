@@ -169,7 +169,7 @@ This can be useful to let the user select no tag when returning directly."
   "Replace current word with selected tag."
   (let ((selection (get-suggestion minibuffer)))
     (unless (uiop:emptyp selection)
-      (text-buffer::replace-word-at-cursor (input-cursor minibuffer) selection)
+      (text-buffer::replace-word-at-cursor (input-cursor minibuffer) (str:concat selection " "))
       (update-display minibuffer))))
 
 (define-mode set-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
