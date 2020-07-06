@@ -28,6 +28,7 @@
    times word appears in the document.")
    (vector-form :accessor vector-form
                 :documentation "Vector representation of the document.")
+   (rank :accessor rank :documentation "Rank used for sorting.")
    (tokens :accessor tokens)
    (token-count :accessor token-count)))
 
