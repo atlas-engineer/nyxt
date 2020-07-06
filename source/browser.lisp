@@ -1102,6 +1102,67 @@ Deal with REQUEST-DATA with the following rules:
          (log:debug "Forwarding: ~a" (object-display url))
          request-data)))))
 
+(export-always 'url-dispatching-handler)
+(defun url-dispatching-handler (name test action)
+  "Return a `resource' handler that, if `add-hook'ed to the `request-resource-hook',
+will automatically apply its ACTION on the URLs that conform to TEST.
+
+TEST and ACTION should be functions of one argument, the requested URL.
+In case ACTION returns nil, URL request is aborted.
+The new URL returned by ACTION is loaded otherwise.
+
+`match-host', `match-scheme', `match-domain' and `match-file-extension'
+can be used to create TEST-functions, but any other function of one argument
+would fit the TEST slot as well.
+
+Example:
+
+\(define-configuration buffer
+    ((request-resource-hook (reduce #'hooks:add-hook
+                                    (list (url-dispatching-handler
+                                           'doi-link-dispatcher
+                                           (match-scheme \"doi\")
+                                           (lambda (url)
+                                             (quri:uri (format nil \"https://doi.org/~a\"
+                                                               (quri:uri-path url)))))
+                                          (url-dispatching-handler
+                                           'transmission-magnet-links
+                                           (match-scheme \"magnet\")
+                                           (lambda (url)
+                                             (uiop:launch-program
+                                              (list \"transmission-remote\" \"--add\"
+                                                    (object-string url))
+                                              nil))))
+                                    :initial-value %slot-default))))"
+  (make-handler-resource
+    #'(lambda (request-data)
+        (let ((url (url request-data)))
+          (if (funcall-safely test url)
+              (let ((new-url (funcall-safely action url)))
+                (log:info "Applied \"~a\" URL-dispatcher on \"~a\" and got \"~a\""
+                          (symbol-name name) (object-display url) (object-display new-url))
+                (when new-url (setf (url request-data) new-url) request-data))
+              request-data)))
+    :name name))
+
+(declaim (ftype (function (string) (function (quri:uri) boolean))
+                match-scheme match-host match-domain match-file-extension))
+(export-always 'match-scheme)
+(defun match-scheme (scheme)
+  #'(lambda (url) (string= scheme (quri:uri-scheme url))))
+
+(export-always 'match-host)
+(defun match-host (host)
+  #'(lambda (url) (string= host (quri:uri-host url))))
+
+(export-always 'match-domain)
+(defun match-domain (domain)
+  #'(lambda (url) (string= domain (quri:uri-domain url))))
+
+(export-always 'match-file-extension)
+(defun match-file-extension (extension)
+  #'(lambda (url) (string= extension (pathname-type (quri:uri-path url)))))
+
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
 

@@ -67,6 +67,9 @@ have priorities over the other modes key bindings.")
     (:p "See the " (:code "search-engines") " browser slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
 
+    (:h3 "URL-dispatchers")
+    (:p "See the" (:code "url-dispatching-handler") " function documentation.")
+
     (:h3 "Downloads")
     (:p "See the " (:code "download-list") " command and the "
         (:code "download-path") " browser slot documentation.")
