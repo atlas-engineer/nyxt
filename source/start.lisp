@@ -123,7 +123,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
     ;; running or we risk remove an unrelated file.
     (let ((socket-path (expand-path *socket-path*)))
       (when (uiop:file-exists-p socket-path)
-        (log:info "Deleting socket ~a" socket-path)
+        (log:info "Deleting socket ~s." socket-path)
         (uiop:delete-file-if-exists socket-path))))
   (unless *keep-alive*
     (uiop:quit 0 nil)))

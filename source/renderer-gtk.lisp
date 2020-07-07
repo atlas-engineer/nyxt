@@ -316,7 +316,7 @@ See `gtk-browser's `modifier-translator' slot."
   (when (<= 1 (gtk:gtk-entry-text-length (key-string-buffer window)))
     (prog1
         (match (gtk:gtk-entry-text (key-string-buffer window))
-          ;; Special cases: these characters are not supported as is in KEY values.
+          ;; Special cases: these characters are not supported as is for keyspecs.
           ;; See `self-insert' for the reverse translation.
           (" " "space")
           ("-" "hyphen")
