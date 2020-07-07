@@ -13,12 +13,12 @@ track of their reading position."
     (define-scheme "reading-line-mode"
       scheme:cua
       (list
-       "M-up" 'line-cursor-up
-       "M-down" 'line-cursor-down)
+       "M-up" 'reading-line-cursor-up
+       "M-down" 'reading-line-cursor-down)
       scheme:emacs
       (list
-       "M-p" 'line-cursor-up
-       "M-n" 'line-cursor-down)))
+       "M-p" 'reading-line-cursor-up
+       "M-n" 'reading-line-cursor-down)))
    (style :accessor style
           :initform (cl-css:css
                      '(("#reading-line-cursor"
@@ -27,8 +27,8 @@ track of their reading position."
                         :left "0"
                         :width "100%"
                         :background-color "gray"
-                        :z-index "2147483647"
-                        :opacity "10%"
+                        :z-index "2147483647" ; 32 bit unsigned integer max
+                        :opacity "15%"
                         :height "20px")))
           :documentation "The CSS applied to the reading line.")
    (constructor
@@ -36,7 +36,14 @@ track of their reading position."
     (lambda (mode)
       (initialize-display mode)))))
 
-(define-command line-cursor-up (&key (step-size 10) (buffer (current-buffer)))
+(define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))
+  "Move the view port to show the reading line cursor."
+  (pflet ((jump-to-cursor ()
+    (ps:chain (ps:chain document (query-selector "#reading-line-cursor")) (scroll-into-view-if-needed))))
+    (with-current-buffer buffer
+      (jump-to-cursor))))
+
+(define-command reading-line-cursor-up (&key (step-size 10) (buffer (current-buffer)))
   "Move the reading line cursor up. If scrolling off screen, move the
 screen as well."
   (pflet ((cursor-up ()
@@ -46,9 +53,10 @@ screen as well."
       (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
             (+ (- original-position (ps:lisp step-size)) "px")))))
     (with-current-buffer buffer
-      (cursor-up))))
+      (cursor-up)))
+  (jump-to-reading-line-cursor :buffer buffer))
 
-(define-command line-cursor-down (&key (step-size 10) (buffer (current-buffer)))
+(define-command reading-line-cursor-down (&key (step-size 10) (buffer (current-buffer)))
   "Move the reading line cursor down. If scrolling off screen, move
 the screen as well."
   (pflet ((cursor-down ()
@@ -58,7 +66,8 @@ the screen as well."
       (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
             (+ (+ original-position (ps:lisp step-size)) "px")))))
     (with-current-buffer buffer
-      (cursor-down))))
+      (cursor-down)))
+  (jump-to-reading-line-cursor :buffer buffer))
 
 (defmethod initialize-display ((mode reading-line-mode))
   (let* ((content (markup:markup
