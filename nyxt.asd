@@ -80,6 +80,7 @@
                (:file "help-mode")
                (:file "application-mode")
                (:file "web-mode")
+               (:file "reading-line-mode")
                (:file "certificate-whitelist-mode")
                (:file "emacs-mode")
                (:file "vi-mode")
