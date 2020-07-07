@@ -34,7 +34,11 @@ track of their reading position."
    (constructor
     :initform
     (lambda (mode)
-      (initialize-display mode)))))
+      (initialize-display mode)))
+   (destructor
+    :initform
+    (lambda (mode)
+      (destroy-display mode)))))
 
 (define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))
   "Move the view port to show the reading line cursor."
@@ -77,3 +81,7 @@ the screen as well."
                            (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
                            (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) "10px"))))
     (ffi-buffer-evaluate-javascript (buffer mode) insert-content)))
+
+(defmethod destroy-display ((mode reading-line-mode))
+  (let ((destroy-content (ps:ps (setf (ps:chain document (query-selector "#reading-line-cursor") |outerHTML|) ""))))
+    (ffi-buffer-evaluate-javascript (buffer mode) destroy-content)))
