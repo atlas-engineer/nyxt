@@ -1145,23 +1145,35 @@ Example:
               request-data)))
     :name name))
 
-(declaim (ftype (function (string) (function (quri:uri) boolean))
+(declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
                 match-scheme match-host match-domain match-file-extension))
 (export-always 'match-scheme)
-(defun match-scheme (scheme)
-  #'(lambda (url) (string= scheme (quri:uri-scheme url))))
+(defun match-scheme (scheme &rest other-schemes)
+  "Return a predicate for URLs matching one of SCHEME or OTHER-SCHEMES."
+  #'(lambda (url)
+      (some (alex:curry #'string= (quri:uri-scheme url))
+            (cons scheme other-schemes))))
 
 (export-always 'match-host)
-(defun match-host (host)
-  #'(lambda (url) (string= host (quri:uri-host url))))
+(defun match-host (host &rest other-hosts)
+  "Return a predicate for URLs matching one of HOST or OTHER-HOSTS."
+  #'(lambda (url)
+      (some (alex:curry #'string= (quri:uri-host url))
+            (cons host other-hosts))))
 
 (export-always 'match-domain)
-(defun match-domain (domain)
-  #'(lambda (url) (string= domain (quri:uri-domain url))))
+(defun match-domain (domain &rest other-domains)
+  "Return a predicate for URLs matching one of DOMAIN or OTHER-DOMAINS."
+  #'(lambda (url)
+      (some (alex:curry #'string= (quri:uri-domain url))
+            (cons domain other-domains))))
 
 (export-always 'match-file-extension)
-(defun match-file-extension (extension)
-  #'(lambda (url) (string= extension (pathname-type (quri:uri-path url)))))
+(defun match-file-extension (extension &rest other-extensions)
+  "Return a predicate for URLs matching one of EXTENSION or OTHER-EXTENSIONS."
+  #'(lambda (url)
+      (some (alex:curry #'string= (pathname-type (or (quri:uri-path url) "")))
+            (cons extension other-extensions))))
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
