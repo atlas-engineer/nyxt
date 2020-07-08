@@ -517,7 +517,10 @@ Warning: This behaviour may change in the future."
              nil))))))
 
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
-  (let ((url (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer)))))
+  (sera:and-let* ((url (webkit:webkit-web-view-uri (gtk-object buffer)))
+                  ;; `url' can be nil if buffer didn't have any URL associated
+                  ;; to the web view, e.g. the start page.
+                  (url (quri:uri url)))
     (cond ((eq load-event :webkit-load-started)
            (setf (slot-value buffer 'load-status) :loading)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
