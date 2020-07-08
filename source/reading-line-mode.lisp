@@ -27,7 +27,7 @@ track of their reading position."
                         :left "0"
                         :width "100%"
                         :background-color "gray"
-                        :z-index "2147483647" ; 32 bit signed integer max
+                        :z-index #.(format nil "~s" (1- (expt 2 31))) ; 32 bit signed integer max
                         :opacity "15%"
                         :height "20px")))
           :documentation "The CSS applied to the reading line.")
