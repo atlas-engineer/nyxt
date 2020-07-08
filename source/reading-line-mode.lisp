@@ -51,7 +51,7 @@ track of their reading position."
   "Move the reading line cursor up. If scrolling off screen, move the
 screen as well."
   (pflet ((cursor-up ()
-    (let ((original-position 
+    (let ((original-position
             (ps:chain (parse-int
                        (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) 10))))
       (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
@@ -64,7 +64,7 @@ screen as well."
   "Move the reading line cursor down. If scrolling off screen, move
 the screen as well."
   (pflet ((cursor-down ()
-    (let ((original-position 
+    (let ((original-position
             (ps:chain (parse-int
                        (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) 10))))
       (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
@@ -77,7 +77,7 @@ the screen as well."
   (let* ((content (markup:markup
                    (:style (style mode))
                    (:span :id "reading-line-cursor" "")))
-         (insert-content (ps:ps 
+         (insert-content (ps:ps
                            (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
                            (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) "10px"))))
     (ffi-buffer-evaluate-javascript (buffer mode) insert-content)))
