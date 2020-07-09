@@ -57,7 +57,7 @@ buffer."
                                        (ps:ps ,@script-body)))))
 
 (export-always 'pflet)
-(defmacro pflet (((function function-arguments &rest function-body)) &body body)
+(defmacro pflet (((function function-arguments &body function-body)) &body body)
   "Define single parenscript function in a flet body."
   `(flet ((,function ,function-arguments
             (ffi-buffer-evaluate-javascript (current-buffer)
