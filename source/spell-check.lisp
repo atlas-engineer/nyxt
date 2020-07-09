@@ -33,6 +33,18 @@ suggestions."
 (define-parenscript active-input-area-cursor ()
   (ps:chain document active-element selection-start))
 
+(define-command spell-check-word-at-cursor ()
+  "Spell check the word at cursor."
+  (with-result* ((contents (active-input-area-content))
+                 (cursor-position (active-input-area-cursor)))
+    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
+          (cursor (make-instance 'text-buffer:cursor)))
+      (cluffer:attach-cursor cursor text-buffer)
+      (text-buffer::insert-string cursor contents)
+      (setf (cluffer:cursor-position cursor)
+            (parse-integer cursor-position))
+      (spell-check-prompt (text-buffer::word-at-cursor cursor)))))
+
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
   (with-result (selected-word (read-from-minibuffer
