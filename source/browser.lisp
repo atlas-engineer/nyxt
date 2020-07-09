@@ -61,7 +61,10 @@ Parent directories are created if necessary."
      status-formatter
      window-delete-hook)))
 (defclass window ()
-  ((id :accessor id :initarg :id)
+  ((id :accessor id
+       :initarg :id
+       :type string
+       :initform "")
    (active-buffer :reader active-buffer :initform nil)
    (active-minibuffers :accessor active-minibuffers :initform nil
                        :documentation "The stack of currently active minibuffers.")
@@ -215,7 +218,10 @@ Without handler, return ARG.  This is an acceptable `combination' for
      buffer-delete-hook
      default-cookie-policy)))
 (defclass buffer ()
-  ((id :accessor id :initarg :id :initform ""
+  ((id :accessor id
+       :initarg :id
+       :type string
+       :initform ""
        :documentation "Unique identifier for a buffer.
 Dead buffers (i.e. those not associated with a web view) have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
@@ -946,10 +952,10 @@ current buffer."
             nil))))))
 
 (defmethod get-unique-window-identifier ((browser browser))
-  (incf (slot-value browser 'total-window-count)))
+  (format nil "~s" (incf (slot-value browser 'total-window-count))))
 
 (defmethod get-unique-buffer-identifier ((browser browser))
-  (incf (slot-value browser 'total-buffer-count)))
+  (format nil "~s" (incf (slot-value browser 'total-buffer-count))))
 
 (declaim (ftype (function (&optional window buffer)) set-window-title))
 (export-always 'set-window-title)
