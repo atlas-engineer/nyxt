@@ -1,5 +1,8 @@
 (in-package :nyxt)
 
+(defclass-export data-manager-path (data-path)
+  ((ref :initform "data-manager")))
+
 (defclass-export gtk-browser (browser)
   (#+darwin
    (modifiers :accessor modifiers
@@ -30,7 +33,15 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 \(define-configuration browser
   ((modifier-translator #'my-translate-modifiers)))")
    (web-context :initform nil
-                :documentation "Single instantiation of our custom web context.")))
+                :documentation "Single instantiation of our custom web context.")
+   (data-manager-path :initarg :data-manager-path
+                      :accessor data-manager-path
+
+                      :type data-path
+                      :initform (make-instance 'data-manager-path
+                                               :dirname (uiop:xdg-cache-home +data-root+))
+                      :documentation "Directory in which the WebKitGTK
+data-manager will store the data separately for each buffer.")))
 
 (defmethod web-context ((browser gtk-browser))
   (or (slot-value *browser* 'web-context)
@@ -405,9 +416,22 @@ Warning: This behaviour may change in the future."
                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
+(defun make-data-manager (id)
+  (make-instance 'webkit:webkit-website-data-manager
+                 :base-data-directory
+                 (str:concat (expand-path (data-manager-path *browser*))
+                             "/nyxt-data-manager-" id)))
+
 (declaim (ftype (function (&optional (or buffer null))) make-context))
 (defun make-context (&optional buffer)
-  (let* ((context (web-context *browser*))
+  (let* ((context (if (and buffer
+                           ;; Initial window buffer or replacement/temp buffers
+                           ;; may have no ID.
+                           (not (str:emptyp (id buffer))))
+                      (let ((manager (make-data-manager (id buffer))))
+                        (make-instance 'webkit:webkit-web-context
+                                       :website-data-manager manager))
+                      (web-context *browser*)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (when (and buffer (expand-path (cookies-path buffer)))
       (webkit:webkit-cookie-manager-set-persistent-storage
