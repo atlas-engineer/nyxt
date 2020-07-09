@@ -24,7 +24,11 @@ mode."
       scheme:emacs
       (list
        "M-p" 'reading-line-cursor-up
-       "M-n" 'reading-line-cursor-down)))
+       "M-n" 'reading-line-cursor-down)
+      scheme:vi-normal
+      (list
+       "j" 'reading-line-cursor-up
+       "k" 'reading-line-cursor-down)))
    (style :accessor style
           :initform (cl-css:css
                      '(("#reading-line-cursor"
