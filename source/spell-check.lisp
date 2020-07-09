@@ -17,10 +17,15 @@
   "Spell check a highlighted word. If a word is incorrectly spelled,
 pull up a prompt of suggestions."
   (with-result (word (%copy))
-    (if (spell-check-word :word word)
+    (spell-check-prompt word)))
+
+(defun spell-check-prompt (word)
+  "Spell check `word', if incorrectly spelled, prompt the user with
+suggestions."
+  (if (spell-check-word :word word)
         (echo "Highlighted word: ~a, spelled correctly." word)
         (progn (echo "Highlighted word: ~a, spelled incorrectly." word)
-               (spell-check-suggest-word :word word)))))
+               (spell-check-suggest-word :word word))))
 
 (define-parenscript active-input-area-content ()
   (ps:chain document active-element value))
