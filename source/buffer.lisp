@@ -50,11 +50,14 @@ If URL is `:default', use `default-new-buffer-url'."
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let* ((buffer (if dead-buffer
-                     (ffi-buffer-make dead-buffer)
+                     (progn
+                       ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
+                       (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
+                       (ffi-buffer-make dead-buffer))
                      (apply #'make-instance *buffer-class*
+                            :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
-    (setf (id buffer) (get-unique-buffer-identifier *browser*))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
