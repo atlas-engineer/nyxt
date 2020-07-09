@@ -22,6 +22,12 @@ pull up a prompt of suggestions."
         (progn (echo "Highlighted word: ~a, spelled incorrectly." word)
                (spell-check-suggest-word :word word)))))
 
+(define-parenscript active-input-area-content ()
+  (ps:chain document active-element value))
+
+(define-parenscript active-input-area-cursor ()
+  (ps:chain document active-element selection-start))
+
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
   (with-result (selected-word (read-from-minibuffer
