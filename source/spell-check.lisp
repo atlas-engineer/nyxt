@@ -40,7 +40,8 @@ suggestions."
                                 :input-buffer word
                                 :input-prompt "Suggest spelling (3+ characters)"
                                 :suggestion-function 'enchant-suggestion)))
-    (trivial-clipboard:text selected-word)))
+    (trivial-clipboard:text selected-word)
+    (echo "Word copied to clipboard.")))
 
 (defun enchant-suggestion (minibuffer)
   (let ((input (input-buffer minibuffer)))
