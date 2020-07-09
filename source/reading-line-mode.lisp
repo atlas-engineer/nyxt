@@ -8,7 +8,7 @@
 (define-mode reading-line-mode ()
   "Mode for drawing a line on screen that you can use to keep track of
 your reading position. To use this mode, first enable this mode and
-then use the bindings for ``reading-line-cursor-up' and
+then use the bindings for `reading-line-cursor-up' and
 `reading-line-cursor-down' to move the reading line cursor. If you
 navigate away from the reading line, you can always invoke the command
 `jump-to-reading-line-cursor' to jump back to your reading
