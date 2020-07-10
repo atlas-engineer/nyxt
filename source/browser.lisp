@@ -1109,12 +1109,17 @@ Deal with REQUEST-DATA with the following rules:
          request-data)))))
 
 (export-always 'url-dispatching-handler)
+(declaim (ftype (function (symbol
+                           (function (quri:uri) boolean)
+                           (or string (function (quri:uri) (or quri:uri null)))))
+                url-dispatching-handler))
 (defun url-dispatching-handler (name test action)
   "Return a `resource' handler that, if `add-hook'ed to the `request-resource-hook',
 will automatically apply its ACTION on the URLs that conform to TEST.
 
-TEST and ACTION should be functions of one argument, the requested URL.
-In case ACTION returns nil, URL request is aborted.
+TEST should be function of one argument, the requested URL.
+ACTION can be either a shell command as a string, or a function taking a URL as argument.
+In case ACTION returns nil (always the case for shell command), URL request is aborted.
 The new URL returned by ACTION is loaded otherwise.
 
 `match-host', `match-scheme', `match-domain' and `match-file-extension'
@@ -1134,22 +1139,40 @@ Example:
                                           (url-dispatching-handler
                                            'transmission-magnet-links
                                            (match-scheme \"magnet\")
+                                           \"transmission-remote --add ~a\")
+                                          (url-dispatching-handler
+                                           'emacs-file
+                                           (match-scheme \"file\")
                                            (lambda (url)
                                              (uiop:launch-program
-                                              (list \"transmission-remote\" \"--add\"
-                                                    (object-string url))
-                                              nil))))
+                                              `(\"emacs\" ,(quri:uri-path url)))
+                                             nil)))
                                     :initial-value %slot-default))))"
   (make-handler-resource
-    #'(lambda (request-data)
-        (let ((url (url request-data)))
-          (if (funcall-safely test url)
-              (let ((new-url (funcall-safely action url)))
-                (log:info "Applied \"~a\" URL-dispatcher on \"~a\" and got \"~a\""
-                          (symbol-name name) (object-display url) (object-display new-url))
-                (when new-url (setf (url request-data) new-url) request-data))
-              request-data)))
-    :name name))
+   #'(lambda (request-data)
+       (let ((url (url request-data)))
+         (if (funcall-safely test url)
+             (etypecase action
+               (function
+                (let* ((new-url (funcall-safely action url)))
+                  (log:info "Applied ~s URL-dispatcher on ~s and got ~s"
+                            (symbol-name name)
+                            (object-display url)
+                            (object-display new-url))
+                  (when new-url
+                    (setf (url request-data) new-url)
+                    request-data)))
+               (string (let ((action #'(lambda (url)
+                                         (uiop:launch-program
+                                          (format nil action
+                                                  (object-string url)))
+                                         nil)))
+                         (funcall-safely action url)
+                         (log:info "Applied ~s shell-command URL-dispatcher on ~s"
+                            (symbol-name name)
+                            (object-display url)))))
+             request-data)))
+   :name name))
 
 (declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
                 match-scheme match-host match-domain match-file-extension))
