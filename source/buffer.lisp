@@ -126,22 +126,24 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   "Set BROWSER's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
+  (hooks:run-hook (window-set-active-buffer-hook window) window buffer)
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
-    (hooks:run-hook (window-set-active-buffer-hook window) window buffer)
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-instance *buffer-class*))
-              (buffer-swap (active-buffer window)))
-          (log:debug "Swapping with buffer from existing window.")
+              (old-buffer (active-buffer window)))
+          (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
+                     (object-string (url old-buffer))
+                     (object-string (url (active-buffer window-with-same-buffer)))
+                     (object-string (url buffer)))
           (ffi-window-set-active-buffer window-with-same-buffer temp-buffer)
           (ffi-window-set-active-buffer window buffer)
-          (ffi-window-set-active-buffer window-with-same-buffer buffer-swap)
-          (buffer-delete temp-buffer))
-        (ffi-window-set-active-buffer window buffer))
-    (setf (active-buffer window) buffer)
-    (let ((inactive-replacement-buffers (delete-if (complement #'replacement-buffer-p)
-                                                   (get-inactive-buffers))))
-      (mapc #'buffer-delete inactive-replacement-buffers))
+          (setf (active-buffer window) buffer)
+          (window-set-active-buffer window-with-same-buffer old-buffer)
+          (ffi-buffer-delete temp-buffer))
+        (progn
+          (ffi-window-set-active-buffer window buffer)
+          (setf (active-buffer window) buffer)))
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
     (set-window-title window buffer)
