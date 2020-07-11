@@ -39,7 +39,6 @@ Example to use Tor as a proxy both for browsing and downloading:
     :initform
     (lambda (mode)
       (setf (proxy (buffer mode)) (proxy mode))
-      (echo "Proxy set to ~a (whitelisting ~a) for ~a."
+      (echo "Proxy set to ~a (whitelisting ~a)."
             (object-display (server-address (proxy mode)))
-            (whitelist (proxy mode))
-            (buffer mode))))))
+            (whitelist (proxy mode)))))))
