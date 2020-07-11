@@ -62,8 +62,8 @@ Currently we store the list of current URLs of all buffers."
          (setf buffer-histories (delete-if-not #'htree:current buffer-histories))
          (when buffer-histories
            (log:info "Restoring ~a."
-                     (mapcar #'object-string (mapcar (alex:compose #'htree:data #'htree:current)
-                                                     buffer-histories)))
+                     (mapcar (alex:compose #'object-string #'htree:data #'htree:current)
+                             buffer-histories))
            ;; Delete the old buffers?
            ;; (maphash (lambda (id buffer)
            ;;            (declare (ignore id))

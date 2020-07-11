@@ -1,14 +1,40 @@
 (in-package :nyxt)
 
 (defclass-export buffer-description ()
-  ((url :accessor url
-        :initarg :url
-        :type quri:uri
-        :initform (quri:uri ""))
+  ((url :initarg :url
+        :type (or quri:uri string)
+        :initform (quri:uri "")
+        :documentation "URL should be a `quri:uri'.
+We also support the `string' type only for serialization purposes.  The URL is
+automatically turned into a `quri:uri' in the accessor.")
    (title :accessor title
           :initarg :title
           :type string
           :initform "")))
+
+(defmethod url ((bd buffer-description))
+  "This accessor ensures we always return a `quri:uri'.
+This is useful in cases the URL is originally stored as a string (for instance
+when deserializing a `buffer-description').
+
+We can't use `initialize-instance :after' to convert the URL because
+`s-serialization:deserialize-sexp' sets the slots manually after making the
+class."
+  (unless (quri:uri-p (slot-value bd 'url))
+    (setf (slot-value bd 'url) (ensure-url (slot-value bd 'url))))
+  (slot-value bd 'url))
+
+(defmethod (setf url) (value (bd buffer-description))
+  (setf (slot-value bd 'url) value))
+
+(defmethod s-serialization::serialize-sexp-internal ((bd buffer-description)
+                                                     stream
+                                                     serialization-state)
+  "Serialize `buffer-description' by turning the URL into a string."
+  (let ((new-bd (make-instance 'buffer-description
+                               :title (title bd))))
+    (setf (url new-bd) (object-string (url bd)))
+    (call-next-method new-bd stream serialization-state)))
 
 (defmethod object-string ((buffer-description buffer-description))
   (object-string (url buffer-description)))
