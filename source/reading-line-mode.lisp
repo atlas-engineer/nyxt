@@ -27,8 +27,8 @@ mode."
        "M-n" 'reading-line-cursor-down)
       scheme:vi-normal
       (list
-       "j" 'reading-line-cursor-up
-       "k" 'reading-line-cursor-down)))
+       "K" 'reading-line-cursor-up
+       "J" 'reading-line-cursor-down)))
    (style :accessor style
           :initform (cl-css:css
                      '(("#reading-line-cursor"
