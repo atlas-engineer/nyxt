@@ -155,9 +155,6 @@ proceeding."
                (not (url-empty-p (url buffer))))
       (reload-current-buffer buffer))))
 
-(defun replacement-buffer-p (buffer)    ; TODO: Rename placeholder-buffer-p?
-  (str:emptyp (id buffer)))
-
 (defun get-inactive-buffers ()
   "Return inactive buffers sorted by last-access timestamp, or NIL if none."
   (let ((active-buffers
