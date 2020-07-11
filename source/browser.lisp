@@ -1322,3 +1322,11 @@ sometimes yields the wrong reasult."
 (declaim (type (browser-type) *browser-class*))
 (export-always '*browser-class*)
 (defvar *browser-class* 'browser)
+
+(defmacro within-renderer-thread (&body body)
+  "Convenience macro to run FFI-calling code from the REPL.
+It should not be used to write code."
+  `(ffi-within-renderer-thread
+    *browser*
+    (lambda ()
+      ,@body)))
