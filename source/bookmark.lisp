@@ -307,23 +307,33 @@ If character before cursor is '+' or '-' complete against tag."
        "tab" 'insert-suggestion-or-tag)))))
 
 (define-command set-url-from-bookmark ()
-  "Set the URL for the current buffer from a bookmark."
-  (with-result (entry (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Open bookmark"
-                        :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                        :suggestion-function (bookmark-suggestion-filter))))
-    ;; TODO: Add support for multiple bookmarks?
-    (set-url* (object-string (url entry)) :buffer (current-buffer) :raw-url-p t)))
+  "Set the URL for the current buffer from a bookmark.
+With multiple selections, open the first bookmark in the current buffer, the
+rest in background buffers."
+  (with-result (entries (read-from-minibuffer
+                         (make-minibuffer
+                          :input-prompt "Open bookmark(s)"
+                          :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                          :suggestion-function (bookmark-suggestion-filter)
+                          :multi-selection-p t)))
+    (dolist (entry (rest entries))
+      (make-buffer :url (object-string (url entry))))
+    (set-url* (object-string (url (first entries)))
+              :raw-url-p t)))
 
 (define-command set-url-from-bookmark-new-buffer ()
-  "Open selected bookmark in a new buffer."
-  (with-result (entry (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Open bookmark in a new buffer"
-                        :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                        :suggestion-function (bookmark-suggestion-filter))))
-    (set-url* (object-string (url entry)) :buffer (make-buffer-focus :url nil) :raw-url-p t)))
+  "Open selected bookmarks in new buffers."
+  (with-result (entries (read-from-minibuffer
+                         (make-minibuffer
+                          :input-prompt "Open bookmarks in new buffers"
+                          :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                          :suggestion-function (bookmark-suggestion-filter)
+                          :multi-selection-p t)))
+    (dolist (entry (rest entries))
+      (make-buffer :url (object-string (url entry))))
+    (set-url* (object-string (url (first entries)))
+              :buffer (make-buffer-focus :url nil)
+              :raw-url-p t)))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))
