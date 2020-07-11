@@ -1093,7 +1093,10 @@ The new URL returned by ACTION is loaded otherwise.
 can be used to create TEST-functions, but any other function of one argument
 would fit the TEST slot as well.
 
-Example:
+The following example does a few things:
+- Forward DOI links to the doi.org website.
+- Open magnet links with Transmission.
+- Open local files (file:// URIs) with Emacs.
 
 \(define-configuration buffer
     ((request-resource-hook (reduce #'hooks:add-hook
