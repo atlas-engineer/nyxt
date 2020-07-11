@@ -217,7 +217,8 @@ Without handler, return ARG.  This is an acceptable `combination' for
 (defclass buffer ()
   ((id :accessor id :initarg :id :initform ""
        :documentation "Unique identifier for a buffer.
-Dead buffers (i.e. those not associated with a web view) have an empty ID.")
+Dead buffers or placeholder buffers (i.e. those not associated with a web view)
+have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (url :accessor url :initarg :url :type quri:uri :initform (quri:uri ""))
    (url-at-point :accessor url-at-point :type quri:uri :initform (quri:uri ""))
@@ -226,12 +227,14 @@ Dead buffers (i.e. those not associated with a web view) have an empty ID.")
                 :initarg :load-status
                 :type (or (eql :loading)
                           (eql :finished)
-                          (eql :unloaded)
-                          (eql :void))
-                :initform :void
-                :documentation "Whether the buffer is loading or finished loading.
-`:unloaded' is for buffers that have not been loaded yet, like session-restored
-buffers.")
+                          (eql :unloaded))
+                :initform :unloaded
+                :documentation "The status of the buffer.
+- `:loading' when loading a web resource.
+- `:finished' when done loading a web resource.
+- `:unloaded' for buffers that have not been loaded yet, like
+  session-restored buffers, dead buffers or new buffers that haven't started the
+  loading process yet..")
    (last-access :accessor last-access
                 :initform (local-time:now)
                 :type local-time:timestamp
@@ -965,48 +968,6 @@ This is useful to tell REPL instances from binary ones."
                           (str:concat "Nyxt" (when *keep-alive* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
                                        url))))
-
-(declaim (ftype (function (window buffer)) window-set-active-buffer))
-(export-always 'window-set-active-buffer)
-(defun window-set-active-buffer (window buffer) ; TODO: Rename window-set-buffer.
-  "Set BROWSER's WINDOW buffer to BUFFER.
-Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
-proceeding."
-  (let ((window-with-same-buffer (find buffer (delete window (window-list))
-                                       :key #'active-buffer)))
-    (hooks:run-hook (window-set-active-buffer-hook window) window buffer)
-    (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (buffer-make *browser*))
-              (buffer-swap (active-buffer window)))
-          (log:debug "Swapping with buffer from existing window.")
-          (ffi-window-set-active-buffer window-with-same-buffer temp-buffer)
-          (ffi-window-set-active-buffer window buffer)
-          (ffi-window-set-active-buffer window-with-same-buffer buffer-swap)
-          (buffer-delete temp-buffer))
-        (ffi-window-set-active-buffer window buffer))
-    (setf (active-buffer window) buffer)
-    (let ((inactive-replacement-buffers (delete-if (complement #'replacement-buffer-p)
-                                                   (get-inactive-buffers))))
-      (mapc #'buffer-delete inactive-replacement-buffers))
-    (setf (last-access buffer) (local-time:now))
-    (setf (last-active-buffer *browser*) buffer)
-    (set-window-title window buffer)
-    (when (eq (slot-value buffer 'load-status) :unloaded)
-      (reload-current-buffer buffer))))
-
-(defun replacement-buffer-p (buffer)
-  (eq (slot-value buffer 'load-status)
-      :void))
-
-(defun get-inactive-buffers ()
-  "Return inactive buffers sorted by last-access timestamp, or NIL if none."
-  (let ((active-buffers
-          (mapcar #'active-buffer (window-list)))
-        (buffers (buffer-list)))
-    (match (set-difference buffers active-buffers)
-      ((guard diff diff)
-       ;; Display the most recent inactive buffer.
-       (sort diff #'local-time:timestamp> :key #'last-access)))))
 
 (declaim (ftype (function (list-of-strings &key (:no-focus boolean)))))
 (defun open-urls (urls &key no-focus)

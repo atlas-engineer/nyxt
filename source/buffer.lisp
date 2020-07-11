@@ -63,11 +63,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
     (initialize-modes buffer)
-    (if dead-buffer
-        (progn
-          (setf (url buffer) (url dead-buffer))
-          (setf (slot-value buffer 'load-status) :unloaded))
-        (setf (slot-value buffer 'load-status) :void))
+    (when dead-buffer
+      (setf (url buffer) (url dead-buffer)))
     (when (expand-path (cookies-path buffer))
       (ensure-parent-exists (expand-path (cookies-path buffer))))
     (buffers-set (id buffer) buffer)
@@ -122,6 +119,51 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (export-always 'window-list)
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
+
+(declaim (ftype (function (window buffer)) window-set-active-buffer))
+(export-always 'window-set-active-buffer)
+(defun window-set-active-buffer (window buffer) ; TODO: Rename window-set-buffer.
+  "Set BROWSER's WINDOW buffer to BUFFER.
+Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
+proceeding."
+  (let ((window-with-same-buffer (find buffer (delete window (window-list))
+                                       :key #'active-buffer)))
+    (hooks:run-hook (window-set-active-buffer-hook window) window buffer)
+    (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
+        (let ((temp-buffer (make-instance *buffer-class*))
+              (buffer-swap (active-buffer window)))
+          (log:debug "Swapping with buffer from existing window.")
+          (ffi-window-set-active-buffer window-with-same-buffer temp-buffer)
+          (ffi-window-set-active-buffer window buffer)
+          (ffi-window-set-active-buffer window-with-same-buffer buffer-swap)
+          (buffer-delete temp-buffer))
+        (ffi-window-set-active-buffer window buffer))
+    (setf (active-buffer window) buffer)
+    (let ((inactive-replacement-buffers (delete-if (complement #'replacement-buffer-p)
+                                                   (get-inactive-buffers))))
+      (mapc #'buffer-delete inactive-replacement-buffers))
+    (setf (last-access buffer) (local-time:now))
+    (setf (last-active-buffer *browser*) buffer)
+    (set-window-title window buffer)
+    (when (and (eq (slot-value buffer 'load-status) :unloaded)
+               ;; TODO: Find a better way to filter out non-webpages ("internal
+               ;; buffers" like the REPL or help pages).  Could use a marker
+               ;; slot or a specialized class.
+               (not (url-empty-p (url buffer))))
+      (reload-current-buffer buffer))))
+
+(defun replacement-buffer-p (buffer)    ; TODO: Rename placeholder-buffer-p?
+  (str:emptyp (id buffer)))
+
+(defun get-inactive-buffers ()
+  "Return inactive buffers sorted by last-access timestamp, or NIL if none."
+  (let ((active-buffers
+          (mapcar #'active-buffer (window-list)))
+        (buffers (buffer-list)))
+    (match (set-difference buffers active-buffers)
+      ((guard diff diff)
+       ;; Display the most recent inactive buffer.
+       (sort diff #'local-time:timestamp> :key #'last-access)))))
 
 (export-always 'buffer-suggestion-filter)
 (defun buffer-suggestion-filter (&key current-is-last-p domain)
