@@ -45,6 +45,16 @@ On errors, return URL."
          (not (string= (quri:uri-domain uri)
                        (quri:uri-tld uri))))))
 
+(declaim (ftype (function (t) quri:uri) ensure-url))
+(defun ensure-url (thing)
+  "Return `quri:uri' derived from THING.
+If it cannot be derived, return an empty `quri:uri'."
+  (the (values quri:uri &optional)
+       (if (quri:uri-p thing)
+           thing
+           (or (ignore-errors (quri:uri thing))
+               (quri:uri "")))))
+
 (declaim (ftype (function (quri:uri) boolean) empty-url-p))
 (export-always 'url-empty-p)
 (defun url-empty-p (url)

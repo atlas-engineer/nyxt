@@ -73,9 +73,9 @@ Currently we store the list of current URLs of all buffers."
            ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
            (loop for history in buffer-histories
                  for buffer = (make-buffer)
-                 for mode = (find-submode buffer 'web-mode)
+                 for mode = (find-submode buffer 'web-mode) ; TODO: This assumes BUFFER has web-mode.  What if it doesn't?
                  do (setf (url buffer)
-                          (url (htree:data (htree:current history))))
+                          (ensure-url (url (htree:data (htree:current history)))))
                  do (setf (slot-value buffer 'load-status) :unloaded)
                  do (setf (nyxt/web-mode:history mode) history))
            ;; TODO: Switch to the last active buffer.  We probably need to serialize *browser*.
