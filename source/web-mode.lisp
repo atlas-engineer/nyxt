@@ -394,14 +394,16 @@ Otherwise go forward to the only child."
            (%paste :input-text (funcall (autofill-fill selected-fill)))))))
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
-  (unless (find-if (alex:rcurry #'str:starts-with? (object-string url))
-                   (history-blacklist mode))
-    (htree:add-child (make-instance 'buffer-description
-                                    :url (object-string url)
-                                    :title (title (buffer mode)))
-                     (history mode)
-                     :test #'equals)
-    (when url
+  (declare (type quri:uri url))
+  (unless (url-empty-p url)
+    (unless (find-if (alex:rcurry #'str:starts-with? (object-string url))
+                     (history-blacklist mode))
+      (htree:add-child (make-instance 'buffer-description
+                                      :url url
+                                      :title (title (buffer mode)))
+                       (history mode)
+                       :test #'equals)
+
       (history-add url :title (title (buffer mode)))))
 
   (match (session-store-function *browser*)

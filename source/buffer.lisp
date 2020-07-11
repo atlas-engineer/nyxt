@@ -1,25 +1,29 @@
 (in-package :nyxt)
 
 (defclass-export buffer-description ()
-  ((url :accessor url :initarg :url
-        :initform "" :type string)
-   (title :accessor title :initarg :title
-          :initform "" :type string)))
+  ((url :accessor url
+        :initarg :url
+        :type quri:uri
+        :initform (quri:uri ""))
+   (title :accessor title
+          :initarg :title
+          :type string
+          :initform "")))
 
 (defmethod object-string ((buffer-description buffer-description))
-  (url buffer-description))
+  (object-string (url buffer-description)))
 
 (defmethod object-display ((buffer-description buffer-description))
   (format nil "~a  ~a"
           (title buffer-description)
-          (quri:url-decode (url buffer-description))))
+          (object-display (url buffer-description))))
 
 (export-always 'equals)
 (defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
   "Comparison function for buffer history entries.
 An entry is uniquely identified from its URL.  We do not take the
 title into accound as it may vary from one load to the next."
-  (string= (url bd1) (url bd2)))
+  (quri:uri= (url bd1) (url bd2)))
 
 (defmethod object-string ((buffer buffer))
   (object-string (url buffer)))

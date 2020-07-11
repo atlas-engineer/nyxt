@@ -75,7 +75,7 @@ Currently we store the list of current URLs of all buffers."
                  for buffer = (make-buffer)
                  for mode = (find-submode buffer 'web-mode)
                  do (setf (url buffer)
-                          (object-string (url (htree:data (htree:current history)))))
+                          (url (htree:data (htree:current history))))
                  do (setf (slot-value buffer 'load-status) :unloaded)
                  do (setf (nyxt/web-mode:history mode) history))
            ;; TODO: Switch to the last active buffer.  We probably need to serialize *browser*.
