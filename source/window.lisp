@@ -55,7 +55,7 @@
 (define-command make-window (&optional buffer)
   "Create a new window."
   (let ((window (window-make *browser*))
-        (buffer (or buffer (make-buffer))))
+        (buffer (or buffer (make-buffer :url :default))))
     (window-set-active-buffer window buffer)
     (values window buffer)))
 
