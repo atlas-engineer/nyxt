@@ -1222,10 +1222,10 @@ sometimes yields the wrong reasult."
 (defparameter %buffer nil)              ; TODO: Make a monad?
 
 (export-always 'current-buffer)
-(defun current-buffer ()
-  "Get the active buffer for the active window."
+(defun current-buffer (&optional window)
+  "Get the active buffer for WINDOW, or the active window otherwise."
   (or %buffer
-      (match (current-window)
+      (match (or window (current-window))
         ((guard w w) (active-buffer w))
         (_ (log:debug "No active window, picking last active buffer.")
            (last-active-buffer *browser*)))))
