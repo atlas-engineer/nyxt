@@ -1175,8 +1175,7 @@ Example:
   (echo-warning "JavaScript error: ~a" condition))
 
 (defun format-status (window)
-  (declare (ignore window))
-  (let ((buffer (current-buffer)))
+  (let ((buffer (active-buffer window)))
     (format nil "[~{~a~^ ~}] ~a~a — ~a"
             (mapcar (lambda (m) (str:replace-all "-mode" ""
                                                  (str:downcase

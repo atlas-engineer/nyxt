@@ -147,6 +147,7 @@ proceeding."
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
     (set-window-title window buffer)
+    (print-status nil window)
     (when (and (eq (slot-value buffer 'load-status) :unloaded)
                ;; TODO: Find a better way to filter out non-webpages ("internal
                ;; buffers" like the REPL or help pages).  Could use a marker
