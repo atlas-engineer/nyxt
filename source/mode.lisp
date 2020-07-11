@@ -188,10 +188,8 @@ If there is no corresponding keymap, return nil."
 (defmethod on-signal-load-finished ((mode root-mode) url)
   url)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :s-serialization)
-
-(defmethod serializable-slots ((object nyxt::root-mode))
+(defmethod s-serialization:serializable-slots ((object root-mode))
   "Discard keymaps which can be quite verbose."
-  (delete 'nyxt::keymap-scheme
-          (mapcar #'closer-mop:slot-definition-name (closer-mop:class-slots (class-of object)))))
+  (delete 'keymap-scheme
+          (mapcar #'closer-mop:slot-definition-name
+                  (closer-mop:class-slots (class-of object)))))

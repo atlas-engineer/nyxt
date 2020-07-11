@@ -178,10 +178,8 @@ This is an acceptable handler for `request-resource-hook'."
         ;; Pass request to the other handlers.
         request-data)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :s-serialization)
-
-(defmethod serializable-slots ((object nyxt/blocker-mode::blocker-mode))
+(defmethod s-serialization:serializable-slots ((object blocker-mode))
   "Discard hostlists which can get pretty big."
   (delete 'nyxt/blocker-mode::hostlists
-          (mapcar #'closer-mop:slot-definition-name (closer-mop:class-slots (class-of object)))))
+          (mapcar #'closer-mop:slot-definition-name
+                  (closer-mop:class-slots (class-of object)))))
