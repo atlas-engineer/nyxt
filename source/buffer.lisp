@@ -421,11 +421,31 @@ The current buffer access time is set to be the last."
                               oldest-buffer)))
     (set-current-buffer oldest-buffer)))
 
+(export-always 'mode-name)
+(defun mode-name (mode)
+  (class-name (class-of mode)))
+
+(declaim (ftype (function (list-of-symbols &optional buffer)) disable-modes enable-modes))
+(export-always 'disable-modes)
+(defun disable-modes (modes &optional (buffer (current-buffer)))
+  "Disable MODES for BUFFER.
+MODES should be a list symbols, each possibly returned by `mode-name'."
+  (dolist (mode modes)
+    (funcall-safely (sym (mode-command mode))
+                    :buffer buffer :activate nil)))
+
+(export-always 'enable-modes)
+(defun enable-modes (modes &optional (buffer (current-buffer)))
+  "Enable MODES for BUFFER.
+MODES should be a list of symbols, each possibly returned by `mode-name'."
+  (dolist (mode modes)
+    (funcall-safely (sym (mode-command mode))
+                    :buffer buffer :activate t)))
+
 (defun active-mode-suggestion-filter (buffers)
   "Return the union of the active modes in BUFFERS."
-  (let ((modes (delete-duplicates (mapcar (lambda (m)
-                                            (class-name (class-of m)))
-                                          (apply #'append (mapcar #'modes buffers))))))
+  (let ((modes (delete-duplicates (mapcar #'mode-name
+                                          (alex:mappend #'modes buffers)))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) modes))))
 
@@ -438,8 +458,7 @@ The current buffer access time is set to be the last."
                     (mode-list)))
         (common-modes (reduce #'intersection
                               (mapcar (lambda (b)
-                                        (mapcar (lambda (m) (class-name (class-of m)))
-                                                (modes b)))
+                                        (mapcar #'mode-name (modes b)))
                                       buffers))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) (set-difference all-non-minibuffer-modes common-modes)))))
@@ -452,9 +471,7 @@ The current buffer access time is set to be the last."
                         :multi-selection-p t
                         :suggestion-function (active-mode-suggestion-filter buffers))))
     (dolist (buffer buffers)
-      (dolist (mode modes)
-        (funcall (sym (mode-command mode))
-                 :buffer buffer :activate nil)))))
+      (disable-modes modes buffer))))
 
 (define-command disable-mode-for-buffer ()
   "Disable queried mode(s) for select buffer(s)."
@@ -473,9 +490,7 @@ The current buffer access time is set to be the last."
                         :multi-selection-p t
                         :suggestion-function (inactive-mode-suggestion-filter buffers))))
     (dolist (buffer buffers)
-      (dolist (mode modes)
-        (funcall (sym (mode-command mode))
-                 :buffer buffer :activate t)))))
+      (enable-modes modes buffer))))
 
 (define-command enable-mode-for-buffer ()
   "Enable queried mode(s) for select buffer(s)."
