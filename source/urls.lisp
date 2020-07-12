@@ -63,6 +63,20 @@ If it cannot be derived, return an empty `quri:uri'."
        (when url
          (uiop:emptyp (object-string url)))))
 
+(declaim (ftype (function (quri:uri) boolean)
+                empty-path-url-p host-only-url-p))
+(export-always 'empty-path-url-p)
+(defun empty-path-url-p (url)
+  (or (string= (quri:uri-path url) "/")
+      (null (quri:uri-path url))))
+
+(export-always 'host-only-url-p)
+(defun host-only-url-p (url)
+  (every #'null
+         (list (quri:uri-query url)
+               (quri:uri-fragment url)
+               (quri:uri-userinfo url))))
+
 (declaim (ftype (function (quri:uri quri:uri) boolean) schemeless-uri=))
 (defun schemeless-uri= (uri1 uri2)
   "Like `quri:uri=' but ignore scheme in comparison.

@@ -72,6 +72,7 @@
                (:file "bookmark")
                (:file "history")
                (:file "autofill")
+               (:file "auto-mode")
                (:file "external-editor")
                (:file "url-group")
                ;; Core Modes

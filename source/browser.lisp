@@ -179,6 +179,8 @@ the empty string.")))
             session-store-function
             session-restore-function
             session-restore-prompt
+            auto-mode-list
+            auto-mode-list-data-path
             standard-output-path
             error-output-path
             before-exit-hook
@@ -373,6 +375,14 @@ from `session-path'.")
                            :initform :always-ask
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
+   (auto-mode-list :accessor auto-mode-list
+                   :type list
+                   :initform '()
+                   :documentation "The auto-mode rules kept in memory.")
+   (auto-mode-list-data-path :accessor auto-mode-list-data-path
+                             :type data-path
+                             :initform (make-instance 'auto-mode-list-data-path :basename "auto-mode-list")
+                 :documentation "The path where the auto-mode rules are saved.")
    (standard-output-path :accessor standard-output-path
                          :type data-path
                          :initform (make-instance 'data-path :basename "standard-out.txt")
@@ -759,7 +769,8 @@ The following example does a few things:
    :name name))
 
 (declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
-                match-scheme match-host match-domain match-file-extension))
+                match-scheme match-host match-domain
+                match-file-extension match-regex match-url))
 (export-always 'match-scheme)
 (defun match-scheme (scheme &rest other-schemes)
   "Return a predicate for URLs matching one of SCHEME or OTHER-SCHEMES."
@@ -787,6 +798,20 @@ The following example does a few things:
   #'(lambda (url)
       (some (alex:curry #'string= (pathname-type (or (quri:uri-path url) "")))
             (cons extension other-extensions))))
+
+(export-always 'match-regex)
+(defun match-regex (regex &rest other-regex)
+  "Return a predicate for URLs matching one of REGES or OTHER-REGEX."
+  #'(lambda (url)
+      (some (alex:rcurry #'cl-ppcre:scan (object-display url))
+            (cons regex other-regex))))
+
+(export-always 'match-url)
+(defun match-url (one-url &rest other-urls)
+  "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
+  #'(lambda (url)
+      (some (alex:rcurry #'string= (object-display url))
+            (cons one-url other-urls))))
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))

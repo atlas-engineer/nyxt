@@ -71,6 +71,8 @@ This can be used to set the path from command line.  See
   ((ref :initform "history")))
 (defclass-export download-data-path (data-path) ; TODO: Rename to downloads-data-path?
   ((ref :initform "download")))
+(defclass-export auto-mode-list-data-path (data-path)
+  ((ref :initform "auto-mode-list")))
 
 (declaim (ftype (function (string) (or string null)) find-ref-path))
 (defun find-ref-path (ref)

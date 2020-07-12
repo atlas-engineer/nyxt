@@ -72,11 +72,13 @@ Example:
                        (when (constructor new-mode)
                          (funcall-safely (constructor new-mode) new-mode))
                        (push new-mode (modes buffer))
-                       (hooks:run-hook (enable-hook new-mode) new-mode))
+                       (hooks:run-hook (enable-hook new-mode) new-mode)
+                       (hooks:run-hook (enable-mode-hook buffer) new-mode))
                      (print-status)
                      (log:debug "~a enabled." ',name))
                    (when existing-instance
                      (hooks:run-hook (disable-hook existing-instance) existing-instance)
+                     (hooks:run-hook (disable-mode-hook buffer) existing-instance)
                      (when (destructor existing-instance)
                        (funcall-safely (destructor existing-instance) existing-instance))
                      (setf (modes buffer) (delete existing-instance
