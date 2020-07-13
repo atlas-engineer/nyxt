@@ -32,10 +32,16 @@ run " (:code "describe-command") " and type 'mode' to list them all.")
     (:h3 "Keybinding configuration")
     (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
         (:code "emacs-mode") ".  To make the change persistent across sessions,
-add the following to you configuration (for VI bindings):")
-    (:pre (:code "
+add the following to you configuration:")
+    (:ul
+     (:li "VI bindings:"
+      (:pre (:code "
 \(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default))))"))
+  ((default-modes (append '(vi-normal-mode) %slot-default))))")))
+     (:li "Emacs bindings:"
+      (:pre (:code "
+\(define-configuration buffer
+  ((default-modes (append '(emacs-mode) %slot-default))))"))))
     (:p "The " (:code "override-map") " is a keymap which has priority over
 everything.  By default, it has only very few bindings like the one
 for " (:code "execute-command") ".  You can use it to set keys globally:")
