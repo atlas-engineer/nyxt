@@ -52,10 +52,10 @@
                             :direction :output
                             :if-exists :supersede
                             :element-type '(unsigned-byte 8))
-      (log:info "Downloading~%  ~a~%to~%  ~s.~%"
+      (log:info "Downloading ~s~%  to ~s."
                 (or (ignore-errors (quri:url-decode (quri:render-uri (resolved-uri download))))
                     (quri:render-uri (resolved-uri download)))
-                (file download))
+                (namestring (file download)))
       (loop :for byte-position = (read-sequence buffer (downstream download))
 
             :do (update download)
