@@ -939,7 +939,7 @@ when `proxied-downloads-p' is true."
   "Download URL.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
-  (hooks:run-hook (before-download-hook *browser*) url)
+  (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
@@ -947,18 +947,21 @@ current buffer."
     (declare (type (or quri:uri null) proxy-address))
     (when download-dir
       (let* ((download nil))
-        (handler-case
-            (progn
-              (setf download (download-manager:resolve
-                              url
-                              :directory download-dir
-                              :cookies cookies
-                              :proxy proxy-address))
-              (push download (downloads *browser*))
-              download)
-          (error (c)
-            (echo-warning "Download error: ~a" c)
-            nil))))))
+        (flet ((unsafe-download ()
+                 (setf download (download-manager:resolve
+                                 url
+                                 :directory download-dir
+                                 :cookies cookies
+                                 :proxy proxy-address))
+                 (push download (downloads *browser*))
+                 download))
+          (if *keep-alive*
+              (unsafe-download)
+              (handler-case
+                  (unsafe-download)
+                (error (c)
+                  (echo-warning "Download error: ~a" c)
+                  nil))))))))
 
 (defmethod get-unique-window-identifier ((browser browser))
   (format nil "~s" (incf (slot-value browser 'total-window-count))))
