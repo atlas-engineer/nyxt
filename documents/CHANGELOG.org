@@ -41,7 +41,7 @@ MAJOR.MINOR.PATCH, we increment the:
 
 ** 2.0.0
 - Rename project to Nyxt.
-  This name is more "searchable" on the Web.  It's also reasonable
+  This name is more "searchable" on the Web.  It's also reasonably
   "backward-compatible" with "Next".
 
   Note that the persisted files have changed location.  You might have to move
@@ -79,6 +79,7 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - New =lisp-repl= command to evaluate Lisp, introspect and modify Nyxt while
   it's running, from the browser itself!
+  This supersedes the removed =evaluate-lisp= command.
 
 - Add =certificate-whitelist-mode= to the default modes.  In case of certificate
   error, call =add-domain-to-certificate-whitelist= followed by a reload if you
@@ -87,6 +88,8 @@ MAJOR.MINOR.PATCH, we increment the:
   The =certificate-whitelist= slot is now a list of strings.
 
 - Make current URL the first candidate in =set-url-*= commands.
+
+- New =reading-line-mode=.
 
 - New =scheme:cua= default binding scheme.  You can still use the former default
   =scheme:emacs= with =emacs-mode=.
@@ -104,6 +107,10 @@ MAJOR.MINOR.PATCH, we increment the:
   =cua=, =emacs=, =vi-normal= and =vi-insert= are in the =scheme= package.  Thus
   it's enough to complete over =scheme:= to list them all.
 
+- Most URLs are now of the =quri:uri= type instead of the string type.  This
+  allows for convenient URL manipulation, such as domain or scheme extraction.
+  This also allows us to systematically print hex-encoded URLs properly.
+
 - Turn =resource-query-function= into a composable hook,
   =request-resource-hook=, which supports changing the URI of the request.
 
@@ -114,6 +121,8 @@ MAJOR.MINOR.PATCH, we increment the:
 - Sessions are now saved in XDG_DATA_HOME/nyxt/sessions/.  Default session is
   =default.lisp=.  The command line option =--session= has been replaced by the
   more general =--with-path= (e.g. ~--with-path session=/path/to/session~).
+
+- Sessions are restore lazily.  This fixes the long hang on startup.
 
 - Command line options: New =--load= option to load a Lisp file, =--eval= and
   =--load= can be specified multiple times, the =--remote= option allows
