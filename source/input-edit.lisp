@@ -17,6 +17,22 @@
                                      (ps:lisp selection-start)
                                      (ps:lisp selection-end))))
 
+(defmacro with-text-buffer ((buffer-name cursor-name
+                             &optional initial-contents
+                                       initial-cursor-position)
+                            &body body)
+  `(let ((,buffer-name (make-instance 'text-buffer:text-buffer))
+         (,cursor-name (make-instance 'text-buffer:cursor)))
+     (cluffer:attach-cursor ,cursor-name ,buffer-name)
+     (text-buffer::insert-string ,cursor-name ,initial-contents)
+     (setf (cluffer:cursor-position ,cursor-name) (parse-integer ,initial-cursor-position))
+     ,@body))
+
+(defmacro with-input-area ((contents cursor-position) &body body)
+  `(with-result* ((,contents (active-input-area-content))
+                  (,cursor-position (active-input-area-cursor)))
+     ,@body))
+
 (define-command cursor-forwards ()
   "Move cursor forward by one element."
   (with-result* ((cursor-position (active-input-area-cursor)))
@@ -31,42 +47,24 @@
 
 (define-command cursor-forwards-word ()
   "Move cursor forwards a word."
-  (with-result* ((contents (active-input-area-content))
-                 (cursor-position (active-input-area-cursor)))
-    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
-          (cursor (make-instance 'text-buffer:cursor)))
-      (cluffer:attach-cursor cursor text-buffer)
-      (text-buffer::insert-string cursor contents)
-      (setf (cluffer:cursor-position cursor)
-            (parse-integer cursor-position))
+  (with-input-area (contents cursor-position)
+    (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::move-forward-word cursor)
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
 (define-command cursor-backwards-word ()
   "Move cursor backwards a word."
-  (with-result* ((contents (active-input-area-content))
-                 (cursor-position (active-input-area-cursor)))
-    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
-          (cursor (make-instance 'text-buffer:cursor)))
-      (cluffer:attach-cursor cursor text-buffer)
-      (text-buffer::insert-string cursor contents)
-      (setf (cluffer:cursor-position cursor)
-            (parse-integer cursor-position))
+  (with-input-area (contents cursor-position)
+    (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::move-backward-word cursor)
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
 (define-command delete-forwards ()
   "Delete character after cursor."
-  (with-result* ((contents (active-input-area-content))
-                 (cursor-position (active-input-area-cursor)))
-    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
-          (cursor (make-instance 'text-buffer:cursor)))
-      (cluffer:attach-cursor cursor text-buffer)
-      (text-buffer::insert-string cursor contents)
-      (setf (cluffer:cursor-position cursor)
-            (parse-integer cursor-position))
+  (with-input-area (contents cursor-position)
+    (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-item-forward cursor)
       (set-active-input-area-content
        (text-buffer::string-representation text-buffer))
@@ -75,14 +73,8 @@
 
 (define-command delete-backwards ()
   "Delete character before cursor."
-  (with-result* ((contents (active-input-area-content))
-                 (cursor-position (active-input-area-cursor)))
-    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
-          (cursor (make-instance 'text-buffer:cursor)))
-      (cluffer:attach-cursor cursor text-buffer)
-      (text-buffer::insert-string cursor contents)
-      (setf (cluffer:cursor-position cursor)
-            (parse-integer cursor-position))
+  (with-input-area (contents cursor-position)
+    (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-item-backward cursor)
       (set-active-input-area-content
        (text-buffer::string-representation text-buffer))
@@ -91,14 +83,8 @@
 
 (define-command delete-backwards-word ()
   "Delete backwards a word."
-  (with-result* ((contents (active-input-area-content))
-                 (cursor-position (active-input-area-cursor)))
-    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
-          (cursor (make-instance 'text-buffer:cursor)))
-      (cluffer:attach-cursor cursor text-buffer)
-      (text-buffer::insert-string cursor contents)
-      (setf (cluffer:cursor-position cursor)
-            (parse-integer cursor-position))
+  (with-input-area (contents cursor-position)
+    (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-backward-word cursor)
       (set-active-input-area-content
        (text-buffer::string-representation text-buffer))
@@ -107,14 +93,8 @@
 
 (define-command delete-forwards-word ()
   "Delete forwards a word."
-  (with-result* ((contents (active-input-area-content))
-                 (cursor-position (active-input-area-cursor)))
-    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
-          (cursor (make-instance 'text-buffer:cursor)))
-      (cluffer:attach-cursor cursor text-buffer)
-      (text-buffer::insert-string cursor contents)
-      (setf (cluffer:cursor-position cursor)
-            (parse-integer cursor-position))
+  (with-input-area (contents cursor-position)
+    (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-forward-word cursor)
       (set-active-input-area-content
        (text-buffer::string-representation text-buffer))
