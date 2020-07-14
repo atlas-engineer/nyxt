@@ -1,16 +1,16 @@
 (in-package :nyxt)
 
-;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:
-;; - It's too verbose, e.g. a list is
-;; (:SEQUENCE 3 :CLASS CL:LIST :SIZE 2 :ELEMENTS ( "bar" "baz" ) )
-;;
-;; - We lack control on the linebreaks.
-;;
-;; - It needs IDs for every object, which makes it hard for the user to
-;;   hand-edit the file without breaking it.
-;;
-;; - Un-explicitly-set class slots are exported if they have an initform;
-;;   removing the initform forces us to put lots of (slot-boundp ...).
+;;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:
+;;; - It's too verbose, e.g. a list is
+;;; (:SEQUENCE 3 :CLASS CL:LIST :SIZE 2 :ELEMENTS ( "bar" "baz" ) )
+;;;
+;;; - We lack control on the linebreaks.
+;;;
+;;; - It needs IDs for every object, which makes it hard for the user to
+;;;   hand-edit the file without breaking it.
+;;;
+;;; - Un-explicitly-set class slots are exported if they have an initform;
+;;;   removing the initform forces us to put lots of (slot-boundp ...).
 
 (defclass-export bookmark-entry ()
   ((url :initarg :url
