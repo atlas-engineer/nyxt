@@ -16,7 +16,7 @@
                       &key
                       (directory (download-directory))
                       cookies
-                        proxy)
+                      proxy)
   (let* ((cookies-jar
            (unless (str:emptyp cookies)
              (parse-cookie-jar-string cookies (quri:uri-host requested-uri)
@@ -25,7 +25,7 @@
         (multiple-value-bind (stream status response-headers resolved-uri)
             (dex:get (quri:render-uri requested-uri)
                      :want-stream t :force-binary t :keep-alive nil
-                     :proxy (quri:render-uri proxy) :cookie-jar cookies-jar)
+                     :proxy (and proxy (quri:render-uri proxy)) :cookie-jar cookies-jar)
           ;; TODO: Allow caller to set the target filename?
           (let* ((file (merge-pathnames
                         directory (extract-filename requested-uri
@@ -42,7 +42,7 @@
         (error c)))))
 
 (defmethod fetch ((download download)
-                     &key (buffer-size 16)) ; Small for testing.
+                  &key (buffer-size 16)) ; Small for testing.
   "Return the number of bytes fetched."
   (let* ((buffer (make-array buffer-size :element-type '(unsigned-byte 8)))
          ;; Without `uiop:parse-native-namestring' `with-open-file' would fail
@@ -52,8 +52,10 @@
                             :direction :output
                             :if-exists :supersede
                             :element-type '(unsigned-byte 8))
-      (log:info "Downloading~%  ~a~%to~%  '~a'.~%"
-                (quri:url-decode (resolved-uri download)) (file download))
+      (log:info "Downloading~%  ~a~%to~%  ~s.~%"
+                (or (ignore-errors (quri:url-decode (quri:render-uri (resolved-uri download))))
+                    (quri:render-uri (resolved-uri download)))
+                (file download))
       (loop :for byte-position = (read-sequence buffer (downstream download))
 
             :do (update download)

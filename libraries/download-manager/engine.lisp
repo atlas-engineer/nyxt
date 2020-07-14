@@ -139,13 +139,13 @@ Only send if last update was more than `update-interval' seconds ago."
       (setf (last-update download) new-time))))
 
 (declaim (ftype (function (quri:uri &key (:directory string)
-                                    (:proxy quri:uri)
+                                    (:proxy (or quri:uri null))
                                     (:cookies (or string null))))
                 resolve))
 (defun resolve (uri &key
                     (directory (download-directory))
-                      proxy
-                      cookies)
+                    proxy
+                    cookies)
   "Start downloading URI concurrently and return a corresponding `download' object.
 If DIRECTORY is nil, `default-download-directory' will be used.  COOKIES can
 specify a cookie jar as a string, which is useful for authenticated downloads.
