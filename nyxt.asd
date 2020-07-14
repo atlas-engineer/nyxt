@@ -93,6 +93,7 @@
                (:file "vcs-mode")
                (:file "force-https-mode")
                ;; Web-mode commands
+               (:file "input-edit")
                (:file "element-hint")
                (:file "jump-heading")
                (:file "scroll")

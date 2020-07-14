@@ -27,12 +27,6 @@ suggestions."
         (progn (echo "Highlighted word: ~a, spelled incorrectly." word)
                (spell-check-suggest-word :word word))))
 
-(define-parenscript active-input-area-content ()
-  (ps:chain document active-element value))
-
-(define-parenscript active-input-area-cursor ()
-  (ps:chain document active-element selection-start))
-
 (define-command spell-check-word-at-cursor ()
   "Spell check the word at cursor."
   (with-result* ((contents (active-input-area-content))
