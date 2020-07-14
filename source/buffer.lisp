@@ -153,6 +153,11 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
   (hooks:run-hook (window-set-active-buffer-hook window) window buffer)
+  ;; The current buffer last-access time is set to now to ensure it becomes the
+  ;; second newest buffer.  If we didn't update the access time, the buffer
+  ;; last-access time could be older than, say, buffers opened in the
+  ;; background.
+  (setf (last-access (active-buffer window)) (local-time:now))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
@@ -406,7 +411,14 @@ The current buffer access time is set to be the last."
 
 (define-command switch-buffer-next ()   ; TODO: Rename switch-buffer-oldest
   "Switch to the oldest buffer in the list of buffers."
-  (set-current-buffer (alex:last-elt (buffer-list :sort-by-time t))))
+  (let* ((buffers (buffer-list :sort-by-time t))
+         (oldest-buffer (alex:last-elt buffers)))
+    (when (eq oldest-buffer (current-buffer))
+      ;; Current buffer may already be the oldest, e.g. if other buffer was
+      ;; opened in the background.
+      (setf oldest-buffer (or (second (nreverse buffers))
+                              oldest-buffer)))
+    (set-current-buffer oldest-buffer)))
 
 (defun active-mode-suggestion-filter (buffers)
   "Return the union of the active modes in BUFFERS."
