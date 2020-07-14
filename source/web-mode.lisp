@@ -162,7 +162,7 @@ search.")
        "pagedown" 'scroll-page-down))))
   ;; Init.
   ;; TODO: Do we need to set the default URL?  Maybe not.
-  ;; (set-url* (default-new-buffer-url (buffer %mode))
+  ;; (buffer-load (default-new-buffer-url (buffer %mode))
   ;;                 (buffer %mode))
   )
 
@@ -191,7 +191,7 @@ search.")
     (if (and (input-tag-p response)
              (url-empty-p (url-at-point buffer)))
         (funcall-safely #'paste)
-        (set-url* (object-string (url-at-point buffer)) :buffer (make-buffer-focus :url nil)))))
+        (buffer-load (url-at-point buffer) :buffer (make-buffer-focus :url nil)))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."
@@ -209,7 +209,7 @@ search.")
         (echo "History entry is already the current URL.")
         (progn
           (setf (htree:current history) history-node)
-          (set-url* (object-string (url (htree:data history-node))))))))
+          (buffer-load (url (htree:data history-node)))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
@@ -219,7 +219,7 @@ search.")
         (progn
           (htree:back (history mode))
           (match (htree:current (history mode))
-            ((guard n n) (set-url* (object-string (url (htree:data n))))))))))
+            ((guard n n) (buffer-load (url (htree:data n)))))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
@@ -228,7 +228,7 @@ search.")
         (progn
           (htree:forward (history mode))
           (match (htree:current (history mode))
-            ((guard n n) (set-url* (object-string (url (htree:data n)))))))
+            ((guard n n) (buffer-load (url (htree:data n))))))
         (echo "No forward history."))))
 
 (defun history-backwards-suggestion-filter (&optional (mode (find-submode

@@ -437,7 +437,7 @@ Warning: This behaviour may change in the future."
            context
            (gobject:pointer certificate)
            host)
-          (set-url* (object-string url) :buffer buffer)
+          (buffer-load url :buffer buffer)
           t)
         (progn
           (tls-help buffer url)

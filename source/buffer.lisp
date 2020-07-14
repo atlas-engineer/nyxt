@@ -63,10 +63,12 @@ MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
   (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
          (url (if (eq url :default)
-                  (object-string (default-new-buffer-url buffer))
+                  (default-new-buffer-url buffer)
                   url)))
-    (unless (str:emptyp url)
-      (set-url* url :buffer buffer))
+    (unless (if (quri:uri-p url)
+                (url-empty-p url)
+                (str:emptyp url))
+      (buffer-load url :buffer buffer))
     buffer))
 
 (define-class-type buffer)
@@ -281,22 +283,23 @@ to the currently active buffer."
                                           ; to call this.
   (ps:chain document title))
 
-(export-always 'set-url*)
-(declaim (ftype (function (string &key (:buffer buffer) (:raw-url-p boolean)) t) set-url*))
-(defun set-url* (input-url &key (buffer (current-buffer)) raw-url-p)
+(export-always 'buffer-load)
+(declaim (ftype (function ((or quri:uri string) &key (:buffer buffer)) t) buffer-load))
+(defun buffer-load (input-url &key (buffer (current-buffer)))
   "Load INPUT-URL in BUFFER.
-URL is first transformed by `parse-url', then by BUFFER's `set-url-hook'."
-  (let* ((url (if raw-url-p
-                  (quri:uri input-url)
-                  (parse-url input-url))))
+If INPUT-URL is a string, it's transformed to a `quri:uri' by `parse-url'.
+URL is then transformed by BUFFER's `buffer-load-hook'."
+  (let ((url (if (stringp input-url)
+                 (parse-url input-url)
+                 input-url)))
     (handler-case
         (progn
-          (let ((new-url (hooks:run-hook (slot-value buffer 'set-url-hook) url)))
+          (let ((new-url (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)))
             (check-type new-url quri:uri)
-            (setf url new-url)))
+            (setf url new-url)
+            (ffi-buffer-load buffer url)))
       (error (c)
-        (log:error "In `set-url-hook': ~a" c)))
-    (ffi-buffer-load buffer url)))
+        (log:error "In `buffer-load-hook': ~a" c)))))
 
 (defun search-engine-suggestion-filter (minibuffer)
   (with-slots (input-buffer) minibuffer
@@ -373,9 +376,9 @@ complete against a search engine."
         ;; In case read-from-minibuffer returned a string upon
         ;; must-match-p.
         (setf url (url url)))
-      (set-url* (object-string url) :buffer (if new-buffer-p
-                                                (make-buffer-focus :url nil)
-                                                (current-buffer))))))
+      (buffer-load url :buffer (if new-buffer-p
+                                   (make-buffer-focus :url nil)
+                                   (current-buffer))))))
 
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
@@ -387,7 +390,7 @@ complete against a search engine."
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."
-  (set-url* (object-string (url buffer)) :buffer buffer))
+  (buffer-load (url buffer) :buffer buffer))
 
 (define-command reload-buffer ()
   "Reload queried buffer(s)."
