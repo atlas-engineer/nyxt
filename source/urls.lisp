@@ -55,11 +55,13 @@ If it cannot be derived, return an empty `quri:uri'."
            (or (ignore-errors (quri:uri thing))
                (quri:uri "")))))
 
-(declaim (ftype (function (quri:uri) boolean) empty-url-p))
+(declaim (ftype (function ((or quri:uri string null)) boolean) url-empty-p))
 (export-always 'url-empty-p)
 (defun url-empty-p (url)
   "Small convenience function to check whether the given URL is empty."
-  (uiop:emptyp (object-string url)))
+  (the (values boolean &optional)
+       (when url
+         (uiop:emptyp (object-string url)))))
 
 (declaim (ftype (function (quri:uri quri:uri) boolean) schemeless-uri=))
 (defun schemeless-uri= (uri1 uri2)

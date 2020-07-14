@@ -220,7 +220,6 @@ Without handler, return ARG.  This is an acceptable `combination' for
      highlighted-box-style
      proxy
      certificate-whitelist
-     set-url-hook
      buffer-delete-hook
      default-cookie-policy)))
 (defclass buffer ()
@@ -385,11 +384,11 @@ renderers might support this.")
                           :initform '()
                           :type list-of-strings
                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
-   (set-url-hook ;; :accessor set-url-hook ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
+   (buffer-load-hook ;; :accessor buffer-load-hook ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
                  :initform (make-hook-uri->uri
                             :combination #'hooks:combine-composed-hook)
                  :type hook-uri->uri
-                 :documentation "Hook run in `set-url*' after `parse-url' was processed.
+                 :documentation "Hook run in `buffer-load' after `parse-url' was processed.
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
    (buffer-delete-hook :accessor buffer-delete-hook
@@ -987,12 +986,12 @@ This is useful to tell REPL instances from binary ones."
 (declaim (ftype (function (list-of-strings &key (:no-focus boolean)))))
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
-   First URL is focused if NO-FOCUS is nil."
+First URL is focused if NO-FOCUS is nil."
   (handler-case
       (let ((first-buffer (first (mapcar
                                   (lambda (url)
                                     (let ((buffer (make-buffer)))
-                                      (set-url* url :buffer buffer)
+                                      (buffer-load url :buffer buffer)
                                       buffer))
                                   urls))))
         (when (and first-buffer (not no-focus))
