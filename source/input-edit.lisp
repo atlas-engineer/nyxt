@@ -24,8 +24,10 @@
   `(let ((,buffer-name (make-instance 'text-buffer:text-buffer))
          (,cursor-name (make-instance 'text-buffer:cursor)))
      (cluffer:attach-cursor ,cursor-name ,buffer-name)
-     (text-buffer::insert-string ,cursor-name ,initial-contents)
-     (setf (cluffer:cursor-position ,cursor-name) (parse-integer ,initial-cursor-position))
+     (when ,initial-contents
+       (text-buffer::insert-string ,cursor-name ,initial-contents))
+     (when ,initial-cursor-position
+       (setf (cluffer:cursor-position ,cursor-name) (parse-integer ,initial-cursor-position)))
      ,@body))
 
 (defmacro with-input-area ((contents cursor-position) &body body)
