@@ -434,7 +434,7 @@ The current buffer access time is set to be the last."
   (let ((all-non-minibuffer-modes
          (delete-if (lambda (m)
                       (closer-mop:subclassp (find-class m)
-                                            (find-class 'minibuffer-mode)))
+                                            (find-class 'nyxt/minibuffer-mode:minibuffer-mode)))
                     (mode-list)))
         (common-modes (reduce #'intersection
                               (mapcar (lambda (b)
