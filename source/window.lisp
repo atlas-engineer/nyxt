@@ -1,5 +1,94 @@
 (in-package :nyxt)
 
+(defclass window ()
+  ((id :accessor id
+       :initarg :id
+       :type string
+       :initform "")
+   (active-buffer :reader active-buffer :initform nil)
+   (active-minibuffers :accessor active-minibuffers :initform nil
+                       :documentation "The stack of currently active minibuffers.")
+   (status-buffer-height :accessor status-buffer-height :initform 16
+                         :type integer
+                         :documentation "The height of the status buffer in pixels.")
+   (status-buffer-style :accessor status-buffer-style :initform
+                        (cl-css:css
+                         '((body
+                            :background "rgb(224, 224, 224)"
+                            :font-size "12px"
+                            :color "rgb(32, 32, 32)"
+                            :padding 0
+                            :padding-left "4px"
+                            :margin 0))))
+   (message-buffer-height :accessor message-buffer-height :initform 16
+                          :type integer
+                          :documentation "The height of the message buffer in pixels.")
+   (message-buffer-style :accessor message-buffer-style :initform
+                         (cl-css:css
+                          '((body
+                             :font-size "12px"
+                             :padding 0
+                             :padding-left "4px"
+                             :margin 0))))
+   (minibuffer-open-height :accessor minibuffer-open-height :initform 256
+                           :type integer
+                           :documentation "The height of the minibuffer when open.")
+   (minibuffer-open-single-line-height :accessor minibuffer-open-single-line-height
+                                       :initform 35
+                                       :type integer
+                                       :documentation "The height of
+ the minibuffer when open for a single line of input.")
+   (input-dispatcher :accessor input-dispatcher
+                     :initform #'dispatch-input-event
+                     :type function
+                     :documentation "Function to process input events.
+It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
+Cannot be null.")
+   (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
+                                  :initform (make-hook-window-buffer)
+                                  :type hook-window-buffer
+                                  :documentation "Hook run before `window-set-active-buffer' takes effect.
+The handlers take the window and the buffer as argument.")
+   (status-formatter :accessor status-formatter
+                     :initform #'format-status
+                     :type (function (window) string)
+                     :documentation "Function of a window argument that returns
+a string to be printed in the status view.
+Cannot be null.
+
+Example formatter that prints the buffer indices over the total number of buffers:
+
+\(defun my-format-status (window)
+  (let* ((buffer (current-buffer window))
+         (buffer-count (1+ (or (position buffer
+                                         (sort (buffer-list)
+                                               #'string<
+                                               :key #'id))
+                               0))))
+    (str:concat
+     (markup:markup
+      (:b (format nil \"[~{~a~^ ~}]\"
+                  (mapcar (lambda (m) (str:replace-all \"-mode\" \"\"
+                                                       (str:downcase
+                                                        (class-name (class-of m)))))
+                          (modes buffer)))))
+     (format nil \" (~a/~a) \"
+             buffer-count
+             (length (buffer-list)))
+     (format nil \"~a~a — ~a\"
+            (if (eq (slot-value buffer 'load-status) :loading)
+                \"(Loading) \"
+                \"\")
+            (object-display (url buffer))
+            (title buffer)))))")
+   (window-delete-hook :accessor window-delete-hook
+                       :initform (make-hook-window)
+                       :type hook-window
+                       :documentation "Hook run after `ffi-window-delete' takes effect.
+The handlers take the window as argument.")))
+
+(hooks:define-hook-type window (function (window)))
+
 (define-class-type window)
 (declaim (type (window-type) *window-class*))
 (export-always '*window-class*)

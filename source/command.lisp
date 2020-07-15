@@ -1,5 +1,8 @@
 (in-package :nyxt)
 
+(defvar *command-list* '()
+  "The list of known commands, for internal use only.")
+
 ;; We need a `command' class for multiple reasons:
 ;; - Identify commands uniquely (although being a member of `*command-list*' is enough).
 ;;

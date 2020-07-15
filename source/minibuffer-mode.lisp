@@ -63,6 +63,58 @@
     ;; for the mode.
     )))
 
+(define-mode set-url-mode (nyxt/minibuffer-mode:minibuffer-mode)
+  "Minibuffer mode for setting the URL of a buffer."
+  ((keymap-scheme
+    :initform
+    (define-scheme "set-url"
+      scheme:cua
+      (list
+       "tab" 'insert-suggestion-or-search-engine)))))
+
+(defun search-engine-suggestion-filter (minibuffer)
+  (with-slots (input-buffer) minibuffer
+    (let* ((matched-engines
+             (remove-if-not
+              (lambda (engine)
+                (str:starts-with-p (text-buffer::string-representation input-buffer)
+                                   (shortcut engine)
+                                   :ignore-case t))
+              (search-engines *browser*)))
+           (fuzzy-matched-engines
+            (fuzzy-match (input-buffer minibuffer)
+                         (set-difference (search-engines *browser*) matched-engines))))
+      (append matched-engines fuzzy-matched-engines))))
+
+(define-command insert-suggestion-or-search-engine (&optional (minibuffer (current-minibuffer)))
+  "Paste selected suggestion or search engine to input.
+If minibuffer input is not empty and the selection is on first position,
+complete against a search engine."
+  (cond
+    ;; Complete a search engine name.
+    ((and (not (str:emptyp (input-buffer minibuffer)))
+          (zerop (nyxt::suggestion-cursor minibuffer)))
+     (let* ((engines (search-engines *browser*))
+            (matching-engines
+              (remove-if (complement (alex:curry #'str:starts-with-p (input-buffer minibuffer)))
+                         engines
+                         :key #'shortcut)))
+       (match (length matching-engines)
+         (1
+          (kill-whole-line minibuffer)
+          (insert minibuffer (str:concat (shortcut (first matching-engines)) " ")))
+         (match-count
+          (with-result (engine (read-from-minibuffer
+                                (make-minibuffer
+                                 :input-prompt "Search engine"
+                                 :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
+                                 :suggestion-function #'search-engine-suggestion-filter)))
+            (when engine
+              (kill-whole-line minibuffer)
+              (insert minibuffer (str:concat (shortcut engine) " "))))))))
+    (t
+     (insert-suggestion minibuffer))))
+
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
   (with-slots (nyxt::callback must-match-p nyxt::suggestions nyxt::suggestion-cursor
