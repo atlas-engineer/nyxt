@@ -1,5 +1,192 @@
 (in-package :nyxt)
 
+(defclass buffer ()
+  ((id :accessor id
+       :initarg :id
+       :type string
+       :initform ""
+       :documentation "Unique identifier for a buffer.
+Dead buffers or placeholder buffers (i.e. those not associated with a web view)
+have an empty ID.")
+   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
+   (url :accessor url :initarg :url :type quri:uri :initform (quri:uri ""))
+   (url-at-point :accessor url-at-point :type quri:uri :initform (quri:uri ""))
+   (title :accessor title :initarg :title :type string :initform "")
+   (load-status ;; :accessor load-status ; TODO: Need to decide if we want progress / errors before exposing to the user.
+                :initarg :load-status
+                :type (or (eql :loading)
+                          (eql :finished)
+                          (eql :unloaded))
+                :initform :unloaded
+                :documentation "The status of the buffer.
+- `:loading' when loading a web resource.
+- `:finished' when done loading a web resource.
+- `:unloaded' for buffers that have not been loaded yet, like
+  session-restored buffers, dead buffers or new buffers that haven't started the
+  loading process yet..")
+   (last-access :accessor last-access
+                :initform (local-time:now)
+                :type local-time:timestamp
+                :documentation "Timestamp when the buffer was last switched to.")
+   (modes :accessor modes :initarg :modes :initform '()
+          :documentation "The list of mode instances.")
+   (default-modes :accessor default-modes :initarg :default-modes
+                  :initform '(certificate-whitelist-mode web-mode base-mode)
+                  :type list-of-symbols
+                  :documentation "The symbols of the classes to instantiate on buffer creation.")
+   (keymap-scheme-name
+    :accessor keymap-scheme-name
+    :initarg :keymap-scheme-name
+    :initform scheme:cua
+    :type keymap:scheme-name
+    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+   (current-keymaps-hook
+    :accessor current-keymaps-hook
+    :initarg :current-keymaps-hook
+    :type hook-keymaps-buffer
+    :initform (make-hook-keymaps-buffer
+               :combination #'hooks:combine-composed-hook)
+    :documentation "Hook run as a return value of `current-keymaps'.")
+   (override-map :accessor override-map
+                 :initarg :override-map
+                 :initform (let ((map (make-keymap "overide-map")))
+                             (define-key map
+                               "C-space" 'execute-command))
+                 :documentation "Keymap that overrides all other bindings.
+No libraries should ever touch the override-map, this is left for the user to
+customize to their needs.
+
+Example:
+
+\(define-configuration buffer
+  ((override-map (let ((map (make-keymap \"overide-map\")))
+                             (define-key map
+                               \"M-x\" 'execute-command
+                               \"C-q\" 'quit)
+                   map))))")
+   (forward-input-events-p :accessor forward-input-events-p
+                           :initarg :forward-input-events-p
+                           :type boolean
+                           :initform t
+                           :documentation "When non-nil, keyboard events are
+forwarded to the renderer when no binding is found.  Pointer
+events (e.g. mouse events) are not affected by this, they are always
+forwarded when no binding is found.")
+   (last-event :accessor last-event
+               :initform nil
+               ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
+               :documentation "The last event that was received for the current buffer.")
+   (request-resource-scheme :accessor request-resource-scheme
+                            :initarg :request-resource-scheme
+                            :initform (define-scheme "request-resource"
+                                        scheme:cua
+                                        (list
+                                         "C-button1" 'request-resource-open-url-focus
+                                         "button2" 'request-resource-open-url-focus
+                                         "C-shift-button1" 'request-resource-open-url))
+                            :documentation "This keymap can be looked up when
+`request-resource-hook' handlers run.
+The functions are expected to take key arguments like `:url'.")
+   (request-resource-hook :accessor request-resource-hook
+                          :initarg :request-resource-hook
+                          :initform (make-hook-resource
+                                     :combination #'combine-composed-hook-until-nil
+                                     :handlers (list #'request-resource))
+                          :documentation "Hook run on every resource load.
+The handlers are composed, passing a `request-data'
+until one of them returns nil or all handlers apply successfully.
+
+Newest hook is run first.
+If a `request-data' object is returned, it gets passed to other handlers
+or right to the renderer if there are no more handlers.
+If nil is returned, stop the hook and cancel the resource load.
+
+There's no more ability to pass the results to the renderer with :FORWARD.
+
+Example:
+
+\(define-configuration buffer
+  ((request-resource-hook
+    (reduce #'hooks:add-hook
+            (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
+            :initial-value %slot-default))))")
+   (default-new-buffer-url :accessor default-new-buffer-url
+                           :initform (quri:uri "https://nyxt.atlas.engineer/start")
+                           :documentation "The URL set to a new blank buffer opened by Nyxt.")
+   (scroll-distance :accessor scroll-distance :initform 50 :type number
+                    :documentation "The distance scroll-down or scroll-up will scroll.")
+   (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50 :type number
+                               :documentation "Horizontal scroll distance. The
+distance scroll-left or scroll-right will scroll.")
+   (current-zoom-ratio :accessor current-zoom-ratio :initform 1.0 :type number
+                       :documentation "The current zoom relative to the default zoom.")
+   (zoom-ratio-step :accessor zoom-ratio-step :initform 0.2 :type number
+                    :documentation "The step size for zooming in and out.")
+   (zoom-ratio-min :accessor zoom-ratio-min :initform 0.2 :type number
+                   :documentation "The minimum zoom ratio relative to the default.")
+   (zoom-ratio-max :accessor zoom-ratio-max :initform 5.0 :type number
+                   :documentation "The maximum zoom ratio relative to the default.")
+   (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0 :type number
+                       :documentation "The default zoom ratio.")
+   (page-scroll-ratio :accessor page-scroll-ratio
+                      :type number
+                      :initform 0.90
+                      :documentation "The ratio of the page to scroll.
+A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
+down.")
+   (cookies-path :accessor cookies-path
+                 :initform (make-instance 'cookies-data-path :basename "cookies.txt")
+                 :documentation "The path where cookies are stored.  Not all
+renderers might support this.")
+   (box-style :accessor box-style
+              :initform (cl-css:css
+                         '((".nyxt-hint"
+                            :background "linear-gradient(#fcff9e, #efcc00)"
+                            :color "black"
+                            :border "1px black solid"
+                            :padding "1px 3px 1px 3px"
+                            :border-radius "2px"
+                            :z-index #.(1- (expt 2 31)))))
+              :documentation "The style of the boxes, e.g. link hints.")
+   (highlighted-box-style :accessor highlighted-box-style
+                          :initform (cl-css:css
+                                     '((".nyxt-hint.nyxt-highlight-hint"
+                                        :font-weight "500"
+                                        :background "#fcff9e")))
+
+                          :documentation "The style of highlighted boxes, e.g. link hints.")
+   (proxy :initform nil
+          :type (or proxy null)
+          :documentation "Proxy for buffer.")
+   (certificate-whitelist :accessor certificate-whitelist
+                          :initform '()
+                          :type list-of-strings
+                          :documentation  "A list of hostnames for which certificate errors shall be ignored.")
+   (buffer-load-hook ;; :accessor buffer-load-hook ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
+                 :initform (make-hook-uri->uri
+                            :combination #'hooks:combine-composed-hook)
+                 :type hook-uri->uri
+                 :documentation "Hook run in `buffer-load' after `parse-url' was processed.
+The handlers take the URL going to be loaded as argument
+and must return a (possibly new) URL.")
+   (buffer-delete-hook :accessor buffer-delete-hook
+                       :initform (make-hook-buffer)
+                       :type hook-buffer
+                       :documentation "Hook run before `buffer-delete' takes effect.
+The handlers take the buffer as argument.")
+   (default-cookie-policy :accessor default-cookie-policy
+                          :initarg :default-cookie-policy
+                          :type cookie-policy
+                          :initform :no-third-party
+                          :documentation "Cookie policy of new buffers.
+Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
+`:no-third-party' (accept cookies for current website only).")))
+(unexport
+ '(last-access
+   last-event))
+
+(hooks:define-hook-type buffer (function (buffer)))
+
 (defclass-export buffer-description ()
   ((url :initarg :url
         :type (or quri:uri string)
@@ -298,58 +485,6 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
             (ffi-buffer-load buffer url)))
       (error (c)
         (log:error "In `buffer-load-hook': ~a" c)))))
-
-(defun search-engine-suggestion-filter (minibuffer)
-  (with-slots (input-buffer) minibuffer
-    (let* ((matched-engines
-             (remove-if-not
-              (lambda (engine)
-                (str:starts-with-p (text-buffer::string-representation input-buffer)
-                                   (shortcut engine)
-                                   :ignore-case t))
-              (search-engines *browser*)))
-           (fuzzy-matched-engines
-            (fuzzy-match (input-buffer minibuffer)
-                         (set-difference (search-engines *browser*) matched-engines))))
-      (append matched-engines fuzzy-matched-engines))))
-
-(define-command insert-suggestion-or-search-engine (&optional (minibuffer (current-minibuffer)))
-  "Paste selected suggestion or search engine to input.
-If minibuffer input is not empty and the selection is on first position,
-complete against a search engine."
-  (cond
-    ;; Complete a search engine name.
-    ((and (not (str:emptyp (input-buffer minibuffer)))
-          (zerop (suggestion-cursor minibuffer)))
-     (let* ((engines (search-engines *browser*))
-            (matching-engines
-              (remove-if (complement (alex:curry #'str:starts-with-p (input-buffer minibuffer)))
-                         engines
-                         :key #'shortcut)))
-       (match (length matching-engines)
-         (1
-          (nyxt/minibuffer-mode:kill-whole-line minibuffer)
-          (insert minibuffer (str:concat (shortcut (first matching-engines)) " ")))
-         (match-count
-          (with-result (engine (read-from-minibuffer
-                                (make-minibuffer
-                                 :input-prompt "Search engine"
-                                 :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
-                                 :suggestion-function #'search-engine-suggestion-filter)))
-            (when engine
-              (nyxt/minibuffer-mode:kill-whole-line minibuffer)
-              (insert minibuffer (str:concat (shortcut engine) " "))))))))
-    (t
-     (nyxt/minibuffer-mode:insert-suggestion minibuffer))))
-
-(define-mode set-url-mode (nyxt/minibuffer-mode:minibuffer-mode)
-  "Minibuffer mode for setting the URL of a buffer."
-  ((keymap-scheme
-    :initform
-    (define-scheme "set-url"
-      scheme:cua
-      (list
-       "tab" 'insert-suggestion-or-search-engine)))))
 
 (define-command set-url (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
