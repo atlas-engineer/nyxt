@@ -144,7 +144,12 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
 
 (defun package-classes ()
   "Return the list of class symbols in Nyxt-related-packages."
-  (delete-if (complement (alex:rcurry #'find-class nil)) (package-defined-symbols)))
+  (delete-if (lambda (sym)
+               (not (and (find-class sym nil)
+                         ;; Discard non-standard objects such as structures or
+                         ;; conditions because they don't have public slots.
+                         (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
+             (package-defined-symbols)))
 
 (defclass slot ()
   ((name :initarg :name
