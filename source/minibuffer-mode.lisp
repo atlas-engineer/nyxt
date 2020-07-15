@@ -1,8 +1,3 @@
-(uiop:define-package :nyxt/minibuffer-mode
-  (:use :common-lisp :trivia :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:export-always)
-  (:documentation "Mode for minibuffer"))
 (in-package :nyxt/minibuffer-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)

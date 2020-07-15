@@ -27,4 +27,12 @@ It's recommended to use this package in the Nyxt configuration file, instead of
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user))
 
 (uiop:define-package parenscript-user
-  (:use :common-lisp :nyxt :parenscript))
+    (:use :common-lisp :nyxt :parenscript))
+
+(uiop:define-package :nyxt/minibuffer-mode
+  (:use :common-lisp :trivia :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:export-always)
+  (:export :minibuffer-mode)
+  (:documentation "Mode for minibuffer"))
+
