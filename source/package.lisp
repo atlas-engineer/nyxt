@@ -29,6 +29,10 @@ It's recommended to use this package in the Nyxt configuration file, instead of
 (uiop:define-package parenscript-user
     (:use :common-lisp :nyxt :parenscript))
 
+
+;; Unlike other modes, nyxt/minibuffer-mode is declared here because
+;; certain files depend upon its existence being declared beforehand
+;; (for compilation).
 (uiop:define-package :nyxt/minibuffer-mode
   (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
