@@ -2,6 +2,7 @@ Usage:
 
    make all                 Create Nyxt.
    make install             Install Nyxt.
+   make doc                 Generate Nyxt documentation (as a fallback).
 
 Set DESTDIR to change the target destinatation.  It should be
 an absolute path.
@@ -28,3 +29,9 @@ make all NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
 WARNING: Make sure your Quicklisp distribution is up-to-date when using
 NYXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
 libraries that should follow master.
+
+The documentation generation is mostly useful if you cannot consult the
+documention in Nyxt itself.  Since the manual is normally dynamically generated
+at runtime (for instance the paths and the bindings are printed according to the
+user configuration), the static doc generation can only display the default
+values.

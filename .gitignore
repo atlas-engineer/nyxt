@@ -26,3 +26,6 @@ Nyxt.app
 *.sx32fsl
 *.wx64fsl
 *.wx32fsl
+
+# Generated doc
+manual.html

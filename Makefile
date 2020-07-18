@@ -132,6 +132,18 @@ build-deps: quicklisp-extra-libs
 deps:
 	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) build-deps || true
 
+manual.html: $(lisp_files)
+	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
+		--load nyxt.asd \
+		--eval '(asdf:load-system :nyxt)' \
+		--eval '(with-open-file  (out "manual.html" :direction :output) (write-string (nyxt::manual-content) out))' \
+		--eval '(uiop:quit)'
+
+.PHONY: doc
+doc: manual.html
+
 .PHONY: check
 check: check-asdf check-binary
 
