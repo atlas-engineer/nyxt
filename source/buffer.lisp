@@ -573,13 +573,17 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 (define-command switch-buffer-previous ()
   "Switch to the previous buffer in the list of buffers.
 That is to say, the one with the most recent access time after the current buffer.
-The current buffer access time is set to be the last."
+The current buffer access time is set to be the last so that if we keep calling
+this command it cycles through all buffers."
   (let* ((buffers (buffer-list :sort-by-time t))
-         (last-buffer (alex:last-elt buffers)))
+         (last-buffer (alex:last-elt buffers))
+         (current-buffer (current-buffer)))
     (when (second buffers)
-      (setf (last-access (current-buffer))
-            (local-time:timestamp- (last-access last-buffer) 1 :sec))
-      (set-current-buffer (second buffers)))))
+      (set-current-buffer (second buffers))
+      ;; Set the last-access time after switching buffer, since switching
+      ;; buffers already sets the slot.
+      (setf (last-access current-buffer)
+            (local-time:timestamp- (last-access last-buffer) 1 :sec)))))
 
 (define-command switch-buffer-next ()   ; TODO: Rename switch-buffer-oldest
   "Switch to the oldest buffer in the list of buffers."
