@@ -963,8 +963,9 @@ sometimes yields the wrong reasult."
   (or %buffer
       (match (or window (current-window))
         ((guard w w) (active-buffer w))
-        (_ (log:debug "No active window, picking last active buffer.")
-           (last-active-buffer *browser*)))))
+        (_ (when *browser*
+             (log:debug "No active window, picking last active buffer.")
+             (last-active-buffer *browser*))))))
 
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)
