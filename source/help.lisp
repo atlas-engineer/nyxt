@@ -383,8 +383,14 @@ The version number is stored in the clipboard."
   (echo "Messages cleared."))
 
 (declaim (ftype (function (function-symbol &key (:modes list))) binding-keys))
-(defun binding-keys (fn &key (modes (modes (current-buffer))))
-  (let ((keymaps (cons (override-map (current-buffer))
+(defun binding-keys (fn &key (modes (if (current-buffer)
+                                        (modes (current-buffer))
+                                        (mapcar #'make-instance (default-mode-symbols)))))
+  ;; We can't use `(modes (make-instance 'buffer))' because modes are only
+  ;; instantiated after the buffer web view, which is not possible if there is
+  ;; no *browser*.
+  (let ((keymaps (cons (override-map (or (current-buffer)
+                                         (make-instance 'buffer)))
                        (delete nil (mapcar #'keymap modes)))))
     (or (first (keymap:binding-keys fn keymaps))
         "UNBOUND")))

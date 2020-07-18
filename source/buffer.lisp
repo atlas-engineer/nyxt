@@ -185,6 +185,13 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
  '(last-access
    last-event))
 
+(defun default-mode-symbols ()
+  "Return default mode symbols (with package prefix)."
+  (let ((default-modes
+          (second (getf (mopu:slot-properties (find-class 'buffer) 'default-modes)
+                        :initform))))
+    (mapcar (alex:compose #'sym #'mode-command) default-modes)))
+
 (hooks:define-hook-type buffer (function (buffer)))
 
 (defclass-export buffer-description ()
