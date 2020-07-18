@@ -179,22 +179,24 @@ toggle command, return the toggle command of the parent."
         (nil nil)
         (c (mode-command (class-name (first (mopu:direct-superclasses c))))))))
 
+(defun make-mode (mode-symbol buffer)
+  (log:debug mode-symbol buffer (mode-command mode-symbol))
+  (match (mode-command mode-symbol)
+    ((guard c c) (funcall (sym c) :buffer buffer :activate t))
+    (_ (log:warn "Mode command ~a not found." mode-symbol))))
+
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
    This must be called after BUFFER has been created by the renderer.
    See `buffer-make'."
   (let ((root-mode (make-instance 'root-mode :buffer buffer)))
-    (dolist (mode-class (reverse (default-modes buffer)))
+    (dolist (mode-symbol (reverse (default-modes buffer)))
       ;; ":activate t" should not be necessary here since (modes buffer) should be
       ;; empty.
       ;; For now, root-mode does not have an associated command.
-      (if (eq mode-class 'root-mode)
+      (if (eq mode-symbol 'root-mode)
           (push root-mode (modes buffer))
-          (progn
-            (log:debug mode-class buffer (mode-command mode-class))
-            (match (mode-command mode-class)
-              ((guard c c) (funcall (sym c) :buffer buffer :activate t))
-              (_ (log:warn "Mode command ~a not found." mode-class))))))))
+          (make-mode mode-symbol buffer)))))
 
 (export-always 'on-signal-notify-uri)
 (defmethod on-signal-notify-uri ((buffer buffer) no-uri)
