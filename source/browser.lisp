@@ -42,25 +42,6 @@ Parent directories are created if necessary."
        (with-maybe-gpg-file (,stream path ,@options)
          ,@body))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'window)
-  (export
-   '(id
-     status-buffer-height
-     status-buffer-style
-     message-buffer-height
-     message-buffer-style
-     minibuffer-open-height
-     minibuffer-open-single-line-height
-     input-dispatcher
-     window-set-active-buffer-hook
-     status-formatter
-     window-delete-hook)))
-
-(unexport
- '(active-buffer
-   active-minibuffers))
-
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)
   (print-status))
@@ -100,39 +81,6 @@ Without handler, return ARG.  This is an acceptable `combination' for
                      (compose-handlers (rest handlers) new-result)))
                  result)))
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'buffer)
-  (export
-   '(id
-     url
-     url-at-point
-     title
-     load-status
-     modes
-     default-modes
-     keymap-scheme-name
-     current-keymaps-hook
-     override-map
-     forward-input-events-p
-     request-resource-scheme
-     request-resource-hook
-     default-new-buffer-url
-     scroll-distance
-     horizontal-scroll-distance
-     current-zoom-ratio
-     zoom-ratio-step
-     zoom-ratio-min
-     zoom-ratio-max
-     zoom-ratio-default
-     page-scroll-ratio
-     cookies-path
-     box-style
-     highlighted-box-style
-     proxy
-     certificate-whitelist
-     buffer-delete-hook
-     default-cookie-policy)))
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))

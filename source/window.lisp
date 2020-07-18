@@ -1,5 +1,19 @@
 (in-package :nyxt)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'window)
+  (export
+   '(id
+     status-buffer-height
+     status-buffer-style
+     message-buffer-height
+     message-buffer-style
+     minibuffer-open-height
+     minibuffer-open-single-line-height
+     input-dispatcher
+     window-set-active-buffer-hook
+     status-formatter
+     window-delete-hook)))
 (defclass window ()
   ((id :accessor id
        :initarg :id

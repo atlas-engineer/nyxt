@@ -1,5 +1,37 @@
 (in-package :nyxt)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'buffer)
+  (export
+   '(id
+     url
+     url-at-point
+     title
+     load-status
+     modes
+     default-modes
+     keymap-scheme-name
+     current-keymaps-hook
+     override-map
+     forward-input-events-p
+     request-resource-scheme
+     request-resource-hook
+     default-new-buffer-url
+     scroll-distance
+     horizontal-scroll-distance
+     current-zoom-ratio
+     zoom-ratio-step
+     zoom-ratio-min
+     zoom-ratio-max
+     zoom-ratio-default
+     page-scroll-ratio
+     cookies-path
+     box-style
+     highlighted-box-style
+     proxy
+     certificate-whitelist
+     buffer-delete-hook
+     default-cookie-policy)))
 (defclass buffer ()
   ((id :accessor id
        :initarg :id
@@ -181,9 +213,6 @@ The handlers take the buffer as argument.")
                           :documentation "Cookie policy of new buffers.
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only).")))
-(unexport
- '(last-access
-   last-event))
 
 (defun default-mode-symbols ()
   "Return default mode symbols (with package prefix)."
