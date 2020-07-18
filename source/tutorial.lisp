@@ -136,7 +136,8 @@ place rather than having to jump around on a buffer (or multiple buffers).")
     (:li (command-markup 'nyxt/web-mode:remove-search-hints) ": Remove the highlighting around the search hits."))
    (:h3 "Bookmarks")
    (:p "The bookmark file "
-       (:code (expand-path (bookmarks-path *browser*)))
+       (:code (expand-path (bookmarks-path (or *browser*
+                                               (make-instance 'browser)))))
        " is made to be human readable and editable.
 Bookmarks can have the following settings:")
    (:ul
