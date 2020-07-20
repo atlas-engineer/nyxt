@@ -101,6 +101,14 @@ Example formatter that prints the buffer indices over the total number of buffer
                        :documentation "Hook run after `ffi-window-delete' takes effect.
 The handlers take the window as argument.")))
 
+(defun print-status (&optional status window)
+  (let ((window (or window (current-window))))
+    (when window
+      (ffi-print-status
+       window
+       (or status
+           (funcall-safely (status-formatter window) window))))))
+
 (hooks:define-hook-type window (function (window)))
 
 (define-class-type window)
@@ -169,4 +177,3 @@ The handlers take the window as argument.")))
 (define-command unfullscreen-current-window (&optional (window (current-window)))
   "Unfullscreen WINDOW, or the currently active window if unspecified."
   (ffi-window-unfullscreen window))
-

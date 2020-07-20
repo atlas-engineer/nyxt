@@ -214,6 +214,67 @@ The handlers take the buffer as argument.")
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only).")))
 
+(defmethod proxy ((buffer buffer))
+  (slot-value buffer 'proxy))
+
+(defmethod (setf proxy) (proxy (buffer buffer))
+  (setf (slot-value buffer 'proxy) proxy)
+  (if proxy
+      (ffi-buffer-set-proxy buffer
+                            (server-address proxy)
+                            (whitelist proxy))
+      (ffi-buffer-set-proxy buffer
+                            (quri:uri "")
+                            nil)))
+
+(declaim (ftype (function (buffer &key (:downloads-only boolean))) proxy-adress))
+(defun proxy-address (buffer &key (downloads-only nil))
+  "Return the proxy address, nil if not set.
+If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
+when `proxied-downloads-p' is true."
+  (let* ((proxy (and buffer (proxy buffer)))
+         (proxied-downloads (and proxy (proxied-downloads-p proxy))))
+    (when (or (not downloads-only)
+              proxied-downloads)
+      (server-address proxy))))
+
+(defmethod initialize-modes ((buffer buffer))
+  "Initialize BUFFER modes.
+This must be called after BUFFER has been created by the renderer.
+See `buffer-make'."
+  (dolist (mode-symbol (reverse (default-modes buffer)))
+    (make-mode mode-symbol buffer)))
+
+(export-always 'on-signal-notify-uri)
+(defmethod on-signal-notify-uri ((buffer buffer) no-uri)
+  "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
+BUFFER's modes."
+  (declare (ignore no-uri))
+  (setf (url buffer) (ffi-buffer-uri buffer))
+  (dolist (mode (modes buffer))
+    (on-signal-notify-uri mode (url buffer)))
+  (url buffer))
+
+(export-always 'on-signal-notify-title)
+(defmethod on-signal-notify-title ((buffer buffer) no-title)
+  "Set BUFFER's `title' slot, then dispatch `on-signal-notify-title' over the
+BUFFER's modes."
+  (declare (ignore no-title))
+  (setf (title buffer) (ffi-buffer-title buffer))
+  (dolist (mode (modes buffer))
+    (on-signal-notify-title mode (url buffer)))
+  (title buffer))
+
+(export-always 'on-signal-load-committed)
+(defmethod on-signal-load-committed ((buffer buffer) url)
+  (declare (ignore buffer url))
+  nil)
+
+(export-always 'on-signal-load-finished)
+(defmethod on-signal-load-finished ((buffer buffer) url)
+  (dolist (mode (modes buffer))
+    (on-signal-load-finished mode url)))
+
 (defun default-mode-symbols ()
   "Return default mode symbols (with package prefix)."
   (let ((default-modes
