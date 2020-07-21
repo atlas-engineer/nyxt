@@ -33,12 +33,13 @@ See the `add-domain-to-certificate-whitelist' command."
                                                             'web-mode)))
   "Suggestion function over all parent URLs."
   (let ((parents (htree:parent-nodes (history mode))))
-    (push (htree:current (history mode)) parents)
-    (setf parents (remove-if #'str:emptyp parents :key (alex:compose  #'url #'htree:data)))
+    (when (htree:current (history mode))
+      (push (htree:current (history mode)) parents))
+    (setf parents (remove-if #'url-empty-p parents :key (alex:compose #'url #'htree:data)))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
-          (error "Cannot navigate backwards.")))))
+          '()))))
 
 (define-command add-domain-to-certificate-whitelist (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate whitelist.
@@ -52,7 +53,7 @@ To make this change permanent, you can customize
   (if (find-submode buffer 'certificate-whitelist-mode)
       (with-result (input (read-from-minibuffer
                            (make-minibuffer
-                            :input-prompt "URL host to whitelist:"
+                            :input-prompt "URL host to whitelist"
                             :suggestion-function (previous-history-urls-suggestion-filter))))
         (unless (url-empty-p (url (htree:data input)))
           (let ((host (quri:uri-host (url (htree:data input)))))
