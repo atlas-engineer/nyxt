@@ -105,4 +105,34 @@
              (htree:back (make-tree1)))
             '("http://example.root/B2" "http://example.root/B1")))
 
+(prove:subtest
+    "Move existing child to first position on add."
+  (let ((tree (make-tree2)))
+    (prove:is (htree:data (htree:current tree))
+              "http://example.root/B")
+    (htree:back tree)
+    (prove:is (htree:data (htree:current tree))
+              "http://example.root")
+    (htree:add-child "http://example.root/A" tree)
+    (prove:is (htree:data (htree:current tree))
+              "http://example.root/A")))
+
+(defun trim-scheme (url)
+  (let ((delimiter "://"))
+    (subseq url (+ (length delimiter) (search delimiter url)))))
+
+(defun scheme-less-url= (url1 url2)
+  (string= (trim-scheme url1)
+           (trim-scheme url2)))
+
+(prove:subtest
+    "Update current node data."
+  (let ((tree (make-tree2)))
+    (htree:add-child "https://example.root/B" tree :test #'scheme-less-url=)
+    (prove:is (htree:data (htree:current tree))
+              "https://example.root/B")
+    (htree:back tree)
+    (prove:is (htree:data (htree:current tree))
+              "http://example.root")))
+
 (prove:finalize)
