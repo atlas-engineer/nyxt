@@ -102,15 +102,19 @@ Example:
     `(with-result ,(first bindings)
        (with-result* ,(rest bindings) ,@body))))
 
-(defparameter *yes-no-choices* '("yes" "no"))
+(export-always '*yes-no-choices*)
+(defparameter *yes-no-choices* '("yes" "no")
+  "The suggestions when asking the user for a yes/no choice.
+The first one is the 'yes' choice, the second is 'no'.")
 
 (defun yes-no-suggestion-filter ()
   (lambda (minibuffer)
     (fuzzy-match (input-buffer minibuffer) *yes-no-choices*)))
 
 (defun confirmed-p (answer)
-  (string-equal answer "yes"))
+  (string-equal answer (first *yes-no-choices*)))
 
+(export-always 'with-confirm)
 (defmacro with-confirm (prompt &body body)
   "Ask the user for confirmation before executing BODY.
 PROMPT is a list fed to `format nil'.
