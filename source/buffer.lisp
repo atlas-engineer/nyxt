@@ -60,12 +60,18 @@ have an empty ID.")
                 :initform (local-time:now)
                 :type local-time:timestamp
                 :documentation "Timestamp when the buffer was last switched to.")
-   (modes :accessor modes :initarg :modes :initform '()
-          :documentation "The list of mode instances.")
-   (default-modes :accessor default-modes :initarg :default-modes
-                  :initform '(certificate-whitelist-mode web-mode base-mode)
+   (modes :accessor modes
+          :initform '()
+          :documentation "The list of mode instances.
+Modes are instantiated after the `default-modes' slot, with `initialize-modes'
+and not in the initform so that the instantiation form can access the
+initialized buffer.")
+   (default-modes :accessor default-modes
+                  :initarg :default-modes
                   :type list-of-symbols
-                  :documentation "The symbols of the classes to instantiate on buffer creation.")
+                  :initform '(certificate-whitelist-mode web-mode base-mode)
+                  :documentation "The symbols of the modes to instantiate on buffer creation.
+The mode instances are stored in the `modes' slot.")
    (keymap-scheme-name
     :accessor keymap-scheme-name
     :initarg :keymap-scheme-name
