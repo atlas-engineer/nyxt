@@ -395,16 +395,16 @@ Otherwise go forward to the only child."
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
-  (unless (url-empty-p url)
-    (unless (find-if (alex:rcurry #'str:starts-with? (object-string url))
-                     (history-blacklist mode))
-      (htree:add-child (make-instance 'buffer-description
-                                      :url url
-                                      :title (title (buffer mode)))
-                       (history mode)
-                       :test #'equals)
+  (unless (or (url-empty-p url)
+              (find-if (alex:rcurry #'str:starts-with? (object-string url))
+                       (history-blacklist mode)))
+    (htree:add-child (make-instance 'buffer-description
+                                    :url url
+                                    :title (title (buffer mode)))
+                     (history mode)
+                     :test #'equals)
 
-      (history-add url :title (title (buffer mode)))))
+    (history-add url :title (title (buffer mode))))
 
   (match (session-store-function *browser*)
     ((guard f f) (funcall-safely f)))
