@@ -803,13 +803,13 @@ The following example does a few things:
                   (mapcar (lambda (m) (str:replace-all "-mode" ""
                                                        (str:downcase
                                                         (class-name (class-of m)))))
-                          (modes buffer)))))
-     (format nil " ~a~a — ~a"
-             (if (eq (slot-value buffer 'load-status) :loading)
-                 "(Loading) "
-                 "")
-             (object-display (url buffer))
-             (title buffer)))))
+                          (modes buffer))))
+      (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
+      (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
+      (:span
+       (format nil "~a — ~a"
+               (object-display (url buffer))
+               (title buffer)))))))
 
 (defun print-message (message &optional window)
   (let ((window (or window (current-window))))
