@@ -133,6 +133,10 @@ If a `request-data' object is returned, it gets passed to other handlers
 or right to the renderer if there are no more handlers.
 If nil is returned, stop the hook and cancel the resource load.
 
+The current buffer URL should not be relied upon.  With WebKitGTK, it is the same
+as (url REQUEST-DATA).
+If you need to access the URL before this request, inspect the web-mode history.
+
 There's no more ability to pass the results to the renderer with :FORWARD.
 
 Example:

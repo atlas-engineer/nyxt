@@ -632,7 +632,7 @@ If none is found, fall back to `scheme:cua'."
            :type buffer
            :initform (current-buffer)
            :documentation "Buffer targetted by the request.")
-   (url :initarg :url ; TODO: Rename to URI since it's a quri:uri and not a string.
+   (url :initarg :url ; TODO: Rename to URI since it's a quri:uri and not a string?  Or leave URL everywhere, since we almost never use strings.
         :accessor url
         :type quri:uri
         :initform (quri:uri "")
