@@ -703,12 +703,17 @@ The following example does a few things:
                                                        (str:downcase
                                                         (class-name (class-of m)))))
                           (modes buffer))))
-      (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
-      (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
-      (:span
-       (format nil " ~a — ~a"
-               (object-display (url buffer))
-               (title buffer)))))))
+      (:span :class "status-menu"
+             (:a :class "button" :title "Back" :href "lisp://%28nyxt%2Fweb-mode%3Ahistory-backwards%29" "←")
+             (:a :class "button" :title "Refresh" :href "lisp://%28nyxt%3Areload-current-buffer%29" "↺")
+             (:a :class "button" :title "Forwards" :href "lisp://%28nyxt%2Fweb-mode%3Ahistory-forwards%29" "→")))
+     (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
+     (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
+     (:span
+      (format nil " ~a — ~a"
+              (object-display (url buffer))
+              (title buffer))))))
+
 
 (defun print-message (message &optional window)
   (let ((window (or window (current-window))))
