@@ -807,7 +807,7 @@ The following example does a few things:
       (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
       (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
       (:span
-       (format nil "~a — ~a"
+       (format nil " ~a — ~a"
                (object-display (url buffer))
                (title buffer)))))))
 
