@@ -228,30 +228,31 @@ EXPR is expected to be as per the expression sent in `bind-socket-or-quit'."
           (log:warn "Could not extract URLs from ~s." expr)
           nil))))
 
-(export-always 'default-startup)
-(defun default-startup (&optional urls)
-  "Make a window and load URLS in new buffers.
-This function is suitable as a `browser' `startup-function'."
-  (let ((window (window-make *browser*))
-        (buffer (help)))
-    (if urls
-        (open-urls urls)
-        (window-set-active-buffer window buffer)))
-  (when (startup-error-reporter-function *browser*)
-    (funcall-safely (startup-error-reporter-function *browser*)))
-  (when (expand-path (session-path *browser*))
-    (flet ((restore-session ()
-             (when (and (session-restore-function *browser*)
-                        (uiop:file-exists-p (expand-path (session-path *browser*))))
-               (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
-               (funcall (session-restore-function *browser*)))))
-      (match (session-restore-prompt *browser*)
-        (:always-ask
-         (with-confirm ("Restore previous session?")
-           (restore-session)))
-        (:always-restore
-         (restore-session))
-        (:never-restore (log:info "Not restoring session."))))))
+(export-always 'make-startup-function)
+(defun make-startup-function (&key (buffer-fn #'help))
+  "Return a function suitable as a `browser' `startup-function'.
+To change the default buffer, e.g. set it to a given URL:
+
+  (make-startup-function
+   :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
+  (lambda (&optional urls)
+    (let ((window (window-make *browser*)))
+      (if urls
+          (open-urls urls)
+          (window-set-active-buffer window (funcall-safely buffer-fn))))
+    (when (startup-error-reporter-function *browser*)
+      (funcall-safely (startup-error-reporter-function *browser*)))
+    (when (expand-path (session-path *browser*))
+      (flet ((restore-session ()
+               (when (and (session-restore-function *browser*)
+                          (uiop:file-exists-p (expand-path (session-path *browser*))))
+                 (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
+                 (funcall (session-restore-function *browser*)))))
+        (match (session-restore-prompt *browser*)
+          (:always-ask (with-confirm ("Restore previous session?")
+                         (restore-session)))
+          (:always-restore (restore-session))
+          (:never-restore (log:info "Not restoring session.")))))))
 
 (export-always 'open-external-urls)
 (defun open-external-urls (urls)
