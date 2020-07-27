@@ -7,12 +7,12 @@
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria))
 
 (export-always '*prompt-on-mode-toggle*)
-(defparameter *prompt-on-mode-toggle* nil
+(defvar *prompt-on-mode-toggle* nil
   "Whether user will be asked about adding the mode to included/excluded modes
 in auto-mode-list on mode activation/deactivation.")
 
 (export-always '*non-rememberable-modes*)
-(defparameter *non-rememberable-modes*
+(defvar *non-rememberable-modes*
   ;; Base mode conflicts with its Nyxt symbol if it's not prefixed
   '(help-mode web-mode auto-mode nyxt::base-mode)
   "Modes that AUTO-MODE won't even try to save.")
