@@ -99,14 +99,14 @@ in auto-mode-list on mode activation/deactivation.")
          ;; We need to supress prompting when auto-mode modifies modes.
          (*prompt-on-mode-toggle* nil)
          (web-mode (find-submode (buffer request-data) 'web-mode))
-         (prev-url
+         (previous-url
            (unless (eq (htree:root (history web-mode))
                        (htree:current (history web-mode)))
              (url (htree:data
                    (htree:parent (htree:current (history web-mode))))))))
     (if (matching-auto-mode-rule (url request-data))
         (progn
-          (when (and prev-url (not (matching-auto-mode-rule prev-url)))
+          (when (and previous-url (not (matching-auto-mode-rule previous-url)))
             (store-last-active-modes auto-mode))
           (enable-matching-modes (url request-data) (buffer request-data)))
         ;; Apply previous saved modes only on buffer-loads, not anytime else.
