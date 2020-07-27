@@ -165,7 +165,6 @@ the empty string.")))
             socket-thread
             focus-on-reopened-buffer-p
             startup-function
-            start-page-url
             open-external-link-in-new-window-p
             search-engines
             download-path
@@ -269,9 +268,6 @@ is run after the renderer has been initialized and after the
                                     :initform nil
                                     :documentation "When supplied, upon startup,
 if there are errors, they will be reported by this function.")
-   (start-page-url :accessor start-page-url :type quri:uri
-                   :initform (quri:uri "https://nyxt.atlas.engineer/quickstart")
-                   :documentation "The URL of the first buffer opened by Nyxt when started.")
    (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
                                        :initform nil
                                        :documentation "When open links from an external program, or

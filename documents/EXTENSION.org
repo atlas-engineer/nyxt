@@ -11,17 +11,6 @@ please feel free to open a PR with your customization.
 - [[#scroll-the-page-up-and-down-by-a-screen][Scroll the page up and down by a screen]]
 - [[#send-current-url-to-kdeconnect-devices][Send current URL to KDEConnect devices]]
 
-* Setting the start page
-Setting the start page can easily be achieved in the following manner:
-
-#+NAME: start-page-set
-#+BEGIN_SRC lisp
-(defclass my-browser ()
-  ((start-page-url :initform "about:blank")))
-
-(setf *browser-class* 'my-browser)
-#+END_SRC
-
 * Creating your own Parenscript
 You can call any parenscript within the browser through the convient
 ~define-parenscript~ macro. A really simple example below
