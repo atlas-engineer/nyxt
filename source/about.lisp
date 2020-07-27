@@ -10,6 +10,7 @@
                     Nyxt and would like to be included on this list.")
                     (:ul
                      (:li "Adom Hartell (@4t0m)")
+                     (:li "Artyom Bologov (@aartaka)")
                      (:li "Solomon Bloch (@noogie13)"))
                     (:h1 "Supporters")
                     (:p "Thank you to NLnet for supporting Nyxt!")
