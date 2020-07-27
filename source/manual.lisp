@@ -258,6 +258,15 @@ following packages:")
      (:li "gstreamer1-plugins-base"))
     (:p "After the desired plugins have been installed, clear the GStreamer cache at "
         (:code "~/.cache/gstreamer-1.0") " and restart Nyxt.")
+    (:h3 "Input method support (CJK, etc.)")
+    (:p "Depending on your setup, you might have to set some environment
+variables or run some commands before starting Nyxt, for instance")
+    (:pre (:code "
+GTK_IM_MODULE=xim
+XMODIFIERS=@im=ibus
+ibus --daemonize --replace --xim"))
+    (:p "You can persist this change by saving the commands in
+your " (:code ".xprofile") " or similar.")
     (:h3 "Font size on HiDPI displays")
     (:p "On HiDPI displays the font size used for displaying web and Nyxt's
 minibuffer content might be too tiny.")
