@@ -257,10 +257,10 @@ identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
 count since deleting windows may reseult in duplicate identifiers.")
    (startup-function :accessor startup-function
                      :type (or function null)
-                     :initform #'default-startup
+                     :initform (make-startup-function)
                      :documentation "The function run on startup.  It takes a
-list of URLs (strings) as argument (the command line positional arguments).  It
-is run after the renderer has been initialized and after the
+list of URLs (strings) as optional argument (the command line positional
+arguments).  It is run after the renderer has been initialized and after the
 `*after-init-hook*' has run.")
    (startup-error-reporter-function :accessor startup-error-reporter-function
                                     :initarg :startup-error-reporter-function
