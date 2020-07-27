@@ -233,7 +233,7 @@ For the storage format see the comment in the head of your `auto-mode-list-data-
              (= 2 (length (test rule))))
         (format t "~s " (second (test rule)))
         (format t "~s " (test rule)))
-    (format t ":MODES ~a"
+    (format t ":modes ~a"
             (mapcar (alex:compose #'string-downcase #'symbol-name)
                     (modes rule)))
     (write-string ")" stream)))
