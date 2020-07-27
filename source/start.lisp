@@ -228,6 +228,7 @@ EXPR is expected to be as per the expression sent in `bind-socket-or-quit'."
           (log:warn "Could not extract URLs from ~s." expr)
           nil))))
 
+(export-always 'default-startup)
 (defun default-startup (&optional urls)
   "Make a window and load URLS in new buffers.
 This function is suitable as a `browser' `startup-function'."
