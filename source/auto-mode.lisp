@@ -219,7 +219,7 @@ For the storage format see the comment in the head of your `auto-mode-list-data-
                   (make-instance 'auto-mode-rule :test test))))
     (when modes
       (setf (modes rule) (rememberable-of (mapcar #'maybe-mode-name modes))
-            (auto-mode-list *browser*) (remove-duplicates
+            (auto-mode-list *browser*) (delete-duplicates
                                         (push rule (auto-mode-list *browser*))
                                         :key #'test :test #'equal))
       (store-auto-mode-list)
