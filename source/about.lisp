@@ -11,7 +11,10 @@
                     (:ul
                      (:li "Adom Hartell (@4t0m)")
                      (:li "Artyom Bologov (@aartaka)")
-                     (:li "Solomon Bloch (@noogie13)"))
+                     (:li "John Mercouris (@jmercouris)")
+                     (:li "Pierre Neidhardt (@ambrevar)")
+                     (:li "Solomon Bloch (@noogie13)")
+                     (:li "Vincent Dardel (@vindarel)"))
                     (:h1 "Supporters")
                     (:p "Thank you to NLnet for supporting Nyxt!")
                     (:h1 "Crowdfunding backers")
