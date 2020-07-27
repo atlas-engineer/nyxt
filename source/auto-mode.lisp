@@ -132,9 +132,9 @@ in auto-mode-list on mode activation/deactivation.")
   #'(lambda (mode)
       (when (and (not (mode-covered-by-auto-mode-p mode auto-mode-instance))
                  *prompt-on-mode-toggle*)
-        (nyxt::with-confirm ("Permanently ~a ~a for this URL?"
-                             (if enable-p "enable" "disable")
-                             (mode-name mode))
+        (with-confirm ("Permanently ~a ~a for this URL?"
+                       (if enable-p "enable" "disable")
+                       (mode-name mode))
           (with-result (url (read-from-minibuffer
                              (make-minibuffer
                               :input-prompt "URL:"
