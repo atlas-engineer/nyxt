@@ -50,6 +50,7 @@ search.")
        "C-u M-g" 'follow-hint-new-buffer
        "C-x C-w" 'copy-hint-url
        "C-v" 'paste
+       "shift-insert" 'paste
        "button2" 'paste-or-set-url
        "C-c" 'copy
        "button9" 'history-forwards
@@ -138,6 +139,7 @@ search.")
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-v" 'paste
+       "shift-insert" 'paste
        "+" 'zoom-in-page
        "hyphen" 'zoom-out-page
        "0" 'unzoom-page
