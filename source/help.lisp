@@ -300,7 +300,8 @@ This function can be used as a `window' `input-dispatcher'."
                (setf key-stack nil)
                (setf (input-dispatcher window) #'dispatch-input-event))
               ((not bound-value)
-               (echo "Unbound.")
+               (echo "Unbound: ~a"
+                     (keyspecs-with-optional-keycode key-stack))
                (setf key-stack nil)
                (setf (input-dispatcher window) #'dispatch-input-event))
               ((and (<= 2 (length key-stack))
