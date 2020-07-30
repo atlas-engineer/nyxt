@@ -377,11 +377,6 @@ If URL is `:default', use `default-new-buffer-url'."
       (buffer-load url :buffer buffer))
     buffer))
 
-(define-class-type buffer)
-(declaim (type (buffer-type) *buffer-class*))
-(export-always '*buffer-class*)
-(defvar *buffer-class* 'buffer)
-
 (declaim (ftype (function (browser &key (:title string) (:default-modes list) (:dead-buffer buffer))) buffer-make))
 (defun buffer-make (browser &key title default-modes dead-buffer)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
