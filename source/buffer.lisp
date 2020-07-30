@@ -387,7 +387,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                        ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
                        (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
                        (ffi-buffer-make dead-buffer))
-                     (apply #'make-instance *buffer-class*
+                     (apply #'make-instance 'buffer
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
@@ -467,7 +467,7 @@ proceeding."
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (make-instance *buffer-class*))
+        (let ((temp-buffer (make-instance 'buffer))
               (old-buffer (active-buffer window)))
           (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
                      (object-string (url old-buffer))

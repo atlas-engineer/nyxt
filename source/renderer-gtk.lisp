@@ -144,7 +144,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
                                           :orientation :vertical
                                           :spacing 0))
     (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-    (setf active-buffer (make-instance *buffer-class*))
+    (setf active-buffer (make-instance 'buffer))
 
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
@@ -574,7 +574,7 @@ Warning: This behaviour may change in the future."
 
 (defmethod ffi-window-make ((browser gtk-browser))
   "Make a window."
-  (make-instance *window-class*))
+  (make-instance 'window))
 
 (defmethod ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."

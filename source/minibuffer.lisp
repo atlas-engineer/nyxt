@@ -195,7 +195,7 @@ A minibuffer query is typically done as follows:
     (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
     (when explicit-input-buffer
       (text-buffer::insert-string tmp-input-cursor input-buffer))
-    (apply #'make-instance *minibuffer-class*
+    (apply #'make-instance 'minibuffer
            `(:input-buffer ,tmp-input-buffer
              :input-cursor ,tmp-input-cursor
              ,@(if explicit-default-modes

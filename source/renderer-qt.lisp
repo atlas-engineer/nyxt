@@ -41,7 +41,7 @@
     (setf id (get-unique-window-identifier *browser*))
     (setf qt-object (qt:new-q-widget))
     (setf box-layout (qt:new-qv-box-layout))
-    (setf active-buffer (make-instance *buffer-class*))
+    (setf active-buffer (make-instance 'buffer))
     (setf minibuffer-view (qt:new-q-web-engine-view))
     ;; Add views to window, configure window widget
     (qt:widget-set-layout qt-object box-layout)
@@ -102,7 +102,7 @@
 
 (defmethod ffi-window-make ((browser qt-browser))
   "Make a window."
-  (make-instance *window-class*))
+  (make-instance 'window))
 
 (defmethod ffi-window-to-foreground ((window qt-window))
   "Show window in foreground."
@@ -130,7 +130,7 @@
   (qt:widget-set-fixed-height (minibuffer-view window) height))
 
 (defmethod ffi-buffer-make ((browser qt-browser))
-  (make-instance *buffer-class*))
+  (make-instance 'buffer))
 
 (defmethod ffi-buffer-delete ((buffer qt-buffer)))
 
