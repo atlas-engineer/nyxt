@@ -275,6 +275,12 @@ if there are errors, they will be reported by this function.")
                                        :documentation "When open links from an external program, or
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
+   (default-search-engine :accessor default-search-engine
+                          :initform "default"
+                          :type string
+                          :documentation "Specify the default seacrh engine.
+The search-engine with this shortcut is used when none are explicitly specified
+and the query is not a valid URL.")
    (search-engines :accessor search-engines
                    :initform (list (make-instance 'search-engine
                                                   :shortcut "default"
@@ -290,9 +296,9 @@ You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
 If the query is empty, FALLBACK-URL is loaded instead.  If
 FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
-The engine with the \"default\" shortcut (or the first engine if there is no
-\"default\") is used when the query is not a valid URL, or the first keyword is
-not recognized.")
+The engine specified by default-search-engine (or the first engine if there is
+no \"default\") is used when the query is not a valid URL, or the first keyword
+is not recognized.")
    (key-stack :accessor key-stack :initform '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
    (downloads :accessor downloads :initform '()

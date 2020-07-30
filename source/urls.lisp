@@ -113,8 +113,8 @@ bookmarks."
             (bookmark-search-engines))))
 
 (defun default-search-engine (&optional (search-engines (all-search-engines)))
-  "Return the search engine with the 'default' shortcut, or the first one if
-there is none."
-  (or (find "default"
+  "Return the search-engine that matches default-search-engine, or the first
+one if there is none."
+  (or (find (slot-value *browser* 'default-search-engine)
             search-engines :test #'string= :key #'shortcut)
       (first search-engines)))
