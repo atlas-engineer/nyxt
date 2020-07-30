@@ -811,7 +811,7 @@ The following example does a few things:
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
   #'(lambda (url)
       (some (alex:rcurry #'string= (object-display url))
-            (cons one-url other-urls))))
+            (mapcar #'quri:url-decode (cons one-url other-urls)))))
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
