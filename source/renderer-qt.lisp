@@ -3,7 +3,7 @@
 (defclass-export qt-browser (browser)
   ((application :accessor application)))
 
-(setf *browser-class* 'qt-browser)
+(setf (find-class 'browser) (find-class 'qt-browser))
 
 (defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
@@ -29,18 +29,12 @@
    (box-layout :accessor box-layout)
    (minibuffer-view :accessor minibuffer-view)))
 
-(define-class-type window)
-(declaim (type (window-type) *window-class*))
-(export-always '*window-class*)
-(defparameter *window-class* 'qt-window)
+(setf (find-class 'window) (find-class 'qt-window))
 
 (defclass-export qt-buffer (buffer)
   ((qt-object :accessor qt-object)))
 
-(define-class-type buffer)
-(declaim (type (buffer-type) *buffer-class*))
-(export-always '*buffer-class*)
-(defparameter *buffer-class* 'qt-buffer)
+(setf (find-class 'buffer) (find-class 'qt-buffer))
 
 (defmethod initialize-instance :after ((window qt-window) &key)
   (with-slots (id qt-object box-layout active-buffer minibuffer-view) window

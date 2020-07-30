@@ -47,7 +47,7 @@ data-manager will store the data separately for each buffer.")))
   (or (slot-value *browser* 'web-context)
       (setf (slot-value *browser* 'web-context) (make-instance 'webkit:webkit-web-context))))
 
-(setf *browser-class* 'gtk-browser)
+(setf (find-class 'browser) (find-class 'gtk-browser))
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -101,7 +101,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
    (message-view :accessor message-view)
    (key-string-buffer :accessor key-string-buffer)))
 
-(setf *window-class* 'gtk-window)
+(setf (find-class 'window) (find-class 'gtk-window))
 
 (defclass-export gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)
@@ -114,7 +114,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
                         :type list
                         :initform '())))
 
-(setf *buffer-class* 'gtk-buffer)
+(setf (find-class 'buffer) (find-class 'gtk-buffer))
 
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
