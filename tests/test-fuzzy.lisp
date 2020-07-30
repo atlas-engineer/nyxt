@@ -7,7 +7,7 @@
 
 (plan nil)
 
-(setf *browser* (make-instance *browser-class*))
+(setf *browser* (make-instance 'browser))
 
 (defparameter *suggestions* '("LINK-HINTS" "ACTIVE-HISTORY-NODE" "HISTORY-BACKWARDS"
                              "DID-FINISH-NAVIGATION" "HISTORY-FORWARDS"

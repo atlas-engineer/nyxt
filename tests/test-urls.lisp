@@ -7,7 +7,7 @@
 
 (plan nil)
 
-(setf *browser* (make-instance *browser-class*))
+(setf *browser* (make-instance 'browser))
 
 (subtest "Parse URL"
   (is (nyxt::parse-url "https://nyxt.atlas.engineer")
