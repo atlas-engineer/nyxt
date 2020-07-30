@@ -946,10 +946,6 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-print-message ((window window) message))
 (define-ffi-method ffi-buffer-cookie-policy ((buffer buffer) value))
 
-(define-class-type browser)
-(declaim (type (browser-type) *browser-class*))
-(export-always '*browser-class*)
-(defvar *browser-class* 'browser)
 
 (defmacro within-renderer-thread (&body body)
   "Convenience macro to run FFI-calling code from the REPL.

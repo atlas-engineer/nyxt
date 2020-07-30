@@ -174,8 +174,6 @@ A minibuffer query is typically done as follows:
   ;; Write form here in which `tags' is bound to the resulting element(s).
   )"))
 
-(export-always '*minibuffer-class*)
-(defparameter *minibuffer-class* 'minibuffer)
 (export-always 'make-minibuffer)
 (defun make-minibuffer
     (&key (default-modes nil explicit-default-modes)
