@@ -27,8 +27,7 @@ Example:
   ((keymap-schemes :initform (keymap:make-scheme
                               scheme:emacs *my-keymap*
                               scheme:vi-normal *my-keymap*))))"
-  (let* ((class-var (intern (format nil "*~a-CLASS*" name)))
-         (docstring (if (stringp (first body))
+  (let* ((docstring (if (stringp (first body))
                         (first body)
                         (progn
                           (log:warn "The define-mode definition for ~a doesn't have a documentation string." name)
@@ -45,12 +44,6 @@ Example:
                                `((:documentation ,docstring)))))
     `(progn
        (defclass-export ,@class-args)
-       ;; Class symbol customization:
-       (define-class-type ,name)
-       (declaim (type (,(intern (format nil "~a-TYPE" name))) ,class-var))
-       (export-always ',class-var)
-       (defparameter ,class-var ',name
-         ,(format nil "Default class to use for ~a." name))
        ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
        ;; Should probably always have root-mode.
        ,(unless (eq name 'root-mode)
@@ -60,13 +53,13 @@ Example:
              ,docstring
              (unless (typep buffer 'buffer)
                (error ,(format nil "Mode command ~a called on empty buffer" name)))
-             (let ((existing-instance (find-mode buffer ,class-var)))
+             (let ((existing-instance (find-mode buffer ',name)))
                (unless explicit?
                  (setf activate (not existing-instance)))
                (if activate
                    (unless existing-instance
                      ;; TODO: Should we move mode to the front when it already exists?
-                     (let ((new-mode (apply #'make-instance ,class-var
+                     (let ((new-mode (apply #'make-instance ',name
                                             :buffer buffer
                                             args)))
                        (when (constructor new-mode)
