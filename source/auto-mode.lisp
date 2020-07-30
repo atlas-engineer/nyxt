@@ -138,7 +138,7 @@ in auto-mode-list on mode activation/deactivation.")
           (with-result (url (read-from-minibuffer
                              (make-minibuffer
                               :input-prompt "URL:"
-                              :input-buffer (object-string (url (buffer mode)))
+                              :input-buffer (object-display (url (buffer mode)))
                               :must-match-p nil)))
             (let* ((test (make-dwim-match url))
                    (rule (find test (auto-mode-list *browser*)
