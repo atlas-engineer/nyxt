@@ -168,7 +168,6 @@ Return most recent entry in RING."
 (defmacro define-configuration (super &body slots)
   "Helper macro to customize class slots.
 It generates a user-SUPER subclass of SUPER.
-It binds `*SUPER-class*' to this newly generated class.
 
 Classes can be modes or a core class like `browser', `buffer', `minibuffer',
 `window'.
@@ -185,45 +184,29 @@ In the above, `%slot-default' will be substituted with the default value of
 `default-modes'.
 
 To discover the default value of a slot or all slots of a class, use the
-`describe-slot' or `describe-class' commands respectively.
-
-Since modes are classes with class variables (the `*MODE-class*'), the same applies.
-
-Example to get the `blocker-mode' command to use a new default hostlists:
-
-\(define-configuration nyxt/blocker-mode:blocker-mode
-  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
-
-Since the above binds `nyxt/blocker-mode:*blocker-mode-class*' to
-`user-blocker-mode', the `blocker-mode' command now toggles the new
-`user-blocker-mode' instead of `blocker-mode'."
+`describe-slot' or `describe-class' commands respectively."
 
   (let* ((name (intern (str:concat "USER-" (symbol-name super))))
-         (configured-class)
-         (super-variant (let ((super-variant (intern (str:concat (symbol-name *renderer-class*) "-" (symbol-name super)))))
-                          ;; SUPER may not have a renderer variant, e.g. modes don't.
-                          (if (find-class super-variant nil)
-                              super-variant
-                              super))))
-    (unless (find-class super-variant nil)
+         (configured-class))
+    (unless (find-class super nil)
       (error "define-configuration argument ~a is not a known class." super))
-    (setf configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*") (symbol-package super-variant)))
+    (setf configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*") (symbol-package super)))
     `(progn
-       (defclass ,name (,super-variant)
-         ,(loop with super-class = (closer-mop:ensure-finalized (find-class super-variant))
+       (defclass ,name (,super)
+         ,(loop with super-class = (closer-mop:ensure-finalized (find-class super))
                 for slot in (car slots)
                 for known-slot? = (find (car slot) (mopu:slot-names super-class))
                 for initform = (and known-slot?
                                     (getf (mopu:slot-properties super-class (car slot))
                                           :initform))
                 if known-slot?
-                  collect (list (car slot) :initform `(funcall (lambda (%slot-default)
-                                                                 (declare (ignorable %slot-default))
-                                                                 ,(cadr slot))
-                                                               ,initform))
+                collect (list (car slot) :initform `(funcall (lambda (%slot-default)
+                                                               (declare (ignorable %slot-default))
+                                                               ,(cadr slot))
+                                                             ,initform))
                 else do
-                  (log:warn "Undefined slot ~a in ~a" (car slot) super-variant)))
-       (setf ,configured-class ',name))))
+                   (log:warn "Undefined slot ~a in ~a" (car slot) super)))
+       (setf (find-class ',super) (find-class ',name)))))
 
 (export-always 'load-system)
 (defun load-system (system)
