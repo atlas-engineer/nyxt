@@ -50,13 +50,19 @@
 (subtest "URL processing"
   (is (valid-url-p "http://foo")
       nil
-      "Invalid URL (empty domain)")
+      "Invalid URL (empty host)")
   (is (valid-url-p "http://algo")
       nil
-      "Invalid URL (TLD == domain)")
+      "Invalid URL (TLD == host)")
   (is (valid-url-p "http://example.org/foo/bar?query=baz#qux")
       t
       "Valid URL")
+  (is (valid-url-p "http://192.168.1.1")
+      t
+      "Valid IP URL")
+  (is (valid-url-p "http://192.168.1.1/foo")
+      t
+      "Valid IP URL")
   (is (nyxt::schemeless-uri= (quri:uri "http://example.org")
                              (quri:uri "https://example.org/"))
       t

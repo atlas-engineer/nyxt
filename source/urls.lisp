@@ -37,12 +37,13 @@ On errors, return URL."
   (let ((uri (ignore-errors (quri:uri url))))
     (and uri
          (quri:uri-p uri)
-         ;; E.g. "http://foo" has an empty domain, so it's probably
-         ;; not a URI query.
-         (quri:uri-domain uri)
-         ;; E.g. "http://algo" have the same tld and domain, which is
-         ;; probably not a URI query.
-         (not (string= (quri:uri-domain uri)
+         (not (uiop:emptyp (quri:uri-scheme uri)))
+         ;; "http://" does not have a host.
+         ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
+         (quri:uri-host uri)
+         ;; E.g. "http://algo" or "http://foo" have the same tld and host, which
+         ;; is probably not a URI query.
+         (not (string= (quri:uri-host uri)
                        (quri:uri-tld uri))))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
