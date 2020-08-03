@@ -71,10 +71,12 @@ in auto-mode-list on mode activation/deactivation.")
                    buffer)))
 
 (defun clean-up-auto-mode (mode)
-  (dolist (handler-name '(auto-mode-request-handler
-                          enable-mode-prompting-handler
-                          disable-mode-prompting-handler))
-    (hooks:remove-hook (request-resource-hook (buffer mode)) handler-name)))
+  (hooks:remove-hook (request-resource-hook (buffer mode))
+                     'auto-mode-request-handler)
+  (hooks:remove-hook (enable-mode-hook (buffer mode))
+                     'enable-mode-auto-mode-handler)
+  (hooks:remove-hook (disable-mode-hook (buffer mode))
+                     'disable-mode-auto-mode-handler))
 
 (defun store-last-active-modes (auto-mode)
   (setf (last-active-modes auto-mode)
