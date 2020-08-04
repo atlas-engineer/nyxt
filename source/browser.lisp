@@ -179,8 +179,8 @@ the empty string.")))
             session-store-function
             session-restore-function
             session-restore-prompt
-            auto-mode-list
-            auto-mode-list-data-path
+            auto-mode-rules
+            auto-mode-rules-data-path
             standard-output-path
             error-output-path
             before-exit-hook
@@ -375,13 +375,14 @@ from `session-path'.")
                            :initform :always-ask
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
-   (auto-mode-list :accessor auto-mode-list
-                   :type list
-                   :initform '()
-                   :documentation "The auto-mode rules kept in memory.")
-   (auto-mode-list-data-path :accessor auto-mode-list-data-path
-                             :type data-path
-                             :initform (make-instance 'auto-mode-list-data-path :basename "auto-mode-list")
+   (auto-mode-rules :accessor auto-mode-rules
+                    :type list
+                    :initform '()
+                    :documentation "The list of auto-mode rules kept in memory.")
+   (auto-mode-rules-data-path :accessor auto-mode-rules-data-path
+                              :type data-path
+                              :initform (make-instance 'auto-mode-rules-data-path
+                                                       :basename "auto-mode-rules")
                  :documentation "The path where the auto-mode rules are saved.")
    (standard-output-path :accessor standard-output-path
                          :type data-path
