@@ -9,7 +9,7 @@
 (defparameter *default-proxy*
   (make-instance 'proxy
                  :server-address (quri:uri "socks5://localhost:9050")
-                 :whitelist '("localhost" "localhost:8080")
+                 :allowlist '("localhost" "localhost:8080")
                  :proxied-downloads-p t))
 
 (define-mode proxy-mode ()
@@ -22,7 +22,7 @@ Example to use Tor as a proxy both for browsing and downloading:
 \(setf nyxt/proxy-mode:*default-proxy*
   (make-instance 'proxy
                  :server-address (quri:uri \"socks5://localhost:9050\")
-                 :whitelist '(\"localhost\" \"localhost:8080\")
+                 :allowlist '(\"localhost\" \"localhost:8080\")
                  :proxied-downloads-p t))
 
 \(define-configuration buffer
@@ -39,6 +39,6 @@ Example to use Tor as a proxy both for browsing and downloading:
     :initform
     (lambda (mode)
       (setf (proxy (buffer mode)) (proxy mode))
-      (echo "Proxy set to ~a (whitelisting ~a)."
+      (echo "Proxy set to ~a (allowlisting ~a)."
             (object-display (server-address (proxy mode)))
-            (whitelist (proxy mode)))))))
+            (allowlist (proxy mode)))))))

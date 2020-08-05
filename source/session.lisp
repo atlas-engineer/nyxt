@@ -27,7 +27,7 @@ instance of Nyxt."
 Currently we store the list of current URLs of all buffers."
   ;; TODO: Should we persist keymaps, constructors, etc.?  For instance, should
   ;; we restore the proxy value?  It may be wiser to let the user configure
-  ;; whitelitss / blacklists instead.  It's also easier
+  ;; allow/deny lists instead.  It's also easier
   (with-data-file (file (session-path *browser*)
                         :direction :output
                         :if-does-not-exist :create
