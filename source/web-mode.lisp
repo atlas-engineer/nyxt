@@ -19,9 +19,9 @@
             :type htree:history-tree
             :initarg :history
             :initform (htree:make))
-   (history-blacklist :accessor history-blacklist
+   (history-denylist :accessor history-denylist
                       :type list-of-strings
-                      :initarg :history-blacklist
+                      :initarg :history-denylist
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
                       ;; history.  How?
@@ -400,7 +400,7 @@ Otherwise go forward to the only child."
   (declare (type quri:uri url))
   (unless (or (url-empty-p url)
               (find-if (alex:rcurry #'str:starts-with? (object-string url))
-                       (history-blacklist mode)))
+                       (history-denylist mode)))
     (htree:add-child (make-instance 'buffer-description
                                     :url url
                                     :title (title (buffer mode)))

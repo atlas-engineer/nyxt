@@ -1,6 +1,6 @@
 (uiop:define-package :nyxt/blocker-mode
   (:use :common-lisp :trivia :nyxt)
-  (:documentation "Block resource queries blacklisted hosts."))
+  (:documentation "Block resource queries for listed hosts."))
 (in-package :nyxt/blocker-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
@@ -119,7 +119,7 @@ Return nil if hostlist cannot be parsed."
   "Default hostlist for `blocker-mode'.")
 
 (define-mode blocker-mode ()
-    "Enable blocking of blacklisted hosts.
+    "Enable blocking of listed hosts.
 To customize the list of blocked hosts, set the `hostlists' slot.
 See the `hostlist' class documentation.
 
@@ -154,7 +154,7 @@ Example:
              :combination #'combine-composed-hook-until-nil
              :handlers (list #'request-resource-block)))))))
 
-(defmethod blacklisted-host-p ((mode blocker-mode) host)
+(defmethod denylisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.
 Return nil if MODE's hostlist cannot be parsed."
   (when host
@@ -162,11 +162,11 @@ Return nil if MODE's hostlist cannot be parsed."
                never (member-string host (parse hostlist))))))
 
 (defun request-resource-block (request-data)
-  "Block resource queries from blacklisted hosts.
+  "Block resource queries from denylisted hosts.
 This is an acceptable handler for `request-resource-hook'."
   (let ((mode (find-submode (buffer request-data) 'blocker-mode)))
     (if (and mode
-             (blacklisted-host-p
+             (denylisted-host-p
               mode
               (quri:uri-host (url request-data))))
         (progn

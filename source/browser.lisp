@@ -53,7 +53,7 @@ Parent directories are created if necessary."
                    :documentation "The address of the proxy server.
 It's made of three components: protocol, host and port.
 Example: \"http://192.168.1.254:8080\".")
-   (whitelist :accessor whitelist :initarg :whitelist
+   (allowlist :accessor allowlist :initarg :allowlist
               :initform '("localhost" "localhost:8080")
               :type list-of-strings
               :documentation "A list of URIs not to forward to the proxy.")
