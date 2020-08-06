@@ -132,3 +132,12 @@ Example usage defaulting to \"no\":
                           :hide-suggestion-count-p t)))
      (when (confirmed-p answer)
        ,@body)))
+
+(defmacro with-class ((class-sym override-sym) &body body)
+  (alex:with-gensyms (old-class)
+    `(let ((,old-class (find-class ',class-sym)))
+       (unwind-protect
+            (progn
+              (setf (find-class ',class-sym) (find-class ',override-sym))
+              ,@body)
+         (setf (find-class ',class-sym) ,old-class)))))
