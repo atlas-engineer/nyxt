@@ -43,8 +43,7 @@
                :nyxt/hooks
                :nyxt/keymap)
   :pathname "source/"
-  :components ((:file "patches/patch-serialization")
-               (:file "package")
+  :components ((:file "package")
                ;; Independent utilities
                (:file "tags")
                (:file "time")
