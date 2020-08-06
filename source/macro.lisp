@@ -134,6 +134,8 @@ Example usage defaulting to \"no\":
        ,@body)))
 
 (defmacro with-class ((class-sym override-sym) &body body)
+  "Dynamically override the class corresponding to CLASS-SYM by OVERRIDE-SYM.
+The class is restored when exiting BODY."
   (alex:with-gensyms (old-class)
     `(let ((,old-class (find-class ',class-sym)))
        (unwind-protect
