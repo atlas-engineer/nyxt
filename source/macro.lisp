@@ -27,20 +27,6 @@ Accessor symbols are derived from ACCESSOR-FN applied to the slot name."
          (export ',class-symbol)
          (export ',syms ,@(and package-supplied? (list package)))))))
 
-;; WARNING: Compile-time type-checking with `satisfies' only works at the
-;; top-level with SBCL.
-(defmacro define-class-type (class-sym)
-  "Define a type named CLASS-SYM-type.
-An object of this type is a subclass of CLASS-SYM."
-  (let ((type-pred (intern (str:concat (string class-sym) "-TYPE-P")))
-        (type-fun (intern (str:concat (string class-sym) "-TYPE"))))
-    `(progn
-       (defun ,type-pred (class-symbol)
-         (closer-mop:subclassp (find-class class-symbol)
-                               (find-class ',class-sym)))
-       (deftype ,type-fun ()
-         '(satisfies ,type-pred)))))
-
 (defparameter %callback nil)            ; TODO: Make a monad?
 
 (export-always 'define-parenscript)

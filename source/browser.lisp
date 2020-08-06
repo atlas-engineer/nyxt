@@ -63,11 +63,6 @@ Example: \"http://192.168.1.254:8080\".")
   (:documentation "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."))
 
-(define-class-type proxy)
-(declaim (type (proxy-type) *proxy-class*))
-(export-always '*proxy-class*)
-(defvar *proxy-class* 'proxy)
-
 (export-always 'combine-composed-hook-until-nil)
 (defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
   "Return the result of the composition of the HOOK handlers on ARG, from
