@@ -16,6 +16,7 @@
      current-keymaps-hook
      override-map
      forward-input-events-p
+     pre-request-hook
      request-resource-scheme
      request-resource-hook
      default-new-buffer-url
@@ -128,6 +129,15 @@ forwarded when no binding is found.")
                :initform nil
                ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
                :documentation "The last event that was received for the current buffer.")
+   (pre-request-hook :accessor pre-request-hook
+                     :initarg :pre-request-hook
+                     :initform (make-hook-resource
+                                :combination #'combine-composed-hook-until-nil)
+                     :type hook-resource
+                     :documentation "Hook run before the `request-resource-hook'.
+One example of it's application is `auto-mode' that changes mode setup. Any
+action on modes that can possibly change the handlers in `request-resource-hook'
+should find its place there.")
    (request-resource-scheme :accessor request-resource-scheme
                             :initarg :request-resource-scheme
                             :initform (define-scheme "request-resource"
@@ -568,7 +578,7 @@ See `make-buffer'."
 (define-command delete-all-buffers ()
   "Delete all buffers, with confirmation."
   (let ((count (length (buffer-list))))
-    (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
+    (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
       (delete-buffers))))
 
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
@@ -583,7 +593,7 @@ to the currently active buffer."
   (let* ((all-buffers (buffer-list))
          (buffers-to-delete (remove buffer all-buffers))
          (count (list-length buffers-to-delete)))
-    (with-confirm ("Are you sure to delete ~a buffer~p?" count count)
+    (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
       (mapcar #'buffer-delete buffers-to-delete))))
 
 ;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.

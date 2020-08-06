@@ -509,17 +509,19 @@ Warning: This behaviour may change in the future."
           (webkit:webkit-policy-decision-use response-policy-decision)
           nil)
         (let ((request-data
-                (hooks:run-hook (request-resource-hook buffer)
-                                (make-instance 'request-data
-                                               :buffer buffer
-                                               :url (quri:copy-uri url)
-                                               :keys (unless (uiop:emptyp mouse-button)
-                                                       (list (keymap:make-key
-                                                              :value mouse-button
-                                                              :modifiers modifiers)))
-                                               :event-type event-type
-                                               :new-window-p is-new-window
-                                               :known-type-p is-known-type))))
+                (hooks:run-hook
+                 (request-resource-hook buffer)
+                 (hooks:run-hook (pre-request-hook buffer)
+                                 (make-instance 'request-data
+                                                :buffer buffer
+                                                :url (quri:copy-uri url)
+                                                :keys (unless (uiop:emptyp mouse-button)
+                                                        (list (keymap:make-key
+                                                               :value mouse-button
+                                                               :modifiers modifiers)))
+                                                :event-type event-type
+                                                :new-window-p is-new-window
+                                                :known-type-p is-known-type)))))
           (cond
             ((null request-data)
              (log:debug "Don't forward to renderer (null request data).")
