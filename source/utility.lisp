@@ -151,18 +151,6 @@ Return most recent entry in RING."
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
 
-(export-always 'set-renderer)
-(defun set-renderer (&optional renderer)
-  "Set the renderer to the RENDERER if supplied, otherwise, check for
-   the existence of classes that define renderers."
-  (if renderer
-      (if (closer-mop:subclassp (find-class renderer) 'browser)
-          (setf *renderer-class* (intern (str:replace-all "-BROWSER" "" (symbol-name renderer))))
-          (error "RENDERER must extend BROWSER class."))
-      (let ((found-renderer-class (class-name (first (mopu:subclasses 'browser)))))
-        (setf *renderer-class*
-              (intern (str:replace-all "-BROWSER" "" (symbol-name found-renderer-class)))))))
-
 (export-always '%slot-default)
 (export-always 'define-configuration)
 (defmacro define-configuration (super &body slots)

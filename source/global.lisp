@@ -1,10 +1,6 @@
 (in-package :nyxt)
 ;; Packagers are welcome to customize the `defparameter's to suit the host system.
 
-(defvar *renderer-class* 'gtk
-  "The renderer class used when constructing the define-configuration
-  macro.")
-
 (export-always '*options*)
 (defvar *options* '()
   "The list of command line options.")
