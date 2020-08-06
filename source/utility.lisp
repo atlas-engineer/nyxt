@@ -184,7 +184,16 @@ In the above, `%slot-default' will be substituted with the default value of
 `default-modes'.
 
 To discover the default value of a slot or all slots of a class, use the
-`describe-slot' or `describe-class' commands respectively."
+`describe-slot' or `describe-class' commands respectively.
+
+Example to get the `blocker-mode' command to use a new default hostlists:
+
+\(define-configuration nyxt/blocker-mode:blocker-mode
+  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
+
+Since the above binds `nyxt/blocker-mode:*blocker-mode-class*' to
+`user-blocker-mode', the `blocker-mode' command now toggles the new
+`user-blocker-mode' instead of `blocker-mode'."
 
   (let* ((name (intern (str:concat "USER-" (symbol-name super))))
          (configured-class))
