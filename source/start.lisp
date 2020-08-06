@@ -249,7 +249,7 @@ To change the default buffer, e.g. set it to a given URL:
                  (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
                  (funcall (session-restore-function *browser*)))))
         (match (session-restore-prompt *browser*)
-          (:always-ask (with-confirm ("Restore previous session?")
+          (:always-ask (if-confirm ("Restore previous session?")
                          (restore-session)))
           (:always-restore (restore-session))
           (:never-restore (log:info "Not restoring session.")))))))

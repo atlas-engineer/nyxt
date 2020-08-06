@@ -11,7 +11,7 @@ in `auto-mode-rules' on mode activation/deactivation.")
 
 (export-always '*non-rememberable-modes*)
 (defvar *non-rememberable-modes*
-  ;; Base mode conflicts with its Nyxt symbol if it's not prefixed
+  ;; base-mode conflicts with its Nyxt symbol if it's not prefixed
   '(help-mode web-mode auto-mode nyxt::base-mode)
   "Modes that `auto-mode' won't even try to save.
 Append names of modes you want to always control manually to this list.
@@ -38,10 +38,22 @@ Be careful with deleting the defaults -- it can be harmful for your browsing.")
          :accessor test
          :type list
          :initform (error "Slot `test' should be set."))
-   (modes :initarg :modes
-          :accessor modes
-          :type list-of-symbols
-          :initform '())))
+   (included :initarg :included
+             :accessor included
+             :type list-of-symbols
+             :initform '()
+             :documentation "The list of mode symbols to enable on rule activation.")
+   (excluded :initarg :excluded
+             :accessor excluded
+             :type list-of-symbols
+             :initform '()
+             :documentation "The list of mode symbols to disable on rule activation.")
+   (exact-p :initarg :exact-p
+            :accessor exact-p
+            :type boolean
+            :initform nil
+            :documentation "If non-nil, enable the INCLUDED modes exclusively.
+Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes, if nil.")))
 
 (declaim (ftype (function (quri:uri) (or auto-mode-rule null))
                 matching-auto-mode-rule))
@@ -60,27 +72,26 @@ Be careful with deleting the defaults -- it can be harmful for your browsing.")
 (declaim (ftype (function (quri:uri buffer)) enable-matching-modes))
 (defun enable-matching-modes (url buffer)
   (let ((rule (matching-auto-mode-rule url)))
-    (enable-modes (rememberable-of (set-difference
-                                    (modes rule)
-                                    (mapcar #'mode-name (modes buffer))
-                                    :test #'mode-equal))
+    (enable-modes (set-difference
+                   (included rule)
+                   (rememberable-of (mapcar #'mode-name (modes buffer)))
+                   :test #'mode-equal)
                   buffer)
-    (disable-modes (rememberable-of (set-difference
-                                     (mapcar #'mode-name (modes buffer))
-                                     (modes rule) :test #'mode-equal))
+    (disable-modes (if (exact-p rule)
+                       (set-difference
+                        (rememberable-of (mapcar #'mode-name (modes buffer)))
+                        (included rule) :test #'mode-equal)
+                       (excluded rule))
                    buffer)))
 
-(defun clean-up-auto-mode (mode)
-  (hooks:remove-hook (request-resource-hook (buffer mode))
-                     'auto-mode-request-handler)
-  (hooks:remove-hook (enable-mode-hook (buffer mode))
-                     'enable-mode-auto-mode-handler)
-  (hooks:remove-hook (disable-mode-hook (buffer mode))
-                     'disable-mode-auto-mode-handler))
+(defun can-store-last-active-modes (auto-mode url)
+  (or (null (last-active-modes-url auto-mode))
+      (not (quri:uri= url (last-active-modes-url auto-mode)))))
 
-(defun store-last-active-modes (auto-mode)
-  (setf (last-active-modes auto-mode)
-        (modes (buffer auto-mode))))
+(defun store-last-active-modes (auto-mode url)
+  (when (can-store-last-active-modes auto-mode url)
+      (setf (last-active-modes auto-mode) (modes (buffer auto-mode))
+            (last-non-matching-url auto-mode) url)))
 
 (defun restore-last-active-modes (auto-mode)
   (disable-modes
@@ -96,61 +107,92 @@ Be careful with deleting the defaults -- it can be harmful for your browsing.")
                            :test #'mode-equal))
    (buffer auto-mode)))
 
-(defun auto-mode-request-handler (request-data)
+(defun new-page-request-p (request-data)
+  "Whether the REQUEST-DATA is a request for a new page load.
+Resource/font/ads/anchor loads are safely ignored.
+
+It relies on the fact that, due to the WebKit limitations, we store the loaded
+URL in the buffer slot when we need to load a new page, while, for
+non-new-page requests, buffer URL is not altered."
+  (quri:uri= (url request-data) (url (buffer request-data))))
+
+(defun history-empty-p (history)
+  (eq (htree:root history) (htree:current history)))
+
+(defun auto-mode-handler (request-data)
   (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
-         ;; We need to supress prompting when auto-mode modifies modes.
+         ;; We need to suppress prompting when auto-mode modifies modes.
          (*prompt-on-mode-toggle* nil)
          (web-mode (find-submode (buffer request-data) 'web-mode))
          (previous-url
-           (unless (eq (htree:root (history web-mode))
-                       (htree:current (history web-mode)))
+           (unless (history-empty-p (history web-mode))
              (url (htree:data
-                   (htree:parent (htree:current (history web-mode))))))))
-    (if (matching-auto-mode-rule (url request-data))
-        (progn
-          (when (and previous-url (not (matching-auto-mode-rule previous-url)))
-            (store-last-active-modes auto-mode))
-          (enable-matching-modes (url request-data) (buffer request-data)))
-        ;; Apply previous saved modes only on buffer-loads, not anytime else.
-        ;;
-        ;; TODO: Relies on somewhat illogical behavior of (url (current-buffer))
-        ;; and (url request-data) being equal after buffer-load is called.
-        ;; Replace with more stable and logical condition?
-        (when (quri:uri= (url request-data) (url (buffer auto-mode)))
-          (restore-last-active-modes auto-mode))))
+                   (htree:parent (htree:current (history web-mode)))))))
+         (rule (matching-auto-mode-rule (url request-data)))
+         (previous-rule (when previous-url (matching-auto-mode-rule previous-url))))
+    (when (and rule previous-url (not previous-rule))
+      (store-last-active-modes auto-mode previous-url))
+    (cond
+      ((and (not rule) (new-page-request-p request-data))
+       (restore-last-active-modes auto-mode))
+      ((and rule (not (equal rule previous-rule)))
+       (enable-matching-modes (url request-data) (buffer request-data)))))
   request-data)
 
-(defun mode-covered-by-auto-mode-p (mode auto-mode-instance)
+(defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
   (or (non-rememberable-mode-p mode)
       (let ((matching-rule (matching-auto-mode-rule
-                            (url (buffer auto-mode-instance)))))
-        (member mode (or (and matching-rule (modes matching-rule))
-                         (last-active-modes auto-mode-instance))
+                            (url (buffer auto-mode)))))
+        (member mode (or (and matching-rule (union (included matching-rule)
+                                                   (excluded matching-rule)))
+                         ;; Mode is covered by auto-mode only if it is
+                         ;; in last-active-modes and gets enabled.
+                         ;; If it gets disabled, user should be prompted,
+                         ;; because they may want to persist it.
+                         (and enable-p (last-active-modes auto-mode)))
                 :test #'mode-equal))))
+
+(export-always 'url-infer-match)
+(declaim (ftype (function (string) list) url-infer-match))
+(defun url-infer-match (url)
+  "Infer the best `test' for `auto-mode-rule', based on the form of URL.
+The rules are:
+- If it's a plain domain-only URL (i.e. \"http://domain.com\") -- then use `match-domain'.
+- If it's host with subdomains (\"http://whatever.subdomain.domain.com\") -- use `match-host'.
+- Use `match-url' otherwise."
+  (let ((url (or (ignore-errors (quri:uri url)) url)))
+    (if (and (quri:uri-p url)
+             (empty-path-url-p url)
+             (host-only-url-p url))
+        (if (string= (quri:uri-domain url)
+                     (cl-ppcre:regex-replace "www[0-9]?\\." (quri:uri-host url) ""))
+            `(match-domain ,(quri:uri-domain url))
+            `(match-host ,(quri:uri-host url)))
+        `(match-url ,(object-display url)))))
 
 (declaim (ftype (function (boolean t) (function (root-mode)))
                 make-mode-toggle-prompting-handler))
-(defun make-mode-toggle-prompting-handler (enable-p auto-mode-instance)
+(defun make-mode-toggle-prompting-handler (enable-p auto-mode)
   #'(lambda (mode)
-      (when (and (not (mode-covered-by-auto-mode-p mode auto-mode-instance))
+      (when (and (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
                  *prompt-on-mode-toggle*)
-        (with-confirm ("Permanently ~a ~a for this URL?"
-                       (if enable-p "enable" "disable")
-                       (mode-name mode))
+        (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
+                       enable-p (mode-name mode))
           (with-result (url (read-from-minibuffer
                              (make-minibuffer
                               :input-prompt "URL:"
                               :input-buffer (object-display (url (buffer mode)))
                               :must-match-p nil)))
-            (let* ((test (make-dwim-match url))
-                   (rule (find test (auto-mode-rules *browser*)
-                               :key #'test :test #'equal))
-                   (rule-modes (if rule (modes rule) (modes (buffer mode))))
-                   (modes (if enable-p
-                              (union (list mode) rule-modes :test #'mode-equal)
-                              (set-difference rule-modes (list mode)
-                                              :test #'mode-equal))))
-              (add-modes-to-auto-mode-rules test modes)))))))
+            (add-modes-to-auto-mode-rules (url-infer-match url)
+                                          :append-p t
+                                          :include (when enable-p (list mode))
+                                          :exclude (unless enable-p (list mode))))
+          (setf (last-active-modes auto-mode)
+                (if enable-p
+                    (union (list mode) (last-active-modes auto-mode)
+                           :test #'mode-equal)
+                    (remove mode (last-active-modes auto-mode)
+                            :test #'mode-equal)))))))
 
 (defun initialize-auto-mode (mode)
   (unless (last-active-modes mode)
@@ -164,79 +206,125 @@ Be careful with deleting the defaults -- it can be harmful for your browsing.")
                   (nyxt::make-handler-mode
                    (make-mode-toggle-prompting-handler nil mode)
                    :name 'disable-mode-auto-mode-handler))
-  (hooks:add-hook (request-resource-hook (buffer mode))
-                  (make-handler-resource #'auto-mode-request-handler)))
+  (hooks:add-hook (pre-request-hook (buffer mode))
+                  (make-handler-resource #'auto-mode-handler)))
+
+(defun clean-up-auto-mode (mode)
+  (hooks:remove-hook (pre-request-hook (buffer mode))
+                     'auto-mode-handler)
+  (hooks:remove-hook (enable-mode-hook (buffer mode))
+                     'enable-mode-auto-mode-handler)
+  (hooks:remove-hook (disable-mode-hook (buffer mode))
+                     'disable-mode-auto-mode-handler))
 
 (define-mode auto-mode ()
   "Remember the modes setup for given domain/host/URL and store it in an editable form.
 These modes will then be activated on every visit to this domain/host/URL."
-  ((last-active-modes :accessor last-active-modes
+  ((last-active-modes-url :accessor last-active-modes-url
+                          :type (or quri:uri null)
+                          :initform nil
+                          :documentation "The last URL that the active modes were saved for.
+We need to store this to not overwrite the `last-active-modes' for a given URL,
+if `auto-mode-handler' will fire more than once.")
+   (last-active-modes :accessor last-active-modes
                       :type list
-                      :initform '())
+                      :initform '()
+                      :documentation "The list of modes that were enabled
+on the last URL not covered by `auto-mode'.")
    (destructor :initform #'clean-up-auto-mode)
    (constructor :initform #'initialize-auto-mode)))
 
-(declaim (ftype (function (string) list) make-dwim-match))
-(defun make-dwim-match (url)
-  (let ((url (or (ignore-errors (quri:uri url)) url)))
-    (if (and (quri:uri-p url)
-             (empty-path-url-p url)
-             (host-only-url-p url))
-        (if (string= (quri:uri-domain url)
-                     (cl-ppcre:regex-replace "www[0-9]?\\." (quri:uri-host url) ""))
-            `(match-domain ,(quri:uri-domain url))
-            `(match-host ,(quri:uri-host url)))
-        `(match-url ,(object-display url)))))
-
-(define-command save-modes-to-auto-mode-rules ()
-  "Store the enabled modes to `auto-mode-rules' for all the future visits of this
-domain/host/URL/group of websites inferring the suitable matching condition by user input.
-The rules are:
-- If it's a plain domain-only URL (i.e. \"http://domain.com\") -- then use `match-domain'.
-- If it's host with subdomains (\"http://whatever.subdomain.domain.com\") -- use `match-host'.
-- Use `match-url' otherwise.
+(define-command save-non-default-modes-for-future-visits ()
+  "Save the modes present in `default-modes' and not present in current modes as :excluded,
+and modes that are present in mode list but not in `default-modes' as :included,
+to one of `auto-mode-rules'. Apply the resulting rule for all the future visits to this URL,
+inferring the matching condition with `url-infer-match'.
 
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
-  (if (find-submode (current-buffer) 'auto-mode)
-      (with-result (url (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "URL:"
-                          :input-buffer (object-string (url (current-buffer)))
-                          :suggestion-function (nyxt::history-suggestion-filter
-                                                :prefix-urls (list
-                                                              (object-string
-                                                               (url (current-buffer)))))
-                          :history (minibuffer-set-url-history *browser*)
-                          :must-match-p nil)))
-        (when (typep url 'nyxt::history-entry)
-          (setf url (url url)))
-        (add-modes-to-auto-mode-rules (make-dwim-match url)
-                                      (modes (current-buffer))))
-      (echo "Enable auto-mode first.")))
+  (with-result (url (read-from-minibuffer
+                     (make-minibuffer
+                      :input-prompt "URL:"
+                      :input-buffer (object-string (url (current-buffer)))
+                      :suggestion-function (nyxt::history-suggestion-filter
+                                            :prefix-urls (list
+                                                          (object-string
+                                                           (url (current-buffer)))))
+                      :history (minibuffer-set-url-history *browser*)
+                      :must-match-p nil)))
+    (when (typep url 'nyxt::history-entry)
+      (setf url (url url)))
+    (add-modes-to-auto-mode-rules
+     (url-infer-match url)
+     :include (set-difference (modes (current-buffer))
+                              (default-modes (current-buffer))
+                              :test #'mode-equal)
+     :exclude (set-difference (default-modes (current-buffer))
+                              (modes (current-buffer))
+                              :test #'mode-equal))))
 
-(declaim (ftype (function (list (or null list)) (values list &optional))
+(define-command save-exact-modes-for-future-visits ()
+  "Store the exact list of enabled modes to `auto-mode-rules' for all the future visits of this
+domain/host/URL/group of websites inferring the suitable matching condition by user input.
+Uses `url-infer-match', see its documentation for matching rules.
+
+For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
+  ;; TODO: Should it prompt for modes to save?
+  ;; One may want to adjust the modes before persisting them as :exact-p rule.
+  (with-result (url (read-from-minibuffer
+                     (make-minibuffer
+                      :input-prompt "URL:"
+                      :input-buffer (object-string (url (current-buffer)))
+                      :suggestion-function (nyxt::history-suggestion-filter
+                                            :prefix-urls (list
+                                                          (object-string
+                                                           (url (current-buffer)))))
+                      :history (minibuffer-set-url-history *browser*)
+                      :must-match-p nil)))
+    (when (typep url 'nyxt::history-entry)
+      (setf url (url url)))
+    (add-modes-to-auto-mode-rules (url-infer-match url)
+                                  :include (modes (current-buffer))
+                                  :exact-p t)))
+
+(declaim (ftype (function (list &key (:append-p boolean) (:exclude list)
+                                (:include list) (:exact-p boolean))
+                          (values list &optional))
                 add-modes-to-auto-mode-rules))
-(defun add-modes-to-auto-mode-rules (test modes)
-  (let ((rule (or (find test (auto-mode-rules *browser*) :key #'test :test #'equal)
-                  (make-instance 'auto-mode-rule :test test))))
-    (when modes
-      (setf (modes rule) (rememberable-of (mapcar #'maybe-mode-name modes))
-            (auto-mode-rules *browser*) (delete-duplicates
-                                         (push rule (auto-mode-rules *browser*))
-                                         :key #'test :test #'equal))
-      (store-auto-mode-rules)
-      (auto-mode-rules *browser*))))
+(defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
+  (let* ((rule (or (find test (auto-mode-rules *browser*) :key #'test :test #'equal)
+                   (make-instance 'auto-mode-rule :test test)))
+         (include  (rememberable-of (mapcar #'maybe-mode-name include)))
+         (exclude  (rememberable-of (mapcar #'maybe-mode-name exclude))))
+    (setf (exact-p rule) exact-p
+          (included rule) (union include
+                                 (when append-p
+                                   (set-difference (included rule) exclude)))
+          (excluded rule) (union exclude
+                                 (when append-p
+                                   (set-difference (excluded rule) include)))
+          (auto-mode-rules *browser*) (delete-duplicates
+                                       (push rule (auto-mode-rules *browser*))
+                                       :key #'test :test #'equal))
+    (store-auto-mode-rules)
+    (auto-mode-rules *browser*)))
 
 (defmethod serialize-object ((rule auto-mode-rule) stream)
-  (let ((*standard-output* stream)
-        (*print-case* :downcase))
-    (write-string "(" stream)
-    (if (and (eq (first (test rule)) 'match-url)
-             (= 2 (length (test rule))))
-        (format t "~s " (second (test rule)))
-        (format t "~s " (test rule)))
-    (format t ":modes ~a" (modes rule))
-    (write-string ")" stream)))
+  (flet ((write-if-present (slot)
+           (when (funcall slot rule)
+             (format t " :~a ~a"
+                     slot
+                     (funcall slot rule)))))
+    (let ((*standard-output* stream)
+          (*print-case* :downcase))
+      (write-string "(" stream)
+      (if (and (eq (first (test rule)) 'match-url)
+               (= 2 (length (test rule))))
+          (format t "~s " (second (test rule)))
+          (format t "~s " (test rule)))
+      (write-if-present 'included)
+      (write-if-present 'excluded)
+      (write-if-present 'exact-p)
+      (write-string ")" stream))))
 
 (defmethod deserialize-auto-mode-rules (stream)
   (handler-case
@@ -260,12 +348,14 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (write-string ";; List of auto-mode rules.
 ;; It is made to be easily readable and editable, but you still need to remember some things:
 ;;
-;; Every rule starts on a new line and consists of two parts:
+;; Every rule starts on a new line and consists of one or more of the following elements:
 ;; - Condition for rule activation. It is either (match-domain ...),
 ;;   (match-host ...), (match-regex ...) or a string.
-;; - :MODES -- List of the modes to enable on condition. Edit carefully:
-;;   all the modes except these and nyxt/auto-mode:*non-rememberable-modes*
-;;   will be disabled on matching URL.
+;; - :included (optional) -- List of the modes to enable on condition.
+;; - :excluded (optional) -- List of the modes to disable on condition.
+;; - :exact-p  (optional) -- Whether to enable only :included modes and disable
+;;    everything else (if :exact-p is t), or just add :included and exclude :excluded
+;;    modes from the current modes list (if :exact-p is nil or not present).
 ;;
 ;; Conditions work this way:
 ;; - match-domain matches the URL domains only.
@@ -274,7 +364,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
 ;;   Example: (match-host \"old.reddit.com\") will work on old Reddit only.
 ;; - match-regex works for any address that matches a given regex. You can add these manually,
 ;;   but remember: with great regex comes great responsibility!
-;;   Example: \"https://github.com/.*/.*\" will activate only in repos on GitHub.
+;;   Example: (match-regex \"https://github\\.com/.*/.*\") will activate only in repos on GitHub.
 ;; - String format matches the exact URL and nothing else
 ;;   Example: \"https://lispcookbook.github.io/cl-cookbook/pattern_matching.html\"
 ;;            will work on the Pattern Matching article of CL Cookbook, and nowhere else.

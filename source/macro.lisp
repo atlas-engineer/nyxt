@@ -102,7 +102,7 @@ Example:
 (export-always '*yes-no-choices*)
 (defparameter *yes-no-choices* '(:yes "yes" :no "no")
   "The suggestions when asking the user for a yes/no choice.
-See `with-confirm'.
+See `if-confirm'.
 The first suggestion poses as a default.")
 
 (defun yes-no-suggestion-filter ()
@@ -112,23 +112,25 @@ The first suggestion poses as a default.")
 (defun confirmed-p (answer)
   (string-equal answer (getf *yes-no-choices* :yes)))
 
-(export-always 'with-confirm)
-(defmacro with-confirm (prompt &body body)
-  "Ask the user for confirmation before executing BODY.
+(export-always 'if-confirm)
+(defmacro if-confirm (prompt yes-form &optional no-form)
+  "Ask the user for confirmation before executing either YES-FORM of NO-FORM.
+YES-FORM is executed on  \"yes\" answer, NO-FORM -- on \"no\".
 PROMPT is a list fed to `format nil'.
 
 Example usage defaulting to \"no\":
 
 \(let ((*yes-no-choices* '(:no \"no\" :yes \"yes\")))
-  (with-confirm (\"Are you sure to kill ~a buffers?\" count)
+  (if-confirm (\"Are you sure to kill ~a buffers?\" count)
      (delete-buffers)))"
   `(with-result (answer (read-from-minibuffer
                          (make-minibuffer
                           :input-prompt (format nil ,@prompt)
                           :suggestion-function (yes-no-suggestion-filter)
                           :hide-suggestion-count-p t)))
-     (when (confirmed-p answer)
-       ,@body)))
+     (if (confirmed-p answer)
+         ,yes-form
+         ,no-form)))
 
 (defmacro with-class ((class-sym override-sym) &body body)
   "Dynamically override the class corresponding to CLASS-SYM by OVERRIDE-SYM.
