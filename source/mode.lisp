@@ -51,8 +51,11 @@ Example:
                                         (activate t explicit?)
                                         &allow-other-keys)
              ,docstring
-             (unless (typep buffer 'buffer)
-               (error ,(format nil "Mode command ~a called on empty buffer" name)))
+             (unless (find 'buffer (mopu:superclasses buffer) :key #'class-name)
+               ;; Warning: (typep buffer 'buffer) would not work for minibuffers
+               ;; if the BUFFER class was reassigned after the MINIBUFFER class
+               ;; declaration.
+               (error ,(format nil "Mode command ~a called on non-buffer" name)))
              (let ((existing-instance (find-mode buffer ',name)))
                (unless explicit?
                  (setf activate (not existing-instance)))
