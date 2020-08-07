@@ -1,5 +1,25 @@
 (in-package :nyxt)
 
+(defmacro replace-class (from to)
+  "Set class corresponding to FROM symbol to that of TO.
+Class TO is untouched.
+FROM and TO are unquoted symbols.
+Return new class.
+
+This macro ensures the type corresponding to the FROM symbol maps the TO class.
+Otherwise the old type could be undefined, as is the case with CCL (SBCL
+maintains the type though).  See the `find-class' documentation in the
+HyperSpec:
+
+  The results are undefined if the user attempts to change or remove the class
+  associated with a symbol that is defined as a type specifier in the standard."
+  `(progn
+     (setf (find-class ',from) (find-class ',to))
+     ;; TODO: Test with implementations beyond SBCL and CCL.
+     #-SBCL
+     (deftype ,from () ',to)
+     (find-class ',from)))
+
 (export-always 'defclass-export)
 (defmacro defclass-export (name supers &body (slots . options))
   "Define and export class.
@@ -12,7 +32,7 @@ e.g.  (defclass-export foo (foo) ()) works."
       (let ((temp-name (gensym (string name))))
         ;; Don't export the class again.
         `(progn (defclass ,temp-name ,supers ,slots ,@options)
-                (setf (find-class ',name) (find-class ',temp-name))))
+                (replace-class ,name ,temp-name)))
       `(serapeum.exporting:defclass ,name ,supers ,slots ,@options)))
 
 ;; While we don't use this macro yet, it could prove useful if we decide to use
