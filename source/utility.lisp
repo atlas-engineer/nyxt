@@ -153,9 +153,8 @@ Return most recent entry in RING."
 
 (export-always '%slot-default)
 (export-always 'define-configuration)
-(defmacro define-configuration (super &body slots)
-  "Helper macro to customize class slots.
-It generates a user-SUPER subclass of SUPER.
+(defmacro define-configuration (name &body slots)
+  "Helper macro to customize NAME class slots.
 
 Classes can be modes or a core class like `browser', `buffer', `minibuffer',
 `window'.
@@ -183,27 +182,24 @@ Since the above binds `nyxt/blocker-mode:*blocker-mode-class*' to
 `user-blocker-mode', the `blocker-mode' command now toggles the new
 `user-blocker-mode' instead of `blocker-mode'."
 
-  (let* ((name (intern (str:concat "USER-" (symbol-name super))))
-         (configured-class))
-    (unless (find-class super nil)
-      (error "define-configuration argument ~a is not a known class." super))
-    (setf configured-class (intern (str:concat "*" (symbol-name super) "-CLASS*") (symbol-package super)))
-    `(progn
-       (defclass ,name (,super)
-         ,(loop with super-class = (closer-mop:ensure-finalized (find-class super))
-                for slot in (car slots)
-                for known-slot? = (find (car slot) (mopu:slot-names super-class))
-                for initform = (and known-slot?
-                                    (getf (mopu:slot-properties super-class (car slot))
-                                          :initform))
-                if known-slot?
-                collect (list (car slot) :initform `(funcall (lambda (%slot-default)
-                                                               (declare (ignorable %slot-default))
-                                                               ,(cadr slot))
-                                                             ,initform))
-                else do
-                   (log:warn "Undefined slot ~a in ~a" (car slot) super)))
-       (setf (find-class ',super) (find-class ',name)))))
+  (unless (find-class name nil)
+    (error "define-configuration argument ~a is not a known class." name))
+  `(progn
+     (defclass-export ,name (,name)
+       ,(loop with super-class = (closer-mop:ensure-finalized (find-class name))
+              for slot in (first slots)
+              for known-slot? = (find (first slot) (mopu:slot-names super-class))
+              for initform = (and known-slot?
+                                  (getf (mopu:slot-properties super-class (first slot))
+                                        :initform))
+              if known-slot?
+                collect (list (first slot)
+                              :initform `(funcall (lambda (%slot-default)
+                                                    (declare (ignorable %slot-default))
+                                                    ,(cadr slot))
+                                                  ,initform))
+              else do
+                (log:warn "Undefined slot ~a in ~a" (first slot) name)))))
 
 (export-always 'load-system)
 (defun load-system (system)
