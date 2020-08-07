@@ -448,8 +448,8 @@ Warning: This behaviour may change in the future."
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (host (quri:uri-host url)))
-    (if (and (certificate-allowlist buffer)
-             (member-string host (certificate-allowlist buffer)))
+    (if (and (certificate-exception buffer)
+             (member-string host (certificate-exception buffer)))
         (progn
           (webkit:webkit-web-context-allow-tls-certificate-for-host
            context

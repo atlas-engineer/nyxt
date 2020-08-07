@@ -154,7 +154,7 @@ Example:
              :combination #'combine-composed-hook-until-nil
              :handlers (list #'request-resource-block)))))))
 
-(defmethod denylisted-host-p ((mode blocker-mode) host)
+(defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.
 Return nil if MODE's hostlist cannot be parsed."
   (when host
@@ -162,11 +162,11 @@ Return nil if MODE's hostlist cannot be parsed."
                never (member-string host (parse hostlist))))))
 
 (defun request-resource-block (request-data)
-  "Block resource queries from denylisted hosts.
+  "Block resource queries from blocklisted hosts.
 This is an acceptable handler for `request-resource-hook'."
   (let ((mode (find-submode (buffer request-data) 'blocker-mode)))
     (if (and mode
-             (denylisted-host-p
+             (blocklisted-host-p
               mode
               (quri:uri-host (url request-data))))
         (progn
