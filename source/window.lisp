@@ -5,59 +5,35 @@
 
 (hooks:define-hook-type window-buffer (function (window buffer)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'window)
-  (export
-   '(id
-     message-buffer-height
-     message-buffer-style
-     minibuffer-open-height
-     minibuffer-open-single-line-height
-     input-dispatcher
-     window-set-active-buffer-hook
-     status-formatter
-     window-delete-hook)))
-(defclass window ()
-  ((id :accessor id
-       :initarg :id
-       :type string
-       :initform "")
-   (active-buffer :reader active-buffer :initform nil)
-   (active-minibuffers :accessor active-minibuffers :initform nil
+(define-class window ()
+  ((id "")
+   (active-buffer :accessor nil :reader active-buffer :export nil)
+   (active-minibuffers :export nil
                        :documentation "The stack of currently active minibuffers.")
    ;; TODO: each frame should have a status buffer, not each window
-   (status-buffer :accessor status-buffer :initform nil)
-   (message-buffer-height :accessor message-buffer-height :initform 16
-                          :type integer
+   (status-buffer :export nil)
+   (message-buffer-height 16
                           :documentation "The height of the message buffer in pixels.")
-   (message-buffer-style :accessor message-buffer-style :initform
-                         (cl-css:css
+   (message-buffer-style (cl-css:css
                           '((body
                              :font-size "12px"
                              :padding 0
                              :padding-left "4px"
                              :margin 0))))
-   (minibuffer-open-height :accessor minibuffer-open-height :initform 256
-                           :type integer
+   (minibuffer-open-height 256
                            :documentation "The height of the minibuffer when open.")
-   (minibuffer-open-single-line-height :accessor minibuffer-open-single-line-height
-                                       :initform 35
-                                       :type integer
+   (minibuffer-open-single-line-height 35
                                        :documentation "The height of
  the minibuffer when open for a single line of input.")
-   (input-dispatcher :accessor input-dispatcher
-                     :initform #'dispatch-input-event
-                     :type function
+   (input-dispatcher #'dispatch-input-event
                      :documentation "Function to process input events.
 It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
 Cannot be null.")
-   (window-set-active-buffer-hook :accessor window-set-active-buffer-hook
-                                  :initform (make-hook-window-buffer)
+   (window-set-active-buffer-hook (make-hook-window-buffer)
                                   :type hook-window-buffer
                                   :documentation "Hook run before `window-set-active-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
-   (status-formatter :accessor status-formatter
-                     :initform #'format-status
+   (status-formatter #'format-status
                      :type (function (window) string)
                      :documentation "Function of a window argument that returns
 a string to be printed in the status view.
@@ -88,11 +64,13 @@ Example formatter that prints the buffer indices over the total number of buffer
                 \"\")
             (object-display (url buffer))
             (title buffer)))))")
-   (window-delete-hook :accessor window-delete-hook
-                       :initform (make-hook-window)
+   (window-delete-hook (make-hook-window)
                        :type hook-window
                        :documentation "Hook run after `ffi-window-delete' takes effect.
-The handlers take the window as argument.")))
+The handlers take the window as argument."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)
