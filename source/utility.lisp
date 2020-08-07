@@ -203,7 +203,7 @@ Since the above binds `nyxt/blocker-mode:*blocker-mode-class*' to
                                                              ,initform))
                 else do
                    (log:warn "Undefined slot ~a in ~a" (car slot) super)))
-       (setf (find-class ',super) (find-class ',name)))))
+       (replace-class ,super ,name))))
 
 (export-always 'load-system)
 (defun load-system (system)

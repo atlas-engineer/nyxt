@@ -47,8 +47,6 @@ data-manager will store the data separately for each buffer.")))
   (or (slot-value *browser* 'web-context)
       (setf (slot-value *browser* 'web-context) (make-instance 'webkit:webkit-web-context))))
 
-(setf (find-class 'browser) (find-class 'gtk-browser))
-
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
 See `ffi-initialize' and `ffi-kill-browser'.
@@ -101,8 +99,6 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
    (message-view :accessor message-view)
    (key-string-buffer :accessor key-string-buffer)))
 
-(setf (find-class 'window) (find-class 'gtk-window))
-
 (defclass-export gtk-buffer (buffer)
   ((gtk-object :accessor gtk-object)
    (proxy-uri :accessor proxy-uri
@@ -113,8 +109,6 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
                         :initarg :proxy-ignored-hosts
                         :type list
                         :initform '())))
-
-(setf (find-class 'buffer) (find-class 'gtk-buffer))
 
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
@@ -870,3 +864,10 @@ As a second value, return the current buffer index starting from 0."
   (webkit:webkit-web-view-go-to-back-forward-list-item
    (gtk-object buffer)
    (webkit-history-entry-gtk-object history-entry)))
+
+(defun set-renderer ()
+  (replace-class window gtk-window)
+  (replace-class buffer gtk-buffer)
+  (replace-class browser gtk-browser))
+
+(set-renderer)
