@@ -262,14 +262,14 @@ could mean that the address you are attempting the access is
 compromised.")
             (:p "If you trust the address nonetheless, you can add an exception
 for the current hostname with the "
-                (:code "add-domain-to-certificate-allowlist")
+                (:code "add-domain-to-certificate-exception")
                 " command.  The "
-                (:code "certificate-allowlist-mode")
+                (:code "certificate-exception-mode")
                 " must be active for the current buffer (which is the
 default).")
             (:p "To persist hostname exceptions in your initialization
 file, see the "
-                (:code "add-domain-to-certificate-allowlist")
+                (:code "add-domain-to-certificate-exception")
                 " documentation.")))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))

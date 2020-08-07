@@ -31,7 +31,7 @@
      box-style
      highlighted-box-style
      proxy
-     certificate-allowlist
+     certificate-exception
      buffer-delete-hook
      default-cookie-policy)))
 (defclass buffer ()
@@ -71,7 +71,7 @@ initialized buffer.")
    (default-modes :accessor default-modes
                   :initarg :default-modes
                   :type list-of-symbols
-                  :initform '(certificate-allowlist-mode web-mode base-mode)
+                  :initform '(certificate-exception-mode web-mode base-mode)
                   :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' slot.")
    (enable-mode-hook :accessor enable-mode-hook
@@ -214,7 +214,7 @@ renderers might support this.")
    (proxy :initform nil
           :type (or proxy null)
           :documentation "Proxy for buffer.")
-   (certificate-allowlist :accessor certificate-allowlist
+   (certificate-exception :accessor certificate-exception
                           :initform '()
                           :type list-of-strings
                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")

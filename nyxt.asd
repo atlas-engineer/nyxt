@@ -82,7 +82,7 @@
                (:file "application-mode")
                (:file "web-mode")
                (:file "reading-line-mode")
-               (:file "certificate-allowlist-mode")
+               (:file "certificate-exception-mode")
                (:file "emacs-mode")
                (:file "vi-mode")
                (:file "blocker-mode")
