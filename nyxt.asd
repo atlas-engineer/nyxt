@@ -253,11 +253,11 @@
   :depends-on (alexandria fset str)
   :pathname "libraries/keymap/"
   :components ((:file "package")
-                             (:file "types")
-                             (:file "conditions")
-                             (:file "keymap")
-                             (:file "scheme")
-                             (:file "scheme-names"))
+               (:file "types")
+               (:file "conditions")
+               (:file "keymap")
+               (:file "scheme")
+               (:file "scheme-names"))
   :in-order-to ((test-op (test-op "nyxt/keymap/tests"))))
 
 (asdf:defsystem nyxt/keymap/tests
@@ -265,3 +265,16 @@
   :perform (asdf:test-op (op c)
                          (funcall (read-from-string "prove:run")
                                   (asdf:system-relative-pathname c "libraries/keymap/tests/"))))
+
+(asdf:defsystem nyxt/class-star
+  :depends-on (hu.dwim.defclass-star moptilities)
+  :pathname "libraries/class-star/"
+  :components ((:file "package")
+               (:file "class-star"))
+  :in-order-to ((test-op (test-op "nyxt/class-star/tests"))))
+
+(asdf:defsystem nyxt/class-star/tests
+  :depends-on (nyxt/class-star prove)
+  :perform (asdf:test-op (op c)
+                         (funcall (read-from-string "prove:run")
+                                  (asdf:system-relative-pathname c "libraries/class-star/tests/"))))

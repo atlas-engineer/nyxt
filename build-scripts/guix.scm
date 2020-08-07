@@ -144,6 +144,7 @@
        ("dexador" ,cl-dexador)
        ("enchant" ,cl-enchant)
        ("fset" ,cl-fset)
+       ("hu.dwim.defclass-star" ,cl-hu.dwim.defclass-star)
        ("iolib" ,cl-iolib)
        ("local-time" ,cl-local-time)
        ("log4cl" ,cl-log4cl)

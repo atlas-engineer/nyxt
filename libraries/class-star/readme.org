@@ -1,0 +1,49 @@
+Features:
+
+- Implicit initarg, accessor, reader and writer like defclass/std.
+- Implicit initform defaulting to the zero-value of the slot type
+  (e.g. 0 for integers, "" for strings).  Can also forbid :initform-less slots
+  at compile time.
+- New `:export' slot option.
+- Global option to toggle the default slot exportation.
+- Global option to change the initform default to (error "Slot must be set").
+- Global option to change the name generation of the initarg, accessor,
+  reader and writer.  `nil` means none no initarg, etc. is generated.
+- Cycle detection in superclasses (like the above macro).
+
+Example result:
+
+```
+(define-class foo (foo)
+  ((slot1 :type integer) ; defaults to 0
+   (slot2 :type string :initform "hello!")
+   (unexported-slot :export nil)
+  (:export-all t
+   :initarg-names (lambda (s) (str:concat "my-" s)))
+
+; And this would work
+(make-instance 'foo :my-slot1 17)
+```
+
+Maybe have a `define-class-export` that exports the class name and turns
+on slot exportation by default.
+
+Metaclasses would not be very useful here since most of our features need to be
+enacted at compile-time, while metaclasses are mostly useful on classe /instances/.
+
+hu.dwim.defclass-star provides almost everything we need except
+
+- initform customization (such as zero values);
+- supers cycle support.
+
+* References
+
+- defclass/std:
+  https://github.com/EuAndreh/defclass-std
+  http://quickdocs.org/defclass-std/
+- defclass*:
+  http://quickdocs.org/hu.dwim.defclass-star/api
+  https://common-lisp.net/project/defclass-star/configuration.lisp.html
+- Serapeum:
+  https://github.com/ruricolist/serapeum/
+  https://github.com/ruricolist/serapeum/issues/38
