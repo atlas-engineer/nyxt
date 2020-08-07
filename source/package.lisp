@@ -8,6 +8,7 @@
 (uiop:define-package nyxt
   (:use :common-lisp :trivia)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)

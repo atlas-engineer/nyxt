@@ -41,7 +41,8 @@
                :nyxt/history-tree
                :nyxt/password-manager
                :nyxt/hooks
-               :nyxt/keymap)
+               :nyxt/keymap
+               :nyxt/class-star)
   :pathname "source/"
   :components ((:file "package")
                ;; Independent utilities
