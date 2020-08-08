@@ -91,7 +91,7 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
 (defun store-last-active-modes (auto-mode url)
   (when (can-store-last-active-modes auto-mode url)
       (setf (last-active-modes auto-mode) (modes (buffer auto-mode))
-            (last-non-matching-url auto-mode) url)))
+            (last-active-modes-url auto-mode) url)))
 
 (defun restore-last-active-modes (auto-mode)
   (disable-modes
