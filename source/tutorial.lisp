@@ -40,7 +40,7 @@ adblocking while 'noscript-mode' disables JavaScript.")
 the settings of a mode in a buffer does not impact the other buffers.  Mode
 functions are only available when the mode is enabled for the current buffer.")
    (:p "Each mode has an associated " (:i "mode toggler") " which is a command
-of the same name the toggles the mode for the current buffer.")
+of the same name that toggles the mode for the current buffer.")
    (:h3 "Minibuffer")
    (:p "The minibuffer is a menu that will appear when a command requests user
 input. For example, when invoking the " (:code "set-url") " command, you must
@@ -77,7 +77,7 @@ window) where Nyxt outputs messages back to you. To view the history of all
 messages, invoke the command " (:code "messages") ".")
    (:h3 "Status Area")
    (:p "The status area is where information about the state of that buffer is
-printed. By default this includes the active modes, the URL, and the title of
+printed. By default, this includes the active modes, the URL, and the title of
 the current buffer.")
 
    (:h2 "Basic controls")
@@ -110,8 +110,8 @@ links on the page will be listed in the minibuffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
     (:li (command-markup 'nyxt/web-mode:follow-hint) ": Go to link in current buffer.")
-    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer-focus) ": Create new buffer with link, focus on new buffer.")
-    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer) ": Create new buffer with link, keep focus on current buffer."))
+    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer-focus) ": Create new buffer with link; focus on new buffer.")
+    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer) ": Create new buffer with link; keep focus on current buffer."))
    (:h3 "Using the buffer history")
    (:p "History is represented as a tree that you can traverse: when you go back
 in history, then follow a new URL, it effectively creates a new branch without

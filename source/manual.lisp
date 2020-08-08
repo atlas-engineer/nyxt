@@ -32,7 +32,7 @@ run " (:code "describe-command") " and type 'mode' to list them all.")
     (:h3 "Keybinding configuration")
     (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
         (:code "emacs-mode") ".  To make the change persistent across sessions,
-add the following to you configuration:")
+add the following to your configuration:")
     (:ul
      (:li "VI bindings:"
       (:pre (:code "
@@ -50,7 +50,7 @@ for " (:code "execute-command") ".  You can use it to set keys globally:")
   ((override-map (let ((map (make-keymap \"override-map\")))
                    (define-key map
                      \"M-x\" 'execute-command)))))"))
-    (:p "A more flexibly way is to create your own mode with you custom
+    (:p "A more flexible way is to create your own mode with your custom
 keybindings.  When this mode is added first to the buffer mode list, its keys
 have priorities over the other modes key bindings.")
     (:pre (:code "
@@ -88,7 +88,7 @@ documentation.")
 
     (:h3 "Custom commands")
     (:p "Creating your own invokable commands is similar to creating a Common
-Lisp function except the form is " (:code "define-command") " instead of "
+Lisp function, except the form is " (:code "define-command") " instead of "
         (:code "defun") ".")
     (:p "Example:")
     (:pre (:code
@@ -238,9 +238,9 @@ instance must be non-nil.")
 
     (:h2 "Troubleshooting")
     (:h3 "Playing videos")
-    (:p "Nyxt delegates video support to third party plugins.")
+    (:p "Nyxt delegates video support to third-party plugins.")
     (:p "When using the WebKitGTK backends, GStreamer and its plugins are
-leveraged.  Depending on the video you will need to install some of the
+leveraged.  Depending on the video, you will need to install some of the
 following packages:")
     (:ul
      (:li "gst-libav")
@@ -268,7 +268,7 @@ ibus --daemonize --replace --xim"))
     (:p "You can persist this change by saving the commands in
 your " (:code ".xprofile") " or similar.")
     (:h3 "Font size on HiDPI displays")
-    (:p "On HiDPI displays the font size used for displaying web and Nyxt's
+    (:p "On HiDPI displays, the font size used for displaying web and Nyxt's
 minibuffer content might be too tiny.")
     (:p "To fix this issue when using the WebKitGTK render, export the following
 environment variable before starting Nyxt:")
