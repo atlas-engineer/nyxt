@@ -159,6 +159,9 @@ The class is restored when exiting BODY."
     `(let ((,old-class (find-class ',class-sym)))
        (unwind-protect
             (progn
-              (setf (find-class ',class-sym) (find-class ',override-sym))
+              (replace-class ,class-sym ,override-sym)
               ,@body)
-         (setf (find-class ',class-sym) ,old-class)))))
+         ;; TODO: Test type with CCL:
+         (setf (find-class ',class-sym) ,old-class)
+         #-SBCL
+         (deftype ,class-sym () ',class-sym)))))
