@@ -365,13 +365,14 @@ The version number is stored in the clipboard."
                          (buffer-list))))
     (unless buffer
       (setf buffer (nyxt/help-mode:help-mode :activate t
-                                             :buffer (make-buffer :title "*Messages*"))))
+                                             :buffer (make-internal-buffer :title "*Messages*"))))
     (let* ((content
-             (apply #'markup:markup*
-                    '(:h1 "Messages")
-                    (mapcar (lambda (message)
-                              (list :p message))
-                            (reverse (messages-content *browser*)))))
+             (markup:markup
+              (:h1 "Messages")
+              (:a :href (lisp-url "(clear-messages)(messages)") "Clear Messages")
+              (:ul
+               (loop for message in (reverse (messages-content *browser*))
+                     collect (markup:markup (:li message))))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript buffer insert-content))
