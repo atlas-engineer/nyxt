@@ -249,14 +249,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only).")))
 
 (defclass internal-buffer (buffer)
-  ((id :accessor id
-       :initarg :id
-       :type string
-       :initform ""
-       :documentation "Unique identifier for a buffer.
-Dead buffers or placeholder buffers (i.e. those not associated with a web view)
-have an empty ID.")
-   (default-modes :accessor default-modes
+  ((default-modes :accessor default-modes
                   :initarg :default-modes
                   :type list-of-symbols
                   :initform '(base-mode)
