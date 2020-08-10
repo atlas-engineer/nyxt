@@ -303,9 +303,13 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                                  (when append-p
                                    (set-difference (excluded rule) include)))
           (auto-mode-rules *browser*) (delete-duplicates
-                                       (push rule (auto-mode-rules *browser*))
+                                       (append (when (or (included rule) (excluded rule))
+                                                 (list rule))
+                                               (auto-mode-rules *browser*))
                                        :key #'test :test #'equal))
-    (store-auto-mode-rules)
+    (if (or (included rule) (excluded rule))
+        (store-auto-mode-rules)
+        (echo "You have only default-modes enabled in this buffer. There's nothing to save."))
     (auto-mode-rules *browser*)))
 
 (defmethod serialize-object ((rule auto-mode-rule) stream)
