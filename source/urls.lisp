@@ -130,3 +130,16 @@ Otherwise, build a search query with the default search engine."
             (t (match (default-search-engine search-engines)
                  (nil (quri:uri input-url))
                  (default (quri:uri (generate-search-query input-url (search-url default)))))))))))
+
+(defun default-search-engine (&optional (search-engines (all-search-engines)))
+  "Return the search engine with the 'default' shortcut, or the first one if
+there is none."
+  (or (find "default"
+            search-engines :test #'string= :key #'shortcut)
+      (first search-engines)))
+
+(defun lisp-url (data)
+  "Generate a Lisp URL from a string. This is useful for encoding
+functionality into internal-buffers."
+  (str:concat "lisp://" (quri:url-encode data)))
+
