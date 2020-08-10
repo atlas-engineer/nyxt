@@ -3,8 +3,6 @@
 (defclass-export qt-browser (browser)
   ((application :accessor application)))
 
-(setf (find-class 'browser) (find-class 'qt-browser))
-
 (defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
   (flet ((initialize ()
@@ -29,12 +27,10 @@
    (box-layout :accessor box-layout)
    (minibuffer-view :accessor minibuffer-view)))
 
-(setf (find-class 'window) (find-class 'qt-window))
-
 (defclass-export qt-buffer (buffer)
   ((qt-object :accessor qt-object)))
 
-(setf (find-class 'buffer) (find-class 'qt-buffer))
+(defclass-export qt-internal-buffer (internal-buffer qt-buffer) ())
 
 (defmethod initialize-instance :after ((window qt-window) &key)
   (with-slots (id qt-object box-layout active-buffer minibuffer-view) window
@@ -151,3 +147,11 @@
   (declare (ignore browser))
   ;; TODO: Test this!
   (funcall thunk))
+
+(defun set-renderer ()
+  (replace-class window qt-window)
+  (replace-class buffer qt-buffer)
+  (replace-class internal-buffer qt-internal-buffer)
+  (replace-class browser qt-browser))
+
+(set-renderer)
