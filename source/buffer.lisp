@@ -248,6 +248,21 @@ The handlers take the buffer as argument.")
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only).")))
 
+(defclass internal-buffer (buffer)
+  ((id :accessor id
+       :initarg :id
+       :type string
+       :initform ""
+       :documentation "Unique identifier for a buffer.
+Dead buffers or placeholder buffers (i.e. those not associated with a web view)
+have an empty ID.")
+   (default-modes :accessor default-modes
+                  :initarg :default-modes
+                  :type list-of-symbols
+                  :initform '(base-mode)
+                  :documentation "The symbols of the modes to instantiate on buffer creation.
+The mode instances are stored in the `modes' slot.")))
+
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
 
@@ -387,8 +402,14 @@ If URL is `:default', use `default-new-buffer-url'."
       (buffer-load url :buffer buffer))
     buffer))
 
-(declaim (ftype (function (browser &key (:title string) (:default-modes list) (:dead-buffer buffer))) buffer-make))
-(defun buffer-make (browser &key title default-modes dead-buffer)
+(define-command make-internal-buffer (&key (title "") modes)
+  "Create a new buffer.
+MODES is a list of mode symbols.
+If URL is `:default', use `default-new-buffer-url'."
+  (buffer-make *browser* :title title :default-modes modes :internal-buffer-p t))
+
+(declaim (ftype (function (browser &key (:title string) (:default-modes list) (:dead-buffer buffer) (:internal-buffer-p symbol))) buffer-make))
+(defun buffer-make (browser &key title default-modes dead-buffer internal-buffer-p)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
@@ -397,7 +418,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                        ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
                        (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
                        (ffi-buffer-make dead-buffer))
-                     (apply #'make-instance 'buffer
+                     (apply #'make-instance (if internal-buffer-p 'internal-buffer 'buffer)
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))

@@ -110,6 +110,8 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
                         :type list
                         :initform '())))
 
+(defclass-export gtk-internal-buffer (internal-buffer gtk-buffer) ())
+
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
                  :web-context (make-context buffer)))
@@ -416,7 +418,7 @@ Warning: This behaviour may change in the future."
                  (str:concat (expand-path (data-manager-path *browser*))
                              "/nyxt-data-manager-" id)))
 
-(declaim (ftype (function (&optional (or buffer null))) make-context))
+(declaim (ftype (function (&optional (or internal-buffer buffer null))) make-context))
 (defun make-context (&optional buffer)
   (let* ((context (if (and buffer
                            ;; Initial window buffer or replacement/temp buffers
@@ -870,6 +872,7 @@ As a second value, return the current buffer index starting from 0."
 (defun set-renderer ()
   (replace-class window gtk-window)
   (replace-class buffer gtk-buffer)
+  (replace-class internal-buffer gtk-internal-buffer)
   (replace-class browser gtk-browser))
 
 (set-renderer)
