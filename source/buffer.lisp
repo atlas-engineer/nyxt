@@ -32,7 +32,7 @@
      box-style
      highlighted-box-style
      proxy
-     certificate-exception
+     certificate-exceptions
      buffer-delete-hook
      default-cookie-policy)))
 (defclass buffer ()
@@ -224,7 +224,7 @@ renderers might support this.")
    (proxy :initform nil
           :type (or proxy null)
           :documentation "Proxy for buffer.")
-   (certificate-exception :accessor certificate-exception
+   (certificate-exceptions :accessor certificate-exceptions
                           :initform '()
                           :type list-of-strings
                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")

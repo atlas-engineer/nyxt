@@ -21,7 +21,7 @@ Use at your own risk -- it can break websites whose certificates are not known
 and websites that still don't have HTTPS version (shame on them!).
 
 To permanently bypass the \"Unacceptable TLS Certificate\" error:
-\(setf nyxt/certificate-exception-mode:*default-certificate-exception*
+\(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
        '(\"your.unacceptable.cert.website\"))
 
 Example:
