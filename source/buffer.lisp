@@ -401,7 +401,11 @@ MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
   (buffer-make *browser* :title title :default-modes modes :internal-buffer-p t))
 
-(declaim (ftype (function (browser &key (:title string) (:default-modes list) (:dead-buffer buffer) (:internal-buffer-p symbol))) buffer-make))
+(declaim (ftype (function (browser &key (:title string)
+                                   (:default-modes list)
+                                   (:dead-buffer buffer)
+                                   (:internal-buffer-p boolean)))
+                buffer-make))
 (defun buffer-make (browser &key title default-modes dead-buffer internal-buffer-p)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
