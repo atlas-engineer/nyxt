@@ -309,7 +309,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                                        :key #'test :test #'equal))
     (if (or (included rule) (excluded rule))
         (store-auto-mode-rules)
-        (echo "You have only default-modes enabled in this buffer. There's nothing to save."))
+        (echo "Only default modes are enabled in this buffer, there's nothing to save."))
     (auto-mode-rules *browser*)))
 
 (defmethod serialize-object ((rule auto-mode-rule) stream)
