@@ -503,14 +503,6 @@ Persist the `bookmarks-data' slot from BROWSER to `bookmarks-path' with
   (match (bookmarks-store-function browser)
     ((guard f f) (funcall-safely f))))
 
-(declaim (ftype (function (buffer)) add-to-recent-buffers))
-(defun add-to-recent-buffers (buffer)
-  "Create a recent-buffer from given buffer and add it to `recent-buffers'."
-  ;; Make sure it's a dead buffer:
-  (setf (id buffer) "")
-  (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
-  (containers:insert-item (recent-buffers *browser*) buffer))
-
 (defun download-watch ()
   "Update the download-list buffer.
 This function is meant to be run in the background."

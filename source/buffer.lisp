@@ -442,6 +442,14 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
+(declaim (ftype (function (buffer)) add-to-recent-buffers))
+(defun add-to-recent-buffers (buffer)
+  "Create a recent-buffer from given buffer and add it to `recent-buffers'."
+  ;; Make sure it's a dead buffer:
+  (setf (id buffer) "")
+  (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
+  (containers:insert-item (recent-buffers *browser*) buffer))
+
 (declaim (ftype (function (buffer)) buffer-delete))
 (defun buffer-delete (buffer)
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
