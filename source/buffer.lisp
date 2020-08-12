@@ -803,3 +803,11 @@ MODES should be a list of symbols, each possibly returned by `mode-name'."
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the content of the buffer."
   (ffi-inspector-show (current-buffer)))
+
+(define-parenscript %print-buffer ()
+  (print))
+
+(export-always 'print-buffer)
+(define-command print-buffer ()
+  "Print the current buffer."
+  (%print-buffer))
