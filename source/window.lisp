@@ -117,6 +117,10 @@ Example formatter that prints the buffer indices over the total number of buffer
                        :documentation "Hook run after `ffi-window-delete' takes effect.
 The handlers take the window as argument.")))
 
+(defmethod (setf active-buffer) (buffer (window window))
+  (setf (slot-value window 'active-buffer) buffer)
+  (print-status))
+
 (defun print-status (&optional status window)
   (let ((window (or window (current-window))))
     (when window
