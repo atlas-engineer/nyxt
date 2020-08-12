@@ -37,10 +37,6 @@ Parent directories are created if necessary."
        (with-maybe-gpg-file (,stream path ,@options)
          ,@body))))
 
-(defmethod (setf active-buffer) (buffer (window window))
-  (setf (slot-value window 'active-buffer) buffer)
-  (print-status))
-
 (defclass-export proxy ()
   ((server-address :accessor server-address :initarg :server-address
                    :initform (quri:uri "socks5://127.0.0.1:9050")
