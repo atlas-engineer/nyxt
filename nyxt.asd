@@ -71,7 +71,6 @@
                (:file "input")
                (:file "minibuffer")
                (:file "minibuffer-mode")
-               (:file "parse-urls")
                (:file "recent-buffers")
                (:file "password")
                (:file "bookmark")
