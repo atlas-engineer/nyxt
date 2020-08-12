@@ -1,5 +1,7 @@
 (in-package :nyxt)
 
+(hooks:define-hook-type window-buffer (function (window buffer)))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'window)
   (export

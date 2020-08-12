@@ -5,14 +5,9 @@
 (defclass minibuffer () ())
 (hooks:define-hook-type minibuffer (function (minibuffer)))
 (hooks:define-hook-type download (function (download-manager:download)))
-(hooks:define-hook-type window-buffer (function (window buffer)))
 
-(hooks:define-hook-type keymaps-buffer (function (list-of-keymaps buffer)
-                                                 (values &optional list-of-keymaps buffer)))
-(export-always '(make-hook-keymaps-buffer make-handler-keymaps-buffer))
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
 (export-always '(make-hook-resource make-handler-resource))
-(hooks:define-hook-type uri->uri (function (quri:uri) quri:uri))
 
 (export-always 'expand-path)
 (declaim (ftype (function ((or null data-path)) (or string null)) expand-path))
