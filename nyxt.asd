@@ -57,6 +57,7 @@
                (:file "buffer")
                (:file "window")
                (:file "mode")
+               (:file "search-engine")
                (:file "browser")
                (:file "utility")
                (:file "urls")
