@@ -50,7 +50,6 @@
                (:file "types")
                (:file "conditions")
                ;; Core functionality
-               (:file "macro")
                (:file "global")
                (:file "data-storage")
                (:file "configuration")
