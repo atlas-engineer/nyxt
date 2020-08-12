@@ -20,18 +20,6 @@ On errors, return URL."
          (url (format nil search-url encoded-search-string)))
     url))
 
-(defun bookmark-search-engines (&optional (bookmarks (bookmarks-data *browser*)))
-  (mapcar (lambda (b)
-            (make-instance 'search-engine
-                           :shortcut (shortcut b)
-                           :search-url (if (quri:uri-scheme (quri:uri (search-url b)))
-                                           (search-url b)
-                                           (str:concat (object-display (url b)) (search-url b)))
-                           :fallback-url (object-string (url b))))
-          (remove-if (lambda (b) (or (str:emptyp (search-url b))
-                                     (str:emptyp (shortcut b))))
-                     bookmarks)))
-
 (export-always 'valid-url-p)
 (defun valid-url-p (url)
   (let ((uri (ignore-errors (quri:uri url))))
@@ -105,17 +93,3 @@ Authority is compared case-insensitively (RFC 3986)."
 This way, HTTPS and HTTP is ignored when comparing URIs."
   (string< (schemeless-url uri1)
            (schemeless-url uri2)))
-
-(defun all-search-engines ()
-  "Return the `search-engines' from the `browser' instance plus those in
-bookmarks."
-  (when *browser*
-    (append (search-engines *browser*)
-            (bookmark-search-engines))))
-
-(defun default-search-engine (&optional (search-engines (all-search-engines)))
-  "Return the search engine with the 'default' shortcut, or the first one if
-there is none."
-  (or (find "default"
-            search-engines :test #'string= :key #'shortcut)
-      (first search-engines)))
