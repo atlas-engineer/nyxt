@@ -369,7 +369,7 @@ The version number is stored in the clipboard."
     (let* ((content
              (markup:markup
               (:h1 "Messages")
-              (:a :href (lisp-url "(clear-messages)(messages)") "Clear Messages")
+              (:a :href (lisp-url "(nyxt::clear-messages)(nyxt::messages)") "Clear Messages")
               (:ul
                (loop for message in (reverse (messages-content *browser*))
                      collect (markup:markup (:li message))))))
