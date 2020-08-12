@@ -376,8 +376,7 @@ After you have found a TASK item that is available:
 - make a pull request.
 
 ** IRC Channel
-You can find Nyxt on Freenode IRC at =#nyxt-browser=.
-
+#+html: You can find Nyxt on Freenode IRC: <a href="https://webchat.freenode.net/#nyxt">#nyxt</a>
 
 # Local Variables:
 # before-save-hook: org-make-toc
