@@ -159,7 +159,7 @@ Example:
 Return nil if MODE's hostlist cannot be parsed."
   (when host
     (not (loop for hostlist in (hostlists mode)
-               never (member-string host (parse hostlist))))))
+               never (member host (parse hostlist) :test #'string=)))))
 
 (defun request-resource-block (request-data)
   "Block resource queries from blocklisted hosts.
