@@ -68,46 +68,6 @@ Without handler, return ARG.  This is an acceptable `combination' for
                  result)))
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
 
-;; TODO: Find a better way to uniquely identify commands from mode methods.
-;; What about symbol properties?  We could use:
-;;
-;; (setf (get name 'commandp) t)
-;;
-;; But that doesn't seem to work properly, some commands need to be evaluated
-;; twice before they appear in the list.  We could use a class (we used to have
-;; a COMMAND class) or intern the symbol into a special package (see `intern'
-;; documentation).
-
-(defun mode-list ()
-  "Return the list of all namespaced mode symbols."
-  (delete-if (complement (lambda (m)
-                           (str:suffixp (list (symbol-name m) "-MODE")
-                                        "-MODE")))
-             (mapcar #'sym *command-list*)))
-
-(defun mode-command (mode-symbol)
-  "Return the mode toggle command.
-We loop over `*command-list*' to find the mode command since a mode may be
-defined in any package and is unique.
-
-If MODE-SYMBOL is a mode that inherits from another without defining a its own
-toggle command, return the toggle command of the parent."
-  (or (find-if (lambda (c)
-                 (eq (find-symbol (string mode-symbol) (pkg c))
-                     (sym c)))
-               *command-list*)
-      (match (find-class mode-symbol nil)
-        (nil nil)
-        (c (mode-command (class-name (first (mopu:direct-superclasses c))))))))
-
-(defun make-mode (mode-symbol buffer)
-  (log:debug mode-symbol buffer (mode-command mode-symbol))
-  (match (mode-command mode-symbol)
-    ;; ":activate t" should not be necessary here since (modes buffer) should be
-    ;; empty.
-    ((guard c c) (funcall (sym c) :buffer buffer :activate t))
-    (_ (log:warn "Mode command ~a not found." mode-symbol))))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'browser)
   (export '(remote-execution-p
