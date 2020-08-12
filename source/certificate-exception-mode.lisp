@@ -16,9 +16,9 @@ See the `add-domain-to-certificate-exceptions' command.")
 This can apply to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
   ((certificate-exceptions :initarg :certificate-exceptions
-                          :accessor certificate-exceptions
-                          :type list-of-strings
-                          :initform *default-certificate-exceptions*)
+                           :accessor certificate-exceptions
+                           :type list-of-strings
+                           :initform *default-certificate-exceptions*)
    (destructor
     :initform
     (lambda (mode)
