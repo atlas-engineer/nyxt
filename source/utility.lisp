@@ -56,12 +56,6 @@ before running this command."
   (swank:create-server :port swank-port :dont-close t)
   (echo "Swank server started at port ~a" swank-port))
 
-(export-always 'member-string)
-(defun member-string (string list)
-  "Return the tail of LIST beginning whose first element is STRING."
-  (check-type string string)
-  (member string list :test #'string=))
-
 (export-always 'notify)
 (defun notify (msg)
   "Echo this message and display it with a desktop notification system (notify-send on linux, terminal-notifier on macOs)."

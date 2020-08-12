@@ -451,7 +451,7 @@ Warning: This behaviour may change in the future."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (host (quri:uri-host url)))
     (if (and (certificate-exceptions buffer)
-             (member-string host (certificate-exceptions buffer)))
+             (member host (certificate-exceptions buffer) :test #'string=))
         (progn
           (webkit:webkit-web-context-allow-tls-certificate-for-host
            context
