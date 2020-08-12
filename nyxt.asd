@@ -71,6 +71,7 @@
                (:file "input")
                (:file "minibuffer")
                (:file "minibuffer-mode")
+               (:file "command-commands")
                (:file "recent-buffers")
                (:file "password")
                (:file "bookmark")
