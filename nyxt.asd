@@ -62,6 +62,7 @@
                (:file "search-engine")
                (:file "browser")
                (:file "utility")
+               (:file "notification")
                (:file "clipboard")
                (:file "urls")
                (:file "fuzzy")
