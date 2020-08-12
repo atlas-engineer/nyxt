@@ -54,6 +54,8 @@
                (:file "global")
                (:file "data-storage")
                (:file "command")
+               (:file "renderer-script")
+               (:file "minibuffer-helper")
                (:file "buffer")
                (:file "window")
                (:file "mode")
