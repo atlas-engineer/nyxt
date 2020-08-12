@@ -176,13 +176,9 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
                                 (symbol-package sym)))))
 
 (defun class-public-slots (class-sym)
-  "Return list of slot symbols that have at least a reader or a writer."
+  "Return the list of exported slots."
   (delete-if
-   (lambda (slot-name)
-     (let ((props (mopu:slot-properties (find-class class-sym) slot-name)))
-       (or (and (not (getf props :writers))
-                (not (getf props :readers)))
-           (not (exported-p slot-name)))))
+   (complement #'exported-p)
    (mopu:slot-names class-sym)))
 
 (defun package-slots ()
