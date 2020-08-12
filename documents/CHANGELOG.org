@@ -55,6 +55,11 @@ MAJOR.MINOR.PATCH, we increment the:
   should simplify installation, remove many performance bottlenecks and fix the
   mouse and keyboard issues.
 
+- New =auto-mode= to automatically load a configured set of modes for matching
+  URLs.  For instance, this can tell Nyxt to automatically enable proxy-mode
+  when navigating to Wikipedia and disable it otherwise.  The rules can be
+  persisted for future use.
+
 - New =tutorial= and =manual= commands.
 
 - Keybindings bind to function /symbols/ and not functions (i.e. ='foo= and not
