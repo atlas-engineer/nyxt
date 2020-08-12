@@ -60,27 +60,6 @@ Accessor symbols are derived from ACCESSOR-FN applied to the slot name."
 
 (defparameter %callback nil)            ; TODO: Make a monad?
 
-(export-always 'define-parenscript)
-(defmacro define-parenscript (script-name args &body script-body)
-  "Define parenscript function SCRIPT-NAME.
-SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
-Any Lisp expression must be wrapped in (PS:LISP ...).
-
-The returned function is called with the ARGS lambda-list over the current
-buffer."
-  `(progn
-     (defun ,script-name ,args
-       (ffi-buffer-evaluate-javascript (current-buffer)
-                                       (ps:ps ,@script-body)))))
-
-(export-always 'pflet)
-(defmacro pflet (((function function-arguments &body function-body)) &body body)
-  "Define single parenscript function in a flet body."
-  `(flet ((,function ,function-arguments
-            (ffi-buffer-evaluate-javascript (current-buffer)
-                                            (ps:ps ,@function-body))))
-     ,@body))
-
 (export-always 'use-empty-result)
 (defun use-empty-result ()
   (funcall-safely %callback nil))

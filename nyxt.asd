@@ -54,6 +54,7 @@
                (:file "global")
                (:file "data-storage")
                (:file "command")
+               (:file "javascript")
                (:file "buffer")
                (:file "window")
                (:file "mode")
