@@ -793,6 +793,20 @@ sometimes yields the wrong reasult."
   "Return the currently active minibuffer."
   (first (active-minibuffers (current-window))))
 
+(defmethod write-output-to-log ((browser browser))
+  "Set the *standard-output* and *error-output* to write to a log file."
+  (values
+   (setf *standard-output*
+         (open (expand-path (standard-output-path browser))
+               :direction :output
+               :if-does-not-exist :create
+               :if-exists :append))
+   (setf *error-output*
+         (open (expand-path (error-output-path browser))
+               :direction :output
+               :if-does-not-exist :create
+               :if-exists :append))))
+
 (defmacro define-ffi-method (name arguments)
   `(progn
      (export-always ',name)

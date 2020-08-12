@@ -82,20 +82,6 @@ before running this command."
                        (uiop:launch-program command))))
        (notify (if (zerop exit-code) success-msg error-msg))))))
 
-(defmethod write-output-to-log ((browser browser))
-  "Set the *standard-output* and *error-output* to write to a log file."
-  (values
-   (setf *standard-output*
-         (open (expand-path (standard-output-path browser))
-               :direction :output
-               :if-does-not-exist :create
-               :if-exists :append))
-   (setf *error-output*
-         (open (expand-path (error-output-path browser))
-               :direction :output
-               :if-does-not-exist :create
-               :if-exists :append))))
-
 (export-always 'funcall-safely)
 (defun funcall-safely (f &rest args)
   "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run
