@@ -261,6 +261,12 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                   :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' slot.")))
 
+(defmethod internal-buffer-p ((buffer buffer))
+  nil)
+
+(defmethod internal-buffer-p ((internal-buffer internal-buffer))
+  t)
+
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
 
