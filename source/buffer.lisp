@@ -1,5 +1,10 @@
 (in-package :nyxt)
 
+(hooks:define-hook-type keymaps-buffer (function (list-of-keymaps buffer)
+                                                 (values &optional list-of-keymaps buffer)))
+(export-always '(make-hook-keymaps-buffer make-handler-keymaps-buffer))
+(hooks:define-hook-type uri->uri (function (quri:uri) quri:uri))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'buffer)
   (export
