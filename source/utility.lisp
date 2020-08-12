@@ -88,14 +88,6 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
-(define-parenscript %print-buffer ()
-  (print))
-
-(export-always 'print-buffer)
-(define-command print-buffer ()
-  "Print the current buffer."
-  (%print-buffer))
-
 (export-always '%slot-default)
 (export-always 'define-configuration)
 (defmacro define-configuration (name &body slots)
