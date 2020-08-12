@@ -622,12 +622,6 @@ to the currently active buffer."
     (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
       (mapcar #'buffer-delete buffers-to-delete))))
 
-;; WARNING: Don't use this parenscript, use the TITLE buffer slot instead.
-(define-parenscript %%buffer-get-title () ; TODO: `on-signal-load-finished' should
-                                          ; pass the title so that we don't have
-                                          ; to call this.
-  (ps:chain document title))
-
 (export-always 'buffer-load)
 (declaim (ftype (function ((or quri:uri string) &key (:buffer buffer)) t) buffer-load))
 (defun buffer-load (input-url &key (buffer (current-buffer)))
