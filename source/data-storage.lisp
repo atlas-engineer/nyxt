@@ -1,5 +1,24 @@
 (in-package :nyxt)
 
+;; TODO: defclass-export is used extensively here, but we can't place it in
+;; configuration.lisp since that file depends on this one.  Remove this macro
+;; once we have our own define-class library.
+(export-always 'defclass-export)
+(defmacro defclass-export (name supers &body (slots . options))
+  "Define and export class.
+Additionally, this class definition macro supports cycle in the superclasses,
+e.g.  (defclass-export foo (foo) ()) works."
+  (if (and (find-class name nil)
+           (member (find-class name)
+                   (append (mapcar #'find-class supers)
+                           (mapcar #'mopu:superclasses supers))))
+      (let ((temp-name (gensym (string name))))
+        ;; Don't export the class again.
+        `(progn (defclass ,temp-name ,supers ,slots ,@options)
+                (replace-class ,name ,temp-name)))
+      `(serapeum.exporting:defclass ,name ,supers ,slots ,@options)))
+
+
 ;; TODO: Make this a separate library?
 
 (defvar +data-root+ "nyxt")
