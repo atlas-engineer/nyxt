@@ -56,6 +56,7 @@
                (:file "configuration")
                (:file "command")
                (:file "javascript")
+               (:file "minibuffer-helper")
                (:file "buffer")
                (:file "window")
                (:file "mode")
