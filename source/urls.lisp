@@ -138,8 +138,9 @@ there is none."
             search-engines :test #'string= :key #'shortcut)
       (first search-engines)))
 
-(defun lisp-url (data)
+(declaim (ftype (function (string)) lisp-url))
+(defun lisp-url (lisp-data)
   "Generate a Lisp URL from a string. This is useful for encoding
 functionality into internal-buffers."
-  (str:concat "lisp://" (quri:url-encode data)))
+  (str:concat "lisp://" (quri:url-encode lisp-data)))
 
