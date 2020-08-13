@@ -20,9 +20,7 @@
 
 (defun command-suggestion-filter (&optional mode-symbols)
   (let* ((commands
-           (sort (apply #'list-commands mode-symbols)
-                 (lambda (c1 c2)
-                   (> (access-time c1) (access-time c2)))))
+           (sort (apply #'list-commands mode-symbols) #'> :key #'access-time))
          (pretty-commands (mapcar #'command-display commands)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) commands :suggestions-display pretty-commands))))
