@@ -556,7 +556,7 @@ Deal with REQUEST-DATA with the following rules:
       (declare (type quri:uri url))
       (cond
         ((internal-buffer-p buffer)
-         (evaluate (quri:url-decode (quri:uri-domain url)))
+         (evaluate (quri:url-decode (schemeless-url url)))
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
