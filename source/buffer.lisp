@@ -259,7 +259,35 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                   :type list-of-symbols
                   :initform '(base-mode)
                   :documentation "The symbols of the modes to instantiate on buffer creation.
-The mode instances are stored in the `modes' slot.")))
+The mode instances are stored in the `modes' slot.")
+   (style :accessor style :initform
+          (cl-css:css
+           '((h1
+              :font-family "Helvetica Neue, Helvetica")
+             (h2
+              :font-family "Helvetica Neue, Helvetica")
+             (h3
+              :font-family "Helvetica Neue, Helvetica")
+             (h4
+              :font-family "Helvetica Neue, Helvetica")
+             (h5
+              :font-family "Helvetica Neue, Helvetica")
+             (h6
+              :font-family "Helvetica Neue, Helvetica")
+             (.button
+              :background-color "darkgray"
+              :color "white"
+              :text-decoration "none"
+              :border-radius "2px"
+              :padding "6px"
+              :margin-left "2px"
+              :margin-right "2px")
+             (|.button:hover|
+              :color "black")
+             (|.button:visited|
+              :color "white")
+             (|.button:active|
+              :color "white"))))))
 
 (defmethod internal-buffer-p ((buffer buffer))
   nil)
