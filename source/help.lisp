@@ -368,8 +368,12 @@ The version number is stored in the clipboard."
                                              :buffer (make-internal-buffer :title "*Messages*"))))
     (let* ((content
              (markup:markup
+              (:style (style buffer))
               (:h1 "Messages")
-              (:a :href (lisp-url "(nyxt:clear-messages)(nyxt:messages)") "Clear messages")
+              (:a :class "button"
+                  :href (lisp-url "(nyxt:messages)") "Update")
+              (:a :class "button"
+                  :href (lisp-url "(nyxt:clear-messages)(nyxt:messages)") "Clear")
               (:ul
                (loop for message in (reverse (messages-content *browser*))
                      collect (markup:markup (:li message))))))
