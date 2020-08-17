@@ -112,9 +112,20 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defclass-export gtk-internal-buffer (internal-buffer gtk-buffer) ())
 
+(defclass-export gtk-status-buffer (status-buffer gtk-internal-buffer) ())
+
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
                  :web-context (make-context buffer)))
+
+(defmethod initialize-instance :after ((buffer gtk-status-buffer) &key)
+  (with-slots (gtk-object) buffer
+    (setf gtk-object (make-web-view))
+    (gobject:g-signal-connect
+     gtk-object "decide-policy"
+     (lambda (web-view response-policy-decision policy-decision-type-response)
+       (declare (ignore web-view))
+       (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout active-buffer
@@ -873,6 +884,7 @@ As a second value, return the current buffer index starting from 0."
   (replace-class window gtk-window)
   (replace-class buffer gtk-buffer)
   (replace-class internal-buffer gtk-internal-buffer)
+  (replace-class status-buffer gtk-status-buffer)
   (replace-class browser gtk-browser))
 
 (set-renderer)

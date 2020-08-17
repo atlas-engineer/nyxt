@@ -289,6 +289,8 @@ The mode instances are stored in the `modes' slot.")
              (|.button:active|
               :color "white"))))))
 
+(defclass status-buffer (internal-buffer) ())
+
 (defmethod internal-buffer-p ((buffer buffer))
   nil)
 
