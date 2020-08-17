@@ -702,12 +702,13 @@ The following example does a few things:
                                                       (str:downcase
                                                        (class-name (class-of m)))))
                          (modes buffer))))
-     (:span :class "status-menu"
-            (:a :class "button" :title "Backwards" :href (lisp-url "(nyxt/web-mode:history-backwards)") "←")
-            (:a :class "button" :title "Forwards" :href (lisp-url "(nyxt/web-mode:history-forwards)") "→"))
+     (:a :class "button" :title "Backwards" :href (lisp-url "(nyxt/web-mode:history-backwards)") "←")
+     (:a :class "button" :title "Forwards" :href (lisp-url "(nyxt/web-mode:history-forwards)") "→")
+     (:a :class "button" :title "Reload" :href (lisp-url "(nyxt:reload-current-buffer)") "↺")
      (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
      (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
-     (:span
+     (:a :class "button"
+         :href (lisp-url "(nyxt:set-url-from-current-url)")
       (format nil " ~a — ~a"
               (object-display (url buffer))
               (title buffer))))))
