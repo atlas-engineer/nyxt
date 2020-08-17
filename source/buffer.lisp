@@ -293,7 +293,7 @@ The mode instances are stored in the `modes' slot.")
   ((height :accessor height :initform 16
            :type integer
            :documentation "The height of the status buffer in pixels.")
-   (style :accessor status-buffer-style :initform
+   (style :accessor style :initform
           (cl-css:css
            '((body
               :background "rgb(224, 224, 224)"
@@ -329,10 +329,6 @@ The mode instances are stored in the `modes' slot.")
               :margin-left "2px"
               :margin-right "2px")
              (|.button:hover|
-              :color "white")
-             (|.button:visited|
-              :color "black")
-             (|.button:active|
               :color "white"))))))
 
 (defmethod internal-buffer-p ((buffer buffer))
