@@ -32,6 +32,8 @@
 
 (defclass-export qt-internal-buffer (internal-buffer qt-buffer) ())
 
+(defclass-export qt-status-buffer (status-buffer qt-internal-buffer) ())
+
 (defmethod initialize-instance :after ((window qt-window) &key)
   (with-slots (id qt-object box-layout active-buffer minibuffer-view) window
     (setf id (get-unique-window-identifier *browser*))
@@ -45,7 +47,7 @@
     (qt:layout-add-widget box-layout minibuffer-view)
     (qt:layout-set-contents-margins box-layout 0 0 0 0)
     (qt:layout-set-spacing box-layout 0)
-    (ffi-window-set-minibuffer-height window (status-buffer-height window))
+    (ffi-window-set-minibuffer-height window 16)
     (qt:widget-resize qt-object 1024 768)
     (qt:widget-install-key-press-filter
      (qt-object window)
@@ -152,6 +154,7 @@
   (replace-class window qt-window)
   (replace-class buffer qt-buffer)
   (replace-class internal-buffer qt-internal-buffer)
+  (replace-class status-buffer qt-status-buffer)
   (replace-class browser qt-browser))
 
 (set-renderer)
