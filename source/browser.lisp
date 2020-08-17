@@ -697,11 +697,11 @@ The following example does a few things:
 (defun format-status (window)
   (let ((buffer (current-buffer window)))
     (markup:markup
-     (:b (format nil "[~{~a~^ ~}]"
-                 (mapcar (lambda (m) (str:replace-all "-mode" ""
-                                                      (str:downcase
-                                                       (class-name (class-of m)))))
-                         (modes buffer))))
+     (:span (format nil "[~{~a~^ ~}]"
+                    (mapcar (lambda (m) (str:replace-all "-mode" ""
+                                                         (str:downcase
+                                                          (class-name (class-of m)))))
+                            (modes buffer))))
      (:a :class "button" :title "Backwards" :href (lisp-url "(nyxt/web-mode:history-backwards)") "←")
      (:a :class "button" :title "Forwards" :href (lisp-url "(nyxt/web-mode:history-forwards)") "→")
      (:a :class "button" :title "Reload" :href (lisp-url "(nyxt:reload-current-buffer)") "↺")
