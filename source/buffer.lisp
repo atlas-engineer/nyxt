@@ -289,7 +289,51 @@ The mode instances are stored in the `modes' slot.")
              (|.button:active|
               :color "white"))))))
 
-(defclass status-buffer (internal-buffer) ())
+(defclass status-buffer (internal-buffer)
+  ((height :accessor height :initform 16
+           :type integer
+           :documentation "The height of the status buffer in pixels.")
+   (style :accessor status-buffer-style :initform
+          (cl-css:css
+           '((body
+              :background "rgb(224, 224, 224)"
+              :font-size "12px"
+              :color "rgb(32, 32, 32)"
+              :padding 0
+              :padding-left "4px"
+              :line-height "16px"
+              :margin 0)
+             (.loader
+              :border "2px solid gray"
+              :border-top "2px solid black"
+              :border-radius "50%"
+              :display "inline-block"
+              :margin-top "2px"
+              :margin-left "3px"
+              :margin-right "3px"
+              :width "7px"
+              :height "7px"
+              :animation "spin 2s linear infinite")
+             ("@keyframes spin"
+              ("0%" :transform "rotate(0deg)")
+              ("100%" :transform "rotate(360deg)"))
+             (.status-menu
+              :padding-left "4px")
+             (.button
+              :background-color "darkgray"
+              :color "black"
+              :text-decoration "none"
+              :border-radius "2px"
+              :padding-left "2px"
+              :padding-right "2px"
+              :margin-left "2px"
+              :margin-right "2px")
+             (|.button:hover|
+              :color "white")
+             (|.button:visited|
+              :color "black")
+             (|.button:active|
+              :color "white"))))))
 
 (defmethod internal-buffer-p ((buffer buffer))
   nil)
