@@ -713,7 +713,6 @@ The following example does a few things:
               (object-display (url buffer))
               (title buffer))))))
 
-
 (defun print-message (message &optional window)
   (let ((window (or window (current-window))))
     (when window
