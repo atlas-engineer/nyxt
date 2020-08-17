@@ -704,7 +704,6 @@ The following example does a few things:
                          (modes buffer))))
      (:span :class "status-menu"
             (:a :class "button" :title "Backwards" :href (lisp-url "(nyxt/web-mode:history-backwards)") "←")
-            (:a :class "button" :title "Reload" :href (lisp-url "(nyxt:reload-current-buffer)") "↺")
             (:a :class "button" :title "Forwards" :href (lisp-url "(nyxt/web-mode:history-forwards)") "→"))
      (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
      (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))

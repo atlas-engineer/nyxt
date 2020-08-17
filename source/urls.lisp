@@ -142,5 +142,5 @@ there is none."
 (defun lisp-url (lisp-data)
   "Generate a Lisp URL from a string. This is useful for encoding
 functionality into internal-buffers."
-  (quri:url-encode lisp-data))
+  (str:concat "lisp://" (quri:url-encode lisp-data)))
 
