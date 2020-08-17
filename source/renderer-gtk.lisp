@@ -119,7 +119,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defmethod initialize-instance :after ((buffer gtk-status-buffer) &key)
   (with-slots (gtk-object) buffer
-    (setf gtk-object (make-web-view))
+    (setf gtk-object (make-web-view buffer))
     (gobject:g-signal-connect
      gtk-object "decide-policy"
      (lambda (web-view response-policy-decision policy-decision-type-response)
