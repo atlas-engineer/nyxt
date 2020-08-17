@@ -94,7 +94,6 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
    (minibuffer-container :accessor minibuffer-container)
    (minibuffer-view :accessor minibuffer-view)
    (status-container :accessor status-container)
-   (status-view :accessor status-view)
    (message-container :accessor message-container)
    (message-view :accessor message-view)
    (key-string-buffer :accessor key-string-buffer)))
@@ -130,7 +129,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (with-slots (gtk-object box-layout active-buffer
                minibuffer-container minibuffer-view
-               status-container status-view
+               status-buffer status-container
                message-container message-view
                id key-string-buffer) window
     (setf id (get-unique-window-identifier *browser*))
@@ -162,11 +161,11 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
     (setf (gtk:gtk-widget-size-request message-container)
           (list -1 (message-buffer-height window)))
 
-    (setf status-view (make-web-view))
+    (setf status-buffer (make-instance 'status-buffer))
     (gtk:gtk-box-pack-end box-layout status-container :expand nil)
-    (gtk:gtk-box-pack-start status-container status-view :expand t)
+    (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
     (setf (gtk:gtk-widget-size-request status-container)
-          (list -1 (status-buffer-height window)))
+          (list -1 (height status-buffer)))
 
     (setf minibuffer-view (make-web-view))
     (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
@@ -429,7 +428,6 @@ Warning: This behaviour may change in the future."
                  (str:concat (expand-path (data-manager-path *browser*))
                              "/nyxt-data-manager-" id)))
 
-(declaim (ftype (function (&optional (or internal-buffer buffer null))) make-context))
 (defun make-context (&optional buffer)
   (let* ((context (if (and buffer
                            ;; Initial window buffer or replacement/temp buffers
@@ -804,11 +802,11 @@ custom (the specified proxy) and none."
 
 (defmethod ffi-print-status ((window gtk-window) text)
   (let ((text (markup:markup
-               (:head (:style (status-buffer-style window)))
+               (:head (:style (style (status-buffer window))))
                (:body (markup:raw text)))))
-    (with-slots (status-view) window
+    (with-slots (status-buffer) window
       (webkit2:webkit-web-view-evaluate-javascript
-       (status-view window)
+       (gtk-object (status-buffer window))
        (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
                     (ps:lisp text)))))))
 
