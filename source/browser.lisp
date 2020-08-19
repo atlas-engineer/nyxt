@@ -705,6 +705,7 @@ The following example does a few things:
      (:a :class "button" :title "Backwards" :href (lisp-url "(nyxt/web-mode:history-backwards)") "←")
      (:a :class "button" :title "Forwards" :href (lisp-url "(nyxt/web-mode:history-forwards)") "→")
      (:a :class "button" :title "Reload" :href (lisp-url "(nyxt:reload-current-buffer)") "↺")
+     (:a :class "button" :title "Execute" :href (lisp-url "(nyxt:execute-command)") "⚙")
      (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
      (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
      (:a :class "button"
