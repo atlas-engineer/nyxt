@@ -1,11 +1,11 @@
 (in-package :nyxt)
 
 (defclass meta-result ()
-  ((display :accessor display :initarg :display)
+  ((result :accessor result :initarg :result)
    (source-minibuffer :accessor source-minibuffer :initarg :source)))
 
 (defmethod object-display ((meta-result meta-result))
-  (format nil "~a" (object-display (display meta-result))))
+  (format nil "~a" (object-display (result meta-result))))
 
 (defun meta-search (minibuffers)
   "Search a composite set of sources simultaneously."
@@ -21,7 +21,7 @@
                                              (funcall (suggestion-function i)
                                                       (input-buffer minibuffer))
                                           collect (make-instance 'meta-result
-                                                                 :display result
+                                                                 :result result
                                                                  :source i))))))))
     (funcall (slot-value (source-minibuffer selection) 'callback) selection)))
 
@@ -32,11 +32,11 @@
     (make-minibuffer
      :suggestion-function
      (lambda (i) (fuzzy-match i (list "Carp" "Goldfish" "Salmon")))
-     :callback (lambda (i) (format t "Hello ~a" (display i))))
+     :callback (lambda (i) (format t "Hello ~a" (result i))))
     (make-minibuffer
      :suggestion-function
      (lambda (i) (fuzzy-match i (list "Turtle" "Box Turtle" "Sea Water Turtle")))
-     :callback (lambda (i) (print (display i)))))))
+     :callback (lambda (i) (print (result i)))))))
 
 (defun intertwine (&rest lists)
   (let ((heads (copy-list lists))
