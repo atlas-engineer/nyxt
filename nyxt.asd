@@ -79,6 +79,7 @@
                (:file "auto-mode")
                (:file "external-editor")
                (:file "url-group")
+               (:file "minibuffer-composite")
                ;; Core Modes
                (:file "base-mode")
                (:file "repl-mode")
