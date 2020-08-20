@@ -36,7 +36,8 @@
 string and returns a list of suggestion strings.
 Example: `buffer-suggestion-filter'.")
    (callback :initform nil
-             :documentation "Function to call over the selected suggestion.")
+             :documentation "Function to call over the selected suggestion."
+             :initarg :callback)
    (callback-buffer :initarg :callback-buffer
                     :accessor callback-buffer
                     :initform (when *browser* (current-buffer))
@@ -182,6 +183,7 @@ A minibuffer query is typically done as follows:
     (&key (default-modes nil explicit-default-modes)
        (suggestion-function nil explicit-suggestion-function)
        (callback-buffer nil explicit-callback-buffer)
+       (callback nil explicit-callback)
        (setup-function nil explicit-setup-function)
        (cleanup-function nil explicit-cleanup-function)
        (changed-callback nil explicit-changed-callback)
@@ -209,6 +211,9 @@ A minibuffer query is typically done as follows:
                    '())
              ,@(if explicit-callback-buffer
                    `(:callback-buffer ,callback-buffer)
+                   '())
+             ,@(if explicit-callback
+                   `(:callback ,callback)
                    '())
              ,@(if explicit-setup-function
                    `(:setup-function ,setup-function)

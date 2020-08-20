@@ -1,32 +1,42 @@
 (in-package :nyxt)
 
-(defstruct minibuffer-source
-  (suggestion-function)
-  (result-function))
+(defclass meta-result ()
+  ((display :accessor display :initarg :display)
+   (source-minibuffer :accessor source-minibuffer :initarg :source)))
 
-(define-command meta-search ()
+(defmethod object-display ((meta-result meta-result))
+  (format nil "~a" (object-display (display meta-result))))
+
+(defun meta-search (minibuffers)
   "Search a composite set of sources simultaneously."
-  (let ((minibuffers (list
-                      (make-minibuffer-source
-                       :suggestion-function (lambda (i) (fuzzy-match i (list "Turtle" "Sea Turtle" "Box Turtle")))
-                       :result-function (lambda (i)
-                                          (print i)))
-                      (make-minibuffer-source
-                       :suggestion-function (lambda (i) (fuzzy-match i (list "Salmon" "Carp" "Swordfish")))
-                       :result-function (lambda (i)
-                                          (print i))))))
-    (with-result (selection (read-from-minibuffer
-                             (make-minibuffer
-                              :input-prompt "Open bookmarks in new buffers"
-                              :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                              :suggestion-function
-                              (lambda (minibuffer)
-                                (apply #'intertwine
-                                       (mapcar (lambda (i)
-                                                 (funcall (minibuffer-source-suggestion-function i)
-                                                          (input-buffer minibuffer)))
-                                               minibuffers))))))
-      (print selection))))
+  (with-result (selection
+                (read-from-minibuffer
+                 (make-minibuffer
+                  :input-prompt "Meta Search"
+                  :suggestion-function
+                  (lambda (minibuffer)
+                    (apply #'intertwine
+                           (loop for i in minibuffers collect
+                                    (loop for result in
+                                             (funcall (suggestion-function i)
+                                                      (input-buffer minibuffer))
+                                          collect (make-instance 'meta-result
+                                                                 :display result
+                                                                 :source i))))))))
+    (funcall (slot-value (source-minibuffer selection) 'callback) selection)))
+
+(define-command meta-search-demonstration ()
+  "Demonstration of how meta search function works."
+  (meta-search
+   (list
+    (make-minibuffer
+     :suggestion-function
+     (lambda (i) (fuzzy-match i (list "Carp" "Goldfish" "Salmon")))
+     :callback (lambda (i) (format t "Hello ~a" (display i))))
+    (make-minibuffer
+     :suggestion-function
+     (lambda (i) (fuzzy-match i (list "Turtle" "Box Turtle" "Sea Water Turtle")))
+     :callback (lambda (i) (print (display i)))))))
 
 (defun intertwine (&rest lists)
   (let ((heads (copy-list lists))
