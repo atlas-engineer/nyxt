@@ -565,6 +565,9 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (remhash id (slot-value *browser* 'buffers))
   (print-status))
 
+(defun buffer-delete-by-id (id)
+  (buffer-delete (gethash id (slot-value *browser* 'buffers))))
+
 (export-always 'window-list)
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
