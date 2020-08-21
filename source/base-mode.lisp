@@ -144,3 +144,27 @@
                                "C-w C-q" 'delete-window
                                "u" 'reopen-buffer
                                "C-x C-f" 'open-file)))))
+
+(define-command buffers ()
+  "Show the *Buffers* buffer."
+  (let ((buffer (find-if (lambda (b)
+                           (string= "*Buffers*" (title b)))
+                         (buffer-list))))
+    (unless buffer
+      (setf buffer (base-mode :activate t
+                              :buffer (make-internal-buffer :title "*Buffers*"))))
+    (let* ((content
+             (markup:markup
+              (:style (style buffer))
+              (:h1 "Buffers")
+              (:a :class "button"
+                  :href (lisp-url "(nyxt:buffers)") "Update")
+              (:ul
+               (loop for buffer in (buffer-list)
+                     collect (markup:markup (:li (:p (title buffer))
+                                                 (:p (quri:render-uri (url buffer)))))))))
+           (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                        (ps:lisp content)))))
+      (ffi-buffer-evaluate-javascript buffer insert-content))
+    (set-current-buffer buffer)
+    buffer))
