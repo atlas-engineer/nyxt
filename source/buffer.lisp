@@ -262,7 +262,9 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 The mode instances are stored in the `modes' slot.")
    (style :accessor style :initform
           (cl-css:css
-           '((h1
+           '((body
+              :line-height "24px")
+             (h1
               :font-family "Helvetica Neue, Helvetica")
              (h2
               :font-family "Helvetica Neue, Helvetica")
@@ -565,9 +567,6 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (remhash id (slot-value *browser* 'buffers))
   (print-status))
 
-(defun buffer-delete-by-id (id)
-  (buffer-delete (gethash id (slot-value *browser* 'buffers))))
-
 (export-always 'window-list)
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
@@ -640,14 +639,16 @@ proceeding."
   (copy-to-clipboard (title (current-buffer)))
   (echo "~a copied to clipboard." (title (current-buffer))))
 
-(define-command switch-buffer ()
+(define-command switch-buffer (&key id)
   "Switch the active buffer in the current window."
-  (with-result (buffer (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Switch to buffer"
-                         ;; For commodity, the current buffer shouldn't be the first one on the list.
-                         :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
-    (set-current-buffer buffer)))
+  (if id
+      (set-current-buffer (gethash id (slot-value *browser* 'buffers)))
+      (with-result (buffer (read-from-minibuffer
+                            (make-minibuffer
+                             :input-prompt "Switch to buffer"
+                             ;; For commodity, the current buffer shouldn't be the first one on the list.
+                             :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
+        (set-current-buffer buffer))))
 
 (define-command switch-buffer-domain (&optional (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -667,14 +668,16 @@ See `make-buffer'."
     (set-current-buffer buffer)
     buffer))
 
-(define-command delete-buffer ()
+(define-command delete-buffer (&key id)
   "Delete the buffer(s) via minibuffer input."
-  (with-result (buffers (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Delete buffer(s)"
-                          :multi-selection-p t
-                          :suggestion-function (buffer-suggestion-filter))))
-    (mapcar #'buffer-delete buffers)))
+  (if id
+      (buffer-delete (gethash id (slot-value *browser* 'buffers)))
+      (with-result (buffers (read-from-minibuffer
+                             (make-minibuffer
+                              :input-prompt "Delete buffer(s)"
+                              :multi-selection-p t
+                              :suggestion-function (buffer-suggestion-filter))))
+        (mapcar #'buffer-delete buffers))))
 
 (defun delete-buffers ()
   "Delete all buffers."
