@@ -108,6 +108,7 @@
                (:file "zoom")
                ;; Needs web-mode
                (:file "help")
+               (:file "status")
                ;; Depends on everything else:
                (:file "about")
                (:file "session")
