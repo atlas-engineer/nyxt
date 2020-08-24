@@ -147,12 +147,9 @@
 
 (define-command buffers ()
   "Show the *Buffers* buffer."
-  (let ((buffer (find-if (lambda (b)
-                           (string= "*Buffers*" (title b)))
-                         (buffer-list))))
-    (unless buffer
-      (setf buffer (base-mode :activate t
-                              :buffer (make-internal-buffer :title "*Buffers*"))))
+  (let ((buffer (or (find "*Buffers*" (buffer-list)
+                          :test #'string= :key #'title)
+                    (make-internal-buffer :title "*Buffers*"))))
     (let* ((content
              (markup:markup
               (:style (style buffer))
