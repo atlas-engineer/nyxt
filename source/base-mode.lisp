@@ -167,8 +167,8 @@
                                                  :href (lisp-url (format nil "(nyxt::delete-buffer :id \"~a\")" (id buffer))) "X")
                                              (:a :class "button"
                                                  :href (lisp-url (format nil "(nyxt::switch-buffer :id \"~a\")" (id buffer)))
-                                                 (format nil "~a" (title buffer)))
-                                             (:span (quri:render-uri (url buffer)))))))))
+                                                 (quri:render-uri (url buffer)))
+                                             (:span (title buffer))))))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript buffer insert-content))
