@@ -148,7 +148,7 @@
                                "u" 'reopen-buffer
                                "C-x C-f" 'open-file)))))
 
-(define-command buffers ()
+(define-command list-buffers ()
   "Show the *Buffers* buffer."
   (let ((buffer (or (find "*Buffers*" (buffer-list)
                           :test #'string= :key #'title)
