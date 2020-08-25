@@ -882,10 +882,10 @@ As a second value, return the current buffer index starting from 0."
    (webkit-history-entry-gtk-object history-entry)))
 
 (defun set-renderer ()
-  (replace-class window gtk-window)
-  (replace-class buffer gtk-buffer)
-  (replace-class internal-buffer gtk-internal-buffer)
-  (replace-class status-buffer gtk-status-buffer)
-  (replace-class browser gtk-browser))
+  (class*:replace-class window gtk-window)
+  (class*:replace-class buffer gtk-buffer)
+  (class*:replace-class internal-buffer gtk-internal-buffer)
+  (class*:replace-class status-buffer gtk-status-buffer)
+  (class*:replace-class browser gtk-browser))
 
 (set-renderer)

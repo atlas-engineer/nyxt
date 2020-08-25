@@ -268,7 +268,7 @@
                                   (asdf:system-relative-pathname c "libraries/keymap/tests/"))))
 
 (asdf:defsystem nyxt/class-star
-  :depends-on (hu.dwim.defclass-star moptilities)
+  :depends-on (hu.dwim.defclass-star moptilities alexandria)
   :pathname "libraries/class-star/"
   :components ((:file "package")
                (:file "class-star"))

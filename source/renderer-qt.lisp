@@ -154,10 +154,10 @@
   (funcall thunk))
 
 (defun set-renderer ()
-  (replace-class window qt-window)
-  (replace-class buffer qt-buffer)
-  (replace-class internal-buffer qt-internal-buffer)
-  (replace-class status-buffer qt-status-buffer)
-  (replace-class browser qt-browser))
+  (class*:replace-class window qt-window)
+  (class*:replace-class buffer qt-buffer)
+  (class*:replace-class internal-buffer qt-internal-buffer)
+  (class*:replace-class status-buffer qt-status-buffer)
+  (class*:replace-class browser qt-browser))
 
 (set-renderer)
