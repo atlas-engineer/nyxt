@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :cl-user)
 
 ;; Some compilers (e.g. SBCL) fail to reload the system with `defpackage' when

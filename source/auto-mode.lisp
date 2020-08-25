@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (uiop:define-package :nyxt/auto-mode
   (:use :common-lisp :nyxt)
   (:import-from #:serapeum #:export-always)

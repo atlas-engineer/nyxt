@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :nyxt)
 ;; Packagers are welcome to customize the `defparameter's to suit the host system.
 

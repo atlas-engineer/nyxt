@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :nyxt)
 
 (defun substring-norm (substrings string &key (substring-length 2))

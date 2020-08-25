@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :nyxt)
 
 ;; TODO: defclass-export is used extensively here, but we can't place it in

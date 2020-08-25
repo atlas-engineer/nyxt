@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :nyxt/web-mode)
 
 (define-parenscript query-buffer (&key query (case-sensitive-p nil))

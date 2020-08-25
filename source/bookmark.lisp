@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :nyxt)
 
 ;;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:

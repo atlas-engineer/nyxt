@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (uiop:define-package :nyxt/blocker-mode
   (:use :common-lisp :trivia :nyxt)
   (:documentation "Block resource queries for listed hosts."))

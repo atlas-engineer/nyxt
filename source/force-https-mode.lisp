@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (uiop:define-package :nyxt/force-https-mode
   (:use :common-lisp :nyxt)
   (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
