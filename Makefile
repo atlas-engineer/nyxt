@@ -1,124 +1,180 @@
-## We use some Bourne shell syntax.
+## Use Bourne shell syntax.
 SHELL = /bin/sh
+UNAME := $(shell uname)
 
 LISP ?= sbcl
-LISP_FLAGS ?= --no-userinit
-## If you want to enable SBCL's user init file:
-# LISP_FLAGS =
+## We use --non-interactive with SBCL so that errors don't interrupt the CI.
+LISP_FLAGS ?= --no-userinit --non-interactive
+QUICKLISP_DIR=quicklisp-client
+QUICKLISP_LIBRARIES=quicklisp-libraries
 
-NEXT_INTERNAL_QUICKLISP = true
+NYXT_INTERNAL_QUICKLISP = true
+NYXT_RENDERER = gtk
 
 PREFIX = /usr/local
 prefix = $(PREFIX)
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
+APPLICATIONSDIR = /Applications
 
 .PHONY: help
 help:
 	@cat INSTALL
 
-lisp_files := next.asd source/*.lisp source/ports/*.lisp
+lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
+quicklisp_set_dir=(push \#p"$(QUICKLISP_LIBRARIES)/" (symbol-value (find-symbol "*LOCAL-PROJECT-DIRECTORIES*" (find-package (quote ql)))))
+quicklisp_maybe_load=(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp") $(quicklisp_set_dir))
 
-next: $(lisp_files)
-	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
-	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+.PHONY: clean-fasls
+clean-fasls:
+	$(NYXT_INTERNAL_QUICKLISP) && \
+	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
-		--eval '(ql:quickload :trivial-features)' \
-		--load next.asd \
-		--eval '(asdf:make :next)' \
-		--eval '(uiop:quit)'
+		--load $(QUICKLISP_DIR)/setup.lisp \
+		--load nyxt.asd \
+		--eval '(ql:quickload :swank)' \
+		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
+		--eval '(swank:delete-system-fasls "nyxt")' \
+		--eval '(uiop:quit)' || true
 
-## TODO: Add install rule for Cocoa?
-## TODO: Update the rule once we have the resulting .app.
-cocoa-webkit: next
-	xcodebuild -project ports/cocoa-webkit/cocoa-webkit.xcodeproj
-	mkdir -p build/Next.app/Contents/MacOS build/Next.app/Contents/Resources
-	cp assets/Info.plist build/Next.app/Contents/Info.plist
-	cp assets/next.icns build/Next.app/Contents/Resources/next.icns
-	mv next build/Next.app/Contents/MacOS
-	mv ports/cocoa-webkit/build/Release/cocoa-webkit build/Next.app/Contents/MacOS/cocoa-webkit
+nyxt: $(lisp_files)
+	$(MAKE) application
 
-.PHONY: gtk-webkit
-gtk-webkit:
-	$(MAKE) -C ports/gtk-webkit
+.PHONE: application
+application: deps
+	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '$(quicklisp_maybe_load)' \
+		--load nyxt.asd \
+		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
+		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
+
+.PHONY: app-bundle
+app-bundle:
+	mkdir -p ./Nyxt.app/Contents/MacOS
+	mkdir -p ./Nyxt.app/Contents/Resources
+	mv ./nyxt ./Nyxt.app/Contents/MacOS
+	cp ./assets/Info.plist ./Nyxt.app/Contents
+	cp ./assets/nyxt.icns ./Nyxt.app/Contents/Resources
+
+.PHONY: install-app-bundle
+install-app-bundle:
+	cp -r Nyxt.app $(DESTDIR)/Applications
 
 .PHONY: all
-all: next gtk-webkit
+all: nyxt
+ifeq ($(UNAME), Darwin)
+all: nyxt app-bundle
+endif
 
-.PHONY: install-gtk-webkit
-install-gtk-webkit: gtk-webkit
-	$(MAKE) -C ports/gtk-webkit install DESTDIR=$(DESTDIR) PREFIX=$(PREFIX)
-
-## We use a temporary "version" file to generate the final next.desktop with the
+## We use a temporary "version" file to generate the final nyxt.desktop with the
 ## right version number.  Since "version" is a file target, third-party
 ## packaging systems can choose to generate "version" in advance before calling
 ## "make install-assets", so that they won't need to rely on Quicklisp.
-version:
-	$(NEXT_INTERNAL_QUICKLISP) && $(MAKE) deps || true
-	env NEXT_INTERNAL_QUICKLISP=$(NEXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+version: deps
+	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--eval '(when (string= (uiop:getenv "NEXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp"))' \
-		--eval '(ql:quickload :trivial-features)' \
-		--load next.asd \
-		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :next))))' \
+		--eval '$(quicklisp_maybe_load)' \
+		--load nyxt.asd \
+		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :nyxt))))' \
 		--eval '(uiop:quit)'
-
 
 .PHONY: install-assets
 install-assets: version
 	mkdir -p "$(DESTDIR)$(DATADIR)/applications/"
-	sed "s/VERSION/$$(cat version)/" assets/next.desktop > "$(DESTDIR)$(DATADIR)/applications/next.desktop"
+	sed "s/VERSION/$$(cat version)/" assets/nyxt.desktop > "$(DESTDIR)$(DATADIR)/applications/nyxt.desktop"
 	rm version
 	for i in 16 32 128 256 512; do \
 		mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/" ; \
-		cp -f assets/next_$${i}x$${i}.png "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/next.png" ; \
+		cp -f assets/nyxt_$${i}x$${i}.png "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/nyxt.png" ; \
 		done
 
-.PHONY: install-next
-install-next: next
+.PHONY: install-nyxt
+install-nyxt: nyxt
 	mkdir -p "$(DESTDIR)$(BINDIR)"
 	cp -f $< "$(DESTDIR)$(BINDIR)/"
 	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
 
 .PHONY: install
-install: install-next install-gtk-webkit install-assets
+install:
+install:
+ifeq ($(UNAME), Linux)
+install: install-nyxt install-assets
+endif
+ifeq ($(UNAME), Darwin)
+install: install-app-bundle
+endif
 
-.PHONY: clean
-clean:
-	rm -rf build
+.PHONY: quicklisp-extra-libs
+quicklisp-extra-libs:
+	$(NYXT_INTERNAL_QUICKLISP) && git submodule update --init || true
 
-QUICKLISP_URL = https://beta.quicklisp.org/quicklisp.lisp
-DOWNLOAD_AGENT = curl
-DOWNLOAD_AGENT_FLAGS = --output
-QUICKLISP_DIR = quicklisp
+## This rule only updates the internal distribution.
+.PHONY: quicklisp-update
+quicklisp-update:
+	$(NYXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
+		--load $(QUICKLISP_DIR)/setup.lisp \
+		--eval '(require "asdf")' \
+		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
+		--eval '(uiop:quit)' || true
 
-quicklisp.lisp:
-	$(DOWNLOAD_AGENT) $(DOWNLOAD_AGENT_FLAGS) $@ $(QUICKLISP_URL)
-
-$(QUICKLISP_DIR)/setup.lisp: quicklisp.lisp
-	rm -rf $(QUICKLISP_DIR)
-	mkdir -p $(QUICKLISP_DIR)
+.PHONY: build-deps
+build-deps: quicklisp-extra-libs
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--load $< \
-		--eval '(quicklisp-quickstart:install :path "$(QUICKLISP_DIR)/")' \
-		--eval '(uiop:quit)'
+		--load $(QUICKLISP_DIR)/setup.lisp \
+		--eval '$(quicklisp_set_dir)' \
+		--load nyxt.asd \
+		--eval '(ql:quickload :nyxt/$(NYXT_RENDERER)-application)' \
+		--eval '(uiop:quit)' || true
+	$(MAKE) quicklisp-update
 
 .PHONY: deps
-deps: $(QUICKLISP_DIR)/setup.lisp
-	$(LISP) $(LISP_FLAGS) \
+deps:
+	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) build-deps || true
+
+manual.html: $(lisp_files)
+	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--load $< \
-		--eval '(ql:quickload :trivial-features)' \
-		--load next.asd \
-		--eval '(ql:quickload :next)' \
+		--eval '$(quicklisp_maybe_load)' \
+		--load nyxt.asd \
+		--eval '(asdf:load-system :nyxt)' \
+		--eval '(with-open-file  (out "manual.html" :direction :output) (write-string (nyxt::manual-content) out))' \
 		--eval '(uiop:quit)'
+
+.PHONY: doc
+doc: manual.html
+
+.PHONY: check
+check: check-asdf check-binary
+
+## TODO: Test that Nyxt starts even with broken init file.
+
+.PHONY: check-build
+check-build: deps
+	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '$(quicklisp_maybe_load)' \
+		--load nyxt.asd \
+		--eval '(ql:quickload :nyxt)' \
+		--eval '(uiop:quit)'
+
+.PHONY: check-asdf
+check-asdf: deps
+	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
+		--eval '(require "asdf")' \
+		--eval '$(quicklisp_maybe_load)' \
+		--load nyxt.asd \
+		--eval '(asdf:test-system :nyxt)' \
+		--eval '(uiop:quit)'
+
+.PHONY: check-binary
+check-binary: nyxt
+	./nyxt -h
 
 .PHONY: clean-deps
 clean-deps:
-	rm -rf quicklisp.lisp
 	rm -rf $(QUICKLISP_DIR)
 
-.PHONY: clean-all
-clean-all: clean clean-deps
+.PHONY: clean
+clean: clean-fasls clean-deps

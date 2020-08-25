@@ -1,0 +1,9 @@
+[submodule "quicklisp/local-projects/cl-webkit"]
+	path = quicklisp-libraries/cl-webkit
+	url = https://github.com/joachifm/cl-webkit
+[submodule "quicklisp/local-projects/cluffer"]
+	path = quicklisp-libraries/cluffer
+	url = https://github.com/robert-strandh/Cluffer.git
+[submodule "quicklisp-client"]
+	path = quicklisp-client
+	url = https://github.com/quicklisp/quicklisp-client

@@ -1,4 +1,0 @@
-This directory contains licenses from external projects. When
-applicable, a function, or a file will include a reference to a
-particular license (contained in this folder) indicating the origin of
-that snippet of source code.

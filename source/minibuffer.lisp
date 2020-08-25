@@ -1,406 +1,507 @@
-;;; minibuffer.lisp --- major mode for input
+(in-package :nyxt)
 
-(in-package :next)
-
-(define-mode minibuffer-mode ()
-    "Mode for the minibuffer."
-    ((name :accessor name :initform "minibuffer")
-     (keymap
-      :initform
-      (let ((map (make-keymap)))
-        (define-key (key "HYPHEN") #'self-insert
-          (key "SPACE") #'self-insert
-          (key "C-f") #'cursor-forwards
-          (key "M-f") #'cursor-forwards-word
-          (key "C-b") #'cursor-backwards
-          (key "M-b") #'cursor-backwards-word
-          (key "M-d") #'delete-forwards-word
-          (key "M-BACKSPACE") #'delete-backwards-word
-          (key "Right") #'cursor-forwards
-          (key "Left") #'cursor-backwards
-          (key "C-d") #'delete-forwards
-          (key "DELETE") #'delete-forwards
-          (key "BACKSPACE") #'delete-backwards
-          (key "C-a") #'cursor-beginning
-          (key "C-e") #'cursor-end
-          (key "C-k") #'kill-line
-          (key "RETURN") #'return-input
-          (key "C-RETURN") #'return-immediate
-          (key "C-g") #'cancel-input
-          (key "ESCAPE") #'cancel-input
-          (key "C-n") #'select-next
-          (key "C-p") #'select-previous
-          (key "Down") #'select-next
-          (key "Up") #'select-previous
-          (key "C-v") #'paste
-          (key "C-y") #'paste
-          :keymap map)
-        map))))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'minibuffer)
+  (export
+   '(default-modes
+     suggestion-function
+     setup-function
+     cleanup-function
+     changed-callback
+     must-match-p
+     input-prompt
+     input-buffer
+     input-cursor
+     invisible-input-p
+     history
+     multi-selection-p
+     hide-suggestion-count-p
+     reset-suggestion-state
+     max-lines
+     minibuffer-style
+     user-style
+     override-map)))
 
 (defclass minibuffer (buffer)
-  ((mode :accessor mode :initarg :mode :initform 'minibuffer-mode)
-   (completion-function :accessor completion-function)
-   (callback-function :accessor callback-function)
-   (callback-buffer :accessor callback-buffer)
-   (setup-function :accessor setup-function)
-   (cleanup-function :accessor cleanup-function)
-   (empty-complete-immediate :accessor empty-complete-immediate)
-   (display-mode :accessor display-mode :initform :nil)
-   (input-prompt :accessor input-prompt :initform "Input:")
-   (input-buffer :accessor input-buffer :initform "")
-   (input-buffer-cursor :accessor input-buffer-cursor :initform 0)
-   (completions :accessor completions)
-   (completion-cursor :accessor completion-cursor :initform 0)
-   (minibuffer-style :accessor minibuffer-style
-                     :initform (cl-css:css
-                                '((* :font-family "monospace,monospace"
-                                     :font-size "14px")
-                                  (body :border-top "4px solid dimgray"
-                                        :margin "0"
-                                        :padding "0 6px")
-                                  ("#container" :display "flex"
-                                                :flex-flow "column"
-                                                :height "100%")
-                                  ("#input" :padding "6px 0"
-                                            :border-bottom "solid 1px lightgray")
-                                  ("#completions" :flex-grow "1"
-                                                  :overflow-y "auto"
-                                                  :overflow-x "auto")
-                                  ("#cursor" :background-color "gray"
-                                             :color "white")
-                                  ("#prompt" :padding-right "4px"
-                                             :color "dimgray")
-                                  (ul :list-style "none"
-                                      :padding "0"
-                                      :margin "0")
-                                  (li :padding "2px")
-                                  (.selected :background-color "gray"
-                                             :color "white")))
-                     :documentation "The CSS applied to a minibuffer when it is set-up.")))
+  ((default-modes :initarg :default-modes
+                  :initform '(minibuffer-mode))
+   (suggestion-function :initarg :suggestion-function
+                        :accessor suggestion-function
+                        :initform nil
+                        :type (or function null)
+                        :documentation "Take the input
+string and returns a list of suggestion strings.
+Example: `buffer-suggestion-filter'.")
+   (callback :initform nil
+             :documentation "Function to call over the selected suggestion.")
+   (callback-buffer :initarg :callback-buffer
+                    :accessor callback-buffer
+                    :initform (when *browser* (current-buffer))
+                    :documentation "The active buffer when the minibuffer was
+brought up.
+This can be useful to know which was the original buffer in the `callback' in
+case the buffer was changed.")
+   (setup-function :initarg :setup-function :accessor setup-function
+                   :initform #'setup-default
+                   :type (or function null)
+                   :documentation "Fills the `content' on when the minibuffer is created.
+Takes no argument.  Called only once.")
+   (cleanup-function :initarg :cleanup-function
+                     :accessor cleanup-function
+                     :initform nil
+                     :type (or function null)
+                     :documentation "Run after a suggestion has been selected.
+This should not rely on the minibuffer's content.")
+   (changed-callback :initarg :changed-callback
+                     :accessor changed-callback
+                     :initform nil
+                     :type (or function null)
+                     :documentation "Called whenever a change happens.")
+   (must-match-p :initarg :must-match-p
+                 :accessor must-match-p
+                 :initform t
+                 :type boolean
+                 :documentation "If nil, allow input matching no suggestions.")
+   (input-prompt :initarg :input-prompt
+                 :accessor input-prompt
+                 :initform "Input"
+                 :type string
+                 :documentation "Text to prompt to the user, before `input-buffer'.")
+   (input-buffer :initarg :input-buffer
+                 :initform (make-instance 'text-buffer:text-buffer)
+                 :documentation "Buffer used to capture keyboard input.")
+   (input-cursor :accessor input-cursor
+                 :initarg :input-cursor
+                 :initform (make-instance 'text-buffer:cursor)
+                 :documentation "Cursor used in conjunction with the input-buffer.")
+   (invisible-input-p :initarg :invisible-input-p
+                      :accessor invisible-input-p
+                      :type boolean
+                      :initform nil
+                      :documentation "If non-nil, input is replaced by placeholder character.
+This is useful to conceal passwords.")
+   (history :initarg :history
+            :accessor history
+            :initform (minibuffer-generic-history *browser*)
+            :type (or containers:ring-buffer-reverse null)
+            :documentation "History of inputs for the minibuffer.
+If nil, no history is used.")
+   (multi-selection-p :initarg :multi-selection-p :accessor multi-selection-p
+                      :initform nil
+                      :type boolean
+                      :documentation "If non-nil, allow for selecting multiple suggestions.")
+   (suggestions :accessor suggestions :initform nil)
+   (marked-suggestions :accessor marked-suggestions :initform nil)
+   (hide-suggestion-count-p :accessor hide-suggestion-count-p
+                            :initarg :hide-suggestion-count-p
+                            :initform nil
+                            :type boolean
+                            :documentation "Show the number of chosen suggestions
+inside brackets. It can be useful to disable, for instance for a yes/no question.")
+   (suggestion-head :accessor suggestion-head
+                    :initform 0
+                    :type integer)
+   (suggestion-cursor :accessor suggestion-cursor
+                      :initform 0
+                      :type integer)
+   (content :initform "" :type string
+            :documentation "The HTML content of the minibuffer.")
+   (max-lines :initarg :max-lines
+              :accessor max-lines
+              :type integer
+              :initform 10
+              :documentation "Max number of suggestion lines to show.  You will
+want edit this to match the changes done to `minibuffer-style'.")
+   (minibuffer-style
+    :accessor minibuffer-style
+    :initform (cl-css:css
+               '((* :font-family "monospace,monospace"
+                    :font-size "14px"
+                    :line-height "18px")
+                 (body :border-top "4px solid dimgray"
+                       :margin "0"
+                       :padding "0 6px")
+                 ("#container" :display "flex"
+                               :flex-flow "column"
+                               :height "100%")
+                 ("#input" :padding "6px 0"
+                           :border-bottom "solid 1px lightgray")
+                 ("#suggestions" :flex-grow "1"
+                                 :overflow-y "auto"
+                                 :overflow-x "auto")
+                 ("#cursor" :background-color "gray"
+                            :color "white")
+                 ("#prompt" :padding-right "4px"
+                            :color "dimgray")
+                 (ul :list-style "none"
+                     :padding "0"
+                     :margin "0")
+                 (li :padding "2px")
+                 (.marked :background-color "darkgray"
+                          :font-weight "bold"
+                          :color "white")
+                 (.selected :background-color "gray"
+                            :color "white")))
+    :documentation "The CSS applied to a minibuffer when it is set-up.")
+   (user-style
+    :accessor user-style
+    :initform ""
+    :documentation "User CSS that is applied after the
+minibuffer-style. This can be used to override any styles in the
+minibuffer-style.")
+   (override-map :accessor override-map
+                 :initform (let ((map (make-keymap "overide-map")))
+                             (define-key map
+                               "escape"
+                               ;; We compute symbol at runtime because
+                               ;; nyxt/minibuffer-mode does not exist at
+                               ;; compile-time since it's loaded afterwards.
+                               (find-symbol (string 'cancel-input)
+                                            (find-package 'nyxt/minibuffer-mode))))
+                 :type keymap:keymap
+                 :documentation "Keymap that takes precedence over all modes' keymaps."))
+  (:documentation "The minibuffer is the interface for user interactions.  Each
+prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
+calls, such as invoking `minibuffer-history'.
 
-(defmethod initialize-instance :after ((minibuffer minibuffer)
-                                       &key &allow-other-keys)
-  (when (symbolp (mode minibuffer))
-    (setf (mode minibuffer) (make-instance (mode minibuffer)))))
+A minibuffer query is typically done as follows:
 
-(defmethod read-from-minibuffer ((minibuffer minibuffer)
-                                 &key callback input-prompt completion-function setup-function
-                                   cleanup-function empty-complete-immediate)
-  (if input-prompt
-      (setf (input-prompt minibuffer) input-prompt)
-      (setf (input-prompt minibuffer) "Input:"))
-  (setf (display-mode minibuffer) :read)
-  (setf (callback-function minibuffer) callback)
-  (setf (completion-function minibuffer) completion-function)
-  (setf (completions minibuffer) nil)
-  (setf (completion-cursor minibuffer) 0)
-  (setf (setup-function minibuffer) setup-function)
-  (setf (cleanup-function minibuffer) cleanup-function)
-  (setf (empty-complete-immediate minibuffer) empty-complete-immediate)
-  (setf (callback-buffer minibuffer) (active-buffer *interface*))
-  (if setup-function
-      (funcall setup-function)
-      (setup-default minibuffer))
-  (update-display minibuffer)
-  (show *interface*))
+\(with-result (tags (read-from-minibuffer
+                    (make-minibuffer
+                     :input-prompt \"Space-separated tag (s) \"
+                     :default-modes '(set-tag-mode minibuffer-mode)
+                     :suggestion-function (tag-suggestion-filter))))
+  ;; Write form here in which `tags' is bound to the resulting element(s).
+  )"))
 
-(define-command return-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Return with minibuffer selection."
-  (hide *interface*)
-  (setf (display-mode minibuffer) :nil)
-  (set-active-buffer *interface* (callback-buffer minibuffer))
-  (with-slots (callback-function cleanup-function
-               empty-complete-immediate completions completion-cursor)
+(export-always 'make-minibuffer)
+(defun make-minibuffer
+    (&key (default-modes nil explicit-default-modes)
+       (suggestion-function nil explicit-suggestion-function)
+       (callback-buffer nil explicit-callback-buffer)
+       (setup-function nil explicit-setup-function)
+       (cleanup-function nil explicit-cleanup-function)
+       (changed-callback nil explicit-changed-callback)
+       (must-match-p t explicit-must-match-p)
+       (input-prompt nil explicit-input-prompt)
+       (input-buffer nil explicit-input-buffer)
+       (invisible-input-p nil explicit-invisible-input-p)
+       (hide-suggestion-count-p nil explicit-hide-suggestion-count-p)
+       (history nil explicit-history)
+       (multi-selection-p nil explicit-multi-selection-p))
+  "See the `minibuffer' class for the argument documentation."
+  (let ((tmp-input-buffer (make-instance 'text-buffer:text-buffer))
+        (tmp-input-cursor (make-instance 'text-buffer:cursor)))
+    (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
+    (when explicit-input-buffer
+      (text-buffer::insert-string tmp-input-cursor input-buffer))
+    (apply #'make-instance 'minibuffer
+           `(:input-buffer ,tmp-input-buffer
+             :input-cursor ,tmp-input-cursor
+             ,@(if explicit-default-modes
+                   `(:default-modes ,default-modes)
+                   '())
+             ,@(if explicit-suggestion-function
+                   `(:suggestion-function ,suggestion-function)
+                   '())
+             ,@(if explicit-callback-buffer
+                   `(:callback-buffer ,callback-buffer)
+                   '())
+             ,@(if explicit-setup-function
+                   `(:setup-function ,setup-function)
+                   '())
+             ,@(if explicit-cleanup-function
+                   `(:cleanup-function ,cleanup-function)
+                   '())
+             ,@(if explicit-changed-callback
+                   `(:changed-callback ,changed-callback)
+                   '())
+             ,@(if explicit-must-match-p
+                   `(:must-match-p ,must-match-p)
+                   '())
+             ,@(if explicit-input-prompt
+                   `(:input-prompt ,input-prompt)
+                   '())
+             ,@(if explicit-invisible-input-p
+                   `(:invisible-input-p ,invisible-input-p)
+                   '())
+             ,@(if explicit-hide-suggestion-count-p
+                   `(:hide-suggestion-count-p ,hide-suggestion-count-p)
+                   '())
+             ,@(if explicit-history
+                   `(:history ,history)
+                   '())
+             ,@(if explicit-multi-selection-p
+                   `(:multi-selection-p ,multi-selection-p)
+                   '())))))
+
+(defmethod input-buffer ((minibuffer minibuffer))
+  (str:replace-all " " " " (text-buffer::string-representation (slot-value minibuffer 'input-buffer))))
+
+(defmethod update-suggestions ((minibuffer minibuffer))
+  (with-slots (suggestion-function suggestions must-match-p )
       minibuffer
-    (if completions
-        (let ((completion (nth completion-cursor completions)))
-          (if completion
-              ;; if we're able to find a completion
-              (funcall callback-function completion)
-              ;; if we can't find a completion
-              (when empty-complete-immediate
-                ;; if we accept immediate output in place of completion
-                (return-immediate (mode minibuffer) minibuffer))))
-        ;; if there's no completion function
-        (return-immediate (mode minibuffer) minibuffer))
-    (when cleanup-function
-      (funcall cleanup-function))))
+    (if suggestion-function
+        (setf suggestions (funcall-safely suggestion-function minibuffer))
+        (setf suggestions nil))
+    (when (and (not must-match-p)
+               (not (str:emptyp (input-buffer minibuffer))))
+      ;; Don't add input to suggestions that don't accept arbitrary
+      ;; inputs (i.e. must-match-p is t).
+      (push (input-buffer minibuffer) suggestions))))
 
-(define-command return-immediate (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Return with minibuffer input, ignoring the selection."
-  (hide *interface*)
-  (setf (display-mode minibuffer) :nil)
-  (set-active-buffer *interface* (callback-buffer minibuffer))
-  (with-slots (callback-function cleanup-function) minibuffer
-    (funcall callback-function (input-buffer minibuffer))
-    (when cleanup-function
-      (funcall cleanup-function))))
+(defmethod (setf input-buffer) (value (minibuffer minibuffer))
+  "Reset the minibuffer state on every input change.
+  This is necessary or else suggestion cursor / head could be beyond
+  the updated list length."
+  (text-buffer::kill-line (input-cursor minibuffer))
+  (insert minibuffer value)
+  (reset-suggestion-state minibuffer))
 
-(define-command cancel-input (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Close the minibuffer query without further action."
-  (log:debug (callback-buffer minibuffer))
-  (setf (display-mode minibuffer) :nil)
-  (set-active-buffer *interface* (callback-buffer minibuffer))
-  (with-slots (cleanup-function) minibuffer
-    (when cleanup-function
-      (funcall cleanup-function)))
-  (hide *interface*))
+(defmethod reset-suggestion-state ((minibuffer minibuffer))
+  "Update the suggestions and move the suggestion cursor to the
+beginning."
+  (update-suggestions minibuffer)
+  (setf (suggestion-cursor minibuffer) 0)
+  (setf (suggestion-head minibuffer) 0))
 
-(defmethod set-input ((minibuffer minibuffer) input)
-  (when input
-    (%%minibuffer-evaluate-javascript
-     *interface* (%%window-active *interface*)
-     (ps:ps (ps:chain document (write (ps:lisp input)))))))
+(defmethod content ((minibuffer minibuffer))
+  (slot-value minibuffer 'content))
+
+(defmethod (setf content) (html-content minibuffer)
+  "Set the `content' of the MINIBUFFER to HTML-CONTENT.
+   This runs a call"
+  (setf (slot-value minibuffer 'content) html-content)
+  (ffi-minibuffer-evaluate-javascript
+   (current-window)
+   (ps:ps (ps:chain document
+                    (write (ps:lisp (content minibuffer)))))))
+
+(defmethod initialize-instance :after ((minibuffer minibuffer) &key)
+  (unless (cluffer:cursor-attached-p (input-cursor minibuffer))
+    (cluffer:attach-cursor (input-cursor minibuffer) (input-buffer minibuffer)))
+  (hooks:run-hook (minibuffer-make-hook *browser*) minibuffer)
+  ;; We don't want to show the input in the suggestion list when invisible.
+  (unless (suggestion-function minibuffer)
+    ;; If we have no suggestion function, then we have no suggestions beside
+    ;; immediate input, so we must allow them as valid suggestion.
+    (setf (must-match-p minibuffer) nil))
+  (setf (must-match-p minibuffer)
+        (if (invisible-input-p minibuffer)
+            t ; This way the minibuffer won't display the input as a suggestion.
+            (must-match-p minibuffer)))
+  (initialize-modes minibuffer))
+
+(declaim (ftype (function (minibuffer)) read-from-minibuffer))
+(export-always 'read-from-minibuffer)
+(defun read-from-minibuffer (minibuffer)
+  "Open the minibuffer, ready for user input.
+Example use:
+
+\(read-from-minibuffer
+ (make-minibuffer
+  :suggestion-function #'my-suggestion-filter))
+
+See the documentation of `minibuffer' to know more about the minibuffer options."
+  (when %callback
+    (setf (slot-value minibuffer 'callback) %callback))
+  ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
+  (setf (callback-buffer minibuffer) (current-buffer))
+  (if *keep-alive*
+      (match (setup-function minibuffer)
+        ((guard f f) (funcall f minibuffer)))
+      (handler-case (match (setup-function minibuffer)
+                      ((guard f f) (funcall f minibuffer)))
+        (error (c)
+          (echo-warning "Minibuffer error: ~a" c)
+          (return-from read-from-minibuffer))))
+  (state-changed minibuffer)
+  (update-display minibuffer)
+  (push minibuffer (active-minibuffers (current-window)))
+  (apply #'show
+         (unless (suggestion-function minibuffer)
+           ;; We don't need so much height since there is no suggestion to display.
+           (list :height (minibuffer-open-single-line-height (current-window))))))
+
+(export-always 'erase-input)
+(defmethod erase-input ((minibuffer minibuffer))
+  "Erase the minibuffer input."
+  (cluffer:beginning-of-line (input-cursor minibuffer))
+  (text-buffer::kill-forward-line (input-cursor minibuffer)))
 
 (defmethod erase-document ((minibuffer minibuffer))
-  (%%minibuffer-evaluate-javascript
-   *interface* (%%window-active *interface*)
-   (ps:ps
-     (ps:chain document (open))
-     (ps:chain document (close)))))
+  (evaluate-script minibuffer (ps:ps
+                                (ps:chain document (open))
+                                (ps:chain document (close)))))
 
 (defmethod setup-default ((minibuffer minibuffer))
   (erase-document minibuffer)
-  (setf (input-buffer minibuffer) "")
-  (setf (input-buffer-cursor minibuffer) 0)
-  (set-input minibuffer
-             (cl-markup:markup
-              (:head (:style (minibuffer-style minibuffer)))
-              (:body
-               (:div :id "container"
-                     (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
-                     (:div :id "completions" ""))))))
+  (update-suggestions minibuffer)
+  (setf (content minibuffer)
+        (markup:markup
+         (:head (:style (minibuffer-style minibuffer))
+                (:style (user-style minibuffer)))
+         (:body
+          (:div :id "container"
+                (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
+                (:div :id "suggestions" ""))))))
 
-(defmethod show ((interface remote-interface))
-  (let ((active-window (%%window-active interface)))
-    (setf (minibuffer-active active-window) t)
-    (%%window-set-minibuffer-height interface
-                                    active-window
-                                    (minibuffer-open-height active-window))))
+(export-always 'evaluate-script)
+(defmethod evaluate-script ((minibuffer minibuffer) script)
+  "Evaluate SCRIPT into MINIBUFFER's webview.
+The new webview HTML content it set as the MINIBUFFER's `content'."
+  (when minibuffer
+    (with-result (new-content
+                  (ffi-minibuffer-evaluate-javascript
+                   (current-window)
+                   (str:concat script (ps:ps (ps:chain document body |outerHTML|)))))
+      (setf (slot-value minibuffer 'content) new-content))))
 
-(defmethod hide ((interface remote-interface))
-  (let ((active-window (%%window-active interface)))
-    (setf (minibuffer-active active-window) nil)
-    (%%window-set-minibuffer-height *interface*
-                                    active-window
-                                    (minibuffer-closed-height active-window))))
+(defun show (&key (minibuffer (first (active-minibuffers (current-window)))) height)
+  "Show the last active minibuffer, if any."
+  (when minibuffer
+    (ffi-window-set-minibuffer-height
+     (current-window)
+     (or height
+         (minibuffer-open-height (current-window))))))
 
-(defun insert (characters &optional (minibuffer (minibuffer *interface*)))
-    (setf (input-buffer minibuffer)
-          (cl-strings:insert characters
-                             (input-buffer minibuffer)
-                             :position (input-buffer-cursor minibuffer)))
-    (incf (input-buffer-cursor minibuffer) (length characters))
-    (setf (completion-cursor minibuffer) 0)
-    (update-display minibuffer))
+(export-always 'hide)
+(defun hide (minibuffer)
+  "Hide MINIBUFFER and display next active one, if any."
+  ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
+  ;; minibuffer was invoked before the old one reaches here.
+  (alex:deletef (active-minibuffers (current-window)) minibuffer)
+  (if (active-minibuffers (current-window))
+      (progn
+        (show)
+        ;; We need to refresh so that the nested minibuffers don't have to do it.
+        (state-changed (first (active-minibuffers (current-window))))
+        (update-display (first (active-minibuffers (current-window)))))
+      (progn
+        (ffi-window-set-minibuffer-height (current-window) 0))))
 
-(define-command self-insert (minibuffer-mode)
-  "Insert key-chord-stack in MINIBUFFER."
-  (let ((key-string (key-chord-key-string (first (key-chord-stack *interface*))))
-        (translation-table '(("HYPHEN" "-")
-                             ("SPACE" " "))))
-    (setf key-string (or (cadr (assoc key-string translation-table :test #'string=))
-                         key-string))
-    (insert key-string)))
-
-(define-command delete-forwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Delete character after cursor."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (unless (= input-buffer-cursor (length input-buffer))
-      (setf input-buffer
-            (concatenate 'string
-                         (subseq input-buffer 0 input-buffer-cursor)
-                         (subseq input-buffer
-                                 (+ 1 input-buffer-cursor)
-                                 (length input-buffer))))))
+(export-always 'insert)
+(defmethod insert ((minibuffer minibuffer) characters)
+  (text-buffer::insert-string (input-cursor minibuffer) characters)
+  (reset-suggestion-state minibuffer)
+  (state-changed minibuffer)
   (update-display minibuffer))
 
-(define-command delete-backwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Delete character before cursor."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (unless (= input-buffer-cursor 0)
-      (setf input-buffer
-            (concatenate 'string
-                         (subseq input-buffer 0 (- input-buffer-cursor 1))
-                         (subseq input-buffer input-buffer-cursor (length input-buffer))))
-      (decf input-buffer-cursor)))
+(defmethod generate-input-html ((minibuffer minibuffer))
+  (let ((buffer-string-representation (if (invisible-input-p minibuffer)
+                                          (text-buffer::invisible-string-representation (slot-value minibuffer 'input-buffer))
+                                          (text-buffer::string-representation (slot-value minibuffer 'input-buffer)))))
+    (cond ((eql 0 (cluffer:item-count (slot-value minibuffer 'input-buffer)))
+           (markup:markup (:span :id "cursor" (markup:raw "&nbsp;"))))
+          ((eql (cluffer:cursor-position (input-cursor minibuffer)) (cluffer:item-count (slot-value minibuffer 'input-buffer)))
+           (markup:markup (:span buffer-string-representation)
+                          (:span :id "cursor" (markup:raw "&nbsp;"))))
+          (t (markup:markup (:span (subseq buffer-string-representation 0 (cluffer:cursor-position (input-cursor minibuffer))))
+                            (:span :id "cursor" (subseq buffer-string-representation 
+                                                        (cluffer:cursor-position (input-cursor minibuffer))
+                                                        (+ 1 (cluffer:cursor-position (input-cursor minibuffer)))))
+                            (:span (subseq buffer-string-representation (+ 1  (cluffer:cursor-position (input-cursor minibuffer))))))))))
+
+(defmethod generate-suggestion-html ((minibuffer minibuffer))
+  (with-slots (suggestions suggestion-cursor) minibuffer
+    (let ((lines (max-lines minibuffer))) ; TODO: Compute lines dynamically.
+      (when (>= (- suggestion-cursor (suggestion-head minibuffer)) lines)
+        (setf (suggestion-head minibuffer)
+              (min
+               (+ (suggestion-head minibuffer) 1)
+               (length suggestions))))
+      (when (< (- suggestion-cursor (suggestion-head minibuffer)) 0)
+        (setf (suggestion-head minibuffer)
+              (max
+               (- (suggestion-head minibuffer) 1)
+               0)))
+      (markup:markup
+       (:ul (loop repeat lines
+                  for i from (suggestion-head minibuffer)
+                  for suggestion in (nthcdr i suggestions)
+                  collect
+                  (markup:markup
+                   (:li :class (let ((selected-p (= i suggestion-cursor))
+                                     (marked-p (member suggestion (marked-suggestions minibuffer)))
+                                     (head-p (= i (suggestion-head minibuffer))))
+                                 (str:join " " (delete-if #'null (list (and marked-p "marked")
+                                                                       (and selected-p "selected")
+                                                                       (and head-p "head")))))
+                        (match (object-display suggestion)
+                          ((guard s (not (str:emptyp s))) s)
+                          (_ " "))))))))))
+
+(defmethod generate-prompt-html ((minibuffer minibuffer))
+  (with-slots (suggestions marked-suggestions) minibuffer
+    (format nil "~a~a:"
+            (input-prompt minibuffer)
+            (cond
+              ((not suggestions)
+               "")
+              ((hide-suggestion-count-p minibuffer)
+               "")
+              (marked-suggestions
+               (format nil " [~a/~a]"
+                       (length marked-suggestions)
+                       (length suggestions)))
+              ((and (not marked-suggestions)
+                    (multi-selection-p minibuffer))
+               (format nil " [0/~a]"
+                       (length suggestions)))
+              ((not marked-suggestions)
+               (format nil " [~a]"
+                       (length suggestions)))
+              (t
+               "[?]")))))
+
+(defmethod set-suggestions ((minibuffer minibuffer) suggestions)
+  "Set the suggestions and update the display."
+  (setf (suggestions minibuffer) suggestions)
+  (state-changed minibuffer)
   (update-display minibuffer))
 
-(define-command cursor-forwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Move cursor forward by one."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (when (< input-buffer-cursor (length input-buffer))
-      (incf input-buffer-cursor)))
-  (update-display minibuffer))
-
-(define-command cursor-backwards (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Move cursor backwards by one."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (when (> input-buffer-cursor 0)
-      (decf input-buffer-cursor)))
-  (update-display minibuffer))
-
-(define-command cursor-beginning (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Move cursor to the beginning of the input area."
-  (with-slots (input-buffer-cursor) minibuffer
-    (setf input-buffer-cursor 0))
-  (update-display minibuffer))
-
-(define-command cursor-end (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Move cursor to the end of the input area."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (setf input-buffer-cursor (length input-buffer)))
-  (update-display minibuffer))
-
-(defun char-at-cursor (&optional (minibuffer (minibuffer *interface*)))
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (if (< input-buffer-cursor (length input-buffer))
-        (char (input-buffer minibuffer) (input-buffer-cursor minibuffer)))))
-
-(define-command cursor-forwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Move cursor to the end of the word at point."
-  (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
-    (with-slots (input-buffer input-buffer-cursor) minibuffer
-      (if (intersection stop-characters (list (char-at-cursor minibuffer)))
-          (loop while (and
-                       (intersection stop-characters (list (char-at-cursor minibuffer)))
-                       (< input-buffer-cursor (length input-buffer)))
-                do (incf input-buffer-cursor))
-          (loop while (and
-                       (not (intersection stop-characters (list (char-at-cursor minibuffer))))
-                       (< input-buffer-cursor (length input-buffer)))
-                do (incf input-buffer-cursor)))))
-  (update-display minibuffer)
-  (input-buffer-cursor minibuffer))
-
-;; TODO: Re-use cursor-forwards-word
-(define-command cursor-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Move cursor to the beginning of the word at point."
-  (let ((stop-characters '(#\: #\/ #\- #\. #\Space)))
-    (with-slots (input-buffer input-buffer-cursor) minibuffer
-      (if (intersection stop-characters (list (char-at-cursor minibuffer)))
-          (loop while (and
-                       (intersection stop-characters (list (char input-buffer input-buffer-cursor)))
-                       (> input-buffer-cursor 0))
-                do (decf input-buffer-cursor))
-          (loop while (and
-                       (not (intersection stop-characters (list (char-at-cursor minibuffer))))
-                       (> input-buffer-cursor 0))
-                do (decf input-buffer-cursor)))))
-  (update-display minibuffer)
-  (input-buffer-cursor minibuffer))
-
-(define-command delete-forwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Delete characters from cursor position until the end of the word at point."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (let* ((current-cursor-position input-buffer-cursor)
-           (new-cursor-position (cursor-forwards-word (mode minibuffer) minibuffer))
-           (transpose-distance (- new-cursor-position current-cursor-position)))
-      (setf input-buffer
-            (concatenate 'string
-                         (subseq input-buffer 0 current-cursor-position)
-                         (subseq input-buffer new-cursor-position (length input-buffer))))
-      (setf input-buffer-cursor (- input-buffer-cursor transpose-distance))))
-  (update-display minibuffer))
-
-(define-command delete-backwards-word (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Delete characters from cursor position until the beginning of the word at point."
-  (with-slots (input-buffer input-buffer-cursor) minibuffer
-    (let ((current-cursor-position input-buffer-cursor)
-          (new-cursor-position (cursor-backwards-word (mode minibuffer) minibuffer)))
-      (setf input-buffer
-            (concatenate 'string
-                         (subseq input-buffer 0 new-cursor-position)
-                         (subseq input-buffer current-cursor-position (length input-buffer))))))
-  (update-display minibuffer))
-
-(define-command kill-line (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Delete all characters from cursor position until the end of the line."
-    (with-slots (input-buffer input-buffer-cursor) minibuffer
-      (setf input-buffer (subseq input-buffer 0 input-buffer-cursor)))
-  (update-display minibuffer))
-
-(defun generate-input-html (input-buffer cursor-index)
-  (cond ((equal "" input-buffer) (cl-markup:markup (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
-        ((eql cursor-index (length input-buffer)) (cl-markup:markup (:span input-buffer)
-                                                                    (:span :id "cursor" (cl-markup:raw "&nbsp;"))))
-        (t (cl-markup:markup (:span (subseq input-buffer 0 cursor-index))
-                             (:span :id "cursor" (subseq input-buffer cursor-index (+ 1 cursor-index)))
-                             (:span (subseq input-buffer (+ 1  cursor-index)))))))
-
-(defun generate-completion-html (completions cursor-index)
-  (cl-markup:markup (:ul (loop for i from 0 for completion in completions
-                               collect
-                               (cl-markup:markup
-                                (:li :class (when (equal i cursor-index) "selected")
-                                     :id (when (equal i cursor-index) "selected")
-                                     (object-string completion)))))))
-
-(defmethod update-display ((minibuffer minibuffer))
-  (with-slots (input-buffer input-buffer-cursor completion-function
-               completions completion-cursor)
-      minibuffer
-    (if completion-function
-        (setf completions (funcall completion-function input-buffer))
-        (setf completions nil))
-    (let ((input-text (generate-input-html input-buffer input-buffer-cursor))
-          (completion-html (generate-completion-html completions completion-cursor)))
-      (%%minibuffer-evaluate-javascript
-       *interface* (%%window-active *interface*)
+(export-always 'update-input-buffer-display)
+(defmethod update-input-buffer-display ((minibuffer minibuffer))
+  "Update the display for the input buffer including the prompt and
+completion count."
+  (with-slots (suggestions marked-suggestions) minibuffer
+    (let ((input-text (generate-input-html minibuffer))
+          (prompt-text (generate-prompt-html minibuffer)))
+      (evaluate-script
+       minibuffer
        (ps:ps
          (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
-               (ps:lisp (input-prompt minibuffer)))
+               (ps:lisp prompt-text))
          (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
-               (ps:lisp input-text))
-         (setf (ps:chain document (get-element-by-id "completions") |innerHTML|)
-               (ps:lisp completion-html)))))))
+               (ps:lisp input-text)))))))
 
-(define-command select-next (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Select next entry in minibuffer."
-  (when (< (completion-cursor minibuffer) (- (length (completions minibuffer)) 1))
-    (incf (completion-cursor minibuffer))
-    (update-display minibuffer)
-    (%%minibuffer-evaluate-javascript
-     *interface* (%%window-active *interface*)
-     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
-                      (scroll-into-view false))))))
+(export-always 'update-suggestions-display)
+(defmethod update-suggestions-display ((minibuffer minibuffer))
+  (let ((suggestion-html (generate-suggestion-html minibuffer)))
+    (evaluate-script minibuffer
+                     (ps:ps
+                       (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
+                             (ps:lisp suggestion-html))))))
 
-(define-command select-previous (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Select previous entry in minibuffer."
-  (when (> (completion-cursor minibuffer) 0)
-    (decf (completion-cursor minibuffer))
-    (update-display minibuffer)
-    (%%minibuffer-evaluate-javascript
-     *interface* (%%window-active *interface*)
-     (ps:ps (ps:chain (ps:chain document (get-element-by-id "selected"))
-                      (scroll-into-view true))))))
+(export-always 'update-display)
+(defmethod update-display ((minibuffer minibuffer))
+  (update-input-buffer-display minibuffer)
+  (update-suggestions-display minibuffer))
 
-(defmethod echo ((minibuffer minibuffer) text)
-  (let ((active-window (%%window-active *interface*)))
-    (unless (eql (display-mode minibuffer) :read)
-      (setf (display-mode minibuffer) :echo)
-      (erase-document minibuffer)
-      (%%window-set-minibuffer-height *interface*
-                                      active-window
-                                      (minibuffer-echo-height active-window))
-      (let ((style (cl-css:css
-                    '((* :font-family "monospace,monospace"
-                         :font-size "14px")
-                      (body :border-top "4px solid dimgray"
-                            :margin "0"
-                            :padding "0 6px")
-                      (p :margin "0")))))
-        (set-input minibuffer
-                   (cl-markup:markup
-                    (:head (:style style))
-                    (:body
-                     (:p text))))))))
+(export-always 'state-changed)
+(defmethod state-changed ((minibuffer minibuffer))
+  (when (changed-callback minibuffer)
+    (funcall-safely (changed-callback minibuffer))))
 
-(defmethod echo-dismiss ((minibuffer minibuffer))
-  (when (eql (display-mode minibuffer) :echo)
-    (hide *interface*)
-    (erase-document minibuffer)))
+(export-always 'get-suggestion)
+(defmethod get-suggestion ((minibuffer minibuffer))
+  "Return the string for the current suggestion in the minibuffer."
+  (with-slots (suggestions suggestion-cursor)
+      minibuffer
+    (and suggestions
+         (object-string (nth suggestion-cursor suggestions)))))
 
-(define-command paste (minibuffer-mode &optional (minibuffer (minibuffer *interface*)))
-  "Paste clipboard text to input."
-  (insert (trivial-clipboard:text) minibuffer))
+(export-always 'get-marked-suggestions)
+(defmethod get-marked-suggestions ((minibuffer minibuffer))
+  "Return the list of strings for the marked suggestion in the minibuffer."
+  (mapcar #'object-string (marked-suggestions minibuffer)))

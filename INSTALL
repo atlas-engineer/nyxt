@@ -1,27 +1,37 @@
 Usage:
 
-   make cocoa-webkit        Create Next with the Cocoa-WebKit port.
-
-   make next                Create the Lisp core.
-   make install-next        Install the Lisp core.
-
-   make gtk-webkit          Create the GTK-WebKit port.
-   make install-gtk-webkit  Install the GTK-WebKit port.
-
-   make all                 Create the Lisp core and the GTK-WebKit port.
-   make install             Install the Lisp core and the GTK-WebKit port.
+   make all                 Create Nyxt.
+   make install             Install Nyxt.
+   make doc                 Generate Nyxt documentation (as a fallback).
 
 Set DESTDIR to change the target destinatation.  It should be
 an absolute path.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
-If NEXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
+Set NYXT_RENDERER to the renderer of your choice, e.g. "gtk".
+
+Set NYXT_COMPRESS to generate a compressed executable.  This
+greatly reduces the file size at the expense of a slightly
+increased startup time.  It's recommended to leave this off
+on file systems with compression.
+
+If NYXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
 dependencies will be fetched with Quicklisp into the
 QUICKLISP_DIR directory.
 
 Otherwise, the dependencies will have to be locally installed
-on your system.  You might have to accomodate the LISP_FLAGS
-to, say, use your local install of Quicklisp.  For instance:
+on your system.  You may have to accomodate the LISP_FLAGS
+to, use your local install of Quicklisp.  For example:
 
-   make next NEXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+make all NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+
+WARNING: Make sure your Quicklisp distribution is up-to-date when using
+NYXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
+libraries that should follow master.
+
+The documentation generation is mostly useful if you cannot consult the
+documention in Nyxt itself.  Since the manual is normally dynamically generated
+at runtime (for instance the paths and the bindings are printed according to the
+user configuration), the static doc generation can only display the default
+values.

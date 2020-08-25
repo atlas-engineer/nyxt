@@ -1,118 +1,102 @@
-#+html: <img src="https://next.atlas.engineer/static/image/next_256x256.png" align="right"/>
-* Next Web Browser
-Next is a keyboard-oriented, extensible web-browser designed for power
-users. The application has familiar key-bindings, is fully
+#+html: <img src="https://nyxt.atlas.engineer/static/image/nyxt_256x256.png" align="right"/>
+
+* Nyxt web browser
+
+(Formerly Next.)
+
+Nyxt is a keyboard-oriented, extensible web-browser designed for power
+users. It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][VI]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully
 configurable and extensible in Lisp, and has powerful features for
 productive professionals.
 
-*Warning:* Next is under active development.  Feel free to [[https://github.com/atlas-engineer/next/issues][report]] bugs,
+If you like Nyxt and if you want to help future development, please
+support us on [[https://www.patreon.com/nyxt][Patreon]] or give us a star, thank you!
+
+*Warning:* Nyxt is under active development. Feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]] bugs,
 instabilities or feature wishes.
 
-* Features
-Next includes many features designed to enable you to focus on being
-productive. A few of them are demonstrated below.
+-----
+
+#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer Manual</a> | Freenode IRC: <a href="https://webchat.freenode.net/#nyxt">#nyxt</a> </div>
+
+-----
 
 ** Fast tab switching
-Switch easily between your open tabs by fuzzy search. If you are
+Switch easily between your open tabs via fuzzy search. If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
-~epl~, and any other valid series of letters.
+~epl~, or any other matching series of letters.
 
-#+html: <img src="https://next.atlas.engineer/static/image/tab_switch.gif" align="center"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/switch-buffer.png" align="center"/>
+
+** Multiple selection
+Commands can accept multiple inputs, allowing you to quickly perform
+an operation against multiple objects. In the example below we search
+for penguins, and only open up links that have the text "animal"
+within them.
+
+#+html: <img src="https://nyxt.atlas.engineer/static/image/multi-select.png" align="center"/>
+
+** Powerful Bookmarks
+Bookmark a page with tags. Search bookmarks with compound
+queries. Capture more data about your bookmarks, and group and wrangle
+them in any way you like.
+
+#+html: <img src="https://nyxt.atlas.engineer/static/image/bookmark.png" align="center"/>
+
+** Multi tab search
+Search multiple tabs at the same time, and view all the results in a
+single window. Jump quickly through your open tabs to find what you
+need.
+
+#+html: <img src="https://nyxt.atlas.engineer/static/image/multi-search.png" align="center"/>
+
 
 ** History as a tree
-History is represented as a tree that you can traverse. More complex
-than the "forwards-backwards" abstraction found in other browsers,
-the tree makes sure you never lose track of where you've been.
+History is represented as a tree that you can traverse. smarter than
+the "forwards-backwards" abstraction found in other browsers, the tree
+makes sure  you never lose  track of where  you've been.
 
-In the example below, the User performs the following actions:
+#+html: <img src="https://nyxt.atlas.engineer/static/image/history.png" align="center"/>
 
-1. Starts page ~True Parrot~
-2. Visits page ~Gray Parrot~
-3. Returns to page ~True Parrot~
-4. Visits page ~Budgerigar~
-5. Returns to page ~True Parrot~
-6. Executes ~forwards~ keybind in history
+For a complete list of features, please see the manual.
 
-It is at this point that a normal browser would NOT be able to
-navigate you forwards to your visit of ~Gray Parrot~. Instead of
-erasing your history, Next offers smart navigation and prompts the
-user. Do you wish to go forwards to ~Gray Parrot~ or to
-~Budgerigar~?
+* Getting started
+** Install Nyxt
 
-** Lightning fast navigation
-Next is lightweight and fast. The interface does not get in your way,
-and everything can be done by keyboard. You are free to fully focus on
-your task unburdened by cumbersome UI.
+Nyxt supports GNU/Linux, macOS, and Guix with engine support for
+WebKit and WebEngine/Blink.
 
-Link Hints provide you with the ability to instantly jump to any link
-on the page, or even open it in a new tab.
+Please see the [[https://nyxt.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating
+systems provide packages for Nyxt:
 
-Fuzzy completion means intelligent completion. Find your bookmarks,
-open up new links, or switch tabs with the power of fuzzy completion.
+- Alpine
+- Debian and derivatives (Ubuntu, LinuxMint), for Debian >= 10 (Buster).
+- [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
+- [[https://aur.archlinux.org/packages/next-browser/][Arch Linux AUR]] (and the [[https://aur.archlinux.org/packages/next-browser-git/][-git PKGBUILD]])
+- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.  (Replace =next= with =nyxt= when
+  the package gets updated to 2.0.)
+- [[https://guix.gnu.org][Guix]]: Install with =guix install next=.  (Replace =next= with =nyxt= when
+  the package gets updated to 2.0.)
 
-#+html: <img src="https://next.atlas.engineer/static/image/fast_navigation.gif" align="center"/>
+To perform an installation from source, please see the [[https://github.com/atlas-engineer/nyxt/tree/master/documents][developer readme]].
 
-* Getting Started
-** Install Next
-See the [[https://next.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating systems
-provide packages for Next:
+** Documentation
 
-- [[https://aur.archlinux.org/packages/next-browser-git/][Arch Linux AUR]]
-- [[https://guix.info][Guix]]: Install with =guix package --install sbcl-next=.
+For full documentation about Nyxt, how it works, and how to extend it please see
+the embedded help.  To get started, run the =help= command (=C-space help=).
 
-Guix is a package manager that can be installed on any GNU/Linux distribution;
-should Next be missing from your distribution, there is always the possibility
-to install Guix on your system and use it to install Next.
+If you want to help with development or build Nyxt from scratch, read
+the developer's documentation at [[https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org][documents/README.org]].
 
-- If Guix is easily available for your distribution (e.g. as a package), then
-  this is definitely the simplest route.
+*** Customize and extend Nyxt
 
-- If not, or if you want to help developing Next, then building from source is
-  the commended route.
-
-To perform an installation from source, please see the [[https://github.com/atlas-engineer/next/tree/master/documents][developer readme]].
-
-** Quickstart Keys
-- ~C-l~:     Load URL in tab
-- ~M-l~:     Load URL in a new tab
-- ~C-x b~:   Switch tab
-- ~C-b~:     Backwards history
-- ~C-f~:     Forwards history
-- ~C-x C-c~: Quit
-
-The symbols represent modifiers:
-
-- ~C~: Control key
-- ~S~: Super (Windows key, Command key)
-- ~M~: Meta (Alt key, Option key)
-- ~s~: Shift key
-
-The following keys exist as special keys:
-
-- ~BACKSPACE~
-- ~DELETE~
-- ~ESCAPE~
-- ~HYPHEN~
-- ~RETURN~
-- ~SPACE~
-- ~TAB~
-
-** Customize and Extend Next
-Customization is possible through the creation of a
-=~/.config/next/init.lisp= file. From here you
-can override and redefine any of the functions by defining your init
-file as part of the ~:next~ package. For more information please see:
-[[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org#customization][customizing Next]].
+Complete customization is possible through the creation of a
+=~/.config/nyxt/init.lisp= file. For more information, see the manual.
 
 Additionally, a document provided in the documents directory named
-[[https://github.com/atlas-engineer/next/blob/master/documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
+[[file:documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
 customizations. To share your own extension, please make a pull
 request with your new extension appended to EXTENSION.org.
 
-** Documentation
-For full documentation about Next, how it works, and how to extend it
-please see the [[https://github.com/atlas-engineer/next/blob/master/documents/MANUAL.org][user manual]].
-
 ** History of changes
-
-See [[file:documents/CHANGELOG.org][CHANGELOG.org]].
+Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].

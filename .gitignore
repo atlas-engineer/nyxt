@@ -1,12 +1,8 @@
 # Ignore build artifacts
 build/
 version
-ports/gtk-webkit/next-gtk-webkit
-next
-
-# Automatically fetched dependencies
-quicklisp/
-quicklisp.lisp
+nyxt
+Nyxt.app
 
 # Ignore PNG and XCF
 *.png
@@ -30,3 +26,6 @@ quicklisp.lisp
 *.sx32fsl
 *.wx64fsl
 *.wx32fsl
+
+# Generated doc
+manual.html
