@@ -4,5 +4,7 @@
   (:nicknames class*)
   (:use :common-lisp)
   (:import-from :hu.dwim.defclass-star)
-  (:export #:define-class
+  (:export #:with-class
+           #:replace-class
+           #:define-class
            #:name-identity))

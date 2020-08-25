@@ -3,40 +3,6 @@
 
 (in-package :nyxt)
 
-(defmacro replace-class (from to)
-  "Set class corresponding to FROM symbol to that of TO.
-Class TO is untouched.
-FROM and TO are unquoted symbols.
-Return new class.
-
-This macro ensures the type corresponding to the FROM symbol maps the TO class.
-Otherwise the old type could be undefined, as is the case with CCL (SBCL
-maintains the type though).  See the `find-class' documentation in the
-HyperSpec:
-
-  The results are undefined if the user attempts to change or remove the class
-  associated with a symbol that is defined as a type specifier in the standard."
-  `(progn
-     (setf (find-class ',from) (find-class ',to))
-     ;; TODO: Test with implementations beyond SBCL and CCL.
-     #-SBCL
-     (deftype ,from () ',to)
-     (find-class ',from)))
-
-(defmacro with-class ((class-sym override-sym) &body body)
-  "Dynamically override the class corresponding to CLASS-SYM by OVERRIDE-SYM.
-The class is restored when exiting BODY."
-  (alex:with-gensyms (old-class)
-    `(let ((,old-class (find-class ',class-sym)))
-       (unwind-protect
-            (progn
-              (replace-class ,class-sym ,override-sym)
-              ,@body)
-         ;; TODO: Test type with CCL:
-         (setf (find-class ',class-sym) ,old-class)
-         #-SBCL
-         (deftype ,class-sym () ',class-sym)))))
-
 (export-always 'funcall-safely)
 (defun funcall-safely (f &rest args)
   "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run

@@ -18,7 +18,7 @@ e.g.  (defclass-export foo (foo) ()) works."
       (let ((temp-name (gensym (string name))))
         ;; Don't export the class again.
         `(progn (defclass ,temp-name ,supers ,slots ,@options)
-                (replace-class ,name ,temp-name)))
+                (class*:replace-class ,name ,temp-name)))
       `(serapeum.exporting:defclass ,name ,supers ,slots ,@options)))
 
 
