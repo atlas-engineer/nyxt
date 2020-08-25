@@ -100,9 +100,9 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
               (tag-description tag))
       (object-string tag)))
 
-(declaim (ftype (function (quri:uri &key (:title string) (:tags t)) t) bookmark-add))
+(declaim (ftype (function (quri:uri &key (:title string) (:date local-time::timestamp) (:tags t)) t) bookmark-add))
 (export-always 'bookmark-add)
-(defun bookmark-add (url &key title tags)
+(defun bookmark-add (url &key date title tags)
   (unless (or (url-empty-p url)
               (string= "about:blank" (object-string url)))
     (let* ((entry nil)
@@ -414,3 +414,29 @@ rest in background buffers."
           (setf (slot-value *browser* 'bookmarks-data) data)))
     (error (c)
       (echo-warning "Failed to load bookmarks from ~s: ~a" (expand-path (bookmarks-path *browser*)) c))))
+
+(define-command import-bookmarks-from-html ()
+  "Import bookmarks from a html file, only tested with firefox."
+  (with-result (html-file (read-from-minibuffer
+			   (make-minibuffer
+			    :input-prompt "Path to html file")))
+    (unless (and (probe-file html-file)
+		 (equal (pathname-type html-file) "html"))
+      (import-bookmarks-from-html))
+    ;; (until-if (probe-file html-file)
+    ;; 	      (with-result (html (read-from-minibuffer
+    ;; 			   (make-minibuffer
+    ;; 			    :input-prompt "File doesn't exist!")))
+    ;; 		(setf html-file html)))
+   (with-open-file (in-html html-file 
+   			   :external-format :utf-8)
+    (lquery:$ (initialize in-html)
+      "a"
+      (combine (attr :href) (text) (attr :ADD_DATE) (attr :TAGS))
+      (map-apply #'(lambda (url title date tags)
+   		     (when (and (> (length url) 4) 
+   				(equal (subseq url 0 4) "http"))
+   		       (bookmark-add (quri:uri url)
+   				     :title title
+   				     :date (local-time:unix-to-timestamp (parse-integer date))
+   				     :tags (if (equal "NIL" tags) NIL)))))))))

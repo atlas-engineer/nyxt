@@ -20,6 +20,7 @@
                :local-time
                :log4cl
                :lparallel
+	       :lquery
                :mk-string-metrics
                :osicat
                :parenscript
