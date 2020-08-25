@@ -34,6 +34,13 @@ The class is restored when exiting BODY."
          #-SBCL
          (deftype ,class-sym () ',class-sym)))))
 
+(defun original-class (class-sym)
+  "Return the parent class with the same name, or nil if there is none.
+This is useful to retrieve the original class of a class that was overridden,
+e.g. with (define-class foo (foo) ...)."
+  (find class-sym (mopu:superclasses (find-class class-sym))
+        :key #'class-name))
+
 (defun name-identity (name definition)
   (declare (ignore definition))
   name)

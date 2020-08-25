@@ -48,6 +48,14 @@
                 (fboundp 'name-no-acc-of)))
             nil))
 
+(prove:subtest "Original class"
+  (defclass foo () ())
+  (defclass bar (foo) ())
+  (setf (find-class 'foo) (find-class 'bar))
+  (prove:isnt (class*:original-class 'foo) nil)
+  (prove:is (class-name (class*:original-class 'foo)) 'foo)
+  (prove:isnt (class*:original-class 'foo) (find-class 'foo)))
+
 ;; TODO: These cycle tests work if run at the top-level, but not within prove:subtest.
 
 ;; (prove:subtest "Cycle"
