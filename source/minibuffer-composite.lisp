@@ -25,19 +25,6 @@
                                                                  :source i))))))))
     (funcall (slot-value (source-minibuffer selection) 'callback) selection)))
 
-(define-command meta-search-demonstration ()
-  "Demonstration of how meta search function works."
-  (meta-search
-   (list
-    (make-minibuffer
-     :suggestion-function
-     (lambda (i) (fuzzy-match i (list "Carp" "Goldfish" "Salmon")))
-     :callback (lambda (i) (format t "Hello ~a" (result i))))
-    (make-minibuffer
-     :suggestion-function
-     (lambda (i) (fuzzy-match i (list "Turtle" "Box Turtle" "Sea Water Turtle")))
-     :callback (lambda (i) (print (result i)))))))
-
 (defun intertwine (&rest lists)
   (let ((heads (copy-list lists))
         (result '()))
