@@ -255,18 +255,19 @@ URL."
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result* ((url (quri:uri
-                       (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Bookmark URL"))))
-                 (tags (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Space-separated tag(s)"
-                         :default-modes '(set-tag-mode minibuffer-mode)
-                         :input-buffer (url-bookmark-tags url)
-                         :suggestion-function (tag-suggestion-filter)))))
-
-    (bookmark-add url :tags tags)))
+  (with-result (url (read-from-minibuffer
+                     (make-minibuffer
+                      :input-prompt "Bookmark URL")))
+    (if (not (valid-url-p url))
+        (echo "Invalid URL")
+        (let ((url (quri:uri url)))
+          (with-result (tags (read-from-minibuffer
+                              (make-minibuffer
+                               :input-prompt "Space-separated tag(s)"
+                               :default-modes '(set-tag-mode minibuffer-mode)
+                               :input-buffer (url-bookmark-tags url)
+                               :suggestion-function (tag-suggestion-filter))))
+            (bookmark-add url :tags tags))))))
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
