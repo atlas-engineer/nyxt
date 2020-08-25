@@ -13,7 +13,7 @@ Features:
 
 Example result:
 
-```
+#+begin_src lisp
 (define-class foo (foo)
   ((slot1 :type integer) ; defaults to 0
    (slot2 :type string :initform "hello!")
@@ -23,7 +23,7 @@ Example result:
 
 ; And this would work
 (make-instance 'foo :my-slot1 17)
-```
+#+end_src
 
 Maybe have a `define-class-export` that exports the class name and turns
 on slot exportation by default.
@@ -35,6 +35,20 @@ hu.dwim.defclass-star provides almost everything we need except
 
 - initform customization (such as zero values);
 - supers cycle support.
+
+You can customize how to infer the default value.  For instance, to fall back to
+nil when the type is not one of the known basic types (see =basic-type-zero-values=):
+
+#+begin_src lisp
+(define-class garg ()
+  ((name :type class))
+  (:type-zero-function #'nil-fallback-type-zero-function))
+#+end_src
+
+See the =*type-zero-function*= for the default inference function.
+
+You can also set this option to nil, in which case you get the default behaviour
+back of no inference.
 
 * References
 

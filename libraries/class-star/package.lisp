@@ -8,4 +8,8 @@
            #:replace-class
            #:original-class
            #:define-class
-           #:name-identity))
+           #:name-identity
+           #:*type-zero-function*
+           #:default-type-zero-function
+           #:no-unbound-type-zero-function
+           #:nil-fallback-type-zero-function))
