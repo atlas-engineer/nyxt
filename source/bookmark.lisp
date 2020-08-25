@@ -423,11 +423,6 @@ rest in background buffers."
     (unless (and (probe-file html-file)
 		 (equal (pathname-type html-file) "html"))
       (import-bookmarks-from-html))
-    ;; (until-if (probe-file html-file)
-    ;; 	      (with-result (html (read-from-minibuffer
-    ;; 			   (make-minibuffer
-    ;; 			    :input-prompt "File doesn't exist!")))
-    ;; 		(setf html-file html)))
    (with-open-file (in-html html-file 
    			   :external-format :utf-8)
     (lquery:$ (initialize in-html)
