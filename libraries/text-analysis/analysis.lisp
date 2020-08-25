@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :text-analysis)
 
 ;;; text-analysis.lisp -- functions for facilitating text analysis

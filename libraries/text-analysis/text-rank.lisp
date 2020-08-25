@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :text-analysis)
 
 ;;; text-rank.lisp -- implementation of textrank algorithm
