@@ -6,5 +6,6 @@
   (:import-from :hu.dwim.defclass-star)
   (:export #:with-class
            #:replace-class
+           #:original-class
            #:define-class
            #:name-identity))
