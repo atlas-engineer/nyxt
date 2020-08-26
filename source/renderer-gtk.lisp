@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class data-manager-path (data-path)
+(define-class data-manager-data-path (data-path)
   ((ref :initform "data-manager"))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
@@ -38,12 +38,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                 :type t
                 :accessor nil
                 :export nil
-                :documentation "Single instantiation of our custom web context.")
-   (data-manager-path (make-instance 'data-manager-path
-                                     :dirname (uiop:xdg-cache-home +data-root+))
-                      :type data-path
-                      :documentation "Directory in which the WebKitGTK
-data-manager will store the data separately for each buffer."))
+                :documentation "Single instantiation of our custom web context."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
@@ -109,10 +104,18 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 (define-class gtk-buffer ()
   ((gtk-object)
    (proxy-uri (quri:uri ""))
-   (proxy-ignored-hosts '()))
+   (proxy-ignored-hosts '())
+   (data-manager-path (make-instance 'data-manager-data-path
+                                     :dirname (uiop:xdg-cache-home +data-root+))
+                      :documentation "Directory in which the WebKitGTK
+data-manager will store the data separately for each buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+
+(defmethod expand-data-path ((profile private-data-profile) (path data-manager-data-path))
+  "We shouldn't store any `data-manager' data for `private-data-profile'."
+  nil)
 
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
@@ -423,18 +426,18 @@ Warning: This behaviour may change in the future."
                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
-(defun make-data-manager (id)
-  (make-instance 'webkit:webkit-website-data-manager
-                 :base-data-directory
-                 (str:concat (expand-path (data-manager-path *browser*))
-                             "/nyxt-data-manager-" id)))
+(defun make-data-manager (buffer)
+  (let ((path (expand-path (data-manager-path buffer))))
+    (apply #'make-instance `(webkit:webkit-website-data-manager
+                             ,@(when path `(:base-data-directory ,path))
+                             :is-ephemeral ,(not path)))))
 
 (defun make-context (&optional buffer)
   (let* ((context (if (and buffer
                            ;; Initial window buffer or replacement/temp buffers
                            ;; may have no ID.
                            (not (str:emptyp (id buffer))))
-                      (let ((manager (make-data-manager (id buffer))))
+                      (let ((manager (make-data-manager buffer)))
                         (make-instance 'webkit:webkit-web-context
                                        :website-data-manager manager))
                       (web-context *browser*)))
@@ -448,6 +451,12 @@ Warning: This behaviour may change in the future."
     context))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
+  (let ((path (data-manager-path buffer)))
+    (setf (data-manager-path buffer)
+          (make-instance 'data-manager-data-path
+                         :dirname (pathname (str:concat (namestring (dirname path))
+                                                        "/nyxt-data-manager-"
+                                                        (id buffer))))))
   (ffi-buffer-make buffer))
 
 (defmethod ffi-buffer-uri ((buffer gtk-buffer))

@@ -9,14 +9,16 @@
 
 (defun download-refresh ()
   "Display a buffer listing all downloads."
-  (let* ((download-buffer (or (find-buffer 'download-mode)
+  ;; TODO: list the downloads of the buffers with the non-standard paths.
+  (let* ((buffer (current-buffer))
+         (download-buffer (or (find-buffer 'download-mode)
                               (download-mode :activate t
                                              :buffer (make-buffer :title "*Downloads*"))))
          (contents (markup:markup
                     (:h1 "Downloads")
-                    (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-path *browser*))))
+                    (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-path buffer))))
                     (:span              ; TODO: Do we need this span?  We need something because of the loop.
-                     (loop for d in (downloads *browser*)
+                     (loop for d in (get-data (download-path buffer))
                            collect
                            (markup:markup
                             (:p
@@ -57,8 +59,9 @@
 (define-command download-list ()
   "Display a buffer listing all downloads."
   (unless (download-watcher *browser*)
-    (setf (download-watcher *browser*) (bt:make-thread #'download-watch)))
- (set-current-buffer (download-refresh)))
+    (setf (download-watcher *browser*)
+          (bt:make-thread #'download-watch)))
+  (set-current-buffer (download-refresh)))
 
 (define-command download-url ()
   "Download the page or file of the current buffer."
@@ -68,7 +71,8 @@
 
 (defun get-downloaded-filenames ()
   "Return the list of downloaded filenames of the current session, as strings."
-  (mapcar #'download-manager:filename (downloads *browser*)))
+  (mapcar #'download-manager:filename
+          (get-data (download-path (current-buffer)))))
 
 (defun downloaded-files-suggestion-filter ()
   (let ((filenames (get-downloaded-filenames)))

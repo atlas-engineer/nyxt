@@ -9,36 +9,42 @@
 
 (subtest "Global history"
   (progn
-    (let ((*browser* (make-instance 'browser)))
-      (setf (history-restore-function *browser*) nil)
-      (history-add (quri:uri "http://example.org"))
-      (is (hash-table-count (nyxt::history-data *browser*))
-          1
-          "history has 1 entry")
-      (let ((entry (first (alexandria:hash-table-alist
-                           (nyxt::history-data *browser*)))))
-        (is (first entry)
-            "http://example.org"
-            "key is URL")
-        (is (url (rest entry))
-            (quri:uri "http://example.org")
-            :test #'quri:uri=
-            "value has quri:uri")
-        (is (title (rest entry))
-            nil
-            "value has no title"))
-      (history-add (quri:uri "http://example.org") :title "foo")
-      (is (hash-table-count (nyxt::history-data *browser*))
-          1
-          "history has still 1 entry after adding same URI")
-      (let ((entry (first (alexandria:hash-table-alist
-                           (nyxt::history-data *browser*)))))
-        (is (title (rest entry))
-            "foo"
-            "value now has title"))
-      (history-add (quri:uri "http://example.org/sub"))
-      (is (hash-table-count (nyxt::history-data *browser*))
-          2
-          "history now has 2 entries"))))
+    (let ((*browser* (make-instance 'browser))
+          (buffer (nyxt::make-buffer)))
+      ;; We need to make sure nothing will be restored.
+      (nyxt:with-current-buffer buffer
+        (let ((path (setf (history-path buffer)
+                          (make-instance 'history-data-path
+                                         :basename "history"
+                                         :dirname "/tmp/nyxt-history-test"))))
+          (history-add (quri:uri "http://example.org"))
+          (is (hash-table-count (nyxt:get-data path))
+              1
+              "history has 1 entry")
+          (let ((entry (first (alexandria:hash-table-alist
+                               (nyxt:get-data path)))))
+            (is (first entry)
+                "http://example.org"
+                "key is URL")
+            (is (url (rest entry))
+                (quri:uri "http://example.org")
+                :test #'quri:uri=
+                "value has quri:uri")
+            (is (title (rest entry))
+                nil
+                "value has no title"))
+          (history-add (quri:uri "http://example.org") :title "foo")
+          (is (hash-table-count (nyxt:get-data path))
+              1
+              "history has still 1 entry after adding same URI")
+          (let ((entry (first (alexandria:hash-table-alist (nyxt:get-data path)))))
+            (is (title (rest entry))
+                "foo"
+                "value now has title"))
+          (history-add (quri:uri "http://example.org/sub"))
+          (is (hash-table-count (nyxt:get-data path))
+              2
+              "history now has 2 entries")
+          (uiop:delete-file-if-exists (expand-path (history-path buffer))))))))
 
 (finalize)

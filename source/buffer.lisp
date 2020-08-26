@@ -13,6 +13,11 @@
        :documentation "Unique identifier for a buffer.
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
+   (data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
+                                              'default-data-profile))
+                 :type data-profile
+                 :documentation "Profile to use for all persisted files.
+See the `data-path' class and the `expand-path' function.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
@@ -144,9 +149,6 @@ distance scroll-left or scroll-right will scroll.")
                       :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
-   (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
-                 :documentation "The path where cookies are stored.  Not all
-renderers might support this.")
    (box-style (cl-css:css
                '((".nyxt-hint"
                   :background "linear-gradient(#fcff9e, #efcc00)"
@@ -180,6 +182,43 @@ and must return a (possibly new) URL.")
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
+   (session-path (make-instance 'session-data-path
+                                          :basename "default"
+                                          :dirname (uiop:xdg-data-home +data-root+ "sessions"))
+                 :type data-path
+                 :documentation "
+The path where the system will create/save the session.")
+   (download-path (make-instance 'download-data-path
+                                 :dirname (xdg-download-dir))
+                  :type data-path
+                  :documentation "Path of directory where downloads will be
+stored.  Nil means use system default.
+Downloads are kept in browser's `user-data', keyed by the expanded `download-path'.")
+   (history-path (make-instance 'history-data-path :basename "history")
+                 :type data-path
+                 :documentation "
+The path where the system will create/save the global history.
+History data is kept in browser's `user-data', keyed by the expanded `history-path'.")
+   (bookmarks-path (make-instance 'bookmarks-data-path :basename "bookmarks")
+                   :type data-path
+                   :documentation "
+The path where the system will create/save the bookmarks.
+Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
+   (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
+                 :type data-path
+                 :documentation "The path where cookies are stored.  Not all
+renderers might support this.")
+   (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path
+                                        :basename "auto-mode-rules")
+                         :type data-path
+                         :documentation "The path where the auto-mode rules are saved.
+Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-path'.")
+   (standard-output-path (make-instance 'standard-output-data-path :basename "standard-out.txt")
+                         :type data-path
+                         :documentation "Path where `*standard-output*' can be written to.")
+   (error-output-path (make-instance 'error-output-data-path :basename "standard-error.txt")
+                      :type data-path
+                      :documentation "Path where `*error-output*' can be written to.")
    (default-cookie-policy :no-third-party
                           :type cookie-policy
                           :documentation "Cookie policy of new buffers.
@@ -412,11 +451,12 @@ If URL is `:default', use `default-new-buffer-url'."
   (buffer-make *browser* :title title :default-modes modes :internal-buffer-p t))
 
 (declaim (ftype (function (browser &key (:title string)
+                                   (:data-profile data-profile)
                                    (:default-modes list)
                                    (:dead-buffer buffer)
                                    (:internal-buffer-p boolean)))
                 buffer-make))
-(defun buffer-make (browser &key title default-modes dead-buffer internal-buffer-p)
+(defun buffer-make (browser &key data-profile title default-modes dead-buffer internal-buffer-p)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
@@ -428,7 +468,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                      (apply #'make-instance (if internal-buffer-p 'user-internal-buffer 'user-buffer)
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
-                                    (when default-modes `(:default-modes ,default-modes)))))))
+                                    (when default-modes `(:default-modes ,default-modes))
+                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
@@ -468,9 +509,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (buffers-delete (id buffer))
     (setf (id buffer) "")
     (add-to-recent-buffers buffer)
-    (match (session-store-function *browser*)
-      ((guard f f)
-       (funcall-safely f)))))
+    (store (data-profile buffer) (session-path buffer))))
 
 (export-always 'buffer-list)
 (defun buffer-list (&key sort-by-time domain)

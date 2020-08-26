@@ -133,10 +133,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
 
 (define-command quit-after-clearing-session ()
   "Clear session then quit Nyxt."
-  (setf
-   (session-store-function *browser*) nil
-   (session-restore-function *browser*) nil)
-  (uiop:delete-file-if-exists (expand-path (session-path *browser*)))
+  (uiop:delete-file-if-exists (expand-path (session-path (current-buffer))))
   (quit))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
@@ -256,17 +253,17 @@ To change the default buffer, e.g. set it to a given URL:
           (window-set-active-buffer window (funcall-safely buffer-fn))))
     (when (startup-error-reporter-function *browser*)
       (funcall-safely (startup-error-reporter-function *browser*)))
-    (when (expand-path (session-path *browser*))
-      (flet ((restore-session ()
-               (when (and (session-restore-function *browser*)
-                          (uiop:file-exists-p (expand-path (session-path *browser*))))
-                 (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
-                 (funcall (session-restore-function *browser*)))))
-        (match (session-restore-prompt *browser*)
-          (:always-ask (if-confirm ("Restore previous session?")
-                         (restore-session)))
-          (:always-restore (restore-session))
-          (:never-restore (log:info "Not restoring session.")))))))
+    (let ((buffer (current-buffer)))
+      (when (expand-path (session-path buffer))
+        (flet ((restore-session ()
+                 (when (uiop:file-exists-p (expand-path (session-path buffer)))
+                   (log:info "Restoring session ~s." (expand-path (session-path buffer)))
+                   (restore (data-profile buffer) (session-path buffer)))))
+          (match (session-restore-prompt *browser*)
+            (:always-ask (if-confirm ("Restore previous session?")
+                                     (restore-session)))
+            (:always-restore (restore-session))
+            (:never-restore (log:info "Not restoring session."))))))))
 
 (export-always 'open-external-urls)
 (defun open-external-urls (urls)
@@ -479,7 +476,6 @@ Finally,run the `*after-init-hook*'."
     (setf *browser* (make-instance 'user-browser
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
-    (log:info "Using data profile ~s." (name (data-profile *browser*)))
     (when (expand-path *socket-path*)
       (bind-socket-or-quit free-args))
     (ffi-initialize *browser* free-args startup-timestamp)))

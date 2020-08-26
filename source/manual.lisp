@@ -177,23 +177,27 @@ GnuPG documentation for how to set it up.")
     (:p "Example to create a development data-profile that stores all data in "
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
     (:pre (:code "
-\(defvar +dev-data-profile+ (make-instance 'data-profile :name \"dev\")
-  \"Development profile.\")
+\(define-class dev-data-profile (data-profile)
+   ((name :initform \"dev\"))
+   (:export-class-name-p t)
+   (:export-accessor-names-p t)
+   (:accessor-name-transformer #'class*:name-identity)
+   (:documentation \"Development profile.\"))
 
-\(defmethod nyxt:expand-data-path ((profile (eql +dev-data-profile+)) (path data-path))
+\(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path data-path))
   \"Persist data to /tmp/nyxt/.\"
   (expand-default-path (make-instance (class-name (class-of path))
                                       :basename (basename path)
                                       :dirname \"/tmp/nyxt/\")))
 
-\(defmethod nyxt:expand-data-path ((profile (eql +dev-data-profile+)) (path session-data-path))
+\(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path session-data-path))
   \"Persist session to default location.\"
-  (expand-data-path +default-data-profile+ path))
+  (expand-data-path *global-data-profile* path))
 
 ;; Make new profile the default:
-\(define-configuration browser
-  ((data-profile (or (find-data-profile (getf *options* :data-profile))
-                     +dev-data-profile+))
+\(define-configuration buffer
+  ((data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
+                                    'dev-data-profile)))
    (bookmarks-path (make-instance 'bookmarks-data-path
                                   :basename \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
     (:p "Then you can start an instance of Nyxt using this profile

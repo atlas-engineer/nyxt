@@ -88,25 +88,24 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (declaim (ftype (function (quri:uri &key (:title string) (:tags t)) t) bookmark-add))
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key title tags)
-  (unless (or (url-empty-p url)
-              (string= "about:blank" (object-string url)))
-    (let* ((entry nil)
-           (bookmarks-without-url (remove-if (lambda (b)
-                                               (when (equal-url (url b) url)
-                                                 (setf entry b)))
-                                             (bookmarks-data *browser*)))
-           (tags (if (stringp tags) (str:split " " tags :omit-nulls t) tags)))
-      (unless entry
-        (setf entry (make-instance 'bookmark-entry
-                                   :url url)))
-      (unless (str:emptyp title)
-        (setf (title entry) title))
-      (setf tags (delete-duplicates tags :test #'string=))
-      (setf (tags entry) (sort tags #'string<))
-      (push entry bookmarks-without-url)
-      ;; Warning: Make sure to set bookmarks-data only once here since it is
-      ;; persisted each time.
-      (setf (bookmarks-data *browser*) bookmarks-without-url))))
+  (with-data-access bookmarks (bookmarks-path (current-buffer))
+    (unless (or (url-empty-p url)
+                (string= "about:blank" (object-string url)))
+      (let* ((entry nil)
+             (bookmarks-without-url (remove-if (lambda (b)
+                                                 (when (equal-url (url b) url)
+                                                   (setf entry b)))
+                                               bookmarks))
+             (tags (if (stringp tags) (str:split " " tags :omit-nulls t) tags)))
+        (unless entry
+          (setf entry (make-instance 'bookmark-entry
+                                     :url url)))
+        (unless (str:emptyp title)
+          (setf (title entry) title))
+        (setf tags (delete-duplicates tags :test #'string=))
+        (setf (tags entry) (sort tags #'string<))
+        (push entry bookmarks-without-url)
+        (setf bookmarks bookmarks-without-url)))))
 
 (export-always 'match-bookmarks)
 (defun match-bookmarks (specification &optional (as-url-list-p t))
@@ -116,7 +115,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
          (tag-specs (first input-specs))
          (non-tags (str:downcase (str:join " " (second input-specs))))
          (validator (ignore-errors (tag-specification-validator tag-specs)))
-         (bookmarks (bookmarks-data *browser*)))
+         (bookmarks (get-data (bookmarks-path (current-buffer)))))
     (when validator
       (setf bookmarks (remove-if (lambda (bookmark)
                                    (not (funcall validator
@@ -141,7 +140,8 @@ This can be useful to let the user select no tag when returning directly."
                             (mapcar (lambda (name) (make-tag :name name))
                                     (delete-duplicates
                                      (apply #'append
-                                            (mapcar #'tags (bookmarks-data *browser*)))
+                                            (mapcar #'tags (get-data
+                                                            (bookmarks-path (current-buffer)))))
                                      :test #'string-equal)))
                     #'string-lessp
                     :key #'tag-name)))
@@ -172,7 +172,7 @@ This can be useful to let the user select no tag when returning directly."
            (markup:markup
             (:h1 "Bookmarks")
             (:body
-             (loop for bookmark in (bookmarks-data *browser*)
+             (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
                    collect (markup:markup (:p (:a :href (object-string (url bookmark))
                                                   (object-display (url bookmark)))
                                               " "
@@ -193,7 +193,7 @@ This can be useful to let the user select no tag when returning directly."
 URL."
   (the (values string &optional)
        (let ((existing-bm (find url
-                                (bookmarks-data *browser*)
+                                (get-data (bookmarks-path (current-buffer)))
                                 :key #'url
                                 :test #'equal-url)))
          (if existing-bm
@@ -255,14 +255,16 @@ URL."
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
-  (with-result (entries (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Delete bookmark(s)"
-                          :multi-selection-p t
-                          :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                          :suggestion-function (bookmark-suggestion-filter))))
-    (setf (bookmarks-data *browser*)
-          (set-difference (bookmarks-data *browser*) entries :test #'equals))))
+  (with-data-access bookmarks (bookmarks-path (current-buffer))
+    (with-result (entries (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Delete bookmark(s)"
+                            :multi-selection-p t
+                            :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                            :suggestion-function (bookmark-suggestion-filter))))
+      (setf bookmarks
+            (set-difference bookmarks
+                            entries :test #'equals)))))
 
 (define-command insert-suggestion-or-tag (&optional (minibuffer (current-minibuffer)))
   "Paste selected suggestion or tag in input.
@@ -361,39 +363,38 @@ rest in background buffers."
       (log:error "During bookmark deserialization: ~a" c)
       nil)))
 
-(defun store-sexp-bookmarks ()
-  "Store the bookmarks to the browser `bookmarks-path'."
-  (with-data-file (file (bookmarks-path *browser*)
+(defmethod store ((profile data-profile) (path bookmarks-data-path))
+  "Store the bookmarks to the buffer `bookmarks-path'."
+  (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
     ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
     ;; already a customizable function.
-    (setf (slot-value *browser* 'bookmarks-data)
-          (sort (slot-value *browser* 'bookmarks-data)
+    (setf (get-data path)
+          (sort (get-data path)
                 #'uri< :key #'url))
     (write-string "(" file)
-    (dolist (entry (slot-value *browser* 'bookmarks-data))
+    (dolist (entry (get-data path))
       (write-char #\newline file)
       (serialize-object entry file))
     (format file "~%)~%")
     (echo "Saved ~a bookmarks to ~s."
-          (length (slot-value *browser* 'bookmarks-data))
-          (expand-path (bookmarks-path *browser*))))
+          (length (get-data path))
+          (expand-path path)))
   t)
 
-(defun restore-sexp-bookmarks ()
-  "Restore the bookmarks from the browser `bookmarks-path'."
+(defmethod restore ((profile data-profile) (path bookmarks-data-path))
+  "Restore the bookmarks from the buffer `bookmarks-path'."
   (handler-case
-      (let ((data (with-data-file (file (bookmarks-path *browser*)
+      (let ((data (with-data-file (file path
                                         :direction :input
                                         :if-does-not-exist nil)
                     (when file
                       (deserialize-bookmarks file)))))
         (when data
-          (echo "Loading ~a bookmarks from ~s."
-                (length data)
-                (expand-path (bookmarks-path *browser*)))
-          (setf (slot-value *browser* 'bookmarks-data) data)))
+          (echo "Loading ~a bookmarks from ~s." (length data) (expand-path path))
+          (setf (get-data path) data)))
     (error (c)
-      (echo-warning "Failed to load bookmarks from ~s: ~a" (expand-path (bookmarks-path *browser*)) c))))
+      (echo-warning "Failed to load bookmarks from ~s: ~a"
+                    (expand-path path) c))))

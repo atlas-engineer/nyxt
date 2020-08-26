@@ -143,31 +143,3 @@ Initialization file use case:
     (error ()
       ;; Improper list.
       list)))
-
-(export-always 'expand-path)
-(declaim (ftype (function ((or null data-path)) (or string null)) expand-path))
-(defun expand-path (data-path)
-  "Return the expanded path of DATA-PATH or nil if there is none.
-`expand-data-path' is dispatched against `data-path' and `*browser*'s
-`data-profile' if `*browser*' is instantiated, `+default-data-profile+'
-otherwise.
-This function can be used on browser-less globals like `*init-file-path*'."
-  (when data-path
-    (the (values (or string null) &optional)
-         (match (if *browser*
-                    (expand-data-path (data-profile *browser*) data-path)
-                    (expand-data-path +default-data-profile+ data-path))
-           ("" nil)
-           (m (uiop:native-namestring m))))))
-
-(export-always 'with-data-file)
-(defmacro with-data-file ((stream data-path &rest options) &body body)
-  "Evaluate BODY with STREAM bound to DATA-PATH.
-DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
-If DATA-PATH expands to NIL or the empty string, do nothing.
-OPTIONS are as for `open'.
-Parent directories are created if necessary."
-  `(let ((path (expand-path ,data-path)))
-     (when path
-       (with-maybe-gpg-file (,stream path ,@options)
-         ,@body))))
