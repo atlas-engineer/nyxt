@@ -25,31 +25,31 @@ instance of Nyxt."
   (list +version+
         (delete-if #'null (mapcar #'buffer-history (web-buffers)))))
 
-(defun store-sexp-session ()
-  "Store the current Nyxt session to the browser `session-path'.
+(defmethod store ((profile data-profile) (path session-data-path))
+  "Store the current Nyxt session to the BUFFER's `session-path'.
 Currently we store the list of current URLs of all buffers."
   ;; TODO: Should we persist keymaps, constructors, etc.?  For instance, should
   ;; we restore the proxy value?  It may be wiser to let the user configure
   ;; allow/deny lists instead.  It's also easier
-  (with-data-file (file (session-path *browser*)
+  (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
-    (log:info "Saving session to ~s." (expand-path (session-path *browser*)))
+    (log:info "Saving session to ~s." (expand-path path))
     ;; We READ the output of serialize-sexp to make it more human-readable.
     (let ((*package* (find-package :nyxt)))
       ;; We need to make sure current package is :nyxt so that
-      ;; symbols a printed with consistent namespaces.
+      ;; symbols are printed with consistent namespaces.
       (format file
               "~s"
               (with-input-from-string (in (with-output-to-string (out)
                                             (s-serialization:serialize-sexp (session-data) out)))
                 (read in))))))
 
-(defun restore-sexp-session ()
-  "Restore the current Nyxt session from the browser `session-path'."
+(defmethod restore ((profile data-profile) (path session-data-path))
+  "Restore the current Nyxt session from the BUFFER's `session-path'."
   (handler-case
-      (match (with-data-file (input (session-path *browser*)
+      (match (with-data-file (input path
                                     :direction :input
                                     :if-does-not-exist nil)
                (when input
@@ -85,4 +85,4 @@ Currently we store the list of current URLs of all buffers."
            ;; Or else we could include `access-time' in the buffer class.
            )))
     (error (c)
-      (log:warn "Failed to restore session from ~a: ~a" (session-path *browser*) c))))
+      (log:warn "Failed to restore session from ~a: ~a" (expand-path path) c))))

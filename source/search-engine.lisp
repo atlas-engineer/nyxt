@@ -36,7 +36,8 @@ the empty string."))
           (make-string (max 0 (- 10 (length (shortcut engine)))) :initial-element #\no-break_space)
           (search-url engine)))
 
-(defun bookmark-search-engines (&optional (bookmarks (bookmarks-data *browser*)))
+(defun bookmark-search-engines (&optional (bookmarks (get-data (bookmarks-path
+                                                                (current-buffer)))))
   (mapcar (lambda (b)
             (make-instance 'search-engine
                            :shortcut (shortcut b)

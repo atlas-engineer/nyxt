@@ -11,7 +11,7 @@
 (export-always '*prompt-on-mode-toggle*)
 (defvar *prompt-on-mode-toggle* nil
   "Whether user will be asked about adding the mode to included/excluded modes
-in `auto-mode-rules' on mode activation/deactivation.")
+in the auto-mode rules on mode activation/deactivation.")
 
 (export-always '*non-rememberable-modes*)
 (defvar *non-rememberable-modes*
@@ -53,9 +53,9 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(declaim (ftype (function (quri:uri) (or auto-mode-rule null))
+(declaim (ftype (function (quri:uri buffer) (or auto-mode-rule null))
                 matching-auto-mode-rule))
-(defun matching-auto-mode-rule (url)
+(defun matching-auto-mode-rule (url buffer)
   (flet ((priority (test1 test2)
            (let ((priority-list '(match-regex match-url match-host match-domain)))
              (< (or (position (first test1) priority-list) 4)
@@ -64,12 +64,13 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
                   #'(lambda (rule)
                       (funcall-safely
                        (apply (first (test rule)) (rest (test rule))) url))
-                  (or (auto-mode-rules *browser*) (restore-auto-mode-rules)))
+                  (or (get-data (auto-mode-rules-path buffer))
+                      (restore (data-profile buffer) (auto-mode-rules-path buffer))))
                  #'priority :key #'test))))
 
 (declaim (ftype (function (quri:uri buffer)) enable-matching-modes))
 (defun enable-matching-modes (url buffer)
-  (let ((rule (matching-auto-mode-rule url)))
+  (let ((rule (matching-auto-mode-rule url buffer)))
     (enable-modes (set-difference
                    (included rule)
                    (rememberable-of (mapcar #'mode-name (modes buffer)))
@@ -82,18 +83,18 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
                        (excluded rule))
                    buffer)))
 
-(defun can-store-last-active-modes (auto-mode url)
+(defun can-save-last-active-modes (auto-mode url)
   (or (null (last-active-modes-url auto-mode))
       (not (quri:uri= url (last-active-modes-url auto-mode)))))
 
-(defun store-last-active-modes (auto-mode url)
-  (when (can-store-last-active-modes auto-mode url)
+(defun save-last-active-modes (auto-mode url)
+  (when (can-save-last-active-modes auto-mode url)
     ;; `last-active-modes' must be a list separate from the mode list, otherwise
     ;; when modes get modified, last-active-modes would also be altered.
     (setf (last-active-modes auto-mode) (copy-list (modes (buffer auto-mode)))
           (last-active-modes-url auto-mode) url)))
 
-(defun restore-last-active-modes (auto-mode)
+(defun reapply-last-active-modes (auto-mode)
   (disable-modes
    (mapcar #'maybe-mode-name
            (set-difference (modes (buffer auto-mode))
@@ -128,21 +129,22 @@ non-new-page requests, buffer URL is not altered."
            (unless (history-empty-p (history web-mode))
              (url (htree:data
                    (htree:parent (htree:current (history web-mode)))))))
-         (rule (matching-auto-mode-rule (url request-data)))
-         (previous-rule (when previous-url (matching-auto-mode-rule previous-url))))
+         (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
+         (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
     (when (and rule previous-url (not previous-rule))
-      (store-last-active-modes auto-mode previous-url))
+      (save-last-active-modes auto-mode previous-url))
     (cond
       ((and (not rule) (new-page-request-p request-data))
-       (restore-last-active-modes auto-mode))
-      ((and rule (not (equal rule previous-rule)))
+       (reapply-last-active-modes auto-mode))
+      ((and rule (not (equalp rule previous-rule)))
        (enable-matching-modes (url request-data) (buffer request-data)))))
   request-data)
 
 (defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
   (or (non-rememberable-mode-p mode)
       (let ((matching-rule (matching-auto-mode-rule
-                            (url (buffer auto-mode)))))
+                            (url (buffer auto-mode))
+                            (buffer auto-mode))))
         (member mode (or (and matching-rule (union (included matching-rule)
                                                    (excluded matching-rule)))
                          ;; Mode is covered by auto-mode only if it is
@@ -234,7 +236,7 @@ on the last URL not covered by `auto-mode'.")
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,
 and modes that are present in mode list but not in `default-modes' as :included,
-to one of `auto-mode-rules'. Apply the resulting rule for all the future visits to this URL,
+to one of auto-mode rules. Apply the resulting rule for all the future visits to this URL,
 inferring the matching condition with `url-infer-match'.
 
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
@@ -260,7 +262,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                               :test #'mode-equal))))
 
 (define-command save-exact-modes-for-future-visits ()
-  "Store the exact list of enabled modes to `auto-mode-rules' for all the future visits of this
+  "Store the exact list of enabled modes to auto-mode rules for all the future visits of this
 domain/host/URL/group of websites inferring the suitable matching condition by user input.
 Uses `url-infer-match', see its documentation for matching rules.
 
@@ -288,26 +290,25 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                           (values list &optional))
                 add-modes-to-auto-mode-rules))
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (let* ((rule (or (find test (auto-mode-rules *browser*) :key #'test :test #'equal)
-                   (make-instance 'auto-mode-rule :test test)))
-         (include  (rememberable-of (mapcar #'maybe-mode-name include)))
-         (exclude  (rememberable-of (mapcar #'maybe-mode-name exclude))))
-    (setf (exact-p rule) exact-p
-          (included rule) (union include
-                                 (when append-p
-                                   (set-difference (included rule) exclude)))
-          (excluded rule) (union exclude
-                                 (when append-p
-                                   (set-difference (excluded rule) include)))
-          (auto-mode-rules *browser*) (delete-duplicates
-                                       (append (when (or (included rule) (excluded rule))
-                                                 (list rule))
-                                               (auto-mode-rules *browser*))
-                                       :key #'test :test #'equal))
-    (if (or (included rule) (excluded rule))
-        (store-auto-mode-rules)
-        (echo "Only default modes are enabled in this buffer, there's nothing to save."))
-    (auto-mode-rules *browser*)))
+  (with-data-access rules (auto-mode-rules-path (current-buffer))
+    (let* ((rule (or (find test rules
+                           :key #'test :test #'equal)
+                     (make-instance 'auto-mode-rule :test test)))
+           (include  (rememberable-of (mapcar #'maybe-mode-name include)))
+           (exclude  (rememberable-of (mapcar #'maybe-mode-name exclude))))
+      (setf (exact-p rule) exact-p
+            (included rule) (union include
+                                   (when append-p
+                                     (set-difference (included rule) exclude)))
+            (excluded rule) (union exclude
+                                   (when append-p
+                                     (set-difference (excluded rule) include)))
+            rules (delete-duplicates
+                   (append (when (or (included rule) (excluded rule))
+                             (list rule))
+                           rules)
+                   :key #'test :test #'equal)))
+    rules))
 
 (defmethod serialize-object ((rule auto-mode-rule) stream)
   (flet ((write-if-present (slot)
@@ -341,8 +342,8 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
       (log:error "During auto-mode rules deserialization: ~a" c)
       nil)))
 
-(defun store-auto-mode-rules ()
-  (with-data-file (file (auto-mode-rules-data-path *browser*)
+(defmethod store ((profile data-profile) (path auto-mode-rules-data-path))
+  (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
@@ -374,27 +375,23 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
 ;; You can write additional URLs in the bracketed conditions, to reuse the rule for other URL
 ;; Example: (match-host \"reddit.com\" \"old.reddit.com\" \"www6.reddit.com\")
 " file)
-      (write-string "(" file)
-      (dolist (rule (slot-value nyxt:*browser* 'nyxt:auto-mode-rules))
-        (write-char #\newline file)
-        (serialize-object rule file))
-      (format file "~%)~%"))
-    (echo "Saved ~a auto-mode rules to ~s."
-          (length (slot-value *browser* 'auto-mode-rules))
-          (expand-path (auto-mode-rules-data-path *browser*)))))
+    (write-string "(" file)
+    (dolist (rule (get-data path))
+      (write-char #\newline file)
+      (serialize-object rule file))
+    (format file "~%)~%")
+    (echo "Saved ~a auto-mode rules to ~s." (length (get-data path)) (expand-path path)))))
 
-(defun restore-auto-mode-rules ()
+(defmethod restore ((profile data-profile) (path auto-mode-rules-data-path))
   (handler-case
-      (let ((data (with-data-file (file (auto-mode-rules-data-path *browser*)
+      (let ((data (with-data-file (file path
                                         :direction :input
                                         :if-does-not-exist nil)
                     (when file
                       (let ((*package* (find-package :nyxt/auto-mode)))
                         (deserialize-auto-mode-rules file))))))
         (when data
-          (echo "Loading ~a auto-mode rules from ~s."
-                (length data) (expand-path (auto-mode-rules-data-path *browser*)))
-          (setf (slot-value *browser* 'auto-mode-rules) data)))
+          (echo "Loading ~a auto-mode rules from ~s." (length data) (expand-path path))
+          (setf (get-data path) data)))
     (error (c)
-      (echo-warning "Failed to load auto-mode-rules from ~s: ~a"
-                    (expand-path (auto-mode-rules-data-path *browser*)) c))))
+      (echo-warning "Failed to load auto-mode-rules from ~s: ~a" (expand-path path) c))))

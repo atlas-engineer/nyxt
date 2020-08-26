@@ -416,10 +416,10 @@ Otherwise go forward to the only child."
                      (history mode)
                      :test #'equals)
 
-    (history-add url :title (title (buffer mode))))
+    (with-current-buffer (buffer mode)
+      (history-add url :title (title (buffer mode)))))
 
-  (match (session-store-function *browser*)
-    ((guard f f) (funcall-safely f)))
+  (store (data-profile (buffer mode)) (session-path (buffer mode)))
   url)
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)

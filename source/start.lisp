@@ -133,10 +133,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
 
 (define-command quit-after-clearing-session ()
   "Clear session then quit Nyxt."
-  (setf
-   (session-store-function *browser*) nil
-   (session-restore-function *browser*) nil)
-  (uiop:delete-file-if-exists (expand-path (session-path *browser*)))
+  (uiop:delete-file-if-exists (expand-path (session-path (current-buffer))))
   (quit))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
@@ -250,18 +247,18 @@ To change the default buffer, e.g. set it to a given URL:
   (make-startup-function
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
   (lambda (&optional urls)
-    (let ((window (window-make *browser*)))
+    (let ((window (window-make *browser*))
+          (buffer (current-buffer)))
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
       ;; TODO: If (session-restore-prompt *browser*) is :always-ask, the session
       ;; will be overwritten because if-confirm is asynchronous.
       ;; Implement synchronous minibuffer to fix this.
-      (when (expand-path (session-path *browser*))
+      (when (expand-path (session-path buffer))
         (flet ((restore-session ()
-                 (when (and (session-restore-function *browser*)
-                            (uiop:file-exists-p (expand-path (session-path *browser*))))
-                   (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
-                   (funcall (session-restore-function *browser*)))))
+                 (when (uiop:file-exists-p (expand-path (session-path buffer)))
+                   (log:info "Restoring session ~s." (expand-path (session-path buffer)))
+                   (restore (data-profile buffer) (session-path buffer)))))
           (match (session-restore-prompt *browser*)
             (:always-ask (if-confirm ("Restore previous session?")
                                      (restore-session)))
@@ -269,9 +266,9 @@ To change the default buffer, e.g. set it to a given URL:
             (:never-restore (log:info "Not restoring session.")))))
       (if urls
           (open-urls urls)
-          (window-set-active-buffer window (funcall-safely buffer-fn)))
-      (when (startup-error-reporter-function *browser*)
-        (funcall-safely (startup-error-reporter-function *browser*))))))
+          (window-set-active-buffer window (funcall-safely buffer-fn))))
+    (when (startup-error-reporter-function *browser*)
+      (funcall-safely (startup-error-reporter-function *browser*)))))
 
 (export-always 'open-external-urls)
 (defun open-external-urls (urls)
@@ -332,7 +329,7 @@ short as possible."
   "Check if a file is a socket."
   (and (uiop:file-exists-p socket-path)
        #+darwin
-       (equal "=" (uiop:run-program (list "stat" "-f" "%T" socket-path) 
+       (equal "=" (uiop:run-program (list "stat" "-f" "%T" socket-path)
                                     :output '(:string :stripped t)))
        #-darwin
        (not (eq :socket (osicat:file-kind socket-path)))))
@@ -484,7 +481,6 @@ Finally,run the `*after-init-hook*'."
     (setf *browser* (make-instance 'user-browser
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
-    (log:info "Using data profile ~s." (name (data-profile *browser*)))
     (when (expand-path *socket-path*)
       (bind-socket-or-quit free-args))
     (ffi-initialize *browser* free-args startup-timestamp)))

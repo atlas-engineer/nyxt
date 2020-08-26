@@ -49,39 +49,36 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 (declaim (ftype (function (quri:uri &key (:title string) (:explicit t)) t) history-add))
 (export-always 'history-add)
 (defun history-add (uri &key title explicit)
-  "Add URL to the global history.
+  "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
-  (unless (url-empty-p uri)
-    (unless (history-data *browser*)
-      (setf (slot-value *browser* 'history-data)
-            (make-hash-table :test #'equal)))
-    (let ((entry (gethash (object-string uri) (history-data *browser*))))
-      (unless entry
-        (setf entry (make-instance 'history-entry :url uri)))
-      (if explicit
-          (incf (explicit-visits entry))
-          (incf (implicit-visits entry)))
-      (setf (last-access entry) (local-time:now))
-      ;; Always update the title since it may have changed since last visit.
-      (setf (title entry) title)
-      (setf (gethash (object-string uri) (history-data *browser*)) entry)
-      ;; Use accessor to ensure store function is called.
-      (setf (history-data *browser*) (history-data *browser*)))))
+  (with-data-access history (history-path (current-buffer))
+    (unless (url-empty-p uri)
+      (unless history
+        (setf history (make-hash-table :test #'equal)))
+      (let ((entry (gethash (object-string uri) history)))
+        (unless entry
+          (setf entry (make-instance 'history-entry :url uri)))
+        (if explicit
+            (incf (explicit-visits entry))
+            (incf (implicit-visits entry)))
+        (setf (last-access entry) (local-time:now))
+        ;; Always update the title since it may have changed since last visit.
+        (setf (title entry) title)
+        (setf (gethash (object-string uri) history) entry)))))
 
 (define-command delete-history-entry ()
   "Delete queried history entries."
-  (with-result (entries (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Delete entries"
-                          :suggestion-function (history-suggestion-filter)
-                          :history (minibuffer-set-url-history *browser*)
-                          :multi-selection-p t)))
-    (dolist (entry entries)
-      (remhash (object-string (url entry)) (history-data *browser*)))
-    ;; Use accessor to ensure store function is called.
-    (setf (history-data *browser*) (history-data *browser*))))
+  (with-data-access history (history-path (current-buffer))
+    (with-result (entries (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Delete entries"
+                            :suggestion-function (history-suggestion-filter)
+                            :history (minibuffer-set-url-history *browser*)
+                            :multi-selection-p t)))
+      (dolist (entry entries)
+        (remhash (object-string (url entry)) history)))))
 
 
 
@@ -105,12 +102,13 @@ lot."
 This can be useful to, say, prefix the history with the current URL.  At the
 moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
-  (let ((history (when (history-data *browser*)
-                   (sort (alex:hash-table-values
-                          (history-data *browser*))
-                         (lambda (x y)
-                           (> (score-history-entry x)
-                              (score-history-entry y))))))
+  (let* ((path (history-path (current-buffer)))
+         (history (when (get-data path)
+                       (sort (alex:hash-table-values
+                              (get-data path))
+                             (lambda (x y)
+                               (> (score-history-entry x)
+                                  (score-history-entry y))))))
         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
       (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
@@ -122,11 +120,11 @@ it would not be very useful."
 This data can be used to restore the session later, e.g. when starting a new
 instance of Nyxt."
   (list +version+
-        (history-data *browser*)))
+        (get-data (history-path (current-buffer)))))
 
-(defun store-sexp-history ()            ; TODO: Factor with `store-sexp-session'.
-  "Store the global history to the browser `history-path'."
-  (with-data-file (file (history-path *browser*)
+(defmethod store ((profile data-profile) (path history-data-path))
+  "Store the global/buffer-local history to the PATH."
+  (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
@@ -134,7 +132,7 @@ instance of Nyxt."
     (let ((*package* (find-package :nyxt))
           (*print-length* nil))
       ;; We need to make sure current package is :nyxt so that
-      ;; symbols a printed with consistent namespaces.
+      ;; symbols are printed with consistent namespaces.
       (format file
               "~s"
               (with-input-from-string (in (with-output-to-string (out)
@@ -143,15 +141,15 @@ instance of Nyxt."
                                              out)))
                 (read in))))))
 
-(defun restore-sexp-history ()
-  "Restore the global history from the browser `history-path'."
+(defmethod restore ((profile data-profile) (path history-data-path))
+  "Restore the global/buffer-local history from the PATH."
   (handler-case
-      (let ((data (with-data-file (file (history-path *browser*)
+      (let ((data (with-data-file (file path
                                         :direction :input
                                         :if-does-not-exist nil)
                     (when file
                       ;; We need to make sure current package is :nyxt so that
-                      ;; symbols a printed with consistent namespaces.
+                      ;; symbols are printed with consistent namespaces.
                       (let ((*package* (find-package :nyxt)))
                         (s-serialization:deserialize-sexp file))))))
         (match data
@@ -163,8 +161,9 @@ instance of Nyxt."
                        version +version+))
            (echo "Loading global history of ~a URLs from ~s."
                  (hash-table-count history)
-                 (expand-path (history-path *browser*)))
-           (setf (slot-value *browser* 'history-data) history))
+                 (expand-path path))
+           (setf (get-data path) history))
           (_ (error "Expected (list version history) structure."))))
     (error (c)
-      (echo-warning "Failed to restore history from ~a: ~a" (expand-path (history-path *browser*)) c))))
+      (echo-warning "Failed to restore history from ~a: ~a"
+                    (expand-path path) c))))

@@ -9,39 +9,6 @@
 
 (defvar *gpg-program* "gpg")
 
-(define-class data-profile ()
-  ((name ""
-         :documentation "The name of the profile to refer it with."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
-(export-always '+default-data-profile+)
-(defvar +default-data-profile+ (make-instance 'data-profile :name "default")
-  "With the default profile all data is persisted to the standard locations.")
-
-(export-always '+private-data-profile+)
-(defvar +private-data-profile+ (make-instance 'data-profile :name "private")
-  "With the private profile no data should be persisted to disk.")
-
-(defun package-data-profiles ()
-  "Return the list of data profiles a (DATA-PROFILE NAME DOCSTRING) tuples."
-  (sort (mapcar (lambda (profile)
-                  (list (symbol-value profile)
-                        (name (symbol-value profile))
-                        (documentation profile 'variable)))
-                (delete-if (lambda (sym)
-                             (not (ignore-errors
-                                   (mopu:subclassp (class-of (symbol-value sym))
-                                                   'data-profile))))
-                           (package-variables)))
-        #'string< :key #'second))
-
-(export-always 'find-data-profile)
-(defun find-data-profile (name)
-  "Return profile matching NAME.
-Return NIL on no match."
-  (first (find name (package-data-profiles) :test #'string= :key #'second)))
 
 (define-class data-path ()
   ((dirname ""
@@ -84,6 +51,82 @@ This can be used to set the path from command line.  See
   ((ref :initform "auto-mode-rules"))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
+(define-class standard-output-data-path (data-path)
+  ((ref :initform "standard-output"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+(define-class error-output-data-path (data-path)
+  ((ref :initform "error-output"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+
+(export-always 'xdg-download-dir)
+(defun xdg-download-dir ()
+  (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")
+                                              :output '(:string :stripped t)))))
+    (when (or (null dir) (string= dir (uiop:getenv "HOME")))
+      (setf dir (uiop:getenv "XDG_DOWNLOAD_DIR")))
+    (unless dir
+      (setf dir (str:concat (uiop:getenv "HOME") "/Downloads/")))
+    (unless (str:ends-with? "/" dir)
+      (setf dir (str:concat dir "/")))
+    dir))
+
+(define-class data-profile ()
+  ((name ""
+         :documentation "The name of the profile to refer it with."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+
+(define-class default-data-profile (data-profile)
+  ((name :initform "default"))
+  (:export-class-name-p t)
+  (:documentation "With the default profile all data is persisted to the standard locations."))
+
+(define-class private-data-profile (data-profile)
+  ((name :initform "private")
+   (user-data-cache (make-hash-table :test #'equal)
+                    :type hash-table
+                    :documentation "Buffer-local `user-data-cache' to isolate the data of a private buffer."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "With the private profile no data should be persisted to disk.
+No data should be shared with other buffers either."))
+
+(export-always '*global-data-profile*)
+(defvar *global-data-profile* (make-instance 'default-data-profile)
+  "The profile to use in the absence of buffers and on browser-less variables.")
+
+(export-always 'current-data-profile)
+(defun current-data-profile ()
+  "If `%buffer' is non-nil, return its data-profile.
+Return `*global-data-profile*' otherwise."
+  ;; TODO: %BUFFER is not defined yet. Move %BUFFER there?
+  (let ((buffer (current-buffer)))
+    (or (and buffer (data-profile buffer))
+        *global-data-profile*)))
+
+(defun package-data-profiles ()
+  "Return the list of data profiles as a (DATA-PROFILE-SYM NAME DOCSTRING) tuples."
+  (sort (mapcar (lambda (profile)
+                  (list profile
+                        (getf (mopu:slot-properties profile 'name)
+                              :initform)
+                        (documentation profile 'type)))
+                (delete-if (lambda (sym)
+                             (not (ignore-errors
+                                   (and (not (eq sym 'data-profile))
+                                        (mopu:subclassp sym 'data-profile)))))
+                           (package-classes)))
+        #'string< :key #'second))
+
+(export-always 'find-data-profile)
+(defun find-data-profile (name)
+  "Return profile matching NAME.
+Return NIL on no match."
+  (first (find name (package-data-profiles) :test #'string= :key #'second)))
 
 (declaim (ftype (function (string) (or string null)) find-ref-path))
 (defun find-ref-path (ref)
@@ -108,7 +151,7 @@ place of PATH `basename'.
 - When PATH has no basename, return ROOT.  This is useful to refer to
   directories.
 - If basename has a slash, return basename.
-- Otherwise expand to 'ROOT/basename.lisp' or 'ROOT/basname' if the basename
+- Otherwise expand to 'ROOT/basename.lisp' or 'ROOT/basename' if the basename
   already contains a period."
   (let ((name (match (find-ref-path (ref path))
                 (nil (namestring (basename path)))
@@ -131,20 +174,16 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
-(export-always 'xdg-download-dir)
-(defun xdg-download-dir ()
-  (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")
-                                              :output '(:string :stripped t)))))
-    (when (or (null dir) (string= dir (uiop:getenv "HOME")))
-      (setf dir (uiop:getenv "XDG_DOWNLOAD_DIR")))
-    (unless dir
-      (setf dir (str:concat (uiop:getenv "HOME") "/Downloads/")))
-    (unless (str:ends-with? "/" dir)
-      (setf dir (str:concat dir "/")))
-    dir))
+(defmethod expand-data-path ((profile private-data-profile) (path cookies-data-path))
+  "We shouldn't store cookies for `private-data-profile'."
+  nil)
 
-(defmethod expand-data-path ((profile (eql +private-data-profile+)) (path data-path))
-  "Don't persist anything in private mode."
+(defmethod expand-data-path ((profile private-data-profile) (path standard-output-data-path))
+  "We shouldn't store `*standard-output*' for `private-data-profile'."
+  nil)
+
+(defmethod expand-data-path ((profile private-data-profile) (path error-output-data-path))
+  "We shouldn't store `*error-output*' for `private-data-profile'."
   nil)
 
 (export-always 'ensure-parent-exists)
@@ -154,6 +193,88 @@ function result as a boolean in conditions."
   "Create parent directories of PATH if they don't exist and return PATH."
   (ensure-directories-exist (directory-namestring path))
   path)
+
+(export-always 'store)
+(defgeneric store (profile path)
+  (:method ((profile data-profile) (path data-path))
+    (error "No store method defined for ~a and ~a."
+           (serapeum:class-name-of path)
+           (serapeum:class-name-of profile)))
+  (:documentation "The generic way to store data to the given path type.
+Define a method for your `data-path' type to make it storable."))
+
+(export-always 'restore)
+(defgeneric restore (profile path)
+  (:method ((profile data-profile) (path data-path))
+    (error "No restore method defined for ~a and ~a."
+           (serapeum:class-name-of path)
+           (serapeum:class-name-of profile)))
+  (:documentation "The generic way to restore data from the given path type.
+Define a method for your `data-path' type to make it restorable."))
+
+(defmethod store ((profile private-data-profile) (path data-path))
+  nil)
+
+(defmethod restore ((profile private-data-profile) (path data-path))
+  nil)
+
+(export-always 'expand-path)
+(declaim (ftype (function ((or null data-path)) (or string null)) expand-path))
+(defun expand-path (data-path)
+  "Return the expanded path of DATA-PATH or nil if there is none.
+`expand-data-path' is dispatched against `data-path' and `current-data-profile'
+`data-profile' if there are buffers, `*global-data-profile*' otherwise.
+This function can be used on browser-less globals like `*init-file-path*'."
+  (when data-path
+    (the (values (or string null) &optional)
+         (match (expand-data-path (current-data-profile) data-path)
+           ("" nil)
+           (m (uiop:native-namestring m))))))
+
+;; TODO: create subclasses for history, session, bookmark, auto-mode data to ensure typing?
+(define-class user-data ()
+  ((data nil
+         :documentation "The meaningful data to store. Examples: history data, session, bookmarks.")
+   (lock (bt:make-recursive-lock)
+         :type bt:lock
+         :documentation "The lock to guard from race conditions on the access to this data."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "The class to mediate the data keeping."))
+
+(export-always 'get-user-data)
+(defgeneric get-user-data (profile path)
+  (:documentation "Access the browsing-related data depending on the `data-profile'."))
+
+(defmethod get-user-data ((profile private-data-profile) (path data-path))
+  "Look up the buffer-local data in case of `private-data-profile'."
+  (sera:and-let* ((expanded-path (expand-path path)))
+    (alex:ensure-gethash expanded-path (user-data-cache profile)
+                         (make-instance 'user-data))))
+
+(export-always 'get-data)
+;; TODO: Better name? Isn't it too wide?
+(defmethod get-data ((path data-path))
+  (data (get-user-data (current-data-profile) path)))
+
+(defmethod (setf get-data) (value (path data-path))
+  (setf (data (get-user-data (current-data-profile) path)) value))
+
+(export-always 'with-data-access)
+(defmacro with-data-access (data-var data-path &body body)
+  "Lock the data for the BODY to avoid race conditions.
+Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it."
+  (alex:with-gensyms (lock path-name)
+    `(let* ((,path-name ,data-path)
+            (,lock (lock (get-user-data (current-data-profile) ,path-name))))
+       (bt:with-recursive-lock-held (,lock)
+         (restore (current-data-profile) ,path-name)
+         (let ((,data-var (get-data ,path-name)))
+           (unwind-protect
+                (progn ,@body)
+             (setf (get-data ,path-name) ,data-var)
+             (store (current-data-profile) ,path-name)))))))
 
 (defvar *gpg-default-recipient* nil)
 
@@ -301,3 +422,16 @@ Parent directories are created if necessary."
             `(ensure-parent-exists ,filespec))
          (with-open-file (,stream ,filespec ,@options)
            ,@body))))
+
+(export-always 'with-data-file)
+(defmacro with-data-file ((stream data-path &rest options) &body body)
+  "Evaluate BODY with STREAM bound to DATA-PATH.
+DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
+If DATA-PATH expands to NIL or the empty string, do nothing.
+OPTIONS are as for `open'.
+Parent directories are created if necessary."
+  (alex:with-gensyms (path)
+    `(let ((,path (expand-path ,data-path)))
+       (when ,path
+         (with-maybe-gpg-file (,stream ,path ,@options)
+           ,@body)))))

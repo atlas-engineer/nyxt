@@ -46,11 +46,10 @@ Without handler, return ARG.  This is an acceptable `combination' for
 You must understand the risks before enabling this: a privliged user with access
 to your system can then take control of the browser and execute arbitrary code
 under your user profile.")
-   (data-profile (or (find-data-profile (getf *options* :data-profile))
-                     +default-data-profile+)
-                 :type data-profile
-                 :documentation "Profile to use for all persisted files.
-See the `data-path' class and the `expand-path' function.")
+;; TODO: is it always user's data? Better name maybe?
+   (user-data-cache (make-hash-table :test #'equal)
+                    :type hash-table
+                    :documentation "Table that maps the expanded `data-path's to the `user-data' (possibly) stored there.")
    (socket-thread nil                   ; TODO: Unexport?
                   :type t
                   :documentation "Thread that listens on socket.
@@ -132,93 +131,21 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 The engine with the \"default\" shortcut (or the first engine if there is no
 \"default\") is used when the query is not a valid URL, or the first keyword is
 not recognized.")
-   (key-stack '()
-              :export nil
-              :documentation "A stack that keeps track of the key chords a user has pressed.")
-   (downloads '()
-              :export nil
-              :documentation "List of downloads.")
    (download-watcher nil
                      :type t
                      :export nil
                      :documentation "List of downloads.")
-   (download-path :accessor download-path
-                  :type data-path
-                  :initform (make-instance 'download-data-path
-                                           :dirname (xdg-download-dir))
-                  :documentation "Path of directory where downloads will be
-stored.  Nil means use system default.")
+   (key-stack '()
+              :documentation "A stack that keeps track of the key chords a user has pressed.")
    (startup-timestamp (local-time:now)
                       :export nil
                       :documentation "`local-time:timestamp' of when Nyxt was started.")
    (init-time 0.0
               :export nil
               :documentation "Init time in seconds.")
-   (history-data nil
-                 :accessor nil
-                 :type t
-                 :export nil
-                 :documentation "The history data kept in memory.")
-   (history-path (make-instance 'history-data-path :basename "history")
-                 :type data-path
-                 :documentation "
-The path where the system will create/save the global history.")
-   (history-store-function :initarg :history-store-function
-                           :accessor history-store-function
-                           :type (or function null)
-                           :initform #'store-sexp-history
-                           :documentation "
-The function which stores the global history into `history-path'.")
-   (history-restore-function #'restore-sexp-history
-                             :type (or function null)
-                             :documentation "
-The function which restores the global history from `history-path'.")
-   (bookmarks-data nil
-                   :accessor nil
-                   :type t
-                   :export nil
-                   :documentation "The bookmarks kept in memory.")
-   (bookmarks-path (make-instance 'bookmarks-data-path :basename "bookmarks")
-                   :type data-path
-                   :documentation "
-The path where the system will create/save the bookmarks.")
-   (bookmarks-store-function #'store-sexp-bookmarks
-                             :type (or function null)
-                             :documentation "
-The function which stores the bookmarks into `bookmarks-path'.")
-   (bookmarks-restore-function #'restore-sexp-bookmarks
-                               :type (or function null)
-                               :documentation "
-The function which restores the bookmarks from `bookmarks-path'.")
-   (session-path (make-instance 'session-data-path
-                                :basename "default"
-                                :dirname (uiop:xdg-data-home +data-root+ "sessions"))
-                 :type data-path
-                 :documentation "
-The path where the system will create/save the session.")
-   (session-store-function #'store-sexp-session
-                           :type (or function null)
-                           :documentation "The function which stores the session
-into `session-path'.")
-   (session-restore-function #'restore-sexp-session
-                             :type (or function null)
-                             :documentation "The function which restores the session
-from `session-path'.")
    (session-restore-prompt :always-ask
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
-   (auto-mode-rules '()
-                    :documentation "The list of auto-mode rules kept in memory.")
-   (auto-mode-rules-data-path (make-instance 'auto-mode-rules-data-path
-                                             :basename "auto-mode-rules")
-                              :type data-path
-                              :documentation "The path where the auto-mode rules are saved.")
-   (standard-output-path (make-instance 'data-path :basename "standard-out.txt")
-                         :type data-path
-                         :documentation "Path where `*standard-output*' can be written to.")
-   (error-output-path (make-instance 'data-path :basename "standard-error.txt")
-                      :type data-path
-                      :documentation "Path where `*error-output*' can be written to.")
    ;; Hooks follow:
    (before-exit-hook (hooks:make-hook-void)
                      :type hooks:hook-void
@@ -279,6 +206,11 @@ editor executable."))
 
 (define-user-class browser)
 
+(defmethod get-user-data ((profile default-data-profile) (path data-path))
+  (sera:and-let* ((expanded-path (expand-path path)))
+    (alex:ensure-gethash expanded-path (user-data-cache *browser*)
+                         (make-instance 'user-data))))
+
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
   "Get the window containing a buffer."
@@ -303,37 +235,6 @@ editor executable."))
   (when (null browser)
     (error "There is no current *browser*. Is Nyxt started?")))
 
-(defmethod history-data ((browser browser))
-  "Return the `history-data' slot from BROWSER.
-If empty, the history data is initialized with `history-restore-function'."
-  (when (and (null (slot-value browser 'history-data))
-             (history-restore-function browser))
-    (funcall-safely (history-restore-function browser)))
-  (slot-value browser 'history-data))
-
-(defmethod (setf history-data) (value (browser browser))
-  "Set `history-data' to VALUE.
-Persist the `history-data' slot from BROWSER to `history-path' with
-`history-store-function'."
-  (setf (slot-value browser 'history-data) value)
-  (match (history-store-function browser)
-    ((guard f f) (funcall-safely f))))
-
-(defmethod bookmarks-data ((browser browser))
-  "Return the `bookmarks-data' slot from BROWSER.
-If empty, the bookmarks data is initialized with `bookmarks-restore-function'."
-  (when (and (null (slot-value browser 'bookmarks-data))
-             (bookmarks-restore-function browser))
-    (funcall-safely (bookmarks-restore-function browser)))
-  (slot-value browser 'bookmarks-data))
-
-(defmethod (setf bookmarks-data) (value (browser browser))
-  "Set `bookmarks-data' to VALUE.
-Persist the `bookmarks-data' slot from BROWSER to `bookmarks-path' with
-`bookmarks-store-function'."
-  (setf (slot-value browser 'bookmarks-data) value)
-  (match (bookmarks-store-function browser)
-    ((guard f f) (funcall-safely f))))
 
 (defun download-watch ()
   "Update the download-list buffer.
@@ -364,8 +265,8 @@ This function is meant to be run in the background."
                 download))
 (export-always 'download)
 (defun download (url &key
-                     cookies
-                     (proxy-address :auto))
+                       cookies
+                       (proxy-address :auto))
   "Download URL.
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
@@ -373,7 +274,8 @@ current buffer."
   (when (eq proxy-address :auto)
     (setf proxy-address (proxy-address (current-buffer)
                                        :downloads-only t)))
-  (let ((download-dir (expand-path (download-path *browser*))))
+  (let* ((path (download-path (current-buffer)))
+         (download-dir (expand-path path)))
     (declare (type (or quri:uri null) proxy-address))
     (when download-dir
       (let* ((download nil))
@@ -383,7 +285,7 @@ current buffer."
                                  :directory download-dir
                                  :cookies cookies
                                  :proxy proxy-address))
-                 (push download (downloads *browser*))
+                 (push download (get-data path))
                  download))
           (if *keep-alive*
               (unsafe-download)
@@ -689,17 +591,20 @@ sometimes yields the wrong reasult."
 
 (defmethod write-output-to-log ((browser browser))
   "Set the *standard-output* and *error-output* to write to a log file."
-  (values
-   (setf *standard-output*
-         (open (expand-path (standard-output-path browser))
-               :direction :output
-               :if-does-not-exist :create
-               :if-exists :append))
-   (setf *error-output*
-         (open (expand-path (error-output-path browser))
-               :direction :output
-               :if-does-not-exist :create
-               :if-exists :append))))
+  (let ((buffer (current-buffer)))
+    (values
+     (sera:and-let* ((path (expand-path (standard-output-path buffer))))
+       (setf *standard-output*
+             (open path
+                   :direction :output
+                   :if-does-not-exist :create
+                   :if-exists :append)))
+     (sera:and-let* ((path (expand-path (error-output-path buffer))))
+       (setf *error-output*
+             (open path
+                   :direction :output
+                   :if-does-not-exist :create
+                   :if-exists :append))))))
 
 (defmacro define-ffi-method (name arguments)
   `(progn
