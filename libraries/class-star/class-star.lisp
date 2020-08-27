@@ -91,17 +91,33 @@ subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
 \(0))'.
 
 Note that in a slot definition, '() is infered to be a list while NIL is infered
-to be a boolean."
+to be a boolean.
+
+Non-basic form types are not infered (returns nil)."
   (multiple-value-bind (found? value)
       (initform definition)
     (when found?
-      (let* ((type (type-of value)))
-        (flet ((derive-type (general-type)
-                 (when (subtypep type general-type)
-                   general-type)))
-          (or (some #'derive-type '(string boolean list array hash-table integer
-                                    complex number))
-              type))))))
+      (cond
+        ((and (consp value)
+              (eq (first value) 'quote)
+              (symbolp (second value)))
+         (if (eq (type-of (second value)) 'null)
+             'list                      ; The empty list.
+             'symbol))
+        ((and (consp value)
+              (eq (first value) 'function))
+         'function)
+        ((and (consp value)
+              (not (eq (first value) 'quote)))
+         ;; Non-basic form.
+         nil)
+        (t (let* ((type (type-of value)))
+             (flet ((derive-type (general-type)
+                      (when (subtypep type general-type)
+                        general-type)))
+               (or (some #'derive-type '(string boolean list array hash-table integer
+                                         complex number))
+                   type))))))))
 
 (defun type-zero-initform-inference (definition)
   "Infer basic type zero values.
