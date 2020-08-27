@@ -17,25 +17,21 @@ Example:
 \(define-configuration buffer
   ((default-modes (append '(vi-normal-mode) %slot-default))))"
   ((previous-keymap-scheme-name nil
-    :accessor previous-keymap-scheme-name
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 vi-normal-mode.")
    (keymap-scheme
-    :initform
     (define-scheme "vi"
       scheme:vi-normal
       (list
         "i" 'vi-insert-mode
         "button1" 'vi-button1)))
    (destructor
-    :initform
     (lambda (mode)
       (setf (keymap-scheme-name (buffer mode))
             (previous-keymap-scheme-name mode))
       (setf (forward-input-events-p (buffer mode)) t)))
    (constructor
-    :initform
     (lambda (mode)
       (with-accessors ((buffer buffer)) mode
         (let ((vi-insert (find-submode buffer 'vi-insert-mode)))
@@ -56,12 +52,10 @@ See `vi-normal-mode'."
   ;; We could inherit from vi-normal-mode to save the declaration of this slot
   ;; but then (find-submode ... 'vi-normal-mode) would match vi-insert-mode.
   ((previous-keymap-scheme-name nil
-    :accessor previous-keymap-scheme-name
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 vi-normal-mode.")
    (keymap-scheme
-    :initform
     (define-scheme "vi"
       scheme:vi-insert
       (list
@@ -72,12 +66,10 @@ vi-normal-mode.")
        "escape" 'vi-normal-mode
        "button1" 'vi-button1)))
    (destructor
-    :initform
     (lambda (mode)
       (setf (keymap-scheme-name (buffer mode))
             (previous-keymap-scheme-name mode))))
    (constructor
-    :initform
     (lambda (mode)
       (with-accessors ((buffer buffer)) mode
         (let ((vi-normal (find-submode buffer 'vi-normal-mode)))
