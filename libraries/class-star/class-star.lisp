@@ -84,6 +84,24 @@ An error is raised if the type is unsupported."
     ((subtypep type 'number) 0.0)
     (t (error "Unknown type"))))
 
+(defun basic-type-inference (definition)
+  "Return general type of VALUE.
+This is like `type-of' but returns less specialized types for some common
+subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
+\(0))'.
+
+Warning: '() is considered a boolean, not a list."
+  (multiple-value-bind (found? value)
+      (initform definition)
+    (when found?
+      (let* ((type (type-of value)))
+        (flet ((derive-type (general-type)
+                 (when (subtypep type general-type)
+                   general-type)))
+          (or (some #'derive-type '(string boolean list array hash-table integer
+                                    complex number))
+              type))))))
+
 (defun type-zero-initform-inference (definition)
   "Infer basic type zero values.
 See `basic-type-zero-values'.
@@ -122,28 +140,38 @@ Fall back to nil if initform is missing for unsupported types."
         nil)))
 
 (defvar *initform-inference* 'type-zero-initform-inference)
+(defvar *type-inference* 'basic-type-inference)
 
-(defun process-slot-initform (definition &optional initform-inference) ; See `hu.dwim.defclass-star:process-slot-definition'.
+(defun process-slot-initform (definition &key ; See `hu.dwim.defclass-star:process-slot-definition'.
+                                           initform-inference
+                                           type-inference)
   (unless (consp definition)
     (setf definition (list definition)))
   (if (initform definition)
-      definition
-      (let ((type (getf (rest definition) :type)))
-        (setf definition (append definition
-                                 (list :initform (if (and type initform-inference)
-                                                     (funcall initform-inference definition)
-                                                     nil)))))))
+      (if (definition-type definition)
+          definition
+          (if type-inference
+              (setf definition (append definition
+                                       (list :type (funcall type-inference definition))))
+              definition))
+      (if initform-inference
+          (setf definition (append definition
+                                   (list :initform (funcall initform-inference definition))))
+          definition)))
 
 (defmacro define-class (name supers &body (slots . options))
   "Define class like `defclass*' but with extensions.
 
-The default initforms can be automatically inferred by the f unction specified
-in the :initform-inference option, which defaults to `*initform-inference*'.
+The default initforms can be automatically inferred by the function specified
+in the `:initform-inference' option, which defaults to `*initform-inference*'.
 The initform can still be specified manually with `:initform' or as second
 argument, right after the slot name.
 
+The same applies to the types with the `:type-inference' option, the
+`*type-inference*' default and the `:type' argument respectively.
+
 This class definition macro supports cycle in the superclasses,
-e.g.  (define-class foo (foo) ()) works."
+e.g. (define-class foo (foo) ()) works."
   (if (superclasses-have-cycle? name supers)
       (let ((temp-name (gensym (string name))))
         ;; TODO: Don't export the class again.
@@ -151,13 +179,21 @@ e.g.  (define-class foo (foo) ()) works."
                   ,(mapcar #'process-slot-initform slots)
                   ,@options)
                 (setf (find-class ',name) (find-class ',temp-name))))
-      (let* ((option-type (assoc :initform-inference options))
-             (initform-inference (or (when option-type
+      (let* ((initform-option (assoc :initform-inference options))
+             (initform-inference (or (when initform-option
                                        (setf options (delete :initform-inference options :key #'car))
-                                       (eval (second option-type)))
-                                     *initform-inference*)))
+                                       (eval (second initform-option)))
+                                     *initform-inference*))
+             (type-option (assoc :type-inference options))
+             (type-inference (or (when type-option
+                                   (setf options (delete :type-inference options :key #'car))
+                                   (eval (second type-option)))
+                                 *type-inference*)))
         `(hu.dwim.defclass-star:defclass* ,name ,supers
            ,(mapcar (lambda (definition)
-                      (process-slot-initform definition initform-inference))
+                      (process-slot-initform
+                       definition
+                       :initform-inference initform-inference
+                       :type-inference type-inference))
                     slots)
            ,@options))))
