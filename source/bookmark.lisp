@@ -160,7 +160,6 @@ This can be useful to let the user select no tag when returning directly."
 (define-mode set-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the tag of a bookmark."
   ((keymap-scheme
-    :initform
     (define-scheme "set-tag"
       scheme:cua
       (list "tab" 'insert-tag
@@ -286,7 +285,6 @@ If character before cursor is '+' or '-' complete against tag."
 (define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the bookmark and their tags."
   ((keymap-scheme
-    :initform
     (define-scheme "minibuffer-tag"
       scheme:cua
       (list
