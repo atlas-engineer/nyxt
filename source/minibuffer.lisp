@@ -3,167 +3,116 @@
 
 (in-package :nyxt)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'minibuffer)
-  (export
-   '(default-modes
-     suggestion-function
-     setup-function
-     cleanup-function
-     changed-callback
-     must-match-p
-     input-prompt
-     input-buffer
-     input-cursor
-     invisible-input-p
-     history
-     multi-selection-p
-     hide-suggestion-count-p
-     reset-suggestion-state
-     max-lines
-     minibuffer-style
-     user-style
-     override-map)))
-
-(defclass minibuffer (buffer)
-  ((default-modes :initarg :default-modes
-                  :initform '(minibuffer-mode))
-   (suggestion-function :initarg :suggestion-function
-                        :accessor suggestion-function
-                        :initform nil
+(define-class minibuffer (buffer)
+  ((default-modes '(minibuffer-mode))
+   (suggestion-function nil
                         :type (or function null)
-                        :documentation "Take the input
-string and returns a list of suggestion strings.
+                        :documentation "
+Take the input string and returns a list of suggestion strings.
 Example: `buffer-suggestion-filter'.")
-   (callback :initform nil
-             :documentation "Function to call over the selected suggestion."
-             :initarg :callback)
-   (callback-buffer :initarg :callback-buffer
-                    :accessor callback-buffer
-                    :initform (when *browser* (current-buffer))
+   (callback nil
+             :export nil
+             :documentation "Function to call over the selected suggestion.")
+   (callback-buffer (when *browser* (current-buffer))
+                    :type (or buffer null)
+                    :export nil
                     :documentation "The active buffer when the minibuffer was
 brought up.
 This can be useful to know which was the original buffer in the `callback' in
 case the buffer was changed.")
-   (setup-function :initarg :setup-function :accessor setup-function
-                   :initform #'setup-default
+   (setup-function #'setup-default
                    :type (or function null)
                    :documentation "Fills the `content' on when the minibuffer is created.
 Takes no argument.  Called only once.")
-   (cleanup-function :initarg :cleanup-function
-                     :accessor cleanup-function
-                     :initform nil
+   (cleanup-function nil
                      :type (or function null)
                      :documentation "Run after a suggestion has been selected.
 This should not rely on the minibuffer's content.")
-   (changed-callback :initarg :changed-callback
-                     :accessor changed-callback
-                     :initform nil
+   (changed-callback nil
                      :type (or function null)
                      :documentation "Called whenever a change happens.")
-   (must-match-p :initarg :must-match-p
-                 :accessor must-match-p
-                 :initform t
-                 :type boolean
+   (must-match-p t
                  :documentation "If nil, allow input matching no suggestions.")
-   (input-prompt :initarg :input-prompt
-                 :accessor input-prompt
-                 :initform "Input"
-                 :type string
+   (input-prompt :initform "Input"
                  :documentation "Text to prompt to the user, before `input-buffer'.")
-   (input-buffer :initarg :input-buffer
-                 :initform (make-instance 'text-buffer:text-buffer)
+   (input-buffer (make-instance 'text-buffer:text-buffer)
+                 :accessor nil
                  :documentation "Buffer used to capture keyboard input.")
-   (input-cursor :accessor input-cursor
-                 :initarg :input-cursor
-                 :initform (make-instance 'text-buffer:cursor)
+   (input-cursor (make-instance 'text-buffer:cursor)
                  :documentation "Cursor used in conjunction with the input-buffer.")
-   (invisible-input-p :initarg :invisible-input-p
-                      :accessor invisible-input-p
-                      :type boolean
-                      :initform nil
+   (invisible-input-p nil
                       :documentation "If non-nil, input is replaced by placeholder character.
 This is useful to conceal passwords.")
-   (history :initarg :history
-            :accessor history
-            :initform (minibuffer-generic-history *browser*)
+   (history (minibuffer-generic-history *browser*)
             :type (or containers:ring-buffer-reverse null)
             :documentation "History of inputs for the minibuffer.
 If nil, no history is used.")
-   (multi-selection-p :initarg :multi-selection-p :accessor multi-selection-p
-                      :initform nil
-                      :type boolean
+   (multi-selection-p nil
                       :documentation "If non-nil, allow for selecting multiple suggestions.")
-   (suggestions :accessor suggestions :initform nil)
-   (marked-suggestions :accessor marked-suggestions :initform nil)
-   (hide-suggestion-count-p :accessor hide-suggestion-count-p
-                            :initarg :hide-suggestion-count-p
-                            :initform nil
-                            :type boolean
+   (suggestions '()
+                :export nil)
+   (marked-suggestions '()
+                       :export nil)
+   (hide-suggestion-count-p nil
                             :documentation "Show the number of chosen suggestions
 inside brackets. It can be useful to disable, for instance for a yes/no question.")
-   (suggestion-head :accessor suggestion-head
-                    :initform 0
-                    :type integer)
-   (suggestion-cursor :accessor suggestion-cursor
-                      :initform 0
-                      :type integer)
-   (content :initform "" :type string
+   (suggestion-head 0
+                    :export nil)
+   (suggestion-cursor 0
+                      :export nil)
+   (content ""
+            :accessor nil
+            :export nil
             :documentation "The HTML content of the minibuffer.")
-   (max-lines :initarg :max-lines
-              :accessor max-lines
-              :type integer
-              :initform 10
+   (max-lines 10
               :documentation "Max number of suggestion lines to show.  You will
 want edit this to match the changes done to `minibuffer-style'.")
-   (minibuffer-style
-    :accessor minibuffer-style
-    :initform (cl-css:css
-               '((* :font-family "monospace,monospace"
-                    :font-size "14px"
-                    :line-height "18px")
-                 (body :border-top "4px solid dimgray"
-                       :margin "0"
-                       :padding "0 6px")
-                 ("#container" :display "flex"
-                               :flex-flow "column"
-                               :height "100%")
-                 ("#input" :padding "6px 0"
-                           :border-bottom "solid 1px lightgray")
-                 ("#suggestions" :flex-grow "1"
-                                 :overflow-y "auto"
-                                 :overflow-x "auto")
-                 ("#cursor" :background-color "gray"
-                            :color "white")
-                 ("#prompt" :padding-right "4px"
-                            :color "dimgray")
-                 (ul :list-style "none"
-                     :padding "0"
-                     :margin "0")
-                 (li :padding "2px")
-                 (.marked :background-color "darkgray"
-                          :font-weight "bold"
-                          :color "white")
-                 (.selected :background-color "gray"
-                            :color "white")))
-    :documentation "The CSS applied to a minibuffer when it is set-up.")
-   (user-style
-    :accessor user-style
-    :initform ""
-    :documentation "User CSS that is applied after the
+   (minibuffer-style #.(cl-css:css
+                        '((* :font-family "monospace,monospace"
+                             :font-size "14px"
+                             :line-height "18px")
+                          (body :border-top "4px solid dimgray"
+                                :margin "0"
+                                :padding "0 6px")
+                          ("#container" :display "flex"
+                                        :flex-flow "column"
+                                        :height "100%")
+                          ("#input" :padding "6px 0"
+                                    :border-bottom "solid 1px lightgray")
+                          ("#suggestions" :flex-grow "1"
+                                          :overflow-y "auto"
+                                          :overflow-x "auto")
+                          ("#cursor" :background-color "gray"
+                                     :color "white")
+                          ("#prompt" :padding-right "4px"
+                                     :color "dimgray")
+                          (ul :list-style "none"
+                              :padding "0"
+                              :margin "0")
+                          (li :padding "2px")
+                          (.marked :background-color "darkgray"
+                                   :font-weight "bold"
+                                   :color "white")
+                          (.selected :background-color "gray"
+                                     :color "white")))
+                     :documentation "The CSS applied to a minibuffer when it is set-up.")
+   (user-style ""
+               :documentation "User CSS that is applied after the
 minibuffer-style. This can be used to override any styles in the
 minibuffer-style.")
-   (override-map :accessor override-map
-                 :initform (let ((map (make-keymap "overide-map")))
-                             (define-key map
-                               "escape"
-                               ;; We compute symbol at runtime because
-                               ;; nyxt/minibuffer-mode does not exist at
-                               ;; compile-time since it's loaded afterwards.
-                               (find-symbol (string 'cancel-input)
-                                            (find-package 'nyxt/minibuffer-mode))))
+   (override-map (let ((map (make-keymap "overide-map")))
+                   (define-key map
+                     "escape"
+                     ;; We compute symbol at runtime because
+                     ;; nyxt/minibuffer-mode does not exist at
+                     ;; compile-time since it's loaded afterwards.
+                     (find-symbol (string 'cancel-input)
+                                  (find-package 'nyxt/minibuffer-mode))))
                  :type keymap:keymap
                  :documentation "Keymap that takes precedence over all modes' keymaps."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
   (:documentation "The minibuffer is the interface for user interactions.  Each
 prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
 calls, such as invoking `minibuffer-history'.
@@ -243,6 +192,7 @@ A minibuffer query is typically done as follows:
                    `(:multi-selection-p ,multi-selection-p)
                    '())))))
 
+(export-always 'input-buffer)
 (defmethod input-buffer ((minibuffer minibuffer))
   (str:replace-all " " " " (text-buffer::string-representation (slot-value minibuffer 'input-buffer))))
 
@@ -266,6 +216,7 @@ A minibuffer query is typically done as follows:
   (insert minibuffer value)
   (reset-suggestion-state minibuffer))
 
+(export-always 'reset-suggestion-state)
 (defmethod reset-suggestion-state ((minibuffer minibuffer))
   "Update the suggestions and move the suggestion cursor to the
 beginning."
