@@ -12,7 +12,7 @@
      (:a :class "button" :title "Forwards" :href (lisp-url '(nyxt/web-mode:history-forwards)) "→")
      (:a :class "button" :title "Reload" :href (lisp-url '(nyxt:reload-current-buffer)) "↺")
      (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
-     (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt::buffers)) "≡")
+     (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt::list-buffers)) "≡")
      (:span :class (when (eq (slot-value buffer 'load-status) :loading) "loader") "")
      (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
      (:a :class "button"
