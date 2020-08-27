@@ -84,7 +84,7 @@ An error is raised if the type is unsupported."
     ((subtypep type 'number) 0.0)
     (t (error "Unknown type"))))
 
-(defun default-type-zero-function (definition)
+(defun type-zero-initform-inference (definition)
   "Infer basic type zero values.
 See `basic-type-zero-values'.
 Raise a condition at macro-expansion time when initform is missing for unsupported types."
@@ -97,7 +97,7 @@ Raise a condition at macro-expansion time when initform is missing for unsupport
         ;; Default initform when type is missing:
         nil)))
 
-(defun no-unbound-type-zero-function (definition)
+(defun no-unbound-initform-inference (definition)
   "Infer basic type zero values.
 Raise a condition when instantiating if initform is missing for unsupported types."
   (let ((type (definition-type definition)))
@@ -109,7 +109,7 @@ Raise a condition when instantiating if initform is missing for unsupported type
         ;; Default initform when type is missing:
         nil)))
 
-(defun nil-fallback-type-zero-function (definition)
+(defun nil-fallback-initform-inference (definition)
   "Infer basic type zero values.
 Fall back to nil if initform is missing for unsupported types."
   (let ((type (definition-type definition)))
@@ -121,24 +121,24 @@ Fall back to nil if initform is missing for unsupported types."
         ;; Default initform when type is missing:
         nil)))
 
-(defvar *type-zero-function* 'default-type-zero-function)
+(defvar *initform-inference* 'type-zero-initform-inference)
 
-(defun process-slot-initform (definition &optional type-zero-function) ; See `hu.dwim.defclass-star:process-slot-definition'.
+(defun process-slot-initform (definition &optional initform-inference) ; See `hu.dwim.defclass-star:process-slot-definition'.
   (unless (consp definition)
     (setf definition (list definition)))
   (if (initform definition)
       definition
       (let ((type (getf (rest definition) :type)))
         (setf definition (append definition
-                                 (list :initform (if (and type type-zero-function)
-                                                     (funcall type-zero-function definition)
+                                 (list :initform (if (and type initform-inference)
+                                                     (funcall initform-inference definition)
                                                      nil)))))))
 
 (defmacro define-class (name supers &body (slots . options))
   "Define class like `defclass*' but with extensions.
 
 The default initforms can be automatically inferred by the f unction specified
-in the :type-zero-function option, which defaults to `*type-zero-function*'.
+in the :initform-inference option, which defaults to `*initform-inference*'.
 The initform can still be specified manually with `:initform' or as second
 argument, right after the slot name.
 
@@ -151,13 +151,13 @@ e.g.  (define-class foo (foo) ()) works."
                   ,(mapcar #'process-slot-initform slots)
                   ,@options)
                 (setf (find-class ',name) (find-class ',temp-name))))
-      (let* ((option-type (assoc :type-zero-function options))
-             (type-zero-function (or (when option-type
-                                       (setf options (delete :type-zero-function options :key #'car))
+      (let* ((option-type (assoc :initform-inference options))
+             (initform-inference (or (when option-type
+                                       (setf options (delete :initform-inference options :key #'car))
                                        (eval (second option-type)))
-                                     *type-zero-function*)))
+                                     *initform-inference*)))
         `(hu.dwim.defclass-star:defclass* ,name ,supers
            ,(mapcar (lambda (definition)
-                      (process-slot-initform definition type-zero-function))
+                      (process-slot-initform definition initform-inference))
                     slots)
            ,@options))))
