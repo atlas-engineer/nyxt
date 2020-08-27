@@ -25,11 +25,26 @@ On errors, return URL."
 
 (export-always 'valid-url-p)
 (defun valid-url-p (url)
-  (let ((uri (ignore-errors (quri:uri url))))
+  ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+  ;; Last updated 2020-08-26.
+  (let ((valid-schemes
+          '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
+            "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
+            "ftp" "geo" "go" "gopher" "h323" "http" "https" "iax" "icap" "im" "imap" "info"
+            "ipp" "ipps" "iris" "iris.beep" "iris.lwz" "iris.xpc" "iris.xpcs" "jabber"
+            "ldap" "leaptofrogans" "mailto" "mid" "msrp" "msrps" "mtqp" "mupdate" "news"
+            "nfs" "ni" "nih" "nntp" "opaquelocktoken" "pkcs11" "pop" "pres" "reload" "rtsp"
+            "rtsps" "rtspu" "service" "session" "shttp" "sieve" "sip" "sips" "sms" "snmp"
+            "soap.beep" "soap.beeps" "stun" "stuns" "tag" "tel" "telnet" "tftp"
+            "thismessage" "tip" "tn3270" "turn" "turns" "tv" "urn" "vemmi" "vnc" "ws" "wss"
+            "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s"))
+        (uri (ignore-errors (quri:uri url))))
     (and uri
          (quri:uri-p uri)
-         (not (uiop:emptyp (quri:uri-scheme uri)))
-         (or (string= (quri:uri-scheme uri) "file")
+         (find (quri:uri-scheme uri) valid-schemes :test #'string=)
+         ;; `parse-url' tries to guess
+         ;; the URL from the user input by prefixing it with HTTPS:
+         (or (not (find (quri:uri-scheme uri) '("http" "https") :test #'string=))
              (and
               ;; "http://" does not have a host.
               ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.

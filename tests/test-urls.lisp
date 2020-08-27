@@ -45,7 +45,15 @@
   (is (nyxt::parse-url "*spurious*")
       (quri:uri "https://duckduckgo.com/?q=%2Aspurious%2A")
       :test #'quri:uri=
-      "ignore wildcards"))
+      "ignore wildcards")
+  (is (nyxt::parse-url "about:blank")
+      (quri:uri "about:blank")
+      :test #'quri:uri=
+      "about:blank")
+  (is (nyxt::parse-url "foo:blank")
+      (quri:uri "https://duckduckgo.com/?q=foo%3Ablank")
+      :test #'quri:uri=
+      "valid syntax but unknown scheme"))
 
 (subtest "URL processing"
   (is (valid-url-p "http://foo")
