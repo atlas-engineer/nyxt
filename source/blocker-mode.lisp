@@ -3,6 +3,7 @@
 
 (uiop:define-package :nyxt/blocker-mode
   (:use :common-lisp :trivia :nyxt)
+  (:import-from #:class-star #:define-class)
   (:documentation "Block resource queries for listed hosts."))
 (in-package :nyxt/blocker-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -13,26 +14,25 @@
 
 (defclass hostlist-data-path (data-path) ())
 
-(defclass-export hostlist ()
-  ((url :accessor url :initarg :url
-        :initform (quri:uri "")
+(define-class hostlist ()
+  ((url (quri:uri "")
         :type quri:uri
         :documentation "URL where to download the list from.  If empty, no attempt
 will be made at updating it.")
-   (path :initarg :path
-         :accessor path
+   (path (make-instance 'hostlist-data-path)
          :type hostlist-data-path
-         :initform (make-instance 'hostlist-data-path)
          :documentation "Where to find the list locally.
 If nil, the list won't be persisted.
 If path is relative, it will be set to (xdg-data-home path).")
-   (hosts :accessor hosts :initarg :hosts
-          :initform '()
+   (hosts '()
           :documentation "The list of domain name.")
-   (update-interval :accessor update-interval :initarg :update-interval
-                    :initform (* 60 60 24)
+   (update-interval (* 60 60 24)
+                    :type integer
                     :documentation "If URL is provided, update the list after
 this amount of seconds."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
   (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot.
 See `*default-hostlist*' for an example."))
 
