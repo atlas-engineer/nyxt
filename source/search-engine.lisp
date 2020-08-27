@@ -3,25 +3,22 @@
 
 (in-package :nyxt)
 
-(defclass-export search-engine ()
-  ((shortcut :initarg :shortcut
-             :accessor shortcut
+(define-class search-engine ()
+  ((shortcut (error "Slot `shortcut' must be set")
              :type string
-             :initform (error "Slot `shortcut' must be set")
              :documentation "The word used to refer to the search engine, for
 instance from the `set-url' commands.")
-   (search-url :initarg :search-url
-               :accessor search-url
+   (search-url (error "Slot `search-url' must be set")
                :type string
-               :initform (error "Slot `search-url' must be set")
                :documentation "The URL containing a '~a' which will be replaced with the search query.")
-   (fallback-url :initarg :fallback-url
-                 :accessor fallback-url
+   (fallback-url nil
                  :type (or string null)
-                 :initform nil
                  :documentation "The URL to fall back to when given an empty
 query.  This is optional: if nil, use `search-url' instead with ~a expanded to
-the empty string.")))
+the empty string."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (export-always 'make-search-engine)
 (defun make-search-engine (shortcut search-url &optional (fallback-url ""))
