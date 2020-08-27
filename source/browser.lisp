@@ -446,39 +446,27 @@ If none is found, fall back to `scheme:cua'."
 (defun request-resource-open-url-focus (&key url &allow-other-keys)
   (open-urls (list url) :no-focus nil))
 
-(defclass-export request-data ()
-  ((buffer :initarg :buffer
-           :accessor buffer
+(define-class request-data ()
+  ((buffer (current-buffer)
            :type buffer
-           :initform (current-buffer)
            :documentation "Buffer targetted by the request.")
-   (url :initarg :url ; TODO: Rename to URI since it's a quri:uri and not a string?  Or leave URL everywhere, since we almost never use strings.
-        :accessor url
-        :type quri:uri
-        :initform (quri:uri "")
+   (url (quri:uri "")
         :documentation "URL of the request")
-   (event-type :initarg :event-type
-               ;; :accessor event-type ; TODO: No public accessor for now, we first need a use case.
-               :type keyword
-               :initform :other
+   (event-type :other
+               :accessor nil ; TODO: No public accessor for now, we first need a use case.
+               :export nil
                :documentation "The type of request, e.g. `:link-click'.")
-   (new-window-p :initarg :new-window-p
-                 :accessor new-window-p
-                 :type boolean
-                 :initform nil
+   (new-window-p nil
                  :documentation "Whether the request wants to happen in a new window.")
-   (known-type-p :initarg :known-type-p
-                 :accessor known-type-p
-                 :type boolean
-                 :initform nil
+   (known-type-p nil
                  :documentation "Whether the request is for a contented with
 supported MIME-type (e.g. a picture that can be displayed in
 the web view.")
-   (keys :initarg :keys
-         :accessor keys
-         :type list
-         :initform '()
-         :documentation "The key sequence that was pressed to generate the request.")))
+   (keys '()
+         :documentation "The key sequence that was pressed to generate the request."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (export-always 'request-resource)
 (defun request-resource (request-data)
