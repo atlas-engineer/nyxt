@@ -158,7 +158,7 @@
               (:style (style buffer))
               (:h1 "Buffers")
               (:a :class "button"
-                  :href (lisp-url '(nyxt::buffers)) "Update")
+                  :href (lisp-url '(nyxt::list-buffers)) "Update")
               (:br "")
               (:div
                (loop for buffer in (buffer-list)
@@ -166,9 +166,8 @@
                                              (:a :class "button"
                                                  :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "X")
                                              (:a :class "button"
-                                                 :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer)))
-                                                 (quri:render-uri (url buffer)))
-                                             (:span (title buffer))))))))
+                                                 :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
+                                             (:span (title buffer) " - "(quri:render-uri (url buffer)))))))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript buffer insert-content))
