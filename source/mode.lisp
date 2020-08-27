@@ -27,9 +27,9 @@ Example:
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-schemes :initform (keymap:make-scheme
-                              scheme:emacs *my-keymap*
-                              scheme:vi-normal *my-keymap*))))"
+  ((keymap-schemes (keymap:make-scheme
+                    scheme:emacs *my-keymap*
+                    scheme:vi-normal *my-keymap*))))"
   (let* ((docstring (if (stringp (first body))
                         (first body)
                         (progn
@@ -95,41 +95,31 @@ Example:
 
 (define-mode root-mode (t)
   "All modes inherit from `root-mode'."
-  ((buffer :accessor buffer
-           :initarg :buffer
-           :initform nil
+  ((buffer nil
            :type (or buffer null))
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
-   (constructor :accessor constructor
-                :initarg :constructor
+   (constructor nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :type (or function null)
-                :initform nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :documentation
                 "A lambda function which initializes the mode upon activation.
 It takes the mode as argument.")
-   (destructor :accessor destructor
-               :initarg :destructor
+   (destructor nil ; TODO: Better name?
                :type (or function null)
-               :initform nil ; TODO: Better name?
                :documentation
                "A lambda function which tears down the mode upon deactivation.
 It takes the mode as argument.")
-   (enable-hook :accessor enable-hook :initarg :enable-hook
-                :initform (make-hook-mode)
+   (enable-hook (make-hook-mode)
                 :type hook-mode
                 :documentation "This hook is run when enabling the mode.
 It takes the mode as argument
 It is run before the destructor.")
-   (disable-hook :accessor disable-hook :initarg :disable-hook
-                 :initform (make-hook-mode)
+   (disable-hook (make-hook-mode)
                  :type hook-mode
                  :documentation "This hook is run when disabling the mode.
 It takes the mode as argument.
 It is run before the destructor.")
-   (keymap-scheme :accessor keymap-scheme
-                  :initarg :keymap-scheme
-                  :type keymap:scheme
-                  :initform (make-hash-table :size 0))))
+   (keymap-scheme (make-hash-table :size 0)
+                  :type keymap:scheme)))
 
 (defmethod object-string ((mode root-mode))
   (symbol-name (class-name (class-of mode))))
