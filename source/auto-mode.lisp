@@ -218,19 +218,16 @@ The rules are:
 (define-mode auto-mode ()
   "Remember the modes setup for given domain/host/URL and store it in an editable form.
 These modes will then be activated on every visit to this domain/host/URL."
-  ((last-active-modes-url :accessor last-active-modes-url
+  ((last-active-modes-url nil
                           :type (or quri:uri null)
-                          :initform nil
                           :documentation "The last URL that the active modes were saved for.
 We need to store this to not overwrite the `last-active-modes' for a given URL,
 if `auto-mode-handler' will fire more than once.")
-   (last-active-modes :accessor last-active-modes
-                      :type list
-                      :initform '()
+   (last-active-modes '()
                       :documentation "The list of modes that were enabled
 on the last URL not covered by `auto-mode'.")
-   (destructor :initform #'clean-up-auto-mode)
-   (constructor :initform #'initialize-auto-mode)))
+   (destructor #'clean-up-auto-mode)
+   (constructor #'initialize-auto-mode)))
 
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,
