@@ -3,8 +3,10 @@
 
 (in-package :nyxt)
 
-(defclass-export qt-browser (browser)
-  ((application :accessor application)))
+(define-class qt-browser (browser)
+  ((application :accessor application))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
@@ -25,17 +27,27 @@
 (defmethod ffi-kill-browser ((browser qt-browser))
   (qt:application-quit (application browser)))
 
-(defclass-export qt-window (window)
-  ((qt-object :accessor qt-object)
-   (box-layout :accessor box-layout)
-   (minibuffer-view :accessor minibuffer-view)))
+(define-class qt-window (window)
+  ((qt-object)
+   (box-layout)
+   (minibuffer-view))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export qt-buffer (buffer)
-  ((qt-object :accessor qt-object)))
+(define-class qt-buffer (buffer)
+  ((qt-object))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export qt-internal-buffer (internal-buffer qt-buffer) ())
+(define-class qt-internal-buffer (internal-buffer qt-buffer) ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export qt-status-buffer (status-buffer qt-internal-buffer) ())
+(define-class qt-status-buffer (status-buffer qt-internal-buffer) ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod initialize-instance :after ((window qt-window) &key)
   (with-slots (id qt-object box-layout active-buffer minibuffer-view) window
