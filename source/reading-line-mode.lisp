@@ -18,7 +18,6 @@ navigate away from the reading line, you can always invoke the command
 position. To remove the reading line from the screen, disable this
 mode."
   ((keymap-scheme
-    :initform
     (define-scheme "reading-line-mode"
       scheme:cua
       (list
@@ -32,24 +31,21 @@ mode."
       (list
        "K" 'reading-line-cursor-up
        "J" 'reading-line-cursor-down)))
-   (style :accessor style
-          :initform (cl-css:css
-                     '(("#reading-line-cursor"
-                        :position "absolute"
-                        :top "10px"
-                        :left "0"
-                        :width "100%"
-                        :background-color "gray"
-                        :z-index #.(1- (expt 2 31)) ; 32 bit signed integer max
-                        :opacity "15%"
-                        :height "20px")))
+   (style (cl-css:css
+           '(("#reading-line-cursor"
+              :position "absolute"
+              :top "10px"
+              :left "0"
+              :width "100%"
+              :background-color "gray"
+              :z-index #.(1- (expt 2 31)) ; 32 bit signed integer max
+              :opacity "15%"
+              :height "20px")))
           :documentation "The CSS applied to the reading line.")
    (constructor
-    :initform
     (lambda (mode)
       (initialize-display mode)))
    (destructor
-    :initform
     (lambda (mode)
       (destroy-display mode)))))
 
