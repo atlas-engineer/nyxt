@@ -12,12 +12,10 @@
 (define-mode application-mode ()
   "Mode that forwards all keys to the renderer."
   ((destructor
-    :initform
     (lambda (mode)
       (hooks:remove-hook (current-keymaps-hook (buffer mode))
                          'keep-override-map)))
    (constructor
-    :initform
     (lambda (mode)
       (if (current-keymaps-hook (buffer mode))
           (hooks:add-hook (current-keymaps-hook (buffer mode))
