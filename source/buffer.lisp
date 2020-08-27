@@ -331,17 +331,16 @@ BUFFER's modes."
 
 (hooks:define-hook-type buffer (function (buffer)))
 
-(defclass-export buffer-description ()
-  ((url :initarg :url
-        :type (or quri:uri string)
-        :initform (quri:uri "")
+(define-class buffer-description ()
+  ((url (quri:uri "")
+        :accessor nil
         :documentation "URL should be a `quri:uri'.
 We also support the `string' type only for serialization purposes.  The URL is
 automatically turned into a `quri:uri' in the accessor.")
-   (title :accessor title
-          :initarg :title
-          :type string
-          :initform "")))
+   (title ""))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod url ((bd buffer-description))
   "This accessor ensures we always return a `quri:uri'.
