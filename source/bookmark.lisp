@@ -15,46 +15,28 @@
 ;;; - Un-explicitly-set class slots are exported if they have an initform;
 ;;;   removing the initform forces us to put lots of (slot-boundp ...).
 
-(defclass-export bookmark-entry ()
-  ((url :initarg :url
-        :accessor url
-        :type quri:uri
-        :initform (quri:uri ""))
-   (title :initarg :title
-          :accessor title
-          :type string
-          :initform "")
-   (annotation :initarg :annotation
-               :accessor annotation
-               :type string
-               :initform "")
-   (date :initarg :date
-         :accessor date
-         :type local-time:timestamp
-         :initform (local-time:now))
-   (tags :initarg :tags
-         :accessor tags
-         :type list-of-strings
-         :initform nil
-         :documentation "A list of strings.")
-   (shortcut :initarg :shortcut
-             :accessor shortcut
-             :type string
-             :initform ""
+(define-class bookmark-entry ()
+  ((url (quri:uri ""))
+   (title "")
+   (annotation "")
+   (date (local-time:now))
+   (tags '()
+         :type list-of-strings)
+   (shortcut ""
              :documentation "
 This allows the following URL queries from the minibuffer:
 
 - SHORTCUT: Open the associated bookmark.
 - SHORTCUT TERM: Use SEARCH-URL to search TERM.  If SEARCH-URL is empty, fallback on other search engines.")
-   (search-url :initarg :search-url
-               :accessor search-url
-               :type string
-               :initform ""
+   (search-url ""
                :documentation "
 The URL to use when SHORTCUT is the first word in the input.
 The search term is placed at '~a' in the SEARCH-URL if any, or at the end otherwise.
 SEARCH-URL maybe either be a full URL or a path.  If the latter, the path is
-appended to the URL.")))
+appended to the URL."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod object-string ((entry bookmark-entry))
   (object-string (url entry)))
