@@ -147,17 +147,24 @@ Fall back to nil if initform is missing for unsupported types."
                                            type-inference)
   (unless (consp definition)
     (setf definition (list definition)))
-  (if (initform definition)
-      (if (definition-type definition)
-          definition
-          (if type-inference
-              (setf definition (append definition
-                                       (list :type (funcall type-inference definition))))
-              definition))
-      (if initform-inference
-          (setf definition (append definition
-                                   (list :initform (funcall initform-inference definition))))
-          definition)))
+  (cond
+    ((and (initform definition)
+          (or (definition-type definition)
+              (not type-inference)))
+     definition)
+    ((and (initform definition)
+          (not (definition-type definition))
+          type-inference)
+     (append definition
+             (list :type (funcall type-inference definition))))
+    ((and (not (initform definition))
+          initform-inference)
+     (append definition
+             (list :initform (funcall initform-inference definition))))
+    ((and (not (initform definition))
+          (not initform-inference))
+     definition)
+    (t (error "Condition fell through!"))))
 
 (defmacro define-class (name supers &body (slots . options))
   "Define class like `defclass*' but with extensions.
