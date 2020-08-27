@@ -29,13 +29,15 @@ On errors, return URL."
     (and uri
          (quri:uri-p uri)
          (not (uiop:emptyp (quri:uri-scheme uri)))
-         ;; "http://" does not have a host.
-         ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
-         (quri:uri-host uri)
-         ;; E.g. "http://algo" or "http://foo" have the same tld and host, which
-         ;; is probably not a URI query.
-         (not (string= (quri:uri-host uri)
-                       (quri:uri-tld uri))))))
+         (or (string= (quri:uri-scheme uri) "file")
+             (and
+              ;; "http://" does not have a host.
+              ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
+              (quri:uri-host uri)
+              ;; E.g. "http://algo" or "http://foo" have the same tld and host, which
+              ;; is probably not a URI query.
+              (not (string= (quri:uri-host uri)
+                            (quri:uri-tld uri))))))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
 (defun ensure-url (thing)
@@ -116,7 +118,8 @@ Otherwise, build a search query with the default search engine."
                    (str:emptyp new-input))
               (quri:uri (fallback-url engine))
               (quri:uri (generate-search-query new-input (search-url engine)))))
-        (let ((recognized-scheme (ignore-errors (quri:uri-scheme (quri:uri input-url)))))
+        (let ((recognized-scheme (and (valid-url-p input-url)
+                                      (quri:uri-scheme (quri:uri input-url)))))
           (cond
             ((and recognized-scheme
                   (not (string= "file" recognized-scheme)))
