@@ -90,7 +90,8 @@ This is like `type-of' but returns less specialized types for some common
 subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
 \(0))'.
 
-Warning: '() is considered a boolean, not a list."
+Note that in a slot definition, '() is infered to be a list while NIL is infered
+to be a boolean."
   (multiple-value-bind (found? value)
       (initform definition)
     (when found?
