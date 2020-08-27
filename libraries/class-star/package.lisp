@@ -9,7 +9,9 @@
            #:original-class
            #:define-class
            #:name-identity
-           #:*type-zero-function*
-           #:default-type-zero-function
-           #:no-unbound-type-zero-function
-           #:nil-fallback-type-zero-function))
+           #:*initform-inference*
+           #:type-zero-initform-inference
+           #:no-unbound-initform-inference
+           #:nil-fallback-initform-inference
+           #:*type-inference*
+           #:basic-type-inference))
