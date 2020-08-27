@@ -9,7 +9,6 @@
 (define-mode minibuffer-mode ()
   "Mode for the minibuffer."
   ((keymap-scheme
-    :initform
     (define-scheme "minibuffer"
       scheme:cua
       (list
@@ -64,7 +63,6 @@
 (define-mode set-url-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the URL of a buffer."
   ((keymap-scheme
-    :initform
     (define-scheme "set-url"
       scheme:cua
       (list
