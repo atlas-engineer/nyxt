@@ -16,9 +16,9 @@ Example:
 
 \(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default))))"
-  ((previous-keymap-scheme-name
+  ((previous-keymap-scheme-name nil
     :accessor previous-keymap-scheme-name
-    :type keymap:scheme-name
+    :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 this mode.")
    (destructor
