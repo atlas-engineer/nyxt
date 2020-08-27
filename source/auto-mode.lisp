@@ -4,6 +4,7 @@
 (uiop:define-package :nyxt/auto-mode
   (:use :common-lisp :nyxt)
   (:import-from #:serapeum #:export-always)
+  (:import-from #:class-star #:define-class)
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
 
@@ -36,27 +37,21 @@ Be careful with deleting the defaults -- it can be harmful for your browsing.")
 (defun rememberable-of (modes)
   (remove-if #'non-rememberable-mode-p modes))
 
-(defclass-export auto-mode-rule ()
-  ((test :initarg :test
-         :accessor test
-         :type list
-         :initform (error "Slot `test' should be set."))
-   (included :initarg :included
-             :accessor included
+(define-class auto-mode-rule ()
+  ((test (error "Slot `test' should be set.")
+         :type list)
+   (included '()
              :type list-of-symbols
-             :initform '()
              :documentation "The list of mode symbols to enable on rule activation.")
-   (excluded :initarg :excluded
-             :accessor excluded
+   (excluded '()
              :type list-of-symbols
-             :initform '()
              :documentation "The list of mode symbols to disable on rule activation.")
-   (exact-p :initarg :exact-p
-            :accessor exact-p
-            :type boolean
-            :initform nil
+   (exact-p nil
             :documentation "If non-nil, enable the INCLUDED modes exclusively.
-Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes, if nil.")))
+Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes, if nil."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (declaim (ftype (function (quri:uri) (or auto-mode-rule null))
                 matching-auto-mode-rule))
