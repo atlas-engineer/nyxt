@@ -64,10 +64,10 @@ have priorities over the other modes key bindings.")
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-scheme :initform (keymap:make-scheme
-                             scheme:cua *my-keymap*
-                             scheme:emacs *my-keymap*
-                             scheme:vi-normal *my-keymap*))))
+  ((keymap-scheme (keymap:make-scheme
+                   scheme:cua *my-keymap*
+                   scheme:emacs *my-keymap*
+                   scheme:vi-normal *my-keymap*))))
 
 \(define-configuration buffer
   ((default-modes (append '(my-mode) %slot-default))))"))
