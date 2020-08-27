@@ -12,20 +12,19 @@
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
 (export-always '(make-hook-resource make-handler-resource))
 
-(defclass-export proxy ()
-  ((server-address :accessor server-address :initarg :server-address
-                   :initform (quri:uri "socks5://127.0.0.1:9050")
-                   :type quri:uri
+(define-class proxy ()
+  ((server-address (quri:uri "socks5://127.0.0.1:9050")
                    :documentation "The address of the proxy server.
 It's made of three components: protocol, host and port.
 Example: \"http://192.168.1.254:8080\".")
-   (allowlist :accessor allowlist :initarg :allowlist
-              :initform '("localhost" "localhost:8080")
+   (allowlist '("localhost" "localhost:8080")
               :type list-of-strings
               :documentation "A list of URIs not to forward to the proxy.")
-   (proxied-downloads-p :accessor proxied-downloads-p :initarg :proxied-downloads-p
-                        :initform t
+   (proxied-downloads-p t
                         :documentation "Non-nil if downloads should also use the proxy."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."))
 
