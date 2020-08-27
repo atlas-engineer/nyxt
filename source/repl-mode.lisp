@@ -6,7 +6,6 @@
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
   ((keymap-scheme
-    :initform
     (define-scheme "repl"
       scheme:cua
       (list
@@ -33,38 +32,33 @@
        "return" 'return-input)
       scheme:emacs
       (list)))
-   (style :accessor style
-          :initform (cl-css:css
-                     '((* :font-family "monospace,monospace")
-                       (body :margin "0"
-                             :padding "0 6px")
-                       ("#container" :display "flex"
-                                     :flex-flow "column"
-                                     :height "100%")
-                       ("#input" :padding "6px 0"
-                                 :border-top "solid 1px lightgray")
-                       ("#evaluation-history" :flex-grow "1"
-                                       :overflow-y "auto"
-                                       :overflow-x "auto")
-                       ("#cursor" :background-color "gray"
-                                  :color "white")
-                       ("#prompt" :padding-right "4px"
-                                  :color "dimgray")
-                       (ul :list-style "none"
-                           :padding "0"
-                           :margin "0")
-                       (li :padding "2px")))
+   (style (cl-css:css
+           '((* :font-family "monospace,monospace")
+             (body :margin "0"
+                   :padding "0 6px")
+             ("#container" :display "flex"
+                           :flex-flow "column"
+                           :height "100%")
+             ("#input" :padding "6px 0"
+                       :border-top "solid 1px lightgray")
+             ("#evaluation-history" :flex-grow "1"
+                                    :overflow-y "auto"
+                                    :overflow-x "auto")
+             ("#cursor" :background-color "gray"
+                        :color "white")
+             ("#prompt" :padding-right "4px"
+                        :color "dimgray")
+             (ul :list-style "none"
+                 :padding "0"
+                 :margin "0")
+             (li :padding "2px")))
           :documentation "The CSS applied to a REPL when it is set-up.")
-   (input-buffer :accessor input-buffer
-                 :initform (make-instance 'text-buffer:text-buffer)
+   (input-buffer (make-instance 'text-buffer:text-buffer)
                  :documentation "Buffer used to capture keyboard input.")
-   (input-cursor :accessor input-cursor
-                 :initform (make-instance 'text-buffer:cursor)
+   (input-cursor (make-instance 'text-buffer:cursor)
                  :documentation "Cursor used in conjunction with the input-buffer.")
-   (evaluation-history :accessor evaluation-history
-                       :initform (list))
+   (evaluation-history (list))
    (constructor
-    :initform
     (lambda (mode)
       (initialize-display mode)
       (cluffer:attach-cursor (input-cursor mode) (input-buffer mode))
