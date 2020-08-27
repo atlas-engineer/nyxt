@@ -49,7 +49,7 @@ Since the above binds `nyxt/blocker-mode:*blocker-mode-class*' to
   (unless (find-class name nil)
     (error "define-configuration argument ~a is not a known class." name))
   `(progn
-     (defclass-export ,name (,name)
+     (define-class ,name (,name)
        ,(loop with super-class = (closer-mop:ensure-finalized (find-class name))
               for slot in (first slots)
               for known-slot? = (find (first slot) (mopu:slot-names super-class))
@@ -63,7 +63,8 @@ Since the above binds `nyxt/blocker-mode:*blocker-mode-class*' to
                                                     ,(cadr slot))
                                                   ,initform))
               else do
-                (log:warn "Undefined slot ~a in ~a" (first slot) name)))))
+                (log:warn "Undefined slot ~a in ~a" (first slot) name))
+       (:accessor-name-transformer #'class*:name-identity))))
 
 (export-always 'load-system)
 (defun load-system (system)
