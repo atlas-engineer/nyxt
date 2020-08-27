@@ -44,8 +44,8 @@
               (class*:define-class foo-no-accessors ()
                 ((name-no-acc :type string))
                 (:automatic-accessors-p nil))
-              (let ((foo (make-instance 'foo-no-accessors)))
-                (fboundp 'name-no-acc-of)))
+              (make-instance 'foo-no-accessors)
+              (fboundp 'name-no-acc-of))
             nil))
 
 (prove:subtest "Original class"
@@ -55,6 +55,22 @@
   (prove:isnt (class*:original-class 'foo) nil)
   (prove:is (class-name (class*:original-class 'foo)) 'foo)
   (prove:isnt (class*:original-class 'foo) (find-class 'foo)))
+
+(prove:subtest "Initform inference"
+  (class*:define-class foo-initform-infer ()
+    ((name :type string)))
+  (prove:is (name-of (make-instance 'foo-initform-infer))
+            "")
+  (class*:define-class foo-initform-infer-no-unbound ()
+    ((name :type function))
+    (:initform-inference 'class*:no-unbound-initform-inference))
+  (prove:is-error (make-instance 'foo-initform-infer-no-unbound)
+                  'simple-error)
+  (class*:define-class foo-initform-infer-nil-fallback ()
+    ((name :type function))
+    (:initform-inference 'class*:nil-fallback-initform-inference))
+  (prove:is (name-of (make-instance 'foo-initform-infer-nil-fallback))
+            nil))
 
 ;; TODO: These cycle tests work if run at the top-level, but not within prove:subtest.
 
