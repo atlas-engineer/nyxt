@@ -7,12 +7,10 @@
 (in-package :nyxt/noscript-mode)
 
 (define-mode noscript-mode ()
-    "Disable Javascript in current buffer."
-    ((destructor
-      :initform
-      (lambda (mode)
-        (ffi-buffer-enable-javascript-markup (buffer mode) t)))
-     (constructor
-      :initform
-      (lambda (mode)
-        (ffi-buffer-enable-javascript-markup (buffer mode) nil)))))
+  "Disable Javascript in current buffer."
+  ((destructor
+    (lambda (mode)
+      (ffi-buffer-enable-javascript-markup (buffer mode) t)))
+   (constructor
+    (lambda (mode)
+      (ffi-buffer-enable-javascript-markup (buffer mode) nil)))))
