@@ -32,12 +32,10 @@ Example:
 \(define-configuration buffer
   ((default-modes (append '(force-https-mode) %slot-default))))"
   ((destructor
-    :initform
     (lambda (mode)
       (hooks:remove-hook (request-resource-hook (buffer mode))
                          'force-https-handler)))
    (constructor
-    :initform
     (lambda (mode)
       (hooks:add-hook (request-resource-hook (buffer mode))
                       (make-handler-resource #'force-https-handler))))))
