@@ -18,23 +18,18 @@
 
 (define-mode web-mode ()
   "Base mode for interacting with documents."
-  ((history :accessor history
-            :type htree:history-tree
-            :initarg :history
-            :initform (htree:make))
-   (history-blocklist :accessor history-blocklist
-                      :type list-of-strings
-                      :initarg :history-blocklist
+  ((history (htree:make)
+            :type htree:history-tree)
+   (history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
                       ;; history.  How?
-                      :initform '("https://duckduckgo.com/l/")
+                      :type list-of-strings
                       :documentation "URI prefixes to not save in history.
 Example: DuckDuckGo redirections should be ignored or else going backward in
 history after consulting a result reloads the result, not the duckduckgo
 search.")
    (keymap-scheme
-    :initform
     (define-scheme "web"
       scheme:cua
       (list
