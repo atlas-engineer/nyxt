@@ -18,16 +18,12 @@ See the `add-domain-to-certificate-exceptions' command.")
   "Enable ignoring of certificate errors.
 This can apply to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
-  ((certificate-exceptions :initarg :certificate-exceptions
-                           :accessor certificate-exceptions
-                           :type list-of-strings
-                           :initform *default-certificate-exceptions*)
+  ((certificate-exceptions *default-certificate-exceptions*
+                           :type list-of-strings)
    (destructor
-    :initform
     (lambda (mode)
       (setf (certificate-exceptions (buffer mode)) nil)))
    (constructor
-    :initform
     (lambda (mode)
       (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode))))))
 
