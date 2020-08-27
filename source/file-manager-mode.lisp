@@ -112,7 +112,6 @@ videos with =mpv=:
 on the minibuffer. Specialize keybindings on this mode. See the
 command `open-file'."
   ((keymap-scheme
-    :initform
     (define-scheme "file-manager"
       scheme:emacs
       (list
