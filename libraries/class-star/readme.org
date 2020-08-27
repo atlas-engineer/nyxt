@@ -21,6 +21,7 @@ read slots by their name, not by their properties).
   the initform from the zero-value of basic types (e.g. 0 for integers, "" for
   strings) or raise a macro-expansion-time error for unsupported types.
   Other functions with different behaviours are provided, or you can provide your own.
+- Implicit, customizable type inference from the initform.
 - The initform can be specified as usual with =:initform= or directly in second
   position, right after the slot name.
 - Class option to toggle the default slot exportation.
