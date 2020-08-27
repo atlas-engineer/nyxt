@@ -3,21 +3,20 @@
 
 (in-package :nyxt)
 
-(defclass-export data-manager-path (data-path)
-  ((ref :initform "data-manager")))
+(define-class data-manager-path (data-path)
+  ((ref :initform "data-manager"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export gtk-browser (browser)
+
+(define-class gtk-browser (browser)
   (#+darwin
-   (modifiers :accessor modifiers
-              :initform '()
-              :type list
+   (modifiers '()
               :documentation "On macOS some modifiers like Super and Meta are
 seen like regular keys.
 To work around this issue, we store them in this list while they are pressed.
 See `push-modifiers', `pop-modifiers' and `key-event-modifiers'.")
-   (modifier-translator :accessor modifier-translator
-                        :initform #'translate-modifiers
-                        :type function
+   (modifier-translator #'translate-modifiers
                         :documentation "Function that returns a list of
 modifiers understood by `keymap:make-key'.  You can customize this slot if you
 want to change the behaviour of modifiers, for instance swap 'control' and
@@ -35,16 +34,17 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 \(define-configuration browser
   ((modifier-translator #'my-translate-modifiers)))")
-   (web-context :initform nil
+   (web-context nil
+                :export nil
                 :documentation "Single instantiation of our custom web context.")
-   (data-manager-path :initarg :data-manager-path
-                      :accessor data-manager-path
-
+   (data-manager-path (make-instance 'data-manager-path
+                                     :dirname (uiop:xdg-cache-home +data-root+))
                       :type data-path
-                      :initform (make-instance 'data-manager-path
-                                               :dirname (uiop:xdg-cache-home +data-root+))
                       :documentation "Directory in which the WebKitGTK
-data-manager will store the data separately for each buffer.")))
+data-manager will store the data separately for each buffer."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod web-context ((browser gtk-browser))
   (or (slot-value *browser* 'web-context)
@@ -91,30 +91,34 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   (unless *keep-alive*
     (gtk:leave-gtk-main)))
 
-(defclass-export gtk-window (window)
-  ((gtk-object :accessor gtk-object)
-   (box-layout :accessor box-layout)
-   (minibuffer-container :accessor minibuffer-container)
-   (minibuffer-view :accessor minibuffer-view)
-   (status-container :accessor status-container)
-   (message-container :accessor message-container)
-   (message-view :accessor message-view)
-   (key-string-buffer :accessor key-string-buffer)))
+(define-class gtk-window (window)
+  ((gtk-object)
+   (box-layout)
+   (minibuffer-container)
+   (minibuffer-view)
+   (status-container)
+   (message-container)
+   (message-view)
+   (key-string-buffer))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export gtk-buffer (buffer)
-  ((gtk-object :accessor gtk-object)
-   (proxy-uri :accessor proxy-uri
-              :initarg :proxy-uri
-              :type quri:uri
-              :initform (quri:uri ""))
-   (proxy-ignored-hosts :accessor proxy-ignored-hosts
-                        :initarg :proxy-ignored-hosts
-                        :type list
-                        :initform '())))
+(define-class gtk-buffer (buffer)
+  ((gtk-object)
+   (proxy-uri (quri:uri ""))
+   (proxy-ignored-hosts '()))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export gtk-internal-buffer (internal-buffer gtk-buffer) ())
+(define-class gtk-internal-buffer (internal-buffer gtk-buffer) ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export gtk-status-buffer (status-buffer gtk-internal-buffer) ())
+(define-class gtk-status-buffer (status-buffer gtk-internal-buffer) ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
