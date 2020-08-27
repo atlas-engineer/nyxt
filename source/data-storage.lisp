@@ -28,12 +28,12 @@ e.g.  (defclass-export foo (foo) ()) works."
 
 (defvar *gpg-program* "gpg")
 
-(defclass-export data-profile ()
-  ((name :initarg :name
-         :accessor name
-         :type string
-         :initform ""
-         :documentation "The name of the profile to refer it with.")))
+(define-class data-profile ()
+  ((name ""
+         :documentation "The name of the profile to refer it with."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (export-always '+default-data-profile+)
 (defvar +default-data-profile+ (make-instance 'data-profile :name "default")
@@ -62,39 +62,47 @@ e.g.  (defclass-export foo (foo) ()) works."
 Return NIL on no match."
   (first (find name (package-data-profiles) :test #'string= :key #'second)))
 
-(defclass-export data-path ()
-  ((dirname :initarg :dirname
-            :accessor dirname
+(define-class data-path ()
+  ((dirname ""
             :type (or string pathname)
-            :initform ""
             :documentation "The directory of `basename'.")
-   (basename :initarg :basename
-             :accessor basename
+   (basename ""
              :type (or string pathname)
-             :initform ""
              :documentation "The basename of data-path.
 It can be appended with an extension if necessary.
 When omitted, data-path designates a directory.")
-   (ref :initarg :ref
-        :accessor ref
-        :type string
-        :initform ""
+   (ref ""
         :documentation "The reference name of the data-path.
 This can be used to set the path from command line.  See
-`expand-default-path'.")))
+`expand-default-path'."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
-(defclass-export session-data-path (data-path)
-  ((ref :initform "session")))
-(defclass-export cookies-data-path (data-path)
-  ((ref :initform "cookies")))
-(defclass-export bookmarks-data-path (data-path)
-  ((ref :initform "bookmarks")))
-(defclass-export history-data-path (data-path)
-  ((ref :initform "history")))
-(defclass-export download-data-path (data-path) ; TODO: Rename to downloads-data-path?
-  ((ref :initform "download")))
-(defclass-export auto-mode-rules-data-path (data-path)
-  ((ref :initform "auto-mode-rules")))
+(define-class session-data-path (data-path)
+  ((ref :initform "session"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+(define-class cookies-data-path (data-path)
+  ((ref :initform "cookies"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+(define-class bookmarks-data-path (data-path)
+  ((ref :initform "bookmarks"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+(define-class history-data-path (data-path)
+  ((ref :initform "history"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+(define-class download-data-path (data-path) ; TODO: Rename to downloads-data-path?
+  ((ref :initform "download"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+(define-class auto-mode-rules-data-path (data-path)
+  ((ref :initform "auto-mode-rules"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (declaim (ftype (function (string) (or string null)) find-ref-path))
 (defun find-ref-path (ref)
