@@ -41,6 +41,32 @@
       (setf (access-time command) (get-internal-real-time))
       (run command))))
 
+(define-command execute-extended-command ()
+  "Execute a command by name, also supply optional parameters."
+  (flet ((query-arguments (arguments command)
+               (flet ((make-binding (argument)
+                        (let* ((sym (first argument))
+                               (default-value (format nil "~a" (second argument)))
+                               (string (string-downcase (symbol-name sym))))
+                          `(,sym (read-from-minibuffer
+                                  (make-minibuffer
+                                   :input-prompt ,string
+                                   :input-buffer ,default-value))))))
+                 (let ((bindings (mapcar #'make-binding arguments))
+                       (bound-values (mapcar #'first arguments)))
+                   `(with-result* ,bindings
+                      (run ,command ,@bound-values))))))
+    (with-result (command (read-from-minibuffer
+                           (make-minibuffer
+                            :input-prompt "Execute command"
+                            :suggestion-function (command-suggestion-filter
+                                                  (mapcar (alex:compose #'class-name #'class-of)
+                                                          (modes (current-buffer))))
+                            :hide-suggestion-count-p t)))
+      (setf (access-time command) (get-internal-real-time))
+      (let ((optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list 
+                                              (swank::arglist (sym command))))))
+        (eval (query-arguments optional-arguments command))))))
 
 (defun hook-suggestion-filter ()
   (flet ((list-hooks (object)
