@@ -43,132 +43,89 @@ Without handler, return ARG.  This is an acceptable `combination' for
                  result)))
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'browser)
-  (export '(remote-execution-p
-            data-profile
-            socket-thread
-            focus-on-reopened-buffer-p
-            startup-function
-            open-external-link-in-new-window-p
-            search-engines
-            download-path
-            history-path
-            history-store-function
-            history-restore-function
-            bookmarks-data
-            bookmarks-path
-            bookmarks-store-function
-            bookmarks-restore-function
-            session-path
-            session-store-function
-            session-restore-function
-            session-restore-prompt
-            auto-mode-rules
-            auto-mode-rules-data-path
-            standard-output-path
-            error-output-path
-            before-exit-hook
-            window-make-hook
-            buffer-make-hook
-            buffer-before-make-hook
-            minibuffer-make-hook
-            before-download-hook
-            after-download-hook
-            autofills
-            spell-check-language
-            external-editor-program)))
-(defclass-export browser ()
-  ((remote-execution-p :accessor remote-execution-p
-                       :initarg remote-execution-p
+(define-class browser ()
+  ((remote-execution-p nil
                        :type boolean
-                       :initform nil
                        :documentation "When non-nil, execute Lisp code that is sent to the socket.
 You must understand the risks before enabling this: a privliged user with access
 to your system can then take control of the browser and execute arbitrary code
 under your user profile.")
-   (data-profile :accessor data-profile
-                 :initarg :data-profile
+   (data-profile (or (find-data-profile (getf *options* :data-profile))
+                     +default-data-profile+)
                  :type data-profile
-                 :initform (or (find-data-profile (getf *options* :data-profile))
-                               +default-data-profile+)
                  :documentation "Profile to use for all persisted files.
 See the `data-path' class and the `expand-path' function.")
-   (socket-thread :accessor socket-thread
-                  :initform nil
+   (socket-thread nil                   ; TODO: Unexport?
+                  :type t
                   :documentation "Thread that listens on socket.
 See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
-   (password-interface :accessor password-interface
-                       :initform (password:make))
-   (messages-content :accessor messages-content
-                     :initform '()
-                     :type list
+   (password-interface (password:make)
+                       :export nil)
+   (messages-content '()
+                     :export nil
                      :documentation "A list of all echoed messages.
 Most recent messages are first.")
-   (clipboard-ring :accessor clipboard-ring :initform (make-ring))
-   (minibuffer-generic-history :accessor minibuffer-generic-history
-                               :initform (make-ring))
-   (minibuffer-search-history :accessor minibuffer-search-history
-                              :initform (make-ring))
-   (minibuffer-set-url-history :accessor minibuffer-set-url-history :initform (make-ring))
-   (recent-buffers :accessor recent-buffers :initform (make-ring :size 50)
+   (clipboard-ring (make-ring)
+                   :export nil)
+   (minibuffer-generic-history (make-ring))
+   (minibuffer-search-history (make-ring))
+   (minibuffer-set-url-history (make-ring))
+   (recent-buffers (make-ring :size 50)
+                   :export nil
                    :documentation "A ring that keeps track of deleted buffers.")
-   (focus-on-reopened-buffer-p :accessor focus-on-reopened-buffer-p ; TODO: Replace this with minibuffer Helm-style actions.
-                               :initform t
+   (focus-on-reopened-buffer-p t ; TODO: Replace this with minibuffer Helm-style actions.
                                :documentation "When reopening a closed buffer,
 focus on it instead of opening it in the background.
 
 Warning: This setting may be deprecated in a future release, don't rely on it.")
-   (windows :accessor windows
-            :initform (make-hash-table :test #'equal))
-   (total-window-count :initform 0
-                       :type integer
+   (windows (make-hash-table :test #'equal)
+            :export nil)
+   (total-window-count 0
+                       :export nil
                        :documentation "This is used to generate unique window
 identifiers in `get-unique-window-identifier'.  We can't rely on the windows
 count since deleting windows may reseult in duplicate identifiers.")
-   (last-active-window :initform nil
+   (last-active-window nil
                        :type (or window null)
+                       :export nil
                        :documentation "Records the last active window.  This is
 useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
-   (last-active-buffer :accessor last-active-buffer :initform nil)
+   (last-active-buffer nil
+                       :export nil)
    (buffers :initform (make-hash-table :test #'equal)
             :documentation "To manipulate the list of buffers,
 see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
-   (total-buffer-count :initform 0
-                       :type integer
+   (total-buffer-count 0
+                       :export nil
                        :documentation "This is used to generate unique buffer
 identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
 count since deleting windows may reseult in duplicate identifiers.")
-   (startup-function :accessor startup-function
+   (startup-function (make-startup-function)
                      :type (or function null)
-                     :initform (make-startup-function)
                      :documentation "The function run on startup.  It takes a
 list of URLs (strings) as optional argument (the command line positional
 arguments).  It is run after the renderer has been initialized and after the
 `*after-init-hook*' has run.")
-   (startup-error-reporter-function :accessor startup-error-reporter-function
-                                    :initarg :startup-error-reporter-function
+   (startup-error-reporter-function nil
                                     :type (or function null)
-                                    :initform nil
+                                    :export nil
                                     :documentation "When supplied, upon startup,
 if there are errors, they will be reported by this function.")
-   (open-external-link-in-new-window-p :accessor open-external-link-in-new-window-p
-                                       :initform nil
+   (open-external-link-in-new-window-p nil
                                        :documentation "When open links from an external program, or
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
-   (search-engines :accessor search-engines
-                   :initform (list (make-instance 'search-engine
-                                                  :shortcut "default"
-                                                  :search-url "https://duckduckgo.com/?q=~a"
-                                                  :fallback-url "https://duckduckgo.com/")
-                                   (make-instance 'search-engine
-                                                  :shortcut "wiki"
-                                                  :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                                                  :fallback-url "https://en.wikipedia.org/"))
+   (search-engines (list (make-instance 'search-engine
+                                        :shortcut "default"
+                                        :search-url "https://duckduckgo.com/?q=~a"
+                                        :fallback-url "https://duckduckgo.com/")
+                         (make-instance 'search-engine
+                                        :shortcut "wiki"
+                                        :search-url "https://en.wikipedia.org/w/index.php?search=~a"
+                                        :fallback-url "https://en.wikipedia.org/"))
                    :type list-of-search-engines
                    :documentation "A list of the `search-engine' objects.
 You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
@@ -178,11 +135,15 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 The engine with the \"default\" shortcut (or the first engine if there is no
 \"default\") is used when the query is not a valid URL, or the first keyword is
 not recognized.")
-   (key-stack :accessor key-stack :initform '()
+   (key-stack '()
+              :export nil
               :documentation "A stack that keeps track of the key chords a user has pressed.")
-   (downloads :accessor downloads :initform '()
+   (downloads '()
+              :export nil
               :documentation "List of downloads.")
-   (download-watcher :accessor download-watcher :initform nil
+   (download-watcher nil
+                     :type t
+                     :export nil
                      :documentation "List of downloads.")
    (download-path :accessor download-path
                   :type data-path
@@ -190,19 +151,19 @@ not recognized.")
                                            :dirname (xdg-download-dir))
                   :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.")
-   (startup-timestamp :initarg :startup-timestamp :accessor startup-timestamp
-                      :type local-time:timestamp
-                      :initform nil
+   (startup-timestamp (local-time:now)
+                      :export nil
                       :documentation "`local-time:timestamp' of when Nyxt was started.")
-   (init-time :initform 0.0 :type number
+   (init-time 0.0
+              :export nil
               :documentation "Init time in seconds.")
-   (history-data :initform nil
-                 :documentation "
-The history data kept in memory.")
-   (history-path :initarg :history-path
-                 :accessor history-path
+   (history-data nil
+                 :accessor nil
+                 :type t
+                 :export nil
+                 :documentation "The history data kept in memory.")
+   (history-path (make-instance 'history-data-path :basename "history")
                  :type data-path
-                 :initform (make-instance 'history-data-path :basename "history")
                  :documentation "
 The path where the system will create/save the global history.")
    (history-store-function :initarg :history-store-function
@@ -211,136 +172,112 @@ The path where the system will create/save the global history.")
                            :initform #'store-sexp-history
                            :documentation "
 The function which stores the global history into `history-path'.")
-   (history-restore-function :initarg :history-restore-function
-                             :accessor history-restore-function
+   (history-restore-function #'restore-sexp-history
                              :type (or function null)
-                             :initform #'restore-sexp-history
                              :documentation "
 The function which restores the global history from `history-path'.")
    (bookmarks-data :initform nil
-                   :documentation "
-The bookmarks kept in memory.")
-   (bookmarks-path :initarg :bookmarks-path
-                   :accessor bookmarks-path
+                   :accessor nil
+                   :export nil
+                   :documentation "The bookmarks kept in memory.")
+   (bookmarks-path (make-instance 'bookmarks-data-path :basename "bookmarks")
                    :type data-path
-                   :initform (make-instance 'bookmarks-data-path :basename "bookmarks")
                    :documentation "
 The path where the system will create/save the bookmarks.")
-   (bookmarks-store-function :initarg :bookmarks-store-function
-                             :accessor bookmarks-store-function
+   (bookmarks-store-function #'store-sexp-bookmarks
                              :type (or function null)
-                             :initform #'store-sexp-bookmarks
                              :documentation "
 The function which stores the bookmarks into `bookmarks-path'.")
-   (bookmarks-restore-function :initarg :bookmarks-restore-function
-                               :accessor bookmarks-restore-function
+   (bookmarks-restore-function #'restore-sexp-bookmarks
                                :type (or function null)
-                               :initform #'restore-sexp-bookmarks
                                :documentation "
 The function which restores the bookmarks from `bookmarks-path'.")
-   (session-path :initarg :session-path
-                 :accessor session-path
+   (session-path (make-instance 'session-data-path
+                                :basename "default"
+                                :dirname (uiop:xdg-data-home +data-root+ "sessions"))
                  :type data-path
-                 :initform (make-instance 'session-data-path
-                                          :basename "default"
-                                          :dirname (uiop:xdg-data-home +data-root+ "sessions"))
                  :documentation "
 The path where the system will create/save the session.")
-   (session-store-function :accessor session-store-function
+   (session-store-function #'store-sexp-session
                            :type (or function null)
-                           :initform #'store-sexp-session
                            :documentation "The function which stores the session
 into `session-path'.")
-   (session-restore-function :accessor session-restore-function
+   (session-restore-function #'restore-sexp-session
                              :type (or function null)
-                             :initform #'restore-sexp-session
                              :documentation "The function which restores the session
 from `session-path'.")
-   (session-restore-prompt :accessor session-restore-prompt
-                           :initform :always-ask
+   (session-restore-prompt :always-ask
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
-   (auto-mode-rules :accessor auto-mode-rules
-                    :type list
-                    :initform '()
+   (auto-mode-rules '()
                     :documentation "The list of auto-mode rules kept in memory.")
-   (auto-mode-rules-data-path :accessor auto-mode-rules-data-path
+   (auto-mode-rules-data-path (make-instance 'auto-mode-rules-data-path
+                                             :basename "auto-mode-rules")
                               :type data-path
-                              :initform (make-instance 'auto-mode-rules-data-path
-                                                       :basename "auto-mode-rules")
-                 :documentation "The path where the auto-mode rules are saved.")
-   (standard-output-path :accessor standard-output-path
+                              :documentation "The path where the auto-mode rules are saved.")
+   (standard-output-path (make-instance 'data-path :basename "standard-out.txt")
                          :type data-path
-                         :initform (make-instance 'data-path :basename "standard-out.txt")
                          :documentation "Path where `*standard-output*' can be written to.")
-   (error-output-path :accessor error-output-path
+   (error-output-path (make-instance 'data-path :basename "standard-error.txt")
                       :type data-path
-                      :initform (make-instance 'data-path :basename "standard-error.txt")
                       :documentation "Path where `*error-output*' can be written to.")
    ;; Hooks follow:
-   (before-exit-hook :accessor before-exit-hook
-                     :initform (hooks:make-hook-void)
+   (before-exit-hook (hooks:make-hook-void)
                      :type hooks:hook-void
                      :documentation "Hook run before both `*browser*' and the
 renderer get terminated.  The handlers take no argument.")
-   (window-make-hook :accessor window-make-hook
-                     :initform (make-hook-window)
+   (window-make-hook (make-hook-window)
                      :type hook-window
                      :documentation "Hook run after `window-make'.
 The handlers take the window as argument.")
-   (buffer-make-hook :accessor buffer-make-hook
-                     :initform (make-hook-buffer)
+   (buffer-make-hook (make-hook-buffer)
                      :type hook-buffer
                      :documentation "Hook run after `buffer-make' and before `ffi-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
-   (buffer-before-make-hook :accessor buffer-before-make-hook
-                            :initform (make-hook-buffer)
+   (buffer-before-make-hook (make-hook-buffer)
                             :type hook-buffer
                             :documentation "Hook run before `buffer-make'.
 This hook is mostly useful to set the `cookies-path'.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
-   (minibuffer-make-hook :accessor minibuffer-make-hook
-                         :initform (make-hook-minibuffer)
+   (minibuffer-make-hook (make-hook-minibuffer)
                          :type hook-minibuffer
                          :documentation "Hook run after the `minibuffer' class
 is instantiated and before initializing the minibuffer modes.
 The handlers take the minibuffer as argument.")
-   (before-download-hook :accessor before-download-hook
-                         :initform (make-hook-download)
+   (before-download-hook (make-hook-download)
                          :type hook-download
                          :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
-   (after-download-hook :accessor after-download-hook
-                        :initform (make-hook-download)
+   (after-download-hook (make-hook-download)
                         :type hook-download
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")
-   (autofills :accessor autofills
-              :initform (list (make-autofill :key "Name" :fill "My Name")
-                              (make-autofill :name "Hello Printer"
-                                             :key "Function example"
-                                             :fill (lambda () (format nil "hello!"))))
+   (autofills (list (make-autofill :key "Name" :fill "My Name")
+                    (make-autofill :name "Hello Printer"
+                                   :key "Function example"
+                                   :fill (lambda () (format nil "hello!"))))
               :documentation "To autofill run the command `autofill'.
 Use this slot to customize the autofill values available.
 
 The fill can be a string value it or a function.  The latter allows you to
 provide content dynamic to the context.")
 
-   (spell-check-language :accessor spell-check-language
-                         :initform "en_US"
+   (spell-check-language "en_US"
                          :documentation "Spell check language used by Nyxt. For
 a list of more languages available, please view the documentation for
 cl-enchant (broker-list-dicts).")
-   (external-editor-program :accessor external-editor-program
-                  :type (or string null)
-                  :initform nil
-                  :documentation "The external editor to use for
+   (external-editor-program nil
+                            :type (or string null)
+                            :documentation "The external editor to use for
 editing files. It should be specified as a complete string path to the
-editor executable.")))
+editor executable."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
