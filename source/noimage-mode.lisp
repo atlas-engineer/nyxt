@@ -7,12 +7,10 @@
 (in-package :nyxt/noimage-mode)
 
 (define-mode noimage-mode ()
-    "Disable images in current buffer."
-    ((destructor
-      :initform
-      (lambda (mode)
-        (ffi-buffer-auto-load-image (buffer mode) t)))
-     (constructor
-      :initform
-      (lambda (mode)
-        (ffi-buffer-auto-load-image (buffer mode) nil)))))
+  "Disable images in current buffer."
+  ((destructor
+    (lambda (mode)
+      (ffi-buffer-auto-load-image (buffer mode) t)))
+   (constructor
+    (lambda (mode)
+      (ffi-buffer-auto-load-image (buffer mode) nil)))))
