@@ -8,111 +8,57 @@
 (export-always '(make-hook-keymaps-buffer make-handler-keymaps-buffer))
 (hooks:define-hook-type uri->uri (function (quri:uri) quri:uri))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'buffer)
-  (export
-   '(id
-     url
-     url-at-point
-     title
-     load-status
-     modes
-     default-modes
-     enable-mode-hook
-     disable-mode-hook
-     keymap-scheme-name
-     current-keymaps-hook
-     override-map
-     forward-input-events-p
-     pre-request-hook
-     request-resource-scheme
-     request-resource-hook
-     default-new-buffer-url
-     scroll-distance
-     horizontal-scroll-distance
-     current-zoom-ratio
-     zoom-ratio-step
-     zoom-ratio-min
-     zoom-ratio-max
-     zoom-ratio-default
-     page-scroll-ratio
-     cookies-path
-     box-style
-     highlighted-box-style
-     proxy
-     certificate-exceptions
-     buffer-delete-hook
-     default-cookie-policy)))
-(defclass buffer ()
-  ((id :accessor id
-       :initarg :id
-       :type string
-       :initform ""
+(define-class buffer ()
+  ((id ""
        :documentation "Unique identifier for a buffer.
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
-   (url :accessor url :initarg :url :type quri:uri :initform (quri:uri ""))
-   (url-at-point :accessor url-at-point :type quri:uri :initform (quri:uri ""))
-   (title :accessor title :initarg :title :type string :initform "")
-   (load-status ;; :accessor load-status ; TODO: Need to decide if we want progress / errors before exposing to the user.
-                :initarg :load-status
+   (url (quri:uri ""))
+   (url-at-point (quri:uri ""))
+   (title "")
+   (load-status :unloaded
                 :type (or (eql :loading)
                           (eql :finished)
                           (eql :unloaded))
-                :initform :unloaded
+                :accessor nil
+                :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
                 :documentation "The status of the buffer.
 - `:loading' when loading a web resource.
 - `:finished' when done loading a web resource.
 - `:unloaded' for buffers that have not been loaded yet, like
   session-restored buffers, dead buffers or new buffers that haven't started the
   loading process yet..")
-   (last-access :accessor last-access
-                :initform (local-time:now)
-                :type local-time:timestamp
+   (last-access (local-time:now)
+                :export nil
                 :documentation "Timestamp when the buffer was last switched to.")
-   (modes :accessor modes
-          :initform '()
+   (modes :initform '()
           :documentation "The list of mode instances.
 Modes are instantiated after the `default-modes' slot, with `initialize-modes'
 and not in the initform so that the instantiation form can access the
 initialized buffer.")
-   (default-modes :accessor default-modes
-                  :initarg :default-modes
+   (default-modes '(certificate-exception-mode web-mode base-mode)
                   :type list-of-symbols
-                  :initform '(certificate-exception-mode web-mode base-mode)
                   :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' slot.")
-   (enable-mode-hook :accessor enable-mode-hook
-                     :initarg :enable-mode-hook
-                     :initform (make-hook-mode)
+   (enable-mode-hook (make-hook-mode)
                      :type hook-mode
                      :documentation "Hook run on every mode activation,
 after the mode-specific hook.")
-   (disable-mode-hook :accessor disable-mode-hook
-                      :initarg :disable-mode-hook
-                      :initform (make-hook-mode)
+   (disable-mode-hook (make-hook-mode)
                       :type hook-mode
                       :documentation "Hook run on every mode deactivation,
 after the mode-specific hook.")
-   (keymap-scheme-name
-    :accessor keymap-scheme-name
-    :initarg :keymap-scheme-name
-    :initform scheme:cua
-    :type keymap:scheme-name
-    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+   (keymap-scheme-name scheme:cua
+                       :documentation "The keymap scheme that will be used for all modes in the current buffer.")
    (current-keymaps-hook
-    :accessor current-keymaps-hook
-    :initarg :current-keymaps-hook
+    (make-hook-keymaps-buffer
+     :combination #'hooks:combine-composed-hook)
     :type hook-keymaps-buffer
-    :initform (make-hook-keymaps-buffer
-               :combination #'hooks:combine-composed-hook)
     :documentation "Hook run as a return value of `current-keymaps'.")
-   (override-map :accessor override-map
-                 :initarg :override-map
-                 :initform (let ((map (make-keymap "overide-map")))
-                             (define-key map
-                               "C-space" 'execute-command))
+   (override-map (let ((map (make-keymap "overide-map")))
+                   (define-key map
+                     "C-space" 'execute-command))
                  :documentation "Keymap that overrides all other bindings.
 No libraries should ever touch the override-map, this is left for the user to
 customize to their needs.
@@ -125,43 +71,36 @@ Example:
                                \"M-x\" 'execute-command
                                \"C-q\" 'quit)
                    map))))")
-   (forward-input-events-p :accessor forward-input-events-p
-                           :initarg :forward-input-events-p
-                           :type boolean
-                           :initform t
+   (forward-input-events-p t
                            :documentation "When non-nil, keyboard events are
 forwarded to the renderer when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
-   (last-event :accessor last-event
-               :initform nil
+   (last-event nil
+               :type t
+               :export nil
                ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
                :documentation "The last event that was received for the current buffer.")
-   (pre-request-hook :accessor pre-request-hook
-                     :initarg :pre-request-hook
-                     :initform (make-hook-resource
+   (pre-request-hook (make-hook-resource
                                 :combination #'combine-composed-hook-until-nil)
                      :type hook-resource
                      :documentation "Hook run before the `request-resource-hook'.
 One example of it's application is `auto-mode' that changes mode setup. Any
 action on modes that can possibly change the handlers in `request-resource-hook'
 should find its place there.")
-   (request-resource-scheme :accessor request-resource-scheme
-                            :initarg :request-resource-scheme
-                            :initform (define-scheme "request-resource"
-                                        scheme:cua
-                                        (list
-                                         "C-button1" 'request-resource-open-url-focus
-                                         "button2" 'request-resource-open-url-focus
-                                         "C-shift-button1" 'request-resource-open-url))
+   (request-resource-scheme (define-scheme "request-resource"
+                              scheme:cua
+                              (list
+                               "C-button1" 'request-resource-open-url-focus
+                               "button2" 'request-resource-open-url-focus
+                               "C-shift-button1" 'request-resource-open-url))
                             :documentation "This keymap can be looked up when
 `request-resource-hook' handlers run.
 The functions are expected to take key arguments like `:url'.")
-   (request-resource-hook :accessor request-resource-hook
-                          :initarg :request-resource-hook
-                          :initform (make-hook-resource
-                                     :combination #'combine-composed-hook-until-nil
-                                     :handlers (list #'request-resource))
+   (request-resource-hook (make-hook-resource
+                           :combination #'combine-composed-hook-until-nil
+                           :handlers (list #'request-resource))
+                          :type hook-resource
                           :documentation "Hook run on every resource load.
 The handlers are composed, passing a `request-data'
 until one of them returns nil or all handlers apply successfully.
@@ -184,77 +123,71 @@ Example:
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default))))")
-   (default-new-buffer-url :accessor default-new-buffer-url
-                           :initform (quri:uri "https://nyxt.atlas.engineer/start")
+   (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
-   (scroll-distance :accessor scroll-distance :initform 50 :type number
+   (scroll-distance 50
                     :documentation "The distance scroll-down or scroll-up will scroll.")
-   (horizontal-scroll-distance :accessor horizontal-scroll-distance :initform 50 :type number
+   (horizontal-scroll-distance 50
                                :documentation "Horizontal scroll distance. The
 distance scroll-left or scroll-right will scroll.")
-   (current-zoom-ratio :accessor current-zoom-ratio :initform 1.0 :type number
+   (current-zoom-ratio 1.0
                        :documentation "The current zoom relative to the default zoom.")
-   (zoom-ratio-step :accessor zoom-ratio-step :initform 0.2 :type number
+   (zoom-ratio-step 0.2
                     :documentation "The step size for zooming in and out.")
-   (zoom-ratio-min :accessor zoom-ratio-min :initform 0.2 :type number
+   (zoom-ratio-min 0.2
                    :documentation "The minimum zoom ratio relative to the default.")
-   (zoom-ratio-max :accessor zoom-ratio-max :initform 5.0 :type number
+   (zoom-ratio-max 5.0
                    :documentation "The maximum zoom ratio relative to the default.")
-   (zoom-ratio-default :accessor zoom-ratio-default :initform 1.0 :type number
+   (zoom-ratio-default 1.0
                        :documentation "The default zoom ratio.")
-   (page-scroll-ratio :accessor page-scroll-ratio
-                      :type number
-                      :initform 0.90
+   (page-scroll-ratio 0.90
                       :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
-   (cookies-path :accessor cookies-path
-                 :initform (make-instance 'cookies-data-path :basename "cookies.txt")
+   (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
                  :documentation "The path where cookies are stored.  Not all
 renderers might support this.")
-   (box-style :accessor box-style
-              :initform (cl-css:css
-                         '((".nyxt-hint"
-                            :background "linear-gradient(#fcff9e, #efcc00)"
-                            :color "black"
-                            :border "1px black solid"
-                            :padding "1px 3px 1px 3px"
-                            :border-radius "2px"
-                            :z-index #.(1- (expt 2 31)))))
+   (box-style (cl-css:css
+               '((".nyxt-hint"
+                  :background "linear-gradient(#fcff9e, #efcc00)"
+                  :color "black"
+                  :border "1px black solid"
+                  :padding "1px 3px 1px 3px"
+                  :border-radius "2px"
+                  :z-index #.(1- (expt 2 31)))))
               :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style :accessor highlighted-box-style
-                          :initform (cl-css:css
-                                     '((".nyxt-hint.nyxt-highlight-hint"
-                                        :font-weight "500"
-                                        :background "#fcff9e")))
-
+   (highlighted-box-style (cl-css:css
+                           '((".nyxt-hint.nyxt-highlight-hint"
+                              :font-weight "500"
+                              :background "#fcff9e")))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
-   (proxy :initform nil
+   (proxy nil
+          :accessor nil
           :type (or proxy null)
           :documentation "Proxy for buffer.")
-   (certificate-exceptions :accessor certificate-exceptions
-                          :initform '()
-                          :type list-of-strings
-                          :documentation  "A list of hostnames for which certificate errors shall be ignored.")
-   (buffer-load-hook ;; :accessor buffer-load-hook ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
-                 :initform (make-hook-uri->uri
-                            :combination #'hooks:combine-composed-hook)
-                 :type hook-uri->uri
-                 :documentation "Hook run in `buffer-load' after `parse-url' was processed.
+   (certificate-exceptions '()
+                           :type list-of-strings
+                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
+   (buffer-load-hook (make-hook-uri->uri
+                      :combination #'hooks:combine-composed-hook)
+                     :type hook-uri->uri
+                     :accessor nil
+                     :export nil ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
+                     :documentation "Hook run in `buffer-load' after `parse-url' was processed.
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
-   (buffer-delete-hook :accessor buffer-delete-hook
-                       :initform (make-hook-buffer)
+   (buffer-delete-hook (make-hook-buffer)
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
-   (default-cookie-policy :accessor default-cookie-policy
-                          :initarg :default-cookie-policy
+   (default-cookie-policy :no-third-party
                           :type cookie-policy
-                          :initform :no-third-party
                           :documentation "Cookie policy of new buffers.
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
-`:no-third-party' (accept cookies for current website only).")))
+`:no-third-party' (accept cookies for current website only)."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defclass internal-buffer (buffer)
   ((default-modes :accessor default-modes
