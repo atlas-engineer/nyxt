@@ -122,7 +122,7 @@ Return nil if hostlist cannot be parsed."
   "Default hostlist for `blocker-mode'.")
 
 (define-mode blocker-mode ()
-    "Enable blocking of listed hosts.
+  "Enable blocking of listed hosts.
 To customize the list of blocked hosts, set the `hostlists' slot.
 See the `hostlist' class documentation.
 
@@ -136,26 +136,23 @@ Example:
 
 \(define-mode my-blocker-mode (nyxt/blocker-mode:blocker-mode)
   \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
-  ((nyxt/blocker-mode:hostlists :initform (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
+  ((nyxt/blocker-mode:hostlists (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
 
 \(define-configuration buffer
   ((default-modes (append '(my-blocker-mode) %slot-default))))"
-    ((hostlists :accessor hostlists :initarg :hostlists
-                :initform (list *default-hostlist*))
-     (destructor
-      :initform
-      (lambda (mode)
-        (hooks:remove-hook (request-resource-hook (buffer mode))
-                           'request-resource-block)))
-     (constructor
-      :initform
-      (lambda (mode)
-        (if (request-resource-hook (buffer mode))
-            (hooks:add-hook (request-resource-hook (buffer mode))
-                            (make-handler-resource #'request-resource-block))
-            (make-hook-resource
-             :combination #'combine-composed-hook-until-nil
-             :handlers (list #'request-resource-block)))))))
+  ((hostlists (list *default-hostlist*))
+   (destructor
+    (lambda (mode)
+      (hooks:remove-hook (request-resource-hook (buffer mode))
+                         'request-resource-block)))
+   (constructor
+    (lambda (mode)
+      (if (request-resource-hook (buffer mode))
+          (hooks:add-hook (request-resource-hook (buffer mode))
+                          (make-handler-resource #'request-resource-block))
+          (make-hook-resource
+           :combination #'combine-composed-hook-until-nil
+           :handlers (list #'request-resource-block)))))))
 
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.
