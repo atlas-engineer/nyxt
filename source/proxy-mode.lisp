@@ -30,16 +30,12 @@ Example to use Tor as a proxy both for browsing and downloading:
 
 \(define-configuration buffer
   ((default-modes (append '(proxy-mode) %slot-default))))"
-  ((proxy :initarg :proxy
-          :accessor proxy
-          :type proxy
-          :initform *default-proxy*)
+  ((proxy *default-proxy*
+          :type proxy)
    (destructor
-    :initform
     (lambda (mode)
       (setf (proxy (buffer mode)) nil)))
    (constructor
-    :initform
     (lambda (mode)
       (setf (proxy (buffer mode)) (proxy mode))
       (echo "Proxy set to ~a (allowlisting ~a)."
