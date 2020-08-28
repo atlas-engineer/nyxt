@@ -3,9 +3,6 @@
 
 (in-package :nyxt)
 
-;; Create necessary hook types. We must forward-declare the class
-;; since the hook take the type of the class that hosts them.
-(defclass minibuffer () ())
 (hooks:define-hook-type minibuffer (function (minibuffer)))
 (hooks:define-hook-type download (function (download-manager:download)))
 
