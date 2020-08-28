@@ -35,8 +35,7 @@
                            (make-minibuffer
                             :input-prompt "Execute command"
                             :suggestion-function (command-suggestion-filter
-                                                  (mapcar (alex:compose #'class-name #'class-of)
-                                                          (modes (current-buffer))))
+                                                  (mapcar #'mode-name (modes (current-buffer))))
                             :hide-suggestion-count-p t)))
       (setf (access-time command) (get-internal-real-time))
       (run command))))
@@ -60,8 +59,7 @@
                            (make-minibuffer
                             :input-prompt "Execute extended command"
                             :suggestion-function (command-suggestion-filter
-                                                  (mapcar (alex:compose #'class-name #'class-of)
-                                                          (modes (current-buffer))))
+                                                  (mapcar #'mode-name (modes (current-buffer))))
                             :hide-suggestion-count-p t)))
       (setf (access-time command) (get-internal-real-time))
       (let ((optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list 
