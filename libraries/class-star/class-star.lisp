@@ -96,7 +96,8 @@ subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
 Note that in a slot definition, '() is infered to be a list while NIL is infered
 to be a boolean.
 
-Non-basic form types are not infered (returns nil)."
+Non-basic form types are not infered (returns nil).
+Non-basic scalar types are derived to their own type (with `type-of')."
   (multiple-value-bind (found? value)
       (initform definition)
     (when found?
@@ -120,6 +121,9 @@ Non-basic form types are not infered (returns nil)."
                         general-type)))
                (or (some #'derive-type '(string boolean list array hash-table integer
                                          complex number))
+                   ;; Only allow objects of the same type by default.
+                   ;; We could have returned nil to inhibit the generation of a
+                   ;; :type property.
                    type))))))))
 
 (defun type-zero-initform-inference (definition)
@@ -159,8 +163,12 @@ Fall back to nil if initform is missing for unsupported types."
         ;; Default initform when type is missing:
         nil)))
 
-(defvar *initform-inference* 'type-zero-initform-inference)
-(defvar *type-inference* 'basic-type-inference)
+(defvar *initform-inference* 'type-zero-initform-inference
+  "Fallback initform inference function.
+Set this to nil to disable inference.")
+(defvar *type-inference* 'basic-type-inference
+  "Fallback type inference function.
+Set this to nil to disable inference.")
 
 (defun process-slot-initform (definition &key ; See `hu.dwim.defclass-star:process-slot-definition'.
                                            initform-inference
@@ -176,7 +184,9 @@ Fall back to nil if initform is missing for unsupported types."
           (not (definition-type definition))
           type-inference)
      (append definition
-             (list :type (funcall type-inference definition))))
+             (let ((result-type (funcall type-inference definition)))
+               (when result-type
+                 (list :type result-type)))))
     ((and (not (initform definition))
           initform-inference)
      (append definition
