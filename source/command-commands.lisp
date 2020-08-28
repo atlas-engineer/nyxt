@@ -44,18 +44,18 @@
 (define-command execute-extended-command ()
   "Execute a command by name, also supply optional parameters."
   (flet ((query-arguments (arguments command)
-               (flet ((make-binding (argument)
-                        (let* ((sym (first argument))
-                               (default-value (format nil "~a" (second argument)))
-                               (string (string-downcase (symbol-name sym))))
-                          `(,sym (read-from-minibuffer
-                                  (make-minibuffer
-                                   :input-prompt ,string
-                                   :input-buffer ,default-value))))))
-                 (let ((bindings (mapcar #'make-binding arguments))
-                       (bound-values (mapcar #'first arguments)))
-                   `(with-result* ,bindings
-                      (run ,command ,@bound-values))))))
+           (flet ((make-binding (argument)
+                    (let* ((sym (first argument))
+                           (default-value (format nil "~a" (second argument)))
+                           (string (string-downcase (symbol-name sym))))
+                      `(,sym (read-from-minibuffer
+                              (make-minibuffer
+                               :input-prompt ,string
+                               :input-buffer ,default-value))))))
+             (let ((bindings (mapcar #'make-binding arguments))
+                   (bound-values (mapcar #'first arguments)))
+               `(with-result* ,bindings
+                  (run ,command ,@bound-values))))))
     (with-result (command (read-from-minibuffer
                            (make-minibuffer
                             :input-prompt "Execute extended command"
