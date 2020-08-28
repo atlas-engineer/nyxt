@@ -328,13 +328,16 @@ This function can be used as a `window' `input-dispatcher'."
   (setf (input-dispatcher (current-window)) #'describe-key-dispatch-input)
   (echo "Press a key sequence to describe (cancel with 'escape escape'):"))
 
+(defun read-string (string)
+  (car (with-input-from-string (input string)
+         (loop for object = (read input nil :eof)
+               until (eq object :eof)
+               collect object))))
+
 (defun evaluate (string)
   "Evaluate all expressions in string and return a list of values.
 This does not use an implicit PROGN to allow evaluating top-level expressions."
-  (with-input-from-string (input string)
-    (loop for object = (read input nil :eof)
-          until (eq object :eof)
-          collect (eval object))))
+  (eval (read-string string)))
 
 (defun error-buffer (title text)
   "Print some help."
