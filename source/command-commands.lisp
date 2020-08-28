@@ -58,7 +58,7 @@
                       (run ,command ,@bound-values))))))
     (with-result (command (read-from-minibuffer
                            (make-minibuffer
-                            :input-prompt "Execute command"
+                            :input-prompt "Execute extended command"
                             :suggestion-function (command-suggestion-filter
                                                   (mapcar (alex:compose #'class-name #'class-of)
                                                           (modes (current-buffer))))
