@@ -20,8 +20,8 @@
      (address :accessor nil))
     (:accessor-name-transformer (lambda (name def) (declare (ignore def)) name)))
   (make-instance 'bar)
-  (prove:is (fboundp 'name) t)
-  (prove:is (fboundp 'this-age) t)
+  (prove:ok (fboundp 'name))
+  (prove:ok (fboundp 'this-age) t)
   (prove:is (fboundp 'address) nil))
 
 (prove:subtest "Simple class default value"
@@ -70,7 +70,7 @@
   (prove:is-error (make-instance 'foo-initform-infer-no-unbound)
                   'simple-error)
   (class*:define-class foo-initform-infer-nil-fallback ()
-    ((name :type function))
+    ((name :type (or function null)))
     (:initform-inference 'class*:nil-fallback-initform-inference))
   (prove:is (name-of (make-instance 'foo-initform-infer-nil-fallback))
             nil))
