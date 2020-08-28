@@ -51,10 +51,11 @@
                               (make-minibuffer
                                :input-prompt ,string
                                :input-buffer ,default-value))))))
-             (let ((bindings (mapcar #'make-binding arguments))
-                   (bound-values (mapcar #'first arguments)))
+             (let* ((bindings (mapcar #'make-binding arguments))
+                    (bound-value1 (mapcar #'first arguments))
+                    (bound-value2 (mapcar (lambda (i) `(read-from-string ,i)) bound-value1)))
                `(with-result* ,bindings
-                  (run ,command ,@bound-values))))))
+                  (run ,command ,@bound-value2))))))
     (with-result (command (read-from-minibuffer
                            (make-minibuffer
                             :input-prompt "Execute extended command"
