@@ -36,6 +36,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   ((modifier-translator #'my-translate-modifiers)))")
    (web-context nil
                 :type t
+                :accessor nil
                 :export nil
                 :documentation "Single instantiation of our custom web context.")
    (data-manager-path (make-instance 'data-manager-path
