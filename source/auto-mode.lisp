@@ -344,7 +344,9 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
-    (write-string ";; List of auto-mode rules.
+    (let ((*package* *package*))
+      (in-package :nyxt/auto-mode)
+      (write-string ";; List of auto-mode rules.
 ;; It is made to be easily readable and editable, but you still need to remember some things:
 ;;
 ;; Every rule starts on a new line and consists of one or more of the following elements:
@@ -371,11 +373,11 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
 ;; You can write additional URLs in the bracketed conditions, to reuse the rule for other URL
 ;; Example: (match-host \"reddit.com\" \"old.reddit.com\" \"www6.reddit.com\")
 " file)
-    (write-string "(" file)
-    (dolist (rule (slot-value *browser* 'auto-mode-rules))
-      (write-char #\newline file)
-      (serialize-object rule file))
-    (format file "~%)~%")
+      (write-string "(" file)
+      (dolist (rule (slot-value nyxt:*browser* 'nyxt:auto-mode-rules))
+        (write-char #\newline file)
+        (serialize-object rule file))
+      (format file "~%)~%"))
     (echo "Saved ~a auto-mode rules to ~s."
           (length (slot-value *browser* 'auto-mode-rules))
           (expand-path (auto-mode-rules-data-path *browser*)))))
@@ -385,7 +387,10 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
       (let ((data (with-data-file (file (auto-mode-rules-data-path *browser*)
                                         :direction :input
                                         :if-does-not-exist nil)
-                    (when file (deserialize-auto-mode-rules file)))))
+                    (when file
+                      (let ((*package* *package*))
+                        (in-package :nyxt/auto-mode)
+                        (deserialize-auto-mode-rules file))))))
         (when data
           (echo "Loading ~a auto-mode rules from ~s."
                 (length data) (expand-path (auto-mode-rules-data-path *browser*)))
