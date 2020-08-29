@@ -11,6 +11,7 @@
 Take the input string and returns a list of suggestion strings.
 Example: `buffer-suggestion-filter'.")
    (callback nil
+             :type (or function null)
              :export nil
              :documentation "Function to call over the selected suggestion.")
    (callback-buffer (when *browser* (current-buffer))
