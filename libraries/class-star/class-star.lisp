@@ -227,7 +227,7 @@ e.g. (define-class foo (foo) ()) works."
                   ,(mapcar #'process-slot-initform slots)
                   ,@(append (delete :export-class-name-p options :key #'first)
                             '((:export-class-name-p nil))))
-                (setf (find-class ',name) (find-class ',temp-name))))
+                (replace-class ,name ,temp-name)))
       (let* ((initform-option (assoc :initform-inference options))
              (initform-inference (or (when initform-option
                                        (setf options (delete :initform-inference options :key #'car))
