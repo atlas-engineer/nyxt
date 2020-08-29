@@ -21,7 +21,7 @@
     (:accessor-name-transformer (lambda (name def) (declare (ignore def)) name)))
   (make-instance 'bar)
   (prove:ok (fboundp 'name))
-  (prove:ok (fboundp 'this-age) t)
+  (prove:ok (fboundp 'this-age))
   (prove:is (fboundp 'address) nil))
 
 (prove:subtest "Simple class default value"
