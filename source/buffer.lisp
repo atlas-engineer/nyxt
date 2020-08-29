@@ -795,16 +795,20 @@ this command it cycles through all buffers."
   "Disable MODES for BUFFER.
 MODES should be a list symbols, each possibly returned by `mode-name'."
   (dolist (mode modes)
-    (funcall-safely (sym (mode-command mode))
-                    :buffer buffer :activate nil)))
+    (let ((command (mode-command mode)))
+      (if command
+          (funcall-safely (sym command) :buffer buffer :activate nil)
+          (log:warn "Mode command ~a not found." mode)))))
 
 (export-always 'enable-modes)
 (defun enable-modes (modes &optional (buffer (current-buffer)))
   "Enable MODES for BUFFER.
 MODES should be a list of symbols, each possibly returned by `mode-name'."
   (dolist (mode modes)
-    (funcall-safely (sym (mode-command mode))
-                    :buffer buffer :activate t)))
+    (let ((command (mode-command mode)))
+      (if command
+          (funcall-safely (sym command) :buffer buffer :activate t)
+          (log:warn "Mode command ~a not found." mode)))))
 
 (defun active-mode-suggestion-filter (buffers)
   "Return the union of the active modes in BUFFERS."
