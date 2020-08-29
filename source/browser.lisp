@@ -90,6 +90,7 @@ useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (last-active-buffer nil
+                       :type (or buffer null)
                        :export nil)
    (buffers :initform (make-hash-table :test #'equal)
             :documentation "To manipulate the list of buffers,
@@ -172,8 +173,9 @@ The function which stores the global history into `history-path'.")
                              :type (or function null)
                              :documentation "
 The function which restores the global history from `history-path'.")
-   (bookmarks-data :initform nil
+   (bookmarks-data nil
                    :accessor nil
+                   :type t
                    :export nil
                    :documentation "The bookmarks kept in memory.")
    (bookmarks-path (make-instance 'bookmarks-data-path :basename "bookmarks")
