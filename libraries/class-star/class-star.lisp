@@ -220,10 +220,13 @@ This class definition macro supports cycle in the superclasses,
 e.g. (define-class foo (foo) ()) works."
   (if (superclasses-have-cycle? name supers)
       (let ((temp-name (gensym (string name))))
-        ;; TODO: Don't export the class again.
+        ;; Since the temp-name is an uninterned symbol, we can not export it.
+        ;; REVIEW: Should we need to export the temp-name, we could use
+        ;; `gentemp' instead of `gensym'.
         `(progn (hu.dwim.defclass-star:defclass* ,temp-name ,supers
                   ,(mapcar #'process-slot-initform slots)
-                  ,@options)
+                  ,@(append (delete :export-class-name-p options :key #'first)
+                            '((:export-class-name-p nil))))
                 (setf (find-class ',name) (find-class ',temp-name))))
       (let* ((initform-option (assoc :initform-inference options))
              (initform-inference (or (when initform-option
