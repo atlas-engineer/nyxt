@@ -115,16 +115,25 @@ Non-basic scalar types are derived to their own type (with `type-of')."
               (not (eq (first value) 'quote)))
          ;; Non-basic form.
          nil)
-        (t (let* ((type (type-of value)))
-             (flet ((derive-type (general-type)
-                      (when (subtypep type general-type)
-                        general-type)))
-               (or (some #'derive-type '(string boolean list array hash-table integer
-                                         complex number))
-                   ;; Only allow objects of the same type by default.
-                   ;; We could have returned nil to inhibit the generation of a
-                   ;; :type property.
-                   type))))))))
+        (t (let* ((type (if (symbolp value)
+                            (handler-case
+                                ;; We can get type of externally defined symbol.
+                                (type-of (eval value))
+                              (error ()
+                                ;; Don't infer type if symbol is not yet defined.
+                                nil))
+                            (type-of value))))
+             (if type
+                 (flet ((derive-type (general-type)
+                          (when (subtypep type general-type)
+                            general-type)))
+                   (or (some #'derive-type '(string boolean list array hash-table integer
+                                             complex number))
+                       ;; Only allow objects of the same type by default.
+                       ;; We could have returned nil to inhibit the generation of a
+                       ;; :type property.
+                       type))
+                 nil)))))))
 
 (defun type-zero-initform-inference (definition)
   "Infer basic type zero values.

@@ -75,9 +75,11 @@
   (prove:is (name-of (make-instance 'foo-initform-infer-nil-fallback))
             nil))
 
+(defvar street-name "bar")
 (prove:subtest "Type inference"
   (class*:define-class foo-type-infer ()
     ((name "foo")
+     (nickname street-name)
      (age 1)
      (height 2.0)
      (width 2 :type number)
@@ -89,6 +91,8 @@
      (fun #'list)
      (composite (error "Should not eval, type should not be infered"))))
   (prove:is (getf (mopu:slot-properties 'foo-type-infer 'name) :type)
+            'string)
+  (prove:is (getf (mopu:slot-properties 'foo-type-infer 'nickname) :type)
             'string)
   (prove:is (getf (mopu:slot-properties 'foo-type-infer 'age) :type)
             'integer)
