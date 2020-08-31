@@ -880,8 +880,8 @@ As a second value, return the current buffer index starting from 0."
    (webkit-history-entry-gtk-object history-entry)))
 
 (defun set-renderer ()
-  (defclass REPLACEME-window (gtk-window window) ())
-  (defclass REPLACEME-buffer (gtk-buffer buffer) ())
-  (defclass REPLACEME-browser (gtk-browser browser) ()))
+  (define-REPLACEME-class window (gtk-window))
+  (define-REPLACEME-class buffer (gtk-buffer))
+  (define-REPLACEME-class browser (gtk-browser)))
 
 (set-renderer)
