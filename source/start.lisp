@@ -461,7 +461,7 @@ Finally,run the `*after-init-hook*'."
                  (notify (str:concat message "."))
                  (error-in-new-window "*Init file errors*" full-message))))))
     (load-or-eval :remote nil)
-    (setf *browser* (make-instance 'browser
+    (setf *browser* (make-instance 'REPLACEME-browser
                                    :startup-error-reporter-function startup-error-reporter
                                    :startup-timestamp startup-timestamp))
     (log:info "Using data profile ~s." (name (data-profile *browser*)))

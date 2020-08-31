@@ -35,7 +35,7 @@
                            (make-minibuffer
                             :input-prompt "Execute command"
                             :suggestion-function (command-suggestion-filter
-                                                  (mapcar (alex:compose #'class-name #'class-of)
+                                                  (mapcar #'mode-name
                                                           (modes (current-buffer))))
                             :hide-suggestion-count-p t)))
       (setf (access-time command) (get-internal-real-time))
