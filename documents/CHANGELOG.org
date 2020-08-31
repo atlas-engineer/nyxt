@@ -83,6 +83,7 @@ MAJOR.MINOR.PATCH, we increment the:
   respectively.
   The status view can be customized with the =status-formatter= window slot.
   The =status-buffer= slot has been removed.
+  The status view has interactive buttons.
 
 - Report user configuration errors in a Nyxt web view.  Users don't have to
   check the shell output anymore.
@@ -98,6 +99,8 @@ MAJOR.MINOR.PATCH, we increment the:
 - New =lisp-repl= command to evaluate Lisp, introspect and modify Nyxt while
   it's running, from the browser itself!
   This supersedes the removed =evaluate-lisp= command.
+
+- New =list-buffers= command.
 
 - Rename =certificate-whitelist-mode= to =certificate-exception-mode= as well as
   the =certificate-whitelist= slot to =certificate-exceptions= and
@@ -132,6 +135,8 @@ MAJOR.MINOR.PATCH, we increment the:
   more general =--with-path= (e.g. ~--with-path session=/path/to/session~).
 
 - Sessions are restored lazily.  This fixes the long hang on startup.
+
+- Session buffer titles are also restored.
 
 - Command line options: New =--load= option to load a Lisp file, =--eval= and
   =--load= can be specified multiple times, the =--remote= option allows
