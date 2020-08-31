@@ -25,18 +25,12 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Improve macOS distribution
 + Create a standalone application bundle that macOS users can simply
   double click and run
-*** ECL, CCL, and EQL compatibility
-+ Broaden support for different Lisp implementations by removing SBCL
-  specific code when possible
 *** Password manager
 + Add an integrated password manager
 *** Add built-in editor
 + Add simple built-in editor capabilities so that you can easily
   script Next without opening up an external editor
 + Also use the editor for text-field input on the internet
-*** Add support for external editor
-+ Allow Next to call out to an external editor to fill in the contents
-  of a particular text field
 *** Add online suggestions from search engines
 
 ** 2.0.0
