@@ -191,7 +191,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-REPLACEME-class buffer)
 
-(defclass internal-buffer ()
+(defclass internal-buffer (REPLACEME-buffer)
   ((default-modes :accessor default-modes
                   :initarg :default-modes
                   :type list-of-symbols
@@ -229,11 +229,9 @@ The mode instances are stored in the `modes' slot.")
              (|.button:active|
               :color "white"))))))
 
-(defclass REPLACEME-internal-buffer (internal-buffer REPLACEME-buffer)
-  ()
-  (:export-class-name-p t))
+(define-REPLACEME-class internal-buffer)
 
-(defclass status-buffer ()
+(defclass status-buffer (REPLACEME-internal-buffer)
   ((height :accessor height :initform 16
            :type integer
            :documentation "The height of the status buffer in pixels.")
@@ -261,9 +259,7 @@ The mode instances are stored in the `modes' slot.")
              (|.button:hover|
               :color "white"))))))
 
-(define-class REPLACEME-status-buffer (status-buffer REPLACEME-internal-buffer)
-  ()
-  (:export-class-name-p t))
+(define-REPLACEME-class status-buffer)
 
 (defmethod internal-buffer-p ((buffer buffer))
   nil)

@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class minibuffer ()
+(define-class minibuffer (REPLACEME-buffer)
   ((default-modes '(minibuffer-mode))
    (suggestion-function nil
                         :type (or function null)
@@ -128,9 +128,7 @@ A minibuffer query is typically done as follows:
   ;; Write form here in which `tags' is bound to the resulting element(s).
   )"))
 
-(define-class REPLACEME-minibuffer (minibuffer REPLACEME-buffer)
-  ()
-  (:export-class-name-p t))
+(define-REPLACEME-class minibuffer)
 
 (export-always 'make-minibuffer)
 (defun make-minibuffer
