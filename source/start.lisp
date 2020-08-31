@@ -281,6 +281,13 @@ short as possible."
    (lambda () (open-urls urls)))
   urls)
 
+(defun set-socket-permissions (socket-path)
+  "Make socket only readable and writable by the current user."
+  #+darwin
+  (uiop:run-program (list "chmod" "600" socket-path))
+  #-darwin
+  (setf (osicat:file-permissions socket-path) '(:user-read :user-write)))
+
 (defun listen-socket ()
   (let ((socket-path (expand-path *socket-path*)))
     (when socket-path
@@ -291,7 +298,7 @@ short as possible."
                                  :local-filename socket-path)
         ;; We don't want group members or others to flood the socket or, worse,
         ;; execute code.
-        (setf (osicat:file-permissions socket-path) '(:user-read :user-write))
+        (set-socket-permissions socket-path)
         ;; Since we are in a separate thread, we need to set the default package
         ;; for remote execution.
         (in-package :nyxt-user)
@@ -316,6 +323,15 @@ short as possible."
                               :remote-filename (expand-path *socket-path*))
      (iolib:socket-connected-p s))))
 
+(defun file-is-socket-p (socket-path)
+  "Check if a file is a socket."
+  (and (uiop:file-exists-p socket-path)
+       #+darwin
+       (equal "=" (uiop:run-program (list "stat" "-f" "%T" socket-path) 
+                                    :output '(:string :stripped t)))
+       #-darwin
+       (not (eq :socket (osicat:file-kind socket-path)))))
+
 (defun bind-socket-or-quit (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket."
@@ -331,8 +347,7 @@ Otherwise bind socket."
            (format s "~s" `(open-external-urls ',urls)))
          (unless *keep-alive*
            (uiop:quit))))
-      ((and (uiop:file-exists-p socket-path)
-            (not (eq :socket (osicat:file-kind socket-path))))
+      ((file-is-socket-p socket-path)
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path))
       (t (progn
            (log:info "Listening to socket ~s." socket-path)

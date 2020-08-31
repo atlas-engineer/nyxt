@@ -21,6 +21,7 @@
                :log4cl
                :lparallel
                :mk-string-metrics
+               #-darwin
                :osicat
                :parenscript
                :quri
