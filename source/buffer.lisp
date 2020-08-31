@@ -189,9 +189,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class REPLACEME-buffer (buffer)
-  ()
-  (:export-class-name-p t))
+(define-REPLACEME-class buffer)
 
 (defclass internal-buffer ()
   ((default-modes :accessor default-modes
@@ -231,7 +229,9 @@ The mode instances are stored in the `modes' slot.")
              (|.button:active|
               :color "white"))))))
 
-(defclass REPLACEME-internal-buffer (internal-buffer REPLACEME-buffer) ())
+(defclass REPLACEME-internal-buffer (internal-buffer REPLACEME-buffer)
+  ()
+  (:export-class-name-p t))
 
 (defclass status-buffer ()
   ((height :accessor height :initform 16

@@ -45,15 +45,13 @@ Example:
                        (:export-class-name-p t)
                        (:export-accessor-names-p t)
                        (:accessor-name-transformer #'class*:name-identity)))
-         (configurable-class-name (intern (str:concat "REPLACEME-" (string name)))))
+         (configurable-class-name (REPLACEME-class-name name)))
     (when docstring
       (setf class-args (append class-args
                                `((:documentation ,docstring)))))
     `(progn
        (define-class ,@class-args)
-       (define-class ,configurable-class-name (,name)
-         ()
-         (:export-class-name-p t))
+       (define-REPLACEME-class ,name)
        ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
        ;; Should probably always have root-mode.
        ,(unless (eq name 'root-mode)

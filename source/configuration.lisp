@@ -15,6 +15,17 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
+(defun REPLACEME-class-name (class-sym)
+  (intern (str:concat "REPLACEME-" (string class-sym))
+          (symbol-package class-sym)))
+
+(defmacro define-REPLACEME-class (name &optional superclasses)
+  (let ((REPLACEME-name (REPLACEME-class-name name))
+        (superclasses-with-original (remove-duplicates (append superclasses (list name)))))
+    `(progn
+       (export-always ',REPLACEME-name (symbol-package ',REPLACEME-name))
+       (defclass ,REPLACEME-name ,superclasses-with-original ()))))
+
 (export-always '%slot-default)
 (export-always 'define-configuration)
 (defmacro define-configuration (name &body slots)
@@ -46,7 +57,7 @@ The above defines `nyxt/blocker-mode:REPLACEME-blocker-mode' to inherit from a
 generated class containing the specialized hostlists and the original
 `blocker-mode'."
 
-  (let* ((final-name (intern (str:concat "REPLACEME-" (string name)) (symbol-package name)))
+  (let* ((final-name (REPLACEME-class-name name))
          (temp-name (gentemp (string final-name) (symbol-package name))))
     (dolist (name (list name final-name))
       (unless (find-class name nil)
@@ -68,9 +79,9 @@ generated class containing the specialized hostlists and the original
                 else do
                   (log:warn "Undefined slot ~a in ~a" (first slot) final-name))
          (:accessor-name-transformer #'class*:name-identity))
-       (defclass ,final-name ,(cons temp-name
-                               (mapcar #'class-name
-                                       (mopu:direct-superclasses final-name))) ()))))
+       (define-REPLACEME-class ,name ,(cons temp-name
+                                            (mapcar #'class-name
+                                                    (mopu:direct-superclasses final-name)))))))
 
 (export-always 'load-system)
 (defun load-system (system)
