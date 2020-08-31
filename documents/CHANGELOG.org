@@ -32,8 +32,8 @@ MAJOR.MINOR.PATCH, we increment the:
   script Next without opening up an external editor
 + Also use the editor for text-field input on the internet
 *** Add online suggestions from search engines
-
 ** 2.0.0
+*** 2-pre-release-1
 - Rename project to Nyxt.
   This name is more "searchable" on the Web.  It's also reasonably
   "backward-compatible" with "Next".
