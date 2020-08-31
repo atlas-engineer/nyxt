@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class minibuffer (buffer)
+(define-class minibuffer ()
   ((default-modes '(minibuffer-mode))
    (suggestion-function nil
                         :type (or function null)
@@ -128,6 +128,10 @@ A minibuffer query is typically done as follows:
   ;; Write form here in which `tags' is bound to the resulting element(s).
   )"))
 
+(define-class REPLACEME-minibuffer (minibuffer REPLACEME-buffer)
+  ()
+  (:export-class-name-p t))
+
 (export-always 'make-minibuffer)
 (defun make-minibuffer
     (&key (default-modes nil explicit-default-modes)
@@ -150,7 +154,7 @@ A minibuffer query is typically done as follows:
     (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
     (when explicit-input-buffer
       (text-buffer::insert-string tmp-input-cursor input-buffer))
-    (apply #'make-instance 'minibuffer
+    (apply #'make-instance 'REPLACEME-minibuffer
            `(:input-buffer ,tmp-input-buffer
              :input-cursor ,tmp-input-cursor
              ,@(if explicit-default-modes

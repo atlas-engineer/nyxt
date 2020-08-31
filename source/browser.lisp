@@ -277,6 +277,10 @@ editor executable."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
+(define-class REPLACEME-browser (browser)
+  ()
+  (:export-class-name-p t))
+
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
   "Get the window containing a buffer."

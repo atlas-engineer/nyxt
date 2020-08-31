@@ -44,12 +44,16 @@ Example:
                        ,direct-slots
                        (:export-class-name-p t)
                        (:export-accessor-names-p t)
-                       (:accessor-name-transformer #'class*:name-identity))))
+                       (:accessor-name-transformer #'class*:name-identity)))
+         (configurable-class-name (intern (str:concat "REPLACEME-" (string name)))))
     (when docstring
       (setf class-args (append class-args
                                `((:documentation ,docstring)))))
     `(progn
        (define-class ,@class-args)
+       (define-class ,configurable-class-name (,name)
+         ()
+         (:export-class-name-p t))
        ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
        ;; Should probably always have root-mode.
        ,(unless (eq name 'root-mode)
@@ -62,13 +66,13 @@ Example:
                ;; if the BUFFER class was reassigned after the MINIBUFFER class
                ;; declaration.
                (error ,(format nil "Mode command ~a called on non-buffer" name)))
-             (let ((existing-instance (find-mode buffer ',name)))
+             (let ((existing-instance (find-mode buffer ',configurable-class-name)))
                (unless explicit?
                  (setf activate (not existing-instance)))
                (if activate
                    (unless existing-instance
                      ;; TODO: Should we move mode to the front when it already exists?
-                     (let ((new-mode (apply #'make-instance ',name
+                     (let ((new-mode (apply #'make-instance ',configurable-class-name
                                             :buffer buffer
                                             args)))
                        (when (constructor new-mode)
@@ -181,9 +185,11 @@ toggle command, return the toggle command of the parent."
                *command-list*)
       (match (find-class mode-symbol nil)
         (nil nil)
-        (c (mode-command (class-name (first (mopu:direct-superclasses c))))))))
+        ;; Definition mode class is the last of of the REPLACEME-mode superclass.
+        (c (mode-command (class-name (first (last (mopu:direct-superclasses c)))))))))
 
 (defun make-mode (mode-symbol buffer)
+  ;; (let ((mode-symbol (intern (str:concat "REPLACEME-" (string mode-symbol))))))
   (log:debug mode-symbol buffer (mode-command mode-symbol))
   (match (mode-command mode-symbol)
     ;; ":activate t" should not be necessary here since (modes buffer) should be

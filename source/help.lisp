@@ -399,7 +399,7 @@ The version number is stored in the clipboard."
   ;; instantiated after the buffer web view, which is not possible if there is
   ;; no *browser*.
   (let ((keymaps (cons (override-map (or (current-buffer)
-                                         (make-instance 'buffer)))
+                                         (make-instance 'REPLACEME-buffer)))
                        (delete nil (mapcar #'keymap modes)))))
     (or (first (keymap:binding-keys fn keymaps))
         "UNBOUND")))

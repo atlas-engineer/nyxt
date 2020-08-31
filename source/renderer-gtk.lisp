@@ -9,7 +9,7 @@
   (:accessor-name-transformer #'class*:name-identity))
 
 
-(define-class gtk-browser (browser)
+(define-class gtk-browser ()
   (#+darwin
    (modifiers '()
               :documentation "On macOS some modifiers like Super and Meta are
@@ -93,7 +93,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   (unless *keep-alive*
     (gtk:leave-gtk-main)))
 
-(define-class gtk-window (window)
+(define-class gtk-window ()
   ((gtk-object)
    (box-layout)
    (minibuffer-container)
@@ -106,7 +106,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class gtk-buffer (buffer)
+(define-class gtk-buffer ()
   ((gtk-object)
    (proxy-uri (quri:uri ""))
    (proxy-ignored-hosts '()))
@@ -114,19 +114,11 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class gtk-internal-buffer (internal-buffer gtk-buffer) ()
-  (:export-class-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
-(define-class gtk-status-buffer (status-buffer gtk-internal-buffer) ()
-  (:export-class-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
 (defun make-web-view (&optional buffer)
   (make-instance 'webkit:webkit-web-view
                  :web-context (make-context buffer)))
 
-(defmethod initialize-instance :after ((buffer gtk-status-buffer) &key)
+(defmethod initialize-instance :after ((buffer status-buffer) &key)
   (with-slots (gtk-object) buffer
     (setf gtk-object (make-web-view buffer))
     (gobject:g-signal-connect
@@ -159,7 +151,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
                                           :orientation :vertical
                                           :spacing 0))
     (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-    (setf active-buffer (make-instance 'buffer))
+    (setf active-buffer (make-instance 'REPLACEME-buffer))
 
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
@@ -170,7 +162,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
     (setf (gtk:gtk-widget-size-request message-container)
           (list -1 (message-buffer-height window)))
 
-    (setf status-buffer (make-instance 'status-buffer))
+    (setf status-buffer (make-instance 'REPLACEME-status-buffer))
     (gtk:gtk-box-pack-end box-layout status-container :expand nil)
     (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
     (setf (gtk:gtk-widget-size-request status-container)
@@ -590,7 +582,7 @@ Warning: This behaviour may change in the future."
 
 (defmethod ffi-window-make ((browser gtk-browser))
   "Make a window."
-  (make-instance 'window))
+  (make-instance 'REPLACEME-window))
 
 (defmethod ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
@@ -888,10 +880,8 @@ As a second value, return the current buffer index starting from 0."
    (webkit-history-entry-gtk-object history-entry)))
 
 (defun set-renderer ()
-  (class*:replace-class window gtk-window)
-  (class*:replace-class buffer gtk-buffer)
-  (class*:replace-class internal-buffer gtk-internal-buffer)
-  (class*:replace-class status-buffer gtk-status-buffer)
-  (class*:replace-class browser gtk-browser))
+  (defclass REPLACEME-window (gtk-window window) ())
+  (defclass REPLACEME-buffer (gtk-buffer buffer) ())
+  (defclass REPLACEME-browser (gtk-browser browser) ()))
 
 (set-renderer)

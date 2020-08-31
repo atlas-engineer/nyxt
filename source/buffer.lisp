@@ -189,7 +189,11 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(defclass internal-buffer (buffer)
+(define-class REPLACEME-buffer (buffer)
+  ()
+  (:export-class-name-p t))
+
+(defclass internal-buffer ()
   ((default-modes :accessor default-modes
                   :initarg :default-modes
                   :type list-of-symbols
@@ -227,7 +231,9 @@ The mode instances are stored in the `modes' slot.")
              (|.button:active|
               :color "white"))))))
 
-(defclass status-buffer (internal-buffer)
+(defclass REPLACEME-internal-buffer (internal-buffer REPLACEME-buffer) ())
+
+(defclass status-buffer ()
   ((height :accessor height :initform 16
            :type integer
            :documentation "The height of the status buffer in pixels.")
@@ -254,6 +260,10 @@ The mode instances are stored in the `modes' slot.")
               :margin-right "2px")
              (|.button:hover|
               :color "white"))))))
+
+(define-class REPLACEME-status-buffer (status-buffer REPLACEME-internal-buffer)
+  ()
+  (:export-class-name-p t))
 
 (defmethod internal-buffer-p ((buffer buffer))
   nil)
@@ -419,7 +429,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                        ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
                        (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
                        (ffi-buffer-make dead-buffer))
-                     (apply #'make-instance (if internal-buffer-p 'internal-buffer 'buffer)
+                     (apply #'make-instance (if internal-buffer-p 'REPLACEME-internal-buffer 'REPLACEME-buffer)
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes)))))))
