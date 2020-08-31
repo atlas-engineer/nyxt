@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class qt-browser (browser)
+(define-class qt-browser ()
   ((application :accessor application))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
@@ -27,7 +27,7 @@
 (defmethod ffi-kill-browser ((browser qt-browser))
   (qt:application-quit (application browser)))
 
-(define-class qt-window (window)
+(define-class qt-window ()
   ((qt-object)
    (box-layout)
    (minibuffer-view))
@@ -35,18 +35,10 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class qt-buffer (buffer)
+(define-class qt-buffer ()
   ((qt-object))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
-(define-class qt-internal-buffer (internal-buffer qt-buffer) ()
-  (:export-class-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
-(define-class qt-status-buffer (status-buffer qt-internal-buffer) ()
-  (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod initialize-instance :after ((window qt-window) &key)
@@ -166,10 +158,8 @@
   (funcall thunk))
 
 (defun set-renderer ()
-  (class*:replace-class window qt-window)
-  (class*:replace-class buffer qt-buffer)
-  (class*:replace-class internal-buffer qt-internal-buffer)
-  (class*:replace-class status-buffer qt-status-buffer)
-  (class*:replace-class browser qt-browser))
+  (define-user-class window (qt-window))
+  (define-user-class buffer (qt-buffer))
+  (define-user-class browser (qt-browser)))
 
 (set-renderer)
