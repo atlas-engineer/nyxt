@@ -81,10 +81,10 @@ To discover the default value of a slot or all slots of a class, use the
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
-\(define-configuration nyxt/blocker-mode:user-blocker-mode
+\(define-configuration nyxt/blocker-mode:blocker-mode
   ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
 
-The above defines `nyxt/blocker-mode:user-blocker-mode' to inherit from a
+The above defines `nyxt/blocker-mode:blocker-mode' to inherit from a
 generated class containing the specialized hostlists and the original
 `blocker-mode'."
 
