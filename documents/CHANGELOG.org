@@ -17,14 +17,6 @@ MAJOR.MINOR.PATCH, we increment the:
 + This technology will probably be built ontop of Quicklisp
 *** Per tab isolation
 + Add support for per-tab Proxy and Tor support
-*** Improve macOS performance
-+ Rewrite the Qt port from Python to C++ to improve performance,
-  additionally enabling a host of features not offered by the Python
-  port
-+ Fix some issues with strange keys emitted on macOS from the keyboard
-*** Improve macOS distribution
-+ Create a standalone application bundle that macOS users can simply
-  double click and run
 *** Password manager
 + Add an integrated password manager
 *** Add built-in editor
@@ -43,6 +35,20 @@ MAJOR.MINOR.PATCH, we increment the:
 
   - ~/.config/next -> ~/.config/nyxt
   - ~/.local/share/next -> ~/.local/share/nyxt
+
+- Improve macOS performance
+  The WebKitGTK+ port for macOS has been improved with complete
+  support for the Quartz backend. This significantly improves
+  start-up time and allows for native rendering (no need for XQuartz)
+
+  Fix some issues with strange keys emitted on macOS from the
+  keyboard: this has been resolved through the usage of the "Unicode
+  Hex Input" keyboard input option.
+
+- Improve macOS distribution
+  It is now possible to create a standalone application bundle for
+  Nyxt using the =darwin-app.asd=. It is also possible to create pkg
+  bundles for distribution via MacPorts.
 
 - Replace D-Bus-based architecture with an FFI architecture.  As a result, there
   is only one exectuable needed to run Nyxt and no more need for D-Bus.  This
