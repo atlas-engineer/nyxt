@@ -38,6 +38,25 @@ from NAME last."
        (closer-mop:ensure-class ',user-name
                                 :direct-superclasses ',superclasses-with-original))))
 
+(defun user-class-p (class-specifier)
+  (not (mopu:direct-slot-names class-specifier)))
+
+(defmacro with-user-class ((class-sym new-superclasses) &body body) ; TODO: Export if users ever demand it.
+  "Dynamically override the superclasses of the user class corresponding to
+CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
+  ;; Test:
+  ;; (with-user-class (buffer (buffer))
+  ;;   (mopu:direct-superclasses 'user-buffer))
+  (let ((user-class (user-class-name class-sym)))
+    (unless (user-class-p user-class)
+      (error "Argument must be a user class (see `user-class-p')."))
+    (let ((old-superclasses (mapcar #'class-name (mopu:direct-superclasses user-class))))
+      `(unwind-protect
+            (progn
+              (define-user-class ,class-sym ,new-superclasses)
+              ,@body)
+         (define-user-class ,class-sym ,old-superclasses)))))
+
 (export-always '%slot-default)
 (export-always 'define-configuration)
 (defmacro define-configuration (name &body slots)
