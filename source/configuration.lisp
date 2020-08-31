@@ -19,6 +19,7 @@ from a binary) then any condition is logged instead of triggering the debugger."
   (intern (str:concat "USER-" (string class-sym))
           (symbol-package class-sym)))
 
+(export-always 'define-user-class)
 (defmacro define-user-class (name &optional superclasses)
   "Define the user class of NAME.
 This helper function is useful to compose the customizations of a class.
