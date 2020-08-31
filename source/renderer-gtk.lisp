@@ -151,7 +151,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
                                           :orientation :vertical
                                           :spacing 0))
     (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-    (setf active-buffer (make-instance 'REPLACEME-buffer))
+    (setf active-buffer (make-instance 'user-buffer))
 
     ;; Add the views to the box layout and to the window
     (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
@@ -162,7 +162,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
     (setf (gtk:gtk-widget-size-request message-container)
           (list -1 (message-buffer-height window)))
 
-    (setf status-buffer (make-instance 'REPLACEME-status-buffer))
+    (setf status-buffer (make-instance 'user-status-buffer))
     (gtk:gtk-box-pack-end box-layout status-container :expand nil)
     (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
     (setf (gtk:gtk-widget-size-request status-container)
@@ -582,7 +582,7 @@ Warning: This behaviour may change in the future."
 
 (defmethod ffi-window-make ((browser gtk-browser))
   "Make a window."
-  (make-instance 'REPLACEME-window))
+  (make-instance 'user-window))
 
 (defmethod ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
@@ -880,8 +880,8 @@ As a second value, return the current buffer index starting from 0."
    (webkit-history-entry-gtk-object history-entry)))
 
 (defun set-renderer ()
-  (define-REPLACEME-class window (gtk-window))
-  (define-REPLACEME-class buffer (gtk-buffer))
-  (define-REPLACEME-class browser (gtk-browser)))
+  (define-user-class window (gtk-window))
+  (define-user-class buffer (gtk-buffer))
+  (define-user-class browser (gtk-browser)))
 
 (set-renderer)

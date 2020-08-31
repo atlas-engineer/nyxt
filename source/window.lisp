@@ -72,7 +72,7 @@ The handlers take the window as argument."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-REPLACEME-class window)
+(define-user-class window)
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)

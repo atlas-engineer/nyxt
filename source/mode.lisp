@@ -45,13 +45,13 @@ Example:
                        (:export-class-name-p t)
                        (:export-accessor-names-p t)
                        (:accessor-name-transformer #'class*:name-identity)))
-         (configurable-class-name (REPLACEME-class-name name)))
+         (configurable-class-name (user-class-name name)))
     (when docstring
       (setf class-args (append class-args
                                `((:documentation ,docstring)))))
     `(progn
        (define-class ,@class-args)
-       (define-REPLACEME-class ,name)
+       (define-user-class ,name)
        ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
        ;; Should probably always have root-mode.
        ,(unless (eq name 'root-mode)
@@ -171,9 +171,9 @@ It may be MODE-SYMBOL itself."
              (mapcar #'sym *command-list*)))
 
 (defun original-class (class-sym)
-  "When CLASS-SYM is a REPLACEME class, return its original class."
+  "When CLASS-SYM is a user class, return its original class."
   ;; REVIEW: Is the original class always the last one?  What if the user
-  ;; decides to mix in another class, e.g. (defclass REPLACEME-buffer
+  ;; decides to mix in another class, e.g. (defclass user-buffer
   ;; (user-buffer buffer unrelated-class))?
   (first (last (mopu:direct-superclasses class-sym))))
 

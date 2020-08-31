@@ -277,7 +277,7 @@ editor executable."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-REPLACEME-class browser)
+(define-user-class browser)
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
