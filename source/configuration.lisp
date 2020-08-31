@@ -20,11 +20,22 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (symbol-package class-sym)))
 
 (defmacro define-REPLACEME-class (name &optional superclasses)
+  "Define the REPLACEME class of NAME.
+This helper function is useful to compose the customizations of a class.
+
+This may be called multiple times.
+NAME must be an existing class.
+NAME is automatically append to SUPERCLASSES, so that REPLACEME-name inherits
+from NAME last."
   (let ((REPLACEME-name (REPLACEME-class-name name))
-        (superclasses-with-original (remove-duplicates (append superclasses (list name)))))
+        (superclasses-with-original (remove-duplicates
+                                     (append superclasses (list name)))))
     `(progn
        (export-always ',REPLACEME-name (symbol-package ',REPLACEME-name))
-       (defclass ,REPLACEME-name ,superclasses-with-original ()))))
+       ;; Probably no need to call the defclass macro if we just need to
+       ;; set the superclasses.
+       (closer-mop:ensure-class ',REPLACEME-name
+                                :direct-superclasses ',superclasses-with-original))))
 
 (export-always '%slot-default)
 (export-always 'define-configuration)
