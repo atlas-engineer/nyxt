@@ -21,13 +21,13 @@ from a binary) then any condition is logged instead of triggering the debugger."
   "Helper macro to customize NAME class slots.
 
 Classes can be modes or a core class like `browser', `buffer', `minibuffer',
-`window' prefixed by REPLACEME.
+`window'.  Note that the classes must _not_ be prefixed by 'REPLACEME-'.
 
 The `%slot-default' variable is replaced by the slot initform.
 
 Example that sets some defaults for all buffers:
 
-\(define-configuration REPLACEME-buffer
+\(define-configuration buffer
   ((status-buffer-height 24)
    (default-modes (append '(vi-normal-mode) %slot-default))))
 
@@ -46,12 +46,14 @@ The above defines `nyxt/blocker-mode:REPLACEME-blocker-mode' to inherit from a
 generated class containing the specialized hostlists and the original
 `blocker-mode'."
 
-  (unless (find-class name nil)
-    (error "define-configuration argument ~a is not a known class." name))
-  (let ((temp-name (gentemp (string name))))
+  (let* ((final-name (intern (str:concat "REPLACEME-" (string name)) (symbol-package name)))
+         (temp-name (gentemp (string final-name) (symbol-package name))))
+    (dolist (name (list name final-name))
+      (unless (find-class name nil)
+        (error "define-configuration argument ~a is not a known class." name)))
     `(progn
        (define-class ,temp-name ()
-         ,(loop with super-class = (closer-mop:ensure-finalized (find-class name))
+         ,(loop with super-class = (closer-mop:ensure-finalized (find-class final-name))
                 for slot in (first slots)
                 for known-slot? = (find (first slot) (mopu:slot-names super-class))
                 for initform = (and known-slot?
@@ -64,11 +66,11 @@ generated class containing the specialized hostlists and the original
                                                       ,(cadr slot))
                                                     ,initform))
                 else do
-                  (log:warn "Undefined slot ~a in ~a" (first slot) name))
+                  (log:warn "Undefined slot ~a in ~a" (first slot) final-name))
          (:accessor-name-transformer #'class*:name-identity))
-       (defclass ,name ,(cons temp-name
-                         (mapcar #'class-name
-                                 (mopu:direct-superclasses name))) ()))))
+       (defclass ,final-name ,(cons temp-name
+                               (mapcar #'class-name
+                                       (mopu:direct-superclasses final-name))) ()))))
 
 (export-always 'load-system)
 (defun load-system (system)
