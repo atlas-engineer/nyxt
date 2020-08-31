@@ -15,26 +15,26 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
-(defun REPLACEME-class-name (class-sym)
-  (intern (str:concat "REPLACEME-" (string class-sym))
+(defun user-class-name (class-sym)
+  (intern (str:concat "USER-" (string class-sym))
           (symbol-package class-sym)))
 
-(defmacro define-REPLACEME-class (name &optional superclasses)
-  "Define the REPLACEME class of NAME.
+(defmacro define-user-class (name &optional superclasses)
+  "Define the user class of NAME.
 This helper function is useful to compose the customizations of a class.
 
 This may be called multiple times.
 NAME must be an existing class.
-NAME is automatically append to SUPERCLASSES, so that REPLACEME-name inherits
+NAME is automatically append to SUPERCLASSES, so that user-name inherits
 from NAME last."
-  (let ((REPLACEME-name (REPLACEME-class-name name))
+  (let ((user-name (user-class-name name))
         (superclasses-with-original (remove-duplicates
                                      (append superclasses (list name)))))
     `(progn
-       (export-always ',REPLACEME-name (symbol-package ',REPLACEME-name))
+       (export-always ',user-name (symbol-package ',user-name))
        ;; Probably no need to call the defclass macro if we just need to
        ;; set the superclasses.
-       (closer-mop:ensure-class ',REPLACEME-name
+       (closer-mop:ensure-class ',user-name
                                 :direct-superclasses ',superclasses-with-original))))
 
 (export-always '%slot-default)
@@ -43,7 +43,7 @@ from NAME last."
   "Helper macro to customize NAME class slots.
 
 Classes can be modes or a core class like `browser', `buffer', `minibuffer',
-`window'.  Note that the classes must _not_ be prefixed by 'REPLACEME-'.
+`window'.  Note that the classes must _not_ be prefixed by 'user-'.
 
 The `%slot-default' variable is replaced by the slot initform.
 
@@ -61,14 +61,14 @@ To discover the default value of a slot or all slots of a class, use the
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
-\(define-configuration nyxt/blocker-mode:REPLACEME-blocker-mode
+\(define-configuration nyxt/blocker-mode:user-blocker-mode
   ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
 
-The above defines `nyxt/blocker-mode:REPLACEME-blocker-mode' to inherit from a
+The above defines `nyxt/blocker-mode:user-blocker-mode' to inherit from a
 generated class containing the specialized hostlists and the original
 `blocker-mode'."
 
-  (let* ((final-name (REPLACEME-class-name name))
+  (let* ((final-name (user-class-name name))
          (temp-name (gentemp (string final-name) (symbol-package name))))
     (dolist (name (list name final-name))
       (unless (find-class name nil)
@@ -90,7 +90,7 @@ generated class containing the specialized hostlists and the original
                 else do
                   (log:warn "Undefined slot ~a in ~a" (first slot) final-name))
          (:accessor-name-transformer #'class*:name-identity))
-       (define-REPLACEME-class ,name ,(cons temp-name
+       (define-user-class ,name ,(cons temp-name
                                             (mapcar #'class-name
                                                     (mopu:direct-superclasses final-name)))))))
 
