@@ -172,6 +172,13 @@ It may be MODE-SYMBOL itself."
                                         "-MODE")))
              (mapcar #'sym *command-list*)))
 
+(defun original-class (class-sym)
+  "When CLASS-SYM is a REPLACEME class, return its original class."
+  ;; REVIEW: Is the original class always the last one?  What if the user
+  ;; decides to mix in another class, e.g. (defclass REPLACEME-buffer
+  ;; (user-buffer buffer unrelated-class))?
+  (first (last (mopu:direct-superclasses class-sym))))
+
 (defun mode-command (mode-symbol)
   "Return the mode toggle command.
 We loop over `*command-list*' to find the mode command since a mode may be
@@ -185,11 +192,9 @@ toggle command, return the toggle command of the parent."
                *command-list*)
       (match (find-class mode-symbol nil)
         (nil nil)
-        ;; Definition mode class is the last of of the REPLACEME-mode superclass.
-        (c (mode-command (class-name (first (last (mopu:direct-superclasses c)))))))))
+        (m (mode-command (class-name (original-class m)))))))
 
 (defun make-mode (mode-symbol buffer)
-  ;; (let ((mode-symbol (intern (str:concat "REPLACEME-" (string mode-symbol))))))
   (log:debug mode-symbol buffer (mode-command mode-symbol))
   (match (mode-command mode-symbol)
     ;; ":activate t" should not be necessary here since (modes buffer) should be
