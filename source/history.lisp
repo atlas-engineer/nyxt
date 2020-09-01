@@ -131,11 +131,10 @@ instance of Nyxt."
                         :if-does-not-exist :create
                         :if-exists :supersede)
     ;; We READ the output of serialize-sexp to make it more human-readable.
-    (let ((*package* *package*)
+    (let ((*package* (find-package :nyxt))
           (*print-length* nil))
       ;; We need to make sure current package is :nyxt so that
       ;; symbols a printed with consistent namespaces.
-      (in-package :nyxt)
       (format file
               "~s"
               (with-input-from-string (in (with-output-to-string (out)
@@ -153,8 +152,7 @@ instance of Nyxt."
                     (when file
                       ;; We need to make sure current package is :nyxt so that
                       ;; symbols a printed with consistent namespaces.
-                      (let ((*package* *package*))
-                        (in-package :nyxt)
+                      (let ((*package* (find-package :nyxt)))
                         (s-serialization:deserialize-sexp file))))))
         (match data
           (nil nil)

@@ -344,8 +344,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
-    (let ((*package* *package*))
-      (in-package :nyxt/auto-mode)
+    (let ((*package* (find-package :nyxt/auto-mode)))
       (write-string ";; List of auto-mode rules.
 ;; It is made to be easily readable and editable, but you still need to remember some things:
 ;;
@@ -388,8 +387,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                                         :direction :input
                                         :if-does-not-exist nil)
                     (when file
-                      (let ((*package* *package*))
-                        (in-package :nyxt/auto-mode)
+                      (let ((*package* (find-package :nyxt/auto-mode)))
                         (deserialize-auto-mode-rules file))))))
         (when data
           (echo "Loading ~a auto-mode rules from ~s."
