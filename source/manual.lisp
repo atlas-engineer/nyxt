@@ -59,8 +59,8 @@ have priorities over the other modes key bindings.")
     (:pre (:code "
 \(defvar *my-keymap* (make-keymap \"my-map\"))
 \(define-key *my-keymap*
-  \"C-f\" 'history-forwards
-  \"C-b\" 'history-backwards)
+  \"C-f\" 'nyxt/web-mode:history-forwards
+  \"C-b\" 'nyxt/web-mode:history-backwards)
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
