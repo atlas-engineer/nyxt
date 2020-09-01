@@ -25,18 +25,21 @@ Return nil if not found."
     (getf definition :type)))
 
 (defun basic-type-zero-values (type)
-  "Return TYPE zero value.
-An error is raised if the type is unsupported."
-  (cond
-    ((subtypep type 'string) "")
-    ((subtypep type 'boolean) nil)
-    ((subtypep type 'list) '())
-    ((subtypep type 'array) (make-array 0))
-    ((subtypep type 'hash-table) (make-hash-table))
-    ;; Order matters for numbers:
-    ((subtypep type 'float) 0.0)
-    ((subtypep type 'number) 0)         ; Includes complex numbers and rationals.
-    (t (error "Unknown type"))))
+  "Return TYPE zero value as (ZERO-VALUE BOOLEAN).
+BOOLEAN is non-nil if value was inferred, nil otherwise."
+  (let* ((inferred? t)
+         (zero-value (cond
+                       ((subtypep type 'string) "")
+                       ((subtypep type 'boolean) nil)
+                       ((subtypep type 'list) '())
+                       ((subtypep type 'array) (make-array 0))
+                       ((subtypep type 'hash-table) (make-hash-table))
+                       ;; Order matters for numbers:
+                       ((subtypep type 'float) 0.0)
+                       ((subtypep type 'number) 0) ; Includes complex numbers and rationals.
+                       (t (setf inferred? nil)
+                          nil))))
+    (values (and inferred? zero-value) inferred?)))
 
 (defun basic-type-inference (definition)
   "Return general type of VALUE.
@@ -89,25 +92,31 @@ Non-basic scalar types are derived to their own type (with `type-of')."
 (defun type-zero-initform-inference (definition)
   "Infer basic type zero values.
 See `basic-type-zero-values'.
-Raise a condition at macro-expansion time when initform is missing for unsupported types."
+Raise a condition at macro-expansion time when initform is missing for
+unsupported types."
   (let ((type (definition-type definition)))
     (if type
-        (handler-case (basic-type-zero-values type)
-          (error ()
-            ;; Compile-time error:
-            (error "Missing initform.")))
+        (multiple-value-bind (value found?)
+            (basic-type-zero-values type)
+          (if found?
+              value
+              ;; Compile-time error:
+              (error "Missing initform.")))
         ;; Default initform when type is missing:
         nil)))
 
 (defun no-unbound-initform-inference (definition)
   "Infer basic type zero values.
-Raise a condition when instantiating if initform is missing for unsupported types."
+Raise a condition when instantiating if initform is missing for unsupported
+types."
   (let ((type (definition-type definition)))
     (if type
-        (handler-case (basic-type-zero-values type)
-          (error ()
-            ;; Run-time error:
-            '(error "Slot must be bound.")))
+        (multiple-value-bind (value found?)
+            (basic-type-zero-values type)
+          (if found?
+              value
+              ;; Run-time error:
+              '(error "Slot must be bound.")))
         ;; Default initform when type is missing:
         nil)))
 
@@ -116,10 +125,12 @@ Raise a condition when instantiating if initform is missing for unsupported type
 Fall back to nil if initform is missing for unsupported types."
   (let ((type (definition-type definition)))
     (if type
-        (handler-case (basic-type-zero-values type)
-          (error ()
-            ;; Fall-back to nil:
-            nil))
+        (multiple-value-bind (value found?)
+            (basic-type-zero-values type)
+          (if found?
+              value
+              ;; Fall-back to nil:
+              nil))
         ;; Default initform when type is missing:
         nil)))
 
