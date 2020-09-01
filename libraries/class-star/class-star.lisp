@@ -34,9 +34,8 @@ An error is raised if the type is unsupported."
     ((subtypep type 'array) (make-array 0))
     ((subtypep type 'hash-table) (make-hash-table))
     ;; Order matters for numbers:
-    ((subtypep type 'integer) 0)
-    ((subtypep type 'complex) #c(0 0))
-    ((subtypep type 'number) 0.0)
+    ((subtypep type 'float) 0.0)
+    ((subtypep type 'number) 0)         ; Includes complex numbers and rationals.
     (t (error "Unknown type"))))
 
 (defun basic-type-inference (definition)
