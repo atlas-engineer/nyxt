@@ -37,10 +37,9 @@ Currently we store the list of current URLs of all buffers."
                         :if-exists :supersede)
     (log:info "Saving session to ~s." (expand-path (session-path *browser*)))
     ;; We READ the output of serialize-sexp to make it more human-readable.
-    (let ((*package* *package*))
+    (let ((*package* (find-package :nyxt)))
       ;; We need to make sure current package is :nyxt so that
       ;; symbols a printed with consistent namespaces.
-      (in-package :nyxt)
       (format file
               "~s"
               (with-input-from-string (in (with-output-to-string (out)
@@ -56,8 +55,7 @@ Currently we store the list of current URLs of all buffers."
                (when input
                  ;; We need to make sure current package is :nyxt so that
                  ;; symbols are printed with consistent namespaces.
-                 (let ((*package* *package*))
-                   (in-package :nyxt)
+                 (let ((*package* (find-package :nyxt)))
                    (s-serialization:deserialize-sexp input))))
         ((list version buffer-histories)
          (unless (string= version +version+)
