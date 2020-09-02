@@ -1,5 +1,5 @@
 (asdf:defsystem :nyxt
-  :version "1.5.0"
+  :version "2" ; Pre-release 1
   :author "Atlas Engineer LLC"
   :license "BSD 3-Clause"
   :serial t
