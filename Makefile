@@ -76,7 +76,8 @@ version: deps
 		--eval '(require "asdf")' \
 		--eval '$(quicklisp_maybe_load)' \
 		--load nyxt.asd \
-		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" (asdf/component:component-version (asdf:find-system :nyxt))))' \
+		--eval '(asdf:load-system :nyxt)' \
+		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" nyxt:+version+))' \
 		--eval '(uiop:quit)'
 
 .PHONY: install-assets
