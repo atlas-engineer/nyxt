@@ -44,18 +44,8 @@ is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
 (export-always '+version+)
 (defparameter +version+
-  (let ((version (asdf/component:component-version (asdf:find-system :nyxt)))
-        (directory (asdf:system-source-directory :nyxt)))
-    (or (ignore-errors
-         (uiop:with-current-directory (directory)
-           (multiple-value-bind (current-commit)
-               (uiop:run-program (list "git" "describe" "--always")
-                                 :output '(:string :stripped t))
-             (multiple-value-bind (tag-commit)
-                 (uiop:run-program (list "git" "describe" version "--always")
-                                   :output '(:string :stripped t))
-               (concatenate 'string
-                            version
-                            (when (string/= tag-commit current-commit)
-                              (format nil "-~a" current-commit)))))))
-        version)))
+  (or (ignore-errors
+       (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
+         (uiop:run-program (list "git" "describe" "--always" "--tags")
+                           :output '(:string :stripped t))))
+      (asdf/component:component-version (asdf:find-system :nyxt))))
