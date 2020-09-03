@@ -56,7 +56,7 @@
     (let* ((input (variable-suggestion-name input))
            (help-buffer (nyxt/help-mode:help-mode
                          :activate t
-                         :buffer (make-buffer
+                         :buffer (make-internal-buffer
                                   :title (str:concat "*Help-"
                                                      (symbol-name input)
                                                      "*"))))
@@ -76,7 +76,7 @@
   (let* ((title (str:concat "*Help-" (symbol-name (sym command)) "*"))
          (help-buffer (nyxt/help-mode:help-mode
                        :activate t
-                       :buffer (make-buffer :title title)))
+                       :buffer (make-internal-buffer :title title)))
          (key-keymap-pairs (nth-value 1 (keymap:binding-keys
                                          (sym command)
                                          (all-keymaps))))
@@ -124,7 +124,7 @@ For generic functions, describe all the methods."
               (:p (write-to-string (closer-mop:method-lambda-list method))))))
       (let* ((help-buffer (nyxt/help-mode:help-mode
                            :activate t
-                           :buffer (make-buffer
+                           :buffer (make-internal-buffer
                                     :title (str:concat "*Help-"
                                                        (symbol-name input)
                                                        "*"))))
@@ -190,7 +190,7 @@ A command is a special kind of function that can be called with
     (let* ((input (class-suggestion-name input))
            (help-buffer (nyxt/help-mode:help-mode
                          :activate t
-                         :buffer (make-buffer
+                         :buffer (make-internal-buffer
                                   :title (str:concat "*Help-"
                                                      (symbol-name input)
                                                      "*"))))
@@ -215,7 +215,7 @@ A command is a special kind of function that can be called with
                         :suggestion-function (slot-suggestion-filter))))
     (let* ((help-buffer (nyxt/help-mode:help-mode
                          :activate t
-                         :buffer (make-buffer
+                         :buffer (make-internal-buffer
                                   :title (str:concat "*Help-"
                                                      (symbol-name (name input))
                                                      "*"))))
@@ -232,7 +232,7 @@ A command is a special kind of function that can be called with
   (let* ((title (str:concat "*Help-bindings"))
          (help-buffer (nyxt/help-mode:help-mode
                        :activate t
-                       :buffer (make-buffer :title title)))
+                       :buffer (make-internal-buffer :title title)))
          (help-contents
            (markup:markup
             (:h1 "Bindings")
@@ -339,7 +339,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
 (defun error-buffer (title text)
   "Print some help."
   (let* ((error-buffer (nyxt/help-mode:help-mode :activate t
-                                                 :buffer (make-buffer :title title)))
+                                                 :buffer (make-internal-buffer :title title)))
          (error-contents
            (markup:markup
             (:h1 "Error occured:")
@@ -407,7 +407,7 @@ The version number is stored in the clipboard."
 (define-command help ()
   "Print help information."
   (let ((help-buffer (nyxt/help-mode:help-mode :activate t
-                                               :buffer (make-buffer :title "*Help*"))))
+                                               :buffer (make-internal-buffer :title "*Help*"))))
     (set-current-buffer help-buffer)
     (let* ((help-contents
              (markup:markup
@@ -472,7 +472,7 @@ commands.")))
   "Show the tutorial."
   (let ((help-buffer (nyxt/help-mode:help-mode
                       :activate t
-                      :buffer (make-buffer :title "*Tutorial*"))))
+                      :buffer (make-internal-buffer :title "*Tutorial*"))))
     (set-current-buffer help-buffer)
     (let* ((help-contents
              (str:concat
@@ -492,7 +492,7 @@ the "
   "Show the manual."
   (let ((help-buffer (nyxt/help-mode:help-mode
                       :activate t
-                      :buffer (make-buffer :title "*Manual*"))))
+                      :buffer (make-internal-buffer :title "*Manual*"))))
     (set-current-buffer help-buffer)
     (let* ((help-contents (manual-content))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
