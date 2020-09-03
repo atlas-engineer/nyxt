@@ -191,7 +191,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class buffer)
 
-(defclass internal-buffer (user-buffer)
+(define-class internal-buffer (user-buffer)
   ((style :accessor style :initform
           (cl-css:css
            '((body
