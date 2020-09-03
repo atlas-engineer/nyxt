@@ -192,13 +192,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-user-class buffer)
 
 (defclass internal-buffer (user-buffer)
-  ((default-modes :accessor default-modes
-                  :initarg :default-modes
-                  :type list-of-symbols
-                  :initform '(base-mode)
-                  :documentation "The symbols of the modes to instantiate on buffer creation.
-The mode instances are stored in the `modes' slot.")
-   (style :accessor style :initform
+  ((style :accessor style :initform
           (cl-css:css
            '((body
               :line-height "24px")
