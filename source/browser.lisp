@@ -483,8 +483,13 @@ Deal with REQUEST-DATA with the following rules:
                                 (keymap:lookup-key keys keymap))))
       (declare (type quri:uri url))
       (cond
-        ((internal-buffer-p buffer)
+        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
+         (log:debug "Evaluate Lisp code from internal buffer: ~a" (quri:url-decode (schemeless-url url)))
          (evaluate (quri:url-decode (schemeless-url url)))
+         nil)
+        ((internal-buffer-p buffer)
+         (log:debug "Load URL from internal buffer in new buffer: ~a" (object-display url))
+         (open-urls (list (object-string url)))
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
