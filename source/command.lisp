@@ -284,7 +284,8 @@ This function can be `funcall'ed."
 
 (defmethod run ((command command) &rest args)
   "Run COMMAND over ARGS."
-  (apply #'funcall-safely (command-function command) args))
+  (chanl:pexec ()
+    (apply #'funcall-safely (command-function command) args)))
 
 (define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.
