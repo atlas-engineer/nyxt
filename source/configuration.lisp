@@ -58,36 +58,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
          (define-user-class ,class-sym ,old-superclasses)))))
 
 (export-always '%slot-default)
-(export-always 'define-configuration)
-(defmacro define-configuration (name &body slots)
-  "Helper macro to customize NAME class slots.
-
-Classes can be modes or a core class like `browser', `buffer', `minibuffer',
-`window'.  Note that the classes must _not_ be prefixed by 'user-'.
-
-The `%slot-default' variable is replaced by the slot initform.
-
-Example that sets some defaults for all buffers:
-
-\(define-configuration buffer
-  ((status-buffer-height 24)
-   (default-modes (append '(vi-normal-mode) %slot-default))))
-
-In the above, `%slot-default' will be substituted with the default value of
-`default-modes'.
-
-To discover the default value of a slot or all slots of a class, use the
-`describe-slot' or `describe-class' commands respectively.
-
-Example to get the `blocker-mode' command to use a new default hostlists:
-
-\(define-configuration nyxt/blocker-mode:blocker-mode
-  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
-
-The above defines `nyxt/blocker-mode:blocker-mode' to inherit from a
-generated class containing the specialized hostlists and the original
-`blocker-mode'."
-
+(defmacro %define-configuration (name &body slots)
   (let* ((final-name (user-class-name name))
          (temp-name (gentemp (string final-name) (symbol-package name))))
     (dolist (name (list name final-name))
@@ -113,6 +84,44 @@ generated class containing the specialized hostlists and the original
        (define-user-class ,name ,(cons temp-name
                                             (mapcar #'class-name
                                                     (mopu:direct-superclasses final-name)))))))
+
+(export-always 'define-configuration)
+(defmacro define-configuration (names &body slots)
+  "Helper macro to customize the class slots of the NAMES classes.
+NAMES is either a symbol or a list of symbols.
+
+Classes can be modes or a one of the user-configurable classes like `browser',
+`buffer', `minibuffer', `window'.  Note that the classes must _not_ be prefixed
+by 'user-'.
+
+The `%slot-default' variable is replaced by the slot initform.
+
+Example that sets some defaults for all buffers:
+
+\(define-configuration (buffer internal-buffer)
+  ((status-buffer-height 24)
+   (default-modes (append '(vi-normal-mode) %slot-default))))
+
+Example to get the `blocker-mode' command to use a new default hostlists:
+
+\(define-configuration nyxt/blocker-mode:blocker-mode
+  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
+
+In the above, `%slot-default' will be substituted with the default value of
+`default-modes'.
+
+In the last example, `nyxt/blocker-mode:user-blocker-mode' is defined to inherit
+from the original `blocker-mode' and a generated class containing the
+specialized hostlists.
+
+To discover the default value of a slot or all slots of a class, use the
+`describe-slot' or `describe-class' commands respectively."
+  (if (listp names)
+      `(progn
+         ,@(mapcar (lambda (name)
+                     `(%define-configuration ,name ,@slots))
+                   names))
+      `(%define-configuration ,names ,@slots)))
 
 (export-always 'load-system)
 (defun load-system (system)
