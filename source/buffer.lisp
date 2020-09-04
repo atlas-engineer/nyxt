@@ -723,7 +723,7 @@ this command it cycles through all buffers."
 
 (export-always 'mode-name)
 (defun mode-name (mode)
-  (class-name (class-of mode)))
+  (class-name (original-class mode)))
 
 (declaim (ftype (function (list-of-symbols &optional buffer)) disable-modes enable-modes))
 (export-always 'disable-modes)

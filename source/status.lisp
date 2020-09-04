@@ -6,11 +6,9 @@
      (:span (format nil "[~{~a~^ ~}]"
                     (mapcar (lambda (m)
                               (str:replace-all
-                               "user-" ""
-                               (str:replace-all
-                                "-mode" ""
-                                (str:downcase
-                                 (class-name (class-of m))))))
+                               "-mode" ""
+                               (str:downcase
+                                (mode-name m))))
                             (modes buffer))))
      (:a :class "button" :title "Backwards" :href (lisp-url '(nyxt/web-mode:history-backwards)) "←")
      (:a :class "button" :title "Forwards" :href (lisp-url '(nyxt/web-mode:history-forwards)) "→")
