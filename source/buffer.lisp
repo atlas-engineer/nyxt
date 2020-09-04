@@ -746,6 +746,36 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    (make-buffer-focus)
                                    (current-buffer))))))
 
+(define-command set-url2 (&key new-buffer-p prefill-current-url-p)
+  "Set the URL for the current buffer, completing with history."
+  (let ((history (minibuffer-set-url-history *browser*)))
+    (when history
+      (containers:insert-item history (url (current-buffer))))
+    (let ((url (prompt-minibuffer
+                :input-prompt (format nil "Open URL in ~A buffer"
+                                      (if new-buffer-p
+                                          "new"
+                                          "current"))
+                :input-buffer (if prefill-current-url-p
+                                  (object-string (url (current-buffer))) "")
+                :default-modes '(set-url-mode minibuffer-mode)
+                :suggestion-function (history-suggestion-filter
+                                      :prefix-urls (list (object-string
+                                                          (url (current-buffer)))))
+                :history history
+                :must-match-p nil)))
+
+      (when (typep url 'history-entry)
+        ;; In case read-from-minibuffer returned a string upon
+        ;; must-match-p.
+        (setf url (url url)))
+      (ffi-within-renderer-thread       ; TODO: Wrap all ffi-* method content with ffi-within-renderer-thread.
+       *browser*
+       (lambda ()
+         (buffer-load url :buffer (if new-buffer-p
+                                      (make-buffer-focus)
+                                      (current-buffer))))))))
+
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
   (set-url :prefill-current-url-p t))
