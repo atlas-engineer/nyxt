@@ -4,7 +4,8 @@
 (in-package :nyxt)
 
 (define-class minibuffer (user-internal-buffer)
-  ((default-modes '(minibuffer-mode))
+  ((channel (make-instance 'chanl:channel))
+   (default-modes '(minibuffer-mode))
    (suggestion-function nil
                         :type (or function null)
                         :documentation "
@@ -132,7 +133,8 @@ A minibuffer query is typically done as follows:
 
 (export-always 'make-minibuffer)
 (defun make-minibuffer
-    (&key (default-modes nil explicit-default-modes)
+    (&key (channel nil explicit-channel)
+       (default-modes nil explicit-default-modes)
        (suggestion-function nil explicit-suggestion-function)
        (callback-buffer nil explicit-callback-buffer)
        (callback nil explicit-callback)
@@ -155,6 +157,9 @@ A minibuffer query is typically done as follows:
     (apply #'make-instance 'user-minibuffer
            `(:input-buffer ,tmp-input-buffer
              :input-cursor ,tmp-input-cursor
+             ,@(if explicit-channel
+                   `(:channel ,channel)
+                   '())
              ,@(if explicit-default-modes
                    `(:default-modes ,default-modes)
                    '())
@@ -359,7 +364,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
            (markup:markup (:span buffer-string-representation)
                           (:span :id "cursor" (markup:raw "&nbsp;"))))
           (t (markup:markup (:span (subseq buffer-string-representation 0 (cluffer:cursor-position (input-cursor minibuffer))))
-                            (:span :id "cursor" (subseq buffer-string-representation 
+                            (:span :id "cursor" (subseq buffer-string-representation
                                                         (cluffer:cursor-position (input-cursor minibuffer))
                                                         (+ 1 (cluffer:cursor-position (input-cursor minibuffer)))))
                             (:span (subseq buffer-string-representation (+ 1  (cluffer:cursor-position (input-cursor minibuffer))))))))))
@@ -467,3 +472,40 @@ completion count."
 (defmethod get-marked-suggestions ((minibuffer minibuffer))
   "Return the list of strings for the marked suggestion in the minibuffer."
   (mapcar #'object-string (marked-suggestions minibuffer)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun prompt-minibuffer (&key input-prompt
+                            input-buffer
+                            default-modes
+                            suggestion-function
+                            history
+                            must-match-p)
+  ""
+  (let ((channel (make-instance 'chanl:channel)))
+    (ffi-within-renderer-thread
+     *browser*
+     (lambda ()
+       (let ((minibuffer (make-minibuffer
+                          :channel channel
+                          :input-prompt input-prompt
+                          :input-buffer input-buffer
+                          :default-modes default-modes
+                          :suggestion-function suggestion-function
+                          :history history
+                          :must-match-p must-match-p)))
+         (if *keep-alive*
+             (match (setup-function minibuffer)
+               ((guard f f) (funcall f minibuffer)))
+             (handler-case (match (setup-function minibuffer)
+                             ((guard f f) (funcall f minibuffer)))
+               (error (c)
+                 (echo-warning "Minibuffer error: ~a" c))))
+         (state-changed minibuffer)
+         (update-display minibuffer)
+         (push minibuffer (active-minibuffers (current-window)))
+         (apply #'show
+                (unless (suggestion-function minibuffer)
+                  ;; We don't need so much height since there is no suggestion to display.
+                  (list :height (minibuffer-open-single-line-height (current-window))))))))
+    (chanl:recv channel)))

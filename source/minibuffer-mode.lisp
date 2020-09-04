@@ -33,7 +33,8 @@
        "end" 'cursor-end
        "C-k" 'kill-line
        "return" 'return-input
-       "C-return" 'return-immediate
+       "C-return" 'return-selection
+       ;; "C-return" 'return-immediate
        "C-g" 'cancel-input
        "escape" 'cancel-input
        "C-n" 'select-next
@@ -120,6 +121,33 @@ complete against a search engine."
                                     (first nyxt::suggestions))))
       (nil (when invisible-input-p
              (funcall-safely nyxt::callback (input-buffer minibuffer))))))
+  (quit-minibuffer minibuffer))
+
+(define-command return-selection (&optional (minibuffer (current-minibuffer)))
+  "Return with minibuffer selection."
+  (with-slots (must-match-p nyxt::suggestions nyxt::suggestion-cursor
+               invisible-input-p
+               multi-selection-p nyxt::marked-suggestions)
+      minibuffer
+    (match (or nyxt::marked-suggestions
+               (and nyxt::suggestions
+                    (list (nth nyxt::suggestion-cursor nyxt::suggestions)))
+               (and (not must-match-p)
+                    (list (input-buffer minibuffer))))
+      ((guard nyxt::suggestions nyxt::suggestions)
+       ;; Note that "immediate input" is also in suggestions, so it's caught here.
+       (setf nyxt::suggestions
+             (mapcar (lambda (suggestion) (if (stringp suggestion)
+                                              (str:replace-all " " " " suggestion)
+                                              suggestion))
+                     nyxt::suggestions))
+       (chanl:send (channel minibuffer) (if multi-selection-p
+                                          nyxt::suggestions
+                                          (first nyxt::suggestions))
+                   :blockp nil))
+      (nil (when invisible-input-p
+             (chanl:send (channel minibuffer) (input-buffer minibuffer)
+                         :blockp nil)))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
