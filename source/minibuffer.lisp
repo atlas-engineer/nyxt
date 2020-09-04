@@ -4,16 +4,13 @@
 (in-package :nyxt)
 
 (define-class minibuffer (user-internal-buffer)
-  ((default-modes '(minibuffer-mode))
+  ((channel (error "Channel required"))
+   (default-modes '(minibuffer-mode))
    (suggestion-function nil
                         :type (or function null)
                         :documentation "
 Take the input string and returns a list of suggestion strings.
 Example: `buffer-suggestion-filter'.")
-   (callback nil
-             :type (or function null)
-             :export nil
-             :documentation "Function to call over the selected suggestion.")
    (callback-buffer (when *browser* (current-buffer))
                     :type (or buffer null)
                     :export nil
@@ -130,23 +127,26 @@ A minibuffer query is typically done as follows:
 
 (define-user-class minibuffer)
 
+(defmacro define-function (name args &body body)
+  "Eval ARGS then define function over the resulting lambda list."
+  (let ((evaluated-args (eval args)))
+    `(defun ,name  ,evaluated-args
+       (declare (ignorable ,@(set-difference (mapcar (lambda (arg) (if (listp arg) (first arg) arg))
+                                                     evaluated-args)
+                                             '(&key &allow-other-keys &aux &optional &rest))))
+       ,@body)))
+
+(defun minibuffer-initargs ()
+  (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)))))
+             (mopu:direct-slot-names 'minibuffer)))
+
 (export-always 'make-minibuffer)
-(defun make-minibuffer
-    (&key (default-modes nil explicit-default-modes)
-       (suggestion-function nil explicit-suggestion-function)
-       (callback-buffer nil explicit-callback-buffer)
-       (callback nil explicit-callback)
-       (setup-function nil explicit-setup-function)
-       (cleanup-function nil explicit-cleanup-function)
-       (changed-callback nil explicit-changed-callback)
-       (must-match-p t explicit-must-match-p)
-       (input-prompt nil explicit-input-prompt)
-       (input-buffer nil explicit-input-buffer)
-       (invisible-input-p nil explicit-invisible-input-p)
-       (hide-suggestion-count-p nil explicit-hide-suggestion-count-p)
-       (history nil explicit-history)
-       (multi-selection-p nil explicit-multi-selection-p))
-  "See the `minibuffer' class for the argument documentation."
+(define-function make-minibufer
+    (append '(&rest args)
+            '(&key)
+            (delete 'input-buffer
+                    (minibuffer-initargs))
+            '((input-buffer nil explicit-input-buffer)))
   (let ((tmp-input-buffer (make-instance 'text-buffer:text-buffer))
         (tmp-input-cursor (make-instance 'text-buffer:cursor)))
     (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
@@ -155,45 +155,7 @@ A minibuffer query is typically done as follows:
     (apply #'make-instance 'user-minibuffer
            `(:input-buffer ,tmp-input-buffer
              :input-cursor ,tmp-input-cursor
-             ,@(if explicit-default-modes
-                   `(:default-modes ,default-modes)
-                   '())
-             ,@(if explicit-suggestion-function
-                   `(:suggestion-function ,suggestion-function)
-                   '())
-             ,@(if explicit-callback-buffer
-                   `(:callback-buffer ,callback-buffer)
-                   '())
-             ,@(if explicit-callback
-                   `(:callback ,callback)
-                   '())
-             ,@(if explicit-setup-function
-                   `(:setup-function ,setup-function)
-                   '())
-             ,@(if explicit-cleanup-function
-                   `(:cleanup-function ,cleanup-function)
-                   '())
-             ,@(if explicit-changed-callback
-                   `(:changed-callback ,changed-callback)
-                   '())
-             ,@(if explicit-must-match-p
-                   `(:must-match-p ,must-match-p)
-                   '())
-             ,@(if explicit-input-prompt
-                   `(:input-prompt ,input-prompt)
-                   '())
-             ,@(if explicit-invisible-input-p
-                   `(:invisible-input-p ,invisible-input-p)
-                   '())
-             ,@(if explicit-hide-suggestion-count-p
-                   `(:hide-suggestion-count-p ,hide-suggestion-count-p)
-                   '())
-             ,@(if explicit-history
-                   `(:history ,history)
-                   '())
-             ,@(if explicit-multi-selection-p
-                   `(:multi-selection-p ,multi-selection-p)
-                   '())))))
+             ,@args))))
 
 (export-always 'input-buffer)
 (defmethod input-buffer ((minibuffer minibuffer))
@@ -254,36 +216,38 @@ beginning."
             (must-match-p minibuffer)))
   (initialize-modes minibuffer))
 
-(declaim (ftype (function (minibuffer)) read-from-minibuffer))
-(export-always 'read-from-minibuffer)
-(defun read-from-minibuffer (minibuffer)
+(export-always 'prompt-minibuffer)
+(define-function prompt-minibuffer (append '(&rest args)
+                                           (list '&key
+                                                 (minibuffer-initargs)))
   "Open the minibuffer, ready for user input.
+ARGS are as per `make-minibuffer'.
 Example use:
 
-\(read-from-minibuffer
- (make-minibuffer
-  :suggestion-function #'my-suggestion-filter))
+\(prompt-minibuffer
+  :suggestion-function #'my-suggestion-filter)
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
-  (when %callback
-    (setf (slot-value minibuffer 'callback) %callback))
-  ;; TODO: Shall we leave it to the caller to decide which is the callback-buffer?
-  (setf (callback-buffer minibuffer) (current-buffer))
-  (if *keep-alive*
-      (match (setup-function minibuffer)
-        ((guard f f) (funcall f minibuffer)))
-      (handler-case (match (setup-function minibuffer)
-                      ((guard f f) (funcall f minibuffer)))
-        (error (c)
-          (echo-warning "Minibuffer error: ~a" c)
-          (return-from read-from-minibuffer))))
-  (state-changed minibuffer)
-  (update-display minibuffer)
-  (push minibuffer (active-minibuffers (current-window)))
-  (apply #'show
-         (unless (suggestion-function minibuffer)
-           ;; We don't need so much height since there is no suggestion to display.
-           (list :height (minibuffer-open-single-line-height (current-window))))))
+  (let ((channel (make-instance 'chanl:channel)))
+    (ffi-within-renderer-thread
+     *browser*
+     (lambda ()
+       (let ((minibuffer (apply #'make-minibuffer (append (list :channel channel) args))))
+         (if *keep-alive*
+             (match (setup-function minibuffer)
+               ((guard f f) (funcall f minibuffer)))
+             (handler-case (match (setup-function minibuffer)
+                             ((guard f f) (funcall f minibuffer)))
+               (error (c)
+                 (echo-warning "Minibuffer error: ~a" c))))
+         (state-changed minibuffer)
+         (update-display minibuffer)
+         (push minibuffer (active-minibuffers (current-window)))
+         (apply #'show
+                (unless (suggestion-function minibuffer)
+                  ;; We don't need so much height since there is no suggestion to display.
+                  (list :height (minibuffer-open-single-line-height (current-window))))))))
+    (chanl:recv channel)))
 
 (export-always 'erase-input)
 (defmethod erase-input ((minibuffer minibuffer))
@@ -359,7 +323,7 @@ The new webview HTML content it set as the MINIBUFFER's `content'."
            (markup:markup (:span buffer-string-representation)
                           (:span :id "cursor" (markup:raw "&nbsp;"))))
           (t (markup:markup (:span (subseq buffer-string-representation 0 (cluffer:cursor-position (input-cursor minibuffer))))
-                            (:span :id "cursor" (subseq buffer-string-representation 
+                            (:span :id "cursor" (subseq buffer-string-representation
                                                         (cluffer:cursor-position (input-cursor minibuffer))
                                                         (+ 1 (cluffer:cursor-position (input-cursor minibuffer)))))
                             (:span (subseq buffer-string-representation (+ 1  (cluffer:cursor-position (input-cursor minibuffer))))))))))

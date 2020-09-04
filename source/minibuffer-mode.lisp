@@ -32,7 +32,7 @@
        "C-e" 'cursor-end
        "end" 'cursor-end
        "C-k" 'kill-line
-       "return" 'return-input
+       "return" 'return-selection
        "C-return" 'return-immediate
        "C-g" 'cancel-input
        "escape" 'cancel-input
@@ -95,9 +95,9 @@ complete against a search engine."
     (t
      (insert-suggestion minibuffer))))
 
-(define-command return-input (&optional (minibuffer (current-minibuffer)))
+(define-command return-selection (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
-  (with-slots (nyxt::callback must-match-p nyxt::suggestions nyxt::suggestion-cursor
+  (with-slots (must-match-p nyxt::suggestions nyxt::suggestion-cursor
                invisible-input-p
                multi-selection-p nyxt::marked-suggestions)
       minibuffer
@@ -113,11 +113,13 @@ complete against a search engine."
                                               (str:replace-all " " " " suggestion)
                                               suggestion))
                      nyxt::suggestions))
-       (funcall-safely nyxt::callback (if multi-selection-p
-                                    nyxt::suggestions
-                                    (first nyxt::suggestions))))
+       (chanl:send (channel minibuffer) (if multi-selection-p
+                                          nyxt::suggestions
+                                          (first nyxt::suggestions))
+                   :blockp nil))
       (nil (when invisible-input-p
-             (funcall-safely nyxt::callback (input-buffer minibuffer))))))
+             (chanl:send (channel minibuffer) (input-buffer minibuffer)
+                         :blockp nil)))))
   (quit-minibuffer minibuffer))
 
 (define-command return-immediate (&optional (minibuffer (current-minibuffer)))
