@@ -88,8 +88,10 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
 
 (defun store-last-active-modes (auto-mode url)
   (when (can-store-last-active-modes auto-mode url)
-      (setf (last-active-modes auto-mode) (modes (buffer auto-mode))
-            (last-active-modes-url auto-mode) url)))
+    ;; `last-active-modes' must be a list separate from the mode list, otherwise
+    ;; when modes get modified, last-active-modes would also be altered.
+    (setf (last-active-modes auto-mode) (copy-list (modes (buffer auto-mode)))
+          (last-active-modes-url auto-mode) url)))
 
 (defun restore-last-active-modes (auto-mode)
   (disable-modes
