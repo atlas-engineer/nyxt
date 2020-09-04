@@ -251,22 +251,27 @@ To change the default buffer, e.g. set it to a given URL:
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
   (lambda (&optional urls)
     (let ((window (window-make *browser*)))
+      ;; Restore session before opening command line URLs, otherwise it will
+      ;; reset the session with the new URLs.
+      ;; TODO: If (session-restore-prompt *browser*) is :always-ask, the session
+      ;; will be overwritten because if-confirm is asynchronous.
+      ;; Implement synchronous minibuffer to fix this.
+      (when (expand-path (session-path *browser*))
+        (flet ((restore-session ()
+                 (when (and (session-restore-function *browser*)
+                            (uiop:file-exists-p (expand-path (session-path *browser*))))
+                   (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
+                   (funcall (session-restore-function *browser*)))))
+          (match (session-restore-prompt *browser*)
+            (:always-ask (if-confirm ("Restore previous session?")
+                                     (restore-session)))
+            (:always-restore (restore-session))
+            (:never-restore (log:info "Not restoring session.")))))
       (if urls
           (open-urls urls)
-          (window-set-active-buffer window (funcall-safely buffer-fn))))
-    (when (startup-error-reporter-function *browser*)
-      (funcall-safely (startup-error-reporter-function *browser*)))
-    (when (expand-path (session-path *browser*))
-      (flet ((restore-session ()
-               (when (and (session-restore-function *browser*)
-                          (uiop:file-exists-p (expand-path (session-path *browser*))))
-                 (log:info "Restoring session ~s." (expand-path (session-path *browser*)))
-                 (funcall (session-restore-function *browser*)))))
-        (match (session-restore-prompt *browser*)
-          (:always-ask (if-confirm ("Restore previous session?")
-                         (restore-session)))
-          (:always-restore (restore-session))
-          (:never-restore (log:info "Not restoring session.")))))))
+          (window-set-active-buffer window (funcall-safely buffer-fn)))
+      (when (startup-error-reporter-function *browser*)
+        (funcall-safely (startup-error-reporter-function *browser*))))))
 
 (export-always 'open-external-urls)
 (defun open-external-urls (urls)
