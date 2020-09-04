@@ -192,36 +192,35 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-user-class buffer)
 
 (define-class internal-buffer (user-buffer)
-  ((style :accessor style :initform
-          (cl-css:css
-           '((body
-              :line-height "24px")
-             (h1
-              :font-family "Helvetica Neue, Helvetica")
-             (h2
-              :font-family "Helvetica Neue, Helvetica")
-             (h3
-              :font-family "Helvetica Neue, Helvetica")
-             (h4
-              :font-family "Helvetica Neue, Helvetica")
-             (h5
-              :font-family "Helvetica Neue, Helvetica")
-             (h6
-              :font-family "Helvetica Neue, Helvetica")
-             (.button
-              :background-color "darkgray"
-              :color "white"
-              :text-decoration "none"
-              :border-radius "2px"
-              :padding "6px"
-              :margin-left "2px"
-              :margin-right "2px")
-             (|.button:hover|
-              :color "black")
-             (|.button:visited|
-              :color "white")
-             (|.button:active|
-              :color "white"))))))
+  ((style #.(cl-css:css
+             '((body
+                :line-height "24px")
+               (h1
+                :font-family "Helvetica Neue, Helvetica")
+               (h2
+                :font-family "Helvetica Neue, Helvetica")
+               (h3
+                :font-family "Helvetica Neue, Helvetica")
+               (h4
+                :font-family "Helvetica Neue, Helvetica")
+               (h5
+                :font-family "Helvetica Neue, Helvetica")
+               (h6
+                :font-family "Helvetica Neue, Helvetica")
+               (.button
+                :background-color "darkgray"
+                :color "white"
+                :text-decoration "none"
+                :border-radius "2px"
+                :padding "6px"
+                :margin-left "2px"
+                :margin-right "2px")
+               (|.button:hover|
+                :color "black")
+               (|.button:visited|
+                :color "white")
+               (|.button:active|
+                :color "white"))))))
 
 (define-user-class internal-buffer)
 
