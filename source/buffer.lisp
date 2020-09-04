@@ -220,37 +220,42 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                (|.button:visited|
                 :color "white")
                (|.button:active|
-                :color "white"))))))
+                :color "white")))))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (define-user-class internal-buffer)
 
-(defclass status-buffer (user-internal-buffer)
-  ((height :accessor height :initform 16
+(define-class status-buffer (user-internal-buffer)
+  ((height 16
            :type integer
            :documentation "The height of the status buffer in pixels.")
-   (style :accessor style :initform
-          (cl-css:css
-           '((body
-              :background "rgb(224, 224, 224)"
-              :font-size "12px"
-              :color "rgb(32, 32, 32)"
-              :padding 0
-              :padding-left "4px"
-              :line-height "16px"
-              :margin 0)
-             (.status-menu
-              :padding-left "4px")
-             (.button
-              :background-color "darkgray"
-              :color "black"
-              :text-decoration "none"
-              :border-radius "2px"
-              :padding-left "2px"
-              :padding-right "2px"
-              :margin-left "2px"
-              :margin-right "2px")
-             (|.button:hover|
-              :color "white"))))))
+   (style #.(cl-css:css
+             '((body
+                :background "rgb(224, 224, 224)"
+                :font-size "12px"
+                :color "rgb(32, 32, 32)"
+                :padding 0
+                :padding-left "4px"
+                :line-height "16px"
+                :margin 0)
+               (.status-menu
+                :padding-left "4px")
+               (.button
+                :background-color "darkgray"
+                :color "black"
+                :text-decoration "none"
+                :border-radius "2px"
+                :padding-left "2px"
+                :padding-right "2px"
+                :margin-left "2px"
+                :margin-right "2px")
+               (|.button:hover|
+                :color "white")))))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (define-user-class status-buffer)
 
