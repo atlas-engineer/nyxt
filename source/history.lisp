@@ -104,11 +104,11 @@ moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
   (let* ((path (history-path (current-buffer)))
          (history (when (get-data path)
-                       (sort (alex:hash-table-values
-                              (get-data path))
-                             (lambda (x y)
-                               (> (score-history-entry x)
-                                  (score-history-entry y))))))
+                    (sort (alex:hash-table-values
+                           (get-data path))
+                          (lambda (x y)
+                            (> (score-history-entry x)
+                               (score-history-entry y))))))
         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
       (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
