@@ -114,23 +114,6 @@ if there are errors, they will be reported by this function.")
                                        :documentation "When open links from an external program, or
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
-   (search-engines (list (make-instance 'search-engine
-                                        :shortcut "default"
-                                        :search-url "https://duckduckgo.com/?q=~a"
-                                        :fallback-url "https://duckduckgo.com/")
-                         (make-instance 'search-engine
-                                        :shortcut "wiki"
-                                        :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                                        :fallback-url "https://en.wikipedia.org/"))
-                   :type list-of-search-engines
-                   :documentation "A list of the `search-engine' objects.
-You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
-If the query is empty, FALLBACK-URL is loaded instead.  If
-FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
-
-The engine with the \"default\" shortcut (or the first engine if there is no
-\"default\") is used when the query is not a valid URL, or the first keyword is
-not recognized.")
    (download-watcher nil
                      :type t
                      :export nil

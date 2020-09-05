@@ -76,7 +76,7 @@ complete against a search engine."
     ;; Complete a search engine name.
     ((and (not (str:emptyp (input-buffer minibuffer)))
           (zerop (nyxt::suggestion-cursor minibuffer)))
-     (let* ((engines (search-engines *browser*))
+     (let* ((engines (search-engines (current-buffer)))
             (matching-engines
               (remove-if (complement (alex:curry #'str:starts-with-p (input-buffer minibuffer)))
                          engines

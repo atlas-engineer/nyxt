@@ -52,30 +52,28 @@ the empty string."))
 (defun all-search-engines ()
   "Return the `search-engines' from the `browser' instance plus those in
 bookmarks."
-  (when *browser*
-    (append (search-engines *browser*)
+  (sera:and-let* ((buffer (current-buffer)))
+    (append (search-engines buffer)
             (bookmark-search-engines))))
 
 (defun default-search-engine (&optional (search-engines (all-search-engines)))
-  "Return the search engine with the 'default' shortcut, or the first one if
-there is none."
-  (or (find "default"
-            search-engines :test #'string= :key #'shortcut)
-      (first search-engines)))
+  "Return the last search engine of the SEARCH-ENGINES."
+  (first (last search-engines)))
 
 (export-always 'search-engine-suggestion-filter)
 (defun search-engine-suggestion-filter (minibuffer)
   (with-slots (input-buffer) minibuffer
-    (let* ((matched-engines
+    (let* ((engines (search-engines (current-buffer)))
+           (matched-engines
              (remove-if-not
               (lambda (engine)
                 (str:starts-with-p (text-buffer::string-representation input-buffer)
                                    (shortcut engine)
                                    :ignore-case t))
-              (search-engines *browser*)))
+              engines))
            (fuzzy-matched-engines
             (fuzzy-match (input-buffer minibuffer)
-                         (set-difference (search-engines *browser*) matched-engines))))
+                         (set-difference engines matched-engines))))
       (append matched-engines fuzzy-matched-engines))))
 
 (define-command search-selection ()

@@ -73,7 +73,7 @@ have priorities over the other modes key bindings.")
   ((default-modes (append '(my-mode) %slot-default))))"))
 
     (:h3 "Search engines")
-    (:p "See the " (:code "search-engines") " browser slot documentation.
+    (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
 
     (:h3 "URL-dispatchers")
