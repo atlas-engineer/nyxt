@@ -13,13 +13,18 @@
 ;;
 ;; - Access-time: This is useful to sort command by the time they were last
 ;;   called.  The only way to do this is to persist the command instances.
-(defclass command ()
-  ((sym :accessor sym :initarg :sym :type symbol :initform nil)
-   (pkg :accessor pkg :initarg :pkg :type package :initform nil)
-   (sexp :accessor sexp :initarg :sexp :type sexp :initform nil)
-   (access-time :accessor access-time :type integer :initform 0
+(define-class command ()
+  ((sym nil
+        :type (or symbol null))
+   (pkg nil
+        :type (or package null))
+   (sexp nil
+         :type sexp)
+   (access-time 0
+                :type integer
                 :documentation "Last time this command was called from minibuffer.
-This can be used to order the commands.")))
+This can be used to order the commands."))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
@@ -157,13 +162,12 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
                          (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
              (package-defined-symbols)))
 
-(defclass slot ()
-  ((name :initarg :name
-         :accessor name
-         :type symbol)
-   (class-sym :initarg :class-sym
-              :accessor class-sym
-              :type symbol)))
+(define-class slot ()
+  ((name nil
+         :type (or symbol null))
+   (class-sym nil
+              :type (or symbol null)))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod object-string ((slot slot))
   (string-downcase (write-to-string (name slot))))

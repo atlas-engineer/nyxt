@@ -3,8 +3,7 @@
 
 (in-package :nyxt)
 
-(defclass messages-appender (log4cl-impl:appender)
-  ())
+(defclass messages-appender (log4cl-impl:appender) ())
 
 (defmethod log4cl-impl:appender-do-append ((appender messages-appender) logger level log-func)
   (when *browser*

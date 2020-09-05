@@ -3,13 +3,13 @@
 
 (in-package :nyxt)
 
-(defclass hook-description ()
-  ((name :accessor name :initarg :name
-         :initform ""
-         :type string
+(define-class hook-description ()
+  ((name ""
          :documentation "The hook name.")
-   (value :accessor value :initarg :value
-          :documentation "The hook value.")))
+   (value nil
+          :type t
+          :documentation "The hook value."))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod object-string ((hook-desc hook-description))
   (name hook-desc))

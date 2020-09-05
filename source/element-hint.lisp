@@ -219,16 +219,18 @@ identifier for every hinted element."
                                         :identifier (cdr (assoc :identifier element))
                                         :hint (cdr (assoc :hint element))))))))
 
-(defclass hint ()
-  ((hint :accessor hint :initarg :hint)
-   (identifier :accessor identifier :initarg :identifier)
-   (body :accessor body :initarg :body
-         :documentation "The body of the anchor tag.")))
+(define-class hint ()
+  ((hint "")
+   (identifier "")
+   (body ""
+         :documentation "The body of the anchor tag."))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defclass button-hint (hint) ())
 
-(defclass link-hint (hint)
-  ((url :accessor url :initarg :url)))
+(define-class link-hint (hint)
+  ((url ""))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defclass input-hint (hint) ())
 

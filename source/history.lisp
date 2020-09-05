@@ -3,36 +3,26 @@
 
 (in-package :nyxt)
 
-(defclass history-entry ()
-  ((url :initarg :url
-        :accessor url
-        :type quri:uri
-        :initform (quri:uri ""))
-   (title :initarg :title
-          :accessor title
-          :type string
-          :initform "")
-   (last-access :initarg :last-access
-                :accessor last-access
-                :type local-time:timestamp
-                :initform (local-time:now))
+(define-class history-entry ()
+  ((url (quri:uri "")
+        :type quri:uri)
+   (title "")
+   (last-access (local-time:now)
+                :type local-time:timestamp)
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
    ;; could use a new buffer slot to signal that the last load came from an
    ;; explicit request?
-   (explicit-visits :initarg :explicit-visits
-                    :accessor explicit-visits
+   (explicit-visits 0
                     :type integer
-                    :initform 0
                     :documentation "
 Number of times the URL was visited by a minibuffer request.  This does not
 include implicit visits.")
-   (implicit-visits :initarg :implicit-visits
-                    :accessor implicit-visits
+   (implicit-visits 0
                     :type integer
-                    :initform 0
                     :documentation "
 Number of times the URL was visited by following a link on a page.  This does
 not include explicit visits."))
+  (:accessor-name-transformer #'class*:name-identity)
   (:documentation "
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))

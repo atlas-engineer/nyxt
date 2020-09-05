@@ -3,9 +3,10 @@
 
 (in-package :nyxt)
 
-(defclass meta-result ()
-  ((result :accessor result :initarg :result)
-   (source-minibuffer :accessor source-minibuffer :initarg :source)))
+(define-class meta-result ()
+  ((result)
+   (source-minibuffer :initarg :source))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod object-display ((meta-result meta-result))
   (format nil "~a" (object-display (result meta-result))))

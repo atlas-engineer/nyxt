@@ -3,10 +3,9 @@
 
 (in-package :nyxt/web-mode)
 
-(defclass heading ()
-  ((inner-text :accessor inner-text
-               :initarg :inner-text
-               :type :string))
+(define-class heading ()
+  ((inner-text ""))
+  (:accessor-name-transformer #'class*:name-identity)
   (:documentation "A heading. The inner-text must not be modified, so
   than we can jump to the anchor of the same name."))
 

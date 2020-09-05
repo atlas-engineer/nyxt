@@ -108,10 +108,11 @@
     (replace-original-nodes)
     (ps:chain |json| (stringify *matches*))))
 
-(defclass match ()
-  ((identifier :accessor identifier :initarg :identifier)
-   (body :accessor body :initarg :body)
-   (buffer :accessor buffer :initarg :buffer)))
+(define-class match ()
+  ((identifier)
+   (body)
+   (buffer))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defclass multi-buffer-match (match) ())
 
