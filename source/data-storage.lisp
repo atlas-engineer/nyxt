@@ -249,9 +249,7 @@ This function can be used on browser-less globals like `*init-file-path*'."
 
 (defmethod get-user-data ((profile private-data-profile) (path data-path))
   "Look up the buffer-local data in case of `private-data-profile'."
-  (sera:and-let* ((expanded-path (expand-path path)))
-    (alex:ensure-gethash expanded-path (user-data-cache profile)
-                         (make-instance 'user-data))))
+  (%get-user-data profile path (user-data-cache profile)))
 
 (export-always 'get-data)
 ;; TODO: Better name? Isn't it too wide?
@@ -269,7 +267,6 @@ Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it."
     `(let* ((,path-name ,data-path)
             (,lock (lock (get-user-data (current-data-profile) ,path-name))))
        (bt:with-recursive-lock-held (,lock)
-         (restore (current-data-profile) ,path-name)
          (let ((,data-var (get-data ,path-name)))
            (unwind-protect
                 (progn ,@body)

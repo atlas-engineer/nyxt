@@ -189,10 +189,21 @@ editor executable."))
 
 (define-user-class browser)
 
-(defmethod get-user-data ((profile default-data-profile) (path data-path))
+(defun %get-user-data (profile path cache)
   (sera:and-let* ((expanded-path (expand-path path)))
-    (alex:ensure-gethash expanded-path (user-data-cache *browser*)
-                         (make-instance 'user-data))))
+    (multiple-value-bind  (user-data found?)
+        (gethash expanded-path cache)
+      (if found?
+          user-data
+          (let ((user-data (make-instance 'user-data)))
+            (setf (gethash expanded-path cache)
+                  user-data)
+            (bt:with-recursive-lock-held ((lock user-data))
+              (restore profile path))
+            user-data)))))
+
+(defmethod get-user-data ((profile default-data-profile) (path data-path))
+  (%get-user-data profile path (user-data-cache *browser*)))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
