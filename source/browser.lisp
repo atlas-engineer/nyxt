@@ -620,6 +620,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-buffer-delete (buffer))
 (define-ffi-method ffi-buffer-load (buffer uri))
 (define-ffi-method ffi-buffer-evaluate-javascript (buffer javascript))
+(define-ffi-method ffi-buffer-evaluate-javascript-SYNC (buffer javascript))
 (define-ffi-method ffi-minibuffer-evaluate-javascript (window javascript))
 (define-ffi-method ffi-buffer-enable-javascript (buffer value))
 (define-ffi-method ffi-buffer-enable-javascript-markup (buffer value))
