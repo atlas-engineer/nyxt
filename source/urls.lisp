@@ -13,7 +13,8 @@
 If the URL contains hexadecimal-encoded characters, return their unicode counterpart.
 On errors, return URL."
     (the (values (or string null) &optional)
-         (or (ignore-errors (quri:url-decode (quri:render-uri uri))) (quri:render-uri uri))))
+         (or (ignore-errors (ffi-display-uri (quri:render-uri uri)))
+             (quri:render-uri uri))))
 
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string

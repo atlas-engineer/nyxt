@@ -830,6 +830,9 @@ custom (the specified proxy) and none."
        (ps:ps (setf (ps:@ document Body |innerHTML|)
                     (ps:lisp text)))))))
 
+(defmethod ffi-display-uri (text)
+  (webkit:webkit-uri-for-display text))
+
 (declaim (ftype (function (webkit:webkit-cookie-manager cookie-policy)) set-cookie-policy))
 (defun set-cookie-policy (cookie-manager cookie-policy)
   (webkit:webkit-cookie-manager-set-accept-policy

@@ -635,6 +635,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-inspector-show (buffer))
 (define-ffi-method ffi-print-status (window text))
 (define-ffi-method ffi-print-message (window message))
+(define-ffi-method ffi-display-uri (text))
 (define-ffi-method ffi-buffer-cookie-policy (buffer value))
 
 (defmacro within-renderer-thread (&body body)
