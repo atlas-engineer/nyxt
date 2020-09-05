@@ -165,8 +165,8 @@ This can be useful to let the user select no tag when returning directly."
       (list "tab" 'insert-tag
             "return" 'nyxt/minibuffer-mode:return-immediate)))))
 
-(define-command show-bookmarks ()
-  "Show all bookmarks in a new buffer."
+(define-command list-bookmarks ()
+  "List all bookmarks in a new buffer."
   (let* ((bookmarks-buffer (make-buffer :title "*Bookmarks*"))
          (bookmark-contents
            (markup:markup

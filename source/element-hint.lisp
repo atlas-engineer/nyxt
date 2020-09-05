@@ -377,7 +377,7 @@ visible active buffer."
   (query-hints "Download link URL:" (lambda (selected-link)
                                       (download (quri:uri selected-link))
                                       (unless (find-buffer 'download-mode)
-                                        (download-list)))))
+                                        (list-downloads)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt/minibuffer-mode)

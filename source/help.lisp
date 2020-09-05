@@ -366,7 +366,7 @@ The version number is stored in the clipboard."
   (setf (messages-content *browser*) '())
   (echo "Messages cleared."))
 
-(define-command messages ()
+(define-command list-messages ()
   "Show the *Messages* buffer."
   (let ((buffer (find-if (lambda (b)
                            (string= "*Messages*" (title b)))
@@ -379,9 +379,9 @@ The version number is stored in the clipboard."
               (:style (style buffer))
               (:h1 "Messages")
               (:a :class "button"
-                  :href (lisp-url '(nyxt::messages)) "Update")
+                  :href (lisp-url '(nyxt::list-messages)) "Update")
               (:a :class "button"
-                  :href (lisp-url '(nyxt:clear-messages) '(nyxt::messages)) "Clear")
+                  :href (lisp-url '(nyxt:clear-messages) '(nyxt::list-messages)) "Clear")
               (:ul
                (loop for message in (reverse (messages-content *browser*))
                      collect (markup:markup (:li message))))))

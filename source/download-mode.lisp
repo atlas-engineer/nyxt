@@ -56,7 +56,7 @@
     (ffi-buffer-evaluate-javascript download-buffer insert-content)
     download-buffer))
 
-(define-command download-list ()
+(define-command list-downloads ()
   "Display a buffer listing all downloads."
   (unless (download-watcher *browser*)
     (setf (download-watcher *browser*)
@@ -67,7 +67,7 @@
   "Download the page or file of the current buffer."
   (download (url (current-buffer)))
   (unless (find-buffer 'download-mode)
-    (download-list)))
+    (list-downloads)))
 
 (defun get-downloaded-filenames ()
   "Return the list of downloaded filenames of the current session, as strings."

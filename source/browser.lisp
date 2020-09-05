@@ -237,7 +237,7 @@ editor executable."))
 
 
 (defun download-watch ()
-  "Update the download-list buffer.
+  "Update the *Downloads* buffer.
 This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
@@ -406,7 +406,7 @@ Deal with REQUEST-DATA with the following rules:
          (download url :proxy-address (proxy-address buffer :downloads-only t)
                        :cookies "")
          (unless (find-buffer 'download-mode)
-           (download-list))
+           (list-downloads))
          nil)
         (t
          (log:debug "Forwarding: ~a" (object-display url))

@@ -32,7 +32,7 @@
                      "C-m k" 'bookmark-delete
                      "C-t" 'make-buffer-focus
                      "C-m u" 'bookmark-url
-                     "C-b" 'show-bookmarks
+                     "C-b" 'list-bookmarks
                      "M-c l" 'copy-url
                      "M-c t" 'copy-title
                      "f1 f1" 'help
@@ -47,7 +47,7 @@
                      "f1 b" 'describe-bindings
                      "f11" 'fullscreen-current-window
                      "C-o" 'load-file
-                     "C-j" 'download-list
+                     "C-j" 'list-downloads
                      "C-space" 'execute-command
                      "C-n" 'make-window
                      "C-shift-W" 'delete-current-window

@@ -83,7 +83,7 @@ magnet links.  See the" (:code "url-dispatching-handler") " function
 documentation.")
 
     (:h3 "Downloads")
-    (:p "See the " (:code "download-list") " command and the "
+    (:p "See the " (:code "list-downloads") " command and the "
         (:code "download-path") " browser slot documentation.")
 
     (:h3 "Proxy and Tor")

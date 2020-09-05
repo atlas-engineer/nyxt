@@ -77,7 +77,7 @@ upon return.  The suggestion under the cursor is not processed if not marked.")
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
-messages, invoke the command " (:code "messages") ".")
+messages, invoke the command " (:code "list-messages") ".")
    (:h3 "Status Area")
    (:p "The status area is where information about the state of that buffer is
 printed. By default, this includes the active modes, the URL, and the title of
@@ -160,7 +160,7 @@ removed from the input, they are also removed from the existing bookmark.")
     (:li (command-markup 'set-url-from-bookmark) ": Open bookmark in current buffer.")
     (:li (command-markup 'set-url-from-bookmark-new-buffer) ": Open bookmark in new buffer.")
     (:li (command-markup 'bookmark-delete) ": Delete queried bookmarks.")
-    (:li (command-markup 'show-bookmarks) ": Display a new buffer containing the
+    (:li (command-markup 'list-bookmarks) ": Display a new buffer containing the
 list of all bookmarks."))
    (:p "You can filter them with selectors: use '+', '-' or write a compound
 query inside parenthesis in which you can use 'and', 'or' and 'not'. Examples:")
