@@ -10,6 +10,8 @@
    (active-buffer :accessor nil :reader active-buffer :export nil)
    (active-minibuffers :export nil
                        :documentation "The stack of currently active minibuffers.")
+   (key-stack '()
+              :documentation "A stack that keeps track of the key chords a user has pressed.")
    ;; TODO: each frame should have a status buffer, not each window
    (status-buffer :export nil)
    (message-buffer-height 16

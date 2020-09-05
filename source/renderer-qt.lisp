@@ -71,7 +71,7 @@
 
 (defmethod on-signal-key-press-event ((sender qt-window) event)
   (when (qt:key-string event)
-    (alex:appendf (key-stack *browser*)
+    (alex:appendf (key-stack sender)
                   (list (keymap:make-key :code (qt:key-code event)
                                          :value (string-downcase (qt:key-string event))
                                          :modifiers (qt:modifiers event)

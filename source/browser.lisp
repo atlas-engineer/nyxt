@@ -118,8 +118,6 @@ window or not.")
                      :type t
                      :export nil
                      :documentation "List of downloads.")
-   (key-stack '()
-              :documentation "A stack that keeps track of the key chords a user has pressed.")
    (startup-timestamp (local-time:now)
                       :export nil
                       :documentation "`local-time:timestamp' of when Nyxt was started.")

@@ -360,7 +360,7 @@ See `gtk-browser's `modifier-translator' slot."
         (log:debug key-string keycode character keyval-name))
     (if key-string
         (progn
-          (alex:appendf (key-stack *browser*)
+          (alex:appendf (key-stack sender)
                         (list (keymap:make-key :code keycode
                                                :value key-string
                                                :modifiers modifiers
@@ -390,7 +390,7 @@ Warning: This behaviour may change in the future."
                              (button-event-modifiers event)
                              event)))
     (when key-string
-      (alex:appendf (key-stack *browser*)
+      (alex:appendf (key-stack sender)
                     (list (keymap:make-key
                            :value key-string
                            :modifiers modifiers
@@ -419,7 +419,7 @@ Warning: This behaviour may change in the future."
                              (scroll-event-modifiers event)
                              event)))
     (when key-string
-      (alex:appendf (key-stack *browser*)
+      (alex:appendf (key-stack sender)
                     (list (keymap:make-key
                            :value key-string
                            :modifiers modifiers

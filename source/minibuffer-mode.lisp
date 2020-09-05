@@ -145,8 +145,8 @@ complete against a search engine."
   (self-insert (nyxt:current-minibuffer)))
 
 (define-command self-insert (receiver)
-  "Insert first key from `*browser*' `key-stack' to the receiver."
-  (let ((key-string (keymap:key-value (first (nyxt::key-stack *browser*))))
+  "Insert first key from current window `key-stack' to the receiver."
+  (let ((key-string (keymap:key-value (first (nyxt::key-stack (current-window)))))
         (translation-table '(("hyphen" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking

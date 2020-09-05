@@ -289,7 +289,7 @@ This function can be used as a `window' `input-dispatcher'."
   (declare (ignore event buffer printable-p))
   (handler-case
       (progn
-        (with-accessors ((key-stack key-stack)) *browser*
+        (with-accessors ((key-stack key-stack)) window
           (log:debug "Intercepted key ~a" (first (last key-stack)))
           (let ((escape-key (keymap:make-key :value "escape"))
                 (bound-value (the (or symbol keymap:keymap null)
@@ -318,7 +318,7 @@ This function can be used as a `window' `input-dispatcher'."
                      (keyspecs-with-optional-keycode key-stack)))))))
     (error (c)
       (echo-warning "~a" c)
-      (setf (key-stack *browser*) nil)
+      (setf (key-stack window) nil)
       (setf (input-dispatcher window) #'dispatch-input-event)))
   ;; Never forward events.
   t)
