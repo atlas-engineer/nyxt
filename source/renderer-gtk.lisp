@@ -442,7 +442,9 @@ Warning: This behaviour may change in the future."
                                        :website-data-manager manager))
                       (web-context *browser*)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (when (and buffer (expand-path (cookies-path buffer)))
+    (when (and buffer
+               (web-buffer-p buffer)
+               (expand-path (cookies-path buffer)))
       (webkit:webkit-cookie-manager-set-persistent-storage
        cookie-manager
        (expand-path (cookies-path buffer))

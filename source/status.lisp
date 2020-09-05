@@ -15,7 +15,9 @@
      (:a :class "button" :title "Reload" :href (lisp-url '(nyxt:reload-current-buffer)) "↺")
      (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
      (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt::list-buffers)) "≡")
-     (:span (if (eq (slot-value buffer 'load-status) :loading) "Loading: " ""))
+     (:span (if (and (web-buffer-p buffer)
+                     (eq (slot-value buffer 'load-status) :loading))
+                "Loading: " ""))
      (:a :class "button"
          :href (lisp-url '(nyxt:set-url-from-current-url))
       (format nil " ~a — ~a"
