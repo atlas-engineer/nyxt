@@ -7,6 +7,120 @@
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
+
+  (defun qsa (context selector)
+    "Alias of document.querySelectorAll"
+    (ps:chain context (query-selector-all selector)))
+
+  (defun code-char (n)
+    "Alias of String.fromCharCode"
+    (ps:chain -string (from-char-code n)))
+
+  (defun add-stylesheet ()
+    (unless (qs document "#nyxt-stylesheet")
+      (ps:try
+       (ps:let* ((style-element (ps:chain document (create-element "style")))
+                 (box-style (ps:lisp (box-style (current-buffer))))
+                 (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
+         (setf (ps:@ style-element id) "nyxt-stylesheet")
+         (ps:chain document head (append-child style-element))
+         (ps:chain style-element sheet (insert-rule box-style 0))
+         (ps:chain style-element sheet (insert-rule highlighted-style 1)))
+       (:catch (error)))))
+
+  (defun hint-determine-position (rect)
+    "Determines the position of a hint according to the element"
+    (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
+               :left (+ (ps:@ window page-x-offset) (- (ps:@ rect left) 20))))
+
+  (defun hint-create-element (element hint)
+    "Creates a DOM element to be used as a hint"
+    (ps:let* ((rect (ps:chain element (get-bounding-client-rect)))
+              (position (hint-determine-position rect))
+              (element (ps:chain document (create-element "span"))))
+      (setf (ps:@ element class-name) "nyxt-hint")
+      (setf (ps:@ element style position) "absolute")
+      (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
+      (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
+      (setf (ps:@ element id) (+ "nyxt-hint-" hint))
+      (setf (ps:@ element text-content) hint)
+      element))
+
+  (defun hint-add (element hint)
+    "Adds a hint on a single element. Additionally sets a unique
+identifier for every hinted element."
+    (ps:chain element (set-attribute "nyxt-identifier" hint))
+    (ps:let ((hint-element (hint-create-element element hint)))
+      (ps:chain document body (append-child hint-element))))
+
+  (defun element-drawable-p (element)
+    (if (or (ps:chain element offset-width)
+            (ps:chain element offset-height)
+            (ps:chain element (get-client-rects) length))
+        t nil))
+
+  (defun element-in-view-port-p (element)
+    (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
+      (if (and (>= (ps:chain rect top) 0)
+               (>= (ps:chain rect left) 0)
+               (<= (ps:chain rect right) (ps:chain window inner-width))
+               (<= (ps:chain rect bottom) (ps:chain window inner-height)))
+          t nil)))
+
+  (defun object-create (element hint)
+    (cond ((equal "A" (ps:@ element tag-name))
+           (ps:create "type" "link" "hint" hint "href" (ps:@ element href) "body" (ps:@ element |innerHTML|)))
+          ((equal "BUTTON" (ps:@ element tag-name))
+           (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
+          ((equal "INPUT" (ps:@ element tag-name))
+           (ps:create "type" "input" "hint" hint "identifier" hint))
+          ((equal "TEXTAREA" (ps:@ element tag-name))
+           (ps:create "type" "textarea" "hint" hint "identifier" hint))))
+
+  (defun hints-add (elements)
+    "Adds hints on elements"
+    (ps:let* ((elements-length (length elements))
+              (hints (hints-generate elements-length)))
+      (ps:chain |json|
+                (stringify
+                 (loop for i from 0 to (- elements-length 1)
+                       when (and (element-drawable-p (elt elements i))
+                                 (element-in-view-port-p (elt elements i)))
+                       do (hint-add (elt elements i) (elt hints i))
+                       when (or (and (element-drawable-p (elt elements i))
+                                     (ps:lisp annotate-full-document))
+                                (and (element-drawable-p (elt elements i))
+                                     (element-in-view-port-p (elt elements i))))
+                       collect (object-create (elt elements i) (elt hints i)))))))
+
+  (defun hints-determine-chars-length (length)
+    "Finds out how many chars long the hints must be"
+    (floor (+ 1 (/ (log length) (log 26)))))
+
+  (defun hints-generate (length)
+    "Generates hints that will appear on the elements"
+    (strings-generate length (hints-determine-chars-length length)))
+
+  (defun strings-generate (length chars-length)
+    "Generates strings of specified length"
+    (ps:let ((minimum (1+ (ps:chain -math (pow 26 (- chars-length 1))))))
+      (loop for i from minimum to (+ minimum length)
+            collect (string-generate i))))
+
+  (defun string-generate (n)
+    "Generates a string from a number"
+    (if (>= n 0)
+        (+ (string-generate (floor (- (/ n 26) 1)))
+           (code-char (+ 65
+                         (rem n 26)))) ""))
+
+  (add-stylesheet)
+  (hints-add (qsa document (list "a" "button" "input" "textarea"))))
+
+(define-parenscript-SYNC add-element-hints-SYNC (&key annotate-full-document)
+  (defun qs (context selector)
+    "Alias of document.querySelector"
+    (ps:chain context (query-selector selector)))
   
   (defun qsa (context selector)
     "Alias of document.querySelectorAll"
@@ -355,24 +469,24 @@ visible active buffer."
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
-  (with-result* ((elements-json (add-element-hints))
-                 (result (read-from-minibuffer
-                          (make-minibuffer
-                           :input-prompt "Bookmark hint"
-                           :history nil
-                           :suggestion-function
-                           (hint-suggestion-filter (elements-from-json elements-json))
-                           :cleanup-function
-                           (lambda ()
-                             (remove-element-hints)))))
-                 (tags (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Space-separated tag(s)"
-                         :default-modes '(set-tag-mode minibuffer-mode)
-                         :input-buffer (url-bookmark-tags (quri:uri (url result)))
-                         :suggestion-function (tag-suggestion-filter)))))
-    (when result
-      (bookmark-add (quri:uri (url result)) :tags tags))))
+  (let* ((elements-json (add-element-hints-SYNC)))
+    (log:info "elements" elements-json)
+    (let* ((result (prompt-minibuffer
+                    :input-prompt "Bookmark hint"
+                    :history nil
+                    :suggestion-function
+                    (hint-suggestion-filter (elements-from-json elements-json))
+                    :cleanup-function (lambda ()
+                                        (remove-element-hints)))))
+      (log:info "RESULT" result)
+      (let ((tags (prompt-minibuffer
+                   :input-prompt "Space-separated tag(s)"
+                   :default-modes '(set-tag-mode minibuffer-mode)
+                   :input-buffer (url-bookmark-tags (quri:uri (url result)))
+                   :suggestion-function (tag-suggestion-filter))))
+
+        (when result
+          (bookmark-add (quri:uri (url result)) :tags tags))))))
 
 (define-command download-hint-url ()
   "Download the file under the URL hinted by the user."

@@ -16,6 +16,19 @@ buffer."
        (ffi-buffer-evaluate-javascript (current-buffer)
                                        (ps:ps ,@script-body)))))
 
+(export-always 'define-parenscript-SYNC)
+(defmacro define-parenscript-SYNC (script-name args &body script-body)
+  "Define parenscript function SCRIPT-NAME.
+SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
+Any Lisp expression must be wrapped in (PS:LISP ...).
+
+The returned function is called with the ARGS lambda-list over the current
+buffer."
+  `(progn
+     (defun ,script-name ,args
+       (ffi-buffer-evaluate-javascript-SYNC (current-buffer)
+                                            (ps:ps ,@script-body)))))
+
 (export-always 'pflet)
 (defmacro pflet (((function function-arguments &body function-body)) &body body)
   "Define single parenscript function in a flet body."

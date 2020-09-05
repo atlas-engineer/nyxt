@@ -474,26 +474,14 @@ completion count."
   (mapcar #'object-string (marked-suggestions minibuffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun prompt-minibuffer (&key input-prompt
-                            input-buffer
-                            default-modes
-                            suggestion-function
-                            history
-                            must-match-p)
+(export-always 'prompt-minibuffer)
+(defun prompt-minibuffer (&rest args)
   ""
   (let ((channel (make-instance 'chanl:channel)))
     (ffi-within-renderer-thread
      *browser*
      (lambda ()
-       (let ((minibuffer (make-minibuffer
-                          :channel channel
-                          :input-prompt input-prompt
-                          :input-buffer input-buffer
-                          :default-modes default-modes
-                          :suggestion-function suggestion-function
-                          :history history
-                          :must-match-p must-match-p)))
+       (let ((minibuffer (apply #'make-minibuffer (append (list :channel channel)  args))))
          (if *keep-alive*
              (match (setup-function minibuffer)
                ((guard f f) (funcall f minibuffer)))
