@@ -86,6 +86,7 @@
                (:file "base-mode")
                (:file "repl-mode")
                (:file "help-mode")
+               (:file "message-mode")
                (:file "application-mode")
                (:file "web-mode")
                (:file "reading-line-mode")

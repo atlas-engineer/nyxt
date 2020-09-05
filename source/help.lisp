@@ -361,19 +361,12 @@ The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
-(define-command clear-messages ()       ; TODO: Move to lod-mode?
-  "Clear the *Messages* buffer."
-  (setf (messages-content *browser*) '())
-  (echo "Messages cleared."))
-
 (define-command list-messages ()
   "Show the *Messages* buffer."
-  (let ((buffer (find-if (lambda (b)
-                           (string= "*Messages*" (title b)))
-                         (buffer-list))))
-    (unless buffer
-      (setf buffer (nyxt/help-mode:help-mode :activate t
-                                             :buffer (make-internal-buffer :title "*Messages*"))))
+  (let ((buffer (or (find-buffer 'message-mode)
+                    (nyxt/message-mode:message-mode
+                     :activate t
+                     :buffer (make-internal-buffer :title "*Messages*")))))
     (let* ((content
              (markup:markup
               (:style (style buffer))
@@ -381,7 +374,9 @@ The version number is stored in the clipboard."
               (:a :class "button"
                   :href (lisp-url '(nyxt::list-messages)) "Update")
               (:a :class "button"
-                  :href (lisp-url '(nyxt:clear-messages) '(nyxt::list-messages)) "Clear")
+                  :href (lisp-url '(nyxt/message-mode:clear-messages)
+                                  '(nyxt::list-messages))
+                  "Clear")
               (:ul
                (loop for message in (reverse (messages-content *browser*))
                      collect (markup:markup (:li message))))))
