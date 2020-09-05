@@ -143,16 +143,18 @@ Example:
   ((hostlists (list *default-hostlist*))
    (destructor
     (lambda (mode)
-      (hooks:remove-hook (request-resource-hook (buffer mode))
-                         'request-resource-block)))
+      (when (web-buffer-p (buffer mode))
+        (hooks:remove-hook (request-resource-hook (buffer mode))
+                           'request-resource-block))))
    (constructor
     (lambda (mode)
-      (if (request-resource-hook (buffer mode))
-          (hooks:add-hook (request-resource-hook (buffer mode))
-                          (make-handler-resource #'request-resource-block))
-          (make-hook-resource
-           :combination #'combine-composed-hook-until-nil
-           :handlers (list #'request-resource-block)))))))
+      (when (web-buffer-p (buffer mode))
+        (if (request-resource-hook (buffer mode))
+            (hooks:add-hook (request-resource-hook (buffer mode))
+                            (make-handler-resource #'request-resource-block))
+            (make-hook-resource
+             :combination #'combine-composed-hook-until-nil
+             :handlers (list #'request-resource-block))))))))
 
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.

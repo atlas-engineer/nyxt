@@ -22,18 +22,6 @@ See the `data-path' class and the `expand-path' function.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
-   (load-status :unloaded
-                :type (or (eql :loading)
-                          (eql :finished)
-                          (eql :unloaded))
-                :accessor nil
-                :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
-                :documentation "The status of the buffer.
-- `:loading' when loading a web resource.
-- `:finished' when done loading a web resource.
-- `:unloaded' for buffers that have not been loaded yet, like
-  session-restored buffers, dead buffers or new buffers that haven't started the
-  loading process yet..")
    (last-access (local-time:now)
                 :export nil
                 :documentation "Timestamp when the buffer was last switched to.")
@@ -42,7 +30,7 @@ See the `data-path' class and the `expand-path' function.")
 Modes are instantiated after the `default-modes' slot, with `initialize-modes'
 and not in the initform so that the instantiation form can access the
 initialized buffer.")
-   (default-modes '(certificate-exception-mode web-mode base-mode)
+   (default-modes '(web-mode base-mode)
                   :type list-of-symbols
                   :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' slot.")
@@ -179,13 +167,6 @@ down.")
                               :font-weight "500"
                               :background "#fcff9e")))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
-   (proxy nil
-          :accessor nil
-          :type (or proxy null)
-          :documentation "Proxy for buffer.")
-   (certificate-exceptions '()
-                           :type list-of-strings
-                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
    (buffer-load-hook (make-hook-uri->uri
                       :combination #'hooks:combine-composed-hook)
                      :type hook-uri->uri
@@ -220,10 +201,6 @@ History data is kept in browser's `user-data', keyed by the expanded `history-pa
                    :documentation "
 The path where the system will create/save the bookmarks.
 Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
-   (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
-                 :type data-path
-                 :documentation "The path where cookies are stored.  Not all
-renderers might support this.")
    (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path
                                         :basename "auto-mode-rules")
                          :type data-path
@@ -234,7 +211,41 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
                          :documentation "Path where `*standard-output*' can be written to.")
    (error-output-path (make-instance 'error-output-data-path :basename "standard-error.txt")
                       :type data-path
-                      :documentation "Path where `*error-output*' can be written to.")
+                      :documentation "Path where `*error-output*' can be written to."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+
+(define-user-class buffer)
+
+(define-class web-buffer (user-buffer)
+  ((default-modes '(certificate-exception-mode web-mode base-mode)
+                  :type list-of-symbols
+                  :documentation "The symbols of the modes to instantiate on buffer creation.
+The mode instances are stored in the `modes' slot.")
+   (load-status :unloaded
+                :type (or (eql :loading)
+                          (eql :finished)
+                          (eql :unloaded))
+                :accessor nil
+                :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
+                :documentation "The status of the buffer.
+- `:loading' when loading a web resource.
+- `:finished' when done loading a web resource.
+- `:unloaded' for buffers that have not been loaded yet, like
+  session-restored buffers, dead buffers or new buffers that haven't started the
+  loading process yet.")
+   (proxy nil
+          :accessor nil
+          :type (or proxy null)
+          :documentation "Proxy for buffer.")
+   (certificate-exceptions '()
+                           :type list-of-strings
+                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
+   (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
+                 :type data-path
+                 :documentation "The path where cookies are stored.  Not all
+renderers might support this.")
    (default-cookie-policy :no-third-party
                           :type cookie-policy
                           :documentation "Cookie policy of new buffers.
@@ -244,7 +255,15 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-user-class buffer)
+(define-user-class web-buffer)
+
+(defmethod initialize-instance :after ((buffer web-buffer) &key)
+  (when (expand-path (cookies-path buffer))
+    (ensure-parent-exists (expand-path (cookies-path buffer)))))
+
+(export-always 'web-buffer-p)
+(defun web-buffer-p (buffer)
+  (subtypep (type-of buffer) 'web-buffer))
 
 (define-class internal-buffer (user-buffer)
   ((style #.(cl-css:css
@@ -314,6 +333,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class status-buffer)
 
+(export-always 'internal-buffer-p)
 (defmethod internal-buffer-p ((buffer buffer))
   nil)
 
@@ -479,7 +499,9 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                        ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
                        (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
                        (ffi-buffer-make dead-buffer))
-                     (apply #'make-instance (if internal-buffer-p 'user-internal-buffer 'user-buffer)
+                     (apply #'make-instance (if internal-buffer-p
+                                                'user-internal-buffer
+                                                'user-web-buffer)
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes))
@@ -490,8 +512,6 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (initialize-modes buffer)
     (when dead-buffer
       (setf (url buffer) (url dead-buffer)))
-    (when (expand-path (cookies-path buffer))
-      (ensure-parent-exists (expand-path (cookies-path buffer))))
     (buffers-set (id buffer) buffer)
     (unless (last-active-buffer browser)
       ;; When starting from a REPL, it's possible that the window is spawned in
@@ -584,11 +604,8 @@ proceeding."
     (setf (last-active-buffer *browser*) buffer)
     (set-window-title window buffer)
     (print-status nil window)
-    (when (and (eq (slot-value buffer 'load-status) :unloaded)
-               ;; TODO: Find a better way to filter out non-webpages ("internal
-               ;; buffers" like the REPL or help pages).  Could use a marker
-               ;; slot or a specialized class.
-               (not (url-empty-p (url buffer))))
+    (when (and (web-buffer-p buffer)
+               (eq (slot-value buffer 'load-status) :unloaded))
       (reload-current-buffer buffer))))
 
 (defun get-inactive-buffers ()
