@@ -136,8 +136,9 @@ can be 'web-mode as well as 'nyxt/web-mode:web-mode."
                               (match (mode-command mode-symbol)
                                 ((guard c (not (null c))) (sym c))))))
     (when mode-full-symbol
-      (find-if (lambda (m) (eq mode-full-symbol (class-name (class-of m))))
-               (modes buffer)))))
+      (find mode-full-symbol
+            (modes buffer)
+            :key (alex:compose #'class-name #'original-class)))))
 
 (export-always 'find-submode)
 (defmethod find-submode ((buffer buffer) mode-symbol)
