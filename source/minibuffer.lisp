@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class minibuffer (user-buffer)
+(define-class minibuffer (user-internal-buffer)
   ((default-modes '(minibuffer-mode))
    (suggestion-function nil
                         :type (or function null)
