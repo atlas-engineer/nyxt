@@ -62,3 +62,28 @@ there is none."
   (or (find "default"
             search-engines :test #'string= :key #'shortcut)
       (first search-engines)))
+
+(export-always 'search-engine-suggestion-filter)
+(defun search-engine-suggestion-filter (minibuffer)
+  (with-slots (input-buffer) minibuffer
+    (let* ((matched-engines
+             (remove-if-not
+              (lambda (engine)
+                (str:starts-with-p (text-buffer::string-representation input-buffer)
+                                   (shortcut engine)
+                                   :ignore-case t))
+              (search-engines *browser*)))
+           (fuzzy-matched-engines
+            (fuzzy-match (input-buffer minibuffer)
+                         (set-difference (search-engines *browser*) matched-engines))))
+      (append matched-engines fuzzy-matched-engines))))
+
+(define-command search-selection ()
+  "Search selected text using the queried search engine."
+  (with-result* ((selection (%copy))
+                 (engine (read-from-minibuffer
+                          (make-minibuffer
+                           :input-prompt "Search engine"
+                           :suggestion-function #'search-engine-suggestion-filter))))
+    (when engine
+      (buffer-load (generate-search-query selection (search-url engine))))))

@@ -68,20 +68,6 @@
       (list
        "tab" 'insert-suggestion-or-search-engine)))))
 
-(defun search-engine-suggestion-filter (minibuffer)
-  (with-slots (input-buffer) minibuffer
-    (let* ((matched-engines
-             (remove-if-not
-              (lambda (engine)
-                (str:starts-with-p (text-buffer::string-representation input-buffer)
-                                   (shortcut engine)
-                                   :ignore-case t))
-              (search-engines *browser*)))
-           (fuzzy-matched-engines
-            (fuzzy-match (input-buffer minibuffer)
-                         (set-difference (search-engines *browser*) matched-engines))))
-      (append matched-engines fuzzy-matched-engines))))
-
 (define-command insert-suggestion-or-search-engine (&optional (minibuffer (current-minibuffer)))
   "Paste selected suggestion or search engine to input.
 If minibuffer input is not empty and the selection is on first position,
@@ -104,7 +90,7 @@ complete against a search engine."
                                 (make-minibuffer
                                  :input-prompt "Search engine"
                                  :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
-                                 :suggestion-function #'search-engine-suggestion-filter)))
+                                 :suggestion-function #'nyxt:search-engine-suggestion-filter)))
             (when engine
               (kill-whole-line minibuffer)
               (insert minibuffer (str:concat (shortcut engine) " "))))))))
