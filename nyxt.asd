@@ -83,6 +83,7 @@
                (:file "url-group")
                (:file "minibuffer-composite")
                ;; Core Modes
+               (:file "buffer-listing-mode")
                (:file "base-mode")
                (:file "repl-mode")
                (:file "help-mode")

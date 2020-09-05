@@ -150,9 +150,10 @@
 
 (define-command list-buffers ()
   "Show the *Buffers* buffer."
-  (let ((buffer (or (find "*Buffers*" (buffer-list)
-                          :test #'string= :key #'title)
-                    (make-internal-buffer :title "*Buffers*"))))
+  (let ((buffer (or (find-buffer 'buffer-listing-mode)
+                    (nyxt/buffer-listing-mode:buffer-listing-mode
+                     :activate t
+                     :buffer (make-internal-buffer :title "*Buffers*")))))
     (let* ((content
              (markup:markup
               (:style (style buffer))
