@@ -64,7 +64,7 @@ Example:
                ;; if the BUFFER class was reassigned after the MINIBUFFER class
                ;; declaration.
                (error ,(format nil "Mode command ~a called on non-buffer" name)))
-             (let ((existing-instance (find-mode buffer ',configurable-class-name)))
+             (let ((existing-instance (find-mode buffer ',name)))
                (unless explicit?
                  (setf activate (not existing-instance)))
                (if activate
