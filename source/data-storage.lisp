@@ -197,25 +197,23 @@ function result as a boolean in conditions."
 (export-always 'store)
 (defgeneric store (profile path)
   (:method ((profile data-profile) (path data-path))
-    (error "No store method defined for ~a and ~a."
-           (serapeum:class-name-of path)
-           (serapeum:class-name-of profile)))
+    nil)
   (:documentation "The generic way to store data to the given path type.
 Define a method for your `data-path' type to make it storable."))
 
 (export-always 'restore)
 (defgeneric restore (profile path)
   (:method ((profile data-profile) (path data-path))
-    (error "No restore method defined for ~a and ~a."
-           (serapeum:class-name-of path)
-           (serapeum:class-name-of profile)))
+    nil)
   (:documentation "The generic way to restore data from the given path type.
 Define a method for your `data-path' type to make it restorable."))
 
 (defmethod store ((profile private-data-profile) (path data-path))
+  "This method guarantess PATH will not be persisted to disk in PRIVATE-DATA-PROFILE."
   nil)
 
 (defmethod restore ((profile private-data-profile) (path data-path))
+  "This method guarantess PATH will not be loaded from disk in PRIVATE-DATA-PROFILE."
   nil)
 
 (export-always 'expand-path)
