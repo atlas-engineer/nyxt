@@ -65,11 +65,6 @@ Currently we store the list of current URLs of all buffers."
            (log:info "Restoring ~a."
                      (mapcar (alex:compose #'object-string #'htree:data #'htree:current)
                              buffer-histories))
-           ;; Delete the old buffers?
-           ;; (maphash (lambda (id buffer)
-           ;;            (declare (ignore id))
-           ;;            (buffer-delete buffer))
-           ;;          buffers)
            ;; Make the new ones.
            ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
            (loop for history in buffer-histories
@@ -86,3 +81,51 @@ Currently we store the list of current URLs of all buffers."
            )))
     (error (c)
       (log:warn "Failed to restore session from ~a: ~a" (expand-path path) c))))
+
+(defun session-name-suggestion-filter (minibuffer)
+  (fuzzy-match (input-buffer minibuffer)
+               (mapcar #'pathname-name
+                       (uiop:directory-files
+                        (uiop:pathname-directory-pathname
+                         (expand-path (session-path (current-buffer))))))))
+
+(define-command store-session-by-name ()
+  "Store the session data (i.e. all the opened buffers) in the file named by user input."
+  (with-result (name (read-from-minibuffer
+                      (make-minibuffer
+                       :input-prompt "The name to store session with"
+                       :history (minibuffer-session-restore-history *browser*)
+                       :suggestion-function #'session-name-suggestion-filter)))
+    (when name
+      (store (data-profile (current-buffer))
+             (make-instance 'session-data-path
+                            :dirname (dirname (session-path (current-buffer)))
+                            :basename name)))))
+
+(define-command restore-session-by-name ()
+  "Restore the session data from the file named by user input."
+  (with-result (name (read-from-minibuffer
+                      (make-minibuffer
+                       :input-prompt "The name of the session to restore"
+                       :history (minibuffer-session-restore-history *browser*)
+                       :suggestion-function #'session-name-suggestion-filter)))
+    (when name
+      (restore (data-profile (current-buffer))
+               (make-instance 'session-data-path
+                              :basename name
+                              :dirname (dirname (session-path (current-buffer))))))))
+
+(define-command replace-session-by-name ()
+  "Delete all the buffers of the current session and restore the one chosen by user."
+  (with-result (name (read-from-minibuffer
+                      (make-minibuffer
+                       :input-prompt "The name of the session to replace the current one"
+                       :history (minibuffer-session-restore-history *browser*)
+                       :suggestion-function #'session-name-suggestion-filter)))
+    (when name
+      (dolist (buffer (buffer-list))
+        (buffer-delete buffer))
+      (restore (data-profile (current-buffer))
+               (make-instance 'session-data-path
+                              :basename name
+                              :dirname (dirname (session-path (current-buffer))))))))
