@@ -13,7 +13,7 @@
   (let* ((buffer (current-buffer))
          (download-buffer (or (find-buffer 'download-mode)
                               (download-mode :activate t
-                                             :buffer (make-buffer :title "*Downloads*"))))
+                                             :buffer (make-internal-buffer :title "*Downloads*"))))
          (contents (markup:markup
                     (:h1 "Downloads")
                     (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-path buffer))))
