@@ -390,7 +390,7 @@ Warning: This behaviour may change in the future."
                              (button-event-modifiers event)
                              event)))
     (when key-string
-      (alex:appendf (key-stack sender)
+      (alex:appendf (key-stack window)
                     (list (keymap:make-key
                            :value key-string
                            :modifiers modifiers
@@ -419,7 +419,7 @@ Warning: This behaviour may change in the future."
                              (scroll-event-modifiers event)
                              event)))
     (when key-string
-      (alex:appendf (key-stack sender)
+      (alex:appendf (key-stack window)
                     (list (keymap:make-key
                            :value key-string
                            :modifiers modifiers
