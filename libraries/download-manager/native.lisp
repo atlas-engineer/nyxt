@@ -72,7 +72,10 @@
     ;; TODO: Report something if bytes-fetched is not the same as bytes-total.
     (setf (finished-p download) t)
     (uiop:rename-file-overwriting-target temp-file
-                                         (ensure-unique-file (file download)))
+                                         (ensure-unique-file
+                                          ;; Same as above for `parse-native-namestring'.
+                                          (uiop:parse-native-namestring
+                                           (namestring (file download)))))
     (update download)
     (bytes-fetched download)))
 
