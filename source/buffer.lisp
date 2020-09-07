@@ -14,7 +14,7 @@
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
    (data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
-                                              'default-data-profile))
+                                    'default-data-profile))
                  :type data-profile
                  :documentation "Profile to use for all persisted files.
 See the `data-path' class and the `expand-path' function.")
@@ -103,7 +103,7 @@ forwarded when no binding is found.")
                ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
                :documentation "The last event that was received for the current buffer.")
    (pre-request-hook (make-hook-resource
-                                :combination #'combine-composed-hook-until-nil)
+                      :combination #'combine-composed-hook-until-nil)
                      :type hook-resource
                      :documentation "Hook run before the `request-resource-hook'.
 One example of it's application is `auto-mode' that changes mode setup. Any
@@ -199,8 +199,8 @@ and must return a (possibly new) URL.")
                        :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
    (session-path (make-instance 'session-data-path
-                                          :basename "default"
-                                          :dirname (uiop:xdg-data-home +data-root+ "sessions"))
+                                :basename "default"
+                                :dirname (uiop:xdg-data-home +data-root+ "sessions"))
                  :type data-path
                  :documentation "
 The path where the system will create/save the session.")
