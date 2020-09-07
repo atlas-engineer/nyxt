@@ -276,15 +276,10 @@ To change the default buffer, e.g. set it to a given URL:
       ;; will be overwritten because if-confirm is asynchronous.
       ;; Implement synchronous minibuffer to fix this.
       (when (expand-path (session-path buffer))
-        (flet ((restore-session ()
-                 (when (uiop:file-exists-p (expand-path (session-path buffer)))
-                   (log:info "Restoring session ~s." (expand-path (session-path buffer)))
-                   (restore (data-profile buffer) (session-path buffer)))))
-          (match (session-restore-prompt *browser*)
-            (:always-ask (if-confirm ("Restore previous session?")
-                                     (restore-session)))
-            (:always-restore (restore-session))
-            (:never-restore (log:info "Not restoring session.")))))
+        (match (session-restore-prompt *browser*)
+               (:always-ask (restore-session-by-name))
+               (:always-restore (restore (data-profile buffer) (session-path buffer)))
+               (:never-restore (log:info "Not restoring session."))))
       (if urls
           (open-urls urls)
           (window-set-active-buffer window (funcall-safely buffer-fn))))
