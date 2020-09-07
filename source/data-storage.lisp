@@ -212,10 +212,10 @@ Define a method for your `data-path' type to make it storable."))
   (:documentation "The generic way to restore data from the given path type.
 Define a method for your `data-path' type to make it restorable."))
 
-(defmethod store ((profile private-data-profile) (path data-path))
+(defmethod store ((profile data-profile) (path data-path))
   nil)
 
-(defmethod restore ((profile private-data-profile) (path data-path))
+(defmethod restore ((profile data-profile) (path data-path))
   nil)
 
 (export-always 'expand-path)
