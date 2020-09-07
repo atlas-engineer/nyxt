@@ -66,6 +66,7 @@ Most recent messages are first.")
    (minibuffer-generic-history (make-ring))
    (minibuffer-search-history (make-ring))
    (minibuffer-set-url-history (make-ring))
+   (minibuffer-session-restore-history (make-ring))
    (recent-buffers (make-ring :size 50)
                    :export nil
                    :documentation "A ring that keeps track of deleted buffers.")
