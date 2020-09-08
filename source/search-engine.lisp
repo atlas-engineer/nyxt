@@ -53,8 +53,9 @@ the empty string."))
   "Return the `search-engines' from the `browser' instance plus those in
 bookmarks."
   (sera:and-let* ((buffer (current-buffer)))
-    (append (search-engines buffer)
-            (bookmark-search-engines))))
+    ;; Make sure `default-search-engine' returns the same value after the append.
+    (append (bookmark-search-engines)
+            (search-engines buffer))))
 
 (defun default-search-engine (&optional (search-engines (all-search-engines)))
   "Return the last search engine of the SEARCH-ENGINES."
