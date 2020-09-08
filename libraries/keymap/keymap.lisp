@@ -503,21 +503,12 @@ The same is done for the successive keymaps if KEYMAP-OR-KEYMAPS is a list of
 keymaps."
   (let* ((keys (if (stringp keys-or-keyspecs)
                    (keymap::keyspecs->keys keys-or-keyspecs)
-                   keys-or-keyspecs))
-         (matching-keymap nil)
-         (matching-key nil)
-         (result
-           (some (lambda (keys)
-                   (multiple-value-bind (hit hit-keymap)
-                       (lookup-key* keymap-or-keymaps keys '())
-                     (when hit
-                       (setf matching-keymap hit-keymap)
-                       (setf matching-key keys)
-                       hit)))
-                 (cons keys (funcall (or *translator*
-                                         (constantly nil))
-                                     keys)))))
-    (values result matching-keymap matching-key)))
+                   keys-or-keyspecs)))
+    (dolist (key (list* keys (funcall (or *translator* (constantly nil)) keys)))
+      (multiple-value-bind (hit hit-keymap)
+	  (lookup-key* keymap-or-keymaps key '())
+	(when hit
+	  (return (values hit hit-keymap key)))))))
 
 (defparameter *print-shortcut* t
   "Whether to print the short form of the modifiers.")
