@@ -183,7 +183,7 @@ A command is a special kind of function that can be called with
          ;; We use :pre for documentation so that code samples get formatted properly.
          ;; TODO: Parse docstrings and highlight code samples.
          (list (markup:markup (:li "Documentation: " (:pre (getf props :documentation))))))
-       (:li (:a :class "button" :href (lisp-url '(nyxt::list-messages)) "Configure")))))))
+       (:li (:a :class "button" :href (lisp-url `(nyxt::configure-slot ',slot ',class)) "Configure")))))))
 
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
@@ -211,6 +211,13 @@ A command is a special kind of function that can be called with
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help)
       (set-current-buffer help-buffer))))
+
+(define-command configure-slot (slot class)
+  "Set the value of a slot in a users config.lisp"
+  (with-result (input (read-from-minibuffer
+                       (make-minibuffer
+                        :input-prompt (format nil "Configure slot value ~a" slot))))
+    (print input)))
 
 (define-command describe-slot ()
   "Inspect a slot and show it in a help buffer."
