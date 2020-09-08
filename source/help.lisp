@@ -182,7 +182,8 @@ A command is a special kind of function that can be called with
        (when (getf props :documentation)
          ;; We use :pre for documentation so that code samples get formatted properly.
          ;; TODO: Parse docstrings and highlight code samples.
-         (list (markup:markup (:li "Documentation: " (:pre (getf props :documentation)))))))))))
+         (list (markup:markup (:li "Documentation: " (:pre (getf props :documentation))))))
+       (:li (:a :class "button" :href (lisp-url '(nyxt::list-messages)) "Configure")))))))
 
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
