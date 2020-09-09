@@ -11,13 +11,6 @@
                         :documentation "
 Take the input string and returns a list of suggestion strings.
 Example: `buffer-suggestion-filter'.")
-   (callback-buffer (when *browser* (current-buffer))
-                    :type (or buffer null)
-                    :export nil
-                    :documentation "The active buffer when the minibuffer was
-brought up.
-This can be useful to know which was the original buffer in the `callback' in
-case the buffer was changed.")
    (setup-function #'setup-default
                    :type (or function null)
                    :documentation "Fills the `content' on when the minibuffer is created.
