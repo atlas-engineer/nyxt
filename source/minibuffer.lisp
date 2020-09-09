@@ -270,7 +270,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
   (when minibuffer
-    (let ((new-content
+    (let ((new-content                  ; TODO: Is new-content used at all?
             (ffi-minibuffer-evaluate-javascript
              (current-window)
              (str:concat script (ps:ps (ps:chain document body |outerHTML|))))))

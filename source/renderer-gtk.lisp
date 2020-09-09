@@ -726,10 +726,16 @@ requested a reload."
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
-  (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
-                                               javascript
-                                               %callback
-                                               #'javascript-error-handler))
+  (let ((channel (make-instance 'chanl:channel)))
+    (ffi-within-renderer-thread
+     *browser*
+     (lambda ()
+       (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
+                                                    javascript
+                                                    (lambda (result)
+                                                      (chanl:send channel result :blockp nil))
+                                                    #'javascript-error-handler)))
+    (chanl:recv channel)))
 
 (defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
