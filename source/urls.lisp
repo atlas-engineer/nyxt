@@ -52,8 +52,10 @@ On errors, return URL."
               (quri:uri-host uri)
               ;; E.g. "http://algo" or "http://foo" have the same tld and host, which
               ;; is probably not a URI query.
-              (not (string= (quri:uri-host uri)
-                            (quri:uri-tld uri))))))))
+              (not (and (not (string= (quri:uri-host uri)
+                                      "localhost"))
+                        (string= (quri:uri-host uri)
+                                 (quri:uri-tld uri)))))))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
 (defun ensure-url (thing)

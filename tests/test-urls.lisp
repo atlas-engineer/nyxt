@@ -41,6 +41,10 @@
         (quri:uri "https://duckduckgo.com/?q=algo")
         :test #'quri:uri=
         "same domain and TLD")
+    (is (nyxt::parse-url "http://localhost:8080")
+        (quri:uri "http://localhost:8080")
+        :test #'quri:uri=
+        "localhost")
     (is (nyxt::parse-url "*spurious*")
         (quri:uri "https://duckduckgo.com/?q=%2Aspurious%2A")
         :test #'quri:uri=
