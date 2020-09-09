@@ -9,8 +9,8 @@
 SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
 Any Lisp expression must be wrapped in (PS:LISP ...).
 
-The returned function is called with the ARGS lambda-list over the current
-buffer."
+The returned function sends the compiled Javascript to the current buffer webview.
+The function can be passed ARGS."
   `(progn
      (defun ,script-name ,args
        (ffi-buffer-evaluate-javascript (current-buffer)
