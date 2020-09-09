@@ -33,12 +33,15 @@ use the socket without parsing any init file.")
 
 (defmethod expand-data-path ((profile data-profile) (path (eql *config-file-path*)))
   "Return path of the init file."
-  (expand-default-path (make-instance 'data-path
-                                      :basename (basename path)
-                                      ;; Specify `dirname' here since
-                                      ;; *config-file-path* is evaluated
-                                      ;; at compile-time.
-                                      :dirname (uiop:xdg-config-home +data-root+))))
+  (unless (getf *options* :no-config)
+    (match (getf *options* :config)
+      (new-path
+       (expand-default-path (make-instance 'data-path
+                                           :basename (or new-path (basename path))
+                                           ;; Specify `dirname' here since
+                                           ;; *config-file-path* is evaluated
+                                           ;; at compile-time.
+                                           :dirname (uiop:xdg-config-home +data-root+)))))))
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
@@ -479,6 +482,9 @@ REPL examples:
 (defun start-load-or-eval ()
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
+  (unless (or (getf *options* :no-config)
+              (not (expand-path *config-file-path*)))
+    (load-lisp (expand-path *config-file-path*) :package (find-package :nyxt-user)))
   (unless (or (getf *options* :no-init)
               (not (expand-path *init-file-path*)))
     (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
@@ -493,7 +499,8 @@ Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (format t "Nyxt version ~a~&" +version+)
-    (unless (not (expand-path *config-file-path*))
+    (unless (or (getf *options* :no-config)
+                (not (expand-path *config-file-path*)))
       (load-lisp (expand-path *config-file-path*)
                  :package (find-package :nyxt-user)))
     (unless (or (getf *options* :no-init)
