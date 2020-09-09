@@ -79,10 +79,9 @@ bookmarks."
 
 (define-command search-selection ()
   "Search selected text using the queried search engine."
-  (with-result* ((selection (%copy))
-                 (engine (read-from-minibuffer
-                          (make-minibuffer
-                           :input-prompt "Search engine"
-                           :suggestion-function #'search-engine-suggestion-filter))))
+  (let* ((selection (%copy))
+         (engine (prompt-minibuffer
+                  :input-prompt "Search engine"
+                  :suggestion-function #'search-engine-suggestion-filter)))
     (when engine
       (buffer-load (generate-search-query selection (search-url engine))))))

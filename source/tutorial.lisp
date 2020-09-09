@@ -59,7 +59,7 @@ supply the URL you would like to navigate to. The minibuffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
    (:ul
-    (:li (command-markup 'nyxt/minibuffer-mode:return-input
+    (:li (command-markup 'nyxt/minibuffer-mode:return-selection
                          :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
          ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")

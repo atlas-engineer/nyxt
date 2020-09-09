@@ -160,10 +160,9 @@ Note: this feature is alpha, get in touch for more!"
   ;; TODO: How do we set the current directory permanently?
   (uiop:with-current-directory ((uiop:getcwd))
     ;; Allow the current minibuffer to recognize our keybindings.
-    (with-result (filename (read-from-minibuffer
-                            (make-minibuffer
-                             :default-modes '(nyxt/file-manager-mode::file-manager-mode minibuffer-mode)
-                             :input-prompt (file-namestring (uiop:getcwd))
-                             :suggestion-function #'nyxt/file-manager-mode::open-file-from-directory-suggestion-filter)))
+    (let ((filename (prompt-minibuffer
+                     :default-modes '(nyxt/file-manager-mode::file-manager-mode minibuffer-mode)
+                     :input-prompt (file-namestring (uiop:getcwd))
+                     :suggestion-function #'nyxt/file-manager-mode::open-file-from-directory-suggestion-filter)))
 
       (funcall nyxt/file-manager-mode::*open-file-function* (namestring filename)))))

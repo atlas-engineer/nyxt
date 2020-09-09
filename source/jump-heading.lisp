@@ -45,12 +45,11 @@ For example, Wikipedia ones end with '[edit]'. We strip what comes after the fir
 
 (define-command jump-to-heading ()
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
-  (with-result* ((headings (get-headings))
-                 (heading (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Jump to heading"
-                            :suggestion-function (lambda (minibuffer)
-                                                   (fuzzy-match
-                                                    (input-buffer minibuffer)
-                                                    (make-headings (cl-json:decode-json-from-string headings))))))))
+  (let* ((headings (get-headings))
+         (heading (prompt-minibuffer
+                   :input-prompt "Jump to heading"
+                   :suggestion-function (lambda (minibuffer)
+                                          (fuzzy-match
+                                           (input-buffer minibuffer)
+                                           (make-headings (cl-json:decode-json-from-string headings)))))))
     (paren-jump-to-heading :heading-inner-text (inner-text heading))))

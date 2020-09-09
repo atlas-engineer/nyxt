@@ -50,10 +50,9 @@ To make this change permanent, you can customize
 \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-exception-mode)
-      (with-result (input (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "URL host to exception list:"
-                            :suggestion-function (previous-history-urls-suggestion-filter))))
+      (let ((input (prompt-minibuffer
+                    :input-prompt "URL host to exception list:"
+                    :suggestion-function (previous-history-urls-suggestion-filter))))
         (unless (url-empty-p (url (htree:data input)))
           (let ((host (quri:uri-host (url (htree:data input)))))
             (echo "Added exception for ~s." host)

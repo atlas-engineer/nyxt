@@ -122,9 +122,8 @@ Lisp function, except the form is " (:code "define-command") " instead of "
     (:pre (:code
            "(define-command bookmark-url ()
   \"Allow the user to bookmark a URL via minibuffer input.\"
-  (with-result (url (read-from-minibuffer
-                     (make-minibuffer
-                      :input-prompt \"Bookmark URL\")))
+  (let ((url (prompt-minibuffer
+              :input-prompt \"Bookmark URL\")))
     (bookmark-add url)))"))
     (:p "See the " (:code "minibuffer") " class documentation for how to write
 write custom minibuffers.")

@@ -181,7 +181,7 @@ search.")
 
 (defun call-non-input-command-or-forward (command &key (buffer (current-buffer))
                                                     (window (current-window)))
-  (with-result (response (%clicked-in-input?))
+  (let ((response (%clicked-in-input?)))
     (if (input-tag-p response)
         (ffi-generate-input-event
          window
@@ -190,7 +190,7 @@ search.")
 
 (define-command paste-or-set-url (&optional (buffer (current-buffer)))
   "Paste text if active element is an input tag, forward event otherwise."
-  (with-result (response (%clicked-in-input?))
+  (let ((response (%clicked-in-input?)))
     (let ((url-empty (url-empty-p (url-at-point buffer))))
       (if (and (input-tag-p response) url-empty)
           (funcall-safely #'paste)
@@ -247,10 +247,9 @@ search.")
 
 (define-command history-backwards-query ()
   "Query parent URL to navigate back to."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Navigate backwards to"
-                        :suggestion-function (history-backwards-suggestion-filter))))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Navigate backwards to"
+                :suggestion-function (history-backwards-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -266,10 +265,9 @@ search.")
 
 (define-command history-forwards-query ()
   "Query forward-URL to navigate to."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Navigate forwards to"
-                        :suggestion-function (history-forwards-suggestion-filter))))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Navigate forwards to"
+                :suggestion-function (history-forwards-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -294,10 +292,9 @@ Otherwise go forward to the only child."
 
 (define-command history-forwards-all-query ()
   "Query URL to forward to, from all child branches."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Navigate forwards to (all branches)"
-                        :suggestion-function (history-forwards-all-suggestion-filter))))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Navigate forwards to (all branches)"
+                :suggestion-function (history-forwards-all-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -313,10 +310,9 @@ Otherwise go forward to the only child."
 
 (define-command history-all-query ()
   "Query URL to go to, from the whole history."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Navigate to"
-                        :suggestion-function (history-all-suggestion-filter))))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Navigate to"
+                :suggestion-function (history-all-suggestion-filter))))
     (when input
       (set-url-from-history input))))
 
@@ -382,27 +378,25 @@ Otherwise go forward to the only child."
 
 (define-command paste-from-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
-  (with-result (ring-item (read-from-minibuffer
-                           (make-minibuffer
-                            :suggestion-function (ring-suggestion-filter
-                                                  (nyxt::clipboard-ring *browser*)))))
+  (let ((ring-item (prompt-minibuffer
+                    :suggestion-function (ring-suggestion-filter
+                                          (nyxt::clipboard-ring *browser*)))))
     (%paste :input-text ring-item)))
 
 (define-command copy ()
   "Copy selected text to clipboard."
-  (with-result (input (%copy))
+  (let ((input (%copy)))
     (copy-to-clipboard input)
     (echo "Text copied.")))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
-  (with-result (selected-fill (read-from-minibuffer
-                               (make-minibuffer
-                                :input-prompt "Autofill"
-                                :suggestion-function
-                                (lambda (minibuffer)
-                                  (fuzzy-match (input-buffer minibuffer)
-                                               (autofills *browser*))))))
+  (let ((selected-fill (prompt-minibuffer
+                        :input-prompt "Autofill"
+                        :suggestion-function
+                        (lambda (minibuffer)
+                          (fuzzy-match (input-buffer minibuffer)
+                                       (autofills *browser*))))))
     (cond ((stringp (autofill-fill selected-fill))
            (%paste :input-text (autofill-fill selected-fill)))
           ((functionp (autofill-fill selected-fill))

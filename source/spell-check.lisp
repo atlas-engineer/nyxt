@@ -8,9 +8,8 @@
     (if word-supplied-p
         (enchant:with-dict (lang (spell-check-language *browser*))
           (enchant:dict-check lang word))
-        (with-result (word (read-from-minibuffer
-                            (make-minibuffer
-                             :input-prompt "Spell check word")))
+        (let ((word (prompt-minibuffer
+                     :input-prompt "Spell check word")))
           (if (enchant:with-dict (lang (spell-check-language *browser*))
                 (enchant:dict-check lang word))
               (echo "~a spelled correctly." word)
@@ -19,7 +18,7 @@
 (define-command spell-check-highlighted-word ()
   "Spell check a highlighted word. If a word is incorrectly spelled,
 pull up a prompt of suggestions."
-  (with-result (word (%copy))
+  (let ((word (%copy)))
     (spell-check-prompt word)))
 
 (defun spell-check-prompt (word)
@@ -32,7 +31,7 @@ suggestions."
 
 (define-command spell-check-word-at-cursor ()
   "Spell check the word at cursor."
-  (with-result* ((contents (active-input-area-content))
+  (let* ((contents (active-input-area-content))
                  (cursor-position (active-input-area-cursor)))
     (let ((text-buffer (make-instance 'text-buffer:text-buffer))
           (cursor (make-instance 'text-buffer:cursor)))
@@ -44,11 +43,10 @@ suggestions."
 
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
-  (with-result (selected-word (read-from-minibuffer
-                               (make-minibuffer
-                                :input-buffer word
-                                :input-prompt "Suggest spelling (3+ characters)"
-                                :suggestion-function 'enchant-suggestion)))
+  (let ((selected-word (prompt-minibuffer
+                        :input-buffer word
+                        :input-prompt "Suggest spelling (3+ characters)"
+                        :suggestion-function 'enchant-suggestion)))
     (trivial-clipboard:text selected-word)
     (echo "Word copied to clipboard.")))
 
