@@ -31,6 +31,15 @@ use the socket without parsing any init file.")
                                            ;; at compile-time.
                                            :dirname (uiop:xdg-config-home +data-root+)))))))
 
+(defmethod expand-data-path ((profile data-profile) (path (eql *config-file-path*)))
+  "Return path of the init file."
+  (expand-default-path (make-instance 'data-path
+                                      :basename (basename path)
+                                      ;; Specify `dirname' here since
+                                      ;; *config-file-path* is evaluated
+                                      ;; at compile-time.
+                                      :dirname (uiop:xdg-config-home +data-root+))))
+
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
@@ -219,6 +228,10 @@ Return the short error message and the full error message as second value."
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
   (load-lisp init-file :package (find-package :nyxt-user)))
+
+(define-command load-config-file (&key (config-file (expand-path *config-file-path*)))
+  "Load or reload the config file."
+  (load-lisp config-file :package (find-package :nyxt-user)))
 
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
@@ -464,13 +477,16 @@ The evaluation may happen on its own instance or on an already running instance.
 
 (defun start-browser (free-args)
   "Load INIT-FILE if non-nil.
+Load CONFIG-FILE.
 Instantiate `*browser*'.
 Start Nyxt and load URLS if any.
 Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (format t "Nyxt version ~a~&" +version+)
-
+    (unless (not (expand-path *config-file-path*))
+      (load-lisp (expand-path *config-file-path*)
+                 :package (find-package :nyxt-user)))
     (unless (or (getf *options* :no-init)
                 (not (expand-path *init-file-path*)))
       (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
