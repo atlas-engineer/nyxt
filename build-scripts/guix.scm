@@ -133,6 +133,7 @@
      ;; See https://github.com/atlas-engineer/nyxt/issues/680.
      `(("alexandria" ,cl-alexandria)
        ("bordeaux-threads" ,cl-bordeaux-threads)
+       ("cl-chanl" ,cl-chanl)
        ("cl-containers" ,cl-containers)
        ("cl-css" ,cl-css)
        ("cl-json" ,cl-json)
