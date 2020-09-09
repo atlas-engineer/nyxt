@@ -221,15 +221,14 @@ URL."
                    name-list)))
     (if (url-empty-p (url buffer))
         (echo "Buffer has no URL.")
-        (with-result* ((body (with-current-buffer buffer
-                               (document-get-body)))
-                       (tags (read-from-minibuffer
-                              (make-minibuffer
-                               :input-prompt "Space-separated tag(s)"
-                               :default-modes '(set-tag-mode minibuffer-mode)
-                               :input-buffer (url-bookmark-tags (url buffer))
-                               :suggestion-function (tag-suggestion-filter
-                                                     :extra-tags (make-tags (extract-keywords body 5)))))))
+        (let* ((body (with-current-buffer buffer
+                       (document-get-body)))
+               (tags (prompt-minibuffer
+                      :input-prompt "Space-separated tag(s)"
+                      :default-modes '(set-tag-mode minibuffer-mode)
+                      :input-buffer (url-bookmark-tags (url buffer))
+                      :suggestion-function (tag-suggestion-filter
+                                            :extra-tags (make-tags (extract-keywords body 5))))))
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
@@ -237,38 +236,34 @@ URL."
 
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."
-  (with-result (buffers (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Bookmark URL from buffer(s)"
-                          :multi-selection-p t
-                          :suggestion-function (buffer-suggestion-filter))))
+  (let ((buffers (prompt-minibuffer
+                  :input-prompt "Bookmark URL from buffer(s)"
+                  :multi-selection-p t
+                  :suggestion-function (buffer-suggestion-filter))))
     (mapcar #'bookmark-current-page buffers)))
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
-  (with-result (url (read-from-minibuffer
-                     (make-minibuffer
-                      :input-prompt "Bookmark URL")))
+  (let ((url (prompt-minibuffer
+              :input-prompt "Bookmark URL")))
     (if (not (valid-url-p url))
         (echo "Invalid URL")
-        (let ((url (quri:uri url)))
-          (with-result (tags (read-from-minibuffer
-                              (make-minibuffer
-                               :input-prompt "Space-separated tag(s)"
-                               :default-modes '(set-tag-mode minibuffer-mode)
-                               :input-buffer (url-bookmark-tags url)
-                               :suggestion-function (tag-suggestion-filter))))
-            (bookmark-add url :tags tags))))))
+        (let* ((url (quri:uri url))
+               (tags (prompt-minibuffer
+                      :input-prompt "Space-separated tag(s)"
+                      :default-modes '(set-tag-mode minibuffer-mode)
+                      :input-buffer (url-bookmark-tags url)
+                      :suggestion-function (tag-suggestion-filter))))
+          (bookmark-add url :tags tags)))))
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
   (with-data-access bookmarks (bookmarks-path (current-buffer))
-    (with-result (entries (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Delete bookmark(s)"
-                            :multi-selection-p t
-                            :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                            :suggestion-function (bookmark-suggestion-filter))))
+    (let ((entries (prompt-minibuffer
+                    :input-prompt "Delete bookmark(s)"
+                    :multi-selection-p t
+                    :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                    :suggestion-function (bookmark-suggestion-filter))))
       (setf bookmarks
             (set-difference bookmarks
                             entries :test #'equals)))))
@@ -290,11 +285,10 @@ If character before cursor is '+' or '-' complete against tag."
          (operand? (unless (str:emptyp current-word) (subseq current-word 0 1))))
     (if (or (equal "-" operand?)
             (equal "+" operand?))
-        (with-result (tag (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Tag"
-                            :input-buffer (subseq current-word 1)
-                            :suggestion-function (tag-suggestion-filter))))
+        (let ((tag (prompt-minibuffer
+                    :input-prompt "Tag"
+                    :input-buffer (subseq current-word 1)
+                    :suggestion-function (tag-suggestion-filter))))
           (when tag
             (text-buffer::replace-word-at-cursor
              (input-cursor minibuffer)
@@ -313,24 +307,22 @@ If character before cursor is '+' or '-' complete against tag."
   "Set the URL for the current buffer from a bookmark.
 With multiple selections, open the first bookmark in the current buffer, the
 rest in background buffers."
-  (with-result (entries (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Open bookmark(s)"
-                          :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                          :suggestion-function (bookmark-suggestion-filter)
-                          :multi-selection-p t)))
+  (let ((entries (prompt-minibuffer
+                  :input-prompt "Open bookmark(s)"
+                  :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                  :suggestion-function (bookmark-suggestion-filter)
+                  :multi-selection-p t)))
     (dolist (entry (rest entries))
       (make-buffer :url (object-string (url entry))))
     (buffer-load (url (first entries)))))
 
 (define-command set-url-from-bookmark-new-buffer ()
   "Open selected bookmarks in new buffers."
-  (with-result (entries (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Open bookmarks in new buffers"
-                          :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                          :suggestion-function (bookmark-suggestion-filter)
-                          :multi-selection-p t)))
+  (let ((entries (prompt-minibuffer
+                  :input-prompt "Open bookmarks in new buffers"
+                  :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                  :suggestion-function (bookmark-suggestion-filter)
+                  :multi-selection-p t)))
     (dolist (entry (rest entries))
       (make-buffer :url (object-string (url entry))))
     (buffer-load (url (first entries))

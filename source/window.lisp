@@ -122,11 +122,10 @@ The handlers take the window as argument."))
 
 (define-command delete-window ()
   "Delete the queried window(s)."
-  (with-result (windows (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Delete window(s)"
-                          :multi-selection-p t
-                          :suggestion-function (window-suggestion-filter))))
+  (let ((windows (prompt-minibuffer
+                  :input-prompt "Delete window(s)"
+                  :multi-selection-p t
+                  :suggestion-function (window-suggestion-filter))))
     (mapcar #'delete-current-window windows)))
 
 (define-command delete-current-window (&optional (window (current-window)))

@@ -61,12 +61,11 @@ The history is sorted by last access."
 (define-command delete-history-entry ()
   "Delete queried history entries."
   (with-data-access history (history-path (current-buffer))
-    (with-result (entries (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Delete entries"
-                            :suggestion-function (history-suggestion-filter)
-                            :history (minibuffer-set-url-history *browser*)
-                            :multi-selection-p t)))
+    (let ((entries (prompt-minibuffer
+                    :input-prompt "Delete entries"
+                    :suggestion-function (history-suggestion-filter)
+                    :history (minibuffer-set-url-history *browser*)
+                    :multi-selection-p t)))
       (dolist (entry entries)
         (remhash (object-string (url entry)) history)))))
 

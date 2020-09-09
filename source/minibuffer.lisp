@@ -117,23 +117,23 @@ calls, such as invoking `minibuffer-history'.
 
 A minibuffer query is typically done as follows:
 
-\(with-result (tags (read-from-minibuffer
-                    (make-minibuffer
-                     :input-prompt \"Space-separated tag (s) \"
-                     :default-modes '(set-tag-mode minibuffer-mode)
-                     :suggestion-function (tag-suggestion-filter))))
+\(let ((tags (prompt-minibuffer
+              :input-prompt \"Space-separated tag (s) \"
+              :default-modes '(set-tag-mode minibuffer-mode)
+              :suggestion-function (tag-suggestion-filter))))
   ;; Write form here in which `tags' is bound to the resulting element(s).
   )"))
 
 (define-user-class minibuffer)
 
 (defmacro define-function (name args &body body)
-  "Eval ARGS then define function over the resulting lambda list."
+  "Eval ARGS then define function over the resulting lambda list.
+All ARGS are declared as `ignorable'."
   (let ((evaluated-args (eval args)))
     `(defun ,name  ,evaluated-args
        (declare (ignorable ,@(set-difference (mapcar (lambda (arg) (if (listp arg) (first arg) arg))
                                                      evaluated-args)
-                                             '(&key &allow-other-keys &aux &optional &rest))))
+                                             lambda-list-keywords)))
        ,@body)))
 
 (defun minibuffer-initargs ()
@@ -221,7 +221,7 @@ beginning."
                                            (list '&key
                                                  (minibuffer-initargs)))
   "Open the minibuffer, ready for user input.
-ARGS are as per `make-minibuffer'.
+ARGS are passed to the minibuffer constructor.
 Example use:
 
 \(prompt-minibuffer
@@ -277,10 +277,10 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content it set as the MINIBUFFER's `content'."
   (when minibuffer
-    (with-result (new-content
-                  (ffi-minibuffer-evaluate-javascript
-                   (current-window)
-                   (str:concat script (ps:ps (ps:chain document body |outerHTML|)))))
+    (let ((new-content
+            (ffi-minibuffer-evaluate-javascript
+             (current-window)
+             (str:concat script (ps:ps (ps:chain document body |outerHTML|))))))
       (setf (slot-value minibuffer 'content) new-content))))
 
 (defun show (&key (minibuffer (first (active-minibuffers (current-window)))) height)

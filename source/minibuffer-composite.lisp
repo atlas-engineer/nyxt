@@ -13,20 +13,19 @@
 
 (defun meta-search (minibuffers)
   "Search a composite set of sources simultaneously."
-  (with-result (selection
-                (read-from-minibuffer
-                 (make-minibuffer
-                  :input-prompt "Meta Search"
-                  :suggestion-function
-                  (lambda (minibuffer)
-                    (apply #'intertwine
-                           (loop for i in minibuffers collect
-                                    (loop for result in
-                                             (funcall (suggestion-function i)
-                                                      minibuffer)
-                                          collect (make-instance 'meta-result
-                                                                 :result result
-                                                                 :source i))))))))
+  (let ((selection
+          (prompt-minibuffer
+           :input-prompt "Meta Search"
+           :suggestion-function
+           (lambda (minibuffer)
+             (apply #'intertwine
+                    (loop for i in minibuffers
+                          collect
+                          (loop for result in (funcall (suggestion-function i)
+                                                       minibuffer)
+                                collect (make-instance 'meta-result
+                                                       :result result
+                                                       :source i))))))))
     (funcall (slot-value (source-minibuffer selection) 'callback) (result selection))))
 
 (defun intertwine (&rest lists)

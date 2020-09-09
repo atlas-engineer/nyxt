@@ -654,22 +654,20 @@ proceeding."
   "Switch the active buffer in the current window."
   (if id
       (set-current-buffer (gethash id (slot-value *browser* 'buffers)))
-      (with-result (buffer (read-from-minibuffer
-                            (make-minibuffer
-                             :input-prompt "Switch to buffer"
-                             ;; For commodity, the current buffer shouldn't be the first one on the list.
-                             :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
+      (let ((buffer (prompt-minibuffer
+                     :input-prompt "Switch to buffer"
+                     ;; For commodity, the current buffer shouldn't be the first one on the list.
+                     :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
         (set-current-buffer buffer))))
 
 (define-command switch-buffer-domain (&optional (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
   (let ((domain (quri:uri-domain (url buffer))))
-    (with-result (buffer (read-from-minibuffer
-                          (make-minibuffer
-                           :input-prompt "Switch to buffer in current domain:"
-                           :suggestion-function (buffer-suggestion-filter
-                                                 :domain domain
-                                                 :current-is-last-p t))))
+    (let ((buffer (prompt-minibuffer
+                   :input-prompt "Switch to buffer in current domain:"
+                   :suggestion-function (buffer-suggestion-filter
+                                         :domain domain
+                                         :current-is-last-p t))))
       (set-current-buffer buffer))))
 
 (define-command make-buffer-focus (&key (url :default))
@@ -683,11 +681,10 @@ See `make-buffer'."
   "Delete the buffer(s) via minibuffer input."
   (if id
       (buffer-delete (gethash id (slot-value *browser* 'buffers)))
-      (with-result (buffers (read-from-minibuffer
-                             (make-minibuffer
-                              :input-prompt "Delete buffer(s)"
-                              :multi-selection-p t
-                              :suggestion-function (buffer-suggestion-filter))))
+      (let ((buffers (prompt-minibuffer
+                      :input-prompt "Delete buffer(s)"
+                      :multi-selection-p t
+                      :suggestion-function (buffer-suggestion-filter))))
         (mapcar #'buffer-delete buffers))))
 
 (define-command reduce-to-buffer (&key (delete t))
@@ -781,7 +778,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                 :must-match-p nil)))
 
       (when (typep url 'history-entry)
-        ;; In case read-from-minibuffer returned a string upon
+        ;; In case prompt-minibuffer returned a string upon
         ;; must-match-p.
         (setf url (url url)))
       (ffi-within-renderer-thread       ; TODO: Wrap the buffer-load FFI method content with ffi-within-renderer-thread.
@@ -805,11 +802,10 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-command reload-buffer ()
   "Reload queried buffer(s)."
-  (with-result (buffers (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Reload buffer(s)"
-                          :multi-selection-p t
-                          :suggestion-function (buffer-suggestion-filter))))
+  (let ((buffers (prompt-minibuffer
+                  :input-prompt "Reload buffer(s)"
+                  :multi-selection-p t
+                  :suggestion-function (buffer-suggestion-filter))))
     (mapcar #'reload-current-buffer buffers)))
 
 (define-command switch-buffer-previous ()
@@ -886,40 +882,36 @@ MODES should be a list of symbols, each possibly returned by `mode-name'."
 
 (define-command disable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
   "Disable queried mode(s)."
-  (with-result (modes (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Disable mode(s)"
-                        :multi-selection-p t
-                        :suggestion-function (active-mode-suggestion-filter buffers))))
+  (let ((modes (prompt-minibuffer
+                :input-prompt "Disable mode(s)"
+                :multi-selection-p t
+                :suggestion-function (active-mode-suggestion-filter buffers))))
     (dolist (buffer buffers)
       (disable-modes modes buffer))))
 
 (define-command disable-mode-for-buffer ()
   "Disable queried mode(s) for select buffer(s)."
-  (with-result (buffers (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Disable mode(s) for buffer(s)"
-                          :multi-selection-p t
-                          :suggestion-function (buffer-suggestion-filter))))
+  (let ((buffers (prompt-minibuffer
+                  :input-prompt "Disable mode(s) for buffer(s)"
+                  :multi-selection-p t
+                  :suggestion-function (buffer-suggestion-filter))))
     (disable-mode-for-current-buffer :buffers buffers)))
 
 (define-command enable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
   "Enable queried mode(s)."
-  (with-result (modes (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Enable mode(s)"
-                        :multi-selection-p t
-                        :suggestion-function (inactive-mode-suggestion-filter buffers))))
+  (let ((modes (prompt-minibuffer
+                :input-prompt "Enable mode(s)"
+                :multi-selection-p t
+                :suggestion-function (inactive-mode-suggestion-filter buffers))))
     (dolist (buffer buffers)
       (enable-modes modes buffer))))
 
 (define-command enable-mode-for-buffer ()
   "Enable queried mode(s) for select buffer(s)."
-  (with-result (buffers (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Enable mode(s) for buffer(s)"
-                          :multi-selection-p t
-                          :suggestion-function (buffer-suggestion-filter))))
+  (let ((buffers (prompt-minibuffer
+                  :input-prompt "Enable mode(s) for buffer(s)"
+                  :multi-selection-p t
+                  :suggestion-function (buffer-suggestion-filter))))
     (enable-mode-for-current-buffer :buffers buffers)))
 
 (define-command open-inspector ()

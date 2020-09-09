@@ -84,11 +84,10 @@ complete against a search engine."
           (kill-whole-line minibuffer)
           (insert minibuffer (str:concat (shortcut (first matching-engines)) " ")))
          (match-count
-          (with-result (engine (read-from-minibuffer
-                                (make-minibuffer
-                                 :input-prompt "Search engine"
-                                 :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
-                                 :suggestion-function #'nyxt:search-engine-suggestion-filter)))
+          (let ((engine (prompt-minibuffer
+                         :input-prompt "Search engine"
+                         :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
+                         :suggestion-function #'nyxt:search-engine-suggestion-filter)))
             (when engine
               (kill-whole-line minibuffer)
               (insert minibuffer (str:concat (shortcut engine) " "))))))))
@@ -300,11 +299,10 @@ readable."
 (define-command minibuffer-history (&optional (minibuffer (current-minibuffer)))
   "Choose a minibuffer input history entry to insert as input."
   (when (history minibuffer)
-    (with-result (input (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Input history"
-                          :history nil
-                          :suggestion-function (minibuffer-history-suggestion-filter (history minibuffer)))))
+    (let ((input (prompt-minibuffer
+                  :input-prompt "Input history"
+                  :history nil
+                  :suggestion-function (minibuffer-history-suggestion-filter (history minibuffer)))))
       (unless (str:empty? input)
         (log:debug input minibuffer)
         (text-buffer::kill-line (input-cursor minibuffer))

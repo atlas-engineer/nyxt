@@ -87,7 +87,7 @@ vi-normal-mode.")
   (ffi-generate-input-event
    (current-window)
    (nyxt::last-event buffer))
-  (with-result (response (nyxt/web-mode:%clicked-in-input?))
+  (let ((response (nyxt/web-mode:%clicked-in-input?)))
     (cond
       ((and (nyxt/web-mode:input-tag-p response)
             (find-submode buffer 'vi-normal-mode))

@@ -83,8 +83,7 @@
 (define-command download-open-file ()
   "Open a downloaded file.
 See also `open-file'."
-  (with-result (filename (read-from-minibuffer
-                          (make-minibuffer
-                           :input-prompt "Open file"
-                           :suggestion-function (downloaded-files-suggestion-filter))))
+  (let ((filename (prompt-minibuffer
+                   :input-prompt "Open file"
+                   :suggestion-function (downloaded-files-suggestion-filter))))
     (nyxt/file-manager-mode:open-file-function filename)))
