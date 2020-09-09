@@ -82,7 +82,7 @@ The handlers take the window as argument."))
 
 (defun print-status (&optional status window)
   (let ((window (or window (current-window))))
-    (when (status-buffer window)
+    (when (and window (status-buffer window))
       (ffi-print-status
        window
        (or status
