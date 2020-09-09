@@ -31,13 +31,12 @@
 (define-command execute-command ()
   "Execute a command by name."
   (unless (active-minibuffers (current-window))
-    (with-result (command (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Execute command"
-                            :suggestion-function (command-suggestion-filter
-                                                  (mapcar #'mode-name
-                                                          (modes (current-buffer))))
-                            :hide-suggestion-count-p t)))
+    (let ((command (prompt-minibuffer
+                    :input-prompt "Execute command"
+                    :suggestion-function (command-suggestion-filter
+                                          (mapcar #'mode-name
+                                                  (modes (current-buffer))))
+                    :hide-suggestion-count-p t)))
       (setf (access-time command) (get-internal-real-time))
       (run command))))
 
@@ -75,26 +74,20 @@
 
 (define-command disable-hook-handler ()
   "Remove handler(s) from a hook."
-  (with-result (hook-desc (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Hook where to disable handler"
-                            :suggestion-function (hook-suggestion-filter))))
-    (with-result (handler
-                  (read-from-minibuffer
-                   (make-minibuffer
-                    :input-prompt (format nil "Disable handler from ~a" (name hook-desc))
-                    :suggestion-function (handler-suggestion-filter (value hook-desc)))))
-      (hooks:disable-hook (value hook-desc) handler))))
+  (let* ((hook-desc (prompt-minibuffer
+                     :input-prompt "Hook where to disable handler"
+                     :suggestion-function (hook-suggestion-filter)))
+         (handler (prompt-minibuffer
+                   :input-prompt (format nil "Disable handler from ~a" (name hook-desc))
+                   :suggestion-function (handler-suggestion-filter (value hook-desc)))))
+    (hooks:disable-hook (value hook-desc) handler)))
 
 (define-command enable-hook-handler ()
   "Remove handler(s) from a hook."
-  (with-result (hook-desc (read-from-minibuffer
-                           (make-minibuffer
-                            :input-prompt "Hook where to enable handler"
-                            :suggestion-function (hook-suggestion-filter))))
-    (with-result (handler
-                  (read-from-minibuffer
-                   (make-minibuffer
-                    :input-prompt (format nil "Enable handler from ~a" (name hook-desc))
-                    :suggestion-function (disabled-handler-suggestion-filter (value hook-desc)))))
-      (hooks:enable-hook (value hook-desc) handler))))
+  (let* ((hook-desc (prompt-minibuffer
+                     :input-prompt "Hook where to enable handler"
+                     :suggestion-function (hook-suggestion-filter)))
+         (handler (prompt-minibuffer
+                   :input-prompt (format nil "Enable handler from ~a" (name hook-desc))
+                   :suggestion-function (disabled-handler-suggestion-filter (value hook-desc)))))
+    (hooks:enable-hook (value hook-desc) handler)))

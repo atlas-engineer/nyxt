@@ -145,9 +145,9 @@
       (map nil
            (lambda (buffer)
              (with-current-buffer buffer
-               (with-result (result (query-buffer
-                                     :query input
-                                     :case-sensitive-p case-sensitive-p))
+               (let ((result (query-buffer
+                              :query input
+                              :case-sensitive-p case-sensitive-p)))
                  (let* ((matches (matches-from-json
                                   result buffer multi-buffer)))
                    (setf all-matches (append all-matches matches))
@@ -178,11 +178,10 @@
   "Show a prompt in the minibuffer that allows to choose
 one or more buffers, and then start a search prompt that
 searches over the selected buffer(s)."
-  (with-result (buffers (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Search buffer(s)"
-                          :multi-selection-p t
-                          :suggestion-function (buffer-suggestion-filter))))
+  (let ((buffers (prompt-minibuffer
+                  :input-prompt "Search buffer(s)"
+                  :multi-selection-p t
+                  :suggestion-function (buffer-suggestion-filter))))
     (apply #'search-over-buffers buffers
            (if explicit-case-p
                `(:case-sensitive-p ,case-sensitive-p)
@@ -195,28 +194,26 @@ provided buffers."
          (prompt-text
            (if (> num-buffers 1)
                (format nil "Search over ~d buffers for (3+ characters)" num-buffers)
-               "Search for (3+ characters)"))
-         (minibuffer (make-minibuffer
-                      :input-prompt prompt-text
-                      :suggestion-function
-                      #'(lambda (minibuffer)
-                          (unless explicit-case-p
-                            (setf case-sensitive-p (not (str:downcasep (input-buffer minibuffer)))))
-                          (match-suggestion-function (input-buffer minibuffer) buffers case-sensitive-p))
-                      :changed-callback
-                      (let ((subsequent-call nil))
-                        (lambda ()
-                          ;; when the minibuffer initially appears, we don't
-                          ;; want update-selection-highlight-hint to scroll
-                          ;; but on subsequent calls, it should scroll
-                          (update-selection-highlight-hint
-                           :scroll subsequent-call)
-                          (setf subsequent-call t)))
-                      :cleanup-function (lambda () (remove-focus))
-                      :history (nyxt::minibuffer-search-history *browser*))))
-    (with-result (match (read-from-minibuffer minibuffer))
-      (declare (ignore match))
-      (update-selection-highlight-hint :follow t :scroll t))))
+               "Search for (3+ characters)")))
+    (prompt-minibuffer
+     :input-prompt prompt-text
+     :suggestion-function
+     #'(lambda (minibuffer)
+         (unless explicit-case-p
+           (setf case-sensitive-p (not (str:downcasep (input-buffer minibuffer)))))
+         (match-suggestion-function (input-buffer minibuffer) buffers case-sensitive-p))
+     :changed-callback
+     (let ((subsequent-call nil))
+       (lambda ()
+         ;; when the minibuffer initially appears, we don't
+         ;; want update-selection-highlight-hint to scroll
+         ;; but on subsequent calls, it should scroll
+         (update-selection-highlight-hint
+          :scroll subsequent-call)
+         (setf subsequent-call t)))
+     :cleanup-function (lambda () (remove-focus))
+     :history (nyxt::minibuffer-search-history *browser*))
+    (update-selection-highlight-hint :follow t :scroll t)))
 
 (define-command remove-search-hints ()
   "Remove all search hints."

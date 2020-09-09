@@ -388,11 +388,10 @@ nothing is done if file is missing."
                (with-input-from-string (,in (with-output-to-string (,stream)
                                               (setf ,result (progn ,@body))))
                  (gpg-write ,in ,gpg-file ,recipient))
-               (with-result (,recipient (read-from-minibuffer
-                                        (make-minibuffer
-                                         :input-prompt "Recipient:"
-                                         :suggestion-function (gpg-key-suggestion-filter)
-                                         :must-match-p nil)))
+               (let ((,recipient (prompt-minibuffer
+                                  :input-prompt "Recipient:"
+                                  :suggestion-function (gpg-key-suggestion-filter)
+                                  :must-match-p nil)))
                  (with-input-from-string (,in (with-output-to-string (,stream)
                                                 (setf ,result (progn ,@body))))
                    (gpg-write ,in ,gpg-file (gpg-key-key-id ,recipient)))))

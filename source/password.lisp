@@ -35,15 +35,13 @@
     ((and (password-interface *browser*)
           (has-method-p (password-interface *browser*)
                         #'password:save-password))
-     (with-result* ((password-name (read-from-minibuffer
-                                    (make-minibuffer
-                                     :input-prompt "Name for new password"
-                                     :input-buffer (or (quri:uri-domain (url (current-buffer)))
-                                                       ""))))
-                    (new-password (read-from-minibuffer
-                                   (make-minibuffer
-                                    :invisible-input-p t
-                                    :input-prompt "New password (leave empty to generate)"))))
+     (let* ((password-name (prompt-minibuffer
+                            :input-prompt "Name for new password"
+                            :input-buffer (or (quri:uri-domain (url (current-buffer)))
+                                              "")))
+            (new-password (prompt-minibuffer
+                           :invisible-input-p t
+                           :input-prompt "New password (leave empty to generate)")))
        (password:save-password (password-interface *browser*)
                                :password-name password-name
                                :password new-password)))
@@ -61,12 +59,10 @@
   "Copy password prompting for all the details without suggestion."
   (password-debug-info)
   (if (password-interface *browser*)
-      (with-result* ((password-name (read-from-minibuffer
-                                     (make-minibuffer
-                                      :input-prompt "Name of password")))
-                     (service (read-from-minibuffer
-                               (make-minibuffer
-                                :input-prompt "Service"))))
+      (let* ((password-name (prompt-minibuffer
+                             :input-prompt "Name of password"))
+             (service (prompt-minibuffer
+                       :input-prompt "Service")))
         (handler-case
             (password:clip-password (password-interface *browser*)
                                     :password-name password-name
@@ -80,12 +76,10 @@
   (password-debug-info)
   (if (password-interface *browser*)
       (with-password (password-interface *browser*)
-        (with-result (password-name
-                      (read-from-minibuffer
-                       (make-minibuffer
-                        :suggestion-function
-                        (password-suggestion-filter
-                         (password-interface *browser*)))))
+        (let ((password-name (prompt-minibuffer
+                              :suggestion-function
+                              (password-suggestion-filter
+                               (password-interface *browser*)))))
           (password:clip-password (password-interface *browser*) :password-name password-name)
           (echo "Password saved to clipboard for ~a seconds." password:*sleep-timer*)))
       (echo-warning "No password manager found.")))

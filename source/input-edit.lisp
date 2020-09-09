@@ -34,19 +34,19 @@
      ,@body))
 
 (defmacro with-input-area ((contents cursor-position) &body body)
-  `(with-result* ((,contents (active-input-area-content))
+  `(let* ((,contents (active-input-area-content))
                   (,cursor-position (active-input-area-cursor)))
      ,@body))
 
 (define-command cursor-forwards ()
   "Move cursor forward by one element."
-  (with-result* ((cursor-position (active-input-area-cursor)))
+  (let* ((cursor-position (active-input-area-cursor)))
     (let ((new-position (+ (parse-integer cursor-position) 1)))
       (set-active-input-area-cursor new-position new-position))))
 
 (define-command cursor-backwards ()
   "Move cursor backwards by one element."
-  (with-result* ((cursor-position (active-input-area-cursor)))
+  (let* ((cursor-position (active-input-area-cursor)))
     (let ((new-position (- (parse-integer cursor-position) 1)))
       (set-active-input-area-cursor new-position new-position))))
 

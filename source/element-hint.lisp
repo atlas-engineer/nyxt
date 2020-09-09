@@ -164,7 +164,7 @@ identifier for every hinted element."
 (defun query-hints (prompt function &key multi-selection-p annotate-full-document)
   (let* ((buffer (current-buffer))
          minibuffer)
-    (with-result (elements-json (add-element-hints :annotate-full-document annotate-full-document))
+    (let ((elements-json (add-element-hints :annotate-full-document annotate-full-document)))
       (setf minibuffer (make-minibuffer
                         :input-prompt prompt
                         :history nil
@@ -187,7 +187,7 @@ identifier for every hinted element."
                           (with-current-buffer buffer
                             (remove-element-hints)))))
       ;; TODO: ADD offscreen hints in background from full document annotation
-      (with-result (result (read-from-minibuffer minibuffer))
+      (let ((result (prompt-minibuffer minibuffer)))
         (funcall-safely function result)))))
 
 (defun hint-suggestion-filter (hints)
@@ -355,22 +355,20 @@ visible active buffer."
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
-  (with-result* ((elements-json (add-element-hints))
-                 (result (read-from-minibuffer
-                          (make-minibuffer
-                           :input-prompt "Bookmark hint"
-                           :history nil
-                           :suggestion-function
-                           (hint-suggestion-filter (elements-from-json elements-json))
-                           :cleanup-function
-                           (lambda ()
-                             (remove-element-hints)))))
-                 (tags (read-from-minibuffer
-                        (make-minibuffer
-                         :input-prompt "Space-separated tag(s)"
-                         :default-modes '(set-tag-mode minibuffer-mode)
-                         :input-buffer (url-bookmark-tags (quri:uri (url result)))
-                         :suggestion-function (tag-suggestion-filter)))))
+  (let* ((elements-json (add-element-hints))
+         (result (prompt-minibuffer
+                  :input-prompt "Bookmark hint"
+                  :history nil
+                  :suggestion-function
+                  (hint-suggestion-filter (elements-from-json elements-json))
+                  :cleanup-function
+                  (lambda ()
+                    (remove-element-hints))))
+         (tags (prompt-minibuffer
+                :input-prompt "Space-separated tag(s)"
+                :default-modes '(set-tag-mode minibuffer-mode)
+                :input-buffer (url-bookmark-tags (quri:uri (url result)))
+                :suggestion-function (tag-suggestion-filter))))
     (when result
       (bookmark-add (quri:uri (url result)) :tags tags))))
 

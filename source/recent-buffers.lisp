@@ -17,11 +17,10 @@
 
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."
-  (with-result (buffers (read-from-minibuffer
-                         (make-minibuffer
-                          :input-prompt "Reopen buffer(s)"
-                          :multi-selection-p t
-                          :suggestion-function (recent-buffer-suggestion-filter))))
+  (let ((buffers (prompt-minibuffer
+                  :input-prompt "Reopen buffer(s)"
+                  :multi-selection-p t
+                  :suggestion-function (recent-buffer-suggestion-filter))))
     (dolist (buffer buffers)
       (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
       (reload-current-buffer (buffer-make *browser* :dead-buffer buffer))

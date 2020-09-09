@@ -49,26 +49,25 @@
 
 (define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :suggestion-function (variable-suggestion-filter)
-                        :input-prompt "Describe variable")))
-    (let* ((input (variable-suggestion-name input))
-           (help-buffer (nyxt/help-mode:help-mode
-                         :activate t
-                         :buffer (make-internal-buffer
-                                  :title (str:concat "*Help-"
-                                                     (symbol-name input)
-                                                     "*"))))
-           (help-contents (markup:markup
-                           (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
-                           (:pre (documentation input 'variable))
-                           (:h2 "Current Value:")
-                           (:pre (object-display (symbol-value input)))))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript help-buffer insert-help)
-      (set-current-buffer help-buffer))))
+  (let* ((input (variable-suggestion-name
+                 (prompt-minibuffer
+                  :suggestion-function (variable-suggestion-filter)
+                  :input-prompt "Describe variable")))
+         (help-buffer (nyxt/help-mode:help-mode
+                       :activate t
+                       :buffer (make-internal-buffer
+                                :title (str:concat "*Help-"
+                                                   (symbol-name input)
+                                                   "*"))))
+         (help-contents (markup:markup
+                         (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
+                         (:pre (documentation input 'variable))
+                         (:h2 "Current Value:")
+                         (:pre (object-display (symbol-value input)))))
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (set-current-buffer help-buffer)))
 
 (declaim (ftype (function (command)) describe-command*))
 (defun describe-command* (command)
@@ -111,10 +110,9 @@
 (define-command describe-function ()
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Describe function"
-                        :suggestion-function (function-suggestion-filter))))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Describe function"
+                :suggestion-function (function-suggestion-filter))))
     (setf input (function-suggestion-name input))
     (flet ((method-desc (method)
              (markup:markup
@@ -153,10 +151,9 @@ For generic functions, describe all the methods."
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Describe command"
-                        :suggestion-function (command-suggestion-filter))))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Describe command"
+                :suggestion-function (command-suggestion-filter))))
     (describe-command* input)))
 
 (defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
@@ -183,49 +180,47 @@ A command is a special kind of function that can be called with
 
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Describe class"
-                        :suggestion-function (class-suggestion-filter))))
-    (let* ((input (class-suggestion-name input))
-           (help-buffer (nyxt/help-mode:help-mode
-                         :activate t
-                         :buffer (make-internal-buffer
-                                  :title (str:concat "*Help-"
-                                                     (symbol-name input)
-                                                     "*"))))
-           (slots (class-public-slots input))
-           (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots)))
-           (help-contents (str:concat
-                           (markup:markup
-                            (:h1 (symbol-name input))
-                            (:p (:pre (documentation input 'type)))
-                            (:h2 "Slots:"))
-                           slot-descs))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript help-buffer insert-help)
-      (set-current-buffer help-buffer))))
+  (let* ((input (class-suggestion-name
+                 (prompt-minibuffer
+                  :input-prompt "Describe class"
+                  :suggestion-function (class-suggestion-filter))))
+         (help-buffer (nyxt/help-mode:help-mode
+                       :activate t
+                       :buffer (make-internal-buffer
+                                :title (str:concat "*Help-"
+                                                   (symbol-name input)
+                                                   "*"))))
+         (slots (class-public-slots input))
+         (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots)))
+         (help-contents (str:concat
+                         (markup:markup
+                          (:h1 (symbol-name input))
+                          (:p (:pre (documentation input 'type)))
+                          (:h2 "Slots:"))
+                         slot-descs))
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (set-current-buffer help-buffer)))
 
 (define-command describe-slot ()
   "Inspect a slot and show it in a help buffer."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt "Describe slot"
-                        :suggestion-function (slot-suggestion-filter))))
-    (let* ((help-buffer (nyxt/help-mode:help-mode
-                         :activate t
-                         :buffer (make-internal-buffer
-                                  :title (str:concat "*Help-"
-                                                     (symbol-name (name input))
-                                                     "*"))))
+  (let* ((input (prompt-minibuffer
+                 :input-prompt "Describe slot"
+                 :suggestion-function (slot-suggestion-filter)))
+         (help-buffer (nyxt/help-mode:help-mode
+                       :activate t
+                       :buffer (make-internal-buffer
+                                :title (str:concat "*Help-"
+                                                   (symbol-name (name input))
+                                                   "*"))))
 
-           (help-contents (describe-slot* (name input) (class-sym input)
-                                          :mention-class-p t))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript help-buffer insert-help)
-      (set-current-buffer help-buffer))))
+         (help-contents (describe-slot* (name input) (class-sym input)
+                                        :mention-class-p t))
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (set-current-buffer help-buffer)))
 
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
