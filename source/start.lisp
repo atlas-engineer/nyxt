@@ -7,6 +7,10 @@
 (defvar *init-file-path* (make-instance 'data-path :basename "init")
   "The path of the initialization file.")
 
+(export-always '*config-file-path*)
+(defvar *config-file-path* (make-instance 'data-path :basename "config")
+  "The path of the generated configuration file.")
+
 (export-always '*socket-path*)
 (defvar *socket-path* (make-instance 'data-path :basename "nyxt.socket")
   "Path string of the Unix socket used to communicate between different
