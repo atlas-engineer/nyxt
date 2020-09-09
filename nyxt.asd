@@ -73,6 +73,7 @@
                (:file "message")
                (:file "input")
                (:file "minibuffer")
+               (:file "minibuffer-prompt")
                (:file "minibuffer-mode")
                (:file "command-commands")
                (:file "recent-buffers")

@@ -187,8 +187,8 @@ identifier for every hinted element."
                         (lambda ()
                           (with-current-buffer buffer
                             (remove-element-hints)))))
-      ;; TODO: ADD offscreen hints in background from full document annotation
-      (let ((result (prompt-minibuffer minibuffer)))
+      ;; TODO: Add offscreen hints in background from full document annotation
+      (let ((result (prompt-minibuffer :minibuffer minibuffer)))
         (funcall-safely function result)))))
 
 (defun hint-suggestion-filter (hints)
