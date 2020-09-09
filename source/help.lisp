@@ -217,7 +217,8 @@ A command is a special kind of function that can be called with
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt (format nil "Configure slot value ~a" slot))))
-    (print input)))
+    (eval `(define-configuration ,class
+             ((,slot (read-from-string ,input)))))))
 
 (define-command describe-slot ()
   "Inspect a slot and show it in a help buffer."
