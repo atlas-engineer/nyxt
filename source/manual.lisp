@@ -284,8 +284,6 @@ export GDK_SCALE=2
 export GDK_DPI_SCALE=0.5
 nyxt
 "))
-    (:p "Note that if you're running sway, you'll also need this
-    environment variable " (:code "export GDK_BACKEND=x11") ".")
     (:h3 "StumpWM mouse scroll")
     (:p "If the mouse scroll does not work for you, see the "
         (:a
