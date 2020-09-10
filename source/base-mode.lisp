@@ -19,7 +19,7 @@
                      "C-tab" 'switch-buffer-next
                      "C-pageup" 'switch-buffer-previous
                      "C-pagedown" 'switch-buffer-next
-                     "C-l" 'set-url-from-current-url
+                     "C-l" 'set-url
                      "M-l" 'set-url-new-buffer
                      "f5" 'reload-current-buffer
                      "C-r" 'reload-current-buffer
