@@ -90,7 +90,7 @@ documentation.")
     (:p "See the " (:code "proxy-mode") " documentation.")
 
     (:h3 "Custom commands")
-    (:p "Creating your own invokable commands is similar to creating a Common
+    (:p "Creating your own invocable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
         (:code "defun") ".")
     (:p "Example:")
@@ -232,7 +232,7 @@ executed in the order they appear.")
     (:p "You can also evaluate a Lisp file from the Nyxt interface with
 the " (:code "load-file") " command.  For
 convenience, " (:code "load-init-file") " (re)loads your initialization file.")
-    (:p "You can evan make scripts.  Here is an example foo.lisp:")
+    (:p "You can even make scripts.  Here is an example foo.lisp:")
     (:pre (:code "#!nyxt --script
 \(format t \"~a~&\" +version+)"))
     (:p "--eval and --load can be commanded to operate over an
