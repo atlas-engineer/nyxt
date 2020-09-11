@@ -241,10 +241,6 @@ Return the short error message and the full error message as second value."
   "Load or reload the init file."
   (load-lisp init-file :package (find-package :nyxt-user)))
 
-(define-command load-config-file (&key (config-file (expand-path *config-file-path*)))
-  "Load or reload the config file."
-  (load-lisp config-file :package (find-package :nyxt-user)))
-
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
   (handler-case
