@@ -217,7 +217,7 @@ A command is a special kind of function that can be called with
       (set-current-buffer help-buffer))))
 
 (defun configure-slot (slot class)
-  "Set the value of a slot in a users config.lisp"
+  "Set the value of a slot in a users config.lisp."
   (with-result (input (read-from-minibuffer
                        (make-minibuffer
                         :input-prompt (format nil "Configure slot value ~a" slot))))
@@ -232,7 +232,7 @@ A command is a special kind of function that can be called with
                         :if-does-not-exist :create
                         :if-exists :append)
     (log:info "Appending configuration form ~a to ~s." form (expand-path *config-file-path*))
-    (format file "~%~a" form)))
+    (format file "~&~a~%" form)))
 
 (define-command describe-slot ()
   "Inspect a slot and show it in a help buffer."
