@@ -71,12 +71,12 @@ use the socket without parsing any init file.")
            :short #\I
            :long "no-init"
            :description "Do not load the user init file.")
-    (:name :init
+    (:name :config
            :short #\c
            :long "config"
            :arg-parser #'identity
            :description "Set path to config file.")
-    (:name :no-init
+    (:name :no-config
            :short #\C
            :long "no-config"
            :description "Do not load the user config file.")
