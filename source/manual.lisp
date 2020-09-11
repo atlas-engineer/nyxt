@@ -23,7 +23,7 @@ button marked 'Configure' to change it. The settings will be applied
 immediately and saved for future sessions.")
     (:p "Settings created by Nyxt are stored in "
         (:code (expand-path *config-file-path*)) ".")
-    (:p "Any settings can be overriden by users manually via "
+    (:p "Any settings can be overridden by users manually via "
         (:code (expand-path *init-file-path*)) ".")
     (:p "The following section assumes that you know some basic Common Lisp or a
 similar programming language.")
