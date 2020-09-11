@@ -406,6 +406,7 @@ The version number is stored in the clipboard."
     (set-current-buffer help-buffer)
     (let* ((help-contents
              (markup:markup
+              (:style (style help-buffer))
               (:h1 "Getting started")
               (:p (:b "Warning: ") "Nyxt is under active development. Feel free to "
                   (:a :href "https://github.com/atlas-engineer/nyxt/issues"
