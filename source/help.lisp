@@ -61,6 +61,7 @@
                                                      (symbol-name input)
                                                      "*"))))
            (help-contents (markup:markup
+                           (:style (style help-buffer))
                            (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
                            (:pre (documentation input 'variable))
                            (:h2 "Current Value:")
@@ -88,6 +89,7 @@
                                   :location)
                             :file))
          (help-contents (markup:markup
+                         (:style (style help-buffer))
                          (:h1 (symbol-name (sym command))
                               (unless (eq (find-package :nyxt)
                                           (symbol-package (sym command)))
@@ -134,6 +136,7 @@ For generic functions, describe all the methods."
                                                              (symbol-function input))))
                                 (str:concat
                                  (markup:markup
+                                  (:style (style help-buffer))
                                   (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                                        (when (macro-function input) " (macro)"))
                                   (:pre (documentation input 'function))
@@ -198,6 +201,7 @@ A command is a special kind of function that can be called with
            (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots)))
            (help-contents (str:concat
                            (markup:markup
+                            (:style (style help-buffer))
                             (:h1 (symbol-name input))
                             (:p (:pre (documentation input 'type)))
                             (:h2 "Slots:"))
@@ -216,12 +220,11 @@ A command is a special kind of function that can be called with
     (let* ((help-buffer (nyxt/help-mode:help-mode
                          :activate t
                          :buffer (make-internal-buffer
-                                  :title (str:concat "*Help-"
-                                                     (symbol-name (name input))
-                                                     "*"))))
-
-           (help-contents (describe-slot* (name input) (class-sym input)
-                                          :mention-class-p t))
+                                  :title (str:concat
+                                          "*Help-" (symbol-name (name input)) "*"))))
+           (help-contents
+             (str:concat (markup:markup (:style (style help-buffer)))
+                         (describe-slot* (name input) (class-sym input) :mention-class-p t)))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help)
@@ -235,6 +238,7 @@ A command is a special kind of function that can be called with
                        :buffer (make-internal-buffer :title title)))
          (help-contents
            (markup:markup
+            (:style (style help-buffer))
             (:h1 "Bindings")
             (:p
              (loop for keymap in (current-keymaps (current-buffer))
@@ -473,6 +477,7 @@ commands.")))
     (let* ((help-contents
              (str:concat
               (markup:markup
+               (:style (style help-buffer))
                (:h1 "Nyxt tutorial")
                (:p "The following tutorial introduces the core concepts and the
 basic usage.  For more details, especially regarding the configuration, see
@@ -490,7 +495,8 @@ the "
                       :activate t
                       :buffer (make-internal-buffer :title "*Manual*"))))
     (set-current-buffer help-buffer)
-    (let* ((help-contents (manual-content))
+    (let* ((help-contents (str:concat (markup:markup (:style (style help-buffer)))
+                                      (manual-content)))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help))
