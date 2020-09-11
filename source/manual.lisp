@@ -15,6 +15,16 @@ of Nyxt."))
     (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
+    (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp
+to customize Nyxt. To begin, start by invoking the
+commands " (:code "describe-class") " or " (:code "describe-slot") ".
+When you find a value that you would like to change, you can press the
+button marked 'Configure' to change it. The settings will be applied
+immediately and saved for future sessions.")
+    (:p "Settings created by Nyxt are stored in "
+        (:code (expand-path *config-file-path*)) ".")
+    (:p "Any settings can be overriden by users manually via "
+        (:code (expand-path *init-file-path*)) ".")
     (:p "The following section assumes that you know some basic Common Lisp or a
 similar programming language.")
     (:p "Nyxt configuration can be persisted in the user
