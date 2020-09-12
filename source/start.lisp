@@ -27,15 +27,15 @@ use the socket without parsing any init file.")
                                            ;; at compile-time.
                                            :dirname (uiop:xdg-config-home +data-root+)))))))
 
-(defmethod expand-data-path ((profile data-profile) (path (eql *autoconfig-file-path*)))
+(defmethod expand-data-path ((profile data-profile) (path (eql *auto-config-file-path*)))
   "Return path of the init file."
-  (unless (getf *options* :no-autoconfig)
-    (match (getf *options* :autoconfig)
+  (unless (getf *options* :no-auto-config)
+    (match (getf *options* :auto-config)
       (new-path
        (expand-default-path (make-instance 'data-path
                                            :basename (or new-path (basename path))
                                            ;; Specify `dirname' here since
-                                           ;; *autoconfig-file-path* is evaluated
+                                           ;; *auto-config-file-path* is evaluated
                                            ;; at compile-time.
                                            :dirname (uiop:xdg-config-home +data-root+)))))))
 
@@ -67,15 +67,15 @@ use the socket without parsing any init file.")
            :short #\I
            :long "no-init"
            :description "Do not load the user init file.")
-    (:name :autoconfig
+    (:name :auto-config
            :short #\c
-           :long "autoconfig"
+           :long "auto-config"
            :arg-parser #'identity
-           :description "Set path to autoconfig file.")
-    (:name :no-autoconfig
+           :description "Set path to auto-config file.")
+    (:name :no-auto-config
            :short #\C
-           :long "no-autoconfig"
-           :description "Do not load the user autoconfig file.")
+           :long "no-auto-config"
+           :description "Do not load the user auto-config file.")
     (:name :socket
            :short #\s
            :long "socket"
@@ -474,16 +474,16 @@ REPL examples:
 (defun start-load-or-eval ()
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
-  (unless (or (getf *options* :no-autoconfig)
-              (not (expand-path *autoconfig-file-path*)))
-    (load-lisp (expand-path *autoconfig-file-path*) :package (find-package :nyxt-user)))
+  (unless (or (getf *options* :no-auto-config)
+              (not (expand-path *auto-config-file-path*)))
+    (load-lisp (expand-path *auto-config-file-path*) :package (find-package :nyxt-user)))
   (unless (or (getf *options* :no-init)
               (not (expand-path *init-file-path*)))
     (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
   (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (free-args)
-  "Load AUTOCONFIG-FILE.
+  "Load AUTO-CONFIG-FILE.
 Load INIT-FILE if non-nil.
 Instantiate `*browser*'.
 Start Nyxt and load URLS if any.
@@ -491,9 +491,9 @@ Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (format t "Nyxt version ~a~&" +version+)
-    (unless (or (getf *options* :no-autoconfig)
-                (not (expand-path *autoconfig-file-path*)))
-      (load-lisp (expand-path *autoconfig-file-path*)
+    (unless (or (getf *options* :no-auto-config)
+                (not (expand-path *auto-config-file-path*)))
+      (load-lisp (expand-path *auto-config-file-path*)
                  :package (find-package :nyxt-user)))
     (unless (or (getf *options* :no-init)
                 (not (expand-path *init-file-path*)))
