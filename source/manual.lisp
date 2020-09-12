@@ -16,14 +16,14 @@ of Nyxt."))
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
     (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp
-to customize Nyxt. To begin, start by invoking the
+to customize Nyxt. Start by invoking the
 commands " (:code "describe-class") " or " (:code "describe-slot") ".
-When you find a value that you would like to change, you can press the
-button marked 'Configure' to change it. The settings will be applied
-immediately and saved for future sessions.")
+You can press the button marked 'Configure' to change the value of a
+setting. The settings will be applied immediately and saved for future
+sessions.")
     (:p "Settings created by Nyxt are stored in "
         (:code (expand-path *config-file-path*)) ".")
-    (:p "Any settings can be overridden by users manually via "
+    (:p "Any settings can be overridden manually by "
         (:code (expand-path *init-file-path*)) ".")
     (:p "The following section assumes that you know some basic Common Lisp or a
 similar programming language.")
