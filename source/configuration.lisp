@@ -3,8 +3,8 @@
 
 (in-package :nyxt)
 
-(export-always '*autoconfig-file-path*)
-(defvar *autoconfig-file-path* (make-instance 'data-path :basename "autoconfig")
+(export-always '*auto-config-file-path*)
+(defvar *auto-config-file-path* (make-instance 'data-path :basename "auto-config")
   "The path of the generated configuration file.")
 
 (export-always 'funcall-safely)
