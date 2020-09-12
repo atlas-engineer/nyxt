@@ -487,8 +487,8 @@ The evaluation may happen on its own instance or on an already running instance.
   (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (free-args)
-  "Load INIT-FILE if non-nil.
-Load CONFIG-FILE.
+  "Load CONFIG-FILE.
+Load INIT-FILE if non-nil.
 Instantiate `*browser*'.
 Start Nyxt and load URLS if any.
 Finally,run the `*after-init-hook*'."
