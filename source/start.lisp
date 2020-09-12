@@ -7,8 +7,8 @@
 (defvar *init-file-path* (make-instance 'data-path :basename "init")
   "The path of the initialization file.")
 
-(export-always '*config-file-path*)
-(defvar *config-file-path* (make-instance 'data-path :basename "config")
+(export-always '*autoconfig-file-path*)
+(defvar *autoconfig-file-path* (make-instance 'data-path :basename "autoconfig")
   "The path of the generated configuration file.")
 
 (export-always '*socket-path*)
@@ -31,15 +31,15 @@ use the socket without parsing any init file.")
                                            ;; at compile-time.
                                            :dirname (uiop:xdg-config-home +data-root+)))))))
 
-(defmethod expand-data-path ((profile data-profile) (path (eql *config-file-path*)))
+(defmethod expand-data-path ((profile data-profile) (path (eql *autoconfig-file-path*)))
   "Return path of the init file."
-  (unless (getf *options* :no-config)
-    (match (getf *options* :config)
+  (unless (getf *options* :no-autoconfig)
+    (match (getf *options* :autoconfig)
       (new-path
        (expand-default-path (make-instance 'data-path
                                            :basename (or new-path (basename path))
                                            ;; Specify `dirname' here since
-                                           ;; *config-file-path* is evaluated
+                                           ;; *autoconfig-file-path* is evaluated
                                            ;; at compile-time.
                                            :dirname (uiop:xdg-config-home +data-root+)))))))
 
@@ -71,15 +71,15 @@ use the socket without parsing any init file.")
            :short #\I
            :long "no-init"
            :description "Do not load the user init file.")
-    (:name :config
+    (:name :autoconfig
            :short #\c
-           :long "config"
+           :long "autoconfig"
            :arg-parser #'identity
-           :description "Set path to config file.")
-    (:name :no-config
+           :description "Set path to autoconfig file.")
+    (:name :no-autoconfig
            :short #\C
-           :long "no-config"
-           :description "Do not load the user config file.")
+           :long "no-autoconfig"
+           :description "Do not load the user autoconfig file.")
     (:name :socket
            :short #\s
            :long "socket"
@@ -478,16 +478,16 @@ REPL examples:
 (defun start-load-or-eval ()
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
-  (unless (or (getf *options* :no-config)
-              (not (expand-path *config-file-path*)))
-    (load-lisp (expand-path *config-file-path*) :package (find-package :nyxt-user)))
+  (unless (or (getf *options* :no-autoconfig)
+              (not (expand-path *autoconfig-file-path*)))
+    (load-lisp (expand-path *autoconfig-file-path*) :package (find-package :nyxt-user)))
   (unless (or (getf *options* :no-init)
               (not (expand-path *init-file-path*)))
     (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
   (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (free-args)
-  "Load CONFIG-FILE.
+  "Load AUTOCONFIG-FILE.
 Load INIT-FILE if non-nil.
 Instantiate `*browser*'.
 Start Nyxt and load URLS if any.
@@ -495,9 +495,9 @@ Finally,run the `*after-init-hook*'."
   (let ((startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (format t "Nyxt version ~a~&" +version+)
-    (unless (or (getf *options* :no-config)
-                (not (expand-path *config-file-path*)))
-      (load-lisp (expand-path *config-file-path*)
+    (unless (or (getf *options* :no-autoconfig)
+                (not (expand-path *autoconfig-file-path*)))
+      (load-lisp (expand-path *autoconfig-file-path*)
                  :package (find-package :nyxt-user)))
     (unless (or (getf *options* :no-init)
                 (not (expand-path *init-file-path*)))
