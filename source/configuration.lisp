@@ -3,6 +3,10 @@
 
 (in-package :nyxt)
 
+(export-always '*autoconfig-file-path*)
+(defvar *autoconfig-file-path* (make-instance 'data-path :basename "autoconfig")
+  "The path of the generated configuration file.")
+
 (export-always 'funcall-safely)
 (defun funcall-safely (f &rest args)
   "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run
