@@ -22,7 +22,7 @@ You can press the button marked 'Configure' to change the value of a
 setting. The settings will be applied immediately and saved for future
 sessions.")
     (:p "Settings created by Nyxt are stored in "
-        (:code (expand-path *config-file-path*)) ".")
+        (:code (expand-path *autoconfig-file-path*)) ".")
     (:p "Any settings can be overridden manually by "
         (:code (expand-path *init-file-path*)) ".")
     (:p "The following section assumes that you know some basic Common Lisp or a
