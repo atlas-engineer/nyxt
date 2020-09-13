@@ -9,13 +9,10 @@
    (:h3 "Keybindings and Commands")
    (:p "Commands in Nyxt are invoked by pressing specific keys or from
 the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
-") which will prompt you for a list of commands which you can then select
-from.")
+").")
    (:p "In Nyxt, keybindings are represented as in 'control-space' or
 equivalently 'C-space'. In this example, 'C' is a shortcut for the modifier
-'control', and 'space' represents the character ' '.  A modifier is a key that
-does nothing on its own, its purpose is to alter the meaning of a
-non-modifier key when pressed together.  Therefore, to input the 'C-x'
+'control', and 'space' represents the character ' '. Example: to input the 'C-x'
 keybinding you would keep 'control' pressed and then hit 'x'.  Multiple
 key presses can be chained: in 'C-x C-M-left', you would have to press 'C-x',
 let go of all keys, and then press 'control', 'meta' and 'left'.")
@@ -29,11 +26,9 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
 `gtk-browser' class.")
 
    (:h3 "Buffers")
-   (:p "Nyxt uses the concept of buffers instead of the more limited \"tabs\"
-used by many applications. Unlike tabs, the buffer display scales, that is to
-say, it's just as convenient to navigate 2 or 100 buffers.  The buffer states
-are fully separated, for instance two buffers can have different set of
-keybindings.")
+   (:p "Nyxt uses the concept of buffers instead of the more limited
+\"tabs\". Buffer states are fully separated, each buffer having its
+own behavior and settings.")
    (:h3 "Modes")
    (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
 set of functions, hooks, keybindings and other facilities that modify the
