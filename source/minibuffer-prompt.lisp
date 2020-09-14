@@ -1,0 +1,52 @@
+(in-package :nyxt)
+
+(export-always 'make-minibuffer)
+(define-function make-minibuffer
+    (append '(&rest args)
+            '(&key)
+            (delete 'input-buffer
+                    (public-initargs 'minibuffer))
+            '((input-buffer nil explicit-input-buffer)))
+  (let ((tmp-input-buffer (make-instance 'text-buffer:text-buffer))
+        (tmp-input-cursor (make-instance 'text-buffer:cursor)))
+    (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
+    (when explicit-input-buffer
+      (text-buffer::insert-string tmp-input-cursor input-buffer))
+    (apply #'make-instance 'user-minibuffer
+           `(:input-buffer ,tmp-input-buffer
+             :input-cursor ,tmp-input-cursor
+             ,@args))))
+
+(export-always 'prompt-minibuffer)
+(define-function prompt-minibuffer (append '(&rest args)
+                                           `(&key minibuffer
+                                                 ,@(public-initargs 'minibuffer)))
+  "Open the minibuffer, ready for user input.
+ARGS are passed to the minibuffer constructor.
+Example use:
+
+\(prompt-minibuffer
+  :suggestion-function #'my-suggestion-filter)
+
+See the documentation of `minibuffer' to know more about the minibuffer options."
+  (let ((channel (make-instance 'chanl:channel)))
+    (ffi-within-renderer-thread
+     *browser*
+     (lambda ()
+       (let ((minibuffer (or minibuffer
+                             (apply #'make-minibuffer (append (list :channel channel) args)))))
+         (if *keep-alive*
+             (match (setup-function minibuffer)
+               ((guard f f) (funcall f minibuffer)))
+             (handler-case (match (setup-function minibuffer)
+                             ((guard f f) (funcall f minibuffer)))
+               (error (c)
+                 (echo-warning "Minibuffer error: ~a" c))))
+         (state-changed minibuffer)
+         (update-display minibuffer)
+         (push minibuffer (active-minibuffers (current-window)))
+         (apply #'show
+                (unless (suggestion-function minibuffer)
+                  ;; We don't need so much height since there is no suggestion to display.
+                  (list :height (minibuffer-open-single-line-height (current-window))))))))
+    (chanl:recv channel)))
