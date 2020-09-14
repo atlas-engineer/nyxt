@@ -56,7 +56,41 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
-(defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
+(defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
+  (declare (ignore browser))
+  (gtk:within-gtk-thread
+    (funcall thunk)))
+
+(defmacro define-ffi-method (name args &body body) ; TODO: Support declare, docstring.
+  "Make a window."
+  (let* ((docstring (when (stringp (first body))
+                      (prog1
+                          (first body)
+                        (setf body (rest body)))))
+         (declares (when (and (listp (first body))
+                              (eq 'declare (first (first body))))
+                     (prog1
+                         (first body)
+                       (setf body (rest body))))))
+    `(defmethod ,name ,args
+       ,docstring
+       ,declares
+       (let ((channel (make-instance 'chanl:channel)))
+         (ffi-within-renderer-thread
+          *browser*
+          (lambda ()
+            (chanl:send
+             channel
+             (progn
+               ,@body))))
+         ;; (chanl:pexec ()
+         ;;   (chanl:send
+         ;;    channel
+         ;;    (progn
+         ;;      ,@body)))
+         (chanl:recv channel)))))
+
+(define-ffi-method ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
    GNU/Linux, Nyxt could hang after 10 minutes if it's not
    used. Conversely, on Darwin, if gtk:within-main-loop is used, no
@@ -84,7 +118,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
         (finalize browser urls startup-timestamp)
         (gtk:gtk-main))))
 
-(defmethod ffi-kill-browser ((browser gtk-browser))
+(define-ffi-method ffi-kill-browser ((browser gtk-browser))
   (unless *keep-alive*
     (gtk:leave-gtk-main)))
 
@@ -122,94 +156,100 @@ data-manager will store the data separately for each buffer."))
                  :web-context (make-context buffer)))
 
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
-  (with-slots (gtk-object) buffer
-    (setf gtk-object (make-web-view buffer))
-    (gobject:g-signal-connect
-     gtk-object "decide-policy"
-     (lambda (web-view response-policy-decision policy-decision-type-response)
-       (declare (ignore web-view))
-       (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))
+  (ffi-within-renderer-thread
+   *browser*
+   (lambda ()
+     (with-slots (gtk-object) buffer
+       (setf gtk-object (make-web-view buffer))
+       (gobject:g-signal-connect
+        gtk-object "decide-policy"
+        (lambda (web-view response-policy-decision policy-decision-type-response)
+          (declare (ignore web-view))
+          (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (with-slots (gtk-object box-layout active-buffer
-               minibuffer-container minibuffer-view
-               status-buffer status-container
-               message-container message-view
-               id key-string-buffer) window
-    (setf id (get-unique-window-identifier *browser*))
-    (setf gtk-object (make-instance 'gtk:gtk-window
-                                    :type :toplevel
-                                    :default-width 1024
-                                    :default-height 768))
-    (setf box-layout (make-instance 'gtk:gtk-box
-                                    :orientation :vertical
-                                    :spacing 0))
-    (setf minibuffer-container (make-instance 'gtk:gtk-box
+  (ffi-within-renderer-thread
+   *browser*
+   (lambda ()
+     (with-slots (gtk-object box-layout active-buffer
+                  minibuffer-container minibuffer-view
+                  status-buffer status-container
+                  message-container message-view
+                  id key-string-buffer) window
+       (setf id (get-unique-window-identifier *browser*))
+       (setf gtk-object (make-instance 'gtk:gtk-window
+                                       :type :toplevel
+                                       :default-width 1024
+                                       :default-height 768))
+       (setf box-layout (make-instance 'gtk:gtk-box
+                                       :orientation :vertical
+                                       :spacing 0))
+       (setf minibuffer-container (make-instance 'gtk:gtk-box
+                                                 :orientation :vertical
+                                                 :spacing 0))
+       (setf message-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
-    (setf message-container (make-instance 'gtk:gtk-box
-                                           :orientation :vertical
-                                           :spacing 0))
-    (setf status-container (make-instance 'gtk:gtk-box
-                                          :orientation :vertical
-                                          :spacing 0))
-    (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-    (setf active-buffer (make-instance 'user-buffer))
+       (setf status-container (make-instance 'gtk:gtk-box
+                                             :orientation :vertical
+                                             :spacing 0))
+       (setf key-string-buffer (make-instance 'gtk:gtk-entry))
+       (setf active-buffer (make-instance 'user-buffer))
 
-    ;; Add the views to the box layout and to the window
-    (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
+       ;; Add the views to the box layout and to the window
+       (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
 
-    (setf message-view (make-web-view))
-    (gtk:gtk-box-pack-end box-layout message-container :expand nil)
-    (gtk:gtk-box-pack-start message-container message-view :expand t)
-    (setf (gtk:gtk-widget-size-request message-container)
-          (list -1 (message-buffer-height window)))
+       (setf message-view (make-web-view))
+       (gtk:gtk-box-pack-end box-layout message-container :expand nil)
+       (gtk:gtk-box-pack-start message-container message-view :expand t)
+       (setf (gtk:gtk-widget-size-request message-container)
+             (list -1 (message-buffer-height window)))
 
-    (setf status-buffer (make-instance 'user-status-buffer))
-    (gtk:gtk-box-pack-end box-layout status-container :expand nil)
-    (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
-    (setf (gtk:gtk-widget-size-request status-container)
-          (list -1 (height status-buffer)))
+       (setf status-buffer (make-instance 'user-status-buffer))
+       (gtk:gtk-box-pack-end box-layout status-container :expand nil)
+       (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
+       (setf (gtk:gtk-widget-size-request status-container)
+             (list -1 (height status-buffer)))
 
-    (setf minibuffer-view (make-web-view))
-    (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
-    (gtk:gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
-    (setf (gtk:gtk-widget-size-request minibuffer-container)
-          (list -1 0))
+       (setf minibuffer-view (make-web-view))
+       (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
+       (gtk:gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
+       (setf (gtk:gtk-widget-size-request minibuffer-container)
+             (list -1 0))
 
-    (gtk:gtk-container-add gtk-object box-layout)
-    (setf (slot-value *browser* 'last-active-window) window)
-    (gtk:gtk-widget-show-all gtk-object)
-    (gobject:g-signal-connect
-     gtk-object "key_press_event"
-     (lambda (widget event) (declare (ignore widget))
-       #+darwin
-       (push-modifier *browser* event)
-       (on-signal-key-press-event window event)))
-    (gobject:g-signal-connect
-     gtk-object "key_release_event"
-     (lambda (widget event) (declare (ignore widget))
-       #+darwin
-       (pop-modifier *browser* event)
-       (on-signal-key-release-event window event)))
-    (gobject:g-signal-connect
-     gtk-object "destroy"
-     (lambda (widget) (declare (ignore widget))
-       (on-signal-destroy window)))))
+       (gtk:gtk-container-add gtk-object box-layout)
+       (setf (slot-value *browser* 'last-active-window) window)
+       (gtk:gtk-widget-show-all gtk-object)
+       (gobject:g-signal-connect
+        gtk-object "key_press_event"
+        (lambda (widget event) (declare (ignore widget))
+          #+darwin
+          (push-modifier *browser* event)
+          (on-signal-key-press-event window event)))
+       (gobject:g-signal-connect
+        gtk-object "key_release_event"
+        (lambda (widget event) (declare (ignore widget))
+          #+darwin
+          (pop-modifier *browser* event)
+          (on-signal-key-release-event window event)))
+       (gobject:g-signal-connect
+        gtk-object "destroy"
+        (lambda (widget) (declare (ignore widget))
+          (on-signal-destroy window)))))))
 
-(defmethod on-signal-destroy ((window gtk-window))
+(define-ffi-method on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (window-delete window))
 
-(defmethod ffi-window-delete ((window gtk-window))
+(define-ffi-method ffi-window-delete ((window gtk-window))
   "Delete a window object and remove it from the hash of windows."
   (gtk:gtk-widget-destroy (gtk-object window)))
 
-(defmethod ffi-window-fullscreen ((window gtk-window))
+(define-ffi-method ffi-window-fullscreen ((window gtk-window))
   (gtk:gtk-window-fullscreen (gtk-object window)))
 
-(defmethod ffi-window-unfullscreen ((window gtk-window))
+(define-ffi-method ffi-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
 (defun derive-key-string (keyval character)
@@ -344,7 +384,7 @@ See `gtk-browser's `modifier-translator' slot."
           (character character))
       (setf (gtk:gtk-entry-text (key-string-buffer window)) ""))))
 
-(defmethod on-signal-key-press-event ((sender gtk-window) event)
+(define-ffi-method on-signal-key-press-event ((sender gtk-window) event)
   (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
          (keyval (gdk:gdk-event-key-keyval event))
          (keyval-name (gdk:gdk-keyval-name keyval))
@@ -369,7 +409,7 @@ See `gtk-browser's `modifier-translator' slot."
         ;; Do not forward modifier-only to renderer.
         t)))
 
-(defmethod on-signal-key-release-event ((sender gtk-window) event)
+(define-ffi-method on-signal-key-release-event ((sender gtk-window) event)
   "We don't handle key release events.
 Warning: This behaviour may change in the future."
   (declare (ignore event))
@@ -379,7 +419,7 @@ Warning: This behaviour may change in the future."
       ;; Forward release event to the web view.
       nil))
 
-(defmethod on-signal-button-press-event ((sender gtk-buffer) event)
+(define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
          ;; REVIEW: No need to store X and Y?
          ;; (x (gdk:gdk-event-button-x event))
@@ -397,7 +437,7 @@ Warning: This behaviour may change in the future."
                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
-(defmethod on-signal-scroll-event ((sender gtk-buffer) event)
+(define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
   (let* ((button (match (gdk:gdk-event-scroll-direction event)
                    (:up 4)
                    (:down 5)
@@ -461,10 +501,10 @@ Warning: This behaviour may change in the future."
                                                         (id buffer))))))
   (ffi-buffer-make buffer))
 
-(defmethod ffi-buffer-uri ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-uri ((buffer gtk-buffer))
   (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer))))
 
-(defmethod ffi-buffer-title ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-title ((buffer gtk-buffer))
   (or (webkit:webkit-web-view-title (gtk-object buffer)) ""))
 
 (defmethod on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
@@ -591,38 +631,41 @@ Warning: This behaviour may change in the future."
     (url (print-message (str:concat "→ " (quri:url-decode url)))
          (setf (url-at-point buffer) (quri:uri url)))))
 
-(defmethod ffi-window-make ((browser gtk-browser))
+(define-ffi-method ffi-window-make ((browser gtk-browser))
   "Make a window."
-  (make-instance 'user-window))
+  (let ((channel (make-instance 'chanl:channel)))
+    (chanl:pexec ()
+      (chanl:send channel (make-instance 'user-window)))
+    (chanl:recv channel)))
 
-(defmethod ffi-window-to-foreground ((window gtk-window))
+(define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
   (gtk:gtk-window-present (gtk-object window))
   (setf (slot-value *browser* 'last-active-window) window))
 
-(defmethod ffi-window-set-title ((window gtk-window) title)
+(define-ffi-method ffi-window-set-title ((window gtk-window) title)
   "Set the title for a window."
   (setf (gtk:gtk-window-title (gtk-object window)) title))
 
-(defmethod ffi-window-active ((browser gtk-browser))
+(define-ffi-method ffi-window-active ((browser gtk-browser))
   "Return the window object for the currently active window."
   (setf (slot-value browser 'last-active-window)
         (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
             (first (window-list))
             (slot-value browser 'last-active-window))))
 
-(defmethod ffi-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
+(define-ffi-method ffi-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
   "Set BROWSER's WINDOW buffer to BUFFER. "
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))
   buffer)
 
-(defmethod ffi-window-set-minibuffer-height ((window gtk-window) height)
+(define-ffi-method ffi-window-set-minibuffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
-(defmethod ffi-buffer-make ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (setf (gtk-object buffer) (make-web-view buffer))
   (ffi-buffer-enable-smooth-scrolling buffer t)
@@ -690,10 +733,10 @@ Warning: This behaviour may change in the future."
      nil))
   buffer)
 
-(defmethod ffi-buffer-delete ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
   (gtk:gtk-widget-destroy (gtk-object buffer)))
 
-(defmethod ffi-buffer-load ((buffer gtk-buffer) uri)
+(define-ffi-method ffi-buffer-load ((buffer gtk-buffer) uri)
   "Load URI in BUFFER.
 An optimization technique is to make use of the renderer history cache.
 For WebKit, if the URL matches an entry in the webkit-history then we fetch the
@@ -701,7 +744,7 @@ page from the cache.
 
 We don't use the cache if URI matches BUFFER's URL since this means the user
 requested a reload."
-  (declare (type quri:uri uri))
+  ;; (declare (type quri:uri uri))
   (let* ((history (webkit-history buffer))
          (entry (or (find uri history :test #'quri:uri= :key #'webkit-history-entry-uri)
                     (find uri history :test #'quri:uri= :key #'webkit-history-entry-original-uri))))
@@ -711,7 +754,7 @@ requested a reload."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
 
-(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
+(define-ffi-method ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
   (let ((channel (make-instance 'chanl:channel)))
     (ffi-within-renderer-thread
      *browser*
@@ -723,31 +766,31 @@ requested a reload."
                                                     #'javascript-error-handler)))
     (chanl:recv channel)))
 
-(defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
+(define-ffi-method ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
 
-(defmethod ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
-(defmethod ffi-buffer-enable-javascript-markup ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-enable-javascript-markup ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript-markup
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
-(defmethod ffi-buffer-enable-smooth-scrolling ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-enable-smooth-scrolling ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-smooth-scrolling
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
 #+webkit2-media
-(defmethod ffi-buffer-enable-media ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-enable-media ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-media
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
-(defmethod ffi-buffer-auto-load-image ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-auto-load-image ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-auto-load-images
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
@@ -756,12 +799,12 @@ requested a reload."
 (defmethod ffi-buffer-enable-sound ((buffer gtk-buffer) value)
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) value))
 
-(defmethod ffi-buffer-user-agent ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
-(defmethod ffi-buffer-set-proxy ((buffer gtk-buffer)
+(define-ffi-method ffi-buffer-set-proxy ((buffer gtk-buffer)
                                  &optional (proxy-uri (quri:uri ""))
                                    (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URI.
@@ -789,13 +832,13 @@ custom (the specified proxy) and none."
     (webkit:webkit-web-context-set-network-proxy-settings
      context mode settings)))
 
-(defmethod ffi-buffer-get-proxy ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-get-proxy ((buffer gtk-buffer))
   "Return the proxy URI and list of ignored hosts (a list of strings) as second value."
   (the (values (or quri:uri null) list-of-strings)
        (values (proxy-uri buffer)
                (proxy-ignored-hosts buffer))))
 
-(defmethod ffi-generate-input-event ((window gtk-window) event)
+(define-ffi-method ffi-generate-input-event ((window gtk-window) event)
   ;; The "send_event" field is used to mark the event as an "unconsumed"
   ;; keypress.  The distinction allows us to avoid looping indefinitely.
   (etypecase event
@@ -807,22 +850,17 @@ custom (the specified proxy) and none."
      (setf (gdk:gdk-event-scroll-send-event event) t)))
   (gtk:gtk-main-do-event event))
 
-(defmethod ffi-generated-input-event-p ((window gtk-window) event)
+(define-ffi-method ffi-generated-input-event-p ((window gtk-window) event)
   (gdk:gdk-event-send-event event))
 
-(defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
-  (declare (ignore browser))
-  (gtk:within-gtk-thread
-    (funcall thunk)))
-
-(defmethod ffi-inspector-show ((buffer gtk-buffer))
+(define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
   (setf (webkit:webkit-settings-enable-developer-extras
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         t)
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
-(defmethod ffi-print-status ((window gtk-window) text)
+(define-ffi-method ffi-print-status ((window gtk-window) text)
   (let ((text (markup:markup
                (:head (:style (style (status-buffer window))))
                (:body (markup:raw text)))))
@@ -832,7 +870,7 @@ custom (the specified proxy) and none."
        (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
                     (ps:lisp text)))))))
 
-(defmethod ffi-print-message ((window gtk-window) text)
+(define-ffi-method ffi-print-message ((window gtk-window) text)
   (let ((text (markup:markup
                (:head (:style (message-buffer-style window)))
                (:body (markup:raw text)))))
@@ -842,7 +880,7 @@ custom (the specified proxy) and none."
        (ps:ps (setf (ps:@ document Body |innerHTML|)
                     (ps:lisp text)))))))
 
-(defmethod ffi-display-uri (text)
+(define-ffi-method ffi-display-uri (text)
   (webkit:webkit-uri-for-display text))
 
 (declaim (ftype (function (webkit:webkit-cookie-manager cookie-policy)) set-cookie-policy))
@@ -854,7 +892,7 @@ custom (the specified proxy) and none."
      (:never :webkit-cookie-policy-accept-never)
      (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
 
-(defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-cookie-policy ((buffer gtk-buffer) value)
   "VALUE is one of`:always', `:never' or `:no-third-party'."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
@@ -878,7 +916,7 @@ LANGUAGE is a list of strings like '(\"en_US\" \"fr_FR\")."
   original-uri
   gtk-object)
 
-(defmethod webkit-history ((buffer gtk-buffer))
+(define-ffi-method webkit-history ((buffer gtk-buffer))
   "Return a list of `webkit-history-entry's for the current buffer.
 Oldest entries come last.
 

@@ -218,11 +218,12 @@ editor executable."))
       (hooks:run-hook *after-init-hook*)
     (error (c)
       (log:error "In *after-init-hook*: ~a" c)))
-  (funcall-safely (startup-function browser) urls)
-  ;; Set 'init-time at the end of finalize to take the complete startup time
-  ;; into account.
-  (setf (slot-value *browser* 'init-time)
-        (local-time:timestamp-difference (local-time:now) startup-timestamp)))
+  (chanl:pexec ()
+    (funcall-safely (startup-function browser) urls)
+    ;; Set 'init-time at the end of finalize to take the complete startup time
+    ;; into account.
+    (setf (slot-value *browser* 'init-time)
+          (local-time:timestamp-difference (local-time:now) startup-timestamp))))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
