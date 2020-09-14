@@ -57,14 +57,15 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defun renderer-thread-p ()
-  (eq *renderer-thread* (bt:current-thread)))
+  ;; (eq *renderer-thread* (bt:current-thread))
+  (string= "cl-cffi-gtk main thread" (bt:thread-name (bt:current-thread))))
 
 (defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
   (declare (ignore browser))
   (gtk:within-gtk-thread
     (funcall thunk)))
 
-(defun within-renderer-thread (thunk)
+(defun PREFIX-within-renderer-thread (thunk)
   (if (renderer-thread-p)
       (funcall thunk)
       (gtk:within-gtk-thread
@@ -88,13 +89,13 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
            (progn
              ,@body)
            (let ((channel (make-instance 'chanl:channel)))
-             (within-renderer-thread
-              (lambda ()
-                (chanl:send
-                 channel
-                 (progn
-                   ,@body)
-                 :blockp nil)))
+             (gtk:within-gtk-thread
+               (lambda ()
+                 (chanl:send
+                  channel
+                  (progn
+                    ,@body)
+                  :blockp nil)))
              (chanl:recv channel))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
@@ -162,8 +163,7 @@ data-manager will store the data separately for each buffer."))
                  :web-context (make-context buffer)))
 
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
-  (ffi-within-renderer-thread
-   *browser*
+  (PREFIX-within-renderer-thread
    (lambda ()
      (with-slots (gtk-object) buffer
        (setf gtk-object (make-web-view buffer))
@@ -174,8 +174,7 @@ data-manager will store the data separately for each buffer."))
           (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (ffi-within-renderer-thread
-   *browser*
+  (PREFIX-within-renderer-thread
    (lambda ()
      (with-slots (gtk-object box-layout active-buffer
                   minibuffer-container minibuffer-view
@@ -757,10 +756,9 @@ requested a reload."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
 
-(define-ffi-method ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
+(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
   (let ((channel (make-instance 'chanl:channel)))
-    (ffi-within-renderer-thread
-     *browser*
+    (PREFIX-within-renderer-thread
      (lambda ()
        (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
                                                     javascript
