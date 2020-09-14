@@ -220,16 +220,19 @@ A command is a special kind of function that can be called with
   "Set the value of a slot in a users auto-config.lisp."
   (flet ((set-slot (slot class input)
            (echo "Slot ~a updated with value ~a." slot input)
-           (eval `(define-configuration ,class
-                    ((,slot (read-from-string ,input)))))
            (append-configuration `(define-configuration ,class
                                     ((,slot ,input))))))
     (if new-value-supplied-p
-        (set-slot slot class value)
+        (progn
+          (set-slot slot class value)
+          (eval `(define-configuration ,class
+                   ((,slot ,value)))))
         (with-result (input (read-from-minibuffer
                              (make-minibuffer
                               :input-prompt (format nil "Configure slot value ~a" slot))))
-          (set-slot slot class input)))))
+          (set-slot slot class input)
+          (eval `(define-configuration ,class
+                   ((,slot (read-from-string ,input)))))))))
 
 (defun append-configuration (form)
   (with-data-file (file *auto-config-file-path*
@@ -275,13 +278,27 @@ A command is a special kind of function that can be called with
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
                                       'web-buffer
-                                      :value (append '(emacs-mode) %slot-default)))
+                                      :value ''(certificate-exception-mode
+                                                web-mode
+                                                base-mode)))
+                    "Use Standard (CUA)"))
+            (:p (:a :class "button"
+                    :href (lisp-url `(nyxt::configure-slot
+                                      'default-modes
+                                      'web-buffer
+                                      :value ''(emacs-mode
+                                                certificate-exception-mode
+                                                web-mode
+                                                base-mode)))
                     "Use Emacs"))
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
                                       'web-buffer
-                                      :value (append '(vi-mode) %slot-default)))
+                                      :value ''(vi-normal-mode
+                                                certificate-exception-mode
+                                                web-mode
+                                                base-mode)))
                     "Use vi"))
             (:h2 "Default new buffer URL")
             (:a :class "button"
