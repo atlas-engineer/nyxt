@@ -643,11 +643,3 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-display-uri (text))
 (define-ffi-method ffi-buffer-cookie-policy (buffer value))
 (define-ffi-method ffi-set-preferred-languages (buffer value))
-
-(defmacro within-renderer-thread (&body body)
-  "Convenience macro to run FFI-calling code from the REPL.
-It should not be used to write code."
-  `(ffi-within-renderer-thread
-    *browser*
-    (lambda ()
-      ,@body)))
