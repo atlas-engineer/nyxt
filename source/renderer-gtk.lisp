@@ -56,10 +56,19 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
+(defun renderer-thread-p ()
+  (eq *renderer-thread* (bt:current-thread)))
+
 (defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
   (declare (ignore browser))
   (gtk:within-gtk-thread
     (funcall thunk)))
+
+(defun within-renderer-thread (thunk)
+  (if (renderer-thread-p)
+      (funcall thunk)
+      (gtk:within-gtk-thread
+        (funcall thunk))))
 
 (defmacro define-ffi-method (name args &body body) ; TODO: Support declare, docstring.
   "Make a window."
@@ -75,22 +84,20 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
     `(defmethod ,name ,args
        ,docstring
        ,declares
-       (let ((channel (make-instance 'chanl:channel)))
-         (ffi-within-renderer-thread
-          *browser*
-          (lambda ()
-            (chanl:send
-             channel
-             (progn
-               ,@body))))
-         ;; (chanl:pexec ()
-         ;;   (chanl:send
-         ;;    channel
-         ;;    (progn
-         ;;      ,@body)))
-         (chanl:recv channel)))))
+       (if (renderer-thread-p)
+           (progn
+             ,@body)
+           (let ((channel (make-instance 'chanl:channel)))
+             (within-renderer-thread
+              (lambda ()
+                (chanl:send
+                 channel
+                 (progn
+                   ,@body)
+                 :blockp nil)))
+             (chanl:recv channel))))))
 
-(define-ffi-method ffi-initialize ((browser gtk-browser) urls startup-timestamp)
+(defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
    GNU/Linux, Nyxt could hang after 10 minutes if it's not
    used. Conversely, on Darwin, if gtk:within-main-loop is used, no
@@ -99,8 +106,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
    on."
   (log:debug "Initializing GTK Interface")
   (if gtk-running-p
-      (ffi-within-renderer-thread
-       browser
+      (gtk:within-gtk-thread
        (lambda ()
          (finalize browser urls startup-timestamp)))
       #-darwin
@@ -633,10 +639,7 @@ Warning: This behaviour may change in the future."
 
 (define-ffi-method ffi-window-make ((browser gtk-browser))
   "Make a window."
-  (let ((channel (make-instance 'chanl:channel)))
-    (chanl:pexec ()
-      (chanl:send channel (make-instance 'user-window)))
-    (chanl:recv channel)))
+  (make-instance 'user-window))
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
