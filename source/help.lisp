@@ -216,16 +216,20 @@ A command is a special kind of function that can be called with
       (ffi-buffer-evaluate-javascript help-buffer insert-help)
       (set-current-buffer help-buffer))))
 
-(defun configure-slot (slot class)
+(defun configure-slot (slot class &key (value nil new-value-supplied-p))
   "Set the value of a slot in a users auto-config.lisp."
-  (with-result (input (read-from-minibuffer
-                       (make-minibuffer
-                        :input-prompt (format nil "Configure slot value ~a" slot))))
-    (echo "Slot ~a updated with value ~a." slot input)
-    (eval `(define-configuration ,class
-             ((,slot (read-from-string ,input)))))
-    (append-configuration `(define-configuration ,class
-                             ((,slot ,input))))))
+  (flet ((set-slot (slot class input)
+           (echo "Slot ~a updated with value ~a." slot input)
+           (eval `(define-configuration ,class
+                    ((,slot (read-from-string ,input)))))
+           (append-configuration `(define-configuration ,class
+                                    ((,slot ,input))))))
+    (if new-value-supplied-p
+        (set-slot slot class value)
+        (with-result (input (read-from-minibuffer
+                             (make-minibuffer
+                              :input-prompt (format nil "Configure slot value ~a" slot))))
+          (set-slot slot class input)))))
 
 (defun append-configuration (form)
   (with-data-file (file *auto-config-file-path*
