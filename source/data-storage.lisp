@@ -104,9 +104,11 @@ No data should be shared with other buffers either."))
   "If `%buffer' is non-nil, return its data-profile.
 Return `*global-data-profile*' otherwise."
   ;; TODO: %BUFFER is not defined yet. Move %BUFFER there?
-  (let ((buffer (current-buffer)))
-    (or (and buffer (data-profile buffer))
-        *global-data-profile*)))
+  (if *renderer-thread* ; This function may be called before renderer has started.
+      (let ((buffer (current-buffer)))
+        (or (and buffer (data-profile buffer))
+            *global-data-profile*))
+      *global-data-profile*))
 
 (defun package-data-profiles ()
   "Return the list of data profiles as a (DATA-PROFILE-SYM NAME DOCSTRING) tuples."
