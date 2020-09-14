@@ -90,12 +90,11 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
              ,@body)
            (let ((channel (make-instance 'chanl:channel)))
              (gtk:within-gtk-thread
-               (lambda ()
-                 (chanl:send
-                  channel
-                  (progn
-                    ,@body)
-                  :blockp nil)))
+               (chanl:send
+                channel
+                (progn
+                  ,@body)
+                :blockp nil))
              (chanl:recv channel))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
@@ -108,8 +107,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   (log:debug "Initializing GTK Interface")
   (if gtk-running-p
       (gtk:within-gtk-thread
-       (lambda ()
-         (finalize browser urls startup-timestamp)))
+        (finalize browser urls startup-timestamp))
       #-darwin
       (progn
         (setf gtk-running-p t)
