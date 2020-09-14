@@ -477,8 +477,8 @@ The version number is stored in the clipboard."
     (let* ((help-contents
              (markup:markup
               (:style (style help-buffer))
-              (:h1 "Getting started")
-              (:p (:b "Warning: ") "Nyxt is under active development. Feel free to "
+              (:h1 "Welcome to Nyxt " (:span :style "font-weight:normal" "☺"))
+              (:p (:b "Attention: ") "Nyxt is under active development. Feel free to "
                   (:a :href "https://github.com/atlas-engineer/nyxt/issues"
                       "report")
                   " bugs, instabilities or feature wishes.")
@@ -495,8 +495,8 @@ The version number is stored in the clipboard."
               (:h2 "Quickstart keys")
               (:ul
                (:li (:code (binding-keys 'set-url)) ": Load URL")
-               (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new tab")
-               (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch tab")
+               (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new buffer")
+               (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch buffer")
                (:li (:code (binding-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
                (:li (:code (binding-keys 'nyxt/web-mode:history-forwards)) ": Forwards history")
                (:li (:code (binding-keys 'nyxt/web-mode:follow-hint)) ": Follow link in current buffer")
@@ -504,31 +504,25 @@ The version number is stored in the clipboard."
                (:li (:code (binding-keys 'quit)) ": Quit")
                (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
                (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current tab"))
-              (:p "Legend:")
+              (:p "Key:")
               (:ul
                (:li (:code "control") " (" (:code "C") "): Control key")
                (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
                (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
                (:li (:code "shift") " (" (:code "s") "): Shift key"))
-
-              (:p "Nyxt proposes several " (:i "binding schemes") ", including CUA, Emacs and VI."
-                  " For instance, call the " (:code "vi-normal-mode") " command to switch to VI bindings."
-                  " To enable it by default, see the command documentation with "
-                  (:code (binding-keys 'execute-command) " describe-command") " (bound to "
-                  (:code (binding-keys 'describe-command)) ").")
-
+              (:h2 "Quick configuration")
+              (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings"))
               (:h2 "Documentation")
               (:p "The " (:i "minibuffer") " lets you fuzzy-search all commands."
                   " Press " (:code (binding-keys 'execute-command))
                   " then type " (:code "describe") " to list all documentation-related commands."
                   " These commands can display the documentation of all Nyxt components.")
               (:p "An introduction to Nyxt core concepts can be consulted with the "
-                  (:code "tutorial") " command (" (:code (binding-keys 'tutorial)) ").")
+                  (:code "tutorial") " command.")
+              (:p (:a :class "button" :href (lisp-url `(nyxt::tutorial)) "Tutorial"))
               (:p "For full documentation about Nyxt, how it works and how to configure it please see the "
-                  (:code "manual") " command (" (:code (binding-keys 'manual)) ").")
-              (:p "The manual covers the extensibility capabilities of Nyxt,
-from the inspection of the internals to the the creation of new modes and
-commands.")))
+                  (:code "manual") " command.")
+              (:p (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual"))))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript help-buffer insert-help))
