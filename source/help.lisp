@@ -272,21 +272,24 @@ A command is a special kind of function that can be called with
             buffers.")
             (:h2 "Keybinding style")
             (:p (:a :class "button"
-                    :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
-                    "Use Standard (CUA)"))
-            (:p (:a :class "button"
-                    :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                    :href (lisp-url `(nyxt::configure-slot
+                                      'default-modes
+                                      'web-buffer
+                                      :value (append '(emacs-mode) %slot-default)))
                     "Use Emacs"))
             (:p (:a :class "button"
-                    :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                    :href (lisp-url `(nyxt::configure-slot
+                                      'default-modes
+                                      'web-buffer
+                                      :value (append '(vi-mode) %slot-default)))
                     "Use vi"))
             (:h2 "Default new buffer URL")
             (:a :class "button"
-                :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                :href (lisp-url `(nyxt::configure-slot 'default-new-buffer-url 'web-buffer))
                 "Set default new buffer URL")
             (:h2 "Default zoom ratio")
             (:a :class "button"
-                :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                :href (lisp-url `(nyxt::configure-slot 'current-zoom-ratio 'buffer))
                 "Set default zoom ratio")))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
