@@ -89,6 +89,9 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                                             (mapcar #'class-name
                                                     (mopu:direct-superclasses final-name)))))))
 
+(defun get-initform (class-symbol class-slot)
+  (getf (mopu:slot-properties (find-class class-symbol) class-slot) :initform))
+
 (export-always 'define-configuration)
 (defmacro define-configuration (names &body slots)
   "Helper macro to customize the class slots of the NAMES classes.
