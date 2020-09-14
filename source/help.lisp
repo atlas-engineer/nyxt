@@ -254,6 +254,41 @@ A command is a special kind of function that can be called with
       (ffi-buffer-evaluate-javascript help-buffer insert-help)
       (set-current-buffer help-buffer))))
 
+(define-command common-settings ()
+  "Configure a set of frequently used settings."
+  (let* ((help-buffer (nyxt/help-mode:help-mode
+                       :activate t
+                       :buffer (make-internal-buffer :title "*Settings*")))
+         (help-contents
+           (markup:markup
+            (:style (style help-buffer))
+            (:h1 "Common Settings")
+            (:p "Set the values for frequently configured
+            settings. Changes made will apply to newly created
+            buffers.")
+            (:h2 "Keybinding style")
+            (:p (:a :class "button"
+                    :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                    "Use Standard (CUA)"))
+            (:p (:a :class "button"
+                    :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                    "Use Emacs"))
+            (:p (:a :class "button"
+                    :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                    "Use vi"))
+            (:h2 "Default new buffer URL")
+            (:a :class "button"
+                :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                "Set default new buffer URL")
+            (:h2 "Default zoom ratio")
+            (:a :class "button"
+                :href (lisp-url `(nyxt::configure-slot 'fish 'salmon))
+                "Set default zoom ratio")))
+         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                   (ps:lisp help-contents)))))
+    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (set-current-buffer help-buffer)))
+
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
   (let* ((title (str:concat "*Help-bindings"))
