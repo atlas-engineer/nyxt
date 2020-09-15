@@ -281,7 +281,7 @@ A command is a special kind of function that can be called with
                                       :value ''(certificate-exception-mode
                                                 web-mode
                                                 base-mode)))
-                    "Use Standard (CUA)"))
+                    "Use default (CUA)"))
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
