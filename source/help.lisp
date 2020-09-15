@@ -520,7 +520,7 @@ The version number is stored in the clipboard."
                (:li (:code (binding-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
                (:li (:code (binding-keys 'quit)) ": Quit")
                (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
-               (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current tab"))
+               (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current buffer"))
               (:p "Key:")
               (:ul
                (:li (:code "control") " (" (:code "C") "): Control key")
