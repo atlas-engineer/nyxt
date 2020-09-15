@@ -165,7 +165,7 @@
                (loop for buffer in (buffer-list)
                      collect (markup:markup (:p
                                              (:a :class "button"
-                                                 :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "X")
+                                                 :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "╳")
                                              (:a :class "button"
                                                  :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
                                              (:span (title buffer) " - "(quri:render-uri (url buffer)))))))))
