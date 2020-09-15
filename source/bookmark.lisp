@@ -167,9 +167,10 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
-  (let* ((bookmarks-buffer (make-buffer :title "*Bookmarks*"))
+  (let* ((bookmarks-buffer (make-internal-buffer :title "*Bookmarks*"))
          (bookmark-contents
            (markup:markup
+            (:style (style bookmarks-buffer))
             (:h1 "Bookmarks")
             (:body
              (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
