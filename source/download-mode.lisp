@@ -15,6 +15,7 @@
                               (download-mode :activate t
                                              :buffer (make-internal-buffer :title "*Downloads*"))))
          (contents (markup:markup
+                    (:style (style download-buffer))
                     (:h1 "Downloads")
                     (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-path buffer))))
                     (:span              ; TODO: Do we need this span?  We need something because of the loop.
