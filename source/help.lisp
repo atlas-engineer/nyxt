@@ -219,7 +219,7 @@ A command is a special kind of function that can be called with
 (defun configure-slot (slot class &key (value nil new-value-supplied-p))
   "Set the value of a slot in a users auto-config.lisp."
   (flet ((set-slot (slot class input)
-           (echo "Slot ~a updated with value ~a." slot input)
+           (echo "Slot ~a updated with value ~s." slot input)
            (append-configuration `(define-configuration ,class
                                     ((,slot ,input))))))
     (if new-value-supplied-p
