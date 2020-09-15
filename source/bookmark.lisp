@@ -174,14 +174,19 @@ This can be useful to let the user select no tag when returning directly."
             (:h1 "Bookmarks")
             (:body
              (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
-                   collect (markup:markup (:div
-                                           (:p (:b "Title: ") (title bookmark))
-                                           (:p (:b "URL: ") (:a :href (object-string (url bookmark))
-                                                                (object-display (url bookmark))))
-                                           (:p (:b "Tags: ")
-                                               (when (tags bookmark)
-                                                 (format nil " (~{~a~^, ~})" (tags bookmark))))
-                                           (:hr "")))))))
+                   collect
+                      (let ((url-display (object-display (url bookmark)))
+                            (url-href (object-string (url bookmark))))
+                        (markup:markup (:div
+                                        (:p (:b "Title: ") (title bookmark))
+                                        (:p (:b "URL: ") (:a :href url-href
+                                                             url-display))
+                                        (:p (:b "Tags: ")
+                                            (when (tags bookmark)
+                                              (format nil " (~{~a~^, ~})" (tags bookmark))))
+                                        (:p (:a :class "button"
+                                                :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                                        (:hr ""))))))))
          (insert-contents (ps:ps (setf (ps:@ document Body |innerHTML|)
                                        (ps:lisp bookmark-contents)))))
     (ffi-buffer-evaluate-javascript bookmarks-buffer insert-contents)
@@ -267,6 +272,16 @@ URL."
       (setf bookmarks
             (set-difference bookmarks
                             entries :test #'equals)))))
+
+(defun delete-bookmark (url)
+  "Delete a bookmark by the URL. This function depends on equals only
+comparing URLs."
+  (with-data-access bookmarks (bookmarks-path (current-buffer))
+    (setf bookmarks
+          (set-difference
+           bookmarks
+           (list (make-instance 'bookmark-entry :url (quri:uri url)))
+           :test #'equals))))
 
 (define-command insert-suggestion-or-tag (&optional (minibuffer (current-minibuffer)))
   "Paste selected suggestion or tag in input.
