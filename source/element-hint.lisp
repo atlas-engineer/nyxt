@@ -391,32 +391,23 @@ visible active buffer."
     (define-scheme "set-tag"
       scheme:cua
       (list 
-       "M-[" 'toggle-hints-transparent
-       "M-]" 'toggle-hints-opaque
+       "M-i" 'toggle-hints-transparency
        "M-n" 'select-next-follow
        "M-p" 'select-previous-follow)))))
 
-(define-command toggle-hints-transparent (&key (buffer (current-buffer)))
+(define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."
   (pflet ((toggle-transparent ()
             (defun qsa (context selector)
               "Alias of document.querySelectorAll"
               (ps:chain context (query-selector-all selector)))
             (ps:dolist (element (qsa document ".nyxt-hint"))
-              (setf (ps:chain element style opacity) "0.20"))))
+              (if (or (= (ps:chain element style opacity) "1")
+                      (= (ps:chain element style opacity) ""))
+                  (setf (ps:chain element style opacity) "0.2")
+                  (setf (ps:chain element style opacity) "1.0")))))
     (with-current-buffer buffer
       (toggle-transparent))))
-
-(define-command toggle-hints-opaque (&key (buffer (current-buffer)))
-  "Toggle the on-screen element hints transparency."
-  (pflet ((toggle-opaque ()
-            (defun qsa (context selector)
-              "Alias of document.querySelectorAll"
-              (ps:chain context (query-selector-all selector)))
-            (ps:dolist (element (qsa document ".nyxt-hint"))
-              (setf (ps:chain element style opacity) "1.0"))))
-    (with-current-buffer buffer
-      (toggle-opaque))))
 
 (define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer and focus the referencing hint/match
