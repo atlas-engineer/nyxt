@@ -38,8 +38,6 @@
        "escape" 'cancel-input
        "C-n" 'select-next
        "C-p" 'select-previous
-       "M-n" 'select-next-follow
-       "M-p" 'select-previous-follow
        "button4" 'select-previous
        "button5" 'select-next
        "down" 'select-next

@@ -167,6 +167,7 @@ identifier for every hinted element."
     (with-result (elements-json (add-element-hints :annotate-full-document annotate-full-document))
       (setf minibuffer (make-minibuffer
                         :input-prompt prompt
+                        :default-modes '(element-hint-mode minibuffer-mode)
                         :history nil
                         :multi-selection-p multi-selection-p
                         :suggestion-function
@@ -359,6 +360,7 @@ visible active buffer."
                  (result (read-from-minibuffer
                           (make-minibuffer
                            :input-prompt "Bookmark hint"
+                           :default-modes '(element-hint-mode minibuffer-mode)
                            :history nil
                            :suggestion-function
                            (hint-suggestion-filter (elements-from-json elements-json))
@@ -383,6 +385,15 @@ visible active buffer."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt/minibuffer-mode)
+(define-mode element-hint-mode (nyxt/minibuffer-mode:minibuffer-mode)
+  "Minibuffer mode for setting the tag of a bookmark."
+  ((keymap-scheme
+    (define-scheme "set-tag"
+      scheme:cua
+      (list 
+       "M-n" 'select-next-follow
+       "M-p" 'select-previous-follow)))))
+
 (define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
   "Select next entry in minibuffer and focus the referencing hint/match
 if there is one such."
