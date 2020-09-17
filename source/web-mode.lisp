@@ -48,6 +48,8 @@ search.")
        "M-g" 'follow-hint-new-buffer-focus
        "C-u M-g" 'follow-hint-new-buffer
        "C-x C-w" 'copy-hint-url
+       ;; We bind C-y to paste to override the built-in GTK binding
+       "C-y" 'paste
        "C-v" 'paste
        "shift-insert" 'paste
        "button2" 'paste-or-set-url
