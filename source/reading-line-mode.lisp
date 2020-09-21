@@ -82,6 +82,10 @@ the screen as well."
       (cursor-down)))
   (jump-to-reading-line-cursor :buffer buffer))
 
+(defmethod nyxt:on-signal-notify-uri ((mode reading-line-mode) url)
+  (declare (ignore url))
+  (initialize-display mode))
+
 (defmethod initialize-display ((mode reading-line-mode))
   (let* ((content (markup:markup
                    (:style (style mode))
