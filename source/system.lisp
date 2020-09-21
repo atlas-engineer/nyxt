@@ -11,12 +11,21 @@
               (:style (style buffer))
               (:h1 "Systems")
               (:body
-               (loop for system in (ql:system-list)
-                     collect (markup:markup (:div
-                                             (:p "Name: "(ql-dist:short-description system))
-                                             (:p "System file name: "(ql-dist:system-file-name system))
-                                             (:p "Dependencies: " (format nil "~a" (ql-dist:required-systems system)))
-                                             (:hr "")))))))
+               ;; temporarily limit to 100 elements
+               (loop for system in (subseq (ql:system-list) 0 100)
+                     collect
+                        (let ((name (ql-dist:short-description system))
+                              (url (ql-dist:archive-url (ql-dist:preference-parent system)))
+                              (size (format nil "~a" (ql-dist:archive-size (ql-dist:preference-parent system))))
+                              (dependencies (format nil "~a" (ql-dist:required-systems system))))
+                          (markup:markup (:div
+                                          (:p "Name: " name)
+                                          (:p "URL: " (:a :href url url))
+                                          (:p "Size: " size)
+                                          (:p "Dependencies: " dependencies)
+                                          (:p (:a :class "button"
+                                                  :href (lisp-url `(ql:quickload ,name)) "Load"))
+                                          (:hr ""))))))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript buffer insert-content))
