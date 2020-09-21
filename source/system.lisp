@@ -11,9 +11,12 @@
               (:style (style buffer))
               (:h1 "Systems")
               (:body
-               (loop for message in (ql:system-list)
+               (loop for system in (ql:system-list)
                      collect (markup:markup (:div
-                                             (:p message)))))))
+                                             (:p "Name: "(ql-dist:short-description system))
+                                             (:p "System file name: "(ql-dist:system-file-name system))
+                                             (:p "Dependencies: " (format nil "~a" (ql-dist:required-systems system)))
+                                             (:hr "")))))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript buffer insert-content))
