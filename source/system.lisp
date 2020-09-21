@@ -21,7 +21,7 @@
                           (markup:markup (:div
                                           (:p "Name: " name)
                                           (:p "URL: " (:a :href url url))
-                                          (:p "Size: " size)
+                                          (:p "Size: " size " bytes")
                                           (:p "Dependencies: " dependencies)
                                           (:p (:a :class "button"
                                                   :href (lisp-url `(ql:quickload ,name)) "Load"))
