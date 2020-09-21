@@ -1,21 +1,6 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/file-manager-mode
-  (:use :common-lisp :trivia :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:documentation "Manage files.
-
-Open any file from within Nyxt, with the usual fuzzy suggestion.
-
-`M-x open-file (C-x C-f)'
-
-\"file manager\" is a bit excessive for now. Currently, we can:
-- browse files, with fuzzy-suggestion
-- go one directory up (C-l)
-- enter a directory (C-j)
-- open files. By default, with xdg-open. See `open-file-function'.
-"))
 (in-package :nyxt/file-manager-mode)
 (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
 

@@ -415,3 +415,34 @@ rest in background buffers."
     (error (c)
       (echo-warning "Failed to load bookmarks from ~s: ~a"
                     (expand-path path) c))))
+
+(define-command import-bookmarks-from-html ()
+  "Import bookmarks from an HTML file."
+  (with-result (html-file (read-from-minibuffer
+			               (make-minibuffer
+                            :default-modes '(nyxt/file-manager-mode::file-manager-mode
+                                             minibuffer-mode)
+			                :input-prompt "Path to the HTML file: "
+                            :suggestion-function #'nyxt/file-manager-mode::open-file-from-directory-suggestion-filter
+                            :must-match-p nil)))
+    (unless (and (probe-file html-file)
+		         (equal (pathname-type html-file) "html"))
+      (import-bookmarks-from-html))
+    (with-open-file (in-html html-file
+   			                 :external-format :utf-8)
+      (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
+        (loop for a-tag in a-tags
+           do (let ((extracted
+                     (list (plump:attribute a-tag "href")
+                           (plump:render-text a-tag)
+                           (plump:attribute a-tag "tags"))))
+                (apply #'(lambda (url title tags)
+                            (let ((url-uri (quri:uri url)))
+   		                      (when (string= (quri:uri-scheme url-uri)
+                                             "http"
+                                             :end1 4)
+                                (bookmark-add url-uri
+   				                              :title title
+   				                              :tags (unless (null tags)
+                                                      (str:split "," tags))))))
+                        extracted)))))))
