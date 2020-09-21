@@ -56,7 +56,7 @@ mode."
     (with-current-buffer buffer
       (jump-to-cursor))))
 
-(define-command reading-line-cursor-up (&key (step-size 10) (buffer (current-buffer)))
+(define-command reading-line-cursor-up (&key (step-size 20) (buffer (current-buffer)))
   "Move the reading line cursor up. If scrolling off screen, move the
 screen as well."
   (pflet ((cursor-up ()
@@ -69,7 +69,7 @@ screen as well."
       (cursor-up)))
   (jump-to-reading-line-cursor :buffer buffer))
 
-(define-command reading-line-cursor-down (&key (step-size 10) (buffer (current-buffer)))
+(define-command reading-line-cursor-down (&key (step-size 20) (buffer (current-buffer)))
   "Move the reading line cursor down. If scrolling off screen, move
 the screen as well."
   (pflet ((cursor-down ()
