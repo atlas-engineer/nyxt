@@ -83,6 +83,7 @@
                (:file "external-editor")
                (:file "url-group")
                (:file "minibuffer-composite")
+               (:file "system")
                ;; Core Modes
                (:file "buffer-listing-mode")
                (:file "base-mode")
