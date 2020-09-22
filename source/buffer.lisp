@@ -268,19 +268,33 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-class internal-buffer (user-buffer)
   ((style #.(cl-css:css
              '((body
-                :line-height "24px")
+                :line-height "24px"
+                :margin-left "20px"
+                :margin-top "20px")
                (h1
-                :font-family "Helvetica Neue, Helvetica")
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 400)
                (h2
-                :font-family "Helvetica Neue, Helvetica")
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 400)
                (h3
-                :font-family "Helvetica Neue, Helvetica")
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 400)
                (h4
-                :font-family "Helvetica Neue, Helvetica")
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 400)
                (h5
-                :font-family "Helvetica Neue, Helvetica")
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 400)
                (h6
-                :font-family "Helvetica Neue, Helvetica")
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 400)
+               (hr
+                :height "3px"
+                :border-radius "2px"
+                :border-width "0"
+                :color "lightgray"
+                :background-color "lightgray")
                (.button
                 :background-color "darkgray"
                 :color "white"
