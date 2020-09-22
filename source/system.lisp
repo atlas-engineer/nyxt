@@ -31,3 +31,11 @@
       (ffi-buffer-evaluate-javascript buffer insert-content))
     (set-current-buffer buffer)
     buffer))
+
+(define-command add-distribution ()
+  "Add a new Quicklisp distribution."
+  (with-result (url (read-from-minibuffer
+                     (make-minibuffer
+                      :input-prompt "New distribution URL"
+                      :must-match-p nil)))
+    (ql-dist:install-dist url :prompt nil)))
