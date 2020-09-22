@@ -22,6 +22,18 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
     (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
+   (:h2 "Quickstart keys")
+   (:ul
+    (:li (:code (binding-keys 'set-url)) ": Load URL")
+    (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new buffer")
+    (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch buffer")
+    (:li (:code (binding-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
+    (:li (:code (binding-keys 'nyxt/web-mode:history-forwards)) ": Forwards history")
+    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint)) ": Follow link in current buffer")
+    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
+    (:li (:code (binding-keys 'quit)) ": Quit")
+    (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
+    (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current buffer"))
    (:p "Modifiers can be remapped, see the `modifier-translator' slot of the
 `gtk-browser' class.")
 
