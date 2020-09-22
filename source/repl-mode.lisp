@@ -129,14 +129,10 @@
     (update-display repl)))
 
 (defun current-repl ()
-  (find-if (lambda (i) (eq (class-of i)
-                           (find-class 'nyxt/repl-mode:repl-mode)))
-           (nyxt:modes (nyxt::current-buffer))))
+  (find-mode (current-buffer) 'repl-mode))
 
 (defmethod active-repl-p ((window nyxt:window))
-  (find-if (lambda (i) (eq (class-of i)
-                           (find-class 'nyxt/repl-mode:repl-mode)))
-           (nyxt:modes (nyxt::active-buffer window))))
+  (current-repl))
 
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup
