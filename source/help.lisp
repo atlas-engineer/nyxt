@@ -494,8 +494,11 @@ The version number is stored in the clipboard."
     (let* ((help-contents
              (markup:markup
               (:style (style help-buffer))
-              (:h1 "Welcome to Nyxt " (:span :style "font-weight:normal" "☺"))
-              (:p (:b "Attention: ") "Nyxt is under active development. Feel free to "
+              (:style (cl-css:css '((:h2
+                                     :font-weight 300
+                                     :padding-top "10px"))))
+              (:h1 "Welcome to Nyxt ☺")
+              (:p "Attention: Nyxt is under active development. Feel free to "
                   (:a :href "https://github.com/atlas-engineer/nyxt/issues"
                       "report")
                   " bugs, instabilities or feature wishes.")
@@ -509,6 +512,7 @@ The version number is stored in the clipboard."
                         (:a :href "https://github.com/atlas-engineer/nyxt"
                             "star the project on GitHub")
                         ".")))
+              (:hr )
               (:h2 "Quick configuration")
               (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
                   " Switch between Emacs/vi/CUA mode, set home page URL, and zoom level.")
