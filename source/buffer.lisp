@@ -273,22 +273,22 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :margin-top "20px")
                (h1
                 :font-family "Helvetica Neue, Helvetica"
-                :font-weight 400)
+                :font-weight 500)
                (h2
                 :font-family "Helvetica Neue, Helvetica"
-                :font-weight 400)
+                :font-weight 500)
                (h3
                 :font-family "Helvetica Neue, Helvetica"
-                :font-weight 400)
+                :font-weight 500)
                (h4
                 :font-family "Helvetica Neue, Helvetica"
-                :font-weight 400)
+                :font-weight 500)
                (h5
                 :font-family "Helvetica Neue, Helvetica"
-                :font-weight 400)
+                :font-weight 500)
                (h6
                 :font-family "Helvetica Neue, Helvetica"
-                :font-weight 400)
+                :font-weight 500)
                (hr
                 :height "3px"
                 :border-radius "2px"
