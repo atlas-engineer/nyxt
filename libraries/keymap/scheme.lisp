@@ -19,6 +19,15 @@ schemes.  See `define-scheme'.")))
 (declaim (ftype (function (string &rest scheme-name) (values scheme-name &optional))
                 make-scheme-name))
 (defun make-scheme-name (name &rest parents)
+  "Return a new `scheme-name' object.
+The scheme name inherits from the optional PARENTS, ordered by priority.
+
+Example:
+
+  (defvar emacs (make-scheme-name \"emacs\" cua))
+
+In the above, we define a new scheme name called `emacs` which inherits from the
+existing name `cua`."
   (the (values scheme-name &optional)
        (make-instance 'scheme-name
                       :name name
@@ -75,6 +84,9 @@ Example:
 
     scheme:emacs '(\"M-w\" copy
                    \"M-y\" paste))
+
+`scheme:cua' and `scheme:emacs' are pre-defined scheme names.  To define a new
+scheme name, see `make-scheme-name'.
 
 `scheme:cua' is a parent of `scheme:emacs'; thus, in the above example, the Emacs keymap
 will have the CUA keymap as parent.

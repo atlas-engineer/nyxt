@@ -55,6 +55,9 @@ add the following to your configuration:")
       (:pre (:code "
 \(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default))))"))))
+    (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
+        ".  See also the " (:code "scheme-name") " class and the "
+        (:code "define-scheme") " macro.")
     (:p "The " (:code "override-map") " is a keymap which has priority over
 everything.  By default, it has only very few bindings like the one
 for " (:code "execute-command") ".  You can use it to set keys globally:")
@@ -74,7 +77,7 @@ have priorities over the other modes key bindings.")
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-scheme (keymap:make-scheme
+  ((keymap-scheme (define-scheme
                    scheme:cua *my-keymap*
                    scheme:emacs *my-keymap*
                    scheme:vi-normal *my-keymap*))))
