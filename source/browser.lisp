@@ -627,6 +627,7 @@ sometimes yields the wrong reasult."
 (define-ffi-method ffi-buffer-enable-smooth-scrolling (buffer value))
 (define-ffi-method ffi-buffer-enable-media (buffer value))
 (define-ffi-method ffi-buffer-auto-load-image (buffer value))
+(define-ffi-method ffi-buffer-enable-sound (buffer value))
 (define-ffi-method ffi-buffer-user-agent (buffer value))
 (define-ffi-method ffi-buffer-set-proxy (buffer &optional proxy-uri ignore-hosts))
 (define-ffi-method ffi-buffer-get-proxy (buffer))

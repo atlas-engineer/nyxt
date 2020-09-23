@@ -97,6 +97,7 @@
                (:file "blocker-mode")
                (:file "proxy-mode")
                (:file "noimage-mode")
+               (:file "nosound-mode")
                (:file "noscript-mode")
                (:file "file-manager-mode")
                (:file "download-mode")
