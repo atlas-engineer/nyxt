@@ -85,9 +85,9 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
               (tag-description tag))
       (object-string tag)))
 
-(declaim (ftype (function (quri:uri &key (:title string) (:tags t)) t) bookmark-add))
+(declaim (ftype (function (quri:uri &key (:title string) (:date local-time:timestamp) (:tags t)) t) bookmark-add))
 (export-always 'bookmark-add)
-(defun bookmark-add (url &key title tags)
+(defun bookmark-add (url &key date title tags)
   (with-data-access bookmarks (bookmarks-path (current-buffer))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (object-string url)))
@@ -419,30 +419,32 @@ rest in background buffers."
 (define-command import-bookmarks-from-html ()
   "Import bookmarks from an HTML file."
   (with-result (html-file (read-from-minibuffer
-			               (make-minibuffer
-                            :default-modes '(nyxt/file-manager-mode::file-manager-mode
+                           (make-minibuffer
+                            :default-modes '(nyxt/file-manager-mode:file-manager-mode
                                              minibuffer-mode)
-			                :input-prompt "Path to the HTML file: "
-                            :suggestion-function #'nyxt/file-manager-mode::open-file-from-directory-suggestion-filter
+                            :input-prompt "Path to the HTML file: "
+                            ;; the suggestion filter allows non-html files right
+                            ;; now, as with :must-match-p set to nil the user
+                            ;; would still be able to select a non-html file;
+                            ;; this should be fixed (and :must-match-p nil -
+                            ;; removed) once the file-manager has better navigation
+                            ;; support
+                            :suggestion-function #'nyxt/file-manager-mode:open-file-from-directory-suggestion-filter
                             :must-match-p nil)))
-    (unless (and (probe-file html-file)
-		         (equal (pathname-type html-file) "html"))
-      (import-bookmarks-from-html))
-    (with-open-file (in-html html-file
-   			                 :external-format :utf-8)
-      (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
-        (loop for a-tag in a-tags
-           do (let ((extracted
-                     (list (plump:attribute a-tag "href")
-                           (plump:render-text a-tag)
-                           (plump:attribute a-tag "tags"))))
-                (apply #'(lambda (url title tags)
-                            (let ((url-uri (quri:uri url)))
-   		                      (when (string= (quri:uri-scheme url-uri)
-                                             "http"
-                                             :end1 4)
-                                (bookmark-add url-uri
-   				                              :title title
-   				                              :tags (unless (null tags)
-                                                      (str:split "," tags))))))
-                        extracted)))))))
+    (if (and (probe-file html-file)
+             (equal (pathname-type html-file) "html"))
+        (with-open-file (in-html html-file :external-format :utf-8)
+          (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
+            (dolist (a-tag a-tags)
+              (let* ((url (plump:attribute a-tag "href"))
+                     (title (plump:render-text a-tag))
+                     (date (plump:attribute a-tag "add_date"))
+                     (tags (plump:attribute a-tag "tags"))
+                     (url-uri (quri:uri url)))
+                (when (str:starts-with? "http" (quri:uri-scheme url-uri))
+                  (bookmark-add url-uri
+                                :title title
+                                :date (local-time:unix-to-timestamp (parse-integer date))
+                                :tags (when tags
+                                        (str:split "," tags))))))))
+        (echo "The file doesn't exist or is not an HTML file."))))
