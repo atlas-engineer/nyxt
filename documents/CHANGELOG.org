@@ -25,6 +25,74 @@ MAJOR.MINOR.PATCH, we increment the:
 + Also use the editor for text-field input on the internet
 *** Add online suggestions from search engines
 ** 2.0.0
+
+*** TASK 2-pre-release-2 (upcoming)
+
+- Add configuration buttons for slots.
+
+  The configuration is persisted to =~/.config/nyxt/auto-config.lisp=.
+
+- Add user classes (browser, window, buffer, minibuffer, modes and some more).
+
+  =define-configuration= now updates the corresponding user-class, which is a
+  slot-less class that inherits from the default class + various class
+  specializations.
+
+  This approach has the benefit to be functional (in the sense of functional
+  programming): it allows the user to access the default slot values, it's even
+  possible to remove a specialization.
+
+- Add per-buffer data.
+
+  Most data-path slots have been moved from the browser class to the buffer
+  class.  This allows for much more flexibility and paves the way for "private /
+  incognito" buffers.
+
+- Rename =show-bookmarks=, =download-list=, =messages= to =list-bookmarks=,
+  =list-downloads=, =list-messages= respectively, out of consistency.
+
+- Overhaul the startup and bookmarks pages.
+
+- Move search-engines slot from BROWSER to BUFFER.
+
+  This makes it possible to locally customize the search engines.
+  For instance, the search engines could be altered by proxy-mode.
+
+- Default search engine is now the last one of the list.
+
+  The "default" keyword is no longer special.
+
+- Add the =web-buffer= class (inherits from =buffer=) and use it for regular buffers.
+
+  Move =load-status=, =proxy=, =cookies= and =certificates= slots to =web-buffer=.
+  Special buffers use the =internal-buffer= class.
+
+- Add nosound-mode.
+
+  Useful to mute a buffer.
+
+- Add =search-selection= command.
+
+  Allows to query the highlighted text with a given search engine.
+  Particularly useful for dictionaries.
+
+- Make puny-encoded URLs human readable.
+
+- Bind =M-i= to toggle the transparency of element hints.
+
+- Add session dumping commands.
+
+  Namely =store-session-by-name=, =restore-session-by-name= and
+  =replace-session-by-name=.
+
+- Various fixes:
+
+  - =lisp-repl= input works again.
+
+  - URL with wildcards (like `[` and `]`) are properly downloaded.
+
+  - =localhost= URLs are supported.
+
 *** 2-pre-release-1
 - Rename project to Nyxt.
   This name is more "searchable" on the Web.  It's also reasonably
