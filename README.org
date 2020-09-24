@@ -7,13 +7,13 @@
 Nyxt is a keyboard-oriented, extensible web-browser designed for power
 users. It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully
 configurable and extensible in Lisp, and has powerful features for
-productive professionals.
+productivity.
 
 If you like Nyxt and if you want to help future development, please
-support us on [[https://www.patreon.com/nyxt][Patreon]] or give us a star, thank you!
+support us on [[https://www.patreon.com/nyxt][Patreon]], or give us a star, thank you!
 
-*Warning:* Nyxt is under active development. Feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]] bugs,
-instabilities or feature wishes.
+*Attention:* Nyxt is under active development. Feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]]
+bugs, instabilities or feature wishes.
 
 -----
 
@@ -92,11 +92,6 @@ the developer's documentation at [[https://github.com/atlas-engineer/nyxt/blob/m
 
 Complete customization is possible through the creation of a
 =~/.config/nyxt/init.lisp= file. For more information, see the manual.
-
-Additionally, a document provided in the documents directory named
-[[file:documents/EXTENSION.org][EXTENSION.org]] is a place for the community to share helpful
-customizations. To share your own extension, please make a pull
-request with your new extension appended to EXTENSION.org.
 
 ** History of changes
 Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].
