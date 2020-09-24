@@ -61,4 +61,5 @@ Open any file from within Nyxt, with the usual fuzzy suggestion.
 - enter a directory (C-j)
 - open files. By default, with xdg-open. See `open-file-function'.
 ")
-  (:export :file-manager-mode))
+  (:export :file-manager-mode)
+  (:export :open-file-from-directory-suggestion-filter))
