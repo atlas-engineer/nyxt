@@ -26,7 +26,7 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Add online suggestions from search engines
 ** 2.0.0
 
-*** TASK 2-pre-release-2 (upcoming)
+*** 2-pre-release-2
 
 - Add configuration buttons for slots.
 
