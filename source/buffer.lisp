@@ -690,6 +690,35 @@ See `make-buffer'."
                               :suggestion-function (buffer-suggestion-filter))))
         (mapcar #'buffer-delete buffers))))
 
+(define-command reduce-to-buffer (&key (delete t))
+  "Reduce the buffer(s) via minibuffer input and copy their
+  titles/URLs to a single buffer, optionally delete them. This
+  function is useful for archiving a set of useful URLs or preparing a
+  list to send to a colleague."
+  (with-result (buffers (read-from-minibuffer
+                         (make-minibuffer
+                          :input-prompt "Reduce buffer(s)"
+                          :multi-selection-p t
+                          :suggestion-function (buffer-suggestion-filter))))
+    (let* ((reduced-buffer (make-internal-buffer :title "*Reduced Buffers*"))
+           (buffer-contents (markup:markup
+                             (:style (style reduced-buffer))
+                             (:h1 "Reduced Buffers:")
+                             (:div
+                              (loop for buffer in buffers
+                                    collect
+                                       (markup:markup (:div
+                                                       (:p (:b "Title: ") (title buffer))
+                                                       (:p (:b "URL: ") (:a :href (object-string (url buffer))
+                                                                            (object-string (url buffer))))
+                                                       (:hr "")))))))
+           (insert-contents (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                         (ps:lisp buffer-contents)))))
+      (when delete (mapcar #'buffer-delete buffers))
+      (ffi-buffer-evaluate-javascript reduced-buffer insert-contents)
+      (set-current-buffer reduced-buffer)
+      reduced-buffer)))
+
 (defun delete-buffers ()
   "Delete all buffers."
   (mapcar #'buffer-delete (buffer-list)))
