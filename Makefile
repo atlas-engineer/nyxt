@@ -132,6 +132,11 @@ build-deps: quicklisp-extra-libs
 
 .PHONY: deps
 deps:
+	SBCL_VER="$$(sbcl --version)" ; \
+	if [ "sbcl" = "$(LISP)" ] && expr "$$SBCL_VER" : "SBCL 1" > /dev/null ; then \
+		printf "\nERROR: SBCL version (%s) too old -- needs version 2 or later\n\n" "$$SBCL_VER" >&2 ; \
+		false ; \
+	fi
 	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) build-deps || true
 
 manual.html: $(lisp_files)
