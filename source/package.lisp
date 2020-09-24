@@ -44,8 +44,8 @@ It's recommended to use this package in the Nyxt configuration file, instead of
   (:export :minibuffer-mode)
   (:documentation "Mode for minibuffer"))
 
-;; nyxt/file-manager-mode is declared here because due to the same reason
-;; as nyxt/minibuffer-mode.
+;; nyxt/file-manager-mode is declared here due to the same reason as
+;; nyxt/minibuffer-mode.
 (uiop:define-package :nyxt/file-manager-mode
     (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
