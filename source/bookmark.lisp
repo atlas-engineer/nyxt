@@ -422,7 +422,7 @@ rest in background buffers."
                            (make-minibuffer
                             :default-modes '(nyxt/file-manager-mode:file-manager-mode
                                              minibuffer-mode)
-                            :input-prompt "Path to the HTML file: "
+                            :input-prompt "Path to the HTML file"
                             ;; the suggestion filter allows non-html files right
                             ;; now, as with :must-match-p set to nil the user
                             ;; would still be able to select a non-html file;
@@ -431,7 +431,7 @@ rest in background buffers."
                             ;; support
                             :suggestion-function #'nyxt/file-manager-mode:open-file-from-directory-suggestion-filter
                             :must-match-p nil)))
-    (if (and (probe-file html-file)
+    (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))
         (with-open-file (in-html html-file :external-format :utf-8)
           (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
@@ -444,7 +444,7 @@ rest in background buffers."
                 (when (str:starts-with? "http" (quri:uri-scheme url-uri))
                   (bookmark-add url-uri
                                 :title title
-                                :date (local-time:unix-to-timestamp (parse-integer date))
+                                :date (ignore-errors (local-time:unix-to-timestamp (parse-integer date)))
                                 :tags (when tags
                                         (str:split "," tags))))))))
         (echo "The file doesn't exist or is not an HTML file."))))
