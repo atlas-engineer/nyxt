@@ -60,4 +60,5 @@ Open any file from within Nyxt, with the usual fuzzy suggestion.
 - go one directory up (C-l)
 - enter a directory (C-j)
 - open files. By default, with xdg-open. See `open-file-function'.
-"))
+")
+  (:export :file-manager-mode))
