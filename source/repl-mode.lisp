@@ -129,7 +129,7 @@
     (update-display repl)))
 
 (defun current-repl ()
-  (find-mode (current-buffer) 'repl-mode))
+  (find-submode (current-buffer) 'repl-mode))
 
 (defmethod active-repl-p ((window nyxt:window))
   (current-repl))
