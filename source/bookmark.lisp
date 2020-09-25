@@ -85,7 +85,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
               (tag-description tag))
       (object-string tag)))
 
-(declaim (ftype (function (quri:uri &key (:title string) (:date local-time:timestamp) (:tags t)) t) bookmark-add))
+(declaim (ftype (function (quri:uri &key (:title string) (:date (or local-time:timestamp null)) (:tags t)) t) bookmark-add))
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
   (with-data-access bookmarks (bookmarks-path (current-buffer))
@@ -104,6 +104,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
           (setf (title entry) title))
         (setf tags (delete-duplicates tags :test #'string=))
         (setf (tags entry) (sort tags #'string<))
+        (when date
+          (setf (date entry) date))
         (push entry bookmarks-without-url)
         (setf bookmarks bookmarks-without-url)))))
 
