@@ -376,15 +376,15 @@ visible active buffer."
     (when result
       (bookmark-add (quri:uri (url result)) :tags tags))))
 
-
 (define-command download-hint-url (&key annotate-full-document)
   "Download the file under the URL(s) hinted by the user."
   (query-hints "Download link URL"
                (lambda (selected-links)
-                 ;; TODO: re-enable multi-selection when download works for multiple downloads
-                 (mapcar (lambda (i) (download (quri:uri (url i)))) selected-links)
+                 (loop for link in selected-links
+                       ;; TODO: sleep should NOT be necessary to avoid breaking download
+                       do (download (quri:uri (url link))) (sleep 0.25))
                  (list-downloads))
-               :multi-selection-p nil
+               :multi-selection-p t
                :annotate-full-document annotate-full-document))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
