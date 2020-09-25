@@ -50,12 +50,10 @@ On errors, return URL."
               ;; "http://" does not have a host.
               ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
               (quri:uri-host uri)
-              ;; E.g. "http://algo" or "http://foo" have the same tld and host, which
-              ;; is probably not a URI query.
-              (not (and (not (string= (quri:uri-host uri)
-                                      "localhost"))
-                        (string= (quri:uri-host uri)
-                                 (quri:uri-tld uri)))))))))
+              ;; "http://algo" has the "algo" hostname but it's probably invalid
+              ;; unless it's found on the local network.  We also need to
+              ;; support "localhost" and the current system hostname.
+              (ignore-errors (usocket:get-host-by-name (quri:uri-host uri))))))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
 (defun ensure-url (thing)

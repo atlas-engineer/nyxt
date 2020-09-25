@@ -164,6 +164,7 @@
        ("trivial-package-local-nicknames" ,cl-trivial-package-local-nicknames)
        ("trivial-types" ,cl-trivial-types)
        ("unix-opts" ,cl-unix-opts)
+       ("usocket" ,cl-usocket)
        ;; WebKitGTK deps
        ("cl-cffi-gtk" ,cl-cffi-gtk)
        ("cl-webkit" ,cl-webkit)

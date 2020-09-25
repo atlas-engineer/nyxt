@@ -35,6 +35,7 @@
                :trivial-package-local-nicknames
                :trivial-types
                :unix-opts
+               :usocket
                ;; Local systems:
                :nyxt/text-buffer
                :nyxt/text-analysis

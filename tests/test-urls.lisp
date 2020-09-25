@@ -65,15 +65,12 @@
   (is (valid-url-p "http://algo")
       nil
       "Invalid URL (TLD == host)")
-  (is (valid-url-p "http://example.org/foo/bar?query=baz#qux")
-      t
+  (ok (valid-url-p "http://example.org/foo/bar?query=baz#qux")
       "Valid URL")
-  (is (valid-url-p "http://192.168.1.1")
-      t
+  (ok (valid-url-p "http://192.168.1.1")
       "Valid IP URL")
-  (is (valid-url-p "http://192.168.1.1/foo")
-      t
-      "Valid IP URL")
+  (ok (valid-url-p "http://192.168.1.1/foo")
+      "Valid IP URL with path")
   (is (nyxt::schemeless-uri= (quri:uri "http://example.org")
                              (quri:uri "https://example.org/"))
       t
