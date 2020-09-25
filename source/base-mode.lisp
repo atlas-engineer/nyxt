@@ -65,6 +65,7 @@
                      "C-[" 'switch-buffer-previous
                      "C-]" 'switch-buffer-next
                      "C-x b" 'switch-buffer
+                     "C-x C-b" 'list-buffers
                      "C-x k" 'delete-buffer ; Emacs' default behaviour is to query.
                      "C-x C-k" 'delete-current-buffer
                      "C-x left" 'switch-buffer-previous
