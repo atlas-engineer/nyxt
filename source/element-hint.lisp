@@ -328,13 +328,13 @@ identifier for every hinted element."
 (define-command follow-hint (&key annotate-full-document)
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
-  (query-hints "Go to element:" '%follow-hint
+  (query-hints "Go to element" '%follow-hint
                :annotate-full-document annotate-full-document))
 
 (define-command follow-hint-new-buffer (&key annotate-full-document)
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
-  (query-hints "Open element in new buffer:"
+  (query-hints "Open element in new buffer"
                (lambda (result) (mapcar #'%follow-hint-new-buffer result))
                :multi-selection-p t
                :annotate-full-document annotate-full-document))
@@ -342,7 +342,7 @@ buffer (not set to visible active buffer)."
 (define-command follow-hint-new-buffer-focus (&key annotate-full-document)
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
-  (query-hints "Go to element in new buffer:"
+  (query-hints "Go to element in new buffer"
                (lambda (result)
                  (%follow-hint-new-buffer-focus (first result))
                  (mapcar #'%follow-hint-new-buffer (rest result)))
@@ -351,7 +351,7 @@ visible active buffer."
 
 (define-command copy-hint-url (&key annotate-full-document)
   "Show a set of element hints, and copy the URL of the user inputted one."
-  (query-hints "Copy element URL:" '%copy-hint-url
+  (query-hints "Copy element URL" '%copy-hint-url
                :annotate-full-document annotate-full-document))
 
 (define-command bookmark-hint ()
