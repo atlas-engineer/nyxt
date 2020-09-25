@@ -376,12 +376,16 @@ visible active buffer."
     (when result
       (bookmark-add (quri:uri (url result)) :tags tags))))
 
-(define-command download-hint-url ()
-  "Download the file under the URL hinted by the user."
-  (query-hints "Download link URL:" (lambda (selected-link)
-                                      (download (quri:uri selected-link))
-                                      (unless (find-buffer 'download-mode)
-                                        (list-downloads)))))
+
+(define-command download-hint-url (&key annotate-full-document)
+  "Download the file under the URL(s) hinted by the user."
+  (query-hints "Download link URL"
+               (lambda (selected-links)
+                 ;; TODO: re-enable multi-selection when download works for multiple downloads
+                 (mapcar (lambda (i) (download (quri:uri (url i)))) selected-links)
+                 (list-downloads))
+               :multi-selection-p nil
+               :annotate-full-document annotate-full-document))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt/minibuffer-mode)
