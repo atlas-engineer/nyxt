@@ -628,12 +628,21 @@ highest precedence."
   "Return a the list of `keyspec's bound to BINDING in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results.
 Comparison against BINDING is done with TEST."
-  (let ((result '()))
-    (maphash (lambda (key sym)
-               (when (funcall test binding sym)
-                 (push key result)))
-             (keymap->map keymap))
-    (sort result #'string<)))
+  ;; This code is a bit redundant with `keymap->map*' but it's necessary to
+  ;; avoid calling key->keyspec thousands of times.
+  (labels ((scan-keymap (keymap visited)
+             (let ((result '()))
+               (fset:do-map (key sym (entries keymap))
+                 (cond
+                   ((funcall test binding sym)
+                    (push (list key) result))
+                   ((and (keymap-p sym) (find sym visited))
+                    (warn "Cycle detected in keymap ~a" keymap))
+                   ((keymap-p sym)
+                    (dolist (hit (scan-keymap sym (cons keymap visited)))
+                      (push (cons key hit) result)))))
+               result)))
+    (sort (mapcar #'keys->keyspecs (scan-keymap keymap '())) #'string<)))
 
 (declaim (ftype (function (t (or keymap list-of-keymaps) &key (:test function))
                           (values list list))
@@ -650,9 +659,6 @@ Comparison against BINDING is done with TEST.
 For instance, to list all keymaps that have a binding, call
 
   (mapcar #'second (nth-value 1 (binding-keys ...)))"
-  ;; TODO: This can be slow since it explodes the number of function calls
-  ;; (particularly `keymap->map*' and then `key->keyspec').  Memoize?  Add
-  ;; lookup table?
   (let ((alist (alex:mappend (lambda (keymap)
                                (let ((hit (binding-keys* bound-value keymap :test test)))
                                  (when hit
