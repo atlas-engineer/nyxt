@@ -3,7 +3,7 @@
 
 (in-package :nyxt/web-mode)
 
-(define-parenscript add-element-hints (&key annotate-full-document)
+(define-parenscript add-element-hints (&key annotate-visible-only)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
@@ -88,7 +88,7 @@ identifier for every hinted element."
                                  (element-in-view-port-p (elt elements i)))
                        do (hint-add (elt elements i) (elt hints i))
                        when (or (and (element-drawable-p (elt elements i))
-                                     (ps:lisp annotate-full-document))
+                                     (not (ps:lisp annotate-visible-only)))
                                 (and (element-drawable-p (elt elements i))
                                      (element-in-view-port-p (elt elements i))))
                        collect (object-create (elt elements i) (elt hints i)))))))
@@ -161,10 +161,10 @@ identifier for every hinted element."
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "nyxt-hint"))))
 
-(defun query-hints (prompt function &key multi-selection-p annotate-full-document)
+(defun query-hints (prompt function &key multi-selection-p annotate-visible-only)
   (let* ((buffer (current-buffer))
          minibuffer)
-    (with-result (elements-json (add-element-hints :annotate-full-document annotate-full-document))
+    (with-result (elements-json (add-element-hints :annotate-visible-only annotate-visible-only))
       (setf minibuffer (make-minibuffer
                         :input-prompt prompt
                         :default-modes '(element-hint-mode minibuffer-mode)
@@ -325,21 +325,21 @@ identifier for every hinted element."
                                      :scroll scroll))
           (remove-focus)))))
 
-(define-command follow-hint (&key annotate-full-document)
+(define-command follow-hint (&key annotate-visible-only)
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
   (query-hints "Go to element" '%follow-hint
-               :annotate-full-document annotate-full-document))
+               :annotate-visible-only annotate-visible-only))
 
-(define-command follow-hint-new-buffer (&key annotate-full-document)
+(define-command follow-hint-new-buffer (&key annotate-visible-only)
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
   (query-hints "Open element in new buffer"
                (lambda (result) (mapcar #'%follow-hint-new-buffer result))
                :multi-selection-p t
-               :annotate-full-document annotate-full-document))
+               :annotate-visible-only annotate-visible-only))
 
-(define-command follow-hint-new-buffer-focus (&key annotate-full-document)
+(define-command follow-hint-new-buffer-focus (&key annotate-visible-only)
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
   (query-hints "Go to element in new buffer"
@@ -347,12 +347,12 @@ visible active buffer."
                  (%follow-hint-new-buffer-focus (first result))
                  (mapcar #'%follow-hint-new-buffer (rest result)))
                :multi-selection-p t
-               :annotate-full-document annotate-full-document))
+               :annotate-visible-only annotate-visible-only))
 
-(define-command copy-hint-url (&key annotate-full-document)
+(define-command copy-hint-url (&key annotate-visible-only)
   "Show a set of element hints, and copy the URL of the user inputted one."
   (query-hints "Copy element URL" '%copy-hint-url
-               :annotate-full-document annotate-full-document))
+               :annotate-visible-only annotate-visible-only))
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
@@ -376,7 +376,7 @@ visible active buffer."
     (when result
       (bookmark-add (quri:uri (url result)) :tags tags))))
 
-(define-command download-hint-url (&key annotate-full-document)
+(define-command download-hint-url (&key annotate-visible-only)
   "Download the file under the URL(s) hinted by the user."
   (query-hints "Download link URL"
                (lambda (selected-links)
@@ -385,7 +385,7 @@ visible active buffer."
                        do (download (quri:uri (url link))) (sleep 0.25))
                  (list-downloads))
                :multi-selection-p t
-               :annotate-full-document annotate-full-document))
+               :annotate-visible-only annotate-visible-only))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt/minibuffer-mode)
