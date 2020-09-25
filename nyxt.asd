@@ -104,6 +104,7 @@
                (:file "download-mode")
                (:file "vcs-mode")
                (:file "force-https-mode")
+               (:file "reduce-tracking-mode")
                ;; Web-mode commands
                (:file "input-edit")
                (:file "element-hint")
