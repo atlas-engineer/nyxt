@@ -51,8 +51,8 @@ and OS integration is provided via:
 - GNU/Linux: GTK, Qt
 
 ** Installing SBCL
-You'll need SBCL ≥ 1.4.2 to compile Nyxt.  (Previous versions require
-an ASDF update.)
+You'll need SBCL ≥ 1.5.0 to compile Nyxt.  (Previous versions require
+an ASDF update and may yield unexpected issues.)
 
 You can obtain SBCL from your package manager or by downloading it
 directly from the SBCL repository.
