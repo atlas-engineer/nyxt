@@ -691,10 +691,9 @@ See `make-buffer'."
         (mapcar #'buffer-delete buffers))))
 
 (define-command reduce-to-buffer (&key (delete t))
-  "Reduce the buffer(s) via minibuffer input and copy their
-  titles/URLs to a single buffer, optionally delete them. This
-  function is useful for archiving a set of useful URLs or preparing a
-  list to send to a colleague."
+  "Reduce the buffer(s) via minibuffer input and copy their titles/URLs to a
+single buffer, optionally delete them. This function is useful for archiving a
+set of useful URLs or preparing a list to send to a someone else."
   (with-result (buffers (read-from-minibuffer
                          (make-minibuffer
                           :input-prompt "Reduce buffer(s)"
