@@ -855,6 +855,17 @@ custom (the specified proxy) and none."
     (set-cookie-policy cookie-manager value)
     buffer))
 
+(defmethod ffi-set-preferred-languages ((buffer gtk-buffer)
+                                        language-list)
+  "Set the list of preferred languages in the HTTP header \"Accept-Language:\".
+LANGUAGE is a list of strings like '(\"en_US\" \"fr_FR\")."
+  (let ((langs (cffi:foreign-alloc :string
+                                   :initial-contents language-list
+                                   :null-terminated-p t)))
+    (webkit:webkit-web-context-set-preferred-languages
+     (webkit:webkit-web-view-web-context (gtk-object buffer))
+     langs)))
+
 (defstruct webkit-history-entry
   title
   uri
