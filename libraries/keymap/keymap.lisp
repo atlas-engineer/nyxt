@@ -639,7 +639,7 @@ Comparison against BINDING is done with TEST."
                           (values list list))
                 binding-keys))
 (defun binding-keys (bound-value keymap-or-keymaps &key (test #'eql))
-  "Return a the list of `keyspec's bound to BINDING in KEYMAP.
+  "Return the list of `keyspec's bound to BINDING in KEYMAP.
 The list is sorted alphabetically to ensure reproducible results.
 Duplicates are removed.
 
