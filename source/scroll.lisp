@@ -6,13 +6,13 @@
 (define-command scroll-to-top ()
   "Scroll to the top of the current page."
   (pflet ((scroll-to-top ()
-            (ps:chain window (scroll-by 0 (- (ps:chain document body scroll-height))))))
+            (ps:chain window (scroll-by 0 (- (ps:chain document document-element scroll-height))))))
     (scroll-to-top)))
 
 (define-command scroll-to-bottom ()
   "Scroll to the bottom of the current page."
   (pflet ((scroll-to-bottom ()
-            (ps:chain window (scroll-by 0 (ps:chain document body scroll-height)))))
+            (ps:chain window (scroll-by 0 (ps:chain document document-element scroll-height)))))
     (scroll-to-bottom)))
 
 (define-command scroll-down (&key (scroll-distance (scroll-distance (current-buffer))))
