@@ -255,7 +255,7 @@ This function can be `funcall'ed."
 
 (defun command-display (command)
   ;; Use `(current-window :no-rescan)' or else the minibuffer will stutter
-  ;; because of the RPC calls.
+  ;; because of the FFI calls.
   (let* ((buffer (active-buffer (current-window :no-rescan)))
          (scheme-name (keymap-scheme-name buffer))
          (bindings '()))
