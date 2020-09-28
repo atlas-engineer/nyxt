@@ -430,10 +430,8 @@ Otherwise go forward to the only child."
   ;; can only be done after the URL has been loaded which is a bit of a
   ;; kludge.  Instead we could add an FFI endpoint,
   ;; e.g. webkit_web_view_set_zoom_level.
-
-  ;; TODO: Temporarily commented out to work with synchronous minibuffers.
-  ;; (unzoom-page :buffer (buffer mode)
-  ;;              :ratio (current-zoom-ratio (buffer mode)))
+  (unzoom-page :buffer (buffer mode)
+               :ratio (current-zoom-ratio (buffer mode)))
   url)
 
 (defmethod nyxt:object-string ((node htree:node))
