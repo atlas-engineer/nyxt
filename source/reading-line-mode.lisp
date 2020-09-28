@@ -93,8 +93,8 @@ the screen as well."
          (insert-content (ps:ps
                            (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
                            (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) "10px"))))
-    (ffi-buffer-evaluate-javascript (buffer mode) insert-content)))
+    (ffi-buffer-evaluate-javascript-async (buffer mode) insert-content)))
 
 (defmethod destroy-display ((mode reading-line-mode))
   (let ((destroy-content (ps:ps (setf (ps:chain document (query-selector "#reading-line-cursor") |outerHTML|) ""))))
-    (ffi-buffer-evaluate-javascript (buffer mode) destroy-content)))
+    (ffi-buffer-evaluate-javascript-async (buffer mode) destroy-content)))

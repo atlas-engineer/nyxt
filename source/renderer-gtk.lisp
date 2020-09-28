@@ -783,7 +783,7 @@ requested a reload."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
 
-(defmethod ffi-buffer-evaluate-javascript-sync ((buffer gtk-buffer) javascript)
+(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
   (PREFIX-within-renderer-thread
    (lambda (&optional channel)
      (webkit2:webkit-web-view-evaluate-javascript
@@ -794,8 +794,7 @@ requested a reload."
           (chanl:send channel result :blockp nil)))
       #'javascript-error-handler))))
 
-;; TODO: Exchange async/sync names.
-(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
+(defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript)
   (PREFIX-within-renderer-thread-async
    (lambda ()
      (webkit2:webkit-web-view-evaluate-javascript

@@ -54,7 +54,7 @@
                     (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys 'execute-command))) "."))))
          (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                       (ps:lisp contents)))))
-    (ffi-buffer-evaluate-javascript download-buffer insert-content)
+    (ffi-buffer-evaluate-javascript-async download-buffer insert-content)
     download-buffer))
 
 (define-command list-downloads ()

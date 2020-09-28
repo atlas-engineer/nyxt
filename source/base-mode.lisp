@@ -173,6 +173,6 @@
                                              (:span (title buffer) " - "(quri:render-uri (url buffer)))))))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
-      (ffi-buffer-evaluate-javascript buffer insert-content))
+      (ffi-buffer-evaluate-javascript-async buffer insert-content))
     (set-current-buffer buffer)
     buffer))

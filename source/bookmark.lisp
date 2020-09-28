@@ -191,7 +191,7 @@ This can be useful to let the user select no tag when returning directly."
                                         (:hr ""))))))))
          (insert-contents (ps:ps (setf (ps:@ document Body |innerHTML|)
                                        (ps:lisp bookmark-contents)))))
-    (ffi-buffer-evaluate-javascript bookmarks-buffer insert-contents)
+    (ffi-buffer-evaluate-javascript-async bookmarks-buffer insert-contents)
     (set-current-buffer bookmarks-buffer)
     bookmarks-buffer))
 
