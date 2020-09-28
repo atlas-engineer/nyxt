@@ -165,29 +165,28 @@ identifier for every hinted element."
   (let* ((buffer (current-buffer))
          minibuffer)
     (let ((elements-json (add-element-hints :annotate-full-document annotate-full-document)))
-      (setf minibuffer (make-minibuffer
-                        :input-prompt prompt
-                        :history nil
-                        :multi-selection-p multi-selection-p
-                        :suggestion-function
-                        (hint-suggestion-filter (elements-from-json elements-json))
-                        :changed-callback
-                        (let ((subsequent-call nil))
-                          (lambda ()
-                            ;; when the minibuffer initially appears, we don't
-                            ;; want update-selection-highlight-hint to scroll
-                            ;; but on subsequent calls, it should scroll
-                            (update-selection-highlight-hint
-                             :scroll subsequent-call
-                             :buffer buffer
-                             :minibuffer minibuffer)
-                            (setf subsequent-call t)))
-                        :cleanup-function
-                        (lambda ()
-                          (with-current-buffer buffer
-                            (remove-element-hints)))))
       ;; TODO: Add offscreen hints in background from full document annotation
-      (let ((result (prompt-minibuffer :minibuffer minibuffer)))
+      (let ((result (prompt-minibuffer
+                     :input-prompt prompt
+                     :history nil
+                     :multi-selection-p multi-selection-p
+                     :suggestion-function
+                     (hint-suggestion-filter (elements-from-json elements-json))
+                     :changed-callback
+                     (let ((subsequent-call nil))
+                       (lambda ()
+                         ;; when the minibuffer initially appears, we don't
+                         ;; want update-selection-highlight-hint to scroll
+                         ;; but on subsequent calls, it should scroll
+                         (update-selection-highlight-hint
+                          :scroll subsequent-call
+                          :buffer buffer
+                          :minibuffer minibuffer)
+                         (setf subsequent-call t)))
+                     :cleanup-function
+                     (lambda ()
+                       (with-current-buffer buffer
+                         (remove-element-hints))))))
         (funcall-safely function result)))))
 
 (defun hint-suggestion-filter (hints)
