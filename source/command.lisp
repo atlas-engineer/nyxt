@@ -283,7 +283,19 @@ This function can be `funcall'ed."
 
 
 (defmethod run ((command command) &rest args)
-  "Run COMMAND over ARGS."
+  "Run COMMAND over ARGS and return its result.
+This is blocking, see `run-async' for an asynchronous way to run commands."
+  (let ((channel (make-instance 'chanl:channel)))
+    (chanl:pexec ()
+      (chanl:send channel
+                  (apply #'funcall-safely (command-function command) args)
+                  :blockp nil))
+    (chanl:recv channel)))
+
+(defmethod run-async ((command command) &rest args)
+  "Run COMMAND over ARGS asynchronously.
+See `run' for a way to run commands in a synchronous fashion and return the
+result."
   (chanl:pexec ()
     (apply #'funcall-safely (command-function command) args)))
 

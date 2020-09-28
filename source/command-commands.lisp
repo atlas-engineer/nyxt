@@ -38,7 +38,7 @@
                                                   (modes (current-buffer))))
                     :hide-suggestion-count-p t)))
       (setf (access-time command) (get-internal-real-time))
-      (run command))))
+      (run-async command))))
 
 
 (defun hook-suggestion-filter ()
