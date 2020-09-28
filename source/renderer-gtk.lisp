@@ -69,6 +69,18 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
     (funcall thunk)))
 
 (defun PREFIX-within-renderer-thread (thunk)
+  "If the current thread is the renderer thread, execute THUNK with `funcall'.
+Otherwise run the THINK on the renderer thread by passing it a channel and wait on the channel's result."
+  (if (renderer-thread-p)
+      (funcall thunk)
+      (let ((channel (make-instance 'chanl:channel)))
+        (gtk:within-gtk-thread
+          (funcall thunk channel))
+        (chanl:recv channel))))
+
+(defun PREFIX-within-renderer-thread-async (thunk)
+  "Same as `PREFIX-within-renderer-thread' but THUNK is not blocking and does
+not return."
   (if (renderer-thread-p)
       (funcall thunk)
       (gtk:within-gtk-thread
@@ -164,7 +176,7 @@ data-manager will store the data separately for each buffer."))
                  :web-context (make-context buffer)))
 
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
-  (PREFIX-within-renderer-thread
+  (PREFIX-within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
        (setf gtk-object (make-web-view buffer))
@@ -175,7 +187,7 @@ data-manager will store the data separately for each buffer."))
           (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (PREFIX-within-renderer-thread
+  (PREFIX-within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object box-layout active-buffer
                   minibuffer-container minibuffer-view
@@ -771,16 +783,26 @@ requested a reload."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
 
+(defmethod ffi-buffer-evaluate-javascript-sync ((buffer gtk-buffer) javascript)
+  (PREFIX-within-renderer-thread
+   (lambda (&optional channel)
+     (webkit2:webkit-web-view-evaluate-javascript
+      (gtk-object buffer)
+      javascript
+      (when channel
+        (lambda (result)
+          (chanl:send channel result :blockp nil)))
+      #'javascript-error-handler))))
+
+;; TODO: Exchange async/sync names.
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
-  (let ((channel (make-instance 'chanl:channel)))
-    (PREFIX-within-renderer-thread
-     (lambda ()
-       (webkit2:webkit-web-view-evaluate-javascript (gtk-object buffer)
-                                                    javascript
-                                                    (lambda (result)
-                                                      (chanl:send channel result :blockp nil))
-                                                    #'javascript-error-handler)))
-    (chanl:recv channel)))
+  (PREFIX-within-renderer-thread-async
+   (lambda ()
+     (webkit2:webkit-web-view-evaluate-javascript
+      (gtk-object buffer)
+      javascript
+      nil
+      #'javascript-error-handler))))
 
 (define-ffi-method ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
