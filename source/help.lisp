@@ -418,10 +418,11 @@ This function can be used as a `window' `input-dispatcher'."
 (defun evaluate (string)
   "Evaluate all expressions in string and return a list of values.
 This does not use an implicit PROGN to allow evaluating top-level expressions."
-  (with-input-from-string (input string)
-    (loop for object = (read input nil :eof)
-          until (eq object :eof)
-          collect (eval object))))
+  (chanl:pexec ()
+    (with-input-from-string (input string)
+      (loop for object = (read input nil :eof)
+            until (eq object :eof)
+            collect (eval object)))))
 
 (defun error-buffer (title text)
   "Print some help."
