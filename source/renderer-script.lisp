@@ -13,8 +13,8 @@ The returned function sends the compiled Javascript to the current buffer webvie
 The function can be passed ARGS."
   `(progn
      (defun ,script-name ,args
-       (ffi-buffer-evaluate-javascript (current-buffer)
-                                       (ps:ps ,@script-body)))))
+       (ffi-buffer-evaluate-javascript-sync (current-buffer)
+                                            (ps:ps ,@script-body)))))
 
 (export-always 'pflet)
 (defmacro pflet (((function function-arguments &body function-body)) &body body)
