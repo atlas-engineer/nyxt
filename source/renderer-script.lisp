@@ -37,6 +37,14 @@ buffer."
                                             (ps:ps ,@function-body))))
      ,@body))
 
+(export-always 'pflet-SYNC)
+(defmacro pflet-SYNC (((function function-arguments &body function-body)) &body body)
+  "Define single parenscript function in a flet body."
+  `(flet ((,function ,function-arguments
+            (ffi-buffer-evaluate-javascript-SYNC (current-buffer)
+                                            (ps:ps ,@function-body))))
+     ,@body))
+
 (define-parenscript document-get-body (&key (limit 100000))
   (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
 
