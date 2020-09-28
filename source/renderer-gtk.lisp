@@ -75,7 +75,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   "Make a window."
   (let* ((docstring (when (stringp (first body))
                       (prog1
-                          (first body)
+                          (list (first body))
                         (setf body (rest body)))))
          (declares (when (and (listp (first body))
                               (eq 'declare (first (first body))))
@@ -83,7 +83,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
                          (first body)
                        (setf body (rest body))))))
     `(defmethod ,name ,args
-       ,docstring
+       ,@docstring
        ,declares
        (if (renderer-thread-p)
            (progn
@@ -510,7 +510,7 @@ Warning: This behaviour may change in the future."
 (define-ffi-method ffi-buffer-title ((buffer gtk-buffer))
   (or (webkit:webkit-web-view-title (gtk-object buffer)) ""))
 
-(defmethod on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
+(define-ffi-method on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (host (quri:uri-host url)))
@@ -527,7 +527,7 @@ Warning: This behaviour may change in the future."
           (tls-help buffer url)
           t))))
 
-(defmethod on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
+(define-ffi-method on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
   (let ((is-new-window nil) (is-known-type t) (event-type :other)
         (navigation-action nil) (navigation-type nil)
         (mouse-button nil) (modifiers ())
@@ -602,7 +602,7 @@ Warning: This behaviour may change in the future."
              (webkit:webkit-web-view-load-request (gtk-object buffer) request)
              nil))))))
 
-(defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
+(define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
   (sera:and-let* ((url (webkit:webkit-web-view-uri (gtk-object buffer)))
                   ;; `url' can be nil if buffer didn't have any URL associated
                   ;; to the web view, e.g. the start page.
@@ -621,7 +621,7 @@ Warning: This behaviour may change in the future."
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Finished loading ~s." (object-display url))))))
 
-(defmethod on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
+(define-ffi-method on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
   (match (cond ((webkit:webkit-hit-test-result-link-uri hit-test-result)
                 (webkit:webkit-hit-test-result-link-uri hit-test-result))
