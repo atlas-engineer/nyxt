@@ -58,6 +58,9 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defun renderer-thread-p ()
   ;; (eq *renderer-thread* (bt:current-thread))
+  #+darwin
+  (string= "main thread" (bt:thread-name (bt:current-thread)))
+  #-darwin
   (string= "cl-cffi-gtk main thread" (bt:thread-name (bt:current-thread))))
 
 (defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
