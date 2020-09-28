@@ -117,7 +117,7 @@ Return nil to forward to renderer or non-nil otherwise."
               ;; thread.
               (setf (last-key window) (first key-stack))
               (unwind-protect
-                   (run (function-command (symbol-function bound-function)))
+                   (run-async (function-command (symbol-function bound-function)))
                 ;; We must reset the key-stack on errors or else all subsequent
                 ;; keypresses will keep triggering the same erroring command.
                 (setf key-stack nil))
