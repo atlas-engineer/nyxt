@@ -22,7 +22,10 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
     (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
-   (:h2 "Quickstart keys")
+   (:p "Modifiers can be remapped, see the `modifier-translator' slot of the
+`gtk-browser' class.")
+
+   (:h3 "Quickstart keys")
    (:ul
     (:li (:code (binding-keys 'set-url)) ": Load URL")
     (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new buffer")
@@ -34,8 +37,6 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code (binding-keys 'quit)) ": Quit")
     (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
     (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current buffer"))
-   (:p "Modifiers can be remapped, see the `modifier-translator' slot of the
-`gtk-browser' class.")
 
    (:h3 "Buffers")
    (:p "Nyxt uses the concept of buffers instead of the more limited
