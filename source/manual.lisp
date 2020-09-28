@@ -42,6 +42,18 @@ class and slot documentation for the individual details.")
     (:p "To find out about all modes known to Nyxt,
 run " (:code "describe-command") " and type 'mode' to list them all.")
 
+    (:h3 "Web buffers and internal buffers")
+    (:p "`internal-buffer' is used for Nyxt-specific, internal pages such as the
+tutorial and the description pages.  `web-buffer' is used for web pages.  Both
+the `web-buffer' and the `internal-buffer' classes inherit from the `buffer'
+class.")
+    (:p "You can configure a `buffer' slot and it will automatically become the
+new default for both the `internal-buffer' and `web-buffer' classes unless this
+slot is specialized by these child classes.  For example, since the
+`default-modes' slot is specialized by the `web-buffer' class, if you want to
+include `my-mode' you'll need to configure both the `buffer' and the
+`web-buffer' classes.")
+
     (:h3 "Keybinding configuration")
     (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
         (:code "emacs-mode") ".  To make the change persistent across sessions,
@@ -49,11 +61,11 @@ add the following to your configuration:")
     (:ul
      (:li "VI bindings:"
       (:pre (:code "
-\(define-configuration buffer
+\(define-configuration (buffer web-buffer)
   ((default-modes (append '(vi-normal-mode) %slot-default))))")))
      (:li "Emacs bindings:"
       (:pre (:code "
-\(define-configuration buffer
+\(define-configuration (buffer web-buffer)
   ((default-modes (append '(emacs-mode) %slot-default))))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  See also the " (:code "scheme-name") " class and the "
@@ -82,7 +94,7 @@ have priorities over the other modes key bindings.")
                    scheme:emacs *my-keymap*
                    scheme:vi-normal *my-keymap*))))
 
-\(define-configuration buffer
+\(define-configuration (buffer web-buffer)
   ((default-modes (append '(my-mode) %slot-default))))"))
 
     (:h3 "Search engines")

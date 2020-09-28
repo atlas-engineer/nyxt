@@ -105,7 +105,7 @@ The `%slot-default' variable is replaced by the slot initform.
 
 Example that sets some defaults for all buffers:
 
-\(define-configuration (buffer internal-buffer)
+\(define-configuration (buffer web-buffer)
   ((status-buffer-height 24)
    (default-modes (append '(vi-normal-mode) %slot-default))))
 
