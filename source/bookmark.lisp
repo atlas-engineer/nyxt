@@ -242,7 +242,7 @@ URL."
                   :input-prompt "Bookmark URL from buffer(s)"
                   :multi-selection-p t
                   :suggestion-function (buffer-suggestion-filter))))
-    (mapcar #'bookmark-current-page buffers)))
+    (mapc #'bookmark-current-page buffers)))
 
 (define-command bookmark-url ()
   "Allow the user to bookmark a URL via minibuffer input."
