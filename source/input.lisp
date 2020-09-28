@@ -111,7 +111,11 @@ Return nil to forward to renderer or non-nil otherwise."
               t)
 
              ((typep bound-function 'function-symbol)
-              (log:debug "Found key binding ~a" (keyspecs key-stack translated-key))
+              (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
+              ;; We save the last key separately to keep it available to the
+              ;; command even after key-stack has been reset in the other
+              ;; thread.
+              (setf (last-key window) (first key-stack))
               (unwind-protect
                    (run (function-command (symbol-function bound-function)))
                 ;; We must reset the key-stack on errors or else all subsequent
