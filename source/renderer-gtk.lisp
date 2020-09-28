@@ -68,7 +68,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   (gtk:within-gtk-thread
     (funcall thunk)))
 
-(defun PREFIX-within-renderer-thread (thunk)
+(defun %within-renderer-thread (thunk)
   "If the current thread is the renderer thread, execute THUNK with `funcall'.
 Otherwise run the THINK on the renderer thread by passing it a channel and wait on the channel's result."
   (if (renderer-thread-p)
@@ -78,8 +78,8 @@ Otherwise run the THINK on the renderer thread by passing it a channel and wait 
           (funcall thunk channel))
         (chanl:recv channel))))
 
-(defun PREFIX-within-renderer-thread-async (thunk)
-  "Same as `PREFIX-within-renderer-thread' but THUNK is not blocking and does
+(defun %within-renderer-thread-async (thunk)
+  "Same as `%within-renderer-thread' but THUNK is not blocking and does
 not return."
   (if (renderer-thread-p)
       (funcall thunk)
@@ -176,7 +176,7 @@ data-manager will store the data separately for each buffer."))
                  :web-context (make-context buffer)))
 
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
-  (PREFIX-within-renderer-thread-async
+  (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
        (setf gtk-object (make-web-view buffer))
@@ -187,7 +187,7 @@ data-manager will store the data separately for each buffer."))
           (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (PREFIX-within-renderer-thread-async
+  (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object box-layout active-buffer
                   minibuffer-container minibuffer-view
@@ -784,7 +784,7 @@ requested a reload."
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
-  (PREFIX-within-renderer-thread
+  (%within-renderer-thread
    (lambda (&optional channel)
      (webkit2:webkit-web-view-evaluate-javascript
       (gtk-object buffer)
@@ -795,7 +795,7 @@ requested a reload."
       #'javascript-error-handler))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript)
-  (PREFIX-within-renderer-thread-async
+  (%within-renderer-thread-async
    (lambda ()
      (webkit2:webkit-web-view-evaluate-javascript
       (gtk-object buffer)
