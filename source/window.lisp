@@ -12,6 +12,10 @@
                        :documentation "The stack of currently active minibuffers.")
    (key-stack '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
+   (last-key nil
+             :export nil
+             :type (or nil keymap:key)
+             :documentation "Last last pressed key.  Useful for `self-insert'.")
    ;; TODO: each frame should have a status buffer, not each window
    (status-buffer :export nil)
    (message-buffer-height 16

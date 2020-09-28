@@ -141,13 +141,13 @@ complete against a search engine."
     ((guard f f) (funcall-safely f)))
   (hide minibuffer))
 
-(defun self-insert-minibuffer ()
+(define-command self-insert-minibuffer ()
   "Self insert with the current minibuffer."
   (self-insert (nyxt:current-minibuffer)))
 
 (define-command self-insert (receiver)
-  "Insert first key from current window `key-stack' to the receiver."
-  (let ((key-string (keymap:key-value (first (nyxt::key-stack (current-window)))))
+  "Insert last key from current window to the receiver."
+  (let ((key-string (keymap:key-value (nyxt::last-key (current-window))))
         (translation-table '(("hyphen" "-")
                              ;; Regular spaces are concatenated into a single
                              ;; one by HTML rendering, so we use a non-breaking
