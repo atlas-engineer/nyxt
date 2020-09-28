@@ -132,5 +132,5 @@
                      (:li "18 anonymous"))))
          (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                       (ps:lisp contents)))))
-    (ffi-buffer-evaluate-javascript buffer insert-content)
+    (ffi-buffer-evaluate-javascript-async buffer insert-content)
     (set-current-buffer buffer)))

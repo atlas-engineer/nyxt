@@ -711,7 +711,7 @@ set of useful URLs or preparing a list to send to a someone else."
            (insert-contents (ps:ps (setf (ps:@ document Body |innerHTML|)
                                          (ps:lisp buffer-contents)))))
       (when delete (mapcar #'buffer-delete buffers))
-      (ffi-buffer-evaluate-javascript reduced-buffer insert-contents)
+      (ffi-buffer-evaluate-javascript-async reduced-buffer insert-contents)
       (set-current-buffer reduced-buffer)
       reduced-buffer)))
 

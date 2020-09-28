@@ -144,7 +144,7 @@
                           (:div :id "suggestions" "")))))
          (insert-content (ps:ps (ps:chain document
                                           (write (ps:lisp content))))))
-    (ffi-buffer-evaluate-javascript (buffer repl) insert-content)))
+    (ffi-buffer-evaluate-javascript-async (buffer repl) insert-content)))
 
 (defmethod add-object-to-evaluation-history ((repl repl-mode) item)
   (push item (evaluation-history repl)))
@@ -155,7 +155,7 @@
             (:ul (loop for item in (reverse (evaluation-history repl))
                        collect (markup:markup
                                 (:li item)))))))
-    (ffi-buffer-evaluate-javascript 
+    (ffi-buffer-evaluate-javascript-async
      (buffer repl)
      (ps:ps (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
                   (ps:lisp (generate-evaluation-history-html repl)))))))
@@ -170,7 +170,7 @@
                  (t (markup:markup (:span (subseq (text-buffer::string-representation (input-buffer repl)) 0 (cluffer:cursor-position (input-cursor repl))))
                                    (:span :id "cursor" (subseq (text-buffer::string-representation (input-buffer repl)) (cluffer:cursor-position (input-cursor repl)) (+ 1 (cluffer:cursor-position (input-cursor repl)))))
                                    (:span (subseq (text-buffer::string-representation (input-buffer repl)) (+ 1  (cluffer:cursor-position (input-cursor repl))))))))))
-    (ffi-buffer-evaluate-javascript
+    (ffi-buffer-evaluate-javascript-async
      (buffer repl)
      (ps:ps (setf (ps:chain document (get-element-by-id "input-buffer") |innerHTML|)
                   (ps:lisp (generate-input-buffer-html repl)))))))

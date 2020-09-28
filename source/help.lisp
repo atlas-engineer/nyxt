@@ -68,7 +68,7 @@
                          (:pre (object-display (symbol-value input)))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 (declaim (ftype (function (command)) describe-command*))
@@ -107,7 +107,7 @@
                                         (write-to-string (sexp command)))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 (define-command describe-function ()
@@ -148,7 +148,7 @@ For generic functions, describe all the methods."
                                     (:p (format nil "~s" (sb-introspect:function-type input))))))))
              (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                        (ps:lisp help-contents)))))
-        (ffi-buffer-evaluate-javascript help-buffer insert-help)
+        (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
         (set-current-buffer help-buffer)))))
 
 (define-command describe-command ()
@@ -211,7 +211,7 @@ A command is a special kind of function that can be called with
                          slot-descs))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 (defun configure-slot (slot class &key (value nil new-value-supplied-p))
@@ -258,7 +258,7 @@ A command is a special kind of function that can be called with
                                        :mention-class-p t)))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 (define-command common-settings ()
@@ -310,7 +310,7 @@ A command is a special kind of function that can be called with
                 "Set default zoom ratio")))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 (define-command describe-bindings ()
@@ -336,7 +336,7 @@ A command is a special kind of function that can be called with
                                              (:td (string-downcase bound-value)))))))))))
          (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                    (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript help-buffer insert-help)
+    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
 (defun tls-help (buffer url)
@@ -366,7 +366,7 @@ file, see the "
     ;; Set (url buffer) so that the user can simply reload the page after
     ;; allowing the exception:
     (setf (url buffer) url)
-    (ffi-buffer-evaluate-javascript buffer insert-help)))
+    (ffi-buffer-evaluate-javascript-async buffer insert-help)))
 
 (defun describe-key-dispatch-input (event buffer window printable-p)
   "Display documentation of the value bound to the keys pressed by the user.
@@ -434,7 +434,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
             (:p text)))
          (insert-error (ps:ps (setf (ps:@ document Body |innerHTML|)
                                     (ps:lisp error-contents)))))
-    (ffi-buffer-evaluate-javascript error-buffer insert-error)
+    (ffi-buffer-evaluate-javascript-async error-buffer insert-error)
     error-buffer))
 
 (defun error-in-new-window (title text)
@@ -470,7 +470,7 @@ The version number is stored in the clipboard."
                      collect (markup:markup (:li message))))))
            (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
-      (ffi-buffer-evaluate-javascript buffer insert-content))
+      (ffi-buffer-evaluate-javascript-async buffer insert-content))
     (set-current-buffer buffer)
     buffer))
 
@@ -526,7 +526,7 @@ The version number is stored in the clipboard."
                   " Full documentation about Nyxt, how it works and how to configure it.")))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript help-buffer insert-help))
+      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
     help-buffer))
 
 (define-command tutorial ()
@@ -547,7 +547,7 @@ the "
               (tutorial-content)))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript help-buffer insert-help))
+      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
     help-buffer))
 
 (define-command manual ()
@@ -560,7 +560,7 @@ the "
                                       (manual-content)))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript help-buffer insert-help))
+      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
     help-buffer))
 
 (define-command copy-system-information ()
