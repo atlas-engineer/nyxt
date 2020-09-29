@@ -784,12 +784,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
         ;; In case prompt-minibuffer returned a string upon
         ;; must-match-p.
         (setf url (url url)))
-      (ffi-within-renderer-thread       ; TODO: Wrap the buffer-load FFI method content with ffi-within-renderer-thread.
-       *browser*
-       (lambda ()
-         (buffer-load url :buffer (if new-buffer-p
-                                      (make-buffer-focus)
-                                      (current-buffer))))))))
+      (buffer-load url :buffer (if new-buffer-p
+                                   (make-buffer-focus)
+                                   (current-buffer))))))
 
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
