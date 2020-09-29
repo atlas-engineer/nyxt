@@ -234,6 +234,7 @@ This function can be used on browser-less globals like `*init-file-path*'."
 ;; TODO: create subclasses for history, session, bookmark, auto-mode data to ensure typing?
 (define-class user-data ()
   ((data nil
+         :type t
          :documentation "The meaningful data to store. Examples: history data, session, bookmarks.")
    (lock (bt:make-recursive-lock)
          :type bt:lock
