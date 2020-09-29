@@ -16,7 +16,7 @@ All ARGS are declared as `ignorable'."
 
 
 (export-always 'make-minibuffer)
-(define-function make-minibuffer
+(define-function make-minibuffer        ; TODO: Unexport since it's only used by prompt-minibuffer?  Wait until we've got a proper fix for meta-search.
     (append '(&rest args)
             '(&key)
             (delete 'input-buffer
