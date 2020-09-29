@@ -1,5 +1,20 @@
 (in-package :nyxt)
 
+(defmacro define-function (name args &body body)
+  "Eval ARGS then define function over the resulting lambda list.
+All ARGS are declared as `ignorable'."
+  (let ((evaluated-args (eval args)))
+    `(defun ,name  ,evaluated-args
+       (declare (ignorable ,@(set-difference (mapcar (lambda (arg) (if (listp arg) (first arg) arg))
+                                                     evaluated-args)
+                                             lambda-list-keywords)))
+       ,@body)))
+
+(defun public-initargs (class-specifier)
+  (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)))))
+             (mopu:direct-slot-names class-specifier)))
+
+
 (export-always 'make-minibuffer)
 (define-function make-minibuffer
     (append '(&rest args)
