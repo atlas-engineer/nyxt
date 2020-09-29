@@ -63,7 +63,7 @@ matching your input as you type.")
                          :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
          ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")
-    (:li (command-markup 'nyxt/minibuffer-mode:return-immediate
+    (:li (command-markup 'nyxt/minibuffer-mode:return-input
                          :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
          ": Validate the current input, ignoring any suggestion."))
    (:p " Some commands support multiple selections, for

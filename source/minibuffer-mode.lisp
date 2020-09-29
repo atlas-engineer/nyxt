@@ -33,7 +33,7 @@
        "end" 'cursor-end
        "C-k" 'kill-line
        "return" 'return-selection
-       "C-return" 'return-immediate
+       "C-return" 'return-input
        "C-g" 'cancel-input
        "escape" 'cancel-input
        "C-n" 'select-next
@@ -121,7 +121,7 @@ complete against a search engine."
                          :blockp nil)))))
   (quit-minibuffer minibuffer))
 
-(define-command return-immediate (&optional (minibuffer (current-minibuffer)))
+(define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
   (with-slots (nyxt::callback) minibuffer
     (funcall-safely nyxt::callback (input-buffer minibuffer)))
