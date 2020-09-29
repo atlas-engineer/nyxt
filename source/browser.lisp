@@ -527,9 +527,7 @@ The following example does a few things:
 (defun print-message (message &optional window)
   (let ((window (or window (current-window))))
     (when window
-      (ffi-within-renderer-thread
-       *browser*
-       (lambda () (ffi-print-message window message))))))
+      (ffi-print-message window message))))
 
 (export-always 'current-window)
 (defun current-window (&optional no-rescan)
