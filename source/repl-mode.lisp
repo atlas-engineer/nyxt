@@ -183,7 +183,7 @@
   (cluffer:insert-item (input-cursor repl) characters)
   (update-input-buffer-display repl))
 
-(defun self-insert-repl ()
+(define-command self-insert-repl ()
   (nyxt/minibuffer-mode:self-insert (current-repl)))
 
 (in-package :nyxt)

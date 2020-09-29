@@ -417,6 +417,19 @@ This function can be used as a `window' `input-dispatcher'."
 (defun evaluate (string)
   "Evaluate all expressions in string and return a list of values.
 This does not use an implicit PROGN to allow evaluating top-level expressions."
+  (let ((channel (make-instance 'chanl:channel)))
+    (chanl:pexec ()
+      (chanl:send
+       channel
+       (with-input-from-string (input string)
+         (loop for object = (read input nil :eof)
+               until (eq object :eof)
+               collect (eval object)))
+       :blockp nil))
+    (chanl:recv channel)))
+
+(defun evaluate-async (string)
+  "Like `evaluate' but does not block and does not return the result."
   (chanl:pexec ()
     (with-input-from-string (input string)
       (loop for object = (read input nil :eof)
