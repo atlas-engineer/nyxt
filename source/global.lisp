@@ -13,8 +13,6 @@
 This is useful when the browser is run from a REPL so that quitting does not
 close the connection.")
 
-(defvar *renderer-thread* nil)
-
 (export-always '*browser*)
 (defvar *browser* nil
   "The entry-point object to a complete instance of Nyxt.

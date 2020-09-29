@@ -57,7 +57,6 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defun renderer-thread-p ()
-  ;; (eq *renderer-thread* (bt:current-thread))
   #+darwin
   (string= "main thread" (bt:thread-name (bt:current-thread)))
   #-darwin
