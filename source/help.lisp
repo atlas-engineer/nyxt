@@ -429,6 +429,7 @@ This does not use an implicit PROGN to allow evaluating top-level expressions."
                                                  :buffer (make-internal-buffer :title title)))
          (error-contents
            (markup:markup
+            (:style (style error-buffer))
             (:h1 "Error occured:")
             (:p text)))
          (insert-error (ps:ps (setf (ps:@ document Body |innerHTML|)
