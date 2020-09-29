@@ -14,7 +14,7 @@ The function can be passed ARGS."
   `(progn
      (defun ,script-name ,args
        (ffi-buffer-evaluate-javascript (current-buffer)
-                                            (ps:ps ,@script-body)))))
+                                       (ps:ps ,@script-body)))))
 
 (export-always 'pflet)
 (defmacro pflet (((function function-arguments &body function-body)) &body body)
