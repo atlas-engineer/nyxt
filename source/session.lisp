@@ -91,11 +91,10 @@ Currently we store the list of current URLs of all buffers."
 
 (define-command store-session-by-name ()
   "Store the session data (i.e. all the opened buffers) in the file named by user input."
-  (with-result (name (read-from-minibuffer
-                      (make-minibuffer
-                       :input-prompt "The name to store session with"
-                       :history (minibuffer-session-restore-history *browser*)
-                       :suggestion-function #'session-name-suggestion-filter)))
+  (let ((name (prompt-minibuffer
+               :input-prompt "The name to store session with"
+               :history (minibuffer-session-restore-history *browser*)
+               :suggestion-function #'session-name-suggestion-filter)))
     (when name
       (store (data-profile (current-buffer))
              (make-instance 'session-data-path
@@ -104,11 +103,10 @@ Currently we store the list of current URLs of all buffers."
 
 (define-command restore-session-by-name ()
   "Restore the session data from the file named by user input."
-  (with-result (name (read-from-minibuffer
-                      (make-minibuffer
-                       :input-prompt "The name of the session to restore"
-                       :history (minibuffer-session-restore-history *browser*)
-                       :suggestion-function #'session-name-suggestion-filter)))
+  (let ((name (prompt-minibuffer
+               :input-prompt "The name of the session to restore"
+               :history (minibuffer-session-restore-history *browser*)
+               :suggestion-function #'session-name-suggestion-filter)))
     (when name
       (restore (data-profile (current-buffer))
                (make-instance 'session-data-path
@@ -117,11 +115,10 @@ Currently we store the list of current URLs of all buffers."
 
 (define-command replace-session-by-name ()
   "Delete all the buffers of the current session and restore the one chosen by user."
-  (with-result (name (read-from-minibuffer
-                      (make-minibuffer
-                       :input-prompt "The name of the session to replace the current one"
-                       :history (minibuffer-session-restore-history *browser*)
-                       :suggestion-function #'session-name-suggestion-filter)))
+  (let ((name (prompt-minibuffer
+               :input-prompt "The name of the session to replace the current one"
+               :history (minibuffer-session-restore-history *browser*)
+               :suggestion-function #'session-name-suggestion-filter)))
     (when name
       (dolist (buffer (buffer-list))
         (buffer-delete buffer))
