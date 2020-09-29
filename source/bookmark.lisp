@@ -165,7 +165,7 @@ This can be useful to let the user select no tag when returning directly."
     (define-scheme "set-tag"
       scheme:cua
       (list "tab" 'insert-tag
-            "return" 'nyxt/minibuffer-mode:return-immediate)))))
+            "return" 'nyxt/minibuffer-mode:return-input)))))
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
