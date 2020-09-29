@@ -124,7 +124,8 @@
   "Return inputted text."
   (let ((input (str:replace-all " " " " (text-buffer::string-representation (input-buffer repl)))))
     (add-object-to-evaluation-history repl (format nil "> ~a" input))
-    (add-object-to-evaluation-history repl (nyxt::evaluate input))
+    (dolist (result (nyxt::evaluate input))
+      (add-object-to-evaluation-history repl result))
     (text-buffer::kill-line (input-cursor repl))
     (update-display repl)))
 
