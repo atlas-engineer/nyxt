@@ -622,6 +622,14 @@ Warning: This behaviour may change in the future."
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
+(defmethod ffi-window-set-status-buffer-height ((window gtk-window) height)
+  (setf (gtk:gtk-widget-size-request (status-container window))
+        (list -1 height)))
+
+(defmethod ffi-window-set-message-buffer-height ((window gtk-window) height)
+  (setf (gtk:gtk-widget-size-request (message-container window))
+        (list -1 height)))
+
 (defmethod ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (setf (gtk-object buffer) (make-web-view buffer))
