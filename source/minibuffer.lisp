@@ -218,12 +218,12 @@ beginning."
 (export-always 'evaluate-script)
 (defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
-The new webview HTML content it set as the MINIBUFFER's `content'."
+The new webview HTML content is set as the MINIBUFFER's `content'."
   (when minibuffer
-    (let ((new-content                  ; TODO: Is new-content used at all?
-            (ffi-minibuffer-evaluate-javascript
-             (current-window)
-             (str:concat script (ps:ps (ps:chain document body |outerHTML|))))))
+    (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|)))))
+      (ffi-minibuffer-evaluate-javascript
+       (current-window)
+       new-content)
       (setf (slot-value minibuffer 'content) new-content))))
 
 (defun show (&key (minibuffer (first (active-minibuffers (current-window)))) height)
