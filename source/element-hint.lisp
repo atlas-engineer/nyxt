@@ -168,6 +168,7 @@ identifier for every hinted element."
       ;; TODO: Add offscreen hints in background from full document annotation
       (let ((result (prompt-minibuffer
                      :input-prompt prompt
+                     :default-modes '(element-hint-mode minibuffer-mode)
                      :history nil
                      :multi-selection-p multi-selection-p
                      :suggestion-function
