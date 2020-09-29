@@ -84,7 +84,6 @@
                (:file "auto-mode")
                (:file "external-editor")
                (:file "url-group")
-               (:file "minibuffer-composite")
                ;; Core Modes
                (:file "buffer-listing-mode")
                (:file "base-mode")
