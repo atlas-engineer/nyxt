@@ -749,14 +749,17 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   (let ((url (if (stringp input-url)
                  (parse-url input-url)
                  input-url)))
-    (handler-case
-        (progn
-          (let ((new-url (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)))
-            (check-type new-url quri:uri)
-            (setf url new-url)
-            (ffi-buffer-load buffer url)))
-      (error (c)
-        (log:error "In `buffer-load-hook': ~a" c)))))
+
+    (let ((new-url
+           (handler-case
+               (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)
+             (error (c)
+               (log:error "In `buffer-load-hook': ~a" c)
+               nil))))
+      (when new-url
+        (check-type new-url quri:uri)
+        (setf url new-url)
+        (ffi-buffer-load buffer url)))))
 
 (define-command set-url (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
