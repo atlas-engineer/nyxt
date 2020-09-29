@@ -316,16 +316,6 @@ Otherwise go forward to the only child."
     (when input
       (set-url-from-history input))))
 
-(define-command meta-search-history-buffers ()
-  "Set the URL from the history or from the set of buffers."
-  (set-url-from-history
-   (nyxt::meta-search
-    (list
-     (make-minibuffer
-      :suggestion-function (history-all-suggestion-filter))
-     (make-minibuffer
-      :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))))
-
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))
   "Open a new buffer displaying the whole history tree."
   (labels ((traverse (node current)
