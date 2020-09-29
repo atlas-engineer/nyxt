@@ -159,3 +159,7 @@ Initialization file use case:
     (error ()
       ;; Improper list.
       list)))
+
+(defun public-initargs (class-specifier)
+  (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)))))
+             (mopu:direct-slot-names class-specifier)))

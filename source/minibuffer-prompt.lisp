@@ -10,11 +10,6 @@ All ARGS are declared as `ignorable'."
                                              lambda-list-keywords)))
        ,@body)))
 
-(defun public-initargs (class-specifier)
-  (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)))))
-             (mopu:direct-slot-names class-specifier)))
-
-
 (export-always 'make-minibuffer)
 (define-function make-minibuffer        ; TODO: Unexport since it's only used by prompt-minibuffer?  Wait until we've got a proper fix for meta-search.
     (append '(&rest args)
