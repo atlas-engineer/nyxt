@@ -30,6 +30,18 @@
     (set-current-buffer buffer)
     buffer))
 
+(define-command load-system ()
+  "Load a system from Quicklisp."
+  (with-result (system (read-from-minibuffer
+                     (make-minibuffer
+                      :input-prompt "Load system"
+                      :suggestion-function (lambda (minibuffer)
+                                             (fuzzy-match
+                                              (input-buffer minibuffer)
+                                              (mapcar #'ql-dist:short-description (ql:system-list))))
+                      :must-match-p t)))
+    (ql:quickload system)))
+
 (define-command add-distribution ()
   "Add a new Quicklisp distribution."
   (with-result (url (read-from-minibuffer
