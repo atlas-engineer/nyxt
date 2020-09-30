@@ -123,8 +123,8 @@ complete against a search engine."
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
-  (with-slots (nyxt::callback) minibuffer
-    (funcall-safely nyxt::callback (input-buffer minibuffer)))
+  (chanl:send (channel minibuffer) (input-buffer minibuffer)
+              :blockp nil)
   (quit-minibuffer minibuffer))
 
 (defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
