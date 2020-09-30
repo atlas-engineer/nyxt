@@ -321,18 +321,23 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
            :documentation "The height of the status buffer in pixels.")
    (style #.(cl-css:css
              '((body
-                :background "rgb(224, 224, 224)"
+                :background "rgb(200, 200, 200)"
                 :font-size "12px"
                 :color "rgb(32, 32, 32)"
                 :padding 0
-                :padding-left "4px"
                 :line-height "16px"
                 :margin 0)
+               ("#modes"
+                :border-right "2px solid rgb(120, 120, 120)"
+                :display "inline-block"
+                :padding "0 5px 0 5px"
+                :margin "0 5px 0 0")
                (.status-menu
                 :padding-left "4px")
                (.button
-                :background-color "darkgray"
+                :background-color "rgb(160, 160, 160)"
                 :color "black"
+                :height "100%"
                 :text-decoration "none"
                 :border-radius "2px"
                 :padding-left "2px"
