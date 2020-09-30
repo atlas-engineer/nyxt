@@ -97,6 +97,7 @@ Return nil to forward to renderer or non-nil otherwise."
       (cond
         ((ffi-generated-input-event-p window event)
          (log:debug "Forward generated event ~a" (keyspecs key-stack))
+         (setf key-stack nil)
          nil)
 
         (t
