@@ -276,9 +276,9 @@ To change the default buffer, e.g. set it to a given URL:
       ;; Implement synchronous minibuffer to fix this.
       (when (expand-path (session-path buffer))
         (match (session-restore-prompt *browser*)
-               (:always-ask (restore-session-by-name))
-               (:always-restore (restore (data-profile buffer) (session-path buffer)))
-               (:never-restore (log:info "Not restoring session."))))
+          (:always-ask (restore-session-by-name))
+          (:always-restore (restore (data-profile buffer) (session-path buffer)))
+          (:never-restore (log:info "Not restoring session."))))
       (if urls
           (open-urls urls)
           (window-set-active-buffer window (funcall-safely buffer-fn))))
