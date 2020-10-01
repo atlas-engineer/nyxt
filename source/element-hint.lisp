@@ -188,7 +188,8 @@ identifier for every hinted element."
                      (lambda ()
                        (with-current-buffer buffer
                          (remove-element-hints))))))
-        (funcall-safely function result)))))
+        (when result
+          (funcall-safely function result))))))
 
 (defun hint-suggestion-filter (hints)
   (lambda (minibuffer)

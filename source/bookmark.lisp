@@ -316,7 +316,8 @@ rest in background buffers."
                   :multi-selection-p t)))
     (dolist (entry (rest entries))
       (make-buffer :url (object-string (url entry))))
-    (buffer-load (url (first entries)))))
+    (when entries
+      (buffer-load (url (first entries))))))
 
 (define-command set-url-from-bookmark-new-buffer ()
   "Open selected bookmarks in new buffers."
