@@ -663,8 +663,7 @@ proceeding."
                      :input-prompt "Switch to buffer"
                      ;; For commodity, the current buffer shouldn't be the first one on the list.
                      :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
-        (when buffer
-          (set-current-buffer buffer)))))
+        (set-current-buffer buffer))))
 
 (define-command switch-buffer-domain (&optional (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
