@@ -72,7 +72,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 Otherwise run the THINK on the renderer thread by passing it a channel and wait on the channel's result."
   (if (renderer-thread-p)
       (funcall thunk)
-      (let ((channel (make-instance 'chanl:channel)))
+      (let ((channel (make-instance 'chanl:bounded-channel :size 1)))
         (gtk:within-gtk-thread
           (funcall thunk channel))
         (chanl:recv channel))))
@@ -102,13 +102,12 @@ not return."
        (if (renderer-thread-p)
            (progn
              ,@body)
-           (let ((channel (make-instance 'chanl:channel)))
+           (let ((channel (make-instance 'chanl:bounded-channel :size 1)))
              (gtk:within-gtk-thread
                (chanl:send
                 channel
                 (progn
-                  ,@body)
-                :blockp nil))
+                  ,@body)))
              (chanl:recv channel))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
@@ -790,7 +789,7 @@ requested a reload."
       javascript
       (when channel
         (lambda (result)
-          (chanl:send channel result :blockp nil)))
+          (chanl:send channel result)))
       #'javascript-error-handler))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript)
