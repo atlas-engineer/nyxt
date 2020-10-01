@@ -142,20 +142,15 @@
     (let ((input (str:replace-all " " " " input))
           (all-matches nil)
           (multi-buffer (if (> (list-length buffers) 1) t nil)))
-      (map nil
-           (lambda (buffer)
-             (with-current-buffer buffer
-               (let ((result (query-buffer
-                              :query input
-                              :case-sensitive-p case-sensitive-p)))
-                 (let* ((matches (matches-from-json
-                                  result buffer multi-buffer)))
-                   (setf all-matches (append all-matches matches))
-                   (nyxt::set-suggestions (current-minibuffer) all-matches)))))
-           buffers)))
-  ;; return NIL, the suggestions will be updated asynchronously by the
-  ;; callback from query-buffer
-  ())
+      (dolist (buffer buffers)
+        (with-current-buffer buffer
+          (let ((result (query-buffer
+                         :query input
+                         :case-sensitive-p case-sensitive-p)))
+            (let* ((matches (matches-from-json
+                             result buffer multi-buffer)))
+              (setf all-matches (append all-matches matches))))))
+      all-matches)))
 
 (define-parenscript %remove-search-hints ()
   (defun qsa (context selector)

@@ -787,9 +787,10 @@ requested a reload."
      (webkit2:webkit-web-view-evaluate-javascript
       (gtk-object buffer)
       javascript
-      (when channel
-        (lambda (result)
-          (chanl:send channel result)))
+      (if channel
+          (lambda (result)
+            (chanl:send channel result))
+          #'identity)
       #'javascript-error-handler))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript)
