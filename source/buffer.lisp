@@ -605,7 +605,7 @@ proceeding."
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (make-instance 'buffer))
+        (let ((temp-buffer (make-instance 'user-buffer))
               (old-buffer (active-buffer window)))
           (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
                      (object-string (url old-buffer))
