@@ -162,14 +162,14 @@ can set a hook like the following in your configuration file:")
               url)))
   request-data)
 
-\(define-configuration buffer
+\(define-configuration web-buffer
   ((request-resource-hook
     (add-hook %slot-default (make-handler-resource #'old-reddit-handler)))))"))
     (:p "(See " (:code "url-dispatching-handler")
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
     (:pre (:code "
-\(define-configuration buffer
+\(define-configuration web-buffer
   ((request-resource-hook
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler
