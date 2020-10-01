@@ -59,4 +59,5 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
                 (unless (suggestion-function minibuffer)
                   ;; We don't need so much height since there is no suggestion to display.
                   (list :height (minibuffer-open-single-line-height (current-window))))))))
-    (chanl:recv channel)))
+    (or (chanl:recv channel)
+        (error 'nyxt-minibuffer-canceled))))
