@@ -419,7 +419,7 @@ This function can be used as a `window' `input-dispatcher'."
 The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
 You need not wrap multiple values in a PROGN, all top-level expression are
 evaluate in order."
-  (let ((channel (make-instance 'chanl:channel)))
+  (let ((channel (make-instance 'chanl:bounded-channel :size 1)))
     (chanl:pexec ()
       (chanl:send
        channel
@@ -428,8 +428,7 @@ evaluate in order."
           (last
            (loop for object = (read input nil :eof)
                  until (eq object :eof)
-                 collect (multiple-value-list  (eval object))))))
-       :blockp nil))
+                 collect (multiple-value-list  (eval object))))))))
     (chanl:recv channel)))
 
 (defun evaluate-async (string)

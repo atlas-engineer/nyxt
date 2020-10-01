@@ -114,17 +114,14 @@ complete against a search engine."
                      nyxt::suggestions))
        (chanl:send (channel minibuffer) (if multi-selection-p
                                           nyxt::suggestions
-                                          (first nyxt::suggestions))
-                   :blockp nil))
+                                          (first nyxt::suggestions))))
       (nil (when invisible-input-p
-             (chanl:send (channel minibuffer) (input-buffer minibuffer)
-                         :blockp nil)))))
+             (chanl:send (channel minibuffer) (input-buffer minibuffer))))))
   (quit-minibuffer minibuffer))
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
-  (chanl:send (channel minibuffer) (input-buffer minibuffer)
-              :blockp nil)
+  (chanl:send (channel minibuffer) (input-buffer minibuffer))
   (quit-minibuffer minibuffer))
 
 (defun quit-minibuffer (&optional (minibuffer (current-minibuffer)))
