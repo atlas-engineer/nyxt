@@ -225,6 +225,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
   "Hide MINIBUFFER and display next active one, if any."
   ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
   ;; minibuffer was invoked before the old one reaches here.
+  (chanl:send (channel minibuffer) nil :blockp nil) ; To tell prompt-minibuffer to return.
   (alex:deletef (active-minibuffers (current-window)) minibuffer)
   (if (active-minibuffers (current-window))
       (progn

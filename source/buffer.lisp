@@ -780,13 +780,14 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                 :history history
                 :must-match-p nil)))
 
-      (when (typep url 'history-entry)
-        ;; In case prompt-minibuffer returned a string upon
-        ;; must-match-p.
-        (setf url (url url)))
-      (buffer-load url :buffer (if new-buffer-p
-                                   (make-buffer-focus)
-                                   (current-buffer))))))
+      (when url
+        (when (typep url 'history-entry)
+          ;; In case prompt-minibuffer returned a string upon
+          ;; must-match-p.
+          (setf url (url url)))
+        (buffer-load url :buffer (if new-buffer-p
+                                     (make-buffer-focus)
+                                     (current-buffer)))))))
 
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
