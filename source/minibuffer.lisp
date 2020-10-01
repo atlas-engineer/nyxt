@@ -224,10 +224,10 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 (export-always 'hide)
 (defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
-  ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
-  ;; minibuffer was invoked before the old one reaches here.
   (chanl:send (interrupt-channel minibuffer) t) ; To tell prompt-minibuffer to raise exception.
   (chanl:send (channel minibuffer) nil) ; Unblock prompt-minibuffer after interrupt-channel has been used.
+  ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
+  ;; minibuffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) minibuffer)
   (if (active-minibuffers (current-window))
       (progn
