@@ -129,7 +129,11 @@ Return nil to forward to renderer or non-nil otherwise."
                 (dolist (key key-stack)
                   (let ((value (keymap:key-value key)))
                     (log:debug "Insert ~s in minibuffer" value)
-                    (insert (nyxt:current-minibuffer) value))))
+                    ;; TODO: This thread is required for search-buffer to list
+                    ;; the suggestions properly.  Remove this workaround with
+                    ;; the upcoming minibuffer library.
+                    (chanl:pexec ()
+                      (insert (nyxt:current-minibuffer) value)))))
               (setf key-stack nil)
               t)
 
