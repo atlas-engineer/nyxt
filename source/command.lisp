@@ -285,15 +285,14 @@ This function can be `funcall'ed."
 (defmethod run ((command command) &rest args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
-  (let ((channel (make-instance 'chanl:channel)))
+  (let ((channel (make-instance 'chanl:bounded-channel :size 1)))
     (chanl:pexec ()
       (chanl:send channel
                   (handler-case
                       (apply #'funcall-safely (command-function command) args)
                     (nyxt-minibuffer-canceled ()
                       (log:debug "Minibuffer interrupted")
-                      nil))
-                  :blockp nil))
+                      nil))))
     (chanl:recv channel)))
 
 (defmethod run-async ((command command) &rest args)
