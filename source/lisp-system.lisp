@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-command list-systems ()
-  "List systems available."
+  "List systems available via Quicklisp."
   (let ((buffer (make-internal-buffer :title "*Systems*")))
     (let* ((content
              (markup:markup
