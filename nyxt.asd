@@ -83,7 +83,7 @@
                (:file "external-editor")
                (:file "url-group")
                (:file "minibuffer-composite")
-               (:file "system")
+               (:file "lisp-system")
                ;; Core Modes
                (:file "buffer-listing-mode")
                (:file "base-mode")
