@@ -61,6 +61,9 @@ Currently we store the list of current URLs of all buffers."
          (unless (string= version +version+)
            (log:warn "Session version ~s differs from current version ~s." version +version+))
          (setf buffer-histories (delete-if-not #'htree:current buffer-histories))
+         (echo "Loading session of ~a URLs from ~s."
+               (length buffer-histories)
+               (expand-path path))
          (when buffer-histories
            (log:info "Restoring ~a."
                      (mapcar (alex:compose #'object-string #'htree:data #'htree:current)
