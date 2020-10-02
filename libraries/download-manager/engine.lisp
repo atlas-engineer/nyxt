@@ -35,16 +35,6 @@ Create it if it does not exist."
   "A channel which can be queried for download notifications.
 The channel return value is a `download'.")
 
-(defun init (&optional (worker-count 8))
-  "Initialize the download manager.
-This is called automatically from `resolve', but it can also be called manually
-beforehand in order to specify different initialization argument."
-  (setf lparallel:*kernel* (lparallel:make-kernel worker-count :name "download-manager-kernel"))
-  (setf *notifications* (lparallel:make-channel)))
-
-(defun kill-kernel ()
-  (lparallel:end-kernel :wait t))
-
 (defclass download ()
   ((requested-uri :accessor requested-uri
                   :initarg :requested-uri
@@ -132,7 +122,7 @@ Only send if last update was more than `update-interval' seconds ago."
          (time-diff (- new-time (last-update download))))
     (when (or (< (update-interval download) time-diff)
               (finished-p download))
-      (lparallel:submit-task *notifications* (constantly download))
+      (chanl:send *notifications* download)
       (setf (last-update-speed download)
             (if (= 0 time-diff)
                 0
@@ -146,22 +136,21 @@ Only send if last update was more than `update-interval' seconds ago."
                                     (:cookies (or string null))))
                 resolve))
 (defun resolve (uri &key
-                    (directory (download-directory))
-                    proxy
-                    cookies)
+                      (directory (download-directory))
+                      proxy
+                      cookies)
   "Start downloading URI concurrently and return a corresponding `download' object.
 If DIRECTORY is nil, `default-download-directory' will be used.  COOKIES can
 specify a cookie jar as a string, which is useful for authenticated downloads.
 PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
-  (unless lparallel:*kernel*
-    (init))
+  (unless *notifications*
+    (setf *notifications* (make-instance 'chanl:unbounded-channel)))
   (let ((download (cache :uri uri
                          :directory (download-directory directory)
                          :cookies cookies
-                         :proxy proxy))
-        (channel (lparallel:make-channel)))
-    ;; TODO: We could just use bt:make-thread, no need for a channel... Unless
-    ;; we use it to watch for unfinished downloads and warn the user before
-    ;; closing.
-    (lparallel:submit-task channel #'fetch download)
+                         :proxy proxy)))
+    ;; TODO: We just use bt:make-thread, no need for a channel... Unless need to
+    ;; watch for unfinished downloads and warn the user before closing.
+    (chanl:pexec ()
+      (fetch download))
     download))

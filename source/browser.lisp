@@ -237,7 +237,7 @@ This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
   (when download-manager:*notifications*
-    (loop for d = (lparallel:receive-result download-manager:*notifications*)
+    (loop for d = (chanl:recv download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
             do (hooks:run-hook (after-download-hook *browser*))

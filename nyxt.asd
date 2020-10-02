@@ -20,7 +20,6 @@
                :iolib
                :local-time
                :log4cl
-               :lparallel
                :mk-string-metrics
                #-darwin
                :osicat
@@ -184,10 +183,10 @@
                    :compression (not (null (uiop:getenv "NYXT_COMPRESS")))))
 
 (asdf:defsystem nyxt/download-manager
-  :depends-on (cl-ppcre
+  :depends-on (chanl
+               cl-ppcre
                dexador
                log4cl
-               lparallel
                quri
                str)
   :pathname "libraries/download-manager/"
