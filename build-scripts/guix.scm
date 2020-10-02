@@ -149,7 +149,6 @@
        ("iolib" ,cl-iolib)
        ("local-time" ,cl-local-time)
        ("log4cl" ,cl-log4cl)
-       ("lparallel" ,cl-lparallel)
        ("mk-string-metrics" ,cl-mk-string-metrics)
        ("moptilities" ,cl-moptilities)
        ("osicat" ,sbcl-osicat)          ; SBCL version needed for libosicat.so.
