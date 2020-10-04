@@ -19,7 +19,7 @@
    (pkg nil
         :type (or package null))
    (sexp nil
-         :type sexp)
+         :type t)
    (access-time 0
                 :type integer
                 :documentation "Last time this command was called from minibuffer.
