@@ -292,7 +292,9 @@ Changing this will only impact newly created keymaps.")
 Used for documentation purposes, e.g. referring to a keymap by a well known name.")
    (entries :accessor entries
             :initarg :entries
-            :initform nil
+            ;; We cannot use the standard (make-hash-table :test #'equalp)
+            ;; because then (set "a") and (set "A") would be the same thing.
+            :initform (fset:empty-map)
             :type fset:wb-map
             :documentation
             "Hash table of which the keys are key-chords and the values are a
@@ -321,11 +323,7 @@ Parents are ordered by priority, the first parent has highest priority.")))
   (the (values keymap &optional)
        (make-instance 'keymap
                       :name name
-                      :parents parents
-                      ;; We cannot use the standard (make-hash-table :test #'equalp)
-                      ;; because then (set "a") and (set "A") would be the same thing.
-                      :entries (fset:empty-map))))
-
+                      :parents parents)))
 (defun keymap-p (object)
   (typep object 'keymap))
 
