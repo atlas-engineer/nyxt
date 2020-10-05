@@ -26,6 +26,19 @@ MAJOR.MINOR.PATCH, we increment the:
 *** Add online suggestions from search engines
 ** 2.0.0
 
+*** TASK 2-pre-release-3 (upcoming)
+
+- Synchronous minibuffers and Parenscripts.
+
+  Minibuffers and parenscripts no longer need to be called with =with-result= no
+  =with-result*= (which have been removed).  Parenscripts can be called directly
+  while minibuffer interaction is now done with the =prompt-minibuffer= function.
+
+- Temporarily removed =meta-search-history-buffers=.
+
+  It was incompatible with synchronous minibuffers.  It will be re-introduced
+  when we have multi-source minibuffers.
+
 *** 2-pre-release-2
 
 - Add configuration buttons for slots.
