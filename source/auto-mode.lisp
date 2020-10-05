@@ -3,23 +3,9 @@
 
 (uiop:define-package :nyxt/auto-mode
   (:use :common-lisp :nyxt)
-  (:import-from #:serapeum #:export-always)
   (:import-from #:class-star #:define-class)
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
-
-(export-always '*prompt-on-mode-toggle*)
-(defvar *prompt-on-mode-toggle* nil
-  "Whether user will be asked about adding the mode to included/excluded modes
-in the auto-mode rules on mode activation/deactivation.")
-
-(export-always '*non-rememberable-modes*)
-(defvar *non-rememberable-modes*
-  ;; base-mode conflicts with its Nyxt symbol if it's not prefixed
-  '(help-mode web-mode auto-mode nyxt::base-mode)
-  "Modes that `auto-mode' won't even try to save.
-Append names of modes you want to always control manually to this list.
-Be careful with deleting the defaults -- it can be harmful for your browsing.")
 
 (declaim (ftype (function ((or symbol root-mode)) (values symbol &optional)) maybe-mode-name))
 (defun maybe-mode-name (mode)
@@ -31,11 +17,9 @@ Be careful with deleting the defaults -- it can be harmful for your browsing.")
   (string-equal (symbol-name (maybe-mode-name mode1))
                 (symbol-name (maybe-mode-name mode2))))
 
-(defun non-rememberable-mode-p (mode)
-  (member mode *non-rememberable-modes* :test #'mode-equal))
-
-(defun rememberable-of (modes)
-  (remove-if #'non-rememberable-mode-p modes))
+(defun rememberable-of (modes auto-mode)
+  (set-difference modes (non-rememberable-modes auto-mode)
+                  :test #'mode-equal))
 
 (define-class auto-mode-rule ()
   ((test (error "Slot `test' should be set.")
@@ -70,15 +54,16 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
 
 (declaim (ftype (function (quri:uri buffer)) enable-matching-modes))
 (defun enable-matching-modes (url buffer)
-  (let ((rule (matching-auto-mode-rule url buffer)))
+  (let ((rule (matching-auto-mode-rule url buffer))
+        (auto-mode (find-mode buffer 'auto-mode)))
     (enable-modes (set-difference
                    (included rule)
-                   (rememberable-of (mapcar #'mode-name (modes buffer)))
+                   (rememberable-of (mapcar #'mode-name (modes buffer)) auto-mode)
                    :test #'mode-equal)
                   buffer)
     (disable-modes (if (exact-p rule)
                        (set-difference
-                        (rememberable-of (mapcar #'mode-name (modes buffer)))
+                        (rememberable-of (mapcar #'mode-name (modes buffer)) auto-mode)
                         (included rule) :test #'mode-equal)
                        (excluded rule))
                    buffer)))
@@ -122,8 +107,6 @@ non-new-page requests, buffer URL is not altered."
 
 (defun auto-mode-handler (request-data)
   (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
-         ;; We need to suppress prompting when auto-mode modifies modes.
-         (*prompt-on-mode-toggle* nil)
          (web-mode (find-submode (buffer request-data) 'web-mode))
          (previous-url
            (unless (history-empty-p (history web-mode))
@@ -141,7 +124,7 @@ non-new-page requests, buffer URL is not altered."
   request-data)
 
 (defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
-  (or (non-rememberable-mode-p mode)
+  (or (member mode (non-rememberable-modes auto-mode) :test #'mode-equal)
       (let ((matching-rule (matching-auto-mode-rule
                             (url (buffer auto-mode))
                             (buffer auto-mode))))
@@ -154,7 +137,6 @@ non-new-page requests, buffer URL is not altered."
                          (and enable-p (last-active-modes auto-mode)))
                 :test #'mode-equal))))
 
-(export-always 'url-infer-match)
 (declaim (ftype (function (string) list) url-infer-match))
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-mode-rule', based on the form of URL.
@@ -176,8 +158,7 @@ The rules are:
                 make-mode-toggle-prompting-handler))
 (defun make-mode-toggle-prompting-handler (enable-p auto-mode)
   #'(lambda (mode)
-      (when (and (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
-                 *prompt-on-mode-toggle*)
+      (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
         (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
                        enable-p (mode-name mode))
                     (let ((url (prompt-minibuffer
@@ -199,14 +180,15 @@ The rules are:
   (unless (last-active-modes mode)
     (setf (last-active-modes mode)
           (default-modes (buffer mode))))
-  (hooks:add-hook (enable-mode-hook (buffer mode))
-                  (nyxt::make-handler-mode
-                   (make-mode-toggle-prompting-handler t mode)
-                   :name 'enable-mode-auto-mode-handler))
-  (hooks:add-hook (disable-mode-hook (buffer mode))
-                  (nyxt::make-handler-mode
-                   (make-mode-toggle-prompting-handler nil mode)
-                   :name 'disable-mode-auto-mode-handler))
+  (when (prompt-on-mode-toggle mode)
+    (hooks:add-hook (enable-mode-hook (buffer mode))
+                    (nyxt::make-handler-mode
+                     (make-mode-toggle-prompting-handler t mode)
+                     :name 'enable-mode-auto-mode-handler))
+    (hooks:add-hook (disable-mode-hook (buffer mode))
+                    (nyxt::make-handler-mode
+                     (make-mode-toggle-prompting-handler nil mode)
+                     :name 'disable-mode-auto-mode-handler)))
   (hooks:add-hook (pre-request-hook (buffer mode))
                   (make-handler-resource #'auto-mode-handler)))
 
@@ -221,7 +203,17 @@ The rules are:
 (define-mode auto-mode ()
   "Remember the modes setup for given domain/host/URL and store it in an editable form.
 These modes will then be activated on every visit to this domain/host/URL."
-  ((last-active-modes-url nil
+  ((prompt-on-mode-toggle nil
+                          :type boolean
+                          :documentation "Whether user will be asked about adding the mode
+to included/excluded modes in the auto-mode rules on mode activation/deactivation.")
+   ;; base-mode conflicts with its Nyxt symbol if it's not prefixed
+   (non-rememberable-modes '(help-mode web-mode auto-mode nyxt::base-mode)
+                           :type list
+                           :documentation "Modes that `auto-mode' won't even try to save.
+Append names of modes you want to always control manually to this list.
+Be careful with deleting the defaults -- it can be harmful for your browsing.")
+   (last-active-modes-url nil
                           :type (or quri:uri null)
                           :documentation "The last URL that the active modes were saved for.
 We need to store this to not overwrite the `last-active-modes' for a given URL,
@@ -291,8 +283,9 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))
-           (include  (rememberable-of (mapcar #'maybe-mode-name include)))
-           (exclude  (rememberable-of (mapcar #'maybe-mode-name exclude))))
+           (auto-mode (find-mode (current-buffer) 'auto-mode))
+           (include (rememberable-of (mapcar #'maybe-mode-name include) auto-mode))
+           (exclude (rememberable-of (mapcar #'maybe-mode-name exclude) auto-mode)))
       (setf (exact-p rule) exact-p
             (included rule) (union include
                                    (when append-p
