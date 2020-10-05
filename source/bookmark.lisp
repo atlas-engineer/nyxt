@@ -412,19 +412,18 @@ rest in background buffers."
 
 (define-command import-bookmarks-from-html ()
   "Import bookmarks from an HTML file."
-  (with-result (html-file (read-from-minibuffer
-                           (make-minibuffer
-                            :default-modes '(nyxt/file-manager-mode:file-manager-mode
-                                             minibuffer-mode)
-                            :input-prompt "Path to the HTML file"
-                            ;; the suggestion filter allows non-html files right
-                            ;; now, as with :must-match-p set to nil the user
-                            ;; would still be able to select a non-html file;
-                            ;; this should be fixed (and :must-match-p nil -
-                            ;; removed) once the file-manager has better navigation
-                            ;; support
-                            :suggestion-function #'nyxt/file-manager-mode:open-file-from-directory-suggestion-filter
-                            :must-match-p nil)))
+  (let ((html-file (prompt-minibuffer
+                    :default-modes '(nyxt/file-manager-mode:file-manager-mode
+                                     minibuffer-mode)
+                    :input-prompt "Path to the HTML file"
+                    ;; the suggestion filter allows non-html files right
+                    ;; now, as with :must-match-p set to nil the user
+                    ;; would still be able to select a non-html file;
+                    ;; this should be fixed (and :must-match-p nil -
+                    ;; removed) once the file-manager has better navigation
+                    ;; support
+                    :suggestion-function #'nyxt/file-manager-mode:open-file-from-directory-suggestion-filter
+                    :must-match-p nil)))
     (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))
         (with-open-file (in-html html-file :external-format :utf-8)
