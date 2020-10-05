@@ -152,10 +152,11 @@ The handlers take the window as argument."))
   "Unfullscreen WINDOW, or the currently active window if unspecified."
   (ffi-window-unfullscreen window))
 
-(define-command toggle-toolbar-visibility (&optional (window (current-window)))
+(define-command toggle-toolbars (&optional (window (current-window)))
   "Toggle the visibility of the message and status buffer areas."
-  (if (and (zerop (ffi-window-get-status-buffer-height window))
-           (zerop (ffi-window-get-message-buffer-height window)))
+  (if (= 0
+         (ffi-window-get-status-buffer-height window)
+         (ffi-window-get-message-buffer-height window))
       (unpresent-current-window window)
       (present-current-window window)))
 
