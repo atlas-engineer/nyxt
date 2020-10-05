@@ -622,9 +622,15 @@ Warning: This behaviour may change in the future."
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
+(defmethod ffi-window-get-status-buffer-height ((window gtk-window) height)
+  (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
+
 (defmethod ffi-window-set-status-buffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (status-container window))
         (list -1 height)))
+
+(defmethod ffi-window-get-message-buffer-height ((window gtk-window) height)
+  (nth-value 1 (gtk:gtk-widget-size-request (message-container window))))
 
 (defmethod ffi-window-set-message-buffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (message-container window))
