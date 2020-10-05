@@ -152,12 +152,7 @@ The handlers take the window as argument."))
   "Unfullscreen WINDOW, or the currently active window if unspecified."
   (ffi-window-unfullscreen window))
 
-(define-command present-current-window (&optional (window (current-window)))
-  "Hide everything but the current buffer."
-  (ffi-window-set-status-buffer-height window 0)
-  (ffi-window-set-message-buffer-height window 0))
-
-(define-command unpresent-current-window (&optional (window (current-window)))
-  "Unhide everything but the current buffer."
-  (ffi-window-set-status-buffer-height window (height (status-buffer window)))
-  (ffi-window-set-message-buffer-height window (message-buffer-height window)))
+(define-command toggle-toolbars (&optional (window (current-window)))
+  "Hide or display the status view and the message view."
+  (ffi-window-toggle-status-view window)
+  (ffi-window-toggle-message-view window))
