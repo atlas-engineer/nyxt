@@ -41,7 +41,8 @@
       (run-async command))))
 
 (define-command execute-extended-command ()
-   "Execute a command by name, also supply optional parameters."
+   "Execute a command by name, also supply required, optional, and
+keyword parameters."
    (let* ((command (prompt-minibuffer
                     :input-prompt "Execute extended command"
                     :suggestion-function (command-suggestion-filter
@@ -52,7 +53,9 @@
           (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list
                                             argument-list)))
           (optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list
-                                            argument-list))))
+                                            argument-list)))
+          (key-arguments (nth-value 3 (alex:parse-ordinary-lambda-list
+                                       argument-list))))
      (apply command-symbol
             (append
              (when required-arguments
@@ -64,7 +67,13 @@
                (loop for argument in optional-arguments
                      collect (read-from-string
                               (prompt-minibuffer
-                               :input-prompt (first argument)))))))
+                               :input-prompt (first argument)))))
+             (when key-arguments
+               (loop for argument in key-arguments
+                     collect (first (car argument))
+                     collect (read-from-string
+                              (prompt-minibuffer
+                               :input-prompt (second (car argument))))))))
      (setf (access-time command) (get-internal-real-time))))
 
 (defun hook-suggestion-filter ()
