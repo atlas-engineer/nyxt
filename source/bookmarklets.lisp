@@ -22,8 +22,12 @@
 
 (in-package :nyxt)
 
-(define-command color-internal-external-links (&optional (buffer (current-buffer)))
+(defmacro define-bookmarklet-command (name documentation source)
+  `(define-command ,name (&optional (buffer (current-buffer)))
+     ,documentation
+  (ffi-buffer-evaluate-javascript-async buffer ,source)))
+
+(define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."
-  (ffi-buffer-evaluate-javascript-async 
-   buffer
-   nyxt/bookmarklets::color-internal-external-links))
+  nyxt/bookmarklets::color-internal-external-links)
+
