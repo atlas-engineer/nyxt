@@ -108,6 +108,7 @@
                (:file "force-https-mode")
                (:file "reduce-tracking-mode")
                ;; Web-mode commands
+               (:file "bookmarklets")
                (:file "input-edit")
                (:file "element-hint")
                (:file "jump-heading")
