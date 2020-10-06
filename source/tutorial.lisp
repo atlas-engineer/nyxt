@@ -185,7 +185,9 @@ query inside parenthesis in which you can use 'and', 'or' and 'not'. Examples:")
     (:li (command-markup 'nyxt/web-mode:jump-to-heading) ": Query a heading (a
 section) of the current page and jump to it.")
     (:li (command-markup 'nyxt/web-mode:autofill) ": See the "
-         (:code "autofills") " browser slot.")
+         (:code "autofills") " browser slot or "
+         (:a :href "https://nyxt.atlas.engineer/article/autofills.org"
+                   "this article on autofills"))
     (:li (command-markup 'vcs-clone) ": Clone version control repository
 matching current URL.")
     (:li (command-markup 'open-file) ", " (command-markup 'download-open-file)
