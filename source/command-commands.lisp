@@ -40,6 +40,22 @@
       (setf (access-time command) (get-internal-real-time))
       (run-async command))))
 
+(define-command execute-extended-command ()
+   "Execute a command by name, also supply optional parameters."
+   (let* ((command (prompt-minibuffer
+                    :input-prompt "Execute extended command"
+                    :suggestion-function (command-suggestion-filter
+                                          (mapcar #'mode-name (modes (current-buffer))))
+                    :hide-suggestion-count-p t))
+          (command-symbol (sym command))
+          (optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list
+                                            (swank::arglist command-symbol)))))
+     (apply command-symbol
+            (loop for argument in optional-arguments
+                  collect (read-from-string
+                           (prompt-minibuffer
+                            :input-prompt (first argument)))))
+     (setf (access-time command) (get-internal-real-time))))
 
 (defun hook-suggestion-filter ()
   (flet ((list-hooks (object)
