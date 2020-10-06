@@ -25,7 +25,7 @@
 (defmacro define-bookmarklet-command (name documentation source)
   `(define-command ,name (&optional (buffer (current-buffer)))
      ,documentation
-  (ffi-buffer-evaluate-javascript-async buffer ,source)))
+     (ffi-buffer-evaluate-javascript-async buffer ,source)))
 
 (define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."
