@@ -48,13 +48,23 @@
                                           (mapcar #'mode-name (modes (current-buffer))))
                     :hide-suggestion-count-p t))
           (command-symbol (sym command))
+          (argument-list (swank::arglist command-symbol))
+          (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list
+                                            argument-list)))
           (optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list
-                                            (swank::arglist command-symbol)))))
+                                            argument-list))))
      (apply command-symbol
-            (loop for argument in optional-arguments
-                  collect (read-from-string
-                           (prompt-minibuffer
-                            :input-prompt (first argument)))))
+            (append
+             (when required-arguments
+               (loop for argument in required-arguments
+                     collect (read-from-string
+                              (prompt-minibuffer
+                               :input-prompt argument))))
+             (when optional-arguments
+               (loop for argument in optional-arguments
+                     collect (read-from-string
+                              (prompt-minibuffer
+                               :input-prompt (first argument)))))))
      (setf (access-time command) (get-internal-real-time))))
 
 (defun hook-suggestion-filter ()
