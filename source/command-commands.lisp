@@ -43,6 +43,7 @@
 (define-command execute-extended-command ()
    "Execute a command by name, also supply required, optional, and
 keyword parameters."
+  ;; TODO: prefill default-values when prompting optional/key arguments
    (let* ((command (prompt-minibuffer
                     :input-prompt "Execute extended command"
                     :suggestion-function (command-suggestion-filter
