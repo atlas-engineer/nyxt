@@ -381,8 +381,9 @@ Deal with REQUEST-DATA with the following rules:
       (declare (type quri:uri url))
       (cond
         ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-         (log:debug "Evaluate Lisp code from internal buffer: ~a" (quri:url-decode (schemeless-url url)))
-         (evaluate-async (quri:url-decode (schemeless-url url)))
+         (log:debug "Evaluate Lisp code from internal buffer: ~a"
+                    (quri:url-decode (schemeless-url url) :lenient t))
+         (evaluate-async (quri:url-decode (schemeless-url url) :lenient t))
          nil)
         ((internal-buffer-p buffer)
          (log:debug "Load URL from internal buffer in new buffer: ~a" (object-display url))
@@ -519,7 +520,8 @@ The following example does a few things:
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
   #'(lambda (url)
       (some (alex:rcurry #'string= (object-display url))
-            (mapcar #'quri:url-decode (cons one-url other-urls)))))
+            (mapcar (lambda (u) (quri:url-decode u :lenient t))
+                    (cons one-url other-urls)))))
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))

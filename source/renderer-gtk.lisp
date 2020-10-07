@@ -644,7 +644,7 @@ Warning: This behaviour may change in the future."
                 (webkit:webkit-hit-test-result-media-uri hit-test-result)))
     (nil (print-message "")
          (setf (url-at-point buffer) (quri:uri "")))
-    (url (print-message (str:concat "→ " (quri:url-decode url)))
+    (url (print-message (str:concat "→ " (quri:url-decode url :lenient t)))
          (setf (url-at-point buffer) (quri:uri url)))))
 
 (define-ffi-method ffi-window-make ((browser gtk-browser))

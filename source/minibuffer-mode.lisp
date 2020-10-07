@@ -281,7 +281,7 @@ readable."
       (kill-whole-line minibuffer)
       (insert minibuffer
               (if (valid-url-p suggestion)
-                  (quri:url-decode suggestion)
+                  (quri:url-decode suggestion :lenient t)
                   suggestion)))))
 
 (declaim (ftype (function (containers:ring-buffer-reverse))

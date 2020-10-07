@@ -243,7 +243,7 @@ identifier for every hinted element."
   (format nil "~a  ~a  ~a"
           (hint link-hint)
           (body link-hint)
-          (quri:url-decode (url link-hint))))
+          (quri:url-decode (url link-hint) :lenient t)))
 
 (defmethod object-string ((button-hint button-hint))
   (body button-hint))

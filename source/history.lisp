@@ -100,7 +100,9 @@ it would not be very useful."
                                (score-history-entry y))))))
         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
     (when prefix-urls
-      (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
+      (setf history (append (mapcar (lambda (u) (quri:url-decode u :lenient t))
+                                    prefix-urls)
+                            history)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) history))))
 
