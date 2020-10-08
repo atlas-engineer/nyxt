@@ -7,24 +7,12 @@
 ;;;; are released into the public domain, per the license available
 ;;;; here: https://www.squarefree.com/bookmarklets/copyright.html
 
-(uiop:define-package nyxt/bookmarklets
-    (:use :common-lisp)
-  (:documentation "Bookmarkets with an origin outside of Nyxt are
-  sourced from here."))
-
-
 (in-package :nyxt)
 
-(defmacro define-bookmarklet (name text)
-  `(defparameter ,name ,text "Bookmarklet."))
-
 (defmacro define-bookmarklet-command (name documentation source)
-  (let ((namespaced-name (intern (string name) (find-package 'nyxt/bookmarklets))))
-    `(progn
-       (define-bookmarklet ,namespaced-name ,source)
-       (define-command ,name (&optional (buffer (current-buffer)))
-         ,documentation
-         (ffi-buffer-evaluate-javascript-async buffer ,namespaced-name)))))
+  `(define-command ,name (&optional (buffer (current-buffer)))
+     ,documentation
+     (ffi-buffer-evaluate-javascript-async buffer ,source)))
 
 (define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."
