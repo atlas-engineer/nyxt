@@ -532,7 +532,7 @@ The version number is stored in the clipboard."
               (:hr )
               (:h2 "Quick configuration")
               (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
-                  " Switch between Emacs/vi/CUA mode, set home page URL, and zoom level.")
+                  " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
               (:h2 "Documentation")
               (:p (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings")
                   " List all bindings for the current buffer.")
