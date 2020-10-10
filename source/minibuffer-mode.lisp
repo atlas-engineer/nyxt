@@ -296,10 +296,11 @@ readable."
 (define-command minibuffer-history (&optional (minibuffer (current-minibuffer)))
   "Choose a minibuffer input history entry to insert as input."
   (when (history minibuffer)
-    (let ((input (prompt-minibuffer
-                  :input-prompt "Input history"
-                  :history nil
-                  :suggestion-function (minibuffer-history-suggestion-filter (history minibuffer)))))
+    (let ((input (object-string
+                  (prompt-minibuffer
+                   :input-prompt "Input history"
+                   :history nil
+                   :suggestion-function (minibuffer-history-suggestion-filter (history minibuffer))))))
       (unless (str:empty? input)
         (log:debug input minibuffer)
         (text-buffer::kill-line (input-cursor minibuffer))
