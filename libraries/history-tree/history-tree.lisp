@@ -158,7 +158,8 @@ Current node is then updated to the first child if it holds DATA."
         (forward history)
        (current history)))
     (t
-     (setf (data (current history)) data))))
+     (setf (data (current history)) data)
+     (current history))))
 
 
 
