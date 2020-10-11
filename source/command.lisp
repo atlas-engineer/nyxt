@@ -288,11 +288,7 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
   (let ((channel (make-instance 'chanl:bounded-channel :size 1)))
     (chanl:pexec ()
       (chanl:send channel
-                  (handler-case
-                      (apply #'funcall-safely (command-function command) args)
-                    (nyxt-minibuffer-canceled ()
-                      (log:debug "Minibuffer interrupted")
-                      nil))))
+                  (apply #'funcall-safely (command-function command) args)))
     (chanl:recv channel)))
 
 (defmethod run-async ((command command) &rest args)
@@ -300,10 +296,7 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (chanl:pexec ()
-    (handler-case
-        (apply #'funcall-safely (command-function command) args)
-      (nyxt-minibuffer-canceled ()
-        (log:debug "Minibuffer interrupted")))))
+    (apply #'funcall-safely (command-function command) args)))
 
 (define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.

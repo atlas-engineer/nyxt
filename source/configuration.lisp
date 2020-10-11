@@ -12,9 +12,14 @@
   "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run
 from a binary) then any condition is logged instead of triggering the debugger."
   (if *keep-alive*
-      (apply f args)
-      (handler-case
-          (apply f args)
+      (handler-case (apply f args)
+        (nyxt-minibuffer-canceled ()
+          (log:debug "Minibuffer interrupted")
+          nil))
+      (handler-case (apply f args)
+        (nyxt-minibuffer-canceled ()
+          (log:debug "Minibuffer interrupted")
+          nil)
         (error (c)
           (log:error "In ~a: ~a" f c)
           nil))))
