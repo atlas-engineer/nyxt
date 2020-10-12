@@ -54,8 +54,9 @@ The history is sorted by last access."
             (incf (explicit-visits entry))
             (incf (implicit-visits entry)))
         (setf (last-access entry) (local-time:now))
-        ;; Always update the title since it may have changed since last visit.
-        (setf (title entry) title)
+        (when title
+          ;; Always update the title since it may have changed since last visit.
+          (setf (title entry) title))
         (setf (gethash (object-string uri) history) entry)))))
 
 (define-command delete-history-entry ()
