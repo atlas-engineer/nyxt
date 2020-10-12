@@ -30,7 +30,7 @@
               :test #'quri:uri=
               "value has quri:uri")
           (is (title (rest entry))
-              nil
+              ""
               "value has no title"))
         (history-add (quri:uri "http://example.org") :title "foo")
         (is (hash-table-count (nyxt:get-data path))
