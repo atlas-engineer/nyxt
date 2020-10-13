@@ -1,0 +1,71 @@
+# Inspired by http://3bb.cc/blog/2020/09/11/github-ci/.
+name: Tests
+
+on:
+  push:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    name: ${{ matrix.lisp }} on ${{ matrix.os }}
+    strategy:
+      matrix:
+        lisp: [sbcl-bin, ccl]
+        os: [ ubuntu-latest ]
+
+    # run the job on every combination of "lisp" and "os" above
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    # Check out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Cache .roswell
+      id: cache-dot-roswell
+      uses: actions/cache@v1
+      with:
+        path: ~/.roswell
+        key: ${{ runner.os }}-dot-roswell-${{ matrix.lisp }}-${{ hashFiles('**/*.asd') }}
+        restore-keys: |
+          ${{ runner.os }}-dot-roswell-${{ matrix.lisp }}-
+          ${{ runner.os }}-dot-roswell-
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y libfixposix0 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip notify-osd enchant
+
+    - name: Install Roswell
+      shell: bash
+      # always run install, since it does some global installs and setup that isn't cached
+      env:
+       LISP: ${{ matrix.lisp }}
+      run: curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh -x
+
+    - name: Check Lisp
+      continue-on-error: true
+      shell: bash
+      run: |
+        ros -e '(format t "~a:~a on ~a~%...~%~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
+        ros -e '(format t " fixnum bits:~a~%" (integer-length most-positive-fixnum))'
+        ros -e "(ql:quickload 'trivial-features)" -e '(format t "features = ~s~%" *features*)'
+
+    - name: Update Quickdist if we have one cached
+      shell: bash
+      run: ros -e "(ql:update-all-dists :prompt nil)"
+
+    - name: Fetch Common Lisp third-party dependencies
+      shell: bash
+      run: |
+        make quicklisp-extra-libs
+        echo "(:tree \"$PWD/quicklisp-libraries\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+
+    - name: Load system and run tests
+      shell: bash
+      # Export CI to tell ASDF to quit on test errors.
+      env:
+       CI: yes
+      run: |
+        ros -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (ql:quickload :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'
