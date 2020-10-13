@@ -8,7 +8,8 @@
 (in-package :nyxt/blocker-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
+  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 

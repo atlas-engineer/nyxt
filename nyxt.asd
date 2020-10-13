@@ -42,7 +42,6 @@
                :nyxt/download-manager
                :nyxt/history-tree
                :nyxt/password-manager
-               :nyxt/hooks
                :nyxt/keymap
                :nyxt/class-star)
   :pathname "source/"
@@ -245,19 +244,6 @@
                (:file "password-security")
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
-
-(asdf:defsystem nyxt/hooks
-  :depends-on (alexandria serapeum)
-  :pathname "libraries/hooks/"
-  :components ((:file "package")
-               (:file "hooks"))
-  :in-order-to ((test-op (test-op "nyxt/hooks/tests"))))
-
-(asdf:defsystem nyxt/hooks/tests
-  :depends-on (nyxt/hooks prove)
-  :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "libraries/hooks/tests/"))))
 
 (asdf:defsystem nyxt/keymap
   :depends-on (alexandria fset str)

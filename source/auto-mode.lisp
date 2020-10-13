@@ -7,6 +7,9 @@
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+
 (declaim (ftype (function ((or symbol root-mode)) (values symbol &optional)) maybe-mode-name))
 (defun maybe-mode-name (mode)
   (if (symbolp mode) mode (mode-name mode)))

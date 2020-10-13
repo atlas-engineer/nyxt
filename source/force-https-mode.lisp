@@ -6,6 +6,9 @@
   (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
 (in-package :nyxt/force-https-mode)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+
 (defun force-https-handler (request-data)
   "Impose HTTPS on any link with HTTP scheme."
   (let ((uri (url request-data)))
