@@ -125,13 +125,23 @@
                (:file "start")
                (:file "tutorial")
                (:file "manual"))
-  :in-order-to ((test-op (test-op "nyxt/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/tests")
+                         (test-op "nyxt/download-manager/tests")
+                         (test-op "nyxt/history-tree/tests")
+                         (test-op "nyxt/hooks/tests")
+                         (test-op "nyxt/keymap/tests")
+                         (test-op "nyxt/class-star/tests"))))
+
+(defun nyxt-run-test (c path)
+  (when (and (uiop:getenv "CI")
+             (not (funcall (read-from-string "prove:run")
+                           (asdf:system-relative-pathname c path))))
+    (uiop:quit 18)))
 
 (asdf:defsystem nyxt/tests
   :depends-on (nyxt prove)
   :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "tests/"))))
+                         (nyxt-run-test c "tests/")))
 
 (asdf:defsystem :nyxt/gtk
   :depends-on (:nyxt
@@ -201,8 +211,7 @@
 (asdf:defsystem nyxt/download-manager/tests
   :depends-on (nyxt/download-manager prove)
   :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "libraries/download-manager/tests/"))))
+                         (nyxt-run-test c "libraries/download-manager/tests/")))
 
 (asdf:defsystem nyxt/text-analysis
   :depends-on (:str
@@ -229,8 +238,7 @@
 (asdf:defsystem nyxt/history-tree/tests
   :depends-on (nyxt/history-tree prove)
   :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "libraries/history-tree/tests/"))))
+                         (nyxt-run-test c "libraries/history-tree/tests/")))
 
 (asdf:defsystem nyxt/password-manager
   :depends-on (bordeaux-threads
@@ -256,8 +264,7 @@
 (asdf:defsystem nyxt/hooks/tests
   :depends-on (nyxt/hooks prove)
   :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "libraries/hooks/tests/"))))
+                         (nyxt-run-test c "libraries/hooks/tests/")))
 
 (asdf:defsystem nyxt/keymap
   :depends-on (alexandria fset str)
@@ -273,8 +280,7 @@
 (asdf:defsystem nyxt/keymap/tests
   :depends-on (alexandria fset nyxt/keymap prove)
   :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "libraries/keymap/tests/"))))
+                         (nyxt-run-test c  "libraries/keymap/tests/")))
 
 (asdf:defsystem nyxt/class-star
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
@@ -286,5 +292,4 @@
 (asdf:defsystem nyxt/class-star/tests
   :depends-on (nyxt/class-star prove)
   :perform (asdf:test-op (op c)
-                         (funcall (read-from-string "prove:run")
-                                  (asdf:system-relative-pathname c "libraries/class-star/tests/"))))
+                         (nyxt-run-test c "libraries/class-star/tests/")))
