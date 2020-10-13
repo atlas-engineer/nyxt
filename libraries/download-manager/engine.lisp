@@ -131,12 +131,12 @@ Only send if last update was more than `update-interval' seconds ago."
       (setf (bytes-last-update download) (bytes-fetched download))
       (setf (last-update download) new-time))))
 
-(declaim (ftype (function (quri:uri &key (:directory string)
+(declaim (ftype (function (quri:uri &key (:directory (or string pathname))
                                     (:proxy (or quri:uri null))
                                     (:cookies (or string null))))
                 resolve))
 (defun resolve (uri &key
-                      (directory (download-directory))
+                      (directory (default-download-directory))
                       proxy
                       cookies)
   "Start downloading URI concurrently and return a corresponding `download' object.
