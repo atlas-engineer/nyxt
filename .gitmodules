@@ -7,3 +7,6 @@
 [submodule "quicklisp-client"]
 	path = quicklisp-client
 	url = https://github.com/quicklisp/quicklisp-client
+[submodule "quicklisp-libraries/cl-cffi-gtk"]
+	path = quicklisp-libraries/cl-cffi-gtk
+	url = https://github.com/Ferada/cl-cffi-gtk/
