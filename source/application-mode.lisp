@@ -6,6 +6,9 @@
   (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
 (in-package :nyxt/application-mode)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+
 ;; Moving modes out of the `modes' slot is a bad idea: too many parts rely on
 ;; the presence of the `modes' slot.
 
