@@ -55,7 +55,8 @@ On errors, return URL."
               ;; "http://algo" has the "algo" hostname but it's probably invalid
               ;; unless it's found on the local network.  We also need to
               ;; support "localhost" and the current system hostname.
-              (ignore-errors (usocket:get-host-by-name (quri:uri-host uri))))))))
+              ;; (ignore-errors (usocket:get-host-by-name (quri:uri-host uri)))
+              )))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
 (defun ensure-url (thing)
