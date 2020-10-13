@@ -1,7 +1,12 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt/web-mode)
+(uiop:define-package :nyxt/input-edit-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:documentation "Mode for editing HTML input areas."))
+
+(in-package :nyxt/input-edit-mode)
 
 ;;;; commands for navigating/editing input fields on HTML pages
 
@@ -105,3 +110,22 @@
        (text-buffer::string-representation text-buffer))
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
+
+(define-mode input-edit-mode ()
+  "Mode for editing input areas in HTML. Overrides many of the
+bindings in other modes, so you will have to disable/enable it as
+necessary."
+  ((keymap-scheme
+    (define-scheme "input-edit-mode"
+      scheme:cua
+      (list)
+      scheme:emacs
+      (list
+       "C-f" 'cursor-forwards
+       "C-b" 'cursor-backwards
+       "M-f" 'cursor-forwards-word
+       "M-b" 'cursor-backwards-word
+       "C-d" 'delete-forwards
+       "backspace" 'delete-backwards
+       "M-backspace" 'delete-backwards-word
+       "M-d" 'delete-forwards-word)))))
