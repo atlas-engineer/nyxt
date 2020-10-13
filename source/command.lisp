@@ -123,13 +123,14 @@ deprecated and by what in the docstring."
                      (not (str:starts-with-p "NYXT" (package-name p))))
                    (list-all-packages))
                   (mapcar #'find-package
-                          '(download-manager
+                          '(class-star
+                            download-manager
                             history-tree
-                            hooks
                             keymap
                             scheme
                             password
-                            text-analysis)))))
+                            text-analysis
+                            text-buffer)))))
 
 (defun package-defined-symbols (&optional (external-package-designators (nyxt-packages))
                                   (user-package-designators '(:nyxt-user)))
