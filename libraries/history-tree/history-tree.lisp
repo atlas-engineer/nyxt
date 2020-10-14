@@ -237,6 +237,31 @@ First child comes first."
   (mapcar #'data (children-nodes history)))
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'find-data))
+(defmethod find-data (data (history history-tree) &key (test #'equal) ensure-p)
+  "Find a tree node matching DATA in HISTORY and return it.
+If ENSURE-P is non-nil, create this node when not found.
+Search is done with the help of TEST argument."
+  ;; TODO: Use caching to speed access up?
+  (let ((match (find data (htree:all-nodes history) :key #'data :test test)))
+    (if (and (not match) ensure-p)
+        (htree:add-child data history :test test)
+        match)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'delete-node))
+(defmethod delete-node (data (history history-tree) &key (test #'equal) rebind-children-p)
+  "Delete node matching DATA from HISTORY and return the node.
+If the node has children itself, and REBIND-CHILDREN-P is not nil, these
+will become children of the node's parent. Search is done with the
+help of TEST argument."
+  (let* ((child (find data (htree:all-nodes history)
+                      :key #'data :test test))
+         (parent (htree:parent child)))
+    (setf (htree:children parent) (append (when rebind-children-p (htree:children child))
+                                          (remove child (htree:children parent))))))
+
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'depth))
