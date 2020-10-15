@@ -61,8 +61,6 @@
             1)
            (format '\#t "~&)~&"))))))
 
-(defvar *guix-database* nil)
-
 (define-class guix-package (os-package)
   ((outputs '())
    (supported-systems '())
@@ -72,18 +70,31 @@
    (location "")
    (description "")))
 
-(defmethod find-os-package ((manager (eql :guix)) name)
+(defvar *guix-database* nil)
+
+(defun guix-database ()
   (unless *guix-database*
     (setf *guix-database* (read-from-string (generate-database))))
-  (let ((pkg (second (assoc name *guix-database* :test #'string=))))
-    (apply #'make-instance 'guix-package
-           :name name
-           (alexandria:mappend
-            (lambda (kw)
-              (list kw (getf pkg kw)))
-            '(:version :outputs :supported-systems :inputs :propagated-inputs
-              :native-inputs :location :home-page :licenses :synopsis
-              :description)))))
+  *guix-database*)
+
+(defun make-guix-package (name &optional (pkg (second (assoc name (guix-database) :test #'string=))))
+  (apply #'make-instance 'guix-package
+         :name name
+         (alexandria:mappend
+          (lambda (kw)
+            (list kw (getf pkg kw)))
+          '(:version :outputs :supported-systems :inputs :propagated-inputs
+            :native-inputs :location :home-page :licenses :synopsis
+            :description))))
+
+(defun database-entry->guix-package (entry)
+  (make-guix-package (first entry) (second entry)))
+
+(defmethod find-os-package ((manager (eql :guix)) name)
+  (make-guix-package name))
+
+(defmethod list-packages ((manager (eql :guix)))
+  (mapcar #'database-entry->guix-package (guix-database)))
 
 (defmethod refresh ((manager (eql :guix)))
   (declare (ignore manager))
@@ -93,6 +104,10 @@
   (declare (ignore manager))
   '("guix" "install"))
 
+(defmethod uninstall-command ((manager (eql :guix)))
+  (declare (ignore manager))
+  '("guix" "remove"))
+
 (defmethod show-command ((manager (eql :guix)))
   (declare (ignore manager))
   '("guix" "show"))
@@ -100,3 +115,16 @@
 (defmethod profile-install ((manager (eql :guix)) profile)
   (declare (ignore manager))
   (list "guix" "install" (str:concat "--profile=" profile)))
+
+(defmethod size-command ((manager (eql :guix)))
+  '("guix" "size"))
+
+(defmethod size ((manager (eql :guix)) package)
+  (run-over-packages #'size-command (list package)))
+
+;; TODO: Find a way to list the files.  If we get the store path we are good.
+;; TODO: Find a way to list the reverse dependencies.
+
+;; TODO: Guix special commands:
+;; - build
+;; - edit

@@ -22,18 +22,22 @@
     (uiop:run-program
      (append
       pre-args
-      (mapcar (lambda (pkg) (name (find-os-package *manager* pkg))) package-list)
+      (mapcar #'name package-list)
       post-args)
      :output '(:string :stripped t) )))
 
 (defun install (package-list)
-  (multiple-value-bind (pre-args post-args)
-      (install-command *manager*)
-    (uiop:run-program
-     (append
-      (list pre-args)
-      (mapcar #'name package-list)
-      (list post-args)))))
+  (run-over-packages #'install-command package-list))
 
-(defun show (package-list)
+(defun uninstall (package-list)
+  (run-over-packages #'uninstall-command package-list))
+
+(defun list-files (package-list)
+  (run-over-packages #'list-files-command package-list))
+
+(defmethod size ((manager (eql t)) package)
+  (reduce (alexandria:compose #'+  #'trivial-file-size:file-size-in-octets)
+          (list-files (list package))))
+
+(defun show (package-list)              ; TODO: Remove since useless.
   (run-over-packages #'show-command package-list))
