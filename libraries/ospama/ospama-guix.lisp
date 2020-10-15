@@ -21,6 +21,19 @@
                         :output '(:string :stripped t)
                         :error-output :output))))
 
+(defvar %find-package
+  ;; TODO: Use upstream's way to find packages.
+  '(lamdbda (name)
+    (let ((result (list)))
+      (fold-packages
+       (lambda (package count)
+         (when (string=? (package-name package)
+                         name)
+           (set! result package))
+         (+ 1 count))
+       1)
+      result)))
+
 (defun package-output-paths (name)
   "Computing the output-paths in `generate-database' is too slow, so we do it just-in-time instead."
   (guix-eval
@@ -34,17 +47,7 @@
      (guix utils)
      (gnu packages))
 
-   ;; TODO: Use upstream's way to find packages.
-   '(define (find-package name)
-     (let ((result '\#f))
-       (fold-packages
-        (lambda (package count)
-          (when (string=? (package-name package)
-                          name)
-            (set! result package))
-          (+ 1 count))
-        1)
-       result))
+   `(define find-package ,%find-package)
 
    '(define* (package-output-paths package)
      "Return store items, even if not present locally."
@@ -107,6 +110,52 @@
             1)
            (format '\#t "~&)~&"))))))
 
+(defun package-dependents (name)
+  ""
+  (guix-eval
+   '(use-modules
+     (guix graph)
+     (guix scripts graph)
+     (guix store)
+     (guix monads)
+     (guix packages)
+     (gnu packages))
+
+   '(define (all-packages)                  ; From refresh.scm.
+     "Return the list of all the distro's packages."
+     (fold-packages (lambda (package result)
+                      ;; Ignore deprecated packages.
+                      (if (package-superseded package)
+                          result
+                          (cons package result)))
+      (list)
+      #:select? (const '\#t)))
+
+   '(define (list-dependents packages)
+     "List all the things that would need to be rebuilt if PACKAGES are changed."
+     ;; Using %BAG-NODE-TYPE is more accurate than using %PACKAGE-NODE-TYPE
+     ;; because it includes implicit dependencies.
+     (define (full-name package)
+      (string-append (package-name package) "@"
+       (package-version package)))
+     (mlet %store-monad ((edges (node-back-edges %bag-node-type
+                                 (package-closure (all-packages)))))
+      (let* ((dependents (node-transitive-edges packages edges))
+             (covering   (filter (lambda (node)
+                                   (null? (edges node)))
+                                 dependents)))
+        (return dependents))))
+
+   `(define find-package ,%find-package)
+
+   `(format '\#t "~s"
+            (map package-name
+                 (with-store store
+                   (run-with-store
+                    store
+                    (mbegin %store-monad
+                            (list-dependents (list (find-package ,name))))))))))
+
 (define-class guix-package (os-package)
   ((outputs '())
    (supported-systems '())
@@ -150,7 +199,7 @@
 (defmethod list-packages ((manager (eql :guix)))
   (mapcar #'database-entry->guix-package (guix-database)))
 
-(defmethod refresh ((manager (eql :guix)))
+(defmethod refresh ((manager (eql :guix))) ; TODO: Unused?
   (declare (ignore manager))
   (setf *guix-database* nil))
 
@@ -185,8 +234,6 @@
 
 (defmethod size ((manager (eql :guix)) package)
   (run-over-packages #'size-command (list package)))
-
-;; TODO: Find a way to list the reverse dependencies.
 
 ;; TODO: Guix special commands:
 ;; - build
