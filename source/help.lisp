@@ -545,6 +545,19 @@ The version number is stored in the clipboard."
       (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
     help-buffer))
 
+(define-command manual ()
+  "Show the manual."
+  (let ((help-buffer (nyxt/help-mode:help-mode
+                      :activate t
+                      :buffer (make-internal-buffer :title "*Manual*"))))
+    (set-current-buffer help-buffer)
+    (let* ((help-contents (str:concat (markup:markup (:style (style help-buffer)))
+                                      (manual-content)))
+           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
+                                     (ps:lisp help-contents)))))
+      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
+    help-buffer))
+
 (define-command tutorial ()
   "Show the tutorial."
   (let ((help-buffer (nyxt/help-mode:help-mode
@@ -561,19 +574,6 @@ basic usage.  For more details, especially regarding the configuration, see
 the "
                    (:code (command-markup 'manual)) "."))
               (tutorial-content)))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
-    help-buffer))
-
-(define-command manual ()
-  "Show the manual."
-  (let ((help-buffer (nyxt/help-mode:help-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*Manual*"))))
-    (set-current-buffer help-buffer)
-    (let* ((help-contents (str:concat (markup:markup (:style (style help-buffer)))
-                                      (manual-content)))
            (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
                                      (ps:lisp help-contents)))))
       (ffi-buffer-evaluate-javascript-async help-buffer insert-help))

@@ -77,22 +77,25 @@ Example:
                               :sexp '(define-command (,@arglist) ,@body))
                *command-list*))
        (export-always ',name)
-       ;; We use defun to define the command instead of storing a lambda because we want
-       ;; to be able to call the foo command from Lisp with (FOO ...).
-       (defun ,name ,arglist
-         ,documentation
-         (handler-case
-             (progn
-               (hooks:run-hook ,before-hook)
-               (log:debug "Calling command ~a." ',name)
-               ;; TODO: How can we print the arglist as well?
-               ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-               (prog1
-                   (progn
-                     ,@body)
-                 (hooks:run-hook ,after-hook)))
-           (nyxt-condition (c)
-             (format t "~s" c)))))))
+       ;; We define the function at compile-time so that macros from the same
+       ;; file can find the symbol function.
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         ;; We use defun to define the command instead of storing a lambda because we want
+         ;; to be able to call the foo command from Lisp with (FOO ...).
+         (defun ,name ,arglist
+           ,documentation
+           (handler-case
+               (progn
+                 (hooks:run-hook ,before-hook)
+                 (log:debug "Calling command ~a." ',name)
+                 ;; TODO: How can we print the arglist as well?
+                 ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
+                 (prog1
+                     (progn
+                       ,@body)
+                   (hooks:run-hook ,after-hook)))
+             (nyxt-condition (c)
+               (format t "~s" c))))))))
 
 ;; TODO: Update define-deprecated-command
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
