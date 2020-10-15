@@ -21,6 +21,52 @@
                         :output '(:string :stripped t)
                         :error-output :output))))
 
+(defun package-output-paths (name)
+  "Computing the output-paths in `generate-database' is too slow, so we do it just-in-time instead."
+  (guix-eval
+   '(use-modules
+     (guix store)
+     (guix derivations)
+     (guix monads)
+     (guix grafts)
+     (guix gexp)
+     (guix packages)
+     (guix utils)
+     (gnu packages))
+
+   ;; TODO: Use upstream's way to find packages.
+   '(define (find-package name)
+     (let ((result '\#f))
+       (fold-packages
+        (lambda (package count)
+          (when (string=? (package-name package)
+                          name)
+            (set! result package))
+          (+ 1 count))
+        1)
+       result))
+
+   '(define* (package-output-paths package)
+     "Return store items, even if not present locally."
+     (define (lower-object/no-grafts obj system) ; From (guix scripts weather)
+      (mlet* %store-monad ((previous (set-grafting '\#f))
+                           (drv (lower-object obj system))
+                           (_ (set-grafting previous)))
+       (return drv)))
+     (with-store store
+       (run-with-store store
+        (mlet %store-monad ((drv (lower-object/no-grafts package (%current-system))))
+         ;; Note: we don't try building DRV like 'guix archive' does
+         ;; because we don't have to since we can instead rely on
+         ;; substitute meta-data.
+         (return
+           (derivation->output-paths drv))))))
+
+   `(display
+     (with-output-to-string
+         (lambda ()
+           (format '\#t "~s" (package-output-paths (find-package ,name))))))))
+
 (defun generate-database ()
   (guix-eval
    '(use-modules
@@ -68,7 +114,15 @@
    (propagated-inputs '())
    (native-inputs '())
    (location "")
-   (description "")))
+   (description "")
+   (output-paths '()
+                 :accessor nil)))
+
+(defmethod output-paths ((pkg guix-package))
+  (unless (slot-value pkg 'output-paths)
+    (setf (slot-value pkg 'output-paths)
+          (package-output-paths (name pkg))))
+  (slot-value pkg 'output-paths))
 
 (defvar *guix-database* nil)
 
@@ -112,6 +166,16 @@
   (declare (ignore manager))
   '("guix" "show"))
 
+(defmethod list-files ((manager (eql :guix)) package output)
+  (flet (list-files-recursively (dir))
+    (let ((result '())) (uiop:collect-sub*directories
+                         dir (constantly t) (constantly t)
+                         (lambda (dir)
+                           (setf result (append (uiop:directory-files dir)
+                                                result))))
+      result)
+    (list-files-recursively (assoc output (output-paths package) :test #'string=))))
+
 (defmethod profile-install ((manager (eql :guix)) profile)
   (declare (ignore manager))
   (list "guix" "install" (str:concat "--profile=" profile)))
@@ -122,7 +186,6 @@
 (defmethod size ((manager (eql :guix)) package)
   (run-over-packages #'size-command (list package)))
 
-;; TODO: Find a way to list the files.  If we get the store path we are good.
 ;; TODO: Find a way to list the reverse dependencies.
 
 ;; TODO: Guix special commands:

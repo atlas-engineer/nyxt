@@ -32,7 +32,7 @@
 (defun uninstall (package-list)
   (run-over-packages #'uninstall-command package-list))
 
-(defun list-files (package-list)
+(defmethod list-files ((manager (eql t)) package-list)
   (run-over-packages #'list-files-command package-list))
 
 (defmethod size ((manager (eql t)) package)
