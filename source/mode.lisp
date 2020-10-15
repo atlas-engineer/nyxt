@@ -91,8 +91,6 @@ Example:
                      (log:debug "~a disabled." ',name))))
              buffer)))))
 
-
-(defclass root-mode () ())
 (hooks:define-hook-type mode (function (root-mode)))
 
 (define-mode root-mode (t)
