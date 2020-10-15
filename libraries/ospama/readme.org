@@ -1,0 +1,3 @@
+OSPAMA: An "Operating System PAcakage MAnager".
+
+Inspired by https://github.com/emacs-helm/helm-system-packages.
