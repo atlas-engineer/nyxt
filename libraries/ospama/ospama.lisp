@@ -5,5 +5,5 @@
    (version "")
    (dependencies '())
    (synopsis "")
-   (homepage "")
-   (license "")))
+   (home-page "")
+   (licenses '())))
