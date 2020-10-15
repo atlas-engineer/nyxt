@@ -1,3 +1,5 @@
+(in-package :ospama)
+
 (defun guix-eval (form &rest more-forms)
   ;; TODO: "guix repl" is a reliable way to execute Guix code, sadly it does not
   ;; seem to support standard input.  Report upstream?  Alternatively, use Guile
@@ -57,10 +59,15 @@
 
 (defvar *guix-database* nil)
 
-(defun init ()
-  (setf *guix-database* (read-from-string (generate-database))))
+(defun find-os-package (name)
+  (unless *guix-database*
+    (setf *guix-database* (read-from-string (generate-database))))
+  (getf (second (assoc name *guix-database* :test #'string=)) :version))
 
-;; (getf (second (assoc "emacs" *guix-database* :test #'string=)) :version)
-
-;; (class*:define-class guix-package (package)
-;;   ((outputs)))
+(define-class guix-package (os-package)
+  ((outputs '())
+   (supported-systems '())
+   (inputs '())
+   (propagated-inputs '())
+   (native-inputs '())
+   (description "")))

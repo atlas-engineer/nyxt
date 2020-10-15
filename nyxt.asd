@@ -291,3 +291,12 @@
   :depends-on (nyxt/class-star prove)
   :perform (asdf:test-op (op c)
                          (nyxt-run-test c "libraries/class-star/tests/")))
+
+(asdf:defsystem nyxt/ospama
+  :depends-on (cl-ppcre nyxt/class-star)
+  :pathname "libraries/ospama/"
+  :components ((:file "package")
+               (:file "ospama")
+               (:file "ospama-guix"))
+  ;; :in-order-to ((test-op (test-op "nyxt/class-star/tests")))
+  )
