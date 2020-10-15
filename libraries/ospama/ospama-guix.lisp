@@ -69,7 +69,7 @@
    (location "")
    (description "")))
 
-(defun find-os-package (name)
+(defmethod find-os-package ((manager (eql :guix)) name)
   (unless *guix-database*
     (setf *guix-database* (read-from-string (generate-database))))
   (let ((pkg (second (assoc name *guix-database* :test #'string=))))
@@ -81,3 +81,19 @@
             '(:version :outputs :supported-systems :inputs :propagated-inputs
               :native-inputs :location :home-page :licenses :synopsis
               :description)))))
+
+(defmethod refresh ((manager (eql :guix)))
+  (declare (ignore manager))
+  (setf *guix-database* nil))
+
+(defmethod install-command ((manager (eql :guix)))
+  (declare (ignore manager))
+  '("guix" "install"))
+
+(defmethod show-command ((manager (eql :guix)))
+  (declare (ignore manager))
+  '("guix" "show"))
+
+(defmethod profile-install ((manager (eql :guix)) profile)
+  (declare (ignore manager))
+  (list "guix" "install" (str:concat "--profile=" profile)))
