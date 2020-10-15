@@ -4,7 +4,8 @@
   ;; TODO: "guix repl" is a reliable way to execute Guix code, sadly it does not
   ;; seem to support standard input.  Report upstream?  Alternatively, use Guile
   ;; the way emacs-guix.el does it, but it does not seem reliable.
-  (let ((*print-case* :downcase))
+  (let ((*package* (find-package :ospama)) ; Need to be in this package to avoid prefixing symbols with current package.
+        (*print-case* :downcase))
     (uiop:with-temporary-file (:pathname p)
       (with-open-file (s p :direction :output :if-exists :append)
         (dolist (f (cons form more-forms))
@@ -59,15 +60,24 @@
 
 (defvar *guix-database* nil)
 
-(defun find-os-package (name)
-  (unless *guix-database*
-    (setf *guix-database* (read-from-string (generate-database))))
-  (getf (second (assoc name *guix-database* :test #'string=)) :version))
-
 (define-class guix-package (os-package)
   ((outputs '())
    (supported-systems '())
    (inputs '())
    (propagated-inputs '())
    (native-inputs '())
+   (location "")
    (description "")))
+
+(defun find-os-package (name)
+  (unless *guix-database*
+    (setf *guix-database* (read-from-string (generate-database))))
+  (let ((pkg (second (assoc name *guix-database* :test #'string=))))
+    (apply #'make-instance 'guix-package
+           :name name
+           (alexandria:mappend
+            (lambda (kw)
+              (list kw (getf pkg kw)))
+            '(:version :outputs :supported-systems :inputs :propagated-inputs
+              :native-inputs :location :home-page :licenses :synopsis
+              :description)))))
