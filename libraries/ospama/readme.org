@@ -1,3 +1,26 @@
 OSPAMA: An "Operating System PAcakage MAnager".
 
 Inspired by https://github.com/emacs-helm/helm-system-packages.
+
+Supported package managers:
+
+- [[https://guix.gnu.org][Guix]]
+
+It provides an =os-package= with children which specialize for various package managers.
+
+If the package manager supports it, the class also includes the list of
+dependencies and dependents.
+
+The library also provides functions to interact with packages:
+
+- =list-packages=: The list of all packages.
+
+- =install=
+
+- =uninstall=
+
+- =list-files=
+
+- =size=
+
+More helpers may be available depending on the package manager.

@@ -211,7 +211,7 @@
   (declare (ignore manager))
   '("guix" "remove"))
 
-(defmethod show-command ((manager (eql :guix)))
+(defmethod show-command ((manager (eql :guix))) ; TODO: Remove once tests are OK.
   (declare (ignore manager))
   '("guix" "show"))
 
