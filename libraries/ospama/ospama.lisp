@@ -21,20 +21,30 @@
 (defun run-over-packages (argument-method package-list)
   (multiple-value-bind (pre-args post-args)
       (funcall argument-method *manager*)
-    (uiop:run-program
-     (append
-      pre-args
-      (mapcar #'name package-list)
-      post-args)
-     :output '(:string :stripped t) )))
+    (let ((command (append
+                    pre-args
+                    (mapcar #'name package-list)
+                    post-args)))
+      (uiop:launch-program command
+                           :output :stream
+                           :error-output :output))))
 
 (export-always 'list-packages)
 (defun list-packages ()
   (manager-list-packages *manager*))
 
-(defun install (package-list)
-  (run-over-packages #'install-command package-list))
+(export-always 'list-profiles)
+(defun list-profiles ()
+  (manager-list-profiles *manager*))
 
+(export-always 'install)
+(defun install (package-list &optional profile)
+  (manager-install *manager* package-list profile))
+
+(defmethod manager-install ((manager t) package-list &optional profile)
+  (run-over-packages (lambda (manager) (install-command manager profile)) package-list))
+
+(export-always 'uninstall)
 (defun uninstall (package-list)
   (run-over-packages #'uninstall-command package-list))
 
