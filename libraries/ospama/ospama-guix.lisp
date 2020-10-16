@@ -210,10 +210,6 @@
   (declare (ignore manager))
   (setf *guix-database* nil))
 
-(defmethod install-command ((manager (eql :guix)))
-  (declare (ignore manager))
-  '("guix" "install"))
-
 (defmethod uninstall-command ((manager (eql :guix)))
   (declare (ignore manager))
   '("guix" "remove"))
@@ -232,7 +228,7 @@
              result)))
     (list-files-recursively (assoc output (output-paths package) :test #'string=))))
 
-(defmethod profile-install ((manager (eql :guix)) profile)
+(defmethod install-command ((manager (eql :guix)) profile)
   (declare (ignore manager))
   (list "guix" "install" (str:concat "--profile=" profile)))
 
@@ -242,7 +238,7 @@
 (defmethod size ((manager (eql :guix)) package)
   (run-over-packages #'size-command (list package)))
 
-(defmethod list-profiles ((manager (eql :guix))) ; TODO: Rename `all-profiles'?
+(defmethod manager-list-profiles ((manager (eql :guix))) ; TODO: Rename `all-profiles'?
   (delete (namestring (uiop:xdg-config-home "guix/current"))
           (str:split
            (string #\newline)
