@@ -16,6 +16,8 @@
   "Mode for package management."
   ())
 
+;; TODO: Add command to interrupt operation?
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt)
 
@@ -32,11 +34,17 @@
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-packages))))
 
+(defun os-profile-suggestion-filter ()
+  (let* ((all-profiles (ospama:list-profiles)))
+    (lambda (minibuffer)
+      ;; TODO: Don't prompt when there is just 1 profile.
+      (fuzzy-match (input-buffer minibuffer) all-profiles))))
+
 (define-command describe-os-package ()
   "Show description of select packages."
   (let* ((packages (prompt-minibuffer
                     :suggestion-function (os-package-suggestion-filter)
-                    :input-prompt "Describe OS package"
+                    :input-prompt "Describe OS package(s)"
                     :multi-selection-p t))
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
@@ -65,5 +73,52 @@
          (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                       (ps:lisp content)))))
     (ffi-buffer-evaluate-javascript-async buffer insert-content)
+    (set-current-buffer buffer)
+    buffer))
+
+(defun format-command-stream (process-info callback)
+  (loop for object = (read-line (uiop:process-info-output process-info) nil :eof)
+        until (eq object :eof)
+        do (funcall callback object)))
+
+(define-command install-os-package ()
+  "Install select packages."
+  (let* ((packages (prompt-minibuffer
+                    :suggestion-function (os-package-suggestion-filter)
+                    :input-prompt "Install OS package(s)"
+                    :multi-selection-p t))
+         (profile (prompt-minibuffer
+                   :suggestion-function (os-profile-suggestion-filter)
+                   :input-prompt "Target profile"))
+         (buffer (or (find-buffer 'os-package-manager-mode)
+                     (nyxt/os-package-manager-mode:os-package-manager-mode
+                      :activate t
+                      :buffer (make-internal-buffer :title "*OS packages*")))) ; TODO: Use different buffer?
+         (content
+           (markup:markup
+            (:style (style buffer))
+            (:h1 "Installing packages...")))
+         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                      (ps:lisp content)))))
+    (ffi-buffer-evaluate-javascript-async buffer insert-content)
+    (chanl:pexec ()
+      (let ((process-info (ospama:install packages profile)))
+        (format-command-stream process-info
+                               (lambda (s)
+                                 ;; TODO: Guard against race condition.
+                                 (ffi-buffer-evaluate-javascript-async
+                                  buffer
+                                  (ps:ps (ps:chain document
+                                                   ;; TODO: Make shell formating
+                                                   ;; function and add support
+                                                   ;; for special characters,
+                                                   ;; e.g. progress bars.
+                                                   (write (ps:lisp (str:concat
+                                                                    (str:replace-all " " "&nbsp;" s)
+                                                                    "<br>")))))
+                                  ;; (ps:ps (setf (ps:@ document body |innerHTML|)
+                                  ;;              (ps:lisp (str:concat (ps:ps (ps:@ document body |innerHTML|))
+                                  ;;                                   s))))
+                                  )))))
     (set-current-buffer buffer)
     buffer))
