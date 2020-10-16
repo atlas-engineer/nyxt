@@ -165,7 +165,10 @@
    (location "")
    (description "")
    (output-paths '()
-                 :accessor nil)))
+                 :accessor nil))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod output-paths ((pkg guix-package))
   (unless (slot-value pkg 'output-paths)
@@ -196,7 +199,7 @@
 (defmethod find-os-package ((manager (eql :guix)) name) ; TODO: Useless?
   (make-guix-package name))
 
-(defmethod list-packages ((manager (eql :guix))) ; TODO: Rename `all-packages'?
+(defmethod manager-list-packages ((manager (eql :guix))) ; TODO: Rename `all-packages'?
   (mapcar #'database-entry->guix-package (guix-database)))
 
 (defmethod refresh ((manager (eql :guix))) ; TODO: Unused?
@@ -215,14 +218,14 @@
   (declare (ignore manager))
   '("guix" "show"))
 
-(defmethod list-files ((manager (eql :guix)) package output)
-  (flet (list-files-recursively (dir))
-    (let ((result '())) (uiop:collect-sub*directories
-                         dir (constantly t) (constantly t)
-                         (lambda (dir)
-                           (setf result (append (uiop:directory-files dir)
-                                                result))))
-      result)
+(defmethod list-files ((manager (eql :guix)) package &key output)
+  (flet ((list-files-recursively (dir)
+           (let ((result '())) (uiop:collect-sub*directories
+                                dir (constantly t) (constantly t)
+                                (lambda (dir)
+                                  (setf result (append (uiop:directory-files dir)
+                                                       result))))
+             result)))
     (list-files-recursively (assoc output (output-paths package) :test #'string=))))
 
 (defmethod profile-install ((manager (eql :guix)) profile)
