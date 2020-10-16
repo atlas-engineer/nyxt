@@ -44,7 +44,8 @@
                :nyxt/history-tree
                :nyxt/password-manager
                :nyxt/keymap
-               :nyxt/class-star)
+               :nyxt/class-star
+               :nyxt/ospama)
   :pathname "source/"
   :components ((:file "package")
                ;; Independent utilities
@@ -108,6 +109,7 @@
                (:file "vcs-mode")
                (:file "force-https-mode")
                (:file "reduce-tracking-mode")
+               (:file "os-package-manager-mode")
                ;; Web-mode commands
                (:file "bookmarklets")
                (:file "input-edit")
