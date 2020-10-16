@@ -13,9 +13,12 @@
       (with-open-file (s p :direction :output :if-exists :append)
         (dolist (f (cons form more-forms))
           (write-string
-           ;; Escaped symbols (e.g. '\#t) are printed as '|NAME| but should be
-           ;; printed as NAME.
-           (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" f) "\\1")
+           ;; Backslashes in Common Lisp are doubled, unlike Guile.
+           (str:replace-all
+            "\\\\" "\\"
+            ;; Escaped symbols (e.g. '\#t) are printed as '|NAME| but should be
+            ;; printed as NAME.
+            (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" f) "\\1"))
            s)))
       (uiop:run-program `("guix" "repl" ,(namestring p))
                         :output '(:string :stripped t)
@@ -76,6 +79,7 @@
      (guix packages)
      (guix licenses)
      (guix utils)
+     (guix build utils)                 ; For `string-replace-substring'.
      (gnu packages))
 
    '(define (ensure-list l)
@@ -105,7 +109,7 @@
                         (or (package-home-page package) 'nil) ; #f must be turned to NIL for Common Lisp.
                         (map license-name (ensure-list (package-license package)))
                         (package-synopsis package)
-                        (package-description package)))
+                        (string-replace-substring (package-description package) "\\n" " ")))
               (+ 1 count))
             1)
            (format '\#t "~&)~&"))))))
