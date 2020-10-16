@@ -10,10 +10,12 @@
    (synopsis "")
    (home-page "")
    (licenses '()))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
 (export-always '*manager*)
-(defvar *manager* nil
+(defvar *manager* :guix ;; (serapeum:resolve-executable "guix") ; TODO: Set this automatically.
   "The currently selected package manager.")
 
 (defun run-over-packages (argument-method package-list)
@@ -26,18 +28,24 @@
       post-args)
      :output '(:string :stripped t) )))
 
+(export-always 'list-packages)
+(defun list-packages ()
+  (manager-list-packages *manager*))
+
 (defun install (package-list)
   (run-over-packages #'install-command package-list))
 
 (defun uninstall (package-list)
   (run-over-packages #'uninstall-command package-list))
 
-(defmethod list-files ((manager (eql t)) package-list)
-  (run-over-packages #'list-files-command package-list))
 
-(defmethod size ((manager (eql t)) package)
-  (reduce (alexandria:compose #'+  #'trivial-file-size:file-size-in-octets)
-          (list-files (list package))))
 
-(defun show (package-list)              ; TODO: Remove since useless.
-  (run-over-packages #'show-command package-list))
+;; (defmethod list-files ((manager (eql t)) package-list)
+;;   (run-over-packages #'list-files-command package-list))
+
+;; (defmethod size ((manager (eql t)) package)
+;;   (reduce (alexandria:compose #'+  #'trivial-file-size:file-size-in-octets)
+;;           (list-files (list package))))
+
+;; (defun show (package-list)              ; TODO: Remove since useless.
+;;   (run-over-packages #'show-command package-list))
