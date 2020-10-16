@@ -10,14 +10,38 @@ stdenv.mkDerivation {
     pkgs.webkitgtk
     pkgs.sbcl
   ];
-  # ++ (with pkgs.lispPackages; [
-    #   # prove-asdf
-    #   # trivial-features
-    # ]
-  # );
 
-  # gst-plugins-bad
-  # gst-plugins-ugly
+  # ++ (with pkgs.lispPackages; [
+  #   prove-asdf
+  #   trivial-features
+  #   alexandria
+  #   bordeaux-threads
+  #   cl-css
+  #   cl-json
+  #   cl-markup
+  #   cl-ppcre
+  #   cl-ppcre-unicode
+  #   cl-prevalence
+  #   closer-mop
+  #   dexador
+  #   enchant
+  #   iolib
+  #   local-time
+  #   log4cl
+  #   mk-string-metrics
+  #   parenscript
+  #   quri
+  #   serapeum
+  #   str
+  #   plump
+  #   swank
+  #   trivia
+  #   trivial-clipboard
+  #   trivial-features
+  #   trivial-types
+  #   unix-opts
+  #   usocket
+  # ]);
 
   buildInputs = [
     pkgs.enchant.out
