@@ -17,6 +17,7 @@
   ())
 
 ;; TODO: Add command to interrupt operation?
+;; (uiop:terminate-process  process-info)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt)
@@ -90,14 +91,15 @@
          (profile (prompt-minibuffer
                    :suggestion-function (os-profile-suggestion-filter)
                    :input-prompt "Target profile"))
+         ;; TODO: Check for running process.
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*")))) ; TODO: Use different buffer?
+                      :buffer (make-internal-buffer :title "*OS packages*"))))
          (content
-           (markup:markup
-            (:style (style buffer))
-            (:h1 "Installing packages...")))
+          (markup:markup
+           (:style (style buffer))
+           (:h1 "Installing packages...")))
          (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                       (ps:lisp content)))))
     (ffi-buffer-evaluate-javascript-async buffer insert-content)
@@ -105,7 +107,6 @@
       (let ((process-info (ospama:install packages profile)))
         (format-command-stream process-info
                                (lambda (s)
-                                 ;; TODO: Guard against race condition.
                                  (ffi-buffer-evaluate-javascript-async
                                   buffer
                                   (ps:ps (ps:chain document
@@ -113,12 +114,14 @@
                                                    ;; function and add support
                                                    ;; for special characters,
                                                    ;; e.g. progress bars.
-                                                   (write (ps:lisp (str:concat
-                                                                    (str:replace-all " " "&nbsp;" s)
-                                                                    "<br>")))))
-                                  ;; (ps:ps (setf (ps:@ document body |innerHTML|)
-                                  ;;              (ps:lisp (str:concat (ps:ps (ps:@ document body |innerHTML|))
-                                  ;;                                   s))))
-                                  )))))
+                                                   (write (ps:lisp (markup:markup
+                                                                    (:code (str:replace-all " " " " s))
+                                                                    (:br)))))))))))
     (set-current-buffer buffer)
     buffer))
+
+;; TODO: Parse Texinfo for Guix descriptions.
+;; TODO: Add commands:
+;; - uninstall
+;; - find-files (open in editor, with select program) -- leverage file-manager
+;; - show-deps, show-reverse-deps (when minibuffer has actions)
