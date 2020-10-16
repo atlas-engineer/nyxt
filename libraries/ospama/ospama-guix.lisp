@@ -193,10 +193,10 @@
 (defun database-entry->guix-package (entry)
   (make-guix-package (first entry) (second entry)))
 
-(defmethod find-os-package ((manager (eql :guix)) name)
+(defmethod find-os-package ((manager (eql :guix)) name) ; TODO: Useless?
   (make-guix-package name))
 
-(defmethod list-packages ((manager (eql :guix)))
+(defmethod list-packages ((manager (eql :guix))) ; TODO: Rename `all-packages'?
   (mapcar #'database-entry->guix-package (guix-database)))
 
 (defmethod refresh ((manager (eql :guix))) ; TODO: Unused?
@@ -234,6 +234,15 @@
 
 (defmethod size ((manager (eql :guix)) package)
   (run-over-packages #'size-command (list package)))
+
+(defmethod list-profiles ((manager (eql :guix))) ; TODO: Rename `all-profiles'?
+  (delete (namestring (uiop:xdg-config-home "guix/current"))
+          (str:split
+           (string #\newline)
+           (uiop:run-program
+            '("guix" "package" "--list-profiles")
+            :output '(:string :stripped t)))
+          :test #'string=))
 
 ;; TODO: Guix special commands:
 ;; - build
