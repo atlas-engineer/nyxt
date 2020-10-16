@@ -22,7 +22,10 @@
 (defmethod object-string ((pkg ospama:os-package))
   (ospama:name pkg))
 (defmethod object-display ((pkg ospama:os-package))
-  (format nil "~a ~a" (ospama:name pkg) (ospama:synopsis pkg)))
+  (format nil "~a~a~a"
+          (ospama:name pkg)
+          (make-string (max 1 (- 40 (length (ospama:name pkg)))) :initial-element #\ )
+          (ospama:synopsis pkg)))
 
 (defun os-package-suggestion-filter ()
   (let* ((all-packages (ospama:list-packages)))
@@ -30,7 +33,7 @@
       (fuzzy-match (input-buffer minibuffer) all-packages))))
 
 (define-command describe-os-package ()
-  ""
+  "Show description of select packages."
   (let* ((packages (prompt-minibuffer
                     :suggestion-function (os-package-suggestion-filter)
                     :input-prompt "Describe OS package"
