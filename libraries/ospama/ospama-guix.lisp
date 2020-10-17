@@ -235,7 +235,7 @@
 (defmethod size-command ((manager (eql :guix)))
   '("guix" "size"))
 
-(defmethod size ((manager (eql :guix)) package)
+(defmethod size ((manager (eql :guix)) package) ; TODO: Get size by running du or similar on store.  How does Guix do it?
   (run-over-packages #'size-command (list package)))
 
 (defmethod manager-list-profiles ((manager (eql :guix))) ; TODO: Rename `all-profiles'?
@@ -250,3 +250,7 @@
 ;; TODO: Guix special commands:
 ;; - build
 ;; - edit
+;; - list-generations (guix pull -l + guix package -l)
+;;   guix package  -p /home/ambrevar/.config/guix/current -l
+;;   ui.scm: display-profile-content
+;; - list-installed from profile?
