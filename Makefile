@@ -152,15 +152,6 @@ check: check-asdf check-binary
 
 ## TODO: Test that Nyxt starts even with broken init file.
 
-.PHONY: check-build
-check-build: deps
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--load nyxt.asd \
-		--eval '(ql:quickload :nyxt)' \
-		--eval '(uiop:quit)'
-
 .PHONY: check-asdf
 check-asdf: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
