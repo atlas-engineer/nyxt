@@ -45,7 +45,7 @@
         "HELP"
         "match 'help' with real suggestions list")
     (is (first (nyxt::fuzzy-match "swit buf"
-                                  '("about" "switch-buffer-nyxt" "switch-buffer"
+                                  '("about" "switch-buffer-next" "switch-buffer"
                                     "delete-buffer")))
         "switch-buffer"
         "match 'swit buf' (small list)")
@@ -55,7 +55,7 @@
         "match 'swit buf' with real suggestions list")
     ;; TODO: Fix reverse fuzzy matching.
     ;; (is (first (nyxt::fuzzy-match "buf swit"
-    ;;                               '("about" "switch-buffer-nyxt" "switch-buffer"
+    ;;                               '("about" "switch-buffer-next" "switch-buffer"
     ;;                                 "delete-buffer")))
     ;;     "switch-buffer"
     ;;     "reverse match 'buf swit' (small list)")
