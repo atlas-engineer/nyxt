@@ -100,7 +100,7 @@ see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
                        :export nil
                        :documentation "This is used to generate unique buffer
 identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
-count since deleting windows may reseult in duplicate identifiers.")
+count since deleting windows may result in duplicate identifiers.")
    (startup-function (make-startup-function)
                      :type (or function null)
                      :documentation "The function run on startup.  It takes a
