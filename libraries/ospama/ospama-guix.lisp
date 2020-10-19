@@ -160,6 +160,18 @@
                     (mbegin %store-monad
                             (list-dependents (list (find-package ,name))))))))))
 
+(declaim (ftype (function (&optional (or symbol string))) list-installed))
+(defun list-installed (&optional (profile '%current-profile))
+  "Return the installed packages in PROFILE as a list of strings.
+PROFILE is a full path to a profile."
+  (guix-eval
+   '(use-modules
+     (guix profiles))
+   `(write
+     (map manifest-entry-name
+          (manifest-entries
+           (concatenate-manifests (map profile-manifest (list ,profile))))))))
+
 (define-class guix-package (os-package)
   ((outputs '())
    (supported-systems '())
@@ -200,19 +212,26 @@
 (defun database-entry->guix-package (entry)
   (make-guix-package (first entry) (second entry)))
 
-(defmethod manager-find-os-package ((manager (eql :guix)) name) ; TODO: Useless?
+(defmethod manager-find-os-package ((manager (eql :guix)) name)
   (make-guix-package name))
 
-(defmethod manager-list-packages ((manager (eql :guix))) ; TODO: Rename `all-packages'?
-  (mapcar #'database-entry->guix-package (guix-database)))
+(defmethod manager-list-packages ((manager (eql :guix)) &optional profile) ; TODO: Rename `all-packages'?
+  (if profile
+      (mapcar #'find-os-package (read-from-string (list-installed)))
+      (mapcar #'database-entry->guix-package (guix-database))))
+
+(defmethod manager-list-profiles ((manager (eql :guix))) ; TODO: Rename `all-profiles'?
+  (delete (namestring (uiop:xdg-config-home "guix/current"))
+          (str:split
+           (string #\newline)
+           (uiop:run-program
+            '("guix" "package" "--list-profiles")
+            :output '(:string :stripped t)))
+          :test #'string=))
 
 (defmethod refresh ((manager (eql :guix))) ; TODO: Unused?
   (declare (ignore manager))
   (setf *guix-database* nil))
-
-(defmethod uninstall-command ((manager (eql :guix)))
-  (declare (ignore manager))
-  '("guix" "remove"))
 
 (defmethod show-command ((manager (eql :guix))) ; TODO: Remove once tests are OK.
   (declare (ignore manager))
@@ -230,22 +249,21 @@
 
 (defmethod install-command ((manager (eql :guix)) profile)
   (declare (ignore manager))
-  (list "guix" "install" (str:concat "--profile=" profile)))
+  (append '("guix" "install")
+          (when profile
+            (list (str:concat "--profile=" profile)))))
+
+(defmethod uninstall-command ((manager (eql :guix)) profile)
+  (declare (ignore manager))
+  (append '("guix" "remove")
+          (when profile
+            (list (str:concat "--profile=" profile)))))
 
 (defmethod size-command ((manager (eql :guix)))
   '("guix" "size"))
 
 (defmethod size ((manager (eql :guix)) package) ; TODO: Get size by running du or similar on store.  How does Guix do it?
   (run-over-packages #'size-command (list package)))
-
-(defmethod manager-list-profiles ((manager (eql :guix))) ; TODO: Rename `all-profiles'?
-  (delete (namestring (uiop:xdg-config-home "guix/current"))
-          (str:split
-           (string #\newline)
-           (uiop:run-program
-            '("guix" "package" "--list-profiles")
-            :output '(:string :stripped t)))
-          :test #'string=))
 
 ;; TODO: Guix special commands:
 ;; - build
