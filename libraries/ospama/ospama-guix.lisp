@@ -14,6 +14,8 @@
   ;; TODO: "guix repl" is a reliable way to execute Guix code, sadly it does not
   ;; seem to support standard input.  Report upstream?  Alternatively, use Guile
   ;; the way emacs-guix.el does it, but it does not seem reliable.
+  "Evaluate forms in Guix REPL.
+Return the REPL output (including the error output) as a string."
   (let ((*package* (find-package :ospama)) ; Need to be in this package to avoid prefixing symbols with current package.
         (*print-case* :downcase))
     (uiop:with-temporary-file (:pathname p)
@@ -108,33 +110,29 @@ just-in-time instead."
          l
          (list l)))
 
-   ;; TODO: Use `write' instead of display.
-   '(display
-     (with-output-to-string
-         (lambda ()
-           (format '\#t "(~&")
-           (fold-packages
-            (lambda (package count)
-              (let ((location (package-location package)))
-                (format '\#t "(~s (:version ~s :outputs ~s :supported-systems ~s :inputs ~s :propagated-inputs ~s :native-inputs ~s :location ~s :home-page ~s :licenses ~s :synopsis ~s :description ~s))~&"
-                        (package-name package)
-                        (package-version package)
-                        (package-outputs package)
-                        (package-supported-systems package)
-                        (map car (package-inputs package))
-                        (map car (package-propagated-inputs package))
-                        (map car (package-native-inputs package))
-                        (string-join (list (location-file location)
-                                           (number->string (location-line location))
-                                           (number->string (location-column location)))
-                                     ":")
-                        (or (package-home-page package) 'nil) ; #f must be turned to NIL for Common Lisp.
-                        (map license-name (ensure-list (package-license package)))
-                        (package-synopsis package)
-                        (string-replace-substring (package-description package) "\\n" " ")))
-              (+ 1 count))
-            1)
-           (format '\#t "~&)~&"))))))
+   '(format '\#t "(~&")
+   '(fold-packages
+     (lambda (package count)
+       (let ((location (package-location package)))
+         (format '\#t "(~s (:version ~s :outputs ~s :supported-systems ~s :inputs ~s :propagated-inputs ~s :native-inputs ~s :location ~s :home-page ~s :licenses ~s :synopsis ~s :description ~s))~&"
+                 (package-name package)
+                 (package-version package)
+                 (package-outputs package)
+                 (package-supported-systems package)
+                 (map car (package-inputs package))
+                 (map car (package-propagated-inputs package))
+                 (map car (package-native-inputs package))
+                 (string-join (list (location-file location)
+                                    (number->string (location-line location))
+                                    (number->string (location-column location)))
+                              ":")
+                 (or (package-home-page package) 'nil) ; #f must be turned to NIL for Common Lisp.
+                 (map license-name (ensure-list (package-license package)))
+                 (package-synopsis package)
+                 (string-replace-substring (package-description package) "\\n" " ")))
+       (+ 1 count))
+     1)
+   '(format '\#t "~&)~&")))
 
 (defun package-dependents (name)
   ""
@@ -275,12 +273,12 @@ This can only be derived if `path' has been derived."))
 (defmethod manager-find-os-package ((manager guix-manager) name)
   (find name (guix-database) :key #'name :test #'string=))
 
-(defmethod manager-list-packages ((manager guix-manager) &optional profile) ; TODO: Rename `all-packages'?
+(defmethod manager-list-packages ((manager guix-manager) &optional profile)
   (if profile
       (mapcar #'find-os-package (read-from-string (list-installed)))
       (guix-database)))
 
-(defmethod manager-list-profiles ((manager guix-manager)) ; TODO: Rename `all-profiles'?
+(defmethod manager-list-profiles ((manager guix-manager))
   (delete (namestring (uiop:xdg-config-home "guix/current"))
           (str:split
            (string #\newline)
