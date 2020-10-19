@@ -41,41 +41,54 @@
       ;; TODO: Don't prompt when there is just 1 profile.
       (fuzzy-match (input-buffer minibuffer) all-profiles))))
 
-(define-command describe-os-package ()
-  "Show description of select packages."
-  (let* ((packages (prompt-minibuffer
-                    :suggestion-function (os-package-suggestion-filter)
-                    :input-prompt "Describe OS package(s)"
-                    :multi-selection-p t))
-         (buffer (or (find-buffer 'os-package-manager-mode)
+(defun %describe-os-package (packages)
+  (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
                       :buffer (make-internal-buffer :title "*OS packages*"))))
          (content
-           (markup:markup
-            (:style (style buffer))
-            (:h1 "Packages")
-            (:ul
-             (loop for package in packages
-                   collect (markup:markup*
-                            `(:li ,(ospama:name package) " " ,(ospama:version package)
-                                  (:ul
-                                   ,@(when (typep package 'ospama:guix-package)
-                                       `((:li "Outputs: " ,(str:join " " (ospama:outputs package)))
-                                         (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
-                                         (:li "Inputs: " ,(str:join " " (ospama:inputs package)))
-                                         (:li "Propagated inputs: " ,(str:join " " (ospama:propagated-inputs package)))
-                                         (:li "Native inputs: " ,(str:join " " (ospama:native-inputs package)))))
-                                   (:li "Home-page: " ,(ospama:home-page package))
-                                   (:li "Licenses: " ,(str:join ", " (ospama:licenses package)))
-                                   (:li "Synopsis: " ,(ospama:synopsis package))
-                                   ,(when (typep package 'ospama:guix-package)
-                                      `(:li "Description: " ,(ospama:description package))))))))))
+           (flet ((format-inputs (inputs)
+                    (alex:mappend
+                     (lambda (input)
+                       `((:a :href (lisp-url
+                                    '(%describe-os-package
+                                      (list (ospama:find-os-package ,input))))
+                             ,input)
+                         " "))
+                     inputs)))
+             (markup:markup
+              (:style (style buffer))
+              (:h1 "Packages")
+              (:ul
+               (loop for package in packages
+                     collect (markup:markup*
+                              `(:li ,(ospama:name package) " " ,(ospama:version package)
+                                    (:ul
+                                     ,@(when (typep package 'ospama:guix-package)
+                                         `((:li "Outputs: " ,(str:join " " (ospama:outputs package)))
+                                           (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
+                                           (:li "Inputs: " ,@(format-inputs (ospama:inputs package)))
+                                           (:li "Propagated inputs: " ,@(format-inputs (ospama:propagated-inputs package)))
+                                           (:li "Native inputs: " ,@(format-inputs (ospama:native-inputs package)))))
+                                     (:li "Home-page: " (:a :href ,(ospama:home-page package)
+                                                            ,(ospama:home-page package)))
+                                     (:li "Licenses: " ,(str:join ", " (ospama:licenses package)))
+                                     (:li "Synopsis: " ,(ospama:synopsis package))
+                                     ,(when (typep package 'ospama:guix-package)
+                                        `(:li "Description: " ,(ospama:description package)))))))))))
          (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                       (ps:lisp content)))))
     (ffi-buffer-evaluate-javascript-async buffer insert-content)
     (set-current-buffer buffer)
     buffer))
+
+(define-command describe-os-package ()
+  "Show description of select packages."
+  (let* ((packages (prompt-minibuffer
+                    :suggestion-function (os-package-suggestion-filter)
+                    :input-prompt "Describe OS package(s)"
+                    :multi-selection-p t)))
+    (%describe-os-package packages)))
 
 (defun format-command-stream (process-info callback)
   (loop for object = (read-line (uiop:process-info-output process-info) nil :eof)
