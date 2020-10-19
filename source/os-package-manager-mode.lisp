@@ -30,12 +30,31 @@
           (make-string (max 1 (- 40 (length (ospama:name pkg)))) :initial-element #\ )
           (ospama:synopsis pkg)))
 
+(defmethod object-string ((output ospama:os-package-output))
+  (format nil "~a:~a"
+          (ospama:name (ospama:parent-package output))
+          (ospama:name output)))
+(defmethod object-display ((output ospama:os-package-output))
+  (let ((pkg (ospama:parent-package output)))
+    (format nil "~a:~a~a~a"
+            (ospama:name pkg)
+            (ospama:name output)
+            (make-string (max 1 (- 40 (length (ospama:name pkg)))) :initial-element #\ )
+            (ospama:synopsis pkg))))
+
 (defun os-package-suggestion-filter ()
   (echo "Loading package database...")
   (let* ((all-packages (ospama:list-packages)))
     (echo "")
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-packages))))
+
+(defun os-package-output-suggestion-filter ()
+  (echo "Loading package database...")
+  (let* ((all-outputs (ospama:list-package-outputs)))
+    (echo "")
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) all-outputs))))
 
 (defun os-installed-package-suggestion-filter (profile)
   (let* ((installed-packages (ospama:list-packages profile)))
@@ -124,6 +143,48 @@
                     :multi-selection-p t)))
     (%describe-os-package packages)))
 
+(defun viewable-file-type-p (path)
+  (let ((path-suffix (string-downcase (namestring path))))
+    (some (lambda (suffix)
+            (str:ends-with? path-suffix suffix) )
+          '(".html" ".htm") )))
+
+;; TODO: open in editor, with select program, leverage file-manager
+(define-command list-os-package-files ()
+  "List files of select packages."
+  (let* ((packages-or-outputs (if (typep (ospama:manager) 'ospama:guix-manager)
+                                  (prompt-minibuffer
+                                   :suggestion-function (os-package-output-suggestion-filter)
+                                   :input-prompt "List files of OS package outputs(s)"
+                                   :multi-selection-p t)
+                                  (prompt-minibuffer
+                                   :suggestion-function (os-package-suggestion-filter)
+                                   :input-prompt "List files of OS package(s)"
+                                   :multi-selection-p t)))
+         (buffer (or (find-buffer 'os-package-manager-mode)
+                     (nyxt/os-package-manager-mode:os-package-manager-mode
+                      :activate t
+                      :buffer (make-internal-buffer :title "*OS packages*"))))
+         (content
+           (markup:markup
+            (:style (style buffer))
+            (:h1 "Package files")
+            (:ul
+             (loop for package-or-output in packages-or-outputs
+                   collect (markup:markup*
+                            `(:li ,(object-string package-or-output)
+                                  (:ul
+                                   ,@(mapcar (lambda (file)
+                                               `(:li ,(if (viewable-file-type-p file)
+                                                          `(:a :href ,file ,file)
+                                                          file)))
+                                             (ospama:list-files (list package-or-output))))))))))
+         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                      (ps:lisp content)))))
+    (ffi-buffer-evaluate-javascript-async buffer insert-content)
+    (set-current-buffer buffer)
+    buffer))
+
 (defun format-command-stream (process-info callback)
   (loop for object = (read-line (uiop:process-info-output process-info) nil :eof)
         until (eq object :eof)
@@ -184,5 +245,4 @@
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
-;; - find-files (open in editor, with select program) -- leverage file-manager
 ;; - show-deps, show-reverse-deps (when minibuffer has actions)
