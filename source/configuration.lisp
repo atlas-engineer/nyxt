@@ -149,8 +149,7 @@ Initialization file use case:
             (ql:quickload system :silent t)
             #-quicklisp
             (asdf:load-system system))))
-    (load-system system)
-    (when (and file (asdf:find-system system nil))
+    (when (and (load-system system) file)
       (load file))))
 
 (defun make-ring (&key (size 1000))
