@@ -62,7 +62,17 @@
                                       (list (ospama:find-os-package ,input))))
                              ,input)
                          " "))
-                     inputs)))
+                     inputs))
+                  (format-outputs (outputs)
+                    (alex:mappend
+                     (lambda (output)
+                       `((:tr
+                          (:td ,(ospama:name output))
+                          (:td ,(if (= 0 (ospama:size output))
+                                    "Unknown size"
+                                    (format nil "~aB" (ospama:size output))))
+                          (:td ,(ospama:path output)))))
+                     outputs)))
              (markup:markup
               (:style (style buffer))
               (:h1 "Packages")
@@ -72,7 +82,14 @@
                               `(:li ,(ospama:name package) " " ,(ospama:version package)
                                     (:ul
                                      ,@(when (typep package 'ospama:guix-package)
-                                         `((:li "Outputs: " ,(str:join " " (ospama:outputs package)))
+                                         `((:li "Outputs: "
+                                                (:table  ,@(format-outputs (ospama:outputs package))))
+                                           ;; TODO: Print output size + total size.
+                                           (:li "Total size: " ,(sera:format-file-size-human-readable
+                                                                 nil
+                                                                 (reduce #'+
+                                                                         (mapcar #'ospama:size
+                                                                                 (ospama:outputs package)))) )
                                            (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
                                            (:li "Inputs: " ,@(format-inputs (ospama:inputs package)))
                                            (:li "Propagated inputs: " ,@(format-inputs (ospama:propagated-inputs package)))
