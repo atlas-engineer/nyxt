@@ -127,14 +127,13 @@
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
-                         (test-op "nyxt/hooks/tests")
                          (test-op "nyxt/keymap/tests")
                          (test-op "nyxt/class-star/tests"))))
 
 (defun nyxt-run-test (c path)
-  (when (and (uiop:getenv "CI")
-             (not (funcall (read-from-string "prove:run")
-                           (asdf:system-relative-pathname c path))))
+  (when (and (not (funcall (read-from-string "prove:run")
+                           (asdf:system-relative-pathname c path)))
+             (uiop:getenv "CI"))
     (uiop:quit 18)))
 
 (asdf:defsystem nyxt/tests
