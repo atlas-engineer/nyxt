@@ -7,7 +7,8 @@
 ;; TODO: Add more typing.
 
 (define-class manager ()
-  ((path ""))
+  ((path ""
+         :type (or string pathname)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
@@ -27,7 +28,8 @@
   ((name "")
    (parent-package nil
                    :type (or null os-package))
-   (path "")
+   (path ""
+         :type (or string pathname))
    (size 0))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
