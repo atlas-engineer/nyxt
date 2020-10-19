@@ -4,7 +4,25 @@
 (in-package :ospama)
 
 (define-class guix-manager (manager)
-  ())
+  ()
+  (:export-class-name-p t))
+
+(define-class guix-package-output (os-package-output)
+  ((parent-package nil
+                   :type (or null guix-package))
+   (path ""
+         :documentation "The path is not automatically filled in `make-guix-package'.
+Call `expand-outputs' to fill this field for all the outputs of a package.
+Also see `expand-output-p' and `expand-outputs-p'.")
+   (size 0
+         :accessor nil
+         :documentation "Apparent size in bytes of outputs, in order.
+This can only be derived if `path' has been derived."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "OS package outputs are meaningful mostly for functional
+package managers like Nix or Guix."))
 
 (detect-manager "guix" 'guix-manager)
 
@@ -204,24 +222,6 @@ PROFILE is a full path to a profile."
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class guix-package-output ()
-  ((name "")
-   (parent-package nil
-                   :type (or null guix-package)
-                   :documentation "This is used to access the parent package to
-compute `path' and `size' just in time.")
-   (path ""
-         :documentation "The path is not automatically filled in `make-guix-package'.
-Call `expand-outputs' to fill this field for all the outputs of a package.
-Also see `expand-output-p' and `expand-outputs-p'.")
-   (size 0
-         :accessor nil
-         :documentation "Apparent size in bytes of outputs, in order.
-This can only be derived if `path' has been derived."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
 (export-always 'expanded-output-p)
 (defun expanded-output-p (output)
   (not (uiop:emptyp (path output))))
@@ -278,6 +278,9 @@ This can only be derived if `path' has been derived."))
       (mapcar #'find-os-package (read-from-string (list-installed)))
       (guix-database)))
 
+(defmethod manager-list-package-outputs ((manager guix-manager))
+  (alexandria:mappend #'outputs (list-packages)))
+
 (defmethod manager-list-profiles ((manager guix-manager))
   (delete (namestring (uiop:xdg-config-home "guix/current"))
           (str:split
@@ -301,16 +304,16 @@ This can only be derived if `path' has been derived."))
           (when profile
             (list (str:concat "--profile=" profile)))))
 
-;; (defmethod list-files ((manager guix-manager) package &key output)
-;;   (flet ((list-files-recursively (dir)
-;;            (let ((result '())) (uiop:collect-sub*directories
-;;                                 dir (constantly t) (constantly t)
-;;                                 (lambda (dir)
-;;                                   (setf result (append (uiop:directory-files dir)
-;;                                                        result))))
-;;              result)))
-;;     (list-files-recursively (assoc output (output-paths package) :test #'string=))))
+(defmethod manager-list-files ((manager guix-manager) outputs)
+  (alexandria:mappend
+   (lambda (output)
+     (unless (expanded-output-p output)
+       (expand-outputs (parent-package output)))
+     (when (uiop:directory-exists-p (path output))
+       (list-files-recursively (path output))))
+   outputs))
 
+;; TODO: Write tests.
 ;; TODO: Guix special commands:
 ;; - build
 ;; - edit
