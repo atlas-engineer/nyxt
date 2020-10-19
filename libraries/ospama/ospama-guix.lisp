@@ -8,6 +8,8 @@
 
 (detect-manager "guix" 'guix-manager)
 
+;; TODO: Call read-from-string in `guix-eval'?
+
 (defun guix-eval (form &rest more-forms)
   ;; TODO: "guix repl" is a reliable way to execute Guix code, sadly it does not
   ;; seem to support standard input.  Report upstream?  Alternatively, use Guile
@@ -31,7 +33,7 @@
 
 (defvar %find-package
   ;; TODO: Use upstream's way to find packages.
-  '(lamdbda (name)
+  '(lambda (name)
     (let ((result (list)))
       (fold-packages
        (lambda (package count)
@@ -74,10 +76,22 @@ just-in-time instead."
          (return
            (derivation->output-paths drv))))))
 
-   `(display
-     (with-output-to-string
-         (lambda ()
-           (format '\#t "~s" (package-output-paths (find-package ,name))))))))
+   `(write (package-output-paths (find-package ,name)))))
+
+(defun package-output-size (output-path)
+  (guix-eval
+   '(use-modules
+     (guix store)
+     (guix monads))
+
+   `(write
+     (let ((path-info (with-store store
+                        (run-with-store store
+                                        (mbegin %store-monad
+                                                (query-path-info* ,output-path))))))
+       (if path-info
+           (path-info-nar-size path-info)
+           0)))))
 
 (defun generate-database ()
   (guix-eval
@@ -93,6 +107,7 @@ just-in-time instead."
          l
          (list l)))
 
+   ;; TODO: Use `write' instead of display.
    '(display
      (with-output-to-string
          (lambda ()
@@ -158,13 +173,13 @@ just-in-time instead."
 
    `(define find-package ,%find-package)
 
-   `(format '\#t "~s"
-            (map package-name
-                 (with-store store
-                   (run-with-store
-                    store
-                    (mbegin %store-monad
-                            (list-dependents (list (find-package ,name))))))))))
+   `(write
+     (map package-name
+          (with-store store
+            (run-with-store
+             store
+             (mbegin %store-monad
+                     (list-dependents (list (find-package ,name))))))))))
 
 (declaim (ftype (function (&optional (or symbol string))) list-installed))
 (defun list-installed (&optional (profile '%current-profile))
@@ -185,46 +200,78 @@ PROFILE is a full path to a profile."
    (propagated-inputs '())
    (native-inputs '())
    (location "")
-   (description "")
-   (output-paths '()
-                 :accessor nil))
+   (description ""))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(defmethod output-paths ((pkg guix-package))
-  (unless (slot-value pkg 'output-paths)
-    (setf (slot-value pkg 'output-paths)
-          (package-output-paths (name pkg))))
-  (slot-value pkg 'output-paths))
+(define-class guix-package-output ()
+  ((name "")
+   (parent-package nil
+                   :type (or null guix-package)
+                   :documentation "This is used to access the parent package to
+compute `path' and `size' just in time.")
+   (path ""
+         :accessor nil)
+   (size nil
+         :type (or number null)
+         :accessor nil
+         :documentation "Apparent size in bytes of outputs, in order.  If NIL,
+the size hasn't been computed yet.  If less than 0, the size is not
+available (probably because the package is not present locally."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+
+(export-always 'path)
+(defmethod path ((output guix-package-output))
+  (when (uiop:emptyp (slot-value output 'path))
+    (setf (slot-value output 'path)
+          (rest (assoc (name output)
+                       (read-from-string (package-output-paths (name (parent-package output))))
+                       :test #'string=))))
+  (slot-value output 'path))
+
+(export-always 'size)
+(defmethod size ((output guix-package-output))
+  (unless (slot-value output 'size)
+    (setf (slot-value output 'size)
+          (read-from-string (package-output-size (path output)))))
+  (slot-value output 'size))
+
+(defun make-guix-package (entry)
+  (let* ((name (first entry))
+         (properties (second entry))
+         (result (apply #'make-instance 'guix-package
+                       :name name
+                       (alexandria:mappend
+                        (lambda (kw)
+                          (list kw (getf properties kw)))
+                        '(:version :supported-systems :inputs :propagated-inputs
+                          :native-inputs :location :home-page :licenses :synopsis
+                          :description)))))
+    (setf (outputs result)
+          (mapcar (lambda (output-name) (make-instance 'guix-package-output
+                                                       :name output-name
+                                                       :parent-package result))
+                  (getf properties :outputs)))
+    result))
 
 (defvar *guix-database* nil)
 
 (defun guix-database ()
   (unless *guix-database*
-    (setf *guix-database* (read-from-string (generate-database))))
+    (setf *guix-database*
+          (mapcar #'make-guix-package (read-from-string (generate-database)))))
   *guix-database*)
 
-(defun make-guix-package (name &optional (pkg (second (assoc name (guix-database) :test #'string=))))
-  (apply #'make-instance 'guix-package
-         :name name
-         (alexandria:mappend
-          (lambda (kw)
-            (list kw (getf pkg kw)))
-          '(:version :outputs :supported-systems :inputs :propagated-inputs
-            :native-inputs :location :home-page :licenses :synopsis
-            :description))))
-
-(defun database-entry->guix-package (entry)
-  (make-guix-package (first entry) (second entry)))
-
 (defmethod manager-find-os-package ((manager guix-manager) name)
-  (make-guix-package name))
+  (find name (guix-database) :key #'name :test #'string=))
 
 (defmethod manager-list-packages ((manager guix-manager) &optional profile) ; TODO: Rename `all-packages'?
   (if profile
       (mapcar #'find-os-package (read-from-string (list-installed)))
-      (mapcar #'database-entry->guix-package (guix-database))))
+      (guix-database)))
 
 (defmethod manager-list-profiles ((manager guix-manager)) ; TODO: Rename `all-profiles'?
   (delete (namestring (uiop:xdg-config-home "guix/current"))
@@ -249,21 +296,15 @@ PROFILE is a full path to a profile."
           (when profile
             (list (str:concat "--profile=" profile)))))
 
-(defmethod list-files ((manager guix-manager) package &key output)
-  (flet ((list-files-recursively (dir)
-           (let ((result '())) (uiop:collect-sub*directories
-                                dir (constantly t) (constantly t)
-                                (lambda (dir)
-                                  (setf result (append (uiop:directory-files dir)
-                                                       result))))
-             result)))
-    (list-files-recursively (assoc output (output-paths package) :test #'string=))))
-
-(defmethod size-command ((manager guix-manager))
-  '("guix" "size"))
-
-(defmethod size ((manager guix-manager) package) ; TODO: Get size by running du or similar on store.  How does Guix do it?
-  (run-over-packages #'size-command (list package)))
+;; (defmethod list-files ((manager guix-manager) package &key output)
+;;   (flet ((list-files-recursively (dir)
+;;            (let ((result '())) (uiop:collect-sub*directories
+;;                                 dir (constantly t) (constantly t)
+;;                                 (lambda (dir)
+;;                                   (setf result (append (uiop:directory-files dir)
+;;                                                        result))))
+;;              result)))
+;;     (list-files-recursively (assoc output (output-paths package) :test #'string=))))
 
 ;; TODO: Guix special commands:
 ;; - build

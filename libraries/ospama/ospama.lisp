@@ -81,7 +81,3 @@ NAME can be also be a path."
 
 ;; (defmethod list-files ((manager (eql t)) package-list)
 ;;   (run-over-packages #'list-files-command package-list))
-
-;; (defmethod size ((manager (eql t)) package)
-;;   (reduce (alexandria:compose #'+  #'trivial-file-size:file-size-in-octets)
-;;           (list-files (list package))))
