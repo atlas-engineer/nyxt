@@ -328,7 +328,7 @@ To customize the port that Swank starts on, edit the global variable
 
 To use =SLY= instead of =SLIME=, you have to add the function =start-slynk= in your =init.lisp=:
 #+begin_src lisp
-(load-after-system :slynk "my-slink.lisp")
+(load-after-system :slynk "/home/user/.config/nyxt/my-slink.lisp")
 #+end_src
 
 After you've added the delcaration above, create a file called
