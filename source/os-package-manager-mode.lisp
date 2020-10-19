@@ -64,15 +64,24 @@
                          " "))
                      inputs))
                   (format-outputs (outputs)
-                    (alex:mappend
-                     (lambda (output)
-                       `((:tr
-                          (:td ,(ospama:name output))
-                          (:td ,(if (= 0 (ospama:size output))
-                                    "Unknown size"
-                                    (format nil "~aB" (ospama:size output))))
-                          (:td ,(ospama:path output)))))
-                     outputs)))
+                    `(:div
+                      (:table
+                       ,@(alex:mappend
+                          (lambda (output)
+                            `((:tr
+                               (:td ,(ospama:name output))
+                               ,@(when (ospama:expanded-output-p output)
+                                   `((:td
+                                      ,(sera:format-file-size-human-readable
+                                        nil
+                                        (ospama:size output)))
+                                     (:td ,(ospama:path output)))))))
+                          outputs))
+                      ,@(when (and (<= 2 (length outputs))
+                                   (ospama:expanded-output-p (first outputs)))
+                          `((:li "Total size: " ,(sera:format-file-size-human-readable
+                                                  nil
+                                                  (reduce #'+ (mapcar #'ospama:size outputs)))))))))
              (markup:markup
               (:style (style buffer))
               (:h1 "Packages")
@@ -83,13 +92,14 @@
                                     (:ul
                                      ,@(when (typep package 'ospama:guix-package)
                                          `((:li "Outputs: "
-                                                (:table  ,@(format-outputs (ospama:outputs package))))
-                                           ;; TODO: Print output size + total size.
-                                           (:li "Total size: " ,(sera:format-file-size-human-readable
-                                                                 nil
-                                                                 (reduce #'+
-                                                                         (mapcar #'ospama:size
-                                                                                 (ospama:outputs package)))) )
+                                                ,@(unless (ospama:expanded-outputs-p package)
+                                                    `((:a :class "button"
+                                                          :href ,(lisp-url '(echo "Computing path & size...")
+                                                                           `(ospama:expand-outputs (ospama:find-os-package ,(ospama:name package)))
+                                                                           `(%describe-os-package
+                                                                             (list (ospama:find-os-package ,(ospama:name package)))))
+                                                          "Compute path & size")))
+                                                ,(format-outputs (ospama:outputs package)))
                                            (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
                                            (:li "Inputs: " ,@(format-inputs (ospama:inputs package)))
                                            (:li "Propagated inputs: " ,@(format-inputs (ospama:propagated-inputs package)))
@@ -174,7 +184,5 @@
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
-;; - Report store item path.
-;; - Report package size.
 ;; - find-files (open in editor, with select program) -- leverage file-manager
 ;; - show-deps, show-reverse-deps (when minibuffer has actions)
