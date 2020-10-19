@@ -200,7 +200,7 @@
 (defun database-entry->guix-package (entry)
   (make-guix-package (first entry) (second entry)))
 
-(defmethod find-os-package ((manager (eql :guix)) name) ; TODO: Useless?
+(defmethod manager-find-os-package ((manager (eql :guix)) name) ; TODO: Useless?
   (make-guix-package name))
 
 (defmethod manager-list-packages ((manager (eql :guix))) ; TODO: Rename `all-packages'?
