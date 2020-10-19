@@ -55,14 +55,9 @@
 (defmethod manager-uninstall ((manager t) package-list &optional profile)
   (run-over-packages (lambda (manager) (uninstall-command manager profile)) package-list))
 
-
-
 ;; (defmethod list-files ((manager (eql t)) package-list)
 ;;   (run-over-packages #'list-files-command package-list))
 
 ;; (defmethod size ((manager (eql t)) package)
 ;;   (reduce (alexandria:compose #'+  #'trivial-file-size:file-size-in-octets)
 ;;           (list-files (list package))))
-
-;; (defun show (package-list)              ; TODO: Remove since useless.
-;;   (run-over-packages #'show-command package-list))

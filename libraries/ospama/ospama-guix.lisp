@@ -233,20 +233,6 @@ PROFILE is a full path to a profile."
   (declare (ignore manager))
   (setf *guix-database* nil))
 
-(defmethod show-command ((manager (eql :guix))) ; TODO: Remove once tests are OK.
-  (declare (ignore manager))
-  '("guix" "show"))
-
-(defmethod list-files ((manager (eql :guix)) package &key output)
-  (flet ((list-files-recursively (dir)
-           (let ((result '())) (uiop:collect-sub*directories
-                                dir (constantly t) (constantly t)
-                                (lambda (dir)
-                                  (setf result (append (uiop:directory-files dir)
-                                                       result))))
-             result)))
-    (list-files-recursively (assoc output (output-paths package) :test #'string=))))
-
 (defmethod install-command ((manager (eql :guix)) profile)
   (declare (ignore manager))
   (append '("guix" "install")
@@ -258,6 +244,16 @@ PROFILE is a full path to a profile."
   (append '("guix" "remove")
           (when profile
             (list (str:concat "--profile=" profile)))))
+
+(defmethod list-files ((manager (eql :guix)) package &key output)
+  (flet ((list-files-recursively (dir)
+           (let ((result '())) (uiop:collect-sub*directories
+                                dir (constantly t) (constantly t)
+                                (lambda (dir)
+                                  (setf result (append (uiop:directory-files dir)
+                                                       result))))
+             result)))
+    (list-files-recursively (assoc output (output-paths package) :test #'string=))))
 
 (defmethod size-command ((manager (eql :guix)))
   '("guix" "size"))
