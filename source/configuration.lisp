@@ -135,8 +135,8 @@ To discover the default value of a slot or all slots of a class, use the
                    names))
       `(%define-configuration ,names ,@slots)))
 
-(export-always 'load-system)
-(defun load-system (system)
+(export-always 'load-after-system)
+(defun load-after-system (system file)
   "Load Common Lisp SYSTEM.
 Use Quicklisp if possible.
 Return NIL if system could not be loaded and return the condition as a second value.
@@ -145,11 +145,15 @@ Initialization file use case:
 
 (when (load-system :foo)
   (defun function-if-foo-is-found () ...))"
-  (ignore-errors
-   #+quicklisp
-   (ql:quickload system :silent t)
-   #-quicklisp
-   (asdf:load-system system)))
+  (flet ((load-system (system)
+           (ignore-errors
+            #+quicklisp
+            (ql:quickload system :silent t)
+            #-quicklisp
+            (asdf:load-system system))))
+    (load-system system)
+    (when (asdf:find-system system nil)
+      (load file))))
 
 (defun make-ring (&key (size 1000))
   "Return a new ring buffer."
