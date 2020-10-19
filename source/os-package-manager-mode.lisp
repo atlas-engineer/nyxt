@@ -31,7 +31,9 @@
           (ospama:synopsis pkg)))
 
 (defun os-package-suggestion-filter ()
+  (echo "Loading package database...")
   (let* ((all-packages (ospama:list-packages)))
+    (echo "")
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-packages))))
 
@@ -155,5 +157,7 @@
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
+;; - Report store item path.
+;; - Report package size.
 ;; - find-files (open in editor, with select program) -- leverage file-manager
 ;; - show-deps, show-reverse-deps (when minibuffer has actions)
