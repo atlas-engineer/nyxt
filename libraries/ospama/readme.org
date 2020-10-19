@@ -24,6 +24,8 @@ The library also provides functions to interact with packages:
 
 - =list-files=
 
-- =size=
+- =list-profiles=: Mostly for functional package managers like Nix and Guix.
+
+- =list-package-outputs=: Mostly for functional package managers like Nix and Guix.
 
 More helpers may be available depending on the package manager.

@@ -3,6 +3,9 @@
 
 (in-package :ospama)
 
+;; TODO: Declare defgenerics.
+;; TODO: Add more typing.
+
 (define-class manager ()
   ((path ""))
   (:export-class-name-p t)
@@ -19,6 +22,18 @@
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+
+(define-class os-package-output ()
+  ((name "")
+   (parent-package nil
+                   :type (or null os-package))
+   (path "")
+   (size 0))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "OS package outputs are meaningful mostly for functional
+package managers like Nix or Guix."))
 
 (export-always '*manager*)
 (defvar *manager* nil
@@ -57,6 +72,10 @@ NAME can be also be a path."
 (defun list-packages (&optional profile)
   (manager-list-packages (manager) profile))
 
+(export-always 'list-package-outputs)
+(defun list-package-outputs ()
+  (manager-list-package-outputs (manager)))
+
 (export-always 'find-os-package)
 (defun find-os-package (name)
   (manager-find-os-package (manager) name))
@@ -79,5 +98,16 @@ NAME can be also be a path."
 (defmethod manager-uninstall ((manager manager) package-list &optional profile)
   (run-over-packages (lambda (manager) (uninstall-command manager profile)) package-list))
 
-;; (defmethod list-files ((manager (eql t)) package-list)
-;;   (run-over-packages #'list-files-command package-list))
+(defun list-files-recursively (directory)
+  (let ((result '()))
+    (uiop:collect-sub*directories
+     (uiop:ensure-directory-pathname directory)
+     (constantly t) (constantly t)
+     (lambda (subdirectory)
+       (setf result (nconc result
+                           (uiop:directory-files subdirectory)))))
+    result))
+
+(export-always 'list-files)
+(defun list-files (package-or-output-list)
+  (manager-list-files (manager) package-or-output-list))
