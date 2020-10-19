@@ -44,6 +44,7 @@
        1)
       result)))
 
+;; TODO: Find a fast way to compute the output-paths.
 (defun package-output-paths (name)
   "Computing the output-paths in `generate-database' is too slow, so we do it
 just-in-time instead."
@@ -212,29 +213,35 @@ PROFILE is a full path to a profile."
                    :documentation "This is used to access the parent package to
 compute `path' and `size' just in time.")
    (path ""
-         :accessor nil)
-   (size nil
-         :type (or number null)
+         :documentation "The path is not automatically filled in `make-guix-package'.
+Call `expand-outputs' to fill this field for all the outputs of a package.
+Also see `expand-output-p' and `expand-outputs-p'.")
+   (size 0
          :accessor nil
-         :documentation "Apparent size in bytes of outputs, in order.  If NIL,
-the size hasn't been computed yet.  If less than 0, the size is not
-available (probably because the package is not present locally."))
+         :documentation "Apparent size in bytes of outputs, in order.
+This can only be derived if `path' has been derived."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(export-always 'path)
-(defmethod path ((output guix-package-output))
-  (when (uiop:emptyp (slot-value output 'path))
-    (setf (slot-value output 'path)
-          (rest (assoc (name output)
-                       (read-from-string (package-output-paths (name (parent-package output))))
-                       :test #'string=))))
-  (slot-value output 'path))
+(export-always 'expanded-output-p)
+(defun expanded-output-p (output)
+  (not (uiop:emptyp (path output))))
+
+(export-always 'expanded-outputs-p)
+(defun expanded-outputs-p (pkg)
+  (expanded-output-p (first (outputs pkg))))
+
+(export-always 'expand-outputs)
+(defun expand-outputs (pkg)
+  (dolist (pair (read-from-string (package-output-paths (name pkg))))
+    (setf (path (find (first pair) (outputs pkg) :key #'name :test #'string=))
+          (rest pair))))
 
 (export-always 'size)
 (defmethod size ((output guix-package-output))
-  (unless (slot-value output 'size)
+  (when (and (= 0 (slot-value output 'size))
+             (expanded-output-p output))
     (setf (slot-value output 'size)
           (read-from-string (package-output-size (path output)))))
   (slot-value output 'size))
