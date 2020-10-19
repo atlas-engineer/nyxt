@@ -127,7 +127,6 @@
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
-                         (test-op "nyxt/hooks/tests")
                          (test-op "nyxt/keymap/tests")
                          (test-op "nyxt/class-star/tests"))))
 
