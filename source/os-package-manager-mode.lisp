@@ -100,6 +100,36 @@
         until (eq object :eof)
         do (funcall callback object)))
 
+(defun operate-os-package (title command profile packages)
+  (let* (;; TODO: Check for running process.
+         (buffer (or (find-buffer 'os-package-manager-mode)
+                     (nyxt/os-package-manager-mode:os-package-manager-mode
+                      :activate t
+                      :buffer (make-internal-buffer :title "*OS packages*"))))
+         (content
+          (markup:markup
+           (:style (style buffer))
+           (:h1 title)))
+         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                      (ps:lisp content)))))
+    (ffi-buffer-evaluate-javascript-async buffer insert-content)
+    (chanl:pexec ()
+      (let ((process-info (funcall command packages profile)))
+        (format-command-stream process-info
+                               (lambda (s)
+                                 (ffi-buffer-evaluate-javascript-async
+                                  buffer
+                                  (ps:ps (ps:chain document
+                                                   ;; TODO: Make shell formating
+                                                   ;; function and add support
+                                                   ;; for special characters,
+                                                   ;; e.g. progress bars.
+                                                   (write (ps:lisp (markup:markup
+                                                                    (:code (str:replace-all " " " " s))
+                                                                    (:br)))))))))))
+    (set-current-buffer buffer)
+    buffer))
+
 (define-command install-os-package ()
   "Install select packages."
   ;; TODO: Allow profile creation.  Need multi-source support for that?
@@ -109,35 +139,8 @@
          (packages (prompt-minibuffer
                     :suggestion-function (os-package-suggestion-filter)
                     :input-prompt "Install OS package(s)"
-                    :multi-selection-p t))
-         ;; TODO: Check for running process.
-         (buffer (or (find-buffer 'os-package-manager-mode)
-                     (nyxt/os-package-manager-mode:os-package-manager-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*"))))
-         (content
-          (markup:markup
-           (:style (style buffer))
-           (:h1 "Installing packages...")))
-         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                      (ps:lisp content)))))
-    (ffi-buffer-evaluate-javascript-async buffer insert-content)
-    (chanl:pexec ()
-      (let ((process-info (ospama:install packages profile)))
-        (format-command-stream process-info
-                               (lambda (s)
-                                 (ffi-buffer-evaluate-javascript-async
-                                  buffer
-                                  (ps:ps (ps:chain document
-                                                   ;; TODO: Make shell formating
-                                                   ;; function and add support
-                                                   ;; for special characters,
-                                                   ;; e.g. progress bars.
-                                                   (write (ps:lisp (markup:markup
-                                                                    (:code (str:replace-all " " " " s))
-                                                                    (:br)))))))))))
-    (set-current-buffer buffer)
-    buffer))
+                    :multi-selection-p t)))
+    (operate-os-package "Installing packages..." #'ospama:install profile packages)))
 
 (define-command uninstall-os-package ()
   "Uninstall select packages."
@@ -147,38 +150,10 @@
          (packages (prompt-minibuffer
                     :suggestion-function (os-installed-package-suggestion-filter profile)
                     :input-prompt "Uninstall OS package(s)"
-                    :multi-selection-p t))
-         ;; TODO: Check for running process.
-         (buffer (or (find-buffer 'os-package-manager-mode)
-                     (nyxt/os-package-manager-mode:os-package-manager-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*"))))
-         (content
-          (markup:markup
-           (:style (style buffer))
-           (:h1 "Uninstalling packages...")))
-         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                      (ps:lisp content)))))
-    (ffi-buffer-evaluate-javascript-async buffer insert-content)
-    (chanl:pexec ()
-      (let ((process-info (ospama:uninstall packages profile)))
-        (format-command-stream process-info
-                               (lambda (s)
-                                 (ffi-buffer-evaluate-javascript-async
-                                  buffer
-                                  (ps:ps (ps:chain document
-                                                   ;; TODO: Make shell formating
-                                                   ;; function and add support
-                                                   ;; for special characters,
-                                                   ;; e.g. progress bars.
-                                                   (write (ps:lisp (markup:markup
-                                                                    (:code (str:replace-all " " " " s))
-                                                                    (:br)))))))))))
-    (set-current-buffer buffer)
-    buffer))
+                    :multi-selection-p t)))
+    (operate-os-package "Uninstalling packages..." #'ospama:uninstall profile packages)))
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
-;; - uninstall
 ;; - find-files (open in editor, with select program) -- leverage file-manager
 ;; - show-deps, show-reverse-deps (when minibuffer has actions)
