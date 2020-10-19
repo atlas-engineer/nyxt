@@ -30,8 +30,8 @@
                            :error-output :output))))
 
 (export-always 'list-packages)
-(defun list-packages ()
-  (manager-list-packages *manager*))
+(defun list-packages (&optional profile)
+  (manager-list-packages *manager* profile))
 
 (export-always 'find-os-package)
 (defun find-os-package (name)
@@ -49,8 +49,11 @@
   (run-over-packages (lambda (manager) (install-command manager profile)) package-list))
 
 (export-always 'uninstall)
-(defun uninstall (package-list)
-  (run-over-packages #'uninstall-command package-list))
+(defun uninstall (package-list &optional profile)
+  (manager-uninstall *manager* package-list profile))
+
+(defmethod manager-uninstall ((manager t) package-list &optional profile)
+  (run-over-packages (lambda (manager) (uninstall-command manager profile)) package-list))
 
 
 
