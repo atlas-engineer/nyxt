@@ -136,7 +136,7 @@ To discover the default value of a slot or all slots of a class, use the
       `(%define-configuration ,names ,@slots)))
 
 (export-always 'load-after-system)
-(defun load-after-system (system file)
+(defun load-after-system (system &optional file)
   "Load Common Lisp SYSTEM.
 Use Quicklisp if possible.
 Return NIL if system could not be loaded and return the condition as a second value.
@@ -152,7 +152,7 @@ Initialization file use case:
             #-quicklisp
             (asdf:load-system system))))
     (load-system system)
-    (when (asdf:find-system system nil)
+    (when (and file (asdf:find-system system nil))
       (load file))))
 
 (defun make-ring (&key (size 1000))
