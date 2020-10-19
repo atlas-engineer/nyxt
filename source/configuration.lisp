@@ -137,14 +137,12 @@ To discover the default value of a slot or all slots of a class, use the
 
 (export-always 'load-after-system)
 (defun load-after-system (system &optional file)
-  "Load Common Lisp SYSTEM.
+  "Load Common Lisp SYSTEM, afterwards if system was loaded, load file.
 Use Quicklisp if possible.
-Return NIL if system could not be loaded and return the condition as a second value.
 
 Initialization file use case:
 
-(when (load-system :foo)
-  (defun function-if-foo-is-found () ...))"
+(load-after-system :xyz \"configure-xyz.lisp\")"
   (flet ((load-system (system)
            (ignore-errors
             #+quicklisp
