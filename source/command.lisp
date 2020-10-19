@@ -69,14 +69,14 @@ Example:
        (export-always ',after-hook)
        (defparameter ,after-hook (hooks:make-hook-void))
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
-                                         (eq (pkg c) *package*)))
+                                         (eq (pkg c) (symbol-package ',name))))
                         *command-list*)
          (push (make-instance 'command
                               :sym ',name
-                              :pkg *package*
+                              :pkg (symbol-package ',name)
                               :sexp '(define-command (,@arglist) ,@body))
                *command-list*))
-       (export-always ',name)
+       (export-always ',name (symbol-package ',name))
        ;; We define the function at compile-time so that macros from the same
        ;; file can find the symbol function.
        (eval-when (:compile-toplevel :load-toplevel :execute)

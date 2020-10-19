@@ -137,8 +137,7 @@ Default keybindings: `M-Right' and `C-j'. "
       (update-display minibuffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :nyxt)
-(define-command open-file ()
+(define-command nyxt::open-file ()
   "Open a file from the filesystem.
 
 The user is prompted with the minibuffer, files are browsable with
@@ -162,7 +161,7 @@ Note: this feature is alpha, get in touch for more!"
     ;; Allow the current minibuffer to recognize our keybindings.
     (let ((filename (prompt-minibuffer
                      :default-modes '(nyxt/file-manager-mode::file-manager-mode minibuffer-mode)
-                     :input-prompt (file-namestring (uiop:getcwd))
+                     :input-prompt (namestring (uiop:getcwd))
                      :suggestion-function #'nyxt/file-manager-mode::open-file-from-directory-suggestion-filter)))
 
       (funcall nyxt/file-manager-mode::*open-file-function* (namestring filename)))))
