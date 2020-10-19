@@ -33,6 +33,10 @@
 (defun list-packages ()
   (manager-list-packages *manager*))
 
+(export-always 'find-os-package)
+(defun find-os-package (name)
+  (manager-find-os-package *manager* name))
+
 (export-always 'list-profiles)
 (defun list-profiles ()
   (manager-list-profiles *manager*))
