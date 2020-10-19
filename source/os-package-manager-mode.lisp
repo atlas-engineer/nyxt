@@ -35,6 +35,11 @@
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-packages))))
 
+(defun os-installed-package-suggestion-filter (profile)
+  (let* ((installed-packages (ospama:list-packages profile)))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) installed-packages))))
+
 (defun os-profile-suggestion-filter ()
   (let* ((all-profiles (ospama:list-profiles)))
     (lambda (minibuffer)
@@ -97,13 +102,14 @@
 
 (define-command install-os-package ()
   "Install select packages."
-  (let* ((packages (prompt-minibuffer
+  ;; TODO: Allow profile creation.  Need multi-source support for that?
+  (let* ((profile (prompt-minibuffer
+                   :suggestion-function (os-profile-suggestion-filter)
+                   :input-prompt "Target profile"))
+         (packages (prompt-minibuffer
                     :suggestion-function (os-package-suggestion-filter)
                     :input-prompt "Install OS package(s)"
                     :multi-selection-p t))
-         (profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter)
-                   :input-prompt "Target profile"))
          ;; TODO: Check for running process.
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
@@ -118,6 +124,44 @@
     (ffi-buffer-evaluate-javascript-async buffer insert-content)
     (chanl:pexec ()
       (let ((process-info (ospama:install packages profile)))
+        (format-command-stream process-info
+                               (lambda (s)
+                                 (ffi-buffer-evaluate-javascript-async
+                                  buffer
+                                  (ps:ps (ps:chain document
+                                                   ;; TODO: Make shell formating
+                                                   ;; function and add support
+                                                   ;; for special characters,
+                                                   ;; e.g. progress bars.
+                                                   (write (ps:lisp (markup:markup
+                                                                    (:code (str:replace-all " " " " s))
+                                                                    (:br)))))))))))
+    (set-current-buffer buffer)
+    buffer))
+
+(define-command uninstall-os-package ()
+  "Uninstall select packages."
+  (let* ((profile (prompt-minibuffer
+                   :suggestion-function (os-profile-suggestion-filter)
+                   :input-prompt "Target profile"))
+         (packages (prompt-minibuffer
+                    :suggestion-function (os-installed-package-suggestion-filter profile)
+                    :input-prompt "Uninstall OS package(s)"
+                    :multi-selection-p t))
+         ;; TODO: Check for running process.
+         (buffer (or (find-buffer 'os-package-manager-mode)
+                     (nyxt/os-package-manager-mode:os-package-manager-mode
+                      :activate t
+                      :buffer (make-internal-buffer :title "*OS packages*"))))
+         (content
+          (markup:markup
+           (:style (style buffer))
+           (:h1 "Uninstalling packages...")))
+         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                      (ps:lisp content)))))
+    (ffi-buffer-evaluate-javascript-async buffer insert-content)
+    (chanl:pexec ()
+      (let ((process-info (ospama:uninstall packages profile)))
         (format-command-stream process-info
                                (lambda (s)
                                  (ffi-buffer-evaluate-javascript-async
