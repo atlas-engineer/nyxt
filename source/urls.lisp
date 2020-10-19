@@ -107,7 +107,7 @@ Authority is compared case-insensitively (RFC 3986)."
   ;; Warning: We can't just set `quri:uri-scheme' to nil because that would
   ;; change the port (e.g. HTTP defaults to 80, HTTPS to 443).
   (format nil
-          "~@[~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
+          "~@[~A~]~@[~A~]~@[?~A~]~@[#~A~]"
           (quri:uri-authority uri)
           (or (quri:uri-path uri) "/")
           (quri:uri-query uri)
