@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 
-(defpackage :ospama
+(uiop:define-package :ospama
   (:use :common-lisp)
   (:import-from #:class* #:define-class)
   (:import-from #:serapeum #:export-always))
