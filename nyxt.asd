@@ -37,6 +37,7 @@
                :unix-opts
                :usocket
                ;; Local systems:
+               :nyxt/user-interface
                :nyxt/text-buffer
                :nyxt/text-analysis
                :nyxt/download-manager
@@ -224,6 +225,12 @@
                (:file "stem")
                (:file "analysis")
                (:file "text-rank")))
+
+(asdf:defsystem nyxt/user-interface
+  :depends-on (:cl-markup)
+  :pathname "libraries/user-interface/"
+  :components ((:file "package")
+               (:file "user-interface")))
 
 (asdf:defsystem nyxt/text-buffer
   :depends-on (:cluffer)
