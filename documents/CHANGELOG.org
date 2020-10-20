@@ -41,6 +41,10 @@ MAJOR.MINOR.PATCH, we increment the:
 
 - New =import-bookmarks-from-html= command.  (Thanks to @kssytsrk.)
 
+- New =execute-extended-command= command.  You can now execute
+  commands and interactively supply required, optional, and keyword
+  parameters.
+
 - New =reduce-tracking-mode=.
 
 - Add many bookmarklets (Javascripts utilities):
@@ -89,7 +93,9 @@ MAJOR.MINOR.PATCH, we increment the:
 
   - invert-color
   
-- New =reduce-to-buffer= command to create textual buffer listings.
+- New =reduce-to-buffer= command to delete buffers and list them on a
+  page. Useful for offloading inactive buffers and sending/saving a
+  group of buffers.
 
 - =download-hint-url= now support multiple selections.
 
