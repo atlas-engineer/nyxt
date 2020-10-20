@@ -567,6 +567,14 @@ sometimes yields the wrong reasult."
     (if (current-window)
         (window-set-active-buffer (current-window) buffer)
         (make-window buffer))
+    (with-data-access (history (history-path buffer)
+                       :default (htree:make))
+      (setf (htree:current history)
+            (or (htree:find-data (make-instance 'history-entry
+                                                :url (url buffer) :id (id buffer))
+                                 history
+                                 :test #'equals)
+                (htree:current history))))
     buffer))
 
 (export-always 'current-minibuffer)
