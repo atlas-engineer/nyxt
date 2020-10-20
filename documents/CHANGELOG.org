@@ -39,6 +39,96 @@ MAJOR.MINOR.PATCH, we increment the:
   It was incompatible with synchronous minibuffers.  It will be re-introduced
   when we have multi-source minibuffers.
 
+- New =import-bookmarks-from-html= command.  (Thanks to @kssytsrk.)
+
+- New =reduce-tracking-mode=.
+
+- Add many bookmarklets (Javascripts utilities):
+
+  - color-internal-external-links
+
+  - urls-as-link-text
+
+  - hide-visited-urls
+
+  - toggle-checkboxes
+
+  - view-password-field-contents
+
+  - show-hidden-form-elements
+
+  - enlarge-textareas
+
+  - show-textbox-character-count
+
+  - highlight-regexp
+
+  - zoom-images-in
+
+  - zoom-images-out
+
+  - sort-table
+
+  - number-table-rows
+
+  - number-lines
+
+  - transpose-tables
+
+  - remove-color
+
+  - remove-images
+
+  - hue-shift-positive
+
+  - hue-shift-negative
+
+  - increase-brightness
+
+  - decrease-brightness
+
+  - invert-color
+  
+- New =reduce-to-buffer= command to create textual buffer listings.
+
+- =download-hint-url= now support multiple selections.
+
+- New =toggle-toolbars= command.
+
+- Replace =load-system= configuration helper with =load-after-system=.
+
+- Quicklisp-based Lisp package manager.  See the =list-systems=, =load-system=
+  and =add-distribution= commands.
+
+- Moved mode globals to mode slots:
+
+  - Moved =*default-proxy*= to the =proxy= slot of =proxy-mode=.
+
+  - Moved =*prompt-on-mode-toggle*= to the =prompt-on-mode-toggle= slot of
+    =auto-mode=.
+
+  - Moved =*non-rememeberable-modes*= to the =non-rememberable= slot of =auto-mode=.
+
+  The user can now leverage =define-configuration= and =describe-class= to
+  easily configure any mode.
+
+- Moved input-edit commands (=cursor-forwards=, etc.) to =input-edit-mode=.
+
+- Replaced =lparallel= dependency with =chanl=.
+
+- Bug fixes
+
+  - SBCL 2.0.9 support.
+
+  - Fix =repl-mode=.
+
+  - Fix element hinting on =lisp://= URLs.
+
+  - Commands can now by defined with a package prefix in their name,
+    e.g. =nyxt::my-command=.
+
+  - Fix hostname resolution.  Hosts on the local network can now be browsed by name.
+
 *** 2-pre-release-2
 
 - Add configuration buttons for slots.
