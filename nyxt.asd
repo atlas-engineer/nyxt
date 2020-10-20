@@ -130,8 +130,10 @@
                          (test-op "nyxt/keymap/tests")
                          (test-op "nyxt/class-star/tests"))))
 
-(defun nyxt-run-test (c path)
-  (when (and (not (funcall (read-from-string "prove:run")
+(defun nyxt-run-test (c path &key network-needed-p)
+  (when (and (or (not network-needed-p)
+                 (not (uiop:getenv "NYXT_TESTS_NO_NETWORK")))
+             (not (funcall (read-from-string "prove:run")
                            (asdf:system-relative-pathname c path)))
              (uiop:getenv "CI"))
     (uiop:quit 18)))
@@ -139,7 +141,8 @@
 (asdf:defsystem nyxt/tests
   :depends-on (nyxt prove)
   :perform (asdf:test-op (op c)
-                         (nyxt-run-test c "tests/")))
+                         (nyxt-run-test c "tests/")
+                         (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
 
 (asdf:defsystem :nyxt/gtk
   :depends-on (:nyxt
@@ -209,7 +212,8 @@
 (asdf:defsystem nyxt/download-manager/tests
   :depends-on (nyxt/download-manager prove)
   :perform (asdf:test-op (op c)
-                         (nyxt-run-test c "libraries/download-manager/tests/")))
+                         (nyxt-run-test c "libraries/download-manager/tests/"
+                                        :network-needed-p t)))
 
 (asdf:defsystem nyxt/text-analysis
   :depends-on (:str

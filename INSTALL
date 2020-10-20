@@ -16,6 +16,8 @@ greatly reduces the file size at the expense of a slightly
 increased startup time.  It's recommended to leave this off
 on file systems with compression.
 
+Set NYXT_TESTS_NO_NETWORK to disable tests that require networking.
+
 If NYXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
 dependencies will be fetched with Quicklisp into the
 QUICKLISP_DIR directory.
