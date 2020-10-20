@@ -15,6 +15,8 @@
 part of the Accept-Language HTTP header.")
    (destructor
     (lambda (mode)
+      ;; What if user wants to have WebGL disabled by default?
+      (ffi-buffer-enable-webgl (buffer mode) t)
       (ffi-set-preferred-languages (buffer mode)
                                    (list (first
                                           (str:split
@@ -22,5 +24,6 @@ part of the Accept-Language HTTP header.")
                                            (or (uiop:getenv "LANG") "")))))))
    (constructor
     (lambda (mode)
+      (ffi-buffer-enable-webgl (buffer mode) nil)
       (ffi-set-preferred-languages (buffer mode)
                                    (preferred-languages mode))))))
