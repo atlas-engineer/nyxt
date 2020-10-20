@@ -19,9 +19,7 @@
 
 (define-mode web-mode ()
   "Base mode for interacting with documents."
-  ((history (htree:make)
-            :type htree:history-tree)
-   (history-blocklist '("https://duckduckgo.com/l/")
+  ((history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
                       ;; history.  How?
@@ -208,7 +206,7 @@ search.")
 (declaim (ftype (function (htree:node &optional buffer)) set-url-from-history))
 (defun set-url-from-history (history-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
-  (let ((history (history (find-submode buffer 'web-mode))))
+  (with-data-access (history (history-path buffer))
     (if (eq history-node (htree:current history))
         (echo "History entry is already the current URL.")
         (progn
@@ -217,29 +215,27 @@ search.")
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
-  (let* ((mode (find-submode buffer 'web-mode)))
-    (if (eq (htree:root (history mode)) (htree:current (history mode)))
+  (with-data-access (history (history-path buffer))
+    (if (eq (htree:root history) (htree:current history))
         (echo "No backward history.")
         (progn
-          (htree:back (history mode))
-          (match (htree:current (history mode))
+          (htree:back history)
+          (match (htree:current history)
             ((guard n n) (buffer-load (url (htree:data n)))))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
-  (let* ((mode (find-submode buffer 'web-mode)))
-    (if (htree:children-nodes (history mode))
+  (with-data-access (history (history-path buffer))
+    (if (htree:children-nodes history)
         (progn
-          (htree:forward (history mode))
-          (match (htree:current (history mode))
+          (htree:forward history)
+          (match (htree:current history)
             ((guard n n) (buffer-load (url (htree:data n))))))
         (echo "No forward history."))))
 
-(defun history-backwards-suggestion-filter (&optional (mode (find-submode
-                                                             (current-buffer)
-                                                             'web-mode)))
+(defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (let ((parents (htree:parent-nodes (history mode))))
+  (let ((parents (htree:parent-nodes (get-data (history-path buffer)))))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
@@ -253,11 +249,9 @@ search.")
     (when input
       (set-url-from-history input))))
 
-(defun history-forwards-suggestion-filter (&optional (mode (find-submode
-                                                            (current-buffer)
-                                                            'web-mode)))
+(defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (let ((children (htree:forward-children-nodes (history mode))))
+  (let ((children (htree:forward-children-nodes (get-data (history-path buffer)))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -271,20 +265,16 @@ search.")
     (when input
       (set-url-from-history input))))
 
-(define-command history-forwards-maybe-query (&optional (mode (find-submode
-                                                               (current-buffer)
-                                                               'web-mode)))
+(define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
   "If current node has multiple chidren, query forward-URL to navigate to.
 Otherwise go forward to the only child."
-  (if (<= 2 (length (htree:children-nodes (history mode))))
+  (if (<= 2 (length (htree:children-nodes (get-data (history-path buffer)))))
       (history-forwards-all-query)
       (history-forwards)))
 
-(defun history-forwards-all-suggestion-filter (&optional (mode (find-submode
-                                                                (current-buffer)
-                                                                'web-mode)))
+(defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (let ((children (htree:children-nodes (history mode))))
+  (let ((children (htree:children-nodes (get-data (history-path buffer)))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -298,11 +288,10 @@ Otherwise go forward to the only child."
     (when input
       (set-url-from-history input))))
 
-(defun history-all-suggestion-filter (&optional (mode (find-submode
-                                                       (current-buffer)
-                                                       'web-mode)))
+(defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (let ((urls (htree:all-nodes (history mode))))
+  (let ((urls (htree:all-nodes
+               (get-data (history-path buffer)))))
     (lambda (minibuffer)
       (if urls
           (fuzzy-match (input-buffer minibuffer) urls)
@@ -317,7 +306,8 @@ Otherwise go forward to the only child."
       (set-url-from-history input))))
 
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))
-  "Open a new buffer displaying the whole history tree."
+  "Open a new buffer displaying the whole history tree of a buffer.
+The history node of the children-buffers are included and colored in gray."
   (labels ((traverse (node current)
              (when node
                `(:li (:a :href ,(object-string (url (htree:data node)))
@@ -326,7 +316,9 @@ Otherwise go forward to the only child."
                                            (object-display (url (htree:data node))))))
                             (if (eq node current)
                                 `(:b ,title)
-                                title)))
+                                title))
+                         ,@(when (string/= (id buffer) (id (htree:data node)))
+                             '(:style "color: darkgray;")))
                      ,(match (mapcar (lambda (n) (traverse n current))
                                      (htree:children node))
                         ((guard l l) `(:ul ,@l)))))))
@@ -334,10 +326,9 @@ Otherwise go forward to the only child."
            (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
                                        (buffer-list))
                               (nyxt/help-mode:help-mode
-                               :activate t
-                               :buffer (make-internal-buffer :title buffer-name))))
-           (history (history (find-submode buffer 'web-mode)))
-           (tree `(:ul ,(traverse (htree:root history)
+                               :activate t :buffer (make-buffer :title buffer-name))))
+           (history (get-data (history-path buffer)))
+           (tree `(:ul ,(traverse (buffer-local-history-tree buffer)
                                   (htree:current history))))
            (tree-style
              (cl-css:css
@@ -441,16 +432,10 @@ Otherwise go forward to the only child."
   (unless (or (url-empty-p url)
               (find-if (alex:rcurry #'str:starts-with? (object-string url))
                        (history-blocklist mode)))
-    (htree:add-child (make-instance 'buffer-description
-                                    :url url
-                                    :title (title (buffer mode)))
-                     (history mode)
-                     :test #'equals)
-
     (with-current-buffer (buffer mode)
       (history-add url :title (title (buffer mode)))))
 
-  (store (data-profile (buffer mode)) (session-path (buffer mode)))
+  (store (data-profile (buffer mode)) (history-path (buffer mode)))
   url)
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)

@@ -3,10 +3,7 @@
 
 (in-package :nyxt)
 
-(defun buffer-history (buffer)
-  "Return the buffer history of BUFFER."
-  (match (find-submode buffer 'web-mode)
-    ((guard m m) (nyxt/web-mode:history m))))
+;;;; TODO: Remove?
 
 (defun web-buffers ()
   "Return list of web buffers.
@@ -14,7 +11,7 @@ I.e. non-special buffers, those with a non-empty URL slot."
   (delete-if (alex:compose #'url-empty-p #'url)
              (buffer-list)))
 
-(defun session-data ()
+(defun session-data (&optional (buffer (current-buffer)))
   "Return the data that needs to be serialized.
 This data can be used to restore the session later, e.g. when starting a new
 instance of Nyxt."
@@ -22,8 +19,7 @@ instance of Nyxt."
   ;; For now, it's just a simple list where the first element is the version.
   ;; Maybe not future-proof, but it's unclear that session structure will ever
   ;; change much.
-  (list +version+
-        (delete-if #'null (mapcar #'buffer-history (web-buffers)))))
+  (list +version+ (get-data (history-path buffer))))
 
 (defmethod store ((profile data-profile) (path session-data-path))
   "Store the current Nyxt session to the BUFFER's `session-path'.
@@ -67,25 +63,32 @@ Currently we store the list of current URLs of all buffers."
                  ;; symbols are printed with consistent namespaces.
                  (let ((*package* (find-package :nyxt)))
                    (s-serialization:deserialize-sexp input))))
-        ((list version buffer-histories)
-         (unless (string= version +version+)
-           (log:warn "Session version ~s differs from current version ~s." version +version+))
-         (setf buffer-histories (delete-if-not #'htree:current buffer-histories))
-         (echo "Loading session of ~a URLs from ~s."
-               (length buffer-histories)
-               (expand-path path))
-         (when buffer-histories
-           (log:info "Restoring ~a."
-                     (mapcar (alex:compose #'object-string #'htree:data #'htree:current)
-                             buffer-histories))
-           ;; Making multiple buffers (in particular WebKit contexts) too
-           ;; rapidly may create collisions with libsoup.  TODO: Add these
-           ;; entries to a separate browser slot and list them in
-           ;; `switch-to-buffers' when we have multi-source support.
-           (mapc #'make-buffer-from-history buffer-histories)
-           (echo "Restored session of ~a URLs from ~s."
-                 (length buffer-histories)
+        ((list version history-tree)
+         (let* ((buffer-histories (buffer-local-histories-table history-tree))
+                (most-recent-nodes (maphash (alex:rcurry #'sort :test #'local-time:timestamp>
+                                                                :key (alex:compose #'last-access
+                                                                                   #'htree:data))
+                                            buffer-histories)))
+           (unless (string= version +version+)
+             (log:warn "Session version ~s differs from current version ~s." version +version+))
+           (echo "Loading session of ~a URLs from ~s."
+                 (hash-table-size buffer-histories)
                  (expand-path path))
+           (when history-tree
+             (log:info "Restoring ~a."
+                       (mapcar (alex:compose #'object-string #'htree:data #'htree:current)
+                               history-tree))
+             ;; Make the new ones.
+             ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
+             (loop for node in most-recent-nodes
+                   for buffer = (make-buffer)
+                   do (setf (url buffer) (ensure-url (url (htree:data node)))
+                            (title buffer) (title (htree:data node))
+                            (slot-value buffer 'load-status) :unloaded)
+                   do (dolist (history-node (gethash (id (htree:data node)) buffer-histories))
+                        (setf (id (htree:data history-node)) (id buffer)))
+                      ;; TODO: This (setf ... (history-path ...)) looks wrong.
+                   finally (setf (get-data (history-path (current-buffer))) history-tree)))
            ;; TODO: Switch to the last active buffer.  We probably need to serialize *browser*.
            ;; Or else we could include `access-time' in the buffer class.
            )))
