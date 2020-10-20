@@ -97,6 +97,10 @@
            (lambda _
              (setenv "HOME" "/tmp")
              #t))
+         (add-before 'check 'disable-network-tests
+           (lambda _
+             (setenv "NYXT_TESTS_NO_NETWORK" "1")
+             #t))
          (add-after 'install 'wrap-program
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((bin (string-append (assoc-ref outputs "out") "/bin/nyxt"))
