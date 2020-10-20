@@ -13,10 +13,12 @@
                         :type list-of-strings
                         :documentation "The list of languages that will be sent as
 part of the Accept-Language HTTP header.")
+   (previous-webgl-setting nil
+                           :documentation "The state of WebGL
+before reduce-tracking-mode was enabled.")
    (destructor
     (lambda (mode)
-      ;; What if user wants to have WebGL disabled by default?
-      (ffi-buffer-enable-webgl (buffer mode) t)
+      (ffi-buffer-enable-webgl (buffer mode) (previous-webgl-setting mode))
       (ffi-set-preferred-languages (buffer mode)
                                    (list (first
                                           (str:split
@@ -24,6 +26,7 @@ part of the Accept-Language HTTP header.")
                                            (or (uiop:getenv "LANG") "")))))))
    (constructor
     (lambda (mode)
+      (setf (previous-webgl-setting mode) (ffi-buffer-webgl-enabled-p (buffer mode)))
       (ffi-buffer-enable-webgl (buffer mode) nil)
       (ffi-set-preferred-languages (buffer mode)
                                    (preferred-languages mode))))))
