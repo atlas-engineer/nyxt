@@ -119,25 +119,21 @@ URL in the buffer slot when we need to load a new page, while, for
 non-new-page requests, buffer URL is not altered."
   (quri:uri= (url request-data) (url (buffer request-data))))
 
-(defun history-empty-p (history)
-  (eq (htree:root history) (htree:current history)))
-
 (defun auto-mode-handler (request-data)
-  (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
-         (web-mode (find-submode (buffer request-data) 'web-mode))
-         (previous-url
-           (unless (history-empty-p (history web-mode))
-             (url (htree:data
-                   (htree:parent (htree:current (history web-mode)))))))
-         (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
-         (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
-    (when (and rule previous-url (not previous-rule))
-      (save-last-active-modes auto-mode previous-url))
-    (cond
-      ((and (not rule) (new-page-request-p request-data))
-       (reapply-last-active-modes auto-mode))
-      ((and rule (not (equalp rule previous-rule)))
-       (enable-matching-modes (url request-data) (buffer request-data)))))
+  (with-data-access (history (history-path (buffer request-data)))
+    (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
+           (previous-url
+             (when (ignore-errors (htree:parent (htree:current history)))
+               (url (htree:data (htree:parent (htree:current history))))))
+           (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
+           (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
+      (when (and rule previous-url (not previous-rule))
+        (save-last-active-modes auto-mode previous-url))
+      (cond
+        ((and (not rule) (new-page-request-p request-data))
+         (reapply-last-active-modes auto-mode))
+        ((and rule (not (equalp rule previous-rule)))
+         (enable-matching-modes (url request-data) (buffer request-data))))))
   request-data)
 
 (defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)

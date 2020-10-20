@@ -482,73 +482,30 @@ BUFFER's modes."
 
 (hooks:define-hook-type buffer (function (buffer)))
 
-(define-class buffer-description ()
-  ((url (quri:uri "")
-        :accessor nil
-        :documentation "URL should be a `quri:uri'.
-We also support the `string' type only for serialization purposes.  The URL is
-automatically turned into a `quri:uri' in the accessor.")
-   (title ""))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
-(defmethod url ((bd buffer-description))
-  "This accessor ensures we always return a `quri:uri'.
-This is useful in cases the URL is originally stored as a string (for instance
-when deserializing a `buffer-description').
-
-We can't use `initialize-instance :after' to convert the URL because
-`s-serialization:deserialize-sexp' sets the slots manually after making the
-class."
-  (unless (quri:uri-p (slot-value bd 'url))
-    (setf (slot-value bd 'url) (ensure-url (slot-value bd 'url))))
-  (slot-value bd 'url))
-
-(defmethod (setf url) (value (bd buffer-description))
-  (setf (slot-value bd 'url) value))
-
-(defmethod s-serialization::serialize-sexp-internal ((bd buffer-description)
-                                                     stream
-                                                     serialization-state)
-  "Serialize `buffer-description' by turning the URL into a string."
-  (let ((new-bd (make-instance 'buffer-description
-                               :title (title bd))))
-    (setf (url new-bd) (object-string (url bd)))
-    (call-next-method new-bd stream serialization-state)))
-
-(defmethod object-string ((buffer-description buffer-description))
-  (object-string (url buffer-description)))
-
-(defmethod object-display ((buffer-description buffer-description))
-  (format nil "~a  ~a"
-          (title buffer-description)
-          (object-display (url buffer-description))))
-
-(export-always 'equals)
-(defmethod equals ((bd1 buffer-description) (bd2 buffer-description))
-  "Comparison function for buffer history entries.
-An entry is uniquely identified from its URL.  We do not take the
-title into accound as it may vary from one load to the next."
-  (quri:uri= (url bd1) (url bd2)))
-
 (defmethod object-string ((buffer buffer))
   (object-string (url buffer)))
 
 (defmethod object-display ((buffer buffer))
   (format nil "~a  ~a" (title buffer) (object-display (url buffer))))
 
-(define-command make-buffer (&key (title "") modes (url ""))
+(define-command make-buffer (&key (title "") modes (url "") child-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is `:default', use `default-new-buffer-url'."
-  (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
-         (url (if (eq url :default)
-                  (default-new-buffer-url buffer)
-                  url)))
-    (unless (url-empty-p url)
-      (buffer-load url :buffer buffer))
-    buffer))
+If URL is `:default', use `default-new-buffer-url'.
+CHILD-P denotes whether the new buffer should have a history
+starting from the current buffer's history."
+  (with-data-access (history (history-path (or (current-buffer) (make-instance 'buffer))))
+    (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
+           (url (if (eq url :default)
+                    (default-new-buffer-url buffer)
+                    url)))
+      ;; We need start buffer history from root in case buffer is independent
+      ;; TODO: New history entries can be created much later than buffer creation. Too stateful.
+      (unless child-p
+        (setf (htree:current history) (htree:root history)))
+      (unless (url-empty-p url)
+        (buffer-load url :buffer buffer))
+      buffer)))
 
 (define-command make-internal-buffer (&key (title "") modes)
   "Create a new buffer.
@@ -590,6 +547,43 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
+(export-always 'buffer-local-histories-table)
+(defmethod buffer-local-histories-table ((history htree:history-tree))
+  "Return a table mapping buffer `id's to the histories of the corresponding buffers."
+  (let ((buffers (make-hash-table :test #'equalp)))
+    (dolist (node (htree:all-nodes history))
+      (push node (gethash (id (htree:data node)) buffers)))
+    buffers))
+
+(export-always 'buffer-local-history-tree)
+(defmethod buffer-local-history-tree ((buffer buffer))
+  "Return a node that the buffer-local history starts from
+and list of nodes of buffer-local history as a second value."
+  (loop with id = (id buffer)
+        with buffer-history
+          = (gethash id (buffer-local-histories-table
+                         (get-data (history-path buffer))))
+        for node in buffer-history
+        when (string/= id (id (htree:data (htree:parent node))))
+          do (return (values node buffer-history))))
+
+(defmethod buffer-local-history-clean ((buffer buffer))
+  "Deletes the BUFFER-local history in case it has no children in other buffers.
+Rebinds the history to the oldest child otherwise."
+  (with-data-access (history (history-path buffer))
+      (multiple-value-bind (root buffer-history)
+          (buffer-local-history-tree buffer)
+        (let* ((buffer-native-history (remove-if (alex:curry #'string/= (id buffer)) buffer-history
+                                                 :key (alex:compose #'id #'data)))
+               (children (set-difference buffer-history buffer-native-history
+                                         :test #'equals :key #'data))
+               (most-recent-child (first (sort children #'local-time:timestamp<
+                                               :key (alex:compose #'last-access #'data)))))
+          (if children
+              (dolist (native-node buffer-native-history)
+                (setf (id (data native-node)) (id most-recent-child)))
+              (htree:delete-node (htree:data root) history :test #'equals))))))
+
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
@@ -608,14 +602,14 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
         (window-set-active-buffer parent-window
                                   replacement-buffer)))
     (ffi-buffer-delete buffer)
+    (buffer-local-history-clean buffer)
     (buffers-delete (id buffer))
-    (setf (id buffer) "")
     (add-to-recent-buffers buffer)
-    (store (data-profile buffer) (session-path buffer))))
+    (store (data-profile buffer) (history-path buffer))))
 
 (export-always 'buffer-list)
 (defun buffer-list (&key sort-by-time domain)
-  (let* ((buffer-list (alex:hash-table-values (slot-value *browser* 'buffers)))
+  (let* ((buffer-list (alex:hash-table-values (buffers *browser*)))
          (buffer-list (if sort-by-time (sort
                                         buffer-list #'local-time:timestamp> :key #'last-access)
                           buffer-list))
@@ -714,7 +708,7 @@ proceeding."
 (define-command switch-buffer (&key id)
   "Switch the active buffer in the current window."
   (if id
-      (set-current-buffer (gethash id (slot-value *browser* 'buffers)))
+      (set-current-buffer (buffers-get id))
       (let ((buffer (prompt-minibuffer
                      :input-prompt "Switch to buffer"
                      ;; For commodity, the current buffer shouldn't be the first one on the list.
@@ -742,7 +736,7 @@ proceeding."
 (define-command make-buffer-focus (&key (url :default))
   "Switch to a new buffer.
 See `make-buffer'."
-  (let ((buffer (make-buffer :url url)))
+  (let ((buffer (make-buffer :url url :child-p t)))
     (set-current-buffer buffer)
     buffer))
 

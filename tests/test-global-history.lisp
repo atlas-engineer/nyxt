@@ -17,31 +17,27 @@
                                        :basename "history"
                                        :dirname "/tmp/nyxt-history-test"))))
         (history-add (quri:uri "http://example.org"))
-        (is (hash-table-count (nyxt:get-data path))
+        (is (htree:size (nyxt:get-data path))
             1
             "history has 1 entry")
-        (let ((entry (first (alexandria:hash-table-alist
-                             (nyxt:get-data path)))))
-          (is (first entry)
-              "http://example.org"
-              "key is URL")
-          (is (url (rest entry))
+        (let ((entry (first (htree:all-nodes-data (nyxt:get-data path)))))
+          (is (url entry)
               (quri:uri "http://example.org")
               :test #'quri:uri=
               "value has quri:uri")
-          (is (title (rest entry))
+          (is (title entry)
               ""
               "value has no title"))
         (history-add (quri:uri "http://example.org") :title "foo")
-        (is (hash-table-count (nyxt:get-data path))
+        (is (htree:size (nyxt:get-data path))
             1
             "history has still 1 entry after adding same URI")
-        (let ((entry (first (alexandria:hash-table-alist (nyxt:get-data path)))))
-          (is (title (rest entry))
+        (let ((entry (first (htree:all-nodes-data (nyxt:get-data path)))))
+          (is (title entry)
               "foo"
               "value now has title"))
         (history-add (quri:uri "http://example.org/sub"))
-        (is (hash-table-count (nyxt:get-data path))
+        (is (htree:size (nyxt:get-data path))
             2
             "history now has 2 entries")
         (uiop:delete-file-if-exists (expand-path (history-path buffer)))))))

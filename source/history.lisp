@@ -7,6 +7,8 @@
   ((url (quri:uri "")
         :type quri:uri)
    (title "")
+   (id ""
+       :documentation "The `id' of the buffer that this entry belongs to the branch of.")
    (last-access (local-time:now)
                 :type local-time:timestamp)
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
@@ -34,7 +36,10 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
   (format nil "~a  ~a" (object-display (url entry)) (title entry)))
 
 (defmethod equals ((e1 history-entry) (e2 history-entry))
-  (quri:uri= (url e1) (url e2)))
+  ;; We need to compare IDs to preserve history entries of different buffers.
+  ;; TODO: Should we?
+  (and (string= (id e1) (id e2))
+       (quri:uri= (url e1) (url e2))))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:explicit t)) t) history-add))
 (export-always 'history-add)
@@ -44,19 +49,21 @@ The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
   (with-data-access (history (history-path (current-buffer))
-                     :default (make-hash-table :test #'equal))
-    (unless (url-empty-p uri)
-      (let ((entry (gethash (object-string uri) history)))
-        (unless entry
-          (setf entry (make-instance 'history-entry :url uri)))
-        (if explicit
-            (incf (explicit-visits entry))
-            (incf (implicit-visits entry)))
-        (setf (last-access entry) (local-time:now))
-        (when title
-          ;; Always update the title since it may have changed since last visit.
-          (setf (title entry) title))
-        (setf (gethash (object-string uri) history) entry)))))
+                             :default (htree:make))
+      (unless (url-empty-p uri)
+        (let* ((maybe-entry (make-instance 'history-entry
+                                           :url uri :id (id (current-buffer)) :title title))
+               (node (htree:find-data maybe-entry history :ensure-p t :test #'equals))
+               (entry (htree:data node)))
+          (if explicit
+              (incf (explicit-visits entry))
+              (incf (implicit-visits entry)))
+          (setf (last-access entry) (local-time:now))
+          (when title
+            ;; Always update the title since it may have changed since last visit.
+            (setf (title entry) title))
+          (setf (htree:data node) entry)))
+    (setf (current-history-node (current-buffer)) (htree:current history))))
 
 (define-command delete-history-entry ()
   "Delete queried history entries."
@@ -67,8 +74,7 @@ The history is sorted by last access."
                     :history (minibuffer-set-url-history *browser*)
                     :multi-selection-p t)))
       (dolist (entry entries)
-        (remhash (object-string (url entry)) history)))))
-
+        (htree:delete-node entry history :test #'equals :rebind-children-p t)))))
 
 
 (defun score-history-entry (entry)
@@ -91,20 +97,17 @@ lot."
 This can be useful to, say, prefix the history with the current URL.  At the
 moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
-  (let* ((path (history-path (current-buffer)))
-         (history (when (get-data path)
-                    (sort (alex:hash-table-values
-                           (get-data path))
-                          (lambda (x y)
-                            (> (score-history-entry x)
-                               (score-history-entry y))))))
-        (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
-    (when prefix-urls
-      (setf history (append (mapcar (lambda (u) (quri:url-decode u :lenient t))
-                                    prefix-urls)
-                            history)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) history))))
+  (with-data-access (hist (history-path (current-buffer)))
+      (let* ((history (when hist
+                        (sort (htree:all-nodes-data hist)
+                              (lambda (x y)
+                                (> (score-history-entry x)
+                                   (score-history-entry y))))))
+          (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
+     (when prefix-urls
+       (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
+     (lambda (minibuffer)
+       (fuzzy-match (input-buffer minibuffer) history)))))
 
 (defun history-stored-data ()
   "Return the history data that needs to be serialized.
@@ -150,12 +153,12 @@ instance of Nyxt."
         (match data
           (nil nil)
           ((guard (list version history)
-                  (hash-table-p history))
+                  (typep 'htree:history-tree history))
            (unless (string= version +version+)
              (log:warn "History version ~s differs from current version ~s"
                        version +version+))
-           (echo "Loading global history of ~a URLs from ~s."
-                 (hash-table-count history)
+           (echo "Loading history of ~a URLs from ~s."
+                 (htree:size history)
                  (expand-path path))
            (setf (get-data path) history))
           (_ (error "Expected (list version history) structure."))))
