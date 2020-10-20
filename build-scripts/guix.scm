@@ -78,18 +78,19 @@
        (modify-phases %standard-phases
          (add-after 'unpack 'patch-version ; Version is guessed from .git which Guix does not have.
            (lambda* (#:key inputs #:allow-other-keys)
-             (let ((version (format #f "~a" ,version)))
-               (substitute* "source/global.lisp"
-                 (("version\\)\\)\\)")
-                  (string-append "version)))"
-                                 "\n"
-                                 "(setf +version+ \"" version "\")"))))
+             (let ((version (format #f "~a" ,version))
+                   (file "source/global.lisp"))
+               (chmod file #o666)
+               (let ((port (open-file file "a")))
+                 (format port "(setf +version+ ~s)" version)
+                 (close-port port)))
              #t))
          (add-before 'build 'make-desktop-version-number
            (lambda _
              (with-output-to-file "version"
                (lambda _
-                 (format #t "~a" ,version)))))
+                 (format #t "~a" ,version)
+                 #t))))
 
          (delete 'configure)
          (add-before 'build 'fix-common-lisp-cache-folder
