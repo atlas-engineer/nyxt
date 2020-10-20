@@ -214,7 +214,7 @@ A command is a special kind of function that can be called with
     (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
     (set-current-buffer help-buffer)))
 
-(defun configure-slot (slot class &key (value nil new-value-supplied-p))
+(defun configure-slot (slot class &key (value nil new-value-supplied-p) (type nil))
   "Set the value of a slot in a users auto-config.lisp."
   (flet ((set-slot (slot class input)
            (echo "Slot ~a updated with value ~s." slot input)
@@ -225,11 +225,17 @@ A command is a special kind of function that can be called with
           (set-slot slot class value)
           (eval `(define-configuration ,class
                    ((,slot ,value)))))
-        (let ((input (prompt-minibuffer
-                      :input-prompt (format nil "Configure slot value ~a" slot))))
-          (set-slot slot class input)
+        (let ((accepted-input
+                (loop while t do
+                         (let ((input (prompt-minibuffer
+                                       :input-prompt (format nil "Configure slot value ~a" slot))))
+                           ;; no type specified, no need to keep querying
+                           (unless type (return input))
+                           (when (typep (read-from-string input) type)
+                             (return input))))))
+          (set-slot slot class accepted-input)
           (eval `(define-configuration ,class
-                   ((,slot (read-from-string ,input)))))))))
+                   ((,slot (read-from-string ,accepted-input)))))))))
 
 (defun append-configuration (form)
   (with-data-file (file *auto-config-file-path*
@@ -301,7 +307,7 @@ A command is a special kind of function that can be called with
                     "Use vi"))
             (:h2 "Default new buffer URL")
             (:a :class "button"
-                :href (lisp-url `(nyxt::configure-slot 'default-new-buffer-url 'web-buffer))
+                :href (lisp-url `(nyxt::configure-slot 'default-new-buffer-url 'web-buffer :type 'STRING))
                 "Set default new buffer URL")
             (:h2 "Default zoom ratio")
             (:a :class "button"
