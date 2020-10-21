@@ -37,7 +37,8 @@ the empty string."))
           (search-url engine)))
 
 (defun bookmark-search-engines (&optional (bookmarks (get-data (bookmarks-path
-                                                                (current-buffer)))))
+                                                                (or (current-buffer)
+                                                                    (make-instance 'user-buffer))))))
   (mapcar (lambda (b)
             (make-instance 'search-engine
                            :shortcut (shortcut b)
@@ -52,7 +53,8 @@ the empty string."))
 (defun all-search-engines ()
   "Return the `search-engines' from the `browser' instance plus those in
 bookmarks."
-  (sera:and-let* ((buffer (current-buffer)))
+  (let ((buffer (or (current-buffer)
+                    (make-instance 'user-buffer))))
     ;; Make sure `default-search-engine' returns the same value after the append.
     (append (bookmark-search-engines)
             (search-engines buffer))))
