@@ -544,28 +544,6 @@ sometimes yields the wrong reasult."
         ;; No window when browser is not started or does not implement `ffi-window-active'.
         (ignore-errors (ffi-window-active *browser*)))))
 
-(defparameter %buffer nil)              ; TODO: Make a monad?
-
-(export-always 'current-buffer)
-(defun current-buffer (&optional window)
-  "Get the active buffer for WINDOW, or the active window otherwise."
-  (or %buffer
-      (match (or window (current-window))
-        ((guard w w) (active-buffer w))
-        (_ (when *browser*
-             (log:debug "No active window, picking last active buffer.")
-             (last-active-buffer))))))
-
-(export-always 'with-current-buffer)
-(defmacro with-current-buffer (buffer &body body)
-  "Execute BODY in a context in which `current-buffer' returns BUFFER."
-  ;; We `unwind-protect' to restore the right buffer when nesting this macro.
-  `(let ((old-%buffer %buffer))
-     (unwind-protect
-          (let ((%buffer ,buffer))
-            ,@body)
-       (setf %buffer old-%buffer))))
-
 (declaim (ftype (function (buffer)) set-current-buffer))
 ;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.
 ;; But we can't use "minibuffer" here since it's not declared yet.  It will
