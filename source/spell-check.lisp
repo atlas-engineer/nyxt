@@ -32,7 +32,7 @@ suggestions."
 (define-command spell-check-word-at-cursor ()
   "Spell check the word at cursor."
   (let* ((contents (nyxt/input-edit-mode::active-input-area-content))
-                 (cursor-position (nyxt/input-edit-mode::active-input-area-content)))
+         (cursor-position (nyxt/input-edit-mode::active-input-area-cursor)))
     (let ((text-buffer (make-instance 'text-buffer:text-buffer))
           (cursor (make-instance 'text-buffer:cursor)))
       (cluffer:attach-cursor cursor text-buffer)
