@@ -12,8 +12,8 @@
                      :input-prompt "Spell check word")))
           (if (enchant:with-dict (lang (spell-check-language *browser*))
                 (enchant:dict-check lang word))
-              (echo "~a spelled correctly." word)
-              (echo "~a is incorrect." word)))))
+              (echo "~s spelled correctly." word)
+              (echo "~s is incorrect." word)))))
 
 (define-command spell-check-highlighted-word ()
   "Spell check a highlighted word. If a word is incorrectly spelled,
@@ -25,8 +25,8 @@ pull up a prompt of suggestions."
   "Spell check `word', if incorrectly spelled, prompt the user with
 suggestions."
   (if (spell-check-word :word word)
-        (echo "Highlighted word: ~a, spelled correctly." word)
-        (progn (echo "Highlighted word: ~a, spelled incorrectly." word)
+        (echo "Highlighted word ~s spelled correctly." word)
+        (progn (echo "Highlighted word ~s spelled incorrectly." word)
                (spell-check-suggest-word :word word))))
 
 (define-command spell-check-word-at-cursor ()
