@@ -24,6 +24,28 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
+(defparameter %buffer nil)              ; TODO: Make a monad?
+
+(export-always 'current-buffer)
+(defun current-buffer (&optional window)
+  "Get the active buffer for WINDOW, or the active window otherwise."
+  (or %buffer
+      (match (or window (current-window))
+        ((guard w w) (active-buffer w))
+        (_ (when *browser*
+             (log:debug "No active window, picking last active buffer.")
+             (last-active-buffer))))))
+
+(export-always 'with-current-buffer)
+(defmacro with-current-buffer (buffer &body body)
+  "Execute BODY in a context in which `current-buffer' returns BUFFER."
+  ;; We `unwind-protect' to restore the right buffer when nesting this macro.
+  `(let ((old-%buffer %buffer))
+     (unwind-protect
+          (let ((%buffer ,buffer))
+            ,@body)
+       (setf %buffer old-%buffer))))
+
 (defun user-class-name (class-sym)
   (intern (str:concat "USER-" (string class-sym))
           (symbol-package class-sym)))
