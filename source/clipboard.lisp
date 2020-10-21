@@ -9,10 +9,11 @@
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
 Return most recent entry in RING."
-  (let ((clipboard-content (trivial-clipboard:text)))
-    (unless (string= clipboard-content (unless (containers:empty-p ring)
-                                         (containers:first-item ring)))
-      (containers:insert-item ring clipboard-content)))
+  (let ((clipboard-content (ignore-errors (trivial-clipboard:text))))
+    (when clipboard-content
+      (unless (string= clipboard-content (unless (containers:empty-p ring)
+                                           (containers:first-item ring)))
+        (containers:insert-item ring clipboard-content))))
   (string (containers:first-item ring)))
 
 (export-always 'copy-to-clipboard)

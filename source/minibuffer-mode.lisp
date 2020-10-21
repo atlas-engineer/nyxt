@@ -257,7 +257,7 @@ complete against a search engine."
   ;; See `paste' comment on why we use a new thread here.
   (bt:make-thread
    (lambda ()
-     (trivial-clipboard:text (trivial-clipboard:text))
+     (trivial-clipboard:text (or (ignore-errors (trivial-clipboard:text)) ""))
      (ffi-within-renderer-thread
       *browser*
       (lambda ()
