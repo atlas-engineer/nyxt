@@ -621,6 +621,9 @@ proceeding."
           (setf (active-buffer window) buffer)))
     (setf (last-access buffer) (local-time:now))
     (setf (last-active-buffer *browser*) buffer)
+    ;; So that `current-buffer' returns the new value if buffer was
+    ;; switched inside a `with-current-buffer':
+    (setf %buffer nil)
     (set-window-title window buffer)
     (print-status nil window)
     (when (and (web-buffer-p buffer)

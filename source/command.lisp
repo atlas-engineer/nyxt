@@ -292,7 +292,12 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
   (let ((channel (make-instance 'chanl:bounded-channel :size 1)))
     (chanl:pexec ()
       (chanl:send channel
-                  (apply #'funcall-safely (command-function command) args)))
+                  ;; Bind current buffer for the duration of the command.  This
+                  ;; way, if the user switches buffer after running a command
+                  ;; but before command termination, `current-buffer' will
+                  ;; return the buffer from which the command was invoked.
+                  (with-current-buffer (current-buffer)
+                    (apply #'funcall-safely (command-function command) args))))
     (chanl:recv channel)))
 
 (defmethod run-async ((command command) &rest args)
@@ -300,7 +305,8 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (chanl:pexec ()
-    (apply #'funcall-safely (command-function command) args)))
+    (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
+      (apply #'funcall-safely (command-function command) args))))
 
 (define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.
