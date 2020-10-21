@@ -532,10 +532,6 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (when dead-buffer
       (setf (url buffer) (url dead-buffer)))
     (buffers-set (id buffer) buffer)
-    (unless (last-active-buffer browser)
-      ;; When starting from a REPL, it's possible that the window is spawned in
-      ;; the background and current-buffer would then return nil.
-      (setf (last-active-buffer browser) buffer))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
     (hooks:run-hook (buffer-make-hook browser) buffer)
@@ -620,7 +616,6 @@ proceeding."
           (ffi-window-set-active-buffer window buffer)
           (setf (active-buffer window) buffer)))
     (setf (last-access buffer) (local-time:now))
-    (setf (last-active-buffer *browser*) buffer)
     ;; So that `current-buffer' returns the new value if buffer was
     ;; switched inside a `with-current-buffer':
     (setf %buffer nil)
@@ -629,6 +624,11 @@ proceeding."
     (when (and (web-buffer-p buffer)
                (eq (slot-value buffer 'load-status) :unloaded))
       (reload-current-buffer buffer))))
+
+(defun last-active-buffer ()
+  "Return buffer with most recent `last-access'."
+  (first (sort (buffer-list)
+               #'local-time:timestamp> :key #'last-access)))
 
 (defun get-inactive-buffers ()
   "Return inactive buffers sorted by last-access timestamp, or NIL if none."

@@ -89,10 +89,6 @@ count since deleting windows may reseult in duplicate identifiers.")
 useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
-   (last-active-buffer (make-instance 'buffer)
-                       :type (or buffer null)
-                       :export nil
-                       :documentation "The default value is the default of `current-buffer'.")
    (buffers :initform (make-hash-table :test #'equal)
             :documentation "To manipulate the list of buffers,
 see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
@@ -558,7 +554,7 @@ sometimes yields the wrong reasult."
         ((guard w w) (active-buffer w))
         (_ (when *browser*
              (log:debug "No active window, picking last active buffer.")
-             (last-active-buffer *browser*))))))
+             (last-active-buffer))))))
 
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)
