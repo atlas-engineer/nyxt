@@ -3,8 +3,8 @@
 
 (uiop:define-package :nyxt/os-package-manager-mode
   (:use :common-lisp :trivia :nyxt)
-  ;; (:documentation "")
-  )
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:documentation "Universal interface to various operating system package managers."))
 (in-package :nyxt/os-package-manager-mode)
 
 ;; TODO: Prompt for password?  Use this:
@@ -63,7 +63,7 @@
       (fuzzy-match (input-buffer minibuffer) all-packages))))
 
 (defun os-manifest-suggestion-filter ()
-  (let* ((all-manifests (ospama:list-manifests)))
+  (let* ((all-manifests (mapcar #'namestring (ospama:list-manifests))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-manifests))))
 
@@ -302,6 +302,15 @@
                     :suggestion-function (os-manifest-suggestion-filter)
                     :input-prompt "Manifest")))
     (operate-os-package "Installing package manifest..." #'ospama:install-manifest profile manifest)))
+
+(define-command edit-package-manifest ()
+  "Edit select manifest."
+  (assert-package-manager)
+  (let ((manifest (prompt-minibuffer
+                   :suggestion-function (os-manifest-suggestion-filter)
+                   :input-prompt "Manifest")))
+    (echo "Opening ~s with ~a" manifest (external-editor-program *browser*))
+    (uiop:launch-program (list (external-editor-program *browser*) manifest))))
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
