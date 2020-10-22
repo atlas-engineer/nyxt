@@ -46,6 +46,10 @@ If unset, it will default to the first `*detected-managers*'.")
 (defvar *detected-managers* '()
   "The list of keywords corresponding to the detected managers.")
 
+;; TODO: What would be an ideal default location?
+(defvar profile-directory (uiop:xdg-data-home "profiles"))
+(defvar manifest-directory (uiop:xdg-data-home "manifests"))
+
 (defun detect-manager (name class-sym)
   "Prepend the CLASS-SYM instance to `*detected-managers*' if NAME is an
 executable that can be found.
@@ -59,16 +63,21 @@ NAME can be also be a path."
     (setf *manager* (first *detected-managers*)))
   *manager*)
 
-(defun run-over-packages (argument-method package-list)
+(defun run (command)
+  "Return a PROCESS-INFO of the command."
+  (uiop:launch-program command
+                       :output :stream
+                       :error-output :output))
+
+(defun run-over-packages (argument-method package-list) ; TODO: This is a bit convoluted.  Simplify?
+  "Return a PROCESS-INFO of the command."
   (multiple-value-bind (pre-args post-args)
       (funcall argument-method (manager))
     (let ((command (append
                     pre-args
                     (mapcar #'name package-list)
                     post-args)))
-      (uiop:launch-program command
-                           :output :stream
-                           :error-output :output))))
+      (run command))))
 
 (export-always 'list-packages)
 (defun list-packages (&optional profile)
@@ -86,12 +95,30 @@ NAME can be also be a path."
 (defun list-profiles ()
   (manager-list-profiles (manager)))
 
+(export-always 'list-manifests)
+(defun list-manifests ()
+  (manager-list-manifests (manager)))
+
+(defmethod manager-list-manifests ((manager manager))
+  (uiop:directory-files (uiop:ensure-directory-pathname manifest-directory)))
+
 (export-always 'install)
 (defun install (package-list &optional profile)
   (manager-install (manager) package-list profile))
 
 (defmethod manager-install ((manager manager) package-list &optional profile)
   (run-over-packages (lambda (manager) (install-command manager profile)) package-list))
+
+(export-always 'install-manifest)
+(defun install-manifest (manifest &optional profile)
+  (manager-install-manifest (manager) manifest profile))
+
+(defmethod install-manifest-command ((manager manager)) ; TODO: Define all defgenerics?
+  (error "Unspecified manager command"))
+
+(defmethod manager-install-manifest ((manager manager) manifest &optional profile)
+  (run (list (lambda (manager) (install-manifest-command manager profile))
+             manifest)))
 
 (export-always 'uninstall)
 (defun uninstall (package-list &optional profile)

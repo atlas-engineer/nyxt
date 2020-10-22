@@ -300,6 +300,12 @@ PROFILE is a full path to a profile."
           (when profile
             (list (str:concat "--profile=" profile)))))
 
+(defmethod manager-install-manifest ((manager guix-manager) manifest &optional profile)
+  (run (append (list (path manager) "package"
+                     (str:concat "--manifest=" (namestring manifest)))
+               (when profile
+                 (list (str:concat "--profile=" profile))))))
+
 (defmethod uninstall-command ((manager guix-manager) profile)
   (append (list (path manager) "remove")
           (when profile
