@@ -155,8 +155,15 @@
     (set-current-buffer buffer)
     buffer))
 
+(defun assert-package-manager ()
+  (unless (ospama:manager)
+    (let ((message "No supported package manager detected."))
+      (echo message)
+      (error message))))
+
 (define-command describe-os-package ()
   "Show description of select packages."
+  (assert-package-manager)
   (let* ((packages (prompt-minibuffer
                     :suggestion-function (os-package-suggestion-filter)
                     :input-prompt "Describe OS package(s)"
@@ -172,6 +179,7 @@
 ;; TODO: open in editor, with select program, leverage file-manager
 (define-command list-os-package-files ()
   "List files of select packages."
+  (assert-package-manager)
   (let* ((packages-or-outputs (if (typep (ospama:manager) 'ospama:guix-manager)
                                   (prompt-minibuffer
                                    :suggestion-function (os-package-output-suggestion-filter)
@@ -187,18 +195,18 @@
                       :buffer (make-internal-buffer :title "*OS packages*")))))
     (html-set
      (markup:markup
-            (:style (style buffer))
-            (:h1 "Package files")
-            (:ul
-             (loop for package-or-output in packages-or-outputs
-                   collect (markup:markup*
-                            `(:li ,(object-string package-or-output)
-                                  (:ul
-                                   ,@(mapcar (lambda (file)
-                                               `(:li ,(if (viewable-file-type-p file)
-                                                          `(:a :href ,file ,file)
-                                                          file)))
-                                             (ospama:list-files (list package-or-output)))))))))
+      (:style (style buffer))
+      (:h1 "Package files")
+      (:ul
+       (loop for package-or-output in packages-or-outputs
+             collect (markup:markup*
+                      `(:li ,(object-string package-or-output)
+                            (:ul
+                             ,@(mapcar (lambda (file)
+                                         `(:li ,(if (viewable-file-type-p file)
+                                                    `(:a :href ,file ,file)
+                                                    file)))
+                                       (ospama:list-files (list package-or-output)))))))))
      buffer)
     (set-current-buffer buffer)
     buffer))
@@ -252,6 +260,7 @@
 
 (define-command install-os-package ()
   "Install select packages."
+  (assert-package-manager)
   ;; TODO: Allow profile creation.  Need multi-source support for that?
   (let* ((profile (prompt-minibuffer
                    :suggestion-function (os-profile-suggestion-filter)
@@ -264,6 +273,7 @@
 
 (define-command uninstall-os-package ()
   "Uninstall select packages."
+  (assert-package-manager)
   (let* ((profile (prompt-minibuffer
                    :suggestion-function (os-profile-suggestion-filter)
                    :input-prompt "Target profile"))
