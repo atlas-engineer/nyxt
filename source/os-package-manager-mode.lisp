@@ -15,8 +15,12 @@
 (define-mode os-package-manager-mode ()
   "Mode for package management."
   ((current-process-info nil
-
-                         :type (or null uiop/launch-program::process-info))))
+                         :type (or null uiop/launch-program::process-info))
+   (keymap-scheme
+    (define-scheme "web"
+      scheme:cua
+      (list
+       "C-d" 'cancel-package-operation))))) ; TODO: Doesn't work?
 
 (define-command cancel-package-operation ()
   "Terminate the package manager process in the current buffer."
@@ -57,6 +61,11 @@
     (echo "")
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-packages))))
+
+(defun os-manifest-suggestion-filter ()
+  (let* ((all-manifests (ospama:list-manifests)))
+    (lambda (minibuffer)
+      (fuzzy-match (input-buffer minibuffer) all-manifests))))
 
 (defun os-package-output-suggestion-filter ()
   (echo "Loading package database...")
@@ -282,6 +291,17 @@
                     :input-prompt "Uninstall OS package(s)"
                     :multi-selection-p t)))
     (operate-os-package "Uninstalling packages..." #'ospama:uninstall profile packages)))
+
+(define-command install-package-manifest ()
+  "Install select manifest to a profile."
+  (assert-package-manager)
+  (let* ((profile (prompt-minibuffer
+                   :suggestion-function (os-profile-suggestion-filter)
+                   :input-prompt "Target profile"))
+         (manifest (prompt-minibuffer
+                    :suggestion-function (os-manifest-suggestion-filter)
+                    :input-prompt "Manifest")))
+    (operate-os-package "Installing package manifest..." #'ospama:install-manifest profile manifest)))
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
