@@ -20,12 +20,18 @@
     (define-scheme "web"
       scheme:cua
       (list
-       "C-d" 'cancel-package-operation))))) ; TODO: Doesn't work?
+       "C-d" 'cancel-package-operation)
+      scheme:emacs
+      (list
+       "C-d" 'cancel-package-operation)
+      scheme:vi-normal
+      (list
+       "C-d" 'cancel-package-operation)))))
 
 (define-command cancel-package-operation ()
   "Terminate the package manager process in the current buffer."
-  (let ((process-info (current-process-info
-                       (find-submode (current-buffer) 'os-package-manager-mode))))
+  (serapeum:and-let* ((process-info (current-process-info
+                                     (find-submode (current-buffer) 'os-package-manager-mode))))
     (uiop:terminate-process process-info)
     (ffi-buffer-evaluate-javascript-async
      (current-buffer)
