@@ -62,8 +62,7 @@
         ('directory
          #t)
         ((or 'regular 'symlink)
-         (or (string-contains file "/.git/")
-             (any (cut string-suffix? <> file) files)))
+         (any (cut string-suffix? <> file) files))
         (_
          #f)))))
 
@@ -91,6 +90,10 @@
          (add-before 'build 'fix-common-lisp-cache-folder
            (lambda _
              (setenv "HOME" "/tmp")
+             #t))
+         (add-before 'build 'set-version
+           (lambda _
+             (setenv "NYXT_VERSION" ,version)
              #t))
          (add-before 'check 'disable-network-tests
            (lambda _
@@ -125,9 +128,7 @@
                #t))))))
     (native-inputs
      `(("prove" ,sbcl-prove)
-       ("sbcl" ,sbcl)
-       ;; Internal version is guessed from "git describe".
-       ("git" ,git)))
+       ("sbcl" ,sbcl)))
     (inputs
      ;; We need to avoid sbcl-* inputs (sbcl-cl-cffi-gtk in particular) as they
      ;; seem to cause Nyxt to hang into a hogging process in about 10 minutes.
