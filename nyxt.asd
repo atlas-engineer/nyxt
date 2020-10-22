@@ -132,12 +132,12 @@
                          (test-op "nyxt/class-star/tests"))))
 
 (defun nyxt-run-test (c path &key network-needed-p)
-  (when (and (or (not network-needed-p)
-                 (not (uiop:getenv "NYXT_TESTS_NO_NETWORK")))
-             (not (funcall (read-from-string "prove:run")
-                           (asdf:system-relative-pathname c path)))
-             (uiop:getenv "CI"))
-    (uiop:quit 18)))
+  (and (or (not network-needed-p)
+           (not (uiop:getenv "NYXT_TESTS_NO_NETWORK")))
+       (not (funcall (read-from-string "prove:run")
+                     (asdf:system-relative-pathname c path)))
+       (uiop:getenv "NYXT_TESTS_ERROR_ON_FAIL")
+       (uiop:quit 18)))
 
 (asdf:defsystem nyxt/tests
   :depends-on (nyxt prove)

@@ -66,7 +66,7 @@ jobs:
       shell: bash
       # Export CI to tell ASDF to quit on test errors.
       env:
-       CI: yes
+       NYXT_TESTS_ERROR_ON_FAIL: yes
       run: |
         ros -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (ql:quickload :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'
 
