@@ -840,6 +840,15 @@ requested a reload."
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         value))
 
+(define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
+  (webkit:webkit-settings-enable-webgl
+         (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+
+(define-ffi-method ffi-buffer-enable-webgl ((buffer gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-webgl
+         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+        value))
+
 (define-ffi-method ffi-buffer-set-proxy ((buffer gtk-buffer)
                                  &optional (proxy-uri (quri:uri ""))
                                    (ignore-hosts (list nil)))

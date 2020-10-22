@@ -610,6 +610,8 @@ sometimes yields the wrong reasult."
 (define-ffi-generic ffi-buffer-enable-javascript-markup (buffer value))
 (define-ffi-generic ffi-buffer-enable-smooth-scrolling (buffer value))
 (define-ffi-generic ffi-buffer-enable-media (buffer value))
+(define-ffi-generic ffi-buffer-webgl-enabled-p (buffer))
+(define-ffi-generic ffi-buffer-enable-webgl (buffer value))
 (define-ffi-generic ffi-buffer-auto-load-image (buffer value))
 (define-ffi-generic ffi-buffer-enable-sound (buffer value))
 (define-ffi-generic ffi-buffer-user-agent (buffer value))
