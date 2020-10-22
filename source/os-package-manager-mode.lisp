@@ -19,6 +19,7 @@
                          :type (or null uiop/launch-program::process-info))))
 
 (define-command cancel-package-operation ()
+  "Terminate the package manager process in the current buffer."
   (let ((process-info (current-process-info
                        (find-submode (current-buffer) 'os-package-manager-mode))))
     (uiop:terminate-process process-info)
@@ -75,71 +76,82 @@
       ;; TODO: Don't prompt when there is just 1 profile.
       (fuzzy-match (input-buffer minibuffer) all-profiles))))
 
+;; TODO: Use these helpers everywhere.
+(defun html-write (content &optional (buffer (current-buffer)))
+  (ffi-buffer-evaluate-javascript-async
+   buffer
+   (ps:ps (ps:chain document
+                    (write (ps:lisp content))))))
+
+(defun html-set (content &optional (buffer (current-buffer)))
+  (ffi-buffer-evaluate-javascript-async
+   buffer
+   (ps:ps (setf (ps:@ document body |innerHTML|)
+                (ps:lisp content)))))
+
 (defun %describe-os-package (packages)
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*"))))
-         (content
-           (flet ((format-inputs (inputs)
-                    (alex:mappend
-                     (lambda (input)
-                       `((:a :href (lisp-url
-                                    '(%describe-os-package
-                                      (list (ospama:find-os-package ,input))))
-                             ,input)
-                         " "))
-                     inputs))
-                  (format-outputs (outputs)
-                    `(:div
-                      (:table
-                       ,@(alex:mappend
-                          (lambda (output)
-                            `((:tr
-                               (:td ,(ospama:name output))
-                               ,@(when (ospama:expanded-output-p output)
-                                   `((:td
-                                      ,(sera:format-file-size-human-readable
-                                        nil
-                                        (ospama:size output)))
-                                     (:td ,(ospama:path output)))))))
-                          outputs))
-                      ,@(when (and (<= 2 (length outputs))
-                                   (ospama:expanded-output-p (first outputs)))
-                          `((:li "Total size: " ,(sera:format-file-size-human-readable
-                                                  nil
-                                                  (reduce #'+ (mapcar #'ospama:size outputs)))))))))
-             (markup:markup
-              (:style (style buffer))
-              (:h1 "Packages")
-              (:ul
-               (loop for package in packages
-                     collect (markup:markup*
-                              `(:li ,(ospama:name package) " " ,(ospama:version package)
-                                    (:ul
-                                     ,@(when (typep package 'ospama:guix-package)
-                                         `((:li "Outputs: "
-                                                ,@(unless (ospama:expanded-outputs-p package)
-                                                    `((:a :class "button"
-                                                          :href ,(lisp-url '(echo "Computing path & size...")
-                                                                           `(ospama:expand-outputs (ospama:find-os-package ,(ospama:name package)))
-                                                                           `(%describe-os-package
-                                                                             (list (ospama:find-os-package ,(ospama:name package)))))
-                                                          "Compute path & size")))
-                                                ,(format-outputs (ospama:outputs package)))
-                                           (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
-                                           (:li "Inputs: " ,@(format-inputs (ospama:inputs package)))
-                                           (:li "Propagated inputs: " ,@(format-inputs (ospama:propagated-inputs package)))
-                                           (:li "Native inputs: " ,@(format-inputs (ospama:native-inputs package)))))
-                                     (:li "Home-page: " (:a :href ,(ospama:home-page package)
-                                                            ,(ospama:home-page package)))
-                                     (:li "Licenses: " ,(str:join ", " (ospama:licenses package)))
-                                     (:li "Synopsis: " ,(ospama:synopsis package))
-                                     ,(when (typep package 'ospama:guix-package)
-                                        `(:li "Description: " ,(ospama:description package)))))))))))
-         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                      (ps:lisp content)))))
-    (ffi-buffer-evaluate-javascript-async buffer insert-content)
+                      :buffer (make-internal-buffer :title "*OS packages*")))))
+    (flet ((format-inputs (inputs)
+             (alex:mappend
+              (lambda (input)
+                `((:a :href (lisp-url
+                             '(%describe-os-package
+                               (list (ospama:find-os-package ,input))))
+                      ,input)
+                  " "))
+              inputs))
+           (format-outputs (outputs)
+             `(:div
+               (:table
+                ,@(alex:mappend
+                   (lambda (output)
+                     `((:tr
+                        (:td ,(ospama:name output))
+                        ,@(when (ospama:expanded-output-p output)
+                            `((:td
+                               ,(sera:format-file-size-human-readable
+                                 nil
+                                 (ospama:size output)))
+                              (:td ,(ospama:path output)))))))
+                   outputs))
+               ,@(when (and (<= 2 (length outputs))
+                            (ospama:expanded-output-p (first outputs)))
+                   `((:li "Total size: " ,(sera:format-file-size-human-readable
+                                           nil
+                                           (reduce #'+ (mapcar #'ospama:size outputs)))))))))
+      (html-set
+       (markup:markup
+        (:style (style buffer))
+        (:h1 "Packages")
+        (:ul
+         (loop for package in packages
+               collect (markup:markup*
+                        `(:li ,(ospama:name package) " " ,(ospama:version package)
+                              (:ul
+                               ,@(when (typep package 'ospama:guix-package)
+                                   `((:li "Outputs: "
+                                          ,@(unless (ospama:expanded-outputs-p package)
+                                              `((:a :class "button"
+                                                    :href ,(lisp-url '(echo "Computing path & size...")
+                                                                     `(ospama:expand-outputs (ospama:find-os-package ,(ospama:name package)))
+                                                                     `(%describe-os-package
+                                                                       (list (ospama:find-os-package ,(ospama:name package)))))
+                                                    "Compute path & size")))
+                                          ,(format-outputs (ospama:outputs package)))
+                                     (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
+                                     (:li "Inputs: " ,@(format-inputs (ospama:inputs package)))
+                                     (:li "Propagated inputs: " ,@(format-inputs (ospama:propagated-inputs package)))
+                                     (:li "Native inputs: " ,@(format-inputs (ospama:native-inputs package)))))
+                               (:li "Home-page: " (:a :href ,(ospama:home-page package)
+                                                      ,(ospama:home-page package)))
+                               (:li "Licenses: " ,(str:join ", " (ospama:licenses package)))
+                               (:li "Synopsis: " ,(ospama:synopsis package))
+                               ,(when (typep package 'ospama:guix-package)
+                                  `(:li "Description: " ,(ospama:description package)))))))))
+       buffer))
     (set-current-buffer buffer)
     buffer))
 
@@ -172,9 +184,9 @@
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*"))))
-         (content
-           (markup:markup
+                      :buffer (make-internal-buffer :title "*OS packages*")))))
+    (html-set
+     (markup:markup
             (:style (style buffer))
             (:h1 "Package files")
             (:ul
@@ -186,10 +198,8 @@
                                                `(:li ,(if (viewable-file-type-p file)
                                                           `(:a :href ,file ,file)
                                                           file)))
-                                             (ospama:list-files (list package-or-output))))))))))
-         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                      (ps:lisp content)))))
-    (ffi-buffer-evaluate-javascript-async buffer insert-content)
+                                             (ospama:list-files (list package-or-output)))))))))
+     buffer)
     (set-current-buffer buffer)
     buffer))
 
@@ -207,41 +217,36 @@
                                        (find-submode buffer 'os-package-manager-mode))))
           (uiop:process-alive-p process-info))
         (echo "An package operation is already running.  You can cancel it with `cancel-package-operation'.")
-        (let* ((content
-                 (markup:markup
-                  (:style (style buffer))
-                  (:h1 title)))
-               (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                            (ps:lisp content)))))
-          (ffi-buffer-evaluate-javascript-async buffer insert-content)
+        (progn
+          (html-set
+           (markup:markup
+            (:style (style buffer))
+            (:h1 title))
+           buffer)
           (chanl:pexec ()
             (let ((process-info (funcall command packages profile))
                   (mode (find-submode buffer 'os-package-manager-mode)))
               (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
-              (ffi-buffer-evaluate-javascript-async
-               buffer
-               (ps:ps (ps:chain document
-                                (write (ps:lisp (markup:markup
-                                                 (:p
-                                                  (:a :class "button"
-                                                      :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
-                                                      "Cancel"))))))))
-              (format-command-stream process-info
-                                     (lambda (s)
-                                       (ffi-buffer-evaluate-javascript-async
-                                        buffer
-                                        (ps:ps (ps:chain document
-                                                         ;; TODO: Make shell formating
-                                                         ;; function and add support
-                                                         ;; for special characters,
-                                                         ;; e.g. progress bars.
-                                                         (write (ps:lisp (markup:markup
-                                                                          (:code (str:replace-all " " " " s))
-                                                                          (:br)))))))))
-              (ffi-buffer-evaluate-javascript-async
-               buffer
-               (ps:ps (ps:chain document
-                                (write (ps:lisp (markup:markup (:p "Done.")))))))))
+              (html-write
+               (markup:markup
+                (:p
+                 (:a :class "button"
+                     :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
+                     "Cancel")))
+               buffer)
+              (format-command-stream
+               process-info
+               (lambda (s)
+                 ;; TODO: Make shell formating function and add support for
+                 ;; special characters, e.g. progress bars.
+                 (html-write
+                  (markup:markup
+                   (:code (str:replace-all " " " " s))
+                   (:br))
+                  buffer)))
+              (html-write
+               (markup:markup (:p "Done."))
+               buffer)))
           (set-current-buffer buffer)
           buffer))))
 
