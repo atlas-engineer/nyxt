@@ -1,0 +1,9 @@
+* Extensions
+This is a list of extensions that work with Nyxt.
+
++ invidious-handler:
+  - https://github.com/kssytsrk/invidious-handler
+  - invidious-handler is a simple redirector from Youtube to Invidious
+    for the Nyxt browser. Invidious is an alternative front-end to
+    Youtube that uses copylefted libre software and respects user's
+    privacy.
