@@ -225,20 +225,24 @@ PROFILE is a full path to a profile."
 
 (export-always 'expanded-output-p)
 (defun expanded-output-p (output)
+  "Return nil if package OUTPUT location hasn't been computed."
   (not (uiop:emptyp (path output))))
 
 (export-always 'expanded-outputs-p)
 (defun expanded-outputs-p (pkg)
+  "Return nil if PKG outputs haven't been computed."
   (expanded-output-p (first (outputs pkg))))
 
 (export-always 'expand-outputs)
 (defun expand-outputs (pkg)
+  "Compute the output locations of PKG."
   (dolist (pair (read-from-string (package-output-paths (name pkg))))
     (setf (path (find (first pair) (outputs pkg) :key #'name :test #'string=))
           (rest pair))))
 
 (export-always 'size)
 (defmethod size ((output guix-package-output))
+  "Size can only be computed once the OUTPUT has been expanded."
   (when (and (= 0 (slot-value output 'size))
              (expanded-output-p output))
     (setf (slot-value output 'size)
