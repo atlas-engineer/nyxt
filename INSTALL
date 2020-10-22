@@ -11,6 +11,9 @@ Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
 Set NYXT_RENDERER to the renderer of your choice, e.g. "gtk".
 
+Set NYXT_VERSION to force the version number instead of deriving it from Git.
+This is useful for build systems without access to the .git metadata.
+
 Set NYXT_COMPRESS to generate a compressed executable.  This
 greatly reduces the file size at the expense of a slightly
 increased startup time.  It's recommended to leave this off

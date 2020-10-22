@@ -44,7 +44,8 @@ is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
 (export-always '+version+)
 (defparameter +version+
-  (or (ignore-errors
+  (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
+      (ignore-errors
        (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
          (uiop:run-program (list "git" "describe" "--always" "--tags")
                            :output '(:string :stripped t))))
