@@ -14,10 +14,18 @@
 
 (define-mode os-package-manager-mode ()
   "Mode for package management."
-  ())
+  ((current-process-info nil
 
-;; TODO: Add command to interrupt operation?
-;; (uiop:terminate-process  process-info)
+                         :type (or null uiop/launch-program::process-info))))
+
+(define-command cancel-package-operation ()
+  (let ((process-info (current-process-info
+                       (find-submode (current-buffer) 'os-package-manager-mode))))
+    (uiop:terminate-process process-info)
+    (ffi-buffer-evaluate-javascript-async
+     (current-buffer)
+     (ps:ps (ps:chain document
+                      (write (ps:lisp (markup:markup (:p "Operation cancelled.")))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt)
@@ -204,7 +212,17 @@
                                       (ps:lisp content)))))
     (ffi-buffer-evaluate-javascript-async buffer insert-content)
     (chanl:pexec ()
-      (let ((process-info (funcall command packages profile)))
+      (let ((process-info (funcall command packages profile))
+            (mode (find-submode buffer 'os-package-manager-mode)))
+        (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
+        (ffi-buffer-evaluate-javascript-async
+         buffer
+         (ps:ps (ps:chain document
+                          (write (ps:lisp (markup:markup
+                                           (:p
+                                            (:a :class "button"
+                                                :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
+                                                "Cancel"))))))))
         (format-command-stream process-info
                                (lambda (s)
                                  (ffi-buffer-evaluate-javascript-async
@@ -216,7 +234,11 @@
                                                    ;; e.g. progress bars.
                                                    (write (ps:lisp (markup:markup
                                                                     (:code (str:replace-all " " " " s))
-                                                                    (:br)))))))))))
+                                                                    (:br)))))))))
+        (ffi-buffer-evaluate-javascript-async
+         buffer
+         (ps:ps (ps:chain document
+                          (write (ps:lisp (markup:markup (:p "Done.")))))))))
     (set-current-buffer buffer)
     buffer))
 
