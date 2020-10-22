@@ -199,48 +199,51 @@
         do (funcall callback object)))
 
 (defun operate-os-package (title command profile packages)
-  (let* (;; TODO: Check for running process.
-         (buffer (or (find-buffer 'os-package-manager-mode)
+  (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*"))))
-         (content
-          (markup:markup
-           (:style (style buffer))
-           (:h1 title)))
-         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                      (ps:lisp content)))))
-    (ffi-buffer-evaluate-javascript-async buffer insert-content)
-    (chanl:pexec ()
-      (let ((process-info (funcall command packages profile))
-            (mode (find-submode buffer 'os-package-manager-mode)))
-        (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
-        (ffi-buffer-evaluate-javascript-async
-         buffer
-         (ps:ps (ps:chain document
-                          (write (ps:lisp (markup:markup
-                                           (:p
-                                            (:a :class "button"
-                                                :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
-                                                "Cancel"))))))))
-        (format-command-stream process-info
-                               (lambda (s)
-                                 (ffi-buffer-evaluate-javascript-async
-                                  buffer
-                                  (ps:ps (ps:chain document
-                                                   ;; TODO: Make shell formating
-                                                   ;; function and add support
-                                                   ;; for special characters,
-                                                   ;; e.g. progress bars.
-                                                   (write (ps:lisp (markup:markup
-                                                                    (:code (str:replace-all " " " " s))
-                                                                    (:br)))))))))
-        (ffi-buffer-evaluate-javascript-async
-         buffer
-         (ps:ps (ps:chain document
-                          (write (ps:lisp (markup:markup (:p "Done.")))))))))
-    (set-current-buffer buffer)
-    buffer))
+                      :buffer (make-internal-buffer :title "*OS packages*")))))
+    (if (sera:and-let* ((process-info (nyxt/os-package-manager-mode:current-process-info
+                                       (find-submode buffer 'os-package-manager-mode))))
+          (uiop:process-alive-p process-info))
+        (echo "An package operation is already running.  You can cancel it with `cancel-package-operation'.")
+        (let* ((content
+                 (markup:markup
+                  (:style (style buffer))
+                  (:h1 title)))
+               (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
+                                            (ps:lisp content)))))
+          (ffi-buffer-evaluate-javascript-async buffer insert-content)
+          (chanl:pexec ()
+            (let ((process-info (funcall command packages profile))
+                  (mode (find-submode buffer 'os-package-manager-mode)))
+              (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
+              (ffi-buffer-evaluate-javascript-async
+               buffer
+               (ps:ps (ps:chain document
+                                (write (ps:lisp (markup:markup
+                                                 (:p
+                                                  (:a :class "button"
+                                                      :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
+                                                      "Cancel"))))))))
+              (format-command-stream process-info
+                                     (lambda (s)
+                                       (ffi-buffer-evaluate-javascript-async
+                                        buffer
+                                        (ps:ps (ps:chain document
+                                                         ;; TODO: Make shell formating
+                                                         ;; function and add support
+                                                         ;; for special characters,
+                                                         ;; e.g. progress bars.
+                                                         (write (ps:lisp (markup:markup
+                                                                          (:code (str:replace-all " " " " s))
+                                                                          (:br)))))))))
+              (ffi-buffer-evaluate-javascript-async
+               buffer
+               (ps:ps (ps:chain document
+                                (write (ps:lisp (markup:markup (:p "Done.")))))))))
+          (set-current-buffer buffer)
+          buffer))))
 
 (define-command install-os-package ()
   "Install select packages."
