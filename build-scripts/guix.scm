@@ -42,6 +42,7 @@
              (gnu packages gtk)
              (gnu packages pkg-config)
              (gnu packages gcc)
+             (gnu packages version-control)
              (gnu packages webkit))
 
 (define %source-dir (dirname (dirname (current-filename))))
@@ -58,15 +59,25 @@
          (status (close-pipe pipe)))
     (lambda (file stat)
       (match (stat:type stat)
-        ('directory #t)
+        ('directory
+         #t)
         ((or 'regular 'symlink)
-         (any (cut string-suffix? <> file) files))
-        (_ #f)))))
+         (or (string-contains file "/.git/")
+             (any (cut string-suffix? <> file) files)))
+        (_
+         #f)))))
+
+(define (nyxt-git-version)              ; Like Nyxt's `+version+'.
+  (let* ((pipe (with-directory-excursion %source-dir
+                 (open-pipe* OPEN_READ "git" "describe" "--always" "--tags")))
+         (version (read-line pipe)))
+    (close-pipe pipe)
+    version))
 
 (define-public nyxt
   (package
     (name "nyxt")
-    (version "0.0.0")
+    (version (nyxt-git-version))
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system gnu-build-system)
     (arguments
@@ -76,22 +87,6 @@
        #:strip-binaries? #f             ; Stripping breaks SBCL binaries.
        #:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'patch-version ; Version is guessed from .git which Guix does not have.
-           (lambda* (#:key inputs #:allow-other-keys)
-             (let ((version (format #f "~a" ,version))
-                   (file "source/global.lisp"))
-               (chmod file #o666)
-               (let ((port (open-file file "a")))
-                 (format port "(setf +version+ ~s)" version)
-                 (close-port port)))
-             #t))
-         (add-before 'build 'make-desktop-version-number
-           (lambda _
-             (with-output-to-file "version"
-               (lambda _
-                 (format #t "~a" ,version)
-                 #t))))
-
          (delete 'configure)
          (add-before 'build 'fix-common-lisp-cache-folder
            (lambda _
@@ -130,7 +125,9 @@
                #t))))))
     (native-inputs
      `(("prove" ,sbcl-prove)
-       ("sbcl" ,sbcl)))
+       ("sbcl" ,sbcl)
+       ;; Internal version is guessed from "git describe".
+       ("git" ,git)))
     (inputs
      ;; We need to avoid sbcl-* inputs (sbcl-cl-cffi-gtk in particular) as they
      ;; seem to cause Nyxt to hang into a hogging process in about 10 minutes.
