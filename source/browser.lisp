@@ -174,7 +174,8 @@ provide content dynamic to the context.")
                          :documentation "Spell check language used by Nyxt. For
 a list of more languages available, please view the documentation for
 cl-enchant (broker-list-dicts).")
-   (external-editor-program nil
+   (external-editor-program (or (uiop:getenv "VISUAL")
+                                (uiop:getenv "EDITOR"))
                             :type (or string null)
                             :documentation "The external editor to use for
 editing files. It should be specified as a complete string path to the
