@@ -208,6 +208,7 @@
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
                       :buffer (make-internal-buffer :title "*OS packages*")))))
+    (echo "Computing file list...")
     (html-set
      (markup:markup
       (:style (style buffer))
@@ -223,6 +224,7 @@
                                                     file)))
                                        (ospama:list-files (list package-or-output)))))))))
      buffer)
+    (echo "")
     (set-current-buffer buffer)
     buffer))
 
