@@ -271,13 +271,13 @@ To change the default buffer, e.g. set it to a given URL:
           (buffer (current-buffer)))
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
-      ;; TODO: If (session-restore-prompt *browser*) is :always-ask, the session
-      ;; will be overwritten because if-confirm is asynchronous.
-      ;; Implement synchronous minibuffer to fix this.
       (when (expand-path (session-path buffer))
         (match (session-restore-prompt *browser*)
-          (:always-ask (restore-session-by-name))
-          (:always-restore (restore (data-profile buffer) (session-path buffer)))
+          ;; Need `funcall-safely' so we continue if the user exits the
+          ;; minibuffer (which raises a condition).
+          (:always-ask (funcall-safely #'restore-session-by-name))
+          (:always-restore (funcall-safely #'restore (data-profile buffer)
+                                           (session-path buffer)))
           (:never-restore (log:info "Not restoring session."))))
       (if urls
           (open-urls urls)
