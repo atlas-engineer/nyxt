@@ -2,6 +2,8 @@
 
 (prove:plan nil)
 
+;; Tests for functional package managers.
+
 (defvar *test-package-name* "hello")
 (defvar *test-profile* (uiop:resolve-absolute-location ; TODO: Can we generate a temp dir in Common Lisp?
                         (list (uiop:temporary-directory) "ospama-tests/profile")))
@@ -9,17 +11,6 @@
                               (list (uiop:temporary-directory) "ospama-tests/manifest.scm")))
 
 (defvar *test-manifest* "(specifications->manifest '(\"hello\"))")
-
-(prove:subtest "Package list"
-  (prove:ok (< 0 (length (ospama:list-packages))))
-  (prove:ok (typep (first (ospama:list-packages)) 'ospama:os-package)))
-
-(prove:subtest "Find package"
-  (prove:is (ospama:name (ospama:find-os-package *test-package-name*))
-            *test-package-name*))
-
-(prove:subtest "List profiles"
-  (prove:ok (uiop:directory-exists-p (first (ospama:list-profiles)))))
 
 (prove:subtest "Install to temp profile"
   (uiop:ensure-all-directories-exist
@@ -57,5 +48,4 @@
     (prove:is (first (last (pathname-directory (first file-list))))
               "bin")))
 
-;; TODO: Only run tests when manager is found?
 (prove:finalize)
