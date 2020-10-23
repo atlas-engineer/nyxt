@@ -328,7 +328,6 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :line-height "16px"
                 :margin 0)
                ("#modes"
-                :border-right "2px solid rgb(120, 120, 120)"
                 :display "inline-block"
                 :padding "0 5px 0 5px"
                 :margin "0 5px 0 0")
