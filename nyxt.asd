@@ -132,7 +132,8 @@
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/keymap/tests")
-                         (test-op "nyxt/class-star/tests"))))
+                         (test-op "nyxt/class-star/tests")
+                         (test-op "nyxt/ospama/tests"))))
 
 (defun nyxt-run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
