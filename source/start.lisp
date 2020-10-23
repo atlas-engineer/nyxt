@@ -27,6 +27,16 @@ use the socket without parsing any init file.")
                                            ;; at compile-time.
                                            :dirname (uiop:xdg-config-home +data-root+)))))))
 
+(export-always 'nyxt-init-file)
+(defun nyxt-init-file (&optional subpath)
+  "Return SUBPATH relative to `*init-file-path*'.
+Return nil if `*init-file-path*' is nil."
+  (if subpath
+      (uiop:subpathname* (uiop:pathname-directory-pathname
+                          (expand-path *init-file-path*))
+                         subpath)
+      (expand-path *init-file-path*)))
+
 (defmethod expand-data-path ((profile data-profile) (path (eql *auto-config-file-path*)))
   "Return path of the init file."
   (unless (getf *options* :no-auto-config)
