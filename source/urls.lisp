@@ -158,6 +158,7 @@ Otherwise, build a search query with the default search engine."
                  (nil (quri:uri input-url))
                  (default (quri:uri (generate-search-query input-url (search-url default)))))))))))
 
+(export-always 'lisp-url)
 (declaim (ftype (function (t &rest t) string) lisp-url))
 (defun lisp-url (lisp-form &rest more-lisp-forms)
   "Generate a lisp:// URL from the given Lisp forms. This is useful for encoding
