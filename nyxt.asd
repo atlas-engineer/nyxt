@@ -307,4 +307,4 @@
 (asdf:defsystem nyxt/ospama/tests
   :depends-on (nyxt/ospama prove)
   :perform (asdf:test-op (op c)
-                         (nyxt-run-test c "libraries/ospama/tests/")))
+                         (nyxt-run-test c "libraries/ospama/tests/tests.lisp")))
