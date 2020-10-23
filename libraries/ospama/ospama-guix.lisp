@@ -28,6 +28,15 @@ package managers like Nix or Guix."))
 (detect-manager "guix" 'guix-manager)
 
 ;; TODO: Call read-from-string in `guix-eval'?
+(declaim (ftype (function (t) string)))
+(defun cl->scheme-syntax (form)
+  #+ccl
+  ;; Escape symbols are printed as \\NAME while they should be printed as NAME.
+  (str:replace-all "\\" "" (format nil "~s" form))
+  #+(not ccl)
+  ;; Escaped symbols (e.g. '\#t) are printed as '|NAME| but should be
+  ;; printed as NAME.
+  (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" form) "\\1"))
 
 (defun guix-eval (form &rest more-forms)
   ;; TODO: "guix repl" is a reliable way to execute Guix code, sadly it does not
@@ -44,9 +53,7 @@ Return the REPL output (including the error output) as a string."
            ;; Backslashes in Common Lisp are doubled, unlike Guile.
            (str:replace-all
             "\\\\" "\\"
-            ;; Escaped symbols (e.g. '\#t) are printed as '|NAME| but should be
-            ;; printed as NAME.
-            (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" f) "\\1"))
+            (cl->scheme-syntax f))
            s)))
       (uiop:run-program `(,(path *manager*) "repl" ,(namestring p))
                         :output '(:string :stripped t)
@@ -145,7 +152,7 @@ just-in-time instead."
                                     (number->string (location-line location))
                                     (number->string (location-column location)))
                               ":")
-                 (or (package-home-page package) 'nil) ; #f must be turned to NIL for Common Lisp.
+                 (or (package-home-page package) "") ; #f must be turned to NIL for Common Lisp.
                  (map license-name (ensure-list (package-license package)))
                  (package-synopsis package)
                  (string-replace-substring (package-description package) "\\n" " ")))
