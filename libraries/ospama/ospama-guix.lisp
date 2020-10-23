@@ -199,7 +199,7 @@ just-in-time instead."
              (mbegin %store-monad
                      (list-dependents (list (find-package ,name))))))))))
 
-(declaim (ftype (function (&optional (or symbol string))) list-installed))
+(declaim (ftype (function (&optional (or symbol string pathname))) list-installed))
 (defun list-installed (&optional (profile '%current-profile))
   "Return the installed packages in PROFILE as a list of strings.
 PROFILE is a full path to a profile."
@@ -209,7 +209,7 @@ PROFILE is a full path to a profile."
    `(write
      (map manifest-entry-name
           (manifest-entries
-           (concatenate-manifests (map profile-manifest (list ,profile))))))))
+           (concatenate-manifests (map profile-manifest (list ,(namestring profile)))))))))
 
 (define-class guix-package (os-package)
   ((outputs '())
@@ -280,7 +280,7 @@ PROFILE is a full path to a profile."
 
 (defmethod manager-list-packages ((manager guix-manager) &optional profile)
   (if profile
-      (mapcar #'find-os-package (read-from-string (list-installed)))
+      (mapcar #'find-os-package (read-from-string (list-installed profile)))
       (guix-database)))
 
 (defmethod manager-list-package-outputs ((manager guix-manager))
@@ -302,18 +302,18 @@ PROFILE is a full path to a profile."
 (defmethod install-command ((manager guix-manager) profile)
   (append (list (path manager) "install")
           (when profile
-            (list (str:concat "--profile=" profile)))))
+            (list (str:concat "--profile=" (namestring profile))))))
 
 (defmethod manager-install-manifest ((manager guix-manager) manifest &optional profile)
   (run (append (list (path manager) "package"
                      (str:concat "--manifest=" (namestring manifest)))
                (when profile
-                 (list (str:concat "--profile=" profile))))))
+                 (list (str:concat "--profile=" (namestring profile)))))))
 
 (defmethod uninstall-command ((manager guix-manager) profile)
   (append (list (path manager) "remove")
           (when profile
-            (list (str:concat "--profile=" profile)))))
+            (list (str:concat "--profile=" (namestring profile))))))
 
 (defmethod manager-list-files ((manager guix-manager) outputs)
   (alexandria:mappend
