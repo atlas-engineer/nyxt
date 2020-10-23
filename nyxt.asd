@@ -300,5 +300,9 @@
   :components ((:file "package")
                (:file "ospama")
                (:file "ospama-guix"))
-  ;; :in-order-to ((test-op (test-op "nyxt/class-star/tests")))
-  )
+  :in-order-to ((test-op (test-op "nyxt/ospama/tests"))))
+
+(asdf:defsystem nyxt/ospama/tests
+  :depends-on (nyxt/ospama prove)
+  :perform (asdf:test-op (op c)
+                         (nyxt-run-test c "libraries/ospama/tests/")))
