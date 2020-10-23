@@ -182,6 +182,10 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
+(defmethod expand-data-path ((profile private-data-profile) (path session-data-path))
+  "We shouldn't store sessions for `private-data-profile'."
+  nil)
+
 (defmethod expand-data-path ((profile private-data-profile) (path cookies-data-path))
   "We shouldn't store cookies for `private-data-profile'."
   nil)
