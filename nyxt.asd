@@ -146,6 +146,9 @@
                          (nyxt-run-test c "tests/")
                          (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
 
+(asdf:defsystem :nyxt-ext
+  :description "Forward system declaration for Nyxt extensions.")
+
 (asdf:defsystem :nyxt/gtk
   :depends-on (:nyxt
                :cl-cffi-gtk
