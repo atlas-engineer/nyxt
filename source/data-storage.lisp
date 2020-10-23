@@ -110,7 +110,8 @@ Return `*global-data-profile*' otherwise."
   ;; dead-lock.  To prevent this, we look for the last active window without
   ;; relying on the renderer.
   (if (and *browser* (slot-value *browser* 'last-active-window))
-      (let ((buffer (current-buffer)))
+      (let ((buffer (or (current-buffer)
+                        (make-instance 'user-buffer))))
         (or (and buffer (data-profile buffer))
             *global-data-profile*))
       *global-data-profile*))
@@ -216,11 +217,11 @@ Define a method for your `data-path' type to make it storable."))
 Define a method for your `data-path' type to make it restorable."))
 
 (defmethod store ((profile private-data-profile) (path data-path))
-  "This method guarantess PATH will not be persisted to disk in PRIVATE-DATA-PROFILE."
+  "This method guarantees PATH will not be persisted to disk in PRIVATE-DATA-PROFILE."
   nil)
 
 (defmethod restore ((profile private-data-profile) (path data-path))
-  "This method guarantess PATH will not be loaded from disk in PRIVATE-DATA-PROFILE."
+  "This method guarantees PATH will not be loaded from disk in PRIVATE-DATA-PROFILE."
   nil)
 
 (export-always 'expand-path)
