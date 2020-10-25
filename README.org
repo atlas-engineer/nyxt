@@ -75,8 +75,7 @@ systems provide packages for Nyxt:
 - [[https://aur.archlinux.org/packages/nyxt-browser/][Arch Linux AUR]] (and the [[https://aur.archlinux.org/packages/nyxt-browser-git/][-git PKGBUILD]])
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.  (Replace =next= with =nyxt= when
   the package gets updated to 2.0.)
-- [[https://guix.gnu.org][Guix]]: Install with =guix install next=.  (Replace =next= with =nyxt= when
-  the package gets updated to 2.0.)
+- [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 
 To perform an installation from source, please see the [[https://github.com/atlas-engineer/nyxt/tree/master/documents][developer readme]].
 
