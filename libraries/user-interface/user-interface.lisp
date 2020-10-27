@@ -11,3 +11,7 @@
   (cl-markup:markup
    (:a :class "button" :href (url button) (text button))))
 
+(defmethod object-expression ((button button))
+  (let ((url (url button))
+        (text (text button)))
+    `(:a :class "button" :href ,url ,text)))
