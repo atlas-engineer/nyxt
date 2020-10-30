@@ -3,14 +3,14 @@
 * Nyxt web browser
 
 Nyxt is a keyboard-oriented, extensible web-browser designed for power
-users. It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully
+users.  It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully
 configurable and extensible in Lisp, and has powerful features for
 productivity.
 
 If you like Nyxt and if you want to help future development, please
 support us on [[https://www.patreon.com/nyxt][Patreon]], or give us a star, thank you!
 
-*Attention:* Nyxt is under active development. Feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]]
+*Attention:* Nyxt is under active development.  Feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]]
 bugs, instabilities or feature wishes.
 
 -----
@@ -20,39 +20,43 @@ bugs, instabilities or feature wishes.
 -----
 
 ** Fast tab switching
-Switch easily between your open tabs via fuzzy search. If you are
+
+Switch easily between your open tabs via fuzzy search.  If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 ~epl~, or any other matching series of letters.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/switch-buffer.png" align="center"/>
 
 ** Multiple selection
-Commands can accept multiple inputs, allowing you to quickly perform
-an operation against multiple objects. In the example below we search
-for penguins, and only open up links that have the text "animal"
-within them.
+
+Commands can accept multiple inputs, allowing you to quickly perform an
+operation against multiple objects.  In the example below we search for
+penguins, and only open up links that have the text "animal" within
+them.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/multi-select.png" align="center"/>
 
-** Powerful Bookmarks
-Bookmark a page with tags. Search bookmarks with compound
-queries. Capture more data about your bookmarks, and group and wrangle
-them in any way you like.
+** Powerful bookmarks
+
+Bookmark a page with tags.  Search bookmarks with compound queries.
+Capture more data about your bookmarks, and group and wrangle them in
+any way you like.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/bookmark.png" align="center"/>
 
 ** Multi tab search
+
 Search multiple tabs at the same time, and view all the results in a
-single window. Jump quickly through your open tabs to find what you
+single window.  Jump quickly through your open tabs to find what you
 need.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/multi-search.png" align="center"/>
 
-
 ** History as a tree
-History is represented as a tree that you can traverse. smarter than
+
+History is represented as a tree that you can traverse.  Smarter than
 the "forwards-backwards" abstraction found in other browsers, the tree
-makes sure  you never lose  track of where  you've been.
+makes sure you never lose track of where you've been.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/history.png" align="center"/>
 
@@ -61,34 +65,40 @@ For a complete list of features, please see the manual.
 * Getting started
 ** Install Nyxt
 
-Nyxt supports GNU/Linux, macOS, and Guix with engine support for
-WebKit and WebEngine/Blink.
+Nyxt supports GNU/Linux, macOS, and Guix with engine support for WebKit
+and WebEngine/Blink.
 
-Please see the [[https://nyxt.atlas.engineer/download][downloads]] page for pre-built binaries. Some operating
+Please see the [[https://nyxt.atlas.engineer/download][downloads]] page for pre-built binaries.  Some operating
 systems provide packages for Nyxt:
 
 - Alpine
 - Debian and derivatives (Ubuntu, LinuxMint), for Debian >= 10 (Buster).
 - [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
 - [[https://aur.archlinux.org/packages/nyxt-browser/][Arch Linux AUR]] (and the [[https://aur.archlinux.org/packages/nyxt-browser-git/][-git PKGBUILD]])
-- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.  (Replace =next= with =nyxt= when
-  the package gets updated to 2.0.)
+- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install next=.  (Replace =next= with
+  =nyxt= when the package gets updated to 2.0.)
 - [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 
-To perform an installation from source, please see the [[https://github.com/atlas-engineer/nyxt/tree/master/documents][developer readme]].
+To perform an installation from source, please see the [[file:documents/README.org][developer readme]].
 
 ** Documentation
 
-For full documentation about Nyxt, how it works, and how to extend it please see
-the embedded help.  To get started, run the =help= command (=C-space help=).
+For full documentation about Nyxt, how it works, and how to extend it
+please see the embedded help.  To get started, run the =help= command
+(=C-space help=).
 
 If you want to help with development or build Nyxt from scratch, read
-the developer's documentation at [[https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org][documents/README.org]].
+the developer's documentation at [[file:documents/README.org][documents/README.org]].
 
 *** Customize and extend Nyxt
 
 Complete customization is possible through the creation of a
-=~/.config/nyxt/init.lisp= file. For more information, see the manual.
+=~/.config/nyxt/init.lisp= file.  For more information, see the manual.
 
 ** History of changes
+
 Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].
+
+# Local Variables:
+# fill-column: 72
+# End:

@@ -2,27 +2,29 @@
 
 * Release Timeline
 
-Next uses [[https://semver.org/][Semantic Versioning]].  In short, given a version number
-MAJOR.MINOR.PATCH, we increment the:
-- MAJOR version when we make incompatible API changes,
-- MINOR version when we add functionality in a backwards-compatible manner, and
-- PATCH version when we make backwards-compatible bug fixes.
+Next uses [[https://semver.org/][Semantic Versioning]].
+
+Given a version number MAJOR.MINOR.PATCH, we increment:
+
+- MAJOR when we make incompatible API changes,
+- MINOR when we add functionality in a backwards-compatible manner, and
+- PATCH when we make backwards-compatible bug fixes.
 
 ** TASK Upcoming
 *** Jump to heading across all tabs
-+ Add a jump to heading command that works across all open tabs
+- Add a jump to heading command that works across all open tabs
 *** Package manager
-+ There should be a package manager/repository where creators of
+- There should be a package manager/repository where creators of
   packages can publish, and users can download
-+ This technology will probably be built ontop of Quicklisp
+- This technology will probably be built ontop of Quicklisp
 *** Per tab isolation
-+ Add support for per-tab Proxy and Tor support
+- Add support for per-tab Proxy and Tor support
 *** Password manager
-+ Add an integrated password manager
+- Add an integrated password manager
 *** Add built-in editor
-+ Add simple built-in editor capabilities so that you can easily
+- Add simple built-in editor capabilities so that you can easily
   script Next without opening up an external editor
-+ Also use the editor for text-field input on the internet
+- Also use the editor for text-field input on the internet
 *** Add online suggestions from search engines
 ** 2.0.0
 
@@ -92,7 +94,7 @@ MAJOR.MINOR.PATCH, we increment the:
   - decrease-brightness
 
   - invert-color
-  
+
 - New =reduce-to-buffer= command to delete buffers and list them on a
   page. Useful for offloading inactive buffers and sending/saving a
   group of buffers.
@@ -511,25 +513,25 @@ See the manual for examples.
 
 - Extend bookmark support.
 
-  + Bookmarks can have tags, a shortcut string, a search-url and a timestamp.
+  - Bookmarks can have tags, a shortcut string, a search-url and a timestamp.
 
-  + Minibuffer usage:
+  - Minibuffer usage:
 
     - =wiki=: Open the Wikipedia main page.
 
     - =wiki elephant=: search Wikipedia for "elephant".
 
-  + Switch from SQLite to an s-exp based text file.
+  - Switch from SQLite to an s-exp based text file.
     A bookmark entry is stored as follwos:
     #+begin_src
     (:url "https://en.wikipedia.org/wiki/Main_Page" :title "Wikipedia, the free encyclopedia" :shortcut "wiki" :search-url "http://en.wikipedia.org/wiki/Special:Search?search=%s" :date "Sat Jul 14 09:41:56 2018" :tags '("encyclopedia" "knowledge" "wiki"))
     #+end_src
 
-  + Bookmark can have search engines.
+  - Bookmark can have search engines.
     ~interface~ search engines and bookmark search engines are
     automatically merged.
 
-  + Bookmarks can be stored and restored in a customizable format.
+  - Bookmarks can be stored and restored in a customizable format.
 
     See the ~bookmarks-store-function~ and ~bookmarks-restore-function~ in ~interface~.
 
@@ -539,9 +541,9 @@ See the manual for examples.
 
   Support for multiple backends.  Currently:
 
-  + [[https://keepassxc.org/][KeepassXC]]
+  - [[https://keepassxc.org/][KeepassXC]]
 
-  + [[https://www.passwordstore.org/][password-store]]
+  - [[https://www.passwordstore.org/][password-store]]
 
 - Session persistence
 
@@ -1154,3 +1156,7 @@ candidates
 CLOSED: [2017-09-04 Mon 00:09]
 - One "click" build system for deployment on OSX
 - Organization of build systems into lisp files, no shell scripts
+
+# Local Variables:
+# fill-column: 72
+# End:
