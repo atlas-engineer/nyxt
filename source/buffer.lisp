@@ -316,16 +316,16 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-user-class internal-buffer)
 
 (define-class status-buffer (user-internal-buffer)
-  ((height 16
+  ((height 18
            :type integer
            :documentation "The height of the status buffer in pixels.")
    (style #.(cl-css:css
              '((body
                 :background "rgb(200, 200, 200)"
-                :font-size "12px"
+                :font-size "14px"
                 :color "rgb(32, 32, 32)"
                 :padding 0
-                :line-height "16px"
+                :line-height "18px"
                 :margin 0)
                ("#modes"
                 :display "inline-block"
@@ -335,7 +335,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :padding-left "4px")
                (.button
                 :background-color "rgb(160, 160, 160)"
-                :color "black"
+                :color "rgb(242, 242, 242)"
                 :height "100%"
                 :text-decoration "none"
                 :border-radius "2px"
@@ -344,7 +344,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :margin-left "2px"
                 :margin-right "2px")
                (|.button:hover|
-                :color "white")))))
+                :color "black")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
