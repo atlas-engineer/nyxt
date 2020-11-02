@@ -8,15 +8,12 @@
   "List of mode names to hide from the status view")
 
 (defun format-status-modes (&optional (buffer (current-buffer)))
-  (markup:markup
-   (:div
-    :id "modes"
-    (format nil "~{~a~^ ~}"
-            (mapcar (lambda (m) (str:replace-all "-mode" "" m))
-                    (set-difference
-                     (mapcar (alex:compose #'str:downcase #'mode-name) (modes buffer))
-                     *invisible-modes*
-                     :test #'string=))))))
+  (format nil "~{~a~^ ~}"
+          (mapcar (lambda (m) (str:replace-all "-mode" "" m))
+                  (set-difference
+                   (mapcar (alex:compose #'str:downcase #'mode-name) (modes buffer))
+                   *invisible-modes*
+                   :test #'string=))))
 
 (defun format-status-buttons ()
   (markup:markup
@@ -42,8 +39,20 @@
 
 (defun format-status (window)
   (let ((buffer (current-buffer window)))
-    (str:concat
-     (format-status-modes buffer)
-     (format-status-buttons)
-     (format-status-load-status buffer)
-     (format-status-url buffer))))
+    (markup:markup
+     (:div :id "container"
+           (:div :id "controls"
+                 (markup:raw
+                  (format-status-buttons)
+                  (format-status-load-status buffer)
+                  (format-status-url buffer)))
+           (:div :id "tabs"
+                 (:a :href "" :class "tab" "Tab 1")
+                 (:a :href "" :class "tab" "Tab 2")
+                 (:a :href "" :class "tab selected" "Tab 3")
+                 (:a :href "" :class "tab" "Tab 4")
+                 (:a :href "" :class "tab" "Tab 5")
+                 (:a :href "" :class "tab" "Tab 6")
+                 (:a :href "" :class "tab" "Tab 7"))
+           (:div :id "modes"
+                 (format-status-modes buffer))))))

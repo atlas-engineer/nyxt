@@ -327,15 +327,39 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :padding 0
                 :line-height "18px"
                 :margin 0)
+               ("#container"
+                :display "grid"
+                :grid-template-columns "1fr 2fr 1fr"
+                :grid-gap "15px")
+               ("#controls"
+                :border-radius "2px"
+                :padding-left "5px"
+                :overflow "hidden"
+                :text-overflow "ellipsis"
+                :white-space "nowrap")
                ("#modes"
-                :display "inline-block"
-                :padding "0 5px 0 5px"
-                :margin "0 5px 0 0")
-               (.status-menu
-                :padding-left "4px")
+                :text-align "right"
+                :padding-right "5px"
+                :text-overflow "ellipsis"
+                :overflow-x "hidden"
+                :white-space "nowrap")
+               ("#tabs"
+                :overflow-x "scroll"
+                :text-align "left")
+               (.tab
+                :white-space "nowrap"
+                :background-color "rgb(130, 130, 130)"
+                :color "rgb(220, 220, 220)"
+                :text-decoration "none"
+                :border-right "1px solid lightgray"
+                :padding-left "4px"
+                :padding-right "4px"
+                :height "100%")
+               (".tab.selected"
+                :background-color "rgb(80, 80, 80)")
                (.button
-                :background-color "rgb(160, 160, 160)"
-                :color "rgb(242, 242, 242)"
+                :background-color "rgb(130, 130, 130)"
+                :color "rgb(220, 220, 220)"
                 :height "100%"
                 :text-decoration "none"
                 :border-radius "2px"
