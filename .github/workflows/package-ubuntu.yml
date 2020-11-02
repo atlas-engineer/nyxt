@@ -1,0 +1,51 @@
+name: Build .deb package for latest Ubuntu
+
+on:
+  push:
+    tags: '*'
+
+jobs:
+  build:
+    name: ${{ matrix.lisp }} on ${{ matrix.os }}
+    strategy:
+      matrix:
+        lisp: [sbcl]
+        # Ubuntu 20.04 is the first with a modern enough SBCL, but it does not
+        # matter anyways since we build SBCL ourselves.
+        # See https://github.com/actions/virtual-environments
+        # os: [ubuntu-20.04]
+        os: [ubuntu-latest]
+      # fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    # Check out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install SBCL and dependencies
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y ruby ruby-dev rubygems dpkg-dev sbcl curl git-core zlib1g-dev
+        sudo apt-get install -y libfixposix0 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip notify-osd enchant
+
+    - name: Fetch Common Lisp third-party dependencies
+      shell: bash
+      run: |
+        make quicklisp-extra-libs
+        echo "(:tree \"$PWD/quicklisp-libraries\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+
+    - name: Build special SBCL and make package
+      shell: bash
+      run: sudo ./build-scripts/build-ubuntu-package.sh
+
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v2 # v2 is necessary for wildcards.
+      ## TODO: Don't wrap deb in zip file.
+      with:
+        name: nyxt-ubuntu
+        ## We need './' to avoid Yaml errors.
+        path: ./*.deb
