@@ -29,7 +29,7 @@
 - [[#run-nyxt-in-a-security-sandbox][Run Nyxt in a security sandbox]]
 - [[#hacking][Hacking]]
   - [[#run-from-source][Run from source]]
-  - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of nyxt]]
+  - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of Nyxt]]
     - [[#slime][SLIME]]
     - [[#sly][SLY]]
 - [[#help--community][Help & Community]]
@@ -321,7 +321,7 @@ comfortable workflow from within your favourite editor.  See the section
 about Emacs and SLIME, or see the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of
 options for various editors.
 
-** Interacting with a compiled version of nyxt
+** Interacting with a compiled version of Nyxt
 *** SLIME   
 
 =SLIME= provides a way of interacting with Nyxt, and with Lisp code in
