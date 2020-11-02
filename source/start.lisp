@@ -281,7 +281,8 @@ To change the default buffer, e.g. set it to a given URL:
           (buffer (current-buffer)))
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
-      (when (expand-path (session-path buffer))
+      (when (and (expand-path (session-path buffer))
+                 (session-list buffer))
         (match (session-restore-prompt *browser*)
           ;; Need `funcall-safely' so we continue if the user exits the
           ;; minibuffer (which raises a condition).

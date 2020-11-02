@@ -85,12 +85,14 @@ Currently we store the list of current URLs of all buffers."
     (error (c)
       (log:warn "Failed to restore session from ~a: ~a" (expand-path path) c))))
 
+(defun session-list (&optional (buffer (current-buffer)))
+  (mapcar #'pathname-name
+          (uiop:directory-files
+           (uiop:pathname-directory-pathname
+            (expand-path (session-path buffer))))))
+
 (defun session-name-suggestion-filter (minibuffer)
-  (fuzzy-match (input-buffer minibuffer)
-               (mapcar #'pathname-name
-                       (uiop:directory-files
-                        (uiop:pathname-directory-pathname
-                         (expand-path (session-path (current-buffer))))))))
+  (fuzzy-match (input-buffer minibuffer) (session-list)))
 
 (define-command store-session-by-name ()
   "Store the session data (i.e. all the opened buffers) in the file named by user input."
