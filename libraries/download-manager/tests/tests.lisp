@@ -7,7 +7,7 @@
 
 (prove:subtest "Simple HTTP/HTTPS downloads"
   (let ((uris '("https://abcl.org"
-                "http://slack.net"
+                "http://en.wikipedia.org/wiki/Main_Page"
                 "https://duckduckgo.com"
                 "https://atlas.engineer")))
     (dolist (uri uris)
