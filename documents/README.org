@@ -338,45 +338,24 @@ a running Common Lisp process for compilation, debugging, documentation
 lookup, and so on.
 #+end_quote
 
-In order to start this interaction of glory and hacks, run the command
-=start-swank= in a compiled version of Nyxt.
+To interact with a running instance of the Nyxt browser run the command
+=start-swank=.  The minibuffer tells you the port where the server
+started (the default is 4006).  Then, in Emacs run ~M-x slime-connect
+RET 127.0.0.1 RET 4006~.
 
-Notice that the default values of the variable ~*swank-port*~ in Nyxt is
+Notice that the default value of the variable ~*swank-port*~ in Nyxt is
 different from its counterpart variable =slime-port= in Emacs to avoid
-collisions with an ~*inferior-lisp*~ process.
-
-After launching the Swank server in Nyxt, complete the following steps
-in Emacs:
-
-1. Make sure you have =SLIME= installed in Emacs
-2. ~M-x slime-connect~
-3. Enter ~127.0.0.1~ for the host
-4. Enter the port number set in the Nyxt variable ~*swank-port*~
-   (e.g. ~4006~)
-
-To customize the port that Swank starts on, edit the global variable
-~slime-port~ in your Emacs init file.
+collisions with an ~*inferior-lisp*~ process.  Both of these default
+values can be configured in the respective init files.
 
 *** SLY
 
-=SLY= is a fork of =SLIME= with additional functionality.
-
-From the SLY manual:
-#+begin_quote
-SLY is a direct fork of SLIME, the "Superior Lisp Interaction Mode
-for Emacs", which itself derived from previous Emacs programs such as
-SLIM and ILISP.  If you already know SLIME, SLY's closeness to is
-immediately apparent.  However, where SLIME has traditionally focused on
-the stability of its core functionality, SLY aims for a richer feature
-set, a more consistent user interface, and an experience generally
-closer to Emacs' own.
-#+end_quote
+[[https://github.com/joaotavora/sly][=SLY=]] is a fork of =SLIME= with additional functionality.
 
 First, follow the following steps in Nyxt:
 
 1. Install =cl-slynk= (available on Guix)
-2. Add the following line to your Nyxt init file (usually located at
-   =~/.config/nyxt/init.lisp=)
+2. Add the following line to your Nyxt init file 
   #+begin_src lisp
     (load-after-system :slynk "~/.config/nyxt/my-slink.lisp")
   #+end_src
@@ -397,13 +376,8 @@ First, follow the following steps in Nyxt:
   #+end_src
 4. Run the command =start-lynk= in Nyxt
 
-Then, in Emacs:
-
-1. Make sure you have =SLY= installed in Emacs
-2. ~M-x sly-connect~
-3. Enter ~127.0.0.1~ for the host
-4. Enter the port number set in the Nyxt variable ~*swank-port*~
-   (e.g. ~4006~)
+Then proceed as in the previous SLIME section by relacing
+~slime-connect~ with ~sly-connect~.
 
 * Help & Community
 
