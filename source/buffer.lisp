@@ -329,7 +329,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :margin 0)
                ("#container"
                 :display "grid"
-                :grid-template-columns "3fr 3fr 2fr"
+                :grid-template-columns "1fr 1fr 256px"
                 :grid-gap "15px")
                ("#controls"
                 :border-radius "2px"
