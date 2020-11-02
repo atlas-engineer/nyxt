@@ -283,19 +283,25 @@ A command is a special kind of function that can be called with
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
                                       'buffer
-                                      :value '%slot-default))
+                                      :value '%slot-default)
+                                    `(nyxt/emacs-mode:emacs-mode :activate nil)
+                                    `(nyxt/vi-mode:vi-normal-mode :activate nil))
                     "Use default (CUA)"))
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
                                       'buffer
-                                      :value '(append '(emacs-mode) %slot-default)))
+                                      :value '(append '(emacs-mode) %slot-default))
+                                    `(nyxt/emacs-mode:emacs-mode :activate t)
+                                    `(nyxt/vi-mode:vi-normal-mode :activate nil))
                     "Use Emacs"))
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
                                       'web-buffer
-                                      :value '(append '(vi-normal-mode) %slot-default)))
+                                      :value '(append '(vi-normal-mode) %slot-default))
+                                    `(nyxt/vi-mode:vi-normal-mode :activate t)
+                                    `(nyxt/emacs-mode:emacs-mode :activate nil))
                     "Use vi"))
             (:h2 "Default new buffer URL")
             (:a :class "button"
