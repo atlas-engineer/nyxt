@@ -37,6 +37,21 @@
                (object-display (url buffer))
                (title buffer)))))
 
+(defun format-status-tabs ()
+  (flet ((buffer-domains ()
+           (remove-duplicates
+            (remove nil
+                    (mapcar #'(lambda (i) (quri:uri-domain (url i)))
+                            (buffer-list :sort-by-time t)))
+            :test #'equal)))
+    (markup:markup
+     (:span
+      (loop for domain in (buffer-domains)
+            collect (markup:markup
+                     (:a :class "tab"
+                         :href
+                         (lisp-url `(nyxt::switch-buffer-or-query-domain ,domain)) domain)))))))
+
 (defun format-status (window)
   (let ((buffer (current-buffer window)))
     (markup:markup
@@ -47,12 +62,7 @@
                   (format-status-load-status buffer)
                   (format-status-url buffer)))
            (:div :id "tabs"
-                 (:a :href "" :class "tab" "Tab 1")
-                 (:a :href "" :class "tab" "Tab 2")
-                 (:a :href "" :class "tab selected" "Tab 3")
-                 (:a :href "" :class "tab" "Tab 4")
-                 (:a :href "" :class "tab" "Tab 5")
-                 (:a :href "" :class "tab" "Tab 6")
-                 (:a :href "" :class "tab" "Tab 7"))
+                 (markup:raw
+                  (format-status-tabs)))
            (:div :id "modes"
                  (format-status-modes buffer))))))

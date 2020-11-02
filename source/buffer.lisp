@@ -329,7 +329,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :margin 0)
                ("#container"
                 :display "grid"
-                :grid-template-columns "1fr 2fr 1fr"
+                :grid-template-columns "3fr 3fr 2fr"
                 :grid-gap "15px")
                ("#controls"
                 :border-radius "2px"
@@ -348,17 +348,17 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :text-align "left")
                (.tab
                 :white-space "nowrap"
-                :background-color "rgb(130, 130, 130)"
+                :background-color "rgb(145, 145, 145)"
                 :color "rgb(220, 220, 220)"
                 :text-decoration "none"
                 :border-right "1px solid lightgray"
                 :padding-left "4px"
                 :padding-right "4px"
                 :height "100%")
-               (".tab.selected"
-                :background-color "rgb(80, 80, 80)")
+               (".tab:hover"
+                :color "black")
                (.button
-                :background-color "rgb(130, 130, 130)"
+                :background-color "rgb(120, 120, 120)"
                 :color "rgb(220, 220, 220)"
                 :height "100%"
                 :text-decoration "none"
@@ -691,15 +691,23 @@ proceeding."
                      :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
         (set-current-buffer buffer))))
 
-(define-command switch-buffer-domain (&optional (buffer (current-buffer)))
+(define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
-  (let ((domain (quri:uri-domain (url buffer))))
+  (let ((domain (or domain (quri:uri-domain (url buffer)))))
     (let ((buffer (prompt-minibuffer
                    :input-prompt "Switch to buffer in current domain:"
                    :suggestion-function (buffer-suggestion-filter
                                          :domain domain
                                          :current-is-last-p t))))
       (set-current-buffer buffer))))
+
+(defun switch-buffer-or-query-domain (domain)
+  "Switch to a buffer if it exists for a given domain, otherwise query
+  the user."
+  (let* ((matching-buffers (buffer-list :domain domain)))
+    (if (eql 1 (length matching-buffers))
+        (set-current-buffer (first matching-buffers))
+        (switch-buffer-domain :domain domain))))
 
 (define-command make-buffer-focus (&key (url :default))
   "Switch to a new buffer.
