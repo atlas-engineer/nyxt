@@ -25,7 +25,7 @@
   - [[#compile][Compile]]
     - [[#using-the-makefile][Using the Makefile]]
     - [[#using-lisp][Using Lisp]]
-  - [[#update-local-lisp-libraries][Update local lisp libraries]]
+  - [[#update-local-lisp-libraries][Update local Lisp libraries]]
 - [[#run-nyxt-in-a-security-sandbox][Run Nyxt in a security sandbox]]
 - [[#hacking][Hacking]]
   - [[#run-from-source][Run from source]]
@@ -246,7 +246,7 @@ this:
   (asdf:make :nyxt/qt-application)
 #+END_SRC
 
-** Update local lisp libraries
+** Update local Lisp libraries
 
 If you use Quicklisp for Common Lisp library management outside the
 context of Nyxt, you may want to reuse your local distribution to build
@@ -354,12 +354,11 @@ values can be configured in the respective init files.
 
 Follow the following steps:
 
-1. Install =cl-slynk= (available on Guix)
-2. Add the following line to your Nyxt init file 
+1. Add the following line to your Nyxt init file 
   #+begin_src lisp
     (load-after-system :slynk "~/.config/nyxt/my-slink.lisp")
   #+end_src
-3. Create a file called =my-slink.lisp= where you will specify your
+2. Create a file called =my-slink.lisp= where you will specify your
    =start-slynk= command
   #+NAME: my-slink.lisp
   #+begin_src lisp
@@ -374,7 +373,7 @@ Follow the following steps:
         (slynk:create-server :port slynk-port :dont-close t)
         (echo "Slynk server started at port ~a" slynk-port))
   #+end_src
-4. Run the command =start-lynk= in Nyxt
+3. Run the command =start-lynk= in Nyxt
 
 Then proceed as in the previous SLIME section by relacing
 ~slime-connect~ with ~sly-connect~.
