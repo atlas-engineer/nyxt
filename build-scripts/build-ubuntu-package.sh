@@ -46,6 +46,6 @@ sbcl \
     --load ~/quicklisp/setup.lisp \
     --eval "(ql:quickload :linux-packaging)" \
     --eval "(ql:quickload :nyxt)" \
-    --eval "(ql:quickload :nyxt/ubuntu-package)" \
-    --eval "(asdf:make :nyxt/ubuntu-package)" \
+    --eval "(ql:quickload :nyxt-ubuntu-package)" \
+    --eval "(asdf:make :nyxt-ubuntu-package)" \
     --quit
