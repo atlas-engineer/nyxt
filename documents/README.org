@@ -352,7 +352,7 @@ values can be configured in the respective init files.
 
 [[https://github.com/joaotavora/sly][=SLY=]] is a fork of =SLIME= with additional functionality.
 
-First, follow the following steps in Nyxt:
+Follow the following steps:
 
 1. Install =cl-slynk= (available on Guix)
 2. Add the following line to your Nyxt init file 
