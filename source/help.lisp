@@ -435,7 +435,7 @@ evaluate in order."
     (with-input-from-string (input string)
       (loop for object = (read input nil :eof)
             until (eq object :eof)
-            collect (eval object)))))
+            collect (funcall-safely (lambda () (eval object)))))))
 
 (defun error-buffer (title text)
   "Print some help."
