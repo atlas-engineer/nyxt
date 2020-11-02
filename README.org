@@ -1,6 +1,6 @@
 #+html: <img src="https://nyxt.atlas.engineer/static/image/nyxt_256x256.png" align="right"/>
 
-* Nyxt Web Browser
+* Nyxt web browser
 
 Nyxt is a keyboard-oriented, extensible web-browser designed for power
 users.  It has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully
@@ -19,7 +19,7 @@ bugs, instabilities or feature wishes.
 
 -----
 
-** Fast Tab Switching
+** Fast tab switching
 
 Switch easily between your open tabs via fuzzy search.  If you are
 looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
@@ -27,7 +27,7 @@ looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/switch-buffer.png" align="center"/>
 
-** Multiple Selection
+** Multiple selection
 
 Commands can accept multiple inputs, allowing you to quickly perform an
 operation against multiple objects.  In the example below we search for
@@ -36,7 +36,7 @@ them.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/multi-select.png" align="center"/>
 
-** Powerful Bookmarks
+** Powerful bookmarks
 
 Bookmark a page with tags.  Search bookmarks with compound queries.
 Capture more data about your bookmarks, and group and wrangle them in
@@ -44,7 +44,7 @@ any way you like.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/bookmark.png" align="center"/>
 
-** Multi Tab Search
+** Multi tab search
 
 Search multiple tabs at the same time, and view all the results in a
 single window.  Jump quickly through your open tabs to find what you
@@ -52,7 +52,7 @@ need.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/multi-search.png" align="center"/>
 
-** History as a Tree
+** History as a tree
 
 History is represented as a tree that you can traverse.  Smarter than
 the "forwards-backwards" abstraction found in other browsers, the tree
@@ -62,7 +62,7 @@ makes sure you never lose track of where you've been.
 
 For a complete list of features, please see the manual.
 
-* Getting Started
+* Getting started
 ** Install Nyxt
 
 Nyxt supports GNU/Linux, macOS, and Guix with engine support for WebKit
@@ -90,12 +90,12 @@ please see the embedded help.  To get started, run the =help= command
 If you want to help with development or build Nyxt from scratch, read
 the developer's documentation at [[file:documents/README.org][documents/README.org]].
 
-*** Customize and Extend Nyxt
+*** Customize and extend Nyxt
 
 Complete customization is possible through the creation of a
 =~/.config/nyxt/init.lisp= file.  For more information, see the manual.
 
-** History of Changes
+** History of changes
 
 Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].
 

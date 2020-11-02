@@ -4,32 +4,32 @@
 # package org-make-toc so that the table of contents below gets updated
 # automatically
 
-* Table of Contents                                                     :TOC:
+* Table of contents                                                     :TOC:
 :PROPERTIES:
 :TOC:      :include all :ignore this
 :END:
 :CONTENTS:
-- [[#developer-installation-with-guix][Developer Installation with Guix]]
-- [[#standard-developer-installation][Standard Developer Installation]]
+- [[#developer-installation-with-guix][Developer installation with Guix]]
+- [[#standard-developer-installation][Standard developer installation]]
   - [[#installing-sbcl][Installing SBCL]]
   - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
-  - [[#gtk-dependencies][GTK Dependencies]]
-    - [[#lisp-dependencies][Lisp Dependencies]]
-    - [[#gnulinux-gtk-dependencies][GNU/Linux GTK Dependencies]]
-    - [[#macos-specific-dependencies][macOS Specific Dependencies]]
-  - [[#qt-dependencies][Qt Dependencies]]
-    - [[#lisp-dependencies][Lisp Dependencies]]
-    - [[#gnulinux-dependencies][GNU/Linux Dependencies]]
-    - [[#macos-dependencies][macOS Dependencies]]
-  - [[#fetch-the-source-code][Fetch the Source Code]]
+  - [[#gtk-dependencies][GTK dependencies]]
+    - [[#lisp-dependencies][Lisp dependencies]]
+    - [[#gnulinux-gtk-dependencies][GNU/Linux GTK dependencies]]
+    - [[#macos-specific-dependencies][macOS specific dependencies]]
+  - [[#qt-dependencies][Qt dependencies]]
+    - [[#lisp-dependencies][Lisp dependencies]]
+    - [[#gnulinux-dependencies][GNU/Linux dependencies]]
+    - [[#macos-dependencies][macOS dependencies]]
+  - [[#fetch-the-source-code][Fetch the source code]]
   - [[#compile][Compile]]
     - [[#using-the-makefile][Using the Makefile]]
     - [[#using-lisp][Using Lisp]]
-  - [[#update-local-lisp-libraries][Update Local Lisp Libraries]]
-- [[#run-nyxt-in-a-security-sandbox][Run Nyxt in a Security Sandbox]]
+  - [[#update-local-lisp-libraries][Update local lisp libraries]]
+- [[#run-nyxt-in-a-security-sandbox][Run Nyxt in a security sandbox]]
 - [[#hacking][Hacking]]
-  - [[#run-from-source][Run from Source]]
-  - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a Compiled Version of Nyxt]]
+  - [[#run-from-source][Run from source]]
+  - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of nyxt]]
     - [[#slime][SLIME]]
     - [[#sly][SLY]]
 - [[#help--community][Help & Community]]
@@ -38,7 +38,7 @@
   - [[#irc-channel][IRC Channel]]
 :END:
 
-* Developer Installation with Guix
+* Developer installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the
 Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
@@ -47,7 +47,7 @@ will find it]]).
 Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
 [[../build-scripts/guix.scm]] file of the Nyxt repository.
 
-* Standard Developer Installation
+* Standard developer installation
 
 Nyxt is written in Common Lisp.  It can be built with any standard Common
 Lisp implementation.  Currently, only [[http://www.sbcl.org/][SBCL]] (≥ 1.4.2) support is tested.
@@ -86,8 +86,8 @@ To install Quicklisp:
 - Evaluate in the REPL ~(ql:add-to-init-file)~ to add Quicklisp to your
   Lisp init file.
 
-** GTK Dependencies
-*** Lisp Dependencies
+** GTK dependencies
+*** Lisp dependencies
 
 Nyxt on GTK requires the latest version of the =cl-webkit= and =cluffer=
 libraries.
@@ -102,7 +102,7 @@ listed in ~asdf:*central-registry*~.  For instance:
   git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 #+end_src
 
-*** GNU/Linux GTK Dependencies
+*** GNU/Linux GTK dependencies
 
 - WebKitGTK+ also known as webkit2gtk (make sure to use the most recent
   version for security reasons)
@@ -158,15 +158,15 @@ distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
-*** macOS Specific Dependencies
+*** macOS specific dependencies
 
 - GTK 3.24.12+
 - WebKitGTK+
 - XQuartz
 - libfixposix
 
-** Qt Dependencies
-*** Lisp Dependencies
+** Qt dependencies
+*** Lisp dependencies
 
 Nyxt on Qt requires the latest version of the cl-webengine library.
 Clone the cl-webengine repository into =~/common-lisp= or any directory
@@ -179,7 +179,7 @@ listed in ~asdf:*central-registry*~:
 Please follow the instructions in the cl-webengine repository for
 details about how to install it on your system.
 
-*** GNU/Linux Dependencies
+*** GNU/Linux dependencies
 
 - Qt 5 (qtbase, qtwebchannel, qtdeclarative)
 - Qt 5 WebEngine
@@ -188,13 +188,13 @@ details about how to install it on your system.
 - notify-osd (optional)
 - enchant (for spellchecking)
 
-*** macOS Dependencies
+*** macOS dependencies
 
 - Qt 5.14.0+
 - Qt WebEngine
 - libfixposix
 
-** Fetch the Source Code
+** Fetch the source code
 
 Clone the Nyxt repository into =~/common-lisp= or any directory listed
 in ~asdf:*central-registry*~:
@@ -246,7 +246,7 @@ this:
   (asdf:make :nyxt/qt-application)
 #+END_SRC
 
-** Update Local Lisp Libraries
+** Update local lisp libraries
 
 If you use Quicklisp for Common Lisp library management outside the
 context of Nyxt, you may want to reuse your local distribution to build
@@ -272,7 +272,7 @@ automatically for you.
 
 You will also need to manually update the [[Lisp specific dependencies]].
 
-* Run Nyxt in a Security Sandbox
+* Run Nyxt in a security sandbox
 
 For improved security while you browse the Internet, you can run Nyxt in
 a container on GNU/Linux.
@@ -297,7 +297,7 @@ a container on GNU/Linux.
 - With [[https://firejail.wordpress.com/][Firejail]].
 
 * Hacking
-** Run from Source
+** Run from source
 
 If you are developing Nyxt, you may prefer to run Nyxt directly from
 source so that you can skip the compilation step and iterate faster.
@@ -321,7 +321,7 @@ comfortable workflow from within your favourite editor.  See the section
 about Emacs and SLIME, or see the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of
 options for various editors.
 
-** Interacting with a Compiled Version of Nyxt
+** Interacting with a compiled version of nyxt
 *** SLIME   
 
 =SLIME= provides a way of interacting with Nyxt, and with Lisp code in
