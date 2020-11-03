@@ -363,7 +363,8 @@ OBJECTS can be a list of packages, a generation, etc."
     (html-set
      (markup:markup
       (:style (style buffer))
-      (:h1 "Generation packages")
+      (:h2 (format nil "Packages for generation ~a" (ospama:id generation)))
+      (:p "Profile " profile)
       (:ul
        (loop for package-output in (ospama:list-packages (ospama:path generation))
              for package = (ospama:parent-package package-output)
