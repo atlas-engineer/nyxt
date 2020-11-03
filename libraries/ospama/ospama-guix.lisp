@@ -216,7 +216,7 @@ PROFILE is a full path to a profile."
    `(write
      (map manifest-entry-name
           (manifest-entries
-           (concatenate-manifests (map profile-manifest (list ,(namestring profile)))))))))
+           (profile-manifest ,(namestring profile)))))))
 
 (define-class guix-package (os-package)
   ((outputs '())
