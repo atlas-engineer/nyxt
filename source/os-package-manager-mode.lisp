@@ -101,8 +101,8 @@
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) installed-packages))))
 
-(defun os-profile-suggestion-filter ()
-  (let* ((all-profiles (ospama:list-profiles)))
+(defun os-profile-suggestion-filter (&key include-manager-p)
+  (let* ((all-profiles (ospama:list-profiles :include-manager-p include-manager-p)))
     (lambda (minibuffer)
       ;; TODO: Don't prompt when there is just 1 profile.
       (fuzzy-match (input-buffer minibuffer) all-profiles))))
@@ -346,10 +346,11 @@ OBJECTS can be a list of packages, a generation, etc."
     (uiop:launch-program (list (external-editor-program *browser*) manifest))))
 
 (define-command describe-os-generation ()
-  "Edit select manifest."
+  "Show the packages of a given profile generation."
   (assert-package-manager)
   (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter)
+                   :suggestion-function (os-profile-suggestion-filter
+                                         :include-manager-p t)
                    :input-prompt "Profile"))
          (generation (prompt-minibuffer
                       :suggestion-function (os-generation-suggestion-filter profile)
@@ -383,7 +384,8 @@ OBJECTS can be a list of packages, a generation, etc."
   "Switch generation of selected profile."
   (assert-package-manager)
   (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter)
+                   :suggestion-function (os-profile-suggestion-filter
+                                         :include-manager-p t)
                    :input-prompt "Target profile"))
          (generation (prompt-minibuffer
                       :suggestion-function (os-generation-suggestion-filter profile)
@@ -395,7 +397,8 @@ OBJECTS can be a list of packages, a generation, etc."
   "Delete generations of selected profile."
   (assert-package-manager)
   (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter)
+                   :suggestion-function (os-profile-suggestion-filter
+                                         :include-manager-p t)
                    :input-prompt "Target profile"))
          (generations (prompt-minibuffer
                        :suggestion-function (os-generation-suggestion-filter profile)
