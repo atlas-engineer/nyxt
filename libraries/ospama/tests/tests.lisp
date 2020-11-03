@@ -9,3 +9,5 @@
   (when (typep (ospama:manager) 'ospama:guix-manager)
     (prove:run (uiop:resolve-absolute-location
                 (list *current-directory* "test-functional.lisp")))))
+
+(prove:finalize)
