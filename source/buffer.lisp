@@ -316,7 +316,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-user-class internal-buffer)
 
 (define-class status-buffer (user-internal-buffer)
-  ((height 18
+  ((height 20
            :type integer
            :documentation "The height of the status buffer in pixels.")
    (style #.(cl-css:css
@@ -325,44 +325,61 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :font-size "14px"
                 :color "rgb(32, 32, 32)"
                 :padding 0
-                :line-height "18px"
-                :margin 0)
+                :margin 0
+                :line-height "20px")
+               (".arrow"
+                :width "20px"
+                :height "20px"
+                :transform "rotate(45deg)"
+                :overflow "clip")
+               (".arrow-right" :margin-left "-10px")
+               (".arrow-left"  :margin-right "-10px")
                ("#container"
                 :display "grid"
-                :grid-template-columns "1fr 1fr 256px"
-                :grid-gap "15px")
+                ;; Columns: controls, arrow, url, arrow, tabs, arrow, modes
+                :grid-template-columns "115px 10px 1fr 10px 2fr 10px 250px"
+                :overflow-y "hidden")
                ("#controls"
-                :border-radius "2px"
+                :background-color "rgb(80,80,80)"
                 :padding-left "5px"
                 :overflow "hidden"
-                :text-overflow "ellipsis"
                 :white-space "nowrap")
+               ("#url"
+                :background-color "rgb(120,120,120)"
+                :min-width "100px"
+                :text-overflow "ellipsis"
+                :overflow-x "hidden"
+                :white-space "nowrap"
+                :padding-left "15px"
+                :padding-right "10px"
+                :margin-left "-10px")
+               ("#tabs"
+                :min-width "100px"
+                :background-color "rgb(160,160,160)"
+                :padding-left "15px"
+                :margin-left "-10px"
+                :margin-right "-10px"
+                :overflow-x "scroll"
+                :text-align "left")
+               (.tab
+                :color "rgb(220, 220, 220)"
+                :white-space "nowrap"
+                :text-decoration "none"
+                :padding-left "5px"
+                :padding-right "5px")
+               (".tab:hover"
+                :color "black")
                ("#modes"
+                :background-color "rgb(120,120,120)"
+                :color "rgb(230, 230, 230)"
                 :text-align "right"
                 :padding-right "5px"
                 :text-overflow "ellipsis"
                 :overflow-x "hidden"
                 :white-space "nowrap")
-               ("#tabs"
-                :overflow-x "scroll"
-                :text-align "left")
-               (.tab
-                :white-space "nowrap"
-                :background-color "rgb(145, 145, 145)"
-                :color "rgb(220, 220, 220)"
-                :text-decoration "none"
-                :border-right "1px solid lightgray"
-                :padding-left "4px"
-                :padding-right "4px"
-                :height "100%")
-               (".tab:hover"
-                :color "black")
                (.button
-                :background-color "rgb(120, 120, 120)"
-                :color "rgb(220, 220, 220)"
-                :height "100%"
+                :color "rgb(230, 230, 230)"
                 :text-decoration "none"
-                :border-radius "2px"
                 :padding-left "2px"
                 :padding-right "2px"
                 :margin-left "2px"

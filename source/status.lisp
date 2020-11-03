@@ -57,12 +57,19 @@
     (markup:markup
      (:div :id "container"
            (:div :id "controls"
+                 (markup:raw (format-status-buttons)))
+           (:div :class "arrow arrow-right" 
+                 :style "background-color:rgb(80,80,80)" "")
+           (:div :id "url"
                  (markup:raw
-                  (format-status-buttons)
                   (format-status-load-status buffer)
                   (format-status-url buffer)))
+           (:div :class "arrow arrow-right" 
+                 :style "background-color:rgb(120,120,120)" "")
            (:div :id "tabs"
                  (markup:raw
                   (format-status-tabs)))
+           (:div :class "arrow arrow-left"
+                 :style "background-color:rgb(120,120,120)" "")
            (:div :id "modes"
                  (format-status-modes buffer))))))
