@@ -46,7 +46,8 @@
 (defmethod object-display ((pkg ospama:os-package))
   (format nil "~a~a~a"
           (ospama:name pkg)
-          (make-string (max 1 (- 40 (length (ospama:name pkg)))) :initial-element #\ )
+          (make-string (max 1 (- 40 (length (ospama:name pkg))))
+                       :initial-element #\ )
           (ospama:synopsis pkg)))
 
 (defmethod object-string ((output ospama:os-package-output))
@@ -58,7 +59,10 @@
     (format nil "~a:~a~a~a"
             (ospama:name pkg)
             (ospama:name output)
-            (make-string (max 1 (- 40 (length (ospama:name pkg)))) :initial-element #\ )
+            (make-string (max 1 (- 40
+                                   (+ (length (ospama:name pkg))
+                                      (length (ospama:name output)))))
+                         :initial-element #\ )
             (ospama:synopsis pkg))))
 
 (defmethod object-string ((gen ospama:os-generation))
@@ -358,15 +362,17 @@
       (:style (style buffer))
       (:h1 "Generation packages")
       (:ul
-       (loop for package in (ospama:list-packages (ospama:path generation))
+       (loop for package-output in (ospama:list-packages (ospama:path generation))
+             for package = (ospama:parent-package package-output)
              collect
              (markup:markup*
                         `(:li (:a :class "button"
                                   :href ,(lisp-url `(%describe-os-package
-                                                     (list (ospama:find-os-package ,(ospama:name package)))))
-                                  ;; TODO: Display the output
-                                  ,(ospama:name package))
-                              " " ,(ospama:version package)))))))
+                                                     (list (ospama:find-os-package
+                                                            ,(ospama:name package)))))
+                                  ,(object-string package-output))
+                              " " ,(ospama:version package))))))
+     buffer)
     (set-current-buffer buffer)
     buffer))
 
