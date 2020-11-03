@@ -158,7 +158,7 @@ With INCLUDE-MANAGER-P, also return the package manager own profile."))
 
 (defgeneric manager-delete-generations (manager generations &optional profile)
   (:method ((manager manager) generations &optional profile)
-    (declare (ignorable profile))
+    (declare (ignorable generations profile))
     (error "Unspecified manager method"))
   (:documentation "Delete GENERATIONS from PROFILE."))
 
