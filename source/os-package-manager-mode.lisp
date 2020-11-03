@@ -256,7 +256,9 @@
         until (eq object :eof)
         do (funcall callback object)))
 
-(defun operate-os-package (title command profile packages) ; TODO: Rename "packages" since it can be a generation.
+(defun operate-os-package (title command profile objects)
+  "Run COMMAND over OBJECTS in PROFILE.
+OBJECTS can be a list of packages, a generation, etc."
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
@@ -272,7 +274,7 @@
             (:h1 title))
            buffer)
           (chanl:pexec ()
-            (let ((process-info (funcall command packages profile))
+            (let ((process-info (funcall command objects profile))
                   (mode (find-submode buffer 'os-package-manager-mode)))
               (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
               (html-write
