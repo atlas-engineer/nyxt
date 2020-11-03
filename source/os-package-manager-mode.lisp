@@ -256,7 +256,7 @@
         until (eq object :eof)
         do (funcall callback object)))
 
-(defun operate-os-package (title command profile packages)
+(defun operate-os-package (title command profile packages) ; TODO: Rename "packages" since it can be a generation.
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
@@ -376,6 +376,18 @@
     (echo "")
     (set-current-buffer buffer)
     buffer))
+
+(define-command switch-os-generation ()
+  "Switch generation of selected profile."
+  (assert-package-manager)
+  (let* ((profile (prompt-minibuffer
+                   :suggestion-function (os-profile-suggestion-filter)
+                   :input-prompt "Target profile"))
+         (generation (prompt-minibuffer
+                      :suggestion-function (os-generation-suggestion-filter profile)
+                      :input-prompt "Switch to generation")))
+    (operate-os-package "Switching to generation..." #'ospama:switch-generation
+                        profile generation)))
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
