@@ -370,6 +370,14 @@ Date is in the form 'Oct 22 2020 18:38:42'."
                (when profile
                  (list (str:concat "--profile=" (namestring profile)))))))
 
+(defmethod manager-delete-generations ((manager guix-manager) generations
+                                       &optional profile)
+  (run (append (list (path manager) "package"
+                     (format nil "--delete-generations=~{~a~^,~}"
+                             (mapcar #'id generations)))
+               (when profile
+                 (list (str:concat "--profile=" (namestring profile)))))))
+
 (defmethod refresh ((manager guix-manager)) ; TODO: Unused?
   (declare (ignore manager))
   (setf *guix-database* nil))
