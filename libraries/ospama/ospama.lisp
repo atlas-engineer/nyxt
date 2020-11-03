@@ -91,8 +91,9 @@ Use the returned `process-info' to check the output and the process termination.
   (:method ((manager manager) &optional profile)
     (declare (ignorable profile))
     (error "Unspecified manager method"))
-  (:documentation "Return the list of packages in PROFILE.
-If PROFILE is nil, return all packages."))
+  (:documentation "Return the list of packages in PROFILE.  If PROFILE is nil,
+return all packages.  For functional package manager, return the list of outputs
+when PROFILE is specified."))
 
 (export-always 'list-package-outputs)
 (defun list-package-outputs ()
