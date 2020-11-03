@@ -391,6 +391,19 @@ OBJECTS can be a list of packages, a generation, etc."
     (operate-os-package "Switching to generation..." #'ospama:switch-generation
                         profile generation)))
 
+(define-command delete-os-generations ()
+  "Delete generations of selected profile."
+  (assert-package-manager)
+  (let* ((profile (prompt-minibuffer
+                   :suggestion-function (os-profile-suggestion-filter)
+                   :input-prompt "Target profile"))
+         (generations (prompt-minibuffer
+                       :suggestion-function (os-generation-suggestion-filter profile)
+                       :input-prompt "Delete generations"
+                       :multi-selection-p t)))
+    (operate-os-package "Deleting generations..." #'ospama:delete-generations
+                        profile generations)))
+
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
 ;; - show-deps, show-reverse-deps (when minibuffer has actions)
