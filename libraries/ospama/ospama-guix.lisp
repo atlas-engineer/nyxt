@@ -218,6 +218,39 @@ PROFILE is a full path to a profile."
           (manifest-entries
            (profile-manifest ,(namestring profile)))))))
 
+(defun generation-list (&optional (profile '%current-profile))
+  "Return the generations in PROFILE as a list of
+(NUMBER CURRENT? PACKAGES TIME FILENAME).
+PROFILE is a full path to a profile.
+Date is in the form 'Oct 22 2020 18:38:42'."
+  (let ((profile (if (pathnamep profile)
+                     (namestring profile)
+                     profile)))
+    (guix-eval
+     '(use-modules
+       (ice-9 match)
+       (srfi srfi-19)
+       (guix profiles))
+     `(write
+       (let loop ((generations (profile-generations ,profile)))
+         (match generations
+           ((number . rest)
+            (cons (list number
+                        (if (= (generation-number ,profile) number)
+                            't
+                            'nil)
+                        (length (manifest-entries
+                                 (profile-manifest
+                                  (generation-file-name ,profile number))))
+                        (date->string
+                         (time-utc->date
+                          (generation-time ,profile number))
+                         ;; ISO-8601 date/time
+                         "~5")
+                        (generation-file-name ,profile number))
+                  (loop rest)))
+           (_ '())))))))
+
 (define-class guix-package (os-package)
   ((outputs '())
    (supported-systems '())
@@ -301,6 +334,27 @@ PROFILE is a full path to a profile."
             (list (path manager) "package" "--list-profiles")
             :output '(:string :stripped t)))
           :test #'string=))
+
+(defun make-generation (id current? package-count date path)
+  (make-instance 'os-generation :id id
+                                :current? current?
+                                :package-count package-count
+                                :date (local-time:parse-timestring date)
+                                :path path))
+
+(defun default-profile-p (profile)
+  (string= (namestring profile)
+           (format nil "~a/.guix-profile" (uiop:getenv "HOME"))))
+
+(defmethod manager-list-generations ((manager guix-manager) &optional profile)
+  (mapcar (lambda (args) (apply #'make-generation args))
+          (read-from-string (if (and profile
+                                     ;; Default profile is a link that needs to
+                                     ;; be expanded for generation-numbers to
+                                     ;; work.  As a workaround, we use `%current-profile'.
+                                     (not (default-profile-p profile)))
+                                (generation-list profile)
+                                (generation-list)))))
 
 (defmethod refresh ((manager guix-manager)) ; TODO: Unused?
   (declare (ignore manager))

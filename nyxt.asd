@@ -296,7 +296,7 @@
                          (nyxt-run-test c "libraries/class-star/tests/")))
 
 (asdf:defsystem nyxt/ospama
-  :depends-on (alexandria cl-ppcre serapeum str nyxt/class-star)
+  :depends-on (alexandria cl-ppcre local-time serapeum str nyxt/class-star)
   :pathname "libraries/ospama/"
   :components ((:file "package")
                (:file "ospama")

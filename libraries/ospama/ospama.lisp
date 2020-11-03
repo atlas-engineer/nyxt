@@ -36,6 +36,18 @@
   (:documentation "OS package outputs are meaningful mostly for functional
 package managers like Nix or Guix."))
 
+(define-class os-generation ()
+  ((id 0)
+   (current? nil)
+   (package-count 0)
+   (date (local-time:now))
+   (path ""
+         :type (or string pathname)))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "OS generation"))
+
 (export-always '*manager*)
 (defvar *manager* nil
   "The currently selected package manager.
@@ -121,6 +133,17 @@ This only needs to be implemented for package managers that support outputs."))
 (export-always 'manager-list-manifests)
 (defmethod manager-list-manifests ((manager manager))
   (uiop:directory-files (uiop:ensure-directory-pathname manifest-directory)))
+
+(export-always 'list-generations)
+(defun list-generations (&optional profile)
+  (manager-list-generations (manager) profile))
+
+(export-always 'manager-list-generations)
+(defgeneric manager-list-generations (manager &optional profile)
+  (:method ((manager manager) &optional profile)
+    (declare (ignorable profile))
+    (error "Unspecified manager method"))
+  (:documentation "Return the generations, optionally for PROFILE."))
 
 (export-always 'install)
 (defun install (package-list &optional profile)
