@@ -328,12 +328,12 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :margin 0
                 :line-height "20px")
                (".arrow"
-                :width "20px"
-                :height "20px"
-                :transform "rotate(45deg)"
-                :overflow "clip")
-               (".arrow-right" :margin-left "-10px")
-               (".arrow-left"  :margin-right "-10px")
+                :width "10px"
+                :height "20px")
+               (".arrow-right"
+                :clip-path "polygon(0 100%, 100% 50%, 0 0)")
+               (".arrow-left"
+                :clip-path "polygon(0 50%, 100% 100%, 100% 0)")
                ("#container"
                 :display "grid"
                 ;; Columns: controls, arrow, url, arrow, tabs, arrow, modes
