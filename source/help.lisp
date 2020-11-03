@@ -298,7 +298,7 @@ A command is a special kind of function that can be called with
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
-                                      'web-buffer
+                                      'buffer
                                       :value '(append '(vi-normal-mode) %slot-default))
                                     `(nyxt/vi-mode:vi-normal-mode :activate t)
                                     `(nyxt/emacs-mode:emacs-mode :activate nil))
