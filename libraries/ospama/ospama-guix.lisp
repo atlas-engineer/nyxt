@@ -375,7 +375,7 @@ for non-standard profiles."
                                 ;; We need to read the symlink for
                                 ;; ~/.guix-profile and the Guix checkout profile
                                 ;; otherwise `generation-numbers' won't work.
-                                (generation-list (read-symlink profile))
+                                (generation-list (guix-expand-profile-symlink profile))
                                 (generation-list)))))
 
 (defmethod manager-switch-generation ((manager guix-manager) (generation os-generation)
