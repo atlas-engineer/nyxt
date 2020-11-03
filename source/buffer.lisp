@@ -361,6 +361,8 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :margin-right "-10px"
                 :overflow-x "scroll"
                 :text-align "left")
+               ("#tabs::-webkit-scrollbar"
+                :display "none")
                (.tab
                 :color "rgb(220, 220, 220)"
                 :white-space "nowrap"
