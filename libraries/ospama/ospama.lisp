@@ -139,12 +139,22 @@ This only needs to be implemented for package managers that support outputs."))
 (defun list-generations (&optional profile)
   (manager-list-generations (manager) profile))
 
-(export-always 'manager-list-generations)
+(export-always 'manager-list-generations) ; TODO: Remove defgeneric exports.
 (defgeneric manager-list-generations (manager &optional profile)
   (:method ((manager manager) &optional profile)
     (declare (ignorable profile))
     (error "Unspecified manager method"))
   (:documentation "Return the generations, optionally for PROFILE."))
+
+(export-always 'switch-generation)
+(defun switch-generation (id &optional profile)
+  (manager-switch-generation (manager) id profile))
+
+(defgeneric manager-switch-generation (manager generation &optional profile)
+  (:method ((manager manager) (generation os-generation) &optional profile)
+    (declare (ignorable profile))
+    (error "Unspecified manager method"))
+  (:documentation "Switch PROFILE to generation ID."))
 
 (export-always 'install)
 (defun install (package-list &optional profile)

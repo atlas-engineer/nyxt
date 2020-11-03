@@ -363,6 +363,13 @@ Date is in the form 'Oct 22 2020 18:38:42'."
                                 (generation-list profile)
                                 (generation-list)))))
 
+(defmethod manager-switch-generation ((manager guix-manager) (generation os-generation)
+                                      &optional profile)
+  (run (append (list (path manager) "package"
+                     (format nil "--switch-generation=~a" (id generation)))
+               (when profile
+                 (list (str:concat "--profile=" (namestring profile)))))))
+
 (defmethod refresh ((manager guix-manager)) ; TODO: Unused?
   (declare (ignore manager))
   (setf *guix-database* nil))
