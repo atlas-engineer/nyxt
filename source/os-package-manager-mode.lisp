@@ -61,6 +61,18 @@
             (make-string (max 1 (- 40 (length (ospama:name pkg)))) :initial-element #\ )
             (ospama:synopsis pkg))))
 
+(defmethod object-string ((gen ospama:os-generation))
+  (ospama:id gen))
+(defmethod object-display ((gen ospama:os-generation))
+  (format nil "~a ~a ~a packages~a"
+          (ospama:id gen)
+          (local-time:format-timestring nil (ospama:date gen)
+                                        :format local-time:+asctime-format+)
+          (ospama:package-count gen)
+          (if (ospama:current? gen)
+              " (current)"
+              "")))
+
 (defun os-package-suggestion-filter ()
   (echo "Loading package database...")
   (let* ((all-packages (ospama:list-packages)))
@@ -90,6 +102,12 @@
     (lambda (minibuffer)
       ;; TODO: Don't prompt when there is just 1 profile.
       (fuzzy-match (input-buffer minibuffer) all-profiles))))
+
+(defun os-generation-suggestion-filter (profile)
+  (let* ((all-generations (ospama:list-generations profile)))
+    (lambda (minibuffer)
+      ;; TODO: Don't prompt when there is just 1 profile.
+      (fuzzy-match (input-buffer minibuffer) all-generations))))
 
 ;; TODO: Use these helpers everywhere.
 (defun html-write (content &optional (buffer (current-buffer)))
@@ -320,6 +338,37 @@
                    :input-prompt "Manifest")))
     (echo "Opening ~s with ~a" manifest (external-editor-program *browser*))
     (uiop:launch-program (list (external-editor-program *browser*) manifest))))
+
+(define-command describe-os-generation ()
+  "Edit select manifest."
+  (assert-package-manager)
+  (let* ((profile (prompt-minibuffer
+                   :suggestion-function (os-profile-suggestion-filter)
+                   :input-prompt "Profile"))
+         (generation (prompt-minibuffer
+                      :suggestion-function (os-generation-suggestion-filter profile)
+                      :input-prompt "Generation"))
+         (buffer (or (find-buffer 'os-package-manager-mode)
+                     (nyxt/os-package-manager-mode:os-package-manager-mode
+                      :activate t
+                      :buffer (make-internal-buffer :title "*OS packages*")))))
+
+    (html-set
+     (markup:markup
+      (:style (style buffer))
+      (:h1 "Generation packages")
+      (:ul
+       (loop for package in (ospama:list-packages (ospama:path generation))
+             collect
+             (markup:markup*
+                        `(:li (:a :class "button"
+                                  :href ,(lisp-url `(%describe-os-package
+                                                     (list (ospama:find-os-package ,(ospama:name package)))))
+                                  ;; TODO: Display the output
+                                  ,(ospama:name package))
+                              " " ,(ospama:version package)))))))
+    (set-current-buffer buffer)
+    buffer))
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
