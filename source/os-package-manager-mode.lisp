@@ -356,7 +356,7 @@
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
                       :buffer (make-internal-buffer :title "*OS packages*")))))
-
+    (echo "Loading package database...")
     (html-set
      (markup:markup
       (:style (style buffer))
@@ -366,13 +366,14 @@
              for package = (ospama:parent-package package-output)
              collect
              (markup:markup*
-                        `(:li (:a :class "button"
-                                  :href ,(lisp-url `(%describe-os-package
-                                                     (list (ospama:find-os-package
-                                                            ,(ospama:name package)))))
-                                  ,(object-string package-output))
-                              " " ,(ospama:version package))))))
+              `(:li (:a :class "button"
+                        :href ,(lisp-url `(%describe-os-package
+                                           (list (ospama:find-os-package
+                                                  ,(ospama:name package)))))
+                        ,(object-string package-output))
+                    " " ,(ospama:version package))))))
      buffer)
+    (echo "")
     (set-current-buffer buffer)
     buffer))
 
