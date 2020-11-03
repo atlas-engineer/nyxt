@@ -208,13 +208,15 @@ just-in-time instead."
 
 (declaim (ftype (function (&optional (or symbol string pathname))) list-installed))
 (defun list-installed (&optional (profile '%current-profile))
-  "Return the installed packages in PROFILE as a list of strings.
+  "Return the installed package outputs in PROFILE as a list of (NAME OUTPUT).
 PROFILE is a full path to a profile."
   (guix-eval
    '(use-modules
      (guix profiles))
    `(write
-     (map manifest-entry-name
+     (map (lambda (entry)
+            (list (manifest-entry-name entry)
+                  (manifest-entry-output entry)))
           (manifest-entries
            (profile-manifest ,(namestring profile)))))))
 
@@ -320,7 +322,12 @@ Date is in the form 'Oct 22 2020 18:38:42'."
 
 (defmethod manager-list-packages ((manager guix-manager) &optional profile)
   (if profile
-      (mapcar #'find-os-package (read-from-string (list-installed profile)))
+      (mapcar (lambda (name+output)
+                (find (second name+output)
+                      (outputs (find-os-package (first name+output)))
+                      :key #'name
+                      :test #'string=))
+              (read-from-string (list-installed profile)))
       (guix-database)))
 
 (defmethod manager-list-package-outputs ((manager guix-manager))
