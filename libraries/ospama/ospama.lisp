@@ -141,14 +141,24 @@ This only needs to be implemented for package managers that support outputs."))
   (:documentation "Return the generations, optionally for PROFILE."))
 
 (export-always 'switch-generation)
-(defun switch-generation (id &optional profile)
-  (manager-switch-generation (manager) id profile))
+(defun switch-generation (generation &optional profile)
+  (manager-switch-generation (manager) generation profile))
 
 (defgeneric manager-switch-generation (manager generation &optional profile)
   (:method ((manager manager) (generation os-generation) &optional profile)
     (declare (ignorable profile))
     (error "Unspecified manager method"))
   (:documentation "Switch PROFILE to generation ID."))
+
+(export-always 'delete-generations)
+(defun delete-generations (generations &optional profile)
+  (manager-delete-generations (manager) generations profile))
+
+(defgeneric manager-delete-generations (manager generations &optional profile)
+  (:method ((manager manager) generations &optional profile)
+    (declare (ignorable profile))
+    (error "Unspecified manager method"))
+  (:documentation "Delete GENERATIONS from PROFILE."))
 
 (export-always 'install)
 (defun install (package-list &optional profile)
