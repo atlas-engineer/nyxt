@@ -115,13 +115,15 @@ This only needs to be implemented for package managers that support outputs."))
   (:documentation "Return the package matching NAME."))
 
 (export-always 'list-profiles)
-(defun list-profiles ()
-  (manager-list-profiles (manager)))
+(defun list-profiles (&key include-manager-p)
+  (manager-list-profiles (manager) :include-manager-p include-manager-p))
 
-(defgeneric manager-list-profiles (manager)
-  (:method ((manager manager))
+(defgeneric manager-list-profiles (manager &key include-manager-p)
+  (:method ((manager manager) &key include-manager-p)
+    (declare (ignorable include-manager-p))
     (error "Unspecified manager method"))
-  (:documentation "Return all profiles as a list of strings."))
+  (:documentation "Return all profiles as a list of strings.
+With INCLUDE-MANAGER-P, also return the package manager own profile."))
 
 (export-always 'list-manifests)
 (defun list-manifests ()

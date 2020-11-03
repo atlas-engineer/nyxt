@@ -322,25 +322,34 @@ Date is in the form 'Oct 22 2020 18:38:42'."
 
 (defmethod manager-list-packages ((manager guix-manager) &optional profile)
   (if profile
-      (mapcar (lambda (name+output)
-                (find (second name+output)
-                      (outputs (find-os-package (first name+output)))
-                      :key #'name
-                      :test #'string=))
-              (read-from-string (list-installed profile)))
+      (delete nil
+              (mapcar
+               (lambda (name+output)
+                 ;; name+output may be that of a channel, e.g. when profile is a Guix checkout.
+                 ;; In this case, `find-os-package' may return nil.
+                 ;; TODO: Should we return channel derivations as first class objects?
+                 (serapeum:and-let* ((pkg (find-os-package (first name+output))))
+                   (find (second name+output)
+                         (outputs pkg)
+                         :key #'name
+                         :test #'string=)))
+               (read-from-string (list-installed profile))))
       (guix-database)))
 
 (defmethod manager-list-package-outputs ((manager guix-manager))
   (alexandria:mappend #'outputs (list-packages)))
 
-(defmethod manager-list-profiles ((manager guix-manager))
-  (delete (namestring (uiop:xdg-config-home "guix/current"))
-          (str:split
-           (string #\newline)
-           (uiop:run-program
-            (list (path manager) "package" "--list-profiles")
-            :output '(:string :stripped t)))
-          :test #'string=))
+(defmethod manager-list-profiles ((manager guix-manager) &key include-manager-p)
+  (let ((all-profiles (str:split
+                       (string #\newline)
+                       (uiop:run-program
+                        (list (path manager) "package" "--list-profiles")
+                        :output '(:string :stripped t)))))
+    (if include-manager-p
+        all-profiles
+        (delete (namestring (uiop:xdg-config-home "guix/current"))
+                all-profiles
+                :test #'string=))))
 
 (defun make-generation (id current? package-count date path)
   (make-instance 'os-generation :id id
@@ -349,18 +358,24 @@ Date is in the form 'Oct 22 2020 18:38:42'."
                                 :date (local-time:parse-timestring date)
                                 :path path))
 
-(defun default-profile-p (profile)
-  (string= (namestring profile)
-           (format nil "~a/.guix-profile" (uiop:getenv "HOME"))))
+(defun guix-expand-profile-symlink (profile)
+  "Return the path the PROFILE link points too.
+This function is mostly useful for the standard profile and the Guix checkout profile.
+
+If the result is not absolute, return PROFILE untouched.  This is what we want
+for non-standard profiles."
+  (let ((result (osicat:read-link profile)))
+    (if (uiop:relative-pathname-p result)
+        profile
+        result)))
 
 (defmethod manager-list-generations ((manager guix-manager) &optional profile)
   (mapcar (lambda (args) (apply #'make-generation args))
-          (read-from-string (if (and profile
-                                     ;; Default profile is a link that needs to
-                                     ;; be expanded for generation-numbers to
-                                     ;; work.  As a workaround, we use `%current-profile'.
-                                     (not (default-profile-p profile)))
-                                (generation-list profile)
+          (read-from-string (if profile
+                                ;; We need to read the symlink for
+                                ;; ~/.guix-profile and the Guix checkout profile
+                                ;; otherwise `generation-numbers' won't work.
+                                (generation-list (read-symlink profile))
                                 (generation-list)))))
 
 (defmethod manager-switch-generation ((manager guix-manager) (generation os-generation)
