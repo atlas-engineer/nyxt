@@ -7,6 +7,7 @@
 (defvar *invisible-modes* '("base-mode") ; TODO: Export?
   "List of mode names to hide from the status view")
 
+(export-always 'format-status-modes)
 (defun format-status-modes (&optional (buffer (current-buffer)))
   (format nil "~{~a~^ ~}"
           (mapcar (lambda (m) (str:replace-all "-mode" "" m))
@@ -15,6 +16,7 @@
                    *invisible-modes*
                    :test #'string=))))
 
+(export-always 'format-status-buttons)
 (defun format-status-buttons ()
   (markup:markup
    (:a :class "button" :title "Backwards" :href (lisp-url '(nyxt/web-mode:history-backwards)) "←")
@@ -23,12 +25,14 @@
    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
    (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt::list-buffers)) "≡")))
 
+(export-always 'format-status-load-status)
 (defun format-status-load-status (&optional (buffer (current-buffer)))
   (markup:markup
    (:span (if (and (web-buffer-p buffer)
                    (eq (slot-value buffer 'load-status) :loading))
               "Loading: " ""))))
 
+(export-always 'format-status-url)
 (defun format-status-url (&optional (buffer (current-buffer)))
   (markup:markup
    (:a :class "button"
@@ -37,6 +41,7 @@
                (object-display (url buffer))
                (title buffer)))))
 
+(export-always 'format-status-tabs)
 (defun format-status-tabs ()
   (flet ((buffer-domains ()
            (remove-duplicates
