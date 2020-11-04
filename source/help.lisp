@@ -215,7 +215,9 @@ A command is a special kind of function that can be called with
     (set-current-buffer help-buffer)))
 
 (defun configure-slot (slot class &key (value nil new-value-supplied-p) (type nil))
-  "Set the value of a slot in a users auto-config.lisp."
+  "Set the value of a slot in a users auto-config.lisp.
+CLASS can be a class symbol or a list of class symbols, as with
+`define-configuration'."
   (flet ((set-slot (slot class input)
            (echo "Slot ~a updated with value ~s." slot input)
            (append-configuration `(define-configuration ,class
@@ -282,7 +284,7 @@ A command is a special kind of function that can be called with
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
-                                      'buffer
+                                      '(buffer web-buffer)
                                       :value '%slot-default)
                                     `(nyxt/emacs-mode:emacs-mode :activate nil)
                                     `(nyxt/vi-mode:vi-normal-mode :activate nil))
@@ -290,7 +292,7 @@ A command is a special kind of function that can be called with
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
-                                      'buffer
+                                      '(buffer web-buffer)
                                       :value '(append '(emacs-mode) %slot-default))
                                     `(nyxt/emacs-mode:emacs-mode :activate t)
                                     `(nyxt/vi-mode:vi-normal-mode :activate nil))
@@ -298,7 +300,7 @@ A command is a special kind of function that can be called with
             (:p (:a :class "button"
                     :href (lisp-url `(nyxt::configure-slot
                                       'default-modes
-                                      'buffer
+                                      '(buffer web-buffer)
                                       :value '(append '(vi-normal-mode) %slot-default))
                                     `(nyxt/vi-mode:vi-normal-mode :activate t)
                                     `(nyxt/emacs-mode:emacs-mode :activate nil))
