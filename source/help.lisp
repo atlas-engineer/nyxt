@@ -53,23 +53,16 @@
                  (prompt-minibuffer
                   :suggestion-function (variable-suggestion-filter)
                   :input-prompt "Describe variable")))
-         (input (variable-suggestion-name input))
-         (help-buffer (nyxt/help-mode:help-mode
-                       :activate t
-                       :buffer (make-internal-buffer
-                                :title (str:concat "*Help-"
-                                                   (symbol-name input)
-                                                   "*"))))
-         (help-contents (markup:markup
-                         (:style (style help-buffer))
-                         (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
-                         (:pre (documentation input 'variable))
-                         (:h2 "Current Value:")
-                         (:pre (object-display (symbol-value input)))))
-         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                   (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
-    (set-current-buffer help-buffer)))
+         (input (variable-suggestion-name input)))
+    (with-current-html-buffer (buffer
+                               (str:concat "*Help-" (symbol-name input) "*")
+                               'nyxt/help-mode:help-mode)
+      (markup:markup
+       (:style (style buffer))
+       (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
+       (:pre (documentation input 'variable))
+       (:h2 "Current Value:")
+       (:pre (object-display (symbol-value input)))))))
 
 (declaim (ftype (function (command)) describe-command*))
 (defun describe-command* (command)
