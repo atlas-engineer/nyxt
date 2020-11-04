@@ -394,17 +394,11 @@ evaluate in order."
 
 (defun error-buffer (title text)
   "Print some help."
-  (let* ((error-buffer (nyxt/help-mode:help-mode :activate t
-                                                 :buffer (make-internal-buffer :title title)))
-         (error-contents
-           (markup:markup
-            (:style (style error-buffer))
-            (:h1 "Error occured:")
-            (:p text)))
-         (insert-error (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                    (ps:lisp error-contents)))))
-    (ffi-buffer-evaluate-javascript-async error-buffer insert-error)
-    error-buffer))
+  (with-current-html-buffer (buffer title 'nyxt/help-mode:help-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:h1 "Error occured:")
+     (:p text))))
 
 (defun error-in-new-window (title text)
   (let* ((window (window-make *browser*))
