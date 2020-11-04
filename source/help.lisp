@@ -414,28 +414,19 @@ The version number is stored in the clipboard."
 
 (define-command list-messages ()
   "Show the *Messages* buffer."
-  (let ((buffer (or (find-buffer 'message-mode)
-                    (nyxt/message-mode:message-mode
-                     :activate t
-                     :buffer (make-internal-buffer :title "*Messages*")))))
-    (let* ((content
-             (markup:markup
-              (:style (style buffer))
-              (:h1 "Messages")
-              (:a :class "button"
-                  :href (lisp-url '(nyxt::list-messages)) "Update")
-              (:a :class "button"
-                  :href (lisp-url '(nyxt/message-mode:clear-messages)
-                                  '(nyxt::list-messages))
-                  "Clear")
-              (:ul
-               (loop for message in (reverse (messages-content *browser*))
-                     collect (markup:markup (:li message))))))
-           (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                        (ps:lisp content)))))
-      (ffi-buffer-evaluate-javascript-async buffer insert-content))
-    (set-current-buffer buffer)
-    buffer))
+  (with-current-html-buffer (buffer "*Messages*" 'message-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:h1 "Messages")
+     (:a :class "button"
+         :href (lisp-url '(nyxt::list-messages)) "Update")
+     (:a :class "button"
+         :href (lisp-url '(nyxt/message-mode:clear-messages)
+                         '(nyxt::list-messages))
+         "Clear")
+     (:ul
+      (loop for message in (reverse (messages-content *browser*))
+            collect (markup:markup (:li message)))))))
 
 (declaim (ftype (function (function-symbol &key (:modes list))) binding-keys))
 (defun binding-keys (fn &key (modes (if (current-buffer)
