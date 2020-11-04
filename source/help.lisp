@@ -296,31 +296,29 @@ CLASS can be a class symbol or a list of class symbols, as with
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
-  (let* ((help-contents
-           (markup:markup
-            (:h1 (format nil "TLS Certificate Error: ~a" (object-display url)))
-            (:p "The address you are trying to visit has an invalid
+  ;; Set (url buffer) so that the user can simply reload the page after
+  ;; allowing the exception:
+  (setf (url buffer) url)
+  (html-set
+   (markup:markup
+    (:h1 (format nil "TLS Certificate Error: ~a" (object-display url)))
+    (:p "The address you are trying to visit has an invalid
 certificate. By default Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
 could mean that the address you are attempting the access is
 compromised.")
-            (:p "If you trust the address nonetheless, you can add an exception
+    (:p "If you trust the address nonetheless, you can add an exception
 for the current hostname with the "
-                (:code "add-domain-to-certificate-exceptions")
-                " command.  The "
-                (:code "certificate-exception-mode")
-                " must be active for the current buffer (which is the
+        (:code "add-domain-to-certificate-exceptions")
+        " command.  The "
+        (:code "certificate-exception-mode")
+        " must be active for the current buffer (which is the
 default).")
-            (:p "To persist hostname exceptions in your initialization
+    (:p "To persist hostname exceptions in your initialization
 file, see the "
-                (:code "add-domain-to-certificate-exceptions")
-                " documentation.")))
-         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                   (ps:lisp help-contents)))))
-    ;; Set (url buffer) so that the user can simply reload the page after
-    ;; allowing the exception:
-    (setf (url buffer) url)
-    (ffi-buffer-evaluate-javascript-async buffer insert-help)))
+        (:code "add-domain-to-certificate-exceptions")
+        " documentation."))
+   buffer))
 
 (defun describe-key-dispatch-input (event buffer window printable-p)
   "Display documentation of the value bound to the keys pressed by the user.
