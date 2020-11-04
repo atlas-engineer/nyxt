@@ -277,29 +277,21 @@ CLASS can be a class symbol or a list of class symbols, as with
 
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
-  (let* ((title (str:concat "*Help-bindings"))
-         (help-buffer (nyxt/help-mode:help-mode
-                       :activate t
-                       :buffer (make-internal-buffer :title title)))
-         (help-contents
-           (markup:markup
-            (:style (style help-buffer))
-            (:h1 "Bindings")
-            (:p
-             (loop for keymap in (current-keymaps (current-buffer))
-                   collect (markup:markup
-                            (:h3 (keymap:name keymap))
-                            (:table
-                             (loop for keyspec being the hash-keys in (keymap:keymap-with-parents->map keymap)
-                                     using (hash-value bound-value)
-                                   collect (markup:markup
-                                            (:tr
-                                             (:td keyspec)
-                                             (:td (string-downcase bound-value)))))))))))
-         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                   (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
-    (set-current-buffer help-buffer)))
+  (with-current-html-buffer (buffer "*Help-bindings" 'nyxt/help-mode:help-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:h1 "Bindings")
+     (:p
+      (loop for keymap in (current-keymaps (current-buffer))
+            collect (markup:markup
+                     (:h3 (keymap:name keymap))
+                     (:table
+                      (loop for keyspec being the hash-keys in (keymap:keymap-with-parents->map keymap)
+                              using (hash-value bound-value)
+                            collect (markup:markup
+                                     (:tr
+                                      (:td keyspec)
+                                      (:td (string-downcase bound-value))))))))))))
 
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
