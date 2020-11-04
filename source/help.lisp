@@ -74,41 +74,36 @@
 (declaim (ftype (function (command)) describe-command*))
 (defun describe-command* (command)
   "Display NAME command documentation in a new focused buffer."
-  (let* ((title (str:concat "*Help-" (symbol-name (sym command)) "*"))
-         (help-buffer (nyxt/help-mode:help-mode
-                       :activate t
-                       :buffer (make-internal-buffer :title title)))
-         (key-keymap-pairs (nth-value 1 (keymap:binding-keys
-                                         (sym command)
-                                         (all-keymaps))))
-         (key-keymapname-pairs (mapcar (lambda (pair)
-                                         (list (first pair)
-                                               (keymap:name (second pair))))
-                                       key-keymap-pairs))
-         (source-file (getf (getf (swank:find-definition-for-thing (command-function command))
-                                  :location)
-                            :file))
-         (help-contents (markup:markup
-                         (:style (style help-buffer))
-                         (:h1 (symbol-name (sym command))
-                              (unless (eq (find-package :nyxt)
-                                          (symbol-package (sym command)))
-                                (format nil " (~a)"
-                                        (package-name (symbol-package (sym command))))))
-                         (:p (:pre ; See describe-slot* for why we use :pre.
-                              ;; TODO: This only displays the first method,
-                              ;; i.e. the first command of one of the modes.
-                              ;; Ask for modes instead?
-                                   (documentation (command-function command) t)))
-                         (:h2 "Bindings")
-                         (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-                         (:h2 (format nil "Source (~a): " source-file))
-                         (:pre (:code (let ((*print-case* :downcase))
-                                        (write-to-string (sexp command)))))))
-         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                   (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
-    (set-current-buffer help-buffer)))
+  (with-current-html-buffer (buffer
+                             (str:concat "*Help-" (symbol-name (sym command)) "*")
+                             'nyxt/help-mode:help-mode)
+    (let* ((key-keymap-pairs (nth-value 1 (keymap:binding-keys
+                                           (sym command)
+                                           (all-keymaps))))
+           (key-keymapname-pairs (mapcar (lambda (pair)
+                                           (list (first pair)
+                                                 (keymap:name (second pair))))
+                                         key-keymap-pairs))
+           (source-file (getf (getf (swank:find-definition-for-thing (command-function command))
+                                    :location)
+                              :file)))
+      (markup:markup
+       (:style (style buffer))
+       (:h1 (symbol-name (sym command))
+            (unless (eq (find-package :nyxt)
+                        (symbol-package (sym command)))
+              (format nil " (~a)"
+                      (package-name (symbol-package (sym command))))))
+       (:p (:pre   ; See describe-slot* for why we use :pre.
+            ;; TODO: This only displays the first method,
+            ;; i.e. the first command of one of the modes.
+            ;; Ask for modes instead?
+            (documentation (command-function command) t)))
+       (:h2 "Bindings")
+       (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
+       (:h2 (format nil "Source (~a): " source-file))
+       (:pre (:code (let ((*print-case* :downcase))
+                      (write-to-string (sexp command)))))))))
 
 (define-command describe-function ()
   "Inspect a function and show it in a help buffer.
