@@ -581,6 +581,18 @@ sometimes yields the wrong reasult."
                    :if-does-not-exist :create
                    :if-exists :append))))))
 
+(defun html-write (content &optional (buffer (current-buffer)))
+  (ffi-buffer-evaluate-javascript-async
+   buffer
+   (ps:ps (ps:chain document
+                    (write (ps:lisp content))))))
+
+(defun html-set (content &optional (buffer (current-buffer)))
+  (ffi-buffer-evaluate-javascript-async
+   buffer
+   (ps:ps (setf (ps:@ document body |innerHTML|)
+                (ps:lisp content)))))
+
 (defmacro define-ffi-generic (name arguments)
   `(progn
      (export-always ',name)

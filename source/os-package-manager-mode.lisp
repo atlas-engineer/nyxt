@@ -113,19 +113,6 @@
       ;; TODO: Don't prompt when there is just 1 profile.
       (fuzzy-match (input-buffer minibuffer) all-generations))))
 
-;; TODO: Use these helpers everywhere.
-(defun html-write (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
-   buffer
-   (ps:ps (ps:chain document
-                    (write (ps:lisp content))))))
-
-(defun html-set (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
-   buffer
-   (ps:ps (setf (ps:@ document body |innerHTML|)
-                (ps:lisp content)))))
-
 (defun %describe-os-package (packages)
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
