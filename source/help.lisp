@@ -484,24 +484,16 @@ The version number is stored in the clipboard."
 
 (define-command tutorial ()
   "Show the tutorial."
-  (let ((help-buffer (nyxt/help-mode:help-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*Tutorial*"))))
-    (set-current-buffer help-buffer)
-    (let* ((help-contents
-             (str:concat
-              (markup:markup
-               (:style (style help-buffer))
-               (:h1 "Nyxt tutorial")
-               (:p "The following tutorial introduces the core concepts and the
+  (with-current-html-buffer (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
+    (str:concat
+     (markup:markup
+      (:style (style buffer))
+      (:h1 "Nyxt tutorial")
+      (:p "The following tutorial introduces the core concepts and the
 basic usage.  For more details, especially regarding the configuration, see
 the "
-                   (:code (command-markup 'manual)) "."))
-              (tutorial-content)))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
-    help-buffer))
+          (:code (command-markup 'manual)) "."))
+     (tutorial-content))))
 
 (define-command copy-system-information ()
   "Save system information into the clipboard."
