@@ -123,33 +123,26 @@ For generic functions, describe all the methods."
               (:pre (documentation method 't))
               (:h2 "Argument list")
               (:p (write-to-string (closer-mop:method-lambda-list method))))))
-      (let* ((help-buffer (nyxt/help-mode:help-mode
-                           :activate t
-                           :buffer (make-internal-buffer
-                                    :title (str:concat "*Help-"
-                                                       (symbol-name input)
-                                                       "*"))))
-             (help-contents (if (typep (symbol-function input) 'generic-function)
-                                (apply #'str:concat (mapcar #'method-desc
-                                                            (mopu:generic-function-methods
-                                                             (symbol-function input))))
-                                (str:concat
-                                 (markup:markup
-                                  (:style (style help-buffer))
-                                  (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
-                                       (when (macro-function input) " (macro)"))
-                                  (:pre (documentation input 'function))
-                                  (:h2 "Argument list")
-                                  (:p (write-to-string (mopu:function-arglist input))))
-                                 #+sbcl
-                                 (unless (macro-function input)
-                                   (markup:markup
-                                    (:h2 "Type")
-                                    (:p (format nil "~s" (sb-introspect:function-type input))))))))
-             (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                       (ps:lisp help-contents)))))
-        (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
-        (set-current-buffer help-buffer)))))
+      (with-current-html-buffer (buffer
+                                 (str:concat "*Help-" (symbol-name input) "*")
+                                 'nyxt/help-mode:help-mode)
+        (if (typep (symbol-function input) 'generic-function)
+            (apply #'str:concat (mapcar #'method-desc
+                                        (mopu:generic-function-methods
+                                         (symbol-function input))))
+            (str:concat
+             (markup:markup
+              (:style (style buffer))
+              (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                   (when (macro-function input) " (macro)"))
+              (:pre (documentation input 'function))
+              (:h2 "Argument list")
+              (:p (write-to-string (mopu:function-arglist input))))
+             #+sbcl
+             (unless (macro-function input)
+               (markup:markup
+                (:h2 "Type")
+                (:p (format nil "~s" (sb-introspect:function-type input)))))))))))
 
 (define-command describe-command ()
   "Inspect a command and show it in a help buffer.
