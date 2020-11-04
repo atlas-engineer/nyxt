@@ -443,45 +443,38 @@ The version number is stored in the clipboard."
 
 (define-command help ()
   "Print help information."
-  (let ((help-buffer (nyxt/help-mode:help-mode :activate t
-                                               :buffer (make-internal-buffer :title "*Help*"))))
-    (set-current-buffer help-buffer)
-    (let* ((help-contents
-             (markup:markup
-              (:style (style help-buffer))
-              (:style (cl-css:css '((:h2
-                                     :font-weight 300
-                                     :padding-top "10px"))))
-              (:h1 "Welcome to Nyxt ☺")
-              (:p "Attention: Nyxt is under active development. Feel free to "
-                  (:a :href "https://github.com/atlas-engineer/nyxt/issues"
-                      "report")
-                  " bugs, instabilities or feature wishes.")
-              (:p "You can help with Nyxt development by supporting us in various ways:"
-                  (:ul
-                   (:li "Support continuous development on "
-                        (:a :href "https://www.patreon.com/nyxt"
-                            "Patreon")
-                        ".")
-                   (:li "Spread the word on social media and "
-                        (:a :href "https://github.com/atlas-engineer/nyxt"
-                            "star the project on GitHub")
-                        ".")))
-              (:hr )
-              (:h2 "Quick configuration")
-              (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
-                  " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
-              (:h2 "Documentation")
-              (:p (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings")
-                  " List all bindings for the current buffer.")
-              (:p (:a :class "button" :href (lisp-url `(nyxt::tutorial)) "Tutorial")
-                  " An introduction to Nyxt core concepts.")
-              (:p (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual")
-                  " Full documentation about Nyxt, how it works and how to configure it.")))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
-    help-buffer))
+  (with-current-html-buffer (buffer "*Help*" 'nyxt/help-mode:help-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:style (cl-css:css '((:h2
+                            :font-weight 300
+                            :padding-top "10px"))))
+     (:h1 "Welcome to Nyxt ☺")
+     (:p "Attention: Nyxt is under active development. Feel free to "
+         (:a :href "https://github.com/atlas-engineer/nyxt/issues"
+             "report")
+         " bugs, instabilities or feature wishes.")
+     (:p "You can help with Nyxt development by supporting us in various ways:"
+         (:ul
+          (:li "Support continuous development on "
+               (:a :href "https://www.patreon.com/nyxt"
+                   "Patreon")
+               ".")
+          (:li "Spread the word on social media and "
+               (:a :href "https://github.com/atlas-engineer/nyxt"
+                   "star the project on GitHub")
+               ".")))
+     (:hr )
+     (:h2 "Quick configuration")
+     (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
+         " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
+     (:h2 "Documentation")
+     (:p (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings")
+         " List all bindings for the current buffer.")
+     (:p (:a :class "button" :href (lisp-url `(nyxt::tutorial)) "Tutorial")
+         " An introduction to Nyxt core concepts.")
+     (:p (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual")
+         " Full documentation about Nyxt, how it works and how to configure it."))))
 
 (define-command manual ()
   "Show the manual."
