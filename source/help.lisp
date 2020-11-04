@@ -478,16 +478,9 @@ The version number is stored in the clipboard."
 
 (define-command manual ()
   "Show the manual."
-  (let ((help-buffer (nyxt/help-mode:help-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*Manual*"))))
-    (set-current-buffer help-buffer)
-    (let* ((help-contents (str:concat (markup:markup (:style (style help-buffer)))
-                                      (manual-content)))
-           (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                     (ps:lisp help-contents)))))
-      (ffi-buffer-evaluate-javascript-async help-buffer insert-help))
-    help-buffer))
+  (with-current-html-buffer (buffer "*Manual*" 'nyxt/help-mode:help-mode)
+    (str:concat (markup:markup (:style (style buffer)))
+                (manual-content))))
 
 (define-command tutorial ()
   "Show the tutorial."
