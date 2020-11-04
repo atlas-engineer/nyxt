@@ -192,27 +192,19 @@ A command is a special kind of function that can be called with
   (let* ((input (class-suggestion-name
                  (prompt-minibuffer
                   :input-prompt "Describe class"
-                  :suggestion-function (class-suggestion-filter))))
-         (input (class-suggestion-name input))
-         (help-buffer (nyxt/help-mode:help-mode
-                       :activate t
-                       :buffer (make-internal-buffer
-                                :title (str:concat "*Help-"
-                                                   (symbol-name input)
-                                                   "*"))))
-         (slots (class-public-slots input))
-         (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots)))
-         (help-contents (str:concat
-                         (markup:markup
-                          (:style (style help-buffer))
-                          (:h1 (symbol-name input))
-                          (:p (:pre (documentation input 'type)))
-                          (:h2 "Slots:"))
-                         slot-descs))
-         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                   (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
-    (set-current-buffer help-buffer)))
+                  :suggestion-function (class-suggestion-filter)))))
+    (with-current-html-buffer (buffer
+                               (str:concat "*Help-" (symbol-name input) "*")
+                               'nyxt/help-mode::help-mode)
+      (let* ((slots (class-public-slots input))
+             (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots))))
+        (str:concat
+         (markup:markup
+          (:style (style buffer))
+          (:h1 (symbol-name input))
+          (:p (:pre (documentation input 'type)))
+          (:h2 "Slots:"))
+         slot-descs)))))
 
 (defun configure-slot (slot class &key (value nil new-value-supplied-p) (type nil))
   "Set the value of a slot in a users auto-config.lisp.
