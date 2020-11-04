@@ -234,53 +234,46 @@ CLASS can be a class symbol or a list of class symbols, as with
 
 (define-command common-settings ()
   "Configure a set of frequently used settings."
-  (let* ((help-buffer (nyxt/help-mode:help-mode
-                       :activate t
-                       :buffer (make-internal-buffer :title "*Settings*")))
-         (help-contents
-           (markup:markup
-            (:style (style help-buffer))
-            (:h1 "Common Settings")
-            (:p "Set the values for frequently configured
+  (with-current-html-buffer (buffer "*Settings*" 'nyxt/help-mode:help-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:h1 "Common Settings")
+     (:p "Set the values for frequently configured
             settings. Changes made will apply to newly created
             buffers.")
-            (:h2 "Keybinding style")
-            (:p (:a :class "button"
-                    :href (lisp-url `(nyxt::configure-slot
-                                      'default-modes
-                                      '(buffer web-buffer)
-                                      :value '%slot-default)
-                                    `(nyxt/emacs-mode:emacs-mode :activate nil)
-                                    `(nyxt/vi-mode:vi-normal-mode :activate nil))
-                    "Use default (CUA)"))
-            (:p (:a :class "button"
-                    :href (lisp-url `(nyxt::configure-slot
-                                      'default-modes
-                                      '(buffer web-buffer)
-                                      :value '(append '(emacs-mode) %slot-default))
-                                    `(nyxt/emacs-mode:emacs-mode :activate t)
-                                    `(nyxt/vi-mode:vi-normal-mode :activate nil))
-                    "Use Emacs"))
-            (:p (:a :class "button"
-                    :href (lisp-url `(nyxt::configure-slot
-                                      'default-modes
-                                      '(buffer web-buffer)
-                                      :value '(append '(vi-normal-mode) %slot-default))
-                                    `(nyxt/vi-mode:vi-normal-mode :activate t)
-                                    `(nyxt/emacs-mode:emacs-mode :activate nil))
-                    "Use vi"))
-            (:h2 "Default new buffer URL")
-            (:a :class "button"
-                :href (lisp-url `(nyxt::configure-slot 'default-new-buffer-url 'web-buffer :type 'STRING))
-                "Set default new buffer URL")
-            (:h2 "Default zoom ratio")
-            (:a :class "button"
-                :href (lisp-url `(nyxt::configure-slot 'current-zoom-ratio 'buffer))
-                "Set default zoom ratio")))
-         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                   (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
-    (set-current-buffer help-buffer)))
+     (:h2 "Keybinding style")
+     (:p (:a :class "button"
+             :href (lisp-url `(nyxt::configure-slot
+                               'default-modes
+                               '(buffer web-buffer)
+                               :value '%slot-default)
+                             `(nyxt/emacs-mode:emacs-mode :activate nil)
+                             `(nyxt/vi-mode:vi-normal-mode :activate nil))
+             "Use default (CUA)"))
+     (:p (:a :class "button"
+             :href (lisp-url `(nyxt::configure-slot
+                               'default-modes
+                               '(buffer web-buffer)
+                               :value '(append '(emacs-mode) %slot-default))
+                             `(nyxt/emacs-mode:emacs-mode :activate t)
+                             `(nyxt/vi-mode:vi-normal-mode :activate nil))
+             "Use Emacs"))
+     (:p (:a :class "button"
+             :href (lisp-url `(nyxt::configure-slot
+                               'default-modes
+                               '(buffer web-buffer)
+                               :value '(append '(vi-normal-mode) %slot-default))
+                             `(nyxt/vi-mode:vi-normal-mode :activate t)
+                             `(nyxt/emacs-mode:emacs-mode :activate nil))
+             "Use vi"))
+     (:h2 "Default new buffer URL")
+     (:a :class "button"
+         :href (lisp-url `(nyxt::configure-slot 'default-new-buffer-url 'web-buffer :type 'STRING))
+         "Set default new buffer URL")
+     (:h2 "Default zoom ratio")
+     (:a :class "button"
+         :href (lisp-url `(nyxt::configure-slot 'current-zoom-ratio 'buffer))
+         "Set default zoom ratio"))))
 
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
