@@ -224,22 +224,13 @@ CLASS can be a class symbol or a list of class symbols, as with
   "Inspect a slot and show it in a help buffer."
   (let* ((input (prompt-minibuffer
                  :input-prompt "Describe slot"
-                 :suggestion-function (slot-suggestion-filter)))
-         (help-buffer (nyxt/help-mode:help-mode
-                       :activate t
-                       :buffer (make-internal-buffer
-                                :title (str:concat "*Help-"
-                                                   (symbol-name (name input))
-                                                   "*"))))
-
-         (help-contents
-           (str:concat (markup:markup (:style (style help-buffer)))
-                       (describe-slot* (name input) (class-sym input)
-                                       :mention-class-p t)))
-         (insert-help (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                   (ps:lisp help-contents)))))
-    (ffi-buffer-evaluate-javascript-async help-buffer insert-help)
-    (set-current-buffer help-buffer)))
+                 :suggestion-function (slot-suggestion-filter))))
+    (with-current-html-buffer (buffer
+                               (str:concat "*Help-" (symbol-name (name input)) "*")
+                               'nyxt/help-mode:help-mode)
+      (str:concat (markup:markup (:style (style buffer)))
+                  (describe-slot* (name input) (class-sym input)
+                                  :mention-class-p t)))))
 
 (define-command common-settings ()
   "Configure a set of frequently used settings."
