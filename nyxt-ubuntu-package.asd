@@ -4,11 +4,11 @@
   :build-operation "linux-packaging:build-op"
   :depends-on ("nyxt/gtk")
   :package-name "nyxt"
-  :version "2" ; Pre-release 3
-  :author "Atlas Engineer LLC"
-  :homepage "https://nyxt.atlas.engineer"
-  :description "Extensible web-browser in Common Lisp"
-  :license "BSD 3-Clause"
+  :version #.(asdf:system-version (asdf:find-system :nyxt))
+  :author #.(asdf:system-author (asdf:find-system :nyxt))
+  :homepage #.(asdf:system-homepage (asdf:find-system :nyxt))
+  :description #.(asdf:system-description (asdf:find-system :nyxt))
+  :license #.(asdf:system-license (asdf:find-system :nyxt))
   :additional-dependencies ("glib-networking"
                             "gsettings-desktop-schemas"
                             "xclip"
