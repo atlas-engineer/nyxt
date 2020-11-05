@@ -408,6 +408,14 @@ for non-standard profiles."
                (when profile
                  (list (str:concat "--profile=" (namestring profile)))))))
 
+(defmethod manager-uninstall ((manager guix-manager) package-output-list &optional profile)
+  (run (append (uninstall-command manager profile)
+               (mapcar (lambda (output)
+                         (format nil "~a:~a"
+                                 (name (parent-package output))
+                                 (name output)))
+                       package-output-list))))
+
 (defmethod uninstall-command ((manager guix-manager) profile)
   (append (list (path manager) "remove")
           (when profile
