@@ -581,38 +581,6 @@ sometimes yields the wrong reasult."
                    :if-does-not-exist :create
                    :if-exists :append))))))
 
-(defun html-write (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
-   buffer
-   (ps:ps (ps:chain document
-                    (write (ps:lisp content))))))
-
-(defun html-set (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
-   buffer
-   (ps:ps (setf (ps:@ document body |innerHTML|)
-                (ps:lisp content)))))
-
-(defmacro with-current-html-buffer ((buffer-var title mode) &body body)
-  "Switch to a buffer in MODE displaying CONTENT.
-If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
-BUFFER-VAR is bound to the new bufer in BODY.
-MODE is a mode symbol.
-BODY must return the HTML markup as a string."
-  `(let* ((,buffer-var (or (find-if (lambda (b)
-                                      (and (string= (title b) ,title)
-                                           (find-mode b ,mode)))
-                                    (buffer-list))
-                           (funcall (symbol-function ,mode)
-                                    :activate t
-                                    :buffer (make-internal-buffer :title ,title)))))
-     (html-set
-      (progn
-        ,@body)
-      ,buffer-var)
-     (set-current-buffer ,buffer-var)
-     ,buffer-var))
-
 (defmacro define-ffi-generic (name arguments)
   `(progn
      (export-always ',name)
