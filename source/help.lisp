@@ -52,8 +52,7 @@
   (let* ((input (variable-suggestion-name
                  (prompt-minibuffer
                   :suggestion-function (variable-suggestion-filter)
-                  :input-prompt "Describe variable")))
-         (input (variable-suggestion-name input)))
+                  :input-prompt "Describe variable"))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name input) "*")
                                'nyxt/help-mode:help-mode)
