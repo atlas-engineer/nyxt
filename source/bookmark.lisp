@@ -169,31 +169,25 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
-  (let* ((bookmarks-buffer (make-internal-buffer :title "*Bookmarks*"))
-         (bookmark-contents
-           (markup:markup
-            (:style (style bookmarks-buffer))
-            (:h1 "Bookmarks")
-            (:body
-             (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
-                   collect
-                      (let ((url-display (object-display (url bookmark)))
-                            (url-href (object-string (url bookmark))))
-                        (markup:markup (:div
-                                        (:p (:b "Title: ") (title bookmark))
-                                        (:p (:b "URL: ") (:a :href url-href
-                                                             url-display))
-                                        (:p (:b "Tags: ")
-                                            (when (tags bookmark)
-                                              (format nil " (~{~a~^, ~})" (tags bookmark))))
-                                        (:p (:a :class "button"
-                                                :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
-                                        (:hr ""))))))))
-         (insert-contents (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                       (ps:lisp bookmark-contents)))))
-    (ffi-buffer-evaluate-javascript-async bookmarks-buffer insert-contents)
-    (set-current-buffer bookmarks-buffer)
-    bookmarks-buffer))
+  (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
+    (markup:markup
+     (:style (style bookmarks-buffer))
+     (:h1 "Bookmarks")
+     (:body
+      (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
+            collect
+               (let ((url-display (object-display (url bookmark)))
+                     (url-href (object-string (url bookmark))))
+                 (markup:markup (:div
+                                 (:p (:b "Title: ") (title bookmark))
+                                 (:p (:b "URL: ") (:a :href url-href
+                                                      url-display))
+                                 (:p (:b "Tags: ")
+                                     (when (tags bookmark)
+                                       (format nil " (~{~a~^, ~})" (tags bookmark))))
+                                 (:p (:a :class "button"
+                                         :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                                 (:hr "")))))))))
 
 (declaim (ftype (function (quri:uri) string) url-bookmark-tags))
 (export-always 'url-bookmark-tags)
