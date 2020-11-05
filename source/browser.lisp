@@ -594,14 +594,18 @@ sometimes yields the wrong reasult."
                 (ps:lisp content)))))
 
 (defmacro with-current-html-buffer ((buffer-var title mode) &body body)
-  "Create and switch to a buffer in MODE displaying CONTENT.
+  "Switch to a buffer in MODE displaying CONTENT.
+If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
 BUFFER-VAR is bound to the new bufer in BODY.
 MODE is a mode symbol.
-BODY must return the HTML markup as a string. "
-  `(let* ((,buffer-var (or (find-buffer ,mode)
+BODY must return the HTML markup as a string."
+  `(let* ((,buffer-var (or (find-if (lambda (b)
+                                      (and (string= (title b) ,title)
+                                           (find-mode b ,mode)))
+                                    (buffer-list))
                            (funcall (symbol-function ,mode)
-                            :activate t
-                            :buffer (make-internal-buffer :title ,title)))))
+                                    :activate t
+                                    :buffer (make-internal-buffer :title ,title)))))
      (html-set
       (progn
         ,@body)
