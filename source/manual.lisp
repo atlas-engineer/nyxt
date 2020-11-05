@@ -89,7 +89,7 @@ have priorities over the other modes key bindings.")
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-scheme (define-scheme
+  ((keymap-scheme (keymap:make-scheme
                    scheme:cua *my-keymap*
                    scheme:emacs *my-keymap*
                    scheme:vi-normal *my-keymap*))))
