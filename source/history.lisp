@@ -133,6 +133,10 @@ instance of Nyxt."
                                              out)))
                 (read in))))))
 
+;; REVIEW: This works around the issue of cl-prevalence to deserialize structs
+;; with custom constructors: https://github.com/40ants/cl-prevalence/issues/16.
+(setf (fdefinition 'quri.uri::make-uri) #'quri.uri::%make-uri)
+
 (defmethod restore ((profile data-profile) (path history-data-path))
   "Restore the global/buffer-local history from the PATH."
   (handler-case
