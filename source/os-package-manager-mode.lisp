@@ -268,17 +268,15 @@ OBJECTS can be a list of packages, a generation, etc."
           (uiop:process-alive-p process-info))
         (echo "An package operation is already running.  You can cancel it with `cancel-package-operation'.")
         (progn
-          (html-set
-           (markup:markup
-            (:style (style buffer))
-            (:h1 title))
-           buffer)
           (chanl:pexec ()
             (let ((process-info (funcall command objects profile))
                   (mode (find-submode buffer 'os-package-manager-mode)))
               (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
+              (html-set "" buffer)      ; Reset content between operations.
               (html-write
                (markup:markup
+                (:style (style buffer))
+                (:h1 title)
                 (:p
                  (:a :class "button"
                      :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
