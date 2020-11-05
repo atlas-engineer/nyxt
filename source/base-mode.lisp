@@ -152,27 +152,18 @@
 
 (define-command list-buffers ()
   "Show the *Buffers* buffer."
-  (let ((buffer (or (find-buffer 'buffer-listing-mode)
-                    (nyxt/buffer-listing-mode:buffer-listing-mode
-                     :activate t
-                     :buffer (make-internal-buffer :title "*Buffers*")))))
-    (let* ((content
-             (markup:markup
-              (:style (style buffer))
-              (:h1 "Buffers")
-              (:a :class "button"
-                  :href (lisp-url '(nyxt::list-buffers)) "Update")
-              (:br "")
-              (:div
-               (loop for buffer in (buffer-list)
-                     collect (markup:markup (:p
-                                             (:a :class "button"
-                                                 :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
-                                             (:a :class "button"
-                                                 :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
-                                             (:span (title buffer) " - "(quri:render-uri (url buffer)))))))))
-           (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                        (ps:lisp content)))))
-      (ffi-buffer-evaluate-javascript-async buffer insert-content))
-    (set-current-buffer buffer)
-    buffer))
+  (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:h1 "Buffers")
+     (:a :class "button"
+         :href (lisp-url '(nyxt::list-buffers)) "Update")
+     (:br "")
+     (:div
+      (loop for buffer in (buffer-list)
+            collect (markup:markup (:p
+                                    (:a :class "button"
+                                        :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
+                                    (:a :class "button"
+                                        :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
+                                    (:span (title buffer) " - "(quri:render-uri (url buffer))))))))))
