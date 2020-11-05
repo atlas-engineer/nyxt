@@ -175,7 +175,7 @@ A command is a special kind of function that can be called with
                   :suggestion-function (class-suggestion-filter)))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name input) "*")
-                               'nyxt/help-mode::help-mode)
+                               'nyxt/help-mode:help-mode)
       (let* ((slots (class-public-slots input))
              (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots))))
         (str:concat
