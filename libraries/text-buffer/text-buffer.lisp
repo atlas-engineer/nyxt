@@ -12,6 +12,10 @@
     :accessor word-separation-characters
     :initform '(":" "/" "." " " " "))))
 
+(defvar *conservative-move-word* nil
+  "If non-nil, the cursor moves to the end (resp. beginning) of the word
+  when `move-forward-word' (resp. `move-backward-word') are called.")
+
 (defmethod string-representation ((buffer text-buffer))
   (with-output-to-string (out)
     (map nil (lambda (string)
@@ -41,39 +45,52 @@
     (cluffer:delete-item cursor)
     t))
 
+(defmethod word-separation-characters-at-cursor-p ((cursor cursor)
+                                                   after)
+  "Return non-nil when `word-separation-characters' are found before or
+after the cursor position.
+
+If AFTER is true then check the chracters after the cursor and
+vice-versa."
+  (find (if after
+            (cluffer:item-after-cursor cursor)
+            (cluffer:item-before-cursor cursor))
+        (word-separation-characters cursor)
+        :test #'equal))
+
 (defmethod move-forward-word ((cursor cursor))
   (unless (cluffer:end-of-line-p cursor)
     (values
-     (if (find (cluffer:item-after-cursor cursor)
-               (word-separation-characters cursor)
-               :test #'equal)
-         (loop while (find (cluffer:item-after-cursor cursor)
-                           (word-separation-characters cursor)
-                           :test #'equal)
+     (if (word-separation-characters-at-cursor-p cursor t)
+         (progn
+           (loop while (word-separation-characters-at-cursor-p cursor t)
+                 do (cluffer:forward-item cursor)
+                 until (cluffer:end-of-line-p cursor))
+           (when *conservative-move-word*
+             (loop while (not (word-separation-characters-at-cursor-p cursor t))
+                   do (cluffer:forward-item cursor)
+                   until (cluffer:end-of-line-p cursor)
+                   collect (cluffer:item-before-cursor cursor))))
+         (loop while (not (word-separation-characters-at-cursor-p cursor t))
                do (cluffer:forward-item cursor)
-               until (cluffer:end-of-line-p cursor))
-         (loop while (not (find (cluffer:item-after-cursor cursor)
-                                (word-separation-characters cursor)
-                                :test #'equal))
-               do (cluffer:forward-item cursor)
-               collect (cluffer:item-before-cursor cursor)
-               until (cluffer:end-of-line-p cursor)))
+               until (cluffer:end-of-line-p cursor)
+               collect (cluffer:item-before-cursor cursor)))
      (cluffer:cursor-position cursor))))
 
 (defmethod move-backward-word ((cursor cursor))
   (unless (cluffer:beginning-of-line-p cursor)
     (values
-     (if (find (cluffer:item-before-cursor cursor)
-               (word-separation-characters cursor)
-               :test #'equal)
-         (loop while (find (cluffer:item-before-cursor cursor)
-                           (word-separation-characters cursor)
-                           :test #'equal)
-               do (cluffer:backward-item cursor)
-               until (cluffer:beginning-of-line-p cursor))
-         (loop while (not (find (cluffer:item-before-cursor cursor)
-                                (word-separation-characters cursor)
-                                :test #'equal))
+     (if (word-separation-characters-at-cursor-p cursor nil)
+         (progn
+           (loop while (word-separation-characters-at-cursor-p cursor nil)
+                 do (cluffer:backward-item cursor)
+                 until (cluffer:beginning-of-line-p cursor))
+           (when *conservative-move-word*
+             (loop while (not (word-separation-characters-at-cursor-p cursor nil))
+                   do (cluffer:backward-item cursor)
+                   until (cluffer:beginning-of-line-p cursor)
+                   collect (cluffer:item-before-cursor cursor))))
+         (loop while (not (word-separation-characters-at-cursor-p cursor nil))
                do (cluffer:backward-item cursor)
                until (cluffer:beginning-of-line-p cursor)
                collect (cluffer:item-before-cursor cursor)))
