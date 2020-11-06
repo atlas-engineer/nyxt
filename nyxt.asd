@@ -230,6 +230,7 @@
   :components ((:file "package")
                (:file "data")
                (:file "stem")
+               (:file "tokenize")
                (:file "analysis")
                (:file "text-rank")))
 
