@@ -19,3 +19,7 @@
                      (delete-if-not (lambda (x) (cl-ppcre:scan alpha-scanner x)) tokens)
                      tokens)))
     tokens))
+
+(defun sentence-tokenize (string)
+  "Split a string into a list of sentences."
+  (mapcar #'str:trim (cl-ppcre:split "\\.|\\?|\\!" string)))

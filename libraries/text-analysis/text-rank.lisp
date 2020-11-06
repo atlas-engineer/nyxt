@@ -5,10 +5,6 @@
 
 ;;; text-rank.lisp -- implementation of textrank algorithm
 
-(defun sentence-tokenize (string)
-  "Split a string into a list of sentences."
-  (mapcar #'str:trim (cl-ppcre:split "\\.|\\?|\\!" string)))
-
 (defclass document-matrix (document-collection)
   ((document-matrix :accessor matrix
                     :documentation "Matrix showing the vector
