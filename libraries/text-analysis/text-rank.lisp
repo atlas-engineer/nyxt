@@ -34,9 +34,13 @@
                  sum (* a b)))
          (vector-sum-root (document)
            (sqrt (loop for i across (vector-form document)
-                       sum (* i i)))))
-    (/ (vector-product document-a document-b)
-       (* (vector-sum-root document-a) (vector-sum-root document-b)))))
+                       sum (* i i))))
+         (vector-zero-p (document)
+           (every #'zerop (vector-form document))))
+    (if (or (vector-zero-p document-a) (vector-zero-p document-b))
+        0 ; if either vector is completely zero, they are dissimilar
+        (/ (vector-product document-a document-b)
+           (* (vector-sum-root document-a) (vector-sum-root document-b))))))
 
 (defmethod generate-document-similarity-matrix ((collection document-matrix))
   (setf (matrix collection)
