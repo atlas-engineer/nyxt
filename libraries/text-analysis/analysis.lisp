@@ -63,11 +63,10 @@ amount of times word appears in the document.")
           do (setf words (append words (tokens document))))
     (remove-duplicates words :test #'equalp)))
 
-(defmethod keywords ((document document) (document-collection document-collection))
-  (sort (loop for word in (dictionary document)
-              collect (cons word (term-frequency-inverse-document-frequency
-                                  document document-collection word))) #'> :key #'cdr))
-
-(defmethod keywords ((document document))
-  (sort (loop for word in (dictionary document)
-              collect (cons word (term-frequency document word))) #'> :key #'cdr))
+(defmethod keywords ((document document) &optional document-collection)
+  (if document-collection
+      (sort (loop for word in (dictionary document)
+                  collect (cons word (term-frequency-inverse-document-frequency
+                                      document document-collection word))) #'> :key #'cdr)
+      (sort (loop for word in (dictionary document)
+                  collect (cons word (term-frequency document word))) #'> :key #'cdr)))
