@@ -7,4 +7,4 @@
   (:use :common-lisp)
   (:export
    #:document
-   #:document-keywords))
+   #:keywords))

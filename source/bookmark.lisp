@@ -207,7 +207,7 @@ URL."
   "Bookmark the URL of BUFFER."
   (flet ((extract-keywords (html limit)
            (sera:take limit (delete "" (mapcar #'first
-                                               (text-analysis:document-keywords
+                                               (text-analysis:keywords
                                                 (make-instance
                                                  'text-analysis:document
                                                  :string-contents (plump:text (plump:parse html)))))

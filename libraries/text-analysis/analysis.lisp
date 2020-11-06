@@ -68,6 +68,6 @@ amount of times word appears in the document.")
               collect (cons word (term-frequency-inverse-document-frequency
                                   document document-collection word))) #'> :key #'cdr))
 
-(defmethod document-keywords ((document document))
+(defmethod keywords ((document document))
   (sort (loop for word in (dictionary document)
               collect (cons word (term-frequency document word))) #'> :key #'cdr))
