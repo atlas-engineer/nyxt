@@ -21,11 +21,13 @@
     (setf (vector-form document) vector-form)))
 
 (defmethod word-count-vectorize-documents ((document-collection document-collection))
+  "Set the vector-form for a collection of documents."
   (let ((dictionary (dictionary document-collection)))
     (loop for document in (documents document-collection)
           do (word-count-vectorize document dictionary))))
 
 (defmethod cosine-similarity ((document-a document) (document-b document))
+  "Calculate the cosine similarity between two vectors."
   (flet ((vector-product (document-a document-b)
            (loop for a across (vector-form document-a)
                  for b across (vector-form document-b)

@@ -6,8 +6,8 @@
 (defclass document ()
   ((string-contents :initarg :string-contents :accessor string-contents)
    (term-count-table :initform (make-hash-table :test #'equal)
-                     :documentation "Contains a mapping of term -> amount of
-   times word appears in the document.")
+                     :documentation "Contains a mapping of term ->
+amount of times word appears in the document.")
    (vector-form :accessor vector-form
                 :documentation "Vector representation of the document.")
    (rank :accessor rank :documentation "Rank used for sorting.")
