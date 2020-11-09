@@ -28,6 +28,58 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 *** Add online suggestions from search engines
 ** 2.0.0
 
+*** TASK 2-pre-release-4 (upcoming)
+
+- Overhauled status view which now displays a scrollable list of tabs.
+
+  Hold =shift= to scroll the tabs horizontally.
+
+- New =dark-mode= (experimental).
+
+- New universal package manager interface.
+
+  Install, uninstall, describe packages, list their files, change
+  generations, etc.
+  See the various =*-package-*= and =*-generation-*= commands.
+
+  For now it only interfaces the Guix package manager.
+
+  Help to implement additional backends is welcome!
+
+- New =nowebgl-mode=.
+
+- New =nyxt-init-file= helper to derive a file name relative to the
+  Nyxt configuration folder.
+
+- No longer ask to restore session when there is none.
+
+- Build option changes:
+
+  - The =NYXT_VERSION= environment variable can be used by packagers to
+    force-set the version used by Nyxt.
+
+  - =NYXT_TESTS_ERROR_ON_FAIL= can be used by packagers to error out
+    when running the test suites, instead of continuing silently.
+
+  - =NYXT_TESTS_NO_NETWORK= can be used to disable network tests (useful
+    when the build environment does not allow network connections).
+
+- Bug fixes:
+
+  - Pasting no longer hangs the browser (happened in some edge cases).
+
+  - =invert-color= bookmarklet now works (thanks to @brongulus).
+
+  - Startup is no longer interrupted when escaping the minibuffer asking
+    to restore the session.
+
+  - Setting the bindings in =common-settings= now applies to all types
+    of buffers.
+
+  - Fix history corruption when opening URL with =about:= schemes.
+
+  - Fix =describe-variable=.
+
 *** 2-pre-release-3
 
 - Synchronous minibuffers and Parenscripts.
