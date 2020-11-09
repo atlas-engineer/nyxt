@@ -10,7 +10,8 @@
 (defstruct style-association
   (url)
   (predicate)
-  (style))
+  (style)
+  (style-file))
 
 (define-mode dark-mode ()
   "Mode for darkening documents."
@@ -25,11 +26,16 @@
       (initialize mode)))))
 
 (defmethod initialize ((mode dark-mode))
-  ;; Set string URLs to Quri objects in style associations
   (loop for association in (style-associations mode)
-        do (when (typep (style-association-url association) 'string)
+        do ;; Set string URLs to Quri objects in style associations
+           (when (typep (style-association-url association) 'string)
              (setf (style-association-url association)
-                   (quri:uri (style-association-url association)))))
+                   (quri:uri (style-association-url association))))
+           ;; Load style files into memory
+           (when (style-association-style-file association)
+             (setf (style-association-style association)
+                   (uiop:read-file-string
+                    (style-association-style-file association)))))
   (darken-display mode (url (buffer mode))))
 
 (defmethod darken-display ((mode dark-mode) url)
