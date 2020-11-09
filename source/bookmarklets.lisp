@@ -102,3 +102,8 @@
 (define-bookmarklet-command invert-color
   "Invert the color of the web page."
   "(d=>{var css=`:root{background-color:#fefefe;filter:invert(100%)}*{background-color:inherit}img:not([src*=\".svg\"]),video{filter: invert(100%)}`,style,id=\"dark-theme-snippet\",ee=d.getElementById(id);if(null!=ee)ee.parentNode.removeChild(ee);else {style = d.createElement('style');style.type=\"text/css\";style.id=id;if(style.styleSheet)style.styleSheet.cssText=css;else style.appendChild(d.createTextNode(css));(d.head||d.querySelector('head')).appendChild(style)}})(document)")
+
+;; This bookmarklet was sourced form 'https://github.com/x08d/222' with permission under the GPL v3.0
+(define-bookmarklet-command darken
+  "Darken the page."
+  "javascript:document.querySelectorAll('*').forEach(e=>e.setAttribute('style','background-color:#222;background-image:none;color:#'+(/^A|BU/.test(e.tagName)?'36c;text-decoration:underline;':'eee;')+e.getAttribute('style')))")
