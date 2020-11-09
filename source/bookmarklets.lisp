@@ -106,4 +106,4 @@
 ;; This bookmarklet was sourced form 'https://github.com/x08d/222' with permission under the GPL v3.0
 (define-bookmarklet-command darken
   "Darken the page."
-  "javascript:document.querySelectorAll('*').forEach(e=>e.setAttribute('style','background-color:#222;background-image:none;color:#'+(/^A|BU/.test(e.tagName)?'36c;text-decoration:underline;':'eee;')+e.getAttribute('style')))")
+  "javascript:document.querySelectorAll('*').forEach(e=>e.setAttribute('style','background-color:#222 !important;background-image:none !important;color:#'+(/^A|BU/.test(e.tagName)?'36c;text-decoration:underline;':'eee;')+e.getAttribute('style')))")
