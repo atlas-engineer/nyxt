@@ -97,6 +97,7 @@
                (:file "application-mode")
                (:file "web-mode")
                (:file "reading-line-mode")
+               (:file "dark-mode")
                (:file "certificate-exception-mode")
                (:file "emacs-mode")
                (:file "vi-mode")
