@@ -30,6 +30,7 @@
              ((guix build utils) #:select (with-directory-excursion))
              (guix gexp)
              (guix packages)
+             ((guix licenses) #:prefix license:)
              (guix licenses)
              (guix git-download)
              (guix build-system gnu)
@@ -112,7 +113,8 @@
                            ":"))
                     (gi-path (string-join
                               (map (lambda (lib)
-                                     (string-append (assoc-ref inputs lib) "/lib/girepository-1.0"))
+                                     (string-append (assoc-ref inputs lib)
+                                                    "/lib/girepository-1.0"))
                                    libs)
                               ":"))
                     (xdg-path (string-join
@@ -179,6 +181,6 @@
     (description "Nyxt is a keyboard-oriented, extensible web-browser
 designed for power users.  The application has familiar Emacs and VI
 key-bindings and is fully configurable and extensible in Common Lisp.")
-    (license bsd-3)))
+    (license license:bsd-3)))
 
 nyxt
