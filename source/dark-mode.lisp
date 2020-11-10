@@ -7,6 +7,17 @@
 
 (in-package :nyxt/dark-mode)
 
+;;; When creating a style association you have two choices for
+;;; matching, URL or predicate. By specifying a URL, the base domain
+;;; is checked. If you specify a predicate, your predicate must accept
+;;; a single argument (the URL), and return t or nil.
+;;;
+;;; You have three ways you can supply a style. You can supply it
+;;; directly by specifying the style. You can supply it by specifying
+;;; a style-file. You can supply it by specifying a style-url. If you
+;;; specify a style-url, the resource at the URL will be downloaded
+;;; and cached. To refresh the cached files, you must manually delete
+;;; the old copies.
 (defstruct style-association
   (url)
   (predicate)
@@ -25,7 +36,12 @@
                          :url "https://example.org"
                          :style (cl-css:css
                                  '((body
-                                    :background-color "black"))))))
+                                    :background-color "black")))))
+                       :documentation "The style-assocations list
+provides a list of predicates/URL checkers and associated styles. When
+a style-association matches, its style will be applied. A
+style-association can be specified in multiple ways, please view the
+style-association struct for more details.")
    (constructor
     (lambda (mode)
       (initialize mode)))))
@@ -92,5 +108,3 @@
         when (and (style-association-predicate association)
                   (funcall (style-association-predicate association) url))
         return (style-association-style association)))
-
-
