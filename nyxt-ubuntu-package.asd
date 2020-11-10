@@ -1,3 +1,5 @@
+;; TODO: Can we move this file to build-scripts?  Looks like linux-packaging
+;; fails to find the produced binary then.
 (defsystem "nyxt-ubuntu-package"
   :defsystem-depends-on ("linux-packaging")
   :class "linux-packaging:deb"
