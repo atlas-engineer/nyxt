@@ -1,11 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/dark-mode
+(uiop:define-package :nyxt/style-mode
     (:use :common-lisp :nyxt)
-  (:documentation "Mode for darkening documents."))
+  (:documentation "Mode for styling documents."))
 
-(in-package :nyxt/dark-mode)
+(in-package :nyxt/style-mode)
 
 ;;; When creating a style association you have two choices for
 ;;; matching, URL or predicate. By specifying a URL, the base domain
@@ -25,12 +25,12 @@
   (style-file)
   (style-url))
 
-(define-mode dark-mode ()
-  "Mode for darkening documents."
+(define-mode style-mode ()
+  "Mode for styling documents."
   ((css-cache-path (make-instance 'mode-css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+
-                                            "dark-mode-css-cache")))
+                                            "style-mode-css-cache")))
    (style-associations (list
                         (make-style-association
                          :url "https://example.org"
@@ -46,7 +46,7 @@ style-association struct for more details.")
     (lambda (mode)
       (initialize mode)))))
 
-(defmethod initialize ((mode dark-mode))
+(defmethod initialize ((mode style-mode))
   (ensure-parent-exists (expand-path (css-cache-path mode)))
   (loop for association in (style-associations mode)
         do ;; Set string URLs to Quri objects in style associations
@@ -64,20 +64,19 @@ style-association struct for more details.")
            (when (style-association-style-url association)
              (setf (style-association-style association)
                    (open-or-cache-url mode (style-association-style-url association)))))
-  (darken-display mode (url (buffer mode))))
+  (style-display mode (url (buffer mode))))
 
-(defmethod darken-display ((mode dark-mode) url)
+(defmethod style-display ((mode style-mode) url)
   (let ((style (style-for-url mode url)))
-    (if style
+    (when style
         (let ((style (markup:markup (:style style))))
           (ffi-buffer-evaluate-javascript-async
            (buffer mode)
            (ps:ps (ps:chain document body
                             (|insertAdjacentHTML| "afterbegin"
-                                                  (ps:lisp style))))))
-        (nyxt::darken (buffer mode)))))
+                                                  (ps:lisp style)))))))))
 
-(defmethod open-or-cache-url ((mode dark-mode) url)
+(defmethod open-or-cache-url ((mode style-mode) url)
   (let ((path (uri-file-path mode url)))
     (ensure-parent-exists (expand-path path))
     (handler-case (uiop:read-file-string (expand-path path))
@@ -88,17 +87,17 @@ style-association struct for more details.")
             (format f "~s" file-contents))
           file-contents)))))
 
-(defmethod uri-file-path ((mode dark-mode) uri)
+(defmethod uri-file-path ((mode style-mode) uri)
   (flet ((uri->name (uri)
            (str:replace-all "/" "-" (quri:uri-path uri))))
     (make-instance 'mode-css-cache-data-path
                    :dirname (dirname (css-cache-path mode))
                    :basename (uri->name uri))))
 
-(defmethod nyxt:on-signal-notify-uri ((mode dark-mode) url)
-  (darken-display mode url))
+(defmethod nyxt:on-signal-notify-uri ((mode style-mode) url)
+  (style-display mode url))
 
-(defmethod style-for-url ((mode dark-mode) url)
+(defmethod style-for-url ((mode style-mode) url)
   (loop for association in (style-associations mode)
         when (and (style-association-url association)
                   (equal
@@ -108,3 +107,21 @@ style-association struct for more details.")
         when (and (style-association-predicate association)
                   (funcall (style-association-predicate association) url))
         return (style-association-style association)))
+
+(define-mode dark-mode (style-mode)
+  "Mode for styling documents."
+  ((css-cache-path (make-instance 'mode-css-cache-data-path
+                                  :dirname (uiop:xdg-data-home
+                                            nyxt::+data-root+
+                                            "dark-mode-css-cache")))))
+
+(defmethod style-display ((mode dark-mode) url)
+  (let ((style (style-for-url mode url)))
+    (if style
+        (let ((style (markup:markup (:style style))))
+          (ffi-buffer-evaluate-javascript-async
+           (buffer mode)
+           (ps:ps (ps:chain document body
+                            (|insertAdjacentHTML| "afterbegin"
+                                                  (ps:lisp style))))))
+        (nyxt::darken (buffer mode)))))
