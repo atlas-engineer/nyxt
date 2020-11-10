@@ -14,7 +14,7 @@
 
 (defvar conservative-word-move nil
   "If non-nil, the cursor moves to the end (resp. beginning) of the word
-  when `move-forward-word' (resp. `move-backward-word') are called.")
+  when `move-forward-word' (resp. `move-backward-word') is called.")
 
 (defmethod string-representation ((buffer text-buffer))
   (with-output-to-string (out)
@@ -56,7 +56,10 @@ after the cursor position."
         :test #'equal))
 
 (defmethod move-boundary-word ((cursor cursor) &key (backwards nil))
-  "TODO"
+  "Move the cursor to the nearest boundary of a word while moving
+forward of backwards.
+
+Notice that a word is bounded by `word-separation-characters'."
   (if (apply #'word-separation-characters-at-cursor-p
              cursor (when backwards (list :before t)))
       (loop while
@@ -144,4 +147,3 @@ If cursor is between two words, return the first one."
                    (or (position char s :start position)
                        (length s)))
                  white-spaces)))
-
