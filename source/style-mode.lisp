@@ -37,7 +37,7 @@
                          :style (cl-css:css
                                  '((body
                                     :background-color "black")))))
-                       :documentation "The style-assocations list
+                       :documentation "The style-associations list
 provides a list of predicates/URL checkers and associated styles. When
 a style-association matches, its style will be applied. A
 style-association can be specified in multiple ways, please view the
