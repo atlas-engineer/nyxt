@@ -67,19 +67,19 @@ Notice that a word is bounded by `word-separation-characters'."
                    cursor (when backwards (list :before t)))
             do (if backwards
                    (cluffer:backward-item cursor)
-                 (cluffer:forward-item cursor))
+                   (cluffer:forward-item cursor))
             until (if backwards
                       (cluffer:beginning-of-line-p cursor)
-                    (cluffer:end-of-line-p cursor)))
+                      (cluffer:end-of-line-p cursor)))
     (loop while
           (not (apply #'word-separation-characters-at-cursor-p
                       cursor (when backwards (list :before t))))
           do (if backwards
                  (cluffer:backward-item cursor)
-               (cluffer:forward-item cursor))
+                 (cluffer:forward-item cursor))
           until (if backwards
                     (cluffer:beginning-of-line-p cursor)
-                  (cluffer:end-of-line-p cursor)))))
+                    (cluffer:end-of-line-p cursor)))))
 
 (defmethod move-forward-word ((cursor cursor))
   (if conservative-word-move
