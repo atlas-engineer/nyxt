@@ -63,34 +63,34 @@ Notice that a word is bounded by `word-separation-characters'."
   (if (apply #'word-separation-characters-at-cursor-p
              cursor (when backwards '(:before t)))
       (loop while
-            (apply #'word-separation-characters-at-cursor-p
-                   cursor (when backwards '(:before t)))
-            do (if backwards
-                   (cluffer:backward-item cursor)
-                   (cluffer:forward-item cursor))
-            until (if backwards
-                      (cluffer:beginning-of-line-p cursor)
-                      (cluffer:end-of-line-p cursor)))
-    (loop while
-          (not (apply #'word-separation-characters-at-cursor-p
-                      cursor (when backwards '(:before t))))
-          do (if backwards
-                 (cluffer:backward-item cursor)
-                 (cluffer:forward-item cursor))
-          until (if backwards
-                    (cluffer:beginning-of-line-p cursor)
-                    (cluffer:end-of-line-p cursor)))))
+           (apply #'word-separation-characters-at-cursor-p
+                  cursor (when backwards '(:before t)))
+         do (if backwards
+                (cluffer:backward-item cursor)
+                (cluffer:forward-item cursor))
+         until (if backwards
+                   (cluffer:beginning-of-line-p cursor)
+                   (cluffer:end-of-line-p cursor)))
+      (loop while
+           (not (apply #'word-separation-characters-at-cursor-p
+                       cursor (when backwards '(:before t))))
+         do (if backwards
+                (cluffer:backward-item cursor)
+                (cluffer:forward-item cursor))
+         until (if backwards
+                   (cluffer:beginning-of-line-p cursor)
+                   (cluffer:end-of-line-p cursor)))))
 
 (defmethod move-forward-word ((cursor cursor))
   (if conservative-word-move
       (loop repeat 2
-            do (move-boundary-word cursor))
+         do (move-boundary-word cursor))
       (move-boundary-word cursor)))
 
 (defmethod move-backward-word ((cursor cursor))
   (if conservative-word-move
       (loop repeat 2
-            do (move-boundary-word cursor :backwards t))
+         do (move-boundary-word cursor :backwards t))
       (move-boundary-word cursor :backwards t)))
 
 (defmethod delete-backward-word ((cursor cursor))
