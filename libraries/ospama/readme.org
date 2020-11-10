@@ -12,9 +12,9 @@ If the package manager supports it, the class also includes the list of
 dependencies and dependents.
 
 Multiple package managers may coexist.  For instance, Guix can be installed on
-top over another OS which runs some other package manager.
+top over another OS which also features another package manager.
 
-The library also provides functions to interact with packages:
+The library provides functions to interact with packages:
 
 - =list-packages=: The list of all packages.
 
@@ -24,8 +24,22 @@ The library also provides functions to interact with packages:
 
 - =list-files=
 
-- =list-profiles=: Mostly for functional package managers like Nix and Guix.
+- =find-os-package=
 
-- =list-package-outputs=: Mostly for functional package managers like Nix and Guix.
+The following is mostly for functional package managers like Nix and Guix:
+
+- =list-package-outputs=
+
+- =list-profiles=
+
+- =list-manifests=
+
+- =install-manifests=
+
+- =list-generations=
+
+- =delete-generations=
+
+- =switch-generation=
 
 More helpers may be available depending on the package manager.
