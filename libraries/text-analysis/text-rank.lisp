@@ -16,11 +16,25 @@
           do (setf (aref vector-form index) (term-count document word)))
     (setf (vector-form document) vector-form)))
 
+(defmethod tf-idf-vectorize ((document document) (collection document-collection) dictionary)
+  (let ((vector-form (make-array (length dictionary) :initial-element 0)))
+    (loop for word in dictionary
+          for index from 0 below (length vector-form)
+          do (setf (aref vector-form index)
+                   (term-frequency-inverse-document-frequency document collection word)))
+    (setf (vector-form document) vector-form)))
+
 (defmethod word-count-vectorize-documents ((document-collection document-collection))
   "Set the vector-form for a collection of documents."
   (let ((dictionary (dictionary document-collection)))
     (loop for document in (documents document-collection)
           do (word-count-vectorize document dictionary))))
+
+(defmethod tf-idf-vectorize-documents ((document-collection document-collection))
+  "Set the vector-form for a collection of documents."
+  (let ((dictionary (dictionary document-collection)))
+    (loop for document in (documents document-collection)
+          do (tf-idf-vectorize document document-collection dictionary))))
 
 (defmethod cosine-similarity ((document-a document) (document-b document))
   "Calculate the cosine similarity between two vectors."
