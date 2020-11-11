@@ -48,22 +48,22 @@ style-association struct for more details.")
 
 (defmethod initialize ((mode style-mode))
   (ensure-parent-exists (expand-path (css-cache-path mode)))
-  (loop for association in (style-associations mode)
-        do ;; Set string URLs to Quri objects in style associations
-           (when (typep (style-association-url association) 'string)
-             (setf (style-association-url association)
-                   (quri:uri (style-association-url association))))
-           (when (typep (style-association-style-url association) 'string)
-             (setf (style-association-style-url association)
-                   (quri:uri (style-association-style-url association))))
-           ;; Load style files into memory
-           (when (style-association-style-file association)
-             (setf (style-association-style association)
-                   (uiop:read-file-string
-                    (style-association-style-file association))))
-           (when (style-association-style-url association)
-             (setf (style-association-style association)
-                   (open-or-cache-url mode (style-association-style-url association)))))
+  (dolist (association (style-associations mode))
+    ;; Set string URLs to Quri objects in style associations
+    (when (typep (style-association-url association) 'string)
+      (setf (style-association-url association)
+            (quri:uri (style-association-url association))))
+    (when (typep (style-association-style-url association) 'string)
+      (setf (style-association-style-url association)
+            (quri:uri (style-association-style-url association))))
+    ;; Load style files into memory
+    (when (style-association-style-file association)
+      (setf (style-association-style association)
+            (uiop:read-file-string
+             (style-association-style-file association))))
+    (when (style-association-style-url association)
+      (setf (style-association-style association)
+            (open-or-cache-url mode (style-association-style-url association)))))
   (style-display mode (url (buffer mode))))
 
 (defmethod style-display ((mode style-mode) url)
