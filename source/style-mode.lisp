@@ -17,7 +17,7 @@
                                             nyxt::+data-root+
                                             "style-mode-css-cache")))
    (style-url nil
-              :type (or null quri:uri)
+              :type (or null string quri:uri)
               :documentation "Remote CSS file.  If supplied, set `style' to the
 content of the URL.  The resource is cached so it needs to be downloaded only
 once.  To refresh the cached files, you must manually delete the old copies.")
@@ -50,8 +50,12 @@ If nil, look for CSS in `style-file' or `style-url'.")
     (nyxt::html-set-style (style mode) (buffer mode))))
 
 (defmethod open-or-cache-url ((mode style-mode) url)
-  (when url
-    (let ((path (uri-file-path mode url)))
+  (when (and url
+             (or (quri:uri-p url)
+                 (valid-url-p url)))
+    (let ((path (uri-file-path mode (if (stringp url)
+                                        (quri:uri url)
+                                        url))))
       (ensure-parent-exists (expand-path path))
       (handler-case (uiop:read-file-string (expand-path path))
         (error ()
