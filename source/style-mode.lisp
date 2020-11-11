@@ -47,12 +47,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
 
 (defmethod apply-style ((mode style-mode) url)
   (when (style mode)
-    (let ((style (markup:markup (:style (mode style)))))
-      (ffi-buffer-evaluate-javascript-async
-       (buffer mode)
-       (ps:ps (ps:chain document body
-                        (|insertAdjacentHTML| "afterbegin"
-                                              (ps:lisp style))))))))
+    (nyxt::html-set-style (style mode) (buffer mode))))
 
 (defmethod open-or-cache-url ((mode style-mode) url)
   (let ((path (uri-file-path mode url)))
@@ -84,10 +79,5 @@ If nil, look for CSS in `style-file' or `style-url'.")
 
 (defmethod apply-style ((mode dark-mode) url)
   (if (style mode)
-      (let ((style (markup:markup (:style (mode style)))))
-        (ffi-buffer-evaluate-javascript-async
-         (buffer mode)
-         (ps:ps (ps:chain document body
-                          (|insertAdjacentHTML| "afterbegin"
-                                                (ps:lisp style))))))
+      (nyxt::html-set-style (style mode) (buffer mode))
       (nyxt::darken (buffer mode))))
