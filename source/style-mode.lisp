@@ -10,74 +10,49 @@
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
-;;; When creating a style association you have two choices for
-;;; matching, URL or predicate. By specifying a URL, the base domain
-;;; is checked. If you specify a predicate, your predicate must accept
-;;; a single argument (the URL), and return t or nil.
-;;;
-;;; You have three ways you can supply a style. You can supply it
-;;; directly by specifying the style. You can supply it by specifying
-;;; a style-file. You can supply it by specifying a style-url. If you
-;;; specify a style-url, the resource at the URL will be downloaded
-;;; and cached. To refresh the cached files, you must manually delete
-;;; the old copies.
-(defstruct style-association
-  (url)
-  (predicate)
-  (style)
-  (style-file)
-  (style-url))
-
 (define-mode style-mode ()
   "Mode for styling documents."
   ((css-cache-path (make-instance 'css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+
                                             "style-mode-css-cache")))
-   (style-associations (list
-                        (make-style-association
-                         :url "https://example.org"
-                         :style (cl-css:css
-                                 '((body
-                                    :background-color "black")))))
-                       :documentation "The style-associations list
-provides a list of predicates/URL checkers and associated styles. When
-a style-association matches, its style will be applied. A
-style-association can be specified in multiple ways, please view the
-style-association struct for more details.")
+   (style-url nil
+              :type (or null quri:uri)
+              :documentation "Remote CSS file.  If supplied, set `style' to the
+content of the URL.  The resource is cached so it needs to be downloaded only
+once.  To refresh the cached files, you must manually delete the old copies.")
+   (style-file nil
+               :type (or null string pathname)
+               :documentation "Local CSS file.
+If supplied, set `style' to the content of the file.
+Otherwise, look for CSS in `style-url'.")
+   (style nil
+          :type (or null string)
+          :documentation "Style as CSS.
+If nil, look for CSS in `style-file' or `style-url'.")
    (constructor
     (lambda (mode)
-      (initialize mode)))))
+      (initialize mode))))
+  :documentation
+  "Style can be set by one of the `style', `style-file' or `style-url' slots.")
 
 (defmethod initialize ((mode style-mode))
   (ensure-parent-exists (expand-path (css-cache-path mode)))
-  (dolist (association (style-associations mode))
-    ;; Set string URLs to Quri objects in style associations
-    (when (typep (style-association-url association) 'string)
-      (setf (style-association-url association)
-            (quri:uri (style-association-url association))))
-    (when (typep (style-association-style-url association) 'string)
-      (setf (style-association-style-url association)
-            (quri:uri (style-association-style-url association))))
-    ;; Load style files into memory
-    (when (style-association-style-file association)
-      (setf (style-association-style association)
-            (uiop:read-file-string
-             (style-association-style-file association))))
-    (when (style-association-style-url association)
-      (setf (style-association-style association)
-            (open-or-cache-url mode (style-association-style-url association)))))
+  (unless (style mode)
+    (setf (style mode)
+          (or (ignore-errors (uiop:read-file-string
+                              (style-file mode)))
+              (open-or-cache-url mode (style-url mode)))))
   (apply-style mode (url (buffer mode))))
 
 (defmethod apply-style ((mode style-mode) url)
-  (let ((style (style-for-url mode url)))
-    (when style
-        (let ((style (markup:markup (:style style))))
-          (ffi-buffer-evaluate-javascript-async
-           (buffer mode)
-           (ps:ps (ps:chain document body
-                            (|insertAdjacentHTML| "afterbegin"
-                                                  (ps:lisp style)))))))))
+  (when (style mode)
+    (let ((style (markup:markup (:style (mode style)))))
+      (ffi-buffer-evaluate-javascript-async
+       (buffer mode)
+       (ps:ps (ps:chain document body
+                        (|insertAdjacentHTML| "afterbegin"
+                                              (ps:lisp style))))))))
 
 (defmethod open-or-cache-url ((mode style-mode) url)
   (let ((path (uri-file-path mode url)))
@@ -100,20 +75,6 @@ style-association struct for more details.")
 (defmethod nyxt:on-signal-notify-uri ((mode style-mode) url)
   (apply-style mode url))
 
-(defmethod style-for-url ((mode style-mode) url)
-  (flet ((domain= (association)
-           (and (style-association-url association)
-                (equal
-                 (quri:uri-domain url)
-                 (quri:uri-domain (style-association-url association)))))
-         (match-predicate-p (association)
-           (and (style-association-predicate association)
-                (funcall-safely (style-association-predicate association) url))))
-    (sera:and-let* ((result
-                     (find-if (alex:disjoin #'domain= #'match-predicate-p)
-                              (style-associations mode))))
-      (style-association-style result))))
-
 (define-mode dark-mode (style-mode)
   "Mode for styling documents."
   ((css-cache-path (make-instance 'css-cache-data-path
@@ -122,12 +83,11 @@ style-association struct for more details.")
                                             "dark-mode-css-cache")))))
 
 (defmethod apply-style ((mode dark-mode) url)
-  (let ((style (style-for-url mode url)))
-    (if style
-        (let ((style (markup:markup (:style style))))
-          (ffi-buffer-evaluate-javascript-async
-           (buffer mode)
-           (ps:ps (ps:chain document body
-                            (|insertAdjacentHTML| "afterbegin"
-                                                  (ps:lisp style))))))
-        (nyxt::darken (buffer mode)))))
+  (if (style mode)
+      (let ((style (markup:markup (:style (mode style)))))
+        (ffi-buffer-evaluate-javascript-async
+         (buffer mode)
+         (ps:ps (ps:chain document body
+                          (|insertAdjacentHTML| "afterbegin"
+                                                (ps:lisp style))))))
+      (nyxt::darken (buffer mode))))
