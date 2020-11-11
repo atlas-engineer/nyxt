@@ -35,11 +35,6 @@
     (cluffer:backward-item cursor)
     t))
 
-(defmethod delete-item-backward ((cursor cursor))
-  (when (safe-backward cursor)
-    (cluffer:delete-item cursor)
-    t))
-
 (defmethod delete-item-forward ((cursor cursor))
   (unless (cluffer:end-of-line-p cursor)
     (cluffer:delete-item cursor)
@@ -49,6 +44,11 @@
                                                    &key before)
   "Return non-nil when `word-separation-characters' are found before or
 after the cursor position."
+(defmethod delete-item-backward ((cursor cursor))
+  (unless (cluffer:beginning-of-line-p cursor)
+    (cluffer:erase-item cursor)
+    t))
+
   (find (if before
             (cluffer:item-before-cursor cursor)
             (cluffer:item-after-cursor cursor))
