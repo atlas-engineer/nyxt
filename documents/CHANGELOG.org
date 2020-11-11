@@ -28,7 +28,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 *** Add online suggestions from search engines
 ** 2.0.0
 
-*** TASK 2-pre-release-4 (upcoming)
+*** 2-pre-release-4
 
 - Overhauled status view which now displays a scrollable list of tabs.
 
