@@ -70,6 +70,14 @@ The function can be passed ARGS."
    (ps:ps (setf (ps:@ document body |innerHTML|)
                 (ps:lisp content)))))
 
+(defun html-set-style (style-string &optional (buffer (current-buffer)))
+  (let ((style (markup:markup (:style style-string))))
+    (ffi-buffer-evaluate-javascript-async
+     buffer
+     (ps:ps (ps:chain document body
+                      (|insertAdjacentHTML| "afterbegin"
+                                            (ps:lisp style)))))))
+
 (defmacro with-current-html-buffer ((buffer-var title mode) &body body)
   "Switch to a buffer in MODE displaying CONTENT.
 If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
