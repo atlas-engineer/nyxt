@@ -69,7 +69,8 @@
                (remove document documents))
              (graph-neighbor-edge-sum (document)
                "Add up the edges of all neighbors of a given node."
-               (reduce #'+ (mapcar #'car (similarity-vector document))))
+               (let ((sum (- (reduce #'+ (mapcar #'car (similarity-vector document))) 1)))
+                 (if (> sum 0) sum 1)))
              (document-similarity (document-a document-b)
                (car (find document-b (similarity-vector document-a) :key #'cdr)))
              (convergedp (previous-score current-score)
