@@ -6,6 +6,9 @@
   (:documentation "Mode for styling documents."))
 
 (in-package :nyxt/style-mode)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 ;;; When creating a style association you have two choices for
 ;;; matching, URL or predicate. By specifying a URL, the base domain
@@ -98,15 +101,18 @@ style-association struct for more details.")
   (apply-style mode url))
 
 (defmethod style-for-url ((mode style-mode) url)
-  (loop for association in (style-associations mode)
-        when (and (style-association-url association)
-                  (equal
-                   (quri:uri-domain url)
-                   (quri:uri-domain (style-association-url association))))
-        return (style-association-style association)
-        when (and (style-association-predicate association)
-                  (funcall (style-association-predicate association) url))
-        return (style-association-style association)))
+  (flet ((domain= (association)
+           (and (style-association-url association)
+                (equal
+                 (quri:uri-domain url)
+                 (quri:uri-domain (style-association-url association)))))
+         (match-predicate-p (association)
+           (and (style-association-predicate association)
+                (funcall (style-association-predicate association) url))))
+    (sera:and-let* ((result
+                     (find-if (alex:disjoin #'domain= #'match-predicate-p)
+                              (style-associations mode))))
+      (style-association-style result))))
 
 (define-mode dark-mode (style-mode)
   "Mode for styling documents."
