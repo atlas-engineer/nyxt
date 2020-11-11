@@ -167,6 +167,58 @@ Set this to nil to disable inference.")
      definition)
     (t (error "Condition fell through!"))))
 
+(defun build-defclass-like-expansion (name supers slots options expansion-builder
+                                      &key
+                                        (export-class-name hu.dwim.defclass-star::*export-class-name-p*)
+                                        (export-accessor-names hu.dwim.defclass-star::*export-accessor-names-p*)
+                                        (export-slot-names hu.dwim.defclass-star::*export-slot-names-p*))
+  "Like `hu.dwim.defclass-star' version but fix the symbol export issue."
+  (declare (ignore supers))
+  #+nil ;; this generates warnings where defclass would not, delme eventually?
+  (unless (eq (symbol-package name) *package*)
+    (style-warn "defclass* for ~A while its home package is not *package* (~A)"
+                (fully-qualified-symbol-name name) *package*))
+  (let ((hu.dwim.defclass-star::*accessor-names* nil)
+        (hu.dwim.defclass-star::*slot-names* nil)
+        (hu.dwim.defclass-star::*symbols-to-export* nil)
+        (hu.dwim.defclass-star::*export-class-name-p* export-class-name)
+        (hu.dwim.defclass-star::*export-accessor-names-p* export-accessor-names)
+        (hu.dwim.defclass-star::*export-slot-names-p* export-slot-names))
+    (multiple-value-bind (binding-names binding-values clean-options)
+        (hu.dwim.defclass-star::extract-options-into-bindings options)
+      (progv binding-names (mapcar #'eval binding-values)
+        (let ((result (funcall expansion-builder
+                               (mapcar 'hu.dwim.defclass-star::process-slot-definition slots)
+                               clean-options)))
+          (if (or hu.dwim.defclass-star::*symbols-to-export*
+                  hu.dwim.defclass-star::*export-class-name-p*)
+              `(progn
+                 ,result
+                 (eval-when (:compile-toplevel :load-toplevel :execute)
+                   ;; XXX: This is the export fix: the export may fail if the
+                   ;; symbol belongs to another package.
+                   ;; This can happen when inheriting from an external class and
+                   ;; overriding a symbol, e.g.
+                   ;; (define-class foo-override (other-package:foo)
+                   ;;   ((other-package:foo-slot ...)))
+                   (ignore-errors
+                    (export '(,@(append (when hu.dwim.defclass-star::*export-class-name-p*
+                                          (list name))
+                                 hu.dwim.defclass-star::*symbols-to-export*))
+                            ,(package-name *package*))))
+                 (find-class ',name nil))
+              result))))))
+
+(defmacro defclass* (name supers slots &rest options)
+  "Identical to `hu.dwim.defclass-star' version.
+We copy this here to hijack the `build-defclass-like-expansion' function."
+  (build-defclass-like-expansion
+   name supers slots options
+   (lambda (processed-slots clean-options)
+     `(defclass ,name ,supers
+        ,processed-slots
+        ,@clean-options))))
+
 (defmacro define-class (name supers &body (slots . options))
   "Define class like `defclass*' but with extensions.
 
@@ -187,7 +239,7 @@ The same applies to the types with the `:type-inference' option, the
                                (setf options (delete :type-inference options :key #'car))
                                (eval (second type-option)))
                              *type-inference*)))
-    `(hu.dwim.defclass-star:defclass* ,name ,supers
+    `(defclass* ,name ,supers
        ,(mapcar (lambda (definition)
                   (process-slot-initform
                    definition
