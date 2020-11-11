@@ -108,7 +108,7 @@ style-association struct for more details.")
                  (quri:uri-domain (style-association-url association)))))
          (match-predicate-p (association)
            (and (style-association-predicate association)
-                (funcall (style-association-predicate association) url))))
+                (funcall-safely (style-association-predicate association) url))))
     (sera:and-let* ((result
                      (find-if (alex:disjoin #'domain= #'match-predicate-p)
                               (style-associations mode))))
