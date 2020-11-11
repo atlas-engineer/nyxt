@@ -22,4 +22,4 @@
 
 (defun sentence-tokenize (string)
   "Split a string into a list of sentences."
-  (mapcar #'str:trim (cl-ppcre:split "\\.|\\?|\\!" string)))
+  (remove "" (mapcar #'str:trim (cl-ppcre:split "\\.|\\?|\\!" string)) :test #'equal))
