@@ -87,20 +87,14 @@ When `move-over-non-word-chars' is `t' move the cursor otherwise."
     (cluffer:cursor-position cursor)))
 
 (defmethod move-forward-word ((cursor cursor))
-  (if conservative-word-move
-      (loop repeat 2
-         do (move-boundary-word cursor))
-      (move-boundary-word cursor)))
+  (move-to-word cursor))
 
 (defmethod move-backward-word ((cursor cursor))
-  (if conservative-word-move
-      (loop repeat 2
-         do (move-boundary-word cursor :backwards t))
-      (move-boundary-word cursor :backwards t)))
 
 (defmethod delete-backward-word ((cursor cursor))
   (dotimes (i (- (cluffer:cursor-position cursor) (or (nth-value 1 (move-backward-word cursor)) 0)))
     (cluffer:delete-item cursor)))
+  (move-to-word cursor :backward t))
 
 (defmethod delete-forward-word ((cursor cursor))
   (dotimes (i (abs (- (cluffer:cursor-position cursor) (or (nth-value 1 (move-forward-word cursor)) 0))))
