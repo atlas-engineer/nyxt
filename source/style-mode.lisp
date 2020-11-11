@@ -64,9 +64,9 @@ style-association struct for more details.")
     (when (style-association-style-url association)
       (setf (style-association-style association)
             (open-or-cache-url mode (style-association-style-url association)))))
-  (style-display mode (url (buffer mode))))
+  (apply-style mode (url (buffer mode))))
 
-(defmethod style-display ((mode style-mode) url)
+(defmethod apply-style ((mode style-mode) url)
   (let ((style (style-for-url mode url)))
     (when style
         (let ((style (markup:markup (:style style))))
@@ -95,7 +95,7 @@ style-association struct for more details.")
                    :basename (uri->name uri))))
 
 (defmethod nyxt:on-signal-notify-uri ((mode style-mode) url)
-  (style-display mode url))
+  (apply-style mode url))
 
 (defmethod style-for-url ((mode style-mode) url)
   (loop for association in (style-associations mode)
@@ -115,7 +115,7 @@ style-association struct for more details.")
                                             nyxt::+data-root+
                                             "dark-mode-css-cache")))))
 
-(defmethod style-display ((mode dark-mode) url)
+(defmethod apply-style ((mode dark-mode) url)
   (let ((style (style-for-url mode url)))
     (if style
         (let ((style (markup:markup (:style style))))
