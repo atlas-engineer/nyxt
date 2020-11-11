@@ -43,9 +43,9 @@ If nil, look for CSS in `style-file' or `style-url'.")
           (or (ignore-errors (uiop:read-file-string
                               (style-file mode)))
               (open-or-cache-url mode (style-url mode)))))
-  (apply-style mode (url (buffer mode))))
+  (apply-style mode))
 
-(defmethod apply-style ((mode style-mode) url)
+(defmethod apply-style ((mode style-mode))
   (when (style mode)
     (nyxt::html-set-style (style mode) (buffer mode))))
 
@@ -69,7 +69,8 @@ If nil, look for CSS in `style-file' or `style-url'.")
                    :basename (uri->name uri))))
 
 (defmethod nyxt:on-signal-notify-uri ((mode style-mode) url)
-  (apply-style mode url))
+  (declare (ignore url))
+  (apply-style mode))
 
 (define-mode dark-mode (style-mode)
   "Mode for styling documents."
@@ -78,7 +79,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
                                             nyxt::+data-root+
                                             "dark-mode-css-cache")))))
 
-(defmethod apply-style ((mode dark-mode) url)
+(defmethod apply-style ((mode dark-mode))
   (if (style mode)
       (nyxt::html-set-style (style mode) (buffer mode))
       (nyxt::darken (buffer mode))))
