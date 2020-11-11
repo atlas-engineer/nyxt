@@ -56,31 +56,35 @@ When `before' is `t', look before the cursor."
         (word-separation-characters cursor)
         :test #'equal))
 
-(defmethod move-boundary-word ((cursor cursor) &key backwards)
-  "Move the cursor to the nearest boundary of a word while moving
-forward of backwards.
+(defmethod move-to-word ((cursor cursor) &key backward)
+  "Move the cursor to the boundary of a word and return its position.
 
-Notice that a word is bounded by `word-separation-characters'."
-  (if (apply #'word-separation-characters-at-cursor-p
-             cursor (when backwards '(:before t)))
-      (loop while
-           (apply #'word-separation-characters-at-cursor-p
-                  cursor (when backwards '(:before t)))
-         do (if backwards
-                (cluffer:backward-item cursor)
-                (cluffer:forward-item cursor))
-         until (if backwards
-                   (cluffer:beginning-of-line-p cursor)
-                   (cluffer:end-of-line-p cursor)))
-      (loop while
-           (not (apply #'word-separation-characters-at-cursor-p
-                       cursor (when backwards '(:before t))))
-         do (if backwards
-                (cluffer:backward-item cursor)
-                (cluffer:forward-item cursor))
-         until (if backwards
-                   (cluffer:beginning-of-line-p cursor)
-                   (cluffer:end-of-line-p cursor)))))
+Notice that a word is a string bounded by `word-separation-characters'."
+  (unless (if backward
+              (cluffer:beginning-of-line-p cursor)
+              (cluffer:end-of-line-p cursor))
+    (flet ((move-to-boundary (&key move-over-non-word-chars)
+             "Move the cursor while it finds `word-separation-characters'
+adjacent to it.
+
+When `move-over-non-word-chars' is `t' move the cursor otherwise."
+             (loop while (if move-over-non-word-chars
+                             (apply #'word-separation-chars-at-cursor-p
+                                    cursor (when backward '(:before t)))
+                             (not (apply #'word-separation-chars-at-cursor-p
+                                         cursor (when backward '(:before t)))))
+                   do (if backward
+                          (cluffer:backward-item cursor)
+                          (cluffer:forward-item cursor))
+                   until (if backward
+                             (cluffer:beginning-of-line-p cursor)
+                             (cluffer:end-of-line-p cursor)))))
+      (if (apply #'word-separation-chars-at-cursor-p
+                 cursor (when backward '(:before t)))
+          (progn (move-to-boundary :move-over-non-word-chars t)
+                 (when conservative-word-move (move-to-boundary)))
+          (move-to-boundary)))
+    (cluffer:cursor-position cursor)))
 
 (defmethod move-forward-word ((cursor cursor))
   (if conservative-word-move
