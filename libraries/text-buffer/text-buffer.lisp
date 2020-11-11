@@ -90,15 +90,30 @@ When `move-over-non-word-chars' is `t' move the cursor otherwise."
   (move-to-word cursor))
 
 (defmethod move-backward-word ((cursor cursor))
-
-(defmethod delete-backward-word ((cursor cursor))
-  (dotimes (i (- (cluffer:cursor-position cursor) (or (nth-value 1 (move-backward-word cursor)) 0)))
-    (cluffer:delete-item cursor)))
   (move-to-word cursor :backward t))
 
+(defmethod delete-word ((cursor cursor) &key backward)
+  "Delete characters until encountering the boundary of a word.
+
+Notice that unless `conservative-word-move' is set to `t' it's hard to
+make sense of this procedure."
+  (let* ((conservative-word-move t)
+         (beg (cluffer:cursor-position cursor))
+         (end (if backward
+                  (move-backward-word cursor)
+                  (move-forward-word cursor))))
+    (loop repeat (abs (- beg end))
+          do (if backward
+                 (cluffer:delete-item cursor)
+                 (cluffer:erase-item cursor)))))
+
 (defmethod delete-forward-word ((cursor cursor))
-  (dotimes (i (abs (- (cluffer:cursor-position cursor) (or (nth-value 1 (move-forward-word cursor)) 0))))
-    (delete-item-backward cursor)))
+  "Delete characters forward until encountering the end of a word."
+  (delete-word cursor))
+
+(defmethod delete-backward-word ((cursor cursor))
+  "Delete characters backward until encountering the end of a word."
+  (delete-word cursor :backward t))
 
 (defmethod kill-forward-line ((cursor cursor))
   (loop while (delete-item-forward cursor)))
