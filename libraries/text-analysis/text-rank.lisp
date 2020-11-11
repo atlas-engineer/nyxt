@@ -71,6 +71,7 @@
    iterations. The `iteration-limit' is the amount of times the
    algorithm may traverse the graph before giving up (if the algorithm
    does not converge)."
+  (declare (ignore epsilon))
   (with-accessors ((documents documents)) collection
     (labels ((set-initial-rank ()
                "Set the initial rank of all documents to a supplied
@@ -86,22 +87,11 @@
                (let ((sum (- (reduce #'+ (mapcar #'car (similarity-vector document))) 1)))
                  (if (> sum 0) sum 1)))
              (document-similarity (document-a document-b)
-               (car (find document-b (similarity-vector document-a) :key #'cdr)))
-             (convergedp (previous-score current-score)
-               "Check if a delta qualifies for convergence."
-               (<=  (abs (- previous-score current-score)) epsilon))
-             (rank-document (document)
-               (setf (rank document) (- 1 damping))
-               (loop for neighbor in (graph-neighbors document)
-                     do (setf (rank neighbor)
-                              (/ (* damping (rank neighbor) (document-similarity document neighbor))
-                                 (graph-neighbor-edge-sum neighbor))))))
+               (car (find document-b (similarity-vector document-a) :key #'cdr))))
       (set-initial-rank)
-      (let (converged)
-        (loop for iteration from 0 to iteration-limit until converged
-              do (setf converged t)
-                 (loop for document in documents
-                       do (let ((previous-rank (rank document)))
-                            (rank-document document)
-                            (unless (convergedp previous-rank (rank document))
-                              (setf converged nil)))))))))
+      (loop for iteration from 0 to iteration-limit
+            do (loop for document in documents
+                     do (setf (rank document)
+                              (loop for neighbor in (graph-neighbors document)
+                                    sum (/ (* damping (rank neighbor) (document-similarity document neighbor))
+                                           (graph-neighbor-edge-sum neighbor)))))))))
