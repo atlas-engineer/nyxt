@@ -59,7 +59,7 @@ This can be used to set the path from command line.  See
   ((ref :initform "error-output"))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
-(define-class mode-css-cache-data-path (data-path)
+(define-class css-cache-data-path (data-path)
   ((ref :initform "mode-css-cache"))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))

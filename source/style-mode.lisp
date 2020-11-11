@@ -27,7 +27,7 @@
 
 (define-mode style-mode ()
   "Mode for styling documents."
-  ((css-cache-path (make-instance 'mode-css-cache-data-path
+  ((css-cache-path (make-instance 'css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+
                                             "style-mode-css-cache")))
@@ -90,7 +90,7 @@ style-association struct for more details.")
 (defmethod uri-file-path ((mode style-mode) uri)
   (flet ((uri->name (uri)
            (str:replace-all "/" "-" (quri:uri-path uri))))
-    (make-instance 'mode-css-cache-data-path
+    (make-instance 'css-cache-data-path
                    :dirname (dirname (css-cache-path mode))
                    :basename (uri->name uri))))
 
@@ -110,7 +110,7 @@ style-association struct for more details.")
 
 (define-mode dark-mode (style-mode)
   "Mode for styling documents."
-  ((css-cache-path (make-instance 'mode-css-cache-data-path
+  ((css-cache-path (make-instance 'css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+
                                             "dark-mode-css-cache")))))
