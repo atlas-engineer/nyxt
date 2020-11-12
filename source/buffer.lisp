@@ -738,7 +738,9 @@ See `make-buffer'."
 (define-command delete-buffer (&key id)
   "Delete the buffer(s) via minibuffer input."
   (if id
-      (buffer-delete (gethash id (slot-value *browser* 'buffers)))
+      (progn
+        (buffer-delete (gethash id (slot-value *browser* 'buffers)))
+        (nyxt::list-buffers))
       (let ((buffers (prompt-minibuffer
                       :input-prompt "Delete buffer(s)"
                       :multi-selection-p t
