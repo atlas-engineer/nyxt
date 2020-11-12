@@ -113,7 +113,7 @@
           do (add-document collection
                            (make-instance 'document-vertex
                                           :string-contents sentence)))
-    (word-count-vectorize-documents collection)
+    (tf-idf-vectorize-documents collection)
     (generate-document-similarity-vectors collection)
     (text-rank collection :iteration-limit 100)
     (serapeum:take summary-length
