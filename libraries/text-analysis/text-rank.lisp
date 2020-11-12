@@ -5,8 +5,11 @@
 
 ;;; text-rank.lisp -- implementation of textrank algorithm
 
-(defclass document-similarity-vector (document)
-  ((similarity-vector :accessor similarity-vector)))
+(defclass document-vertex (document)
+  ((edges :accessor edges :initform (make-hash-table)
+          :documentation "The keys of the hash table represent the
+          edges, the values of the hash table represent the edge
+          weights.")))
 
 (defmethod word-count-vectorize ((document document) dictionary)
   "Transform a document into a vector using word counts."
@@ -55,9 +58,9 @@
 (defmethod generate-document-similarity-vectors ((collection document-collection))
   (with-accessors ((documents documents)) collection
     (loop for document-a in documents
-          do (setf (similarity-vector document-a)
-                   (loop for document-b in documents
-                         collect (cons (cosine-similarity document-a document-b) document-b))))))
+          do (loop for document-b in documents
+                   do (setf (gethash document-b (edges document-a))
+                            (cosine-similarity document-a document-b))))))
 
 (defmethod text-rank ((collection document-collection) &key (epsilon 0.001)
                                                             (damping 0.85)
@@ -83,10 +86,10 @@
                (remove document documents))
              (graph-neighbor-edge-sum (document)
                "Add up the edges of all neighbors of a given node."
-               (let ((sum (- (reduce #'+ (mapcar #'car (similarity-vector document))) 1)))
+               (let ((sum (- (reduce #'+ (alexandria:hash-table-values (edges document))) 1)))
                  (if (> sum 0) sum 1)))
              (document-similarity (document-a document-b)
-               (car (find document-b (similarity-vector document-a) :key #'cdr)))
+               (gethash document-b (edges document-a) 0))
              (convergedp (previous-score current-score)
                "Check if a delta qualifies for convergence."
                (<=  (abs (- previous-score current-score)) epsilon)))
@@ -106,7 +109,7 @@
   (let ((collection (make-instance 'document-collection)))
     (loop for sentence in (sentence-tokenize text)
           do (add-document collection
-                           (make-instance 'document-similarity-vector
+                           (make-instance 'document-vertex
                                           :string-contents sentence)))
     (word-count-vectorize-documents collection)
     (generate-document-similarity-vectors collection)
