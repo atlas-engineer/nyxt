@@ -28,7 +28,9 @@ amount of times word appears in the document.")
 
 (defmethod term-frequency ((document document) term)
   "How often does the word exist in the document?"
-  (/ (term-count document term) (token-count document)))
+  (/ (term-count document term)
+     ;; prevent division by zero for malformed documents
+     (max 1 (token-count document))))
 
 (defmethod termp ((document document) term)
   "Does the term exist in the document?"
