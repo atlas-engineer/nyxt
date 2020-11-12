@@ -792,6 +792,31 @@ to the currently active buffer."
     (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
       (mapcar #'buffer-delete buffers-to-delete))))
 
+(define-command delete-matching-buffers ()
+  "Delete buffers matching a regular expression."
+  (let*
+      ((regexp
+         (prompt-minibuffer
+          :input-prompt "Delete buffers matching this regular expression"))
+       (all-buffers (buffer-list))
+       (all-buffers-titles
+         (mapcar (lambda (x) (str:downcase (title x))) all-buffers))
+       (matched-buffers
+         (mapcar (lambda (x) (ppcre:scan regexp x)) all-buffers-titles))
+       (buffers-to-delete
+         (mapcar
+          'cdr
+          (remove nil (pairlis matched-buffers all-buffers) :key #'car)))
+       ;; buffers-titles-to-delete might come in handy if we want to
+       ;; confirm the buffer titles before deleting
+       ;; (buffers-titles-to-delete
+       ;;   (mapcar
+       ;;    'cdr
+       ;;    (remove nil (pairlis matched-buffers all-buffers-titles) :key #'car)))
+       (count (list-length buffers-to-delete)))
+    (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
+                (mapcar #'buffer-delete buffers-to-delete))))
+
 (export-always 'buffer-load)
 (declaim (ftype (function ((or quri:uri string) &key (:buffer buffer)) t) buffer-load))
 (defun buffer-load (input-url &key (buffer (current-buffer)))
