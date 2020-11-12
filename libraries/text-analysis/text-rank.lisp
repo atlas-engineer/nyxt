@@ -105,7 +105,7 @@
                                                                  (graph-neighbor-edge-sum neighbor)))))
                             (setf converged nil))))))))
 
-(defun summarize-text (text &key (summary-length 3))
+(defun summarize-text (text &key (summary-length 3) (show-rank-p nil))
   (let ((collection (make-instance 'document-collection)))
     (loop for sentence in (sentence-tokenize text)
           do (add-document collection
@@ -115,5 +115,7 @@
     (generate-document-similarity-vectors collection)
     (text-rank collection :iteration-limit 100)
     (serapeum:take summary-length
-                   (mapcar (lambda (i) (cons (rank i) (string-contents i)))
-                           (sort (documents collection) #'> :key #'rank)))))
+                   (mapcar (if show-rank-p
+                               (lambda (i) (cons (rank i) (string-contents i)))
+                               #'string-contents)
+                    (sort (documents collection) #'> :key #'rank)))))
