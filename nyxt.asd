@@ -225,6 +225,8 @@
 
 (asdf:defsystem nyxt/text-analysis
   :depends-on (:str
+               :serapeum
+               :alexandria
                :cl-ppcre)
   :pathname "libraries/text-analysis/"
   :components ((:file "package")
