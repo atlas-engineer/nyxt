@@ -413,7 +413,7 @@ The version number is stored in the clipboard."
 
 (define-command list-messages ()
   "Show the *Messages* buffer."
-  (with-current-html-buffer (buffer "*Messages*" 'message-mode)
+  (with-current-html-buffer (buffer "*Messages*" 'nyxt/message-mode:message-mode)
     (markup:markup
      (:style (style buffer))
      (:h1 "Messages")
