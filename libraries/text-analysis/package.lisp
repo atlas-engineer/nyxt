@@ -7,4 +7,5 @@
   (:use :common-lisp)
   (:export
    #:document
-   #:keywords))
+   #:keywords
+   #:summarize-text))
