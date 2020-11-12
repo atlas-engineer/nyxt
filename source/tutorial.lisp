@@ -101,7 +101,7 @@ the current buffer.")
     (:li (command-markup 'nyxt/web-mode:scroll-to-top) ": Jump to top of page."))
    (:h3 "Setting the URL")
    (:p "When ambiguous URLs are inputted, Nyxt will attempt the best guess it
-can. If the you do not supply a protocol in a URL, HTTPS will be assumed. To
+can. If you do not supply a protocol in a URL, HTTPS will be assumed. To
 visit a site supporting only the less secure HTTP, you must explicitly type the
 full URL including the 'http://' prefix.")
    (:ul
