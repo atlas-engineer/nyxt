@@ -20,6 +20,7 @@
     (setf (vector-form document) vector-form)))
 
 (defmethod tf-idf-vectorize ((document document) (collection document-collection) dictionary)
+  "Transform a document into a vector using tf-idf."
   (let ((vector-form (make-array (length dictionary) :initial-element 0)))
     (loop for word in dictionary
           for index from 0 below (length vector-form)
@@ -56,6 +57,7 @@
            (* (vector-sum-root document-a) (vector-sum-root document-b))))))
 
 (defmethod generate-document-similarity-vectors ((collection document-collection))
+  "Set the edge weights for all document neighbors (graph is fully connected)."
   (with-accessors ((documents documents)) collection
     (loop for document-a in documents
           do (loop for document-b in documents
