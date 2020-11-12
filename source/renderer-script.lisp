@@ -24,13 +24,10 @@ The function can be passed ARGS."
                                             (ps:ps ,@function-body))))
      ,@body))
 
+;; TODO: after implementing reader-view, utilize reader-view algorithm
+;; to get only document data ignoring images, css, etc
 (define-parenscript document-get-body (&key (limit 100000))
   (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
-
-(defun document-body (&key (limit 100000) (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript
-   buffer
-   (ps:ps (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))))
 
 (export-always '%paste)
 (define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
