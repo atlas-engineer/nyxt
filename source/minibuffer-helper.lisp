@@ -18,7 +18,7 @@ The first suggestion poses as a default.")
 
 (export-always 'if-confirm)
 (defmacro if-confirm (prompt yes-form &optional no-form)
-  "Ask the user for confirmation before executing either YES-FORM of NO-FORM.
+  "Ask the user for confirmation before executing either YES-FORM or NO-FORM.
 YES-FORM is executed on  \"yes\" answer, NO-FORM -- on \"no\".
 PROMPT is a list fed to `format nil'.
 
