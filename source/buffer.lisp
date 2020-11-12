@@ -764,6 +764,10 @@ set of useful URLs or preparing a list to send to a someone else."
                                  (:p (:b "Title: ") (title buffer))
                                  (:p (:b "URL: ") (:a :href (object-string (url buffer))
                                                       (object-string (url buffer))))
+                                 (:p (:b "Automatically generated summary: ")
+                                     (:ul
+                                      (loop for summary-bullet in (text-analysis:summarize-text (document-body :buffer buffer))
+                                            collect (markup:markup (:li summary-bullet)))))
                                  (:hr "")))))))
     (when delete (mapcar #'buffer-delete buffers))))
 

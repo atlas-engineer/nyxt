@@ -27,6 +27,11 @@ The function can be passed ARGS."
 (define-parenscript document-get-body (&key (limit 100000))
   (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
 
+(defun document-body (&key (limit 100000) (buffer (current-buffer)))
+  (ffi-buffer-evaluate-javascript
+   buffer
+   (ps:ps (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))))
+
 (export-always '%paste)
 (define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
   (let ((active-element (ps:chain document active-element))
