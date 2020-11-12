@@ -740,7 +740,7 @@ See `make-buffer'."
   (if id
       (progn
         (buffer-delete (gethash id (slot-value *browser* 'buffers)))
-        (nyxt::list-buffers))
+        (when (current-buffer) 'buffer-listing-mode (list-buffers)))
       (let ((buffers (prompt-minibuffer
                       :input-prompt "Delete buffer(s)"
                       :multi-selection-p t
