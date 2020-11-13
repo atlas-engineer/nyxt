@@ -738,14 +738,13 @@ See `make-buffer'."
 (define-command delete-buffer (&key id)
   "Delete the buffer(s) via minibuffer input."
   (if id
-      (progn
-        (buffer-delete (gethash id (slot-value *browser* 'buffers)))
-        (when (current-buffer) 'buffer-listing-mode (list-buffers)))
+      (buffer-delete (gethash id (slot-value *browser* 'buffers)))
       (let ((buffers (prompt-minibuffer
                       :input-prompt "Delete buffer(s)"
                       :multi-selection-p t
                       :suggestion-function (buffer-suggestion-filter))))
-        (mapcar #'buffer-delete buffers))))
+        (mapcar #'buffer-delete buffers)))
+  (when (find-submode (current-buffer) 'buffer-listing-mode) (list-buffers)))
 
 (define-command reduce-to-buffer (&key (delete t))
   "Reduce the buffer(s) via minibuffer input and copy their titles/URLs to a
