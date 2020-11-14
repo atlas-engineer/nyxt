@@ -40,13 +40,17 @@ amount of times word appears in the document.")
   "Add a document to the document collection."
   (push document (documents document-collection)))
 
+(defun match-term (term)
+  (lambda (document)
+    (termp document term)))
+
 (defmethod document-frequency ((document-collection document-collection) term)
-  (/ (count-if (lambda (document) (termp document term)) (documents document-collection))
+  (/ (count-if (match-term term) (documents document-collection))
      (length (documents document-collection))))
 
 (defmethod inverse-document-frequency ((document-collection document-collection) term)
   (log (/ (length (documents document-collection))
-          (count-if (lambda (document) (termp document term)) (documents document-collection)))))
+          (count-if (match-term term) (documents document-collection)))))
 
 (defmethod term-frequency-inverse-document-frequency ((document document)
                                                       (document-collection document-collection)
