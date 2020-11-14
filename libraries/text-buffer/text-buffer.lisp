@@ -102,10 +102,11 @@ make sense of this procedure."
          (end (if backward
                   (move-backward-word cursor)
                   (move-forward-word cursor))))
-    (loop repeat (abs (- beg end))
-          do (if backward
-                 (cluffer:delete-item cursor)
-                 (cluffer:erase-item cursor)))))
+    (when (numberp end)
+      (loop repeat (abs (- beg end))
+            do (if backward
+                   (cluffer:delete-item cursor)
+                   (cluffer:erase-item cursor))))))
 
 (defmethod delete-forward-word ((cursor cursor))
   "Delete characters forward until encountering the end of a word."
