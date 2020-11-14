@@ -2,7 +2,7 @@
 
 (in-package :text-analysis)
 
-(defun word-tokenize (string &key (remove-stop-words t) (stem nil) (down-case t) (alphabeticp t))
+(defun word-tokenize (string &key (remove-stop-words t) (stem nil) (down-case t) (alphabetic t))
   "Split a string into a list of words."
   (let* ((alpha-scanner (cl-ppcre:create-scanner "^[A-Za-z]*$"))
          (tokens (str:split " " (str:collapse-whitespaces string)))
@@ -15,7 +15,7 @@
          (tokens (if down-case
                      (mapcar #'string-downcase tokens)
                      tokens))
-         (tokens (if alphabeticp
+         (tokens (if alphabetic
                      (delete-if-not (lambda (x) (cl-ppcre:scan alpha-scanner x)) tokens)
                      tokens)))
     tokens))
