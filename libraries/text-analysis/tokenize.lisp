@@ -22,4 +22,6 @@
 
 (defun sentence-tokenize (string)
   "Split a string into a list of sentences."
-  (remove "" (mapcar #'str:trim (cl-ppcre:split "\\.|\\?|\\!" string)) :test #'equal))
+  ;; TODO: Use "\\p{Terminal_Punctuation}" regexp instead to catch all terminal
+  ;; punctuation marks, including "," and ";"?
+  (remove "" (mapcar #'str:trim (cl-ppcre:split "[.!?]" string)) :test #'equal))
