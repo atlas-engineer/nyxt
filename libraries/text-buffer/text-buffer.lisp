@@ -59,7 +59,7 @@ When `before' is `t', look before the cursor."
 (defmethod move-to-word ((cursor cursor) &key backward)
   "Move the cursor to the boundary of a word and return its position.
 
-Notice that a word is a string bounded by `word-separation-characters'."
+A word is a string bounded by `word-separation-characters'."
   (unless (if backward
               (cluffer:beginning-of-line-p cursor)
               (cluffer:end-of-line-p cursor))
