@@ -117,10 +117,7 @@ make sense of this procedure."
   (delete-word cursor :backward t))
 
 (defmethod kill-forward-line ((cursor cursor))
-  (let ((beg (cluffer:cursor-position cursor))
-        (end (cluffer:end-of-line cursor)))
-    (loop repeat (abs (- beg end))
-          do (cluffer:erase-item cursor))))
+  (loop while (delete-item-forward cursor)))
 
 (defmethod insert-string ((cursor cursor) string)
   (loop for char across string do
