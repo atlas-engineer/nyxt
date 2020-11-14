@@ -56,7 +56,9 @@ When `before' is `t', look before the cursor."
         (word-separation-characters cursor)
         :test #'equal))
 
-(defmethod move-to-word ((cursor cursor) &key backward)
+(defmethod move-to-word ((cursor cursor) &key backward
+                                           (conservative-word-move
+                                           conservative-word-move))
   "Move the cursor to the boundary of a word and return its position.
 
 A word is a string bounded by `word-separation-characters'."
@@ -93,15 +95,11 @@ When `over-non-word-chars' is `t' move the cursor otherwise."
   (move-to-word cursor :backward t))
 
 (defmethod delete-word ((cursor cursor) &key backward)
-  "Delete characters until encountering the boundary of a word.
-
-Notice that unless `conservative-word-move' is set to `t' it's hard to
-make sense of this procedure."
-  (let* ((conservative-word-move t)
-         (beg (cluffer:cursor-position cursor))
-         (end (if backward
-                  (move-backward-word cursor)
-                  (move-forward-word cursor))))
+  "Delete characters until encountering the boundary of a word."
+  (let ((beg (cluffer:cursor-position cursor))
+        (end (if backward
+                 (move-to-word cursor :backward t :conservative-word-move t)
+                 (move-to-word cursor :conservative-word-move t))))
     (when (numberp end)
       (loop repeat (abs (- beg end))
             do (if backward
