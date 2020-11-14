@@ -94,18 +94,22 @@
                (gethash document-b (edges document-a) 0))
              (convergedp (previous-score current-score)
                "Check if a delta qualifies for convergence."
-               (<=  (abs (- previous-score current-score)) epsilon)))
+               (<=  (abs (- previous-score current-score)) epsilon))
+             (calculate-rank (document)
+               "Calculate the rank of a document."
+               (loop for neighbor in (graph-neighbors document)
+                     sum (/ (* damping (rank neighbor) (document-similarity document neighbor))
+                            (graph-neighbor-edge-sum neighbor)))))
       (set-initial-rank)
-      (let (converged)
-        (loop for iteration from 0 to iteration-limit until converged
-              do (setf converged t)
-                 (loop for document in documents
-                       do (unless (convergedp (rank document)
-                                              (setf (rank document)
-                                                    (loop for neighbor in (graph-neighbors document)
-                                                          sum (/ (* damping (rank neighbor) (document-similarity document neighbor))
-                                                                 (graph-neighbor-edge-sum neighbor)))))
-                            (setf converged nil))))))))
+      (loop with converged = nil
+            for iteration from 0 to iteration-limit until converged
+            do (setf converged t)
+               (loop for document in documents
+                     for old-rank = (rank document)
+                     for new-rank = (calculate-rank document)
+                     do (setf (rank document) new-rank)
+                     unless (convergedp old-rank new-rank)
+                     do (setf converged nil))))))
 
 (defun summarize-text (text &key (summary-length 3) (show-rank-p nil))
   (let ((collection (make-instance 'document-collection)))
