@@ -59,7 +59,10 @@
    (stop-words-lookup :accessor stop-words-lookup)))
 
 (defmethod initialize-instance :after ((data language-data) &key)
-  (setf (stop-words-lookup data) (loop with ht = (make-hash-table :test #'equal) for stop in
-                                       (stop-words data) do (setf (gethash stop ht) t) finally (return ht))))
+  (setf (stop-words-lookup data)
+        (loop with ht = (make-hash-table :test #'equal)
+              for stop in (stop-words data)
+              do (setf (gethash stop ht) t)
+              finally (return ht))))
 
 (defparameter *language-data* (make-instance 'language-data))
