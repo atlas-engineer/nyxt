@@ -73,8 +73,6 @@ amount of times word appears in the document.")
   (if document-collection
       (sort (loop for word in (dictionary document)
                   collect (cons word (term-frequency-inverse-document-frequency
-                                      document document-collection word)))
-            #'> :key #'rest)
+                                      document document-collection word))) #'> :key #'cdr)
       (sort (loop for word in (dictionary document)
-                  collect (cons word (term-frequency document word)))
-            #'> :key #'rest)))
+                  collect (cons word (term-frequency document word))) #'> :key #'cdr)))
