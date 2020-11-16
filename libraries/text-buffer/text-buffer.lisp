@@ -12,10 +12,6 @@
     :accessor word-separation-characters
     :initform '(":" "/" "." " " " "))))
 
-(defvar conservative-word-move nil
-  "If non-nil, the cursor moves to the end (resp. beginning) of the word
-  when `move-forward-word' (resp. `move-backward-word') is called.")
-
 (defmethod string-representation ((buffer text-buffer))
   (with-output-to-string (out)
     (map nil (lambda (string)
@@ -56,9 +52,10 @@ When `before' is `t', look before the cursor."
         (word-separation-characters cursor)
         :test #'equal))
 
-(defmethod move-to-word ((cursor cursor) &key backward
-                                           (conservative-word-move
-                                           conservative-word-move))
+(defmethod move-to-word ((cursor cursor)
+                         &key backward
+                           (conservative-word-move
+                            (nyxt::conservative-word-move buffer)))
   "Move the cursor to the boundary of a word and return its position.
 
 A word is a string bounded by `word-separation-characters'."
@@ -92,12 +89,12 @@ When `over-non-word-chars' is `t' move the cursor otherwise."
 
 (defmethod move-forward-word ((cursor cursor)
                               &key (conservative-word-move
-                                    conservative-word-move))
+                                    (nyxt::conservative-word-move buffer)))
   (move-to-word cursor))
 
 (defmethod move-backward-word ((cursor cursor)
                                &key (conservative-word-move
-                                     conservative-word-move))
+                                     (nyxt::conservative-word-move buffer)))
   (move-to-word cursor :backward t))
 
 (defmethod delete-word ((cursor cursor) &key backward)
