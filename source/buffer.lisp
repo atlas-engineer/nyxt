@@ -65,6 +65,11 @@ query is not a valid URL, or the first keyword is not recognized.")
      :combination #'hooks:combine-composed-hook)
     :type hook-keymaps-buffer
     :documentation "Hook run as a return value of `current-keymaps'.")
+   (conservative-word-move
+    nil
+    :documentation "If non-nil, the cursor moves to the end
+(resp. beginning) of the word when `move-forward-word'
+(resp. `move-backward-word') is called.")
    (override-map (let ((map (make-keymap "overide-map")))
                    (define-key map
                      "C-space" 'execute-command))
