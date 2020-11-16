@@ -39,23 +39,33 @@ package managers like Nix or Guix."))
   (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" form) "\\1"))
 
 (defun guix-eval (form &rest more-forms)
-  ;; TODO: "guix repl" is a reliable way to execute Guix code, sadly it does not
-  ;; seem to support standard input.  Report upstream?  Alternatively, use Guile
-  ;; the way emacs-guix.el does it, but it does not seem reliable.
   "Evaluate forms in Guix REPL.
 Return the REPL output (including the error output) as a string."
   (let ((*package* (find-package :ospama)) ; Need to be in this package to avoid prefixing symbols with current package.
         (*print-case* :downcase))
-    (uiop:with-temporary-file (:pathname p)
-      (with-open-file (s p :direction :output :if-exists :append)
-        (dolist (f (cons form more-forms))
-          (write-string
-           ;; Backslashes in Common Lisp are doubled, unlike Guile.
-           (str:replace-all
-            "\\\\" "\\"
-            (cl->scheme-syntax f))
-           s)))
-      (uiop:run-program `(,(path *manager*) "repl" ,(namestring p))
+    (with-input-from-string (s (str:join (string #\newline)
+                                         (mapcar (lambda (form)
+                                                   (str:replace-all
+                                                    ;; Backslashes in Common Lisp are doubled, unlike Guile.
+                                                    "\\\\" "\\"
+                                                    (cl->scheme-syntax form)))
+                                                 (cons form more-forms))))
+      ;; REVIEW: Upstream bug causes REPL information to be displayed unless
+      ;; /dev/stdin is passed as argument.
+      ;; https://issues.guix.info/issue/44612
+      ;; TODO: Instead of spawning a process all the time, we could keep it alive with
+      ;; https://github.com/archimag/cl-popen/.
+      ;; The following snippet shows how we can write multiple times to the
+      ;; input of a same process:
+      ;; (popen:with-popen2 ("guix repl -t machine /dev/stdin" guix in out)
+      ;;   (write-line "(display \"Hello...\\n\")" in)
+      ;;   (write-line "(display \"...World!\\n\")" in)
+      ;;   (close in)
+      ;;   (list (read-line out nil :eod)
+      ;;         (read-line out nil :eof)
+      ;;         (read-line out nil :eof)))
+      (uiop:run-program '("guix" "repl" "-q" "--type=machine" "/dev/stdin")
+                        :input s
                         :output '(:string :stripped t)
                         :error-output :output))))
 
