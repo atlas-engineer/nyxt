@@ -90,18 +90,22 @@ When `over-non-word-chars' is `t' move the cursor otherwise."
           (move-to-boundary))))
   (cluffer:cursor-position cursor))
 
-(defmethod move-forward-word ((cursor cursor))
+(defmethod move-forward-word ((cursor cursor)
+                              &key (conservative-word-move
+                                    conservative-word-move))
   (move-to-word cursor))
 
-(defmethod move-backward-word ((cursor cursor))
+(defmethod move-backward-word ((cursor cursor)
+                               &key (conservative-word-move
+                                     conservative-word-move))
   (move-to-word cursor :backward t))
 
 (defmethod delete-word ((cursor cursor) &key backward)
   "Delete characters until encountering the boundary of a word."
   (let ((beg (cluffer:cursor-position cursor))
         (end (if backward
-                 (move-to-word cursor :backward t :conservative-word-move t)
-                 (move-to-word cursor :conservative-word-move t))))
+                 (move-backward-word cursor :conservative-word-move t)
+                 (move-forward-word cursor :conservative-word-move t))))
     (when (numberp end)
       (loop repeat (abs (- beg end))
             do (if backward
