@@ -21,11 +21,13 @@
     (prove:is (ospama:name (ospama:parent-package
                             (first (ospama:list-packages *test-profile*))))
               *test-package-name*)
-    (setf process-info (ospama:uninstall (list (ospama:find-os-package *test-package-name*))
+    (setf process-info (ospama:uninstall (list (first (ospama:list-packages *test-profile*)))
                                          *test-profile*))
     (uiop:wait-process process-info)
     ;; TODO: Delete *test-profile* afterwards?
-    (prove:ok (null (ospama:list-packages *test-profile*)))))
+    (prove:is (ospama:list-packages *test-profile*)
+              nil
+              "final profile is empty")))
 
 (prove:subtest "Install manifest to temp profile"
   (uiop:ensure-all-directories-exist
