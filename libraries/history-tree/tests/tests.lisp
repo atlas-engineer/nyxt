@@ -56,9 +56,9 @@
 (prove:subtest
     "Reorder the nodes."
   (prove:is (htree:all-nodes-data
-             (htree:find-child
+             (htree:go-to-child
                "http://example.root/A2"
-              (htree:find-child
+              (htree:go-to-child
                "http://example.root/A"
                (htree:back (make-tree1) 2))))
             '("http://example.root"
