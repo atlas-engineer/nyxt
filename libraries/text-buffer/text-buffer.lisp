@@ -1,8 +1,6 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-
-
 (in-package :text-buffer)
 
 (defclass text-buffer (cluffer-simple-line:line) ())
@@ -24,12 +22,12 @@
 (defmethod safe-forward ((cursor cursor))
   (unless (cluffer:end-of-line-p cursor)
     (cluffer:forward-item cursor)
-    t))
+    (cluffer:item-before-cursor cursor)))
 
 (defmethod safe-backward ((cursor cursor))
   (unless (cluffer:beginning-of-line-p cursor)
     (cluffer:backward-item cursor)
-    t))
+    (cluffer:item-after-cursor cursor)))
 
 (defmethod delete-item-forward ((cursor cursor))
   (unless (cluffer:end-of-line-p cursor)
@@ -114,13 +112,19 @@ position. A word is a string bounded by `word-separation-characters'."
         (cluffer:insert-item cursor (string char))))
 
 (defmethod word-at-cursor ((cursor cursor))
-    "Return word at cursor.
-If cursor is between two words, return the first one."
-  (let ((cursor-position (cluffer:cursor-position cursor)))
-    (move-backward-word cursor)
-    (let ((word-at-cursor (apply #'concatenate 'string (move-forward-word cursor))))
-      (setf (cluffer:cursor-position cursor) cursor-position)
-      word-at-cursor)))
+    "Return word at cursor. If cursor is between two words, return the
+first one."
+  (let* ((original-cursor-position (cluffer:cursor-position cursor))
+         (cursor-back-position (move-backward-word cursor))
+         (starting-cursor-position (cluffer:cursor-position cursor))
+         (delta (abs (- starting-cursor-position
+                        (move-forward-word cursor))))
+         (word-at-cursor (apply #'concatenate 'string
+                                (loop repeat delta
+                                      collect (safe-backward cursor)))))
+    (declare (ignore cursor-back-position))
+    (setf (cluffer:cursor-position cursor) original-cursor-position)
+    (reverse word-at-cursor)))
 
 (defmethod replace-word-at-cursor ((cursor cursor) string)
   (unless (uiop:emptyp (word-at-cursor cursor))
