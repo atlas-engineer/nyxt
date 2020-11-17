@@ -59,7 +59,9 @@
   "Move cursor forwards a word."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
-      (text-buffer::move-forward-word cursor)
+      (text-buffer::move-forward-word cursor
+                                      :conservative-word-move
+                                      (conservative-word-move (current-buffer)))
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
@@ -67,7 +69,9 @@
   "Move cursor backwards a word."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
-      (text-buffer::move-backward-word cursor)
+      (text-buffer::move-backward-word cursor
+                                      :conservative-word-move
+                                      (conservative-word-move (current-buffer)))
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 

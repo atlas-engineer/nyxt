@@ -53,9 +53,7 @@ When `before' is `t', look before the cursor."
         :test #'equal))
 
 (defmethod move-to-word ((cursor cursor)
-                         &key backward
-                           (conservative-word-move
-                            (nyxt::conservative-word-move buffer)))
+                         &key backward conservative-word-move)
   "Move the cursor to the boundary of a word and return its position.
 
 A word is a string bounded by `word-separation-characters'."
@@ -87,15 +85,12 @@ When `over-non-word-chars' is `t' move the cursor otherwise."
           (move-to-boundary))))
   (cluffer:cursor-position cursor))
 
-(defmethod move-forward-word ((cursor cursor)
-                              &key (conservative-word-move
-                                    (nyxt::conservative-word-move buffer)))
-  (move-to-word cursor))
+(defmethod move-forward-word ((cursor cursor) &key conservative-word-move)
+  (move-to-word cursor :conservative-word-move (if conservative-word-move t nil)))
 
-(defmethod move-backward-word ((cursor cursor)
-                               &key (conservative-word-move
-                                     (nyxt::conservative-word-move buffer)))
-  (move-to-word cursor :backward t))
+(defmethod move-backward-word ((cursor cursor) &key conservative-word-move)
+  (move-to-word cursor :backward t
+                       :conservative-word-move (if conservative-word-move t nil)))
 
 (defmethod delete-word ((cursor cursor) &key backward)
   "Delete characters until encountering the boundary of a word."
