@@ -145,8 +145,8 @@ Current node is then updated to the first child if it holds DATA."
   (cond
     ((null (current history))
      (let ((new-node (make-node :data data)))
-        (setf (root history) new-node)
-        (setf (current history) (root history))
+       (setf (root history) new-node)
+       (setf (current history) (root history))
        new-node))
     ((not (funcall test data (data (current history))))
      (let ((node (delete-child data history :test test)))
@@ -154,27 +154,66 @@ Current node is then updated to the first child if it holds DATA."
                    (setf (data node) data)
                    node)
                  (make-node :data data :parent (current history)))
-              (children (current history)))
-        (forward history)
+             (children (current history)))
+       (forward history)
        (current history)))
     (t
      (setf (data (current history)) data)
      (current history))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'map-tree))
+(defun map-tree (function tree &key flatten include-root (collect-function #'cons))
+  "Map the FUNCTION over the TREE.
+If TREE is a `htree:history-tree', start from it's root.
+If TREE is a `htree:node', start from it.
+Include results of applying FUNCTION over ROOT if INCLUDE-ROOT is
+non-nil.
+Return results as cons cells tree if FLATTEN is nil and as a flat
+list otherwise.
+COLLECT-FUNCTION is the function of two arguments that glues the
+current node to the result of further traversal."
+  (labels ((collect (node children)
+             (funcall collect-function node children))
+           (traverse (node)
+             (when node
+               (collect (funcall function node)
+                 ;; This lambda here because (apply #'identity ...) fails on empty arglist.
+                 (apply (if flatten #'append #'(lambda (&rest args) args))
+                        (mapcar #'traverse (children node)))))))
+    (let ((root (typecase tree
+                  (htree:node tree)
+                  (htree:history-tree (htree:root tree)))))
+      (when root
+        (if include-root
+            (traverse root)
+            (apply #'append (mapcar #'traverse (children root))))))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'do-tree))
+(defmacro do-tree ((var tree) &body body)
+  "Apply actions in BODY to all the nodes in a tree.
+Nodes are bound to VAR.
+If TREE is a node, if's passed right away,
+if it is a tree, then the root is taken.
+
+Always return nil, as it is an explicitly imperative macro."
+  `(progn
+     (map-tree (lambda (,var) ,@body) ,tree :include-root t)
+     ;; Explicitly return nil
+     nil))
 
 
 (defmethod all-children ((node node))
-  (labels ((traverse (node)
-             (when node
-               (cons node
-                     (apply #'append (mapcar #'traverse (children node)))))))
-    (apply #'append (mapcar #'traverse (children node)))))
+  (map-tree #'identity node :flatten t))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'all-nodes))
 (defmethod all-nodes ((history history-tree))
   "Return a list of all nodes, in depth-first order."
-  (cons (root history) (all-children (root history))))
+  (let ((root (root history)))
+    (when root
+      (cons root (all-children root)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'parent-nodes))
@@ -243,11 +282,11 @@ First child comes first."
   "Find a tree node matching DATA in HISTORY and return it.
 If ENSURE-P is non-nil, create this node when not found.
 Search is done with the help of TEST argument."
-  ;; TODO: Use caching to speed access up?
-  (let ((match (find data (htree:all-nodes history) :key #'data :test test)))
-    (if (and (not match) ensure-p)
-        (htree:add-child data history :test test)
-        match)))
+  (let ((match (block search
+                 (do-tree (node history)
+                   (when (funcall test data (data node))
+                     (return-from search node))))))
+    (or match (when ensure-p (add-child data history :test test)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'delete-node))
@@ -256,11 +295,14 @@ Search is done with the help of TEST argument."
 If the node has children itself, and REBIND-CHILDREN-P is not nil, these
 will become children of the node's parent. Search is done with the
 help of TEST argument."
-  (let* ((child (find data (htree:all-nodes history)
-                      :key #'data :test test))
-         (parent (htree:parent child)))
-    (setf (htree:children parent) (append (when rebind-children-p (htree:children child))
-                                          (remove child (htree:children parent))))))
+  ;; TODO: This (block ... (map-tree ... (return-from ...))) repeats. Abstract it?
+  (block delete
+    (do-tree (node history)
+      (when (funcall test data (data node))
+        (setf (children (parent node))
+              (append (when rebind-children-p (children node))
+                      (remove node (children (parent node)))))
+        (return-from delete node)))))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
