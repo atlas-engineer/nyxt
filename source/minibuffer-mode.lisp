@@ -192,14 +192,18 @@ complete against a search engine."
 
 (define-command cursor-forwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the end of the word at point."
-  (text-buffer::move-forward-word (input-cursor minibuffer))
+  (text-buffer::move-forward-word (input-cursor minibuffer)
+                                  :conservative-word-move
+                                  (conservative-word-move (current-buffer)))
   (state-changed minibuffer)
   (update-input-buffer-display minibuffer)
   (cluffer:cursor-position (input-cursor minibuffer)))
 
 (define-command cursor-backwards-word (&optional (minibuffer (current-minibuffer)))
   "Move cursor to the beginning of the word at point."
-  (text-buffer::move-backward-word (input-cursor minibuffer))
+  (text-buffer::move-backward-word (input-cursor minibuffer)
+                                   :conservative-word-move
+                                   (conservative-word-move (current-buffer)))
   (state-changed minibuffer)
   (update-input-buffer-display minibuffer)
   (cluffer:cursor-position (input-cursor minibuffer)))

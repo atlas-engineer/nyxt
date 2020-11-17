@@ -97,12 +97,16 @@
 
 (define-command cursor-forwards-word (&optional (repl (current-repl)))
   "Move cursor forwards a word."
-  (text-buffer::move-forward-word (input-cursor repl))
+  (text-buffer::move-forward-word (input-cursor repl)
+                                  :conservative-word-move
+                                  (conservative-word-move (current-buffer)))
   (update-input-buffer-display repl))
 
 (define-command cursor-backwards-word (&optional (repl (current-repl)))
   "Move cursor backwards a word."
-  (text-buffer::move-backward-word (input-cursor repl))
+  (text-buffer::move-backward-word (input-cursor repl)
+                                   :conservative-word-move
+                                   (conservative-word-move (current-buffer)))
   (update-input-buffer-display repl))
 
 (define-command delete-backwards-word (&optional (repl (current-repl)))
@@ -152,7 +156,7 @@
 
 (defmethod update-evaluation-history-display ((repl repl-mode))
   (flet ((generate-evaluation-history-html (repl)
-           (markup:markup 
+           (markup:markup
             (:ul (loop for item in (reverse (evaluation-history repl))
                        collect (markup:markup
                                 (:li item)))))))
