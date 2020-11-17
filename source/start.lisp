@@ -397,9 +397,11 @@ Otherwise bind socket."
                                                            #'symbol-name
                                                            #'opts::name)
                                              opts::*options*))
-  "Start the browser, loading URLs if any.
+    (format nil "Start the browser, loading URLs if any.
 URLs is a list of strings.
 The OPTIONS are the same as the command line options.
+
+~a
 
 Examples:
 
@@ -410,6 +412,7 @@ Examples:
   open the given URLs.
   (nyxt:start '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
               :verbose t :with-path '(\"history\" \"/tmp/nyxt/history.lisp\"))"
+            (with-output-to-string (s) (opts:describe :stream s)))
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
 

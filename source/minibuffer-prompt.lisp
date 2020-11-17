@@ -1,10 +1,13 @@
 (in-package :nyxt)
 
-(defmacro define-function (name args &body body)
-  "Eval ARGS then define function over the resulting lambda list.
+(defmacro define-function (name args docstring &body body)
+  "Eval ARGS and DOCSTRING then define function over the resulting lambda list
+and string.
 All ARGS are declared as `ignorable'."
-  (let ((evaluated-args (eval args)))
-    `(defun ,name  ,evaluated-args
+  (let ((evaluated-args (eval args))
+        (evaluated-docstring (eval docstring)))
+    `(defun ,name ,evaluated-args
+       ,evaluated-docstring
        (declare (ignorable ,@(set-difference (mapcar (lambda (arg) (if (listp arg) (first arg) arg))
                                                      evaluated-args)
                                              lambda-list-keywords)))
@@ -17,6 +20,7 @@ All ARGS are declared as `ignorable'."
             (delete 'input-buffer
                     (public-initargs 'minibuffer))
             '((input-buffer nil explicit-input-buffer)))
+    "Return a new minibuffer instance."
   (let ((tmp-input-buffer (make-instance 'text-buffer:text-buffer))
         (tmp-input-cursor (make-instance 'text-buffer:cursor)))
     (cluffer:attach-cursor tmp-input-cursor tmp-input-buffer)
