@@ -769,7 +769,7 @@ set of useful URLs or preparing a list to send to a someone else."
                      (:p (:b "Automatically generated summary: ")
                          (:ul
                           (loop for summary-bullet in (text-analysis:summarize-text
-                                                       (plump:text (plump:parse (document-get-body :limit 10000))))
+                                                       (document-get-paragraph-contents :limit 10000))
                                 collect (markup:markup (:li (str:collapse-whitespaces summary-bullet))))))
                      (:hr ""))))))))
     (when delete (mapcar #'buffer-delete buffers))))
