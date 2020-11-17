@@ -46,7 +46,7 @@
                      "f1 s" 'describe-slot
                      "f1 k" 'describe-key
                      "f1 b" 'describe-bindings
-                     "f11" 'fullscreen-current-window
+                     "f11" 'toggle-fullscreen
                      "C-o" 'load-file
                      "C-j" 'list-downloads
                      "C-space" 'execute-command
