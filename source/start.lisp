@@ -54,9 +54,7 @@ Return nil if `*init-file-path*' is nil."
   (opts:describe)
   (uiop:quit))
 
-(defun parse-cli-args ()
-  "Parse command line arguments."
-  (opts:define-opts
+(opts:define-opts
     (:name :help
            :description "Print this help and exit."
            :short #\h
@@ -139,10 +137,6 @@ Known profiles are found among global variables that are a subclass of
 Can be specified multiple times.  An empty path means it won't be used.
 Example: --with-path bookmarks=/path/to/bookmarks
          --with-path session="))
-  (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
-                 (opts:missing-arg #'handle-malformed-cli-arg)
-                 (opts:arg-parser-failed #'handle-malformed-cli-arg))
-    (opts:get-opts)))
 
 (define-command quit ()
   "Quit Nyxt."
@@ -198,10 +192,13 @@ before running this command."
 This is the entry point of the binary program.
 Don't run this from a REPL, prefer `start' instead."
   (multiple-value-bind (options free-args)
-      (parse-cli-args)
+      (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
+                     (opts:missing-arg #'handle-malformed-cli-arg)
+                     (opts:arg-parser-failed #'handle-malformed-cli-arg))
+        (opts:get-opts))
     (setf *keep-alive* nil)             ; Not a REPL.
     (in-package :nyxt-user)
-    (apply #'start options free-args)))
+    (apply #'start free-args options)))
 
 (declaim (ftype (function (trivial-types:pathname-designator &key (:package (or null package))))
                 load-lisp))
@@ -395,20 +392,24 @@ Otherwise bind socket."
         (uiop:quit))))
 
 (export-always 'start)
-(defun start (&optional options &rest free-args)
-  "Parse options (either from command line or from the REPL) and perform the
-corresponding action.
-With no action, start the browser.
+(define-function start `(urls &rest options
+                              &key ,@(mapcar (alex:compose #'intern
+                                                           #'symbol-name
+                                                           #'opts::name)
+                                             opts::*options*))
+  "Start the browser, loading URLs if any.
+URLs is a list of strings.
+The OPTIONS are the same as the command line options.
 
-REPL examples:
+Examples:
 
 - Display version and return immediately:
-  (nyxt:start '(:version t))
+  (nyxt:start :version t)
 
 - Start the browser with increased verbosity, a different history data path and
   open the given URLs.
-  (nyxt:start '(:verbose t :with-path (\"history\" \"/tmp/nyxt/history.lisp\"))
-              \"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")"
+  (nyxt:start '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
+              :verbose t :with-path '(\"history\" \"/tmp/nyxt/history.lisp\"))"
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
 
@@ -425,7 +426,7 @@ REPL examples:
   (if (getf *options* :verbose)
       (progn
         (log:config :debug)
-        (format t "Arguments parsed: ~a and ~a~&" *options* free-args))
+        (format t "Arguments parsed: ~a and ~a~&" *options* urls))
       (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
   (cond
@@ -459,7 +460,7 @@ REPL examples:
      (start-load-or-eval))
 
     (t
-     (start-browser free-args)))
+     (start-browser urls)))
 
   (unless *keep-alive* (uiop:quit)))
 
