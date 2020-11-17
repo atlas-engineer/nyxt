@@ -251,7 +251,14 @@ data-manager will store the data separately for each buffer."))
        (gobject:g-signal-connect
         gtk-object "destroy"
         (lambda (widget) (declare (ignore widget))
-          (on-signal-destroy window)))))))
+          (on-signal-destroy window)))
+       (gobject:g-signal-connect
+        gtk-object "window-state-event"
+        (lambda (widget event) (declare (ignore widget))
+          (setf (fullscreen-p window)
+                (find :fullscreen
+                      (gdk:gdk-event-window-state-new-window-state event)))
+          nil))))))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer

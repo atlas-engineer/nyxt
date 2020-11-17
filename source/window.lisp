@@ -16,6 +16,10 @@
              :export nil
              :type (or null keymap:key)
              :documentation "Last last pressed key.  Useful for `self-insert'.")
+   (fullscreen-p nil
+                 :export nil
+                 :type boolean
+                 :documentation "Remember if window is fullscreen of not.")
    ;; TODO: each frame should have a status buffer, not each window
    (status-buffer :export nil)
    (message-buffer-height 16
@@ -147,13 +151,11 @@ The handlers take the window as argument."))
     (window-set-active-buffer window buffer)
     (values window buffer)))
 
-(define-command fullscreen-current-window (&optional (window (current-window)))
+(define-command toggle-fullscreen (&optional (window (current-window)))
   "Fullscreen WINDOW, or the currently active window if unspecified."
-  (ffi-window-fullscreen window))
-
-(define-command unfullscreen-current-window (&optional (window (current-window)))
-  "Unfullscreen WINDOW, or the currently active window if unspecified."
-  (ffi-window-unfullscreen window))
+  (if (fullscreen-p window)
+      (ffi-window-unfullscreen window)
+      (ffi-window-fullscreen window)))
 
 (define-command toggle-toolbars (&optional (window (current-window)))
   "Toggle the visibility of the message and status buffer areas."
