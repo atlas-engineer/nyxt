@@ -119,12 +119,12 @@ first one."
          (starting-cursor-position (cluffer:cursor-position cursor))
          (delta (abs (- starting-cursor-position
                         (move-forward-word cursor))))
-         (word-at-cursor (apply #'concatenate 'string
-                                (loop repeat delta
-                                      collect (safe-backward cursor)))))
+         (word-at-cursor (reverse (apply #'concatenate 'string
+                                         (loop repeat delta
+                                               collect (safe-backward cursor))))))
     (declare (ignore cursor-back-position))
     (setf (cluffer:cursor-position cursor) original-cursor-position)
-    (reverse word-at-cursor)))
+    word-at-cursor))
 
 (defmethod replace-word-at-cursor ((cursor cursor) string)
   (unless (uiop:emptyp (word-at-cursor cursor))
