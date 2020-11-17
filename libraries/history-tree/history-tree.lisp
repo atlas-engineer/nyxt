@@ -86,7 +86,7 @@ be chained."
 (defmethod forward ((history history-tree) &optional (count 1))
   "Go COUNT first-children down from the current node.
 Return (VALUES HISTORY (CURRENT HISTORY)) so that `back', `forward', and
-`find-child' calls can be chained."
+`go-to-child' calls can be chained."
   (when (and (current history)
              (children (current history)))
     (setf (current history) (first (children (current history))))
@@ -96,12 +96,12 @@ Return (VALUES HISTORY (CURRENT HISTORY)) so that `back', `forward', and
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'find-child))
-(defmethod find-child (data (history history-tree) &key (test #'equal))
+  (export 'go-to-child))
+(defmethod go-to-child (data (history history-tree) &key (test #'equal))
   "Go to direct current node's child matching DATA.
 Test is done with the TEST argument.
 Return (VALUES HISTORY (CURRENT HISTORY)) so that `back', `forward', and
-`find-child' calls can be chained."
+`go-to-child' calls can be chained."
   (when (current history)
     (let ((selected-child))
       (setf (children (current history))
