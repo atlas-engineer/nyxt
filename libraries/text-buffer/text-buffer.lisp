@@ -54,22 +54,18 @@ before/after the cursor position."
 (defmethod move-to-word ((cursor cursor) &key direction conservative-word-move)
   "Move the cursor to the boundary of a word and return its
 position. A word is a string bounded by `word-separation-characters'."
-  (labels
-      ((line-limits-p ()
-         (if (eq direction :backward)
-             (cluffer:beginning-of-line-p cursor)
-             (cluffer:end-of-line-p cursor)))
-       (move-to-boundary (&key over-non-word-chars)
-         "Move the cursor while it finds `word-separation-characters'
-          adjacent to it. When `over-non-word-chars' is `t' move the
-          cursor otherwise."
-         (loop while (and (not (line-limits-p)) 
-                          (if over-non-word-chars
-                              (word-separation-chars-at-cursor-p cursor :direction direction)
-                              (not (word-separation-chars-at-cursor-p cursor :direction direction))))
-               do (if (eq direction :backward)
-                      (cluffer:backward-item cursor)
-                      (cluffer:forward-item cursor)))))
+  (labels ((move-to-boundary (&key over-non-word-chars)
+             "Move the cursor while it finds
+              `word-separation-characters' adjacent to it. When
+              `over-non-word-chars' is `t' move the cursor otherwise."
+             (loop named movement
+                   while (if over-non-word-chars
+                             (word-separation-chars-at-cursor-p cursor :direction direction)
+                             (not (word-separation-chars-at-cursor-p cursor :direction direction)))
+                   unless (if (eq direction :backward)
+                              (safe-backward cursor)
+                              (safe-forward cursor))
+                   do (return-from movement))))
     (if (word-separation-chars-at-cursor-p cursor :direction direction)
         (progn (move-to-boundary :over-non-word-chars t)
                (when conservative-word-move (move-to-boundary)))
