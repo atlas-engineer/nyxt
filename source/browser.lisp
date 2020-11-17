@@ -43,7 +43,7 @@ Without handler, return ARG.  This is an acceptable `combination' for
   ((remote-execution-p nil
                        :type boolean
                        :documentation "When non-nil, execute Lisp code that is sent to the socket.
-You must understand the risks before enabling this: a privliged user with access
+You must understand the risks before enabling this: a privileged user with access
 to your system can then take control of the browser and execute arbitrary code
 under your user profile.")
 ;; TODO: is it always user's data? Better name maybe?
