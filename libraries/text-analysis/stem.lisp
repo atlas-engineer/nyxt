@@ -1,6 +1,16 @@
 (in-package :text-analysis)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The software is completely free for any purpose, unless notes at
+;; the head of the program text indicates otherwise (which is
+;; rare). In any case, the notes about licensing are never more
+;; restrictive than the BSD License.
+;
+;; In every case where the software is not written by me (Martin
+;; Porter), this licensing arrangement has been endorsed by the
+;; contributor, and it is therefore unnecessary to ask the contributor
+;; again to confirm it.
+;
 ;; The Porter Stemming Algorithm, somewhat mechanically hand translated to Common Lisp by
 ;; Steven M. Haflich smh@franz.com Feb 2002.  Most of the inline comments refer to the
 ;; original C code.  At the time of this translation the code passes the associated Porter
