@@ -29,6 +29,15 @@ The function can be passed ARGS."
 (define-parenscript document-get-body (&key (limit 100000))
   (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
 
+(define-parenscript document-get-paragraph-contents (&key (limit 100000))
+  (defun qsa (context selector)
+    (ps:chain context (query-selector-all selector)))
+  (let ((result ""))
+    (loop for element in (qsa document (list "p"))
+          do (setf result (+ result
+                             (ps:chain element text-content))))
+    (ps:chain result (slice 0 (ps:lisp limit)))))
+
 (export-always '%paste)
 (define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
   (let ((active-element (ps:chain document active-element))
