@@ -39,8 +39,8 @@ Example use:
   :suggestion-function #'my-suggestion-filter)
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
-  (let ((channel (make-instance 'chanl:bounded-channel :size 1))
-        (interrupt-channel (make-instance 'chanl:bounded-channel :size 1)))
+  (let ((channel (make-bounded-channel 1))
+        (interrupt-channel (make-bounded-channel 1)))
     (ffi-within-renderer-thread
      *browser*
      (lambda ()
@@ -62,7 +62,7 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
                 (unless (suggestion-function minibuffer)
                   ;; We don't need so much height since there is no suggestion to display.
                   (list :height (minibuffer-open-single-line-height (current-window))))))))
-    (let ((result (chanl:recv channel)))
-      (if (chanl:recv interrupt-channel :blockp nil)
+    (let ((result (calispel:? channel)))
+      (if (calispel:? interrupt-channel 0)
           (error 'nyxt-minibuffer-canceled)
           result))))

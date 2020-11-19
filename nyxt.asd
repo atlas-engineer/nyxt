@@ -7,7 +7,8 @@
   :serial t
   :depends-on (:alexandria
                :bordeaux-threads
-               :chanl
+               :calispel
+               :eager-future2
                :cl-css
                :cl-json
                :cl-markup
@@ -205,7 +206,8 @@
                    :compression (not (null (uiop:getenv "NYXT_COMPRESS")))))
 
 (asdf:defsystem nyxt/download-manager
-  :depends-on (chanl
+  :depends-on (calispel
+               eager-future2
                cl-ppcre
                dexador
                log4cl
