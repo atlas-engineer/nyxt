@@ -139,6 +139,10 @@ Example:
             :initial-value %slot-default))))")
    (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
+   (clean-dead-history-p nil
+                         :type boolean
+                         :documentation "Whether the buffer-local history will be deleted
+from the global history tree on buffer deletion.")
    (scroll-distance 50
                     :documentation "The distance scroll-down or scroll-up will scroll.")
    (horizontal-scroll-distance 50
@@ -595,7 +599,8 @@ Rebinds the history to the oldest child otherwise."
         (window-set-active-buffer parent-window
                                   replacement-buffer)))
     (ffi-buffer-delete buffer)
-    (buffer-local-history-clean buffer)
+    (when (clean-dead-history-p buffer)
+      (buffer-local-history-clean buffer))
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)
     (store (data-profile buffer) (history-path buffer))))
