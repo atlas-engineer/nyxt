@@ -66,7 +66,8 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
                 (unless (suggestion-function minibuffer)
                   ;; We don't need so much height since there is no suggestion to display.
                   (list :height (minibuffer-open-single-line-height (current-window))))))))
-    (let ((result (calispel:? channel)))
-      (if (calispel:? interrupt-channel 0)
-          (error 'nyxt-minibuffer-canceled)
-          result))))
+    (calispel:fair-alt
+      ((calispel:? channel result)
+       result)
+      ((calispel:? interrupt-channel)
+       (error 'nyxt-minibuffer-canceled)))))
