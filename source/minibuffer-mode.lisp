@@ -114,8 +114,8 @@ complete against a search engine."
                                               suggestion))
                      nyxt::suggestions))
        (calispel:! (channel minibuffer) (if multi-selection-p
-                                          nyxt::suggestions
-                                          (first nyxt::suggestions))))
+                                            nyxt::suggestions
+                                            (first nyxt::suggestions))))
       (nil (when invisible-input-p
              (calispel:! (channel minibuffer) (input-buffer minibuffer))))))
   (quit-minibuffer minibuffer))
@@ -129,12 +129,11 @@ complete against a search engine."
   (unless (or (null (history minibuffer))
               (str:empty? (input-buffer minibuffer)))
     (containers:insert-item (history minibuffer) (input-buffer minibuffer)))
-  (cancel-input minibuffer))
+  (hide minibuffer))
 
 (define-command cancel-input (&optional (minibuffer (current-minibuffer)))
   "Close the minibuffer query without further action."
-  (match (cleanup-function minibuffer)
-    ((guard f f) (funcall-safely f)))
+  (calispel:! (interrupt-channel minibuffer) t)
   (hide minibuffer))
 
 (define-command self-insert-minibuffer ()
