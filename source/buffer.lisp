@@ -301,6 +301,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :color "lightgray"
                 :background-color "lightgray")
                (.button
+                :display "inline-block"
                 :background-color "darkgray"
                 :color "white"
                 :text-decoration "none"
