@@ -8,7 +8,8 @@
 is blocking, invoke on a separate thread when possible."
   (uiop:with-temporary-file (:directory (uiop:xdg-data-home +data-root+) :pathname p)
     (log:debug "External Editor: ~a opening: ~a" (external-editor-program *browser*) p)
-    (uiop:run-program (list (external-editor-program *browser*) (uiop:native-namestring p)))
+    (uiop:run-program (list (external-editor-program *browser*) (uiop:native-namestring p))
+                      :ignore-error-status t)
     (uiop:read-file-string p)))
 
 (define-command fill-input-from-external-editor ()
