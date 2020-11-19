@@ -122,7 +122,7 @@ Only send if last update was more than `update-interval' seconds ago."
          (time-diff (- new-time (last-update download))))
     (when (or (< (update-interval download) time-diff)
               (finished-p download))
-      (chanl:send *notifications* download)
+      (calispel:! *notifications* download)
       (setf (last-update-speed download)
             (if (= 0 time-diff)
                 0
@@ -144,13 +144,13 @@ If DIRECTORY is nil, `default-download-directory' will be used.  COOKIES can
 specify a cookie jar as a string, which is useful for authenticated downloads.
 PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
   (unless *notifications*
-    (setf *notifications* (make-instance 'chanl:unbounded-channel)))
+    (setf *notifications* (make-instance 'calispel:channel)))
   (let ((download (cache :uri uri
                          :directory (download-directory directory)
                          :cookies cookies
                          :proxy proxy)))
     ;; TODO: We just use bt:make-thread, no need for a channel... Unless need to
     ;; watch for unfinished downloads and warn the user before closing.
-    (chanl:pexec ()
+    (eager-future2:pexec ()
       (fetch download))
     download))

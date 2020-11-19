@@ -215,7 +215,7 @@ editor executable."))
       (hooks:run-hook *after-init-hook*)
     (error (c)
       (log:error "In *after-init-hook*: ~a" c)))
-  (chanl:pexec ()
+  (eager-future2:pexec ()
     (funcall-safely (startup-function browser) urls)
     ;; Set 'init-time at the end of finalize to take the complete startup time
     ;; into account.
@@ -234,7 +234,7 @@ This function is meant to be run in the background."
   ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
   ;; in too high a frequency of refreshes.
   (when download-manager:*notifications*
-    (loop for d = (chanl:recv download-manager:*notifications*)
+    (loop for d = (calispel:? download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
             do (hooks:run-hook (after-download-hook *browser*))

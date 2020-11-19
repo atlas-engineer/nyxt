@@ -294,22 +294,22 @@ This function can be `funcall'ed."
 (defmethod run ((command command) &rest args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
-  (let ((channel (make-instance 'chanl:bounded-channel :size 1)))
-    (chanl:pexec ()
-      (chanl:send channel
-                  ;; Bind current buffer for the duration of the command.  This
-                  ;; way, if the user switches buffer after running a command
-                  ;; but before command termination, `current-buffer' will
-                  ;; return the buffer from which the command was invoked.
-                  (with-current-buffer (current-buffer)
-                    (apply #'funcall-safely (command-function command) args))))
-    (chanl:recv channel)))
+  (let ((channel (make-bounded-channel 1)))
+    (eager-future2:pexec ()
+      (calispel:! channel
+               ;; Bind current buffer for the duration of the command.  This
+               ;; way, if the user switches buffer after running a command
+               ;; but before command termination, `current-buffer' will
+               ;; return the buffer from which the command was invoked.
+               (with-current-buffer (current-buffer)
+                 (apply #'funcall-safely (command-function command) args))))
+    (calispel:? channel)))
 
 (defmethod run-async ((command command) &rest args)
   "Run COMMAND over ARGS asynchronously.
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
-  (chanl:pexec ()
+  (eager-future2:pexec ()
     (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
       (apply #'funcall-safely (command-function command) args))))
 
