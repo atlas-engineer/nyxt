@@ -160,8 +160,8 @@ Note: this feature is alpha, get in touch for more!"
   (uiop:with-current-directory ((uiop:getcwd))
     ;; Allow the current minibuffer to recognize our keybindings.
     (let ((filename (prompt-minibuffer
-                     :default-modes '(nyxt/file-manager-mode::file-manager-mode minibuffer-mode)
+                     :default-modes '(file-manager-mode nyxt/minibuffer-mode:minibuffer-mode)
                      :input-prompt (namestring (uiop:getcwd))
-                     :suggestion-function #'nyxt/file-manager-mode::open-file-from-directory-suggestion-filter)))
+                     :suggestion-function #'open-file-from-directory-suggestion-filter)))
 
       (funcall nyxt/file-manager-mode::*open-file-function* (namestring filename)))))
