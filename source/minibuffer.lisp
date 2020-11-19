@@ -224,7 +224,8 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 (export-always 'hide)
 (defun hide (minibuffer)
   "Hide MINIBUFFER and display next active one, if any."
-  (calispel:! (interrupt-channel minibuffer) t) ; To tell prompt-minibuffer to raise exception.
+  (match (cleanup-function minibuffer)
+    ((guard f f) (funcall-safely f)))
   ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
   ;; minibuffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) minibuffer)
