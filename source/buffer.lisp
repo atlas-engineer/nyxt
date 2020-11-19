@@ -843,7 +843,10 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
         ;; must-match-p.
         (setf url (url url)))
       (buffer-load url :buffer (if new-buffer-p
-                                   (make-buffer-focus)
+                                   ;; Make empty buffer, or else there might be
+                                   ;; a race condition between the URL that's
+                                   ;; loaded and the default one.
+                                   (make-buffer-focus :url "")
                                    (current-buffer))))))
 
 (define-command set-url-from-current-url ()
