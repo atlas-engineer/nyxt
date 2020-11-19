@@ -532,9 +532,13 @@ the "
                             '((body
                                :margin-top 0
                                :margin-bottom 0)
+                              ("a"
+                               :color "gray")
                               (.section
                                :border-top "solid lightgray"
-                               :margin-top "20px")
+                               :margin-top "20px"
+                               :overflow "scroll"
+                               :min-height "150px")
                               ("#container"
                                :display "flex"
                                :flex-flow "column"
@@ -544,15 +548,15 @@ the "
          (:style (style buffer))
          (:style dashboard-style)
          (:div :id "container"
-               (:div :style "min-height: 100px"
-                     (:h1 "Welcome to Nyxt ☺")
+               (:div :style "height: 150px"
+                     (:h1 "Nyxt " (:span :style "color: gray" "browser ") "☺")
                      (:p (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
                      (:a :class "button" :href (lisp-url `(nyxt::restore-session-by-name)) "🗁 Restore Session")
                      (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
                      (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
-               (:div :class "section" :style "flex: 1; overflow: scroll"
+               (:div :class "section" :style "flex: 3"
                      (:h3 "🏷 Bookmarks")
                      (:ul (list-bookmarks)))
-               (:div :class "section" :style "flex: 1; overflow: scroll"
+               (:div :class "section" :style "flex: 5"
                      (:h3 "🗐 Recent URLs")
                      (:ul (list-history)))))))))
