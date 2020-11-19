@@ -534,11 +534,15 @@ the "
                                :margin-bottom 0)
                               ("a"
                                :color "gray")
+                              ("#title"
+                               :font-size "400%")
                               (.section
                                :border-top "solid lightgray"
-                               :margin-top "20px"
+                               :margin-top "10px"
                                :overflow "scroll"
                                :min-height "150px")
+                              (".section h3"
+                               :color "dimgray")
                               ("#container"
                                :display "flex"
                                :flex-flow "column"
@@ -548,15 +552,16 @@ the "
          (:style (style buffer))
          (:style dashboard-style)
          (:div :id "container"
-               (:div :style "height: 150px"
-                     (:h1 "Nyxt " (:span :style "color: gray" "browser ") "☺")
-                     (:p (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
+               (:div :style "height: 210px"
+                     (:h1 :id "title" "Nyxt " (:span :style "color: lightgray" "browser ☺"))
+                     (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
                      (:a :class "button" :href (lisp-url `(nyxt::restore-session-by-name)) "🗁 Restore Session")
+                     (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "⚙ Execute Command")
                      (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
                      (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
                (:div :class "section" :style "flex: 3"
-                     (:h3 "🏷 Bookmarks")
+                     (:h3 "🏷 " (:b "Bookmarks"))
                      (:ul (list-bookmarks)))
                (:div :class "section" :style "flex: 5"
-                     (:h3 "🗐 Recent URLs")
+                     (:h3 "🗐 " (:b "Recent URLs"))
                      (:ul (list-history)))))))))
