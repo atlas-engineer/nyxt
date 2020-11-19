@@ -24,6 +24,14 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
+(defun make-bounded-channel (size)
+  (make-instance 'calispel:channel
+                 :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))
+
+(defmacro pexec (&body body)
+  "Shorthand for (bt:make-thread (lambda () ...))"
+  `(bt:make-thread (lambda () ,@body)))
+
 (defparameter %buffer nil)              ; TODO: Make a monad?
 
 (export-always 'current-buffer)

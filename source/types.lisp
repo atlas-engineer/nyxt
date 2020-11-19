@@ -66,11 +66,3 @@ Example:
   `(or (eql :always)
        (eql :never)
        (eql :no-third-party)))
-
-(defun make-bounded-channel (size)
-  (make-instance 'calispel:channel
-                 :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))
-
-(defmacro pexec (&body body)
-  "Shorthand for (bt:make-thread (lambda () ...))"
-  `(bt:make-thread (lambda () ,@body)))
