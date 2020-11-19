@@ -151,6 +151,7 @@ PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
                          :proxy proxy)))
     ;; TODO: We just use bt:make-thread, no need for a channel... Unless need to
     ;; watch for unfinished downloads and warn the user before closing.
-    (eager-future2:pexec ()
-      (fetch download))
+    (bt:make-thread
+     (lambda ()
+       (fetch download)))
     download))

@@ -290,7 +290,7 @@ This function can be `funcall'ed."
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
   (let ((channel (make-bounded-channel 1)))
-    (eager-future2:pexec ()
+    (pexec ()
       (calispel:! channel
                ;; Bind current buffer for the duration of the command.  This
                ;; way, if the user switches buffer after running a command
@@ -304,7 +304,7 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
   "Run COMMAND over ARGS asynchronously.
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
-  (eager-future2:pexec ()
+  (pexec ()
     (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
       (apply #'funcall-safely (command-function command) args))))
 

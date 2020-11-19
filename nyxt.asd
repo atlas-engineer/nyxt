@@ -8,7 +8,6 @@
   :depends-on (:alexandria
                :bordeaux-threads
                :calispel
-               :eager-future2
                :cl-css
                :cl-json
                :cl-markup
@@ -207,7 +206,6 @@
 
 (asdf:defsystem nyxt/download-manager
   :depends-on (calispel
-               eager-future2
                cl-ppcre
                dexador
                log4cl
