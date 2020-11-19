@@ -509,3 +509,50 @@ the "
     (copy-to-clipboard nyxt-information)
     (log:info nyxt-information)
     (echo "System information copied to clipboard.")))
+
+(define-command dashboard ()
+  "Print a dashboard. Usable as a buffer-fn for make-startup-function."
+  (flet ((list-bookmarks (&key (separator " → "))
+           (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
+                 collect (markup:markup (:li (title bookmark) separator
+                                             (:a :href (object-string (url bookmark))
+                                                 (object-display (url bookmark)))))))
+         (list-history (&key (separator " → ") (limit 20))
+           (let* ((path (history-path (current-buffer)))
+                  (history (when (get-data path)
+                             (sort (alex:hash-table-values (get-data path))
+                                   #'local-time:timestamp>
+                                   :key #'last-access))))
+             (loop for item in (sera:take limit history)
+                   collect (markup:markup
+                            (:li (title item) separator
+                                 (:a :href (object-string (url item))
+                                     (object-string (url item)))))))))
+    (let ((dashboard-style (cl-css:css
+                            '((body
+                               :margin-top 0
+                               :margin-bottom 0)
+                              (.section
+                               :border-top "solid lightgray"
+                               :margin-top "20px")
+                              ("#container"
+                               :display "flex"
+                               :flex-flow "column"
+                               :height "100vh")))))
+      (with-current-html-buffer (buffer "*Dashboard*" 'base-mode)
+        (markup:markup
+         (:style (style buffer))
+         (:style dashboard-style)
+         (:div :id "container"
+               (:div :style "min-height: 100px"
+                     (:h1 "Welcome to Nyxt ☺")
+                     (:p (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
+                     (:a :class "button" :href (lisp-url `(nyxt::restore-session-by-name)) "🗁 Restore Session")
+                     (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
+                     (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
+               (:div :class "section" :style "flex: 1; overflow: scroll"
+                     (:h3 "🏷 Bookmarks")
+                     (:ul (list-bookmarks)))
+               (:div :class "section" :style "flex: 1; overflow: scroll"
+                     (:h3 "🗐 Recent URLs")
+                     (:ul (list-history)))))))))
