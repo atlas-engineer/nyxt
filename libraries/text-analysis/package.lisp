@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 
-(defpackage :text-analysis
+(uiop:define-package :text-analysis
   (:use :common-lisp)
   (:export
    #:document
