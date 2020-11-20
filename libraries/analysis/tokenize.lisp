@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :text-analysis)
+(in-package :analysis)
 
 (defun word-tokenize (string &key (remove-stop-words t) (stem nil) (down-case t) (alphabetic t))
   "Split a string into a list of words."

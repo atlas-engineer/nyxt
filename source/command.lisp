@@ -137,7 +137,7 @@ deprecated and by what in the docstring."
                             keymap
                             scheme
                             password
-                            text-analysis
+                            analysis
                             text-buffer)))))
 
 (defun package-defined-symbols (&optional (external-package-designators (nyxt-packages))
