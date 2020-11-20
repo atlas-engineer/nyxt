@@ -41,7 +41,7 @@
                ;; Local systems:
                :nyxt/user-interface
                :nyxt/text-buffer
-               :nyxt/text-analysis
+               :nyxt/analysis
                :nyxt/download-manager
                :nyxt/history-tree
                :nyxt/password-manager
@@ -212,12 +212,12 @@
                          (nyxt-run-test c "libraries/download-manager/tests/"
                                         :network-needed-p t)))
 
-(asdf:defsystem nyxt/text-analysis
+(asdf:defsystem nyxt/analysis
   :depends-on (:str
                :serapeum
                :alexandria
                :cl-ppcre)
-  :pathname "libraries/text-analysis/"
+  :pathname "libraries/analysis/"
   :components ((:file "package")
                (:file "data")
                (:file "stem")

@@ -774,7 +774,7 @@ set of useful URLs or preparing a list to send to a someone else."
                                           (object-string (url buffer))))
                      (:p (:b "Automatically generated summary: ")
                          (:ul
-                          (loop for summary-bullet in (text-analysis:summarize-text
+                          (loop for summary-bullet in (analysis:summarize-text
                                                        (document-get-paragraph-contents :limit 10000))
                                 collect (markup:markup (:li (str:collapse-whitespaces summary-bullet))))))
                      (:hr ""))))))))

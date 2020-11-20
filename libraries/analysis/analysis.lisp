@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :text-analysis)
+(in-package :analysis)
 
 (defclass document ()
   ((string-contents :initarg :string-contents :accessor string-contents)

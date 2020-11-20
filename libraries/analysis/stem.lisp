@@ -1,4 +1,4 @@
-(in-package :text-analysis)
+(in-package :analysis)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The software is completely free for any purpose, unless notes at
