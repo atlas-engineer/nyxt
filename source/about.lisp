@@ -7,6 +7,7 @@
   "Show the list of contributors."
   (with-current-html-buffer (buffer "*About*" 'base-mode)
     (markup:markup
+     (:style (style buffer))
      (:h1 "Contributors")
      (:p "Let us know if you've contributed to the development of
                     Nyxt and would like to be included on this list.")
