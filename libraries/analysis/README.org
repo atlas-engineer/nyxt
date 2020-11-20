@@ -1,0 +1,25 @@
+* Analysis
+Analysis is a library that provides facilities to help analyze and
+understand data. Listed below are the classes:
+
+** Document
+The document class represents a document. After creating a document,
+you can perform several operations on it, some examples:
+
++ term count: how many times does a term appear in a document?
++ term frequency: how many times does a term appear / the total number
+  of words in the document?
+
+** Document Collection
+The document collection class represents a collection of documents. As
+with a document, there are several operations available, some examples:
+
++ dictionary: which words appear in the document collection?
++ keywords: what are the important keywords in this document
+  collection?
+
+** Document Vertex
+The document vertex class represents a document that is part of a
+graph. The edges slot of the document vertex class is used to store
+edges of that particular vertex. The keys in the edges slot hash table
+are the actual vertexes, and the values are the edge weights.
