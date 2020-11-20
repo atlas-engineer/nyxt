@@ -41,7 +41,9 @@
 
 (defmethod word-separation-chars-at-cursor-p ((cursor cursor) &key direction)
   "Return non-nil when `word-separation-characters' are found
-before/after the cursor position."
+before/after the cursor position. You can specify to look before or
+after the cursor by supplying :backward or :forward for the direction
+value."
   (find (cond ((and (not (cluffer:beginning-of-line-p cursor))
                     (eq direction :backward))
                (cluffer:item-before-cursor cursor))
@@ -53,7 +55,9 @@ before/after the cursor position."
 
 (defmethod move-to-word ((cursor cursor) &key direction conservative-word-move)
   "Move the cursor to the boundary of a word and return its
-position. A word is a string bounded by `word-separation-characters'."
+position. A word is a string bounded by
+`word-separation-characters'. Specify a `direction' of :forward or
+:backward to change the movement."
   (labels ((move-to-boundary (&key over-non-word-chars)
              "Move the cursor while it finds
               `word-separation-characters' adjacent to it. When
@@ -81,7 +85,8 @@ position. A word is a string bounded by `word-separation-characters'."
                        :conservative-word-move conservative-word-move))
 
 (defmethod delete-word ((cursor cursor) &key direction)
-  "Delete characters until encountering the boundary of a word."
+  "Delete characters until encountering the boundary of a
+word. Specify a `direction' as :forward or :backward."
   (let ((start-cursor-position (cluffer:cursor-position cursor))
         (end-cursor-position
           (if (eq direction :backward)
