@@ -281,7 +281,7 @@ If DATA-VAR is a symbol, bind the DATA-VAR to the value of the data
 from DATA-PATH to refer to it in the BODY.
 If DATA-VAR is a list of the form (SYMBOL FORM), SYMBOL will be bound
 to FORM in case no data will be found on DATA-PATH."
-  (alex:with-gensyms (lock path-name var)
+  (alex:with-gensyms (lock path-name)
     `(let* ((,path-name ,data-path)
             (,lock (lock (get-user-data (current-data-profile) ,path-name))))
        (bt:with-recursive-lock-held (,lock)
@@ -290,7 +290,7 @@ to FORM in case no data will be found on DATA-PATH."
                     `(,data-var (get-data ,path-name))))
            (unwind-protect
                 (progn ,@body)
-             (setf (get-data ,path-name) ,data-var)
+             (setf (get-data ,path-name) ,(if (listp data-var) (second data-var) data-var))
              (store (current-data-profile) ,path-name)))))))
 
 (defvar *gpg-default-recipient* nil)
