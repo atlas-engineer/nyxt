@@ -321,8 +321,7 @@ rest in background buffers."
                   :multi-selection-p t)))
     (dolist (entry (rest entries))
       (make-buffer :url (object-string (url entry))))
-    (buffer-load (url (first entries))
-                 :buffer (make-buffer-focus))))
+    (make-buffer-focus :url (url (first entries)))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))

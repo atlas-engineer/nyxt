@@ -314,10 +314,7 @@ This is useful to tell REPL instances from binary ones."
 First URL is focused if NO-FOCUS is nil."
   (handler-case
       (let ((first-buffer (first (mapcar
-                                  (lambda (url)
-                                    (let ((buffer (make-buffer)))
-                                      (buffer-load url :buffer buffer)
-                                      buffer))
+                                  (lambda (url) (make-buffer :url url))
                                   urls))))
         (when (and first-buffer (not no-focus))
           (if (open-external-link-in-new-window-p *browser*)
