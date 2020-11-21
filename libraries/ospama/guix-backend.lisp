@@ -5,6 +5,8 @@
 
 (named-readtables:in-readtable scheme-writer-syntax)
 
+;; TODO: With CCL keywords cannot have the same name as interned symbols.
+
 (defvar %find-package
   ;; TODO: Use upstream's way to find packages.
   '(lambda (name)
@@ -83,7 +85,7 @@ just-in-time instead."
 
    '(fold-packages
      (lambda (package result)
-       (let ((location (package-location package)))
+       (let ((loc (package-location package)))
          (cons
           (list
            (package-name package)
@@ -94,9 +96,9 @@ just-in-time instead."
             #:inputs (map car (package-inputs package))
             #:propagated-inputs (map car (package-propagated-inputs package))
             #:native-inputs (map car (package-native-inputs package))
-            #:location (string-join (list (location-file location)
-                                          (number->string (location-line location))
-                                          (number->string (location-column location)))
+            #:location (string-join (list (location-file loc)
+                                          (number->string (location-line loc))
+                                          (number->string (location-column loc)))
                                     ":")
             ;; In Guix, an empty home-page is #f, but we want a string.
             #:home-page (or (package-home-page package) "")

@@ -36,4 +36,14 @@
                                     'ospama::\#t))
   (:dispatch-macro-char #\# #\f #'(lambda (stream char1 char2)
                                     (declare (ignore stream char1 char2))
-                                    'ospama::\#f)))
+                                    'ospama::\#f))
+  ;; SBCL seems OK without special #\: treatment, but not CCL.
+  ;; uninterning does not work as it would break with:
+  ;;   (let ((location 'foo)) (list #:location location))
+  #+ccl
+  (:dispatch-macro-char #\# #\: #'(lambda (stream char1 char2)
+                                    (declare (ignore char1 char2))
+                                    ;; (make-instance 'scheme-keyword :sym )
+                                    (let ((s (intern (string-upcase (string (read stream))))))
+                                      (unintern s)
+                                      s))))
