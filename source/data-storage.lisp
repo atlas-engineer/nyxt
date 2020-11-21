@@ -275,14 +275,15 @@ This function can be used on browser-less globals like `*init-file-path*'."
   (setf (data (get-user-data (current-data-profile) path)) value))
 
 (export-always 'with-data-access)
-(defmacro with-data-access (data-var data-path &body body)
+(defmacro with-data-access ((data-var data-path &key default) &body body)
   "Lock the data for the BODY to avoid race conditions.
-Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it."
+Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
+In case there's no data, bind DATA-VAR to DEFAULT and set data to it."
   (alex:with-gensyms (lock path-name)
     `(let* ((,path-name ,data-path)
             (,lock (lock (get-user-data (current-data-profile) ,path-name))))
        (bt:with-recursive-lock-held (,lock)
-         (let ((,data-var (get-data ,path-name)))
+         (let ((,data-var (or (get-data ,path-name) ,default)))
            (unwind-protect
                 (progn ,@body)
              (setf (get-data ,path-name) ,data-var)

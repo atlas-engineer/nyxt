@@ -282,7 +282,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                           (values list &optional))
                 add-modes-to-auto-mode-rules))
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (with-data-access rules (auto-mode-rules-path (current-buffer))
+  (with-data-access (rules (auto-mode-rules-path (current-buffer)))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))
