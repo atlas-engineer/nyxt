@@ -43,9 +43,10 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'.
 The history is sorted by last access."
-  (with-data-access (history (make-hash-table :test #'equal))
-      (history-path (current-buffer))
+  (with-data-access history (history-path (current-buffer))
     (unless (url-empty-p uri)
+      (unless history
+        (setf history (make-hash-table :test #'equal)))
       (let ((entry (gethash (object-string uri) history)))
         (unless entry
           (setf entry (make-instance 'history-entry :url uri)))
