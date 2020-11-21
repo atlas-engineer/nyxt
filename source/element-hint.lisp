@@ -264,7 +264,7 @@ identifier for every hinted element."
   (format nil "~a  Textarea" (hint textarea-hint)))
 
 (defmethod %follow-hint ((link-hint link-hint))
-  (buffer-load (url link-hint) :buffer (current-buffer)))
+  (buffer-load (url link-hint)))
 
 (defmethod %follow-hint ((button-hint button-hint))
   (click-button :nyxt-identifier (identifier button-hint)))
@@ -276,16 +276,13 @@ identifier for every hinted element."
   (focus-element :nyxt-identifier (identifier textarea-hint)))
 
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint))
-  (let ((new-buffer (make-buffer)))
-    (buffer-load (url link-hint) :buffer new-buffer)
-    (set-current-buffer new-buffer)))
+  (make-buffer-focus :url (url link-hint)))
 
 (defmethod %follow-hint-new-buffer-focus ((hint hint))
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-new-buffer ((link-hint link-hint))
-  (let ((new-buffer (make-buffer)))
-    (buffer-load (url link-hint) :buffer new-buffer)))
+  (make-buffer :url (url link-hint)))
 
 (defmethod %follow-hint-new-buffer ((hint hint))
   (echo "Unsupported operation for hint: can't open in new buffer."))

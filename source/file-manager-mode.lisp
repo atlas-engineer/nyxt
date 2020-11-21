@@ -49,11 +49,9 @@ Can be used as a `*open-file-function*'."
       (cond
         ((and (uiop:directory-pathname-p filename)
               (uiop:directory-exists-p filename))
-         (buffer-load (format nil "file://~a" (uiop:ensure-directory-pathname filename))
-                      :buffer (make-buffer-focus)))
+         (make-buffer-focus :url (format nil "file://~a" (uiop:ensure-directory-pathname filename))))
         ((supported-media filename)
-         (buffer-load (format nil "file://~a" filename)
-                      :buffer (make-buffer-focus)))
+         (make-buffer-focus :url (format nil "file://~a" filename)))
         (t
          (uiop:launch-program
           #+linux
