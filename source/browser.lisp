@@ -569,12 +569,7 @@ sometimes yields the wrong reasult."
         (make-window buffer))
     (with-data-access (history (history-path buffer)
                        :default (htree:make))
-      (setf (htree:current history)
-            (or (htree:find-data (make-instance 'history-entry
-                                                :url (url buffer) :id (id buffer))
-                                 history
-                                 :test #'equals)
-                (htree:current history))))
+      (setf (htree:current history) (current-history-node buffer)))
     buffer))
 
 (export-always 'current-minibuffer)
