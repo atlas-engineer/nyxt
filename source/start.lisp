@@ -54,89 +54,90 @@ Return nil if `*init-file-path*' is nil."
   (opts:describe)
   (uiop:quit))
 
-(opts:define-opts
+(sera:eval-always ; We eval at read-time because we parse `opts::*options*' in `start'.
+  (opts:define-opts
     (:name :help
-           :description "Print this help and exit."
-           :short #\h
-           :long "help")
+     :description "Print this help and exit."
+     :short #\h
+     :long "help")
     (:name :verbose
-           :short #\v
-           :long "verbose"
-           :description "Print debugging information to stdout.")
+     :short #\v
+     :long "verbose"
+     :description "Print debugging information to stdout.")
     (:name :version
-           :long "version"
-           :description "Print version and exit.")
+     :long "version"
+     :description "Print version and exit.")
     (:name :init
-           :short #\i
-           :long "init"
-           :arg-parser #'identity
-           :description "Set path to initialization file.")
+     :short #\i
+     :long "init"
+     :arg-parser #'identity
+     :description "Set path to initialization file.")
     (:name :no-init
-           :short #\I
-           :long "no-init"
-           :description "Do not load the user init file.")
+     :short #\I
+     :long "no-init"
+     :description "Do not load the user init file.")
     (:name :auto-config
-           :short #\c
-           :long "auto-config"
-           :arg-parser #'identity
-           :description "Set path to auto-config file.")
+     :short #\c
+     :long "auto-config"
+     :arg-parser #'identity
+     :description "Set path to auto-config file.")
     (:name :no-auto-config
-           :short #\C
-           :long "no-auto-config"
-           :description "Do not load the user auto-config file.")
+     :short #\C
+     :long "no-auto-config"
+     :description "Do not load the user auto-config file.")
     (:name :socket
-           :short #\s
-           :long "socket"
-           :arg-parser #'identity
-           :description "Set path to socket.
+     :short #\s
+     :long "socket"
+     :arg-parser #'identity
+     :description "Set path to socket.
 Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.")
     (:name :no-socket
-           :short #\S
-           :long "no-socket"
-           :description "Do not use any socket.")
+     :short #\S
+     :long "no-socket"
+     :description "Do not use any socket.")
     (:name :eval
-           :short #\e
-           :long "eval"
-           :arg-parser #'identity
-           :description "Eval the Lisp expressions.  Can be specified multiple times.")
+     :short #\e
+     :long "eval"
+     :arg-parser #'identity
+     :description "Eval the Lisp expressions.  Can be specified multiple times.")
     (:name :load
-           :short #\l
-           :long "load"
-           :arg-parser #'identity
-           :description "Load the Lisp file.  Can be specified multiple times.")
+     :short #\l
+     :long "load"
+     :arg-parser #'identity
+     :description "Load the Lisp file.  Can be specified multiple times.")
     (:name :quit
-           :short #\q
-           :long "quit"
-           :description "Quit after --load or --eval.")
+     :short #\q
+     :long "quit"
+     :description "Quit after --load or --eval.")
     (:name :script
-           :long "script"
-           :arg-parser #'identity
-           :description "Load the Lisp file (skip #! line if any), skip init file, then exit.
+     :long "script"
+     :arg-parser #'identity
+     :description "Load the Lisp file (skip #! line if any), skip init file, then exit.
 Set to '-' to read standard input instead.")
     (:name :remote
-           :short #\r
-           :long "remote"
-           :description "Send the --eval and --load arguments to the running instance of Nyxt.
+     :short #\r
+     :long "remote"
+     :description "Send the --eval and --load arguments to the running instance of Nyxt.
 Implies --quit.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
     (:name :data-profile
-           :short #\d
-           :long "data-profile"
-           :arg-parser #'identity
-           :description "Use the given data profile. ")
+     :short #\d
+     :long "data-profile"
+     :arg-parser #'identity
+     :description "Use the given data profile. ")
     (:name :list-data-profiles
-           :long "list-data-profiles"
-           :description "List the known data profiles and exit.
+     :long "list-data-profiles"
+     :description "List the known data profiles and exit.
 Known profiles are found among global variables that are a subclass of
 `data-profile'.")
     (:name :with-path
-           :long "with-path"
-           :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
-           :description "Set data path reference to the given path.
+     :long "with-path"
+     :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
+     :description "Set data path reference to the given path.
 Can be specified multiple times.  An empty path means it won't be used.
 Example: --with-path bookmarks=/path/to/bookmarks
-         --with-path session="))
+         --with-path session=")))
 
 (define-command quit ()
   "Quit Nyxt."
