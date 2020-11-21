@@ -88,7 +88,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (declaim (ftype (function (quri:uri &key (:title string) (:date (or local-time:timestamp null)) (:tags t)) t) bookmark-add))
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
-  (with-data-access bookmarks (bookmarks-path (current-buffer))
+  (with-data-access (bookmarks (bookmarks-path (current-buffer)))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (object-string url)))
       (let* ((entry nil)
@@ -254,7 +254,7 @@ URL."
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
-  (with-data-access bookmarks (bookmarks-path (current-buffer))
+  (with-data-access (bookmarks (bookmarks-path (current-buffer)))
     (let ((entries (prompt-minibuffer
                     :input-prompt "Delete bookmark(s)"
                     :multi-selection-p t
@@ -267,7 +267,7 @@ URL."
 (defun delete-bookmark (url)
   "Delete a bookmark by the URL. This function depends on equals only
 comparing URLs."
-  (with-data-access bookmarks (bookmarks-path (current-buffer))
+  (with-data-access (bookmarks (bookmarks-path (current-buffer)))
     (setf bookmarks
           (set-difference
            bookmarks
