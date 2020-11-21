@@ -46,10 +46,9 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 (defun history-add (uri &key title explicit)
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
-case `explicit-visits'.
-The history is sorted by last access."
+case `explicit-visits'."
   (with-data-access (history (history-path (current-buffer))
-                             :default (htree:make))
+                     :default (htree:make))
       (unless (url-empty-p uri)
         (let* ((maybe-entry (make-instance 'history-entry
                                            :url uri :id (id (current-buffer)) :title title))

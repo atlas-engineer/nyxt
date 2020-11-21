@@ -25,6 +25,10 @@ See the `data-path' class and the `expand-path' function.")
    (last-access (local-time:now)
                 :export nil
                 :documentation "Timestamp when the buffer was last switched to.")
+   (current-history-node nil
+                         :type (or null htree:node)
+                         :documentation "The history node that this buffer history is currently on.
+Used to make sure children buffers properly branch from parent buffers in global history.")
    (modes :initform '()
           :documentation "The list of mode instances.
 Modes are instantiated after the `default-modes' slot, with `initialize-modes'
@@ -498,18 +502,17 @@ MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'.
 CHILD-P denotes whether the new buffer should have a history
 starting from the current buffer's history."
-  (with-data-access (history (history-path (or (current-buffer) (make-instance 'buffer))))
-    (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
-           (url (if (eq url :default)
-                    (default-new-buffer-url buffer)
-                    url)))
-      ;; We need start buffer history from root in case buffer is independent
-      ;; TODO: New history entries can be created much later than buffer creation. Too stateful.
-      (unless child-p
-        (setf (htree:current history) (htree:root history)))
-      (unless (url-empty-p url)
-        (buffer-load url :buffer buffer))
-      buffer)))
+  (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
+         (url (if (eq url :default)
+                  (default-new-buffer-url buffer)
+                  url)))
+    (with-data-access (history (history-path (current-buffer))
+                       :default (htree:make))
+      (setf (current-history-node buffer)
+            (if child-p (htree:current history) (htree:root history))))
+    (unless (url-empty-p url)
+      (buffer-load url :buffer buffer))
+    buffer))
 
 (define-command make-internal-buffer (&key (title "") modes)
   "Create a new buffer.
