@@ -5,6 +5,9 @@
 
 (named-readtables:in-readtable scheme-writer-syntax)
 
+;; TODO: Add support for the '() syntax.
+;; Workaround: use `(list)`.
+
 ;; TODO: With CCL keywords cannot have the same name as interned symbols.
 
 (defvar %find-package
@@ -106,7 +109,7 @@ just-in-time instead."
             #:synopsis (package-synopsis package)
             #:description (string-replace-substring (package-description package) "\\n" " ")))
           result)))
-     '())))
+     (list))))
 
 (defun package-dependents (name)        ; TODO: Unused?
   (guix-eval
@@ -197,4 +200,5 @@ Date is in the form 'Oct 22 2020 18:38:42'."
                         "~5")
                        (generation-file-name ,profile number))
                  (loop rest)))
-          (_ '()))))))
+          (_ (list)))))))
+
