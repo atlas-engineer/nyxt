@@ -19,6 +19,7 @@
                 "bookmarklet-command"
                 "class"
                 "command"
+                "function"
                 "mode"
                 "parenscript"
                 "user-class"))))))
