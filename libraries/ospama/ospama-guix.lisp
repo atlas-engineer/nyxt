@@ -27,47 +27,120 @@ package managers like Nix or Guix."))
 
 (detect-manager "guix" 'guix-manager)
 
-;; TODO: Call read-from-string in `guix-eval'?
 (declaim (ftype (function (t) string)))
 (defun cl->scheme-syntax (form)
-  #+ccl
-  ;; Escape symbols are printed as \\NAME while they should be printed as NAME.
-  (str:replace-all "\\" "" (format nil "~s" form))
-  #+(not ccl)
-  ;; Escaped symbols (e.g. '\#t) are printed as '|NAME| but should be
-  ;; printed as NAME.
-  (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" form) "\\1"))
+  (str:replace-all
+   ;; Backslashes in Common Lisp are doubled, unlike Guile.
+   "\\\\" "\\"
+   #+ccl
+   ;; Escape symbols are printed as \\NAME while they should be printed as NAME.
+   (str:replace-all "\\" "" (format nil "~s" form))
+   #+(not ccl)
+   ;; Escaped symbols (e.g. '\#t) are printed as '|NAME| but should be
+   ;; printed as NAME.
+   (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" form) "\\1")))
+
+(defvar *guix-repl-idle-timeout* 60
+  "Time in seconds of being idle before the `guix repl` is exited.")
+
+(defvar *guix-command* "guix"
+  "Name or path to the `guix' executable.")
+
+(defvar %guix-listener-channel nil)
+(defvar %guix-result-channel nil)
+
+;; TODO: Make sure Guix process is closed when Lisp shuts down.
+
+(defun guix-listener ()
+  "Automatically start and quit the Guix REPL after
+`*guix-repl-idle-timeout*'.
+For each inputs on `%guix-listener-channel' a result is returned on
+`%guix-result-channel'."
+  (flet ((maybe-start-guix (guix-process)
+           (unless (and guix-process
+                        (uiop:process-alive-p guix-process))
+             (setf guix-process
+                   (uiop:launch-program `(,*guix-command* "repl" "--type=machine")
+                                        :input :stream :output :stream))
+             ;; Skip REPL header.
+             ;; We could use `read' but CCL won't swallow the linebreak, while
+             ;; SBCL will.
+             (read-line (uiop:process-info-output guix-process) nil :eof))
+           guix-process))
+    (do ((guix-process nil)) (nil)
+      (handler-case
+          (do () (nil)
+            (let ((input (bt:with-timeout (*guix-repl-idle-timeout*)
+                           (chanl:recv %guix-listener-channel))))
+              (setf guix-process (maybe-start-guix guix-process))
+              ;; Append a newline so that REPL proceeds.
+              (format (uiop:process-info-input guix-process) "~a~%" input)
+              (finish-output (uiop:process-info-input guix-process))
+              ;; We set the package to current so that symbols in
+              ;;   (values (value ...) (value ...) ...)
+              ;; do not get returned with a package prefix.
+              (let* ((*package* (find-package :ospama))
+                     (output (read-line (uiop:process-info-output guix-process)
+                                        nil :eof)))
+                ;; Use `read-line' to ensure we empty the output stream.
+                ;; `read' errors could leave a truncated s-expression behind
+                ;; which would prefix the next evaluation result.
+                ;; TODO: Report read errors.
+                (chanl:send %guix-result-channel
+                            (ignore-errors
+                              (named-readtables:in-readtable scheme-syntax)
+                              (prog1 (read-from-string output)
+                                (named-readtables:in-readtable nil)))))))
+        (t ()
+          (close (uiop:process-info-input guix-process))
+          (unless (uiop:process-alive-p guix-process)
+            (uiop:terminate-process guix-process)))))))
 
 (defun guix-eval (form &rest more-forms)
   "Evaluate forms in Guix REPL.
-Return the REPL output (including the error output) as a string."
-  (let ((*package* (find-package :ospama)) ; Need to be in this package to avoid prefixing symbols with current package.
-        (*print-case* :downcase))
-    (with-input-from-string (s (str:join (string #\newline)
-                                         (mapcar (lambda (form)
-                                                   (str:replace-all
-                                                    ;; Backslashes in Common Lisp are doubled, unlike Guile.
-                                                    "\\\\" "\\"
-                                                    (cl->scheme-syntax form)))
-                                                 (cons form more-forms))))
-      ;; REVIEW: Upstream bug causes REPL information to be displayed unless
-      ;; /dev/stdin is passed as argument.
-      ;; https://issues.guix.info/issue/44612
-      ;; TODO: Instead of spawning a process all the time, we could keep it alive with
-      ;; https://github.com/archimag/cl-popen/.
-      ;; The following snippet shows how we can write multiple times to the
-      ;; input of a same process:
-      ;; (popen:with-popen2 ("guix repl -t machine /dev/stdin" guix in out)
-      ;;   (write-line "(display \"Hello...\\n\")" in)
-      ;;   (write-line "(display \"...World!\\n\")" in)
-      ;;   (close in)
-      ;;   (list (read-line out nil :eod)
-      ;;         (read-line out nil :eof)
-      ;;         (read-line out nil :eof)))
-      (uiop:run-program '("guix" "repl" "-q" "--type=machine" "/dev/stdin")
-                        :input s
-                        :output '(:string :stripped t)
-                        :error-output :output))))
+Return the REPL result of the last form.
+On REPL exception (or unexpected form), return NIL and the form as second
+value.
+#<unspecified> objects are returns as NIL."
+  (unless (and %guix-listener-channel %guix-result-channel)
+    (setf %guix-listener-channel (make-instance 'chanl:channel))
+    (setf %guix-result-channel (make-instance 'chanl:channel))
+    (bt:make-thread #'guix-listener))
+  ;; Need to be in this package to avoid prefixing symbols with current package.
+  (let* ((*package* (find-package :ospama))
+         (*print-case* :downcase)
+         (all-forms (cons form more-forms))
+         (ignore-result-forms (butlast all-forms))
+         (final-form (first (last all-forms))))
+    (dolist (form ignore-result-forms)
+      (let ((input (cl->scheme-syntax form)))
+        (chanl:send %guix-listener-channel input)
+        ;; Discard result:
+        (chanl:recv %guix-result-channel)))
+    ;; Final form:
+    (let ((input (cl->scheme-syntax final-form)))
+      (chanl:send %guix-listener-channel input))
+    (let ((repl-result (chanl:recv %guix-result-channel)))
+      (match repl-result
+        ((list* 'values values)
+         (apply #'values
+                (mapcar (lambda-match
+                          ;; Calling `(use-packages (ice-9 match))` returns:
+                          ;;   (values (non-self-quoting 2052 "#<unspecified>"))
+                          ((list 'non-self-quoting _ desc)
+                           ;; (values nil desc)
+                           desc)
+                          ;; Calling `(values 'a 'b)` returns:
+                          ;;   (values (value a) (value b))
+                          ((list 'value value)
+                           value)
+                          (other
+                           ;; (values nil other)
+                           other))
+                        values)))
+        (_
+          ;; Error, or unexpected REPL result formatting.
+         (values nil repl-result))))))
 
 (defvar %find-package
   ;; TODO: Use upstream's way to find packages.
@@ -115,7 +188,7 @@ just-in-time instead."
          (return
            (derivation->output-paths drv))))))
 
-   `(write (package-output-paths (find-package ,name)))))
+   `(package-output-paths (find-package ,name))))
 
 (defun package-output-size (output-path)
   (guix-eval
@@ -123,14 +196,13 @@ just-in-time instead."
      (guix store)
      (guix monads))
 
-   `(write
-     (let ((path-info (with-store store
-                        (run-with-store store
-                                        (mbegin %store-monad
-                                                (query-path-info* ,output-path))))))
-       (if path-info
-           (path-info-nar-size path-info)
-           0)))))
+   `(let ((path-info (with-store store
+                       (run-with-store store
+                                       (mbegin %store-monad
+                                               (query-path-info* ,output-path))))))
+      (if path-info
+          (path-info-nar-size path-info)
+          0))))
 
 (defun generate-database ()
   (guix-eval
@@ -146,32 +218,32 @@ just-in-time instead."
          l
          (list l)))
 
-   '(format '\#t "(~&")
    '(fold-packages
-     (lambda (package count)
+     (lambda (package result)
        (let ((location (package-location package)))
-         (format '\#t "(~s (:version ~s :outputs ~s :supported-systems ~s :inputs ~s :propagated-inputs ~s :native-inputs ~s :location ~s :home-page ~s :licenses ~s :synopsis ~s :description ~s))~&"
-                 (package-name package)
-                 (package-version package)
-                 (package-outputs package)
-                 (package-supported-systems package)
-                 (map car (package-inputs package))
-                 (map car (package-propagated-inputs package))
-                 (map car (package-native-inputs package))
-                 (string-join (list (location-file location)
-                                    (number->string (location-line location))
-                                    (number->string (location-column location)))
-                              ":")
-                 (or (package-home-page package) "") ; #f must be turned to NIL for Common Lisp.
-                 (map license-name (ensure-list (package-license package)))
-                 (package-synopsis package)
-                 (string-replace-substring (package-description package) "\\n" " ")))
-       (+ 1 count))
-     1)
-   '(format '\#t "~&)~&")))
+         (cons
+          (list
+           (package-name package)
+           (list
+            #:version (package-version package)
+            #:outputs (package-outputs package)
+            #:supported-systems (package-supported-systems package)
+            #:inputs (map car (package-inputs package))
+            #:propagated-inputs (map car (package-propagated-inputs package))
+            #:native-inputs (map car (package-native-inputs package))
+            #:location (string-join (list (location-file location)
+                                          (number->string (location-line location))
+                                          (number->string (location-column location)))
+                                    ":")
+            ;; In Guix, an empty home-page is #f, but we want a string.
+            #:home-page (or (package-home-page package) "")
+            #:license-name (map license-name (ensure-list (package-license package)))
+            #:synopsis (package-synopsis package)
+            #:description (string-replace-substring (package-description package) "\\n" " ")))
+          result)))
+     '())))
 
-(defun package-dependents (name)
-  ""
+(defun package-dependents (name)        ; TODO: Unused?
   (guix-eval
    '(use-modules
      (guix graph)
@@ -208,13 +280,12 @@ just-in-time instead."
 
    `(define find-package ,%find-package)
 
-   `(write
-     (map package-name
-          (with-store store
-            (run-with-store
-             store
-             (mbegin %store-monad
-                     (list-dependents (list (find-package ,name))))))))))
+   `(map package-name
+         (with-store store
+           (run-with-store
+            store
+            (mbegin %store-monad
+                    (list-dependents (list (find-package ,name)))))))))
 
 (declaim (ftype (function (&optional (or symbol string pathname))) list-installed))
 (defun list-installed (&optional (profile '%current-profile))
@@ -223,12 +294,12 @@ PROFILE is a full path to a profile."
   (guix-eval
    '(use-modules
      (guix profiles))
-   `(write
-     (map (lambda (entry)
-            (list (manifest-entry-name entry)
-                  (manifest-entry-output entry)))
-          (manifest-entries
-           (profile-manifest ,(namestring profile)))))))
+
+   `(map (lambda (entry)
+           (list (manifest-entry-name entry)
+                 (manifest-entry-output entry)))
+         (manifest-entries
+          (profile-manifest ,(namestring profile))))))
 
 (defun generation-list (&optional (profile '%current-profile))
   "Return the generations in PROFILE as a list of
@@ -243,25 +314,25 @@ Date is in the form 'Oct 22 2020 18:38:42'."
        (ice-9 match)
        (srfi srfi-19)
        (guix profiles))
-     `(write
-       (let loop ((generations (profile-generations ,profile)))
-         (match generations
-           ((number . rest)
-            (cons (list number
-                        (if (= (generation-number ,profile) number)
-                            't
-                            'nil)
-                        (length (manifest-entries
-                                 (profile-manifest
-                                  (generation-file-name ,profile number))))
-                        (date->string
-                         (time-utc->date
-                          (generation-time ,profile number))
-                         ;; ISO-8601 date/time
-                         "~5")
-                        (generation-file-name ,profile number))
-                  (loop rest)))
-           (_ '())))))))
+
+     `(let loop ((generations (profile-generations ,profile)))
+        (match generations
+          ((number . rest)
+           (cons (list number
+                       (if (= (generation-number ,profile) number)
+                           't
+                           'nil)
+                       (length (manifest-entries
+                                (profile-manifest
+                                 (generation-file-name ,profile number))))
+                       (date->string
+                        (time-utc->date
+                         (generation-time ,profile number))
+                        ;; ISO-8601 date/time
+                        "~5")
+                       (generation-file-name ,profile number))
+                 (loop rest)))
+          (_ '()))))))
 
 (define-class guix-package (os-package)
   ((outputs '())
@@ -288,7 +359,7 @@ Date is in the form 'Oct 22 2020 18:38:42'."
 (export-always 'expand-outputs)
 (defun expand-outputs (pkg)
   "Compute the output locations of PKG."
-  (dolist (pair (read-from-string (package-output-paths (name pkg))))
+  (dolist (pair (package-output-paths (name pkg)))
     (setf (path (find (first pair) (outputs pkg) :key #'name :test #'string=))
           (rest pair))))
 
@@ -298,7 +369,7 @@ Date is in the form 'Oct 22 2020 18:38:42'."
   (when (and (= 0 (slot-value output 'size))
              (expanded-output-p output))
     (setf (slot-value output 'size)
-          (read-from-string (package-output-size (path output)))))
+          (package-output-size (path output))))
   (slot-value output 'size))
 
 (defun make-guix-package (entry)
@@ -324,7 +395,7 @@ Date is in the form 'Oct 22 2020 18:38:42'."
 (defun guix-database ()
   (unless *guix-database*
     (setf *guix-database*
-          (mapcar #'make-guix-package (read-from-string (generate-database)))))
+          (mapcar #'make-guix-package (generate-database))))
   *guix-database*)
 
 (defmethod manager-find-os-package ((manager guix-manager) name)
@@ -343,7 +414,7 @@ Date is in the form 'Oct 22 2020 18:38:42'."
                          (outputs pkg)
                          :key #'name
                          :test #'string=)))
-               (read-from-string (list-installed profile))))
+               (list-installed profile)))
       (guix-database)))
 
 (defmethod manager-list-package-outputs ((manager guix-manager))
@@ -381,12 +452,12 @@ for non-standard profiles."
 
 (defmethod manager-list-generations ((manager guix-manager) &optional profile)
   (mapcar (lambda (args) (apply #'make-generation args))
-          (read-from-string (if profile
-                                ;; We need to read the symlink for
-                                ;; ~/.guix-profile and the Guix checkout profile
-                                ;; otherwise `generation-numbers' won't work.
-                                (generation-list (guix-expand-profile-symlink profile))
-                                (generation-list)))))
+          (if profile
+              ;; We need to read the symlink for
+              ;; ~/.guix-profile and the Guix checkout profile
+              ;; otherwise `generation-numbers' won't work.
+              (generation-list (guix-expand-profile-symlink profile))
+              (generation-list))))
 
 (defmethod manager-switch-generation ((manager guix-manager) (generation os-generation)
                                       &optional profile)
@@ -440,11 +511,6 @@ for non-standard profiles."
        (list-files-recursively (path output))))
    outputs))
 
-;; TODO: Write tests.
-;; TODO: Guix special commands:
+;; TODO: Implement more Guix-specific commands:
 ;; - build
 ;; - edit
-;; - list-generations (guix pull -l + guix package -l)
-;;   guix package  -p /home/ambrevar/.config/guix/current -l
-;;   ui.scm: display-profile-content
-;; - list-installed from profile?

@@ -157,6 +157,7 @@
        ("log4cl" ,cl-log4cl)
        ("mk-string-metrics" ,cl-mk-string-metrics)
        ("moptilities" ,cl-moptilities)
+       ("named-readtables" ,cl-named-readtables)
        ("osicat" ,sbcl-osicat)          ; SBCL version needed for libosicat.so.
        ("parenscript" ,cl-parenscript)
        ("plump" ,cl-plump)
