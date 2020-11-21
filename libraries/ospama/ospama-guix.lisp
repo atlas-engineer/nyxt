@@ -27,18 +27,20 @@ package managers like Nix or Guix."))
 
 (detect-manager "guix" 'guix-manager)
 
+(defmethod print-object ((obj (eql 'ospama::\#t)) stream)
+  "Specialized printing of Scheme's #t for `cl->scheme-syntax'."
+  (write-string "#t" stream))
+
+(defmethod print-object ((obj (eql 'ospama::\#f)) stream)
+  "Specialized printing of Scheme's #f for `cl->scheme-syntax'."
+  (write-string "#f" stream))
+
 (declaim (ftype (function (t) string)))
 (defun cl->scheme-syntax (form)
   (str:replace-all
    ;; Backslashes in Common Lisp are doubled, unlike Guile.
    "\\\\" "\\"
-   #+ccl
-   ;; Escape symbols are printed as \\NAME while they should be printed as NAME.
-   (str:replace-all "\\" "" (format nil "~s" form))
-   #+(not ccl)
-   ;; Escaped symbols (e.g. '\#t) are printed as '|NAME| but should be
-   ;; printed as NAME.
-   (ppcre:regex-replace-all "'\\|([^|]*)\\|" (format nil "~s" form) "\\1")))
+   (write-to-string form)))
 
 (defvar *guix-repl-idle-timeout* 60
   "Time in seconds of being idle before the `guix repl` is exited.")
@@ -88,7 +90,7 @@ For each inputs on `%guix-listener-channel' a result is returned on
                 ;; TODO: Report read errors.
                 (chanl:send %guix-result-channel
                             (ignore-errors
-                              (named-readtables:in-readtable scheme-syntax)
+                              (named-readtables:in-readtable scheme-reader-syntax)
                               (prog1 (read-from-string output)
                                 (named-readtables:in-readtable nil)))))))
         (t ()
@@ -141,198 +143,6 @@ value.
         (_
           ;; Error, or unexpected REPL result formatting.
          (values nil repl-result))))))
-
-(defvar %find-package
-  ;; TODO: Use upstream's way to find packages.
-  '(lambda (name)
-    (let ((result (list)))
-      (fold-packages
-       (lambda (package count)
-         (when (string=? (package-name package)
-                         name)
-           (set! result package))
-         (+ 1 count))
-       1)
-      result)))
-
-;; TODO: Find a fast way to compute the output-paths.
-(defun package-output-paths (name)
-  "Computing the output-paths in `generate-database' is too slow, so we do it
-just-in-time instead."
-  (guix-eval
-   '(use-modules
-     (guix store)
-     (guix derivations)
-     (guix monads)
-     (guix grafts)
-     (guix gexp)
-     (guix packages)
-     (guix utils)
-     (gnu packages))
-
-   `(define find-package ,%find-package)
-
-   '(define* (package-output-paths package)
-     "Return store items, even if not present locally."
-     (define (lower-object/no-grafts obj system) ; From (guix scripts weather)
-      (mlet* %store-monad ((previous (set-grafting '\#f))
-                           (drv (lower-object obj system))
-                           (_ (set-grafting previous)))
-       (return drv)))
-     (with-store store
-       (run-with-store store
-        (mlet %store-monad ((drv (lower-object/no-grafts package (%current-system))))
-         ;; Note: we don't try building DRV like 'guix archive' does
-         ;; because we don't have to since we can instead rely on
-         ;; substitute meta-data.
-         (return
-           (derivation->output-paths drv))))))
-
-   `(package-output-paths (find-package ,name))))
-
-(defun package-output-size (output-path)
-  (guix-eval
-   '(use-modules
-     (guix store)
-     (guix monads))
-
-   `(let ((path-info (with-store store
-                       (run-with-store store
-                                       (mbegin %store-monad
-                                               (query-path-info* ,output-path))))))
-      (if path-info
-          (path-info-nar-size path-info)
-          0))))
-
-(defun generate-database ()
-  (guix-eval
-   '(use-modules
-     (guix packages)
-     (guix licenses)
-     (guix utils)
-     (guix build utils)                 ; For `string-replace-substring'.
-     (gnu packages))
-
-   '(define (ensure-list l)
-     (if (list? l)
-         l
-         (list l)))
-
-   '(fold-packages
-     (lambda (package result)
-       (let ((location (package-location package)))
-         (cons
-          (list
-           (package-name package)
-           (list
-            #:version (package-version package)
-            #:outputs (package-outputs package)
-            #:supported-systems (package-supported-systems package)
-            #:inputs (map car (package-inputs package))
-            #:propagated-inputs (map car (package-propagated-inputs package))
-            #:native-inputs (map car (package-native-inputs package))
-            #:location (string-join (list (location-file location)
-                                          (number->string (location-line location))
-                                          (number->string (location-column location)))
-                                    ":")
-            ;; In Guix, an empty home-page is #f, but we want a string.
-            #:home-page (or (package-home-page package) "")
-            #:license-name (map license-name (ensure-list (package-license package)))
-            #:synopsis (package-synopsis package)
-            #:description (string-replace-substring (package-description package) "\\n" " ")))
-          result)))
-     '())))
-
-(defun package-dependents (name)        ; TODO: Unused?
-  (guix-eval
-   '(use-modules
-     (guix graph)
-     (guix scripts graph)
-     (guix store)
-     (guix monads)
-     (guix packages)
-     (gnu packages))
-
-   '(define (all-packages)                  ; From refresh.scm.
-     "Return the list of all the distro's packages."
-     (fold-packages (lambda (package result)
-                      ;; Ignore deprecated packages.
-                      (if (package-superseded package)
-                          result
-                          (cons package result)))
-      (list)
-      #:select? (const '\#t)))
-
-   '(define (list-dependents packages)
-     "List all the things that would need to be rebuilt if PACKAGES are changed."
-     ;; Using %BAG-NODE-TYPE is more accurate than using %PACKAGE-NODE-TYPE
-     ;; because it includes implicit dependencies.
-     (define (full-name package)
-      (string-append (package-name package) "@"
-       (package-version package)))
-     (mlet %store-monad ((edges (node-back-edges %bag-node-type
-                                 (package-closure (all-packages)))))
-      (let* ((dependents (node-transitive-edges packages edges))
-             (covering   (filter (lambda (node)
-                                   (null? (edges node)))
-                                 dependents)))
-        (return dependents))))
-
-   `(define find-package ,%find-package)
-
-   `(map package-name
-         (with-store store
-           (run-with-store
-            store
-            (mbegin %store-monad
-                    (list-dependents (list (find-package ,name)))))))))
-
-(declaim (ftype (function (&optional (or symbol string pathname))) list-installed))
-(defun list-installed (&optional (profile '%current-profile))
-  "Return the installed package outputs in PROFILE as a list of (NAME OUTPUT).
-PROFILE is a full path to a profile."
-  (guix-eval
-   '(use-modules
-     (guix profiles))
-
-   `(map (lambda (entry)
-           (list (manifest-entry-name entry)
-                 (manifest-entry-output entry)))
-         (manifest-entries
-          (profile-manifest ,(namestring profile))))))
-
-(defun generation-list (&optional (profile '%current-profile))
-  "Return the generations in PROFILE as a list of
-(NUMBER CURRENT? PACKAGES TIME FILENAME).
-PROFILE is a full path to a profile.
-Date is in the form 'Oct 22 2020 18:38:42'."
-  (let ((profile (if (pathnamep profile)
-                     (namestring profile)
-                     profile)))
-    (guix-eval
-     '(use-modules
-       (ice-9 match)
-       (srfi srfi-19)
-       (guix profiles))
-
-     `(let loop ((generations (profile-generations ,profile)))
-        (match generations
-          ((number . rest)
-           (cons (list number
-                       (if (= (generation-number ,profile) number)
-                           't
-                           'nil)
-                       (length (manifest-entries
-                                (profile-manifest
-                                 (generation-file-name ,profile number))))
-                       (date->string
-                        (time-utc->date
-                         (generation-time ,profile number))
-                        ;; ISO-8601 date/time
-                        "~5")
-                       (generation-file-name ,profile number))
-                 (loop rest)))
-          (_ '()))))))
 
 (define-class guix-package (os-package)
   ((outputs '())

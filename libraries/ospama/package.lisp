@@ -9,4 +9,5 @@
   (:import-from #:class* #:define-class)
   (:import-from #:serapeum #:export-always))
 
-(defvar ospama::scheme-syntax nil)
+(defvar ospama::scheme-reader-syntax nil)
+(defvar ospama::scheme-writer-syntax nil)
