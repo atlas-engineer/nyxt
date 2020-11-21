@@ -303,7 +303,8 @@
                nyxt/class-star)
   :pathname "libraries/ospama/"
   :components ((:file "package")
-               (:file "scheme-reader")
+               (:file "scheme-syntax")
+               (:file "guix-backend")
                (:file "ospama")
                (:file "ospama-guix"))
   :in-order-to ((test-op (test-op "nyxt/ospama/tests"))))

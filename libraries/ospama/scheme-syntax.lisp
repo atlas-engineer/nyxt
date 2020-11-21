@@ -3,7 +3,7 @@
 
 (in-package :named-readtables)
 
-(defreadtable ospama::scheme-syntax
+(defreadtable ospama::scheme-reader-syntax
   (:merge :standard)
   ;; TODO: While Scheme is case sensitive, preserving the case would mean we'd
   ;; have to upcase all return value symbols.  Or is there a smarter way to "do
@@ -19,6 +19,21 @@
   (:dispatch-macro-char #\# #\f #'(lambda (stream char1 char2)
                                     (declare (ignore stream char1 char2))
                                     NIL))
+  ;; `#:foo' is not a keyword in Common Lisp, read it as `:foo'.
   (:dispatch-macro-char #\# #\: #'(lambda (stream char1 char2)
                                     (declare (ignore char1 char2))
                                     (intern (string-upcase (string (read stream))) "KEYWORD"))))
+
+(defreadtable ospama::scheme-writer-syntax
+  (:merge :standard)
+  ;; (:case :preserve)
+  (:macro-char #\[ #'(lambda (stream char)
+                       (declare (ignore char))
+                       (read-delimited-list #\] stream)))
+  (:macro-char #\# :dispatch)
+  (:dispatch-macro-char #\# #\t #'(lambda (stream char1 char2)
+                                    (declare (ignore stream char1 char2))
+                                    'ospama::\#t))
+  (:dispatch-macro-char #\# #\f #'(lambda (stream char1 char2)
+                                    (declare (ignore stream char1 char2))
+                                    'ospama::\#f)))
