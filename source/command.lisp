@@ -54,13 +54,17 @@ Example:
   \"Play video in the currently open buffer.\"
   (uiop:run-program (list \"mpv\" (object-string (url buffer)))))"
   (let ((documentation (if (stringp (first body))
-                           (first body)
+                           (prog1
+                               (list (first body))
+                             (setf body (rest body)))
                            (warn (make-condition
                                   'command-documentation-style-warning
                                   :name name))))
-        (body (if (stringp (first body))
-                  (rest body)
-                  body))
+        (declares (when (and (listp (first body))
+                             (eq 'declare (first (first body))))
+                    (prog1
+                        (first body)
+                      (setf body (rest body)))))
         (before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")))
         (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
     `(progn
@@ -83,7 +87,8 @@ Example:
          ;; We use defun to define the command instead of storing a lambda because we want
          ;; to be able to call the foo command from Lisp with (FOO ...).
          (defun ,name ,arglist
-           ,documentation
+           ,@documentation
+           ,declares
            (handler-case
                (progn
                  (hooks:run-hook ,before-hook)
