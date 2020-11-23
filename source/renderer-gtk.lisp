@@ -85,7 +85,7 @@ not return."
       (gtk:within-gtk-thread
         (funcall thunk))))
 
-(defmacro define-ffi-method (name args &body body) ; TODO: Support declare, docstring.
+(defmacro define-ffi-method (name args &body body)
   "Make a window."
   (let* ((docstring (when (stringp (first body))
                       (prog1
