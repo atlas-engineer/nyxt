@@ -90,9 +90,9 @@ For each inputs on `%guix-listener-channel' a result is returned on
                 ;; TODO: Report read errors.
                 (chanl:send %guix-result-channel
                             (ignore-errors
-                             (named-readtables:in-readtable scheme-reader-syntax)
-                             (prog1 (read-from-string output)
-                               (named-readtables:in-readtable nil)))))))
+                             (let ((*readtable* (named-readtables:ensure-readtable
+                                                 'scheme-reader-syntax)))
+                               (read-from-string output)))))))
         (t ()
           (close (uiop:process-info-input guix-process))
           (unless (uiop:process-alive-p guix-process)
