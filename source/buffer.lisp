@@ -903,7 +903,7 @@ this command it cycles through all buffers."
 (defun mode-name (mode)
   (class-name (original-class mode)))
 
-(declaim (ftype (function (list-of-symbols &optional buffer)) disable-modes enable-modes))
+(declaim (ftype (function (list-of-symbols &optional buffer)) disable-modes))
 (export-always 'disable-modes)
 (defun disable-modes (modes &optional (buffer (current-buffer)))
   "Disable MODES for BUFFER.
@@ -914,14 +914,16 @@ MODES should be a list symbols, each possibly returned by `mode-name'."
           (funcall-safely (sym command) :buffer buffer :activate nil)
           (log:warn "Mode command ~a not found." mode)))))
 
+(declaim (ftype (function (list-of-symbols &optional buffer t)) enable-modes))
 (export-always 'enable-modes)
-(defun enable-modes (modes &optional (buffer (current-buffer)))
+(defun enable-modes (modes &optional (buffer (current-buffer)) args)
   "Enable MODES for BUFFER.
-MODES should be a list of symbols, each possibly returned by `mode-name'."
+MODES should be a list of symbols, each possibly returned by `mode-name'.
+ARGS are passed to the mode command."
   (dolist (mode modes)
     (let ((command (mode-command mode)))
       (if command
-          (funcall-safely (sym command) :buffer buffer :activate t)
+          (apply #'funcall-safely (sym command) :buffer buffer :activate t args)
           (log:warn "Mode command ~a not found." mode)))))
 
 (defun active-mode-suggestion-filter (buffers)

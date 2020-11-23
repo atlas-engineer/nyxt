@@ -8,28 +8,38 @@
 (in-package :nyxt/auto-mode)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
 
-(declaim (ftype (function ((or symbol root-mode)) (values symbol &optional)) maybe-mode-name))
+(declaim (ftype (function ((or symbol root-mode list)) (values symbol &optional)) maybe-mode-name))
 (defun maybe-mode-name (mode)
-  (if (symbolp mode) mode (mode-name mode)))
+  (let ((mode (if (listp mode)
+                  (first mode)
+                  mode)))
+    (if (symbolp mode) mode (mode-name mode))))
 
-(declaim (ftype (function ((or symbol root-mode) (or symbol root-mode)) boolean)
+(declaim (ftype (function ((or symbol root-mode list) (or symbol root-mode)) boolean)
                 mode-equal))
 (defun mode-equal (mode1 mode2)
   (string-equal (symbol-name (maybe-mode-name mode1))
                 (symbol-name (maybe-mode-name mode2))))
 
 (defun rememberable-of (modes auto-mode)
-  (set-difference modes (non-rememberable-modes auto-mode)
-                  :test #'mode-equal))
+  (if auto-mode
+      (set-difference modes (non-rememberable-modes auto-mode)
+                      :test #'mode-equal)
+      modes))
 
 (define-class auto-mode-rule ()
   ((test (error "Slot `test' should be set.")
          :type list)
    (included '()
-             :type list-of-symbols
-             :documentation "The list of mode symbols to enable on rule activation.")
+             :type list
+             :documentation "The list of modes to enable on rule activation.
+Here 'modes' can be either mode symbols or a list when the first element is the
+mode symbols and the rest are the arguments to pass to the mode initiatiation
+function.")
    (excluded '()
              :type list-of-symbols
              :documentation "The list of mode symbols to disable on rule activation.")
@@ -59,14 +69,15 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
 (defun enable-matching-modes (url buffer)
   (let ((rule (matching-auto-mode-rule url buffer))
         (auto-mode (find-mode buffer 'auto-mode)))
-    (enable-modes (set-difference
-                   (included rule)
-                   (rememberable-of (mapcar #'mode-name (modes buffer)) auto-mode)
-                   :test #'mode-equal)
-                  buffer)
+    (dolist (modes+args (mapcar #'alex:ensure-list
+                                (set-difference
+                                 (included rule)
+                                 (rememberable-of (modes buffer) auto-mode)
+                                 :test #'mode-equal)))
+      (enable-modes (list (first modes+args)) buffer (rest modes+args)))
     (disable-modes (if (exact-p rule)
                        (set-difference
-                        (rememberable-of (mapcar #'mode-name (modes buffer)) auto-mode)
+                        (rememberable-of (modes buffer) auto-mode)
                         (included rule) :test #'mode-equal)
                        (excluded rule))
                    buffer)))
@@ -281,21 +292,24 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                                 (:include list) (:exact-p boolean))
                           (values list &optional))
                 add-modes-to-auto-mode-rules))
+(sera:export-always 'add-modes-to-auto-mode-rules)
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
   (with-data-access (rules (auto-mode-rules-path (current-buffer)))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))
            (auto-mode (find-mode (current-buffer) 'auto-mode))
-           (include (rememberable-of (mapcar #'maybe-mode-name include) auto-mode))
-           (exclude (rememberable-of (mapcar #'maybe-mode-name exclude) auto-mode)))
+           (include (rememberable-of include auto-mode))
+           (exclude (rememberable-of exclude auto-mode)))
       (setf (exact-p rule) exact-p
             (included rule) (union include
                                    (when append-p
-                                     (set-difference (included rule) exclude)))
+                                     (set-difference (included rule) exclude
+                                                     :test #'mode-equal)))
             (excluded rule) (union exclude
                                    (when append-p
-                                     (set-difference (excluded rule) include)))
+                                     (set-difference (excluded rule) include
+                                                     :test #'mode-equal)))
             rules (delete-duplicates
                    (append (when (or (included rule) (excluded rule))
                              (list rule))
@@ -306,7 +320,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
 (defmethod serialize-object ((rule auto-mode-rule) stream)
   (flet ((write-if-present (slot)
            (when (funcall slot rule)
-             (format t " :~a ~a"
+             (format t " :~a ~s"
                      slot
                      (funcall slot rule)))))
     (let ((*standard-output* stream)
@@ -352,6 +366,9 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
 ;; - :exact-p  (optional) -- Whether to enable only :included modes and disable
 ;;    everything else (if :exact-p is t), or just add :included and exclude :excluded
 ;;    modes from the current modes list (if :exact-p is nil or not present).
+;;
+;; Included modes is a list of mode symbols, or a list of lists in the form
+;; of (MODE-SYMBOL INIT-ARGS), where init-args are passed to the mode when instantiated.
 ;;
 ;; Conditions work this way:
 ;; - match-domain matches the URL domains only.
