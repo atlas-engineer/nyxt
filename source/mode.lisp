@@ -49,47 +49,50 @@ Example:
     (when docstring
       (setf class-args (append class-args
                                `((:documentation ,docstring)))))
-    `(progn
-       (define-class ,@class-args)
-       (define-user-class ,name)
-       ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
-       ;; Should probably always have root-mode.
-       ,(unless (eq name 'root-mode)
-          `(define-command ,name (&rest args &key (buffer (current-buffer))
-                                        (activate t explicit?)
-                                        &allow-other-keys)
-             ,docstring
-             (unless (find 'buffer (mopu:superclasses buffer) :key #'class-name)
-               ;; Warning: (typep buffer 'buffer) would not work for minibuffers
-               ;; if the BUFFER class was reassigned after the MINIBUFFER class
-               ;; declaration.
-               (error ,(format nil "Mode command ~a called on non-buffer" name)))
-             (let ((existing-instance (find-mode buffer ',name)))
-               (unless explicit?
-                 (setf activate (not existing-instance)))
-               (if activate
-                   (unless existing-instance
-                     ;; TODO: Should we move mode to the front when it already exists?
-                     (let ((new-mode (apply #'make-instance ',configurable-class-name
-                                            :buffer buffer
-                                            args)))
-                       (when (constructor new-mode)
-                         (funcall-safely (constructor new-mode) new-mode))
-                       (push new-mode (modes buffer))
-                       (hooks:run-hook (enable-hook new-mode) new-mode)
-                       (hooks:run-hook (enable-mode-hook buffer) new-mode))
-                     (print-status)
-                     (log:debug "~a enabled." ',name))
-                   (when existing-instance
-                     (hooks:run-hook (disable-hook existing-instance) existing-instance)
-                     (hooks:run-hook (disable-mode-hook buffer) existing-instance)
-                     (when (destructor existing-instance)
-                       (funcall-safely (destructor existing-instance) existing-instance))
-                     (setf (modes buffer) (delete existing-instance
-                                                  (modes buffer)))
-                     (print-status)
-                     (log:debug "~a disabled." ',name))))
-             buffer)))))
+    (alex:with-gensyms (existing-instance new-mode)
+      `(progn
+         (define-class ,@class-args)
+         (define-user-class ,name)
+         ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
+         ;; Should probably always have root-mode.
+         ,(unless (eq name 'root-mode)
+            `(define-command ,name (&rest args
+                                    &key
+                                    (buffer (current-buffer))
+                                    (activate t explicit?)
+                                    &allow-other-keys)
+               ,docstring
+               (unless (find 'buffer (mopu:superclasses buffer) :key #'class-name)
+                 ;; Warning: (typep buffer 'buffer) would not work for minibuffers
+                 ;; if the BUFFER class was reassigned after the MINIBUFFER class
+                 ;; declaration.
+                 (error ,(format nil "Mode command ~a called on non-buffer" name)))
+               (let ((,existing-instance (find-mode buffer ',name)))
+                 (unless explicit?
+                   (setf activate (not ,existing-instance)))
+                 (if activate
+                     (unless ,existing-instance
+                       ;; TODO: Should we move mode to the front when it already exists?
+                       (let ((,new-mode (apply #'make-instance ',configurable-class-name
+                                               :buffer buffer
+                                               args)))
+                         (when (constructor ,new-mode)
+                           (funcall-safely (constructor ,new-mode) ,new-mode))
+                         (push ,new-mode (modes buffer))
+                         (hooks:run-hook (enable-hook ,new-mode) ,new-mode)
+                         (hooks:run-hook (enable-mode-hook buffer) ,new-mode))
+                       (print-status)
+                       (log:debug "~a enabled." ',name))
+                     (when ,existing-instance
+                       (hooks:run-hook (disable-hook ,existing-instance) ,existing-instance)
+                       (hooks:run-hook (disable-mode-hook buffer) ,existing-instance)
+                       (when (destructor ,existing-instance)
+                         (funcall-safely (destructor ,existing-instance) ,existing-instance))
+                       (setf (modes buffer) (delete ,existing-instance
+                                                    (modes buffer)))
+                       (print-status)
+                       (log:debug "~a disabled." ',name))))
+               buffer))))))
 
 (hooks:define-hook-type mode (function (root-mode)))
 
