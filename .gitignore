@@ -29,3 +29,6 @@ Nyxt.app
 
 # Generated doc
 manual.html
+
+# Ignore flake lockfile
+flake.lock
