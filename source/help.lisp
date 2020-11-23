@@ -525,7 +525,7 @@ the "
                                    :key #'last-access))))
              (loop for item in (sera:take limit history)
                    collect (markup:markup
-                            (:li (title item) separator
+                            (:li (title item) (unless (str:emptyp (title item)) separator)
                                  (:a :href (object-string (url item))
                                      (object-string (url item)))))))))
     (let ((dashboard-style (cl-css:css
@@ -546,7 +546,9 @@ the "
                               ("#container"
                                :display "flex"
                                :flex-flow "column"
-                               :height "100vh")))))
+                               :height "100vh")
+                              ("ul"
+                               :list-style-type "circle")))))
       (with-current-html-buffer (buffer "*Dashboard*" 'base-mode)
         (markup:markup
          (:style (style buffer))
