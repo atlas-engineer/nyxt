@@ -8,7 +8,8 @@
 (define-class window ()
   ((id "")
    (active-buffer :accessor nil :reader active-buffer :export nil)
-   (active-minibuffers :export nil
+   (active-minibuffers '()
+                       :export nil
                        :documentation "The stack of currently active minibuffers.")
    (key-stack '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
