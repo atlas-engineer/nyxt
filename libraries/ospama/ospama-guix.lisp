@@ -73,7 +73,7 @@ For each inputs on `%guix-listener-channel' a result is returned on
       (handler-case
           (do () (nil)
             (let ((input (bt:with-timeout (*guix-repl-idle-timeout*)
-                           (chanl:recv %guix-listener-channel))))
+                           (calispel:? %guix-listener-channel))))
               (setf guix-process (maybe-start-guix guix-process))
               ;; Append a newline so that REPL proceeds.
               (format (uiop:process-info-input guix-process) "~a~%" input)
@@ -88,7 +88,7 @@ For each inputs on `%guix-listener-channel' a result is returned on
                 ;; `read' errors could leave a truncated s-expression behind
                 ;; which would prefix the next evaluation result.
                 ;; TODO: Report read errors.
-                (chanl:send %guix-result-channel
+                (calispel:! %guix-result-channel
                             (ignore-errors
                              (let ((*readtable* (named-readtables:ensure-readtable
                                                  'scheme-reader-syntax)))
@@ -105,8 +105,8 @@ On REPL exception (or unexpected form), return NIL and the form as second
 value.
 #<unspecified> objects are returns as NIL."
   (unless (and %guix-listener-channel %guix-result-channel)
-    (setf %guix-listener-channel (make-instance 'chanl:channel))
-    (setf %guix-result-channel (make-instance 'chanl:channel))
+    (setf %guix-listener-channel (make-instance 'calispel:channel))
+    (setf %guix-result-channel (make-instance 'calispel:channel))
     (bt:make-thread #'guix-listener))
   ;; Need to be in this package to avoid prefixing symbols with current package.
   (let* ((*package* (find-package :ospama))
@@ -116,13 +116,13 @@ value.
          (final-form (first (last all-forms))))
     (dolist (form ignore-result-forms)
       (let ((input (cl->scheme-syntax form)))
-        (chanl:send %guix-listener-channel input)
+        (calispel:! %guix-listener-channel input)
         ;; Discard result:
-        (chanl:recv %guix-result-channel)))
+        (calispel:? %guix-result-channel)))
     ;; Final form:
     (let ((input (cl->scheme-syntax final-form)))
-      (chanl:send %guix-listener-channel input))
-    (let ((repl-result (chanl:recv %guix-result-channel)))
+      (calispel:! %guix-listener-channel input))
+    (let ((repl-result (calispel:? %guix-result-channel)))
       (match repl-result
         ((list* 'values values)
          (apply #'values

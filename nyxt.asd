@@ -292,7 +292,7 @@
 
 (asdf:defsystem nyxt/ospama
   :depends-on (alexandria
-               chanl
+               calispel
                cl-ppcre
                local-time
                named-readtables
