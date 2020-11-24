@@ -1,0 +1,19 @@
+This minibuffer library is heavily inspired by Emacs' [[https://emacs-helm.github.io/helm/][Helm]].
+
+It only deals with the backend side of things, it does not handle any display.
+
+Non-exhaustive list of features:
+
+- Asynchronous suggestion computation.
+- Multiple sources.
+- Multiple actions.
+- Customizable matching and sorting.
+- Multiple properties to match and display (also known as "multiple column
+  display" like =helm-find-files=).
+- Customizable initialization and cleanup functions.
+- Notifications sent when suggestion list is updated.
+- Per-source history.
+- Per-source keymaps.
+- Resumable minibuffers.
+- Persistent action (executed without closing the minibuffer).
+- Follow-mode (automatically run the persistent action on selection change).
