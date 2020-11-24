@@ -316,3 +316,25 @@
   :depends-on (nyxt/ospama prove)
   :perform (asdf:test-op (op c)
                          (nyxt-run-test c "libraries/ospama/tests/tests.lisp")))
+
+(asdf:defsystem nyxt/minibuffer
+  :depends-on (alexandria
+               calispel
+               cl-containers
+               moptilities
+               serapeum
+               str
+               nyxt/keymap
+               nyxt/class-star)
+  :pathname "libraries/minibuffer/"
+  :components ((:file "package")
+               (:file "filter-preprocessor")
+               (:file "filter")
+               (:file "minibuffer-source")
+               (:file "minibuffer"))
+  :in-order-to ((test-op (test-op "nyxt/minibuffer/tests"))))
+
+(asdf:defsystem nyxt/minibuffer/tests
+  :depends-on (nyxt/minibuffer prove)
+  :perform (asdf:test-op (op c)
+                         (nyxt-run-test c "libraries/minibuffer/tests/")))
