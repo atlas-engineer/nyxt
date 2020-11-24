@@ -97,28 +97,30 @@ complete against a search engine."
 
 (define-command return-selection (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer selection."
-  (with-slots (must-match-p nyxt::suggestions nyxt::suggestion-cursor
-               invisible-input-p
-               multi-selection-p nyxt::marked-suggestions)
-      minibuffer
-    (match (or nyxt::marked-suggestions
-               (and nyxt::suggestions
-                    (list (nth nyxt::suggestion-cursor nyxt::suggestions)))
-               (and (not must-match-p)
-                    (list (input-buffer minibuffer))))
-      ((guard nyxt::suggestions nyxt::suggestions)
-       ;; Note that "immediate input" is also in suggestions, so it's caught here.
-       (setf nyxt::suggestions
-             (mapcar (lambda (suggestion) (if (stringp suggestion)
-                                              (str:replace-all " " " " suggestion)
-                                              suggestion))
-                     nyxt::suggestions))
-       (calispel:! (channel minibuffer) (if multi-selection-p
-                                            nyxt::suggestions
-                                            (first nyxt::suggestions))))
-      (nil (when invisible-input-p
-             (calispel:! (channel minibuffer) (input-buffer minibuffer))))))
-  (quit-minibuffer minibuffer))
+  (let ((result))
+    (with-slots (must-match-p nyxt::suggestions nyxt::suggestion-cursor
+                 invisible-input-p
+                 multi-selection-p nyxt::marked-suggestions)
+        minibuffer
+      (match (or nyxt::marked-suggestions
+                 (and nyxt::suggestions
+                      (list (nth nyxt::suggestion-cursor nyxt::suggestions)))
+                 (and (not must-match-p)
+                      (list (input-buffer minibuffer))))
+        ((guard nyxt::suggestions nyxt::suggestions)
+         ;; Note that "immediate input" is also in suggestions, so it's caught here.
+         (setf nyxt::suggestions
+               (mapcar (lambda (suggestion) (if (stringp suggestion)
+                                                (str:replace-all " " " " suggestion)
+                                                suggestion))
+                       nyxt::suggestions))
+         (setf result (if multi-selection-p
+                          nyxt::suggestions
+                          (first nyxt::suggestions))))
+        (nil (when invisible-input-p
+               (setf result (input-buffer minibuffer))))))
+    (quit-minibuffer minibuffer)
+    (calispel:! (channel minibuffer) result)))
 
 (define-command return-input (&optional (minibuffer (current-minibuffer)))
   "Return with minibuffer input, ignoring the selection."
