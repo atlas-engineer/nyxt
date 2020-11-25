@@ -23,3 +23,12 @@
                    do (setf (gethash document-b (edges document-a))
                             (distance document-a document-b))))))
 
+(defmethod dbscan ((collection document-collection) &key (minimum-points 3)
+                                                         (epsilon 0.5))
+  (labels ((range-query (document)
+             "Return all points that have a distance less than epsilon."
+             (loop for vertex being the hash-keys of (edges document)
+                   when (and (<= (gethash vertex (edges document)) epsilon)
+                             (not (eq vertex document)))
+                   collect vertex)))
+    ))
