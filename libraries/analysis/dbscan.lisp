@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :text-analysis)
+(in-package :analysis)
 
 ;;; dbscan.lisp -- implementation of Density-based spatial clustering
 ;;; of applications with noise (DBSCAN) algorithm
@@ -9,7 +9,7 @@
 ;; Vector distance
 
 (defmethod distance ((vector-1 t) (vector-2 t))
-  "v = (list 1 0 5)
-   w = (list 0 2 4)
-   d(v, w) = (sqrt (1-0)^2 + (0-2)^2 + (5-4)^2)"
-  )
+  "Calculate the euclidean distance between two vectors."
+  (sqrt (loop for i across vector-1
+              for j across vector-2
+              sum (expt (- i j) 2))))

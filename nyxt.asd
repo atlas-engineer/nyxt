@@ -223,7 +223,8 @@
                (:file "stem")
                (:file "tokenize")
                (:file "analysis")
-               (:file "text-rank")))
+               (:file "text-rank")
+               (:file "dbscan")))
 
 (asdf:defsystem nyxt/user-interface
   :depends-on (:cl-markup)
