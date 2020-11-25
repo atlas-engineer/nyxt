@@ -7,7 +7,8 @@
 ;;; of applications with noise (DBSCAN) algorithm
 
 (defclass document-cluster (document-vertex)
-  ((cluster :accessor cluster)))
+  ((cluster :accessor cluster)
+   (neighbors :accessor neighbors)))
 
 (defmethod distance ((vector-1 t) (vector-2 t))
   "Calculate the euclidean distance between two vectors."
@@ -54,5 +55,26 @@
              (loop for vertex being the hash-keys of (edges document)
                    when (and (<= (gethash vertex (edges document)) epsilon)
                              (not (eq vertex document)))
-                   collect vertex)))
-    ))
+                   collect vertex))
+           (noisep (document)
+             "A document must have a minimum number of neighbors to
+              not qualify as noise."
+             (setf (neighbors document) (range-query document))
+             (if (< (length (neighbors document)) minimum-points)
+                 (progn (setf (cluster document) :noise) t)
+                 nil)))
+    (loop for document in (documents collection)
+          with cluster = 0
+          with stack = (list)
+          unless (or (slot-boundp document 'cluster)
+                     (noisep document))
+          do (incf cluster)
+             (setf (cluster document) cluster)
+             (setf stack (neighbors document))
+             (loop while stack for item = (pop stack)
+                   when (eq (cluster item) :noise)
+                   do (setf (cluster item) cluster)
+                   unless (slot-boundp item 'cluser)
+                   do (setf (cluster item) cluster)
+                      (unless (noisep item)
+                        (append (neighbors item) stack))))))
