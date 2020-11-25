@@ -1,11 +1,11 @@
 #+html: <img src="https://nyxt.atlas.engineer/static/image/nyxt_256x256.png" align="right"/>
 
-* Nyxt web browser
+* Nyxt browser
 
-Nyxt is a keyboard-oriented, extensible web-browser designed for power
-users.  Conceptually inspired by Emacs and Vim, it has familiar
-key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), is fully configurable and extensible in
-Lisp, and has powerful features for productivity.
+Nyxt is a keyboard-oriented, infinitely extensible web browser designed
+for power users.  Conceptually inspired by Emacs and Vim, it has
+familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), and is fully configurable in
+Lisp.
 
 If you like Nyxt and if you want to help future development, please
 support us on [[https://www.patreon.com/nyxt][Patreon]], or give us a star, thank you!
@@ -81,7 +81,7 @@ systems provide packages for Nyxt:
 
 To perform an installation from source, please see the [[file:documents/README.org][developer readme]].
 
-** Documentation
+** Documentation & Customization
 
 For full documentation about Nyxt, how it works, and how to extend it
 please see the embedded help.  To get started, run the =help= command
@@ -89,11 +89,6 @@ please see the embedded help.  To get started, run the =help= command
 
 If you want to help with development or build Nyxt from scratch, read
 the developer's documentation at [[file:documents/README.org][documents/README.org]].
-
-*** Customize and extend Nyxt
-
-Complete customization is possible through the creation of a
-=~/.config/nyxt/init.lisp= file.  For more information, see the manual.
 
 ** History of changes
 
