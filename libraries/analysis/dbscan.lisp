@@ -6,10 +6,20 @@
 ;;; dbscan.lisp -- implementation of Density-based spatial clustering
 ;;; of applications with noise (DBSCAN) algorithm
 
-;; Vector distance
+(defclass document-cluster (document-vertex)
+  ((cluster :accessor cluster)))
 
 (defmethod distance ((vector-1 t) (vector-2 t))
   "Calculate the euclidean distance between two vectors."
   (sqrt (loop for i across vector-1
               for j across vector-2
               sum (expt (- i j) 2))))
+
+(defmethod generate-document-distance-vectors ((collection document-collection))
+  "Set the edge weights for all document neighbors (graph is fully connected)."
+  (with-accessors ((documents documents)) collection
+    (loop for document-a in documents
+          do (loop for document-b in documents
+                   do (setf (gethash document-b (edges document-a))
+                            (distance document-a document-b))))))
+
