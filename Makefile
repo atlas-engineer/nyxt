@@ -31,6 +31,7 @@ lisp_quit:=--eval '(uiop:quit)'
 clean-fasls:
 	$(lisp_eval) '(asdf:make :nyxt/clean-fasls)' $(lisp_quit)
 
+.PHONY: nyxt
 nyxt:
 	$(lisp_eval) '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || \
@@ -61,28 +62,10 @@ endif
 version:
 	$(lisp_eval) '(asdf:make :nyxt/version)' $(lisp_quit)
 
-## TODO: Move install-assets to .asd.
-.PHONY: install-assets
-install-assets: version
-	mkdir -p "$(DESTDIR)$(DATADIR)/applications/"
-	sed "s/VERSION/$$(cat version)/" assets/nyxt.desktop > "$(DESTDIR)$(DATADIR)/applications/nyxt.desktop"
-	rm version
-	for i in 16 32 128 256 512; do \
-		mkdir -p "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/" ; \
-		cp -f assets/nyxt_$${i}x$${i}.png "$(DESTDIR)$(DATADIR)/icons/hicolor/$${i}x$${i}/apps/nyxt.png" ; \
-		done
-
-.PHONY: install-nyxt
-install-nyxt: nyxt
-	mkdir -p "$(DESTDIR)$(BINDIR)"
-	cp -f $< "$(DESTDIR)$(BINDIR)/"
-	chmod 755 "$(DESTDIR)$(BINDIR)/"$<
-
 .PHONY: install
-install:
-install:
 ifeq ($(UNAME), Linux)
-install: install-nyxt install-assets
+install:
+	$(lisp_eval) '(asdf:make :nyxt/install)' $(lisp_quit)
 endif
 ifeq ($(UNAME), Darwin)
 install: install-app-bundle
