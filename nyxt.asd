@@ -152,6 +152,20 @@
                     (nyxt-run-test c "tests/")
                     (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
 
+(defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
+  :depends-on (nyxt)
+  :output-files (compile-op (o c)
+                            (values (list (system-relative-pathname c "manual.html"))
+                                    t))
+  :perform (compile-op (o c)
+                       (with-open-file (out (output-file o c)
+                                            :direction :output
+                                            :if-exists :supersede)
+                         (write-string (funcall (find-symbol (string 'manual-content)
+                                                             (find-package 'nyxt)))
+
+                                       out))))
+
 (defsystem "nyxt/gtk"
   :depends-on (nyxt
                cl-cffi-gtk
