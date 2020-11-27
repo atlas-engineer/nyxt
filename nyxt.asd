@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 #+sbcl
 (sb-ext:assert-version->= 1 5 0)
 

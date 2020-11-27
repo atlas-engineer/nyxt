@@ -1,10 +1,13 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 ;; TODO: Can we move this file to build-scripts?  Looks like linux-packaging
 ;; fails to find the produced binary then.
 (defsystem "nyxt-ubuntu-package"
-  :defsystem-depends-on ("linux-packaging")
+  :defsystem-depends-on (linux-packaging)
   :class "linux-packaging:deb"
   :build-operation "linux-packaging:build-op"
-  :depends-on ("nyxt/gtk")
+  :depends-on (nyxt/gtk)
   :package-name "nyxt"
   :version #.(asdf:system-version (asdf:find-system :nyxt))
   :author #.(asdf:system-author (asdf:find-system :nyxt))
