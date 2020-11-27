@@ -150,6 +150,24 @@
                      "C-x C-f" 'open-file))
                   :type keymap:scheme)))
 
+(defun cluster-buffers ()
+  (let ((collection (make-instance 'analysis::document-collection)))
+    (loop for buffer in (buffer-list)
+          unless (internal-buffer-p buffer)
+          do (with-current-buffer buffer
+               (analysis::add-document collection
+                                       (make-instance 'analysis::document-cluster
+                                                      :source buffer
+                                                      :string-contents (document-get-paragraph-contents)))))
+    (analysis::tf-idf-vectorize-documents collection)
+    (analysis::generate-document-distance-vectors collection)
+    (analysis::dbscan collection :minimum-points 2
+                                 :epsilon 0.1)
+    (loop for document in (analysis::documents collection)
+          do (format t "title: ~a cluster: ~a ~%"
+                     (title (analysis::source document))
+                     (analysis::cluster document)))))
+
 (define-command list-buffers ()
   "Show the *Buffers* buffer."
   (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
