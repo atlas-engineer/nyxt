@@ -1,4 +1,4 @@
-(defsystem :nyxt
+(defsystem "nyxt"
   :version "2" ; Pre-release 4
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
@@ -146,20 +146,20 @@
        (uiop:getenv "NYXT_TESTS_ERROR_ON_FAIL")
        (uiop:quit 18)))
 
-(defsystem nyxt/tests
+(defsystem "nyxt/tests"
   :depends-on (nyxt prove)
   :perform (test-op (op c)
-                         (nyxt-run-test c "tests/")
-                         (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
+                    (nyxt-run-test c "tests/")
+                    (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
 
-(defsystem :nyxt/gtk
+(defsystem "nyxt/gtk"
   :depends-on (:nyxt
                :cl-cffi-gtk
                :cl-webkit2)
   :pathname "source/"
   :components ((:file "renderer-gtk")))
 
-(defsystem :nyxt/qt
+(defsystem "nyxt/qt"
   :depends-on (:nyxt
                :cl-webengine
                :trivial-main-thread)
@@ -175,13 +175,13 @@
 ;; The workaround is to set a new dummy system of which the sole purpose is to
 ;; produce the desired binary.
 
-(defsystem :nyxt/gtk-application
+(defsystem "nyxt/gtk-application"
   :depends-on (:nyxt/gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
-(defsystem :nyxt/qt-application
+(defsystem "nyxt/qt-application"
   :depends-on (:nyxt/qt)
   :build-operation "program-op"
   :build-pathname "nyxt-qt"
@@ -193,7 +193,7 @@
                    :executable t
                    :compression (not (null (uiop:getenv "NYXT_COMPRESS")))))
 
-(defsystem nyxt/download-manager
+(defsystem "nyxt/download-manager"
   :depends-on (chanl
                cl-ppcre
                dexador
@@ -206,13 +206,13 @@
                (:file "native"))
   :in-order-to ((test-op (test-op "nyxt/download-manager/tests"))))
 
-(defsystem nyxt/download-manager/tests
+(defsystem "nyxt/download-manager/tests"
   :depends-on (nyxt/download-manager prove)
   :perform (test-op (op c)
-                         (nyxt-run-test c "libraries/download-manager/tests/"
-                                        :network-needed-p t)))
+                    (nyxt-run-test c "libraries/download-manager/tests/"
+                                   :network-needed-p t)))
 
-(defsystem nyxt/text-analysis
+(defsystem "nyxt/text-analysis"
   :depends-on (:str
                :serapeum
                :alexandria
@@ -225,30 +225,30 @@
                (:file "analysis")
                (:file "text-rank")))
 
-(defsystem nyxt/user-interface
+(defsystem "nyxt/user-interface"
   :depends-on (:cl-markup)
   :pathname "libraries/user-interface/"
   :components ((:file "package")
                (:file "user-interface")))
 
-(defsystem nyxt/text-buffer
+(defsystem "nyxt/text-buffer"
   :depends-on (:cluffer)
   :pathname "libraries/text-buffer/"
   :components ((:file "package")
                (:file "text-buffer")))
 
-(defsystem nyxt/history-tree
+(defsystem "nyxt/history-tree"
   :pathname "libraries/history-tree/"
   :components ((:file "package")
                (:file "history-tree"))
   :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
 
-(defsystem nyxt/history-tree/tests
+(defsystem "nyxt/history-tree/tests"
   :depends-on (nyxt/history-tree prove)
   :perform (test-op (op c)
-                         (nyxt-run-test c "libraries/history-tree/tests/")))
+                    (nyxt-run-test c "libraries/history-tree/tests/")))
 
-(defsystem nyxt/password-manager
+(defsystem "nyxt/password-manager"
   :depends-on (bordeaux-threads
                cl-ppcre
                str
@@ -262,7 +262,7 @@
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
 
-(defsystem nyxt/keymap
+(defsystem "nyxt/keymap"
   :depends-on (alexandria fset str)
   :pathname "libraries/keymap/"
   :components ((:file "package")
@@ -273,24 +273,24 @@
                (:file "scheme-names"))
   :in-order-to ((test-op (test-op "nyxt/keymap/tests"))))
 
-(defsystem nyxt/keymap/tests
+(defsystem "nyxt/keymap/tests"
   :depends-on (alexandria fset nyxt/keymap prove)
   :perform (test-op (op c)
-                         (nyxt-run-test c "libraries/keymap/tests/")))
+                    (nyxt-run-test c "libraries/keymap/tests/")))
 
-(defsystem nyxt/class-star
+(defsystem "nyxt/class-star"
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
   :pathname "libraries/class-star/"
   :components ((:file "package")
                (:file "class-star"))
   :in-order-to ((test-op (test-op "nyxt/class-star/tests"))))
 
-(defsystem nyxt/class-star/tests
+(defsystem "nyxt/class-star/tests"
   :depends-on (nyxt/class-star prove)
   :perform (test-op (op c)
-                         (nyxt-run-test c "libraries/class-star/tests/")))
+                    (nyxt-run-test c "libraries/class-star/tests/")))
 
-(defsystem nyxt/ospama
+(defsystem "nyxt/ospama"
   :depends-on (alexandria cl-ppcre local-time osicat serapeum str nyxt/class-star)
   :pathname "libraries/ospama/"
   :components ((:file "package")
@@ -298,7 +298,7 @@
                (:file "ospama-guix"))
   :in-order-to ((test-op (test-op "nyxt/ospama/tests"))))
 
-(defsystem nyxt/ospama/tests
+(defsystem "nyxt/ospama/tests"
   :depends-on (nyxt/ospama prove)
   :perform (test-op (op c)
-                         (nyxt-run-test c "libraries/ospama/tests/tests.lisp")))
+                    (nyxt-run-test c "libraries/ospama/tests/tests.lisp")))
