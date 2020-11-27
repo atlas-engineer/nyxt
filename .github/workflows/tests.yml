@@ -56,10 +56,10 @@ jobs:
       shell: bash
       run: ros -e "(ql:update-all-dists :prompt nil)"
 
-    - name: Fetch Common Lisp third-party dependencies
+    - name: Register Common Lisp third-party dependencies location
       shell: bash
       run: |
-        make quicklisp-extra-libs
+        mkdir -p ~/.config/common-lisp/source-registry.conf.d/
         echo "(:tree \"$PWD/quicklisp-libraries\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
     - name: Load system and run tests
@@ -68,7 +68,7 @@ jobs:
       env:
        NYXT_TESTS_ERROR_ON_FAIL: yes
       run: |
-        ros -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (ql:quickload :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'
+        ros -e '(push :nyxt-internal-quicklisp *features*)' -e '(asdf:test-system :nyxt)'
 
     - name: Compilation warnings
       shell: bash
