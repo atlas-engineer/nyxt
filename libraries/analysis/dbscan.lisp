@@ -16,6 +16,9 @@
               for j across vector-2
               sum (expt (- i j) 2))))
 
+(defmethod distance ((document-a document-cluster) (document-b document-cluster))
+  (distance (vector-form document-a) (vector-form document-b)))
+
 (defmethod generate-document-distance-vectors ((collection document-collection))
   "Set the edge weights for all document neighbors (graph is fully connected)."
   (with-accessors ((documents documents)) collection
@@ -60,7 +63,7 @@
              "A document must have a minimum number of neighbors to
               not qualify as noise."
              (setf (neighbors document) (range-query document))
-             (if (< (length (neighbors document)) minimum-points)
+             (if (< (+ 1 (length (neighbors document))) minimum-points)
                  (progn (setf (cluster document) :noise) t)
                  nil)))
     (loop for document in (documents collection)
@@ -72,9 +75,10 @@
              (setf (cluster document) cluster)
              (setf stack (neighbors document))
              (loop while stack for item = (pop stack)
-                   when (eq (cluster item) :noise)
+                   when (and (slot-boundp item 'cluster)
+                             (eq (cluster item) :noise))
                    do (setf (cluster item) cluster)
-                   unless (slot-boundp item 'cluser)
+                   unless (slot-boundp item 'cluster)
                    do (setf (cluster item) cluster)
                       (unless (noisep item)
                         (append (neighbors item) stack))))))
