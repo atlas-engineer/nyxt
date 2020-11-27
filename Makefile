@@ -21,10 +21,12 @@ APPLICATIONSDIR = /Applications
 help:
 	@cat INSTALL
 
+makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(require "asdf")' \
 	--eval '(when (string= "true" "$(NYXT_INTERNAL_QUICKLISP)") (push :nyxt-internal-quicklisp *features*))' \
-	--eval '(asdf:load-asd "nyxt.asd")' --eval
+	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' --eval
 lisp_quit:=--eval '(uiop:quit)'
 
 .PHONY: clean-fasls
