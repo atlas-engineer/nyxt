@@ -88,7 +88,11 @@ just-in-time instead."
 
    '(fold-packages
      (lambda (package result)
-       (let ((loc (package-location package)))
+       (let ((loc (package-location package))
+             (inputs->names (lambda (inputs)
+                              (map package-name
+                                   ;; Input may be an `origin', not necessarily a package.
+                                   (filter package? (map cadr inputs))))))
          (cons
           (list
            (package-name package)
@@ -96,9 +100,10 @@ just-in-time instead."
             #:version (package-version package)
             #:outputs (package-outputs package)
             #:supported-systems (package-supported-systems package)
-            #:inputs (map car (package-inputs package))
-            #:propagated-inputs (map car (package-propagated-inputs package))
-            #:native-inputs (map car (package-native-inputs package))
+
+            #:inputs (inputs->names (package-inputs package))
+            #:propagated-inputs (inputs->names (package-propagated-inputs package))
+            #:native-inputs (inputs->names (package-native-inputs package))
             #:location (string-join (list (location-file loc)
                                           (number->string (location-line loc))
                                           (number->string (location-column loc)))
