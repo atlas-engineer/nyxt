@@ -27,17 +27,9 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(asdf:load-asd "nyxt.asd")' --eval
 lisp_quit:=--eval '(uiop:quit)'
 
-## TODO: Move clean-fasls to .asd.
 .PHONY: clean-fasls
 clean-fasls:
-	$(NYXT_INTERNAL_QUICKLISP) && \
-	$(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
-		--eval '(ql:quickload :swank)' \
-		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
-		--eval '(swank:delete-system-fasls "nyxt")' \
-		--eval '(uiop:quit)' || true
+	$(lisp_eval) '(asdf:make :nyxt/clean-fasls)' $(lisp_quit)
 
 nyxt:
 	$(lisp_eval) '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
