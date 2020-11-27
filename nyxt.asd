@@ -224,7 +224,7 @@
 (defmethod perform ((o image-op) (c system))
   (uiop:dump-image (output-file o c)
                    :executable t
-                   :compression (not (null (uiop:getenv "NYXT_COMPRESS")))))
+                   :compression (uiop:getenv "NYXT_COMPRESS")))
 
 (defsystem "nyxt/download-manager"
   :depends-on (chanl
