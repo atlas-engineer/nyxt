@@ -158,6 +158,19 @@
                     (nyxt-run-test c "tests/")
                     (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
 
+(defsystem "nyxt/version"
+  :depends-on (nyxt)
+  :output-files (compile-op (o c)
+                            (values (list (system-relative-pathname c "version"))
+                                    t))
+  :perform (compile-op (o c)
+                       (with-open-file (out (output-file o c)
+                                            :direction :output
+                                            :if-exists :supersede)
+                         (princ (symbol-value (find-symbol (string '+version+)
+                                                           (find-package 'nyxt)))
+                                out))))
+
 (defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
   :depends-on (nyxt)
   :output-files (compile-op (o c)
