@@ -284,6 +284,7 @@
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
   :pathname "libraries/class-star/"
   :components ((:file "package")
+               (:file "patch")
                (:file "class-star"))
   :in-order-to ((test-op (test-op "nyxt/class-star/tests"))))
 
