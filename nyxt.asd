@@ -137,7 +137,18 @@
                (:file "start")
                (:file "tutorial")
                (:file "manual"))
-  :in-order-to ((test-op (test-op "nyxt/tests")
+  #+nyxt-internal-quicklisp
+  :perform
+  #+nyxt-internal-quicklisp
+  (prepare-op (o c)
+              (mapcar
+               (lambda (s)
+                 (funcall (read-from-string "ql:quickload")
+                          s))
+               (asdf:system-depends-on c)))
+  :in-order-to (#+nyxt-internal-quicklisp
+                (prepare-op (load-op "nyxt/quicklisp"))
+                (test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/keymap/tests")
@@ -152,11 +163,35 @@
        (uiop:getenv "NYXT_TESTS_ERROR_ON_FAIL")
        (uiop:quit 18)))
 
+;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :depends-on (nyxt prove)
   :perform (test-op (op c)
                     (nyxt-run-test c "tests/")
                     (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
+
+(defsystem "nyxt/quicklisp-extra-libs"
+  :perform (compile-op (o c)
+                       (uiop:run-program `("git"
+                                           "-C" ,(namestring (system-relative-pathname c ""))
+                                           "submodule" "update" "--init")
+                                         :ignore-error-status t)))
+
+(defsystem "nyxt/quicklisp"
+  :depends-on (nyxt/quicklisp-extra-libs)
+  :perform (compile-op (o c)
+                       (load (system-relative-pathname
+                              c
+                              (format nil "~a/setup.lisp"
+                                      (or (uiop:getenv "QUICKLISP_DIR")
+                                          "quicklisp-client"))))
+                       (let ((quicklisp-libraries (or (uiop:getenv "QUICKLISP_LIBRARIES")
+                                                      "quicklisp_libraries"))
+                             (project-dir (read-from-string "ql:*local-project-directories*")))
+                         (push (uiop:ensure-directory-pathname quicklisp-libraries)
+                               project-dir))
+                       (funcall (read-from-string "ql:update-dist")
+                                "quicklisp" :prompt nil)))
 
 (defsystem "nyxt/version"
   :depends-on (nyxt)
@@ -167,8 +202,7 @@
                        (with-open-file (out (output-file o c)
                                             :direction :output
                                             :if-exists :supersede)
-                         (princ (symbol-value (find-symbol (string '+version+)
-                                                           (find-package 'nyxt)))
+                         (princ (symbol-value (read-from-string "nyxt:+version+"))
                                 out))))
 
 (defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
@@ -180,9 +214,8 @@
                        (with-open-file (out (output-file o c)
                                             :direction :output
                                             :if-exists :supersede)
-                         (write-string (funcall (find-symbol (string 'manual-content)
-                                                             (find-package 'nyxt)))
-
+                         (write-string (funcall
+                                        (read-from-string "nyxt::manual-content"))
                                        out))))
 
 (defsystem "nyxt/gtk"
@@ -190,14 +223,36 @@
                cl-cffi-gtk
                cl-webkit2)
   :pathname "source/"
-  :components ((:file "renderer-gtk")))
+  :components ((:file "renderer-gtk"))
+  #+nyxt-internal-quicklisp
+  :perform
+  #+nyxt-internal-quicklisp
+  (prepare-op (o c)
+              (mapcar
+               (lambda (s)
+                 (funcall (read-from-string "ql:quickload")
+                          s))
+               (asdf:system-depends-on c)))
+  :in-order-to (#+nyxt-internal-quicklisp
+                (prepare-op (load-op "nyxt/quicklisp"))))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
                cl-webengine
                trivial-main-thread)
   :pathname "source/"
-  :components ((:file "renderer-qt")))
+  :components ((:file "renderer-qt"))
+  #+nyxt-internal-quicklisp
+  :perform
+  #+nyxt-internal-quicklisp
+  (prepare-op (o c)
+              (mapcar
+               (lambda (s)
+                 (funcall (read-from-string "ql:quickload")
+                          s))
+               (asdf:system-depends-on c)))
+  :in-order-to (#+nyxt-internal-quicklisp
+                (prepare-op (load-op "nyxt/quicklisp"))))
 
 ;; We should not set the build-pathname in systems that have a component.
 ;; Indeed, when an external program (like Guix) builds components, it needs to

@@ -8,7 +8,7 @@ LISP_FLAGS ?= --no-userinit --non-interactive
 QUICKLISP_DIR=quicklisp-client
 QUICKLISP_LIBRARIES=quicklisp-libraries
 
-NYXT_INTERNAL_QUICKLISP = true
+NYXT_INTERNAL_QUICKLISP=true
 NYXT_RENDERER = gtk
 
 PREFIX = /usr/local
@@ -21,33 +21,28 @@ APPLICATIONSDIR = /Applications
 help:
 	@cat INSTALL
 
-lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
-quicklisp_set_dir=(push \#p"$(QUICKLISP_LIBRARIES)/" (symbol-value (find-symbol "*LOCAL-PROJECT-DIRECTORIES*" (find-package (quote ql)))))
-quicklisp_maybe_load=(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp") $(quicklisp_set_dir))
+lisp_eval:=$(LISP) $(LISP_FLAGS) \
+	--eval '(require "asdf")' \
+	--eval '(when (string= "true" "$(NYXT_INTERNAL_QUICKLISP)") (push :nyxt-internal-quicklisp *features*))' \
+	--eval '(asdf:load-asd "nyxt.asd")' --eval
+lisp_quit:=--eval '(uiop:quit)'
 
+## TODO: Move clean-fasls to .asd.
 .PHONY: clean-fasls
 clean-fasls:
 	$(NYXT_INTERNAL_QUICKLISP) && \
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
-		--load $(QUICKLISP_DIR)/setup.lisp \
 		--eval '(asdf:load-asd "nyxt.asd")' \
 		--eval '(ql:quickload :swank)' \
 		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
 		--eval '(swank:delete-system-fasls "nyxt")' \
 		--eval '(uiop:quit)' || true
 
-nyxt: $(lisp_files)
-	$(MAKE) application
-
-.PHONE: application
-application: deps
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
-		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
-		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
+nyxt:
+	$(lisp_eval) '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
+		$(lisp_quit) || \
+		(printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
 .PHONY: app-bundle
 app-bundle:
@@ -72,13 +67,9 @@ endif
 ## packaging systems can choose to generate "version" in advance before calling
 ## "make install-assets", so that they won't need to rely on Quicklisp.
 version:
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
-		--eval '(asdf:make :nyxt/version)' \
-		--eval '(uiop:quit)'
+	$(lisp_eval) '(asdf:make :nyxt/version)' $(lisp_quit)
 
+## TODO: Move install-assets to .asd.
 .PHONY: install-assets
 install-assets: version
 	mkdir -p "$(DESTDIR)$(DATADIR)/applications/"
@@ -105,60 +96,13 @@ ifeq ($(UNAME), Darwin)
 install: install-app-bundle
 endif
 
-.PHONY: quicklisp-extra-libs
-quicklisp-extra-libs:
-	$(NYXT_INTERNAL_QUICKLISP) && git submodule update --init || true
-
-## This rule only updates the internal distribution.
-.PHONY: quicklisp-update
-quicklisp-update:
-	$(NYXT_INTERNAL_QUICKLISP) && $(LISP) $(LISP_FLAGS) \
-		--load $(QUICKLISP_DIR)/setup.lisp \
-		--eval '(require "asdf")' \
-		--eval '(ql:update-dist "quicklisp" :prompt nil)' \
-		--eval '(uiop:quit)' || true
-
-.PHONY: build-deps
-build-deps: quicklisp-extra-libs
-	$(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--load $(QUICKLISP_DIR)/setup.lisp \
-		--eval '$(quicklisp_set_dir)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
-		--eval '(ql:quickload :nyxt/$(NYXT_RENDERER)-application)' \
-		--eval '(uiop:quit)' || true
-	$(MAKE) quicklisp-update
-
-.PHONY: deps
-deps:
-	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) build-deps || true
-
 .PHONY: doc
 doc:
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
-		--eval '(asdf:load-system :nyxt/documentation)' \
-		--eval '(uiop:quit)'
+	$(lisp_eval) '(asdf:load-system :nyxt/documentation)' $(lisp_quit)
 
 .PHONY: check
-check: check-asdf check-binary
-
-## TODO: Test that Nyxt starts even with broken init file.
-
-.PHONY: check-asdf
-check-asdf: deps
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
-		--eval '(asdf:test-system :nyxt)' \
-		--eval '(uiop:quit)'
-
-.PHONY: check-binary
-check-binary: nyxt
-	./nyxt -h
+check:
+	$(lisp_eval) '(asdf:test-system :nyxt)' $(lisp_quit)
 
 .PHONY: clean-deps
 clean-deps:
