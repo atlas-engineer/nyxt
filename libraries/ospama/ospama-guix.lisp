@@ -51,13 +51,13 @@ package managers like Nix or Guix."))
 (defvar %guix-listener-channel nil)
 (defvar %guix-result-channel nil)
 
-;; TODO: Make sure Guix process is closed when Lisp shuts down.
-
 (defun guix-listener ()
   "Automatically start and quit the Guix REPL after
 `*guix-repl-idle-timeout*'.
 For each inputs on `%guix-listener-channel' a result is returned on
 `%guix-result-channel'."
+  ;; Guix REPL automatically terminates when it reads EOF in the input stream,
+  ;; which happens when the parent Lisp process dies.
   (flet ((maybe-start-guix (guix-process)
            (unless (and guix-process
                         (uiop:process-alive-p guix-process))
