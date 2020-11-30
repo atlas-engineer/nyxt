@@ -52,7 +52,8 @@
        "shift-space" 'minibuffer-toggle-mark-backwards
        "M-space" 'minibuffer-toggle-mark
        "M-a" 'minibuffer-mark-all
-       "M-u" 'minibuffer-unmark-all))
+       "M-u" 'minibuffer-unmark-all
+       "M-m" 'minibuffer-toggle-mark-all))
     ;; TODO: We could have VI bindings for the minibuffer too.
     ;; But we need to make sure it's optional + to have an indicator
     ;; for the mode.
@@ -346,3 +347,24 @@ Only available if minibuffer `multi-selection-p' is non-nil."
       (setf nyxt::marked-suggestions (set-difference nyxt::marked-suggestions nyxt::suggestions)))
     (state-changed minibuffer)
     (update-display minibuffer)))
+
+(define-command minibuffer-toggle-mark-all (&optional
+                                            (minibuffer (current-minibuffer)))
+  "Toggle the mark over all visible suggestions.
+Only available if minibuffer `multi-selection-p' is non-nil."
+  (when (multi-selection-p minibuffer)
+    (with-slots ((suggestions nyxt::suggestions)
+                 (marked-suggestions nyxt::marked-suggestions))
+        minibuffer
+      (cond ((subsetp marked-suggestions suggestions)
+             (setf marked-suggestions
+                   (set-difference suggestions marked-suggestions)))
+            ((subsetp suggestions marked-suggestions)
+             (setf marked-suggestions
+                   (set-difference marked-suggestions suggestions)))
+            (t ; the intersection of suggestions and marked-suggestions
+               ; is non-trivial
+             (setf marked-suggestions
+                   (union suggestions marked-suggestions))))))
+  (state-changed minibuffer)
+  (update-display minibuffer))

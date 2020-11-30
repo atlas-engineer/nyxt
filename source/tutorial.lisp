@@ -81,7 +81,10 @@ upon return.  The suggestion under the cursor is not processed if not marked.")
          ": Select all currently-displayed suggestions.")
     (:li (command-markup 'nyxt/minibuffer-mode:minibuffer-unmark-all
                          :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
-         ": Deselect all currently-displayed suggestions."))
+         ": Deselect all currently-displayed suggestions.")
+    (:li (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark-all
+                         :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
+         ": Toggle the mark of all currently-displayed suggestions."))
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
