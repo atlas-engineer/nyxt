@@ -10,6 +10,17 @@
   ((cluster :accessor cluster)
    (neighbors :accessor neighbors)))
 
+(defmethod clusters ((collection document-collection))
+  "Return a list of clusters.
+
+   Please note: this function is not responsible for computing the
+   clusters, only for returning the list of pre-tagged documents in
+   cluster lists."
+  (let ((result (make-hash-table)))
+    (loop for document in (documents collection)
+          do (push document (gethash (cluster document) result (list))))
+    result))
+
 (defmethod distance ((vector-1 t) (vector-2 t))
   "Calculate the euclidean distance between two vectors."
   (sqrt (loop for i across vector-1
