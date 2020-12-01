@@ -223,6 +223,7 @@
                (:file "stem")
                (:file "tokenize")
                (:file "analysis")
+               (:file "document-vector")
                (:file "text-rank")
                (:file "dbscan")))
 
