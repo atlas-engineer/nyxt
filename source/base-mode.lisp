@@ -165,7 +165,7 @@
                                           :string-contents (document-get-paragraph-contents)))))
                (analysis::tf-idf-vectorize-documents collection)
                (analysis::generate-document-distance-vectors collection)
-               (analysis::dbscan collection :minimum-points 3 :epsilon 0.10)
+               (analysis::dbscan collection :minimum-points 3 :epsilon 0.12)
                (analysis::clusters collection)))
            (buffer-markup (buffer)
              "Create the presentation for a buffer."
@@ -175,10 +175,10 @@
                   (:a :class "button"
                       :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
                   (:span (title buffer) " - "(quri:render-uri (url buffer))))))
-           (cluster-markup (cluster)
+           (cluster-markup (cluster-id cluster)
              "Create the presentation for a cluster."
              (markup:markup
-              (:div (:h2 "Cluster")
+              (:div (:h2 (format nil "Cluster ~a" cluster-id))
                     (loop for document in cluster
                           collect (buffer-markup (analysis::source document))))))
            (internal-buffers-markup ()
@@ -197,7 +197,8 @@
        (:div
         (if cluster
             (append (list (internal-buffers-markup)) 
-                    (loop for cluster in (alex:hash-table-values (cluster-buffers))
-                          collect (cluster-markup cluster)))
+                    (loop for cluster-key being the hash-key
+                          using (hash-value cluster) of (cluster-buffers)
+                          collect (cluster-markup cluster-key cluster)))
             (loop for buffer in (buffer-list)
                   collect (buffer-markup buffer))))))))
