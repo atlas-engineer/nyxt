@@ -113,7 +113,7 @@ display and match against, see `active-properties'.")
              :documentation
              "Takes `input' and filters the suggestions.")
 
-     (filter-preprocessor #'keep-exact-matches-in-suggestions
+     (filter-preprocessor #'delete-inexact-matches
                           :type (or null function)
                           :documentation
                           "Function called over a copy of `initial-suggestions', when
