@@ -68,7 +68,7 @@ amount of times word appears in the document.")
   "Return a list of all of the words that appear in a document collection."
   (let ((words (list)))
     (loop for document in (documents document-collection)
-          do (setf words (append words (tokens document))))
+          do (alexandria:appendf words (tokens document)))
     (remove-duplicates words :test #'equalp)))
 
 (defmethod keywords ((document document) &optional document-collection)
