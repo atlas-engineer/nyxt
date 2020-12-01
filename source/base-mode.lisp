@@ -150,38 +150,54 @@
                      "C-x C-f" 'open-file))
                   :type keymap:scheme)))
 
-(defun cluster-buffers ()
-  (let ((collection (make-instance 'analysis::document-collection)))
-    (loop for buffer in (buffer-list)
-          unless (internal-buffer-p buffer)
-          do (with-current-buffer buffer
-               (analysis::add-document collection
-                                       (make-instance 'analysis::document-cluster
-                                                      :source buffer
-                                                      :string-contents (document-get-paragraph-contents)))))
-    (analysis::tf-idf-vectorize-documents collection)
-    (analysis::generate-document-distance-vectors collection)
-    (analysis::dbscan collection :minimum-points 2
-                                 :epsilon 0.1)
-    (loop for document in (analysis::documents collection)
-          do (format t "title: ~a cluster: ~a ~%"
-                     (title (analysis::source document))
-                     (analysis::cluster document)))))
-
-(define-command list-buffers ()
+(define-command list-buffers (&key (cluster nil))
   "Show the *Buffers* buffer."
-  (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
-    (markup:markup
-     (:style (style buffer))
-     (:h1 "Buffers")
-     (:a :class "button"
-         :href (lisp-url '(nyxt::list-buffers)) "Update")
-     (:br "")
-     (:div
-      (loop for buffer in (buffer-list)
-            collect (markup:markup (:p
-                                    (:a :class "button"
-                                        :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
-                                    (:a :class "button"
-                                        :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
-                                    (:span (title buffer) " - "(quri:render-uri (url buffer))))))))))
+  (labels ((cluster-buffers ()
+             "Return buffers as hash table, where each value is a cluster (list of documents)."
+             (let ((collection (make-instance 'analysis::document-collection)))
+               (loop for buffer in (buffer-list)
+                     unless (internal-buffer-p buffer)
+                     do (with-current-buffer buffer
+                          (analysis::add-document 
+                           collection
+                           (make-instance 'analysis::document-cluster
+                                          :source buffer
+                                          :string-contents (document-get-paragraph-contents)))))
+               (analysis::tf-idf-vectorize-documents collection)
+               (analysis::generate-document-distance-vectors collection)
+               (analysis::dbscan collection :minimum-points 3 :epsilon 0.10)
+               (analysis::clusters collection)))
+           (buffer-markup (buffer)
+             "Create the presentation for a buffer."
+             (markup:markup 
+              (:p (:a :class "button"
+                      :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
+                  (:a :class "button"
+                      :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
+                  (:span (title buffer) " - "(quri:render-uri (url buffer))))))
+           (cluster-markup (cluster)
+             "Create the presentation for a cluster."
+             (markup:markup
+              (:div (:h2 "Cluster")
+                    (loop for document in cluster
+                          collect (buffer-markup (analysis::source document))))))
+           (internal-buffers-markup ()
+             "Create the presentation for the internal buffers."
+             (markup:markup
+              (:div (:h2 "Internal Buffers")
+                    (loop for buffer in (buffer-list)
+                          when (internal-buffer-p buffer)
+                          collect (buffer-markup buffer))))))
+    (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
+      (markup:markup
+       (:style (style buffer))
+       (:h1 "Buffers")
+       (:a :class "button" :href (lisp-url '(nyxt::list-buffers)) "Update")
+       (:br "")
+       (:div
+        (if cluster
+            (append (list (internal-buffers-markup)) 
+                    (loop for cluster in (alex:hash-table-values (cluster-buffers))
+                          collect (cluster-markup cluster)))
+            (loop for buffer in (buffer-list)
+                  collect (buffer-markup buffer))))))))
