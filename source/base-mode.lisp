@@ -165,7 +165,7 @@
                                           :string-contents (document-get-paragraph-contents)))))
                (analysis::tf-idf-vectorize-documents collection)
                (analysis::generate-document-distance-vectors collection)
-               (analysis::dbscan collection :minimum-points 3 :epsilon 0.12)
+               (analysis::dbscan collection :minimum-points 3 :epsilon 0.1)
                (analysis::clusters collection)))
            (buffer-markup (buffer)
              "Create the presentation for a buffer."
