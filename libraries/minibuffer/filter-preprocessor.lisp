@@ -27,8 +27,8 @@ The substrings must be SUBSTRING-LENGTH characters long or more."
         (string-downcase result)
         result)))
 
-(export-always 'keep-exact-matches-in-suggestions)
-(defun keep-exact-matches-in-suggestions (suggestions source input)
+(export-always 'delete-inexact-matches)
+(defun delete-inexact-matches (suggestions source input)
   "Destructively filter out non-exact matches from SUGGESTIONS.
 Return the resulting list.
 If any input substring matches exactly (but not necessarily a whole word),
