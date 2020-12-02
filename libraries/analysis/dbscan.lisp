@@ -22,7 +22,7 @@
     result))
 
 (defmethod distance ((vector-1 t) (vector-2 t))
-  "Calculate the euclidean distance between two vectors."
+  "Return the Euclidean distance between two vectors."
   (sqrt (loop for i across vector-1
               for j across vector-2
               sum (expt (- i j) 2))))
