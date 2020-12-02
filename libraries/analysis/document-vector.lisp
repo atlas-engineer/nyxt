@@ -48,5 +48,3 @@
   (let ((dictionary (dictionary document-collection)))
     (loop for document in (documents document-collection)
           do (tf-vectorize document dictionary))))
-
-
