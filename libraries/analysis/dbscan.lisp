@@ -63,6 +63,7 @@
            }
        }
    }
+Source: https://en.wikipedia.org/w/index.php?title=DBSCAN&oldid=991672776
 "
   (labels ((range-query (document)
              "Return all points that have a distance less than epsilon."
