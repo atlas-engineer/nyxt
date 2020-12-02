@@ -9,7 +9,12 @@
   ((edges :accessor edges :initform (make-hash-table)
           :documentation "The keys of the hash table represent the
           edges, the values of the hash table represent the edge
-          weights.")))
+          weights."))
+  (:documentation "The document vertex class represents a document
+that is part of a graph. The edges slot of the document vertex class
+is used to store edges of that particular vertex. The keys in the
+edges slot hash table are the actual vertexes, and the values are the
+edge weights."))
 
 (defmethod cosine-similarity ((document-a document) (document-b document))
   "Calculate the cosine similarity between two vectors."

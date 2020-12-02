@@ -14,10 +14,24 @@ amount of times word appears in the document.")
                 :documentation "Vector representation of the document.")
    (rank :accessor rank :documentation "Rank used for sorting.")
    (tokens :accessor tokens)
-   (token-count :accessor token-count)))
+   (token-count :accessor token-count))
+  (:documentation "The document class represents a document. After
+creating a document, you can perform several operations on it, some
+examples:
+
++ term count: how many times does a term appear in a document?
++ term frequency: how many times does a term appear divided by the
+  total number of words in the document?"))
 
 (defclass document-collection ()
-  ((documents :initform () :initarg :documents :accessor documents)))
+  ((documents :initform () :initarg :documents :accessor documents))
+  (:documentation "The document collection class represents a
+collection of documents. As with a document, there are several
+operations available, some examples:
+
++ dictionary: which words appear in the document collection?
++ keywords: what are the important keywords in this document
+  collection?"))
 
 (defmethod initialize-instance :after ((document document) &key)
   (setf (tokens document) (word-tokenize (string-contents document)))
