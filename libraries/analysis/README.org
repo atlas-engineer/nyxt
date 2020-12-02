@@ -23,3 +23,9 @@ The document vertex class represents a document that is part of a
 graph. The edges slot of the document vertex class is used to store
 edges of that particular vertex. The keys in the edges slot hash table
 are the actual vertexes, and the values are the edge weights.
+
+** Document Cluster
+The document cluster class represents a document that is part of a
+graph which will be clustered. It extends the documenet-vertex class
+and adds support for a cluster tag and a list of neighbors. These
+slots are useful for clustering algorithms.
