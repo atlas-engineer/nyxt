@@ -113,6 +113,7 @@
                (:file "force-https-mode")
                (:file "reduce-tracking-mode")
                (:file "os-package-manager-mode")
+               (:file "visual-mode")
                ;; Web-mode commands
                (:file "bookmarklets")
                (:file "input-edit")
