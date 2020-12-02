@@ -40,7 +40,13 @@
 
 (defmethod dbscan ((collection document-collection) &key (minimum-points 3)
                                                          (epsilon 0.5))
-  "DBSCAN(DB, distFunc, eps, minPts) {
+  "Minimum points refers to the minimum amount of points that must
+   exist in the neighborhood of a point for it to be considered a
+   core-point in a cluster. Epsilon refers to the distance between
+   two points for them to be considered neighbors. A pseudocode
+   implementation follows below:
+
+   DBSCAN(DB, distFunc, eps, minPts) {
        C := 0                                                  /* Cluster counter */
        for each point P in database DB {
            if label(P) ≠ undefined then continue               /* Previously processed in inner loop */
