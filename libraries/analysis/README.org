@@ -7,8 +7,8 @@ The document class represents a document. After creating a document,
 you can perform several operations on it, some examples:
 
 + term count: how many times does a term appear in a document?
-+ term frequency: how many times does a term appear / the total number
-  of words in the document?
++ term frequency: how many times does a term appear divided by the
+  total number of words in the document?
 
 ** Document Collection
 The document collection class represents a collection of documents. As
