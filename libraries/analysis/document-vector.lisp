@@ -7,29 +7,29 @@
 
 (defmethod word-count-vectorize ((document document) dictionary)
   "Transform a document into a vector using word counts."
-  (let ((vector-form (make-array (length dictionary) :initial-element 0)))
+  (let ((vector-data (make-array (length dictionary) :initial-element 0)))
     (loop for word in dictionary
-          for index from 0 below (length vector-form)
-          do (setf (aref vector-form index) (term-count document word)))
-    (setf (vector-form document) vector-form)))
+          for index from 0 below (length vector-data)
+          do (setf (aref vector-data index) (term-count document word)))
+    (setf (vector-data document) vector-data)))
 
 (defmethod tf-idf-vectorize ((document document) (collection document-collection) dictionary)
   "Transform a document into a vector using tf-idf."
-  (let ((vector-form (make-array (length dictionary) :initial-element 0)))
+  (let ((vector-data (make-array (length dictionary) :initial-element 0)))
     (loop for word in dictionary
-          for index from 0 below (length vector-form)
-          do (setf (aref vector-form index)
+          for index from 0 below (length vector-data)
+          do (setf (aref vector-data index)
                    (term-frequency-inverse-document-frequency document collection word)))
-    (setf (vector-form document) vector-form)))
+    (setf (vector-data document) vector-data)))
 
 (defmethod tf-vectorize ((document document) dictionary)
   "Transform a document into a vector using tf."
-  (let ((vector-form (make-array (length dictionary) :initial-element 0)))
+  (let ((vector-data (make-array (length dictionary) :initial-element 0)))
     (loop for word in dictionary
-          for index from 0 below (length vector-form)
-          do (setf (aref vector-form index)
+          for index from 0 below (length vector-data)
+          do (setf (aref vector-data index)
                    (term-frequency document word)))
-    (setf (vector-form document) vector-form)))
+    (setf (vector-data document) vector-data)))
 
 (defmethod vectorize-documents ((document-collection document-collection) operation)
   (let ((dictionary (dictionary document-collection)))

@@ -32,7 +32,7 @@ of neighbors. These slots are useful for clustering algorithms."))
               sum (expt (- i j) 2))))
 
 (defmethod distance ((document-a document-cluster) (document-b document-cluster))
-  (distance (vector-form document-a) (vector-form document-b)))
+  (distance (vector-data document-a) (vector-data document-b)))
 
 (defmethod generate-document-distance-vectors ((collection document-collection))
   "Set the edge weights for all document neighbors (graph is fully connected)."
