@@ -8,7 +8,11 @@
 
 (defclass document-cluster (document-vertex)
   ((cluster :accessor cluster)
-   (neighbors :accessor neighbors)))
+   (neighbors :accessor neighbors))
+  (:documentation "The document cluster class represents a document
+that is part of a graph which will be clustered. It extends the
+documenet-vertex class and adds support for a cluster tag and a list
+of neighbors. These slots are useful for clustering algorithms."))
 
 (defmethod clusters ((collection document-collection))
   "Return a list of clusters.
