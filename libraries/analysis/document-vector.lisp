@@ -31,20 +31,22 @@
                    (term-frequency document word)))
     (setf (vector-form document) vector-form)))
 
-(defmethod word-count-vectorize-documents ((document-collection document-collection))
-  "Set the vector-form for a collection of documents."
+(defmethod vectorize-documents ((document-collection document-collection) operation)
   (let ((dictionary (dictionary document-collection)))
     (loop for document in (documents document-collection)
-          do (word-count-vectorize document dictionary))))
+          do (funcall operation :document document
+                                :dictionary dictionary))))
 
-(defmethod tf-idf-vectorize-documents ((document-collection document-collection))
-  "Set the vector-form for a collection of documents."
-  (let ((dictionary (dictionary document-collection)))
-    (loop for document in (documents document-collection)
-          do (tf-idf-vectorize document document-collection dictionary))))
+(defmethod word-count-vectorize-documents ((document-collection document-collection))
+  (vectorize-documents document-collection (lambda (&key document dictionary)
+                                             (word-count-vectorize document dictionary))))
 
 (defmethod tf-vectorize-documents ((document-collection document-collection))
-  "Set the vector-form for a collection of documents."
-  (let ((dictionary (dictionary document-collection)))
-    (loop for document in (documents document-collection)
-          do (tf-vectorize document dictionary))))
+  (vectorize-documents document-collection (lambda (&key document dictionary)
+                                             (tf-vectorize document dictionary))))
+
+(defmethod tf-idf-vectorize-documents ((document-collection document-collection))
+  (vectorize-documents document-collection (lambda (&key document dictionary)
+                                             (tf-idf-vectorize document document-collection dictionary))))
+
+
