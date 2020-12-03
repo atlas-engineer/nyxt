@@ -25,6 +25,9 @@ This can only be derived if `path' has been derived."))
   (:documentation "OS package outputs are meaningful mostly for functional
 package managers like Nix or Guix."))
 
+(defun guix-package-output-p (object)
+  (mopu:subclassp (class-of object) 'guix-package-output))
+
 (detect-manager "guix" 'guix-manager)
 
 (defmethod print-object ((obj (eql 'ospama::\#t)) stream)
@@ -155,6 +158,9 @@ value.
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+
+(defun guix-package-p (object)
+  (mopu:subclassp (class-of object) 'guix-package))
 
 (export-always 'expanded-output-p)
 (defun expanded-output-p (output)
@@ -317,15 +323,22 @@ for non-standard profiles."
   (declare (ignore manager))
   (setf *guix-database* nil))
 
-(defmethod manager-install ((manager guix-manager) output-list &optional profile)
+(defmethod manager-install ((manager guix-manager) package-or-output-list
+                            &optional profile)
   (run (append (list (path manager) "install")
-               (mapcar (lambda (output)
-                         (let ((package (parent-package output)))
+               (mapcar (lambda (package-or-output)
+                         (let ((package (if (guix-package-p package-or-output)
+                                            package-or-output
+                                            (parent-package package-or-output)))
+                               (output (if (guix-package-output-p package-or-output)
+                                            package-or-output
+                                            ;; Default to first output, usually "out".
+                                            (first (outputs package-or-output)))))
                            (format nil "~a@~a:~a"
                                    (name package)
                                    (version package)
                                    (name output))))
-                       output-list)
+                       package-or-output-list)
                (when profile
                  (list (str:concat "--profile=" (namestring profile)))))))
 
