@@ -317,10 +317,17 @@ for non-standard profiles."
   (declare (ignore manager))
   (setf *guix-database* nil))
 
-(defmethod install-command ((manager guix-manager) profile)
-  (append (list (path manager) "install")
-          (when profile
-            (list (str:concat "--profile=" (namestring profile))))))
+(defmethod manager-install ((manager guix-manager) output-list &optional profile)
+  (run (append (list (path manager) "install")
+               (mapcar (lambda (output)
+                         (let ((package (parent-package output)))
+                           (format nil "~a@~a:~a"
+                                   (name package)
+                                   (version package)
+                                   (name output))))
+                       output-list)
+               (when profile
+                 (list (str:concat "--profile=" (namestring profile)))))))
 
 (defmethod manager-install-manifest ((manager guix-manager) manifest &optional profile)
   (run (append (list (path manager) "package"

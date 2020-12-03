@@ -164,11 +164,11 @@ With INCLUDE-MANAGER-P, also return the package manager own profile."))
   (:documentation "Delete GENERATIONS from PROFILE."))
 
 (export-always 'install)
-(defun install (package-list &optional profile)
-  (manager-install (manager) package-list profile))
+(defun install (package-or-output-list &optional profile)
+  (manager-install (manager) package-or-output-list profile))
 
-(defmethod manager-install ((manager manager) package-list &optional profile)
-  (run (append (install-command manager profile) (mapcar #'name package-list))))
+(defmethod manager-install ((manager manager) package-or-output-list &optional profile)
+  (run (append (install-command manager profile) (mapcar #'name package-or-output-list))))
 
 (export-always 'install-command)
 (defgeneric install-command (manager profile)
