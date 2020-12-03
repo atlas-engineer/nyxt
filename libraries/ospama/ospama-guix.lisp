@@ -200,6 +200,25 @@ value.
                   (getf properties :outputs)))
     result))
 
+(defun copy-object (object &rest slot-overrides)
+  (let ((class-sym (class-name (class-of object))))
+    (apply #'make-instance class-sym
+           (append
+            slot-overrides
+            (alexandria:mappend
+             (lambda (slot)
+               (list (intern (symbol-name slot) "KEYWORD")
+                     (slot-value object slot)))
+             (mopu:slot-names class-sym))))))
+
+(defun copy-guix-package (package)
+  (let ((copy (copy-object package)))
+    (setf (outputs copy)
+          (mapcar (lambda (output)
+                    (copy-object output :parent-package copy))
+                  (outputs package)))
+    copy))
+
 (defvar *guix-database* nil)
 
 (defun guix-database ()
@@ -215,15 +234,25 @@ value.
   (if profile
       (delete nil
               (mapcar
-               (lambda (name+output)
-                 ;; name+output may be that of a channel, e.g. when profile is a Guix checkout.
-                 ;; In this case, `find-os-package' may return nil.
-                 ;; TODO: Should we return channel derivations as first class objects?
-                 (serapeum:and-let* ((pkg (find-os-package (first name+output))))
-                   (find (second name+output)
-                         (outputs pkg)
-                         :key #'name
-                         :test #'string=)))
+               (lambda (entry)
+                 (let ((name (first entry))
+                       (version (getf (second entry) :version))
+                       (output (getf (second entry) :output)))
+                   ;; name+output may be that of a channel, e.g. when profile is a Guix checkout.
+                   ;; In this case, `find-os-packages' may return nil.
+                   ;; TODO: Should we return channel derivations as first class objects?
+                   (serapeum:and-let* ((pkgs (find-os-packages name)))
+                     (let ((pkg (find version pkgs :key #'version :test #'string=)))
+                       ;; In case package does not exist in current Guix (happens
+                       ;; e.g. on version update), we create a floating package with
+                       ;; entry's version number.
+                       (unless pkg
+                         (setf pkg (copy-guix-package (first pkgs)))
+                         (setf (version pkg) version))
+                       (find output
+                             (outputs pkg)
+                             :key #'name
+                             :test #'string=)))))
                (list-installed profile)))
       (guix-database)))
 
