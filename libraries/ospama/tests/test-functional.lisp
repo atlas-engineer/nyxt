@@ -15,7 +15,7 @@
 (prove:subtest "Install to temp profile"
   (uiop:ensure-all-directories-exist
    (list (uiop:pathname-directory-pathname *test-profile*)))
-  (let ((process-info (ospama:install (list (ospama:find-os-package *test-package-name*))
+  (let ((process-info (ospama:install (ospama:find-os-packages *test-package-name*)
                                       *test-profile*)))
     (uiop:wait-process process-info)
     (prove:is (ospama:name (ospama:parent-package
@@ -44,7 +44,7 @@
               *test-package-name*)))
 
 (prove:subtest "List files"
-  (let* ((output-list (ospama:outputs (ospama:find-os-package *test-package-name*)))
+  (let* ((output-list (ospama:outputs (first (ospama:find-os-packages *test-package-name*))))
          (file-list (ospama:list-files
                      (list (first output-list)))))
     (prove:is (pathname-name (first file-list))

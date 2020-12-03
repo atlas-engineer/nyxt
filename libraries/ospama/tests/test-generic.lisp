@@ -10,16 +10,16 @@
   (prove:ok (typep (first (ospama:list-packages)) 'ospama:os-package)))
 
 (prove:subtest "Find package"
-  (prove:is (ospama:name (ospama:find-os-package *test-package-name*))
+  (prove:is (ospama:name (first (ospama:find-os-packages *test-package-name*)))
             *test-package-name*))
 
 (prove:subtest "Package inputs"
-  (let* ((pkg (ospama:find-os-package *test-complex-package-name*))
+  (let* ((pkg (first (ospama:find-os-packages *test-complex-package-name*)))
          (all-inputs (append
                       (ospama:inputs pkg)
                       (ospama:propagated-inputs pkg)
                       (ospama:native-inputs pkg))))
-    (prove:ok (mapc #'ospama:find-os-package all-inputs))))
+    (prove:ok (mapc #'ospama:find-os-packages all-inputs))))
 
 (prove:subtest "List profiles"
   (prove:ok (uiop:directory-exists-p (first (ospama:list-profiles)))))
