@@ -104,4 +104,4 @@ Source: https://en.wikipedia.org/w/index.php?title=DBSCAN&oldid=991672776
                    unless (slot-boundp item 'cluster)
                    do (setf (cluster item) cluster-index)
                       (unless (noise-p item)
-                        (append (neighbors item) stack))))))
+                        (alexandria:appendf stack (neighbors item)))))))
