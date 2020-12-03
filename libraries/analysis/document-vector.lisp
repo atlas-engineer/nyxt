@@ -34,19 +34,16 @@
 (defmethod vectorize-documents ((document-collection document-collection) operation)
   (let ((dictionary (dictionary document-collection)))
     (loop for document in (documents document-collection)
-          do (funcall operation :document document
-                                :dictionary dictionary))))
+          do (funcall operation document dictionary))))
 
 (defmethod word-count-vectorize-documents ((document-collection document-collection))
-  (vectorize-documents document-collection (lambda (&key document dictionary)
-                                             (word-count-vectorize document dictionary))))
+  (vectorize-documents document-collection #'word-count-vectorize))
 
 (defmethod tf-vectorize-documents ((document-collection document-collection))
-  (vectorize-documents document-collection (lambda (&key document dictionary)
-                                             (tf-vectorize document dictionary))))
+  (vectorize-documents document-collection #'tf-vectorize))
 
 (defmethod tf-idf-vectorize-documents ((document-collection document-collection))
-  (vectorize-documents document-collection (lambda (&key document dictionary)
+  (vectorize-documents document-collection (lambda (document dictionary)
                                              (tf-idf-vectorize document document-collection dictionary))))
 
 
