@@ -151,15 +151,25 @@ instance of Nyxt."
                         (s-serialization:deserialize-sexp file))))))
         (match data
           (nil nil)
-          ((guard (list version history)
-                  (typep 'htree:history-tree history))
-           (unless (string= version +version+)
-             (log:warn "History version ~s differs from current version ~s"
-                       version +version+))
-           (echo "Loading history of ~a URLs from ~s."
-                 (htree:size history)
-                 (expand-path path))
-           (setf (get-data path) history))
+          ((guard (list version history) t)
+           (ctypecase history
+             (htree:history-tree
+              (unless (string= version +version+)
+                (log:warn "History version ~s differs from current version ~s"
+                          version +version+))
+              (echo "Loading history of ~a URLs from ~s."
+                    (htree:size history)
+                    (expand-path path))
+              (setf (get-data path) history))
+             (hash-table
+              (echo "Importing deprecated global history of ~a URLs from ~s."
+                    (hash-table-count history)
+                    (expand-path path))
+              (unless (get-data path)
+                (setf (get-data path) (htree:make)))
+              (dolist (entry (alex:hash-table-values history))
+                (htree:add-child entry (get-data path))
+                (htree:back (get-data path))))))
           (_ (error "Expected (list version history) structure."))))
     (error (c)
       (echo-warning "Failed to restore history from ~a: ~a"
