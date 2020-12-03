@@ -4,6 +4,7 @@
 
 (defvar *test-package-name* "hello")
 (defvar *test-complex-package-name* "nyxt")
+(defvar *multi-version-package-name* "linux-libre")
 
 (prove:subtest "Package list"
   (prove:ok (< 0 (length (ospama:list-packages))))
@@ -12,6 +13,9 @@
 (prove:subtest "Find package"
   (prove:is (ospama:name (first (ospama:find-os-packages *test-package-name*)))
             *test-package-name*))
+
+(prove:subtest "Find multiple package versions"
+  (prove:ok (<= 2 (length (ospama:find-os-packages *multi-version-package-name*)))))
 
 (prove:subtest "Package inputs"
   (let* ((pkg (first (ospama:find-os-packages *test-complex-package-name*)))
