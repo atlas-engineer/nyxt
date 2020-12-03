@@ -15,7 +15,8 @@ documenet-vertex class and adds support for a cluster tag and a list
 of neighbors. These slots are useful for clustering algorithms."))
 
 (defmethod clusters ((collection document-collection))
-  "Return a list of clusters.
+  "Return a list of clusters. Each hash key represents a cluster, and
+   the hash value is the list of elements in that cluster.
 
    Please note: this function is not responsible for computing the
    clusters, only for returning the list of pre-tagged documents in
