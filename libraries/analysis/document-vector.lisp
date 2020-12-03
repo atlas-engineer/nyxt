@@ -14,7 +14,10 @@
     (setf (vector-data document) vector-data)))
 
 (defmethod tf-idf-vectorize ((document document) (collection document-collection) dictionary)
-  "Transform a document into a vector using tf-idf."
+  "Transform a document into a vector using tf-idf.
+Definition: tf-idf: term frequency, inverse document frequency. How
+often does a term a appear in a document as compared to all other
+documents?"
   (let ((vector-data (make-array (length dictionary) :initial-element 0)))
     (loop for word in dictionary
           for index from 0 below (length vector-data)
@@ -23,7 +26,9 @@
     (setf (vector-data document) vector-data)))
 
 (defmethod tf-vectorize ((document document) dictionary)
-  "Transform a document into a vector using tf."
+  "Transform a document into a vector using tf.
+Definition: tf: term frequency. How often does a term appear in a
+document?"
   (let ((vector-data (make-array (length dictionary) :initial-element 0)))
     (loop for word in dictionary
           for index from 0 below (length vector-data)
@@ -40,9 +45,14 @@
   (vectorize-documents document-collection #'word-count-vectorize))
 
 (defmethod tf-vectorize-documents ((document-collection document-collection))
+  "Definition: tf: term frequency. How often does a term appear in a
+document?"
   (vectorize-documents document-collection #'tf-vectorize))
 
 (defmethod tf-idf-vectorize-documents ((document-collection document-collection))
+  "Definition: tf-idf: term frequency, inverse document frequency. How
+often does a term appear in a document as compared to all other
+documents?"
   (vectorize-documents document-collection (lambda (document dictionary)
                                              (tf-idf-vectorize document document-collection dictionary))))
 
