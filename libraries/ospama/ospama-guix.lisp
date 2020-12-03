@@ -208,8 +208,8 @@ value.
           (mapcar #'make-guix-package (generate-database))))
   *guix-database*)
 
-(defmethod manager-find-os-package ((manager guix-manager) name)
-  (find name (guix-database) :key #'name :test #'string=))
+(defmethod manager-find-os-packages ((manager guix-manager) name)
+  (remove name (guix-database) :key #'name :test #'string/=))
 
 (defmethod manager-list-packages ((manager guix-manager) &optional profile)
   (if profile

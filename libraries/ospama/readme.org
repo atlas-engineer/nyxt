@@ -25,7 +25,7 @@ The library provides functions to interact with packages:
 
 - =list-files=
 
-- =find-os-package=
+- =find-os-packages=
 
 The following is mostly for functional package managers like Nix and Guix:
 
