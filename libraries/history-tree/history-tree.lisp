@@ -9,10 +9,12 @@
 (defclass node ()
   ((parent :accessor parent
            :initarg :parent
-           :initform nil)
+           :initform nil
+           :type (or null node))
    (children :accessor children
              :initarg :children
              :initform nil
+             :type list
              :documentation "List of nodes.")
    (data :accessor data
          :initarg :data
