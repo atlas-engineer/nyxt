@@ -85,7 +85,8 @@ Source: https://en.wikipedia.org/w/index.php?title=DBSCAN&oldid=991672776
            (noise-p (document)
              "A document must have a minimum number of neighbors to
               not qualify as noise."
-             (setf (neighbors document) (range-query document))
+             (unless (slot-boundp document 'neighbors)
+               (setf (neighbors document) (range-query document)))
              (if (< (+ 1 (length (neighbors document))) minimum-points)
                  (progn (setf (cluster document) :noise) t)
                  nil)))
