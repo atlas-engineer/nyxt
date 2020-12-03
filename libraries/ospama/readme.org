@@ -6,7 +6,8 @@ Supported package managers:
 
 - [[https://guix.gnu.org][Guix]]
 
-It provides an =os-package= with children which specialize for various package managers.
+It provides an =os-package= class with subclsses which specialize for various
+package managers.
 
 If the package manager supports it, the class also includes the list of
 dependencies and dependents.
