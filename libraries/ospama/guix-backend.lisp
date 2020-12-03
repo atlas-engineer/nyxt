@@ -23,6 +23,47 @@
        1)
       result)))
 
+(defvar %make-package
+  '(lambda (package)
+    (let ((loc (package-location package))
+          (inputs->names (lambda (inputs)
+                           (map package-name
+                                ;; Input may be an `origin', not necessarily a package.
+                                (filter package? (map cadr inputs))))))
+      (list
+       (package-name package)
+       (list
+        #:version (package-version package)
+        #:outputs (package-outputs package)
+        #:supported-systems (package-supported-systems package)
+
+        #:inputs (inputs->names (package-inputs package))
+        #:propagated-inputs (inputs->names (package-propagated-inputs package))
+        #:native-inputs (inputs->names (package-native-inputs package))
+        #:location (string-join (list (location-file loc)
+                                      (number->string (location-line loc))
+                                      (number->string (location-column loc)))
+                                ":")
+        ;; In Guix, an empty home-page is #f, but we want a string.
+        #:home-page (or (package-home-page package) "")
+        #:license-name (map license-name (ensure-list (package-license package)))
+        #:synopsis (package-synopsis package)
+        #:description (string-replace-substring (package-description package) "\\n" " "))))))
+
+(defvar %make-output
+  '(lambda (entry)
+    (list
+     (manifest-entry-name entry)
+     (list
+      #:version (manifest-entry-version entry)
+      #:output (manifest-entry-output entry)
+      ;; REVIEW: Would any of these ever be interesting to report to the user?
+      ;; #:item (manifest-entry-item entry)
+      ;; #:dependencies (manifest-entry-dependencies entry)
+      ;; #:search-paths (manifest-entry-search-paths entry)
+      ;; #:properties (manifest-entry-properties entry)
+      ))))
+
 ;; TODO: Find a fast way to compute the output-paths.
 (defun package-output-paths (name)
   "Computing the output-paths in `generate-database' is too slow, so we do it
@@ -86,34 +127,13 @@ just-in-time instead."
          l
          (list l)))
 
+   `(define make-package ,%make-package)
+
    '(fold-packages
      (lambda (package result)
-       (let ((loc (package-location package))
-             (inputs->names (lambda (inputs)
-                              (map package-name
-                                   ;; Input may be an `origin', not necessarily a package.
-                                   (filter package? (map cadr inputs))))))
-         (cons
-          (list
-           (package-name package)
-           (list
-            #:version (package-version package)
-            #:outputs (package-outputs package)
-            #:supported-systems (package-supported-systems package)
-
-            #:inputs (inputs->names (package-inputs package))
-            #:propagated-inputs (inputs->names (package-propagated-inputs package))
-            #:native-inputs (inputs->names (package-native-inputs package))
-            #:location (string-join (list (location-file loc)
-                                          (number->string (location-line loc))
-                                          (number->string (location-column loc)))
-                                    ":")
-            ;; In Guix, an empty home-page is #f, but we want a string.
-            #:home-page (or (package-home-page package) "")
-            #:license-name (map license-name (ensure-list (package-license package)))
-            #:synopsis (package-synopsis package)
-            #:description (string-replace-substring (package-description package) "\\n" " ")))
-          result)))
+       (cons
+        (make-package package)
+        result))
      (list))))
 
 (defun package-dependents (name)        ; TODO: Unused?
@@ -162,15 +182,15 @@ just-in-time instead."
 
 (declaim (ftype (function (&optional (or symbol string pathname))) list-installed))
 (defun list-installed (&optional (profile '%current-profile))
-  "Return the installed package outputs in PROFILE as a list of (NAME OUTPUT).
+  "Return the installed package outputs in PROFILE as a list of (NAME (:VERSION :OUTPUT)).
 PROFILE is a full path to a profile."
   (guix-eval
    '(use-modules
      (guix profiles))
 
-   `(map (lambda (entry)
-           (list (manifest-entry-name entry)
-                 (manifest-entry-output entry)))
+   `(define make-output ,%make-output)
+
+   `(map make-output
          (manifest-entries
           (profile-manifest ,(namestring profile))))))
 
