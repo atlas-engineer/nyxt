@@ -82,7 +82,7 @@ Source: https://en.wikipedia.org/w/index.php?title=DBSCAN&oldid=991672776
                    when (and (<= (gethash vertex (edges document)) epsilon)
                              (not (eq vertex document)))
                    collect vertex))
-           (noisep (document)
+           (noise-p (document)
              "A document must have a minimum number of neighbors to
               not qualify as noise."
              (setf (neighbors document) (range-query document))
@@ -93,7 +93,7 @@ Source: https://en.wikipedia.org/w/index.php?title=DBSCAN&oldid=991672776
           with cluster = 0
           with stack = (list)
           unless (or (slot-boundp document 'cluster)
-                     (noisep document))
+                     (noise-p document))
           do (incf cluster)
              (setf (cluster document) cluster)
              (setf stack (neighbors document))
@@ -103,5 +103,5 @@ Source: https://en.wikipedia.org/w/index.php?title=DBSCAN&oldid=991672776
                    do (setf (cluster item) cluster)
                    unless (slot-boundp item 'cluster)
                    do (setf (cluster item) cluster)
-                      (unless (noisep item)
+                      (unless (noise-p item)
                         (append (neighbors item) stack))))))
