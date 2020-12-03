@@ -300,7 +300,7 @@ OBJECTS can be a list of packages, a generation, etc."
                    :suggestion-function (os-profile-suggestion-filter)
                    :input-prompt "Target profile"))
          (packages (prompt-minibuffer
-                    :suggestion-function (os-package-suggestion-filter)
+                    :suggestion-function (os-package-output-suggestion-filter)
                     :input-prompt "Install OS package(s)"
                     :multi-selection-p t)))
     (operate-os-package "Installing packages..." #'ospama:install profile packages)))
