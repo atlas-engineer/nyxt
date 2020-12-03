@@ -44,9 +44,12 @@
 (defmethod object-string ((pkg ospama:os-package))
   (ospama:name pkg))
 (defmethod object-display ((pkg ospama:os-package))
-  (format nil "~a~a~a"
+  (format nil "~a ~a~a~a"
           (ospama:name pkg)
-          (make-string (max 1 (- 40 (length (ospama:name pkg))))
+          (ospama:version pkg)
+          (make-string (max 1 (- 40
+                                 (+ (length (ospama:name pkg))
+                                    (length (ospama:version pkg)))))
                        :initial-element #\ )
           (ospama:synopsis pkg)))
 
@@ -55,13 +58,17 @@
           (ospama:name (ospama:parent-package output))
           (ospama:name output)))
 (defmethod object-display ((output ospama:os-package-output))
-  (let ((pkg (ospama:parent-package output)))
-    (format nil "~a:~a~a~a"
-            (ospama:name pkg)
-            (ospama:name output)
-            (make-string (max 1 (- 40
-                                   (+ (length (ospama:name pkg))
-                                      (length (ospama:name output)))))
+  (let* ((pkg (ospama:parent-package output))
+         (name (format nil "~a~a ~a"
+                       (ospama:name pkg)
+                       ;; TODO: Make this specializable.
+                       (if (string= (ospama:name output) "out")
+                           ""
+                           (str:concat ":" (ospama:name output)))
+                       (ospama:version pkg))))
+    (format nil "~a~a~a"
+            name
+            (make-string (max 1 (- 40 (length name)))
                          :initial-element #\ )
             (ospama:synopsis pkg))))
 
@@ -123,7 +130,7 @@
               (lambda (input)
                 `((:a :href (lisp-url
                              '(%describe-os-package
-                               (list (ospama:find-os-package ,input))))
+                               (ospama:find-os-packages ,input)))
                       ,input)
                   " "))
               inputs))
@@ -160,9 +167,9 @@
                                           ,@(unless (ospama:expanded-outputs-p package)
                                               `((:a :class "button"
                                                     :href ,(lisp-url '(echo "Computing path & size...")
-                                                                     `(ospama:expand-outputs (ospama:find-os-package ,(ospama:name package)))
+                                                                     `(ospama:expand-outputs (first (ospama:find-os-packages ,(ospama:name package))))
                                                                      `(%describe-os-package
-                                                                       (list (ospama:find-os-package ,(ospama:name package)))))
+                                                                       (list (first (ospama:find-os-packages ,(ospama:name package))))))
                                                     "Compute path & size")))
                                           ,(format-outputs (ospama:outputs package)))
                                      (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
@@ -357,8 +364,8 @@ OBJECTS can be a list of packages, a generation, etc."
              (markup:markup*
               `(:li (:a :class "button"
                         :href ,(lisp-url `(%describe-os-package
-                                           (list (ospama:find-os-package
-                                                  ,(ospama:name package)))))
+                                           (ospama:find-os-packages
+                                            ,(ospama:name package))))
                         ,(object-string package-output))
                     " " ,(ospama:version package))))))
      buffer)
