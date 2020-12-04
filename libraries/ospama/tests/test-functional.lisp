@@ -5,6 +5,9 @@
 ;; Tests for functional package managers.
 
 (defvar *test-package-name* "hello")
+(defvar *test-package-with-outputs* "sbcl-slynk")
+(defvar *test-package-with-outputs-output* "image")
+
 (defvar *test-profile* (uiop:resolve-absolute-location ; TODO: Can we generate a temp dir in Common Lisp?
                         (list (uiop:temporary-directory) "ospama-tests/profile")))
 (defvar *test-manifest-file* (uiop:resolve-absolute-location 
@@ -28,6 +31,20 @@
     (prove:is (ospama:list-packages *test-profile*)
               nil
               "final profile is empty")))
+
+(prove:subtest "Install output"
+  (uiop:ensure-all-directories-exist
+   (list (uiop:pathname-directory-pathname *test-profile*)))
+  (let ((process-info (ospama:install (list (find *test-package-with-outputs-output*
+                                                  (ospama:outputs (first (ospama:find-os-packages *test-package-with-outputs*)))
+                                                  :key #'ospama:name
+                                                  :test #'string=))
+                                      *test-profile*)))
+    (uiop:wait-process process-info)
+    (prove:is (ospama:name (first (ospama:list-packages *test-profile*)))
+              *test-package-with-outputs-output*)
+    ;; TODO: Delete *test-profile* afterwards?
+    ))
 
 (prove:subtest "Install manifest to temp profile"
   (uiop:ensure-all-directories-exist
