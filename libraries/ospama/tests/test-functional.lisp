@@ -46,6 +46,23 @@
     ;; TODO: Delete *test-profile* afterwards?
     ))
 
+(defvar *test-package-with-versions* "libpng")
+(defvar *test-package-with-versions-version* "1.2.59")
+
+(prove:subtest "Install version"
+  (uiop:ensure-all-directories-exist
+   (list (uiop:pathname-directory-pathname *test-profile*)))
+  (let ((process-info (ospama:install (list (first (ospama:find-os-packages
+                                                    *test-package-with-versions*
+                                                    :version *test-package-with-versions-version*)))
+                                      *test-profile*)))
+    (uiop:wait-process process-info)
+    (prove:is (ospama:version (ospama:parent-package
+                               (first (ospama:list-packages *test-profile*))))
+              *test-package-with-versions-version*)
+    ;; TODO: Delete *test-profile* afterwards?
+    ))
+
 (prove:subtest "Install manifest to temp profile"
   (uiop:ensure-all-directories-exist
    (list (uiop:pathname-directory-pathname *test-profile*)
