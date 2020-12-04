@@ -172,11 +172,14 @@ value.
   "Return nil if PKG outputs haven't been computed."
   (expanded-output-p (first (outputs pkg))))
 
+(defun find-output (name package)
+  (find name (outputs package) :key #'name :test #'string=))
+
 (export-always 'expand-outputs)
 (defun expand-outputs (pkg)
   "Compute the output locations of PKG."
   (dolist (pair (package-output-paths (name pkg)))
-    (setf (path (find (first pair) (outputs pkg) :key #'name :test #'string=))
+    (setf (path (find-output (first pair) pkg))
           (rest pair))))
 
 (export-always 'size)
@@ -233,8 +236,14 @@ value.
           (mapcar #'make-guix-package (generate-database))))
   *guix-database*)
 
-(defmethod manager-find-os-packages ((manager guix-manager) name)
-  (remove name (guix-database) :key #'name :test #'string/=))
+(defmethod manager-find-os-packages ((manager guix-manager) name
+                                     &key version)
+  (let ((packages (remove name (guix-database) :key #'name :test #'string/=)))
+    (when packages
+      (when version
+        (setf packages
+              (remove version packages :key #'version :test #'string/=)))
+      packages)))
 
 (defmethod manager-list-packages ((manager guix-manager) &optional profile)
   (if profile
@@ -255,10 +264,7 @@ value.
                        (unless pkg
                          (setf pkg (copy-guix-package (first pkgs)))
                          (setf (version pkg) version))
-                       (find output
-                             (outputs pkg)
-                             :key #'name
-                             :test #'string=)))))
+                       (find-output output pkg)))))
                (list-installed profile)))
       (guix-database)))
 

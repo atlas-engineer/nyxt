@@ -105,15 +105,17 @@ when PROFILE is specified."))
 This only needs to be implemented for package managers that support outputs."))
 
 (export-always 'find-os-packages)
-(defun find-os-packages (name)
-  (manager-find-os-packages (manager) name))
+(defun find-os-packages (name &key version)
+  (manager-find-os-packages (manager) name :version version))
 
-(defgeneric manager-find-os-packages (manager name) ; TODO: Optionally take a version and an output as key arg?
-  (:method ((manager manager) name)
-    (declare (ignorable name))
+(defgeneric manager-find-os-packages (manager name &key version)
+  (:method ((manager manager) name &key version)
+    (declare (ignorable name version))
     (error "Unspecified manager method"))
-  (:documentation "Return the packages matching NAME.
-There may be multiple packages, e.g. in case of multiple versions."))
+  (:documentation "Return the packages matching NAME and optionally VERSION.
+There may be multiple packages, e.g. in case of multiple versions.
+Even though at most one package should ever match a name-version pair,
+we return a list in all cases out of consistency."))
 
 (export-always 'list-profiles)
 (defun list-profiles (&key include-manager-p)
