@@ -55,6 +55,21 @@
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
 
+  (defun qsa-text-nodes ()
+    "Gets all text nodes"
+    (let ((elements (qsa document "body, body *"))
+          child)
+      (loop for element in elements
+            do (setf child (ps:@ element child-nodes 0))
+            if (and (ps:chain element (has-child-nodes))
+                    (eql (ps:@ child node-type) 3)
+                    (not (ps:chain (array "B" "I" "STRONG" "SUP" "SUB"
+                                          "DEL" "S" "STRIKE" "U" "TT"
+                                          "OPTION" "A")
+                                   (includes (ps:@ element tag-name)))))
+              collect element)))
+
+
   (defun code-char (n)
     "Alias of String.fromCharCode"
     (ps:chain -string (from-char-code n)))
@@ -111,8 +126,7 @@ identifier for every hinted element."
         t nil)))
 
   (defun object-create (element hint)
-    (cond ((equal "P" (ps:@ element tag-name))
-           (ps:create "type" "p" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))))
+    (ps:create "type" "p" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
 
   (defun hints-add (elements)
     "Adds hints on elements"
@@ -152,7 +166,9 @@ identifier for every hinted element."
                        (rem n 26)))) ""))
 
   (add-stylesheet)
-  (hints-add (qsa document "p")))
+  (hints-add (qsa-text-nodes))
+  ;;(hints-add (qsa document "p"))
+  )
 
 (defclass paragraph-hint (nyxt/web-mode::hint) ())
 
