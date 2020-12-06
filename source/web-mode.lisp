@@ -323,7 +323,7 @@ The history node of the children-buffers are included and colored in gray."
                                      (if (eq node (htree:current history))
                                          `(:b ,title)
                                          title)))))
-                       (buffer-local-history-tree buffer)
+                       (gethash (id buffer) (buffer-local-histories-table history))
                        :include-root t
                        :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b)))))))
          (tree-style
