@@ -199,19 +199,14 @@ and must return a (possibly new) URL.")
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
-   (session-path (make-instance 'session-data-path
-                                :basename "default"
-                                :dirname (uiop:xdg-data-home +data-root+ "sessions"))
-                 :type data-path
-                 :documentation "
-The path where the system will create/save the session.")
    (download-path (make-instance 'download-data-path
                                  :dirname (xdg-download-dir))
                   :type data-path
                   :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.
 Downloads are kept in browser's `user-data', keyed by the expanded `download-path'.")
-   (history-path (make-instance 'history-data-path :basename "history")
+   (history-path (make-instance 'history-data-path :basename "default"
+                                                   :dirname (uiop:xdg-data-home +data-root+ "history"))
                  :type data-path
                  :documentation "
 The path where the system will create/save the global history.
@@ -556,40 +551,33 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 
 (export-always 'buffer-local-histories-table)
 (defmethod buffer-local-histories-table ((history htree:history-tree))
-  "Return a table mapping buffer `id's to the histories of the corresponding buffers."
+  "Return a table mapping buffer `id's to the history-tree nodes of the corresponding buffers."
   (let ((buffers (make-hash-table :test #'equalp)))
-    (dolist (node (htree:all-nodes history))
-      (push node (gethash (id (htree:data node)) buffers)))
+    (htree:do-tree (node history)
+      (let* ((data (htree:data node))
+             (hashed (gethash (id data) buffers)))
+        ;; TODO: Buffer can have several branches associated with it.
+        ;; Setting the first one we find doesn't suffice.
+        (unless (or (str:emptyp (id data)) hashed)
+          (setf (gethash (id data) buffers) node))))
     buffers))
-
-(export-always 'buffer-local-history-tree)
-(defmethod buffer-local-history-tree ((buffer buffer))
-  "Return a node that the buffer-local history starts from
-and list of nodes of buffer-local history as a second value."
-  (loop with id = (id buffer)
-        with buffer-history
-          = (gethash id (buffer-local-histories-table
-                         (get-data (history-path buffer))))
-        for node in buffer-history
-        when (string/= id (id (htree:data (htree:parent node))))
-          do (return (values node buffer-history))))
 
 (defmethod buffer-local-history-clean ((buffer buffer))
   "Deletes the BUFFER-local history in case it has no children in other buffers.
 Rebinds the history to the oldest child otherwise."
   (with-data-access (history (history-path buffer))
-      (multiple-value-bind (root buffer-history)
-          (buffer-local-history-tree buffer)
-        (let* ((buffer-native-history (remove-if (alex:curry #'string/= (id buffer)) buffer-history
-                                                 :key (alex:compose #'id #'data)))
-               (children (set-difference buffer-history buffer-native-history
-                                         :test #'equals :key #'data))
-               (most-recent-child (first (sort children #'local-time:timestamp<
-                                               :key (alex:compose #'last-access #'data)))))
-          (if children
-              (dolist (native-node buffer-native-history)
-                (setf (id (data native-node)) (id most-recent-child)))
-              (htree:delete-node (htree:data root) history :test #'equals))))))
+    (let* ((root (gethash (id buffer) (buffer-local-histories-table history)))
+           (buffer-history (htree:all-nodes root))
+           (buffer-native-history (remove-if (alex:curry #'string/= (id buffer)) buffer-history
+                                             :key (alex:compose #'id #'data)))
+           (children (set-difference buffer-history buffer-native-history
+                                     :test #'equals :key #'data))
+           (most-recent-child (first (sort children #'local-time:timestamp<
+                                           :key (alex:compose #'last-access #'data)))))
+      (if children
+          (dolist (native-node buffer-native-history)
+            (setf (id (data native-node)) (id most-recent-child)))
+          (htree:delete-node (htree:data root) history :test #'equals)))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)

@@ -75,6 +75,30 @@ case `explicit-visits'."
       (dolist (entry entries)
         (htree:delete-node entry history :test #'equals :rebind-children-p t)))))
 
+(defmethod make-buffer-from-history ((root htree:node))
+  "Create the buffer with the history starting from the ROOT.
+Open the latest child of ROOT."
+  (with-data-access (history (history-path (current-buffer)))
+    (let* ((root-id (id (htree:data root)))
+           (node (let ((latest root))
+                   (htree:do-tree (node history)
+                     (let ((node-data (htree:data node))
+                           (latest-data (htree:data latest)))
+                       (when (and (string= (id node-data) (id latest-data))
+                                  (local-time:timestamp>= (last-access node-data)
+                                                          (last-access latest-data)))
+                         (setf latest node))))
+                   latest))
+           (entry (htree:data node))
+           (buffer (make-buffer :url (ensure-url (url entry))
+                                :title (title entry))))
+      (setf (slot-value buffer 'load-status) :unloaded
+            (current-history-node buffer) node)
+      (htree:do-tree (node history)
+        (when (string= (id (htree:data node)) root-id)
+          (setf (id (htree:data node)) (id buffer))))
+      buffer)))
+
 
 (defun score-history-entry (entry)
   "Return history ENTRY score.
@@ -139,7 +163,7 @@ instance of Nyxt."
 (setf (fdefinition 'quri.uri::make-uri) #'quri.uri::%make-uri)
 
 (defmethod restore ((profile data-profile) (path history-data-path))
-  "Restore the global/buffer-local history from the PATH."
+  "Restore the global/buffer-local history and session from the PATH."
   (handler-case
       (let ((data (with-data-file (file path
                                         :direction :input
@@ -160,6 +184,13 @@ instance of Nyxt."
               (echo "Loading history of ~a URLs from ~s."
                     (htree:size history)
                     (expand-path path))
+              (sera:and-let* ((buffer-histories (buffer-local-histories-table history)))
+                ;; Make the new buffers.
+                (dolist (root (alex:hash-table-values buffer-histories))
+                  (make-buffer-from-history root))
+                ;; Switch to the last active buffer.
+                (switch-buffer
+                 :id (id (htree:data (htree:current history)))))
               (setf (get-data path) history))
              (hash-table
               (echo "Importing deprecated global history of ~a URLs from ~s."

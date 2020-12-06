@@ -27,10 +27,6 @@ This can be used to set the path from command line.  See
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class session-data-path (data-path)
-  ((ref :initform "session"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
 (define-class cookies-data-path (data-path)
   ((ref :initform "cookies"))
   (:export-class-name-p t)
@@ -186,10 +182,6 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
-(defmethod expand-data-path ((profile private-data-profile) (path session-data-path))
-  "We shouldn't store sessions for `private-data-profile'."
-  nil)
-
 (defmethod expand-data-path ((profile private-data-profile) (path cookies-data-path))
   "We shouldn't store cookies for `private-data-profile'."
   nil)
@@ -245,7 +237,7 @@ This function can be used on browser-less globals like `*init-file-path*'."
            ("" nil)
            (m (uiop:native-namestring m))))))
 
-;; TODO: create subclasses for history, session, bookmark, auto-mode data to ensure typing?
+;; TODO: create subclasses for history, bookmark, auto-mode data to ensure typing?
 (define-class user-data ()
   ((data nil
          :type t
