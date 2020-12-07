@@ -25,9 +25,6 @@ This can only be derived if `path' has been derived."))
   (:documentation "OS package outputs are meaningful mostly for functional
 package managers like Nix or Guix."))
 
-(defun guix-package-output-p (object)
-  (mopu:subclassp (class-of object) 'guix-package-output))
-
 (detect-manager "guix" 'guix-manager)
 
 (defmethod print-object ((obj (eql 'ospama::\#t)) stream)
@@ -158,9 +155,6 @@ value.
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
-
-(defun guix-package-p (object)
-  (mopu:subclassp (class-of object) 'guix-package))
 
 (export-always 'expanded-output-p)
 (defun expanded-output-p (output)
