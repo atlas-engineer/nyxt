@@ -219,6 +219,7 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
                       :documentation "Path where `*error-output*' can be written to."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
 (define-user-class buffer)
@@ -246,7 +247,7 @@ The mode instances are stored in the `modes' slot.")
           :documentation "Proxy for buffer.")
    (certificate-exceptions '()
                            :type list-of-strings
-                           :documentation  "A list of hostnames for which certificate errors shall be ignored.")
+                           :documentation "A list of hostnames for which certificate errors shall be ignored.")
    (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
                  :type data-path
                  :documentation "The path where cookies are stored.  Not all
@@ -258,6 +259,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only)."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
 (define-user-class web-buffer)
@@ -265,10 +267,6 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (defmethod initialize-instance :after ((buffer web-buffer) &key)
   (when (expand-path (cookies-path buffer))
     (ensure-parent-exists (expand-path (cookies-path buffer)))))
-
-(export-always 'web-buffer-p)
-(defun web-buffer-p (buffer)
-  (subtypep (type-of buffer) 'web-buffer))
 
 (define-class internal-buffer (user-buffer)
   ((style #.(cl-css:css
@@ -317,6 +315,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :color "white")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
 (define-user-class internal-buffer)
@@ -396,16 +395,10 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :color "black")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
 (define-user-class status-buffer)
-
-(export-always 'internal-buffer-p)
-(defmethod internal-buffer-p ((buffer buffer))
-  nil)
-
-(defmethod internal-buffer-p ((internal-buffer internal-buffer))
-  t)
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
