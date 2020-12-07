@@ -14,4 +14,6 @@
            #:no-unbound-initform-inference
            #:nil-fallback-initform-inference
            #:*type-inference*
-           #:basic-type-inference))
+           #:basic-type-inference
+           #:*predicate-name-transformer*
+           #:*export-predicate-name-p*))

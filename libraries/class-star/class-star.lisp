@@ -141,6 +141,17 @@ Set this to nil to disable inference.")
   "Fallback type inference function.
 Set this to nil to disable inference.")
 
+(defvar *predicate-name-transformer* 'default-predicate-name-transformer
+  "A function that takes the class name and its definition as argument.
+Return the predicate name.
+The predicate returns non-nil when the argument is of the `name' class.")
+
+(defvar *export-predicate-name-p* nil)
+
+(defun default-predicate-name-transformer (name &rest args)
+  (declare (ignore args))
+  (intern (format nil "~a-P" name) *package*))
+
 (defun process-slot-initform (definition &key ; See `hu.dwim.defclass-star:process-slot-definition'.
                                            initform-inference
                                            type-inference)
@@ -228,22 +239,52 @@ The initform can still be specified manually with `:initform' or as second
 argument, right after the slot name.
 
 The same applies to the types with the `:type-inference' option, the
-`*type-inference*' default and the `:type' argument respectively."
+`*type-inference*' default and the `:type' argument respectively.
+
+If `:predicate-name-transformer' is non nil (defaults to
+`*predicate-name-transformer*'), a predicate of the resulting name is generated.
+The predicate returns non-nil if its argument is a subtype of the generated
+class.
+
+If `:export-predicate-name-p' is non-nil, which defaults to
+`*export-predicate-name-p*', the predicate is exported (if defined)."
   (let* ((initform-option (assoc :initform-inference options))
          (initform-inference (or (when initform-option
-                                   (setf options (delete :initform-inference options :key #'car))
+                                   (setf options (delete :initform-inference options :key #'first))
                                    (eval (second initform-option)))
                                  *initform-inference*))
          (type-option (assoc :type-inference options))
          (type-inference (or (when type-option
-                               (setf options (delete :type-inference options :key #'car))
+                               (setf options (delete :type-inference options :key #'first))
                                (eval (second type-option)))
-                             *type-inference*)))
-    `(defclass* ,name ,supers
-       ,(mapcar (lambda (definition)
-                  (process-slot-initform
-                   definition
-                   :initform-inference initform-inference
-                   :type-inference type-inference))
-                slots)
-       ,@options)))
+                             *type-inference*))
+         (predicate-option (assoc :predicate-name-transformer options))
+         (predicate-name-transformer
+           (or (when predicate-option
+                 (setf options (delete :predicate-name-transformer options :key #'first))
+                 (eval (second predicate-option)))
+               *predicate-name-transformer*))
+         (export-predicate-option (assoc :export-predicate-name-p options))
+         (export-predicate-p
+           (or (when export-predicate-option
+                 (setf options (delete :export-predicate-name-p options :key #'first))
+                 (eval (second export-predicate-option)))
+               *export-predicate-name-p*)))
+    `(progn
+       (defclass* ,name ,supers
+           ,(mapcar (lambda (definition)
+                      (process-slot-initform
+                       definition
+                       :initform-inference initform-inference
+                       :type-inference type-inference))
+             slots)
+           ,@options)
+       ,@(when predicate-name-transformer
+           (let ((pred-name (funcall predicate-name-transformer name)))
+             `((defun ,pred-name (object)
+                 (subtypep (type-of object) ',name))
+               ,@(when export-predicate-p
+                   `((eval-when (:compile-toplevel :load-toplevel :execute)
+                       (export ',pred-name
+                               ,(package-name *package*))))))))
+       (find-class ',name nil))))

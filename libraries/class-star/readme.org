@@ -1,9 +1,10 @@
 This library enhances the class definition idiom with saner defaults and more
-slot and class options.  It wraps around the =hu.dwim.defclass-star= macro and
-adds a few more features:
+slot and class options.  It wraps around the =hu.dwim.defclass-star= macro,
+fixes a few bugs and adds a few more features:
 
 - initform customization (such as zero values);
-- type inference (optionally errors out when type cannot be inferred).
+- type inference (optionally errors out when type cannot be inferred);
+- predicate generation and customization (just like defstruct).
 
 Metaclasses would not be very useful here since most of our features need to be
 enacted at compile-time, while metaclasses are mostly useful on classe
@@ -26,6 +27,7 @@ read slots by their name, not by their properties).
   position, right after the slot name.
 - Class option to toggle the default slot exportation.
 - The `:export' slot option allows to specify the exportation of individual slots.
+- Implicit, customizable predicate generator.
 
 * Examples
 
