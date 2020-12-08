@@ -47,6 +47,28 @@ will find it]]).
 Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
 [[../build-scripts/guix.scm]] file of the Nyxt repository.
 
+* Developer installation with Nix
+** Building for local development
+To use Nix for local development use the =shell.nix= file located in the
+build-scripts directory.
+
+As an example, to run with SBCL, you could do the following:
+=nix-shell nyxt/build-scripts/shell.nix --run sbcl=
+
+Then you could use Quicklisp to quickload Nyxt, =(ql:quickload
+:nyxt/gtk-application) (nyxt:start)=.
+
+** Compiling
+To compile the latest Nyxt, from the project root, run the the
+following:
+
+=nix-build -I nixpkgs=channel:nixpkgs-unstable=
+
+To compile and install the latest Nyxt, from the project root, run the
+following:
+
+=nix-env -i -f default.nix -I nixpkgs=channel:nixpkgs-unstable=
+
 * Standard developer installation
 
 Nyxt is written in Common Lisp.  It can be built with any standard Common
