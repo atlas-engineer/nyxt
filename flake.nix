@@ -16,14 +16,14 @@
     };
 
   in {
-  
+
     packages = nixpkgs.lib.genAttrs systems (system: {
       nyxt = mkNyxt {
         pkgs = nixpkgs.legacyPackages.${system};
       };
     });
 
-    defaultPackage = nixpkgs.lib.genAttrs systems (system: 
+    defaultPackage = nixpkgs.lib.genAttrs systems (system:
       self.packages.${system}.nyxt
     );
 
@@ -43,7 +43,7 @@
       };
     });
 
-    defaultApp = nixpkgs.lib.genAttrs systems (system: 
+    defaultApp = nixpkgs.lib.genAttrs systems (system:
       self.apps.${system}.nyxt
     );
 
