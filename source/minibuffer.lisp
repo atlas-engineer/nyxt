@@ -57,41 +57,37 @@ inside brackets. It can be useful to disable, for instance for a yes/no question
             :export nil
             :documentation "The HTML content of the minibuffer.")
    (max-lines 10
-              :documentation "Max number of suggestion lines to show.  You will
-want edit this to match the changes done to `minibuffer-style'.")
-   (minibuffer-style #.(cl-css:css
-                        '((* :font-family "monospace,monospace"
-                             :font-size "14px"
-                             :line-height "18px")
-                          (body :border-top "4px solid dimgray"
-                                :margin "0"
-                                :padding "0 6px")
-                          ("#container" :display "flex"
-                                        :flex-flow "column"
-                                        :height "100%")
-                          ("#input" :padding "6px 0"
-                                    :border-bottom "solid 1px lightgray")
-                          ("#suggestions" :flex-grow "1"
-                                          :overflow-y "auto"
-                                          :overflow-x "auto")
-                          ("#cursor" :background-color "gray"
-                                     :color "white")
-                          ("#prompt" :padding-right "4px"
-                                     :color "dimgray")
-                          (ul :list-style "none"
-                              :padding "0"
-                              :margin "0")
-                          (li :padding "2px")
-                          (.marked :background-color "darkgray"
-                                   :font-weight "bold"
-                                   :color "white")
-                          (.selected :background-color "gray"
-                                     :color "white")))
-                     :documentation "The CSS applied to a minibuffer when it is set-up.")
-   (user-style ""
-               :documentation "User CSS that is applied after the
-minibuffer-style. This can be used to override any styles in the
-minibuffer-style.")
+              :documentation "Max number of suggestion lines to show.
+You will want edit this to match the changes done to `style'.")
+   (style #.(cl-css:css
+             '((* :font-family "monospace,monospace"
+                  :font-size "14px"
+                  :line-height "18px")
+               (body :border-top "4px solid dimgray"
+                     :margin "0"
+                     :padding "0 6px")
+               ("#container" :display "flex"
+                             :flex-flow "column"
+                             :height "100%")
+               ("#input" :padding "6px 0"
+                         :border-bottom "solid 1px lightgray")
+               ("#suggestions" :flex-grow "1"
+                               :overflow-y "auto"
+                               :overflow-x "auto")
+               ("#cursor" :background-color "gray"
+                          :color "white")
+               ("#prompt" :padding-right "4px"
+                          :color "dimgray")
+               (ul :list-style "none"
+                   :padding "0"
+                   :margin "0")
+               (li :padding "2px")
+               (.marked :background-color "darkgray"
+                        :font-weight "bold"
+                        :color "white")
+               (.selected :background-color "gray"
+                          :color "white")))
+          :documentation "The CSS applied to a minibuffer when it is set-up.")
    (override-map (let ((map (make-keymap "overide-map")))
                    (define-key map
                      "escape"
@@ -195,8 +191,7 @@ beginning."
   (update-suggestions minibuffer)
   (setf (content minibuffer)
         (markup:markup
-         (:head (:style (minibuffer-style minibuffer))
-                (:style (user-style minibuffer)))
+         (:head (:style (style minibuffer)))
          (:body
           (:div :id "container"
                 (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
