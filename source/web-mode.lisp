@@ -334,13 +334,55 @@ Otherwise go forward to the only child."
            (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
                                        (buffer-list))
                               (nyxt/help-mode:help-mode
-                               :activate t :buffer (make-buffer :title buffer-name))))
+                               :activate t
+                               :buffer (make-internal-buffer :title buffer-name))))
            (history (history (find-submode buffer 'web-mode)))
            (tree `(:ul ,(traverse (htree:root history)
                                   (htree:current history))))
-           (content (markup:markup*
-                     '(:h1 "History")
-                     tree))
+           (tree-style
+             (cl-css:css
+              '((* :margin 0
+                   :padding 0
+                   :list-style "none")
+                ("ul li"
+                 :margin-left "15px"
+                 :position "relative"
+                 :padding-left "5px")
+                ("ul li::before"
+                 :content "' '"
+                 :position "absolute"
+                 :width "1px"
+                 :top "5px"
+                 :bottom "-12px"
+                 :left "-10px")
+                ("body > ul > li:first-child::before"
+                 :top "12px")
+                ("ul li:not(:first-child):last-child::before"
+                 :display "none")
+                ("ul li:only-child::before"
+                 :display "list-item"
+                 :content "' '"
+                 :position "absolute"
+                 :width "1px"
+                 :background-color "#000"
+                 :top "5px"
+                 :bottom "7px"
+                 :height "7px"
+                 :left "-10px")
+                ("ul li::after"
+                 :content "' '"
+                 :position "absolute"
+                 :left "-10px"
+                 :width "10px"
+                 :height "1px"
+                 :background-color "#000"
+                 :top "12px"))))
+           (content (markup:markup
+                     (:body (:h1 "History")
+                            (:style (markup:raw tree-style))
+                            (:div (markup:raw
+                                   (markup:markup*
+                                    tree))))))
            (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript-async output-buffer insert-content)
