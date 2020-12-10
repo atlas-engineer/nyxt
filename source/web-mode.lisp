@@ -341,7 +341,9 @@ Otherwise go forward to the only child."
                                   (htree:current history))))
            (tree-style
              (cl-css:css
-              '((* :margin 0
+              '((body
+                 :line-height "initial")
+                (* :margin 0
                    :padding 0
                    :list-style "none")
                 ("ul li"
@@ -352,6 +354,7 @@ Otherwise go forward to the only child."
                  :content "' '"
                  :position "absolute"
                  :width "1px"
+                 :background-color "#000"
                  :top "5px"
                  :bottom "-12px"
                  :left "-10px")
@@ -379,6 +382,7 @@ Otherwise go forward to the only child."
                  :top "12px"))))
            (content (markup:markup
                      (:body (:h1 "History")
+                            (:style (style output-buffer))
                             (:style (markup:raw tree-style))
                             (:div (markup:raw
                                    (markup:markup*
