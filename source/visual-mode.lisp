@@ -7,9 +7,6 @@
   (:documentation "Visual mode."))
 (in-package :nyxt/visual-mode)
 
-;; TODO: vi-style keybindings, tags on more than <p> elements
-;; also, it doesn't build
-
 (define-mode visual-mode ()
   "Visual mode."
   ((keymap-scheme
@@ -29,12 +26,23 @@
        "C-e" 'end-line
        "M-a" 'backward-sentence
        "M-e" 'forward-sentence)
-      ;; have no idea what to do with vi-style bindings (yet)
-      ;; they seem very different from Emacs ones, and there even
-      ;; seem to be multiple visual modes (char-wise, line-wise, block-wise)
-      #||scheme:vi
+      ;; vi keybindings only enable use of plain "visual" mode for now
+      scheme:vi-normal
       (list
-       "")||#))
+       "h" 'backward-char
+       "j" 'forward-line
+       "k" 'backward-line
+       "l" 'forward-char
+       "w" 'forward-word
+       "$" 'end-line
+       "<end>" 'end-line
+       "<space>" 'forward-char
+       "<backspace>" 'backward-char
+       "0" 'beginning-line
+       "<home>" 'beginning-line
+       "v" 'visual-mode
+       "<escape>" 'visual-mode
+       "C-c" 'visual-mode)))
    (destructor
     (lambda (mode)
       (make-page-uneditable)
@@ -44,7 +52,10 @@
     (lambda (mode)
       (make-page-editable)
       (block-page-keypresses)
-      (select-paragraph)))))
+      (select-paragraph)
+      ;; imitating visual mode in vim
+      (if (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
+        (setf *mark-set* t))))))
 
 (define-parenscript %add-paragraph-hints (&key annotate-visible-only-p)
   (defun qs (context selector)
@@ -166,9 +177,7 @@ identifier for every hinted element."
                        (rem n 26)))) ""))
 
   (add-stylesheet)
-  (hints-add (qsa-text-nodes))
-  ;;(hints-add (qsa document "p"))
-  )
+  (hints-add (qsa-text-nodes)))
 
 (defclass paragraph-hint (nyxt/web-mode::hint) ())
 
@@ -272,7 +281,7 @@ identifier for every hinted element."
   (is-collapsed))
 
 (define-command toggle-mark ()
-  "Toggles the mark."
+  "Toggle the mark."
   (if (string= (is-collapsed) "true")
     (progn
       (setf *mark-set* (not *mark-set*))
