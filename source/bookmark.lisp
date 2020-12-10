@@ -337,7 +337,13 @@ rest in background buffers."
         (write-slot 'annotation)
         (when (date entry)
           (write-string " :date ")
-          (format t "~s" (local-time:format-timestring nil (date entry))))
+          ;; If we don't force the timezone, the timestamp could be serialized
+          ;; differently depending on the local timezone, e.g.
+          ;;     2020-12-10T11:46:02.500515+01:00
+          ;; instead of
+          ;;     2020-12-10T10:46:02.500515Z
+          (format t "~s" (local-time:format-timestring nil (date entry)
+                                                       :timezone local-time:+utc-zone+)))
         (when (tags entry)
           (write-string " :tags (")
           (format t "~s" (first (tags entry)))
