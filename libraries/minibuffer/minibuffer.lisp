@@ -72,7 +72,7 @@ You can call `destructor' to call the registered termination functions of the
 minibuffer and its sources.
 
 Suggestions are computed asynchronously when `input' is updated.
-Use `ready?' to know when the minibuffer is ready.
+Use `ready-p' to know when the minibuffer is ready.
 Sources suggestions can be retrieved even when the compution is not
 finished.")))
 
@@ -95,8 +95,8 @@ finished.")))
   (mapc #'destructor (sources minibuffer))
   (maybe-funcall (after-destructor minibuffer)))
 
-(export-always 'ready?)
-(defun ready? (minibuffer &optional timeout)
+(export-always 'ready-p)
+(defun ready-p (minibuffer &optional timeout)
   "Return non-nil when all minibuffer sources are ready.
 After timeout has elapsed for one source, return nil."
   (every (lambda (source)

@@ -24,7 +24,7 @@
                      :sources (list (minibuffer:make-source
                                      :initial-suggestions '("foo" "bar"))))))
     (setf (minibuffer:input minibuffer) "foo")
-    (when (minibuffer:ready? minibuffer)
+    (when (minibuffer:ready-p minibuffer)
       (let ((filtered-suggestions (minibuffer:suggestions
                                    (first (minibuffer:sources minibuffer)))))
         (prove:is (mapcar #'minibuffer:value filtered-suggestions)
@@ -46,7 +46,7 @@
                       :sources (list (minibuffer:make-source
                                       :initial-suggestions (list url1 url2))))))
     (setf (minibuffer:input minibuffer) "nyxt")
-    (when (minibuffer:ready? minibuffer)
+    (when (minibuffer:ready-p minibuffer)
       (let ((filtered-suggestions (minibuffer:suggestions
                                    (first (minibuffer:sources minibuffer)))))
         (prove:is (mapcar #'minibuffer:value filtered-suggestions)
@@ -65,7 +65,7 @@
                                      :initial-suggestions '("foo" "bar")
                                      :filter #'slow-identity-match)))))
     (setf (minibuffer:input minibuffer) "foo")
-    (when (minibuffer:ready? minibuffer)
+    (when (minibuffer:ready-p minibuffer)
       (let ((filtered-suggestions (minibuffer:suggestions
                                    (first (minibuffer:sources minibuffer)))))
         (prove:is (mapcar #'minibuffer:value filtered-suggestions)
