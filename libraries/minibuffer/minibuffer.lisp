@@ -29,17 +29,17 @@
                   :documentation
                   "Function called with the minibuffer as argument.")
 
-     (before-cleanup nil
+     (before-destructor nil
                      :type (or null function)
                      :documentation
                      "First function called with no parameters when calling the
-`cleanup' function over this minibuffer.
+`destructor' function over this minibuffer.
 It's called before the sources are cleaned up.")
-     (after-cleanup nil
+     (after-destructor nil
                     :type (or null function)
                     :documentation
                     "Last function called with no parameters when calling the
-`cleanup' function over this minibuffer.
+`destructor' function over this minibuffer.
 It's called after the sources are cleaned up.
 
 Note that the function is executed *before* performing an action.")
@@ -68,7 +68,7 @@ It can be a function of one argument, the minibuffer, which returns a string."))
 A minibuffer object holds multiple sources (of type `minibuffer-source') which
 contain a list of `suggestion's.
 
-You can call `cleanup' to call the registered termination functions of the
+You can call `destructor' to call the registered termination functions of the
 minibuffer and its sources.
 
 Suggestions are computed asynchronously when `input' is updated.
@@ -87,13 +87,13 @@ finished.")))
   (mapc (lambda (source) (update source text)) (sources minibuffer))
   text)
 
-(export-always 'cleanup)
-(defmethod cleanup ((minibuffer minibuffer))
-  "First call `before-cleanup', then clean up all sources, finally call
-`after-cleanup'."
-  (maybe-funcall (before-cleanup minibuffer))
-  (mapc #'cleanup (sources minibuffer))
-  (maybe-funcall (after-cleanup minibuffer)))
+(export-always 'destructor)
+(defmethod destructor ((minibuffer minibuffer))
+  "First call `before-destructor', then clean up all sources, finally call
+`after-destructor'."
+  (maybe-funcall (before-destructor minibuffer))
+  (mapc #'destructor (sources minibuffer))
+  (maybe-funcall (after-destructor minibuffer)))
 
 (export-always 'ready?)
 (defun ready? (minibuffer &optional timeout)
