@@ -4,7 +4,8 @@
 (in-package :ospama)
 
 (define-class guix-manager (manager)
-  ()
+  ((path "guix"
+         :type (or string pathname)))
   (:export-class-name-p t))
 
 (define-class guix-package-output (os-package-output)
@@ -25,7 +26,7 @@ This can only be derived if `path' has been derived."))
   (:documentation "OS package outputs are meaningful mostly for functional
 package managers like Nix or Guix."))
 
-(detect-manager "guix" 'guix-manager)
+(push 'guix-manager *supported-managers*)
 
 (defmethod print-object ((obj (eql 'ospama::\#t)) stream)
   "Specialized printing of Scheme's #t for `cl->scheme-syntax'."

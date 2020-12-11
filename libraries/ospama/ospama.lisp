@@ -51,27 +51,32 @@ package managers like Nix or Guix."))
 (export-always '*manager*)
 (defvar *manager* nil
   "The currently selected package manager.
-If unset, it will default to the first `*detected-managers*'.")
+See `manager'.")
 
-(export-always '*detected-managers*)
-(defvar *detected-managers* '()
-  "The list of keywords corresponding to the detected managers.")
+(export-always '*supported-managers*)
+(defvar *supported-managers* '()
+  "The list of supported manager class symbols.")
 
 ;; TODO: What would be an ideal default location?
 (defvar profile-directory (uiop:xdg-data-home "profiles"))
 (defvar manifest-directory (uiop:xdg-data-home "manifests"))
 
-(defun detect-manager (name class-sym)
+(defun manager-found-p (class-sym)
   "Prepend the CLASS-SYM instance to `*detected-managers*' if NAME is an
 executable that can be found.
 NAME can be also be a path."
-  (serapeum:and-let* ((path (serapeum:resolve-executable name)))
-    (push (make-instance class-sym :path path)
-          *detected-managers*)))
+  (let ((manager (make-instance class-sym)))
+    (serapeum:and-let* ((expanded-path (serapeum:resolve-executable (path manager))))
+      (setf (path manager) expanded-path)
+      manager)))
 
+(export-always 'manager)
 (defun manager ()
+  "Return `*manager*', an instance of a package manager class.
+If unbound, set it to the first `*supported-managers*' that satisfies
+`manager-found-p'. "
   (unless *manager*
-    (setf *manager* (first *detected-managers*)))
+    (setf *manager* (some #'manager-found-p *supported-managers*)))
   *manager*)
 
 (declaim (ftype (function (list) uiop/launch-program::process-info) run))
