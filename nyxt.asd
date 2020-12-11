@@ -340,9 +340,11 @@
   :depends-on (alexandria
                calispel
                cl-containers
+               mk-string-metrics
                moptilities
                serapeum
                str
+               trivial-package-local-nicknames
                nyxt/keymap
                nyxt/class-star)
   :pathname "libraries/minibuffer/"
