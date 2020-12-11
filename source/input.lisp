@@ -135,7 +135,8 @@ Return nil to forward to renderer or non-nil otherwise."
                     (pexec ()
                       (insert (nyxt:current-minibuffer) value)))))
               (setf key-stack nil)
-              t)
+              ;; Return nil so that input is forwarded to dummy-text-input.
+              nil)
 
              ((nyxt/repl-mode::active-repl-p window)
               (when printable-p

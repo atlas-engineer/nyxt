@@ -143,6 +143,7 @@ not return."
 (define-class gtk-window ()
   ((gtk-object)
    (box-layout)
+   (dummy-text-input)
    (minibuffer-container)
    (minibuffer-view)
    (status-container)
@@ -191,7 +192,8 @@ data-manager will store the data separately for each buffer."))
                   minibuffer-container minibuffer-view
                   status-buffer status-container
                   message-container message-view
-                  id key-string-buffer) window
+                  id key-string-buffer
+                  dummy-text-input) window
        (setf id (get-unique-window-identifier *browser*))
        (setf gtk-object (make-instance 'gtk:gtk-window
                                        :type :toplevel
@@ -220,6 +222,9 @@ data-manager will store the data separately for each buffer."))
        (gtk:gtk-box-pack-start message-container message-view :expand t)
        (setf (gtk:gtk-widget-size-request message-container)
              (list -1 (message-buffer-height window)))
+
+       (setf dummy-text-input (make-instance 'gtk:gtk-entry))
+       (gtk:gtk-box-pack-end box-layout dummy-text-input :expand nil)
 
        (setf status-buffer (make-instance 'user-status-buffer))
        (gtk:gtk-box-pack-end box-layout status-container :expand nil)
@@ -682,6 +687,9 @@ Warning: This behaviour may change in the future."
   buffer)
 
 (define-ffi-method ffi-window-set-minibuffer-height ((window gtk-window) height)
+  (if (zerop height)
+      (gtk:gtk-widget-grab-focus (dummy-text-input window))
+      (gtk:gtk-widget-grab-focus (gtk-object window)))
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
