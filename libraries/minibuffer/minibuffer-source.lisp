@@ -57,17 +57,17 @@ The other slots are optional."))
            "Name which can be used to differentiate sources from one
 another.")
 
-     (initializer nil
+     (constructor nil
                   :type (or null function)
                   :documentation
                   "Function called with the source as argument.
 It is useful for instance to create the list of `initial-suggestions'.")
 
-     (cleanup nil ; TODO: Better name? `finalizer' is more fit to an after-init function.
-              :type (or null function)
-              :documentation
-              "Function called with the source as parameter to clean it up.
-It's called when `cleanup' is called over `minibuffer'.
+     (destructor nil
+                 :type (or null function)
+                 :documentation
+                 "Function called with the source as parameter to clean it up.
+It's called when `destructor' is called over `minibuffer'.
 
 Note that the function is executed *before* performing any action.")
 
@@ -255,7 +255,7 @@ It can be a function of one argument, the minibuffer, which returns a string."))
   ;; TODO: Setting `suggestions' is not needed?
   (setf (slot-value source 'suggestions) (initial-suggestions source))
   ;; TODO: Run this in parallel. Must be done before first input can be processed.
-  (maybe-funcall (initializer source) source)
+  (maybe-funcall (constructor source) source)
   source)
 
 (defun filtered-properties-suggestion (suggestion properties)
