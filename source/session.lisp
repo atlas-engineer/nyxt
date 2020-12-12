@@ -37,7 +37,7 @@
                                          :dirname (dirname (history-path (current-buffer)))
                                          :basename name)))
       ;; TODO: Maybe merge the existing history, instead of overwriting it?
-      (restore (data-profile (current-buffer)) path)
+      (restore (data-profile (current-buffer)) path :restore-session-p t)
       ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
       (setf history (get-data path)))))
 

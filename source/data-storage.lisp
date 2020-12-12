@@ -203,24 +203,24 @@ function result as a boolean in conditions."
   path)
 
 (export-always 'store)
-(defgeneric store (profile path)
-  (:method ((profile data-profile) (path data-path))
+(defgeneric store (profile path &key &allow-other-keys)
+  (:method ((profile data-profile) (path data-path) &key &allow-other-keys)
     nil)
   (:documentation "The generic way to store data to the given path type.
 Define a method for your `data-path' type to make it storable."))
 
 (export-always 'restore)
-(defgeneric restore (profile path)
-  (:method ((profile data-profile) (path data-path))
+(defgeneric restore (profile path &key &allow-other-keys)
+  (:method ((profile data-profile) (path data-path) &key &allow-other-keys)
     nil)
   (:documentation "The generic way to restore data from the given path type.
 Define a method for your `data-path' type to make it restorable."))
 
-(defmethod store ((profile private-data-profile) (path data-path))
+(defmethod store ((profile private-data-profile) (path data-path) &key &allow-other-keys)
   "This method guarantees PATH will not be persisted to disk in PRIVATE-DATA-PROFILE."
   nil)
 
-(defmethod restore ((profile private-data-profile) (path data-path))
+(defmethod restore ((profile private-data-profile) (path data-path) &key &allow-other-keys)
   "This method guarantees PATH will not be loaded from disk in PRIVATE-DATA-PROFILE."
   nil)
 
