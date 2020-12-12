@@ -356,7 +356,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
       (log:error "During auto-mode rules deserialization: ~a" c)
       nil)))
 
-(defmethod store ((profile data-profile) (path auto-mode-rules-data-path))
+(defmethod store ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
   (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
@@ -399,7 +399,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (format file "~%)~%")
     (echo "Saved ~a auto-mode rules to ~s." (length (get-data path)) (expand-path path)))))
 
-(defmethod restore ((profile data-profile) (path auto-mode-rules-data-path))
+(defmethod restore ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
   (handler-case
       (let ((data (with-data-file (file path
                                         :direction :input

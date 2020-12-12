@@ -373,7 +373,7 @@ rest in background buffers."
       (log:error "During bookmark deserialization: ~a" c)
       nil)))
 
-(defmethod store ((profile data-profile) (path bookmarks-data-path))
+(defmethod store ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
   "Store the bookmarks to the buffer `bookmarks-path'."
   (with-data-file (file path
                         :direction :output
@@ -394,7 +394,7 @@ rest in background buffers."
           (expand-path path)))
   t)
 
-(defmethod restore ((profile data-profile) (path bookmarks-data-path))
+(defmethod restore ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
   "Restore the bookmarks from the buffer `bookmarks-path'."
   (handler-case
       (let ((data (with-data-file (file path

@@ -287,14 +287,14 @@ To change the default buffer, e.g. set it to a given URL:
     (let ((buffer (current-buffer)))
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
-      (when (and (expand-path (session-path buffer))
+      (when (and (expand-path (history-path buffer))
                  (session-list buffer))
         (match (session-restore-prompt *browser*)
           ;; Need `funcall-safely' so we continue if the user exits the
           ;; minibuffer (which raises a condition).
           (:always-ask (funcall-safely #'restore-session-by-name))
           (:always-restore (funcall-safely #'restore (data-profile buffer)
-                                           (session-path buffer)))
+                                           (history-path buffer) :restore-session-p t))
           (:never-restore (log:info "Not restoring session."))))
       (cond
         (urls (open-urls urls))
