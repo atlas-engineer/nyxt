@@ -11,6 +11,13 @@
   "Visual mode."
   ((keymap-scheme
     (define-scheme "visual"
+      scheme:cua
+      (list
+       "up" 'backward-line
+       "down" 'forward-line
+       "left" 'forward-char
+       "right" 'forward-char
+       "escape" 'visual-mode)
       scheme:emacs
       (list
        "C-h" 'select-paragraph
@@ -26,7 +33,7 @@
        "C-e" 'end-line
        "M-a" 'backward-sentence
        "M-e" 'forward-sentence)
-      ;; vi keybindings only enable use of plain "visual" mode for now
+      ;; vi keybindings only enable use of vim's plain "visual" mode for now
       scheme:vi-normal
       (list
        "h" 'backward-char
@@ -35,19 +42,18 @@
        "l" 'forward-char
        "w" 'forward-word
        "$" 'end-line
-       "<end>" 'end-line
-       "<space>" 'forward-char
-       "<backspace>" 'backward-char
+       "keypadend" 'end-line
+       "space" 'forward-char
+       "backspace" 'backward-char
        "0" 'beginning-line
-       "<home>" 'beginning-line
+       "keypadhome" 'beginning-line
        "v" 'visual-mode
-       "<escape>" 'visual-mode
        "C-c" 'visual-mode)))
    (destructor
     (lambda (mode)
       (make-page-uneditable)
       (unlock-page-keypresses)
-      (setf *mark-set* nil)))
+      (defparameter *mark-set* nil)))
    (constructor
     (lambda (mode)
       (make-page-editable)
@@ -55,7 +61,7 @@
       (select-paragraph)
       ;; imitating visual mode in vim
       (if (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
-        (setf *mark-set* t))))))
+        (defvar *mark-set* nil))))))
 
 (define-parenscript %add-paragraph-hints (&key annotate-visible-only-p)
   (defun qs (context selector)
@@ -269,9 +275,10 @@ identifier for every hinted element."
   (setf (ps:@ document body content-editable) "false"))
 
 (define-command select-paragraph ()
+  "Add hints to text elements on the page and open a minibuffer for selecting them."
   (query-paragraph-hints "Set caret on element" #'%follow-hint :annotate-visible-only-p t))
 
-(defparameter *mark-set* nil)
+(defvar *mark-set* nil)
 
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value
