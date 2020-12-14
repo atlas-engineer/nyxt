@@ -28,24 +28,21 @@
 
 (define-command restore-session-by-name ()
   "Restore the session data from the file named by user input."
-  (with-data-access (history (history-path (current-buffer)))
-    (sera:and-let* ((name (prompt-minibuffer
-                           :input-prompt "The name of the session to restore"
-                           :history (minibuffer-session-restore-history *browser*)
-                           :suggestion-function #'session-name-suggestion-filter))
-                    (path (make-instance 'history-data-path
-                                         :dirname (dirname (history-path (current-buffer)))
-                                         :basename name)))
-      ;; TODO: Maybe merge the existing history, instead of overwriting it?
-      (restore (data-profile (current-buffer)) path :restore-session-p t)
-      ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
-      (setf history (get-data path)))))
+  (sera:and-let* ((name (prompt-minibuffer
+                         :input-prompt "The name of the session to restore"
+                         :history (minibuffer-session-restore-history *browser*)
+                         :suggestion-function #'session-name-suggestion-filter))
+                  (path (make-instance 'history-data-path
+                                       :dirname (dirname (history-path (current-buffer)))
+                                       :basename name)))
+    (restore (data-profile (current-buffer)) path :restore-session-p t)
+    ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
+    (setf (get-data (history-path (current-buffer))) (get-data path))))
 
 (define-command replace-session-by-name ()
   "Delete all the buffers of the current session and restore the one chosen by user."
-  (with-data-access (history (history-path (current-buffer)))
-    (let ((old-buffers (buffer-list)))
-      (setf history nil)
-      (restore-session-by-name)
-      (dolist (buffer old-buffers)
-        (buffer-delete buffer)))))
+  (let ((old-buffers (buffer-list)))
+    (setf (get-data (history-path (current-buffer))) nil)
+    (restore-session-by-name)
+    (dolist (buffer old-buffers)
+      (buffer-delete buffer))))
