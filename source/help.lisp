@@ -113,7 +113,7 @@
             (loop for command in *command-list*
                   collect (markup:markup
                            (:details
-                            (:summary (symbol-name (sym command)))
+                            (:summary (format nil "~(~a~)" (symbol-name (sym command))))
                             (:p (:pre (documentation (command-function command) t)))
                             (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                 (write-to-string (sexp command)))))))))))
