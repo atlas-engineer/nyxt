@@ -167,9 +167,12 @@
                                           ,@(unless (ospama:expanded-outputs-p package)
                                               `((:a :class "button"
                                                     :href ,(lisp-url '(echo "Computing path & size...")
-                                                                     `(ospama:expand-outputs (first (ospama:find-os-packages ,(ospama:name package))))
+                                                                     `(ospama:expand-outputs (first (ospama:find-os-packages
+                                                                                                     ,(ospama:name package)
+                                                                                                     :version ,(ospama:version package))))
                                                                      `(%describe-os-package
-                                                                       (list (first (ospama:find-os-packages ,(ospama:name package))))))
+                                                                       (ospama:find-os-packages ,(ospama:name package)
+                                                                                                :version ,(ospama:version package))))
                                                     "Compute path & size")))
                                           ,(format-outputs (ospama:outputs package)))
                                      (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
@@ -364,8 +367,11 @@ OBJECTS can be a list of packages, a generation, etc."
              (markup:markup*
               `(:li (:a :class "button"
                         :href ,(lisp-url `(%describe-os-package
-                                           (ospama:find-os-packages
-                                            ,(ospama:name package))))
+                                           (or (ospama:find-os-packages
+                                                ,(ospama:name package)
+                                                :version ,(ospama:version package))
+                                               (ospama:find-os-packages
+                                                ,(ospama:name package)))))
                         ,(object-string package-output))
                     " " ,(ospama:version package))))))
      buffer)
