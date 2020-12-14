@@ -101,24 +101,20 @@
   "Dump the command descriptions as an HTML file."
   (with-open-file (f file :direction :output :if-exists :supersede)
     (format f "~a" (markup:markup
+                    (:p "Listed below are the current commands, their
+                         documentation, and their source. Non-command
+                         based features are currently unlisted.")
+                    (:h1 "Commands")))
+    (format f "~a" (markup:markup
                     (:style (cl-css:css
                              '((".nyxt-source"
                                 :overflow "auto"))))))
     (format f "~{~a ~%~}"
             (loop for command in *command-list*
                   collect (markup:markup
-                           (:details\ open
+                           (:details
                             (:summary (symbol-name (sym command)))
-                            (:h2 (symbol-name (sym command))
-                                 (unless (eq (find-package :nyxt)
-                                             (symbol-package (sym command)))
-                                   (format nil " (~a)"
-                                           (package-name (symbol-package (sym command))))))
-                            (:p (:pre   ; See describe-slot* for why we use :pre.
-                                 ;; TODO: This only displays the first method,
-                                 ;; i.e. the first command of one of the modes.
-                                 ;; Ask for modes instead?
-                                 (documentation (command-function command) t)))
+                            (:p (:pre (documentation (command-function command) t)))
                             (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                 (write-to-string (sexp command)))))))))))
 
