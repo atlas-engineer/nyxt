@@ -43,9 +43,6 @@ package managers like Nix or Guix."))
    "\\\\" "\\"
    (write-to-string form)))
 
-(defvar *guix-repl-idle-timeout* 60
-  "Time in seconds of being idle before the `guix repl` is exited.")
-
 (defvar *guix-command* "guix"
   "Name or path to the `guix' executable.")
 
@@ -53,51 +50,40 @@ package managers like Nix or Guix."))
 (defvar %guix-result-channel nil)
 
 (defun guix-listener ()
-  "Automatically start and quit the Guix REPL after
-`*guix-repl-idle-timeout*'.
+  "Start the Guix REPL and listen to `%guix-listener-channel'.
 For each inputs on `%guix-listener-channel' a result is returned on
 `%guix-result-channel'."
   ;; Guix REPL automatically terminates when it reads EOF in the input stream,
   ;; which happens when the parent Lisp process dies.
-  (flet ((maybe-start-guix (guix-process)
-           (unless (and guix-process
-                        (uiop:process-alive-p guix-process))
-             (setf guix-process
+  (flet ((start-guix ()
+           (let ((guix-process
                    (uiop:launch-program `(,*guix-command* "repl" "--type=machine")
-                                        :input :stream :output :stream))
+                                        :input :stream :output :stream)))
              ;; Skip REPL header.
              ;; We could use `read' but CCL won't swallow the linebreak, while
              ;; SBCL will.
-             (read-line (uiop:process-info-output guix-process) nil :eof))
-           guix-process))
-    (do ((guix-process nil)) (nil)
-      (handler-case
-          (do () (nil)
-            (let ((input (bt:with-timeout (*guix-repl-idle-timeout*)
-                           (calispel:? %guix-listener-channel))))
-              (setf guix-process (maybe-start-guix guix-process))
-              ;; Append a newline so that REPL proceeds.
-              (format (uiop:process-info-input guix-process) "~a~%" input)
-              (finish-output (uiop:process-info-input guix-process))
-              ;; We set the package to current so that symbols in
-              ;;   (values (value ...) (value ...) ...)
-              ;; do not get returned with a package prefix.
-              (let* ((*package* (find-package :ospama))
-                     (output (read-line (uiop:process-info-output guix-process)
-                                        nil :eof)))
-                ;; Use `read-line' to ensure we empty the output stream.
-                ;; `read' errors could leave a truncated s-expression behind
-                ;; which would prefix the next evaluation result.
-                ;; TODO: Report read errors.
-                (calispel:! %guix-result-channel
-                            (ignore-errors
-                             (let ((*readtable* (named-readtables:ensure-readtable
-                                                 'scheme-reader-syntax)))
-                               (read-from-string output)))))))
-        (t ()
-          (close (uiop:process-info-input guix-process))
-          (unless (uiop:process-alive-p guix-process)
-            (uiop:terminate-process guix-process)))))))
+             (read-line (uiop:process-info-output guix-process) nil :eof)
+             guix-process)))
+    (do ((guix-process (start-guix))) (nil)
+      (let ((input (calispel:? %guix-listener-channel)))
+        ;; Append a newline to tell the REPL to evaluate the input:
+        (format (uiop:process-info-input guix-process) "~a~%" input)
+        (finish-output (uiop:process-info-input guix-process))
+        ;; We set the package to current so that symbols in
+        ;;   (values (value ...) (value ...) ...)
+        ;; do not get returned with a package prefix.
+        (let* ((*package* (find-package :ospama))
+               (output (read-line (uiop:process-info-output guix-process)
+                                  nil :eof)))
+          ;; Use `read-line' to ensure we empty the output stream.
+          ;; `read' errors could leave a truncated s-expression behind
+          ;; which would prefix the next evaluation result.
+          ;; TODO: Report read errors.
+          (calispel:! %guix-result-channel
+                      (ignore-errors
+                       (let ((*readtable* (named-readtables:ensure-readtable
+                                           'scheme-reader-syntax)))
+                         (read-from-string output)))))))))
 
 (defun guix-eval (form &rest more-forms)
   "Evaluate forms in Guix REPL.
@@ -142,7 +128,7 @@ value.
                            other))
                         values)))
         (_
-          ;; Error, or unexpected REPL result formatting.
+         ;; Error, or unexpected REPL result formatting.
          (values nil repl-result))))))
 
 (define-class guix-package (os-package)
