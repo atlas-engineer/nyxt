@@ -17,7 +17,7 @@
 ;; Then in the container environment:
 ;;
 ;;   cd /nyxt
-;;   make nyxt NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+;;   make all NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
 ;;   ./nyxt
 ;;
 ;;; Code:
