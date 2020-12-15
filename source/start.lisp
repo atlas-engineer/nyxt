@@ -13,7 +13,10 @@
 instances of Nyxt.
 
 This path cannot be set from the init file because we want to be able to set and
-use the socket without parsing any init file.")
+use the socket without parsing any init file.
+
+Instead, the socket can be set from the corresponding command line option or the
+NYXT_SOCKET environment variable.")
 
 (defmethod expand-data-path ((profile data-profile) (path (eql *init-file-path*)))
   "Return path of the init file."
@@ -90,7 +93,8 @@ Return nil if `*init-file-path*' is nil."
      :long "socket"
      :arg-parser #'identity
      :description "Set path to socket.
-Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.")
+Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.
+The socket can also be set from the NYXT_SOCKET environment variable.")
     (:name :no-socket
      :short #\S
      :long "no-socket"
@@ -259,7 +263,7 @@ Return the short error message and the full error message as second value."
 
 (defun parse-urls (expr)
   "Do _not_ evaluate EXPR and try to open URLs that were send to it.
-EXPR is expected to be as per the expression sent in `bind-socket-or-quit'."
+EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
   (let ((urls (ignore-errors (second (second (read-from-string expr nil))))))
     (if (and urls (every #'stringp urls))
         (open-external-urls urls)
@@ -358,7 +362,7 @@ short as possible."
        #-darwin
        (not (eq :socket (osicat:file-kind socket-path)))))
 
-(defun bind-socket-or-quit (urls)
+(defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket and return the listening thread."
   (let ((socket-path (expand-path *socket-path*)))
@@ -424,7 +428,9 @@ Examples:
         (if (getf *options* :no-socket)
             nil
             (make-instance 'data-path
-                           :basename (or (getf *options* :socket) (basename *socket-path*)) ; TODO: Set it from environment variable?
+                           :basename (or (getf *options* :socket)
+                                         (uiop:getenv "NYXT_SOCKET")
+                                         (basename *socket-path*))
                            :dirname (uiop:xdg-data-home +data-root+))))
 
   (if (getf *options* :verbose)
@@ -499,7 +505,7 @@ Instantiate `*browser*'.
 Start Nyxt and load URLS if any.
 Finally,run the `*after-init-hook*'."
   (let ((thread (when (expand-path *socket-path*)
-                  (bind-socket-or-quit free-args)))
+                  (listen-or-query-socket free-args)))
         (startup-timestamp (local-time:now))
         (startup-error-reporter nil))
     (when thread
