@@ -491,12 +491,13 @@ BUFFER's modes."
 (defmethod object-display ((buffer buffer))
   (format nil "~a  ~a" (title buffer) (object-display (url buffer))))
 
-(define-command make-buffer (&key (title "") modes (url "") child-p)
+(define-command make-buffer (&key (title "") modes (url "") child-p (load-url-p t))
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'.
 CHILD-P denotes whether the new buffer should have a history
-starting from the current buffer's history."
+starting from the current buffer's history.
+LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
          (url (if (eq url :default)
                   (default-new-buffer-url buffer)
@@ -506,7 +507,9 @@ starting from the current buffer's history."
       (setf (current-history-node buffer)
             (if child-p (htree:current history) (htree:root history))))
     (unless (url-empty-p url)
-      (buffer-load url :buffer buffer))
+      (if load-url-p
+          (buffer-load url :buffer buffer)
+          (setf (url buffer) (quri:uri url))))
     buffer))
 
 (define-command make-internal-buffer (&key (title "") modes)
