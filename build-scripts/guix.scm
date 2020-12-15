@@ -7,11 +7,11 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix environment --no-grafts --load=guix.scm
+;;   guix environment --pure --load=guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --no-grafts --load=guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs
+;;   guix environment --no-grafts --load=guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
 ;;
 ;; Replace '/PATH/TO/YOUR/NYXT/CHECKOUT' as appropriate.
 ;; Then in the container environment:
