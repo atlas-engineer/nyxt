@@ -144,12 +144,12 @@
           (multi-buffer (if (> (list-length buffers) 1) t nil)))
       (dolist (buffer buffers)
         (with-current-buffer buffer
-          (let ((result (query-buffer
+          (let* ((result (query-buffer
                          :query input
-                         :case-sensitive-p case-sensitive-p)))
-            (let* ((matches (matches-from-json
-                             result buffer multi-buffer)))
-              (setf all-matches (append all-matches matches))))))
+                         :case-sensitive-p case-sensitive-p))
+		 (matches (matches-from-json
+			   result buffer multi-buffer)))
+	    (setf all-matches (append all-matches matches)))))
       all-matches)))
 
 (define-parenscript %remove-search-hints ()
