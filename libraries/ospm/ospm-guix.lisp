@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :ospama)
+(in-package :ospm)
 
 (define-class guix-manager (manager)
   ((path "guix"
@@ -28,11 +28,11 @@ package managers like Nix or Guix."))
 
 (push 'guix-manager *supported-managers*)
 
-(defmethod print-object ((obj (eql 'ospama::\#t)) stream)
+(defmethod print-object ((obj (eql 'ospm::\#t)) stream)
   "Specialized printing of Scheme's #t for `cl->scheme-syntax'."
   (write-string "#t" stream))
 
-(defmethod print-object ((obj (eql 'ospama::\#f)) stream)
+(defmethod print-object ((obj (eql 'ospm::\#f)) stream)
   "Specialized printing of Scheme's #f for `cl->scheme-syntax'."
   (write-string "#f" stream))
 
@@ -72,7 +72,7 @@ For each inputs on `%guix-listener-channel' a result is returned on
         ;; We set the package to current so that symbols in
         ;;   (values (value ...) (value ...) ...)
         ;; do not get returned with a package prefix.
-        (let* ((*package* (find-package :ospama))
+        (let* ((*package* (find-package :ospm))
                (output (read-line (uiop:process-info-output guix-process)
                                   nil :eof)))
           ;; Use `read-line' to ensure we empty the output stream.
@@ -96,7 +96,7 @@ value.
     (setf %guix-result-channel (make-instance 'calispel:channel))
     (bt:make-thread #'guix-listener))
   ;; Need to be in this package to avoid prefixing symbols with current package.
-  (let* ((*package* (find-package :ospama))
+  (let* ((*package* (find-package :ospm))
          (*print-case* :downcase)
          (all-forms (cons form more-forms))
          (ignore-result-forms (butlast all-forms))

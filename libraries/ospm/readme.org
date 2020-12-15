@@ -1,4 +1,4 @@
-OSPAMA: An "Operating System PAcakage MAnager".
+OSPM: An "Operating System Pacakage Manager".
 
 Inspired by https://github.com/emacs-helm/helm-system-packages.
 

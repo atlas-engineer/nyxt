@@ -47,7 +47,7 @@
                :nyxt/password-manager
                :nyxt/keymap
                :nyxt/class-star
-               :nyxt/ospama)
+               :nyxt/ospm)
   :pathname "source/"
   :components ((:file "package")
                ;; Independent utilities
@@ -136,7 +136,7 @@
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/keymap/tests")
                          (test-op "nyxt/class-star/tests")
-                         (test-op "nyxt/ospama/tests"))))
+                         (test-op "nyxt/ospm/tests"))))
 
 (defun nyxt-run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
@@ -292,7 +292,7 @@
   :perform (asdf:test-op (op c)
                          (nyxt-run-test c "libraries/class-star/tests/")))
 
-(asdf:defsystem nyxt/ospama
+(asdf:defsystem nyxt/ospm
   :depends-on (alexandria
                calispel
                cl-ppcre
@@ -303,15 +303,15 @@
                str
                trivia
                nyxt/class-star)
-  :pathname "libraries/ospama/"
+  :pathname "libraries/ospm/"
   :components ((:file "package")
                (:file "scheme-syntax")
                (:file "guix-backend")
-               (:file "ospama")
-               (:file "ospama-guix"))
-  :in-order-to ((test-op (test-op "nyxt/ospama/tests"))))
+               (:file "ospm")
+               (:file "ospm-guix"))
+  :in-order-to ((test-op (test-op "nyxt/ospm/tests"))))
 
-(asdf:defsystem nyxt/ospama/tests
-  :depends-on (nyxt/ospama prove)
+(asdf:defsystem nyxt/ospm/tests
+  :depends-on (nyxt/ospm prove)
   :perform (asdf:test-op (op c)
-                         (nyxt-run-test c "libraries/ospama/tests/tests.lisp")))
+                         (nyxt-run-test c "libraries/ospm/tests/tests.lisp")))

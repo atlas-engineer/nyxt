@@ -1,12 +1,12 @@
 (in-package :cl-user)
 
 (defvar *current-directory* (asdf:system-relative-pathname
-                             (asdf:find-system :nyxt/ospama) "libraries/ospama/tests/"))
+                             (asdf:find-system :nyxt/ospm) "libraries/ospm/tests/"))
 
-(when (ospama:manager)
+(when (ospm:manager)
   (prove:run (uiop:resolve-absolute-location
               (list *current-directory* "test-generic.lisp")))
-  (when (typep (ospama:manager) 'ospama:guix-manager)
+  (when (typep (ospm:manager) 'ospm:guix-manager)
     (prove:run (uiop:resolve-absolute-location
                 (list *current-directory* "test-functional.lisp")))))
 

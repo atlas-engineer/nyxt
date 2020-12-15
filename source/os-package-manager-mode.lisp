@@ -41,81 +41,81 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt)
 
-(defmethod object-string ((pkg ospama:os-package))
-  (ospama:name pkg))
-(defmethod object-display ((pkg ospama:os-package))
+(defmethod object-string ((pkg ospm:os-package))
+  (ospm:name pkg))
+(defmethod object-display ((pkg ospm:os-package))
   (format nil "~a ~a~a~a"
-          (ospama:name pkg)
-          (ospama:version pkg)
+          (ospm:name pkg)
+          (ospm:version pkg)
           (make-string (max 1 (- 40
-                                 (+ (length (ospama:name pkg))
-                                    (length (ospama:version pkg)))))
+                                 (+ (length (ospm:name pkg))
+                                    (length (ospm:version pkg)))))
                        :initial-element #\ )
-          (ospama:synopsis pkg)))
+          (ospm:synopsis pkg)))
 
-(defmethod object-string ((output ospama:os-package-output))
+(defmethod object-string ((output ospm:os-package-output))
   (format nil "~a:~a"
-          (ospama:name (ospama:parent-package output))
-          (ospama:name output)))
-(defmethod object-display ((output ospama:os-package-output))
-  (let* ((pkg (ospama:parent-package output))
+          (ospm:name (ospm:parent-package output))
+          (ospm:name output)))
+(defmethod object-display ((output ospm:os-package-output))
+  (let* ((pkg (ospm:parent-package output))
          (name (format nil "~a~a ~a"
-                       (ospama:name pkg)
+                       (ospm:name pkg)
                        ;; TODO: Make this specializable.
-                       (if (string= (ospama:name output) "out")
+                       (if (string= (ospm:name output) "out")
                            ""
-                           (str:concat ":" (ospama:name output)))
-                       (ospama:version pkg))))
+                           (str:concat ":" (ospm:name output)))
+                       (ospm:version pkg))))
     (format nil "~a~a~a"
             name
             (make-string (max 1 (- 40 (length name)))
                          :initial-element #\ )
-            (ospama:synopsis pkg))))
+            (ospm:synopsis pkg))))
 
-(defmethod object-string ((gen ospama:os-generation))
-  (ospama:id gen))
-(defmethod object-display ((gen ospama:os-generation))
+(defmethod object-string ((gen ospm:os-generation))
+  (ospm:id gen))
+(defmethod object-display ((gen ospm:os-generation))
   (format nil "~a ~a ~a packages~a"
-          (ospama:id gen)
-          (local-time:format-timestring nil (ospama:date gen)
+          (ospm:id gen)
+          (local-time:format-timestring nil (ospm:date gen)
                                         :format local-time:+asctime-format+)
-          (ospama:package-count gen)
-          (if (ospama:current? gen)
+          (ospm:package-count gen)
+          (if (ospm:current? gen)
               " (current)"
               "")))
 
 (defun os-package-suggestion-filter ()
   (echo "Loading package database...")
-  (let* ((all-packages (ospama:list-packages)))
+  (let* ((all-packages (ospm:list-packages)))
     (echo "")
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-packages))))
 
 (defun os-manifest-suggestion-filter ()
-  (let* ((all-manifests (mapcar #'namestring (ospama:list-manifests))))
+  (let* ((all-manifests (mapcar #'namestring (ospm:list-manifests))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-manifests))))
 
 (defun os-package-output-suggestion-filter ()
   (echo "Loading package database...")
-  (let* ((all-outputs (ospama:list-package-outputs)))
+  (let* ((all-outputs (ospm:list-package-outputs)))
     (echo "")
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) all-outputs))))
 
 (defun os-installed-package-suggestion-filter (profile)
-  (let* ((installed-packages (ospama:list-packages profile)))
+  (let* ((installed-packages (ospm:list-packages profile)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) installed-packages))))
 
 (defun os-profile-suggestion-filter (&key include-manager-p)
-  (let* ((all-profiles (ospama:list-profiles :include-manager-p include-manager-p)))
+  (let* ((all-profiles (ospm:list-profiles :include-manager-p include-manager-p)))
     (lambda (minibuffer)
       ;; TODO: Don't prompt when there is just 1 profile.
       (fuzzy-match (input-buffer minibuffer) all-profiles))))
 
 (defun os-generation-suggestion-filter (profile)
-  (let* ((all-generations (ospama:list-generations profile)))
+  (let* ((all-generations (ospm:list-generations profile)))
     (lambda (minibuffer)
       ;; TODO: Don't prompt when there is just 1 profile.
       (fuzzy-match (input-buffer minibuffer) all-generations))))
@@ -130,7 +130,7 @@
               (lambda (input)
                 `((:a :href (lisp-url
                              '(%describe-os-package
-                               (ospama:find-os-packages ,input)))
+                               (ospm:find-os-packages ,input)))
                       ,input)
                   " "))
               inputs))
@@ -140,19 +140,19 @@
                 ,@(alex:mappend
                    (lambda (output)
                      `((:tr
-                        (:td ,(ospama:name output))
-                        ,@(when (ospama:expanded-output-p output)
+                        (:td ,(ospm:name output))
+                        ,@(when (ospm:expanded-output-p output)
                             `((:td
                                ,(sera:format-file-size-human-readable
                                  nil
-                                 (ospama:size output)))
-                              (:td ,(ospama:path output)))))))
+                                 (ospm:size output)))
+                              (:td ,(ospm:path output)))))))
                    outputs))
                ,@(when (and (<= 2 (length outputs))
-                            (ospama:expanded-output-p (first outputs)))
+                            (ospm:expanded-output-p (first outputs)))
                    `((:li "Total size: " ,(sera:format-file-size-human-readable
                                            nil
-                                           (reduce #'+ (mapcar #'ospama:size outputs)))))))))
+                                           (reduce #'+ (mapcar #'ospm:size outputs)))))))))
       (html-set
        (markup:markup
         (:style (style buffer))
@@ -160,38 +160,38 @@
         (:ul
          (loop for package in packages
                collect (markup:markup*
-                        `(:li ,(ospama:name package) " " ,(ospama:version package)
+                        `(:li ,(ospm:name package) " " ,(ospm:version package)
                               (:ul
-                               ,@(when (typep package 'ospama:guix-package)
+                               ,@(when (typep package 'ospm:guix-package)
                                    `((:li "Outputs: "
-                                          ,@(unless (ospama:expanded-outputs-p package)
+                                          ,@(unless (ospm:expanded-outputs-p package)
                                               `((:a :class "button"
                                                     :href ,(lisp-url '(echo "Computing path & size...")
-                                                                     `(ospama:expand-outputs (first (ospama:find-os-packages
-                                                                                                     ,(ospama:name package)
-                                                                                                     :version ,(ospama:version package))))
+                                                                     `(ospm:expand-outputs (first (ospm:find-os-packages
+                                                                                                     ,(ospm:name package)
+                                                                                                     :version ,(ospm:version package))))
                                                                      `(%describe-os-package
-                                                                       (ospama:find-os-packages ,(ospama:name package)
-                                                                                                :version ,(ospama:version package))))
+                                                                       (ospm:find-os-packages ,(ospm:name package)
+                                                                                                :version ,(ospm:version package))))
                                                     "Compute path & size")))
-                                          ,(format-outputs (ospama:outputs package)))
-                                     (:li "Supported systems: " ,(str:join " " (ospama:supported-systems package)))
-                                     (:li "Inputs: " ,@(format-inputs (ospama:inputs package)))
-                                     (:li "Propagated inputs: " ,@(format-inputs (ospama:propagated-inputs package)))
-                                     (:li "Native inputs: " ,@(format-inputs (ospama:native-inputs package)))
-                                     (:li "Location: " ,(ospama:location package))))
-                               (:li "Home-page: " (:a :href ,(ospama:home-page package)
-                                                      ,(ospama:home-page package)))
-                               (:li "Licenses: " ,(str:join ", " (ospama:licenses package)))
-                               (:li "Synopsis: " ,(ospama:synopsis package))
-                               ,(when (typep package 'ospama:guix-package)
-                                  `(:li "Description: " ,(ospama:description package)))))))))
+                                          ,(format-outputs (ospm:outputs package)))
+                                     (:li "Supported systems: " ,(str:join " " (ospm:supported-systems package)))
+                                     (:li "Inputs: " ,@(format-inputs (ospm:inputs package)))
+                                     (:li "Propagated inputs: " ,@(format-inputs (ospm:propagated-inputs package)))
+                                     (:li "Native inputs: " ,@(format-inputs (ospm:native-inputs package)))
+                                     (:li "Location: " ,(ospm:location package))))
+                               (:li "Home-page: " (:a :href ,(ospm:home-page package)
+                                                      ,(ospm:home-page package)))
+                               (:li "Licenses: " ,(str:join ", " (ospm:licenses package)))
+                               (:li "Synopsis: " ,(ospm:synopsis package))
+                               ,(when (typep package 'ospm:guix-package)
+                                  `(:li "Description: " ,(ospm:description package)))))))))
        buffer))
     (set-current-buffer buffer)
     buffer))
 
 (defun assert-package-manager ()
-  (unless (ospama:manager)
+  (unless (ospm:manager)
     (let ((message "No supported package manager detected."))
       (echo message)
       (error message))))
@@ -215,7 +215,7 @@
 (define-command list-os-package-files ()
   "List files of select packages."
   (assert-package-manager)
-  (let* ((packages-or-outputs (if (typep (ospama:manager) 'ospama:guix-manager)
+  (let* ((packages-or-outputs (if (typep (ospm:manager) 'ospm:guix-manager)
                                   (prompt-minibuffer
                                    :suggestion-function (os-package-output-suggestion-filter)
                                    :input-prompt "List files of OS package outputs(s)"
@@ -242,7 +242,7 @@
                                          `(:li ,(if (viewable-file-type-p file)
                                                     `(:a :href ,file ,file)
                                                     file)))
-                                       (ospama:list-files (list package-or-output)))))))))
+                                       (ospm:list-files (list package-or-output)))))))))
      buffer)
     (echo "")
     (set-current-buffer buffer)
@@ -306,7 +306,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :suggestion-function (os-package-output-suggestion-filter)
                     :input-prompt "Install OS package(s)"
                     :multi-selection-p t)))
-    (operate-os-package "Installing packages..." #'ospama:install profile packages)))
+    (operate-os-package "Installing packages..." #'ospm:install profile packages)))
 
 (define-command uninstall-os-package ()
   "Uninstall select packages."
@@ -318,7 +318,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :suggestion-function (os-installed-package-suggestion-filter profile)
                     :input-prompt "Uninstall OS package(s)"
                     :multi-selection-p t)))
-    (operate-os-package "Uninstalling packages..." #'ospama:uninstall profile packages)))
+    (operate-os-package "Uninstalling packages..." #'ospm:uninstall profile packages)))
 
 (define-command install-package-manifest ()
   "Install select manifest to a profile."
@@ -329,7 +329,7 @@ OBJECTS can be a list of packages, a generation, etc."
          (manifest (prompt-minibuffer
                     :suggestion-function (os-manifest-suggestion-filter)
                     :input-prompt "Manifest")))
-    (operate-os-package "Installing package manifest..." #'ospama:install-manifest profile manifest)))
+    (operate-os-package "Installing package manifest..." #'ospm:install-manifest profile manifest)))
 
 (define-command edit-package-manifest ()
   "Edit select manifest."
@@ -358,22 +358,22 @@ OBJECTS can be a list of packages, a generation, etc."
     (html-set
      (markup:markup
       (:style (style buffer))
-      (:h2 (format nil "Packages for generation ~a" (ospama:id generation)))
+      (:h2 (format nil "Packages for generation ~a" (ospm:id generation)))
       (:p "Profile " profile)
       (:ul
-       (loop for package-output in (ospama:list-packages (ospama:path generation))
-             for package = (ospama:parent-package package-output)
+       (loop for package-output in (ospm:list-packages (ospm:path generation))
+             for package = (ospm:parent-package package-output)
              collect
              (markup:markup*
               `(:li (:a :class "button"
                         :href ,(lisp-url `(%describe-os-package
-                                           (or (ospama:find-os-packages
-                                                ,(ospama:name package)
-                                                :version ,(ospama:version package))
-                                               (ospama:find-os-packages
-                                                ,(ospama:name package)))))
+                                           (or (ospm:find-os-packages
+                                                ,(ospm:name package)
+                                                :version ,(ospm:version package))
+                                               (ospm:find-os-packages
+                                                ,(ospm:name package)))))
                         ,(object-string package-output))
-                    " " ,(ospama:version package))))))
+                    " " ,(ospm:version package))))))
      buffer)
     (echo "")
     (set-current-buffer buffer)
@@ -389,7 +389,7 @@ OBJECTS can be a list of packages, a generation, etc."
          (generation (prompt-minibuffer
                       :suggestion-function (os-generation-suggestion-filter profile)
                       :input-prompt "Switch to generation")))
-    (operate-os-package "Switching to generation..." #'ospama:switch-generation
+    (operate-os-package "Switching to generation..." #'ospm:switch-generation
                         profile generation)))
 
 (define-command delete-os-generations ()
@@ -403,7 +403,7 @@ OBJECTS can be a list of packages, a generation, etc."
                        :suggestion-function (os-generation-suggestion-filter profile)
                        :input-prompt "Delete generations"
                        :multi-selection-p t)))
-    (operate-os-package "Deleting generations..." #'ospama:delete-generations
+    (operate-os-package "Deleting generations..." #'ospm:delete-generations
                         profile generations)))
 
 ;; TODO: Parse Texinfo for Guix descriptions.
