@@ -101,8 +101,8 @@ count since deleting windows may result in duplicate identifiers.")
                      :type (or function null)
                      :documentation "The function run on startup.  It takes a
 list of URLs (strings) as optional argument (the command line positional
-arguments).  It is run after the renderer has been initialized and after the
-`*after-init-hook*' has run.")
+arguments).  It is run after the renderer has been initialized, after the
+`*after-init-hook*' has run and after a first window has been spawned.")
    (startup-error-reporter-function nil
                                     :type (or function null)
                                     :export nil
@@ -212,10 +212,24 @@ editor executable."))
   ;; `messages-appender' requires `*browser*' to be initialized.
   (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))
   (handler-case
-      (hooks:run-hook *after-init-hook*)
+      (hooks:run-hook *after-init-hook*) ; TODO: Run outside the main loop?
     (error (c)
       (log:error "In *after-init-hook*: ~a" c)))
-  (funcall-safely (startup-function browser) urls)
+  ;; Most of the code assumes the existence of a window.  Let's create it here
+  ;; so that the user does not have to bother with it in the `startup-function'.
+  (let ((window (window-make browser)))
+    (window-set-active-buffer window (help)))
+  ;; The `startup-function' must be run _after_ this function returns;
+  ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
+  ;; idle, so it should do the job.  It's not enough since the
+  ;; `startup-function' may invoke the minibuffer, which cannot be invoked from
+  ;; the renderer thread: this is why we run the startup-function in a new
+  ;; thread from there.
+  (ffi-within-renderer-thread
+   browser
+   (lambda ()
+     (pexec ()
+       (funcall-safely (startup-function browser) urls))))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)

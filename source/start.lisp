@@ -268,15 +268,14 @@ EXPR is expected to be as per the expression sent in `bind-socket-or-quit'."
           nil))))
 
 (export-always 'make-startup-function)
-(defun make-startup-function (&key (buffer-fn #'help))
+(defun make-startup-function (&key buffer-fn)
   "Return a function suitable as a `browser' `startup-function'.
 To change the default buffer, e.g. set it to a given URL:
 
   (make-startup-function
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
   (lambda (&optional urls)
-    (let ((window (window-make *browser*))
-          (buffer (current-buffer)))
+    (let ((buffer (current-buffer)))
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
       (when (and (expand-path (session-path buffer))
@@ -288,9 +287,10 @@ To change the default buffer, e.g. set it to a given URL:
           (:always-restore (funcall-safely #'restore (data-profile buffer)
                                            (session-path buffer)))
           (:never-restore (log:info "Not restoring session."))))
-      (if urls
-          (open-urls urls)
-          (window-set-active-buffer window (funcall-safely buffer-fn))))
+      (cond
+        (urls (open-urls urls))
+        (buffer-fn
+         (window-set-active-buffer (current-window) (funcall-safely buffer-fn)))))
     (when (startup-error-reporter-function *browser*)
       (funcall-safely (startup-error-reporter-function *browser*)))))
 
