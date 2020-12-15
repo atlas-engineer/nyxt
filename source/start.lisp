@@ -292,7 +292,8 @@ To change the default buffer, e.g. set it to a given URL:
         (match (session-restore-prompt *browser*)
           ;; Need `funcall-safely' so we continue if the user exits the
           ;; minibuffer (which raises a condition).
-          (:always-ask (funcall-safely #'restore-session-by-name))
+          (:always-ask (or (funcall-safely #'restore-session-by-name)
+                           (funcall-safely #'restore (data-profile buffer) (history-path buffer))))
           (:always-restore (funcall-safely #'restore (data-profile buffer)
                                            (history-path buffer) :restore-session-p t))
           (:never-restore (log:info "Not restoring session."))))
