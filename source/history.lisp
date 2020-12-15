@@ -91,6 +91,7 @@ Open the latest child of ROOT."
                    latest))
            (entry (htree:data node))
            (buffer (make-buffer :url (ensure-url (url entry))
+                                :load-url-p nil
                                 :title (title entry))))
       (setf (slot-value buffer 'load-status) :unloaded
             (current-history-node buffer) node)
