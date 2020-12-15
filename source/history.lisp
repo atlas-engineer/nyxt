@@ -201,9 +201,8 @@ instance of Nyxt."
                     (expand-path path))
               (unless (get-data path)
                 (setf (get-data path) (htree:make)))
-              (dolist (entry (alex:hash-table-values history))
-                (htree:add-child entry (get-data path))
-                (htree:back (get-data path))))))
+              (htree:add-children (alex:hash-table-values history) (get-data path)
+                                  :test #'equals))))
           (_ (error "Expected (list version history) structure."))))
     (error (c)
       (echo-warning "Failed to restore history from ~a: ~a"
