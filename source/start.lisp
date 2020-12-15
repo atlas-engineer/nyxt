@@ -360,25 +360,24 @@ short as possible."
 
 (defun bind-socket-or-quit (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
-Otherwise bind socket."
+Otherwise bind socket and return the listening thread."
   (let ((socket-path (expand-path *socket-path*)))
     (cond
       ((listening-socket-p)
-       (progn
-         (if urls
-             (log:info "Nyxt already started, requesting to open URL(s): ~{~a~^, ~}" urls)
-             (log:info "Nyxt already started."))
-         (iolib:with-open-socket (s :address-family :local
-                                    :remote-filename socket-path)
-           (format s "~s" `(open-external-urls ',urls)))
-         (unless *keep-alive*
-           (uiop:quit))))
+       (if urls
+           (log:info "Nyxt already started, requesting to open URL(s): ~{~a~^, ~}" urls)
+           (log:info "Nyxt already started."))
+       (iolib:with-open-socket (s :address-family :local
+                                  :remote-filename socket-path)
+         (format s "~s" `(open-external-urls ',urls)))
+       nil)
       ((file-is-socket-p socket-path)
-       (log:error "Could not bind socket ~a, non-socket file exists." socket-path))
-      (t (progn
-           (log:info "Listening to socket ~s." socket-path)
-           (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
-           (setf (socket-thread *browser*) (bt:make-thread #'listen-socket)))))))
+       (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
+       nil)
+      (t
+       (log:info "Listening to socket ~s." socket-path)
+       (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
+       (bt:make-thread #'listen-socket)))))
 
 (defun remote-eval (expr)
   "If another Nyxt is listening on the socket, tell it to evaluate EXPR."
@@ -425,7 +424,7 @@ Examples:
         (if (getf *options* :no-socket)
             nil
             (make-instance 'data-path
-                           :basename (or (getf *options* :socket) (basename *socket-path*))
+                           :basename (or (getf *options* :socket) (basename *socket-path*)) ; TODO: Set it from environment variable?
                            :dirname (uiop:xdg-data-home +data-root+))))
 
   (if (getf *options* :verbose)
@@ -499,30 +498,32 @@ Load INIT-FILE if non-nil.
 Instantiate `*browser*'.
 Start Nyxt and load URLS if any.
 Finally,run the `*after-init-hook*'."
-  (let ((startup-timestamp (local-time:now))
+  (let ((thread (when (expand-path *socket-path*)
+                  (bind-socket-or-quit free-args)))
+        (startup-timestamp (local-time:now))
         (startup-error-reporter nil))
-    (format t "Nyxt version ~a~&" +version+)
-    (unless (or (getf *options* :no-auto-config)
-                (not (expand-path *auto-config-file-path*)))
-      (load-lisp (expand-path *auto-config-file-path*)
-                 :package (find-package :nyxt-user)))
-    (unless (or (getf *options* :no-init)
-                (not (expand-path *init-file-path*)))
-      (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
-                                             :package (find-package :nyxt-user)))
-        (nil nil)
-        ((list message full-message)
-         (setf startup-error-reporter
-               (lambda ()
-                 (notify (str:concat message "."))
-                 (error-in-new-window "*Init file errors*" full-message))))))
-    (load-or-eval :remote nil)
-    (setf *browser* (make-instance 'user-browser
-                                   :startup-error-reporter-function startup-error-reporter
-                                   :startup-timestamp startup-timestamp))
-    (when (expand-path *socket-path*)
-      (bind-socket-or-quit free-args))
-    (ffi-initialize *browser* free-args startup-timestamp)))
+    (when thread
+      (format t "Nyxt version ~a~&" +version+)
+      (unless (or (getf *options* :no-auto-config)
+                  (not (expand-path *auto-config-file-path*)))
+        (load-lisp (expand-path *auto-config-file-path*)
+                   :package (find-package :nyxt-user)))
+      (unless (or (getf *options* :no-init)
+                  (not (expand-path *init-file-path*)))
+        (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
+                                               :package (find-package :nyxt-user)))
+          (nil nil)
+          ((list message full-message)
+           (setf startup-error-reporter
+                 (lambda ()
+                   (notify (str:concat message "."))
+                   (error-in-new-window "*Init file errors*" full-message))))))
+      (load-or-eval :remote nil)
+      (setf *browser* (make-instance 'user-browser
+                                     :startup-error-reporter-function startup-error-reporter
+                                     :startup-timestamp startup-timestamp))
+      (setf (socket-thread *browser*) thread)
+      (ffi-initialize *browser* free-args startup-timestamp))))
 
 (define-command nyxt-init-time ()
   "Return the duration of Nyxt initialization."
