@@ -164,6 +164,16 @@ Current node is then updated to the first child if it holds DATA."
      (current history))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'add-children))
+(defmethod add-children (children-data (history history-tree) &key (test #'equal))
+  "Add the HISTORY `current''s children for every piece of data in CHILDREN-DATA.
+Return the last child."
+  (add-child (first children-data) history :test test)
+  (if (rest children-data)
+      (add-children (rest children-data) (back history) :test test)
+      (current history)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'map-tree))
 (defun map-tree (function tree &key flatten include-root (collect-function #'cons))
   "Map the FUNCTION over the TREE.
