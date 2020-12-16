@@ -575,7 +575,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
     (initialize-modes buffer)
-    (when dead-buffer
+    (when dead-buffer                   ; TODO: URL should be already set.  Useless?
       (setf (url buffer) (url dead-buffer)))
     (buffers-set (id buffer) buffer)
     ;; Run hooks before `initialize-modes' to allow for last-minute modification

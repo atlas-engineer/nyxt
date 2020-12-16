@@ -46,6 +46,16 @@ Currently we store the list of current URLs of all buffers."
                                             (s-serialization:serialize-sexp (session-data) out)))
                 (read in))))))
 
+(defun make-buffer-from-history (history)
+  (let* ((buffer (make-buffer))
+         (mode (find-submode buffer 'web-mode))) ; TODO: This assumes BUFFER has web-mode.  What if it doesn't?
+    (setf (url buffer)
+          (ensure-url (url (htree:data (htree:current history)))))
+    (setf (title buffer)
+          (title (htree:data (htree:current history))))
+    (setf (slot-value buffer 'load-status) :unloaded)
+    (setf (nyxt/web-mode:history mode) history)))
+
 (defmethod restore ((profile data-profile) (path session-data-path))
   "Restore the current Nyxt session from the BUFFER's `session-path'."
   (handler-case
@@ -68,17 +78,14 @@ Currently we store the list of current URLs of all buffers."
            (log:info "Restoring ~a."
                      (mapcar (alex:compose #'object-string #'htree:data #'htree:current)
                              buffer-histories))
-           ;; Make the new ones.
-           ;; TODO: Replace the loop with a function `make-buffer-from-history' in web-mode?
-           (loop for history in buffer-histories
-                 for buffer = (make-buffer)
-                 for mode = (find-submode buffer 'web-mode) ; TODO: This assumes BUFFER has web-mode.  What if it doesn't?
-                 do (setf (url buffer)
-                          (ensure-url (url (htree:data (htree:current history)))))
-                 do (setf (title buffer)
-                          (title (htree:data (htree:current history))))
-                 do (setf (slot-value buffer 'load-status) :unloaded)
-                 do (setf (nyxt/web-mode:history mode) history))
+           ;; Making multiple buffers (in particular WebKit contexts) too
+           ;; rapidly may create collisions with libsoup.  TODO: Add these
+           ;; entries to a separate browser slot and list them in
+           ;; `switch-to-buffers' when we have multi-source support.
+           (mapc make-buffer-from-history buffer-histories)
+           (echo "Restored session of ~a URLs from ~s."
+                 (length buffer-histories)
+                 (expand-path path))
            ;; TODO: Switch to the last active buffer.  We probably need to serialize *browser*.
            ;; Or else we could include `access-time' in the buffer class.
            )))
