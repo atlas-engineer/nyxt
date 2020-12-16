@@ -28,6 +28,45 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 *** Add online suggestions from search engines
 ** 2.0.0
 
+*** TASK 2-pre-release-5 (Upcoming)
+
+- =reduce-to-buffer= includes a summary of each buffer.
+
+- =toggle-fullscreen= replace =fullscreen-current-window= and
+  =unfullscreen-current-window=.
+
+- New =conservative-word-move= buffer slot that changes the cursor
+  movement behaviour.  (Thanks to @aadcg!)
+
+- New =minibuffer-toggle-mark-all= command.  (Thanks to @aadcg!)
+
+- =auto-mode= rules support slot specialization.
+
+- Replace =style-mode= associations with auto-mode rule specialization.
+
+- Improved =buffer-history-tree= styling.
+
+- =ospama=:
+
+  - Package managers are detected at runtime.
+
+  - Add multi-version support to the Guix backend of =ospama=.
+
+- =define-class= can automatically define a predicate, just like =defstruct=.
+
+- =with-data-access= accepts a default value.
+
+- Bug fixes:
+
+  - Fix many startup race conditions.
+
+  - Fix chained minibuffers randomly not showing.
+
+  - Case-sensitive =file://= URLs are supported.
+
+  - =define-mode= no longer creates an export clash when inheriting from
+    a mode from a foreign package.
+
 *** 2-pre-release-4
 
 - Overhauled status view which now displays a scrollable list of tabs.
