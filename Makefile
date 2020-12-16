@@ -98,7 +98,6 @@ install-nyxt: nyxt
 
 .PHONY: install
 install:
-install:
 ifeq ($(UNAME), Linux)
 install: install-nyxt install-assets
 endif
