@@ -40,7 +40,7 @@ clean-fasls:
 nyxt: $(lisp_files)
 	$(MAKE) application
 
-.PHONE: application
+.PHONY: application
 application: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
