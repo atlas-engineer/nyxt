@@ -320,6 +320,11 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class internal-buffer)
 
+(defun make-dummy-buffer ()
+  ;; Internal buffers are lighter than full-blown buffers which can have a
+  ;; WebKit context, etc.
+  (make-instance 'user-internal-buffer))
+
 (define-class status-buffer (user-internal-buffer)
   ((height 20
            :type integer
@@ -642,7 +647,7 @@ proceeding."
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (make-instance 'user-buffer))
+        (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
           (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
                      (object-string (url old-buffer))
