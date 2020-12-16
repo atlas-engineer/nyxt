@@ -169,15 +169,20 @@ data-manager will store the data separately for each buffer."))
   "We shouldn't store any `data-manager' data for `private-data-profile'."
   nil)
 
-(defun make-web-view (&optional buffer)
-  (make-instance 'webkit:webkit-web-view
-                 :web-context (make-context buffer)))
+(defun make-web-view (&key context-buffer)
+  "Return a web view instance.
+When passed a web buffer, create a buffer-local web context.
+Such contexts are not needed for internal buffers."
+  (if context-buffer
+      (make-instance 'webkit:webkit-web-view
+                     :web-context (make-context context-buffer))
+      (make-instance 'webkit:webkit-web-view)))
 
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view buffer))
+       (setf gtk-object (make-web-view))
        (gobject:g-signal-connect
         gtk-object "decide-policy"
         (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -210,7 +215,7 @@ data-manager will store the data separately for each buffer."))
                                              :orientation :vertical
                                              :spacing 0))
        (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-       (setf active-buffer (make-instance 'user-buffer))
+       (setf active-buffer (make-dummy-buffer))
 
        ;; Add the views to the box layout and to the window
        (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
@@ -701,7 +706,9 @@ Warning: This behaviour may change in the future."
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
-  (setf (gtk-object buffer) (make-web-view buffer))
+  (setf (gtk-object buffer) (make-web-view
+                             :context-buffer (unless (internal-buffer-p buffer)
+                                               buffer)))
   (ffi-buffer-enable-smooth-scrolling buffer t)
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
