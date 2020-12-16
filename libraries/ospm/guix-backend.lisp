@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :ospama)
+(in-package :ospm)
 
 (named-readtables:in-readtable scheme-writer-syntax)
 

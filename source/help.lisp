@@ -97,6 +97,27 @@
        (:pre (:code (let ((*print-case* :downcase))
                       (write-to-string (sexp command)))))))))
 
+(defun dump-command-descriptions (file)
+  "Dump the command descriptions as an HTML file."
+  (with-open-file (f file :direction :output :if-exists :supersede)
+    (format f "~a" (markup:markup
+                    (:p "Listed below are the current commands, their
+                         documentation, and their source. Non-command
+                         based features are currently unlisted.")
+                    (:h1 "Commands")))
+    (format f "~a" (markup:markup
+                    (:style (cl-css:css
+                             '((".nyxt-source"
+                                :overflow "auto"))))))
+    (format f "~{~a ~%~}"
+            (loop for command in *command-list*
+                  collect (markup:markup
+                           (:details
+                            (:summary (format nil "~(~a~)" (symbol-name (sym command))))
+                            (:p (:pre (documentation (command-function command) t)))
+                            (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
+                                                                (write-to-string (sexp command)))))))))))
+
 (define-command describe-function ()
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."

@@ -3,11 +3,11 @@
 
 (in-package :cl-user)
 
-(uiop:define-package ospama
+(uiop:define-package ospm
   (:use #:common-lisp)
   (:use #:trivia)
   (:import-from #:class* #:define-class)
   (:import-from #:serapeum #:export-always))
 
-(defvar ospama::scheme-reader-syntax nil)
-(defvar ospama::scheme-writer-syntax nil)
+(defvar ospm::scheme-reader-syntax nil)
+(defvar ospm::scheme-writer-syntax nil)
