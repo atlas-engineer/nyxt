@@ -30,7 +30,11 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 *** TASK 2-pre-release-5 (Upcoming)
 
-- =reduce-to-buffer= includes a summary of each buffer.
+- Added a dashboard function to Nyxt. It can be used as a
+  startup-buffer. It can display display recent URLs, bookmarks, etc.
+
+- =reduce-to-buffer= includes a summary of each buffer (powered by our
+  Text Rank implementation).
 
 - =toggle-fullscreen= replace =fullscreen-current-window= and
   =unfullscreen-current-window=.
@@ -44,9 +48,12 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - Replace =style-mode= associations with auto-mode rule specialization.
 
-- Improved =buffer-history-tree= styling.
+- Improved =buffer-history-tree= presentation. It is now easier to
+  visualize the tree as there are lines drawn between nodes.
 
 - =ospama=:
+
+  - Renamed to =OSPM=
 
   - Package managers are detected at runtime.
 
@@ -55,6 +62,13 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 - =define-class= can automatically define a predicate, just like =defstruct=.
 
 - =with-data-access= accepts a default value.
+
+- =analysis= library:
+
+  - Add support for DBSCAN algorithm. DBSCAN is a clustering algorithm used to
+    classify vectors as being related.
+
+  - Improve Text Rank algorithm implementation. This results in better summarization.
 
 - Bug fixes:
 
