@@ -169,7 +169,7 @@
                (analysis::clusters collection)))
            (buffer-markup (buffer)
              "Create the presentation for a buffer."
-             (markup:markup 
+             (markup:markup
               (:p (:a :class "button"
                       :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
                   (:a :class "button"
@@ -188,8 +188,7 @@
                     (loop for buffer in (buffer-list)
                           when (internal-buffer-p buffer)
                           collect (buffer-markup buffer))))))
-    (with-current-html-buffer (buffer "*Buffers*" :mode 'nyxt/buffer-listing-mode:buffer-listing-mode
-                                      :url (lisp-url '(nyxt::list-buffers)))
+    (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
       (markup:markup
        (:style (style buffer))
        (:h1 "Buffers")
