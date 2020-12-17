@@ -494,9 +494,8 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
          (url (if (eq url :default)
                   (default-new-buffer-url buffer)
-                  url))
-         (from-internal-p (internal-buffer-p (current-buffer))))
-    (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
+                  url)))
+    (with-data-access (history (history-path (current-buffer))
                        :default (htree:make))
       (setf (current-history-node buffer)
             (if child-p (htree:current history) (htree:root history))))
@@ -506,14 +505,11 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
           (setf (url buffer) (quri:uri url))))
     buffer))
 
-(define-command make-internal-buffer (&key (title "") modes (url ""))
-  "Create a new internal buffer.
+(define-command make-internal-buffer (&key (title "") modes)
+  "Create a new buffer.
 MODES is a list of mode symbols.
-URL is the URL to use for this buffer. It's not loaded at buffer
-initialization, it's only `reload-buffer'-ed."
-  (let ((buffer (buffer-make *browser* :title title :default-modes modes :internal-buffer-p t)))
-    (setf (url buffer) (ensure-url url))
-    buffer))
+If URL is `:default', use `default-new-buffer-url'."
+  (buffer-make *browser* :title title :default-modes modes :internal-buffer-p t))
 
 (declaim (ftype (function (browser &key (:title string)
                                    (:data-profile data-profile)
@@ -746,19 +742,15 @@ See `make-buffer'."
                       :suggestion-function (buffer-suggestion-filter))))
         (mapcar #'buffer-delete buffers))))
 
-(define-command reduce-to-buffer (&key (delete t) buffers)
+(define-command reduce-to-buffer (&key (delete t))
   "Reduce the buffer(s) via minibuffer input and copy their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
-  (let ((buffers (or buffers
-                     (prompt-minibuffer
-                      :input-prompt "Reduce buffer(s)"
-                      :multi-selection-p t
-                      :suggestion-function (buffer-suggestion-filter)))))
-    (with-current-html-buffer (reduced-buffer "*Reduced Buffers*"
-                               :mode 'base-mode
-                               :url (lisp-url `(reduce-to-buffer :delete ,delete
-                                                                 :buffers ,buffers)))
+  (let ((buffers (prompt-minibuffer
+                  :input-prompt "Reduce buffer(s)"
+                  :multi-selection-p t
+                  :suggestion-function (buffer-suggestion-filter))))
+    (with-current-html-buffer (reduced-buffer "*Reduced Buffers*" 'base-mode)
       (markup:markup
        (:style (style reduced-buffer))
        (:h1 "Reduced Buffers:")
