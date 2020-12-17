@@ -78,11 +78,12 @@ The function can be passed ARGS."
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
-(defmacro with-current-html-buffer ((buffer-var title mode) &body body)
-  "Switch to a buffer in MODE displaying CONTENT.
+(defmacro with-current-html-buffer ((buffer-var title &key mode url) &body body)
+  "Switch to a buffer in MODE displaying the result of BODY.
 If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
 BUFFER-VAR is bound to the new bufer in BODY.
 MODE is a mode symbol.
+URL is a URL to set for this buffer so that it could be reloadable.
 BODY must return the HTML markup as a string."
   `(let* ((,buffer-var (or (find-if (lambda (b)
                                       (and (string= (title b) ,title)
@@ -90,7 +91,8 @@ BODY must return the HTML markup as a string."
                                     (buffer-list))
                            (funcall (symbol-function ,mode)
                                     :activate t
-                                    :buffer (make-internal-buffer :title ,title)))))
+                                    :buffer (make-internal-buffer :title ,title
+                                                                  ,@(when url `(:url ,url)))))))
      (html-set
       (progn
         ,@body)

@@ -169,7 +169,9 @@ This can be useful to let the user select no tag when returning directly."
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
-  (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
+  (with-current-html-buffer (bookmarks-buffer "*Bookmarks*"
+                             :mode 'base-mode
+                             :url (lisp-url '(list-bookmarks)))
     (markup:markup
      (:style (style bookmarks-buffer))
      (:h1 "Bookmarks")
