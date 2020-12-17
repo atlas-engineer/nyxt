@@ -9,6 +9,10 @@
 ;;
 ;;   guix environment --pure --load=guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
 ;;
+;; To build a local executable (remember you'll need an environment with glib-networking, etc.), run:
+;;
+;;   guix environment --pure --load=guix.scm -- make all NYXT_INTERNAL_QUICKLISP=false
+;;
 ;; To start in a container, run:
 ;;
 ;;   guix environment --no-grafts --load=guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
@@ -17,7 +21,7 @@
 ;; Then in the container environment:
 ;;
 ;;   cd /nyxt
-;;   make all NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+;;   make all NYXT_INTERNAL_QUICKLISP=false
 ;;   ./nyxt
 ;;
 ;;; Code:
