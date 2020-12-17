@@ -53,7 +53,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - =ospama=:
 
-  - Renamed to =OSPM=
+  - Renamed to =OSPM=.
 
   - Package managers are detected at runtime.
 
