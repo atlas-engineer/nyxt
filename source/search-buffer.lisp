@@ -50,14 +50,14 @@
   (defun get-substring-indices (query string)
     "Get the indices of all matching substrings."
     (let ((rgx (ps:new (|RegExp| query (if (ps:lisp case-sensitive-p) "" "i"))))
-	  (index (- (length query))))
+          (index (- (length query))))
       (loop with subindex = 0
             until (= subindex -1)
             do (setf subindex (ps:chain string (search rgx)))
                (setf string (ps:chain string (substring (+ subindex (length query)))))
-	       (setf index (+ index subindex (length query)))
+               (setf index (+ index subindex (length query)))
             when (not (= subindex -1))
-            collect index)))
+              collect index)))
 
   (defun matches-from-node (node query)
     "Return all of substrings that match the search-string."
@@ -147,11 +147,11 @@
       (dolist (buffer buffers)
         (with-current-buffer buffer
           (let* ((result (query-buffer
-                         :query input
-                         :case-sensitive-p case-sensitive-p))
-		 (matches (matches-from-json
-			   result buffer multi-buffer)))
-	    (setf all-matches (append all-matches matches)))))
+                          :query input
+                          :case-sensitive-p case-sensitive-p))
+                 (matches (matches-from-json
+                           result buffer multi-buffer)))
+            (setf all-matches (append all-matches matches)))))
       all-matches)))
 
 (define-parenscript %remove-search-hints ()
