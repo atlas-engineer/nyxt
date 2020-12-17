@@ -188,7 +188,8 @@
                     (loop for buffer in (buffer-list)
                           when (internal-buffer-p buffer)
                           collect (buffer-markup buffer))))))
-    (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
+    (with-current-html-buffer (buffer "*Buffers*" :mode 'nyxt/buffer-listing-mode:buffer-listing-mode
+                                      :url (lisp-url '(nyxt::list-buffers)))
       (markup:markup
        (:style (style buffer))
        (:h1 "Buffers")
