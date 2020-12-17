@@ -47,31 +47,28 @@
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) slots))))
 
-(define-command describe-variable (&optional variable)
+(define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."
-  (let* ((variable (or variable
-                       (variable-suggestion-name
-                        (prompt-minibuffer
-                         :suggestion-function (variable-suggestion-filter)
-                         :input-prompt "Describe variable")))))
+  (let* ((input (variable-suggestion-name
+                 (prompt-minibuffer
+                  :suggestion-function (variable-suggestion-filter)
+                  :input-prompt "Describe variable"))))
     (with-current-html-buffer (buffer
-                               (str:concat "*Help-" (symbol-name variable) "*")
-                               :mode 'nyxt/help-mode:help-mode
-                               :url (lisp-url `(nyxt::describe-variable ,variable)))
+                               (str:concat "*Help-" (symbol-name input) "*")
+                               'nyxt/help-mode:help-mode)
       (markup:markup
        (:style (style buffer))
-       (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-       (:pre (documentation variable 'variable))
+       (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
+       (:pre (documentation input 'variable))
        (:h2 "Current Value:")
-       (:pre (object-display (symbol-value variable)))))))
+       (:pre (object-display (symbol-value input)))))))
 
 (declaim (ftype (function (command)) describe-command*))
 (defun describe-command* (command)
   "Display NAME command documentation in a new focused buffer."
   (with-current-html-buffer (buffer
                              (str:concat "*Help-" (symbol-name (sym command)) "*")
-                             :mode 'nyxt/help-mode:help-mode
-                             :url (lisp-url `(nyxt::describe-comand* ,command)))
+                             'nyxt/help-mode:help-mode)
     (let* ((key-keymap-pairs (nth-value 1 (keymap:binding-keys
                                            (sym command)
                                            (all-keymaps))))
@@ -121,51 +118,48 @@
                             (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                 (write-to-string (sexp command)))))))))))
 
-(define-command describe-function (&optional function)
+(define-command describe-function ()
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (let ((function (or function
-                      (function-suggestion-name
-                       (prompt-minibuffer
-                        :input-prompt "Describe function"
-                        :suggestion-function (function-suggestion-filter))))))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Describe function"
+                :suggestion-function (function-suggestion-filter))))
+    (setf input (function-suggestion-name input))
     (flet ((method-desc (method)
              (markup:markup
-              (:h1 (symbol-name function) " " (write-to-string (mopu:method-specializers method)))
+              (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
               (:pre (documentation method 't))
               (:h2 "Argument list")
               (:p (write-to-string (closer-mop:method-lambda-list method))))))
       (with-current-html-buffer (buffer
-                                 (str:concat "*Help-" (symbol-name function) "*")
-                                 :mode 'nyxt/help-mode:help-mode
-                                 :url (lisp-url `(nyxt::describe-function ,function)))
-        (if (typep (symbol-function function) 'generic-function)
+                                 (str:concat "*Help-" (symbol-name input) "*")
+                                 'nyxt/help-mode:help-mode)
+        (if (typep (symbol-function input) 'generic-function)
             (apply #'str:concat (mapcar #'method-desc
                                         (mopu:generic-function-methods
-                                         (symbol-function function))))
+                                         (symbol-function input))))
             (str:concat
              (markup:markup
               (:style (style buffer))
-              (:h1 (format nil "~s" function) ; Use FORMAT to keep package prefix.
-                   (when (macro-function function) " (macro)"))
-              (:pre (documentation function 'function))
+              (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                   (when (macro-function input) " (macro)"))
+              (:pre (documentation input 'function))
               (:h2 "Argument list")
-              (:p (write-to-string (mopu:function-arglist function))))
+              (:p (write-to-string (mopu:function-arglist input))))
              #+sbcl
-             (unless (macro-function function)
+             (unless (macro-function input)
                (markup:markup
                 (:h2 "Type")
-                (:p (format nil "~s" (sb-introspect:function-type function)))))))))))
+                (:p (format nil "~s" (sb-introspect:function-type input)))))))))))
 
-(define-command describe-command (&optional command)
+(define-command describe-command ()
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (let ((command (or command
-                     (prompt-minibuffer
-                      :input-prompt "Describe command"
-                      :suggestion-function (command-suggestion-filter)))))
-    (describe-command* command)))
+  (let ((input (prompt-minibuffer
+                :input-prompt "Describe command"
+                :suggestion-function (command-suggestion-filter))))
+    (describe-command* input)))
 
 (defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
   (let ((props (mopu:slot-properties (find-class class) slot)))
@@ -194,24 +188,22 @@ A command is a special kind of function that can be called with
                          :href (lisp-url `(nyxt::configure-slot ',slot ',class))
                          "Configure"))))))))))
 
-(define-command describe-class (&optional class)
+(define-command describe-class ()
   "Inspect a class and show it in a help buffer."
-  (let* ((class (or class
-                    (class-suggestion-name
-                     (prompt-minibuffer
-                      :input-prompt "Describe class"
-                      :suggestion-function (class-suggestion-filter))))))
+  (let* ((input (class-suggestion-name
+                 (prompt-minibuffer
+                  :input-prompt "Describe class"
+                  :suggestion-function (class-suggestion-filter)))))
     (with-current-html-buffer (buffer
-                               (str:concat "*Help-" (symbol-name class) "*")
-                               :mode 'nyxt/help-mode:help-mode
-                               :url (lisp-url `(nyxt::describe-class ,class)))
-      (let* ((slots (class-public-slots class))
-             (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* class) slots))))
+                               (str:concat "*Help-" (symbol-name input) "*")
+                               'nyxt/help-mode:help-mode)
+      (let* ((slots (class-public-slots input))
+             (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots))))
         (str:concat
          (markup:markup
           (:style (style buffer))
-          (:h1 (symbol-name class))
-          (:p (:pre (documentation class 'type)))
+          (:h1 (symbol-name input))
+          (:p (:pre (documentation input 'type)))
           (:h2 "Slots:"))
          slot-descs)))))
 
@@ -248,25 +240,21 @@ CLASS can be a class symbol or a list of class symbols, as with
     (log:info "Appending configuration form ~a to ~s." form (expand-path *auto-config-file-path*))
     (format file "~&~a~%" form)))
 
-(define-command describe-slot (&optional slot)
+(define-command describe-slot ()
   "Inspect a slot and show it in a help buffer."
-  (let* ((slot (or slot
-                   (prompt-minibuffer
-                    :input-prompt "Describe slot"
-                    :suggestion-function (slot-suggestion-filter)))))
+  (let* ((input (prompt-minibuffer
+                 :input-prompt "Describe slot"
+                 :suggestion-function (slot-suggestion-filter))))
     (with-current-html-buffer (buffer
-                               (str:concat "*Help-" (symbol-name (name slot)) "*")
-                               :mode 'nyxt/help-mode:help-mode
-                               :url (lisp-url `(nyxt::describe-slot ,slot)))
+                               (str:concat "*Help-" (symbol-name (name input)) "*")
+                               'nyxt/help-mode:help-mode)
       (str:concat (markup:markup (:style (style buffer)))
-                  (describe-slot* (name slot) (class-sym slot)
+                  (describe-slot* (name input) (class-sym input)
                                   :mention-class-p t)))))
 
 (define-command common-settings ()
   "Configure a set of frequently used settings."
-  (with-current-html-buffer (buffer "*Settings*"
-                             :mode 'nyxt/help-mode:help-mode
-                             :url (lisp-url '(nyxt::common-settings)))
+  (with-current-html-buffer (buffer "*Settings*" 'nyxt/help-mode:help-mode)
     (markup:markup
      (:style (style buffer))
      (:h1 "Common Settings")
@@ -309,9 +297,7 @@ CLASS can be a class symbol or a list of class symbols, as with
 
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
-  (with-current-html-buffer (buffer "*Help-bindings"
-                             :mode 'nyxt/help-mode:help-mode
-                             :url (lisp-url '(nyxt::describe-bindings)))
+  (with-current-html-buffer (buffer "*Help-bindings" 'nyxt/help-mode:help-mode)
     (markup:markup
      (:style (style buffer))
      (:h1 "Bindings")
@@ -428,9 +414,7 @@ evaluate in order."
 
 (defun error-buffer (title text)
   "Print some help."
-  (with-current-html-buffer (buffer title
-                             :mode 'nyxt/help-mode:help-mode
-                             :url (lisp-url `(nyxt::error-buffer ,title ,text)))
+  (with-current-html-buffer (buffer title 'nyxt/help-mode:help-mode)
     (markup:markup
      (:style (style buffer))
      (:h1 "Error occured:")
@@ -450,9 +434,7 @@ The version number is stored in the clipboard."
 
 (define-command list-messages ()
   "Show the *Messages* buffer."
-  (with-current-html-buffer (buffer "*Messages*"
-                             :mode 'nyxt/message-mode:message-mode
-                             :url (lisp-url '(nyxt::list-messages)))
+  (with-current-html-buffer (buffer "*Messages*" 'nyxt/message-mode:message-mode)
     (markup:markup
      (:style (style buffer))
      (:h1 "Messages")
@@ -481,9 +463,7 @@ The version number is stored in the clipboard."
 
 (define-command help ()
   "Print help information."
-  (with-current-html-buffer (buffer "*Help*"
-                             :mode 'nyxt/help-mode:help-mode
-                             :url (lisp-url '(nyxt::help)))
+  (with-current-html-buffer (buffer "*Help*" 'nyxt/help-mode:help-mode)
     (markup:markup
      (:style (style buffer))
      (:style (cl-css:css '((:h2
@@ -518,17 +498,13 @@ The version number is stored in the clipboard."
 
 (define-command manual ()
   "Show the manual."
-  (with-current-html-buffer (buffer "*Manual*"
-                             :mode 'nyxt/help-mode:help-mode
-                             :url (lisp-url '(nyxt::manual)))
+  (with-current-html-buffer (buffer "*Manual*" 'nyxt/help-mode:help-mode)
     (str:concat (markup:markup (:style (style buffer)))
                 (manual-content))))
 
 (define-command tutorial ()
   "Show the tutorial."
-  (with-current-html-buffer (buffer "*Tutorial*"
-                             :mode 'nyxt/help-mode:help-mode
-                             :url (lisp-url '(nyxt::tutorial)))
+  (with-current-html-buffer (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
     (str:concat
      (markup:markup
       (:style (style buffer))
@@ -594,9 +570,7 @@ the "
                                :height "100vh")
                               ("ul"
                                :list-style-type "circle")))))
-      (with-current-html-buffer (buffer "*Dashboard*"
-                                 :mode 'base-mode
-                                 :url (lisp-url '(nyxt::dashboard)))
+      (with-current-html-buffer (buffer "*Dashboard*" 'base-mode)
         (markup:markup
          (:style (style buffer))
          (:style dashboard-style)
