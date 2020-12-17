@@ -5,7 +5,7 @@
 
 (define-command about ()
   "Show the list of contributors."
-  (with-current-html-buffer (buffer "*About*" 'base-mode)
+  (with-current-html-buffer (buffer "*About*" :mode 'base-mode)
     (markup:markup
      (:style (style buffer))
      (:h1 "Contributors")

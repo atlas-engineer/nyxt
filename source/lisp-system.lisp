@@ -5,7 +5,9 @@
 
 (define-command list-systems ()
   "List systems available via Quicklisp."
-  (with-current-html-buffer (buffer "*Systems*" 'base-mode)
+  (with-current-html-buffer (buffer "*Systems*"
+                             :mode 'base-mode
+                             :url (lisp-url '(list-systems)))
     (markup:markup
      (:style (style buffer))
      (:h1 "Systems")
