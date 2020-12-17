@@ -57,7 +57,7 @@
                (setf string (ps:chain string (substring (+ subindex (length query)))))
 	       (setf index (+ index subindex (length query)))
             when (not (= subindex -1))
-              Collect index)))
+            collect index)))
 
   (defun matches-from-node (node query)
     "Return all of substrings that match the search-string."
