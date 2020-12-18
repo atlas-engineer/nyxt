@@ -82,7 +82,7 @@ Currently we store the list of current URLs of all buffers."
            ;; rapidly may create collisions with libsoup.  TODO: Add these
            ;; entries to a separate browser slot and list them in
            ;; `switch-to-buffers' when we have multi-source support.
-           (mapc make-buffer-from-history buffer-histories)
+           (mapc #'make-buffer-from-history buffer-histories)
            (echo "Restored session of ~a URLs from ~s."
                  (length buffer-histories)
                  (expand-path path))
