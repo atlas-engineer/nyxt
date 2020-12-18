@@ -47,22 +47,29 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented unless EXPLICIT is non-nil, in which
 case `explicit-visits'."
-  (with-data-access (history (history-path (current-buffer))
-                     :default (htree:make))
-      (unless (url-empty-p uri)
-        (let* ((maybe-entry (make-instance 'history-entry
-                                           :url uri :id (id (current-buffer)) :title title))
-               (node (htree:find-data maybe-entry history :ensure-p t :test #'equals))
-               (entry (htree:data node)))
-          (if explicit
-              (incf (explicit-visits entry))
-              (incf (implicit-visits entry)))
-          (setf (last-access entry) (local-time:now))
-          (when title
-            ;; Always update the title since it may have changed since last visit.
-            (setf (title entry) title))
-          (setf (htree:data node) entry)))
-    (setf (current-history-node (current-buffer)) (htree:current history))))
+  ;; It is implied that `history-add' is invoked only in
+  ;; `on-signal-notify-uri' in response to
+  ;; `buffer-load'. `buffer-load' has its own data syncronization, so
+  ;; we imply that history is up-to-date there.  Using
+  ;; `with-data-access' is not an option -- it will cause the new
+  ;; thread and the thread from `buffer-load' to mutually deadlock.
+  (let ((history (or (get-data (history-path (current-buffer)))
+                     (htree:make))))
+    (unless (url-empty-p uri)
+      (let* ((maybe-entry (make-instance 'history-entry
+                                         :url uri :id (id (current-buffer)) :title title))
+             (node (htree:find-data maybe-entry history :ensure-p t :test #'equals))
+             (entry (htree:data node)))
+        (if explicit
+            (incf (explicit-visits entry))
+            (incf (implicit-visits entry)))
+        (setf (last-access entry) (local-time:now))
+        (when title
+          ;; Always update the title since it may have changed since last visit.
+          (setf (title entry) title))
+        (setf (htree:data node) entry
+              (current-history-node (current-buffer)) (htree:current history))))
+    (setf (get-data (history-path (current-buffer))) history)))
 
 (define-command delete-history-entry ()
   "Delete queried history entries."
