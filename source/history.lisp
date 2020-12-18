@@ -57,7 +57,8 @@ case `explicit-visits'."
                      (htree:make))))
     (unless (url-empty-p uri)
       (let* ((maybe-entry (make-instance 'history-entry
-                                         :url uri :id (id (current-buffer)) :title title))
+                                         :url uri :id (id (current-buffer))
+                                         :title (or title "")))
              (node (htree:find-data maybe-entry history :ensure-p t :test #'equals))
              (entry (htree:data node)))
         (if explicit
