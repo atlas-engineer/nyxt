@@ -46,7 +46,6 @@
              (gnu packages gstreamer)
              (gnu packages gtk)
              (gnu packages pkg-config)
-             (gnu packages gcc)
              (gnu packages version-control)
              (gnu packages webkit))
 
@@ -83,7 +82,7 @@
     (name "nyxt")
     (version (nyxt-git-version))
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
-    (build-system gnu-build-system)
+    (build-system gnu-build-system)     ; TODO: Use glib-or-gtk-build-system instead?
     (arguments
      `(#:make-flags (list "nyxt" "NYXT_INTERNAL_QUICKLISP=false"
                           (string-append "DESTDIR=" (assoc-ref %outputs "out"))
