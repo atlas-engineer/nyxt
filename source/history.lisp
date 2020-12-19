@@ -83,30 +83,34 @@ case `explicit-visits'."
       (dolist (entry entries)
         (htree:delete-node entry history :test #'equals :rebind-children-p t)))))
 
-(defmethod make-buffer-from-history ((root htree:node))
+(defmethod make-buffer-from-history ((root htree:node) (history htree:history-tree))
   "Create the buffer with the history starting from the ROOT.
 Open the latest child of ROOT."
-  (with-data-access (history (history-path (current-buffer)))
-    (let* ((root-id (id (htree:data root)))
-           (node (let ((latest root))
-                   (htree:do-tree (node history)
-                     (let ((node-data (htree:data node))
-                           (latest-data (htree:data latest)))
-                       (when (and (string= (id node-data) (id latest-data))
-                                  (local-time:timestamp>= (last-access node-data)
-                                                          (last-access latest-data)))
-                         (setf latest node))))
-                   latest))
-           (entry (htree:data node))
-           (buffer (make-buffer :url (ensure-url (url entry))
-                                :load-url-p nil
-                                :title (title entry))))
-      (setf (slot-value buffer 'load-status) :unloaded
-            (current-history-node buffer) node)
-      (htree:do-tree (node history)
-        (when (string= (id (htree:data node)) root-id)
-          (setf (id (htree:data node)) (id buffer))))
-      buffer)))
+  (let* ((node (let ((latest root))
+                 (htree:do-tree (node history)
+                   (let ((node-data (htree:data node))
+                         (latest-data (htree:data latest)))
+                     (when (and (string= (id node-data) (id latest-data))
+                                (local-time:timestamp>= (last-access node-data)
+                                                        (last-access latest-data)))
+                       (setf latest node))))
+                 latest))
+         (entry (htree:data node))
+         (buffer (make-buffer :url (ensure-url (url entry))
+                              :load-url-p nil
+                              :title (title entry))))
+    (setf (slot-value buffer 'load-status) :unloaded
+          (current-history-node buffer) node)
+    (htree:do-tree (node history)
+      (let ((root-id (id (htree:data root)))
+            (new-id (id buffer)))
+        (with-slots (id) (htree:data node)
+          (setf id (case id
+                     (root-id new-id)
+                     ;; This is to escape collisions of the new buffer ID with old buffer IDs.
+                     (new-id root-id)
+                     (t id))))))
+    buffer))
 
 
 (defun score-history-entry (entry)
@@ -197,7 +201,7 @@ instance of Nyxt."
                 (sera:and-let* ((buffer-histories (buffer-local-histories-table history)))
                   ;; Make the new buffers.
                   (dolist (root (alex:hash-table-values buffer-histories))
-                    (make-buffer-from-history root))
+                    (make-buffer-from-history root history))
                   ;; Switch to the last active buffer.
                   (when (htree:current history)
                     (switch-buffer
