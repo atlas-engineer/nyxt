@@ -5,12 +5,12 @@
 
 (define-class history-entry ()
   ((url (quri:uri "")
-        :type quri:uri)
+        :type (or quri:uri string))
    (title "")
    (id ""
        :documentation "The `id' of the buffer that this entry belongs to the branch of.")
    (last-access (local-time:now)
-                :type local-time:timestamp)
+                :type (or local-time:timestamp string))
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
    ;; could use a new buffer slot to signal that the last load came from an
    ;; explicit request?
@@ -40,6 +40,44 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
   ;; TODO: Should we?
   (and (string= (id e1) (id e2))
        (quri:uri= (url e1) (url e2))))
+
+(defmethod url ((he history-entry))
+  "This accessor ensures we always return a `quri:uri'.
+This is useful in cases the URL is originally stored as a string (for instance
+when deserializing a `history-entry').
+
+We can't use `initialize-instance :after' to convert the URL because
+`s-serialization:deserialize-sexp' sets the slots manually after making the
+class."
+  (unless (quri:uri-p (slot-value he 'url))
+    (setf (slot-value he 'url) (ensure-url (slot-value he 'url))))
+  (slot-value he 'url))
+
+(defmethod last-access ((he history-entry))
+  "This accessor ensures we always return a `local-time:timestamp'.
+This is useful in cases the timestamp is originally stored as a
+string (for instance when deserializing a `history-entry').
+
+We can't use `initialize-instance :after' to convert the timestamp
+because `s-serialization:deserialize-sexp' sets the slots manually
+after making the class."
+  (unless (typep (slot-value he 'last-access) 'local-time:timestamp)
+    (setf (slot-value he 'last-access)
+          (local-time:parse-timestring (slot-value he 'last-access))))
+  (slot-value he 'last-access))
+
+(defmethod s-serialization::serialize-sexp-internal ((he history-entry)
+                                                     stream
+                                                     serialization-state)
+  "Serialize `buffer-description' by turning the URL into a string."
+  (let ((new-he (make-instance 'history-entry
+                               :title (title he)
+                               :id (id he)
+                               :explicit-visits (explicit-visits he)
+                               :implicit-visits (implicit-visits he))))
+    (setf (url new-he) (object-string (url he))
+          (last-access new-he) (local-time:format-timestring nil (last-access he)))
+    (call-next-method new-he stream serialization-state)))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:explicit t)) t) history-add))
 (export-always 'history-add)
@@ -197,6 +235,7 @@ instance of Nyxt."
               (echo "Loading history of ~a URLs from ~s."
                     (htree:size history)
                     (expand-path path))
+              (setf (get-data path) history)
               (when restore-session-p
                 (sera:and-let* ((buffer-histories (buffer-local-histories-table history)))
                   ;; Make the new buffers.
@@ -205,8 +244,7 @@ instance of Nyxt."
                   ;; Switch to the last active buffer.
                   (when (htree:current history)
                     (switch-buffer
-                     :id (id (htree:data (htree:current history)))))))
-              (setf (get-data path) history))
+                     :id (id (htree:data (htree:current history))))))))
              (hash-table
               (echo "Importing deprecated global history of ~a URLs from ~s."
                     (hash-table-count history)
