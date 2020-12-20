@@ -6,7 +6,6 @@
 ;; TODO: Use methods instead of slots?  Probably no, because we must be able to
 ;; handle anonymous sources / prompters.
 ;; TODO: Memoize suggestion computation?
-;; TODO: Pre-defined prompters: yes-no.
 ;; TODO: User classes?  Probably useful mostly for `prompter-source' since
 ;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
@@ -232,14 +231,20 @@ It can be a function of one argument, the prompter, which returns a string."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer #'class*:name-identity)
-    (:documentation "")))
+    (:documentation "TODO: Complete me.")))
 
 (export-always 'make-source)
-(define-function make-source
+(define-function make-source            ; TODO: Useless?
     (append '(&rest args)
             `(&key ,@(initargs 'prompter-source)))
   "Return prompter source object."
   (apply #'make-instance 'prompter-source args))
+
+(define-class yes-no-source (prompter-source)
+  ((initial-suggestions '("yes" "no")))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "Prompt for yes-no questions."))
 
 (defmethod initialize-instance :after ((source prompter-source) &key)
   ;; TODO: Should we always do this?  What if initial-suggestions are already
