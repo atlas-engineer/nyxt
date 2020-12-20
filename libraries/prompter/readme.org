@@ -1,4 +1,4 @@
-This prompter library is heavily inspired by Emacs' [[https://emacs-helm.github.io/helm/][Helm]].
+This prompter library is heavily inspired by Emacs' minibuffer and [[https://emacs-helm.github.io/helm/][Helm]].
 
 It only deals with the backend side of things, it does not handle any display.
 
