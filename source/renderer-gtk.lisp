@@ -460,10 +460,8 @@ See `gtk-browser's `modifier-translator' slot."
 Warning: This behaviour may change in the future."
   (declare (ignore event))
   (if (active-minibuffers sender)
-      ;; DRAFT: Forward event when minibuffer is up.  This can break some use of
-      ;; the minibuffer, but allows us to use input methods and enter unicode
-      ;; with control-shift-u.
-      nil
+      ;; Do not forward release event when minibuffer is up.
+      t
       ;; Forward release event to the web view.
       nil))
 
