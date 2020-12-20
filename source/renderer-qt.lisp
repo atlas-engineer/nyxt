@@ -145,7 +145,7 @@
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer qt-buffer) javascript)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript %callback))
 
-(defmethod ffi-minibuffer-evaluate-javascript-async ((window qt-window) javascript)
+(defmethod ffi-minibuffer-evaluate-javascript ((window qt-window) javascript)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript %callback))
 
 (defmethod ffi-generate-input-event ((window qt-window) event))
