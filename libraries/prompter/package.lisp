@@ -3,12 +3,12 @@
 
 (in-package cl-user)
 
-(uiop:define-package minibuffer
+(uiop:define-package prompter
   (:use #:common-lisp)
   (:import-from #:class* #:define-class)
   (:import-from #:serapeum #:export-always))
 
-(in-package minibuffer)
+(in-package prompter)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)

@@ -336,7 +336,7 @@
   :perform (asdf:test-op (op c)
                          (nyxt-run-test c "libraries/ospm/tests/tests.lisp")))
 
-(asdf:defsystem nyxt/minibuffer
+(asdf:defsystem nyxt/prompter
   :depends-on (alexandria
                calispel
                cl-containers
@@ -347,15 +347,15 @@
                trivial-package-local-nicknames
                nyxt/keymap
                nyxt/class-star)
-  :pathname "libraries/minibuffer/"
+  :pathname "libraries/prompter/"
   :components ((:file "package")
                (:file "filter-preprocessor")
                (:file "filter")
-               (:file "minibuffer-source")
-               (:file "minibuffer"))
-  :in-order-to ((test-op (test-op "nyxt/minibuffer/tests"))))
+               (:file "prompter-source")
+               (:file "prompter"))
+  :in-order-to ((test-op (test-op "nyxt/prompter/tests"))))
 
-(asdf:defsystem nyxt/minibuffer/tests
-  :depends-on (nyxt/minibuffer prove)
+(asdf:defsystem nyxt/prompter/tests
+  :depends-on (nyxt/prompter prove)
   :perform (asdf:test-op (op c)
-                         (nyxt-run-test c "libraries/minibuffer/tests/")))
+                         (nyxt-run-test c "libraries/prompter/tests/")))

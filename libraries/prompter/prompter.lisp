@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :minibuffer)
+(in-package :prompter)
 
 ;; Same as `minibuffer-source' as to why we wrap in `eval-always'.
 (sera:eval-always

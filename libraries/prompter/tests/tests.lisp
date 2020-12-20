@@ -9,25 +9,25 @@
 
 (prove:plan nil)
 
-(prove:subtest "Minibuffer init"
-  (let ((minibuffer (minibuffer:make
-                     :sources (list (minibuffer:make-source
+(prove:subtest "Prompter init"
+  (let ((prompter (prompter:make
+                     :sources (list (prompter:make-source
                                      :initial-suggestions '("foo" "bar"))))))
-    (prove:ok (find "foo" (minibuffer:suggestions
-                           (first (minibuffer:sources minibuffer)))
+    (prove:ok (find "foo" (prompter:suggestions
+                           (first (prompter:sources prompter)))
                     :test #'string=
-                    :key #'minibuffer:value)
-              "Found suggestion in dummy minibuffer")))
+                    :key #'prompter:value)
+              "Found suggestion in dummy prompter")))
 
-(prove:subtest "Minibuffer matching"
-  (let ((minibuffer (minibuffer:make
-                     :sources (list (minibuffer:make-source
+(prove:subtest "Prompter matching"
+  (let ((prompter (prompter:make
+                     :sources (list (prompter:make-source
                                      :initial-suggestions '("foo" "bar"))))))
-    (setf (minibuffer:input minibuffer) "foo")
-    (when (minibuffer:ready-p minibuffer)
-      (let ((filtered-suggestions (minibuffer:suggestions
-                                   (first (minibuffer:sources minibuffer)))))
-        (prove:is (mapcar #'minibuffer:value filtered-suggestions)
+    (setf (prompter:input prompter) "foo")
+    (when (prompter:ready-p prompter)
+      (let ((filtered-suggestions (prompter:suggestions
+                                   (first (prompter:sources prompter)))))
+        (prove:is (mapcar #'prompter:value filtered-suggestions)
                   '("foo"))))))
 
 (class*:define-class url ()
@@ -35,71 +35,71 @@
    (title ""))
   (:accessor-name-transformer #'class*:name-identity))
 
-(defmethod minibuffer:object-properties ((url url))
+(defmethod prompter:object-properties ((url url))
   `(:uri ,(uri url)
     :title ,(title url)))
 
 (prove:subtest "Multi-property matching"
   (let* ((url1 (make-instance 'url :uri "http://example.org" :title "Example"))
          (url2 (make-instance 'url :uri "http://nyxt.atlas.engineer" :title "Nyxt homepage"))
-         (minibuffer (minibuffer:make
-                      :sources (list (minibuffer:make-source
+         (prompter (prompter:make
+                      :sources (list (prompter:make-source
                                       :initial-suggestions (list url1 url2))))))
-    (setf (minibuffer:input minibuffer) "nyxt")
-    (when (minibuffer:ready-p minibuffer)
-      (let ((filtered-suggestions (minibuffer:suggestions
-                                   (first (minibuffer:sources minibuffer)))))
-        (prove:is (mapcar #'minibuffer:value filtered-suggestions)
+    (setf (prompter:input prompter) "nyxt")
+    (when (prompter:ready-p prompter)
+      (let ((filtered-suggestions (prompter:suggestions
+                                   (first (prompter:sources prompter)))))
+        (prove:is (mapcar #'prompter:value filtered-suggestions)
                   (list url2))))))
 
-(defvar *minibuffer-suggestion-update-interval* 1.5)
+(defvar *prompter-suggestion-update-interval* 1.5)
 
 (defun slow-identity-match (input suggestion)
   (declare (ignore input))
-  (sleep *minibuffer-suggestion-update-interval*)
+  (sleep *prompter-suggestion-update-interval*)
   suggestion)
 
 (prove:subtest "Asynchronous suggestion computation"
-  (let ((minibuffer (minibuffer:make
-                     :sources (list (minibuffer:make-source
+  (let ((prompter (prompter:make
+                     :sources (list (prompter:make-source
                                      :initial-suggestions '("foo" "bar")
                                      :filter #'slow-identity-match)))))
-    (setf (minibuffer:input minibuffer) "foo")
-    (when (minibuffer:ready-p minibuffer)
-      (let ((filtered-suggestions (minibuffer:suggestions
-                                   (first (minibuffer:sources minibuffer)))))
-        (prove:is (mapcar #'minibuffer:value filtered-suggestions)
+    (setf (prompter:input prompter) "foo")
+    (when (prompter:ready-p prompter)
+      (let ((filtered-suggestions (prompter:suggestions
+                                   (first (prompter:sources prompter)))))
+        (prove:is (mapcar #'prompter:value filtered-suggestions)
                   '("foo"))))))
 
 (prove:subtest "Asynchronous suggestion notifications"
   (let* ((suggestion-values '("foobar" "foobaz"))
-         (source (minibuffer:make-source
+         (source (prompter:make-source
                   :initial-suggestions suggestion-values
                   :filter #'slow-identity-match))
-         (minibuffer (minibuffer:make
+         (prompter (prompter:make
                       :sources (list source))))
-    (setf (minibuffer:input minibuffer) "foo")
+    (setf (prompter:input prompter) "foo")
     (sera:nlet query-suggestions ((computed-count 1))
       (calispel:fair-alt
-        ((calispel:? (minibuffer:ready-notifier source))
-         (prove:is (length (minibuffer:suggestions source))
+        ((calispel:? (prompter:ready-notifier source))
+         (prove:is (length (prompter:suggestions source))
                    (length suggestion-values)))
-        ((calispel:? (minibuffer:update-notifier source))
-         (prove:is (length (minibuffer:suggestions source))
+        ((calispel:? (prompter:update-notifier source))
+         (prove:is (length (prompter:suggestions source))
                    computed-count)
          (query-suggestions (1+ computed-count)))))))
 
 (prove:subtest "Asynchronous suggestion interrupt"
   (let* ((suggestion-values '("foobar" "foobaz"))
-         (source (minibuffer:make-source
+         (source (prompter:make-source
                   :initial-suggestions suggestion-values
                   :filter #'slow-identity-match))
-         (minibuffer (minibuffer:make
+         (prompter (prompter:make
                       :sources (list source))))
     (let ((before-input (get-internal-real-time)))
-      (setf (minibuffer:input minibuffer) "foo")
-      (setf (minibuffer:input minibuffer) "bar")
-      (setf (minibuffer:input minibuffer) "baz")
+      (setf (prompter:input prompter) "foo")
+      (setf (prompter:input prompter) "bar")
+      (setf (prompter:input prompter) "baz")
       (prove:is (/ (- (get-internal-real-time) before-input)
                    internal-time-units-per-second)
                 0.01
