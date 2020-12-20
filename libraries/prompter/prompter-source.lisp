@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :minibuffer)
+(in-package :prompter)
 
 ;; TODO: Use methods instead of slots?  Probably no, because we must be able to
 ;; handle anonymous sources / minibuffers.
