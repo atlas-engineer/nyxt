@@ -88,7 +88,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defun %within-renderer-thread (thunk)
   "If the current thread is the renderer thread, execute THUNK with `funcall'.
-Otherwise run the THINK on the renderer thread by passing it a channel and wait on the channel's result."
+Otherwise run the THUNK on the renderer thread by passing it a channel and wait on the channel's result."
   (if (renderer-thread-p)
       (funcall thunk)
       (let ((channel (make-bounded-channel 1)))
