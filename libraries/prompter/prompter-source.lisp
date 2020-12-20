@@ -4,13 +4,13 @@
 (in-package :prompter)
 
 ;; TODO: Use methods instead of slots?  Probably no, because we must be able to
-;; handle anonymous sources / minibuffers.
+;; handle anonymous sources / prompters.
 ;; TODO: Memoize suggestion computation?
-;; TODO: Pre-defined minibuffers: yes-no.
-;; TODO: User classes?  Probably useful mostly for `minibuffer-source' since
-;; they may be defined globally.  Conversely, `minibuffer' is mostly used
+;; TODO: Pre-defined prompters: yes-no.
+;; TODO: User classes?  Probably useful mostly for `prompter-source' since
+;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
-;; TODO: Implement minibuffer actions.
+;; TODO: Implement prompter actions.
 
 (deftype must-match-choices ()
   `(or (eql :always)
@@ -25,7 +25,7 @@
 
 (export-always 'object-properties)
 (defmethod object-properties ((object t))
-  "Suitable as a `minibuffer-source' `suggestion-property-function'."
+  "Suitable as a `prompter-source' `suggestion-property-function'."
   (list :default (write-to-string object)))
 
 (define-class suggestion ()
@@ -44,14 +44,14 @@ used by the `sort-predicate'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "Suggestions are processed and listed in `minibuffer-source'.
+  (:documentation "Suggestions are processed and listed in `prompter-source'.
 It wraps arbitrary object stored in the `value' slot.
 The other slots are optional."))
 
 ;; We must eval the class at read-time because `make-source' is generated using
 ;; the initargs of the class.
 (sera:eval-always
-  (define-class minibuffer-source ()
+  (define-class prompter-source ()
     ((name ""
            :documentation
            "Name which can be used to differentiate sources from one
@@ -67,7 +67,7 @@ It is useful for instance to create the list of `initial-suggestions'.")
                  :type (or null function)
                  :documentation
                  "Function called with the source as parameter to clean it up.
-It's called when `destructor' is called over `minibuffer'.
+It's called when `destructor' is called over `prompter'.
 
 Note that the function is executed *before* performing any action.")
 
@@ -85,7 +85,7 @@ This list is never modified after initialization.")
                   :export t
                   :documentation
                   "The current list of suggestions.
-It's updated asynchronously every time the minibuffer input is changed.
+It's updated asynchronously every time the prompter input is changed.
 The slot is readable even when the computation hasn't finished.
 See `ready-notifier' to know when the list is final.
 See `update-notifier' to know when it has been updated, to avoid polling the
@@ -122,7 +122,7 @@ input is modified, before filtering the suggestions.")
      (filter-postprocessor nil
                            :type (or null function)
                            :documentation
-                           "Function called over the minibuffer-source and the input,
+                           "Function called over the prompter-source and the input,
 when input is modified, after filtering the suggestions.")
 
      (sort-predicate #'score>
@@ -191,7 +191,7 @@ present.")
      (resume nil
              :type (or null function)
              :documentation
-             "Function called with the source as argument when the minibuffer is
+             "Function called with the source as argument when the prompter is
 resumed.")
 
      (follow nil                        ; TODO: Implement.
@@ -213,10 +213,10 @@ non-nil.")
 - `:confirm': Prompt before accepting the input.
 - `:ignore': Exit and do nothing.")
 
-     (history (make-history)            ; TODO: Move to `minibuffer' class?
+     (history (make-history)            ; TODO: Move to `prompter' class?
               :type (or containers:ring-buffer-reverse null)
               :documentation
-              "History of inputs for the minibuffer.
+              "History of inputs for the prompter.
 If nil, no history is used.")
 
      (keymap nil
@@ -228,7 +228,7 @@ If nil, no history is used.")
                    :type (or string function)
                    :documentation
                    "Help message for this source.
-It can be a function of one argument, the minibuffer, which returns a string."))
+It can be a function of one argument, the prompter, which returns a string."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer #'class*:name-identity)
@@ -237,11 +237,11 @@ It can be a function of one argument, the minibuffer, which returns a string."))
 (export-always 'make-source)
 (define-function make-source
     (append '(&rest args)
-            `(&key ,@(initargs 'minibuffer-source)))
-  "Return minibuffer source object."
-  (apply #'make-instance 'minibuffer-source args))
+            `(&key ,@(initargs 'prompter-source)))
+  "Return prompter source object."
+  (apply #'make-instance 'prompter-source args))
 
-(defmethod initialize-instance :after ((source minibuffer-source) &key)
+(defmethod initialize-instance :after ((source prompter-source) &key)
   ;; TODO: Should we always do this?  What if initial-suggestions are already
   ;; suggestion objects?
   (setf (slot-value source 'initial-suggestions)
