@@ -1,4 +1,4 @@
-This minibuffer library is heavily inspired by Emacs' [[https://emacs-helm.github.io/helm/][Helm]].
+This prompter library is heavily inspired by Emacs' [[https://emacs-helm.github.io/helm/][Helm]].
 
 It only deals with the backend side of things, it does not handle any display.
 
@@ -14,6 +14,6 @@ Non-exhaustive list of features:
 - Notifications sent when suggestion list is updated.
 - Per-source history.
 - Per-source keymaps.
-- Resumable minibuffers.
-- Persistent action (executed without closing the minibuffer).
+- Resumable prompters.
+- Persistent action (executed without closing the prompter).
 - Follow-mode (automatically run the persistent action on selection change).

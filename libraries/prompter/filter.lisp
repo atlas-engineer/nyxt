@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :minibuffer)
+(in-package :prompter)
 
 (defun substring-norm (substrings string &key (substring-length 2))
   "Return the norm of SUBSTRINGS with regard to STRING.
@@ -56,7 +56,7 @@ A higher score means the suggestion-string comes first."
 
 (export-always 'score>)
 (defun score> (suggestion1 suggestion2)
-  "Suitable as a `minibuffer-source' `sort-predicate'."
+  "Suitable as a `prompter-source' `sort-predicate'."
   (> (score suggestion1)
      (score suggestion2)))
 
