@@ -106,4 +106,21 @@
                 :test #'<
                 "Consecutive inputs happened fast enough"))))
 
+(prove:subtest "Yes-No prompt"
+  (let* ((suggestion-values '("foobar" "foobaz"))
+         (source (make-instance 'prompter:yes-no-source
+                                :initial-suggestions '("no" "yes")))
+         (prompter (prompter:make
+                      :sources (list source))))
+    (prove:is
+     (mapcar #'prompter:value (prompter:suggestions
+                               (first (prompter:sources prompter))))
+     '("no" "yes"))
+    (setf (prompter:input prompter) "y")
+    (when (prompter:ready-p prompter)
+      (let ((filtered-suggestions (prompter:suggestions
+                                   (first (prompter:sources prompter)))))
+        (prove:is (mapcar #'prompter:value filtered-suggestions)
+                  '("yes" "no"))))))
+
 (prove:finalize)
