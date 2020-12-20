@@ -76,6 +76,8 @@
                (:file "fuzzy")
                (:file "message")
                (:file "input")
+               (:file "prompt-buffer-mode")
+               (:file "prompt-buffer")
                (:file "minibuffer")
                (:file "minibuffer-prompt")
                (:file "minibuffer-mode")
