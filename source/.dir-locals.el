@@ -19,6 +19,7 @@
                 "bookmarklet-command"
                 "class"
                 "command"
+                "ffi-method"
                 "function"
                 "mode"
                 "parenscript"
