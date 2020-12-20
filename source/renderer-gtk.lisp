@@ -402,8 +402,8 @@ See `gtk-browser's `modifier-translator' slot."
         (match (gtk:gtk-entry-text (key-string-buffer window))
           ;; Special cases: these characters are not supported as is for keyspecs.
           ;; See `self-insert' for the reverse translation.
-          ;; (" " "space")
-          ;; ("-" "hyphen")
+          (" " "space")
+          ("-" "hyphen")
           (character character))
       (setf (gtk:gtk-entry-text (key-string-buffer window)) ""))))
 
@@ -438,16 +438,7 @@ Warning: This behaviour may change in the future."
   (declare (ignore event))
   (if (active-minibuffers sender)
       ;; Do not forward release event when minibuffer is up.
-      (progn
-        (pexec ()
-          (log:warn
-           "@@ MINIBUFFER ~s"
-           (ffi-minibuffer-evaluate-javascript
-            (current-window)
-            (ps:ps (ps:chain document
-                             (get-element-by-id "html-input-buffer")
-                             value)))))
-        nil)
+      t
       ;; Forward release event to the web view.
       nil))
 
@@ -818,19 +809,7 @@ requested a reload."
       nil
       #'javascript-error-handler))))
 
-(defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
-  (%within-renderer-thread
-   (lambda (&optional channel)
-     (webkit2:webkit-web-view-evaluate-javascript
-      (minibuffer-view window)
-      javascript
-      (if channel
-          (lambda (result)
-            (calispel:! channel result))
-          #'identity)
-      #'javascript-error-handler))))
-
-(define-ffi-method ffi-minibuffer-evaluate-javascript-async ((window gtk-window) javascript)
+(define-ffi-method ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
