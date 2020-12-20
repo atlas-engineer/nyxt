@@ -155,7 +155,7 @@ beginning."
   "Set the `content' of the MINIBUFFER to HTML-CONTENT.
    This runs a call"
   (setf (slot-value minibuffer 'content) html-content)
-  (ffi-minibuffer-evaluate-javascript
+  (ffi-minibuffer-evaluate-javascript-async
    (current-window)
    (ps:ps (ps:chain document
                     (write (ps:lisp (content minibuffer)))))))
@@ -203,7 +203,7 @@ beginning."
 The new webview HTML content is set as the MINIBUFFER's `content'."
   (when minibuffer
     (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|)))))
-      (ffi-minibuffer-evaluate-javascript
+      (ffi-minibuffer-evaluate-javascript-async
        (current-window)
        new-content)
       (setf (slot-value minibuffer 'content) new-content))))
