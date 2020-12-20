@@ -124,6 +124,11 @@ Return nil to forward to renderer or non-nil otherwise."
                 (setf key-stack nil))
               t)
 
+             ((active-prompt-buffers window)
+              (setf key-stack nil)
+              ;; Forward to prompt buffer.
+              nil)
+
              ((active-minibuffers window)
               (when printable-p
                 (dolist (key key-stack)
