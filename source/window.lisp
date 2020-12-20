@@ -8,6 +8,9 @@
 (define-class window ()
   ((id "")
    (active-buffer :accessor nil :reader active-buffer :export nil)
+   (active-prompt-buffers '()
+                          :export nil
+                          :documentation "The stack of currently active prompt buffers.")
    (active-minibuffers '()
                        :export nil
                        :documentation "The stack of currently active minibuffers.")
