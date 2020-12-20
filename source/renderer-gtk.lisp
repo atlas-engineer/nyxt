@@ -845,7 +845,19 @@ requested a reload."
       nil
       #'javascript-error-handler))))
 
-(define-ffi-method ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
+(defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
+  (%within-renderer-thread
+   (lambda (&optional channel)
+     (webkit2:webkit-web-view-evaluate-javascript
+      (minibuffer-view window)
+      javascript
+      (if channel
+          (lambda (result)
+            (calispel:! channel result))
+          #'identity)
+      #'javascript-error-handler))))
+
+(define-ffi-method ffi-minibuffer-evaluate-javascript-async ((window gtk-window) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
