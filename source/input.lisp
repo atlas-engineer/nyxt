@@ -135,7 +135,7 @@ Return nil to forward to renderer or non-nil otherwise."
                     (pexec ()
                       (insert (nyxt:current-minibuffer) value)))))
               (setf key-stack nil)
-              nil)
+              t)
 
              ((nyxt/repl-mode::active-repl-p window)
               (when printable-p
