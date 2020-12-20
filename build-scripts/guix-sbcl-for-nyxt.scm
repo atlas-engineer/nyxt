@@ -103,6 +103,8 @@
     (propagated-inputs
      `(,@(package-native-inputs nyxt)
        ,@(package-inputs nyxt)
+       ;; To export GIO_EXTRA_MODULES, etc.
+       ("glib" ,glib)
        ;; For user data decryption:
        ("gnupg" ,gnupg)))
     (synopsis "Optimized SBCL for Nyxt development")
