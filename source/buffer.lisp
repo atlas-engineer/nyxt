@@ -887,6 +887,36 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    (make-buffer-focus :url "" :nosave-buffer-p nosave-buffer-p)
                                    (current-buffer))))))
 
+(define-command set-url2 (&key new-buffer-p prefill-current-url-p)
+  "Set the URL for the current buffer, completing with history."
+  (let ((history (minibuffer-set-url-history *browser*)))
+    (when history
+      (containers:insert-item history (url (current-buffer))))
+    (let ((url (prompt
+                :input-prompt (format nil "Open URL in ~A buffer"
+                                      (if new-buffer-p
+                                          "new"
+                                          "current"))
+                :input-buffer (if prefill-current-url-p
+                                  (object-string (url (current-buffer))) "")
+                ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
+                :suggestion-function (history-suggestion-filter
+                                      :prefix-urls (list (object-string
+                                                          (url (current-buffer)))))
+                :history history
+                :must-match-p nil)))
+
+      (when (typep url 'history-entry)
+        ;; In case prompt-minibuffer returned a string upon
+        ;; must-match-p.
+        (setf url (url url)))
+      (buffer-load url :buffer (if new-buffer-p
+                                   ;; Make empty buffer, or else there might be
+                                   ;; a race condition between the URL that's
+                                   ;; loaded and the default one.
+                                   (make-buffer-focus :url "")
+                                   (current-buffer))))))
+
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
   (set-url :prefill-current-url-p t))

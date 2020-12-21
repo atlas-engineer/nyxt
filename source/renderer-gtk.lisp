@@ -721,6 +721,10 @@ Warning: This behaviour may change in the future."
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height)))
 
+(define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
+  (setf (gtk:gtk-widget-size-request (minibuffer-container window)) ; TODO: Rename `minibuffer-container' when we switch to prompter.
+        (list -1 height)))
+
 (define-ffi-method ffi-window-get-status-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
 

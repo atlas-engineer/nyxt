@@ -1,18 +1,5 @@
 (in-package :nyxt)
 
-(defmacro define-function (name args docstring &body body)
-  "Eval ARGS and DOCSTRING then define function over the resulting lambda list
-and string.
-All ARGS are declared as `ignorable'."
-  (let ((evaluated-args (eval args))
-        (evaluated-docstring (eval docstring)))
-    `(defun ,name ,evaluated-args
-       ,evaluated-docstring
-       (declare (ignorable ,@(set-difference (mapcar (lambda (arg) (if (listp arg) (first arg) arg))
-                                                     evaluated-args)
-                                             lambda-list-keywords)))
-       ,@body)))
-
 (export-always 'make-minibuffer)
 (define-function make-minibuffer        ; TODO: Unexport since it's only used by prompt-minibuffer?  Wait until we've got a proper fix for meta-search.
     (append '(&rest args)
