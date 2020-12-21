@@ -129,9 +129,9 @@ A prompt query is typically done as follows:
 
 (defun show-prompt-buffer (&key (prompt-buffer (first (active-minibuffers (current-window)))) height)
   "Show the last active prompt-buffer, if any."
-  (erase-document prompt-buffer) ; TODO: When to erase?
-  (update-display prompt-buffer)
   (when prompt-buffer
+    (erase-document prompt-buffer)      ; TODO: When to erase?
+    (update-display prompt-buffer)
     (ffi-window-set-prompt-buffer-height
      (current-window)
      (or height
@@ -177,40 +177,47 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                    (ps:chain document (close)))))
 
 (defmethod generate-prompt-html ((prompt-buffer prompt-buffer))
-  (let ((source (first (prompter:sources (prompter prompt-buffer)))))
-    (markup:markup
-     (:head ;; (:style (style prompt-buffer))
-      )
-     (:body
-      (:div :id "container"
-            (:div :id "prompt-input"
-                  (:span :id "prompt" (prompter:prompt (prompter prompt-buffer)))
-                  ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
-                  (:span :id "prompt-extra" "[?/?]")
-                  (:input :type "text" :id "input"))
-            ;; TODO: Support multi columns and sources.
-            (:div :id "suggestions"
-                  (:table
-                   (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
-                         for suggestion in (prompter:suggestions source)
-                         collect (markup:markup (:tr (:td (object-display (prompter:value suggestion)))))))))))))
 
-;; (defmethod generate-suggestion-html ((prompt-buffer prompt-buffer))
-;;   (let ((source (first (prompter:sources (prompter prompt-buffer)))))
-;;     (markup:markup
-;;      (:table
-;;       (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
-;;             for suggestion in (prompter:suggestions source)
-;;             collect (markup:markup (:tr (:td (object-display (prompter:value suggestion))))))))))
+  (markup:markup
+   (:head ;; (:style (style prompt-buffer))
+    )
+   (:body
+    (:div :id "container"
+          (:div :id "prompt-input"
+                (:span :id "prompt" (prompter:prompt (prompter prompt-buffer)))
+                ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
+                (:span :id "prompt-extra" "[?/?]")
+                (:input :type "text" :id "input"))
+          ;; TODO: Support multi columns and sources.
+          (:div :id "suggestions"
+                ;; (:table
+                ;;  (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
+                ;;        for suggestion in (prompter:suggestions source)
+                ;;        collect (markup:markup (:tr (:td (object-display (prompter:value suggestion)))))))
+                )))))
+
+;; TODO: Add HTML to set prompt extra.
+
+(defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
+  (let ((source (first (prompter:sources (prompter prompt-buffer)))))
+    (evaluate-script
+     prompt-buffer
+     (ps:ps
+       (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
+             (ps:lisp
+              (markup:markup
+               (:table
+                (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
+                      for suggestion in (prompter:suggestions source)
+                      collect (markup:markup (:tr (:td (object-display (prompter:value suggestion))))))))))))))
 
 (defmethod update-display ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
   ;; TODO: Finish me!
   (ffi-minibuffer-evaluate-javascript-async ; TODO: Replace with `evaluate-script'?  Rename the latter?
    (current-window)
    (ps:ps (ps:chain document
-                    (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)
-                                                ;; (generate-suggestion-html prompt-buffer)
-                                                )))))))
+                    (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)))))))
+  (update-suggestion-html prompt-buffer))
 
 (export-always 'get-marked-suggestions)
 (defmethod get-marked-suggestions ((prompt-buffer prompt-buffer))

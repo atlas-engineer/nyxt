@@ -37,6 +37,10 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 (defmethod object-display ((entry history-entry))
   (format nil "~a  ~a" (object-display (url entry)) (title entry)))
 
+(defmethod prompter:object-properties ((entry history-entry))
+  (list :default (object-string (url entry)) ; TODO: Use object-properties instead?
+        :title (title entry)))
+
 (export-always 'equals)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
   (quri:uri= (url e1) (url e2)))
