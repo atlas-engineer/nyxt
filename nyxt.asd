@@ -44,7 +44,8 @@
                :nyxt/password-manager
                :nyxt/keymap
                :nyxt/class-star
-               :nyxt/ospm)
+               :nyxt/ospm
+               :nyxt/prompter)
   :pathname "source/"
   :components ((:file "package")
                ;; Independent utilities
@@ -72,8 +73,8 @@
                (:file "fuzzy")
                (:file "message")
                (:file "input")
-               (:file "prompt-buffer-mode")
                (:file "prompt-buffer")
+               (:file "prompt-buffer-mode")
                (:file "minibuffer")
                (:file "minibuffer-prompt")
                (:file "minibuffer-mode")
