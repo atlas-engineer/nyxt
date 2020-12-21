@@ -436,11 +436,29 @@ See `gtk-browser's `modifier-translator' slot."
   "We don't handle key release events.
 Warning: This behaviour may change in the future."
   (declare (ignore event))
-  (if (active-minibuffers sender)
+  (let ((minibuffer (first (active-minibuffers sender) )))
+    (cond
+      ((not minibuffer)
+       ;; Forward release event to the web view.
+       nil)
+      ((prompt-buffer-p minibuffer)
+       (pexec ()
+         ;; TODO: Move this logic to prompt-buffer.lisp.
+         (let ((input (ffi-minibuffer-evaluate-javascript
+                       (current-window)
+                       (ps:ps (ps:chain document (get-element-by-id "input")
+                                        value)))))
+           (setf (prompter:input (prompter minibuffer))
+                 input)
+           (when (prompter:ready-p (prompter minibuffer))
+             (update-suggestion-html minibuffer)
+             ;; (show-prompt-buffer)
+             )))
+       ;; Forward to HTML input: it's necessary to handle input methods,
+       ;; e.g. "control-shift u".
+       nil)
       ;; Do not forward release event when minibuffer is up.
-      t
-      ;; Forward release event to the web view.
-      nil))
+      (t t))))
 
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
