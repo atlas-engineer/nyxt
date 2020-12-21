@@ -45,6 +45,12 @@ It's recommended to use this package in the Nyxt configuration file, instead of
   (:import-from #:serapeum #:export-always)
   (:export :minibuffer-mode)
   (:documentation "Mode for minibuffer"))
+;; TODO: See if prompt-buffer-mode can be declared in prompt-buffer-mode.lisp.
+(uiop:define-package :nyxt/prompt-buffer-mode
+  (:use :common-lisp :trivia :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:export-always)
+  (:documentation "Mode for prompter buffer."))
 
 ;; nyxt/file-manager-mode is declared here due to the same reason as
 ;; nyxt/minibuffer-mode.
