@@ -117,9 +117,9 @@ A prompt query is typically done as follows:
   "TODO: Complete me!"
   (let* ((initargs (alex:remove-from-plist args :window)) ; TODO: Make window a slot or prompt-buffer? That would simplify `make-prompt-buffer' args.
          (prompt-buffer (apply #'make-instance 'prompt-buffer initargs)))
-    (update-display prompt-buffer)
-    (push prompt-buffer (active-prompt-buffers window))
-    (show)                              ; TODO: Show should probably take an argument, no?
+    ;; (update-display prompt-buffer) ; TODO: Remove when sure.
+    (push prompt-buffer (active-minibuffers window))
+    (show-prompt-buffer)                              ; TODO: Show should probably take an argument, no?
     ;; TODO: Add method that returns if there is only 1 source with no filter.
     ;; (apply #'show
     ;;        (unless (prompter:filter prompt-buffer)
@@ -127,13 +127,18 @@ A prompt query is typically done as follows:
     ;;          (list :height (minibuffer-open-single-line-height (current-window)))))
     ))
 
-(defun show (&key (prompt-buffer (first (active-prompt-buffers (current-window)))) height)
+(defun show-prompt-buffer (&key (prompt-buffer (first (active-minibuffers (current-window)))) height)
   "Show the last active prompt-buffer, if any."
+  (erase-document prompt-buffer) ; TODO: When to erase?
+  (update-display prompt-buffer)
   (when prompt-buffer
     (ffi-window-set-prompt-buffer-height
      (current-window)
      (or height
          (minibuffer-open-height (current-window)))))) ; TODO: Rename `minibuffer'.
+
+(defmethod state-changed ((prompt-buffer prompt-buffer)) ; TODO: Remove when done.
+  nil)
 
 (export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer) ; TODO: Rename `hide'
@@ -142,67 +147,55 @@ A prompt query is typically done as follows:
     ((guard f f) (funcall-safely f)))
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
-  (alex:deletef (active-prompt-buffers (current-window)) prompt-buffer)
-  (if (active-prompt-buffers (current-window))
+  (alex:deletef (active-minibuffers (current-window)) prompt-buffer)
+  (if (active-minibuffers (current-window))
       (progn
-        (show)
+        (show-prompt-buffer)
         ;; TODO: Remove?
         ;; We need to refresh so that the nested prompt-buffers don't have to do it.
-        ;; (state-changed (first (active-prompt-buffers (current-window))))
-        ;; (update-display (first (active-prompt-buffers (current-window))))
+        ;; (state-changed (first (active-minibuffers (current-window))))
+        ;; (update-display (first (active-minibuffers (current-window))))
         )
       (progn
         (ffi-window-set-prompt-buffer-height (current-window) 0))))
+
+(export-always 'evaluate-script)
+(defmethod evaluate-script ((prompt-buffer prompt-buffer) script) ; TODO: Remove?
+  "Evaluate SCRIPT into PROMPT-BUFFER's webview.
+The new webview HTML content is set as the MINIBUFFER's `content'."
+  (when prompt-buffer
+    (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|)))))
+      (ffi-minibuffer-evaluate-javascript-async
+       (current-window)
+       new-content))))
 
 (defmethod erase-document ((prompt-buffer prompt-buffer)) ; TODO: Remove, empty automatically when `content' is set.
   (evaluate-script prompt-buffer (ps:ps
                                    (ps:chain document (open))
                                    (ps:chain document (close)))))
 
-(defmethod setup-default ((prompt-buffer prompt-buffer)) ; TODO: Rename.
-  (erase-document prompt-buffer)
-  (setf (content prompt-buffer)         ; TODO: Make content setter that sets the HTML.
-        (markup:markup
-         (:head (:style (style prompt-buffer)))
-         (:body
-          (:div :id "container"
-                (:div :id "prompt-input"
-                      (:span :id "prompt" "")
-                      (:span :id "prompt-extra" "")
-                      (:input :type "text" :id "input"))
-                (:div :id "suggestions" ""))))))
-
 (defmethod generate-prompt-html ((prompt-buffer prompt-buffer))
-  ;; TODO: Print suggestion count in "prompt-extra".
-  (with-slots (suggestions marked-suggestions) prompt-buffer
-    (format nil "~a~a:"
-            (input-prompt prompt-buffer)
-            (cond
-              ((not suggestions)
-               "")
-              ((hide-suggestion-count-p prompt-buffer)
-               "")
-              (marked-suggestions
-               (format nil " [~a/~a]"
-                       (length marked-suggestions)
-                       (length suggestions)))
-              ((and (not marked-suggestions)
-                    (multi-selection-p prompt-buffer))
-               (format nil " [0/~a]"
-                       (length suggestions)))
-              ((not marked-suggestions)
-               (format nil " [~a]"
-                       (length suggestions)))
-              (t
-               "[?]")))))
+  (markup:markup
+   (:head (:style (style prompt-buffer)))
+   (:body
+    (:div :id "container"
+          (:div :id "prompt-input"
+                (:span :id "prompt" "")
+                ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
+                (:span :id "prompt-extra" "XXX")
+                (:input :type "text" :id "input"))
+          (:div :id "suggestions" "")))))
 
-(defmethod generate-suggestion-html ((prompt-buffer prompt-buffer)) ; TODO: Generate suggestions as table.
-  ;; TODO: Finish me!
+(defmethod generate-suggestion-html ((prompt-buffer prompt-buffer))
+  ;; TODO: Generate suggestions as table.
   )
 
 (defmethod update-display ((prompt-buffer prompt-buffer))
   ;; TODO: Finish me!
-  )
+  (ffi-minibuffer-evaluate-javascript-async ; TODO: Replace with `evaluate-script'?  Rename the latter?
+   (current-window)
+   (ps:ps (ps:chain document
+                    (write (ps:lisp (generate-prompt-html prompt-buffer)))))))
 
 (export-always 'get-marked-suggestions)
 (defmethod get-marked-suggestions ((prompt-buffer prompt-buffer))
