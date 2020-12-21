@@ -122,4 +122,14 @@
         (prove:is (mapcar #'prompter:value filtered-suggestions)
                   '("yes" "no"))))))
 
+(prove:subtest "Return result"
+  (let ((prompter (prompter:make
+                   :sources (list (prompter:make-source
+                                   :initial-suggestions '("foo" "bar"))))))
+    (setf (prompter:input prompter) "bar")
+    (when (prompter:ready-p prompter)
+      (prompter:return-selection prompter)
+      (prove:is (prompter:value (calispel:? (prompter:result-channel prompter)))
+                "bar"))))
+
 (prove:finalize)
