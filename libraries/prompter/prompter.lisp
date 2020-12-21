@@ -114,7 +114,7 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
 
 (export-always 'return-selection)
 (defun return-selection (prompter)
-  "Send selection to PROMPTER's `result-channel' and quit.
+  "Send selection to PROMPTER's `result-channel'.
 The selection is the collection of marked suggestions across all sources.
 If there is no marked suggestion, send the currently selected suggestion
 instead."
@@ -125,8 +125,7 @@ instead."
                     ;; TODO: What if there is no result?
                     (and (not (must-match-p prompter))
                          (slot-value prompter 'input)))))
-    (calispel:! (result-channel prompter) result)
-    (destructor prompter)))
+    (calispel:! (result-channel prompter) result)))
 
 (export-always 'ready-p)
 (defun ready-p (prompter &optional timeout)
