@@ -26,5 +26,4 @@
 
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer)))
   "Close the prompt-buffer without further action."
-  (prompter:destructor (nyxt:prompter prompt-buffer))
   (hide-prompt-buffer prompt-buffer))
