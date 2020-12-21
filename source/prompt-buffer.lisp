@@ -101,12 +101,12 @@ A prompt query is typically done as follows:
 (define-user-class prompt-buffer)
 
 (defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key) ; TODO: Merge in `make-prompt-buffer'?
-  (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
+  (hooks:run-hook (minibuffer-make-hook *browser*) prompt-buffer) ; TODO: Rename `minibuffer'.
   ;; We don't want to show the input in the suggestion list when invisible.
-  (setf (must-match-p prompt-buffer)
-        (if (invisible-input-p prompt-buffer)
-            t ; This way the minibuffer won't display the input as a suggestion.
-            (must-match-p prompt-buffer)))
+  (when (invisible-input-p prompt-buffer)
+    (dolist (source (prompter:sources (prompter prompt-buffer)))
+      ;; This way the minibuffer won't display the input as a suggestion.
+      (setf (prompter:must-match-p source) t)))
   (initialize-modes prompt-buffer))
 
 (export-always 'make-prompt-buffer)
@@ -116,8 +116,7 @@ A prompt query is typically done as follows:
                                             ,@(public-initargs 'prompt-buffer)))
   "TODO: Complete me!"
   (let* ((initargs (alex:remove-from-plist args :window)) ; TODO: Make window a slot or prompt-buffer? That would simplify `make-prompt-buffer' args.
-         (prompt-buffer (apply #'make-instance 'prompt-buffer
-                               initargs)))
+         (prompt-buffer (apply #'make-instance 'prompt-buffer initargs)))
     (update-display prompt-buffer)
     (push prompt-buffer (active-prompt-buffers window))
     (show)                              ; TODO: Show should probably take an argument, no?
@@ -134,8 +133,9 @@ A prompt query is typically done as follows:
     (ffi-window-set-prompt-buffer-height
      (current-window)
      (or height
-         (prompt-buffer-open-height (current-window))))))
+         (minibuffer-open-height (current-window)))))) ; TODO: Rename `minibuffer'.
 
+(export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer) ; TODO: Rename `hide'
   "Hide PROMPT-BUFFER and display next active one, if any."
   (match (cleanup-function prompt-buffer)
@@ -155,9 +155,9 @@ A prompt query is typically done as follows:
         (ffi-window-set-prompt-buffer-height (current-window) 0))))
 
 (defmethod erase-document ((prompt-buffer prompt-buffer)) ; TODO: Remove, empty automatically when `content' is set.
-  (evaluate-script minibuffer (ps:ps
-                                (ps:chain document (open))
-                                (ps:chain document (close)))))
+  (evaluate-script prompt-buffer (ps:ps
+                                   (ps:chain document (open))
+                                   (ps:chain document (close)))))
 
 (defmethod setup-default ((prompt-buffer prompt-buffer)) ; TODO: Rename.
   (erase-document prompt-buffer)
@@ -207,33 +207,31 @@ A prompt query is typically done as follows:
 (export-always 'get-marked-suggestions)
 (defmethod get-marked-suggestions ((prompt-buffer prompt-buffer))
   "Return the list of strings for the marked suggestion in the minibuffer."
-  (mapcar #'object-string (marked-suggestions () minibuffer)))
+  (mapcar #'object-string (alex:mappend #'prompter:marked-suggestions
+                                        (prompter:sources prompt-buffer))))
 
 (export-always 'prompt)
-(define-function prompt (append '(&rest args)
-                                `(&key prompt-buffer
-                                       ,@(public-initargs 'prompt-buffer)))
+(defun prompt (&key prompter prompt-buffer)
   "Open the prompt buffer, ready for user input.
 ARGS are passed to the prompt-buffer constructor.
 Example use:
 
 \(prompt
-  :filter #'my-suggestion-filter)
+  :prompter (sources (list (make-instance 'prompter:prompter-source :filter #'my-suggestion-filter)))
+  :prompt-buffer )
 
 See the documentation of `prompt-buffer' to know more about the options."
-  ;; TODO: Filter out args that don't fit prompter.
-  (let ((prompt (apply #'prompter:make args)))
+  (let ((prompt (apply #'prompter:make prompter)))
     (ffi-within-renderer-thread
      *browser*
      (lambda ()
-       ;; TODO: Pass right `args' to prompt-buffer.
-       (apply 'make-prompt-buffer (append (list :prompt prompt)
-                                            args))))
+       (apply 'make-prompt-buffer (append (list :prompter prompt)
+                                          prompt-buffer))))
     ;; Wait until it's destroyed and get the selections from `return-selection'.
     (calispel:fair-alt
-      ((calispel:? (results prompt-buffer) results)
+      ((calispel:? (prompter:result-channel prompt) results)
        results)
-      ((calispel:? (interrupt-channel prompt-buffer))
+      ((calispel:? (prompter:interrupt-channel prompt))
        (error 'nyxt-prompt-buffer-canceled)))))
 
 (export-always 'prompter-if-confirm)    ; TODO: Rename to `if-confirm' once `minibuffer' is gone.
