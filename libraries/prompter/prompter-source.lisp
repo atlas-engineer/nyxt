@@ -326,7 +326,9 @@ If a previous suggestion computation was not finished, it is forcefully terminat
   `update-notifier' is notified, if `notification-delay' has been exceeded.
 - Last the `filter-postprocessor' is run the SOURCE and the INPUT.
 - Finally, `ready-notifier' is fired up."
-  (when (update-thread source)
+  (when (and (update-thread source)
+             ;; TODO: This is prone to a race condition.
+             (bt:thread-alive-p (update-thread source)))
     (bt:destroy-thread (update-thread source)))
   (unless (update-notifier source)
     (setf (update-notifier source)
