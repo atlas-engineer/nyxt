@@ -855,18 +855,21 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
     (when history
       (containers:insert-item history (url (current-buffer))))
     (let ((url (prompt
-                :input-prompt (format nil "Open URL in ~A buffer"
-                                      (if new-buffer-p
-                                          "new"
-                                          "current"))
-                :input-buffer (if prefill-current-url-p
-                                  (object-string (url (current-buffer))) "")
+                :prompter (list
+                           :prompt (format nil "Open URL in ~A buffer"
+                                           (if new-buffer-p
+                                               "new"
+                                               "current"))
+                           :input (if prefill-current-url-p
+                                      (object-string (url (current-buffer))) "")
+                           :sources (list (make-instance 'prompter:prompter-source
+                                                         :initial-suggestions (history-initial-suggestions
+                                                                               :prefix-urls (list (object-string
+                                                                                                   (url (current-buffer)))))
+                                                         :history history
+                                                         :must-match-p nil)))
                 ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
-                :suggestion-function (history-suggestion-filter
-                                      :prefix-urls (list (object-string
-                                                          (url (current-buffer)))))
-                :history history
-                :must-match-p nil)))
+                )))
 
       (when (typep url 'history-entry)
         ;; In case prompt-minibuffer returned a string upon

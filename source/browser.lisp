@@ -598,6 +598,7 @@ sometimes yields the wrong reasult."
 (define-ffi-generic ffi-window-active (browser))
 (define-ffi-generic ffi-window-set-active-buffer (window buffer))
 (define-ffi-generic ffi-window-set-minibuffer-height (window height))
+(define-ffi-generic ffi-window-set-prompt-buffer-height (window height))
 (define-ffi-generic ffi-window-set-status-buffer-height (window height))
 (define-ffi-generic ffi-window-set-message-buffer-height (window height))
 (define-ffi-generic ffi-window-get-status-buffer-height (window))
