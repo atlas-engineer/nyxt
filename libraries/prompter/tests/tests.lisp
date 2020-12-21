@@ -11,8 +11,8 @@
 
 (prove:subtest "Prompter init"
   (let ((prompter (prompter:make
-                     :sources (list (prompter:make-source
-                                     :initial-suggestions '("foo" "bar"))))))
+                   :sources (list (prompter:make-source
+                                   :initial-suggestions '("foo" "bar"))))))
     (prove:ok (find "foo" (prompter:suggestions
                            (first (prompter:sources prompter)))
                     :test #'string=
@@ -21,8 +21,8 @@
 
 (prove:subtest "Prompter matching"
   (let ((prompter (prompter:make
-                     :sources (list (prompter:make-source
-                                     :initial-suggestions '("foo" "bar"))))))
+                   :sources (list (prompter:make-source
+                                   :initial-suggestions '("foo" "bar"))))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:ready-p prompter)
       (let ((filtered-suggestions (prompter:suggestions
@@ -43,8 +43,8 @@
   (let* ((url1 (make-instance 'url :uri "http://example.org" :title "Example"))
          (url2 (make-instance 'url :uri "http://nyxt.atlas.engineer" :title "Nyxt homepage"))
          (prompter (prompter:make
-                      :sources (list (prompter:make-source
-                                      :initial-suggestions (list url1 url2))))))
+                    :sources (list (prompter:make-source
+                                    :initial-suggestions (list url1 url2))))))
     (setf (prompter:input prompter) "nyxt")
     (when (prompter:ready-p prompter)
       (let ((filtered-suggestions (prompter:suggestions
@@ -61,9 +61,9 @@
 
 (prove:subtest "Asynchronous suggestion computation"
   (let ((prompter (prompter:make
-                     :sources (list (prompter:make-source
-                                     :initial-suggestions '("foo" "bar")
-                                     :filter #'slow-identity-match)))))
+                   :sources (list (prompter:make-source
+                                   :initial-suggestions '("foo" "bar")
+                                   :filter #'slow-identity-match)))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:ready-p prompter)
       (let ((filtered-suggestions (prompter:suggestions
@@ -77,7 +77,7 @@
                   :initial-suggestions suggestion-values
                   :filter #'slow-identity-match))
          (prompter (prompter:make
-                      :sources (list source))))
+                    :sources (list source))))
     (setf (prompter:input prompter) "foo")
     (sera:nlet query-suggestions ((computed-count 1))
       (calispel:fair-alt
@@ -95,7 +95,7 @@
                   :initial-suggestions suggestion-values
                   :filter #'slow-identity-match))
          (prompter (prompter:make
-                      :sources (list source))))
+                    :sources (list source))))
     (let ((before-input (get-internal-real-time)))
       (setf (prompter:input prompter) "foo")
       (setf (prompter:input prompter) "bar")
@@ -107,11 +107,10 @@
                 "Consecutive inputs happened fast enough"))))
 
 (prove:subtest "Yes-No prompt"
-  (let* ((suggestion-values '("foobar" "foobaz"))
-         (source (make-instance 'prompter:yes-no-source
+  (let* ((source (make-instance 'prompter:yes-no-source
                                 :initial-suggestions '("no" "yes")))
          (prompter (prompter:make
-                      :sources (list source))))
+                    :sources (list source))))
     (prove:is
      (mapcar #'prompter:value (prompter:suggestions
                                (first (prompter:sources prompter))))
