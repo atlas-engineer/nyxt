@@ -79,7 +79,7 @@ All ARGS are declared as `ignorable'."
                        ;; nyxt/minibuffer-mode does not exist at
                        ;; compile-time since it's loaded afterwards.
                        (find-symbol (string 'cancel-input)
-                                    (find-package 'nyxt/minibuffer-mode))))
+                                    (find-package 'nyxt/prompt-buffer-mode))))
                    :type keymap:keymap
                    :documentation "Keymap that takes precedence over all modes' keymaps."))
     (:export-class-name-p t)
@@ -143,14 +143,16 @@ A prompt query is typically done as follows:
 (export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer) ; TODO: Rename `hide'
   "Hide PROMPT-BUFFER and display next active one, if any."
-  (match (cleanup-function prompt-buffer)
-    ((guard f f) (funcall-safely f)))
+  (prompter:destructor (nyxt:prompter prompt-buffer))
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) prompt-buffer)
   (if (active-minibuffers (current-window))
       (progn
-        (show-prompt-buffer)
+        ;; TODO: Remove when done with `minibuffer'.
+        (if (prompt-buffer-p (first (active-minibuffers (current-window))))
+            (show-prompt-buffer)
+            (show))
         ;; TODO: Remove?
         ;; We need to refresh so that the nested prompt-buffers don't have to do it.
         ;; (state-changed (first (active-minibuffers (current-window))))
@@ -180,7 +182,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
    (:body
     (:div :id "container"
           (:div :id "prompt-input"
-                (:span :id "prompt" "")
+                (:span :id "prompt" (prompter:prompt (prompter prompt-buffer)))
                 ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
                 (:span :id "prompt-extra" "XXX")
                 (:input :type "text" :id "input"))
@@ -190,7 +192,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
   ;; TODO: Generate suggestions as table.
   )
 
-(defmethod update-display ((prompt-buffer prompt-buffer))
+(defmethod update-display ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
   ;; TODO: Finish me!
   (ffi-minibuffer-evaluate-javascript-async ; TODO: Replace with `evaluate-script'?  Rename the latter?
    (current-window)
