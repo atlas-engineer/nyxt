@@ -158,6 +158,22 @@ it would not be very useful."
       (lambda (minibuffer)
         (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
 
+(defun history-initial-suggestions (&key prefix-urls) ; TODO: Rename?  Make this a preprocessor so that it runs in the background?
+  "TODO: Complete me!"
+  (let* ((path (history-path (current-buffer)))
+         (history (when (get-data path)
+                    (sort (alex:hash-table-values
+                           (get-data path))
+                          (lambda (x y)
+                            (> (score-history-entry x)
+                               (score-history-entry y))))))
+        (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
+    (when prefix-urls
+      (setf history (append (mapcar (lambda (u) (quri:url-decode u :lenient t))
+                                    prefix-urls)
+                            history)))
+    history))
+
 (defun history-disowned-suggestion-filter ()
   "All disowned history entries (without nodes)."
   (with-data-unsafe (hist (history-path (current-buffer)))
