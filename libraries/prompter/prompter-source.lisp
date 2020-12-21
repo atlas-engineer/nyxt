@@ -50,7 +50,7 @@ The other slots are optional."))
 ;; We must eval the class at read-time because `make-source' is generated using
 ;; the initargs of the class.
 (sera:eval-always
-  (define-class prompter-source ()
+  (define-class prompter-source ()      ; TODO: Rename `source'?
     ((name ""
            :documentation
            "Name which can be used to differentiate sources from one
@@ -110,7 +110,8 @@ display and match against, see `active-properties'.")
      (filter #'fuzzy-match
              :type function
              :documentation
-             "Takes `input' and filters the suggestions.")
+             "Takes `input' and a `suggestion' and return a new suggestion, or
+nil if the suggestion is discarded.")
 
      (filter-preprocessor #'delete-inexact-matches
                           :type (or null function)
@@ -205,7 +206,7 @@ Also see `follow-delay'.")
 non-nil.")
 
      (must-match-p :always
-                   :type must-match-choices
+                   :type (or must-match-choices null)
                    :documentation
                    "Control what to do when input does not match anything.
 - `:always': Reject input.
