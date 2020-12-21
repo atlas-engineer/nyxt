@@ -563,7 +563,7 @@ sometimes yields the wrong reasult."
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
   "Return the currently active prompt-buffer."
-  (first (active-prompt-buffers (current-window))))
+  (first (active-minibuffers (current-window))))
 
 (defmethod write-output-to-log ((browser browser))
   "Set the *standard-output* and *error-output* to write to a log file."

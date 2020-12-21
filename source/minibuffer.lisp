@@ -197,7 +197,6 @@ beginning."
                 (:div :id "input" (:span :id "prompt" "") (:span :id "input-buffer" ""))
                 (:div :id "suggestions" ""))))))
 
-(export-always 'evaluate-script)
 (defmethod evaluate-script ((minibuffer minibuffer) script)
   "Evaluate SCRIPT into MINIBUFFER's webview.
 The new webview HTML content is set as the MINIBUFFER's `content'."
@@ -224,6 +223,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
   ;; Note that MINIBUFFER is not necessarily first in the list, e.g. a new
   ;; minibuffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) minibuffer)
+  (log:warn (first (active-minibuffers (current-window))))
   (if (active-minibuffers (current-window))
       (progn
         (show)
