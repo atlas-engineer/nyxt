@@ -8,6 +8,7 @@
   ((keymap-scheme (define-scheme "base"
                     scheme:cua
                     (list
+                     "C-c C-l" 'set-url2
                      "C-q" 'quit
                      "C-[" 'switch-buffer-previous
                      "C-]" 'switch-buffer-next
