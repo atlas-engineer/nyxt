@@ -124,7 +124,9 @@ Return nil to forward to renderer or non-nil otherwise."
                 (setf key-stack nil))
               t)
 
-             ((active-prompt-buffers window)
+             ((and (active-minibuffers window)
+                   ;; TODO: Remove this confition when `minibuffer' is gone.
+                   (prompt-buffer-p (first (active-minibuffers window))))
               (setf key-stack nil)
               ;; Forward to prompt buffer.
               nil)
