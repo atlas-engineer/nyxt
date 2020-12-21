@@ -34,9 +34,9 @@
                              :padding 0
                              :padding-left "4px"
                              :margin 0))))
-   (minibuffer-open-height 256
+   (minibuffer-open-height 256          ; TODO: Rename to `prompt-buffer-open-height'.
                            :documentation "The height of the minibuffer when open.")
-   (minibuffer-open-single-line-height 35
+   (minibuffer-open-single-line-height 35 ; TODO: Remove?  Rename?
                                        :documentation "The height of
  the minibuffer when open for a single line of input.")
    (input-dispatcher #'dispatch-input-event

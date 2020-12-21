@@ -14,3 +14,6 @@
 
 (define-condition nyxt-minibuffer-canceled (error)
   ())
+
+(define-condition nyxt-prompt-buffer-canceled (error)
+  ())
