@@ -577,17 +577,17 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 Rebinds the history to the oldest child otherwise."
   (with-data-access (history (history-path buffer))
     (let* ((root (gethash (id buffer) (buffer-local-histories-table history)))
-           (buffer-history (htree:all-nodes root))
+           (buffer-history (htree:node-children root))
            (buffer-native-history (remove-if (alex:curry #'string/= (id buffer)) buffer-history
                                              :key (alex:compose #'id #'data)))
            (children (set-difference buffer-history buffer-native-history
                                      :test #'equals :key #'data))
-           (most-recent-child (first (sort children #'local-time:timestamp<
+           (most-recent-child (first (sort children #'local-time:timestamp>
                                            :key (alex:compose #'last-access #'data)))))
       (if children
           (dolist (native-node buffer-native-history)
             (setf (id (data native-node)) (id most-recent-child)))
-          (htree:delete-node (htree:data root) history :test #'equals)))))
+          (htree:delete-data (htree:data root) history :test #'equals)))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)

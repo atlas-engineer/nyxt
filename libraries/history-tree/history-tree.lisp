@@ -173,6 +173,7 @@ Return the last child."
       (add-children (rest children-data) (back history) :test test)
       (current history)))
 
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'map-tree))
 (defun map-tree (function tree &key flatten include-root (collect-function #'cons))
@@ -216,8 +217,54 @@ Always return nil, as it is an explicitly imperative macro."
      nil))
 
 
-(defmethod all-children ((node node))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'node-children))
+(defun node-children (node)
+  "Return a list of all the children of the NODE, recursively."
   (map-tree #'identity node :flatten t))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'node-parents))
+(defun node-parents (node)
+  "Return a list of parents of NODE, recursively.
+First parent comes first in the resulting list."
+  (when node
+    (cons node
+          (node-parents (parent node)))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'node-forward-children))
+(defun node-forward-children (node)
+  "Return a list of the first children of NODE, recursively.
+First child comes first in the resulting list."
+  (when node
+    (cons node
+          (node-forward-children (first (children node))))))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'parent-nodes))
+(defmethod parent-nodes ((history history-tree))
+  "Return a list of all parents of the current node.
+First parent comes first in the resulting list."
+  (when (current history)
+    (node-parents (parent (current history)))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'forward-children-nodes))
+(defmethod forward-children-nodes ((history history-tree))
+  "Return a list of the first children of the current node, recursively.
+First child comes first in the resulting list."
+  (when (current history)
+    (node-forward-children (first (children (current history))))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'children-nodes))
+(defmethod children-nodes ((history history-tree))
+  "Return a list of all the children of the current node.
+The nodes come in depth-first order."
+  (when (current history)
+    (node-children (current history))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'all-nodes))
@@ -225,40 +272,7 @@ Always return nil, as it is an explicitly imperative macro."
   "Return a list of all nodes, in depth-first order."
   (let ((root (root history)))
     (when root
-      (cons root (all-children root)))))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'parent-nodes))
-(defmethod parent-nodes ((history history-tree))
-  "Return a list of all parents of the current node.
-First parent comes first in the resulting list."
-  (labels ((traverse (node)
-             (when node
-               (cons node
-                     (traverse (parent node))))))
-    (when (current history)
-      (traverse (parent (current history))))))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'forward-children-nodes))
-(defmethod forward-children-nodes ((history history-tree))
-  "Return a list of the first children, recursively.
-First child comes first in the resulting list."
-  (labels ((traverse (node)
-             (when node
-               (cons node
-                     (traverse (first (children node)))))))
-    (and (current history)
-         (traverse (first (children (current history)))))))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'children-nodes))
-(defmethod children-nodes ((history history-tree))
-  "Return a list of all the children of the current node.
-The nodes come in depth-first order."
-  (and (current history)
-       (all-children (current history))))
-
+      (cons root (node-children root)))))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -301,8 +315,8 @@ Search is done with the help of TEST argument."
     (or match (when ensure-p (add-child data history :test test)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'delete-node))
-(defmethod delete-node (data (history history-tree) &key (test #'equal) rebind-children-p)
+  (export 'delete-data))
+(defmethod delete-data (data (history history-tree) &key (test #'equal) rebind-children-p)
   "Delete node matching DATA from HISTORY and return the node.
 If the node has children itself, and REBIND-CHILDREN-P is not nil, these
 will become children of the node's parent. Search is done with the
