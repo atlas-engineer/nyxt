@@ -259,6 +259,10 @@ It can be a function of one argument, the prompter, which returns a string."))
                 (initial-suggestions source)))
   ;; TODO: Setting `suggestions' is not needed?
   (setf (slot-value source 'suggestions) (initial-suggestions source))
+  (unless (filter source)
+    ;; If we have no filter, then we have no suggestions beside
+    ;; immediate input, so we must allow them as valid suggestion.
+    (setf (must-match-p source) nil))
   ;; TODO: Run this in parallel. Must be done before first input can be processed.
   (maybe-funcall (constructor source) source)
   source)
