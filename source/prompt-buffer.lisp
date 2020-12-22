@@ -166,18 +166,17 @@ A prompt query is typically done as follows:
   "Evaluate SCRIPT into PROMPT-BUFFER's webview.
 The new webview HTML content is set as the MINIBUFFER's `content'."
   (when prompt-buffer
-    (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|)))))
+    (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|))))) ; TODO: Why do we postfix with this (ps:ps ... |outerHTML|)?
       (ffi-minibuffer-evaluate-javascript-async
        (current-window)
        new-content))))
 
-(defmethod erase-document ((prompt-buffer prompt-buffer)) ; TODO: Remove, empty automatically when `content' is set.
+(defmethod erase-document ((prompt-buffer prompt-buffer)) ; TODO: Remove, empty automatically when `content' is set?
   (evaluate-script prompt-buffer (ps:ps
                                    (ps:chain document (open))
                                    (ps:chain document (close)))))
 
 (defmethod generate-prompt-html ((prompt-buffer prompt-buffer))
-
   (markup:markup
    (:head ;; (:style (style prompt-buffer))
     )
@@ -196,9 +195,9 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                 ;;        collect (markup:markup (:tr (:td (object-display (prompter:value suggestion)))))))
                 )))))
 
-;; TODO: Add HTML to set prompt extra.
 
 (defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
+  ;; TODO: Add HTML to set prompt extra.
   (let ((source (first (prompter:sources (prompter prompt-buffer)))))
     (evaluate-script
      prompt-buffer
