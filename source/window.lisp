@@ -70,7 +70,8 @@ Example formatter that prints the buffer indices over the total number of buffer
              buffer-count
              (length (buffer-list)))
      (format nil \"~a~a — ~a\"
-            (if (eq (slot-value buffer 'load-status) :loading)
+            (if (and (web-buffer-p buffer)
+                     (eq (slot-value buffer 'load-status) :loading))
                 \"(Loading) \"
                 \"\")
             (object-display (url buffer))
