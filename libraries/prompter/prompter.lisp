@@ -175,10 +175,11 @@ If the currently selected suggestion is the last one of the current source, go t
 The selection is the collection of marked suggestions across all sources.
 If there is no marked suggestion, send the currently selected suggestion
 instead."
-  (let ((result (or (alex:mappend #'marked-suggestions (sources prompter))
+  (let ((result (or (mapcar #'value (alex:mappend #'marked-suggestions (sources prompter)))
                     (let ((selected-source (first (selection prompter))))
-                      (nth (second (selection prompter))
-                           (suggestions selected-source)))
+                      (mapcar #'value
+                              (nth (second (selection prompter))
+                                   (suggestions selected-source))))
                     ;; TODO: What if there is no result?
                     (and (not (must-match-p prompter))
                          (slot-value prompter 'input)))))
