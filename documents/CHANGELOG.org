@@ -70,6 +70,8 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
   - Improve Text Rank algorithm implementation. This results in better summarization.
 
+- Replaced =chanl= with =calispel= for concurrency.
+
 - Bug fixes:
 
   - Fix wrong highlighting of search occurences.  (Thanks to @acwilton!)
