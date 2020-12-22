@@ -198,6 +198,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                 )))))
 
 
+(export 'update-suggestion-html)
 (defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
   ;; TODO: Update all sources.
   (let ((source (or (first (prompter:selection (prompter prompt-buffer)))
@@ -219,10 +220,13 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                        collect (markup:markup (:th (symbol-name property-name)))))
                 (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
                       for suggestion in (prompter:suggestions source)
+                      for suggestion-index from 0
                       collect (markup:markup
-                               (:tr
-                                (loop for (_ property) on (prompter:properties suggestion) by #'cddr
-                                      collect (markup:markup (:td property))))))))))))
+                               (:tr :id (when (equal (list source suggestion-index)
+                                                     (prompter:selection (prompter prompt-buffer)))
+                                          "cursor")
+                                    (loop for (_ property) on (prompter:properties suggestion) by #'cddr
+                                          collect (markup:markup (:td property))))))))))))
 
     (let ((suggestions (prompter:suggestions source))
           (marked-suggestions (prompter:marked-suggestions source)))
