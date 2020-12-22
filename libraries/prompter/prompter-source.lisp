@@ -342,15 +342,16 @@ If a previous suggestion computation was not finished, it is forcefully terminat
         (bt:make-thread
          (lambda ()
            (let ((last-notification-time (get-internal-real-time))
-                 (suggestions (if (filter-preprocessor source)
-                                  (funcall (filter-preprocessor source)
-                                           (initial-suggestions source) source input)
-                                  (mapcar #'copy-object (initial-suggestions source)))))
+                 (preprocessed-suggestions (mapcar #'copy-object
+                                                   (initial-suggestions source))))
+             (setf preprocessed-suggestions
+                   (maybe-funcall (filter-preprocessor source)
+                                  preprocessed-suggestions source input))
              ;; TODO: Should we really reset the suggestions here?
              (setf (slot-value source 'suggestions) '())
              (unless (or (str:empty? input)
                          (not (functionp (filter source))))
-               (dolist (suggestion suggestions)
+               (dolist (suggestion preprocessed-suggestions)
                  (sera:and-let* ((processed-suggestion
                                   (funcall (filter source) input suggestion)))
                    (setf (slot-value source 'suggestions)
