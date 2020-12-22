@@ -42,7 +42,7 @@ Suitable as a `prompter-source' `filter-preprocessor'."
      (format-properties
       (filtered-properties-suggestion suggestion (active-properties source))
       (str:downcasep input))))
-  (when input
+  (unless (str:empty? input)
     (let ((exactly-matching-substrings (find-exactly-matching-substrings
                                         input
                                         (mapcar #'match-data suggestions))))
