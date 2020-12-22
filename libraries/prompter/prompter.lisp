@@ -89,16 +89,19 @@ Sources suggestions can be retrieved even when the compution is not
 finished.")))
 
 (defmethod initialize-instance :after ((prompter prompter) &key)
+  (setf (selection prompter) (list (first (sources prompter)) 0))
   (maybe-funcall (initializer prompter) prompter)
   prompter)
 
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter)) ; TODO: (str:replace-all " " " " input) in the caller.
   "Update PROMPTER sources and return TEXT."
-  (setf (slot-value prompter 'input) text)
-  (mapc (lambda (source) (update source text)) (sources prompter))
-  ;; TODO: Update `selection' when `update' is done.
-  (setf (selection prompter) (list (first (sources prompter)) 0))
+  (let ((old-input (slot-value prompter 'input)))
+    (unless (string= old-input text)
+      (setf (slot-value prompter 'input) text)
+      (mapc (lambda (source) (update source text)) (sources prompter))
+      ;; TODO: Update `selection' when `update' is done.
+      (setf (selection prompter) (list (first (sources prompter)) 0))))
   text)
 
 (export-always 'destructor)
@@ -111,6 +114,60 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   (maybe-funcall (after-destructor prompter))
   ;; TODO: Interrupt before or after desctructor?
   (calispel:! (interrupt-channel prompter) t))
+
+(defun move-index (index limit direction wrap-over-p)
+  (let ((new-index (if (eq direction :forward)
+                       (1+ index)
+                       (1- index))))
+    (cond
+      ((< new-index 0)
+       (if wrap-over-p
+           (1- limit)
+           0))
+      ((>= new-index limit)
+       (if wrap-over-p
+           0
+           (1- limit)))
+      (t new-index))))
+
+(defun source-select (prompter direction
+                      &key wrap-over-p)
+  "Select source in DIRECTION and return it.
+PROMPTER's `selection' slot is updated."
+  (let* ((current-source (first (selection prompter)))
+         (current-source-index (position current-source (sources prompter)))
+         (next-source-index (move-index current-source-index (length (sources prompter))
+                                        direction wrap-over-p))
+         (next-source (nth next-source-index (sources prompter))))
+    (setf (selection prompter)
+          (list next-source (if (eq direction :forward)
+                                0
+                                (1- (length (suggestions next-source))))))
+    next-source))
+
+(defun select (prompter direction &key wrap-over-p)
+  "Select next suggestion.
+Direction is one of `:forward' or `:backward'.
+If the currently selected suggestion is the last one of the current source, go to next source."
+  (Let ((current-source (first (selection prompter)))
+        (index (second (selection prompter))))
+    (let ((new-index (if (eq direction :forward)
+                         (1+ index)
+                         (1- index))))
+      (cond
+        ((or (< new-index 0)
+             (>= new-index (length (suggestions current-source))))
+         (source-select prompter direction :wrap-over-p wrap-over-p))
+        (t (setf (selection prompter)
+                 (list current-source new-index)))))))
+
+(export-always 'select-next)
+(defun select-next (prompter)
+  (select prompter :forward))
+
+(export-always 'select-previous)
+(defun select-previous (prompter)
+  (select prompter :backward))
 
 (export-always 'return-selection)
 (defun return-selection (prompter)
