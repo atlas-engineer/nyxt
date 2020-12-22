@@ -436,7 +436,7 @@ See `gtk-browser's `modifier-translator' slot."
   "We don't handle key release events.
 Warning: This behaviour may change in the future."
   (declare (ignore event))
-  (let ((minibuffer (first (active-minibuffers sender) )))
+  (let ((minibuffer (first (active-minibuffers sender))))
     (cond
       ((not minibuffer)
        ;; Forward release event to the web view.

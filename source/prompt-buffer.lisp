@@ -197,8 +197,11 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 
 
 (defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
-  ;; TODO: Add HTML to set prompt extra.
-  (let ((source (first (prompter:sources (prompter prompt-buffer)))))
+  ;; TODO: Update all sources.
+  (let ((source (or (first (prompter:selection (prompter prompt-buffer)))
+                    ;; TODO: `selection' should always be set and there should
+                    ;; be no need for the following fallback.
+                    (first (prompter:sources (prompter prompt-buffer))))))
     (evaluate-script
      prompt-buffer
      (ps:ps
@@ -208,7 +211,32 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                (:table
                 (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
                       for suggestion in (prompter:suggestions source)
-                      collect (markup:markup (:tr (:td (object-display (prompter:value suggestion))))))))))))))
+                      collect (markup:markup (:tr (:td (object-display (prompter:value suggestion))))))))))))
+    (let ((suggestions (prompter:suggestions source))
+          (marked-suggestions (prompter:marked-suggestions source)))
+      (evaluate-script
+       prompt-buffer
+       (ps:ps
+         (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
+               (ps:lisp
+                (cond
+                  ((not suggestions)
+                   "")
+                  ((hide-suggestion-count-p prompt-buffer)
+                   "")
+                  (marked-suggestions
+                   (format nil "[~a/~a]"
+                           (length marked-suggestions)
+                           (length suggestions)))
+                  ((and (not marked-suggestions)
+                        (prompter:multi-selection-p source))
+                   (format nil "[0/~a]"
+                           (length suggestions)))
+                  ((not marked-suggestions)
+                   (format nil "[~a]"
+                           (length suggestions)))
+                  (t
+                   "[?]")))))))))
 
 (defmethod update-display ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
   ;; TODO: Finish me!
@@ -218,11 +246,11 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                     (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)))))))
   (update-suggestion-html prompt-buffer))
 
-(export-always 'get-marked-suggestions)
-(defmethod get-marked-suggestions ((prompt-buffer prompt-buffer))
-  "Return the list of strings for the marked suggestion in the minibuffer."
-  (mapcar #'object-string (alex:mappend #'prompter:marked-suggestions
-                                        (prompter:sources prompt-buffer))))
+;; (export-always 'get-marked-suggestions)
+;; (defmethod get-marked-suggestions ((prompt-buffer prompt-buffer)) ; TODO: Delete?
+;;   "Return the list of strings for the marked suggestion in the minibuffer."
+;;   (mapcar #'object-string (alex:mappend #'prompter:marked-suggestions
+;;                                         (prompter:sources prompt-buffer))))
 
 (export-always 'prompt)
 (defun prompt (&key prompter prompt-buffer)
