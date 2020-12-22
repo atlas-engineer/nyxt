@@ -9,6 +9,10 @@
 
 (prove:plan nil)
 
+(defun source1-suggestions (prompter)
+  (mapcar #'prompter:value (prompter:suggestions
+                            (first (prompter:sources prompter)))))
+
 (prove:subtest "Prompter init"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
@@ -25,16 +29,16 @@
                                    :initial-suggestions '("foo" "bar"))))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:ready-p prompter)
-      (let ((filtered-suggestions (prompter:suggestions
-                                   (first (prompter:sources prompter)))))
-        (prove:is (mapcar #'prompter:value filtered-suggestions)
-                  '("foo"))))
+      (prove:is (source1-suggestions prompter)
+                '("foo")))
     (setf (prompter:input prompter) "bar")
     (when (prompter:ready-p prompter)
-      (let ((filtered-suggestions (prompter:suggestions
-                                   (first (prompter:sources prompter)))))
-        (prove:is (mapcar #'prompter:value filtered-suggestions)
-                  '("bar"))))))
+      (prove:is (source1-suggestions prompter)
+                '("bar")))
+    (setf (prompter:input prompter) "")
+    (when (prompter:ready-p prompter)
+      (prove:is (source1-suggestions prompter)
+                '("foo" "bar")))))
 
 (class*:define-class url ()
   ((uri "")
