@@ -1,5 +1,5 @@
 (asdf:defsystem :nyxt
-  :version "2" ; Pre-release 4
+  :version "2" ; Pre-release 5
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web-browser in Common Lisp"
