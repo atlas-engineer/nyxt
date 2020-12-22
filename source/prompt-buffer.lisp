@@ -54,7 +54,10 @@ All ARGS are declared as `ignorable'."
                                :flex-flow "column"
                                :height "100%")
                  ("#input" :padding "6px 0"
-                           :border-bottom "solid 1px lightgray")
+                           :border-bottom "solid 1px lightgray"
+                           :width "100%" ; TODO: It fills too much, we need to keep it on the same line as the prompt text.
+                           ;; TODO: This autofocus does not work?
+                           :autofocus "true")
                  ("#suggestions" :flex-grow "1"
                                  :overflow-y "auto"
                                  :overflow-x "auto")
@@ -178,8 +181,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 
 (defmethod generate-prompt-html ((prompt-buffer prompt-buffer))
   (markup:markup
-   (:head ;; (:style (style prompt-buffer))
-    )
+   (:head (:style (style prompt-buffer)))
    (:body
     (:div :id "container"
           (:div :id "prompt-input"
@@ -244,6 +246,12 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
    (current-window)
    (ps:ps (ps:chain document
                     (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)))))))
+  ;; TODO: The following is supposed to focus on the HTML input but does not work.
+  (ffi-minibuffer-evaluate-javascript-async
+   (current-window)
+   (ps:ps (ps:chain document
+                    (get-element-by-id "input")
+                    (focus))))
   (update-suggestion-html prompt-buffer))
 
 ;; (export-always 'get-marked-suggestions)
