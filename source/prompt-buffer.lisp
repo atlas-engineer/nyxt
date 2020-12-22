@@ -204,6 +204,8 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                     ;; TODO: `selection' should always be set and there should
                     ;; be no need for the following fallback.
                     (first (prompter:sources (prompter prompt-buffer))))))
+    ;; TODO: Factor out property printing.
+    ;; TODO: Only print `active-properties'.
     (evaluate-script
      prompt-buffer
      (ps:ps
@@ -211,9 +213,17 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
              (ps:lisp
               (markup:markup
                (:table
+                (:tr
+                 (loop with property-sample = (prompter:properties (first (prompter:suggestions source)))
+                       for (property-name _) on property-sample by #'cddr
+                       collect (markup:markup (:th (symbol-name property-name)))))
                 (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
                       for suggestion in (prompter:suggestions source)
-                      collect (markup:markup (:tr (:td (object-display (prompter:value suggestion))))))))))))
+                      collect (markup:markup
+                               (:tr
+                                (loop for (_ property) on (prompter:properties suggestion) by #'cddr
+                                      collect (markup:markup (:td property))))))))))))
+
     (let ((suggestions (prompter:suggestions source))
           (marked-suggestions (prompter:marked-suggestions source)))
       (evaluate-script
