@@ -28,7 +28,13 @@
       (let ((filtered-suggestions (prompter:suggestions
                                    (first (prompter:sources prompter)))))
         (prove:is (mapcar #'prompter:value filtered-suggestions)
-                  '("foo"))))))
+                  '("foo"))))
+    (setf (prompter:input prompter) "bar")
+    (when (prompter:ready-p prompter)
+      (let ((filtered-suggestions (prompter:suggestions
+                                   (first (prompter:sources prompter)))))
+        (prove:is (mapcar #'prompter:value filtered-suggestions)
+                  '("bar"))))))
 
 (class*:define-class url ()
   ((uri "")
