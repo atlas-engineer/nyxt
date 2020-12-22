@@ -36,7 +36,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 - =reduce-to-buffer= includes a summary of each buffer (powered by our
   Text Rank implementation).
 
-- =toggle-fullscreen= replace =fullscreen-current-window= and
+- New =toggle-fullscreen= replaces =fullscreen-current-window= and
   =unfullscreen-current-window=.
 
 - New =conservative-word-move= buffer slot that changes the cursor
@@ -57,7 +57,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
   - Package managers are detected at runtime.
 
-  - Add multi-version support to the Guix backend of =ospama=.
+  - Add multi-version support to the Guix backend.
 
 - =define-class= can automatically define a predicate, just like =defstruct=.
 
@@ -71,6 +71,8 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
   - Improve Text Rank algorithm implementation. This results in better summarization.
 
 - Bug fixes:
+
+  - Fix wrong highlighting of search occurences.  (Thanks to @acwilton!)
 
   - Fix many startup race conditions.
 
