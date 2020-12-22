@@ -156,12 +156,12 @@ If an integer, it specifies the maximum number of lines allow per candidate.")
 at least this number of characters.  When 0, always compute and display
 suggestions.")
 
-     (ready-notifier nil
-                     :type (or null calispel:channel)
+     (ready-notifier (make-channel 1)
+                     :type calispel:channel
                      :documentation "A channel which is written to when `filter-postprocessor'.")
 
-     (update-notifier nil
-                      :type (or null calispel:channel)
+     (update-notifier (make-channel)
+                      :type calispel:channel
                       :documentation "A channel which is written to when `filter'
 commits a change to `suggetsions'.  A notification is only send if at least
 `notification-delay' has passed.  This is useful so that clients don't have to
@@ -330,12 +330,6 @@ If a previous suggestion computation was not finished, it is forcefully terminat
              ;; TODO: This is prone to a race condition.
              (bt:thread-alive-p (update-thread source)))
     (bt:destroy-thread (update-thread source)))
-  (unless (update-notifier source)
-    (setf (update-notifier source)
-          (make-channel)))
-  (unless (ready-notifier source)
-    (setf (ready-notifier source)
-          (make-channel 1)))
   ;; Drain ready-notifier in case it wasn't read.
   (calispel:? (ready-notifier source) 0)
   (setf (update-thread source)
