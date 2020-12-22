@@ -236,9 +236,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                            (length suggestions)))
                   ((not marked-suggestions)
                    (format nil "[~a]"
-                           (length suggestions)))
-                  (t
-                   "[?]")))))))))
+                           (length suggestions)))))))))))
 
 (defmethod update-display ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
   ;; TODO: Finish me!
