@@ -118,20 +118,20 @@ If STEPS is negative, go to next pages instead."
    window
    (ps:ps
      (defun insert-at (tag input-text)
-       (let ((start (ps:chain tag selection-start))
+       (let ((begin (ps:chain tag selection-start))
              (end (ps:chain tag selection-end)))
          (setf (ps:chain tag value)
-               (+ (ps:chain tag value (substring 0 start))
+               (+ (ps:chain tag value (substring 0 begin))
                   input-text
                   (ps:chain tag value
                             (substring end
                                        (ps:chain tag value length)))))
-         (if (= start end)
+         (if (= begin end)
              (progn
-               (setf (ps:chain tag selection-start) (+ start (ps:chain input-text length)))
+               (setf (ps:chain tag selection-start) (+ begin (ps:chain input-text length)))
                (setf (ps:chain tag selection-end) (ps:chain tag selection-start)))
              (progn
-               (setf (ps:chain tag selection-start) start)
-               (setf (ps:chain tag selection-end) (+ start (ps:chain input-text length)))))))
+               (setf (ps:chain tag selection-start) begin)
+               (setf (ps:chain tag selection-end) (+ begin (ps:chain input-text length)))))))
      (insert-at (ps:chain document (get-element-by-id "input"))
                 (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
