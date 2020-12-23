@@ -8,7 +8,7 @@
   (define-class prompter ()
     ((input ""
             :accessor nil
-            :reader :input
+            :reader input
             :documentation
             "User input.")
 
@@ -177,6 +177,11 @@ instead."
                     (and (not (must-match-p prompter))
                          (slot-value prompter 'input)))))
     (calispel:! (result-channel prompter) result)))
+
+(export-always 'return-input)
+(defun return-input (prompter)
+  "Send input to PROMPTER's `result-channel'."
+  (calispel:! (result-channel prompter) (input prompter)))
 
 (export-always 'ready-p)
 (defun ready-p (prompter &optional timeout)
