@@ -218,7 +218,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                  (loop with property-sample = (prompter:properties (first (prompter:suggestions source)))
                        for (property-name _) on property-sample by #'cddr
                        collect (markup:markup (:th (symbol-name property-name)))))
-                (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
+                (loop repeat 20 ;; TODO: Only print as many lines as fit the height.
                       for suggestion in (prompter:suggestions source)
                       for suggestion-index from 0
                       collect (markup:markup
@@ -226,7 +226,17 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                                      (prompter:selection (prompter prompt-buffer)))
                                           "cursor")
                                     (loop for (_ property) on (prompter:properties suggestion) by #'cddr
-                                          collect (markup:markup (:td property))))))))))))
+                                          collect (markup:markup (:td property))))))))))
+       (defun element-in-view-port-p (element) ; TODO: Factor with `add-element-hints'.
+         (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
+           (if (and (>= (ps:chain rect top) 0)
+                    (>= (ps:chain rect left) 0)
+                    (<= (ps:chain rect right) (ps:chain window inner-width))
+                    (<= (ps:chain rect bottom) (ps:chain window inner-height)))
+               t nil)))
+       (unless  (element-in-view-port-p (ps:chain document (get-element-by-id "cursor")))
+         (ps:chain document (get-element-by-id "cursor")
+                   (scroll-into-view t)))))
 
     (let ((suggestions (prompter:suggestions source))
           (marked-suggestions (prompter:marked-suggestions source)))
