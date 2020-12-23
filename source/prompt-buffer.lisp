@@ -136,11 +136,18 @@ A prompt query is typically done as follows:
   (first (prompter:selection (prompter prompt-buffer))))
 
 (export-always 'current-selection)
-(defun current-selection (&optional (prompt-buffer (current-prompt-buffer)))
+(defun current-selection (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Renamed `selected-suggestion'?
   "Return selected prompt-buffer suggestion.
 Return source as second value."
-  (let* ((selection (prompter:selection (prompter prompt-buffer))))
-    (values (second selection) (first selection))))
+  (let* ((selection (prompter:selection (prompter prompt-buffer)))
+         (source (first selection)))
+    (values (nth (second selection) (prompter:suggestions source)) source)))
+
+(export-always 'prompt-buffer-marked-suggestions)
+(defun prompt-buffer-marked-suggestions (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Rename to `marked-suggestions' when minibuffer is deleted.
+  "Return the list of the marked suggestion values in the prompt-buffer."
+  (alex:mappend #'prompter:marked-suggestions
+                (prompter:sources (prompter prompt-buffer))))
 
 (defun show-prompt-buffer (&key (prompt-buffer (first (active-minibuffers (current-window)))) height)
   "Show the last active prompt-buffer, if any."
@@ -293,12 +300,6 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                     (get-element-by-id "input")
                     (focus))))
   (update-suggestion-html prompt-buffer))
-
-;; (export-always 'get-marked-suggestions)
-;; (defmethod get-marked-suggestions ((prompt-buffer prompt-buffer)) ; TODO: Delete?
-;;   "Return the list of strings for the marked suggestion in the minibuffer."
-;;   (mapcar #'object-string (alex:mappend #'prompter:marked-suggestions
-;;                                         (prompter:sources prompt-buffer))))
 
 (export-always 'prompt)
 (defun prompt (&key prompter prompt-buffer)
