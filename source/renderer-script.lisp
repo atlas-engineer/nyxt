@@ -40,18 +40,27 @@ The function can be passed ARGS."
 
 (export-always '%paste)
 (define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
+  (defun insert-at (tag input-text)     ; TODO: Factor with `prompt-buffer-paste'.
+    (let ((start (ps:chain tag selection-start))
+          (end (ps:chain tag selection-end)))
+      (setf (ps:chain tag value)
+            (+ (ps:chain tag value (substring 0 start))
+               input-text
+               (ps:chain tag value
+                         (substring end
+                                    (ps:chain tag value length)))))
+      (if (= start end)
+          (progn
+            (setf (ps:chain tag selection-start) (+ start (ps:chain input-text length)))
+            (setf (ps:chain tag selection-end) (ps:chain tag selection-start)))
+          (progn
+            (setf (ps:chain tag selection-start) start)
+            (setf (ps:chain tag selection-end) (+ start (ps:chain input-text length)))))))
   (let ((active-element (ps:chain document active-element))
         (tag (ps:chain document active-element tag-name)))
     (when (or (string= tag "INPUT")
               (string= tag "TEXTAREA"))
-      (let ((start-position (ps:chain active-element selection-start))
-            (end-position (ps:chain active-element selection-end)))
-        (setf (ps:chain active-element value)
-              (+ (ps:chain active-element value (substring 0 start-position))
-                 (ps:lisp input-text)
-                 (ps:chain active-element value
-                           (substring end-position
-                                      (ps:chain active-element value length)))))))))
+      (insert-at active-element (ps:lisp input-text)))))
 
 (export-always '%copy)
 (define-parenscript %copy ()
