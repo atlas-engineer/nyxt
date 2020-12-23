@@ -18,6 +18,9 @@
        "M-v" 'select-previous-page
        "return" 'return-selection
        "C-return" 'return-input
+       "C-space" 'prompt-buffer-toggle-mark
+       "shift-space" 'prompt-buffer-toggle-mark-backwards
+       "M-space" 'prompt-buffer-toggle-mark
        "C-w" 'copy-selection
        "C-v" 'prompt-buffer-paste))
     ;; TODO: We could have VI bindings for the minibuffer too.
@@ -100,6 +103,34 @@ If STEPS is negative, go to next pages instead."
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer)))
   "Close the prompt-buffer without further action."
   (hide-prompt-buffer prompt-buffer))
+
+(define-command prompt-buffer-toggle-mark (&key
+                                           (prompt-buffer (current-prompt-buffer))
+                                           (direction :forward))
+  "Mark selection.
+Only available if current prompt-buffer source `multi-selection-p' is non-nil.
+DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
+select next."
+  (when (prompter:multi-selection-p (first (prompter:selection (prompter prompt-buffer))))
+    (let* ((selection (prompter:selection (prompter prompt-buffer)))
+           (source (first selection))
+           ;; TODO: Factor this idiom.
+           (suggestion (nth (second selection) (prompter:suggestions source))))
+      (with-accessors ((marked-suggestions prompter:marked-suggestions)) source
+        (match (find (prompter:value suggestion) marked-suggestions)
+          ((guard n n) (setf marked-suggestions (delete (prompter:value suggestion) marked-suggestions)))
+          (_ (push (prompter:value suggestion) marked-suggestions)))))
+    (match direction
+      (:forward (select-next prompt-buffer))
+      (:backward (select-previous prompt-buffer)))))
+
+(define-command prompt-buffer-toggle-mark-backwards (&key
+                                                     (prompt-buffer (current-prompt-buffer)))
+  "Mark selection.
+Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can be
+`:forward' or `:backward' and specifies which suggestion to select next."
+  (prompt-buffer-toggle-mark :prompt-buffer prompt-buffer
+                             :direction :backward))
 
 (define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Copy default property of selection to clipboard."

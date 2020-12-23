@@ -230,6 +230,8 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                (:tr :id (when (equal (list source suggestion-index)
                                                      (prompter:selection (prompter prompt-buffer)))
                                           "cursor")
+                                    :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
+                                             "marked")
                                     (loop for (_ property) on (prompter:properties suggestion) by #'cddr
                                           collect (markup:markup (:td property))))))))))
        (defun element-in-view-port-p (element) ; TODO: Factor with `add-element-hints'.
