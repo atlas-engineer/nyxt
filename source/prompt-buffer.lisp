@@ -131,6 +131,17 @@ A prompt query is typically done as follows:
     ;;          (list :height (minibuffer-open-single-line-height (current-window)))))
     ))
 
+(export-always 'current-source)
+(defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
+  (first (prompter:selection (prompter prompt-buffer))))
+
+(export-always 'current-selection)
+(defun current-selection (&optional (prompt-buffer (current-prompt-buffer)))
+  "Return selected prompt-buffer suggestion.
+Return source as second value."
+  (let* ((selection (prompter:selection (prompter prompt-buffer))))
+    (values (second selection) (first selection))))
+
 (defun show-prompt-buffer (&key (prompt-buffer (first (active-minibuffers (current-window)))) height)
   "Show the last active prompt-buffer, if any."
   (when prompt-buffer

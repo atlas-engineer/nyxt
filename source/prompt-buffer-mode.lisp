@@ -111,11 +111,9 @@ If STEPS is negative, go to next pages instead."
 Only available if current prompt-buffer source `multi-selection-p' is non-nil.
 DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
 select next."
-  (when (prompter:multi-selection-p (first (prompter:selection (prompter prompt-buffer))))
-    (let* ((selection (prompter:selection (prompter prompt-buffer)))
-           (source (first selection))
-           ;; TODO: Factor this idiom.
-           (suggestion (nth (second selection) (prompter:suggestions source))))
+  (when (prompter:multi-selection-p (current-source))
+    (multiple-value-bind (suggestion source)
+        (current-selection)
       (with-accessors ((marked-suggestions prompter:marked-suggestions)) source
         (match (find (prompter:value suggestion) marked-suggestions)
           ((guard n n) (setf marked-suggestions (delete (prompter:value suggestion) marked-suggestions)))
