@@ -170,9 +170,9 @@ If there is no marked suggestion, send the currently selected suggestion
 instead."
   (let ((result (or (mapcar #'value (alex:mappend #'marked-suggestions (sources prompter)))
                     (let ((selected-source (first (selection prompter))))
-                      (mapcar #'value
-                              (nth (second (selection prompter))
-                                   (suggestions selected-source))))
+                      (value
+                       (nth (second (selection prompter))
+                            (suggestions selected-source))))
                     ;; TODO: What if there is no result?
                     (and (not (must-match-p prompter))
                          (slot-value prompter 'input)))))
