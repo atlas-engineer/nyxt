@@ -141,7 +141,7 @@ to next source, or previous source if STEPS is negative."
         (setf new-index
               (if wrap-over-p
                   (mod new-index limit)
-                  (alex:clamp new-index 0 limit)))
+                  (alex:clamp new-index 0 (1- limit))))
         (let* ((new-source (index->source new-index))
                (relative-index (- new-index
                                   (source-length (previous-sources new-source)))))
