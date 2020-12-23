@@ -21,6 +21,9 @@
        "C-space" 'prompt-buffer-toggle-mark
        "shift-space" 'prompt-buffer-toggle-mark-backwards
        "M-space" 'prompt-buffer-toggle-mark
+       "M-a" 'prompt-buffer-mark-all
+       "M-u" 'prompt-buffer-unmark-all
+       "M-m" 'prompt-buffer-toggle-mark-all
        "C-w" 'copy-selection
        "C-v" 'prompt-buffer-paste))
     ;; TODO: We could have VI bindings for the minibuffer too.
@@ -130,9 +133,52 @@ Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can b
   (prompt-buffer-toggle-mark :prompt-buffer prompt-buffer
                              :direction :backward))
 
+(define-command prompt-buffer-mark-all (&optional (prompt-buffer (current-prompt-buffer)))
+  "Mark all visible suggestions in current source.
+Only available if `multi-selection-p' is non-nil."
+  (when (prompter:multi-selection-p (current-source))
+    (alex:unionf (prompter:marked-suggestions (current-source))
+                 (mapcar #'prompter:value (prompter:suggestions (current-source))))
+    (update-suggestion-html prompt-buffer)))
+
+(define-command prompt-buffer-unmark-all (&optional (prompt-buffer (current-prompt-buffer)))
+  "Unmark all visible suggestions in current source.
+Only available if `multi-selection-p' is non-nil."
+  (let ((source (current-source)))
+    (when (prompter:multi-selection-p source)
+      (with-accessors ((marked-suggestions prompter:marked-suggestions)
+                       (suggestions prompter:suggestions))
+          source
+        (setf marked-suggestions
+              (set-difference marked-suggestions
+                              (mapcar #'prompter:value suggestions))))
+      (update-suggestion-html prompt-buffer))))
+
+(define-command prompt-buffer-toggle-mark-all (&optional
+                                               (prompt-buffer (current-prompt-buffer)))
+  "Toggle the mark over all visible suggestions in current source.
+Only available if `multi-selection-p' is non-nil."
+  (let ((source (current-source)))
+    (when (prompter:multi-selection-p source)
+      (with-accessors ((suggestions prompter:suggestions)
+                       (marked-suggestions prompter:marked-suggestions))
+          source
+        (let ((suggestion-values (mapcar #'prompter:value suggestions)))
+          (setf marked-suggestions
+                (cond
+                  ((subsetp marked-suggestions suggestion-values)
+                   (set-difference suggestion-values marked-suggestions))
+                  ((subsetp suggestion-values marked-suggestions)
+                   (set-difference marked-suggestions suggestion-values))
+                  (t ; When the intersection of suggestion-values and marked-suggestions is non-trivial.
+                   (set-difference
+                    (union marked-suggestions suggestion-values)
+                    (intersection marked-suggestions suggestion-values)))))))
+      (update-suggestion-html prompt-buffer))))
+
 (define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Copy default property of selection to clipboard."
-  (let* ((marks (prompt-buffer-marked-suggestions))
+  (let* ((marks (prompt-buffer-marked-suggestions prompt-buffer))
          (props (if marks
                     (mapcar #'prompter:object-properties marks)
                     (list (prompter:properties (current-selection)))))
