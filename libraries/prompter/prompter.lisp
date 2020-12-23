@@ -145,29 +145,40 @@ PROMPTER's `selection' slot is updated."
                                 (1- (length (suggestions next-source))))))
     next-source))
 
-(defun select (prompter direction &key wrap-over-p)
-  "Select next suggestion.
-Direction is one of `:forward' or `:backward'.
+(defun select (prompter steps &key wrap-over-p)
+  "Select suggestion by jump STEPS forward.
+If STEPS is 0, do nothing.
+If STEPS is negative, go backward.
 If the currently selected suggestion is the last one of the current source, go to next source."
-  (Let ((current-source (first (selection prompter)))
-        (index (second (selection prompter))))
-    (let ((new-index (if (eq direction :forward)
-                         (1+ index)
-                         (1- index))))
-      (cond
-        ((or (< new-index 0)
-             (>= new-index (length (suggestions current-source))))
-         (source-select prompter direction :wrap-over-p wrap-over-p))
-        (t (setf (selection prompter)
-                 (list current-source new-index)))))))
+  (unless (= 0 steps)
+    (let* ((current-source (first (selection prompter)))
+           (index (second (selection prompter)))
+           (limit (length (suggestions current-source))))
+      (let ((new-index (+ index steps)))
+        (cond
+          ((or (< new-index 0)
+               (>= new-index limit))
+           (source-select prompter (if (< 0 steps) 1 -1) :wrap-over-p wrap-over-p)
+           (select prompter (if (< 0 steps)
+                                (- steps (- limit index))
+                                (+ steps index))
+             :wrap-over-p wrap-over-p))
+          (t (setf (selection prompter)
+                   (list current-source new-index))))))))
 
 (export-always 'select-next)
-(defun select-next (prompter)
-  (select prompter :forward))
+(defun select-next (prompter &optional (steps 1))
+  "Select element by jumping STEPS forward.
+If STEPS is 0, do nothing.
+If STEPS is negative, go backward."
+  (select prompter steps))
 
 (export-always 'select-previous)
-(defun select-previous (prompter)
-  (select prompter :backward))
+(defun select-previous (prompter &optional (steps 1))
+  "Select element by jumping STEPS forward.
+If STEPS is 0, do nothing.
+If STEPS is negative, go forward."
+  (select prompter (- steps)))
 
 (export-always 'return-selection)
 (defun return-selection (prompter)
