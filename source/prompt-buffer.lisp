@@ -59,8 +59,9 @@ All ARGS are declared as `ignorable'."
                            ;; TODO: This autofocus does not work?
                            :autofocus "true")
                  ("#suggestions" :flex-grow "1"
-                                 :overflow-y "auto"
-                                 :overflow-x "auto")
+                                 :overflow-y "hidden" ; TODO: Auto?
+                                 :overflow-x "hidden"
+                                 :width "100%")
                  ("#cursor" :background-color "gray" ; TODO: Rename "selection".
                             :color "white")
                  ("#prompt" :padding-right "4px"
