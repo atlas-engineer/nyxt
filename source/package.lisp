@@ -28,7 +28,7 @@ Package left for the user to fiddgle with.
 It's recommended to use this package in the Nyxt configuration file, instead of
 `nyxt' itself."))
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt-user)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt-user))
 
