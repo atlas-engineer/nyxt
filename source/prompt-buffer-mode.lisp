@@ -17,7 +17,8 @@
        "C-v" 'select-next-page
        "M-v" 'select-previous-page
        "return" 'return-selection
-       "C-w" 'copy-selection))
+       "C-w" 'copy-selection
+       "C-v" 'prompt-buffer-paste))
     ;; TODO: We could have VI bindings for the minibuffer too.
     ;; But we need to make sure it's optional + to have an indicator
     ;; for the mode.
@@ -104,3 +105,27 @@ If STEPS is negative, go to next pages instead."
     (unless (str:emptyp default-prop)
       (trivial-clipboard:text default-prop)
       (echo "Copied ~s to clipboard." default-prop))))
+
+(define-command prompt-buffer-paste (&optional (window (current-window)))
+  "Paste clipboard text to input."
+  (ffi-minibuffer-evaluate-javascript
+   window
+   (ps:ps
+     (defun insert-at (tag input-text)
+       (let ((start (ps:chain tag selection-start))
+             (end (ps:chain tag selection-end)))
+         (setf (ps:chain tag value)
+               (+ (ps:chain tag value (substring 0 start))
+                  input-text
+                  (ps:chain tag value
+                            (substring end
+                                       (ps:chain tag value length)))))
+         (if (= start end)
+             (progn
+               (setf (ps:chain tag selection-start) (+ start (ps:chain input-text length)))
+               (setf (ps:chain tag selection-end) (ps:chain tag selection-start)))
+             (progn
+               (setf (ps:chain tag selection-start) start)
+               (setf (ps:chain tag selection-end) (+ start (ps:chain input-text length)))))))
+     (insert-at (ps:chain document (get-element-by-id "input"))
+                (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
