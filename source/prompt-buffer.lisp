@@ -61,7 +61,7 @@ All ARGS are declared as `ignorable'."
                  ("#suggestions" :flex-grow "1"
                                  :overflow-y "auto"
                                  :overflow-x "auto")
-                 ("#cursor" :background-color "gray"
+                 ("#cursor" :background-color "gray" ; TODO: Rename "selection".
                             :color "white")
                  ("#prompt" :padding-right "4px"
                             :color "dimgray")
@@ -218,9 +218,13 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                  (loop with property-sample = (prompter:properties (first (prompter:suggestions source)))
                        for (property-name _) on property-sample by #'cddr
                        collect (markup:markup (:th (symbol-name property-name)))))
-                (loop repeat 20 ;; TODO: Only print as many lines as fit the height.
-                      for suggestion in (prompter:suggestions source)
-                      for suggestion-index from 0
+                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
+                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
+                      with max-suggestion-count = 20
+                      repeat max-suggestion-count
+                      with cursor-index = (second (prompter:selection (prompter prompt-buffer)))
+                      for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
+                      for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                       collect (markup:markup
                                (:tr :id (when (equal (list source suggestion-index)
                                                      (prompter:selection (prompter prompt-buffer)))
