@@ -132,14 +132,15 @@ Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can b
 
 (define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Copy default property of selection to clipboard."
-  ;; TODO: Add marked-suggestions support.
-  (log:warn prompt-buffer)
-  (sera:and-let* ((selection (prompter:selection (prompter prompt-buffer)))
-                  (suggestion (nth (second selection) (prompter:suggestions (first selection))))
-                  (default-prop (second (prompter:properties suggestion))))
-    (unless (str:emptyp default-prop)
-      (trivial-clipboard:text default-prop)
-      (echo "Copied ~s to clipboard." default-prop))))
+  (let* ((marks (prompt-buffer-marked-suggestions))
+         (props (if marks
+                    (mapcar #'prompter:object-properties marks)
+                    (list (prompter:properties (current-selection)))))
+         ;; Reverse so that text is ordered from oldest mark to newest.
+         (text (str:join (string #\newline) (mapcar #'second (reverse props)))))
+    (unless (str:emptyp text)
+      (trivial-clipboard:text text)
+      (echo "Copied ~s to clipboard." text))))
 
 (define-command prompt-buffer-paste (&optional (window (current-window)))
   "Paste clipboard text to input."
