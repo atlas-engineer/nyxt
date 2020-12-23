@@ -17,6 +17,7 @@
        "C-v" 'select-next-page
        "M-v" 'select-previous-page
        "return" 'return-selection
+       "C-return" 'return-input
        "C-w" 'copy-selection
        "C-v" 'prompt-buffer-paste))
     ;; TODO: We could have VI bindings for the minibuffer too.
@@ -88,7 +89,12 @@ If STEPS is negative, go to next pages instead."
 
 (define-command return-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Have the PROMT-BUFFER return the selection, then quit."
-  (prompter:return-selection (nyxt:prompter prompt-buffer))
+  (prompter:return-selection (prompter prompt-buffer))
+  (hide-prompt-buffer prompt-buffer))
+
+(define-command return-input (&optional (prompt-buffer (current-prompt-buffer)))
+  "Have the PROMT-BUFFER return the selection, then quit."
+  (prompter:return-input (prompter prompt-buffer))
   (hide-prompt-buffer prompt-buffer))
 
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer)))
