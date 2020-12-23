@@ -16,7 +16,8 @@
        "C-p" 'select-previous
        "C-v" 'select-next-page
        "M-v" 'select-previous-page
-       "return" 'return-selection))
+       "return" 'return-selection
+       "C-w" 'copy-selection))
     ;; TODO: We could have VI bindings for the minibuffer too.
     ;; But we need to make sure it's optional + to have an indicator
     ;; for the mode.
@@ -92,3 +93,14 @@ If STEPS is negative, go to next pages instead."
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer)))
   "Close the prompt-buffer without further action."
   (hide-prompt-buffer prompt-buffer))
+
+(define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
+  "Copy default property of selection to clipboard."
+  ;; TODO: Add marked-suggestions support.
+  (log:warn prompt-buffer)
+  (sera:and-let* ((selection (prompter:selection (prompter prompt-buffer)))
+                  (suggestion (nth (second selection) (prompter:suggestions (first selection))))
+                  (default-prop (second (prompter:properties suggestion))))
+    (unless (str:emptyp default-prop)
+      (trivial-clipboard:text default-prop)
+      (echo "Copied ~s to clipboard." default-prop))))
