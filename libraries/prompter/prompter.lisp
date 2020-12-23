@@ -115,56 +115,38 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   ;; TODO: Interrupt before or after desctructor?
   (calispel:! (interrupt-channel prompter) t))
 
-(defun move-index (index limit direction wrap-over-p)
-  (let ((new-index (if (eq direction :forward)
-                       (1+ index)
-                       (1- index))))
-    (cond
-      ((< new-index 0)
-       (if wrap-over-p
-           (1- limit)
-           0))
-      ((>= new-index limit)
-       (if wrap-over-p
-           0
-           (1- limit)))
-      (t new-index))))
-
-(defun source-select (prompter direction
-                      &key wrap-over-p)
-  "Select source in DIRECTION and return it.
-PROMPTER's `selection' slot is updated."
-  (let* ((current-source (first (selection prompter)))
-         (current-source-index (position current-source (sources prompter)))
-         (next-source-index (move-index current-source-index (length (sources prompter))
-                                        direction wrap-over-p))
-         (next-source (nth next-source-index (sources prompter))))
-    (setf (selection prompter)
-          (list next-source (if (eq direction :forward)
-                                0
-                                (1- (length (suggestions next-source))))))
-    next-source))
-
 (defun select (prompter steps &key wrap-over-p)
-  "Select suggestion by jump STEPS forward.
+  "Select suggestion by jumping STEPS forward.
 If STEPS is 0, do nothing.
 If STEPS is negative, go backward.
-If the currently selected suggestion is the last one of the current source, go to next source."
+If the currently selected suggestion is the last one of the current source, go
+to next source, or previous source if STEPS is negative."
   (unless (= 0 steps)
-    (let* ((current-source (first (selection prompter)))
-           (index (second (selection prompter)))
-           (limit (length (suggestions current-source))))
-      (let ((new-index (+ index steps)))
-        (cond
-          ((or (< new-index 0)
-               (>= new-index limit))
-           (source-select prompter (if (< 0 steps) 1 -1) :wrap-over-p wrap-over-p)
-           (select prompter (if (< 0 steps)
-                                (- steps (- limit index))
-                                (+ steps index))
-             :wrap-over-p wrap-over-p))
-          (t (setf (selection prompter)
-                   (list current-source new-index))))))))
+    (labels ((index->source (index &optional (sources (sources prompter)))
+               (let ((limit (length (suggestions (first sources)))))
+                 (if (< index limit)
+                     (first sources)
+                     (index->source (- index limit) (rest sources)))))
+             (source-length (sources)
+               (reduce #'+ (mapcar (lambda (source) (length (suggestions source)))
+                                   sources)))
+             (previous-sources (source)
+               (let ((current-source-position (position source (sources prompter))))
+                 (subseq (sources prompter) 0 (max 0 (1- current-source-position))))))
+      (let* ((limit (source-length (sources prompter)))
+             (previous-sources (previous-sources (first (selection prompter))))
+             (index (+ (second (selection prompter))
+                       (source-length previous-sources)))
+             (new-index (+ index steps)))
+        (setf new-index
+              (if wrap-over-p
+                  (mod new-index limit)
+                  (alex:clamp new-index 0 limit)))
+        (let* ((new-source (index->source new-index))
+               (relative-index (- new-index
+                                  (source-length (previous-sources new-source)))))
+          (setf (selection prompter)
+                (list new-source relative-index)))))))
 
 (export-always 'select-next)
 (defun select-next (prompter &optional (steps 1))
