@@ -439,12 +439,6 @@ See `buffer-make'."
   (dolist (mode-symbol (reverse (default-modes buffer)))
     (make-mode mode-symbol buffer)))
 
-;; We need to keep `current-history-node' in sync with `htree:current'
-(defmethod (setf htree:current) (value (history htree:history-tree))
-  (when value
-    (setf (slot-value history 'htree:current) value
-                (current-history-node (current-buffer)) value)))
-
 (export-always 'on-signal-notify-uri)
 (defmethod on-signal-notify-uri ((buffer buffer) no-uri)
   "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
