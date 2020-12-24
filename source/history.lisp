@@ -107,6 +107,7 @@ case `explicit-visits'."
           ;; Always update the title since it may have changed since last visit.
           (setf (title entry) title))
         (setf (htree:data node) entry
+              (htree:current history) node
               (current-history-node (current-buffer)) (htree:current history))))
     (setf (get-data (history-path (current-buffer))) history)))
 
