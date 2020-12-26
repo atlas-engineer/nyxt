@@ -162,6 +162,20 @@ If STEPS is 0, do nothing.
 If STEPS is negative, go forward."
   (select prompter (- steps)))
 
+(export-always 'select-first)
+(defun select-first (prompter)
+  "Select first element."
+  (setf (selection prompter)
+        (list (first (sources prompter)) 0)))
+
+(export-always 'select-last)
+(defun select-last (prompter)
+  "Select last element."
+  (let ((last-source (first (last (sources prompter)))))
+    (setf (selection prompter)
+          (list last-source
+                (1- (length (suggestions last-source)))))))
+
 (export-always 'return-selection)
 (defun return-selection (prompter)
   "Send selection to PROMPTER's `result-channel'.
