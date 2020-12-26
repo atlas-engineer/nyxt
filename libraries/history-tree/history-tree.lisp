@@ -93,7 +93,8 @@ Return (VALUES HISTORY (CURRENT HISTORY)) so that `back', `forward', and
              (children (current history)))
     (setf (current history) (first (children (current history))))
     (when (< 1 count)
-      (forward history (1- count)))))
+      (forward history (1- count))))
+  (values history (current history)))
 
 
 
