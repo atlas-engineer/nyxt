@@ -133,21 +133,18 @@ A prompt query is typically done as follows:
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
-  (first (prompter:selection (prompter prompt-buffer))))
+  (prompter:selected-source (prompter prompt-buffer)))
 
-(export-always 'current-selection)
-(defun current-selection (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Renamed `selected-suggestion'?
+(export-always 'current-suggestion)
+(defun current-suggestion (&optional (prompt-buffer (current-prompt-buffer)))
   "Return selected prompt-buffer suggestion.
 Return source as second value."
-  (let* ((selection (prompter:selection (prompter prompt-buffer)))
-         (source (first selection)))
-    (values (nth (second selection) (prompter:suggestions source)) source)))
+  (prompter:selected-suggestion (prompter prompt-buffer)))
 
-(export-always 'prompt-buffer-marked-suggestions)
-(defun prompt-buffer-marked-suggestions (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Rename to `marked-suggestions' when minibuffer is deleted.
+(export-always 'all-marked-suggestions)
+(defun all-marked-suggestions (&optional (prompt-buffer (current-prompt-buffer)))
   "Return the list of the marked suggestion values in the prompt-buffer."
-  (alex:mappend #'prompter:marked-suggestions
-                (prompter:sources (prompter prompt-buffer))))
+  (prompter:all-marked-suggestions (prompter prompt-buffer)))
 
 (defun show-prompt-buffer (&key (prompt-buffer (first (active-minibuffers (current-window)))) height)
   "Show the last active prompt-buffer, if any."

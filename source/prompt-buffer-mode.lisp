@@ -116,7 +116,7 @@ DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
 select next."
   (when (prompter:multi-selection-p (current-source))
     (multiple-value-bind (suggestion source)
-        (current-selection)
+        (current-suggestion)
       (with-accessors ((marked-suggestions prompter:marked-suggestions)) source
         (match (find (prompter:value suggestion) marked-suggestions)
           ((guard n n) (setf marked-suggestions (delete (prompter:value suggestion) marked-suggestions)))
@@ -178,10 +178,10 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Copy default property of selection to clipboard."
-  (let* ((marks (prompt-buffer-marked-suggestions prompt-buffer))
+  (let* ((marks (all-marked-suggestions prompt-buffer))
          (props (if marks
                     (mapcar #'prompter:object-properties marks)
-                    (list (prompter:properties (current-selection)))))
+                    (list (prompter:properties (current-suggestion)))))
          ;; Reverse so that text is ordered from oldest mark to newest.
          (text (str:join (string #\newline) (mapcar #'second (reverse props)))))
     (unless (str:emptyp text)
