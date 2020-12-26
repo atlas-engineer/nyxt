@@ -197,7 +197,8 @@ search.")
     (if (eq history-node (htree:current history))
         (echo "History entry is already the current URL.")
         (progn
-          (setf (htree:current history) history-node)
+          (setf (htree:current history) history-node
+                (id (htree:data history-node)) (id buffer))
           (buffer-load (url (htree:data history-node)))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
@@ -205,19 +206,13 @@ search.")
   (with-data-access (history (history-path buffer))
     (if (eq (htree:root history) (htree:current history))
         (echo "No backward history.")
-        (progn
-          (htree:back history)
-          (match (htree:current history)
-            ((guard n n) (buffer-load (url (htree:data n)))))))))
+        (set-url-from-history (htree:parent (htree:current history)) buffer))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (with-data-access (history (history-path buffer))
     (if (htree:children-nodes history)
-        (progn
-          (htree:forward history)
-          (match (htree:current history)
-            ((guard n n) (buffer-load (url (htree:data n))))))
+        (set-url-from-history (first (htree:children (htree:current history))) buffer)
         (echo "No forward history."))))
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
