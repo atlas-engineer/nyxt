@@ -560,7 +560,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     buffers))
 
 (defmethod buffer-local-history-clean ((buffer buffer))
-  "Deletes the BUFFER-local history in case it has no children in other buffers.
+  "Delete the BUFFER-local history in case it has no children in other buffers.
 Rebinds the history to the oldest child otherwise."
   (with-data-access (history (history-path buffer))
     (let* ((root (gethash (id buffer) (buffer-local-histories-table history)))
@@ -575,6 +575,13 @@ Rebinds the history to the oldest child otherwise."
           (dolist (native-node buffer-native-history)
             (setf (id (data native-node)) (id most-recent-child)))
           (htree:delete-data (htree:data root) history :test #'equals)))))
+
+(defmethod buffer-local-history-clean-ids ((buffer buffer))
+  "Clean the `id's of all the nodes belonging to the buffer."
+  (with-data-access (history (history-path buffer))
+    (htree:do-tree (node history)
+      (when (string= (id buffer) (id (htree:data node)))
+        (setf (id (htree:data node)) "")))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
@@ -594,8 +601,9 @@ Rebinds the history to the oldest child otherwise."
         (window-set-active-buffer parent-window
                                   replacement-buffer)))
     (ffi-buffer-delete buffer)
-    (when (clean-dead-history-p buffer)
-      (buffer-local-history-clean buffer))
+    (if (clean-dead-history-p buffer)
+        (buffer-local-history-clean buffer)
+        (buffer-local-history-clean-ids buffer))
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)
     (store (data-profile buffer) (history-path buffer))))
