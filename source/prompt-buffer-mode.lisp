@@ -18,6 +18,8 @@
        "M-v" 'select-previous-page
        "M->" 'select-last
        "M-<" 'select-first
+       "M-]" 'select-next-source
+       "M-[" 'select-previous-source
        "return" 'return-selection
        "C-return" 'return-input
        "C-space" 'prompt-buffer-toggle-mark
@@ -54,6 +56,16 @@
 (define-command select-last (&optional (prompt-buffer (current-prompt-buffer)))
   "Select first entry in prompt buffer."
   (prompter:select-last (prompter prompt-buffer))
+  (update-suggestion-html prompt-buffer))
+
+(define-command select-next-source (&optional (prompt-buffer (current-prompt-buffer)))
+  "Select next soruce in prompt buffer."
+  (prompter:select-next-source (prompter prompt-buffer))
+  (update-suggestion-html prompt-buffer))
+
+(define-command select-previous-source (&optional (prompt-buffer (current-prompt-buffer)))
+  "Select previous source in prompt buffer."
+  (prompter:select-previous-source (prompter prompt-buffer))
   (update-suggestion-html prompt-buffer))
 
 (define-command select-next-page (&key (prompt-buffer (current-prompt-buffer))
