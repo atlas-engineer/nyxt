@@ -72,6 +72,13 @@ If HOSTLIST has a `path', persist it locally."
 
 (defvar update-lock (bt:make-lock))
 
+(defmethod update-hostlist-with-lock ((hostlist hostlist))
+  (bt:make-thread
+   (lambda ()
+     (when (bt:acquire-lock update-lock nil)
+       (update hostlist)
+       (bt:release-lock update-lock)))))
+
 (defmethod read-hostlist ((hostlist hostlist))
   "Return hostlist file as a string.
 Return nil if hostlist file is not ready yet.
@@ -82,11 +89,7 @@ The new hostlist will be used as soon as it is available."
   (when (or (not (uiop:file-exists-p (expand-path (path hostlist))))
             (< (update-interval hostlist)
                (- (get-universal-time) (uiop:safe-file-write-date (expand-path (path hostlist))))))
-    (bt:make-thread
-     (lambda ()
-       (when (bt:acquire-lock update-lock nil)
-         (update hostlist)
-         (bt:release-lock update-lock)))))
+    (update-hostlist-with-lock hostlist))
   (handler-case
       (uiop:read-file-string (expand-path (path hostlist)))
     (error ()
@@ -186,3 +189,10 @@ This is an acceptable handler for `request-resource-hook'."
   (delete 'nyxt/blocker-mode::hostlists
           (mapcar #'closer-mop:slot-definition-name
                   (closer-mop:class-slots (class-of object)))))
+
+(define-command update-hostlists ()
+  "Forces update for all the hostlists of `blocker-mode'."
+  (let ((blocker-mode (find-mode (current-buffer) 'blocker-mode)))
+    (dolist (hostlist (hostlists blocker-mode))
+      (update-hostlist-with-lock hostlist))
+    (echo "Hostlists updated.")))
