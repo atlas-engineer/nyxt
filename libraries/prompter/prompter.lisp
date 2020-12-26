@@ -169,10 +169,7 @@ The selection is the collection of marked suggestions across all sources.
 If there is no marked suggestion, send the currently selected suggestion
 instead."
   (let ((result (or (mapcar #'value (alex:mappend #'marked-suggestions (sources prompter)))
-                    (let ((selected-source (first (selection prompter))))
-                      (value
-                       (nth (second (selection prompter))
-                            (suggestions selected-source))))
+                    (value (selected-suggestion prompter))
                     ;; TODO: What if there is no result?
                     (and (not (must-match-p prompter))
                          (slot-value prompter 'input)))))
@@ -197,3 +194,19 @@ After timeout has elapsed for one source, return nil."
             `(&key ,@(initargs 'prompter)))
   "Return prompter object."
   (apply #'make-instance 'prompter args))
+
+(export-always 'selected-source)
+(defun selected-source (prompter)
+  (first (selection prompter)))
+
+(export-always 'selected-suggestion)
+(defun selected-suggestion (prompter)
+  "Return selected prompt-buffer suggestion.
+Return source as second value."
+  (let* ((source (first (selection prompter))))
+    (values (nth (second (selection prompter)) (suggestions source)) source)))
+
+(export-always 'all-marked-suggestions)
+(defun all-marked-suggestions (prompter)
+  "Return the list of the marked suggestion values in the prompter."
+  (alex:mappend #'marked-suggestions (sources prompter)))

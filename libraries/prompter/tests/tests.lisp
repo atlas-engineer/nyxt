@@ -139,7 +139,7 @@
     (setf (prompter:input prompter) "bar")
     (when (prompter:ready-p prompter)
       (prompter:return-selection prompter)
-      (prove:is (prompter:value (calispel:? (prompter:result-channel prompter)))
+      (prove:is (calispel:? (prompter:result-channel prompter))
                 "bar"))))
 
 (prove:finalize)
