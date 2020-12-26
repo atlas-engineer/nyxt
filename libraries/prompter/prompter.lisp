@@ -162,6 +162,30 @@ If STEPS is 0, do nothing.
 If STEPS is negative, go forward."
   (select prompter (- steps)))
 
+(export-always 'select-next-source)
+(defun select-next-source (prompter &optional (steps 1))
+  "Jumping STEPS source forward and select first suggestion.
+If STEPS is 0, do nothing.
+If STEPS is negative, go backward and select last suggestion."
+  (unless (= 0 steps)
+    (let* ((source-index (position (selected-source prompter)
+                                   (sources prompter)))
+           (new-source (nth (alex:clamp (+ steps source-index) 0 (1- (length (sources prompter))))
+                            (sources prompter)))
+           (suggestion-index (if (< 0 steps)
+                                 0
+                                 (1- (length (suggestions new-source))))))
+      (setf (selection prompter)
+            (list new-source suggestion-index)))))
+
+(export-always 'select-previous-source)
+(defun select-previous-source (prompter &optional (steps 1))
+  "Jumping STEPS source backward and select last suggestion.
+If STEPS is 0, do nothing.
+If STEPS is negative, go forward and selection first suggestion."
+  (unless (= 0 steps)
+    (select-next-source prompter (- steps))))
+
 (export-always 'select-first)
 (defun select-first (prompter)
   "Select first element."
