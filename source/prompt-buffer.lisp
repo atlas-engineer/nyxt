@@ -216,55 +216,59 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 
 (export 'update-suggestion-html)
 (defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
-  ;; TODO: Update all sources.
-  (let ((source (or (first (prompter:selection (prompter prompt-buffer)))
-                    ;; TODO: `selection' should always be set and there should
-                    ;; be no need for the following fallback.
-                    (first (prompter:sources (prompter prompt-buffer))))))
+  (let* ((sources (prompter:sources (prompter prompt-buffer)))
+         (current-source-index (position (current-source) sources))
+         (last-source-index (1- (length sources))))
     ;; TODO: Factor out property printing.
     ;; TODO: Only print `active-properties'.
-    (evaluate-script
-     prompt-buffer
-     (ps:ps
-       (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
-             (ps:lisp
-              (markup:markup
-               (:h2 (prompter:name source))
-               (:table
-                (:tr
-                 (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
-                                                  (prompter:properties (first (prompter:suggestions source)))
-                                                  (list :default ""))
-                       for (property-name _) on property-sample by #'cddr
-                       collect (markup:markup (:th (symbol-name property-name)))))
-                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
-                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
-                      with max-suggestion-count = 20
-                      repeat max-suggestion-count
-                      with cursor-index = (second (prompter:selection (prompter prompt-buffer)))
-                      for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
-                      for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
-                      collect (markup:markup
-                               (:tr :id (when (equal (list source suggestion-index)
-                                                     (prompter:selection (prompter prompt-buffer)))
-                                          "cursor")
-                                    :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
-                                             "marked")
-                                    (loop for (_ property) on (prompter:properties suggestion) by #'cddr
-                                          collect (markup:markup (:td property))))))))))
-       (defun element-in-view-port-p (element) ; TODO: Factor with `add-element-hints'.
-         (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
-           (if (and (>= (ps:chain rect top) 0)
-                    (>= (ps:chain rect left) 0)
-                    (<= (ps:chain rect right) (ps:chain window inner-width))
-                    (<= (ps:chain rect bottom) (ps:chain window inner-height)))
-               t nil)))
-       (unless  (element-in-view-port-p (ps:chain document (get-element-by-id "cursor")))
-         (ps:chain document (get-element-by-id "cursor")
-                   (scroll-into-view t)))))
+    (flet ((source->html (source)
+             (markup:markup
+              (:h2 (prompter:name source))
+              (:table
+               (:tr
+                (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
+                                                 (prompter:properties (first (prompter:suggestions source)))
+                                                 (list :default ""))
+                      for (property-name _) on property-sample by #'cddr
+                      collect (markup:markup (:th (symbol-name property-name)))))
+               (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
+                     ;; Maybe first make the table, then add the element one by one _if_ there are into view.
+                     with max-suggestion-count = 20
+                     repeat max-suggestion-count
+                     with cursor-index = (second (prompter:selection (prompter prompt-buffer)))
+                     for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
+                     for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
+                     collect (markup:markup
+                              (:tr :id (when (equal (list source suggestion-index)
+                                                    (prompter:selection (prompter prompt-buffer)))
+                                         "cursor")
+                                   :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
+                                            "marked")
+                                   (loop for (_ property) on (prompter:properties suggestion) by #'cddr
+                                         collect (markup:markup (:td property))))))))))
+      (evaluate-script
+       prompt-buffer
+       (ps:ps
+         (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
+               (ps:lisp
+                (str:join (string #\newline)
+                          (loop for i from current-source-index to last-source-index
+                                for source = (nth i sources)
+                                collect (source->html source)))))
+         (defun element-in-view-port-p (element) ; TODO: Factor with `add-element-hints'.
+           (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
+             (if (and (>= (ps:chain rect top) 0)
+                      (>= (ps:chain rect left) 0)
+                      (<= (ps:chain rect right) (ps:chain window inner-width))
+                      (<= (ps:chain rect bottom) (ps:chain window inner-height)))
+                 t nil)))
+         (unless (element-in-view-port-p (ps:chain document (get-element-by-id "cursor")))
+           (ps:chain document (get-element-by-id "cursor")
+                     (scroll-into-view t))))))
 
-    (let ((suggestions (prompter:suggestions source))
-          (marked-suggestions (prompter:marked-suggestions source)))
+    (let* ((source (current-source))
+           (suggestions (prompter:suggestions source))
+           (marked-suggestions (prompter:marked-suggestions source)))
       (evaluate-script
        prompt-buffer
        (ps:ps
