@@ -150,7 +150,7 @@ to next source, or previous source if STEPS is negative."
                                    sources)))
              (previous-sources (source)
                (let ((current-source-position (position source (sources prompter))))
-                 (subseq (sources prompter) 0 (max 0 (1- current-source-position))))))
+                 (subseq (sources prompter) 0 current-source-position))))
       (let* ((limit (source-length (sources prompter)))
              (previous-sources (previous-sources (first (selection prompter))))
              (index (+ (second (selection prompter))
