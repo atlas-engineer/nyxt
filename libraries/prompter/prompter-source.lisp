@@ -72,6 +72,7 @@ Note that the function is executed *before* performing any action.")
 
      (initial-suggestions '()
                           :reader initial-suggestions
+                          :export t
                           :documentation
                           "Suggestions used on initialization, before any
 user input is processed.
@@ -108,7 +109,7 @@ suggestions to derive their list of properties.  To control which property to
 display and match against, see `active-properties'.")
 
      (filter #'fuzzy-match
-             :type function
+             :type (or null function)
              :documentation
              "Takes `input' and a `suggestion' and return a new suggestion, or
 nil if the suggestion is discarded.")
@@ -339,8 +340,14 @@ If a previous suggestion computation was not finished, it is forcefully terminat
                  (preprocessed-suggestions (mapcar #'copy-object
                                                    (initial-suggestions source))))
              (setf preprocessed-suggestions
-                   (maybe-funcall (filter-preprocessor source)
-                                  preprocessed-suggestions source input))
+                   (if (filter-preprocessor source)
+                       (maybe-funcall (filter-preprocessor source)
+                                      preprocessed-suggestions source input)
+                       (list (make-instance 'suggestion
+                                            :value input
+                                            :properties (maybe-funcall (suggestion-property-function source)
+                                                                       input)
+                                            :match-data ""))))
              ;; TODO: Should we really reset the suggestions here?
              (setf (slot-value source 'suggestions) '())
              (if (or (str:empty? input)
