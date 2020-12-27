@@ -157,6 +157,12 @@ If an integer, it specifies the maximum number of lines allow per candidate.")
 at least this number of characters.  When 0, always compute and display
 suggestions.")
 
+     (ready-p nil
+              :type boolean
+              :reader ready-p
+              :export t
+              :documentation "Whether filters are done and suggestions are ready.")
+
      (ready-notifier (make-channel 1)
                      :type calispel:channel
                      :documentation "A channel which is written to when `filter-postprocessor'.")
@@ -333,6 +339,7 @@ If a previous suggestion computation was not finished, it is forcefully terminat
     (bt:destroy-thread (update-thread source)))
   ;; Drain ready-notifier in case it wasn't read.
   (calispel:? (ready-notifier source) 0)
+  (setf (slot-value source 'ready-p) nil)
   (setf (update-thread source)
         (bt:make-thread
          (lambda ()
@@ -368,4 +375,5 @@ If a previous suggestion computation was not finished, it is forcefully terminat
 
            ;; TODO: Pass `filter-preprocessor' result to source in case filter is not run?
            (maybe-funcall (filter-postprocessor source) source input)
+           (setf (slot-value source 'ready-p) t)
            (calispel:! (ready-notifier source) t)))))
