@@ -229,6 +229,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
        (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
              (ps:lisp
               (markup:markup
+               (:h2 (prompter:name source))
                (:table
                 (:tr
                  (loop with property-sample = (prompter:properties (first (prompter:suggestions source)))

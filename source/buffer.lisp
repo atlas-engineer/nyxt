@@ -887,38 +887,51 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    (make-buffer-focus :url "" :nosave-buffer-p nosave-buffer-p)
                                    (current-buffer))))))
 
+(define-class global-history-source (prompter:prompter-source)
+  ((prompter:name "Global history")
+   (prompter:initial-suggestions (history-initial-suggestions))
+   (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
+   (prompter:history (minibuffer-set-url-history *browser*))
+   (prompter:must-match-p nil)))
+
+(define-class new-url-source (prompter:prompter-source)
+  ((prompter:name "New URL")
+   (prompter:initial-suggestions '())
+   (prompter:filter-preprocessor nil)
+   (prompter:filter nil)
+   ;; TODO: Remove slots that are set to default value.
+   (prompter:multi-selection-p nil)
+   (prompter:history (minibuffer-set-url-history *browser*))
+   (prompter:must-match-p nil)))
+
 (define-command set-url2 (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
-  (let ((history (minibuffer-set-url-history *browser*)))
-    (when history
-      (containers:insert-item history (url (current-buffer))))
-    (let ((url (prompt
-                :prompter (list
-                           :prompt (format nil "Open URL in ~A buffer"
-                                           (if new-buffer-p
-                                               "new"
-                                               "current"))
-                           :input (if prefill-current-url-p
-                                      (object-string (url (current-buffer))) "")
-                           :sources (list (make-instance 'prompter:prompter-source
-                                                         :initial-suggestions (history-initial-suggestions
-                                                                               :prefix-urls (list (object-string
-                                                                                                   (url (current-buffer)))))
-                                                         :history history
-                                                         :must-match-p nil)))
-                ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
-                )))
+  ;; TODO: Do we still need to add current URL to history?
+  (sera:and-let* ((history (minibuffer-set-url-history *browser*)))
+    (containers:insert-item history (url (current-buffer))))
+  (let ((url (prompt
+              :prompter (list
+                         :prompt (format nil "Open URL in ~A buffer"
+                                         (if new-buffer-p
+                                             "new"
+                                             "current"))
+                         :input (if prefill-current-url-p
+                                    (object-string (url (current-buffer))) "")
+                         :sources (list (make-instance 'new-url-source)
+                                        (make-instance 'global-history-source)))
+              ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
+              )))
 
-      (when (typep url 'history-entry)
-        ;; In case prompt-minibuffer returned a string upon
-        ;; must-match-p.
-        (setf url (url url)))
-      (buffer-load url :buffer (if new-buffer-p
-                                   ;; Make empty buffer, or else there might be
-                                   ;; a race condition between the URL that's
-                                   ;; loaded and the default one.
-                                   (make-buffer-focus :url "")
-                                   (current-buffer))))))
+    (when (typep url 'history-entry)
+      ;; In case prompt-minibuffer returned a string upon
+      ;; must-match-p.
+      (setf url (url url)))
+    (buffer-load url :buffer (if new-buffer-p
+                                 ;; Make empty buffer, or else there might be
+                                 ;; a race condition between the URL that's
+                                 ;; loaded and the default one.
+                                 (make-buffer-focus :url "")
+                                 (current-buffer)))))
 
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
