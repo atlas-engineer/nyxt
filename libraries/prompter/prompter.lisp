@@ -218,12 +218,13 @@ instead."
   "Send input to PROMPTER's `result-channel'."
   (calispel:! (result-channel prompter) (input prompter)))
 
-(export-always 'ready-p)
-(defun ready-p (prompter &optional timeout)
+(export-always 'all-ready-p)
+(defun all-ready-p (prompter &optional timeout)
   "Return non-nil when all prompter sources are ready.
 After timeout has elapsed for one source, return nil."
   (every (lambda (source)
-            (nth-value 1 (calispel:? (ready-notifier source) timeout)))
+           (or (ready-p source)
+               (nth-value 1 (calispel:? (ready-notifier source) timeout))))
           (sources prompter)))
 
 (export-always 'make)
