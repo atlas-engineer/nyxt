@@ -232,7 +232,9 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                (:h2 (prompter:name source))
                (:table
                 (:tr
-                 (loop with property-sample = (prompter:properties (first (prompter:suggestions source)))
+                 (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
+                                                  (prompter:properties (first (prompter:suggestions source)))
+                                                  (list :default ""))
                        for (property-name _) on property-sample by #'cddr
                        collect (markup:markup (:th (symbol-name property-name)))))
                 (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
