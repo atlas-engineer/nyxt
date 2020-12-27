@@ -111,23 +111,16 @@ compution is not finished.")))
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter)) ; TODO: (str:replace-all " " " " input) in the caller.
   "Update PROMPTER sources and return TEXT."
-  (labels ((drain (channel)
-             (multiple-value-bind (_ ok)
-                 (calispel:? channel 0)
-               (declare (ignore _))
-               (when ok (drain channel)))))
-    (let ((old-input (slot-value prompter 'input)))
-      (unless (string= old-input text)
-        (setf (slot-value prompter 'input) text)
-        (bt:with-lock-held ((ready-source-mutex prompter))
-          (setf (ready-sources prompter) '())
-          ;; TODO: Possible race condition if `update' writes to ready-channel after we drained it.
-          ;; Better: Create new channel.
-          (drain (ready-channel prompter)))
-        (mapc (lambda (source) (update source text prompter)) (sources prompter))
-        ;; TODO: Update `selection' when `update' is done.
-        (setf (selection prompter) (list (first (sources prompter)) 0))))
-    text))
+  (let ((old-input (slot-value prompter 'input)))
+    (unless (string= old-input text)
+      (setf (slot-value prompter 'input) text)
+      (bt:with-lock-held ((ready-source-mutex prompter))
+        (setf (ready-sources prompter) '())
+        (setf (ready-channel prompter) (make-channel nil)))
+      (mapc (lambda (source) (update source text prompter)) (sources prompter))
+      ;; TODO: Update `selection' when `update' is done.
+      (setf (selection prompter) (list (first (sources prompter)) 0))))
+  text)
 
 (export-always 'destructor)
 (defmethod destructor ((prompter prompter))
