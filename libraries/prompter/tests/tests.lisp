@@ -28,15 +28,15 @@
                    :sources (list (prompter:make-source
                                    :initial-suggestions '("foo" "bar"))))))
     (setf (prompter:input prompter) "foo")
-    (when (prompter:ready-p prompter)
+    (when (prompter:all-ready-p prompter)
       (prove:is (source1-suggestions prompter)
                 '("foo")))
     (setf (prompter:input prompter) "bar")
-    (when (prompter:ready-p prompter)
+    (when (prompter:all-ready-p prompter)
       (prove:is (source1-suggestions prompter)
                 '("bar")))
     (setf (prompter:input prompter) "")
-    (when (prompter:ready-p prompter)
+    (when (prompter:all-ready-p prompter)
       (prove:is (source1-suggestions prompter)
                 '("foo" "bar")))))
 
@@ -56,7 +56,7 @@
                     :sources (list (prompter:make-source
                                     :initial-suggestions (list url1 url2))))))
     (setf (prompter:input prompter) "nyxt")
-    (when (prompter:ready-p prompter)
+    (when (prompter:all-ready-p prompter)
       (let ((filtered-suggestions (prompter:suggestions
                                    (first (prompter:sources prompter)))))
         (prove:is (mapcar #'prompter:value filtered-suggestions)
@@ -75,7 +75,7 @@
                                    :initial-suggestions '("foo" "bar")
                                    :filter #'slow-identity-match)))))
     (setf (prompter:input prompter) "foo")
-    (when (prompter:ready-p prompter)
+    (when (prompter:all-ready-p prompter)
       (let ((filtered-suggestions (prompter:suggestions
                                    (first (prompter:sources prompter)))))
         (prove:is (mapcar #'prompter:value filtered-suggestions)
@@ -126,7 +126,7 @@
                                (first (prompter:sources prompter))))
      '("no" "yes"))
     (setf (prompter:input prompter) "y")
-    (when (prompter:ready-p prompter)
+    (when (prompter:all-ready-p prompter)
       (let ((filtered-suggestions (prompter:suggestions
                                    (first (prompter:sources prompter)))))
         (prove:is (mapcar #'prompter:value filtered-suggestions)
@@ -137,7 +137,7 @@
                    :sources (list (prompter:make-source
                                    :initial-suggestions '("foo" "bar"))))))
     (setf (prompter:input prompter) "bar")
-    (when (prompter:ready-p prompter)
+    (when (prompter:all-ready-p prompter)
       (prompter:return-selection prompter)
       (prove:is (calispel:? (prompter:result-channel prompter))
                 "bar"))))
