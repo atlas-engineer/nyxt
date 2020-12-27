@@ -469,10 +469,13 @@ Warning: This behaviour may change in the future."
                                         value)))))
            (setf (prompter:input (prompter minibuffer))
                  input)
-           (when (prompter:ready-p (prompter minibuffer))
-             (update-suggestion-html minibuffer)
-             ;; (show-prompt-buffer)
-             )))
+           (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p (prompter minibuffer))))
+             (cond
+               ;; Nothing to do
+               ((eq t next-source) t)
+               (t ;; At least one source got updated.
+                (update-suggestion-html minibuffer)
+                (maybe-update-view (prompter:next-ready-p (prompter minibuffer))))))))
        ;; Forward to HTML input: it's necessary to handle input methods,
        ;; e.g. "control-shift u".
        nil)
