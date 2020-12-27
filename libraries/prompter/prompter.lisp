@@ -258,16 +258,14 @@ If timeout expires for one source, return nil."
 (defun all-ready-p (prompter &optional timeout)
   "Return non-nil when all prompter sources are ready.
 After timeout has elapsed for one source, return nil."
-  (labels ((check (channel)
-             (let ((next-source (next-ready-p prompter timeout)))
-               (cond
-                 ((eq t next-source)
-                  t)
-                 ((null next-source)
-                  nil)
-                 (t
-                  (check channel))))))
-    (check (ready-channel prompter))))
+  (sera:nlet check ((next-source (next-ready-p prompter timeout)))
+    (cond
+      ((eq t next-source)
+       t)
+      ((null next-source)
+       nil)
+      (t
+       (check (next-ready-p prompter timeout))))))
 
 (export-always 'make)
 (define-function make
