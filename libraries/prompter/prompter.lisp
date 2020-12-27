@@ -32,15 +32,15 @@
                   "Function called with the prompter as argument.")
 
      (before-destructor nil
-                     :type (or null function)
-                     :documentation
-                     "First function called with no parameters when calling the
+                        :type (or null function)
+                        :documentation
+                        "First function called with no parameters when calling the
 `destructor' function over this prompter.
 It's called before the sources are cleaned up.")
      (after-destructor nil
-                    :type (or null function)
-                    :documentation
-                    "Last function called with no parameters when calling the
+                       :type (or null function)
+                       :documentation
+                       "Last function called with no parameters when calling the
 `destructor' function over this prompter.
 It's called after the sources are cleaned up.
 
@@ -72,7 +72,22 @@ Also listen to `interrupt-channel' to know if the minibuffer is quitted.")
                         :type calispel:channel
                         :documentation
                         "Channel to which an arbitrary value is written on exit.
-See also `result-channel'."))
+See also `result-channel'.")
+     (ready-sources '()
+                    :type list
+                    :export nil
+                    :documentation
+                    "List of ready sources.")
+     (ready-source-mutex (bt:make-lock "Ready source mutex")
+                         :type bt:lock
+                         :export nil
+                         :documentation
+                         "Mutex for thread-safe access to `ready-sources'.")
+     (ready-channel (make-channel nil)
+                    :type calispel:channel
+                    :export nil
+                    :documentation
+                    "TODO: Complete"))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer #'class*:name-identity)
@@ -84,9 +99,9 @@ You can call `destructor' to call the registered termination functions of the
 prompter and its sources.
 
 Suggestions are computed asynchronously when `input' is updated.
-Use `ready-p' to know when the prompter is ready.
-Sources suggestions can be retrieved even when the compution is not
-finished.")))
+Use `all-ready-p' and `next-ready-p' to know when the prompter is ready.
+Sources suggestions can be retrieved, possibly partially, even when the
+compution is not finished.")))
 
 (defmethod initialize-instance :after ((prompter prompter) &key)
   (setf (selection prompter) (list (first (sources prompter)) 0))
@@ -96,13 +111,23 @@ finished.")))
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter)) ; TODO: (str:replace-all " " " " input) in the caller.
   "Update PROMPTER sources and return TEXT."
-  (let ((old-input (slot-value prompter 'input)))
-    (unless (string= old-input text)
-      (setf (slot-value prompter 'input) text)
-      (mapc (lambda (source) (update source text)) (sources prompter))
-      ;; TODO: Update `selection' when `update' is done.
-      (setf (selection prompter) (list (first (sources prompter)) 0))))
-  text)
+  (labels ((drain (channel)
+             (multiple-value-bind (_ ok)
+                 (calispel:? channel 0)
+               (declare (ignore _))
+               (when ok (drain channel)))))
+    (let ((old-input (slot-value prompter 'input)))
+      (unless (string= old-input text)
+        (setf (slot-value prompter 'input) text)
+        (bt:with-lock-held ((ready-source-mutex prompter))
+          (setf (ready-sources prompter) '())
+          ;; TODO: Possible race condition if `update' writes to ready-channel after we drained it.
+          ;; Better: Create new channel.
+          (drain (ready-channel prompter)))
+        (mapc (lambda (source) (update source text prompter)) (sources prompter))
+        ;; TODO: Update `selection' when `update' is done.
+        (setf (selection prompter) (list (first (sources prompter)) 0))))
+    text))
 
 (export-always 'destructor)
 (defmethod destructor ((prompter prompter))
@@ -218,14 +243,38 @@ instead."
   "Send input to PROMPTER's `result-channel'."
   (calispel:! (result-channel prompter) (input prompter)))
 
+(export-always 'next-ready-p)
+(defun next-ready-p (prompter &optional timeout)
+  "Block and return next PROMPTER ready source.
+It's the next source that's done updating.
+If all sources are done, return t.
+If timeout expires for one source, return nil."
+  (bt:with-lock-held ((ready-source-mutex prompter))
+    (if (= (length (ready-sources prompter))
+           (length (sources prompter)))
+        t
+        (multiple-value-bind (next-source ok)
+            (calispel:? (ready-channel prompter) timeout)
+          (if ok
+              (progn
+                (push next-source (ready-sources prompter))
+                next-source)
+              nil)))))
+
 (export-always 'all-ready-p)
 (defun all-ready-p (prompter &optional timeout)
   "Return non-nil when all prompter sources are ready.
 After timeout has elapsed for one source, return nil."
-  (every (lambda (source)
-           (or (ready-p source)
-               (nth-value 1 (calispel:? (ready-notifier source) timeout))))
-          (sources prompter)))
+  (labels ((check (channel)
+             (let ((next-source (next-ready-p prompter timeout)))
+               (cond
+                 ((eq t next-source)
+                  t)
+                 ((null next-source)
+                  nil)
+                 (t
+                  (check channel))))))
+    (check (ready-channel prompter))))
 
 (export-always 'make)
 (define-function make

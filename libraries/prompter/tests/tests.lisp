@@ -13,6 +13,10 @@
   (mapcar #'prompter:value (prompter:suggestions
                             (first (prompter:sources prompter)))))
 
+(defun all-source-suggestions (prompter)
+  (mapcar #'prompter:value (alex:mappend #'prompter:suggestions
+                                         (prompter:sources prompter))))
+
 (prove:subtest "Prompter init"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
@@ -91,7 +95,7 @@
     (setf (prompter:input prompter) "foo")
     (sera:nlet query-suggestions ((computed-count 1))
       (calispel:fair-alt
-        ((calispel:? (prompter:ready-notifier source))
+        ((calispel:? (prompter::ready-channel prompter))
          (prove:is (length (prompter:suggestions source))
                    (length suggestion-values)))
         ((calispel:? (prompter:update-notifier source))
@@ -141,5 +145,28 @@
       (prompter:return-selection prompter)
       (prove:is (calispel:? (prompter:result-channel prompter))
                 "bar"))))
+
+(prove:subtest "Multi sources"
+  (let ((prompter (prompter:make
+                   :sources (list (prompter:make-source
+                                   :initial-suggestions '("foo" "bar"))
+                                  (prompter:make-source
+                                   :initial-suggestions '("100 foo" "200"))))))
+    (setf (prompter:input prompter) "foo")
+    (when (prompter:all-ready-p prompter)
+      (prove:is (all-source-suggestions prompter)
+                '("foo" "100 foo")))
+    (setf (prompter:input prompter) "200")
+    (let ((ready-source1 (prompter:next-ready-p prompter))
+          (ready-source2 (prompter:next-ready-p prompter)))
+      (prove:ok (find ready-source1 (prompter:sources prompter))
+                "Found first ready source")
+      (prove:ok (find ready-source2 (prompter:sources prompter))
+                "Found second ready source")
+      (prove:isnt ready-source1
+                  ready-source2
+                  "Ready sources are not the same")
+      (prove:is (all-source-suggestions prompter)
+                '("foo" "bar" "200")))))
 
 (prove:finalize)

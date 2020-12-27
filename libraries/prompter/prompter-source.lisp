@@ -157,16 +157,6 @@ If an integer, it specifies the maximum number of lines allow per candidate.")
 at least this number of characters.  When 0, always compute and display
 suggestions.")
 
-     (ready-p nil
-              :type boolean
-              :reader ready-p
-              :export t
-              :documentation "Whether filters are done and suggestions are ready.")
-
-     (ready-notifier (make-channel 1)
-                     :type calispel:channel
-                     :documentation "A channel which is written to when `filter-postprocessor'.")
-
      (update-notifier (make-channel)
                       :type calispel:channel
                       :documentation "A channel which is written to when `filter'
@@ -323,7 +313,7 @@ If SIZE is NIL, capicity is infinite."
      (make-instance 'calispel:channel
                     :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
 
-(defun update (source input)            ; TODO: Store `input' in the source?
+(defun update (source input prompter)            ; TODO: Store `input' in the source?
   "Update SOURCE to narrow down the list of suggestions according to INPUT.
 If a previous suggestion computation was not finished, it is forcefully terminated.
 
@@ -337,9 +327,6 @@ If a previous suggestion computation was not finished, it is forcefully terminat
              ;; TODO: This is prone to a race condition.
              (bt:thread-alive-p (update-thread source)))
     (bt:destroy-thread (update-thread source)))
-  ;; Drain ready-notifier in case it wasn't read.
-  (calispel:? (ready-notifier source) 0)
-  (setf (slot-value source 'ready-p) nil)
   (setf (update-thread source)
         (bt:make-thread
          (lambda ()
@@ -375,5 +362,4 @@ If a previous suggestion computation was not finished, it is forcefully terminat
 
            ;; TODO: Pass `filter-preprocessor' result to source in case filter is not run?
            (maybe-funcall (filter-postprocessor source) source input)
-           (setf (slot-value source 'ready-p) t)
-           (calispel:! (ready-notifier source) t)))))
+           (calispel:! (ready-channel prompter) source)))))
