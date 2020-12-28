@@ -106,9 +106,8 @@ case `explicit-visits'."
         (when title
           ;; Always update the title since it may have changed since last visit.
           (setf (title entry) title))
-        (setf (htree:data node) entry
-              (htree:current history) node
-              (current-history-node (current-buffer)) (htree:current history))))
+        (setf (htree:current history) node
+              (current-history-node (current-buffer)) node)))
     (setf (get-data (history-path (current-buffer))) history)))
 
 (define-command delete-history-entry ()
