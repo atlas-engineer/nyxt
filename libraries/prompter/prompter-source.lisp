@@ -22,11 +22,35 @@
   "Return a new ring buffer."
   (containers:make-ring-buffer size :last-in-first-out))
 
+(defun exported-p (sym)
+  (eq :external
+      (nth-value 1 (find-symbol (string sym)
+                                (symbol-package sym)))))
+
+(defun object-public-slots (object-specifier)
+  "Return the list of exported slots."
+  (delete-if
+   (complement #'exported-p)
+   (mopu:slot-names object-specifier)))
+
 (export-always 'object-properties)
 (defmethod object-properties ((object t))
-  "Suitable as a `prompter-source' `suggestion-property-function'."
-  ;; TODO: Support objects and structs and expand their exported slot to a plist.
-  (list :default (write-to-string object)))
+  "Return a plist of properties of OBJECT.
+For sturcture and class instances, the plist is made of the exported slots: the
+keys are the slot symbols and the values the slot values passed to
+`write-to-string'.
+
+Suitable as a `prompter-source' `suggestion-property-function'."
+  (cond
+    ((or (typep object 'standard-object)
+         (typep object 'structure-object))
+     (or
+      (alex:mappend (lambda (slot)
+                      (list (intern (string slot) "KEYWORD")
+                            (write-to-string (slot-value object slot))))
+                    (object-public-slots object))
+      (write-to-string object)))
+    (t (list :default (write-to-string object)))))
 
 (define-class suggestion ()
   ((value nil
