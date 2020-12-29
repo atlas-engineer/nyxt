@@ -20,6 +20,7 @@
 (prove:subtest "Prompter init"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
+                                   :name "Test source"
                                    :initial-suggestions '("foo" "bar"))))))
     (prove:ok (find "foo" (prompter:suggestions
                            (first (prompter:sources prompter)))
@@ -30,6 +31,7 @@
 (prove:subtest "Prompter matching"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
+                                   :name "Test source"
                                    :initial-suggestions '("foo" "bar"))))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:all-ready-p prompter)
@@ -58,6 +60,7 @@
          (url2 (make-instance 'url :uri "http://nyxt.atlas.engineer" :title "Nyxt homepage"))
          (prompter (prompter:make
                     :sources (list (prompter:make-source
+                                    :name "Test source"
                                     :initial-suggestions (list url1 url2))))))
     (setf (prompter:input prompter) "nyxt")
     (when (prompter:all-ready-p prompter)
@@ -76,6 +79,7 @@
 (prove:subtest "Asynchronous suggestion computation"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
+                                   :name "Test source"
                                    :initial-suggestions '("foo" "bar")
                                    :filter #'slow-identity-match)))))
     (setf (prompter:input prompter) "foo")
@@ -88,6 +92,7 @@
 (prove:subtest "Asynchronous suggestion notifications"
   (let* ((suggestion-values '("foobar" "foobaz"))
          (source (prompter:make-source
+                  :name "Test source"
                   :initial-suggestions suggestion-values
                   :filter #'slow-identity-match))
          (prompter (prompter:make
@@ -106,6 +111,7 @@
 (prove:subtest "Asynchronous suggestion interrupt"
   (let* ((suggestion-values '("foobar" "foobaz"))
          (source (prompter:make-source
+                  :name "Test source"
                   :initial-suggestions suggestion-values
                   :filter #'slow-identity-match))
          (prompter (prompter:make
@@ -139,6 +145,7 @@
 (prove:subtest "Return result"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
+                                   :name "Test source"
                                    :initial-suggestions '("foo" "bar"))))))
     (setf (prompter:input prompter) "bar")
     (when (prompter:all-ready-p prompter)
@@ -149,8 +156,10 @@
 (prove:subtest "Multi sources"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
+                                   :name "Test source 1"
                                    :initial-suggestions '("foo" "bar"))
                                   (prompter:make-source
+                                   :name "Test source 2"
                                    :initial-suggestions '("100 foo" "200"))))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:all-ready-p prompter)
