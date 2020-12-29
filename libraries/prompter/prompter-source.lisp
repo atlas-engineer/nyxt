@@ -168,6 +168,25 @@ poll `suggestions' for changes.")
                          :documentation "Time in seconds after which to notify
 `update-notifier' if `suggestions' was modified.")
 
+     (ready-channel nil
+                    :type (or null calispel:channel)
+                    :export nil
+                    :documentation "Notify listener that source is ready.
+The source object is sent to the channel.
+If update calculation is aborted, nil is sent instead.")
+
+     (wrote-to-ready-channel-p nil
+                               :type boolean
+                               :export nil
+                               :documentation "Becomes non-nil when calculation
+is done and the source was sent to the `ready-channel'.")
+
+     (wrote-to-ready-channel-mutex (bt:make-lock)
+                                   :type bt:lock
+                                   :export nil
+                                   :documentation "Protect
+`wrote-to-ready-channel-p' access.")
+
      (update-thread nil
                     :type t
                     :export nil
@@ -313,7 +332,7 @@ If SIZE is NIL, capicity is infinite."
      (make-instance 'calispel:channel
                     :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
 
-(defun update (source input prompter)            ; TODO: Store `input' in the source?
+(defun update (source input new-ready-channel) ; TODO: Store `input' in the source?
   "Update SOURCE to narrow down the list of suggestions according to INPUT.
 If a previous suggestion computation was not finished, it is forcefully terminated.
 
@@ -326,44 +345,50 @@ If a previous suggestion computation was not finished, it is forcefully terminat
   (when (and (update-thread source)
              ;; TODO: This is prone to a race condition.
              (bt:thread-alive-p (update-thread source)))
+    (bt:with-lock-held ((wrote-to-ready-channel-mutex source))
+      (unless (wrote-to-ready-channel-p source)
+        (calispel:! (ready-channel source) nil)))
+    ;; Destroy thread _after_ holding the lock, otherwise the lock may be held
+    ;; forever.
     (bt:destroy-thread (update-thread source)))
-  ;; We let-bind the channel so that if PROMPTER's channel is reset, we keep
-  ;; using the old one in this (outdated) thread.
-  ;; See (setf input).
-  (let ((ready-channel (ready-channel prompter)))
-    (setf (update-thread source)
-          (bt:make-thread
-           (lambda ()
-             (let ((last-notification-time (get-internal-real-time))
-                   (preprocessed-suggestions (mapcar #'copy-object
-                                                     (initial-suggestions source))))
-               (setf preprocessed-suggestions
-                     (if (filter-preprocessor source)
-                         (maybe-funcall (filter-preprocessor source)
-                                        preprocessed-suggestions source input)
-                         (list (make-instance 'suggestion
-                                              :value input
-                                              :properties (maybe-funcall (suggestion-property-function source)
-                                                                         input)
-                                              :match-data ""))))
-               ;; TODO: Should we really reset the suggestions here?
-               (setf (slot-value source 'suggestions) '())
-               (if (or (str:empty? input)
-                       (not (functionp (filter source))))
-                   (setf (slot-value source 'suggestions) preprocessed-suggestions)
-                   (dolist (suggestion preprocessed-suggestions)
-                     (sera:and-let* ((processed-suggestion
-                                      (funcall (filter source) input suggestion)))
-                       (setf (slot-value source 'suggestions)
-                             (insert-item-at suggestion (sort-predicate source)
-                                             (suggestions source)))
-                       (let* ((now (get-internal-real-time))
-                              (duration (/ (- now last-notification-time)
-                                           internal-time-units-per-second)))
-                         (when (> duration (notification-delay source))
-                           (calispel:! (update-notifier source) t)
-                           (setf last-notification-time now)))))))
+  (setf (ready-channel source) new-ready-channel)
+  (setf (wrote-to-ready-channel-p source) nil)
+  (setf (update-thread source)
+        (bt:make-thread
+         (lambda ()
+           (let ((last-notification-time (get-internal-real-time))
+                 (preprocessed-suggestions (mapcar #'copy-object
+                                                   (initial-suggestions source))))
+             (setf preprocessed-suggestions
+                   (if (filter-preprocessor source)
+                       (maybe-funcall (filter-preprocessor source)
+                                      preprocessed-suggestions source input)
+                       (list (make-instance 'suggestion
+                                            :value input
+                                            :properties (maybe-funcall (suggestion-property-function source)
+                                                                       input)
+                                            :match-data ""))))
+             ;; TODO: Should we really reset the suggestions here?
+             (setf (slot-value source 'suggestions) '())
+             (if (or (str:empty? input)
+                     (not (functionp (filter source))))
+                 (setf (slot-value source 'suggestions) preprocessed-suggestions)
+                 (dolist (suggestion preprocessed-suggestions)
+                   (sera:and-let* ((processed-suggestion
+                                    (funcall (filter source) input suggestion)))
+                     (setf (slot-value source 'suggestions)
+                           (insert-item-at suggestion (sort-predicate source)
+                                           (suggestions source)))
+                     (let* ((now (get-internal-real-time))
+                            (duration (/ (- now last-notification-time)
+                                         internal-time-units-per-second)))
+                       (when (> duration (notification-delay source))
+                         (calispel:! (update-notifier source) t)
+                         (setf last-notification-time now)))))))
 
-             ;; TODO: Pass `filter-preprocessor' result to source in case filter is not run?
-             (maybe-funcall (filter-postprocessor source) source input)
-             (calispel:! ready-channel source))))))
+           ;; TODO: Pass `filter-preprocessor' result to source in case filter is not run?
+           (maybe-funcall (filter-postprocessor source) source input)
+           (bt:with-lock-held ((wrote-to-ready-channel-mutex source))
+             (unless (wrote-to-ready-channel-p source)
+               (calispel:! new-ready-channel source)
+               (setf (wrote-to-ready-channel-p source) t)))))))
