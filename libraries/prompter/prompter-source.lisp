@@ -25,6 +25,7 @@
 (export-always 'object-properties)
 (defmethod object-properties ((object t))
   "Suitable as a `prompter-source' `suggestion-property-function'."
+  ;; TODO: Support objects and structs and expand their exported slot to a plist.
   (list :default (write-to-string object)))
 
 (define-class suggestion ()
@@ -51,7 +52,7 @@ The other slots are optional."))
 ;; the initargs of the class.
 (sera:eval-always
   (define-class prompter-source ()      ; TODO: Rename `source'?
-    ((name ""
+    ((name (error "Source must have a name")
            :documentation
            "Name which can be used to differentiate sources from one
 another.")
@@ -258,7 +259,8 @@ It can be a function of one argument, the prompter, which returns a string."))
   (apply #'make-instance 'prompter-source args))
 
 (define-class yes-no-source (prompter-source)
-  ((initial-suggestions '("yes" "no")))
+  ((name "Confirm")
+   (initial-suggestions '("yes" "no")))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Prompt for yes-no questions."))
