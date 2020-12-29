@@ -3,6 +3,22 @@
 
 (in-package :prompter)
 
+(define-class sync-queue ()
+  ((ready-sources '()
+                  :type list
+                  :export nil
+                  :documentation
+                  "List of ready sources.")
+   (ready-channel (make-channel nil)
+                  :type calispel:channel
+                  :export nil
+                  :documentation
+                  "Communication channel with the `update' thread."))
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "This object is used to memorize which sources are ready for a
+given input.
+A new object is created on every new input."))
+
 ;; Same as `prompter-source' as to why we wrap in `eval-always'.
 (sera:eval-always
   (define-class prompter ()
@@ -73,21 +89,11 @@ Also listen to `interrupt-channel' to know if the minibuffer is quitted.")
                         :documentation
                         "Channel to which an arbitrary value is written on exit.
 See also `result-channel'.")
-     (ready-sources '()
-                    :type list
-                    :export nil
-                    :documentation
-                    "List of ready sources.")
-     (ready-source-mutex (bt:make-lock "Ready source mutex")
-                         :type bt:lock
-                         :export nil
-                         :documentation
-                         "Mutex for thread-safe access to `ready-sources'.")
-     (ready-channel (make-channel nil)
-                    :type calispel:channel
-                    :export nil
-                    :documentation
-                    "TODO: Complete"))
+
+     (sync-queue nil
+                 :type (or null sync-queue)
+                 :export nil
+                 :documentation "See `sync-queue' class documentation."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer #'class*:name-identity)
@@ -109,15 +115,14 @@ compution is not finished.")))
   prompter)
 
 (export-always 'input)
-(defmethod (setf input) (text (prompter prompter)) ; TODO: (str:replace-all " " " " input) in the caller.
+(defmethod (setf input) (text (prompter prompter))
   "Update PROMPTER sources and return TEXT."
   (let ((old-input (slot-value prompter 'input)))
     (unless (string= old-input text)
       (setf (slot-value prompter 'input) text)
-      (bt:with-lock-held ((ready-source-mutex prompter))
-        (setf (ready-sources prompter) '())
-        (setf (ready-channel prompter) (make-channel nil)))
-      (mapc (lambda (source) (update source text prompter)) (sources prompter))
+      (setf (sync-queue prompter) (make-instance 'sync-queue))
+      (mapc (lambda (source) (update source text (ready-channel (sync-queue prompter))))
+            (sources prompter))
       ;; TODO: Update `selection' when `update' is done.
       (setf (selection prompter) (list (first (sources prompter)) 0))))
   text)
@@ -242,17 +247,26 @@ instead."
 It's the next source that's done updating.
 If all sources are done, return t.
 If timeout expires for one source, return nil."
-  (bt:with-lock-held ((ready-source-mutex prompter))
-    (if (= (length (ready-sources prompter))
-           (length (sources prompter)))
-        t
-        (multiple-value-bind (next-source ok)
-            (calispel:? (ready-channel prompter) timeout)
-          (if ok
-              (progn
-                (push next-source (ready-sources prompter))
-                next-source)
-              nil)))))
+  ;; We copy `sync-queue' here so that it remains the same object throughout
+  ;; this function, since the slot is subject to be changed concurrently when
+  ;; the input is edited.
+  (let ((sync-queue (sync-queue prompter)))
+    (if sync-queue
+        (if (= (length (ready-sources sync-queue))
+               (length (sources prompter)))
+            t
+            (multiple-value-bind (next-source ok)
+                (calispel:? (ready-channel sync-queue) timeout)
+              (cond
+                ((not ok)
+                 nil)
+                ((null next-source)
+                 nil)
+                (t
+                 (push next-source (ready-sources sync-queue))
+                 next-source))))
+        ;; No sync-queue if no input was ever set.
+        t)))
 
 (export-always 'all-ready-p)
 (defun all-ready-p (prompter &optional timeout)

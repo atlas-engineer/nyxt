@@ -454,6 +454,7 @@ Warning: This behaviour may change in the future."
              (cond
                ;; Nothing to do
                ((eq t next-source) t)
+               ((null next-source) nil)
                (t ;; At least one source got updated.
                 (update-suggestion-html minibuffer)
                 (maybe-update-view (prompter:next-ready-p (prompter minibuffer))))))))
