@@ -95,7 +95,7 @@
     (setf (prompter:input prompter) "foo")
     (sera:nlet query-suggestions ((computed-count 1))
       (calispel:fair-alt
-        ((calispel:? (prompter::ready-channel prompter))
+        ((calispel:? (prompter::ready-channel source))
          (prove:is (length (prompter:suggestions source))
                    (length suggestion-values)))
         ((calispel:? (prompter:update-notifier source))
