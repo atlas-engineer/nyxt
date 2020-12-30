@@ -302,14 +302,18 @@ Otherwise go forward to the only child."
            (history (get-data (history-path buffer)))
            (tree `(:ul ,(htree:map-tree
                          #'(lambda (node)
-                             `(:li (:a :href ,(object-string (url (htree:data node)))
-                                       ,(integer->unicode-geometric (id (htree:data node)))
-                                       ,(let ((title (or (match (title (htree:data node))
-                                                           ((guard e (not (str:emptyp e))) e))
-                                                         (object-display (url (htree:data node))))))
-                                          (if (eq node (htree:current history))
-                                              `(:b ,title)
-                                              title)))))
+                             `(:li :class
+                                   ,(if (equal (id (htree:data node)) (id buffer))
+                                        "current-buffer"
+                                        "other-buffer")
+                               (:a :href ,(object-string (url (htree:data node)))
+                                   ,(integer->unicode-geometric (id (htree:data node)))
+                                   ,(let ((title (or (match (title (htree:data node))
+                                                       ((guard e (not (str:emptyp e))) e))
+                                                     (object-display (url (htree:data node))))))
+                                      (if (eq node (htree:current history))
+                                          `(:b ,title)
+                                          title)))))
                          (gethash (id buffer) (buffer-local-histories-table history))
                          :include-root t
                          :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
