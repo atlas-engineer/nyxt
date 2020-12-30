@@ -840,14 +840,14 @@ to the currently active buffer."
   "Load INPUT-URL in BUFFER.
 If INPUT-URL is a string, it's transformed to a `quri:uri' by `parse-url'.
 URL is then transformed by BUFFER's `buffer-load-hook'."
-  (let ((url (typecase input-url
-               (string
-                (parse-url input-url))
-               (history-entry
-                (url input-url))
-               (t
-                input-url))))
-    (let ((new-url
+  (let* ((url (typecase input-url
+                (string
+                 (parse-url input-url))
+                (history-entry
+                 (url input-url))
+                (t
+                 input-url)))
+         (new-url
            (handler-case
                (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)
              (error (c)
