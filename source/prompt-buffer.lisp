@@ -217,7 +217,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 (export 'update-suggestion-html)
 (defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
   (let* ((sources (prompter:sources (prompter prompt-buffer)))
-         (current-source-index (position (current-source) sources))
+         (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))
     ;; TODO: Factor out property printing.
     ;; TODO: Only print `active-properties'.
@@ -266,7 +266,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
            (ps:chain document (get-element-by-id "cursor")
                      (scroll-into-view t))))))
 
-    (let* ((source (current-source))
+    (let* ((source (current-source prompt-buffer))
            (suggestions (prompter:suggestions source))
            (marked-suggestions (prompter:marked-suggestions source)))
       (evaluate-script
