@@ -159,10 +159,9 @@ If STEPS is negative, go to next pages instead."
 
 (define-command run-persistent-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Run persistent action over selected suggestion without closing PROMPT-BUFFER."
-  (funcall-safely (prompter:persistent-action (current-source prompt-buffer))
-                  (prompter:value (current-suggestion prompt-buffer))))
+  (prompter:call-persistent-action (prompter prompt-buffer)))
 
-(define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer)))
+(define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Rename.
   "Close the prompt-buffer without further action."
   (hide-prompt-buffer prompt-buffer))
 
