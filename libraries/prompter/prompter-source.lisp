@@ -237,15 +237,15 @@ present.")
              "Function called with the source as argument when the prompter is
 resumed.")
 
-     (follow nil                        ; TODO: Implement.
-             :type boolean
-             :documentation
-             "When non-nil, automatically execute `persistent-action'.
+     (follow-p nil
+               :type boolean
+               :documentation
+               "When non-nil, automatically execute `persistent-action'.
 Also see `follow-delay'.")
 
-     (follow-delay 0.0                  ; TODO: Implement.
+     (follow-delay 0.0
                    :documentation
-                   "Execute `persistent-action' after this delay when `follow' is
+                   "Execute `persistent-action' after this delay when `follow-p' is
 non-nil.")
 
      (must-match-p :always ; TODO: Remove and use dedicated source instead?  Then remove `return-input'.

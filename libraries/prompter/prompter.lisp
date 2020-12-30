@@ -41,6 +41,7 @@ A new object is created on every new input."))
                 ;; TODO: Use structure?
                 :type list
                 :export nil
+                :reader selection
                 :documentation "A pair of source and suggestion index.")
 
      (initializer nil
@@ -115,6 +116,17 @@ compution is not finished.")))
   (maybe-funcall (initializer prompter) prompter)
   prompter)
 
+(defmethod (setf selection) (value (prompter prompter))
+  (setf (slot-value prompter 'selection) value)
+  (let ((source (selected-source prompter)))
+    (when (follow-p source)
+      (if (< 0 (follow-delay source))
+          (bt:make-thread
+           (lambda ()
+             (sleep (follow-delay source))
+             (call-persistent-action prompter)))
+          (call-persistent-action prompter)))))
+
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter))
   "Update PROMPTER sources and return TEXT."
@@ -139,6 +151,12 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   (maybe-funcall (after-destructor prompter))
   ;; TODO: Interrupt before or after desctructor?
   (calispel:! (interrupt-channel prompter) t))
+
+(export-always 'call-persistent-action)
+(defun call-persistent-action (prompter)
+  (sera:and-let* ((action (persistent-action (selected-source prompter))))
+    (funcall action
+             (value (selected-suggestion prompter)))))
 
 (defun select (prompter steps &key wrap-over-p)
   "Select suggestion by jumping STEPS forward.
