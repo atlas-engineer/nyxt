@@ -12,6 +12,8 @@
        (* :margin 0
           :padding 0
           :list-style "none")
+       (li
+        :white-space "nowrap")
        ("ul li"
         :margin-left "15px"
         :position "relative"
