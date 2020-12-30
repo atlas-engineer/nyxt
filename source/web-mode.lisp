@@ -355,6 +355,30 @@ Otherwise go forward to the only child."
                      (markup:markup*
                       tree))))))))
 
+(define-command list-history (&key (limit 100))
+  "Print the user history as a list."
+  (flet ((list-history (&key (separator " → ") (limit 20))
+           (let* ((path (history-path (current-buffer)))
+                  (history (when (get-data path)
+                             (sort (htree:all-nodes (get-data path))
+                                   #'local-time:timestamp>
+                                   :key (lambda (i) (nyxt::last-access (htree:data i)))))))
+             (loop for item in (mapcar #'htree:data (sera:take limit history))
+                   collect (markup:markup
+                            (:li (title item) (unless (str:emptyp (title item)) separator)
+                                 (:a :href (object-string (url item))
+                                     (object-string (url item)))))))))
+    (with-current-html-buffer (buffer "*History list*" 'nyxt/history-tree-mode:history-tree-mode)
+      (markup:markup
+       (:style (style buffer))
+       (:style (cl-css:css
+                '((a
+                   :color "black")
+                  ("a:hover"
+                   :color "gray"))))
+       (:h1 "History")
+       (:ul (list-history :limit limit))))))
+
 (define-command paste ()
   "Paste from clipboard into active-element."
   ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
