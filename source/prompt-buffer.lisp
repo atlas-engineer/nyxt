@@ -235,12 +235,12 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                      with max-suggestion-count = 20
                      repeat max-suggestion-count
-                     with cursor-index = (second (prompter:selection (prompter prompt-buffer)))
+                     with cursor-index = (prompter:selected-suggestion-position (prompter prompt-buffer))
                      for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
                      for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                      collect (markup:markup
-                              (:tr :id (when (equal (list source suggestion-index)
-                                                    (prompter:selection (prompter prompt-buffer)))
+                              (:tr :id (when (equal (list suggestion source)
+                                                    (multiple-value-list (prompter:selected-suggestion (prompter prompt-buffer))))
                                          "cursor")
                                    :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
                                             "marked")
