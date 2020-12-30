@@ -36,10 +36,11 @@ A new object is created on every new input."))
               :type (or null (cons prompter-source))
               :documentation "List of `prompter-source's.")
 
-     (selection '()   ; TODO: Unexport, rename `result' to `selection'.
+     (selection '()
                 ;; TODO: Index by (source-index suggestion-index) instead?
                 ;; TODO: Use structure?
                 :type list
+                :export nil
                 :documentation "A pair of source and suggestion index.")
 
      (initializer nil
@@ -74,7 +75,7 @@ Note that the function is executed *before* performing an action.")
 Useful, say, to switch source.
 It takes precedence over individual source keymaps.")
 
-     (help-message ""
+     (help-message ""                   ; TODO: Use.
                    :type (or string function)
                    :documentation
                    "Help message for this prompter.
@@ -223,7 +224,7 @@ If STEPS is negative, go forward and selection first suggestion."
           (list last-source
                 (1- (length (suggestions last-source)))))))
 
-(defun result (prompter)
+(defun resolve-selection (prompter)
   (or (mapcar #'value (all-marked-suggestions prompter))
       (value (selected-suggestion prompter))
       ;; TODO: What if there is no result?
@@ -236,7 +237,7 @@ If STEPS is negative, go forward and selection first suggestion."
 The selection is the collection of marked suggestions across all sources.
 If there is no marked suggestion, send the currently selected suggestion
 instead."
-  (calispel:! (result-channel prompter) (result prompter)))
+  (calispel:! (result-channel prompter) (resolve-selection prompter)))
 
 (export-always 'return-input)
 (defun return-input (prompter)
@@ -261,7 +262,7 @@ marked elements."
 (defun run-action (prompter action)
   "Call action over selection and send the results to PROMPTER's `result-channel'."
   ;; TODO: Catch conditions.
-  (let ((action-result (funcall action (result prompter))))
+  (let ((action-result (funcall action (resolve-selection prompter))))
     (calispel:! (result-channel prompter) action-result)))
 
 (export-always 'next-ready-p)
@@ -321,6 +322,12 @@ After timeout has elapsed for one source, return nil."
 Return source as second value."
   (let* ((source (first (selection prompter))))
     (values (nth (second (selection prompter)) (suggestions source)) source)))
+
+(export-always 'selected-suggestion-position)
+(defun selected-suggestion-position (prompter)
+  "Return selected prompt-buffer suggestion position among current source
+suggestions."
+  (second (selection prompter)))
 
 (export-always 'all-marked-suggestions)
 (defun all-marked-suggestions (prompter)
