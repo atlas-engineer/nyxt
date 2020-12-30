@@ -5,7 +5,7 @@
 
 (define-mode history-tree-mode ()
   "Mode for history-tree listing."
-  ((display-buffer-id-glyphs-p t)
+  ((display-buffer-id-glyphs-p t :documentation "Whether to show unique glyphs matching buffer `id's along with buffer history entries.")
    (style
     (cl-css:css
      '((body
