@@ -5,7 +5,8 @@
 
 (define-mode history-tree-mode ()
   "Mode for history-tree listing."
-  ((style
+  ((display-buffer-id-glyphs-p t)
+   (style
     (cl-css:css
      '((body
         :line-height "initial")

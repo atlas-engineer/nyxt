@@ -299,6 +299,7 @@ Otherwise go forward to the only child."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
                                                  'nyxt/history-tree-mode:history-tree-mode)
     (let* ((markup:*auto-escape* nil)
+           (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
            (history (get-data (history-path buffer)))
            (tree `(:ul ,(htree:map-tree
                          #'(lambda (node)
@@ -307,7 +308,8 @@ Otherwise go forward to the only child."
                                         "current-buffer"
                                         "other-buffer")
                                (:a :href ,(object-string (url (htree:data node)))
-                                   ,(integer->unicode-geometric (id (htree:data node)))
+                                   ,(when (nyxt/history-tree-mode:display-buffer-id-glyphs-p mode)
+                                      (integer->unicode-geometric (id (htree:data node))))
                                    ,(let ((title (or (match (title (htree:data node))
                                                        ((guard e (not (str:emptyp e))) e))
                                                      (object-display (url (htree:data node))))))
@@ -320,7 +322,7 @@ Otherwise go forward to the only child."
       (markup:markup
        (:body (:h1 "History")
               (:style (style output-buffer))
-              (:style (style (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode)))
+              (:style (style mode))
               (:div (markup:raw
                      (markup:markup*
                       tree))))))))
@@ -330,6 +332,7 @@ Otherwise go forward to the only child."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
     (let* ((markup:*auto-escape* nil)
+           (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
            (history (let ((dummy-buffer (make-buffer)))
                       (prog1
                           (get-data (history-path dummy-buffer))
@@ -337,7 +340,8 @@ Otherwise go forward to the only child."
            (tree `(:ul ,(htree:map-tree
                          #'(lambda (node)
                              `(:li (:a :href ,(object-string (url (htree:data node)))
-                                       ,(integer->unicode-geometric (id (htree:data node)))
+                                       ,(when (nyxt/history-tree-mode:display-buffer-id-glyphs-p mode)
+                                          (integer->unicode-geometric (id (htree:data node))))
                                        ,(let ((title (or (match (title (htree:data node))
                                                            ((guard e (not (str:emptyp e))) e))
                                                          (object-display (url (htree:data node))))))
@@ -350,7 +354,7 @@ Otherwise go forward to the only child."
       (markup:markup
        (:body (:h1 "History")
               (:style (style output-buffer))
-              (:style (style (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode)))
+              (:style (style mode))
               (:div (markup:raw
                      (markup:markup*
                       tree))))))))
