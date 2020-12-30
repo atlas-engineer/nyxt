@@ -52,6 +52,7 @@ It's recommended to use this package in the Nyxt configuration file, instead of
 (uiop:define-package :nyxt/prompt-buffer-mode
   (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always)
   (:documentation "Mode for prompter buffer."))
 
