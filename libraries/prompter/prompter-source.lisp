@@ -86,13 +86,11 @@ another.")
                   "Function called with the source as argument.
 It is useful for instance to create the list of `initial-suggestions'.")
 
-     (destructor nil                    ; TODO: Use it.
+     (destructor nil
                  :type (or null function)
                  :documentation
                  "Function called with the source as parameter to clean it up.
-It's called when `destructor' is called over `prompter'.
-
-Note that the function is executed *before* performing any action.")
+It's called when `destroy' is called over `prompter'.")
 
      (initial-suggestions '()
                           :reader initial-suggestions
@@ -162,7 +160,7 @@ filtered.  The predicate works the same as the `sort' predicate.")
               :documentation "List of functions that can be run on suggestions
 of this source.")
 
-     (persistent-action nil             ; TODO: Implement.
+     (persistent-action nil ; TODO: Should be a list so we can support as many persistent actions as we want.
                         :type (or null function)
                         :documentation
                         "Function called over the selection without returning

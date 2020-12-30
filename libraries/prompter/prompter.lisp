@@ -52,13 +52,13 @@ A new object is created on every new input."))
                         :type (or null function)
                         :documentation
                         "First function called with no parameters when calling the
-`destructor' function over this prompter.
+`destroy' function over this prompter.
 It's called before the sources are cleaned up.")
      (after-destructor nil
                        :type (or null function)
                        :documentation
                        "Last function called with no parameters when calling the
-`destructor' function over this prompter.
+`destroy' function over this prompter.
 It's called after the sources are cleaned up.
 
 Note that the function is executed *before* performing an action.")
@@ -102,7 +102,7 @@ See also `result-channel'.")
 A prompter object holds multiple sources (of type `prompter-source') which
 contain a list of `suggestion's.
 
-You can call `destructor' to call the registered termination functions of the
+You can call `destroy' to call the registered termination functions of the
 prompter and its sources.
 
 Suggestions are computed asynchronously when `input' is updated.
@@ -128,13 +128,14 @@ compution is not finished.")))
       (setf (selection prompter) (list (first (sources prompter)) 0))))
   text)
 
-(export-always 'destructor)
-(defmethod destructor ((prompter prompter))
-  "First call `before-destructor', then clean up all sources, finally call
+(export-always 'destroy)
+(defun destroy (prompter)
+  "First call `before-destructor', then call all the source destructors, finally call
 `after-destructor'.
 Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   (maybe-funcall (before-destructor prompter))
-  (mapc #'destructor (sources prompter))
+  (mapc (lambda (source) (maybe-funcall (destructor source) source))
+        (sources prompter))
   (maybe-funcall (after-destructor prompter))
   ;; TODO: Interrupt before or after desctructor?
   (calispel:! (interrupt-channel prompter) t))
